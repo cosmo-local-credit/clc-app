@@ -57,6 +57,7 @@ describe("catalog HTTP contract", () => {
       locationName: "Sarajevo",
       geoLat: 43,
       geoLng: 18,
+      tags: [],
     });
     expect(JSON.parse(fetcher.mock.calls[1]?.[1].body)).toMatchObject({
       name: "Local",

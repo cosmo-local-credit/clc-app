@@ -44,6 +44,15 @@ export function CatalogRow({
             {catalog.description}
           </span>
         ) : null}
+        {catalog.tags.length > 0 ? (
+          <span className="mt-2 flex flex-wrap gap-1">
+            {catalog.tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="border border-border px-1.5 py-0.5 text-[0.6875rem]">
+                {tag}
+              </span>
+            ))}
+          </span>
+        ) : null}
         {distanceLabel ? (
           <span className="mt-1 block text-xs text-muted-foreground">{distanceLabel}</span>
         ) : null}

@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:183
+#: apps/web/src/features/pools/ui/pools-page.tsx:146
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, other {# 个资金池}}"
 
@@ -105,7 +105,7 @@ msgstr "{0} 已准备好用于代金券和兑换。"
 #. placeholder {0}: localized.value
 #. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:73
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:87
 msgid "{0} km"
 msgstr "{0} 公里"
 
@@ -157,7 +157,7 @@ msgstr "{0} 已更新。"
 
 #. placeholder {0}: pool.voucherCount
 #: apps/web/src/features/home/ui/wallet-page.tsx:324
-#: apps/web/src/features/pools/ui/pools-page.tsx:587
+#: apps/web/src/features/pools/ui/pools-page.tsx:451
 msgid "{0} vouchers"
 msgstr "{0} 代金券"
 
@@ -223,11 +223,11 @@ msgstr "{pinIcon}、{pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "{summaryTotal} 条评价"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:175
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:246
 msgid "{value} km"
 msgstr "{value} 公里"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:175
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:246
 msgid "{value} m"
 msgstr "{value} 米"
 
@@ -258,7 +258,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgstr "1 份报价"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:322
-#: apps/web/src/features/pools/ui/pools-page.tsx:585
+#: apps/web/src/features/pools/ui/pools-page.tsx:449
 msgid "1 voucher"
 msgstr "1 代金券"
 
@@ -364,9 +364,9 @@ msgid "Active"
 msgstr "启用"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:33
-#: apps/web/src/features/home/ui/activity-page.tsx:43
+#: apps/web/src/features/home/ui/activity-page.tsx:46
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:47
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:285
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:291
 msgid "Activity"
 msgstr "活动"
 
@@ -388,7 +388,7 @@ msgstr "添加链接"
 msgid "Add a message or choose profile details"
 msgstr "添加消息或选择个人资料详细信息"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:482
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:500
 msgid "Add a message or place an order"
 msgstr "添加留言或提交订单"
 
@@ -400,7 +400,7 @@ msgstr "将电话号码添加到您的个人资料中以使用 MPESA。"
 msgid "Add a photo"
 msgstr "添加照片"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:484
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:502
 msgid "Add a private message"
 msgstr "添加私信"
 
@@ -451,6 +451,10 @@ msgstr "添加照片"
 msgid "Add stables"
 msgstr "添加稳定币"
 
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:163
+msgid "Add tags"
+msgstr "添加标签"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:497
 #~ msgid "Add to cart"
 #~ msgstr "添加到购物车"
@@ -474,10 +478,10 @@ msgstr "添加您的联系方式"
 msgid "Added to catalog"
 msgstr "已添加到目录"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:188
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:193
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:207
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:28
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:261
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:279
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:150
 msgid "Address"
 msgstr "地址"
@@ -515,6 +519,11 @@ msgstr "高级详情"
 msgid "Advanced options"
 msgstr "高级选项"
 
+#: apps/web/src/components/marketplace-resource-navigation.tsx:23
+#: apps/web/src/components/marketplace-resource-navigation.tsx:66
+msgid "All"
+msgstr "全部"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:271
 msgid "All pools"
 msgstr "全部资金池"
@@ -551,13 +560,13 @@ msgstr "发送前请务必确认代币和网络相符。"
 #~ msgid "Always works to sign in and recover this wallet. Keep it safe."
 #~ msgstr "始终努力登录并恢复此钱包。确保安全。"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:120
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:156
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:160
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:277
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:123
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:208
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:367
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:162
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:248
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:437
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:223
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:325
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:581
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:692
@@ -565,8 +574,8 @@ msgstr "发送前请务必确认代币和网络相符。"
 msgid "Amount"
 msgstr "金额"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:423
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:264
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:448
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:315
 msgid "Amount exceeds your balance"
 msgstr "金额超过您的余额"
 
@@ -627,22 +636,23 @@ msgstr "作者"
 msgid "Availability depends on your country."
 msgstr "可用情况取决于您所在的国家/地区。"
 
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:162
+msgid "Available tags"
+msgstr "可用标签"
+
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:19
 msgid "Awaiting approval"
 msgstr "等待批准"
 
+#: apps/web/src/components/marketplace-search-shell.tsx:52
 #: apps/web/src/components/paper-wallet-scanner.tsx:191
 #: apps/web/src/components/paper-wallet-scanner.tsx:214
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:30
-#: apps/web/src/features/home/ui/market-list-page.tsx:123
-#: apps/web/src/features/home/ui/offers-page.tsx:98
 #: apps/web/src/features/install/ui/install-page.tsx:62
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:145
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:389
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:316
-#: apps/web/src/features/pools/ui/pools-page.tsx:258
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:337
 msgid "Back"
 msgstr "返回"
@@ -651,7 +661,7 @@ msgstr "返回"
 msgid "Back to market"
 msgstr "返回市场"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:270
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:288
 msgid "Back to pool"
 msgstr "返回资金池"
 
@@ -664,12 +674,12 @@ msgstr "返回资金池"
 msgid "Bag"
 msgstr "袋"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:222
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:225
 msgid "Balance"
 msgstr "余额"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:167
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:207
 msgid "Balance {0}"
 msgstr "余额{0}"
 
@@ -699,7 +709,7 @@ msgstr "粗体"
 msgid "Brown"
 msgstr "棕色"
 
-#: apps/web/src/features/home/ui/market-page.tsx:277
+#: apps/web/src/features/home/ui/market-page.tsx:391
 msgid "Browse all"
 msgstr "浏览全部"
 
@@ -750,14 +760,14 @@ msgstr "相机访问被拒绝。"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:229
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:476
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:692
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:745
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:347
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:597
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
 #: apps/web/src/features/wallet/ui/collect-page.tsx:229
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:404
-#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:475
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:89
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
 #: apps/web/src/routes/__root.tsx:323
@@ -805,11 +815,15 @@ msgstr "现金"
 msgid "Cash services aren't available on {0}."
 msgstr "{0} 不提供现金服务。"
 
+#: apps/web/src/features/home/ui/marketplace-page.tsx:264
+msgid "Catalog"
+msgstr "目录"
+
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:43
 msgid "Catalog not found."
 msgstr "未找到目录。"
 
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:134
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:140
 msgid "Catalog picture"
 msgstr "目录图片"
 
@@ -817,9 +831,10 @@ msgstr "目录图片"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "目录已保存，但无法添加项目。请重试。"
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:37
+#: apps/web/src/components/marketplace-resource-navigation.tsx:41
+#: apps/web/src/components/marketplace-resource-navigation.tsx:70
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
 msgid "Catalogs"
 msgstr "目录"
 
@@ -904,7 +919,7 @@ msgstr "正在检查可存入状态…"
 msgid "Checking how this pool prices vouchers…"
 msgstr "正在检查此资金池如何为代金券定价…"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:403
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:421
 msgid "Checking message availability…"
 msgstr "正在检查留言功能…"
 
@@ -916,7 +931,7 @@ msgstr "正在检查留言功能…"
 msgid "Checking notification support on this device."
 msgstr "检查此设备上的通知支持。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:450
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:468
 msgid "Checking order availability…"
 msgstr "正在检查订单可用性…"
 
@@ -936,11 +951,11 @@ msgstr "正在检查评价资格…"
 msgid "Checking supply…"
 msgstr "正在检查发行量…"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:448
+#: apps/web/src/features/pools/ui/pools-page.tsx:312
 msgid "Checking voucher availability…"
 msgstr "正在检查代金券可用性…"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:376
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:401
 msgid "Checking which vouchers this pool takes…"
 msgstr "正在检查此资金池接受哪些代金券…"
 
@@ -948,7 +963,6 @@ msgstr "正在检查此资金池接受哪些代金券…"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 #: apps/web/src/features/home/ui/settings-page.tsx:159
-#: apps/web/src/features/pools/ui/pools-page.tsx:323
 msgid "Checking…"
 msgstr "检查…"
 
@@ -1064,8 +1078,7 @@ msgid "Clear"
 msgstr "清除"
 
 #: apps/web/src/components/creditable-browse-control.tsx:35
-#: apps/web/src/features/pools/ui/pools-page.tsx:360
-#: apps/web/src/features/pools/ui/pools-page.tsx:385
+#: apps/web/src/features/pools/ui/pools-page.tsx:268
 msgid "Clear filter"
 msgstr "清除筛选条件"
 
@@ -1073,8 +1086,9 @@ msgstr "清除筛选条件"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:40
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:52
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:159
-#: apps/web/src/features/home/ui/market-page.tsx:260
-#: apps/web/src/features/home/ui/offers-page.tsx:165
+#: apps/web/src/features/home/ui/market-page.tsx:367
+#: apps/web/src/features/home/ui/marketplace-page.tsx:139
+#: apps/web/src/features/home/ui/offers-page.tsx:164
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:71
@@ -1082,7 +1096,7 @@ msgstr "清除筛选条件"
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:62
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:71
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
-#: apps/web/src/features/pools/ui/pools-page.tsx:513
+#: apps/web/src/features/pools/ui/pools-page.tsx:377
 msgid "Clear filters"
 msgstr "清除筛选条件"
 
@@ -1127,6 +1141,11 @@ msgstr "关闭私钥表格"
 msgid "Collapse"
 msgstr "收起"
 
+#: apps/web/src/components/marketplace-search-shell.tsx:61
+#: apps/web/src/components/marketplace-search-shell.tsx:65
+msgid "Collapse marketplace search"
+msgstr "收起市场搜索"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:258
 msgid "Collect again from this card"
 msgstr "从此卡再次领取"
@@ -1161,8 +1180,8 @@ msgstr "社区代金券及其详细信息。"
 msgid "Complete"
 msgstr "完成"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:209
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:269
 msgid "Complete fee details are unavailable for this swap."
 msgstr "无法获取此次兑换的完整费用明细。"
 
@@ -1189,7 +1208,7 @@ msgstr "确认并发布"
 msgid "Confirm & Publish"
 msgstr "确认并发布"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:396
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:467
 msgid "Confirm and send"
 msgstr "确认并发送"
 
@@ -1201,21 +1220,21 @@ msgstr "当询问时确认安装或添加。"
 msgid "Confirm password"
 msgstr "确认密码"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:359
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:429
 msgid "Confirm send"
 msgstr "确认发送"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:634
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:684
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:685
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:737
 msgid "Confirm swap"
 msgstr "确认兑换"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:110
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:251
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:265
 #: apps/web/src/features/wallet/ui/collect-page.tsx:430
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:237
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:255
 msgid "Confirmed"
 msgstr "已确认"
 
@@ -1390,10 +1409,10 @@ msgstr "复制收据"
 msgid "Copy supply creation transaction hash"
 msgstr "复制增发交易哈希"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:198
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:202
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:203
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:238
 msgid "Copy transaction hash"
 msgstr "复制交易哈希"
 
@@ -1444,19 +1463,18 @@ msgid "Could not upload your photo. Please try again."
 msgstr "无法上传您的照片。请再试一次。"
 
 #: apps/web/src/components/creditable-browse-control.tsx:89
-#: apps/web/src/features/pools/ui/pools-page.tsx:415
 msgid "Couldn't check creditable pools."
 msgstr "无法检查可存入的资金池。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:412
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:430
 msgid "Couldn't check message availability."
 msgstr "无法检查消息可用性。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:460
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:478
 msgid "Couldn't check order availability."
 msgstr "无法检查订单可用性。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:396
+#: apps/web/src/features/pools/ui/pools-page.tsx:279
 msgid "Couldn't check voucher availability."
 msgstr "无法检查代金券可用性。"
 
@@ -1465,7 +1483,7 @@ msgstr "无法检查代金券可用性。"
 msgid "Couldn't check which vouchers are already approved."
 msgstr "无法检查哪些代金券已获得批准。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:381
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:406
 msgid "Couldn't check which vouchers this pool takes."
 msgstr "无法检查此资金池接受哪些代金券。"
 
@@ -1528,13 +1546,13 @@ msgstr "无法复制收据"
 msgid "Couldn't copy supply creation transaction hash"
 msgstr "无法复制增发交易哈希"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:83
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:81
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:87
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:163
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:169
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:153
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:177
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:183
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:165
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:171
 msgid "Couldn't copy transaction hash"
 msgstr "无法复制交易哈希"
 
@@ -1553,8 +1571,8 @@ msgstr "无法完成首次增发。"
 msgid "Couldn't create vouchers."
 msgstr "无法发行代金券。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:407
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:410
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:432
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:435
 msgid "Couldn't estimate this swap."
 msgstr "无法估算此次兑换。"
 
@@ -1562,10 +1580,10 @@ msgstr "无法估算此次兑换。"
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "无法识别此处的国家/地区。尝试一下附近的地方。"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:77
+#: apps/web/src/features/home/ui/activity-page.tsx:61
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:80
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:203
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:578
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:585
 msgid "Couldn't load activity."
 msgstr "无法加载活动。"
 
@@ -1576,9 +1594,13 @@ msgstr "无法加载目录项目。"
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:193
 msgid "Couldn't load catalogs."
 msgstr "无法加载目录。"
+
+#: apps/web/src/features/home/ui/market-page.tsx:200
+msgid "Couldn't load complete marketplace results."
+msgstr "无法加载完整的市场结果。"
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:36
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:215
@@ -1589,6 +1611,10 @@ msgstr "无法加载信用额度。"
 msgid "Couldn't load holdings."
 msgstr "无法加载持有的代金券。"
 
+#: apps/web/src/features/home/ui/marketplace-page.tsx:154
+msgid "Couldn't load marketplace results."
+msgstr "无法加载市场结果。"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:156
 msgid "Couldn't load offerings."
 msgstr "无法加载商品或服务项目。"
@@ -1598,13 +1624,13 @@ msgstr "无法加载商品或服务项目。"
 msgid "Couldn't load pool tags."
 msgstr "无法加载资金池标签。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:169
+#: apps/web/src/features/home/ui/market-page.tsx:206
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 msgid "Couldn't load pools."
 msgstr "无法加载资金池。"
 
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:469
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:475
 msgid "Couldn't load posts."
 msgstr "无法加载帖子。"
 
@@ -1620,16 +1646,16 @@ msgstr "无法加载评价。"
 msgid "Couldn't load tags."
 msgstr "无法加载标签。"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:225
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:239
 msgid "Couldn't load the private attachment."
 msgstr "无法加载私密附件。"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:102
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:260
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
 msgid "Couldn't load this pool."
 msgstr "无法加载此资金池。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:879
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:939
 msgid "Couldn't load this pool's vouchers."
 msgstr "无法加载此资金池的代金券。"
 
@@ -1642,15 +1668,15 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "无法加载此帖子。您只能编辑您撰写的帖子。"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:140
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:138
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:141
 msgid "Couldn't load this voucher."
 msgstr "无法加载此代金券。"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:175
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:215
 msgid "Couldn't load tokens"
 msgstr "无法加载代币"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:478
+#: apps/web/src/features/pools/ui/pools-page.tsx:342
 msgid "Couldn't load voucher choices."
 msgstr "无法加载代金券选择。"
 
@@ -1689,7 +1715,7 @@ msgid "Couldn't open installation. Follow these instructions or try again "
 "later."
 msgstr "无法打开安装。请按照这些说明操作或稍后重试。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:378
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:396
 msgid "Couldn't prepare this order. Please review it and try again."
 msgstr "无法准备此订单。请检查并重试。"
 
@@ -1735,7 +1761,7 @@ msgstr "无法解析该接收方。"
 msgid "Couldn't retire the voucher."
 msgstr "无法停用代金券。"
 
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:77
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:83
 msgid "Couldn't save the catalog. Try again."
 msgstr "无法保存目录。请重试。"
 
@@ -1777,7 +1803,7 @@ msgstr "无法保存。请再试一次。"
 msgid "Couldn't search vouchers."
 msgstr "无法搜索代金券。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:584
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:602
 msgid "Couldn't share this message."
 msgstr "无法分享此消息。"
 
@@ -1806,8 +1832,8 @@ msgstr "无法更新目录。请重试。"
 msgid "Couldn't upload that photo. Try again."
 msgstr "无法上传该照片。请重试。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:524
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:552
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:551
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:579
 msgid "Couldn't verify this swap. Try again."
 msgstr "无法验证此兑换。再试一次。"
 
@@ -1824,7 +1850,7 @@ msgstr "无法验证您的 MPESA 链接。"
 msgid "Cover photo"
 msgstr "封面照片"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:267
+#: apps/web/src/features/pools/ui/pools-page.tsx:234
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:83
 msgid "Create"
 msgstr "创建"
@@ -1842,7 +1868,7 @@ msgstr "创建一个帐户"
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:32
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:81
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:172
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:198
 msgid "Create catalog"
 msgstr "创建目录"
 
@@ -1882,18 +1908,18 @@ msgstr "发行代金券"
 msgid "Create your account"
 msgstr "创建您的账户"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:105
+#: apps/web/src/features/home/ui/activity-page.tsx:113
 #: apps/web/src/features/home/ui/report-page.tsx:558
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:71
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:624
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:75
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
 msgid "Created"
 msgstr "已增发"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:197
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
 msgid "Created in the pool"
 msgstr "已在资金池中增发"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:54
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:59
 msgid "Created voucher"
 msgstr "已增发代金券"
 
@@ -1920,7 +1946,6 @@ msgstr "增发失败"
 
 #: apps/web/src/components/creditable-browse-control.tsx:75
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:46
-#: apps/web/src/features/pools/ui/pools-page.tsx:319
 msgid "Credit"
 msgstr "可存入"
 
@@ -1948,8 +1973,8 @@ msgstr "每天"
 msgid "Dark"
 msgstr "深色"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:190
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:151
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:194
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:589
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:726
 msgid "Date"
@@ -2000,8 +2025,8 @@ msgstr "部署交易"
 msgid "Deployment transaction hash copied"
 msgstr "部署交易哈希已复制"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:163
 msgid "Deposit"
 msgstr "存入"
@@ -2019,7 +2044,7 @@ msgid "Describe your pool"
 msgstr "介绍您的资金池"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:290
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:114
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
@@ -2055,10 +2080,10 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "显示名称不得超过 120 个字符"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:97
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:333
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:383
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:270
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:716
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:347
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:397
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:288
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:734
 msgid "Done"
 msgstr "完成"
 
@@ -2127,12 +2152,12 @@ msgstr "每个代金券只能链接一次"
 #: apps/web/src/components/offerings/offerings-panel.tsx:357
 #: apps/web/src/features/home/ui/report-page.tsx:89
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:117
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:150
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:189
 msgid "Edit"
 msgstr "编辑"
 
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:77
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:90
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:86
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:99
 msgid "Edit catalog"
 msgstr "编辑目录"
 
@@ -2181,14 +2206,14 @@ msgid "Education"
 msgstr "教育"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:89
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:256
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:270
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:223
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:235
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:242
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:254
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:528
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:546
 msgid "Email"
 msgstr "电子邮件"
 
@@ -2249,7 +2274,7 @@ msgid "Enter a valid website URL including https://"
 msgstr "输入有效的网站 URL，包括 https://"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:234
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:452
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:477
 msgid "Enter an amount greater than zero."
 msgstr "输入大于零的金额。"
 
@@ -2343,8 +2368,8 @@ msgstr "到期日期必须是将来的日期"
 msgid "Expiring"
 msgstr "即将到期"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:110
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
@@ -2374,8 +2399,8 @@ msgstr "费率和费用接收方"
 #~ msgid "Fee calculated at confirmation"
 #~ msgstr "确认时计算的费用"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:212
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:261
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:216
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:275
 msgid "Fee details unavailable."
 msgstr "无法获取费用明细。"
 
@@ -2439,7 +2464,15 @@ msgstr "文件太大 ({0} KB)。最大为 512 KB。"
 msgid "Filter by tag"
 msgstr "按标签筛选"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:108
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:118
+msgid "Filter catalogs"
+msgstr "筛选目录"
+
+#: apps/web/src/features/home/ui/marketplace-page.tsx:107
+msgid "Filter marketplace"
+msgstr "筛选市场"
+
+#: apps/web/src/features/home/ui/offers-page.tsx:132
 msgid "Filter offers"
 msgstr "筛选商品或服务项目"
 
@@ -2456,7 +2489,8 @@ msgid "Filter vouchers"
 msgstr "筛选代金券"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:243
-#: apps/web/src/components/marketplace-resource-navigation.tsx:121
+#: apps/web/src/components/marketplace-resource-navigation.tsx:161
+#: apps/web/src/components/marketplace-resource-navigation.tsx:165
 msgid "Filters"
 msgstr "筛选条件"
 
@@ -2468,7 +2502,7 @@ msgstr "筛选条件"
 msgid "Finding a name…"
 msgstr "正在查找名称…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:139
+#: apps/web/src/features/home/ui/market-page.tsx:165
 msgid "Finding location"
 msgstr "正在查找位置"
 
@@ -2492,11 +2526,11 @@ msgstr "食物"
 msgid "Frame your photo"
 msgstr "调整照片画面"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:145
-#: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:177
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
+#: apps/web/src/features/home/ui/activity-page.tsx:139
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:181
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:648
 msgid "From"
 msgstr "从"
 
@@ -2525,7 +2559,7 @@ msgstr "商品"
 msgid "Gram"
 msgstr "克"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:118
+#: apps/web/src/features/home/ui/activity-page.tsx:126
 msgid "Has a message"
 msgstr "有留言"
 
@@ -2596,7 +2630,7 @@ msgstr "您的体验如何？"
 msgid "I already have an account"
 msgstr "我已经有一个帐户"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:183
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:197
 msgid "I created {amountLabel}."
 msgstr "我增发了 {amountLabel}。"
 
@@ -2608,11 +2642,11 @@ msgstr "我已经保存了这个密钥"
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "我已经保存了这个密钥。如果丢失，我的钱包将无法恢复。"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:285
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:299
 msgid "I made a swap."
 msgstr "我完成了一次兑换。"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:186
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:200
 msgid "I received {amountLabel} from {senderLabel}."
 msgstr "我从 {senderLabel} 收到了 {amountLabel}。"
 
@@ -2620,20 +2654,20 @@ msgstr "我从 {senderLabel} 收到了 {amountLabel}。"
 #~ msgid "I received {amountLabel}."
 #~ msgstr "我收到了 {amountLabel}。"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:185
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:259
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:199
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:277
 msgid "I sent {amountLabel} to {recipientLabel}."
 msgstr "我将 {amountLabel} 发送到 {recipientLabel}。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:260
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:278
 msgid "I sent a payment."
 msgstr "我发送了付款。"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:283
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:297
 msgid "I swapped {sentLabel} for {amountLabel} in {poolName}."
 msgstr "我在 {poolName} 中用 {sentLabel} 兑换了 {amountLabel}。"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:284
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:298
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "我用 {sentLabel} 兑换了 {amountLabel}。"
 
@@ -2675,7 +2709,7 @@ msgstr "增加{0}数量"
 #~ msgid "Increase quantity"
 #~ msgstr "增加数量"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:287
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:293
 msgid "Info"
 msgstr "信息"
 
@@ -2887,7 +2921,8 @@ msgid "Litre"
 msgstr "升"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:146
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:217
+#: apps/web/src/features/home/ui/marketplace-page.tsx:182
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "加载更多"
@@ -2896,10 +2931,10 @@ msgstr "加载更多"
 msgid "Load more reviews"
 msgstr "加载更多评价"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:52
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
+#: apps/web/src/features/home/ui/activity-page.tsx:55
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:74
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:197
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:572
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:579
 msgid "Loading activity…"
 msgstr "正在加载活动…"
 
@@ -2928,17 +2963,18 @@ msgstr "正在加载持有的代金券…"
 msgid "Loading location map"
 msgstr "加载位置图"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:203
+#: apps/web/src/features/home/ui/market-list-page.tsx:198
+#: apps/web/src/features/home/ui/marketplace-page.tsx:149
 msgid "Loading marketplace…"
 msgstr "正在加载市场…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:199
-#: apps/web/src/features/home/ui/activity-page.tsx:153
+#: apps/web/src/features/home/ui/activity-page.tsx:167
 #: apps/web/src/features/home/ui/posts-page.tsx:139
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
-#: apps/web/src/features/pools/ui/pools-page.tsx:541
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:516
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:657
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:108
+#: apps/web/src/features/pools/ui/pools-page.tsx:405
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:522
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:675
 msgid "Loading more…"
 msgstr "加载更多…"
 
@@ -2947,12 +2983,12 @@ msgid "Loading offerings…"
 msgstr "正在加载商品或服务项目…"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:99
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:257
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:280
 msgid "Loading pool…"
 msgstr "正在加载资金池…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:277
-#: apps/web/src/features/pools/ui/pools-page.tsx:442
+#: apps/web/src/features/pools/ui/pools-page.tsx:306
 msgid "Loading pools…"
 msgstr "正在加载资金池…"
 
@@ -2961,12 +2997,12 @@ msgid "Loading post…"
 msgstr "正在加载帖子…"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:106
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:444
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:462
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:450
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:468
 msgid "Loading posts…"
 msgstr "正在加载帖子…"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:218
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:232
 msgid "Loading private attachment…"
 msgstr "正在加载私密附件…"
 
@@ -2985,11 +3021,11 @@ msgstr "正在加载标签…"
 msgid "Loading the editor…"
 msgstr "正在加载编辑器…"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:179
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:219
 msgid "Loading tokens…"
 msgstr "正在加载代币…"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:134
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:137
 msgid "Loading voucher…"
 msgstr "正在加载代金券…"
 
@@ -2997,7 +3033,7 @@ msgstr "正在加载代金券…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:183
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:118
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:157
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:875
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:935
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
 #: apps/web/src/features/wallet/ui/collect-page.tsx:166
@@ -3024,9 +3060,10 @@ msgstr "正在加载您的个人资料…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:118
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:187
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:127
 msgid "Loading…"
 msgstr "加载中…"
 
@@ -3035,15 +3072,15 @@ msgid "Local money and M-Pesa"
 msgstr "本地货币和 M-Pesa"
 
 #: apps/web/src/components/ui/location-picker.tsx:200
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:294
 #: apps/web/src/features/home/ui/report-page.tsx:577
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:552
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:570
 msgid "Location"
 msgstr "地点"
 
-#: apps/web/src/features/home/ui/market-page.tsx:141
+#: apps/web/src/features/home/ui/market-page.tsx:167
 msgid "Location denied"
 msgstr "位置被拒绝"
 
@@ -3052,7 +3089,7 @@ msgid "Location map"
 msgstr "位置图"
 
 #: apps/web/src/components/ui/location-picker.tsx:227
-#: apps/web/src/features/home/ui/market-page.tsx:143
+#: apps/web/src/features/home/ui/market-page.tsx:169
 msgid "Location unavailable"
 msgstr "位置不可用"
 
@@ -3091,7 +3128,9 @@ msgstr "管理代金券、资金池和本地付款。"
 msgid "Manage your wallet session and app preferences."
 msgstr "管理您的钱包会话和应用程序首选项。"
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:111
+#: apps/web/src/components/marketplace-resource-navigation.tsx:46
+#: apps/web/src/components/marketplace-resource-navigation.tsx:71
+#: apps/web/src/components/marketplace-resource-navigation.tsx:116
 msgid "Map"
 msgstr "地图"
 
@@ -3107,15 +3146,15 @@ msgstr "地图标记"
 #~ msgstr "Markdown：**粗体**，# 标题，- 列表，[链接](https://…)"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:38
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:103
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:106
 msgid "Market"
 msgstr "市场"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:113
-#~ msgid "Marketplace"
-#~ msgstr "市场"
+#: apps/web/src/features/home/ui/marketplace-page.tsx:78
+msgid "Marketplace"
+msgstr "市场"
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:62
+#: apps/web/src/components/marketplace-resource-navigation.tsx:76
 msgid "Marketplace sections"
 msgstr "市场分区"
 
@@ -3140,7 +3179,7 @@ msgstr "最大值"
 #~ msgid "Max {max}"
 #~ msgstr "最多 {max}"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:781
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:836
 msgid "Max {max} {symbol}"
 msgstr "最大 {max} {symbol}"
 
@@ -3149,8 +3188,8 @@ msgstr "最大 {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "媒体必须是上传的 http(s) URL"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:351
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:498
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:369
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:516
 msgid "Message"
 msgstr "留言"
 
@@ -3159,15 +3198,15 @@ msgstr "留言"
 msgid "Message must be 500 characters or fewer"
 msgstr "留言不得超过 500 个字符"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:439
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:457
 msgid "Message or order shared."
 msgstr "留言或订单已分享。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:441
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:459
 msgid "Message shared."
 msgstr "留言已分享。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:430
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:448
 msgid "Messages are available only for registered Cosmo users."
 msgstr "私信功能仅适用于已注册的 Cosmo 用户。"
 
@@ -3276,7 +3315,7 @@ msgstr "我的钱包地址"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:194
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:205
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:95
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:101
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:204
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:249
@@ -3302,9 +3341,9 @@ msgstr "钱包上的姓名"
 msgid "Name, symbol or address"
 msgstr "名称、符号或地址"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:241
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:223
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:701
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:241
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:719
 msgid "Network"
 msgstr "网络"
 
@@ -3319,11 +3358,11 @@ msgstr "新所有者地址"
 msgid "New post"
 msgstr "新帖子"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:149
-#: apps/web/src/features/home/ui/activity-page.tsx:128
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:180
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:204
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:633
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:163
+#: apps/web/src/features/home/ui/activity-page.tsx:136
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:184
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:645
 msgid "New supply"
 msgstr "新增发行量"
 
@@ -3361,8 +3400,8 @@ msgstr "否"
 msgid "No {0} fees have accrued yet."
 msgstr "尚未产生 {0} 费用。"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:72
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:592
+#: apps/web/src/features/home/ui/activity-page.tsx:75
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:599
 msgid "No activity yet."
 msgstr "还没有活动。"
 
@@ -3378,7 +3417,11 @@ msgstr "在此设备上找不到相机。"
 msgid "No cash activity yet."
 msgstr "尚无现金活动。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:133
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:183
+msgid "No catalogs are available through your Credit pools."
+msgstr "您的可存入资金池中没有可用目录。"
+
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:202
 msgid "No catalogs found."
 msgstr "未找到任何目录。"
 
@@ -3402,19 +3445,20 @@ msgstr "无信用额度限制"
 msgid "No credit offered"
 msgstr "不提供信用额度"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:504
+#: apps/web/src/features/pools/ui/pools-page.tsx:244
+#: apps/web/src/features/pools/ui/pools-page.tsx:368
 msgid "No creditable pools are available."
 msgstr "没有可用的可存入的资金池。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:496
+#: apps/web/src/features/pools/ui/pools-page.tsx:360
 msgid "No creditable pools have this voucher available."
 msgstr "没有可存入的资金池提供此代金券。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:502
+#: apps/web/src/features/pools/ui/pools-page.tsx:366
 msgid "No creditable pools match this search."
 msgstr "没有可存入的资金池与此搜索匹配。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:494
+#: apps/web/src/features/pools/ui/pools-page.tsx:358
 msgid "No creditable pools with this voucher match these filters."
 msgstr "没有同时符合此代金券和这些筛选条件的可存入资金池。"
 
@@ -3438,6 +3482,23 @@ msgstr "未找到货币。"
 msgid "No items yet. Add pools or vouchers from their detail pages."
 msgstr "暂无项目。请从资金池或代金券的详情页面添加。"
 
+#: apps/web/src/features/home/ui/market-page.tsx:333
+#: apps/web/src/features/home/ui/marketplace-page.tsx:145
+msgid "No marketplace results are available through your Credit pools."
+msgstr "您的可存入资金池中没有可用的市场结果。"
+
+#: apps/web/src/features/home/ui/marketplace-page.tsx:162
+msgid "No marketplace results found."
+msgstr "未找到市场结果。"
+
+#: apps/web/src/features/home/ui/market-page.tsx:359
+msgid "No marketplace results match this search."
+msgstr "没有与此搜索匹配的市场结果。"
+
+#: apps/web/src/features/home/ui/market-page.tsx:371
+msgid "No marketplace results to show yet."
+msgstr "暂无可显示的市场结果。"
+
 #: apps/web/src/components/wallet/recipient-address-input.tsx:210
 msgid "No matching recipients."
 msgstr "没有匹配的接收方。"
@@ -3446,11 +3507,11 @@ msgstr "没有匹配的接收方。"
 msgid "No offerings yet"
 msgstr "还没有商品或服务项目"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:171
+#: apps/web/src/features/home/ui/offers-page.tsx:170
 msgid "No offers are available through your Credit pools."
 msgstr "您的信用资金池中没有可用的商品或服务项目。"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:176
+#: apps/web/src/features/home/ui/offers-page.tsx:175
 msgid "No offers match this search."
 msgstr "没有与此搜索匹配的商品或服务项目。"
 
@@ -3462,19 +3523,19 @@ msgstr "没有通行密钥链接到此钱包。"
 msgid "No pool vouchers match this search."
 msgstr "没有资金池代金券与此搜索匹配。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:500
+#: apps/web/src/features/pools/ui/pools-page.tsx:364
 msgid "No pools have this voucher available."
 msgstr "没有资金池提供此代金券。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:506
+#: apps/web/src/features/pools/ui/pools-page.tsx:370
 msgid "No pools match this search."
 msgstr "没有资金池与此搜索匹配。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:498
+#: apps/web/src/features/pools/ui/pools-page.tsx:362
 msgid "No pools with this voucher match these filters."
 msgstr "没有同时符合此代金券和这些筛选条件的资金池。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:508
+#: apps/web/src/features/pools/ui/pools-page.tsx:372
 msgid "No pools yet."
 msgstr "还没有资金池。"
 
@@ -3483,7 +3544,7 @@ msgid "No posts match this search."
 msgstr "没有帖子与此搜索匹配。"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:119
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:484
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:490
 msgid "No posts yet."
 msgstr "还没有帖子。"
 
@@ -3508,7 +3569,7 @@ msgstr "尚未保存的接收方。"
 msgid "No tags found."
 msgstr "没有找到标签。"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:177
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:217
 msgid "No tokens available"
 msgstr "没有可用的代币"
 
@@ -3524,7 +3585,7 @@ msgstr "没有可提取的 USDm、USDT 或 USDC 余额。"
 msgid "No voucher in this pool is offering anything yet."
 msgstr "此资金池中的代金券暂时没有商品或服务项目。"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:209
+#: apps/web/src/features/home/ui/market-list-page.tsx:204
 msgid "No vouchers are available through your Credit pools."
 msgstr "您的信用资金池中没有可用的代金券。"
 
@@ -3540,7 +3601,6 @@ msgstr "没有代金券与该搜索匹配。"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:388
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:156
-#: apps/web/src/features/home/ui/market-page.tsx:257
 msgid "No vouchers match this search."
 msgstr "没有代金券与此搜索匹配。"
 
@@ -3548,8 +3608,7 @@ msgstr "没有代金券与此搜索匹配。"
 msgid "No vouchers to collect"
 msgstr "没有可领取的代金券"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:216
-#: apps/web/src/features/home/ui/market-page.tsx:264
+#: apps/web/src/features/home/ui/market-list-page.tsx:211
 msgid "No vouchers to show yet."
 msgstr "暂无代金券可显示。"
 
@@ -3567,7 +3626,7 @@ msgstr "没有可用的钱包地址。"
 msgid "No. of participants"
 msgstr "参加人数"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:992
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1052
 msgid "None left to swap for"
 msgstr "没有可兑换的余额"
 
@@ -3587,7 +3646,7 @@ msgstr "这不是标准的 Safaricom 号码。仅当该号码已携号转网时�
 msgid "Not approved"
 msgstr "未获批准"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:890
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:950
 msgid "Not held"
 msgstr "未持有"
 
@@ -3607,7 +3666,7 @@ msgstr "未设置"
 msgid "Nothing has changed."
 msgstr "没有任何更改。"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:91
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:94
 msgid "Nothing has moved through this pool yet."
 msgstr "尚无资金流经此资金池。"
 
@@ -3663,6 +3722,10 @@ msgstr "目前，通知需要 Android 上的 Chrome 或已安装的 iPhone 应�
 msgid "Numbered list"
 msgstr "编号列表"
 
+#: apps/web/src/features/home/ui/marketplace-page.tsx:261
+msgid "Offer"
+msgstr "商品或服务项目"
+
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:201
 msgid "Offering published."
 msgstr "商品或服务项目已发布。"
@@ -3677,12 +3740,13 @@ msgstr "商品或服务项目已更新。"
 
 #: apps/web/src/components/vouchers/voucher-sheet-full.tsx:38
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:40
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:283
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:289
 msgid "Offerings"
 msgstr "商品或服务项目"
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:22
-#: apps/web/src/features/home/ui/offers-page.tsx:100
+#: apps/web/src/components/marketplace-resource-navigation.tsx:26
+#: apps/web/src/components/marketplace-resource-navigation.tsx:67
+#: apps/web/src/features/home/ui/offers-page.tsx:98
 msgid "Offers"
 msgstr "商品或服务项目"
 
@@ -3710,9 +3774,13 @@ msgid "Onramp details"
 msgstr "充值详情"
 
 #: apps/web/src/features/home/ui/report-page.tsx:596
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:716
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:734
 msgid "Open in Maps"
 msgstr "在地图中打开"
+
+#: apps/web/src/components/marketplace-search-shell.tsx:41
+msgid "Open marketplace search"
+msgstr "打开市场搜索"
 
 #: apps/web/src/components/app-menu.tsx:41
 msgid "Open menu"
@@ -3765,7 +3833,7 @@ msgstr "正在打开纸钱包…"
 msgid "Optional"
 msgstr "可选"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:506
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:524
 msgid "Optional message"
 msgstr "可选留言"
 
@@ -3778,7 +3846,7 @@ msgstr "预言机定价"
 msgid "Orange"
 msgstr "橙色"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:349
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:367
 msgid "Order"
 msgstr "订单"
 
@@ -3787,7 +3855,7 @@ msgid "Order (optional)"
 msgstr "订单（可选）"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:197
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:350
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:368
 msgid "Order total"
 msgstr "订单总计"
 
@@ -3811,8 +3879,8 @@ msgstr "发行方回复"
 msgid "Ownership transfer submitted."
 msgstr "已提交所有权转让。"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:74
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:78
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
 msgid "Paid out"
 msgstr "已支付"
 
@@ -3907,8 +3975,8 @@ msgstr "付款已确认"
 msgid "Payment failed"
 msgstr "付款失败"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:256
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:194
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:274
 msgid "Payment receipt"
 msgstr "付款收据"
 
@@ -3918,11 +3986,11 @@ msgstr "付款状态未知"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
 #: apps/web/src/features/wallet/ui/collect-page.tsx:439
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:165
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:183
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:750
@@ -3948,12 +4016,12 @@ msgstr "人们可以使用此名称向您发送代金券。"
 #~ msgstr "人们可以使用此名称向您发送代金券。留空以保留您当前的用户名。"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:269
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:283
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:272
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:540
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:558
 msgid "Phone"
 msgstr "电话"
 
@@ -4009,14 +4077,15 @@ msgid "Place"
 msgstr "地点"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
+#: apps/web/src/features/home/ui/marketplace-page.tsx:263
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:186
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:268
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:672
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1003
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:220
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:374
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:98
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:725
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1063
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:234
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:101
 msgid "Pool"
 msgstr "资金池"
 
@@ -4024,11 +4093,11 @@ msgstr "资金池"
 msgid "Pool actions"
 msgstr "资金池操作"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:68
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
 msgid "Pool activity"
 msgstr "资金池活动"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:94
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:98
 msgid "Pool activity details"
 msgstr "资金池活动详情"
 
@@ -4071,11 +4140,11 @@ msgstr "资金池描述不得超过 500 个字符"
 msgid "Pool details updated."
 msgstr "资金池详细信息已更新。"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:118
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:335
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:645
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:292
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:122
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:360
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:698
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:200
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:306
 msgid "Pool fee"
 msgstr "资金池费用"
 
@@ -4088,7 +4157,7 @@ msgstr "资金池费用"
 msgid "Pool fee updated."
 msgstr "资金池费用已更新。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:528
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:555
 msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "资金池流动性发生变化。查看更新的报价并重试。"
 
@@ -4120,15 +4189,15 @@ msgid "Pool name must be 80 characters or fewer"
 msgstr "资金池名称不得超过 80 个字符"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:105
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:263
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:286
 msgid "Pool not found."
 msgstr "未找到资金池。"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:115
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:119
 msgid "Pool paid out"
 msgstr "资金池已付款"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:112
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:116
 msgid "Pool received"
 msgstr "资金池已收到"
 
@@ -4168,17 +4237,18 @@ msgstr "资金池标签"
 msgid "Pool tracking details are missing."
 msgstr "资金池跟踪详细信息丢失。"
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:33
+#: apps/web/src/components/marketplace-resource-navigation.tsx:38
+#: apps/web/src/components/marketplace-resource-navigation.tsx:69
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:33
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:316
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:110
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:330
-#: apps/web/src/features/pools/ui/pools-page.tsx:261
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:263
+#: apps/web/src/features/pools/ui/pools-page.tsx:174
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:269
 msgid "Pools"
 msgstr "资金池"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:528
+#: apps/web/src/features/pools/ui/pools-page.tsx:392
 msgid "Pools list"
 msgstr "资金池列表"
 
@@ -4221,12 +4291,12 @@ msgstr "帖子已更新。"
 #: apps/web/src/features/home/ui/report-page.tsx:610
 #: apps/web/src/features/home/ui/report-page.tsx:629
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:27
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:291
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:488
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:297
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:494
 msgid "Posts"
 msgstr "帖子"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:456
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:462
 msgid "Posts aren't available for this voucher."
 msgstr "帖子不适用于此代金券。"
 
@@ -4316,7 +4386,7 @@ msgstr "价格必须大于零"
 #: apps/web/src/components/offerings/offering-order-picker.tsx:201
 #: apps/web/src/components/offerings/offerings-panel.tsx:305
 #: apps/web/src/components/offerings/offerings-panel.tsx:486
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:352
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:370
 msgid "Price on request"
 msgstr "价格面议"
 
@@ -4336,7 +4406,7 @@ msgid "Priced in"
 msgstr "计价货币"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:191
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:353
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:371
 msgid "Priced subtotal"
 msgstr "已定价项目小计"
 
@@ -4355,7 +4425,7 @@ msgstr "主要导航"
 msgid "Print"
 msgstr "打印"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:236
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:250
 msgid "Private attachment"
 msgstr "私密附件"
 
@@ -4385,12 +4455,12 @@ msgstr "使用密码保护纸钱包"
 msgid "Protecting paper wallet..."
 msgstr "正在保护纸钱包…"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:133
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:247
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:348
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:654
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:199
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:293
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:137
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:256
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:373
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:707
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:213
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:307
 msgid "Protocol fee"
 msgstr "协议费"
 
@@ -4456,7 +4526,7 @@ msgstr "QR 当前包含原始私钥。"
 msgid "Queued"
 msgstr "已排队"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:327
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:352
 msgid "Rate"
 msgstr "汇率"
 
@@ -4522,13 +4592,13 @@ msgstr "应用关闭时也可接收代金券、兑换和提现更新。"
 msgid "Receive vouchers"
 msgstr "接收代金券"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:107
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:626
+#: apps/web/src/features/home/ui/activity-page.tsx:115
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:638
 msgid "Received"
 msgstr "已收到"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:56
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:170
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:61
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:174
 msgid "Received voucher"
 msgstr "已收到代金券"
 
@@ -4541,13 +4611,13 @@ msgstr "最近的收款"
 msgid "Recent recipients"
 msgstr "最近的接收方"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:45
+#: apps/web/src/features/home/ui/activity-page.tsx:48
 msgid "Recent voucher transfers for this wallet."
 msgstr "此钱包最近的代金券转账。"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:375
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:210
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:693
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:228
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:711
 msgid "Recipient"
 msgstr "接收方"
 
@@ -4574,9 +4644,9 @@ msgstr "请重新连接发布此代金券的钱包以增发。"
 #~ msgstr "重新连接发布此代金券的钱包进行铸造。"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:342
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:309
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:315
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:201
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:323
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:329
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:204
 msgid "Redeem"
 msgstr "兑付"
 
@@ -4598,8 +4668,8 @@ msgid "Redo"
 msgstr "重做"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:328
-msgid "Refreshing creditable pools…"
-msgstr "正在刷新可存入的资金池…"
+#~ msgid "Refreshing creditable pools…"
+#~ msgstr "正在刷新可存入的资金池…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Registering your passkey…"
@@ -4641,6 +4711,7 @@ msgstr "从市场中删除“{0}”？"
 msgid "Remove {0}"
 msgstr "删除{0}"
 
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:164
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:725
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:295
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:547
@@ -4743,10 +4814,12 @@ msgstr "正在停用…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:127
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:196
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:57
 #: apps/web/src/features/home/ui/market-map.tsx:859
-#: apps/web/src/features/home/ui/market-page.tsx:169
+#: apps/web/src/features/home/ui/market-page.tsx:201
+#: apps/web/src/features/home/ui/market-page.tsx:206
+#: apps/web/src/features/home/ui/marketplace-page.tsx:157
 #: apps/web/src/features/home/ui/report-page.tsx:59
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:712
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:282
@@ -4756,17 +4829,16 @@ msgstr "正在停用…"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:944
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1029
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1045
-#: apps/web/src/features/pools/ui/pools-page.tsx:404
-#: apps/web/src/features/pools/ui/pools-page.tsx:423
-#: apps/web/src/features/pools/ui/pools-page.tsx:486
+#: apps/web/src/features/pools/ui/pools-page.tsx:287
+#: apps/web/src/features/pools/ui/pools-page.tsx:350
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:206
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:561
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:222
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:711
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:421
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:475
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:145
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:439
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:493
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:148
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:335
 msgid "Retry"
 msgstr "重试"
@@ -4784,14 +4856,14 @@ msgstr "重试连接"
 #~ msgstr "反转兑换方向"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:174
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:179
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:166
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:192
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:197
 msgid "Reverted"
 msgstr "已回滚"
 
 #: apps/web/src/components/vouchers/voucher-sheet-full.tsx:59
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:289
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:295
 msgid "Reviews"
 msgstr "评价"
 
@@ -4805,7 +4877,7 @@ msgstr "保存"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:384
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:170
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:196
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:466
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:344
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
@@ -4844,7 +4916,7 @@ msgstr "已保存。您的帖子再次等待批准。"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:382
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:217
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:168
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:194
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:464
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:636
@@ -4864,15 +4936,15 @@ msgstr "扫描二维码"
 msgid "Scan recipient address"
 msgstr "扫描接收方地址"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:242
+#: apps/web/src/features/home/ui/market-list-page.tsx:237
 msgid "Scroll for more"
 msgstr "滚动查看更多"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:164
+#: apps/web/src/features/home/ui/market-list-page.tsx:128
 msgid "Search by name or symbol"
 msgstr "按名称或符号搜索"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:78
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
 msgid "Search catalogs"
 msgstr "搜索目录"
 
@@ -4890,12 +4962,16 @@ msgid "Search for a town or place"
 msgstr "搜索城镇或地点"
 
 #: apps/web/src/features/home/ui/market-page.tsx:222
-msgid "Search offers"
-msgstr "搜索商品或服务项目"
+#~ msgid "Search offers"
+#~ msgstr "搜索商品或服务项目"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:138
+#: apps/web/src/features/home/ui/offers-page.tsx:106
 msgid "Search offers, vouchers, descriptions, or tags"
 msgstr "搜索商品或服务项目、代金券、描述或标签"
+
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:160
+msgid "Search or add tags"
+msgstr "搜索或添加标签"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:159
 msgid "Search or enter"
@@ -4906,7 +4982,7 @@ msgstr "搜索或输入"
 msgid "Search pool tags"
 msgstr "搜索资金池标签"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:334
+#: apps/web/src/features/pools/ui/pools-page.tsx:179
 msgid "Search pools"
 msgstr "搜索资金池"
 
@@ -4925,6 +5001,11 @@ msgstr "按标题或描述搜索帖子"
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:347
 msgid "Search tags"
 msgstr "搜索标签"
+
+#: apps/web/src/features/home/ui/market-page.tsx:257
+#: apps/web/src/features/home/ui/marketplace-page.tsx:83
+msgid "Search the marketplace"
+msgstr "搜索市场"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Search voucher filters"
@@ -4967,7 +5048,7 @@ msgstr "正在搜索…"
 #~ msgid "See all"
 #~ msgstr "查看全部"
 
-#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:42
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:48
 msgid "Select a token"
 msgstr "选择代币"
 
@@ -4983,6 +5064,10 @@ msgstr "选定的资金池标签"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:544
 msgid "Selected post tags"
 msgstr "选定的帖子标签"
+
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:161
+msgid "Selected tags"
+msgstr "已选标签"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:721
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:345
@@ -5007,14 +5092,14 @@ msgstr "卖出至银行账户"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:331
 #: apps/web/src/features/home/ui/wallet-page.tsx:92
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:277
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:252
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:159
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:328
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:255
 msgid "Send"
 msgstr "发送"
 
 #. placeholder {0}: details.receiveSymbol
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:323
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:337
 msgid "Send {0}"
 msgstr "发送{0}"
 
@@ -5043,21 +5128,21 @@ msgstr "发送至"
 msgid "Send xDAI as instructed."
 msgstr "按照说明发送 xDAI。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:178
 msgid "Sending"
 msgstr "发送中"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:396
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:467
 msgid "Sending…"
 msgstr "正在发送…"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:109
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:199
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
+#: apps/web/src/features/home/ui/activity-page.tsx:117
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:217
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:640
 msgid "Sent"
 msgstr "已发送"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:57
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:62
 msgid "Sent voucher"
 msgstr "已发送代金券"
 
@@ -5103,7 +5188,7 @@ msgstr "设置"
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:393
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
 #: apps/web/src/features/wallet/ui/receive-page.tsx:155
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:607
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:625
 msgid "Share"
 msgstr "分享"
 
@@ -5125,11 +5210,11 @@ msgid "Share receipt"
 msgstr "分享收据"
 
 #. placeholder {0}: share.sharedBy.name
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:239
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:253
 msgid "Shared by {0}"
 msgstr "由 {0} 分享"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:607
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:625
 msgid "Sharing…"
 msgstr "分享…"
 
@@ -5150,7 +5235,7 @@ msgstr "显示 {stars} 星级评价"
 msgid "Show all"
 msgstr "显示全部"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:101
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:166
 msgid "Showing catalogs <0>globally</0>."
 msgstr "正在<0>全球</0>显示目录。"
 
@@ -5158,7 +5243,7 @@ msgstr "正在<0>全球</0>显示目录。"
 msgid "Showing recent vouchers only."
 msgstr "仅显示最近的代金券。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:81
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:146
 msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
 "location</1>."
 msgstr "正在显示已保存的<1>个人资料位置</1>周围 <0>{radiusLabel}</0> 内的结果。"
@@ -5208,11 +5293,11 @@ msgstr "登录以浏览您的信用资金池中可用的结果。"
 msgid "Sign in to continue"
 msgstr "登录以继续"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:567
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:574
 msgid "Sign in to view activity."
 msgstr "登录查看活动。"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:450
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:456
 msgid "Sign in to view posts."
 msgstr "登录查看帖子。"
 
@@ -5249,7 +5334,7 @@ msgstr "部分文件已跳过。请使用小于 8 MB 的 JPEG、PNG 或 WebP 图
 msgid "Some photos didn't upload. Try adding them again."
 msgstr "部分照片未上传。请重新添加。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:436
+#: apps/web/src/features/pools/ui/pools-page.tsx:300
 msgid "Some pools couldn't be checked. Showing verified results."
 msgstr "无法检查某些资金池。显示经过验证的结果。"
 
@@ -5283,11 +5368,11 @@ msgstr "开始…"
 msgid "Starts"
 msgstr "开始"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:101
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:429
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:235
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:706
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:118
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:105
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:443
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:253
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:724
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:570
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:681
 msgid "Status"
@@ -5297,8 +5382,8 @@ msgstr "状态"
 msgid "Step {clampedStep} of {clampedTotal}"
 msgstr "第 {clampedStep} 步，共 {clampedTotal} 步"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:227
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:259
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:245
 msgid "Submitted"
 msgstr "已提交"
 
@@ -5356,11 +5441,11 @@ msgstr "发行量必须大于零"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "不支持 SVG 文件。使用 PNG、JPEG 或 WebP。"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:145
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:397
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:271
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:468
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:294
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:493
 msgid "Swap"
 msgstr "兑换"
 
@@ -5386,37 +5471,37 @@ msgstr "兑换费必须是 0 到 100 之间的数字"
 msgid "Swap for {0}"
 msgstr "兑换为 {0}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:279
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:293
 msgid "Swap receipt"
 msgstr "兑换收据"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:148
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:162
 msgid "Swap reverted"
 msgstr "兑换已回滚"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:124
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
 msgid "Swap tracking details are missing."
 msgstr "缺少兑换跟踪详情。"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:122
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:136
 msgid "Swap unavailable"
 msgstr "兑换不可用"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:174
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:188
 msgid "Swapped"
 msgstr "已兑换"
 
 #. placeholder {0}: entry.received.tokenSymbol
 #. placeholder {1}: entry.sent.tokenSymbol
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:192
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:195
 msgid "Swapped {0} for {1}"
 msgstr "已用 {0} 兑换 {1}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:136
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:150
 msgid "Swapping"
 msgstr "正在兑换"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:684
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:737
 msgid "Swapping…"
 msgstr "正在兑换…"
 
@@ -5449,7 +5534,11 @@ msgstr "符号"
 msgid "Symbol was taken, using {0} instead."
 msgstr "符号已被占用，改用 {0}。"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
+#: apps/web/src/features/home/ui/marketplace-page.tsx:108
+#: apps/web/src/features/home/ui/offers-page.tsx:133
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:263
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:536
@@ -5602,7 +5691,7 @@ msgid "The connection dropped before the relay answered. Don't charge this card 
 "again until this resolves."
 msgstr "中继服务响应前连接已断开。在问题解决前，请勿再次向此卡扣款。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:985
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1045
 msgid "The credit limit has been reached. No more can be added to this pool."
 msgstr "已达到信用额度。无法再向此资金池添加代金券。"
 
@@ -5623,7 +5712,7 @@ msgstr "无法加载地图。"
 msgid "The map is not supported on this device."
 msgstr "此设备不支持该地图。"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:377
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:395
 msgid "The message and order must be 500 characters or fewer."
 msgstr "消息和订单不得超过 500 个字符。"
 
@@ -5673,7 +5762,7 @@ msgstr "资金池无法发布。"
 msgid "The pool doesn't hold that much {0}."
 msgstr "资金池没有那么多 {0}。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:538
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:565
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "报价已更改。确认前请检查更新的金额。"
 
@@ -5708,7 +5797,8 @@ msgid "There is nothing available for exchange with this voucher yet."
 msgstr "暂时没有可与此代金券兑换的内容。"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:51
-#: apps/web/src/features/home/ui/offers-page.tsx:162
+#: apps/web/src/features/home/ui/marketplace-page.tsx:136
+#: apps/web/src/features/home/ui/offers-page.tsx:161
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:80
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:81
 msgid "These filters aren't valid."
@@ -5770,11 +5860,10 @@ msgid "This device is subscribed to wallet notifications."
 msgstr "该设备已订阅钱包通知。"
 
 #: apps/web/src/components/creditable-browse-control.tsx:32
-#: apps/web/src/features/pools/ui/pools-page.tsx:371
 msgid "This link contains an invalid Credit filter."
 msgstr "此链接包含无效的“可存入”筛选条件。"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:346
+#: apps/web/src/features/pools/ui/pools-page.tsx:254
 msgid "This link contains an invalid output voucher."
 msgstr "此链接包含无效输出代金券。"
 
@@ -5817,22 +5906,22 @@ msgstr "此手机或浏览器无法读取 NFC 卡。请改用二维码。"
 
 #. placeholder {0}: localizedAmounts.depositHeadroom
 #. placeholder {1}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:430
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:455
 msgid "This pool can only take {0} more {1} right now."
 msgstr "此资金池目前最多还能接受 {0} {1}。"
 
 #. placeholder {0}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:428
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:453
 msgid "This pool can't take any more {0} right now."
 msgstr "此资金池目前无法再接受 {0}。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:397
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:883
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:422
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:943
 msgid "This pool doesn't take any vouchers yet."
 msgstr "此资金池暂未接受任何代金券。"
 
 #. placeholder {0}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:442
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:467
 msgid "This pool has no {0} available to swap."
 msgstr "此资金池没有可供兑换的 {0}。"
 
@@ -5855,7 +5944,7 @@ msgstr "此资金池尚未包含任何内容。"
 
 #. placeholder {0}: localizedAmounts.availableAmountOut
 #. placeholder {1}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:444
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:469
 msgid "This pool only has {0} {1} available to swap."
 msgstr "此资金池只有 {0} {1} 可供兑换。"
 
@@ -5869,7 +5958,7 @@ msgid "This pool values every voucher equally, so there is no rate to set. "
 "Adding vouchers to it isn't available here yet."
 msgstr "此资金池对所有代金券采用等值定价，因此无需设置汇率。暂时无法在此添加代金券。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:560
 msgid "This pool's deposit limit changed. Review the updated amounts and try "
 "again."
 msgstr "此资金池的存入额度已更改。请检查更新后的金额并重试。"
@@ -5904,13 +5993,13 @@ msgstr "标题"
 msgid "Title must be 200 characters or fewer"
 msgstr "标题不得超过 200 个字符"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:161
-#: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:186
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:175
+#: apps/web/src/features/home/ui/activity-page.tsx:139
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:190
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
 #: apps/web/src/features/wallet/ui/collect-page.tsx:137
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:648
 msgid "To"
 msgstr "到"
 
@@ -5938,23 +6027,23 @@ msgstr "工具"
 #~ msgid "Total"
 #~ msgstr "全部的"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:144
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:361
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:663
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:209
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:294
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:148
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:386
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:716
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:223
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:308
 msgid "Total fees"
 msgstr "总费用"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:195
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:227
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:219
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:199
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:241
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:237
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:744
 msgid "Transaction"
 msgstr "交易"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:100
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
 msgid "Transaction details"
 msgstr "交易详情"
 
@@ -5962,14 +6051,14 @@ msgstr "交易详情"
 msgid "Transaction hash"
 msgstr "交易哈希"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:82
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:86
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:168
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:152
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:182
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:170
 msgid "Transaction hash copied"
 msgstr "交易哈希已复制"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:49
+#: apps/web/src/features/home/ui/activity-page.tsx:52
 msgid "Transfer history"
 msgstr "转账记录"
 
@@ -5995,27 +6084,27 @@ msgstr "旅行"
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:80
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:142
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:65
-#: apps/web/src/features/home/ui/activity-page.tsx:66
+#: apps/web/src/features/home/ui/activity-page.tsx:69
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:80
 #: apps/web/src/features/home/ui/wallet-page.tsx:200
 #: apps/web/src/features/home/ui/wallet-page.tsx:291
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:221
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:225
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:54
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:392
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:418
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:270
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:417
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:443
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:284
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:224
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:459
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:477
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:586
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:483
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:593
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
 msgid "Try again"
 msgstr "再试一次"
@@ -6040,12 +6129,20 @@ msgstr "无法加载语言。恢复为英语。"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:304
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:328
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:536
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:782
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:796
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1020
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:126
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:98
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:101
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:191
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:355
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:128
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:146
 msgid "Unavailable"
 msgstr "不可用"
 
@@ -6160,7 +6257,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 "funds to your Gnosis wallet."
 msgstr "使用 <0>Binance</0> 或其他本地交易所，再通过 <1>Jumper</1> 将资金发送到您的 Gnosis 钱包。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:144
+#: apps/web/src/features/home/ui/market-page.tsx:170
 msgid "Use current location"
 msgstr "使用当前位置"
 
@@ -6174,7 +6271,7 @@ msgid "Use letters and numbers, for example KES"
 msgstr "使用字母和数字，例如 KES"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:259
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:310
 msgid "Use max · {0}"
 msgstr "使用最大值 · {0}"
 
@@ -6254,8 +6351,8 @@ msgstr "全屏查看图像"
 msgid "View offering details: {0}"
 msgstr "查看商品或服务项目详细信息：{0}"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:232
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:216
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:236
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:625
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:762
 msgid "View on block explorer"
@@ -6265,7 +6362,7 @@ msgstr "在区块浏览器上查看"
 msgid "View pool"
 msgstr "查看资金池"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:128
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:138
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:518
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:69
 msgid "View voucher"
@@ -6280,14 +6377,17 @@ msgstr "可见范围"
 msgid "voucher"
 msgstr "代金券"
 
+#: apps/web/src/components/marketplace-resource-navigation.tsx:33
+#: apps/web/src/components/marketplace-resource-navigation.tsx:68
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:164
+#: apps/web/src/features/home/ui/marketplace-page.tsx:262
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:168
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
 msgstr "代金券"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:233
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:236
 msgid "Voucher actions"
 msgstr "代金券操作"
 
@@ -6299,7 +6399,7 @@ msgstr "代金券合同"
 msgid "Voucher controls"
 msgstr "代金券管理"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:194
 msgid "Voucher creation receipt"
 msgstr "代金券创建收据"
 
@@ -6322,11 +6422,11 @@ msgstr "请输入代金券说明"
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "代金券描述不得超过 500 个字符"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:278
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:284
 msgid "Voucher details"
 msgstr "代金券详情"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:978
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1038
 msgid "Voucher details unavailable"
 msgstr "代金券详细信息不可用"
 
@@ -6392,17 +6492,16 @@ msgid "Voucher tracking details are missing."
 msgstr "缺少代金券跟踪详情。"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:286
-#: apps/web/src/components/marketplace-resource-navigation.tsx:29
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:33
-#: apps/web/src/features/home/ui/market-list-page.tsx:125
+#: apps/web/src/features/home/ui/market-list-page.tsx:123
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:41
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:337
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:102
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:105
 msgid "Vouchers"
 msgstr "代金券"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:228
+#: apps/web/src/features/home/ui/market-list-page.tsx:223
 msgid "Vouchers list"
 msgstr "代金券列表"
 
@@ -6429,8 +6528,8 @@ msgstr "正在等待区块链确认…"
 msgid "Waiting for confirmation…"
 msgstr "正在等待确认…"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:162
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:180
 msgid "Waiting for on-chain confirmation"
 msgstr "正在等待链上确认"
 
@@ -6450,7 +6549,7 @@ msgstr "正在等待链上确认…"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:100
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:103
 msgid "Wallet"
 msgstr "钱包"
 
@@ -6554,7 +6653,7 @@ msgstr "提取流动性"
 msgid "Withdrawal submitted"
 msgstr "提现已提交"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:508
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:514
 msgid "Write a post"
 msgstr "写一篇文章"
 
@@ -6591,7 +6690,7 @@ msgid "Yes"
 msgstr "是"
 
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:99
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:76
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:82
 msgid "You already have a catalog."
 msgstr "您已有一个目录。"
 
@@ -6633,7 +6732,7 @@ msgstr "这些都不是您发行的。"
 msgid "You don't have a username yet."
 msgstr "您还没有用户名。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:401
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:426
 msgid "You don't hold any voucher this pool takes."
 msgstr "您没有持有此资金池接受的代金券。"
 
@@ -6653,15 +6752,15 @@ msgstr "您尚未发行代金券。"
 msgid "You haven't written any posts yet."
 msgstr "您还没有写过任何帖子。"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:51
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:639
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:177
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:60
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:690
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:191
 msgid "You receive"
 msgstr "您收到"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:52
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:642
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:182
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:61
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:694
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:196
 msgid "You send"
 msgstr "您发送"
 

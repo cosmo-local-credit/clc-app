@@ -130,8 +130,8 @@ export function MarketFilterSummary({ filter }: { filter: CatalogFilterControls 
   return (
     <div className="pointer-events-auto flex items-center gap-1 border border-border bg-card ps-3">
       <Link
-        to="/offers"
-        search={(previous) => catalogSearchForScope(previous, false)}
+        to="/market"
+        search={(previous) => ({ ...catalogSearchForScope(previous, false), scope: undefined })}
         className="min-w-0 flex-1 truncate py-2 text-sm"
         aria-label={t`Edit filters`}
       >

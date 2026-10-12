@@ -26,6 +26,7 @@ import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
 import { Route as NavVouchersIndexRouteImport } from './routes/_nav/vouchers/index'
 import { Route as NavPoolsIndexRouteImport } from './routes/_nav/pools/index'
 import { Route as NavOffersIndexRouteImport } from './routes/_nav/offers/index'
+import { Route as NavMarketIndexRouteImport } from './routes/_nav/market/index'
 import { Route as NavCatalogsIndexRouteImport } from './routes/_nav/catalogs/index'
 import { Route as WalletSendReceiptRouteImport } from './routes/wallet/send/receipt'
 import { Route as WalletSendAmountRouteImport } from './routes/wallet/send/amount'
@@ -126,6 +127,11 @@ const NavPoolsIndexRoute = NavPoolsIndexRouteImport.update({
 const NavOffersIndexRoute = NavOffersIndexRouteImport.update({
   id: '/offers/',
   path: '/offers/',
+  getParentRoute: () => NavRoute,
+} as any)
+const NavMarketIndexRoute = NavMarketIndexRouteImport.update({
+  id: '/market/',
+  path: '/market/',
   getParentRoute: () => NavRoute,
 } as any)
 const NavCatalogsIndexRoute = NavCatalogsIndexRouteImport.update({
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
   '/catalogs/': typeof NavCatalogsIndexRoute
+  '/market/': typeof NavMarketIndexRoute
   '/offers/': typeof NavOffersIndexRoute
   '/pools/': typeof NavPoolsIndexRoute
   '/vouchers/': typeof NavVouchersIndexRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
   '/catalogs': typeof NavCatalogsIndexRoute
+  '/market': typeof NavMarketIndexRoute
   '/offers': typeof NavOffersIndexRoute
   '/pools': typeof NavPoolsIndexRoute
   '/vouchers': typeof NavVouchersIndexRoute
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
   '/_nav/catalogs/': typeof NavCatalogsIndexRoute
+  '/_nav/market/': typeof NavMarketIndexRoute
   '/_nav/offers/': typeof NavOffersIndexRoute
   '/_nav/pools/': typeof NavPoolsIndexRoute
   '/_nav/vouchers/': typeof NavVouchersIndexRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
     | '/catalogs/'
+    | '/market/'
     | '/offers/'
     | '/pools/'
     | '/vouchers/'
@@ -387,6 +397,7 @@ export interface FileRouteTypes {
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
     | '/catalogs'
+    | '/market'
     | '/offers'
     | '/pools'
     | '/vouchers'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
     | '/_nav/catalogs/'
+    | '/_nav/market/'
     | '/_nav/offers/'
     | '/_nav/pools/'
     | '/_nav/vouchers/'
@@ -579,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NavOffersIndexRouteImport
       parentRoute: typeof NavRoute
     }
+    '/_nav/market/': {
+      id: '/_nav/market/'
+      path: '/market'
+      fullPath: '/market/'
+      preLoaderRoute: typeof NavMarketIndexRouteImport
+      parentRoute: typeof NavRoute
+    }
     '/_nav/catalogs/': {
       id: '/_nav/catalogs/'
       path: '/catalogs'
@@ -709,6 +728,7 @@ interface NavRouteChildren {
   NavVouchersVoucherAddressRoute: typeof NavVouchersVoucherAddressRoute
   NavWalletVouchersRoute: typeof NavWalletVouchersRoute
   NavCatalogsIndexRoute: typeof NavCatalogsIndexRoute
+  NavMarketIndexRoute: typeof NavMarketIndexRoute
   NavOffersIndexRoute: typeof NavOffersIndexRoute
   NavPoolsIndexRoute: typeof NavPoolsIndexRoute
   NavVouchersIndexRoute: typeof NavVouchersIndexRoute
@@ -725,6 +745,7 @@ const NavRouteChildren: NavRouteChildren = {
   NavVouchersVoucherAddressRoute: NavVouchersVoucherAddressRoute,
   NavWalletVouchersRoute: NavWalletVouchersRoute,
   NavCatalogsIndexRoute: NavCatalogsIndexRoute,
+  NavMarketIndexRoute: NavMarketIndexRoute,
   NavOffersIndexRoute: NavOffersIndexRoute,
   NavPoolsIndexRoute: NavPoolsIndexRoute,
   NavVouchersIndexRoute: NavVouchersIndexRoute,

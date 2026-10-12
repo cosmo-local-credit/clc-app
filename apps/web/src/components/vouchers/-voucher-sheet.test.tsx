@@ -269,7 +269,7 @@ describe("VoucherSheet summary", () => {
   it("keeps existing Get and Directions behavior", () => {
     renderSheet();
     expect(screen.getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
-      `/pools?out_voucher=${VOUCHER.toLowerCase()}`,
+      `/market?scope=pools&out_voucher=${VOUCHER.toLowerCase()}`,
     );
     fireEvent.click(screen.getByRole("button", { name: "Directions" }));
     expect(mocks.maps).toEqual([{ label: "Kilifi", lat: -3.63, lng: 39.85 }]);

@@ -258,8 +258,11 @@ export function VoucherDetailPage({
         </Button>
         <Button asChild variant="info" className="h-14 flex-col gap-1 px-1">
           <Link
-            to="/pools"
-            search={{ out_voucher: (contractAddress ?? voucherAddress).toLowerCase() }}
+            to="/market"
+            search={{
+              scope: "pools",
+              out_voucher: (contractAddress ?? voucherAddress).toLowerCase(),
+            }}
           >
             <RiGroupLine className="size-4" aria-hidden="true" />
             <span className="text-[0.6875rem] font-semibold">

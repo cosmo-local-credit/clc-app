@@ -31,7 +31,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
     catalog?.ownerAddress.toLowerCase() === auth.session?.address.toLowerCase();
   return (
     <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-bottom-nav">
-      <BackChevron label={t`Catalogs`} to="/catalogs" />
+      <BackChevron label={t`Catalogs`} to="/market" search={{ scope: "catalogs" }} />
       {query.isPending ? (
         <p role="status">
           <Trans>Loading…</Trans>
@@ -69,6 +69,15 @@ export function CatalogDetailPage({ id }: { id: string }) {
             <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed">
               {catalog.description}
             </p>
+          ) : null}
+          {catalog.tags.length > 0 ? (
+            <div className="flex flex-wrap gap-2" aria-label={t`Tags`}>
+              {catalog.tags.map((tag) => (
+                <span key={tag} className="border border-border bg-card px-2 py-1 text-xs">
+                  {tag}
+                </span>
+              ))}
+            </div>
           ) : null}
           <div className="flex flex-wrap gap-2">
             <CatalogShareButton id={catalog.id} name={catalog.name} />

@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:183
+#: apps/web/src/features/pools/ui/pools-page.tsx:146
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, one {# пул} few {# пули} many {# пулів} other {# пула}}"
 
@@ -107,7 +107,7 @@ msgstr "{0} готовий до ваучерів та обмінів."
 #. placeholder {0}: localized.value
 #. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:73
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:87
 msgid "{0} km"
 msgstr "{0} км"
 
@@ -157,7 +157,7 @@ msgstr "{0} оновлено."
 
 #. placeholder {0}: pool.voucherCount
 #: apps/web/src/features/home/ui/wallet-page.tsx:324
-#: apps/web/src/features/pools/ui/pools-page.tsx:587
+#: apps/web/src/features/pools/ui/pools-page.tsx:451
 msgid "{0} vouchers"
 msgstr "{0} ваучерів"
 
@@ -223,11 +223,11 @@ msgstr "{pinIcon}, {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "Відгуки: {summaryTotal}"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:175
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:246
 msgid "{value} km"
 msgstr "{value} км"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:175
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:246
 msgid "{value} m"
 msgstr "{value} м"
 
@@ -258,7 +258,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgstr "1 пропозиція"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:322
-#: apps/web/src/features/pools/ui/pools-page.tsx:585
+#: apps/web/src/features/pools/ui/pools-page.tsx:449
 msgid "1 voucher"
 msgstr "1 ваучер"
 
@@ -366,9 +366,9 @@ msgid "Active"
 msgstr "Активний"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:33
-#: apps/web/src/features/home/ui/activity-page.tsx:43
+#: apps/web/src/features/home/ui/activity-page.tsx:46
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:47
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:285
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:291
 msgid "Activity"
 msgstr "Активність"
 
@@ -390,7 +390,7 @@ msgstr "Додати посилання"
 msgid "Add a message or choose profile details"
 msgstr "Додайте повідомлення або виберіть дані профілю"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:482
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:500
 msgid "Add a message or place an order"
 msgstr "Додайте повідомлення або зробіть замовлення"
 
@@ -402,7 +402,7 @@ msgstr "Додайте номер телефону до профілю, щоб �
 msgid "Add a photo"
 msgstr "Додати фотографію"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:484
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:502
 msgid "Add a private message"
 msgstr "Додати приватне повідомлення"
 
@@ -454,6 +454,10 @@ msgstr "Додати фотографії"
 msgid "Add stables"
 msgstr "Додати стейблкоїни"
 
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:163
+msgid "Add tags"
+msgstr "Додати теги"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:497
 #~ msgid "Add to cart"
 #~ msgstr "Додати до кошика"
@@ -478,10 +482,10 @@ msgstr "Додайте контактні дані"
 msgid "Added to catalog"
 msgstr "Додано до каталогу"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:188
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:193
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:207
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:28
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:261
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:279
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:150
 msgid "Address"
 msgstr "Адреса"
@@ -520,6 +524,11 @@ msgstr "Розширені відомості"
 msgid "Advanced options"
 msgstr "Розширені параметри"
 
+#: apps/web/src/components/marketplace-resource-navigation.tsx:23
+#: apps/web/src/components/marketplace-resource-navigation.tsx:66
+msgid "All"
+msgstr "Усі"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:271
 msgid "All pools"
 msgstr "Усі пули"
@@ -556,13 +565,13 @@ msgstr "Перед надсиланням завжди перевіряйте, �
 #~ msgstr "Завжди дає змогу ввійти й відновити цей гаманець. Зберігайте його в "
 #~ "безпеці."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:120
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:156
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:160
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:277
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:123
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:208
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:367
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:162
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:248
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:437
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:223
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:325
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:581
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:692
@@ -570,8 +579,8 @@ msgstr "Перед надсиланням завжди перевіряйте, �
 msgid "Amount"
 msgstr "Сума"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:423
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:264
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:448
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:315
 msgid "Amount exceeds your balance"
 msgstr "Сума перевищує ваш баланс"
 
@@ -632,22 +641,23 @@ msgstr "Автор"
 msgid "Availability depends on your country."
 msgstr "Доступність залежить від вашої країни."
 
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:162
+msgid "Available tags"
+msgstr "Доступні теги"
+
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:19
 msgid "Awaiting approval"
 msgstr "Очікує схвалення"
 
+#: apps/web/src/components/marketplace-search-shell.tsx:52
 #: apps/web/src/components/paper-wallet-scanner.tsx:191
 #: apps/web/src/components/paper-wallet-scanner.tsx:214
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:30
-#: apps/web/src/features/home/ui/market-list-page.tsx:123
-#: apps/web/src/features/home/ui/offers-page.tsx:98
 #: apps/web/src/features/install/ui/install-page.tsx:62
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:145
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:389
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:316
-#: apps/web/src/features/pools/ui/pools-page.tsx:258
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:337
 msgid "Back"
 msgstr "Назад"
@@ -656,7 +666,7 @@ msgstr "Назад"
 msgid "Back to market"
 msgstr "Назад до ринку"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:270
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:288
 msgid "Back to pool"
 msgstr "Назад до пулу"
 
@@ -669,12 +679,12 @@ msgstr "Назад до пулів"
 msgid "Bag"
 msgstr "Кошик"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:222
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:225
 msgid "Balance"
 msgstr "Баланс"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:167
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:207
 msgid "Balance {0}"
 msgstr "Баланс {0}"
 
@@ -704,7 +714,7 @@ msgstr "Напівжирний"
 msgid "Brown"
 msgstr "Коричневий"
 
-#: apps/web/src/features/home/ui/market-page.tsx:277
+#: apps/web/src/features/home/ui/market-page.tsx:391
 msgid "Browse all"
 msgstr "Переглянути все"
 
@@ -756,14 +766,14 @@ msgstr "Доступ до камери заборонено."
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:229
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:476
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:692
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:745
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:347
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:597
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
 #: apps/web/src/features/wallet/ui/collect-page.tsx:229
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:404
-#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:475
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:89
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
 #: apps/web/src/routes/__root.tsx:323
@@ -811,11 +821,15 @@ msgstr "Готівка"
 msgid "Cash services aren't available on {0}."
 msgstr "Готівкові послуги недоступні в мережі {0}."
 
+#: apps/web/src/features/home/ui/marketplace-page.tsx:264
+msgid "Catalog"
+msgstr "Каталог"
+
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:43
 msgid "Catalog not found."
 msgstr "Каталог не знайдено."
 
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:134
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:140
 msgid "Catalog picture"
 msgstr "Зображення каталогу"
 
@@ -823,9 +837,10 @@ msgstr "Зображення каталогу"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Каталог збережено. Не вдалося додати елемент. Спробуйте ще раз."
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:37
+#: apps/web/src/components/marketplace-resource-navigation.tsx:41
+#: apps/web/src/components/marketplace-resource-navigation.tsx:70
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
 msgid "Catalogs"
 msgstr "Каталоги"
 
@@ -911,7 +926,7 @@ msgstr "Перевірка доступності Кредиту…"
 msgid "Checking how this pool prices vouchers…"
 msgstr "Перевіряємо, як цей пул визначає вартість ваучерів…"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:403
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:421
 msgid "Checking message availability…"
 msgstr "Перевірка доступності повідомлень…"
 
@@ -923,7 +938,7 @@ msgstr "Перевірка доступності повідомлень…"
 msgid "Checking notification support on this device."
 msgstr "Перевірка підтримки сповіщень на цьому пристрої."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:450
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:468
 msgid "Checking order availability…"
 msgstr "Перевірка можливості замовлення…"
 
@@ -943,11 +958,11 @@ msgstr "Перевірка права на відгук…"
 msgid "Checking supply…"
 msgstr "Перевірка пропозиції…"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:448
+#: apps/web/src/features/pools/ui/pools-page.tsx:312
 msgid "Checking voucher availability…"
 msgstr "Перевірка доступності ваучерів…"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:376
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:401
 msgid "Checking which vouchers this pool takes…"
 msgstr "Перевіряємо, які ваучери приймає цей пул…"
 
@@ -955,7 +970,6 @@ msgstr "Перевіряємо, які ваучери приймає цей пу
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 #: apps/web/src/features/home/ui/settings-page.tsx:159
-#: apps/web/src/features/pools/ui/pools-page.tsx:323
 msgid "Checking…"
 msgstr "Перевірка…"
 
@@ -1073,8 +1087,7 @@ msgid "Clear"
 msgstr "Очистити"
 
 #: apps/web/src/components/creditable-browse-control.tsx:35
-#: apps/web/src/features/pools/ui/pools-page.tsx:360
-#: apps/web/src/features/pools/ui/pools-page.tsx:385
+#: apps/web/src/features/pools/ui/pools-page.tsx:268
 msgid "Clear filter"
 msgstr "Очистити фільтр"
 
@@ -1082,8 +1095,9 @@ msgstr "Очистити фільтр"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:40
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:52
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:159
-#: apps/web/src/features/home/ui/market-page.tsx:260
-#: apps/web/src/features/home/ui/offers-page.tsx:165
+#: apps/web/src/features/home/ui/market-page.tsx:367
+#: apps/web/src/features/home/ui/marketplace-page.tsx:139
+#: apps/web/src/features/home/ui/offers-page.tsx:164
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:71
@@ -1091,7 +1105,7 @@ msgstr "Очистити фільтр"
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:62
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:71
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
-#: apps/web/src/features/pools/ui/pools-page.tsx:513
+#: apps/web/src/features/pools/ui/pools-page.tsx:377
 msgid "Clear filters"
 msgstr "Очистити фільтри"
 
@@ -1136,6 +1150,11 @@ msgstr "Закрити форму приватного ключа"
 msgid "Collapse"
 msgstr "Згорнути"
 
+#: apps/web/src/components/marketplace-search-shell.tsx:61
+#: apps/web/src/components/marketplace-search-shell.tsx:65
+msgid "Collapse marketplace search"
+msgstr "Згорнути пошук на ринку"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:258
 msgid "Collect again from this card"
 msgstr "Списати ще раз із цієї картки"
@@ -1170,8 +1189,8 @@ msgstr "Ваучери спільноти та відомості про них.
 msgid "Complete"
 msgstr "Завершити"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:209
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:269
 msgid "Complete fee details are unavailable for this swap."
 msgstr "Повні відомості про комісії недоступні для цього обміну."
 
@@ -1198,7 +1217,7 @@ msgstr "Підтвердити й опублікувати"
 msgid "Confirm & Publish"
 msgstr "Підтвердити й опублікувати"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:396
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:467
 msgid "Confirm and send"
 msgstr "Підтвердити й надіслати"
 
@@ -1210,21 +1229,21 @@ msgstr "Коли з’явиться запит, підтвердьте вста
 msgid "Confirm password"
 msgstr "Підтвердьте пароль"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:359
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:429
 msgid "Confirm send"
 msgstr "Підтвердити надсилання"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:634
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:684
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:685
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:737
 msgid "Confirm swap"
 msgstr "Підтвердити обмін"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:110
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:251
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:265
 #: apps/web/src/features/wallet/ui/collect-page.tsx:430
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:237
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:255
 msgid "Confirmed"
 msgstr "Підтверджено"
 
@@ -1399,10 +1418,10 @@ msgstr "Копіювати квитанцію"
 msgid "Copy supply creation transaction hash"
 msgstr "Копіювати хеш транзакції випуску"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:198
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:202
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:203
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:238
 msgid "Copy transaction hash"
 msgstr "Копіювати хеш транзакції"
 
@@ -1454,19 +1473,18 @@ msgid "Could not upload your photo. Please try again."
 msgstr "Не вдалося завантажити ваше фото. Спробуйте ще раз."
 
 #: apps/web/src/components/creditable-browse-control.tsx:89
-#: apps/web/src/features/pools/ui/pools-page.tsx:415
 msgid "Couldn't check creditable pools."
 msgstr "Не вдалося перевірити пули з доступним кредитом."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:412
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:430
 msgid "Couldn't check message availability."
 msgstr "Не вдалося перевірити доступність повідомлень."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:460
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:478
 msgid "Couldn't check order availability."
 msgstr "Не вдалося перевірити можливість замовлення."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:396
+#: apps/web/src/features/pools/ui/pools-page.tsx:279
 msgid "Couldn't check voucher availability."
 msgstr "Не вдалося перевірити доступність ваучерів."
 
@@ -1475,7 +1493,7 @@ msgstr "Не вдалося перевірити доступність вауч
 msgid "Couldn't check which vouchers are already approved."
 msgstr "Не вдалося перевірити, які ваучери вже схвалено."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:381
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:406
 msgid "Couldn't check which vouchers this pool takes."
 msgstr "Не вдалося перевірити, які ваучери приймає цей пул."
 
@@ -1538,13 +1556,13 @@ msgstr "Не вдалося скопіювати квитанцію"
 msgid "Couldn't copy supply creation transaction hash"
 msgstr "Не вдалося скопіювати хеш транзакції випуску"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:83
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:81
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:87
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:163
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:169
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:153
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:177
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:183
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:165
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:171
 msgid "Couldn't copy transaction hash"
 msgstr "Не вдалося скопіювати хеш транзакції"
 
@@ -1563,8 +1581,8 @@ msgstr "Не вдалося випустити початкову кількіс
 msgid "Couldn't create vouchers."
 msgstr "Не вдалося створити ваучери."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:407
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:410
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:432
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:435
 msgid "Couldn't estimate this swap."
 msgstr "Не вдалося розрахувати цей обмін."
 
@@ -1573,10 +1591,10 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Не вдалося визначити країну в цьому місці. Спробуйте вибрати місце "
 "поруч."
 
-#: apps/web/src/features/home/ui/activity-page.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:77
+#: apps/web/src/features/home/ui/activity-page.tsx:61
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:80
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:203
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:578
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:585
 msgid "Couldn't load activity."
 msgstr "Не вдалося завантажити активність."
 
@@ -1587,9 +1605,13 @@ msgstr "Не вдалося завантажити елементи катало
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:193
 msgid "Couldn't load catalogs."
 msgstr "Не вдалося завантажити каталоги."
+
+#: apps/web/src/features/home/ui/market-page.tsx:200
+msgid "Couldn't load complete marketplace results."
+msgstr "Не вдалося завантажити всі результати ринку."
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:36
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:215
@@ -1600,6 +1622,10 @@ msgstr "Не вдалося завантажити кредитні ліміти
 msgid "Couldn't load holdings."
 msgstr "Не вдалося завантажити активи."
 
+#: apps/web/src/features/home/ui/marketplace-page.tsx:154
+msgid "Couldn't load marketplace results."
+msgstr "Не вдалося завантажити результати ринку."
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:156
 msgid "Couldn't load offerings."
 msgstr "Не вдалося завантажити пропозиції."
@@ -1609,13 +1635,13 @@ msgstr "Не вдалося завантажити пропозиції."
 msgid "Couldn't load pool tags."
 msgstr "Не вдалося завантажити теги пулів."
 
-#: apps/web/src/features/home/ui/market-page.tsx:169
+#: apps/web/src/features/home/ui/market-page.tsx:206
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 msgid "Couldn't load pools."
 msgstr "Не вдалося завантажити пули."
 
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:469
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:475
 msgid "Couldn't load posts."
 msgstr "Не вдалося завантажити дописи."
 
@@ -1631,16 +1657,16 @@ msgstr "Не вдалося завантажити відгуки."
 msgid "Couldn't load tags."
 msgstr "Не вдалося завантажити теги."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:225
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:239
 msgid "Couldn't load the private attachment."
 msgstr "Не вдалося завантажити приватне вкладення."
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:102
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:260
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
 msgid "Couldn't load this pool."
 msgstr "Не вдалося завантажити цей пул."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:879
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:939
 msgid "Couldn't load this pool's vouchers."
 msgstr "Не вдалося завантажити ваучери цього пулу."
 
@@ -1653,15 +1679,15 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "Не вдалося завантажити цей допис. Редагувати можна лише власні дописи."
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:140
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:138
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:141
 msgid "Couldn't load this voucher."
 msgstr "Не вдалося завантажити цей ваучер."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:175
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:215
 msgid "Couldn't load tokens"
 msgstr "Не вдалося завантажити токени"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:478
+#: apps/web/src/features/pools/ui/pools-page.tsx:342
 msgid "Couldn't load voucher choices."
 msgstr "Не вдалося завантажити варіанти ваучерів."
 
@@ -1702,7 +1728,7 @@ msgid "Couldn't open installation. Follow these instructions or try again "
 msgstr "Не вдалося відкрити встановлення. Дотримуйтеся цих інструкцій або "
 "спробуйте пізніше."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:378
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:396
 msgid "Couldn't prepare this order. Please review it and try again."
 msgstr "Не вдалося підготувати це замовлення. Перевірте його та спробуйте ще "
 "раз."
@@ -1752,7 +1778,7 @@ msgstr "Не вдалося визначити цього отримувача."
 msgid "Couldn't retire the voucher."
 msgstr "Не вдалося вивести ваучер з обігу."
 
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:77
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:83
 msgid "Couldn't save the catalog. Try again."
 msgstr "Не вдалося зберегти каталог. Спробуйте ще раз."
 
@@ -1794,7 +1820,7 @@ msgstr "Не вдалося зберегти. Спробуйте ще раз."
 msgid "Couldn't search vouchers."
 msgstr "Не вдалося знайти ваучери."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:584
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:602
 msgid "Couldn't share this message."
 msgstr "Не вдалося поділитися цим повідомленням."
 
@@ -1823,8 +1849,8 @@ msgstr "Не вдалося оновити каталог. Спробуйте щ
 msgid "Couldn't upload that photo. Try again."
 msgstr "Не вдалося завантажити це фото. Спробуйте ще раз."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:524
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:552
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:551
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:579
 msgid "Couldn't verify this swap. Try again."
 msgstr "Не вдалося перевірити цей обмін. Спробуйте ще раз."
 
@@ -1841,7 +1867,7 @@ msgstr "Не вдалося перевірити прив’язку до MPESA.
 msgid "Cover photo"
 msgstr "Фото обкладинки"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:267
+#: apps/web/src/features/pools/ui/pools-page.tsx:234
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:83
 msgid "Create"
 msgstr "Створити"
@@ -1859,7 +1885,7 @@ msgstr "Створити обліковий запис"
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:32
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:81
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:172
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:198
 msgid "Create catalog"
 msgstr "Створити каталог"
 
@@ -1899,18 +1925,18 @@ msgstr "Створити ваучери"
 msgid "Create your account"
 msgstr "Створіть обліковий запис"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:105
+#: apps/web/src/features/home/ui/activity-page.tsx:113
 #: apps/web/src/features/home/ui/report-page.tsx:558
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:71
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:624
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:75
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
 msgid "Created"
 msgstr "Створено"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:197
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
 msgid "Created in the pool"
 msgstr "Випущено в пул"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:54
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:59
 msgid "Created voucher"
 msgstr "Випущений ваучер"
 
@@ -1937,7 +1963,6 @@ msgstr "Не вдалося випустити"
 
 #: apps/web/src/components/creditable-browse-control.tsx:75
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:46
-#: apps/web/src/features/pools/ui/pools-page.tsx:319
 msgid "Credit"
 msgstr "Кредит"
 
@@ -1965,8 +1990,8 @@ msgstr "Щодня"
 msgid "Dark"
 msgstr "Темна"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:190
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:151
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:194
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:589
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:726
 msgid "Date"
@@ -2017,8 +2042,8 @@ msgstr "Транзакція розгортання"
 msgid "Deployment transaction hash copied"
 msgstr "Хеш транзакції розгортання скопійовано"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:163
 msgid "Deposit"
 msgstr "Внести"
@@ -2036,7 +2061,7 @@ msgid "Describe your pool"
 msgstr "Опишіть свій пул"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:290
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:114
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
@@ -2072,10 +2097,10 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "Відображувана назва має містити не більше 120 символів"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:97
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:333
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:383
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:270
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:716
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:347
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:397
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:288
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:734
 msgid "Done"
 msgstr "Готово"
 
@@ -2145,12 +2170,12 @@ msgstr "Кожний ваучер можна пов’язати лише оди
 #: apps/web/src/components/offerings/offerings-panel.tsx:357
 #: apps/web/src/features/home/ui/report-page.tsx:89
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:117
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:150
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:189
 msgid "Edit"
 msgstr "Редагувати"
 
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:77
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:90
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:86
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:99
 msgid "Edit catalog"
 msgstr "Редагувати каталог"
 
@@ -2199,14 +2224,14 @@ msgid "Education"
 msgstr "Освіта"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:89
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:256
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:270
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:223
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:235
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:242
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:254
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:528
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:546
 msgid "Email"
 msgstr "Електронна пошта"
 
@@ -2267,7 +2292,7 @@ msgid "Enter a valid website URL including https://"
 msgstr "Введіть дійсну адресу вебсайту, включно з https://"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:234
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:452
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:477
 msgid "Enter an amount greater than zero."
 msgstr "Введіть суму, більшу за нуль."
 
@@ -2360,8 +2385,8 @@ msgstr "Дата завершення дії має бути в майбутнь
 msgid "Expiring"
 msgstr "Термін дії спливає"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:110
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
@@ -2390,8 +2415,8 @@ msgstr "Комісія у % та отримувач"
 #~ msgid "Fee calculated at confirmation"
 #~ msgstr "Комісія розраховується під час підтвердження"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:212
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:261
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:216
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:275
 msgid "Fee details unavailable."
 msgstr "Відомості про комісії недоступні."
 
@@ -2455,7 +2480,15 @@ msgstr "Файл завеликий ({0} КБ). Максимальний роз�
 msgid "Filter by tag"
 msgstr "Фільтрувати за тегом"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:108
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:118
+msgid "Filter catalogs"
+msgstr "Фільтрувати каталоги"
+
+#: apps/web/src/features/home/ui/marketplace-page.tsx:107
+msgid "Filter marketplace"
+msgstr "Фільтрувати ринок"
+
+#: apps/web/src/features/home/ui/offers-page.tsx:132
 msgid "Filter offers"
 msgstr "Фільтрувати пропозиції"
 
@@ -2472,7 +2505,8 @@ msgid "Filter vouchers"
 msgstr "Фільтрувати ваучери"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:243
-#: apps/web/src/components/marketplace-resource-navigation.tsx:121
+#: apps/web/src/components/marketplace-resource-navigation.tsx:161
+#: apps/web/src/components/marketplace-resource-navigation.tsx:165
 msgid "Filters"
 msgstr "Фільтри"
 
@@ -2483,7 +2517,7 @@ msgstr "Фільтри"
 msgid "Finding a name…"
 msgstr "Пошук назви…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:139
+#: apps/web/src/features/home/ui/market-page.tsx:165
 msgid "Finding location"
 msgstr "Пошук місця"
 
@@ -2507,11 +2541,11 @@ msgstr "Їжа"
 msgid "Frame your photo"
 msgstr "Кадруйте фото"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:145
-#: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:177
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
+#: apps/web/src/features/home/ui/activity-page.tsx:139
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:181
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:648
 msgid "From"
 msgstr "Від"
 
@@ -2538,7 +2572,7 @@ msgstr "Товари"
 msgid "Gram"
 msgstr "Грам"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:118
+#: apps/web/src/features/home/ui/activity-page.tsx:126
 msgid "Has a message"
 msgstr "Має повідомлення"
 
@@ -2610,7 +2644,7 @@ msgstr "Як вам сподобалося?"
 msgid "I already have an account"
 msgstr "У мене вже є обліковий запис"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:183
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:197
 msgid "I created {amountLabel}."
 msgstr "Я випустив(-ла) {amountLabel}."
 
@@ -2623,11 +2657,11 @@ msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "Я зберіг цей ключ. Якщо його втратити, мій гаманець неможливо буде "
 "відновити."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:285
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:299
 msgid "I made a swap."
 msgstr "Я здійснив обмін."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:186
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:200
 msgid "I received {amountLabel} from {senderLabel}."
 msgstr "Я отримав(-ла) {amountLabel} від {senderLabel}."
 
@@ -2635,20 +2669,20 @@ msgstr "Я отримав(-ла) {amountLabel} від {senderLabel}."
 #~ msgid "I received {amountLabel}."
 #~ msgstr "Я отримав(-ла) {amountLabel}."
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:185
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:259
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:199
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:277
 msgid "I sent {amountLabel} to {recipientLabel}."
 msgstr "Я надіслав(-ла) {amountLabel} отримувачу {recipientLabel}."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:260
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:278
 msgid "I sent a payment."
 msgstr "Я надіслав(-ла) платіж."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:283
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:297
 msgid "I swapped {sentLabel} for {amountLabel} in {poolName}."
 msgstr "Я обміняв(-ла) {sentLabel} на {amountLabel} у пулі {poolName}."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:284
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:298
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "Я обміняв(-ла) {sentLabel} на {amountLabel}."
 
@@ -2691,7 +2725,7 @@ msgstr "Збільште кількість для {0}"
 #~ msgid "Increase quantity"
 #~ msgstr "Збільшити кількість"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:287
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:293
 msgid "Info"
 msgstr "Інформація"
 
@@ -2906,7 +2940,8 @@ msgid "Litre"
 msgstr "Літр"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:146
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:217
+#: apps/web/src/features/home/ui/marketplace-page.tsx:182
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "Завантажити ще"
@@ -2915,10 +2950,10 @@ msgstr "Завантажити ще"
 msgid "Load more reviews"
 msgstr "Завантажити більше відгуків"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:52
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
+#: apps/web/src/features/home/ui/activity-page.tsx:55
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:74
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:197
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:572
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:579
 msgid "Loading activity…"
 msgstr "Завантаження активності…"
 
@@ -2947,17 +2982,18 @@ msgstr "Завантаження активів…"
 msgid "Loading location map"
 msgstr "Завантаження мапи місця"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:203
+#: apps/web/src/features/home/ui/market-list-page.tsx:198
+#: apps/web/src/features/home/ui/marketplace-page.tsx:149
 msgid "Loading marketplace…"
 msgstr "Завантаження ринку…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:199
-#: apps/web/src/features/home/ui/activity-page.tsx:153
+#: apps/web/src/features/home/ui/activity-page.tsx:167
 #: apps/web/src/features/home/ui/posts-page.tsx:139
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
-#: apps/web/src/features/pools/ui/pools-page.tsx:541
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:516
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:657
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:108
+#: apps/web/src/features/pools/ui/pools-page.tsx:405
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:522
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:675
 msgid "Loading more…"
 msgstr "Завантаження ще…"
 
@@ -2966,12 +3002,12 @@ msgid "Loading offerings…"
 msgstr "Завантаження пропозицій…"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:99
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:257
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:280
 msgid "Loading pool…"
 msgstr "Завантаження пулу…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:277
-#: apps/web/src/features/pools/ui/pools-page.tsx:442
+#: apps/web/src/features/pools/ui/pools-page.tsx:306
 msgid "Loading pools…"
 msgstr "Завантаження пулів…"
 
@@ -2980,12 +3016,12 @@ msgid "Loading post…"
 msgstr "Завантаження допису…"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:106
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:444
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:462
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:450
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:468
 msgid "Loading posts…"
 msgstr "Завантаження дописів…"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:218
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:232
 msgid "Loading private attachment…"
 msgstr "Завантаження приватного вкладення…"
 
@@ -3004,11 +3040,11 @@ msgstr "Завантаження тегів…"
 msgid "Loading the editor…"
 msgstr "Завантаження редактора…"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:179
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:219
 msgid "Loading tokens…"
 msgstr "Завантаження токенів…"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:134
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:137
 msgid "Loading voucher…"
 msgstr "Завантаження ваучера…"
 
@@ -3016,7 +3052,7 @@ msgstr "Завантаження ваучера…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:183
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:118
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:157
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:875
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:935
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
 #: apps/web/src/features/wallet/ui/collect-page.tsx:166
@@ -3043,9 +3079,10 @@ msgstr "Завантаження вашого профілю…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:118
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:187
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:127
 msgid "Loading…"
 msgstr "Завантаження…"
 
@@ -3054,15 +3091,15 @@ msgid "Local money and M-Pesa"
 msgstr "Місцеві гроші та M-Pesa"
 
 #: apps/web/src/components/ui/location-picker.tsx:200
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:294
 #: apps/web/src/features/home/ui/report-page.tsx:577
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:552
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:570
 msgid "Location"
 msgstr "Місце"
 
-#: apps/web/src/features/home/ui/market-page.tsx:141
+#: apps/web/src/features/home/ui/market-page.tsx:167
 msgid "Location denied"
 msgstr "Доступ до геоданих заборонено"
 
@@ -3071,7 +3108,7 @@ msgid "Location map"
 msgstr "Мапа місця"
 
 #: apps/web/src/components/ui/location-picker.tsx:227
-#: apps/web/src/features/home/ui/market-page.tsx:143
+#: apps/web/src/features/home/ui/market-page.tsx:169
 msgid "Location unavailable"
 msgstr "Геодані недоступні"
 
@@ -3111,7 +3148,9 @@ msgstr "Керуйте ваучерами, пулами та місцевими 
 msgid "Manage your wallet session and app preferences."
 msgstr "Керуйте сеансом гаманця та налаштуваннями застосунку."
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:111
+#: apps/web/src/components/marketplace-resource-navigation.tsx:46
+#: apps/web/src/components/marketplace-resource-navigation.tsx:71
+#: apps/web/src/components/marketplace-resource-navigation.tsx:116
 msgid "Map"
 msgstr "Мапа"
 
@@ -3127,15 +3166,15 @@ msgstr "Мітка на мапі"
 #~ msgstr "Markdown: **жирний**, # заголовки, - списки, [посилання](https://…)"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:38
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:103
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:106
 msgid "Market"
 msgstr "Ринок"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:113
-#~ msgid "Marketplace"
-#~ msgstr "Ринок"
+#: apps/web/src/features/home/ui/marketplace-page.tsx:78
+msgid "Marketplace"
+msgstr "Ринок"
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:62
+#: apps/web/src/components/marketplace-resource-navigation.tsx:76
 msgid "Marketplace sections"
 msgstr "Розділи ринку"
 
@@ -3159,7 +3198,7 @@ msgstr "Макс."
 #~ msgid "Max {max}"
 #~ msgstr "Макс. {max}"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:781
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:836
 msgid "Max {max} {symbol}"
 msgstr "Макс. {max} {symbol}"
 
@@ -3168,8 +3207,8 @@ msgstr "Макс. {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Медіафайл має бути завантаженим URL із http(s)"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:351
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:498
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:369
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:516
 msgid "Message"
 msgstr "Повідомлення"
 
@@ -3178,15 +3217,15 @@ msgstr "Повідомлення"
 msgid "Message must be 500 characters or fewer"
 msgstr "Повідомлення має містити не більше 500 символів"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:439
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:457
 msgid "Message or order shared."
 msgstr "Повідомлення або замовлення надіслано."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:441
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:459
 msgid "Message shared."
 msgstr "Повідомлення опубліковано."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:430
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:448
 msgid "Messages are available only for registered Cosmo users."
 msgstr "Повідомлення доступні лише зареєстрованим користувачам Cosmo."
 
@@ -3295,7 +3334,7 @@ msgstr "Адреса мого гаманця"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:194
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:205
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:95
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:101
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:204
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:249
@@ -3321,9 +3360,9 @@ msgstr "Ім’я на гаманці"
 msgid "Name, symbol or address"
 msgstr "Назва, символ або адреса"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:241
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:223
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:701
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:241
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:719
 msgid "Network"
 msgstr "Мережа"
 
@@ -3338,11 +3377,11 @@ msgstr "Адреса нового власника"
 msgid "New post"
 msgstr "Новий допис"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:149
-#: apps/web/src/features/home/ui/activity-page.tsx:128
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:180
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:204
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:633
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:163
+#: apps/web/src/features/home/ui/activity-page.tsx:136
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:184
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:645
 msgid "New supply"
 msgstr "Нова кількість"
 
@@ -3382,8 +3421,8 @@ msgstr "Ні"
 msgid "No {0} fees have accrued yet."
 msgstr "Комісії {0} ще не накопичилися."
 
-#: apps/web/src/features/home/ui/activity-page.tsx:72
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:592
+#: apps/web/src/features/home/ui/activity-page.tsx:75
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:599
 msgid "No activity yet."
 msgstr "Активності ще немає."
 
@@ -3399,7 +3438,11 @@ msgstr "На цьому пристрої не знайдено камери."
 msgid "No cash activity yet."
 msgstr "Готівкових операцій ще немає."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:133
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:183
+msgid "No catalogs are available through your Credit pools."
+msgstr "Немає каталогів, доступних через ваші кредитні пули."
+
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:202
 msgid "No catalogs found."
 msgstr "Каталогів не знайдено."
 
@@ -3423,19 +3466,20 @@ msgstr "Без кредитного ліміту"
 msgid "No credit offered"
 msgstr "Кредит не пропонується"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:504
+#: apps/web/src/features/pools/ui/pools-page.tsx:244
+#: apps/web/src/features/pools/ui/pools-page.tsx:368
 msgid "No creditable pools are available."
 msgstr "Немає доступних пулів із кредитом."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:496
+#: apps/web/src/features/pools/ui/pools-page.tsx:360
 msgid "No creditable pools have this voucher available."
 msgstr "У жодному пулі з кредитом цей ваучер недоступний."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:502
+#: apps/web/src/features/pools/ui/pools-page.tsx:366
 msgid "No creditable pools match this search."
 msgstr "Жоден пул із кредитом не відповідає цьому пошуку."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:494
+#: apps/web/src/features/pools/ui/pools-page.tsx:358
 msgid "No creditable pools with this voucher match these filters."
 msgstr "Жоден пул із кредитом, у якому доступний цей ваучер, не відповідає цим "
 "фільтрам."
@@ -3459,6 +3503,23 @@ msgstr "Валют не знайдено."
 msgid "No items yet. Add pools or vouchers from their detail pages."
 msgstr "Елементів ще немає. Додайте пули або ваучери з їхніх сторінок деталей."
 
+#: apps/web/src/features/home/ui/market-page.tsx:333
+#: apps/web/src/features/home/ui/marketplace-page.tsx:145
+msgid "No marketplace results are available through your Credit pools."
+msgstr "Немає результатів ринку, доступних через ваші кредитні пули."
+
+#: apps/web/src/features/home/ui/marketplace-page.tsx:162
+msgid "No marketplace results found."
+msgstr "Результатів на ринку не знайдено."
+
+#: apps/web/src/features/home/ui/market-page.tsx:359
+msgid "No marketplace results match this search."
+msgstr "Жоден результат ринку не відповідає цьому пошуку."
+
+#: apps/web/src/features/home/ui/market-page.tsx:371
+msgid "No marketplace results to show yet."
+msgstr "Поки що немає результатів ринку для відображення."
+
 #: apps/web/src/components/wallet/recipient-address-input.tsx:210
 msgid "No matching recipients."
 msgstr "Відповідних отримувачів не знайдено."
@@ -3467,11 +3528,11 @@ msgstr "Відповідних отримувачів не знайдено."
 msgid "No offerings yet"
 msgstr "Пропозицій ще немає"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:171
+#: apps/web/src/features/home/ui/offers-page.tsx:170
 msgid "No offers are available through your Credit pools."
 msgstr "Через ваші Кредитні пули немає доступних пропозицій."
 
-#: apps/web/src/features/home/ui/offers-page.tsx:176
+#: apps/web/src/features/home/ui/offers-page.tsx:175
 msgid "No offers match this search."
 msgstr "Жодна пропозиція не відповідає цьому пошуку."
 
@@ -3483,19 +3544,19 @@ msgstr "До цього гаманця не прив’язано ключ до�
 msgid "No pool vouchers match this search."
 msgstr "Жоден ваучер пулу не відповідає цьому пошуку."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:500
+#: apps/web/src/features/pools/ui/pools-page.tsx:364
 msgid "No pools have this voucher available."
 msgstr "Цей ваучер недоступний у жодному пулі."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:506
+#: apps/web/src/features/pools/ui/pools-page.tsx:370
 msgid "No pools match this search."
 msgstr "Жоден пул не відповідає цьому пошуку."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:498
+#: apps/web/src/features/pools/ui/pools-page.tsx:362
 msgid "No pools with this voucher match these filters."
 msgstr "Жоден пул із цим ваучером не відповідає цим фільтрам."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:508
+#: apps/web/src/features/pools/ui/pools-page.tsx:372
 msgid "No pools yet."
 msgstr "Пулів ще немає."
 
@@ -3504,7 +3565,7 @@ msgid "No posts match this search."
 msgstr "Жоден допис не відповідає цьому пошуку."
 
 #: apps/web/src/features/home/ui/posts-page.tsx:119
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:484
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:490
 msgid "No posts yet."
 msgstr "Дописів ще немає."
 
@@ -3529,7 +3590,7 @@ msgstr "Збережених отримувачів ще немає."
 msgid "No tags found."
 msgstr "Тегів не знайдено."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:177
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:217
 msgid "No tokens available"
 msgstr "Немає доступних токенів"
 
@@ -3545,7 +3606,7 @@ msgstr "Немає доступного для виведення балансу
 msgid "No voucher in this pool is offering anything yet."
 msgstr "Жоден ваучер у цьому пулі ще нічого не пропонує."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:209
+#: apps/web/src/features/home/ui/market-list-page.tsx:204
 msgid "No vouchers are available through your Credit pools."
 msgstr "Через ваші Кредитні пули немає доступних ваучерів."
 
@@ -3561,7 +3622,6 @@ msgstr "Жоден ваучер не відповідає цьому пошук�
 
 #: apps/web/src/components/catalog-filter-controls.tsx:388
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:156
-#: apps/web/src/features/home/ui/market-page.tsx:257
 msgid "No vouchers match this search."
 msgstr "Жоден ваучер не відповідає цьому пошуку."
 
@@ -3569,8 +3629,7 @@ msgstr "Жоден ваучер не відповідає цьому пошук�
 msgid "No vouchers to collect"
 msgstr "Немає ваучерів для отримання"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:216
-#: apps/web/src/features/home/ui/market-page.tsx:264
+#: apps/web/src/features/home/ui/market-list-page.tsx:211
 msgid "No vouchers to show yet."
 msgstr "Поки немає ваучерів для відображення."
 
@@ -3588,7 +3647,7 @@ msgstr "Адреса гаманця недоступна."
 msgid "No. of participants"
 msgstr "Кількість учасників"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:992
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1052
 msgid "None left to swap for"
 msgstr "Нічого не залишилося для обміну"
 
@@ -3608,7 +3667,7 @@ msgstr "Це не стандартний номер Safaricom. Продовжу�
 msgid "Not approved"
 msgstr "Не схвалено"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:890
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:950
 msgid "Not held"
 msgstr "Немає у власності"
 
@@ -3628,7 +3687,7 @@ msgstr "Не встановлено"
 msgid "Nothing has changed."
 msgstr "Нічого не змінилося."
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:91
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:94
 msgid "Nothing has moved through this pool yet."
 msgstr "Через цей пул ще нічого не переміщувалося."
 
@@ -3687,6 +3746,10 @@ msgstr "Наразі для сповіщень потрібен Chrome на Andr
 msgid "Numbered list"
 msgstr "Нумерований список"
 
+#: apps/web/src/features/home/ui/marketplace-page.tsx:261
+msgid "Offer"
+msgstr "Пропозиція"
+
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:201
 msgid "Offering published."
 msgstr "Пропозицію опубліковано."
@@ -3701,12 +3764,13 @@ msgstr "Пропозицію оновлено."
 
 #: apps/web/src/components/vouchers/voucher-sheet-full.tsx:38
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:40
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:283
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:289
 msgid "Offerings"
 msgstr "Пропозиції"
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:22
-#: apps/web/src/features/home/ui/offers-page.tsx:100
+#: apps/web/src/components/marketplace-resource-navigation.tsx:26
+#: apps/web/src/components/marketplace-resource-navigation.tsx:67
+#: apps/web/src/features/home/ui/offers-page.tsx:98
 msgid "Offers"
 msgstr "Пропозиції"
 
@@ -3735,9 +3799,13 @@ msgid "Onramp details"
 msgstr "Відомості про поповнення"
 
 #: apps/web/src/features/home/ui/report-page.tsx:596
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:716
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:734
 msgid "Open in Maps"
 msgstr "Відкрити в Картах"
+
+#: apps/web/src/components/marketplace-search-shell.tsx:41
+msgid "Open marketplace search"
+msgstr "Відкрити пошук на ринку"
 
 #: apps/web/src/components/app-menu.tsx:41
 msgid "Open menu"
@@ -3791,7 +3859,7 @@ msgstr "Відкриття паперового гаманця..."
 msgid "Optional"
 msgstr "Необов’язково"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:506
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:524
 msgid "Optional message"
 msgstr "Необов’язкове повідомлення"
 
@@ -3804,7 +3872,7 @@ msgstr "Ціноутворення за оракулом"
 msgid "Orange"
 msgstr "Помаранчевий"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:349
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:367
 msgid "Order"
 msgstr "Замовлення"
 
@@ -3813,7 +3881,7 @@ msgid "Order (optional)"
 msgstr "Замовлення (необов’язково)"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:197
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:350
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:368
 msgid "Order total"
 msgstr "Сума замовлення"
 
@@ -3837,8 +3905,8 @@ msgstr "Відповідь власника"
 msgid "Ownership transfer submitted."
 msgstr "Запит на передачу права власності надіслано."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:74
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:78
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
 msgid "Paid out"
 msgstr "Виплачено"
 
@@ -3933,8 +4001,8 @@ msgstr "Платіж підтверджено"
 msgid "Payment failed"
 msgstr "Платіж не виконано"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:256
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:194
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:274
 msgid "Payment receipt"
 msgstr "Квитанція про оплату"
 
@@ -3944,11 +4012,11 @@ msgstr "Стан платежу невідомий"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
 #: apps/web/src/features/wallet/ui/collect-page.tsx:439
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:165
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:183
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:750
@@ -3976,12 +4044,12 @@ msgstr "Люди можуть використовувати це ім’я, щ�
 #~ "поле порожнім, щоб зберегти поточне ім’я користувача."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:269
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:283
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:272
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:540
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:558
 msgid "Phone"
 msgstr "Телефон"
 
@@ -4037,14 +4105,15 @@ msgid "Place"
 msgstr "Місце"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
+#: apps/web/src/features/home/ui/marketplace-page.tsx:263
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:186
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:268
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:672
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1003
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:220
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:374
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:98
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:725
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1063
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:234
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:101
 msgid "Pool"
 msgstr "Пул"
 
@@ -4052,11 +4121,11 @@ msgstr "Пул"
 msgid "Pool actions"
 msgstr "Дії з пулом"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:68
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
 msgid "Pool activity"
 msgstr "Активність пулу"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:94
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:98
 msgid "Pool activity details"
 msgstr "Відомості про активність пулу"
 
@@ -4099,11 +4168,11 @@ msgstr "Опис пулу має містити не більше 500 симво
 msgid "Pool details updated."
 msgstr "Відомості про пул оновлено."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:118
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:335
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:645
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:292
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:122
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:360
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:698
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:200
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:306
 msgid "Pool fee"
 msgstr "Комісія пулу"
 
@@ -4116,7 +4185,7 @@ msgstr "Комісія пулу"
 msgid "Pool fee updated."
 msgstr "Комісію пулу оновлено."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:528
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:555
 msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "Ліквідність пулу змінилася. Перегляньте оновлений розрахунок і "
 "спробуйте ще раз."
@@ -4149,15 +4218,15 @@ msgid "Pool name must be 80 characters or fewer"
 msgstr "Назва пулу має містити не більше 80 символів"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:105
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:263
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:286
 msgid "Pool not found."
 msgstr "Пул не знайдено."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:115
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:119
 msgid "Pool paid out"
 msgstr "Пул виплатив"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:112
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:116
 msgid "Pool received"
 msgstr "Пул отримав"
 
@@ -4196,17 +4265,18 @@ msgstr "Теги пулу"
 msgid "Pool tracking details are missing."
 msgstr "Відомості для відстеження пулу відсутні."
 
-#: apps/web/src/components/marketplace-resource-navigation.tsx:33
+#: apps/web/src/components/marketplace-resource-navigation.tsx:38
+#: apps/web/src/components/marketplace-resource-navigation.tsx:69
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:33
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:316
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:110
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:330
-#: apps/web/src/features/pools/ui/pools-page.tsx:261
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:263
+#: apps/web/src/features/pools/ui/pools-page.tsx:174
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:269
 msgid "Pools"
 msgstr "Пули"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:528
+#: apps/web/src/features/pools/ui/pools-page.tsx:392
 msgid "Pools list"
 msgstr "Список пулів"
 
@@ -4249,12 +4319,12 @@ msgstr "Допис оновлено."
 #: apps/web/src/features/home/ui/report-page.tsx:610
 #: apps/web/src/features/home/ui/report-page.tsx:629
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:27
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:291
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:488
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:297
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:494
 msgid "Posts"
 msgstr "Дописи"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:456
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:462
 msgid "Posts aren't available for this voucher."
 msgstr "Дописи недоступні для цього ваучера."
 
@@ -4345,7 +4415,7 @@ msgstr "Ціна має бути більшою за нуль"
 #: apps/web/src/components/offerings/offering-order-picker.tsx:201
 #: apps/web/src/components/offerings/offerings-panel.tsx:305
 #: apps/web/src/components/offerings/offerings-panel.tsx:486
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:352
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:370
 msgid "Price on request"
 msgstr "Ціна за запитом"
 
@@ -4365,7 +4435,7 @@ msgid "Priced in"
 msgstr "Валюта ціни"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:191
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:353
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:371
 msgid "Priced subtotal"
 msgstr "Проміжна сума позицій із ціною"
 
@@ -4384,7 +4454,7 @@ msgstr "Основна навігація"
 msgid "Print"
 msgstr "Друкувати"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:236
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:250
 msgid "Private attachment"
 msgstr "Приватне вкладення"
 
@@ -4414,12 +4484,12 @@ msgstr "Захистити паперовий гаманець паролем"
 msgid "Protecting paper wallet..."
 msgstr "Захист паперового гаманця..."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:133
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:247
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:348
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:654
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:199
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:293
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:137
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:256
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:373
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:707
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:213
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:307
 msgid "Protocol fee"
 msgstr "Комісія протоколу"
 
@@ -4485,7 +4555,7 @@ msgstr "Зараз QR-код містить незахищений приват�
 msgid "Queued"
 msgstr "У черзі"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:327
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:352
 msgid "Rate"
 msgstr "Курс"
 
@@ -4552,13 +4622,13 @@ msgstr "Отримуйте оновлення про ваучери, обмін�
 msgid "Receive vouchers"
 msgstr "Отримати ваучери"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:107
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:626
+#: apps/web/src/features/home/ui/activity-page.tsx:115
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:638
 msgid "Received"
 msgstr "Отримано"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:56
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:170
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:61
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:174
 msgid "Received voucher"
 msgstr "Отриманий ваучер"
 
@@ -4571,13 +4641,13 @@ msgstr "Нещодавні оплати"
 msgid "Recent recipients"
 msgstr "Нещодавні отримувачі"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:45
+#: apps/web/src/features/home/ui/activity-page.tsx:48
 msgid "Recent voucher transfers for this wallet."
 msgstr "Нещодавні перекази ваучерів для цього гаманця."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:375
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:210
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:693
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:228
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:711
 msgid "Recipient"
 msgstr "Отримувач"
 
@@ -4605,9 +4675,9 @@ msgstr "Повторно під’єднайте гаманець, з якого
 #~ "ваучер було опубліковано."
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:342
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:309
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:315
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:201
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:323
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:329
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:204
 msgid "Redeem"
 msgstr "Погасити"
 
@@ -4629,8 +4699,8 @@ msgid "Redo"
 msgstr "Повторити"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:328
-msgid "Refreshing creditable pools…"
-msgstr "Оновлення пулів із доступним кредитом…"
+#~ msgid "Refreshing creditable pools…"
+#~ msgstr "Оновлення пулів із доступним кредитом…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Registering your passkey…"
@@ -4672,6 +4742,7 @@ msgstr "Видалити «{0}» із ринку?"
 msgid "Remove {0}"
 msgstr "Видалити {0}"
 
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:164
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:725
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:295
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:547
@@ -4774,10 +4845,12 @@ msgstr "Виведення з обігу…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:127
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:196
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:57
 #: apps/web/src/features/home/ui/market-map.tsx:859
-#: apps/web/src/features/home/ui/market-page.tsx:169
+#: apps/web/src/features/home/ui/market-page.tsx:201
+#: apps/web/src/features/home/ui/market-page.tsx:206
+#: apps/web/src/features/home/ui/marketplace-page.tsx:157
 #: apps/web/src/features/home/ui/report-page.tsx:59
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:712
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:282
@@ -4787,17 +4860,16 @@ msgstr "Виведення з обігу…"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:944
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1029
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1045
-#: apps/web/src/features/pools/ui/pools-page.tsx:404
-#: apps/web/src/features/pools/ui/pools-page.tsx:423
-#: apps/web/src/features/pools/ui/pools-page.tsx:486
+#: apps/web/src/features/pools/ui/pools-page.tsx:287
+#: apps/web/src/features/pools/ui/pools-page.tsx:350
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:206
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:561
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:222
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:711
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:421
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:475
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:145
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:439
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:493
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:148
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:335
 msgid "Retry"
 msgstr "Повторити"
@@ -4814,14 +4886,14 @@ msgstr "Повторити під’єднання"
 #~ msgstr "Змінити напрямок обміну"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:174
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:179
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:166
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:192
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:197
 msgid "Reverted"
 msgstr "Скасовано"
 
 #: apps/web/src/components/vouchers/voucher-sheet-full.tsx:59
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:289
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:295
 msgid "Reviews"
 msgstr "Відгуки"
 
@@ -4834,7 +4906,7 @@ msgstr "Зберегти"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:384
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:170
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:196
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:466
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:344
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
@@ -4874,7 +4946,7 @@ msgstr "Збережено. Ваш допис знову очікує схвал
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:382
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:217
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:168
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:194
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:464
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:636
@@ -4894,15 +4966,15 @@ msgstr "Сканувати QR-код"
 msgid "Scan recipient address"
 msgstr "Сканувати адресу отримувача"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:242
+#: apps/web/src/features/home/ui/market-list-page.tsx:237
 msgid "Scroll for more"
 msgstr "Прокрутіть, щоб побачити більше"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:164
+#: apps/web/src/features/home/ui/market-list-page.tsx:128
 msgid "Search by name or symbol"
 msgstr "Пошук за назвою або символом"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:78
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
 msgid "Search catalogs"
 msgstr "Пошук каталогів"
 
@@ -4920,12 +4992,16 @@ msgid "Search for a town or place"
 msgstr "Знайдіть місто або місце"
 
 #: apps/web/src/features/home/ui/market-page.tsx:222
-msgid "Search offers"
-msgstr "Пошук пропозицій"
+#~ msgid "Search offers"
+#~ msgstr "Пошук пропозицій"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:138
+#: apps/web/src/features/home/ui/offers-page.tsx:106
 msgid "Search offers, vouchers, descriptions, or tags"
 msgstr "Шукайте пропозиції, ваучери, описи або теги"
+
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:160
+msgid "Search or add tags"
+msgstr "Шукати або додати теги"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:159
 msgid "Search or enter"
@@ -4936,7 +5012,7 @@ msgstr "Знайдіть або введіть"
 msgid "Search pool tags"
 msgstr "Пошук тегів пулів"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:334
+#: apps/web/src/features/pools/ui/pools-page.tsx:179
 msgid "Search pools"
 msgstr "Пошук пулів"
 
@@ -4955,6 +5031,11 @@ msgstr "Пошук дописів за заголовком або описом"
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:347
 msgid "Search tags"
 msgstr "Пошук тегів"
+
+#: apps/web/src/features/home/ui/market-page.tsx:257
+#: apps/web/src/features/home/ui/marketplace-page.tsx:83
+msgid "Search the marketplace"
+msgstr "Шукати на ринку"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Search voucher filters"
@@ -4997,7 +5078,7 @@ msgstr "Пошук…"
 #~ msgid "See all"
 #~ msgstr "Переглянути все"
 
-#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:42
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:48
 msgid "Select a token"
 msgstr "Оберіть токен"
 
@@ -5013,6 +5094,10 @@ msgstr "Вибрані теги пулів"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:544
 msgid "Selected post tags"
 msgstr "Вибрані теги дописів"
+
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:161
+msgid "Selected tags"
+msgstr "Вибрані теги"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:721
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:345
@@ -5037,14 +5122,14 @@ msgstr "Продати на банківський рахунок"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:331
 #: apps/web/src/features/home/ui/wallet-page.tsx:92
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:277
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:252
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:159
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:328
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:255
 msgid "Send"
 msgstr "Надіслати"
 
 #. placeholder {0}: details.receiveSymbol
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:323
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:337
 msgid "Send {0}"
 msgstr "Надіслати {0}"
 
@@ -5074,21 +5159,21 @@ msgstr "Надіслати кому"
 msgid "Send xDAI as instructed."
 msgstr "Надішліть xDAI відповідно до вказівок."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:178
 msgid "Sending"
 msgstr "Надсилання"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:396
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:467
 msgid "Sending…"
 msgstr "Надсилання…"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:109
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:199
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
+#: apps/web/src/features/home/ui/activity-page.tsx:117
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:217
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:640
 msgid "Sent"
 msgstr "Надіслано"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:57
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:62
 msgid "Sent voucher"
 msgstr "Надісланий ваучер"
 
@@ -5134,7 +5219,7 @@ msgstr "Налаштування"
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:393
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
 #: apps/web/src/features/wallet/ui/receive-page.tsx:155
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:607
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:625
 msgid "Share"
 msgstr "Поділитися"
 
@@ -5156,11 +5241,11 @@ msgid "Share receipt"
 msgstr "Поділитися квитанцією"
 
 #. placeholder {0}: share.sharedBy.name
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:239
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:253
 msgid "Shared by {0}"
 msgstr "Опублікував(-ла) {0}"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:607
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:625
 msgid "Sharing…"
 msgstr "Публікація…"
 
@@ -5179,7 +5264,7 @@ msgstr "Показати відгуки з оцінкою {stars}"
 msgid "Show all"
 msgstr "Показати все"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:101
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:166
 msgid "Showing catalogs <0>globally</0>."
 msgstr "Каталоги показано <0>з усього світу</0>."
 
@@ -5187,7 +5272,7 @@ msgstr "Каталоги показано <0>з усього світу</0>."
 msgid "Showing recent vouchers only."
 msgstr "Показано лише нещодавні ваучери."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:81
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:146
 msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
 "location</1>."
 msgstr "Показано результати в межах <0>{radiusLabel}</0> від <1>місця, "
@@ -5240,11 +5325,11 @@ msgstr "Увійдіть, щоб переглядати результати, д
 msgid "Sign in to continue"
 msgstr "Увійдіть, щоб продовжити"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:567
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:574
 msgid "Sign in to view activity."
 msgstr "Увійдіть, щоб переглянути активність."
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:450
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:456
 msgid "Sign in to view posts."
 msgstr "Увійдіть, щоб переглянути дописи."
 
@@ -5282,7 +5367,7 @@ msgstr "Деякі файли пропущено. Використовуйте �
 msgid "Some photos didn't upload. Try adding them again."
 msgstr "Деякі фото не завантажилися. Спробуйте додати їх ще раз."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:436
+#: apps/web/src/features/pools/ui/pools-page.tsx:300
 msgid "Some pools couldn't be checked. Showing verified results."
 msgstr "Деякі пули не вдалося перевірити. Показано перевірені результати."
 
@@ -5316,11 +5401,11 @@ msgstr "Початок…"
 msgid "Starts"
 msgstr "Починається"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:101
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:429
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:235
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:706
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:118
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:105
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:443
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:253
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:724
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:570
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:681
 msgid "Status"
@@ -5330,8 +5415,8 @@ msgstr "Стан"
 msgid "Step {clampedStep} of {clampedTotal}"
 msgstr "Крок {clampedStep} із {clampedTotal}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:227
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:259
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:245
 msgid "Submitted"
 msgstr "Надіслано"
 
@@ -5389,11 +5474,11 @@ msgstr "Кількість має бути більшою за нуль"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Файли SVG не підтримуються. Використовуйте PNG, JPEG або WebP."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:145
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:397
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:271
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:468
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:294
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:493
 msgid "Swap"
 msgstr "Обміняти"
 
@@ -5419,37 +5504,37 @@ msgstr "Комісія за обмін має бути числом від 0 д�
 msgid "Swap for {0}"
 msgstr "Обміняти на {0}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:279
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:293
 msgid "Swap receipt"
 msgstr "Квитанція обміну"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:148
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:162
 msgid "Swap reverted"
 msgstr "Обмін скасовано"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:124
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
 msgid "Swap tracking details are missing."
 msgstr "Відомості для відстеження обміну відсутні."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:122
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:136
 msgid "Swap unavailable"
 msgstr "Обмін недоступний"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:174
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:188
 msgid "Swapped"
 msgstr "Обміняно"
 
 #. placeholder {0}: entry.received.tokenSymbol
 #. placeholder {1}: entry.sent.tokenSymbol
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:192
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:195
 msgid "Swapped {0} for {1}"
 msgstr "Обміняно {0} на {1}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:136
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:150
 msgid "Swapping"
 msgstr "Обмін"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:684
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:737
 msgid "Swapping…"
 msgstr "Обмін…"
 
@@ -5482,7 +5567,11 @@ msgstr "Символ"
 msgid "Symbol was taken, using {0} instead."
 msgstr "Символ уже зайнято, натомість використовується {0}."
 
-#: apps/web/src/features/home/ui/offers-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
+#: apps/web/src/features/home/ui/marketplace-page.tsx:108
+#: apps/web/src/features/home/ui/offers-page.tsx:133
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:263
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:536
@@ -5637,7 +5726,7 @@ msgid "The connection dropped before the relay answered. Don't charge this card 
 msgstr "З’єднання обірвалося до того, як платіжний сервіс відповів. Не списуйте "
 "кошти з цієї картки повторно, доки це не з’ясується."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:985
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1045
 msgid "The credit limit has been reached. No more can be added to this pool."
 msgstr "Кредитний ліміт досягнуто. До цього пулу більше нічого не можна додати."
 
@@ -5658,7 +5747,7 @@ msgstr "Не вдалося завантажити мапу."
 msgid "The map is not supported on this device."
 msgstr "Мапа не підтримується на цьому пристрої."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:377
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:395
 msgid "The message and order must be 500 characters or fewer."
 msgstr "Повідомлення та замовлення разом мають містити не більше 500 символів."
 
@@ -5709,7 +5798,7 @@ msgstr "Не вдалося опублікувати пул."
 msgid "The pool doesn't hold that much {0}."
 msgstr "У пулі немає такої кількості {0}."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:538
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:565
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Розрахунок змінився. Перегляньте оновлені суми перед підтвердженням."
 
@@ -5745,7 +5834,8 @@ msgid "There is nothing available for exchange with this voucher yet."
 msgstr "Для обміну на цей ваучер поки нічого немає."
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:51
-#: apps/web/src/features/home/ui/offers-page.tsx:162
+#: apps/web/src/features/home/ui/marketplace-page.tsx:136
+#: apps/web/src/features/home/ui/offers-page.tsx:161
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:80
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:81
 msgid "These filters aren't valid."
@@ -5812,11 +5902,10 @@ msgid "This device is subscribed to wallet notifications."
 msgstr "Цей пристрій підписано на сповіщення гаманця."
 
 #: apps/web/src/components/creditable-browse-control.tsx:32
-#: apps/web/src/features/pools/ui/pools-page.tsx:371
 msgid "This link contains an invalid Credit filter."
 msgstr "Це посилання містить недійсний фільтр «Кредит»."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:346
+#: apps/web/src/features/pools/ui/pools-page.tsx:254
 msgid "This link contains an invalid output voucher."
 msgstr "Це посилання містить недійсний вихідний ваучер."
 
@@ -5863,22 +5952,22 @@ msgstr "Цей телефон або браузер не підтримує зч
 
 #. placeholder {0}: localizedAmounts.depositHeadroom
 #. placeholder {1}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:430
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:455
 msgid "This pool can only take {0} more {1} right now."
 msgstr "Зараз цей пул може прийняти ще лише {0} {1}."
 
 #. placeholder {0}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:428
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:453
 msgid "This pool can't take any more {0} right now."
 msgstr "Зараз цей пул більше не може прийняти {0}."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:397
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:883
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:422
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:943
 msgid "This pool doesn't take any vouchers yet."
 msgstr "Цей пул ще не приймає жодних ваучерів."
 
 #. placeholder {0}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:442
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:467
 msgid "This pool has no {0} available to swap."
 msgstr "У цьому пулі немає доступного для обміну {0}."
 
@@ -5901,7 +5990,7 @@ msgstr "У цьому пулі поки нічого немає."
 
 #. placeholder {0}: localizedAmounts.availableAmountOut
 #. placeholder {1}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:444
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:469
 msgid "This pool only has {0} {1} available to swap."
 msgstr "У цьому пулі для обміну доступно лише {0} {1}."
 
@@ -5917,7 +6006,7 @@ msgid "This pool values every voucher equally, so there is no rate to set. "
 msgstr "Цей пул однаково оцінює всі ваучери, тому курс установлювати не "
 "потрібно. Додавання ваучерів тут поки недоступне."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:560
 msgid "This pool's deposit limit changed. Review the updated amounts and try "
 "again."
 msgstr "Ліміт внесків у цей пул змінився. Перегляньте оновлені суми та "
@@ -5955,13 +6044,13 @@ msgstr "Заголовок"
 msgid "Title must be 200 characters or fewer"
 msgstr "Заголовок має містити не більше 200 символів"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:161
-#: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:186
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:175
+#: apps/web/src/features/home/ui/activity-page.tsx:139
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:190
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
 #: apps/web/src/features/wallet/ui/collect-page.tsx:137
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:648
 msgid "To"
 msgstr "Кому"
 
@@ -5989,23 +6078,23 @@ msgstr "Інструменти"
 #~ msgid "Total"
 #~ msgstr "Усього"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:144
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:361
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:663
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:209
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:294
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:148
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:386
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:716
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:223
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:308
 msgid "Total fees"
 msgstr "Загальні комісії"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:195
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:227
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:219
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:199
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:241
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:237
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:744
 msgid "Transaction"
 msgstr "Транзакція"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:100
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
 msgid "Transaction details"
 msgstr "Відомості про транзакцію"
 
@@ -6013,14 +6102,14 @@ msgstr "Відомості про транзакцію"
 msgid "Transaction hash"
 msgstr "Хеш транзакції"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:82
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:86
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:168
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:152
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:182
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:170
 msgid "Transaction hash copied"
 msgstr "Хеш транзакції скопійовано"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:49
+#: apps/web/src/features/home/ui/activity-page.tsx:52
 msgid "Transfer history"
 msgstr "Історія переказів"
 
@@ -6046,27 +6135,27 @@ msgstr "Поїздка"
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:80
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:142
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:65
-#: apps/web/src/features/home/ui/activity-page.tsx:66
+#: apps/web/src/features/home/ui/activity-page.tsx:69
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:80
 #: apps/web/src/features/home/ui/wallet-page.tsx:200
 #: apps/web/src/features/home/ui/wallet-page.tsx:291
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:221
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:225
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:54
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:392
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:418
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:270
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:417
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:443
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:284
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:224
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:459
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:477
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:586
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:483
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:593
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
 msgid "Try again"
 msgstr "Спробувати ще раз"
@@ -6092,12 +6181,20 @@ msgstr "Не вдалося завантажити мову. Відновлен�
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:304
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:328
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:536
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:782
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:796
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1020
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:126
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:98
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:101
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:191
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:355
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:128
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:146
 msgid "Unavailable"
 msgstr "Недоступно"
 
@@ -6213,7 +6310,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "Скористайтеся <0>Binance</0> або іншою місцевою біржею, а потім "
 "<1>Jumper</1>, щоб надіслати кошти до свого гаманця Gnosis."
 
-#: apps/web/src/features/home/ui/market-page.tsx:144
+#: apps/web/src/features/home/ui/market-page.tsx:170
 msgid "Use current location"
 msgstr "Використати поточне місце"
 
@@ -6227,7 +6324,7 @@ msgid "Use letters and numbers, for example KES"
 msgstr "Використовуйте літери й цифри, наприклад KES"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:259
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:310
 msgid "Use max · {0}"
 msgstr "Використати максимум · {0}"
 
@@ -6307,8 +6404,8 @@ msgstr "Переглянути зображення на весь екран"
 msgid "View offering details: {0}"
 msgstr "Переглянути відомості про пропозицію: {0}"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:232
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:216
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:236
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:625
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:762
 msgid "View on block explorer"
@@ -6318,7 +6415,7 @@ msgstr "Переглянути в оглядачі блокчейну"
 msgid "View pool"
 msgstr "Переглянути пул"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:128
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:138
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:518
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:69
 msgid "View voucher"
@@ -6333,14 +6430,17 @@ msgstr "Видимість"
 msgid "voucher"
 msgstr "ваучер"
 
+#: apps/web/src/components/marketplace-resource-navigation.tsx:33
+#: apps/web/src/components/marketplace-resource-navigation.tsx:68
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:164
+#: apps/web/src/features/home/ui/marketplace-page.tsx:262
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:168
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
 msgstr "Ваучер"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:233
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:236
 msgid "Voucher actions"
 msgstr "Дії з ваучером"
 
@@ -6352,7 +6452,7 @@ msgstr "Контракт ваучера"
 msgid "Voucher controls"
 msgstr "Керування ваучером"
 
-#: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
+#: apps/web/src/components/wallet/transfer-details-sheet.tsx:194
 msgid "Voucher creation receipt"
 msgstr "Квитанція про випуск ваучера"
 
@@ -6375,11 +6475,11 @@ msgstr "Опис ваучера обов’язковий"
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "Опис ваучера має містити не більше 500 символів"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:278
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:284
 msgid "Voucher details"
 msgstr "Відомості про ваучер"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:978
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1038
 msgid "Voucher details unavailable"
 msgstr "Відомості про ваучер недоступні"
 
@@ -6445,17 +6545,16 @@ msgid "Voucher tracking details are missing."
 msgstr "Відомості для відстеження ваучера відсутні."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:286
-#: apps/web/src/components/marketplace-resource-navigation.tsx:29
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:33
-#: apps/web/src/features/home/ui/market-list-page.tsx:125
+#: apps/web/src/features/home/ui/market-list-page.tsx:123
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:41
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:337
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:102
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:105
 msgid "Vouchers"
 msgstr "Ваучери"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:228
+#: apps/web/src/features/home/ui/market-list-page.tsx:223
 msgid "Vouchers list"
 msgstr "Список ваучерів"
 
@@ -6482,8 +6581,8 @@ msgstr "Очікування підтвердження в блокчейні...
 msgid "Waiting for confirmation…"
 msgstr "Очікування підтвердження…"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:162
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:180
 msgid "Waiting for on-chain confirmation"
 msgstr "Очікування підтвердження в блокчейні"
 
@@ -6503,7 +6602,7 @@ msgstr "Очікування блокчейну…"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:100
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:103
 msgid "Wallet"
 msgstr "Гаманець"
 
@@ -6609,7 +6708,7 @@ msgstr "Вивести ліквідність"
 msgid "Withdrawal submitted"
 msgstr "Запит на виведення надіслано"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:508
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:514
 msgid "Write a post"
 msgstr "Написати допис"
 
@@ -6646,7 +6745,7 @@ msgid "Yes"
 msgstr "Так"
 
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:99
-#: apps/web/src/features/catalogs/ui/catalog-form.tsx:76
+#: apps/web/src/features/catalogs/ui/catalog-form.tsx:82
 msgid "You already have a catalog."
 msgstr "У вас уже є каталог."
 
@@ -6688,7 +6787,7 @@ msgstr "Ви не випускали жодного з них."
 msgid "You don't have a username yet."
 msgstr "У вас ще немає імені користувача."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:401
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:426
 msgid "You don't hold any voucher this pool takes."
 msgstr "У вас немає ваучерів, які приймає цей пул."
 
@@ -6709,15 +6808,15 @@ msgstr "Ви ще не випустили ваучер."
 msgid "You haven't written any posts yet."
 msgstr "Ви ще не написали жодного допису."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:51
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:639
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:177
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:60
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:690
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:191
 msgid "You receive"
 msgstr "Ви отримуєте"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:52
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:642
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:182
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:61
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:694
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:196
 msgid "You send"
 msgstr "Ви надсилаєте"
 

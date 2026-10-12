@@ -8,6 +8,7 @@ const write = {
   locationName: "Sarajevo",
   geoLat: 43.85,
   geoLng: 18.4,
+  tags: [],
 };
 describe("catalog validation", () => {
   it("accepts absolute stored images and clears images with an empty string", () => {

@@ -106,10 +106,11 @@ vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
 }));
 
 import {
-  canonicalPoolRedirectSearch,
-  type PoolRouteSearch,
-  pickPoolSearch,
-} from "#/lib/navigation/pool-search";
+  canonicalMarketplaceSearch,
+  marketplaceSearchForScope,
+  pickMarketplaceSearch,
+  type MarketplaceRouteSearch,
+} from "#/lib/navigation/marketplace-search";
 import { WalletPage } from "#/features/home/ui/wallet-page";
 import { PoolDetailPage, PoolsPage } from "#/features/pools/ui";
 
@@ -131,15 +132,26 @@ function createTestRouter(initialEntry: string) {
   const poolsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/pools",
-    validateSearch: (search): PoolRouteSearch => pickPoolSearch(search),
+    validateSearch: (search): MarketplaceRouteSearch => pickMarketplaceSearch(search),
     beforeLoad: ({ search }) => {
-      const next = canonicalPoolRedirectSearch(search);
-      if (!next) return;
-      throw redirect({ to: "/pools", search: next, replace: true });
+      throw redirect({
+        to: "/market",
+        search: marketplaceSearchForScope(search, "pools"),
+        replace: true,
+      });
+    },
+  });
+  const marketRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/market",
+    validateSearch: (search): MarketplaceRouteSearch => pickMarketplaceSearch(search),
+    beforeLoad: ({ search }) => {
+      const next = canonicalMarketplaceSearch(search);
+      if (next) throw redirect({ to: "/market", search: next, replace: true });
     },
     component: () => {
       const { creditable: creditableSearch, out_voucher: outputVoucherSearch } =
-        poolsRoute.useSearch();
+        marketRoute.useSearch();
       return (
         <PoolsPage creditableSearch={creditableSearch} outputVoucherSearch={outputVoucherSearch} />
       );
@@ -171,7 +183,13 @@ function createTestRouter(initialEntry: string) {
     },
   });
   return createRouter({
-    routeTree: rootRoute.addChildren([indexRoute, poolsRoute, poolDetailRoute, sendAmountRoute]),
+    routeTree: rootRoute.addChildren([
+      indexRoute,
+      poolsRoute,
+      marketRoute,
+      poolDetailRoute,
+      sendAmountRoute,
+    ]),
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
 }
@@ -234,7 +252,7 @@ describe("pools navigation", () => {
     });
 
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/pools");
+      expect(router.state.location.pathname).toBe("/market");
       expect(screen.getByRole("heading", { name: "Pools" })).toBeTruthy();
     });
   });
@@ -244,7 +262,7 @@ describe("pools navigation", () => {
     render(withQueryClient(<RouterProvider router={router} />));
 
     const back = await screen.findByRole("link", { name: "Back" });
-    expect(back.getAttribute("href")).toBe("/?tab=market&view=map");
+    expect(back.getAttribute("href")).toBe("/");
   });
 });
 
@@ -284,7 +302,7 @@ describe("pools filter canonicalization through the router", () => {
     render(withQueryClient(<RouterProvider router={router} />));
     await waitFor(() => expect(router.state.status).toBe("idle"));
 
-    expect(router.state.location.pathname).toBe("/pools");
+    expect(router.state.location.pathname).toBe("/market");
     expect(router.state.location.search.creditable).toBe(true);
     expect(router.history.length).toBe(1);
   });
@@ -313,7 +331,7 @@ describe("pools filter canonicalization through the router", () => {
     render(withQueryClient(<RouterProvider router={router} />));
     await waitFor(() => expect(router.state.status).toBe("idle"));
 
-    expect(router.state.location.pathname).toBe("/pools");
+    expect(router.state.location.pathname).toBe("/market");
     expect(router.state.location.search.out_voucher).toBe(address);
     expect(router.history.length).toBe(1);
   });

@@ -326,7 +326,7 @@ describe("pools list", () => {
 });
 
 describe("creditable pools", () => {
-  it("shows all pools and disables Credit while eligibility loads", async () => {
+  it("shows all pools with Credit off even when eligibility is not loaded", async () => {
     creditableState.current = { ...creditableState.current, status: "loading" };
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
@@ -334,24 +334,24 @@ describe("creditable pools", () => {
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.getByText("Solo Pool")).toBeTruthy();
     const credit = screen.getByRole("checkbox", { name: /Credit/ });
-    expect(credit.hasAttribute("data-disabled")).toBe(true);
+    expect(credit.hasAttribute("data-disabled")).toBe(false);
     expect(credit.getAttribute("data-checked")).toBeNull();
   });
 
-  it("defaults Credit on and displays the verified complete result", async () => {
+  it("defaults Credit off even when verified creditable pools exist", async () => {
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[2]!] };
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
 
     const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
-    expect(screen.getByText("Trade Pool")).toBeTruthy();
+    expect(credit.getAttribute("data-checked")).toBeNull();
+    expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.getByText("Empty Pool")).toBeTruthy();
-    expect(screen.queryByText("Solo Pool")).toBeNull();
-    expect(screen.getByText("2 pools")).toBeTruthy();
+    expect(screen.getByText("Solo Pool")).toBeTruthy();
+    expect(screen.getByText("3 pools")).toBeTruthy();
   });
 
-  it("leaves a zero-result Credit option unchecked and enabled", async () => {
+  it("writes Credit on to the URL when the unchecked control is selected", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
 
@@ -360,8 +360,10 @@ describe("creditable pools", () => {
     expect(credit.getAttribute("data-checked")).toBeNull();
 
     fireEvent.click(credit);
-    expect(await screen.findByText("No creditable pools are available.")).toBeTruthy();
-    expect(screen.queryByText("Trade Pool")).toBeNull();
+    const call = navigate.mock.calls.at(-1)?.[0] as {
+      search: (previous: Record<string, unknown>) => Record<string, unknown>;
+    };
+    expect(call.search({ q: "trade" })).toEqual({ q: "trade", creditable: true });
   });
 
   it("forces explicit Credit on even when the verified result is empty", async () => {
@@ -395,7 +397,7 @@ describe("creditable pools", () => {
     renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
 
     const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    expect(credit.getAttribute("data-checked")).toBeNull();
     fireEvent.click(credit);
 
     const call = navigate.mock.calls.at(-1)?.[0] as {
@@ -404,7 +406,7 @@ describe("creditable pools", () => {
     expect(call.search({ q: "trade", out_voucher: OUTPUT_VOUCHER })).toEqual({
       q: "trade",
       out_voucher: OUTPUT_VOUCHER,
-      creditable: false,
+      creditable: true,
     });
   });
 
@@ -445,31 +447,32 @@ describe("creditable pools", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("keeps a manual choice for the current visit when verified data refreshes", async () => {
+  it("keeps an explicit Credit choice when verified data refreshes", async () => {
+    routeSearch.current = { creditable: true };
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
     mockPoolsList();
-    const view = renderWithQueryClient(<PoolsPage />);
+    const view = renderWithQueryClient(<PoolsPage creditableSearch={true} />);
 
     const credit = await screen.findByRole("checkbox", { name: "Credit" });
     await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
-    fireEvent.click(credit);
-    expect(screen.getByText("Solo Pool")).toBeTruthy();
+    expect(screen.getByText("Trade Pool")).toBeTruthy();
+    expect(screen.queryByText("Solo Pool")).toBeNull();
 
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[1]!] };
     view.rerender(
       <QueryClientProvider client={new QueryClient()}>
-        <PoolsPage />
+        <PoolsPage creditableSearch={true} />
       </QueryClientProvider>,
     );
-    expect(credit.getAttribute("data-checked")).toBeNull();
-    expect(screen.getByText("Empty Pool")).toBeTruthy();
+    expect(credit.getAttribute("data-checked")).not.toBeNull();
+    expect(screen.getByText("Solo Pool")).toBeTruthy();
   });
 
   it("intersects Credit with the current search result", async () => {
-    routeSearch.current = { q: "trade" };
+    routeSearch.current = { q: "trade", creditable: true };
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[2]!] };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage />);
+    renderWithQueryClient(<PoolsPage creditableSearch={true} />);
 
     const credit = await screen.findByRole("checkbox", { name: "Credit" });
     await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
@@ -478,19 +481,20 @@ describe("creditable pools", () => {
     expect(screen.queryByText("Solo Pool")).toBeNull();
   });
 
-  it("keeps the normal catalog visible and offers Retry when Credit fails", async () => {
+  it("blocks the normal catalog and offers Retry when enabled Credit verification fails", async () => {
     const retry = vi.fn();
+    routeSearch.current = { creditable: true };
     creditableState.current = { ...creditableState.current, status: "error", retry };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage />);
+    renderWithQueryClient(<PoolsPage creditableSearch={true} />);
 
-    expect(await screen.findByText("Trade Pool")).toBeTruthy();
-    const alert = screen.getByRole("alert");
+    const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("Couldn't check creditable pools.");
+    expect(screen.queryByText("Trade Pool")).toBeNull();
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
     expect(retry).toHaveBeenCalledOnce();
     expect(screen.getByRole("checkbox", { name: "Credit" }).hasAttribute("data-disabled")).toBe(
-      true,
+      false,
     );
   });
 
@@ -530,7 +534,7 @@ describe("output voucher availability", () => {
   });
 
   it("intersects Credit and output availability, then intersects the catalog search", async () => {
-    routeSearch.current = { q: "trade" };
+    routeSearch.current = { q: "trade", creditable: true };
     creditableState.current = {
       ...creditableState.current,
       pools: [POOLS[0]!, POOLS[2]!],
@@ -541,7 +545,9 @@ describe("output voucher availability", () => {
       pools: [POOLS[0]!, POOLS[1]!],
     };
     mockPoolsList();
-    renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
+    renderWithQueryClient(
+      <PoolsPage creditableSearch={true} outputVoucherSearch={OUTPUT_VOUCHER} />,
+    );
 
     const credit = await screen.findByRole("checkbox", { name: "Credit" });
     await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
@@ -551,7 +557,8 @@ describe("output voucher availability", () => {
     expect(screen.getByText("1 pool")).toBeTruthy();
   });
 
-  it("recomputes the automatic Credit default per output until the user changes it", async () => {
+  it("keeps explicit Credit enabled while the output voucher changes", async () => {
+    routeSearch.current = { creditable: true };
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
     outputState.current = {
       ...outputState.current,
@@ -562,29 +569,20 @@ describe("output voucher availability", () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const view = render(
       <QueryClientProvider client={queryClient}>
-        <PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />
+        <PoolsPage creditableSearch={true} outputVoucherSearch={OUTPUT_VOUCHER} />
       </QueryClientProvider>,
     );
 
     const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
 
     outputState.current = { ...outputState.current, pools: [POOLS[0]!] };
     view.rerender(
       <QueryClientProvider client={queryClient}>
-        <PoolsPage outputVoucherSearch={OTHER_VOUCHER} />
+        <PoolsPage creditableSearch={true} outputVoucherSearch={OTHER_VOUCHER} />
       </QueryClientProvider>,
     );
     await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
-
-    fireEvent.click(credit);
-    expect(credit.getAttribute("data-checked")).toBeNull();
-    view.rerender(
-      <QueryClientProvider client={queryClient}>
-        <PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />
-      </QueryClientProvider>,
-    );
-    expect(credit.getAttribute("data-checked")).toBeNull();
   });
 
   it("updates only out_voucher when choosing or clearing a voucher", async () => {

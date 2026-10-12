@@ -6,10 +6,10 @@ import { RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
-import { MarketplaceResourceNavigation } from "#/components/marketplace-resource-navigation";
+import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
 import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
-import { BackChevron, VoucherAvatar } from "#/components/wallet";
+import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import type { MarketVoucher } from "@clc/api/features/market/client";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
@@ -118,52 +118,47 @@ export function MarketListPage({
 
   return (
     <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
-      <div className="pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="space-y-3">
-          <BackChevron label={t`Back`} to="/" search={{ tab: "market", view: "map" }} />
-          <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
-            <Trans>Vouchers</Trans>
-          </h1>
-          <MarketplaceResourceNavigation
-            current="vouchers"
-            filters={
-              <MarketFilterSheet
-                filter={filter}
-                facets={catalog.tagFacets}
-                open={filtersOpen}
-                onOpenChange={(next) => {
-                  if (next) setFiltersEverOpened(true);
-                  setFiltersOpen(next);
-                }}
-              />
-            }
-          />
-        </div>
+      <div>
+        <h1 className="sr-only">
+          <Trans>Vouchers</Trans>
+        </h1>
+        <MarketplaceSearchShell
+          current="vouchers"
+          className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
+          search={<CatalogSearchField filter={filter} label={t`Search by name or symbol`} />}
+          credit={
+            <CreditableBrowseControl
+              part="control"
+              state={credit}
+              onChange={(checked) =>
+                void navigate({
+                  to: "/market",
+                  search: (previous) => ({ ...previous, creditable: checked }),
+                })
+              }
+              onClear={() =>
+                void navigate({
+                  to: "/market",
+                  replace: true,
+                  search: (previous) => ({ ...previous, creditable: undefined }),
+                })
+              }
+            />
+          }
+          filters={
+            <MarketFilterSheet
+              filter={filter}
+              facets={catalog.tagFacets}
+              open={filtersOpen}
+              onOpenChange={(next) => {
+                if (next) setFiltersEverOpened(true);
+                setFiltersOpen(next);
+              }}
+            />
+          }
+        />
 
         {onboardingBanner ? <div className="mt-3">{onboardingBanner}</div> : null}
-
-        <div className="mt-4 flex items-end gap-3">
-          <CreditableBrowseControl
-            part="control"
-            state={credit}
-            onChange={(checked) =>
-              void navigate({
-                to: ".",
-                search: (previous) => ({ ...previous, creditable: checked }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: ".",
-                replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
-              })
-            }
-          />
-          <div className="min-w-0 flex-1">
-            <CatalogSearchField filter={filter} label={t`Search by name or symbol`} />
-          </div>
-        </div>
 
         <div className="mt-3">
           <CreditableBrowseControl

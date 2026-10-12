@@ -12,6 +12,8 @@ import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
 import { LocationPicker } from "#/components/ui/location-picker";
+import { TagCombobox } from "#/components/ui/tag-combobox";
+import { useTokenTags } from "#/hooks/use-deployment";
 import { catalogsClient } from "#/lib/api/catalogs";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
@@ -22,6 +24,7 @@ const formSchema = z.object({
   name: catalogWriteSchema.shape.name,
   description: catalogWriteSchema.shape.description,
   imageUrl: catalogWriteSchema.shape.imageUrl,
+  tags: catalogWriteSchema.shape.tags,
   location: z
     .object({
       lat: catalogWriteSchema.shape.geoLat,
@@ -46,10 +49,12 @@ export function CatalogForm({
   const save = useMutation(saveCatalogMutationOptions(catalogsClient, queryClient, catalog?.id));
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const tagsQuery = useTokenTags();
   const defaultValues: z.input<typeof formSchema> = {
     name: catalog?.name ?? "",
     description: catalog?.description ?? "",
     imageUrl: catalog?.imageUrl ?? "",
+    tags: catalog?.tags ?? [],
     location: catalog
       ? { lat: catalog.geoLat, lng: catalog.geoLng, locationName: catalog.locationName }
       : initialPlace,
@@ -68,6 +73,7 @@ export function CatalogForm({
           geoLat: value.location.lat,
           geoLng: value.location.lng,
           locationName: value.location.locationName,
+          tags: value.tags,
         });
         await onSaved(saved);
       } catch (cause) {
@@ -138,6 +144,26 @@ export function CatalogForm({
             onBusyChange={setImageBusy}
             disabled={!isStorageConfigured || save.isPending}
           />
+        )}
+      </form.Field>
+      <form.Field name="tags">
+        {(field) => (
+          <Field
+            label={t`Tags`}
+            htmlFor="catalog-tags"
+            error={getFieldError(field.state.meta.errors)}
+          >
+            <TagCombobox
+              items={tagsQuery.data ?? []}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              searchLabel={t`Search or add tags`}
+              selectedLabel={t`Selected tags`}
+              listLabel={t`Available tags`}
+              placeholder={t`Add tags`}
+              removeLabel={(tag) => t`Remove ${tag}`}
+            />
+          </Field>
         )}
       </form.Field>
       <form.Field name="location">

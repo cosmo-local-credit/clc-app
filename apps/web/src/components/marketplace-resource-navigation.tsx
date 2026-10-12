@@ -1,126 +1,174 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import type { ComponentProps, ReactNode } from "react";
+import { type ComponentProps, type ReactNode, useEffect, useRef } from "react";
 import {
   RiBookOpenLine,
   RiCoupon3Line,
   RiFilter3Line,
   RiGroupLine,
   RiMap2Line,
+  RiSearch2Line,
   RiStore2Line,
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { catalogSearchForScope } from "#/lib/navigation/catalog-search";
+import {
+  marketplaceSearchForScope,
+  pickMarketplaceSearch,
+} from "#/lib/navigation/marketplace-search";
 
-export type MarketplaceResource = "offers" | "vouchers" | "pools" | "catalogs";
+export type MarketplaceResource = "all" | "offers" | "vouchers" | "pools" | "catalogs" | "map";
 
 const resources = [
+  { id: "all", label: <Trans>All</Trans>, title: "All", icon: RiSearch2Line, variant: "outline" },
   {
     id: "offers",
-    to: "/offers",
     label: <Trans>Offers</Trans>,
+    title: "Offers",
     icon: RiStore2Line,
-    variant: "default",
+    variant: "offer",
   },
   {
     id: "vouchers",
-    to: "/vouchers",
-    label: <Trans>Vouchers</Trans>,
+    label: <Trans>Voucher</Trans>,
+    title: "Voucher",
     icon: RiCoupon3Line,
-    variant: "outline",
+    variant: "voucher",
   },
-  { id: "pools", to: "/pools", label: <Trans>Pools</Trans>, icon: RiGroupLine, variant: "info" },
+  { id: "pools", label: <Trans>Pools</Trans>, title: "Pools", icon: RiGroupLine, variant: "info" },
   {
     id: "catalogs",
-    to: "/catalogs",
     label: <Trans>Catalogs</Trans>,
+    title: "Catalogs",
     icon: RiBookOpenLine,
     variant: "success",
   },
+  { id: "map", label: <Trans>Map</Trans>, title: "Map", icon: RiMap2Line, variant: "outline" },
 ] as const satisfies readonly {
   id: MarketplaceResource;
-  to: "/offers" | "/vouchers" | "/pools" | "/catalogs";
   label: ReactNode;
+  title: string;
   icon: typeof RiStore2Line;
   variant: ComponentProps<typeof Button>["variant"];
 }[];
 
-/** The same complete resource switcher on every marketplace catalog. */
 export function MarketplaceResourceNavigation({
   current,
+  credit,
   filters,
 }: {
   current: MarketplaceResource;
-  /** The page's functional Filters trigger. Catalogs intentionally omits it. */
+  credit?: ReactNode;
   filters?: ReactNode;
 }) {
   const { t } = useLingui();
+  const activeControlRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    activeControlRef.current?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, []);
+  const titleFor = (resource: MarketplaceResource) => {
+    if (resource === "all") return t`All`;
+    if (resource === "offers") return t`Offers`;
+    if (resource === "vouchers") return t`Voucher`;
+    if (resource === "pools") return t`Pools`;
+    if (resource === "catalogs") return t`Catalogs`;
+    return t`Map`;
+  };
   return (
-    <nav
-      className="flex w-full flex-wrap items-center justify-end gap-2"
-      aria-label={t`Marketplace sections`}
-    >
-      {resources.map((resource) => {
-        const Icon = resource.icon;
-        if (resource.id === current) {
+    <nav className="flex w-full items-center gap-1 pb-1" aria-label={t`Marketplace sections`}>
+      <span className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+        {resources.map((resource) => {
+          const Icon = resource.icon;
+          const active = resource.id === current;
+          const inactiveClass =
+            resource.id === "offers"
+              ? "border-offer bg-card text-offer hover:bg-offer/10"
+              : resource.id === "vouchers"
+                ? "border-voucher bg-card text-voucher hover:bg-voucher/10"
+                : resource.id === "pools"
+                  ? "border-info bg-card text-info hover:bg-info/10"
+                  : resource.id === "catalogs"
+                    ? "border-success bg-card text-success hover:bg-success/10"
+                    : "bg-card";
+          const content = (
+            <>
+              <Icon className="size-5" aria-hidden="true" />
+              <span className="sr-only">{resource.label}</span>
+            </>
+          );
+          if (active) {
+            return (
+              <Button
+                key={resource.id}
+                ref={activeControlRef}
+                variant={resource.variant}
+                disabled
+                aria-current="page"
+                title={titleFor(resource.id)}
+                className="size-11 opacity-100"
+              >
+                {content}
+              </Button>
+            );
+          }
+          if (resource.id === "map") {
+            return (
+              <Button key={resource.id} asChild variant="outline" className="size-11 bg-card">
+                <Link
+                  to="/"
+                  title={t`Map`}
+                  search={(previous) => {
+                    const state = pickMarketplaceSearch(previous);
+                    return {
+                      q: state.q,
+                      tags: state.tags,
+                      tagMatch: state.tagMatch,
+                      creditable: state.creditable,
+                    };
+                  }}
+                >
+                  {content}
+                </Link>
+              </Button>
+            );
+          }
+          const scope = resource.id === "all" ? null : resource.id;
           return (
             <Button
               key={resource.id}
+              asChild
               variant="outline"
-              disabled
-              aria-current="page"
-              className="h-9 bg-muted text-muted-foreground opacity-100"
+              className={`size-11 ${inactiveClass}`}
             >
-              <Icon className="size-4" aria-hidden="true" />
-              {resource.label}
+              <Link
+                to="/market"
+                title={titleFor(resource.id)}
+                search={(previous) =>
+                  marketplaceSearchForScope(pickMarketplaceSearch(previous), scope)
+                }
+              >
+                {content}
+              </Link>
             </Button>
           );
-        }
-        return (
+        })}
+      </span>
+      <span className="ms-auto flex shrink-0 items-center gap-1">
+        {credit}
+        {filters ?? (
           <Button
-            key={resource.id}
-            asChild
-            variant={resource.variant}
-            className={resource.variant === "outline" ? "h-9 bg-card" : "h-9"}
+            variant="outline"
+            disabled
+            className="size-11 bg-muted opacity-100"
+            title={t`Filters`}
           >
-            {resource.id === "pools" ? (
-              <Link to="/pools" search={{ creditable: false }}>
-                <Icon className="size-4" aria-hidden="true" />
-                {resource.label}
-              </Link>
-            ) : (
-              <Link to={resource.to}>
-                <Icon className="size-4" aria-hidden="true" />
-                {resource.label}
-              </Link>
-            )}
+            <RiFilter3Line className="size-5" aria-hidden="true" />
+            <span className="sr-only">
+              <Trans>Filters</Trans>
+            </span>
           </Button>
-        );
-      })}
-      <Button asChild variant="outline" className="h-9 bg-card">
-        <Link
-          to="/"
-          search={(previous) => ({
-            ...(current === "vouchers" ? catalogSearchForScope(previous, false) : {}),
-            tab: "market",
-            view: "map",
-          })}
-        >
-          <RiMap2Line className="size-4" aria-hidden="true" />
-          <Trans>Map</Trans>
-        </Link>
-      </Button>
-      {filters ?? (
-        <Button
-          variant="outline"
-          disabled
-          className="h-9 bg-muted text-muted-foreground opacity-100"
-        >
-          <RiFilter3Line className="size-4" aria-hidden="true" />
-          <Trans>Filters</Trans>
-        </Button>
-      )}
+        )}
+      </span>
     </nav>
   );
 }

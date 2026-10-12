@@ -14,6 +14,9 @@ import type { HttpClient } from "../../client/http-client";
 const catalogPageSchema = z.object({
   catalogs: z.array(catalogSchema),
   nextCursor: z.string().nullable(),
+  tagFacets: z
+    .array(z.object({ tag: z.string(), count: z.number().int().nonnegative() }))
+    .optional(),
 });
 const memberPageSchema = z.object({
   items: z.array(catalogMemberSchema),
@@ -43,13 +46,27 @@ export function createCatalogsClient(http: HttpClient) {
   }
   return {
     list(
-      params: { cursor?: string; nearby?: boolean; perPage?: number; q?: string },
+      params: {
+        cursor?: string;
+        nearby?: boolean;
+        perPage?: number;
+        q?: string;
+        tags?: readonly string[];
+        tagMatch?: "any" | "all";
+        facets?: boolean;
+        pools?: readonly { chainId: number; address: string }[];
+      },
       signal?: AbortSignal,
     ) {
       const query = new URLSearchParams({ perPage: String(params.perPage ?? 20) });
       if (params.cursor) query.set("cursor", params.cursor);
       if (params.nearby) query.set("nearby", "true");
       if (params.q?.trim()) query.set("q", params.q.trim());
+      if (params.tags?.length) query.set("tags", params.tags.join(","));
+      if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");
+      if (params.facets) query.set("facets", "true");
+      if (params.pools?.length)
+        query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
       return read(catalogPageSchema, `/api/v2/catalogs?${query}`, {
         method: "GET",
         credentials: params.nearby ? "include" : "omit",

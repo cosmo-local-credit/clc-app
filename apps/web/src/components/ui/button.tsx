@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20",
         info: "bg-info text-info-foreground [a]:hover:bg-info/80",
         success: "bg-success text-success-foreground [a]:hover:bg-success/80",
+        offer: "bg-offer text-offer-foreground [a]:hover:bg-offer/80",
+        voucher: "bg-voucher text-voucher-foreground [a]:hover:bg-voucher/80",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

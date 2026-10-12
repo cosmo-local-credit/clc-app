@@ -130,6 +130,34 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: false, session: null }),
 }));
 
+vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
+  useCreditableBrowse: () => ({
+    auth: { isAuthenticated: false, isLoading: false },
+    parsed: { ok: true, enabled: null },
+    enabled: false,
+    verification: { status: "idle", pools: [], retry: vi.fn() },
+    poolRefs: undefined,
+    blocksResults: false,
+  }),
+}));
+
+vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
+  useMarketplaceMapSearch: (_filter: unknown, _pools: unknown, enabled: boolean) => ({
+    locations: enabled ? (filteredResult.current.data?.vouchers ?? []) : [],
+    status: !enabled
+      ? "disabled"
+      : filteredResult.current.isPlaceholderData
+        ? "loading"
+        : filteredResult.current.error
+          ? "error"
+          : filteredResult.current.data
+            ? "ready"
+            : "loading",
+    error: enabled ? filteredResult.current.error : null,
+    retry: filteredResult.current.refetch,
+  }),
+}));
+
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
   useAllAccountTokens: () => ({ tokens: [] }),
 }));
@@ -375,7 +403,7 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("floats the app menu at logical top-start and reserves room beside it for sign-in", () => {
+  it("floats the app menu at logical top-start and places sign-in below the search shell", () => {
     renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
 
     expect(screen.getByTestId("app-menu").className).toContain("start-4");
@@ -384,10 +412,10 @@ describe("MarketPage guest entry", () => {
     );
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("start-[8.25rem]");
+    ).toContain("inset-x-4");
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
+    ).toContain("top-[calc(env(safe-area-inset-top)+9rem)]");
   });
 
   it("does not request a private profile for guests, or hand the menu a location action", () => {
@@ -493,7 +521,7 @@ describe("MarketPage data states", () => {
     vouchersResult.current = { ...vouchersResult.current, isCatalogComplete: true };
     renderPage();
 
-    expect(screen.getByText(/no vouchers/i)).toBeTruthy();
+    expect(screen.getByText(/no marketplace results/i)).toBeTruthy();
     expect(lastMapProps.current?.locations).toEqual([]);
   });
 
@@ -769,7 +797,7 @@ describe("MarketPage voucher card", () => {
   it("links Browse all to the marketplace list without rendering it over the map", () => {
     renderPage();
 
-    expect(screen.getByRole("link", { name: /browse all/i }).getAttribute("href")).toBe("/offers");
+    expect(screen.getByRole("link", { name: /browse all/i }).getAttribute("href")).toBe("/market");
     expect(screen.queryByRole("list")).toBeNull();
   });
 });
@@ -810,7 +838,7 @@ describe("MarketPage pools", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("leaves pools off a filtered map, whose terms and tags only match vouchers", () => {
+  it("uses the unified filtered map result instead of the separate pool catalog", () => {
     routeSearch.current = { q: "art" };
     poolsResult.current = [pool];
     filteredResult.current = {
@@ -1014,7 +1042,7 @@ describe("MarketPage filtering", () => {
     expect(screen.getByText("\u201cart\u201d")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
     const edit = screen.getByRole("link", { name: "Edit filters" });
-    expect(edit.getAttribute("href")).toContain("/offers");
+    expect(edit.getAttribute("href")).toContain("/market");
     expect(edit.getAttribute("href")).toContain("q=art");
   });
 
@@ -1032,7 +1060,7 @@ describe("MarketPage filtering", () => {
     const href = screen.getByRole("link", { name: "Browse all" }).getAttribute("href");
     expect(href).toContain("q=art");
     expect(href).toContain("tags=Art");
-    expect(href).toContain("/offers");
+    expect(href).toContain("/market");
   });
 
   it("distinguishes a filtered-empty map from an empty catalog", () => {
@@ -1044,8 +1072,8 @@ describe("MarketPage filtering", () => {
 
     render(<MarketPage />);
 
-    expect(screen.getByText("No vouchers match this search.")).toBeTruthy();
-    expect(screen.queryByText("No vouchers to show yet.")).toBeNull();
+    expect(screen.getByText("No marketplace results match this search.")).toBeTruthy();
+    expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
     expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
   });
 
@@ -1055,8 +1083,8 @@ describe("MarketPage filtering", () => {
 
     render(<MarketPage />);
 
-    expect(screen.queryByText("No vouchers match this search.")).toBeNull();
-    expect(screen.queryByText("No vouchers to show yet.")).toBeNull();
+    expect(screen.queryByText("No marketplace results match this search.")).toBeNull();
+    expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
   });
 });
 

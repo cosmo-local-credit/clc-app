@@ -5,9 +5,28 @@ import type { CatalogsClient } from "./client";
 
 export const catalogKeys = {
   all: ["clc", "catalogs"] as const,
-  list: (input: { scope?: string; q?: string } | string = {}) => {
+  list: (
+    input:
+      | {
+          scope?: string;
+          q?: string;
+          tags?: readonly string[];
+          tagMatch?: "any" | "all";
+          pools?: readonly { chainId: number; address: string }[];
+        }
+      | string = {},
+  ) => {
     const params = typeof input === "string" ? { scope: input } : input;
-    return ["clc", "catalogs", "list", params.scope ?? "public", params.q?.trim() ?? ""] as const;
+    return [
+      "clc",
+      "catalogs",
+      "list",
+      params.scope ?? "public",
+      params.q?.trim() ?? "",
+      [...(params.tags ?? [])],
+      params.tagMatch ?? "any",
+      params.pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+    ] as const;
   },
   mine: (address: string) => ["clc", "catalogs", "mine", address.toLowerCase()] as const,
   detail: (id: string) => ["clc", "catalogs", "detail", id] as const,
@@ -18,14 +37,33 @@ export const catalogKeys = {
 
 export function catalogsInfiniteQueryOptions(
   client: CatalogsClient,
-  input: { scope?: string; q?: string } | string = {},
+  input:
+    | {
+        scope?: string;
+        q?: string;
+        tags?: readonly string[];
+        tagMatch?: "any" | "all";
+        pools?: readonly { chainId: number; address: string }[];
+      }
+    | string = {},
 ) {
   const params = typeof input === "string" ? { scope: input } : input;
   return infiniteQueryOptions({
     queryKey: catalogKeys.list(params),
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam, signal }) =>
-      client.list({ cursor: pageParam, nearby: !!params.scope, q: params.q }, signal),
+      client.list(
+        {
+          cursor: pageParam,
+          nearby: !!params.scope,
+          q: params.q,
+          tags: params.tags,
+          tagMatch: params.tagMatch,
+          pools: params.pools,
+          facets: true,
+        },
+        signal,
+      ),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
   });
 }
