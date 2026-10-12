@@ -186,9 +186,9 @@ export function AllVouchersPage() {
             </section>
           ) : null}
           {voucherGroups.issued.length > 0 || (!vouchersQuery.hasNextPage && !unresolved) ? (
-            <section aria-labelledby="your-vouchers-title">
-              <h2 id="your-vouchers-title" className="font-heading mb-2 text-base font-semibold">
-                <Trans>Your Vouchers</Trans>
+            <section aria-labelledby="my-vouchers-title">
+              <h2 id="my-vouchers-title" className="font-heading mb-2 text-base font-semibold">
+                <Trans>My Vouchers</Trans>
               </h2>
               <div className="border-border bg-card border">
                 {voucherGroups.issued.length === 0 ? (

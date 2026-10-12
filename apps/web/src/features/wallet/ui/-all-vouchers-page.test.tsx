@@ -247,7 +247,7 @@ describe("AllVouchersPage", () => {
     expect(await screen.findByText("Some vouchers couldn't load.")).toBeTruthy();
     expect(screen.getByText("Voucher 1")).toBeTruthy();
     expect(screen.queryByText("Voucher 2")).toBeNull();
-    // Your Vouchers would claim none were issued while one row is unresolved.
+    // My Vouchers would claim none were issued while one row is unresolved.
     expect(screen.queryByText("You haven't issued a voucher yet.")).toBeNull();
 
     const detailCalls = () =>
@@ -259,14 +259,14 @@ describe("AllVouchersPage", () => {
     expect(String(detailCalls().at(-1)?.[0])).toContain(bad.tokenAddress);
   });
 
-  it("puts a voucher this account issued under Your Vouchers", async () => {
+  it("puts a voucher this account issued under My Vouchers", async () => {
     const token = accountToken(7);
     mockAccountReads([successResponse({ tokens: [token], last: 7 })], {
       [token.tokenAddress]: ADDRESS,
     });
     renderWithQueryClient(<AllVouchersPage />);
 
-    const issued = within(await screen.findByRole("region", { name: "Your Vouchers" }));
+    const issued = within(await screen.findByRole("region", { name: "My Vouchers" }));
     expect(issued.getByText("Voucher 7")).toBeTruthy();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });

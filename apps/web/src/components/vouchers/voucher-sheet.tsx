@@ -1,23 +1,8 @@
 import type { MarketVoucherDetail, MarketVoucherKind } from "@clc/api/features/market/client";
-import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
 import { Suspense, useState, type ReactNode } from "react";
-import {
-  RiCloseLine,
-  RiCoinLine,
-  RiFileCopyLine,
-  RiGlobalLine,
-  RiHandCoinLine,
-  RiNavigationLine,
-  RiPhoneLine,
-  RiSendPlane2Line,
-  RiShareLine,
-} from "react-icons/ri";
-import { toast } from "sonner";
-import { isAddress, zeroAddress } from "viem";
+import { RiCloseLine } from "react-icons/ri";
 
-import { ReviewStars } from "#/components/reviews/review-editor";
 import { Button } from "#/components/ui/button";
 import {
   MapSheet,
@@ -27,18 +12,22 @@ import {
   type MapSheetSnap,
 } from "#/components/ui/map-sheet";
 import { Skeleton } from "#/components/ui/skeleton";
-import { TagBadge } from "#/components/ui/tag-badge";
 import { VoucherAvatar } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useVoucherReviewSummary } from "#/features/reviews/hooks/use-voucher-reviews";
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
-import { openDefaultMaps } from "#/lib/default-maps";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { cn } from "#/lib/utils";
 import { useMarketDistanceLabel } from "./voucher-labels";
 import type { VoucherPageOrigin } from "./voucher-sheet-full";
 import { VoucherSheetFull } from "./voucher-sheet-full.lazy";
+import {
+  ShareVoucherButton,
+  VOUCHER_ACTION_PILL,
+  VoucherActionRow,
+  VoucherReviewSummaryContent,
+  VoucherTagList,
+} from "./voucher-summary";
 
 export type { VoucherPageOrigin } from "./voucher-sheet-full";
 
@@ -55,10 +44,6 @@ export type VoucherPlaceholder = {
   lng?: number | null;
   chainId?: number | null;
 };
-
-/** A pill draws at 36 px; the inset widens its tap target to 44. */
-const PILL =
-  "relative h-9 shrink-0 gap-1.5 px-3 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
 
 /** The sheet's snap point, back at the peek each time a card opens. */
 export function useVoucherSheetSnap(isOpen: boolean) {
@@ -144,7 +129,7 @@ export function VoucherSheet({
           <Button
             variant="outline"
             size="sm"
-            className={cn(PILL, "mt-3 bg-card")}
+            className={cn(VOUCHER_ACTION_PILL, "mt-3 bg-card")}
             onClick={() => void detailQuery.refetch()}
           >
             <Trans>Retry</Trans>
@@ -208,7 +193,7 @@ function VoucherCard({
   origin: VoucherPageOrigin | undefined;
   onClose: () => void;
 }) {
-  const { i18n, t } = useLingui();
+  const { t } = useLingui();
   const [reachedHalf, setReachedHalf] = useState(false);
   if (snap !== "peek" && !reachedHalf) setReachedHalf(true);
 
@@ -219,17 +204,6 @@ function VoucherCard({
   const locationName = detail?.locationName ?? placeholder?.locationName ?? null;
   const distanceLabel = useMarketDistanceLabel(realFix, coordinates);
   const place = distanceLabel ?? locationName;
-  const phone = detail?.phone ?? null;
-  const website = detail?.website && isHttpUrl(detail.website) ? detail.website : null;
-  const reviewQuery = useVoucherReviewSummary(address);
-  const reviewSummary = reviewQuery.summary;
-  const reviewCount = reviewSummary?.total ?? 0;
-  const reviewAverage = reviewCount > 0 ? (reviewSummary?.average ?? 0) : 0;
-  const numberLocale = i18n.locales?.[0] ?? i18n.locale;
-  const formattedAverage = new Intl.NumberFormat(numberLocale, {
-    maximumFractionDigits: 1,
-  }).format(reviewAverage);
-  const formattedReviewCount = new Intl.NumberFormat(numberLocale).format(reviewCount);
   const auth = useAuthStatus();
   const holdings = useAllAccountTokens(
     auth.isAuthenticated ? (auth.session?.address ?? undefined) : undefined,
@@ -243,12 +217,6 @@ function VoucherCard({
     /^\d+$/.test(holding.balance) &&
     BigInt(holding.balance) > 0n;
   const voucherPageAddress = detail?.address ?? address;
-  const verifiedOwnerAddress =
-    detail?.ownerAddress &&
-    isAddress(detail.ownerAddress, { strict: false }) &&
-    detail.ownerAddress.toLowerCase() !== zeroAddress
-      ? detail.ownerAddress
-      : null;
 
   return (
     <>
@@ -297,80 +265,22 @@ function VoucherCard({
           </div>
         </div>
         <MapSheetDescription className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-muted-foreground text-xs">
-          <span className="font-mono tabular-nums">{formattedAverage}</span>
-          <ReviewStars stars={reviewAverage} />
-          <span className="font-mono tabular-nums">({formattedReviewCount})</span>
-          {place ? (
-            <>
-              <span aria-hidden="true">·</span>
-              <span dir="auto" className="min-w-0 truncate">
-                {place}
-              </span>
-            </>
-          ) : null}
+          <VoucherReviewSummaryContent address={address} place={place} />
         </MapSheetDescription>
-        {detail?.tags && detail.tags.length > 0 ? (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {detail.tags.slice(0, 3).map((tag) => (
-              <TagBadge key={tag} tag={tag} />
-            ))}
-          </div>
-        ) : null}
+        <VoucherTagList tags={detail?.tags} className="mt-2" />
 
-        <div className="mt-3 flex flex-wrap gap-2 py-1">
-          <Button asChild size="sm" className={PILL}>
-            <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
-              <RiHandCoinLine aria-hidden="true" />
-              <Trans>Get</Trans>
-            </Link>
-          </Button>
-          {hasPositiveBalance ? (
-            <Button asChild variant="outline" size="sm" className={cn(PILL, "bg-card")}>
-              <Link to="/wallet/send" search={{ token: voucherPageAddress }}>
-                <RiSendPlane2Line aria-hidden="true" />
-                <Trans>Send</Trans>
-              </Link>
-            </Button>
-          ) : null}
-          {hasPositiveBalance && verifiedOwnerAddress ? (
-            <Button asChild variant="outline" size="sm" className={cn(PILL, "bg-card")}>
-              <Link
-                to="/wallet/send/amount"
-                search={{ token: voucherPageAddress, recipient: verifiedOwnerAddress }}
-              >
-                <RiCoinLine aria-hidden="true" />
-                <Trans>Redeem</Trans>
-              </Link>
-            </Button>
-          ) : null}
-          {coordinates || locationName ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(PILL, "bg-card")}
-              onClick={() => openDefaultMaps({ label: locationName ?? name, lat, lng })}
-            >
-              <RiNavigationLine aria-hidden="true" />
-              <Trans>Directions</Trans>
-            </Button>
-          ) : null}
-          {phone ? (
-            <Button asChild variant="outline" size="sm" className={cn(PILL, "bg-card")}>
-              <a href={`tel:${phone}`}>
-                <RiPhoneLine aria-hidden="true" />
-                <Trans>Call</Trans>
-              </a>
-            </Button>
-          ) : null}
-          {website ? (
-            <Button asChild variant="outline" size="sm" className={cn(PILL, "bg-card")}>
-              <a href={website} target="_blank" rel="noreferrer noopener">
-                <RiGlobalLine aria-hidden="true" />
-                <Trans>Website</Trans>
-              </a>
-            </Button>
-          ) : null}
-        </div>
+        <VoucherActionRow
+          address={voucherPageAddress}
+          name={name}
+          ownerAddress={detail?.ownerAddress}
+          hasPositiveBalance={hasPositiveBalance}
+          locationName={locationName}
+          lat={lat}
+          lng={lng}
+          phone={detail?.phone}
+          website={detail?.website}
+          className="mt-3"
+        />
       </MapSheetPeek>
 
       {reachedHalf ? (
@@ -379,63 +289,5 @@ function VoucherCard({
         </Suspense>
       ) : null}
     </>
-  );
-}
-
-/**
- * Shares the card's own link. Prefers the native share sheet and offers a
- * fresh copy tap if it fails: sharing consumes the tap's user activation, and
- * WebKit will not write to the clipboard without a new one.
- */
-function ShareVoucherButton({ name, address }: { name: string; address: string }) {
-  const { t } = useLingui();
-  const [copyOnly, setCopyOnly] = useState(false);
-  const label = copyOnly ? t`Copy link` : t`Share`;
-  const Icon = copyOnly ? RiFileCopyLine : RiShareLine;
-
-  function link() {
-    return `${window.location.origin}/?voucher=${address}`;
-  }
-
-  function copy() {
-    if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy link`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(link())
-      .then(() => toast.success(t`Link copied`))
-      .catch(() => toast.error(t`Couldn't copy link`));
-  }
-
-  async function share() {
-    if (!navigator.share) {
-      copy();
-      return;
-    }
-    try {
-      await navigator.share({ title: name, url: link() });
-    } catch (error) {
-      // AbortError = the viewer dismissed the sheet; not a failure.
-      if (error instanceof DOMException && error.name === "AbortError") return;
-      setCopyOnly(true);
-    }
-  }
-
-  const onClick = () => {
-    if (copyOnly) copy();
-    else void share();
-  };
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon-lg"
-      className="size-11 shrink-0 border-0 text-muted-foreground"
-      aria-label={label}
-      onClick={onClick}
-    >
-      <Icon className="size-5" aria-hidden="true" />
-    </Button>
   );
 }
