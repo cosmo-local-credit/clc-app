@@ -1,13 +1,13 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
-import { RiCloseLine, RiSearch2Line } from "react-icons/ri";
+import { RiCloseLine, RiFilter3Line, RiSearch2Line } from "react-icons/ri";
 
+import { AppMenu } from "#/components/app-menu";
 import {
   MarketplaceResourceNavigation,
   type MarketplaceResource,
 } from "#/components/marketplace-resource-navigation";
 import { Button } from "#/components/ui/button";
-import { BackChevron } from "#/components/wallet";
 import { useMarketplaceSearchShell } from "#/features/home/stores/marketplace-search-shell";
 import { cn } from "#/lib/utils";
 
@@ -16,24 +16,27 @@ export function MarketplaceSearchShell({
   search,
   credit,
   filters,
-  showBack = true,
+  surface = "page",
   className,
 }: {
   current: MarketplaceResource;
   search: ReactNode;
   credit?: ReactNode;
   filters?: ReactNode;
-  showBack?: boolean;
+  surface?: "map" | "page";
   className?: string;
 }) {
   const { t } = useLingui();
   const collapsed = useMarketplaceSearchShell((state) => state.collapsed);
   const collapse = useMarketplaceSearchShell((state) => state.collapse);
   const expand = useMarketplaceSearchShell((state) => state.expand);
+  const surfaceClassName =
+    surface === "map" ? "bg-transparent" : "border-b border-border bg-background pb-3";
 
   if (collapsed) {
     return (
-      <div className={cn("flex", className)}>
+      <div className={cn("flex gap-1", surfaceClassName, className)}>
+        <AppMenu />
         <Button
           size="icon"
           className="size-11"
@@ -47,10 +50,21 @@ export function MarketplaceSearchShell({
   }
 
   return (
-    <div className={cn("space-y-2 border-b border-border bg-background pb-3", className)}>
-      {showBack ? <BackChevron label={t`Back`} to="/" search={{}} /> : null}
-      <div className="flex items-end gap-2">
+    <div className={cn("space-y-2", surfaceClassName, className)}>
+      <div className="flex items-end gap-1">
+        <AppMenu />
         <div className="min-w-0 flex-1">{search}</div>
+        {filters ?? (
+          <Button
+            disabled
+            size="icon"
+            className="size-11 bg-destructive text-destructive-foreground opacity-100"
+            aria-label={t`Filters`}
+            title={t`Filters`}
+          >
+            <RiFilter3Line className="size-5" aria-hidden="true" />
+          </Button>
+        )}
         <Button
           variant="outline"
           size="icon"
@@ -64,7 +78,7 @@ export function MarketplaceSearchShell({
           </span>
         </Button>
       </div>
-      <MarketplaceResourceNavigation current={current} credit={credit} filters={filters} />
+      <MarketplaceResourceNavigation current={current} credit={credit} />
     </div>
   );
 }

@@ -118,6 +118,7 @@ function CatalogList({
             title={<Trans>Filter catalogs</Trans>}
             facetTitle={<Trans>Tags</Trans>}
             showHeader={false}
+            trigger="marketplace-icon"
             open={filtersOpen}
             onOpenChange={setFiltersOpen}
             onApply={search.setFacets}

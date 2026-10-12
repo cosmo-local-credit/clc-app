@@ -257,12 +257,12 @@ describe("pools navigation", () => {
     });
   });
 
-  it("falls back to the Marketplace map when the pools list is deep-linked", async () => {
+  it("shows the shared menu instead of a synthetic Back link when deep-linked", async () => {
     const router = createTestRouter("/pools");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const back = await screen.findByRole("link", { name: "Back" });
-    expect(back.getAttribute("href")).toBe("/");
+    expect(await screen.findByRole("button", { name: "Open menu" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Back" })).toBeNull();
   });
 });
 
@@ -271,13 +271,13 @@ describe("pools filter canonicalization through the router", () => {
     const router = createTestRouter("/pools?creditable=false");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    expect(credit.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(credit);
 
     await waitFor(() => {
       expect(router.state.location.search.creditable).toBe(true);
-      expect(credit.getAttribute("data-checked")).not.toBeNull();
+      expect(credit.getAttribute("aria-pressed")).toBe("true");
     });
 
     await act(async () => {
@@ -285,7 +285,7 @@ describe("pools filter canonicalization through the router", () => {
     });
     await waitFor(() => {
       expect(router.state.location.search.creditable).toBe(false);
-      expect(credit.getAttribute("data-checked")).toBeNull();
+      expect(credit.getAttribute("aria-pressed")).toBe("false");
     });
 
     await act(async () => {
@@ -293,7 +293,7 @@ describe("pools filter canonicalization through the router", () => {
     });
     await waitFor(() => {
       expect(router.state.location.search.creditable).toBe(true);
-      expect(credit.getAttribute("data-checked")).not.toBeNull();
+      expect(credit.getAttribute("aria-pressed")).toBe("true");
     });
   });
 

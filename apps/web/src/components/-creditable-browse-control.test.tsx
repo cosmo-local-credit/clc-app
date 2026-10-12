@@ -49,7 +49,7 @@ describe("CreditableBrowseControl", () => {
     );
     expect(screen.getByText(/Sign in to browse results/)).toBeTruthy();
     expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
-    expect(screen.queryByRole("checkbox", { name: "Credit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Credit" })).toBeNull();
   });
 
   it("keeps verification loading and errors explicit", () => {
@@ -65,7 +65,7 @@ describe("CreditableBrowseControl", () => {
         onClear={vi.fn()}
       />,
     );
-    expect(screen.getByText("Checking…")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Credit" }).getAttribute("aria-busy")).toBe("true");
 
     view.rerender(
       <CreditableBrowseControl
@@ -87,7 +87,7 @@ describe("CreditableBrowseControl", () => {
     const view = render(
       <CreditableBrowseControl state={state()} onChange={change} onClear={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole("checkbox", { name: "Credit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Credit" }));
     expect(change.mock.calls.at(-1)?.[0]).toBe(true);
 
     view.rerender(
@@ -97,7 +97,25 @@ describe("CreditableBrowseControl", () => {
         onClear={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole("checkbox", { name: "Credit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Credit" }));
     expect(change.mock.calls.at(-1)?.[0]).toBe(false);
+  });
+
+  it("exposes its pressed and busy state without widening the label", () => {
+    render(
+      <CreditableBrowseControl
+        state={state({
+          enabled: true,
+          verification: { status: "loading", pools: [], retry: vi.fn() },
+        })}
+        onChange={vi.fn()}
+        onClear={vi.fn()}
+      />,
+    );
+
+    const credit = screen.getByRole("button", { name: "Credit" });
+    expect(credit.getAttribute("aria-pressed")).toBe("true");
+    expect(credit.getAttribute("aria-busy")).toBe("true");
+    expect(credit.textContent).toBe("Credit");
   });
 });

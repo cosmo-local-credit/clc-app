@@ -1,23 +1,20 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
+import { RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
-import { usePoolCatalog, usePoolFacetVocabulary } from "#/features/pools/hooks/use-filtered-pools";
+import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { usePoolOutputAvailability } from "#/features/pools/hooks/use-pool-output-availability";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
-import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
-import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { CHAIN_ID } from "#/lib/chain";
 import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
-import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
@@ -27,7 +24,6 @@ import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
-import { PoolOutputVoucherFilter } from "./pool-output-voucher-filter";
 
 const POOL_ROW_TAG_LIMIT = 3;
 
@@ -52,7 +48,7 @@ export function PoolsPage({
   const creditFilterInvalid = !creditableResult.ok;
   const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
   const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.pools, storageOwner, {
-    voucherRelationships: true,
+    voucherRelationships: false,
     externalFilterActive: outputVoucherSearch !== undefined || creditableSearch !== undefined,
   });
   const poolsQuery = useUserPoolsInfinite(
@@ -64,7 +60,6 @@ export function PoolsPage({
   // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
   // instead of flashing an empty facet list on every open.
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
-  const clearCreateDraft = usePoolCreateDraft((state) => state.clearDraft);
 
   const catalog = usePoolCatalog(
     filter,
@@ -83,8 +78,6 @@ export function PoolsPage({
   const outputAvailability = usePoolOutputAvailability(
     outputVoucherAddress ? { chainId: CHAIN_ID, address: outputVoucherAddress } : undefined,
   );
-  const voucherVocabulary = usePoolFacetVocabulary(true);
-  const selectedVoucherDetail = useMarketVoucherDetail(outputVoucherAddress ?? undefined);
   const creditableAddresses = useMemo(
     () => new Set(creditable.pools.map((pool) => pool.address.toLowerCase())),
     [creditable.pools],
@@ -149,11 +142,6 @@ export function PoolsPage({
   });
 
   useEffect(() => {
-    resetPoolCreateHistory();
-    clearCreateDraft();
-  }, [clearCreateDraft]);
-
-  useEffect(() => {
     const target = loadMoreRef.current;
     if (!target || !hasMore || typeof IntersectionObserver === "undefined") {
       return;
@@ -201,7 +189,6 @@ export function PoolsPage({
           <PoolFilterSheet
             filter={filter}
             facets={catalog.tagFacets}
-            voucherFacets={catalog.voucherFacets}
             open={filtersOpen}
             onOpenChange={(next) => {
               if (next) setFiltersEverOpened(true);
@@ -227,17 +214,6 @@ export function PoolsPage({
           })
         }
       />
-      <div className="flex items-start justify-end gap-3">
-        {auth.isAuthenticated ? (
-          <Button asChild variant="outline" className="bg-card">
-            <Link to="/pools/create/$step" params={{ step: "pool" }}>
-              <RiAddLine className="size-4" aria-hidden="true" />
-              <Trans>Create</Trans>
-            </Link>
-          </Button>
-        ) : null}
-      </div>
-
       <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
 
       {credit.enabled && credit.poolRefs?.length === 0 ? (
@@ -316,42 +292,7 @@ export function PoolsPage({
 
       {catalog.status === "ready" && filter.result.ok ? (
         <>
-          <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2">
-            <p className="shrink-0 font-medium text-sm tabular-nums">{resultCountLabel}</p>
-            <PoolOutputVoucherFilter
-              facets={voucherVocabulary.data?.voucherFacets ?? []}
-              value={outputVoucherAddress}
-              fallbackLabel={selectedVoucherDetail.data?.name}
-              loading={voucherVocabulary.isPending}
-              onValueChange={(next) =>
-                void navigate({
-                  to: ".",
-                  search: (previous) => ({
-                    ...previous,
-                    out_voucher: next ?? undefined,
-                  }),
-                })
-              }
-            />
-          </div>
-          {voucherVocabulary.isError ? (
-            <div
-              className="flex items-center justify-between gap-3 border border-border bg-card p-3"
-              role="alert"
-            >
-              <p className="text-muted-foreground text-sm">
-                <Trans>Couldn't load voucher choices.</Trans>
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 shrink-0 bg-card"
-                onClick={() => void voucherVocabulary.refetch()}
-              >
-                <Trans>Retry</Trans>
-              </Button>
-            </div>
-          ) : null}
+          <p className="min-h-11 py-3 font-medium text-sm tabular-nums">{resultCountLabel}</p>
           {canShowResults && pools.length === 0 ? (
             <div className="space-y-3 border border-border bg-card p-3">
               <p className="text-muted-foreground text-sm">

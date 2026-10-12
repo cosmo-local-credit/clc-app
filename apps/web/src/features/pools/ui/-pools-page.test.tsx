@@ -240,7 +240,7 @@ describe("pools list", () => {
     expect(urls.filter((url) => !url.includes("facets=true"))).toHaveLength(1);
   });
 
-  it("keeps the labeled filter trigger and remembers applied facets", async () => {
+  it("keeps the compact filter trigger and remembers applied facets", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
 
@@ -250,8 +250,9 @@ describe("pools list", () => {
     expect(screen.getByRole("region", { name: "Pools list" }).className).not.toMatch(/rounded-/);
 
     const trigger = screen.getByRole("button", { name: "Filters" });
-    expect(trigger.className).toContain("h-9");
-    expect(trigger.textContent).toContain("Filters");
+    expect(trigger.className).toContain("size-11");
+    expect(trigger.className).toContain("bg-destructive");
+    expect(trigger.textContent).toBe("");
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });
     expect(sheet.className).toContain("rounded-none");
@@ -261,6 +262,7 @@ describe("pools list", () => {
     expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
       "sr-only",
     );
+    expect(within(sheet).queryByLabelText("Search voucher filters")).toBeNull();
     const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");
     expect(filterContent?.className).toContain("border-b");
     expect(filterContent?.className).not.toContain("border-y");
@@ -288,14 +290,12 @@ describe("pools list", () => {
     expect(screen.queryByRole("button", { name: "Most active" })).toBeNull();
   });
 
-  it("shows one standard Create action in the title row", async () => {
+  it("does not show pool creation in marketplace discovery", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
 
     await screen.findByText("Trade Pool");
-    const createLabels = screen.getAllByText("Create");
-    expect(createLabels).toHaveLength(1);
-    expect(createLabels[0]?.closest("a")?.className).toContain("h-8");
+    expect(screen.queryByRole("link", { name: "Create" })).toBeNull();
   });
 
   it("sizes the search field with the default input height", async () => {
@@ -333,9 +333,9 @@ describe("creditable pools", () => {
 
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.getByText("Solo Pool")).toBeTruthy();
-    const credit = screen.getByRole("checkbox", { name: /Credit/ });
-    expect(credit.hasAttribute("data-disabled")).toBe(false);
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    const credit = screen.getByRole("button", { name: /Credit/ });
+    expect(credit.hasAttribute("disabled")).toBe(false);
+    expect(credit.getAttribute("aria-pressed")).toBe("false");
   });
 
   it("defaults Credit off even when verified creditable pools exist", async () => {
@@ -343,8 +343,8 @@ describe("creditable pools", () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    expect(credit.getAttribute("aria-pressed")).toBe("false");
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.getByText("Empty Pool")).toBeTruthy();
     expect(screen.getByText("Solo Pool")).toBeTruthy();
@@ -355,9 +355,9 @@ describe("creditable pools", () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    const credit = await screen.findByRole("button", { name: "Credit" });
     expect(credit.hasAttribute("disabled")).toBe(false);
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    expect(credit.getAttribute("aria-pressed")).toBe("false");
 
     fireEvent.click(credit);
     const call = navigate.mock.calls.at(-1)?.[0] as {
@@ -371,8 +371,8 @@ describe("creditable pools", () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage creditableSearch="true" />);
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
     expect(await screen.findByText("No creditable pools are available.")).toBeTruthy();
     expect(screen.queryByText("Trade Pool")).toBeNull();
   });
@@ -383,8 +383,8 @@ describe("creditable pools", () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage creditableSearch="false" />);
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    expect(credit.getAttribute("aria-pressed")).toBe("false");
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.getByText("Solo Pool")).toBeTruthy();
   });
@@ -396,8 +396,8 @@ describe("creditable pools", () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    expect(credit.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(credit);
 
     const call = navigate.mock.calls.at(-1)?.[0] as {
@@ -453,8 +453,8 @@ describe("creditable pools", () => {
     mockPoolsList();
     const view = renderWithQueryClient(<PoolsPage creditableSearch={true} />);
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
     expect(screen.getByText("Trade Pool")).toBeTruthy();
     expect(screen.queryByText("Solo Pool")).toBeNull();
 
@@ -464,7 +464,7 @@ describe("creditable pools", () => {
         <PoolsPage creditableSearch={true} />
       </QueryClientProvider>,
     );
-    expect(credit.getAttribute("data-checked")).not.toBeNull();
+    expect(credit.getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByText("Solo Pool")).toBeTruthy();
   });
 
@@ -474,8 +474,8 @@ describe("creditable pools", () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage creditableSearch={true} />);
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
     expect(screen.getByText("Trade Pool")).toBeTruthy();
     expect(screen.queryByText("Empty Pool")).toBeNull();
     expect(screen.queryByText("Solo Pool")).toBeNull();
@@ -493,9 +493,7 @@ describe("creditable pools", () => {
     expect(screen.queryByText("Trade Pool")).toBeNull();
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
     expect(retry).toHaveBeenCalledOnce();
-    expect(screen.getByRole("checkbox", { name: "Credit" }).hasAttribute("data-disabled")).toBe(
-      false,
-    );
+    expect(screen.getByRole("button", { name: "Credit" }).hasAttribute("disabled")).toBe(false);
   });
 
   it("discloses incomplete verification while retaining verified pools", async () => {
@@ -515,7 +513,7 @@ describe("creditable pools", () => {
 });
 
 describe("output voucher availability", () => {
-  it("shows only verified pools with the selected voucher available", async () => {
+  it("shows only verified pools with a deep-linked voucher available without a second search bar", async () => {
     outputState.current = {
       ...outputState.current,
       status: "ready",
@@ -528,9 +526,7 @@ describe("output voucher availability", () => {
     expect(screen.getByText("Empty Pool")).toBeTruthy();
     expect(screen.queryByText("Trade Pool")).toBeNull();
     expect(screen.getByText("2 pools")).toBeTruthy();
-    expect(
-      (screen.getByRole("combobox", { name: "Output voucher" }) as HTMLInputElement).value,
-    ).toBe("Market Credit");
+    expect(screen.queryByRole("combobox", { name: "Output voucher" })).toBeNull();
   });
 
   it("intersects Credit and output availability, then intersects the catalog search", async () => {
@@ -549,8 +545,8 @@ describe("output voucher availability", () => {
       <PoolsPage creditableSearch={true} outputVoucherSearch={OUTPUT_VOUCHER} />,
     );
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
     expect(screen.getByText("Trade Pool")).toBeTruthy();
     expect(screen.queryByText("Solo Pool")).toBeNull();
     expect(screen.queryByText("Empty Pool")).toBeNull();
@@ -573,8 +569,8 @@ describe("output voucher availability", () => {
       </QueryClientProvider>,
     );
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
 
     outputState.current = { ...outputState.current, pools: [POOLS[0]!] };
     view.rerender(
@@ -582,46 +578,7 @@ describe("output voucher availability", () => {
         <PoolsPage creditableSearch={true} outputVoucherSearch={OTHER_VOUCHER} />
       </QueryClientProvider>,
     );
-    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
-  });
-
-  it("updates only out_voucher when choosing or clearing a voucher", async () => {
-    outputState.current = { ...outputState.current, status: "ready" };
-    mockPoolsList();
-    const view = renderWithQueryClient(<PoolsPage />);
-    const selector = await screen.findByRole("combobox", { name: "Output voucher" });
-    fireEvent.click(selector);
-    const choice = await screen.findByRole("option", { name: "Harvest Credit HRV" });
-    fireEvent.pointerDown(choice, { pointerType: "touch" });
-    fireEvent.click(choice);
-
-    const selectCall = navigate.mock.calls.at(-1)?.[0] as {
-      search: (previous: Record<string, unknown>) => Record<string, unknown>;
-    };
-    expect(selectCall.search({ q: "trade", tags: "Food" })).toEqual({
-      q: "trade",
-      tags: "Food",
-      out_voucher: OTHER_VOUCHER,
-    });
-
-    navigate.mockReset();
-    view.rerender(
-      <QueryClientProvider client={new QueryClient()}>
-        <PoolsPage outputVoucherSearch={OTHER_VOUCHER} />
-      </QueryClientProvider>,
-    );
-    const selected = screen.getByRole("combobox", { name: "Output voucher" });
-    fireEvent.click(selected);
-    const all = await screen.findByRole("option", { name: "All Vouchers" });
-    fireEvent.pointerDown(all, { pointerType: "touch" });
-    fireEvent.click(all);
-    const clearCall = navigate.mock.calls.at(-1)?.[0] as {
-      search: (previous: Record<string, unknown>) => Record<string, unknown>;
-    };
-    expect(clearCall.search({ q: "trade", out_voucher: OTHER_VOUCHER })).toEqual({
-      q: "trade",
-      out_voucher: undefined,
-    });
+    await waitFor(() => expect(credit.getAttribute("aria-pressed")).toBe("true"));
   });
 
   it("does not restore saved facets over an explicit output-voucher deep link", async () => {

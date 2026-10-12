@@ -1,9 +1,8 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
-import { RiFocus3Line, RiListUnordered } from "react-icons/ri";
+import { RiFocus3Line } from "react-icons/ri";
 
-import { AppMenu } from "#/components/app-menu";
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
@@ -24,7 +23,6 @@ import { useMarketplaceMapSearch } from "#/features/home/hooks/use-marketplace-m
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
-import { catalogSearchForScope } from "#/lib/navigation/catalog-search";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { MarketFilterSheet, MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
@@ -248,12 +246,10 @@ export function MarketPage({
         />
       </Suspense>
 
-      <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />
-
       <MarketplaceSearchShell
         current="map"
-        showBack={false}
-        className="absolute start-[4.75rem] end-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30 border border-border bg-background p-2"
+        surface="map"
+        className="absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30"
         search={<CatalogSearchField filter={filter} label={t`Search the marketplace`} />}
         credit={
           <CreditableBrowseControl
@@ -373,21 +369,7 @@ export function MarketPage({
       {isCardOpen ? null : (
         <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
           <MarketFilterSummary filter={filter} />
-          <div className="flex items-center gap-2">
-            <Button asChild className="pointer-events-auto h-11 flex-1">
-              <Link
-                to="/market"
-                search={(previous) => ({
-                  ...catalogSearchForScope(previous, false),
-                  scope: undefined,
-                })}
-              >
-                <RiListUnordered className="me-2 size-4" aria-hidden="true" />
-                <Trans>Browse all</Trans>
-              </Link>
-            </Button>
-            {locationButton}
-          </div>
+          <div className="flex justify-end">{locationButton}</div>
         </div>
       )}
 

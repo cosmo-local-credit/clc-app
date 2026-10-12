@@ -44,17 +44,16 @@ export function canonicalMarketplaceSearch(
       marketplaceScopeSchema.safeParse(search.scope.trim().toLowerCase()).success);
   const changedScope = !validScalar || search.scope !== canonicalScope;
   const hasPoolOnlyFilters =
-    canonicalScope !== "pools" &&
-    (search.out_voucher !== undefined ||
-      search.vouchers !== undefined ||
-      search.voucherMatch !== undefined);
+    (canonicalScope !== "pools" && search.out_voucher !== undefined) ||
+    search.vouchers !== undefined ||
+    search.voucherMatch !== undefined;
   if (!base && !changedScope && !hasPoolOnlyFilters) return null;
   return {
     ...(base ?? search),
     scope: canonicalScope,
-    ...(canonicalScope === "pools"
-      ? {}
-      : { out_voucher: undefined, vouchers: undefined, voucherMatch: undefined }),
+    out_voucher: canonicalScope === "pools" ? (base ?? search).out_voucher : undefined,
+    vouchers: undefined,
+    voucherMatch: undefined,
   };
 }
 
@@ -65,8 +64,23 @@ export function marketplaceSearchForScope(
   return {
     ...search,
     scope: scope ?? undefined,
-    ...(scope === "pools"
-      ? {}
-      : { out_voucher: undefined, vouchers: undefined, voucherMatch: undefined }),
+    out_voucher: scope === "pools" ? search.out_voucher : undefined,
+    vouchers: undefined,
+    voucherMatch: undefined,
   };
+}
+
+/** The unfiltered All view is the destination owned by the round Market navigation action. */
+export function isAtMarketplaceRoot(search: unknown): boolean {
+  const state = pickMarketplaceSearch(search);
+  return (
+    state.scope === undefined &&
+    state.q === undefined &&
+    state.tags === undefined &&
+    state.tagMatch === undefined &&
+    state.vouchers === undefined &&
+    state.voucherMatch === undefined &&
+    state.out_voucher === undefined &&
+    state.creditable === undefined
+  );
 }

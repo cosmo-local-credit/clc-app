@@ -5,6 +5,7 @@ import {
   createRouter,
   Outlet,
   RouterProvider,
+  useLocation,
   useSearch,
 } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -36,13 +37,17 @@ async function renderNavigation({
 } = {}) {
   function NavigationFixture() {
     const search = useSearch({ strict: false });
-    const selectedTab = activeTab ?? parseHomeTab(search.tab);
-    return (
-      <BottomNavigation
-        activeTab={selectedTab}
-        atActiveTabRoot={atActiveTabRoot ?? isAtHomeTabRoot(search)}
-      />
-    );
+    const location = useLocation();
+    const selectedTab =
+      activeTab ?? (location.pathname === "/market" ? "market" : parseHomeTab(search.tab));
+    const selectedAtRoot =
+      atActiveTabRoot ??
+      (location.pathname === "/market"
+        ? Object.keys(search).length === 0
+        : selectedTab === "market"
+          ? false
+          : isAtHomeTabRoot(search));
+    return <BottomNavigation activeTab={selectedTab} atActiveTabRoot={selectedAtRoot} />;
   }
 
   const rootRoute = createRootRoute({ component: Outlet });
@@ -55,9 +60,14 @@ async function renderNavigation({
     }),
     component: NavigationFixture,
   });
+  const marketRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/market",
+    component: NavigationFixture,
+  });
   const history = createMemoryHistory({ initialEntries: [initialEntry] });
   const router = createRouter({
-    routeTree: rootRoute.addChildren([indexRoute]),
+    routeTree: rootRoute.addChildren([indexRoute, marketRoute]),
     history,
   });
 
@@ -73,7 +83,9 @@ describe("BottomNavigation", () => {
     await renderNavigation();
 
     for (const [tab, label] of Object.entries(LABELS) as [HomeTab, string][]) {
-      expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe(`/?tab=${tab}`);
+      expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe(
+        tab === "market" ? "/market" : `/?tab=${tab}`,
+      );
     }
   });
 
@@ -90,15 +102,12 @@ describe("BottomNavigation", () => {
     }
   });
 
-  it("does not add history when the active tab is selected", async () => {
+  it("moves the active map destination to the canonical marketplace list", async () => {
     const { history } = await renderNavigation({ initialEntry: "/" });
-    const initialHref = history.location.href;
-    const initialLength = history.length;
 
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
 
-    expect(history.location.href).toBe(initialHref);
-    expect(history.length).toBe(initialLength);
+    await waitFor(() => expect(history.location.href).toBe("/market"));
   });
 
   it("marks an active descendant and navigates it to the owning root", async () => {
@@ -115,9 +124,9 @@ describe("BottomNavigation", () => {
     await waitFor(() => expect(history.location.href).toBe("/?tab=wallet"));
   });
 
-  it("returns the active Browse-all subview to the map and Back restores the list", async () => {
+  it("returns a scoped Market descendant to the unfiltered All list", async () => {
     const { history } = await renderNavigation({
-      initialEntry: "/?tab=market&view=list",
+      initialEntry: "/market?scope=pools",
       activeTab: "market",
       atActiveTabRoot: false,
     });
@@ -125,13 +134,13 @@ describe("BottomNavigation", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
 
-    await waitFor(() => expect(history.location.href).toBe("/?tab=market"));
+    await waitFor(() => expect(history.location.href).toBe("/market"));
 
     await act(async () => {
       history.back();
     });
 
-    await waitFor(() => expect(history.location.href).toBe("/?tab=market&view=list"));
+    await waitFor(() => expect(history.location.href).toBe("/market?scope=pools"));
   });
 
   it("restores the previous tab when navigating back", async () => {

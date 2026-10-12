@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   canonicalMarketplaceSearch,
+  isAtMarketplaceRoot,
   marketplaceSearchForScope,
   parseMarketplaceScope,
   pickMarketplaceSearch,
@@ -45,5 +46,29 @@ describe("marketplace route search", () => {
       creditable: true,
       out_voucher: undefined,
     });
+  });
+
+  it("retires the redundant voucher picker state while preserving exact voucher deep links", () => {
+    const address = `0x${"a".repeat(40)}`;
+    expect(
+      canonicalMarketplaceSearch({
+        scope: "pools",
+        vouchers: `100:${address}`,
+        voucherMatch: "all",
+        out_voucher: address,
+      }),
+    ).toMatchObject({
+      scope: "pools",
+      vouchers: undefined,
+      voucherMatch: undefined,
+      out_voucher: address,
+    });
+  });
+
+  it("treats only the unfiltered All list as the bottom-navigation root", () => {
+    expect(isAtMarketplaceRoot({})).toBe(true);
+    expect(isAtMarketplaceRoot({ scope: "offers" })).toBe(false);
+    expect(isAtMarketplaceRoot({ q: "bike" })).toBe(false);
+    expect(isAtMarketplaceRoot({ creditable: false })).toBe(false);
   });
 });
