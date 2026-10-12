@@ -14,10 +14,9 @@
  * zeroes the radius tokens outright.
  *
  * Credential order matches how operators actually hold their keys. A paper wallet
- * is a printed QR code, so uploading or scanning it is the path; typing a raw
- * private key is the escape hatch behind "Advanced", not the headline. This
- * mirrors apps/web, where the scanner is primary and the key field sits under
- * "Advanced options".
+ * is a printed QR code, so uploading or scanning it is the path. There is no field
+ * to type or paste a raw private key: a key that has to be typed is a key that has
+ * been copied through a clipboard or a chat window.
  *
  * The role gate lives in admin-session.ts. A session that lacks the role, or a
  * check that failed, brings the operator here with a `notice` rather than to a
@@ -28,7 +27,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { FaChrome, FaSafari } from "react-icons/fa";
-import { FiChevronDown, FiKey, FiLoader } from "react-icons/fi";
+import { FiKey, FiLoader } from "react-icons/fi";
 import { MdOutlineFingerprint } from "react-icons/md";
 
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
@@ -38,7 +37,6 @@ import { SectionLabel } from "#/components/admin/section-heading";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import { Textarea } from "#/components/ui/textarea";
 import { useAdminSignOut } from "../admin-session";
 import { type PasskeyUnsupportedReason, usePasskeySupport } from "../passkey-support";
 import { useAdminPasskeySignin, useAdminPrivateKeySignin } from "../use-admin-signin";
@@ -64,8 +62,6 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
 
   const [encryptedKey, setEncryptedKey] = useState<string | null>(null);
   const [passphrase, setPassphrase] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [pastedKey, setPastedKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   // A mutation, though nothing leaves the browser, so the update banner's
   // pending-mutation check holds a reload until the unlock finishes.
@@ -86,7 +82,6 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
     }
   }
 
-  /** Shared by the reader and the advanced field — both yield the same payload. */
   function consumePayload(raw: string) {
     setError(null);
     const parsed = parsePaperWalletImportPayload(raw);
@@ -96,7 +91,6 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
     }
     if (parsed.type === "encrypted") {
       setEncryptedKey(parsed.encryptedKey);
-      setPastedKey("");
       return;
     }
     setError(parsed.error);
@@ -238,55 +232,6 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
                     Signing in...
                   </p>
                 ) : null}
-
-                <div className="border-border border-t pt-3">
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:text-foreground flex w-full items-center justify-center gap-1 text-xs underline-offset-4 hover:underline"
-                    aria-expanded={showAdvanced}
-                    onClick={() => {
-                      setShowAdvanced((open) => !open);
-                      setError(null);
-                    }}
-                  >
-                    Advanced
-                    <FiChevronDown
-                      className={`size-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-                    />
-                  </button>
-
-                  {showAdvanced ? (
-                    <form
-                      className="mt-3 space-y-3"
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        consumePayload(pastedKey);
-                      }}
-                    >
-                      <SectionLabel>Private key</SectionLabel>
-                      <Textarea
-                        value={pastedKey}
-                        onChange={(event) => setPastedKey(event.target.value)}
-                        // Covers all three accepted forms without a paragraph
-                        // explaining them.
-                        placeholder="0x…, 6P…, or a wallet link"
-                        className="min-h-16 font-mono text-xs"
-                        aria-label="Private key"
-                        aria-invalid={!!error}
-                        spellCheck={false}
-                      />
-                      <Button
-                        type="submit"
-                        variant="outline"
-                        className="w-full"
-                        disabled={!pastedKey.trim() || busy}
-                      >
-                        <FiKey />
-                        Sign in with private key
-                      </Button>
-                    </form>
-                  ) : null}
-                </div>
               </>
             )}
           </div>
