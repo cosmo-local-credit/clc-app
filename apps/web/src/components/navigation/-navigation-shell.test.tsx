@@ -169,6 +169,7 @@ describe("NavigationShell", () => {
     ["/pools/0x1111111111111111111111111111111111111111", "Wallet"],
     ["/wallet/vouchers", "Wallet"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=market", "Market"],
+    ["/vouchers/0x2222222222222222222222222222222222222222?from=posts&reportId=report-1", "Posts"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=wallet", "Wallet"],
     [
       "/vouchers/0x2222222222222222222222222222222222222222?from=market&poolAddress=0x1111111111111111111111111111111111111111",

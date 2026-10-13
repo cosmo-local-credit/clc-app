@@ -111,20 +111,6 @@ vi.mock("#/features/home/hooks/use-filtered-market-vouchers", async (importOrigi
   };
 });
 
-// The card is covered on its own; here only that a voucher opens it.
-const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
-
-vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: null,
-    voucherTab: "offerings",
-    open: voucherSheet.open,
-    close: () => {},
-  }),
-}));
-
-vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
-
 vi.mock("@tanstack/react-router", () => ({
   useSearch: () => mocks.search,
   useNavigate: () => mocks.navigate,
@@ -306,7 +292,7 @@ describe("MarketListPage", () => {
     const list = screen.getByLabelText("Vouchers list");
     expect(
       within(list)
-        .getAllByRole("button")
+        .getAllByRole("link")
         .map((row) => row.textContent),
     ).toEqual([
       expect.stringContaining("Near voucher"),
@@ -327,7 +313,7 @@ describe("MarketListPage", () => {
     render(<MarketListPage />);
 
     const list = screen.getByLabelText("Vouchers list");
-    expect(within(list).getAllByRole("button")).toHaveLength(20);
+    expect(within(list).getAllByRole("link")).toHaveLength(20);
 
     act(() => {
       mocks.intersectionCallback?.(
@@ -336,7 +322,7 @@ describe("MarketListPage", () => {
       );
     });
 
-    expect(within(list).getAllByRole("button")).toHaveLength(25);
+    expect(within(list).getAllByRole("link")).toHaveLength(25);
   });
 
   it("keeps location controls out of the list view and links to the canonical map", () => {
@@ -443,19 +429,17 @@ describe("MarketListPage", () => {
 
     expect(container.querySelector('img[src="https://content.example/voucher.png"]')).toBeTruthy();
   });
-  it("opens a voucher's card in place rather than leaving the list", () => {
-    voucherSheet.open.mockClear();
+  it("links a voucher directly to its canonical page", () => {
     mocks.catalog = {
       ...mocks.catalog,
       vouchers: [voucher(1, -1.29, 36.82, { name: "Near voucher" })],
     };
 
     render(<MarketListPage />);
-    const row = within(screen.getByLabelText("Vouchers list")).getByRole("button");
-    fireEvent.click(row);
-
-    expect(row.tagName).toBe("BUTTON");
-    expect(voucherSheet.open).toHaveBeenCalledWith(mocks.catalog.vouchers[0]!.address);
+    const row = within(screen.getByLabelText("Vouchers list")).getByRole("link");
+    expect(row.getAttribute("href")).toBe(
+      `/vouchers/${mocks.catalog.vouchers[0]!.address}?from=market`,
+    );
   });
 
   it("preserves the filter when linking to the map", () => {
@@ -511,7 +495,7 @@ describe("MarketListPage search", () => {
     render(<MarketListPage />);
 
     const list = screen.getByRole("region", { name: "Vouchers list" });
-    expect(within(list).getAllByRole("button")).toHaveLength(1);
+    expect(within(list).getAllByRole("link")).toHaveLength(1);
     expect(list.getAttribute("aria-busy")).toBe("true");
     expect(screen.queryByText("No vouchers match this search.")).toBeNull();
   });
@@ -656,17 +640,17 @@ describe("MarketListPage filter transitions", () => {
         {} as IntersectionObserver,
       );
     });
-    expect(within(list).getAllByRole("button")).toHaveLength(25);
+    expect(within(list).getAllByRole("link")).toHaveLength(25);
 
     mocks.catalog = { ...mocks.catalog, vouchers: [...many, voucher(99, -1.4, 36.9)] };
     rerender(<MarketListPage />);
-    expect(within(screen.getByLabelText("Vouchers list")).getAllByRole("button")).toHaveLength(25);
+    expect(within(screen.getByLabelText("Vouchers list")).getAllByRole("link")).toHaveLength(25);
 
     mocks.search = { q: "art" };
     mocks.filtered = { ...mocks.filtered, data: { vouchers: many, tagFacets: null } };
     rerender(<MarketListPage />);
     await settleDebounce();
-    expect(within(screen.getByLabelText("Vouchers list")).getAllByRole("button")).toHaveLength(20);
+    expect(within(screen.getByLabelText("Vouchers list")).getAllByRole("link")).toHaveLength(20);
   });
 });
 

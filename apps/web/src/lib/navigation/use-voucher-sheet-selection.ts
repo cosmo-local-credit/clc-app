@@ -22,9 +22,9 @@ export type VoucherSheetSelection = {
 };
 
 /**
- * The voucher card's selection, kept in the URL of whichever screen opened it,
- * so Back, a refresh and a shared link all keep it. Every route that opens the
- * card accepts `VoucherSheetSearch`.
+ * The map voucher card's selection, kept in the map URL so Back, a refresh and
+ * a shared link all keep it. Non-map voucher links use the canonical voucher
+ * page instead.
  *
  * Each opened card costs one history entry: the first tap pushes it and marks
  * it, another voucher while a card is open replaces it and keeps the mark, and

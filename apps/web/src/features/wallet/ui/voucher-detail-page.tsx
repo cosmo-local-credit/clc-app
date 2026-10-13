@@ -33,26 +33,30 @@ export function VoucherDetailPage({
   activeTab,
   origin = "market",
   poolAddress,
+  reportId,
 }: {
   voucherAddress: string;
   /** A legacy tab URL now identifies the section to focus on first render. */
   activeTab?: VoucherDetailSection;
   origin?: VoucherOrigin;
   poolAddress?: string;
+  reportId?: string;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const auth = useAuthStatus();
-  const voucherNavigation = resolveVoucherNavigationOwner({ from: origin, poolAddress });
+  const voucherNavigation = resolveVoucherNavigationOwner({ from: origin, poolAddress, reportId });
   const back = {
     label:
       voucherNavigation.backDestination === "pool"
         ? t`Pool`
-        : voucherNavigation.backDestination === "wallet"
-          ? t`Wallet`
-          : voucherNavigation.backDestination === "vouchers"
-            ? t`Vouchers`
-            : t`Market`,
+        : voucherNavigation.backDestination === "posts"
+          ? t`Posts`
+          : voucherNavigation.backDestination === "wallet"
+            ? t`Wallet`
+            : voucherNavigation.backDestination === "vouchers"
+              ? t`Vouchers`
+              : t`Market`,
     to: voucherNavigation.to,
     search: voucherNavigation.search,
   };

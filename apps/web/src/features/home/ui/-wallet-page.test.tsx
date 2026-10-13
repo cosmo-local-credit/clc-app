@@ -1,20 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-
-// The card is covered on its own; here only that a voucher opens it.
-const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
-
-vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: null,
-    voucherTab: "offerings",
-    open: voucherSheet.open,
-    close: () => {},
-  }),
-}));
-
-vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => vi.fn(),
@@ -214,14 +200,14 @@ describe("WalletPage", () => {
     expect(logo?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("opens a balance's card on the wallet rather than leaving for its page", async () => {
-    voucherSheet.open.mockClear();
+  it("links a balance to its canonical voucher page", async () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    fireEvent.click((await screen.findByText("USD₮")).closest("button")!);
-
-    expect(voucherSheet.open).toHaveBeenCalledWith("0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e");
+    const voucher = (await screen.findByText("USD₮")).closest("a");
+    expect(voucher?.getAttribute("href")).toBe(
+      "/vouchers/0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e?from=wallet",
+    );
   });
 
   it("lists vouchers the account issued separately from the ones it holds", async () => {

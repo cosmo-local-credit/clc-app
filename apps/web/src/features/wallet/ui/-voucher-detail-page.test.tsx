@@ -529,6 +529,12 @@ afterEach(() => {
 });
 
 describe("VoucherDetailPage", () => {
+  it("returns a related voucher to its source Post", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} origin="posts" reportId="3182" />);
+
+    expect(screen.getByRole("link", { name: "Posts" }).getAttribute("href")).toBe("/posts/3182");
+  });
+
   it("shows voucher creation as new supply without exposing the zero address", async () => {
     const zeroAddress = "0x0000000000000000000000000000000000000000";
     mocks.transfers = [

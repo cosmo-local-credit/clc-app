@@ -50,12 +50,10 @@ export function useVoucherSheetSnap(isOpen: boolean) {
 }
 
 /**
- * The card a voucher opens, wherever it is tapped: the market, the wallet, a
- * pool or a post. It shows the essentials at the peek, then one continuous
- * offerings-and-reviews view from half onward. Only its own button leaves for
- * the complete voucher page.
+ * The card a map voucher opens. It shows the essentials at the peek, then the
+ * same continuous voucher experience as the canonical page from half onward.
  *
- * The selection lives in the opening screen's URL (`useVoucherSheetSelection`).
+ * The selection lives in the map URL (`useVoucherSheetSelection`).
  * Everything below the peek mounts the first time its tier is reached and
  * stays mounted after a collapse, so its queries run once per card.
  */

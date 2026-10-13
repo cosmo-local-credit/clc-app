@@ -33,6 +33,23 @@ describe("resolveVoucherNavigationOwner", () => {
     });
   });
 
+  it("keeps a related voucher Posts-owned and returns to its source post", () => {
+    expect(resolveVoucherNavigationOwner({ from: "posts", reportId: "3182" })).toEqual({
+      activeTab: "posts",
+      backDestination: "posts",
+      to: "/posts/3182",
+    });
+  });
+
+  it("falls back to the Posts list when a post origin has no report id", () => {
+    expect(resolveVoucherNavigationOwner({ from: "posts" })).toEqual({
+      activeTab: "posts",
+      backDestination: "posts",
+      to: "/",
+      search: { tab: "posts" },
+    });
+  });
+
   it.each([undefined, "market"] as const)("defaults %s origins to Market", (from) => {
     expect(resolveVoucherNavigationOwner({ from })).toEqual({
       activeTab: "market",

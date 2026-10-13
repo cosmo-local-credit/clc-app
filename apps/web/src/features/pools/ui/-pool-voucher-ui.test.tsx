@@ -81,35 +81,33 @@ const {
   swapTransferState: { error: null as Error | null, isPending: false },
 }));
 
-// The card is covered on its own; here only that a voucher opens it.
-const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
-
-vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: null,
-    voucherTab: "offerings",
-    open: voucherSheet.open,
-    close: () => {},
-  }),
-}));
-
-vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
-
 vi.mock("@tanstack/react-router", () => ({
   // Router props are dropped, but ARIA and identity props are forwarded: the
   // pool tab strip is built from Links and its roles are part of the contract.
   Link: ({
     children,
-    to: _to,
-    params: _params,
-    search: _search,
+    to,
+    params,
+    search,
     replace: _replace,
     resetScroll: _resetScroll,
     preload: _preload,
     ...props
-  }: Record<string, unknown> & { children?: React.ReactNode }) => (
-    <a {...(props as React.ComponentProps<"a">)}>{children}</a>
-  ),
+  }: Record<string, unknown> & { children?: React.ReactNode }) => {
+    const path = Object.entries((params as Record<string, string> | undefined) ?? {}).reduce(
+      (value, [key, replacement]) => value.replace(`$${key}`, replacement),
+      String(to),
+    );
+    const query =
+      typeof search === "object" && search !== null
+        ? new URLSearchParams(search as Record<string, string>).toString()
+        : "";
+    return (
+      <a href={query ? `${path}?${query}` : path} {...(props as React.ComponentProps<"a">)}>
+        {children}
+      </a>
+    );
+  },
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => false,
   useNavigate: () => navigate,
@@ -646,15 +644,15 @@ describe("pool voucher UI", () => {
     expect(within(panel).queryByRole("progressbar")).toBeNull();
   });
 
-  it("opens a holding's card over the pool", async () => {
-    voucherSheet.open.mockClear();
+  it("links a holding directly to its canonical voucher page", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
 
     const panel = await screen.findByRole("tabpanel");
-    fireEvent.click(await within(panel).findByRole("button", { name: /Trade Token/ }));
-
-    expect(voucherSheet.open).toHaveBeenCalledWith(TTX_ADDRESS);
+    const holding = await within(panel).findByRole("link", { name: /Trade Token/ });
+    expect(holding.getAttribute("href")).toBe(
+      `/vouchers/${TTX_ADDRESS}?poolAddress=${POOL_ADDRESS}`,
+    );
   });
 
   it("draws each holding as a bar measured against the largest one", async () => {

@@ -8,7 +8,6 @@ import {
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
@@ -16,39 +15,43 @@ import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
-import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
-function WalletVoucherRows({
-  tokens,
-  onOpen,
-}: {
-  tokens: readonly WalletToken[];
-  onOpen: (address: `0x${string}`) => void;
-}) {
-  return tokens.map((token, index, list) => (
-    <button
-      key={token.id}
-      type="button"
-      className={[
-        "flex w-full items-center gap-3 p-3 text-start",
-        index < list.length - 1 ? "border-b border-border" : "",
-      ].join(" ")}
-      onClick={() => {
-        const address = parseVoucherAddress(token.contractAddress ?? token.id);
-        if (address) onOpen(address);
-      }}
-    >
-      <TokenLogo token={token} size={34} />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
-        <p className="text-muted-foreground truncate text-xs">{token.name}</p>
+function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
+  return tokens.map((token, index, list) => {
+    const address = parseVoucherAddress(token.contractAddress ?? token.id);
+    const className = [
+      "flex w-full items-center gap-3 p-3 text-start",
+      index < list.length - 1 ? "border-b border-border" : "",
+    ].join(" ");
+    const content = (
+      <>
+        <TokenLogo token={token} size={34} />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
+          <p className="text-muted-foreground truncate text-xs">{token.name}</p>
+        </div>
+        <div className="shrink-0 text-end">
+          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
+        </div>
+      </>
+    );
+    return address ? (
+      <Link
+        key={token.id}
+        to="/vouchers/$voucherAddress"
+        params={{ voucherAddress: address }}
+        search={{ from: "wallet" }}
+        className={className}
+      >
+        {content}
+      </Link>
+    ) : (
+      <div key={token.id} className={className}>
+        {content}
       </div>
-      <div className="shrink-0 text-end">
-        <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
-      </div>
-    </button>
-  ));
+    );
+  });
 }
 
 /** Balances whose issuer has not resolved yet, below the rows that have. */
@@ -107,8 +110,6 @@ export function WalletPage({ address }: { address?: string }) {
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
   const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
-  const sheet = useVoucherSheetSelection();
-  const sheetToken = vouchers.find((token) => token.id === sheet.voucher?.toLowerCase());
   const voucherGroups = usePartitionedVouchers(vouchers, address);
   // Rows are grouped as their owners arrive. The list waits, or fails, as a
   // whole only until the first one lands; after that an unresolved row is a
@@ -219,7 +220,7 @@ export function WalletPage({ address }: { address?: string }) {
             <section aria-labelledby="holdings-title">
               <SectionHeader id="holdings-title" title={<Trans>Holdings</Trans>} />
               <div className="border-border bg-card border">
-                <WalletVoucherRows tokens={voucherGroups.holdings} onOpen={sheet.open} />
+                <WalletVoucherRows tokens={voucherGroups.holdings} />
               </div>
             </section>
           ) : null}
@@ -247,7 +248,7 @@ export function WalletPage({ address }: { address?: string }) {
                   </Button>
                 </div>
               ) : (
-                <WalletVoucherRows tokens={voucherGroups.issued} onOpen={sheet.open} />
+                <WalletVoucherRows tokens={voucherGroups.issued} />
               )}
               <UnresolvedVouchersRow
                 pending={voucherGroups.pending}
@@ -333,14 +334,6 @@ export function WalletPage({ address }: { address?: string }) {
       </section>
 
       <MyCatalogSection />
-
-      <VoucherSheet
-        placeholder={
-          sheetToken
-            ? { name: sheetToken.name, symbol: sheetToken.symbol, iconUrl: sheetToken.iconUrl }
-            : null
-        }
-      />
     </div>
   );
 }
