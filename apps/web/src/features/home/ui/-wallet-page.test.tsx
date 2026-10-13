@@ -240,6 +240,15 @@ describe("WalletPage", () => {
     expect(screen.getByText("You didn't issue any of these.")).toBeTruthy();
   });
 
+  it("hides a retired indexed balance and shows the empty wallet state", async () => {
+    mockLatestTokens({ tokens: [{ ...ISSUED, catalogActive: false }], detailStatus: 404 });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("No vouchers yet.")).toBeTruthy();
+    expect(screen.queryByText("WLLR")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
+  });
+
   it("does not file balances while the catalog read is down", async () => {
     mockLatestTokens({ detailStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);

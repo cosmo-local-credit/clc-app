@@ -11,6 +11,7 @@ import { CELO_MAINNET_CUSD_ADDRESS } from "@clc/core/lib/constants/celo";
 type TokenKind = "stable" | "voucher";
 
 export type WalletToken = {
+  catalogActive?: boolean;
   id: string;
   symbol: string;
   name: string;

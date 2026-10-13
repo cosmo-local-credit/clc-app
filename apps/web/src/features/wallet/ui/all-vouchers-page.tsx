@@ -168,7 +168,10 @@ export function AllVouchersPage() {
               </Button>
             </div>
           ) : null}
-          {vouchersQuery.isSuccess && vouchers.length === 0 ? (
+          {vouchersQuery.isSuccess &&
+          !resolved &&
+          !voucherGroups.pending &&
+          !voucherGroups.failed ? (
             <div className="flex min-h-14 items-center justify-between gap-3 p-3">
               <p className="text-muted-foreground text-sm">
                 <Trans>No vouchers yet.</Trans>

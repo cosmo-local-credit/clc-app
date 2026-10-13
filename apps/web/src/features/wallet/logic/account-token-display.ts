@@ -6,6 +6,7 @@ import type { WalletToken } from "#/components/wallet/wallet-data";
 export function accountTokenToWalletToken(token: AccountToken): WalletToken {
   return {
     id: token.tokenAddress.toLowerCase(),
+    catalogActive: token.catalogActive,
     symbol: token.tokenSymbol,
     name: token.tokenName,
     amount: formatTokenAmount(token.balance, token.tokenDecimals),
