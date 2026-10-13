@@ -24,6 +24,7 @@ import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import { cn } from "#/lib/utils";
 import { MarketFilterSheet, MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
@@ -249,7 +250,10 @@ export function MarketPage({
       <MarketplaceSearchShell
         current="map"
         surface="map"
-        className="absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30"
+        className={cn(
+          "absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)]",
+          isCardOpen ? "z-20" : "z-30",
+        )}
         search={<CatalogSearchField filter={filter} label={t`Search the marketplace`} />}
         credit={
           <CreditableBrowseControl
@@ -381,6 +385,7 @@ export function MarketPage({
         onSnapChange={setSnap}
         onCoveredHeightChange={handleCoveredHeightChange}
         floating={locationButton}
+        bottomNavigationVisible={isAuthenticated}
       />
     </main>
   );

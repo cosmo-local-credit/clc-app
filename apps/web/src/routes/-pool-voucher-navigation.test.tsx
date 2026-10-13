@@ -86,23 +86,32 @@ describe("pool voucher navigation", () => {
       </QueryClientProvider>,
     );
 
-    // The row opens the voucher's card; its page is the card's last link.
+    // The row opens the complete voucher experience in the pool's sheet.
     const voucherRow = (await screen.findByText("Trade Token")).closest("button");
     if (!voucherRow) throw new Error("Pool voucher row is not a button");
     fireEvent.click(voucherRow);
     const dialog = await screen.findByRole("dialog", { name: "Trade Token" });
     fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
-    const openVoucher = (await within(dialog).findByText("Open voucher page")).closest("a");
-    if (!openVoucher) throw new Error("Open voucher page is not a link");
-    fireEvent.click(openVoucher);
+    expect(await within(dialog).findByRole("heading", { name: "Info" })).toBeTruthy();
+    expect(within(dialog).queryByRole("link", { name: "Open voucher page" })).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Trade Token" })).toBeNull());
+
+    // Dedicated voucher links elsewhere still retain their pool-aware Back
+    // destination even though the now-complete sheet no longer needs an exit.
+    await act(async () => {
+      await router.navigate({
+        to: "/vouchers/$voucherAddress",
+        params: { voucherAddress: TOKEN_ADDRESS.toLowerCase() },
+        search: { poolAddress: POOL_ADDRESS },
+      });
+    });
 
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/vouchers/${TOKEN_ADDRESS.toLowerCase()}`);
       expect(history.location.search).toBe(`?poolAddress=${POOL_ADDRESS}`);
     });
-    expect(await screen.findByText("Trade Token")).toBeTruthy();
-    expect(screen.getByLabelText("Balance").textContent).toMatch(/0\s*TTX/);
+    expect(await screen.findByRole("heading", { level: 1, name: "Trade Token" })).toBeTruthy();
 
     const poolBackLink = screen.getByText("Pool").closest("a");
     if (!poolBackLink) throw new Error("Pool back action is not a link");
@@ -110,13 +119,11 @@ describe("pool voucher navigation", () => {
       fireEvent.click(poolBackLink);
     });
 
-    // Back lands on the pool with the card it was opened from still open over
-    // it; the pool sits behind the card's backdrop until the card closes.
+    // Back lands on the originating pool. The complete sheet was already
+    // closed before following the dedicated page route.
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
-      expect(
-        screen.getAllByText("Trade Token").some((label) => label.closest('[role="dialog"]')),
-      ).toBe(true);
+      expect(screen.queryByRole("dialog", { name: "Trade Token" })).toBeNull();
       expect(screen.getByText("Trade Pool")).toBeTruthy();
     });
   }, 10_000);

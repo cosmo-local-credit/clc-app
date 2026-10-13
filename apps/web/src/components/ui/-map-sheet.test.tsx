@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
@@ -10,12 +10,16 @@ function Harness({
   onSnapChange,
   onClose = vi.fn(),
   onCoveredHeightChange,
+  minimumPeekRatio,
+  underBottomNavigation,
 }: {
   initialSnap?: MapSheetSnap;
   modal?: boolean;
   onSnapChange?: (snap: MapSheetSnap) => void;
   onClose?: () => void;
   onCoveredHeightChange?: (height: number, snap: MapSheetSnap) => void;
+  minimumPeekRatio?: number;
+  underBottomNavigation?: boolean;
 }) {
   const [snap, setSnap] = useState<MapSheetSnap>(initialSnap);
   return (
@@ -29,6 +33,8 @@ function Harness({
       }}
       onClose={onClose}
       onCoveredHeightChange={onCoveredHeightChange}
+      minimumPeekRatio={minimumPeekRatio}
+      underBottomNavigation={underBottomNavigation}
     >
       <MapSheetPeek>
         <MapSheetTitle>Mama Mboga</MapSheetTitle>
@@ -87,15 +93,14 @@ describe("MapSheet", () => {
     expect(screen.getByRole("dialog", { name: "Mama Mboga" })).toBeTruthy();
   });
 
-  it("steps through every snap point from the handle and reports each one", () => {
+  it("opens fully with one handle click and collapses back to peek", () => {
     const onSnapChange = vi.fn();
     render(<Harness onSnapChange={onSnapChange} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
     fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
 
-    expect(onSnapChange.mock.calls).toEqual([["half"], ["full"], ["peek"]]);
+    expect(onSnapChange.mock.calls).toEqual([["full"], ["peek"]]);
   });
 
   it("gives the mouse drag handle a full touch target", () => {
@@ -105,6 +110,27 @@ describe("MapSheet", () => {
     expect(handle.className).toContain("h-11");
     expect(handle.className).toContain("cursor-ns-resize");
     expect(handle.className).toContain("touch-none");
+  });
+
+  it("supports a taller initial peek and sits beneath bottom navigation", async () => {
+    const onCoveredHeightChange = vi.fn();
+    render(
+      <Harness
+        minimumPeekRatio={1 / 3}
+        underBottomNavigation
+        onCoveredHeightChange={onCoveredHeightChange}
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Mama Mboga" });
+    expect(dialog.parentElement?.className).toContain("z-[25]");
+    expect(scrollArea().className).toContain("pb-[calc(4rem+env(safe-area-inset-bottom))]");
+    await waitFor(() =>
+      expect(onCoveredHeightChange).toHaveBeenLastCalledWith(
+        Math.round(window.innerHeight / 3),
+        "peek",
+      ),
+    );
   });
 
   it("closes on Escape", () => {
@@ -124,10 +150,7 @@ describe("MapSheet", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
 
-    expect(onCoveredHeightChange).toHaveBeenLastCalledWith(
-      Math.round(window.innerHeight * 0.55),
-      "half",
-    );
+    expect(onCoveredHeightChange).toHaveBeenLastCalledWith(window.innerHeight, "full");
   });
 
   it("scrolls its content only at full", () => {
@@ -135,10 +158,10 @@ describe("MapSheet", () => {
     expect(scrollArea().className).toContain("overflow-hidden");
 
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    expect(scrollArea().className).toContain("overflow-hidden");
-
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
     expect(scrollArea().className).toContain("overflow-y-auto");
+
+    fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
+    expect(scrollArea().className).toContain("overflow-hidden");
   });
 
   it("measures the peek from the top of its content after collapsing from full", () => {

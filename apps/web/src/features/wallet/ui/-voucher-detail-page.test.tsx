@@ -4,7 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { ReportSummary } from "@clc/api/features/reports/client";
-vi.mock("#/components/catalogs/add-to-catalog-button", () => ({ AddToCatalogButton: () => null }));
+vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
+  AddToCatalogButton: ({ className, size }: { className?: string; size?: string }) =>
+    mocks.auth.isAuthenticated ? (
+      <button type="button" className={className} data-size={size}>
+        Add to catalog
+      </button>
+    ) : null,
+}));
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
@@ -282,7 +289,7 @@ vi.mock("#/features/images/use-image-upload", () => ({
   }),
 }));
 
-vi.mock("#/features/wallet/hooks/use-update-voucher-profile", () => ({
+vi.mock("#/features/vouchers/hooks/use-update-voucher-profile", () => ({
   useUpdateVoucherProfile: () => ({
     mutateAsync: mocks.updateProfile,
     isPending: false,
@@ -589,13 +596,16 @@ describe("VoucherDetailPage", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
     expect(screen.getByRole("heading", { name: "Priscilah Malii" })).toBeTruthy();
-    expect(screen.getByLabelText("Balance").textContent).toContain("12.34 MALII");
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("12.34 MALII (123.4 KSH)");
     expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
     expect(screen.getByRole("img", { name: "0 out of 5 stars" })).toBeTruthy();
     expect(screen.getByText("Agriculture")).toBeTruthy();
 
     const actions = screen.getByLabelText("Voucher actions");
-    expect(actions.textContent).toBe("GetSendRedeemDirectionsCallWebsite");
+    expect(actions.textContent).toBe("GetSendRedeemDirectionsCallWebsiteAdd to catalog");
+    const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
+    expect(addToCatalog.getAttribute("data-size")).toBe("sm");
+    expect(addToCatalog.className).toContain("h-9");
     expect(within(actions).getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
       `/market?scope=pools&out_voucher=${ADDRESS.toLowerCase()}`,
     );
@@ -831,14 +841,11 @@ describe("VoucherDetailPage", () => {
   });
 
   it("shows zero when the account has no balance for the voucher", () => {
-    render(
-      <VoucherDetailPage
-        voucherAddress="0x9990000000000000000000000000000000000999"
-        activeTab="offerings"
-      />,
-    );
+    const unheldAddress = "0x9990000000000000000000000000000000000999";
+    mocks.detailResult.data = detail({ address: unheldAddress });
+    render(<VoucherDetailPage voucherAddress={unheldAddress} activeTab="offerings" />);
 
-    expect(screen.getByLabelText("Balance").textContent).toContain("0 MALII");
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("0 MALII (0 KSH)");
   });
 
   it("keeps the profile image hidden behind a skeleton until load and omits the banner", () => {

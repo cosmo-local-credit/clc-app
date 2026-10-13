@@ -9,7 +9,7 @@ import {
   useParams,
   useSearch,
 } from "@tanstack/react-router";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
@@ -276,13 +276,21 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** The card's own link to the page sits at its full tier. */
-async function openVoucherPageFromCard() {
+/** Inspect the complete sheet, then follow a dedicated voucher route. */
+async function openVoucherPageAfterInspectingSheet(router: ReturnType<typeof renderAt>) {
   fireEvent.click(screen.getByTestId("marker-2710"));
-  await screen.findByRole("dialog", { name: "Priscilah Malii" });
-  fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-  fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-  fireEvent.click(await screen.findByRole("link", { name: "Open voucher page" }));
+  const dialog = await screen.findByRole("dialog", { name: "Priscilah Malii" });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
+  expect(await within(dialog).findByRole("heading", { name: "Info" })).toBeTruthy();
+  expect(within(dialog).queryByRole("link", { name: "Open voucher page" })).toBeNull();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("dialog", { name: "Priscilah Malii" })).toBeNull());
+  await act(async () => {
+    await router.navigate({
+      to: "/vouchers/$voucherAddress",
+      params: { voucherAddress: VOUCHER_ADDRESS },
+    });
+  });
 }
 
 describe("voucher navigation", () => {
@@ -290,7 +298,7 @@ describe("voucher navigation", () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
-    await openVoucherPageFromCard();
+    await openVoucherPageAfterInspectingSheet(router);
 
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(router.state.location.pathname).toBe(`/vouchers/${VOUCHER_ADDRESS}`);
@@ -337,7 +345,7 @@ describe("voucher navigation", () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
-    await openVoucherPageFromCard();
+    await openVoucherPageAfterInspectingSheet(router);
     await waitFor(() => expect(router.state.location.pathname).not.toBe("/"));
 
     // Rendered from cache: detail-backed info is already part of the page.

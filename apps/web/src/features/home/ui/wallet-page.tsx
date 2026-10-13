@@ -340,7 +340,6 @@ export function WalletPage({ address }: { address?: string }) {
             ? { name: sheetToken.name, symbol: sheetToken.symbol, iconUrl: sheetToken.iconUrl }
             : null
         }
-        origin={{ from: "wallet" }}
       />
     </div>
   );
