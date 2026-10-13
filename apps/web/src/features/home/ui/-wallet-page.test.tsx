@@ -1,22 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
-import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
-
-// The card is covered on its own; here only that a voucher opens it.
-const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
-
-vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: null,
-    voucherTab: "offerings",
-    open: voucherSheet.open,
-    close: () => {},
-  }),
-}));
-
-vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => vi.fn(),
@@ -49,6 +33,9 @@ vi.mock("@tanstack/react-router", () => ({
 
 // The profile nudge reads the connected wallet; it has its own test.
 vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
+vi.mock("#/components/catalogs/my-catalog-section", () => ({
+  MyCatalogSection: () => <section aria-label="My catalog">My catalog</section>,
+}));
 
 import { WalletPage } from "./wallet-page";
 
@@ -185,32 +172,19 @@ describe("WalletPage", () => {
     expect(screen.queryByText(/total balance/i)).toBeNull();
   });
 
-  it("keeps Cash visible and disables it only when this chain has no ramp", () => {
+  it("shows only Send, Receive, and Cash shortcuts", () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
-    expect(screen.getByRole("link", { name: /send/i }).getAttribute("href")).toBe("/wallet/send");
-    expect(screen.getByRole("link", { name: /receive/i }).getAttribute("href")).toBe(
+    const actions = within(screen.getByRole("region", { name: "Wallet actions" }));
+    expect(actions.getByRole("link", { name: /send/i }).getAttribute("href")).toBe("/wallet/send");
+    expect(actions.getByRole("link", { name: /receive/i }).getAttribute("href")).toBe(
       "/wallet/receive",
     );
-    // Exact, not /pools/i: the Your Pools header also links out to "All pools".
-    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
-      "/pools?creditable=true",
-    );
+    expect(actions.getByRole("link", { name: /cash/i }).getAttribute("href")).toBe("/wallet/cash");
+    expect(actions.queryByRole("link", { name: "Pools" })).toBeNull();
+    expect(actions.queryByRole("link", { name: "Catalogs" })).toBeNull();
     expect(screen.getByRole("link", { name: "All pools" }).getAttribute("href")).toBe("/pools");
     expect(screen.queryByRole("link", { name: /swap/i })).toBeNull();
-
-    if (chainHasPretiumRamp(CHAIN_ID)) {
-      expect(screen.getByRole("link", { name: /cash/i }).getAttribute("href")).toBe(
-        "/wallet/top-up",
-      );
-      expect(screen.queryByRole("button", { name: /cash/i })).toBeNull();
-      return;
-    }
-
-    const cash = screen.getByRole("button", { name: /cash/i }) as HTMLButtonElement;
-    expect(cash.disabled).toBe(true);
-    expect(cash.title).toBe(`Cash services aren't available on ${CHAIN_INFO.name}.`);
-    expect(screen.queryByRole("link", { name: /cash/i })).toBeNull();
   });
 
   it("shows fetched voucher balances with real logos", async () => {
@@ -226,14 +200,14 @@ describe("WalletPage", () => {
     expect(logo?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("opens a balance's card on the wallet rather than leaving for its page", async () => {
-    voucherSheet.open.mockClear();
+  it("links a balance to its canonical voucher page", async () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    fireEvent.click((await screen.findByText("USD₮")).closest("button")!);
-
-    expect(voucherSheet.open).toHaveBeenCalledWith("0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e");
+    const voucher = (await screen.findByText("USD₮")).closest("a");
+    expect(voucher?.getAttribute("href")).toBe(
+      "/vouchers/0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e?from=wallet",
+    );
   });
 
   it("lists vouchers the account issued separately from the ones it holds", async () => {
@@ -244,7 +218,7 @@ describe("WalletPage", () => {
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
-    const issued = within(screen.getByRole("region", { name: "Your Vouchers" }));
+    const issued = within(screen.getByRole("region", { name: "My Vouchers" }));
     expect(holdings.getByText("USD₮")).toBeTruthy();
     expect(holdings.queryByText("WLLR")).toBeNull();
     expect(issued.getByText("WLLR")).toBeTruthy();
@@ -252,7 +226,9 @@ describe("WalletPage", () => {
     expect(issued.queryByText("USD₮")).toBeNull();
 
     const text = document.body.textContent ?? "";
-    expect(text.indexOf("Holdings")).toBeLessThan(text.indexOf("Your Vouchers"));
+    expect(text.indexOf("Holdings")).toBeLessThan(text.indexOf("My Vouchers"));
+    expect(text.indexOf("My Vouchers")).toBeLessThan(text.indexOf("My Pools"));
+    expect(text.indexOf("My Pools")).toBeLessThan(text.indexOf("My catalog"));
   });
 
   it("treats a token the catalog does not list as a holding", async () => {

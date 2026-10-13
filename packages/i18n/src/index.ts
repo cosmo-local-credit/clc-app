@@ -24,12 +24,18 @@ const catalogLoaders: Record<SupportedLocale, () => Promise<{ messages: Messages
   dz: () => import("./catalogs/dz/messages.po"),
   en: async () => ({ messages: enMessages }),
   es: () => import("./catalogs/es/messages.po"),
+  fil: () => import("./catalogs/fil/messages.po"),
   fr: () => import("./catalogs/fr/messages.po"),
+  hi: () => import("./catalogs/hi/messages.po"),
   it: () => import("./catalogs/it/messages.po"),
+  nl: () => import("./catalogs/nl/messages.po"),
+  "nl-BE": () => import("./catalogs/nl-BE/messages.po"),
   pt: () => import("./catalogs/pt/messages.po"),
   sr: () => import("./catalogs/sr/messages.po"),
   sw: () => import("./catalogs/sw/messages.po"),
   uk: () => import("./catalogs/uk/messages.po"),
+  zh: () => import("./catalogs/zh/messages.po"),
+  "zh-Hant": () => import("./catalogs/zh-Hant/messages.po"),
 };
 
 const loadedLocales = new Set<SupportedLocale>();

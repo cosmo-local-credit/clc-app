@@ -82,6 +82,17 @@ describe("voucherKeys", () => {
       voucherKeys.filtered(FILTER, 20),
     );
   });
+
+  it("isolates filtered caches by verified pool references and normalizes casing", () => {
+    const pools = [{ chainId: 100, address: ADDRESS }];
+    expect(voucherKeys.filtered(FILTER, 20, pools)).toEqual(
+      voucherKeys.filtered(FILTER, 20, [{ chainId: 100, address: ADDRESS.toLowerCase() }]),
+    );
+    expect(voucherKeys.filtered(FILTER, 20, pools)).not.toEqual(voucherKeys.filtered(FILTER, 20));
+    expect(voucherKeys.filteredPage({ perPage: 20, filter: FILTER, pools })).not.toEqual(
+      voucherKeys.filteredPage({ perPage: 20, filter: FILTER }),
+    );
+  });
 });
 
 describe("nextMarketCursor", () => {

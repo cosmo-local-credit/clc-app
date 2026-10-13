@@ -6,12 +6,18 @@ import { completeProfileStep, expect, gotoHydrated, test } from "./fixtures";
 
 test.describe("onboarding profile", () => {
   test("does not advance when the form is empty", async ({ page }) => {
-    await gotoHydrated(page, "/onboarding");
-    await page.getByRole("button", { name: "Continue" }).click();
+    await gotoHydrated(page, "/onboarding?step=profile");
+    const continueButton = page.getByRole("button", { name: "Continue" });
+    await continueButton.scrollIntoViewIfNeeded();
+    await continueButton.click();
 
     // Still on the profile step — validation blocked the submit.
     await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Your paper wallet" })).toBeHidden();
+    const photoButton = page.getByRole("button", { name: "Add a photo" });
+    await expect(photoButton).toBeFocused();
+    await expect(photoButton).toBeInViewport();
+    await expect(photoButton).toHaveAttribute("aria-invalid", "true");
 
     await percySnapshot(page, "Onboarding — profile form validation");
   });
@@ -24,7 +30,7 @@ test.describe("onboarding profile", () => {
   });
 
   test("shows phone input field with country selector", async ({ page }) => {
-    await gotoHydrated(page, "/onboarding");
+    await gotoHydrated(page, "/onboarding?step=profile");
 
     // The phone input should be present
     const phoneInput = page.getByLabel("Phone number");

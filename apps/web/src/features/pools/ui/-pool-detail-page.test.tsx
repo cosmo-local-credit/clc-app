@@ -8,6 +8,7 @@ import type { UserPool } from "@clc/api/features/pools/client";
 const OWNER = "0xDeF0000000000000000000000000000000000456";
 const OTHER = "0x9999999999999999999999999999999999999999";
 const ADDRESS = "0xAbC0000000000000000000000000000000000123";
+vi.mock("#/components/catalogs/add-to-catalog-button", () => ({ AddToCatalogButton: () => null }));
 
 const mocks = vi.hoisted(() => ({
   auth: {
@@ -25,20 +26,6 @@ const mocks = vi.hoisted(() => ({
   },
   updateProfile: vi.fn(),
 }));
-
-// The card is covered on its own; here only that a voucher opens it.
-const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
-
-vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: null,
-    voucherTab: "offerings",
-    open: voucherSheet.open,
-    close: () => {},
-  }),
-}));
-
-vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -216,10 +203,31 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  mocks.auth.isAuthenticated = true;
+  mocks.auth.isLoading = false;
   mocks.auth.session = { address: OWNER, chainId: 100 };
 });
 
 describe("PoolDetailPage pool details editor", () => {
+  it("keeps guest browsing public while hiding wallet and private pool controls", () => {
+    mocks.auth.isAuthenticated = false;
+    mocks.auth.session = null;
+
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByTestId("offerings-panel")).toBeTruthy();
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Offerings",
+      "Vouchers",
+    ]);
+    expect(screen.queryByRole("link", { name: "Swap" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Deposit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Receive" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Holdings" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Credit" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Activity" })).toBeNull();
+  });
+
   it("offers the editor only to the pool's owner", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     const stranger = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);

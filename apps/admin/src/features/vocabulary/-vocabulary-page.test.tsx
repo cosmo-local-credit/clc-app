@@ -307,7 +307,7 @@ describe("deleting a value", () => {
     expect(screen.getByText("Clear the unit from 4 offerings.")).toBeTruthy();
   });
 
-  it("says plainly when a value has no references", async () => {
+  it("keeps deletion available when a value has no references", async () => {
     mocks.getVocabulary.mockResolvedValue({
       tags: [tag({ vouchers: 0, posts: 0, total: 0 })],
       units: [],
@@ -315,7 +315,8 @@ describe("deleting a value", () => {
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Urban Farming" }));
 
-    expect(screen.getByText("This value currently has no references.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Delete everywhere" })).toBeTruthy();
+    expect(screen.queryByText(/Remove from/)).toBeNull();
   });
 
   it("does nothing until the destructive button is pressed", async () => {

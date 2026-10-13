@@ -64,7 +64,7 @@ export function parsePoolOutputVoucher(
   return { ok: true, address: normalizedPrefix.toLowerCase() as `0x${string}` };
 }
 
-/** An optional explicit Credit choice; absence retains the page's automatic default. */
+/** An optional explicit Credit choice; absence leaves Credit off. */
 export function parsePoolCreditable(value: PoolRouteSearch["creditable"]): PoolCreditableResult {
   if (value === undefined) return { ok: true, enabled: null };
   if (typeof value === "boolean") return { ok: true, enabled: value };

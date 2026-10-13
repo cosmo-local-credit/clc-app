@@ -73,9 +73,14 @@ export function PaperWalletReader({
 
     const controller = new AbortController();
     setCameraStarting(true);
-    // No facingMode: a desktop has one webcam facing the operator, and that is
-    // the one they will hold the wallet up to.
-    startQrCamera(video, { onDecoded: onCameraDecoded, signal: controller.signal })
+    // `ideal`, not `exact`: a machine with one camera uses it whatever it faces,
+    // and one with several (a phone, a laptop with a USB camera) gets the rear one
+    // rather than the selfie lens.
+    startQrCamera(video, {
+      facingMode: "environment",
+      onDecoded: onCameraDecoded,
+      signal: controller.signal,
+    })
       .catch((err: unknown) => {
         if (!controller.signal.aborted) onCameraError(err);
       })

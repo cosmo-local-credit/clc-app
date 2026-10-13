@@ -12,10 +12,13 @@ import {
 import { Button } from "#/components/ui/button";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
-import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import {
+  formatTransferDate,
+  formatTransferUnitValue,
+} from "#/features/wallet/logic/transfer-display";
 
 export function ActivityPage({ address }: { address?: string }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const transfersQuery = useAccountTransfersInfinite(address, { poll: true });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
@@ -81,6 +84,11 @@ export function ActivityPage({ address }: { address?: string }) {
               ? RiArrowLeftDownLine
               : RiArrowRightUpLine;
           const transferDate = formatTransferDate(transfer.dateBlock);
+          const uoaLabel = formatTransferUnitValue(
+            transfer.uoaValue,
+            transfer.uoa,
+            i18n.locales?.[0] ?? i18n.locale,
+          );
           return (
             <button
               key={`${transfer.txHash}-${transfer.id}`}
@@ -141,8 +149,14 @@ export function ActivityPage({ address }: { address?: string }) {
                   ) : null}
                 </p>
               </div>
-              <span className="shrink-0 font-mono text-xs font-semibold">
-                {formatTokenAmount(transfer.amount, transfer.tokenDecimals)} {transfer.tokenSymbol}
+              <span className="shrink-0 text-end font-mono text-xs font-semibold">
+                <span className="block">
+                  {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
+                  {transfer.tokenSymbol}
+                </span>
+                {uoaLabel ? (
+                  <span className="block text-muted-foreground">({uoaLabel})</span>
+                ) : null}
               </span>
             </button>
           );

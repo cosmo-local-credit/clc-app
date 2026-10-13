@@ -107,7 +107,7 @@ describe("TransferDetailsSheet receipt sharing", () => {
     recipients.data = [{ address: TRANSFER.recipientAddress.toUpperCase(), label: "Alice" }];
     render(
       <TransferDetailsSheet
-        transfer={{ ...TRANSFER, direction: "OUT" }}
+        transfer={{ ...TRANSFER, direction: "OUT", uoaValue: "1.25", uoa: "KES" }}
         open
         onOpenChange={vi.fn()}
       />,
@@ -119,7 +119,8 @@ describe("TransferDetailsSheet receipt sharing", () => {
 
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
     const payload = share.mock.calls[0]?.[0] as { text: string };
-    expect(payload.text).toContain("I sent 1 USDC to Alice.");
+    expect(screen.getByText("(1.25 KES)")).toBeTruthy();
+    expect(payload.text).toContain("I sent 1 USDC (1.25 KES) to Alice.");
     expect(payload.text).toContain(`Address: ${TRANSFER.recipientAddress}`);
     expect(payload.text).toMatch(/Aug|8/);
     expect(payload.text).toContain(`/tx/${TRANSFER.txHash}`);
@@ -155,6 +156,19 @@ describe("TransferDetailsSheet receipt sharing", () => {
     );
     expect(share.mock.calls[0]?.[0].text).toContain(`Address: ${TRANSFER.senderAddress}`);
     expect(share.mock.calls[0]?.[0].text).not.toContain("I sent");
+  });
+
+  it("ignores incomplete historical valuation snapshots", () => {
+    render(
+      <TransferDetailsSheet
+        transfer={{ ...TRANSFER, uoaValue: "1.25" }}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText(/KES/)).toBeNull();
+    expect(screen.getByText("Amount").parentElement?.textContent).toContain("1 USDC");
   });
 
   it("prefers the current backend identity while retaining the exact address", async () => {

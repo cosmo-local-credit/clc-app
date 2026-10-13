@@ -16,7 +16,11 @@ import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { CHAIN_ID, CHAIN_ID_BIGINT } from "#/lib/chain";
 import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
-import type { RelayerClient, RelayPayload } from "@clc/api/features/relayer/client";
+import type {
+  RelayerClient,
+  RelayPayload,
+  RelayValuationSnapshot,
+} from "@clc/api/features/relayer/client";
 
 const ZERO_HASH = `0x${"00".repeat(32)}` as `0x${string}`;
 const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
@@ -38,6 +42,7 @@ export type RelayCaliburBatchInput = {
 export type RelayCaliburBatchResult = {
   trackingId: string;
   signatureType: "secp256k1" | "webauthn";
+  valuationSnapshots?: RelayValuationSnapshot[];
 };
 
 export async function relayCaliburBatch(
@@ -88,7 +93,11 @@ export async function relayCaliburBatch(
       signatureType: "webauthn",
       authorization: undefined,
     });
-    return { trackingId: result.trackingId, signatureType: "webauthn" };
+    return {
+      trackingId: result.trackingId,
+      signatureType: "webauthn",
+      ...(result.valuationSnapshots ? { valuationSnapshots: result.valuationSnapshots } : {}),
+    };
   }
 
   if (connectorId !== PRIVATE_KEY_CONNECTOR_ID) {
@@ -109,7 +118,11 @@ export async function relayCaliburBatch(
     client,
   );
   const { result } = await client.relay(payload);
-  return { trackingId: result.trackingId, signatureType: "secp256k1" };
+  return {
+    trackingId: result.trackingId,
+    signatureType: "secp256k1",
+    ...(result.valuationSnapshots ? { valuationSnapshots: result.valuationSnapshots } : {}),
+  };
 }
 
 export type SignCaliburBatchWithAccountInput = {

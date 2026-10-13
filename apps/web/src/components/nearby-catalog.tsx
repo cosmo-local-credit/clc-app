@@ -11,8 +11,8 @@ import {
   useHydratedCatalogVisibility,
 } from "#/features/home/state/catalog-visibility";
 
-// Only Market, Pools browsing, and Posts opt in. Other consumers of the same
-// catalog hooks (wallet, pickers, and details) retain ordinary reads.
+// Only Catalogs, Market, Pools browsing, and Posts opt in. Other consumers of
+// the same catalog hooks (wallet, pickers, and details) retain ordinary reads.
 const NearbyCatalogContext = createContext<string | undefined>(undefined);
 
 export type NearbyCatalogFilter = {

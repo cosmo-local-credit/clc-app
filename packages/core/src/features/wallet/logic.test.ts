@@ -59,12 +59,17 @@ describe("formatTokenAmountFixed", () => {
     ["dz", "༡༠,༠༠༠.༠༠"],
     ["en", "10,000.00"],
     ["es", "10.000,00"],
+    ["fil-PH", "10,000.00"],
     ["fr", "10 000,00"],
+    ["hi", "10,000.00"],
     ["it", "10.000,00"],
+    ["nl", "10.000,00"],
+    ["nl-BE", "10.000,00"],
     ["pt", "10.000,00"],
     ["sw", "10,000.00"],
     ["sr", "10.000,00"],
     ["uk", "10 000,00"],
+    ["zh-Hant", "10,000.00"],
   ])("groups fixed amounts for the %s locale", (locale, expected) => {
     expect(formatTokenAmountFixed("10000000000", 6, 2, locale)).toBe(expected);
   });
@@ -93,6 +98,45 @@ describe("formatTokenAmountFixed", () => {
   it("preserves large values with Italian grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "it")).toBe(
       "90.071.992.547.409.931.234,56",
+    );
+  });
+  it("preserves large values with Dutch grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "nl")).toBe(
+      "90.071.992.547.409.931.234,56",
+    );
+  });
+  it("preserves large values with Flemish grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "nl-BE")).toBe(
+      "90.071.992.547.409.931.234,56",
+    );
+  });
+  it("uses Indian grouping for Hindi values", () => {
+    expect(formatTokenAmountFixed("100000000000", 6, 2, "hi")).toBe("1,00,000.00");
+  });
+  it("preserves large values with Hindi grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "hi")).toBe(
+      "9,00,71,99,25,47,40,99,31,234.56",
+    );
+  });
+  it("uses Simplified Chinese grouping for human-facing values", () => {
+    expect(formatTokenAmountFixed("1000000000", 4, 2, "zh-CN")).toBe("100,000.00");
+  });
+  it("uses Filipino grouping for human-facing values", () => {
+    expect(formatTokenAmountFixed("1000000000", 4, 2, "fil-PH")).toBe("100,000.00");
+  });
+  it("preserves large values with Simplified Chinese grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "zh-CN")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+  it("preserves large values with Traditional Chinese grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "zh-Hant")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+  it("preserves large values with Filipino grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "fil-PH")).toBe(
+      "90,071,992,547,409,931,234.56",
     );
   });
   it("preserves large values with Portuguese grouping", () => {

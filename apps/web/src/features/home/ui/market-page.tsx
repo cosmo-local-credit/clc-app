@@ -1,9 +1,11 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
-import { RiFocus3Line, RiListUnordered } from "react-icons/ri";
+import { RiFocus3Line } from "react-icons/ri";
 
-import { AppMenu } from "#/components/app-menu";
+import { CatalogSearchField } from "#/components/catalog-filter-controls";
+import { CreditableBrowseControl } from "#/components/creditable-browse-control";
+import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
 import { Button } from "#/components/ui/button";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import { useVoucherSheetSnap, VoucherSheet } from "#/components/vouchers/voucher-sheet";
@@ -17,10 +19,13 @@ import {
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useMarketMapPools } from "#/features/home/hooks/use-market-pools";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
+import { useMarketplaceMapSearch } from "#/features/home/hooks/use-marketplace-map-search";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
+import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
-import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
+import { cn } from "#/lib/utils";
+import { MarketFilterSheet, MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
 
@@ -30,10 +35,12 @@ export function MarketPage({
   onboardingBanner,
   isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
+  creditableSearch,
 }: {
   onboardingBanner?: ReactNode;
   isAuthenticated?: boolean;
   locationOwner?: string;
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
 }) {
   const { t } = useLingui();
   const {
@@ -85,34 +92,50 @@ export function MarketPage({
       : (voucherCamera ?? savedCamera ?? automaticCamera);
 
   const filter = useMarketFilter(useStorageOwner());
-  const catalog = useMarketCatalogVouchers(filter, viewport, !filter.isRestoringPreference);
+  const credit = useCreditableBrowse(creditableSearch);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersEverOpened, setFiltersEverOpened] = useState(false);
+  const usesUnifiedSearch = filter.isFiltered || credit.enabled;
+  const catalog = useMarketCatalogVouchers(
+    filter,
+    viewport,
+    !filter.isRestoringPreference && !credit.blocksResults,
+    filtersEverOpened,
+    credit.enabled ? credit.poolRefs : undefined,
+  );
   const { vouchers, isCatalogComplete, error, retry } = catalog;
   // The filter's terms and tags are a voucher vocabulary, so a filtered map
   // shows only the vouchers it matched.
-  const poolCatalog = useMarketMapPools(!filter.isRestoringPreference && !filter.isFiltered);
+  const poolCatalog = useMarketMapPools(!filter.isRestoringPreference && !usesUnifiedSearch);
   const { pools } = poolCatalog;
+  const unifiedSearch = useMarketplaceMapSearch(
+    filter,
+    credit.enabled ? credit.poolRefs : undefined,
+    usesUnifiedSearch && !filter.isRestoringPreference && filter.result.ok && !credit.blocksResults,
+  );
   // Pools go last: a stack is keyed by its first member, so pools arriving
   // after the vouchers do not re-key a fan the viewer has open.
-  const locations = useMemo(
-    () => (pools.length === 0 ? vouchers : [...vouchers, ...pools]),
-    [vouchers, pools],
-  );
+  const locations = useMemo(() => {
+    if (usesUnifiedSearch) return unifiedSearch.locations;
+    return pools.length === 0 ? vouchers : [...vouchers, ...pools];
+  }, [pools, unifiedSearch.locations, usesUnifiedSearch, vouchers]);
 
   const fitBounds = useMemo(() => {
-    if (!filter.isFiltered || catalog.status !== "ready" || vouchers.length === 0) return null;
+    if (!usesUnifiedSearch || unifiedSearch.status !== "ready" || locations.length === 0)
+      return null;
 
-    let west = vouchers[0]!.lng;
-    let east = vouchers[0]!.lng;
-    let south = vouchers[0]!.lat;
-    let north = vouchers[0]!.lat;
-    for (const voucher of vouchers) {
-      west = Math.min(west, voucher.lng);
-      east = Math.max(east, voucher.lng);
-      south = Math.min(south, voucher.lat);
-      north = Math.max(north, voucher.lat);
+    let west = locations[0]!.lng;
+    let east = locations[0]!.lng;
+    let south = locations[0]!.lat;
+    let north = locations[0]!.lat;
+    for (const location of locations) {
+      west = Math.min(west, location.lng);
+      east = Math.max(east, location.lng);
+      south = Math.min(south, location.lat);
+      north = Math.max(north, location.lat);
     }
-    return { key: catalog.filterKey, west, south, east, north };
-  }, [filter.isFiltered, catalog.status, catalog.filterKey, vouchers]);
+    return { key: `${catalog.filterKey}:${credit.enabled}`, west, south, east, north };
+  }, [catalog.filterKey, credit.enabled, locations, unifiedSearch.status, usesUnifiedSearch]);
 
   const isCardOpen = selection.voucher !== null;
   const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
@@ -121,7 +144,10 @@ export function MarketPage({
     () => vouchers.find((voucher) => voucher.address.toLowerCase() === cardAddress) ?? null,
     [vouchers, cardAddress],
   );
-  const selectedLocationId = cardCatalogVoucher?.id ?? null;
+  const selectedLocationId =
+    locations.find(
+      (location) => "address" in location && location.address.toLowerCase() === cardAddress,
+    )?.id ?? null;
 
   const [sheetInset, setSheetInset] = useState(0);
   const handleCoveredHeightChange = useCallback((height: number, at: MapSheetSnap) => {
@@ -146,15 +172,19 @@ export function MarketPage({
   const { open } = selection;
   const handleSelectLocation = useCallback(
     (id: string) => {
-      const pool = pools.find((candidate) => candidate.id === id);
-      if (pool) {
-        void navigate({ to: "/pools/$poolAddress", params: { poolAddress: pool.address } });
+      const location = locations.find((candidate) => candidate.id === id);
+      if (!location) return;
+      if (location.kind === "pool") {
+        void navigate({
+          to: "/pools/$poolAddress",
+          params: { poolAddress: location.address },
+        });
         return;
       }
-      const voucher = vouchers.find((candidate) => candidate.id === id);
+      const voucher = "address" in location ? location : undefined;
       if (voucher) open(voucher.address);
     },
-    [navigate, open, pools, vouchers],
+    [locations, navigate, open],
   );
 
   const handleViewportSettled = useCallback((settled: MarketViewport) => {
@@ -164,6 +194,13 @@ export function MarketPage({
   // The vouchers' notice wins: their retry is the one that fills an empty map.
   const notice =
     useMarketFilterNotice(filter, error, retry) ??
+    (unifiedSearch.error
+      ? {
+          message: t`Couldn't load complete marketplace results.`,
+          actionLabel: t`Retry`,
+          onAction: unifiedSearch.retry,
+        }
+      : null) ??
     (poolCatalog.error
       ? { message: t`Couldn't load pools.`, actionLabel: t`Retry`, onAction: poolCatalog.retry }
       : null);
@@ -185,9 +222,9 @@ export function MarketPage({
   );
 
   const isEmpty =
-    vouchers.length === 0 &&
+    locations.length === 0 &&
     filter.result.ok &&
-    (filter.isFiltered ? catalog.status === "ready" : isCatalogComplete);
+    (usesUnifiedSearch ? unifiedSearch.status === "ready" : isCatalogComplete);
 
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
@@ -210,63 +247,133 @@ export function MarketPage({
         />
       </Suspense>
 
-      <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />
+      <MarketplaceSearchShell
+        current="map"
+        surface="map"
+        className={cn(
+          "absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)]",
+          isCardOpen ? "z-20" : "z-30",
+        )}
+        search={<CatalogSearchField filter={filter} label={t`Search the marketplace`} />}
+        credit={
+          <CreditableBrowseControl
+            part="control"
+            state={credit}
+            onChange={(checked) =>
+              void navigate({
+                to: "/",
+                search: (previous) => ({
+                  ...previous,
+                  tab: "market",
+                  view: "map",
+                  creditable: checked,
+                }),
+              })
+            }
+            onClear={() =>
+              void navigate({
+                to: "/",
+                replace: true,
+                search: (previous) => ({
+                  ...previous,
+                  tab: "market",
+                  view: "map",
+                  creditable: false,
+                }),
+              })
+            }
+          />
+        }
+        filters={
+          <MarketFilterSheet
+            filter={filter}
+            facets={catalog.tagFacets}
+            open={filtersOpen}
+            onOpenChange={(next) => {
+              if (next) setFiltersEverOpened(true);
+              setFiltersOpen(next);
+            }}
+          />
+        }
+      />
 
-      {onboardingBanner ? (
-        <div className="pointer-events-none absolute start-[4.75rem] end-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 pe-4">
-          {onboardingBanner}
+      <div className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top)+9rem)] z-20 space-y-2">
+        {onboardingBanner}
+        <div className="pointer-events-auto">
+          <CreditableBrowseControl
+            part="feedback"
+            state={credit}
+            onChange={(checked) =>
+              void navigate({
+                to: "/",
+                search: (previous) => ({
+                  ...previous,
+                  tab: "market",
+                  view: "map",
+                  creditable: checked,
+                }),
+              })
+            }
+            onClear={() =>
+              void navigate({
+                to: "/",
+                replace: true,
+                search: (previous) => ({
+                  ...previous,
+                  tab: "market",
+                  view: "map",
+                  creditable: false,
+                }),
+              })
+            }
+          />
         </div>
-      ) : null}
-
-      {notice ? (
-        <div
-          className="absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
-          role="alert"
-        >
-          <span className="min-w-0 text-sm">{notice.message}</span>
-          {notice.actionLabel && notice.onAction ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className="shrink-0 bg-card"
-              onClick={notice.onAction}
-            >
-              {notice.actionLabel}
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-
-      {isEmpty && !notice ? (
-        <div className="absolute inset-x-4 z-20 space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
-          {filter.isFiltered ? (
-            <>
-              <p>
-                <Trans>No vouchers match this search.</Trans>
-              </p>
-              <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
-                <Trans>Clear filters</Trans>
+        {credit.enabled && credit.poolRefs?.length === 0 ? (
+          <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            <Trans>No marketplace results are available through your Credit pools.</Trans>
+          </div>
+        ) : null}
+        {notice ? (
+          <div
+            className="pointer-events-auto flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
+            role="alert"
+          >
+            <span className="min-w-0 text-sm">{notice.message}</span>
+            {notice.actionLabel && notice.onAction ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="shrink-0 bg-card"
+                onClick={notice.onAction}
+              >
+                {notice.actionLabel}
               </Button>
-            </>
-          ) : (
-            <Trans>No vouchers to show yet.</Trans>
-          )}
-        </div>
-      ) : null}
+            ) : null}
+          </div>
+        ) : null}
+        {isEmpty && !notice ? (
+          <div className="pointer-events-auto space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
+            {filter.isFiltered ? (
+              <>
+                <p>
+                  <Trans>No marketplace results match this search.</Trans>
+                </p>
+                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                  <Trans>Clear filters</Trans>
+                </Button>
+              </>
+            ) : (
+              <Trans>No marketplace results to show yet.</Trans>
+            )}
+          </div>
+        ) : null}
+      </div>
 
       {/* With a card open, only the location button stays, riding the sheet. */}
       {isCardOpen ? null : (
         <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
           <MarketFilterSummary filter={filter} />
-          <div className="flex items-center gap-2">
-            <Button asChild className="pointer-events-auto h-11 flex-1">
-              <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
-                <RiListUnordered className="me-2 size-4" aria-hidden="true" />
-                <Trans>Browse all</Trans>
-              </Link>
-            </Button>
-            {locationButton}
-          </div>
+          <div className="flex justify-end">{locationButton}</div>
         </div>
       )}
 
@@ -278,6 +385,7 @@ export function MarketPage({
         onSnapChange={setSnap}
         onCoveredHeightChange={handleCoveredHeightChange}
         floating={locationButton}
+        bottomNavigationVisible={isAuthenticated}
       />
     </main>
   );

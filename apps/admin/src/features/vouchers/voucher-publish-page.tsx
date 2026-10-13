@@ -353,12 +353,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
             </form.Field>
             <form.Field name="owner">
               {(field) => (
-                <Field
-                  label="Owner"
-                  htmlFor={field.name}
-                  error={fieldError(field)}
-                  hint="The wallet that will own this voucher and create its supply."
-                >
+                <Field label="Owner" htmlFor={field.name} error={fieldError(field)}>
                   <Input
                     id={field.name}
                     value={field.state.value}
@@ -636,7 +631,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                   <Field
                     htmlFor={field.name}
                     label="Terms"
-                    hint="A link to the terms, or the terms themselves written as Markdown."
+                    hint="URL or Markdown."
                     error={fieldError(field)}
                   >
                     <Textarea

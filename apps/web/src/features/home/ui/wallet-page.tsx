@@ -1,56 +1,57 @@
-import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   RiArrowRightSLine,
   RiBankCardLine,
   RiDownloadLine,
-  RiGroupLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { CompleteProfileBanner } from "./complete-profile-banner";
-import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
-import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
-function WalletVoucherRows({
-  tokens,
-  onOpen,
-}: {
-  tokens: readonly WalletToken[];
-  onOpen: (address: `0x${string}`) => void;
-}) {
-  return tokens.map((token, index, list) => (
-    <button
-      key={token.id}
-      type="button"
-      className={[
-        "flex w-full items-center gap-3 p-3 text-start",
-        index < list.length - 1 ? "border-b border-border" : "",
-      ].join(" ")}
-      onClick={() => {
-        const address = parseVoucherAddress(token.contractAddress ?? token.id);
-        if (address) onOpen(address);
-      }}
-    >
-      <TokenLogo token={token} size={34} />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
-        <p className="text-muted-foreground truncate text-xs">{token.name}</p>
+function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
+  return tokens.map((token, index, list) => {
+    const address = parseVoucherAddress(token.contractAddress ?? token.id);
+    const className = [
+      "flex w-full items-center gap-3 p-3 text-start",
+      index < list.length - 1 ? "border-b border-border" : "",
+    ].join(" ");
+    const content = (
+      <>
+        <TokenLogo token={token} size={34} />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
+          <p className="text-muted-foreground truncate text-xs">{token.name}</p>
+        </div>
+        <div className="shrink-0 text-end">
+          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
+        </div>
+      </>
+    );
+    return address ? (
+      <Link
+        key={token.id}
+        to="/vouchers/$voucherAddress"
+        params={{ voucherAddress: address }}
+        search={{ from: "wallet" }}
+        className={className}
+      >
+        {content}
+      </Link>
+    ) : (
+      <div key={token.id} className={className}>
+        {content}
       </div>
-      <div className="shrink-0 text-end">
-        <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
-      </div>
-    </button>
-  ));
+    );
+  });
 }
 
 /** Balances whose issuer has not resolved yet, below the rows that have. */
@@ -90,8 +91,6 @@ function UnresolvedVouchersRow({
 export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const cashAvailable = chainHasPretiumRamp(CHAIN_ID);
-  const cashUnavailableReason = t`Cash services aren't available on ${CHAIN_INFO.name}.`;
   const actions = [
     { id: "send", label: t`Send`, icon: RiSendPlane2Line, variant: "default", to: "/wallet/send" },
     {
@@ -102,18 +101,15 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/receive",
     },
     {
-      id: "topup",
+      id: "cash",
       label: t`Cash`,
       icon: RiBankCardLine,
       variant: "outline",
-      to: "/wallet/top-up",
+      to: "/wallet/cash",
     },
-    { id: "pools", label: t`Pools`, icon: RiGroupLine, variant: "info", to: "/pools" },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
   const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
-  const sheet = useVoucherSheetSelection();
-  const sheetToken = vouchers.find((token) => token.id === sheet.voucher?.toLowerCase());
   const voucherGroups = usePartitionedVouchers(vouchers, address);
   // Rows are grouped as their owners arrive. The list waits, or fails, as a
   // whole only until the first one lands; after that an unresolved row is a
@@ -150,28 +146,9 @@ export function WalletPage({ address }: { address?: string }) {
       <CompleteProfileBanner address={address} />
 
       <section aria-label={t`Wallet actions`} className="space-y-3">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
-            // Pretium's ramps exist only on the chains its worker watches. Keep
-            // Cash visible elsewhere so the wallet's four capabilities do not
-            // shift around, but use a real disabled button rather than a link to
-            // a screen that cannot complete an operation.
-            if (action.id === "topup" && !cashAvailable) {
-              return (
-                <Button
-                  key={action.id}
-                  disabled
-                  variant={action.variant}
-                  aria-label={`${action.label}. ${cashUnavailableReason}`}
-                  title={cashUnavailableReason}
-                  className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
-                >
-                  <Icon className="size-4" aria-hidden="true" />
-                  {action.label}
-                </Button>
-              );
-            }
             return (
               <Button
                 key={action.id}
@@ -179,17 +156,10 @@ export function WalletPage({ address }: { address?: string }) {
                 variant={action.variant}
                 className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
               >
-                {action.id === "pools" ? (
-                  <Link to="/pools" search={{ creditable: true }}>
-                    <Icon className="size-4" aria-hidden="true" />
-                    {action.label}
-                  </Link>
-                ) : (
-                  <Link to={action.to}>
-                    <Icon className="size-4" aria-hidden="true" />
-                    {action.label}
-                  </Link>
-                )}
+                <Link to={action.to}>
+                  <Icon className="size-4" aria-hidden="true" />
+                  {action.label}
+                </Link>
               </Button>
             );
           })}
@@ -197,10 +167,10 @@ export function WalletPage({ address }: { address?: string }) {
       </section>
 
       {!vouchersReady ? (
-        <section aria-labelledby="your-vouchers-title">
+        <section aria-labelledby="my-vouchers-title">
           <SectionHeader
-            id="your-vouchers-title"
-            title={<Trans>Your Vouchers</Trans>}
+            id="my-vouchers-title"
+            title={<Trans>My Vouchers</Trans>}
             action={<Trans>View all</Trans>}
             onAction={() => {
               void navigate({ to: "/wallet/vouchers" });
@@ -250,14 +220,14 @@ export function WalletPage({ address }: { address?: string }) {
             <section aria-labelledby="holdings-title">
               <SectionHeader id="holdings-title" title={<Trans>Holdings</Trans>} />
               <div className="border-border bg-card border">
-                <WalletVoucherRows tokens={voucherGroups.holdings} onOpen={sheet.open} />
+                <WalletVoucherRows tokens={voucherGroups.holdings} />
               </div>
             </section>
           ) : null}
-          <section aria-labelledby="your-vouchers-title">
+          <section aria-labelledby="my-vouchers-title">
             <SectionHeader
-              id="your-vouchers-title"
-              title={<Trans>Your Vouchers</Trans>}
+              id="my-vouchers-title"
+              title={<Trans>My Vouchers</Trans>}
               action={<Trans>View all</Trans>}
               onAction={() => {
                 void navigate({ to: "/wallet/vouchers" });
@@ -278,7 +248,7 @@ export function WalletPage({ address }: { address?: string }) {
                   </Button>
                 </div>
               ) : (
-                <WalletVoucherRows tokens={voucherGroups.issued} onOpen={sheet.open} />
+                <WalletVoucherRows tokens={voucherGroups.issued} />
               )}
               <UnresolvedVouchersRow
                 pending={voucherGroups.pending}
@@ -293,10 +263,10 @@ export function WalletPage({ address }: { address?: string }) {
         </>
       )}
 
-      <section aria-labelledby="your-pools-title">
+      <section aria-labelledby="my-pools-title">
         <SectionHeader
-          id="your-pools-title"
-          title={<Trans>Your Pools</Trans>}
+          id="my-pools-title"
+          title={<Trans>My Pools</Trans>}
           action={<Trans>All pools</Trans>}
           actionTo="/pools"
         />
@@ -363,14 +333,7 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       </section>
 
-      <VoucherSheet
-        placeholder={
-          sheetToken
-            ? { name: sheetToken.name, symbol: sheetToken.symbol, iconUrl: sheetToken.iconUrl }
-            : null
-        }
-        origin={{ from: "wallet" }}
-      />
+      <MyCatalogSection />
     </div>
   );
 }

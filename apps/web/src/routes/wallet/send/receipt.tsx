@@ -1,32 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
+import { sendReceiptSearchSchema } from "#/features/wallet/send-receipt-search";
 import { SendReceiptPage } from "#/features/wallet/ui";
 
-const searchSchema = z.object({
-  token: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]{40}$/)
-    .optional()
-    .catch(undefined),
-  trackingId: z.string().optional().catch(undefined),
-  recipient: z.string().optional().catch(undefined),
-  recipientLabel: z.string().optional().catch(undefined),
-  amount: z.string().optional().catch(undefined),
-  symbol: z.string().optional().catch(undefined),
-  /** Pool the send started from, so Done returns there instead of the wallet. */
-  returnPool: z.string().optional().catch(undefined),
-});
-
 export const Route = createFileRoute("/wallet/send/receipt")({
-  validateSearch: searchSchema,
+  validateSearch: sendReceiptSearchSchema,
   component: SendReceiptRoute,
 });
 
 function SendReceiptRoute() {
-  const { trackingId, recipient, recipientLabel, amount, symbol, token, returnPool } =
-    Route.useSearch();
+  const {
+    trackingId,
+    recipient,
+    recipientLabel,
+    amount,
+    symbol,
+    token,
+    uoaValue,
+    uoa,
+    uoaUnavailable,
+    returnPool,
+  } = Route.useSearch();
   return (
     <AuthenticatedRoute>
       <SendReceiptPage
@@ -36,6 +31,9 @@ function SendReceiptRoute() {
         recipientLabel={recipientLabel}
         amount={amount}
         symbol={symbol}
+        uoaValue={uoaValue}
+        uoa={uoa}
+        uoaUnavailable={uoaUnavailable}
         returnPool={returnPool}
       />
     </AuthenticatedRoute>

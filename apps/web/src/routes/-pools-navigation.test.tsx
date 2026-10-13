@@ -21,6 +21,19 @@ vi.mock("wagmi", () => ({
   useBytecode: () => ({ data: undefined, isPending: false }),
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({
+    state: "authenticated",
+    isAuthenticated: true,
+    isLoading: false,
+    address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+    session: {
+      address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+      role: "USER",
+    },
+  }),
+}));
+
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
   useLatestAccountTokens: () => ({
     data: { tokens: [] },
@@ -93,10 +106,11 @@ vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
 }));
 
 import {
-  canonicalPoolRedirectSearch,
-  type PoolRouteSearch,
-  pickPoolSearch,
-} from "#/lib/navigation/pool-search";
+  canonicalMarketplaceSearch,
+  marketplaceSearchForScope,
+  pickMarketplaceSearch,
+  type MarketplaceRouteSearch,
+} from "#/lib/navigation/marketplace-search";
 import { WalletPage } from "#/features/home/ui/wallet-page";
 import { PoolDetailPage, PoolsPage } from "#/features/pools/ui";
 
@@ -118,15 +132,26 @@ function createTestRouter(initialEntry: string) {
   const poolsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/pools",
-    validateSearch: (search): PoolRouteSearch => pickPoolSearch(search),
+    validateSearch: (search): MarketplaceRouteSearch => pickMarketplaceSearch(search),
     beforeLoad: ({ search }) => {
-      const next = canonicalPoolRedirectSearch(search);
-      if (!next) return;
-      throw redirect({ to: "/pools", search: next, replace: true });
+      throw redirect({
+        to: "/market",
+        search: marketplaceSearchForScope(search, "pools"),
+        replace: true,
+      });
+    },
+  });
+  const marketRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/market",
+    validateSearch: (search): MarketplaceRouteSearch => pickMarketplaceSearch(search),
+    beforeLoad: ({ search }) => {
+      const next = canonicalMarketplaceSearch(search);
+      if (next) throw redirect({ to: "/market", search: next, replace: true });
     },
     component: () => {
       const { creditable: creditableSearch, out_voucher: outputVoucherSearch } =
-        poolsRoute.useSearch();
+        marketRoute.useSearch();
       return (
         <PoolsPage creditableSearch={creditableSearch} outputVoucherSearch={outputVoucherSearch} />
       );
@@ -158,7 +183,13 @@ function createTestRouter(initialEntry: string) {
     },
   });
   return createRouter({
-    routeTree: rootRoute.addChildren([indexRoute, poolsRoute, poolDetailRoute, sendAmountRoute]),
+    routeTree: rootRoute.addChildren([
+      indexRoute,
+      poolsRoute,
+      marketRoute,
+      poolDetailRoute,
+      sendAmountRoute,
+    ]),
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
 }
@@ -168,41 +199,12 @@ afterEach(() => {
 });
 
 describe("pools navigation", () => {
-  it("preserves the Wallet Credit link through Back and Forward navigation", async () => {
+  it("does not expose the removed Wallet Pools shortcut", async () => {
     const router = createTestRouter("/?tab=wallet");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    // Exact: the wallet's Your Pools header links out to "All pools" as well.
-    const poolsAction = await screen.findByRole("link", { name: "Pools" });
-    expect(poolsAction.getAttribute("href")).toBe("/pools?creditable=true");
-    fireEvent.click(poolsAction);
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/pools");
-      expect(router.state.location.search.creditable).toBe(true);
-      expect(screen.getByRole("heading", { name: "Pools" })).toBeTruthy();
-    });
-
-    await act(async () => {
-      router.history.back();
-    });
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/");
-      expect(router.state.location.search).toMatchObject({ tab: "wallet" });
-    });
-
-    await act(async () => {
-      router.history.forward();
-    });
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/pools");
-      expect(router.state.location.search.creditable).toBe(true);
-      expect(
-        screen.getByRole("checkbox", { name: "Credit" }).getAttribute("data-checked"),
-      ).not.toBeNull();
-    });
+    expect(await screen.findByRole("heading", { name: "Wallet" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Pools" })).toBeNull();
   });
 
   it("deposits into a pool through the send flow and Back returns to the pool", async () => {
@@ -250,17 +252,17 @@ describe("pools navigation", () => {
     });
 
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/pools");
+      expect(router.state.location.pathname).toBe("/market");
       expect(screen.getByRole("heading", { name: "Pools" })).toBeTruthy();
     });
   });
 
-  it("falls back to the wallet tab when the pools list is deep-linked", async () => {
+  it("shows the shared menu instead of a synthetic Back link when deep-linked", async () => {
     const router = createTestRouter("/pools");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const back = await screen.findByRole("link", { name: "Wallet" });
-    expect(back.getAttribute("href")).toBe("/?tab=wallet");
+    expect(await screen.findByRole("button", { name: "Open menu" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Back" })).toBeNull();
   });
 });
 
@@ -269,13 +271,13 @@ describe("pools filter canonicalization through the router", () => {
     const router = createTestRouter("/pools?creditable=false");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const credit = await screen.findByRole("checkbox", { name: "Credit" });
-    expect(credit.getAttribute("data-checked")).toBeNull();
+    const credit = await screen.findByRole("button", { name: "Credit" });
+    expect(credit.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(credit);
 
     await waitFor(() => {
       expect(router.state.location.search.creditable).toBe(true);
-      expect(credit.getAttribute("data-checked")).not.toBeNull();
+      expect(credit.getAttribute("aria-pressed")).toBe("true");
     });
 
     await act(async () => {
@@ -283,7 +285,7 @@ describe("pools filter canonicalization through the router", () => {
     });
     await waitFor(() => {
       expect(router.state.location.search.creditable).toBe(false);
-      expect(credit.getAttribute("data-checked")).toBeNull();
+      expect(credit.getAttribute("aria-pressed")).toBe("false");
     });
 
     await act(async () => {
@@ -291,7 +293,7 @@ describe("pools filter canonicalization through the router", () => {
     });
     await waitFor(() => {
       expect(router.state.location.search.creditable).toBe(true);
-      expect(credit.getAttribute("data-checked")).not.toBeNull();
+      expect(credit.getAttribute("aria-pressed")).toBe("true");
     });
   });
 
@@ -300,7 +302,7 @@ describe("pools filter canonicalization through the router", () => {
     render(withQueryClient(<RouterProvider router={router} />));
     await waitFor(() => expect(router.state.status).toBe("idle"));
 
-    expect(router.state.location.pathname).toBe("/pools");
+    expect(router.state.location.pathname).toBe("/market");
     expect(router.state.location.search.creditable).toBe(true);
     expect(router.history.length).toBe(1);
   });
@@ -329,7 +331,7 @@ describe("pools filter canonicalization through the router", () => {
     render(withQueryClient(<RouterProvider router={router} />));
     await waitFor(() => expect(router.state.status).toBe("idle"));
 
-    expect(router.state.location.pathname).toBe("/pools");
+    expect(router.state.location.pathname).toBe("/market");
     expect(router.state.location.search.out_voucher).toBe(address);
     expect(router.history.length).toBe(1);
   });

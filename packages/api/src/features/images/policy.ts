@@ -13,6 +13,7 @@
  */
 
 export type ImagePurpose =
+  | "catalog.image"
   | "profile.avatar"
   | "voucher.icon"
   | "voucher.banner"
@@ -63,6 +64,8 @@ const BANNER_ASPECT = 16 / 9;
  * full-bleed phone header and a desktop audit view.
  */
 export const IMAGE_POLICIES: Readonly<Record<ImagePurpose, ImagePolicy>> = {
+  // Catalog pictures use the existing profile folder: no new storage allowlist.
+  "catalog.image": { folder: "profile", width: 800, aspect: 1 },
   "profile.avatar": { folder: "profile", width: 400, aspect: 1, preview: "circle" },
   "voucher.icon": { folder: "voucher", width: 400, aspect: 1, preview: "circle" },
   "voucher.banner": { folder: "voucher", width: 1280, aspect: BANNER_ASPECT },

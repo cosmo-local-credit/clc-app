@@ -6,7 +6,7 @@ type RoutePolicy = {
   id: string;
   fullPath: string;
   source: string;
-  navOwner?: "home" | "posts" | "wallet" | "voucher";
+  navOwner?: "home" | "market" | "posts" | "wallet" | "voucher";
 };
 
 const ROUTES_DIR = resolve(import.meta.dirname);
@@ -14,6 +14,31 @@ const GENERATED_TREE = resolve(ROUTES_DIR, "../routeTree.gen.ts");
 
 const routePolicy = [
   { id: "/_nav/", fullPath: "/", source: "_nav/index.tsx", navOwner: "home" },
+  {
+    id: "/_nav/catalogs/",
+    fullPath: "/catalogs/",
+    source: "_nav/catalogs/index.tsx",
+    navOwner: "market",
+  },
+  {
+    id: "/_nav/catalogs/$catalogId",
+    fullPath: "/catalogs/$catalogId",
+    source: "_nav/catalogs/$catalogId.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/offers/",
+    fullPath: "/offers/",
+    source: "_nav/offers/index.tsx",
+    navOwner: "market",
+  },
+  {
+    id: "/_nav/market/",
+    fullPath: "/market/",
+    source: "_nav/market/index.tsx",
+    navOwner: "market",
+  },
+  { id: "/catalogs/create", fullPath: "/catalogs/create", source: "catalogs/create.tsx" },
   // $reportId is a directory, not a leaf: the owner edit route lives beside the
   // public detail one, and a leaf file with a sibling folder becomes a layout
   // with no Outlet.
@@ -48,7 +73,7 @@ const routePolicy = [
     source: "_nav/wallet/vouchers.tsx",
     navOwner: "wallet",
   },
-  { id: "/_nav/pools/", fullPath: "/pools/", source: "_nav/pools/index.tsx", navOwner: "wallet" },
+  { id: "/_nav/pools/", fullPath: "/pools/", source: "_nav/pools/index.tsx", navOwner: "market" },
   {
     id: "/_nav/pools/$poolAddress/",
     fullPath: "/pools/$poolAddress/",
@@ -61,6 +86,12 @@ const routePolicy = [
     source: "_nav/vouchers/$voucherAddress.tsx",
     navOwner: "voucher",
   },
+  {
+    id: "/_nav/vouchers/",
+    fullPath: "/vouchers/",
+    source: "_nav/vouchers/index.tsx",
+    navOwner: "market",
+  },
   { id: "/onboarding", fullPath: "/onboarding", source: "onboarding.tsx" },
   { id: "/install", fullPath: "/install", source: "install.tsx" },
   {
@@ -70,7 +101,6 @@ const routePolicy = [
   },
   { id: "/posts/", fullPath: "/posts/", source: "posts/index.tsx" },
   { id: "/settings/", fullPath: "/settings/", source: "settings/index.tsx" },
-  { id: "/vouchers/", fullPath: "/vouchers/", source: "vouchers/index.tsx" },
   {
     id: "/vouchers/create/$step",
     fullPath: "/vouchers/create/$step",
@@ -92,6 +122,7 @@ const routePolicy = [
     source: "pools/create/receipt.tsx",
   },
   { id: "/wallet/", fullPath: "/wallet/", source: "wallet/index.tsx" },
+  { id: "/wallet/cash", fullPath: "/wallet/cash", source: "wallet/cash.tsx" },
   { id: "/wallet/collect", fullPath: "/wallet/collect", source: "wallet/collect.tsx" },
   { id: "/wallet/receive", fullPath: "/wallet/receive", source: "wallet/receive.tsx" },
   { id: "/wallet/top-up", fullPath: "/wallet/top-up", source: "wallet/top-up.tsx" },
@@ -159,7 +190,7 @@ describe("bottom-navigation route policy", () => {
       expect(
         readFileSync(file, "utf8"),
         `${relative(ROUTES_DIR, file)} must declare navOwner`,
-      ).toMatch(/navOwner:\s*"(?:home|posts|wallet|voucher)"/);
+      ).toMatch(/navOwner:\s*"(?:home|market|posts|wallet|voucher)"/);
     }
   });
 });

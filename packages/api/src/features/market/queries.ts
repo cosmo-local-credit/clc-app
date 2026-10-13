@@ -30,6 +30,7 @@ export type VoucherFilteredListParams = VoucherListParams & {
   filter: CatalogFilter;
   /** Only vouchers owned by this address. */
   owner?: string;
+  pools?: readonly { chainId: number; address: string }[];
 };
 
 export const voucherKeys = {
@@ -65,8 +66,21 @@ export const voucherKeys = {
    */
   detail: (address: string) => ["clc", "vouchers", "detail", address.toLowerCase()] as const,
 
-  filtered: (filter: CatalogFilter | null, perPage: number) =>
-    ["clc", "vouchers", "filtered", { filter, perPage }] as const,
+  filtered: (
+    filter: CatalogFilter | null,
+    perPage: number,
+    pools?: readonly { chainId: number; address: string }[],
+  ) =>
+    [
+      "clc",
+      "vouchers",
+      "filtered",
+      {
+        filter,
+        perPage,
+        pools: pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+      },
+    ] as const,
 
   /**
    * One page of a filtered list, as a paged table reads it — distinct from
@@ -85,6 +99,7 @@ export const voucherKeys = {
       {
         filter: params.filter,
         owner: params.owner,
+        pools: params.pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
         perPage: params.perPage,
         cursor: params.cursor,
         next: params.next,
@@ -139,6 +154,7 @@ export function voucherFilteredPageQueryOptions(
           next: params.next,
           filter: params.filter,
           ...(params.owner ? { owner: params.owner } : {}),
+          ...(params.pools ? { pools: params.pools } : {}),
         },
         signal,
       ),

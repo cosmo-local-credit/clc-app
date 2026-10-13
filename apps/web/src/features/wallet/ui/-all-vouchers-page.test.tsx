@@ -5,31 +5,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 const { useConnectionMock } = vi.hoisted(() => ({ useConnectionMock: vi.fn() }));
 
-// The card is covered on its own; here only that a voucher opens it.
-const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
-
-vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: null,
-    voucherTab: "offerings",
-    open: voucherSheet.open,
-    close: () => {},
-  }),
-}));
-
-vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
-
 vi.mock("@tanstack/react-router", () => ({
   // Forwards the rest of the props so `<Button asChild>` data attributes
   // (data-slot / data-variant / data-size) reach the rendered anchor.
   Link: ({
     children,
     params,
+    search,
     to,
     ...rest
   }: {
     children: ReactNode;
     params?: { step?: string; voucherAddress?: string };
+    search?: Record<string, string>;
     to: string;
   } & Record<string, unknown>) => {
     const href = params?.voucherAddress
@@ -37,8 +25,9 @@ vi.mock("@tanstack/react-router", () => ({
       : params?.step
         ? to.replace("$step", params.step)
         : to;
+    const query = new URLSearchParams(search).toString();
     return (
-      <a href={href} {...rest}>
+      <a href={query ? `${href}?${query}` : href} {...rest}>
         {children}
       </a>
     );
@@ -154,8 +143,7 @@ describe("AllVouchersPage", () => {
     expect(create.getAttribute("data-variant")).toBe("outline");
   });
 
-  it("shows account vouchers and opens one's card from its row", async () => {
-    voucherSheet.open.mockClear();
+  it("shows account vouchers and links its expanded action to the canonical page", async () => {
     const token = accountToken(1);
     const fetcher = mockAccountReads([successResponse({ tokens: [token], last: 1 })]);
     renderWithQueryClient(<AllVouchersPage />);
@@ -167,8 +155,9 @@ describe("AllVouchersPage", () => {
     fireEvent.click(voucherRow);
 
     expect(voucherRow.getAttribute("aria-expanded")).toBe("true");
-    fireEvent.click(screen.getByRole("button", { name: /view voucher/i }));
-    expect(voucherSheet.open).toHaveBeenCalledWith(token.tokenAddress);
+    expect(screen.getByRole("link", { name: /view voucher/i }).getAttribute("href")).toBe(
+      `/vouchers/${token.tokenAddress}?from=vouchers`,
+    );
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens?perPage=20`),
       expect.objectContaining({ method: "GET", cache: "no-store" }),
@@ -247,7 +236,7 @@ describe("AllVouchersPage", () => {
     expect(await screen.findByText("Some vouchers couldn't load.")).toBeTruthy();
     expect(screen.getByText("Voucher 1")).toBeTruthy();
     expect(screen.queryByText("Voucher 2")).toBeNull();
-    // Your Vouchers would claim none were issued while one row is unresolved.
+    // My Vouchers would claim none were issued while one row is unresolved.
     expect(screen.queryByText("You haven't issued a voucher yet.")).toBeNull();
 
     const detailCalls = () =>
@@ -259,14 +248,14 @@ describe("AllVouchersPage", () => {
     expect(String(detailCalls().at(-1)?.[0])).toContain(bad.tokenAddress);
   });
 
-  it("puts a voucher this account issued under Your Vouchers", async () => {
+  it("puts a voucher this account issued under My Vouchers", async () => {
     const token = accountToken(7);
     mockAccountReads([successResponse({ tokens: [token], last: 7 })], {
       [token.tokenAddress]: ADDRESS,
     });
     renderWithQueryClient(<AllVouchersPage />);
 
-    const issued = within(await screen.findByRole("region", { name: "Your Vouchers" }));
+    const issued = within(await screen.findByRole("region", { name: "My Vouchers" }));
     expect(issued.getByText("Voucher 7")).toBeTruthy();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });

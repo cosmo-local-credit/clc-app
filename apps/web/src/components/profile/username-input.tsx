@@ -13,7 +13,6 @@ export function UsernameInput({
   onChange,
   onBlur,
   error: validationError,
-  automatic = true,
 }: {
   id: string;
   value: string;
@@ -21,7 +20,6 @@ export function UsernameInput({
   onChange: (value: string) => void;
   onBlur: () => void;
   error?: string | null;
-  automatic?: boolean;
 }) {
   const currentValue = useRef(value);
   currentValue.current = value;
@@ -55,9 +53,7 @@ export function UsernameInput({
         maxLength={24}
       />
       <p id={descriptionId} className="text-muted-foreground text-xs">
-        {automatic
-          ? t`People can use this name to send vouchers to you. Leave blank to choose automatically.`
-          : t`People can use this name to send vouchers to you.`}
+        {t`People can use this name to send vouchers to you.`}
       </p>
       <Button
         type="button"

@@ -36,6 +36,7 @@ import type { StorageOwner } from "#/lib/storage/owner-tier-key";
  */
 export const CATALOG_FILTER_PREFERENCE_NAMES = {
   market: "market.filter-preferences.v1",
+  offers: "offers.filter-preferences.v1",
   pools: "pools.filter-preferences.v1",
   posts: "posts.filter-preferences.v1",
 } as const;

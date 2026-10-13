@@ -1,8 +1,16 @@
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
-import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import {
+  formatUnitOfAccountDisplayValue,
+  formatVoucherUnitValue,
+} from "@clc/core/features/market/logic";
+import {
+  formatTokenAmount,
+  formatTokenAmountFixed,
+  parseTokenAmount,
+} from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
@@ -18,9 +26,11 @@ import {
 } from "#/components/ui/sheet";
 import { SignHint, TokenLogo } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
 import { TokenPickerSheet } from "./token-picker-sheet";
@@ -53,7 +63,7 @@ export function SendAmountPage({
   /** Pool whose Deposit shortcut opened this screen; carried on to the receipt. */
   returnPool?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const navigate = useNavigate();
   const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
@@ -77,8 +87,12 @@ export function SendAmountPage({
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const amountInputRef = useRef<HTMLInputElement>(null);
+  const tokenSelectorRef = useRef<HTMLButtonElement>(null);
+  const focusAmountAfterSelectionRef = useRef(false);
 
   const tokenDecimals = selectedToken?.tokenDecimals ?? 2;
+  const voucherDetail = useMarketVoucherDetail(selectedToken?.contractAddress);
   const parsedAmountRaw = useMemo(() => {
     if (!selectedToken || amount.trim() === "") return null;
     try {
@@ -87,6 +101,31 @@ export function SendAmountPage({
       return null;
     }
   }, [amount, maxAmountRaw, selectedToken, tokenDecimals]);
+  const exactVoucherAmount =
+    parsedAmountRaw === null
+      ? null
+      : formatTokenAmount(parsedAmountRaw, tokenDecimals, tokenDecimals);
+  const submittedVoucherAmount = maxAmountRaw ? (exactVoucherAmount ?? amount) : amount;
+  const unitValue =
+    exactVoucherAmount === null
+      ? null
+      : formatVoucherUnitValue(
+          exactVoucherAmount,
+          voucherDetail.data?.voucherValue ?? null,
+          voucherDetail.data?.voucherUoa ?? null,
+        );
+  const localizedUnitValue = unitValue
+    ? (formatUnitOfAccountDisplayValue(unitValue.value, i18n.locales?.[0] ?? i18n.locale) ??
+      unitValue.value)
+    : null;
+  const unitValueLabel =
+    exactVoucherAmount === null
+      ? null
+      : unitValue && localizedUnitValue
+        ? `${localizedUnitValue} ${unitValue.unit}`
+        : voucherDetail.isPending
+          ? t`Loading…`
+          : t`Unavailable`;
   const balanceRaw = selectedToken?.balance ?? null;
   const amountValue = Number(amount);
   const isValidAmount =
@@ -153,6 +192,7 @@ export function SendAmountPage({
       ) : null}
 
       <button
+        ref={tokenSelectorRef}
         type="button"
         onClick={() => setPickerOpen(true)}
         disabled={!selectedToken}
@@ -211,6 +251,7 @@ export function SendAmountPage({
         <div className="relative flex items-baseline justify-center gap-1.5">
           <div className="relative flex items-baseline">
             <input
+              ref={amountInputRef}
               id="send-amount"
               type="text"
               dir="ltr"
@@ -227,6 +268,7 @@ export function SendAmountPage({
               // number + symbol pair centers true. size is the pre-support fallback.
               size={Math.max(amount.length, 1)}
               aria-invalid={exceedsMax}
+              aria-describedby={unitValueLabel ? "send-amount-uoa-value" : undefined}
               className={cn(
                 "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight caret-primary outline-none [field-sizing:content]",
                 exceedsMax && "text-destructive",
@@ -241,6 +283,15 @@ export function SendAmountPage({
           </div>
           <span className="text-[1.25rem] text-muted-foreground">{selectedToken?.symbol}</span>
         </div>
+        {unitValueLabel ? (
+          <p
+            id="send-amount-uoa-value"
+            className="relative mt-2 font-mono text-muted-foreground text-sm tabular-nums"
+            aria-live="polite"
+          >
+            ({unitValueLabel})
+          </p>
+        ) : null}
         {selectedToken ? (
           <Button
             variant="secondary"
@@ -283,16 +334,25 @@ export function SendAmountPage({
         tokens={tokens}
         selectedId={selectedToken?.id}
         onSelect={(next) => {
+          focusAmountAfterSelectionRef.current = true;
           setMaxAmountRaw(null);
           setSelectedId(next.id);
+        }}
+        finalFocus={() => {
+          if (focusAmountAfterSelectionRef.current) {
+            focusAmountAfterSelectionRef.current = false;
+            return amountInputRef.current;
+          }
+          return tokenSelectorRef.current;
         }}
       />
 
       <SendConfirmationSheet
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        amount={amount}
+        amount={submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
+        unitValueLabel={unitValueLabel}
         recipient={recipientAddress}
         recipientLabel={recipientLabel}
         error={sendVoucher.error instanceof Error ? sendVoucher.error.message : null}
@@ -310,6 +370,11 @@ export function SendAmountPage({
             })
             .catch(() => null);
           if (!result) return;
+          const submittedUnitValue = relaySnapshotUnitValue(
+            result.valuationSnapshots,
+            tokenAddress,
+            exactVoucherAmount ?? amount,
+          );
           void navigate({
             to: "/wallet/send/receipt",
             search: {
@@ -317,8 +382,11 @@ export function SendAmountPage({
               token: tokenAddress,
               recipient: recipientAddress,
               recipientLabel,
-              amount,
+              amount: submittedVoucherAmount,
               symbol: selectedToken.symbol,
+              ...(submittedUnitValue
+                ? { uoaValue: submittedUnitValue.value, uoa: submittedUnitValue.unit }
+                : { uoaUnavailable: true }),
               returnPool,
             },
           });
@@ -333,6 +401,7 @@ function SendConfirmationSheet({
   onOpenChange,
   amount,
   symbol,
+  unitValueLabel,
   recipient,
   recipientLabel,
   error,
@@ -343,6 +412,7 @@ function SendConfirmationSheet({
   onOpenChange: (open: boolean) => void;
   amount: string;
   symbol: string;
+  unitValueLabel: string | null;
   recipient: `0x${string}` | null;
   recipientLabel?: string;
   error: string | null;
@@ -366,8 +436,9 @@ function SendConfirmationSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>Amount</Trans>
                 </span>
-                <span className="font-mono text-xs font-semibold">
+                <span className="min-w-0 text-end font-mono text-xs font-semibold [overflow-wrap:anywhere]">
                   {amount} {symbol}
+                  {unitValueLabel ? ` (${unitValueLabel})` : ""}
                 </span>
               </div>
               <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">

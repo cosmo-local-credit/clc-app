@@ -14,6 +14,7 @@ import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 import { Route as ShellVocabularyRouteImport } from './routes/_shell/vocabulary'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as ShellPaperWalletsRouteImport } from './routes/_shell/paper-wallets'
+import { Route as ShellNfcCardsRouteImport } from './routes/_shell/nfc-cards'
 import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
@@ -54,6 +55,11 @@ const ShellSettingsRoute = ShellSettingsRouteImport.update({
 const ShellPaperWalletsRoute = ShellPaperWalletsRouteImport.update({
   id: '/paper-wallets',
   path: '/paper-wallets',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellNfcCardsRoute = ShellNfcCardsRouteImport.update({
+  id: '/nfc-cards',
+  path: '/nfc-cards',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellSplatRoute = ShellSplatRouteImport.update({
@@ -146,6 +152,7 @@ const ShellPostsReportIdEditRoute = ShellPostsReportIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
   '/$': typeof ShellSplatRoute
+  '/nfc-cards': typeof ShellNfcCardsRoute
   '/paper-wallets': typeof ShellPaperWalletsRoute
   '/settings': typeof ShellSettingsRoute
   '/vocabulary': typeof ShellVocabularyRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/$': typeof ShellSplatRoute
+  '/nfc-cards': typeof ShellNfcCardsRoute
   '/paper-wallets': typeof ShellPaperWalletsRoute
   '/settings': typeof ShellSettingsRoute
   '/vocabulary': typeof ShellVocabularyRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteWithChildren
   '/_shell/$': typeof ShellSplatRoute
+  '/_shell/nfc-cards': typeof ShellNfcCardsRoute
   '/_shell/paper-wallets': typeof ShellPaperWalletsRoute
   '/_shell/settings': typeof ShellSettingsRoute
   '/_shell/vocabulary': typeof ShellVocabularyRoute
@@ -219,6 +228,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/nfc-cards'
     | '/paper-wallets'
     | '/settings'
     | '/vocabulary'
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
+    | '/nfc-cards'
     | '/paper-wallets'
     | '/settings'
     | '/vocabulary'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_shell'
     | '/_shell/$'
+    | '/_shell/nfc-cards'
     | '/_shell/paper-wallets'
     | '/_shell/settings'
     | '/_shell/vocabulary'
@@ -326,6 +338,13 @@ declare module '@tanstack/react-router' {
       path: '/paper-wallets'
       fullPath: '/paper-wallets'
       preLoaderRoute: typeof ShellPaperWalletsRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/nfc-cards': {
+      id: '/_shell/nfc-cards'
+      path: '/nfc-cards'
+      fullPath: '/nfc-cards'
+      preLoaderRoute: typeof ShellNfcCardsRouteImport
       parentRoute: typeof ShellRoute
     }
     '/_shell/$': {
@@ -452,6 +471,7 @@ declare module '@tanstack/react-router' {
 
 interface ShellRouteChildren {
   ShellSplatRoute: typeof ShellSplatRoute
+  ShellNfcCardsRoute: typeof ShellNfcCardsRoute
   ShellPaperWalletsRoute: typeof ShellPaperWalletsRoute
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellVocabularyRoute: typeof ShellVocabularyRoute
@@ -476,6 +496,7 @@ interface ShellRouteChildren {
 
 const ShellRouteChildren: ShellRouteChildren = {
   ShellSplatRoute: ShellSplatRoute,
+  ShellNfcCardsRoute: ShellNfcCardsRoute,
   ShellPaperWalletsRoute: ShellPaperWalletsRoute,
   ShellSettingsRoute: ShellSettingsRoute,
   ShellVocabularyRoute: ShellVocabularyRoute,

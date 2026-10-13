@@ -2,16 +2,18 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { canonicalRedirectSearch } from "#/lib/navigation/catalog-search";
 import {
-  canonicalRedirectSearch,
-  type CatalogRouteSearch,
-  pickCatalogSearch,
-} from "#/lib/navigation/catalog-search";
+  marketplaceSearchForScope,
+  pickMarketplaceSearch,
+  type MarketplaceRouteSearch,
+} from "#/lib/navigation/marketplace-search";
 import {
   type HomeRouteSearch,
   isPrivateHomeTab,
   parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
+import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
@@ -21,11 +23,43 @@ const HomePage = lazy(() =>
 
 export const Route = createFileRoute("/_nav/")({
   staticData: { navOwner: "home" },
-  validateSearch: (search): HomeRouteSearch & CatalogRouteSearch => ({
+  validateSearch: (search): HomeRouteSearch & MarketplaceRouteSearch => ({
     ...parseHomeSearch(search),
-    ...pickCatalogSearch(search),
+    ...pickMarketplaceSearch(search),
   }),
   beforeLoad: ({ search }) => {
+    const voucherAddress = parseVoucherAddress(search.voucher);
+    const isMapVoucher = search.tab === "market" && search.view === "map";
+    if (voucherAddress && !isMapVoucher) {
+      const from =
+        search.tab === "wallet"
+          ? "wallet"
+          : search.tab === "posts"
+            ? "posts"
+            : search.tab === "market"
+              ? "market"
+              : undefined;
+      if (from) {
+        throw redirect({
+          to: "/vouchers/$voucherAddress",
+          params: { voucherAddress },
+          search: { from },
+          replace: true,
+        });
+      }
+      throw redirect({
+        to: "/",
+        search: { ...search, voucher: undefined },
+        replace: true,
+      });
+    }
+    if (search.tab === "market" && search.view === "list") {
+      throw redirect({
+        to: "/market",
+        search: marketplaceSearchForScope(pickMarketplaceSearch(search), null),
+        replace: true,
+      });
+    }
     const next = canonicalRedirectSearch(search, { voucherRelationships: search.tab === "posts" });
     if (!next) return;
     throw redirect({ to: "/", search: next, replace: true });
@@ -35,7 +69,7 @@ export const Route = createFileRoute("/_nav/")({
 
 function IndexPage() {
   const auth = useAuthStatus();
-  const { tab, view } = Route.useSearch();
+  const { tab, view, creditable } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeTab = auth.isAuthenticated ? tab : isPrivateHomeTab(tab ?? "market") ? "market" : tab;
 
@@ -49,7 +83,12 @@ function IndexPage() {
 
   return (
     <Suspense fallback={<HomePageFallback />}>
-      <HomePage activeTab={activeTab} marketView={view} isAuthenticated={auth.isAuthenticated} />
+      <HomePage
+        activeTab={activeTab}
+        marketView={view}
+        isAuthenticated={auth.isAuthenticated}
+        creditableSearch={creditable}
+      />
     </Suspense>
   );
 }

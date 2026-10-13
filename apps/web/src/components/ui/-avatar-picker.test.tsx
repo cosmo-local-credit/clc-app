@@ -53,6 +53,32 @@ describe("AvatarPicker", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it("shows one red required line before and after validation", () => {
+    const { rerender } = render(<AvatarPicker value={null} onChange={vi.fn()} required />);
+
+    const initialRequired = screen.getByText("Required");
+    expect(initialRequired.className).toContain("text-destructive");
+    expect(screen.queryByRole("alert")).toBeNull();
+
+    rerender(<AvatarPicker value={null} onChange={vi.fn()} required validationError="Required" />);
+
+    expect(screen.getAllByText("Required")).toHaveLength(1);
+    expect(screen.getByRole("alert").textContent).toBe("Required");
+    expect(screen.getByRole("button", { name: "Add a photo" }).getAttribute("aria-invalid")).toBe(
+      "true",
+    );
+  });
+
+  it("keeps an external validation error accessible when the picker is optional", () => {
+    render(<AvatarPicker value={null} onChange={vi.fn()} validationError="Choose another photo" />);
+
+    expect(screen.getByRole("alert").textContent).toBe("Choose another photo");
+    expect(screen.queryByText("Optional")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Add a photo" }).getAttribute("aria-describedby"),
+    ).toBe(screen.getByRole("alert").id);
+  });
+
   it("also opens the existing photo library from the same button", () => {
     render(<AvatarPicker value={null} onChange={vi.fn()} />);
 

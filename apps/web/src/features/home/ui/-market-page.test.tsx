@@ -130,8 +130,76 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: false, session: null }),
 }));
 
+vi.mock("wagmi", () => ({
+  useConnection: () => ({ address: undefined }),
+}));
+
+vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
+  useCreditableBrowse: () => ({
+    auth: { isAuthenticated: false, isLoading: false },
+    parsed: { ok: true, enabled: null },
+    enabled: false,
+    verification: { status: "idle", pools: [], retry: vi.fn() },
+    poolRefs: undefined,
+    blocksResults: false,
+  }),
+}));
+
+vi.mock("#/components/creditable-browse-control", () => ({
+  CreditableBrowseControl: ({
+    part,
+    onChange,
+    onClear,
+  }: {
+    part: "control" | "feedback";
+    onChange: (checked: boolean) => void;
+    onClear: () => void;
+  }) => (
+    <div data-testid={`credit-${part}`}>
+      <button type="button" onClick={() => onChange(true)}>
+        {part} Credit on
+      </button>
+      <button type="button" onClick={onClear}>
+        {part} Credit clear
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
+  useMarketplaceMapSearch: (_filter: unknown, _pools: unknown, enabled: boolean) => ({
+    locations: enabled ? (filteredResult.current.data?.vouchers ?? []) : [],
+    status: !enabled
+      ? "disabled"
+      : filteredResult.current.isPlaceholderData
+        ? "loading"
+        : filteredResult.current.error
+          ? "error"
+          : filteredResult.current.data
+            ? "ready"
+            : "loading",
+    error: enabled ? filteredResult.current.error : null,
+    retry: filteredResult.current.refetch,
+  }),
+}));
+
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
-  useAllAccountTokens: () => ({ tokens: [] }),
+  useAllAccountTokens: () => ({
+    tokens: [],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+  useAccountTransfersInfinite: () => ({
+    data: { pages: [{ transfers: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  }),
 }));
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
@@ -354,6 +422,36 @@ beforeEach(() => {
 });
 
 describe("MarketPage location button", () => {
+  it("writes and clears Credit without leaving the canonical map route", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+
+    expect(mockNavigate).toHaveBeenCalledTimes(4);
+    const previous = { q: "food", creditable: false };
+    for (const [index, [call]] of mockNavigate.mock.calls.entries()) {
+      expect(call).toMatchObject({ to: "/", ...(index % 2 === 1 ? { replace: true } : {}) });
+      expect(call.search(previous)).toEqual({
+        q: "food",
+        tab: "market",
+        view: "map",
+        creditable: index % 2 === 0 ? true : false,
+      });
+    }
+  });
+
+  it("opens and closes the map filter sheet through the shared shell", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Close filters" }));
+    expect(screen.queryByRole("dialog", { name: "Filter vouchers" })).toBeNull();
+  });
+
   it.each([
     ["idle", "Use current location", false],
     ["requesting", "Finding location", true],
@@ -375,26 +473,23 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("floats the app menu at logical top-start and reserves room beside it for sign-in", () => {
+  it("places the shared app menu inside the search shell and sign-in below it", () => {
     renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
 
-    expect(screen.getByTestId("app-menu").className).toContain("start-4");
-    expect(screen.getByTestId("app-menu").className).toContain(
-      "top-[calc(env(safe-area-inset-top)+1rem)]",
-    );
+    expect(screen.getByTestId("app-menu")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("start-[4.75rem]");
+    ).toContain("inset-x-4");
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
+    ).toContain("top-[calc(env(safe-area-inset-top)+9rem)]");
   });
 
   it("does not request a private profile for guests, or hand the menu a location action", () => {
     renderPage();
 
     expect(profileRequests.current).toBe(0);
-    expect(lastAppMenuProps.current).toEqual({ className: expect.any(String) });
+    expect(lastAppMenuProps.current).toEqual({});
   });
 });
 
@@ -493,7 +588,7 @@ describe("MarketPage data states", () => {
     vouchersResult.current = { ...vouchersResult.current, isCatalogComplete: true };
     renderPage();
 
-    expect(screen.getByText(/no vouchers/i)).toBeTruthy();
+    expect(screen.getByText(/no marketplace results/i)).toBeTruthy();
     expect(lastMapProps.current?.locations).toEqual([]);
   });
 
@@ -719,14 +814,13 @@ describe("MarketPage voucher card", () => {
     expect(lastMapProps.current?.camera).toBeNull();
   });
 
-  it("moves the location button onto the card and hides the rest of the controls", () => {
+  it("moves the location button onto the card", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
-    expect(screen.getByRole("link", { name: /browse all/i })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
     const location = screen.getByRole("button", { name: "Use current location" });
     expect(screen.getByRole("dialog").contains(location)).toBe(true);
   });
@@ -737,23 +831,24 @@ describe("MarketPage voucher card", () => {
     expect(lastMapProps.current?.bottomInset).toBe(0);
 
     fireEvent.click(screen.getByTestId("marker-1"));
-    // jsdom lays nothing out, so the peek is its fallback height.
-    expect(lastMapProps.current?.bottomInset).toBe(160);
+    // The voucher sheet keeps at least one third of the usable viewport visible.
+    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight / 3));
 
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
     expect(lastMapProps.current?.bottomInset).toBe(0);
   });
 
-  it("collapses a half-height card to its peek when the map is dragged", () => {
+  it("opens a card fully in one click and collapses it back to peek", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
     fireEvent.click(screen.getByTestId("marker-1"));
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight * 0.55));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
 
-    act(() => lastMapProps.current?.onUserPan?.());
+    expect(within(dialog).getByRole("button", { name: "Collapse" })).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collapse" }));
 
-    expect(lastMapProps.current?.bottomInset).toBe(160);
+    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight / 3));
   });
 
   it("closes the card on a tap on empty map", () => {
@@ -766,12 +861,10 @@ describe("MarketPage voucher card", () => {
     expect(selection.calls.at(-1)).toEqual(["close"]);
   });
 
-  it("links Browse all to the marketplace list without rendering it over the map", () => {
+  it("does not render the obsolete Browse all action over the map", () => {
     renderPage();
 
-    expect(screen.getByRole("link", { name: /browse all/i }).getAttribute("href")).toBe(
-      "/?tab=market&view=list",
-    );
+    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
     expect(screen.queryByRole("list")).toBeNull();
   });
 });
@@ -812,7 +905,7 @@ describe("MarketPage pools", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("leaves pools off a filtered map, whose terms and tags only match vouchers", () => {
+  it("uses the unified filtered map result instead of the separate pool catalog", () => {
     routeSearch.current = { q: "art" };
     poolsResult.current = [pool];
     filteredResult.current = {
@@ -1016,7 +1109,7 @@ describe("MarketPage filtering", () => {
     expect(screen.getByText("\u201cart\u201d")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
     const edit = screen.getByRole("link", { name: "Edit filters" });
-    expect(edit.getAttribute("href")).toContain("view=list");
+    expect(edit.getAttribute("href")).toContain("/market");
     expect(edit.getAttribute("href")).toContain("q=art");
   });
 
@@ -1026,15 +1119,19 @@ describe("MarketPage filtering", () => {
     expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
   });
 
-  it("preserves the filter when leaving for the list", () => {
+  it("keeps the filter summary after removing Browse all", () => {
     routeSearch.current = { q: "art", tags: "Art" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
+    };
 
     render(<MarketPage />);
 
-    const href = screen.getByRole("link", { name: "Browse all" }).getAttribute("href");
-    expect(href).toContain("q=art");
-    expect(href).toContain("tags=Art");
-    expect(href).toContain("view=list");
+    const summary = screen.getByRole("link", { name: "Edit filters" });
+    expect(summary.textContent).toContain("“art”");
+    expect(summary.textContent).toContain("1 tag");
+    expect(screen.queryByRole("link", { name: "Browse all" })).toBeNull();
   });
 
   it("distinguishes a filtered-empty map from an empty catalog", () => {
@@ -1046,8 +1143,8 @@ describe("MarketPage filtering", () => {
 
     render(<MarketPage />);
 
-    expect(screen.getByText("No vouchers match this search.")).toBeTruthy();
-    expect(screen.queryByText("No vouchers to show yet.")).toBeNull();
+    expect(screen.getByText("No marketplace results match this search.")).toBeTruthy();
+    expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
     expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
   });
 
@@ -1057,8 +1154,8 @@ describe("MarketPage filtering", () => {
 
     render(<MarketPage />);
 
-    expect(screen.queryByText("No vouchers match this search.")).toBeNull();
-    expect(screen.queryByText("No vouchers to show yet.")).toBeNull();
+    expect(screen.queryByText("No marketplace results match this search.")).toBeNull();
+    expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
   });
 });
 

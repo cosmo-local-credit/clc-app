@@ -280,7 +280,6 @@ function OfferingForm({
             <Field
               htmlFor={field.name}
               label="Good or service"
-              hint="Decides the marker this voucher gets on the market map."
               error={getFieldError(field.state.meta.errors)}
             >
               <Select
@@ -376,7 +375,6 @@ function OfferingForm({
             {(field) => (
               <ImageUploadField
                 label="Photo"
-                hint="Optional. Framed square, like the card it appears in."
                 purpose="offering.photo"
                 value={field.state.value}
                 onChange={(url) => field.handleChange(url)}
@@ -423,11 +421,7 @@ function OfferingForm({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Unlist this offering?</DialogTitle>
-            <DialogDescription>
-              {offering?.name} disappears from the marketplace, this voucher and every pool that
-              allows it. The record is kept for audit and can be restored by an operator with
-              database access.
-            </DialogDescription>
+            <DialogDescription>Remove {offering?.name} from the marketplace?</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button

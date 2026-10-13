@@ -89,6 +89,10 @@ describe("SettingsPage", () => {
     expect(screen.getByTestId("theme-selector")).toBeTruthy();
     expect(screen.getByTestId("language-selector")).toBeTruthy();
     expect(screen.getByTestId("visibility-selector")).toBeTruthy();
+    expect(screen.getByTestId("visibility-selector").parentElement?.id).toBe("visibility");
+    expect(
+      screen.getByText("Choose how far away location-filtered discovery results can be."),
+    ).toBeTruthy();
   });
 
   it("shows 'No address available' when address is undefined", () => {

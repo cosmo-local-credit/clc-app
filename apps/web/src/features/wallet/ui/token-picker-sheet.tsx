@@ -1,4 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import type * as React from "react";
 import { RiCheckLine } from "react-icons/ri";
 
 import {
@@ -20,12 +21,14 @@ export function TokenPickerSheet({
   tokens,
   selectedId,
   onSelect,
+  finalFocus,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tokens: WalletToken[];
   selectedId?: string;
   onSelect: (token: WalletToken) => void;
+  finalFocus?: React.ComponentProps<typeof SheetContent>["finalFocus"];
 }) {
   const { t } = useLingui();
   function handleSelect(token: WalletToken) {
@@ -36,7 +39,10 @@ export function TokenPickerSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border shadow-none [&>div:first-child]:hidden">
+        <SheetContent
+          finalFocus={finalFocus}
+          className="rounded-none border-t border-border shadow-none [&>div:first-child]:hidden"
+        >
           <SheetHeader className="px-6 pt-5 pb-3">
             <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Select a token</Trans>

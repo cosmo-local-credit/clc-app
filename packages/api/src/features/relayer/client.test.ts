@@ -227,6 +227,75 @@ describe("relay", () => {
     expect(spy).toHaveBeenCalledWith(`${BASE}/relay`, expect.objectContaining({ method: "POST" }));
     expect(res.result.trackingId).toBe("uuid-1");
   });
+
+  it("validates and normalizes claim snapshots returned by the relayer", async () => {
+    mockFetch({
+      ok: true,
+      result: {
+        trackingId: "uuid-claim",
+        valuationSnapshots: [
+          {
+            tokenAddress: "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+            voucherValue: "1.25",
+            voucherUoa: " kes ",
+          },
+          {
+            tokenAddress: "not-an-address",
+            voucherValue: "1",
+            voucherUoa: "KES",
+          },
+          {
+            tokenAddress: "0x1234567890123456789012345678901234567890",
+            voucherValue: "0",
+            voucherUoa: "KES",
+          },
+        ],
+      },
+    });
+
+    const result = await client.relay({
+      userAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      signedBatch: {
+        batchedCall: { calls: [], revertOnFailure: true },
+        nonce: "0",
+        keyHash: `0x${"00".repeat(32)}`,
+        executor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        deadline: "0",
+      },
+      signature: "0xabc",
+      signatureType: "secp256k1",
+    });
+
+    expect(result.result).toEqual({
+      trackingId: "uuid-claim",
+      valuationSnapshots: [
+        {
+          tokenAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          voucherValue: "1.25",
+          voucherUoa: "KES",
+        },
+      ],
+    });
+  });
+
+  it("rejects a relay response without a tracking id", async () => {
+    mockFetch({ ok: true, result: { valuationSnapshots: [] } });
+
+    await expect(
+      client.relay({
+        userAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        signedBatch: {
+          batchedCall: { calls: [], revertOnFailure: true },
+          nonce: "0",
+          keyHash: `0x${"00".repeat(32)}`,
+          executor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          deadline: "0",
+        },
+        signature: "0xabc",
+        signatureType: "secp256k1",
+      }),
+    ).rejects.toThrow();
+  });
 });
 
 describe("isRelaySubmissionUncertain", () => {

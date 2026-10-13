@@ -137,6 +137,7 @@ export function CatalogFilterSheet({
   onOpenChange,
   onApply,
   children,
+  trigger = "default",
 }: {
   filter: CatalogFilterControls;
   facets: readonly CatalogFacet[];
@@ -156,6 +157,7 @@ export function CatalogFilterSheet({
     voucherMatch: TagMatch,
   ) => void;
   children?: ReactNode;
+  trigger?: "default" | "marketplace-icon";
 }) {
   const { t } = useLingui();
   const categoryHeadingId = useId();
@@ -237,12 +239,29 @@ export function CatalogFilterSheet({
         onClick={openSheet}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="relative h-8 px-2.5 before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-['']"
+        aria-label={trigger === "marketplace-icon" ? t`Filters` : undefined}
+        title={trigger === "marketplace-icon" ? t`Filters` : undefined}
+        size={trigger === "marketplace-icon" ? "icon" : undefined}
+        className={
+          trigger === "marketplace-icon"
+            ? "relative size-11 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            : "relative h-9 px-2.5 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
+        }
       >
-        <RiFilter3Line className="size-4" aria-hidden="true" />
-        <Trans>Filters</Trans>
+        <RiFilter3Line
+          className={trigger === "marketplace-icon" ? "size-5" : "size-4"}
+          aria-hidden="true"
+        />
+        {trigger === "default" ? <Trans>Filters</Trans> : null}
         {appliedCount > 0 ? (
-          <span className="min-w-4 border border-primary-foreground/30 bg-primary-foreground/15 px-1 text-[10px] tabular-nums">
+          <span
+            aria-hidden="true"
+            className={
+              trigger === "marketplace-icon"
+                ? "absolute -end-1 -top-1 flex min-h-4 min-w-4 items-center justify-center border border-destructive bg-card px-0.5 text-[9px] text-foreground tabular-nums"
+                : "min-w-4 border border-primary-foreground/30 bg-primary-foreground/15 px-1 text-[10px] tabular-nums"
+            }
+          >
             {appliedCount}
           </span>
         ) : null}

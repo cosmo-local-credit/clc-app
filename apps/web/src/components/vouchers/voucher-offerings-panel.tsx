@@ -41,6 +41,7 @@ export function VoucherOfferingsPanel({
   ownerAddress,
   isKnownEmpty,
   maxItems,
+  manualPageSize,
   autoLoadMore,
   presentation = "tabpanel",
   readOnly = false,
@@ -55,6 +56,7 @@ export function VoucherOfferingsPanel({
   /** `kind === "voucher"` already proves the result is empty — skip the request. */
   isKnownEmpty: boolean;
   maxItems?: number;
+  manualPageSize?: number;
   autoLoadMore?: boolean;
   presentation?: "tabpanel" | "section";
   readOnly?: boolean;
@@ -119,6 +121,7 @@ export function VoucherOfferingsPanel({
         fallbackSymbol={voucherSymbol}
         resolveVoucherRate={() => ({ value: voucherValue, unit: voucherUoa })}
         maxItems={maxItems}
+        manualPageSize={manualPageSize}
         autoLoadMore={autoLoadMore}
         openVoucherPageAction={openVoucherPageAction}
         management={
