@@ -130,6 +130,10 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: false, session: null }),
 }));
 
+vi.mock("wagmi", () => ({
+  useConnection: () => ({ address: undefined }),
+}));
+
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   useCreditableBrowse: () => ({
     auth: { isAuthenticated: false, isLoading: false },
@@ -159,7 +163,22 @@ vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
-  useAllAccountTokens: () => ({ tokens: [] }),
+  useAllAccountTokens: () => ({
+    tokens: [],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+  useAccountTransfersInfinite: () => ({
+    data: { pages: [{ transfers: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  }),
 }));
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
@@ -761,23 +780,24 @@ describe("MarketPage voucher card", () => {
     expect(lastMapProps.current?.bottomInset).toBe(0);
 
     fireEvent.click(screen.getByTestId("marker-1"));
-    // jsdom lays nothing out, so the peek is its fallback height.
-    expect(lastMapProps.current?.bottomInset).toBe(160);
+    // The voucher sheet keeps at least one third of the usable viewport visible.
+    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight / 3));
 
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
     expect(lastMapProps.current?.bottomInset).toBe(0);
   });
 
-  it("collapses a half-height card to its peek when the map is dragged", () => {
+  it("opens a card fully in one click and collapses it back to peek", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
     fireEvent.click(screen.getByTestId("marker-1"));
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight * 0.55));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
 
-    act(() => lastMapProps.current?.onUserPan?.());
+    expect(within(dialog).getByRole("button", { name: "Collapse" })).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Collapse" }));
 
-    expect(lastMapProps.current?.bottomInset).toBe(160);
+    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight / 3));
   });
 
   it("closes the card on a tap on empty map", () => {

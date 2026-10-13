@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { type ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -13,13 +13,32 @@ const mocks = vi.hoisted(() => ({
   close: vi.fn(),
   maps: [] as unknown[],
   authenticated: false,
+  authLoading: false,
   sessionAddress: "0x9999999999999999999999999999999999999999",
   balance: "0",
+  balancePending: false,
+  balanceError: false,
+  refetchBalance: vi.fn(),
   reviewSummary: { total: 0, average: 0 },
+}));
+
+vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
+  AddToCatalogButton: ({ className, size }: { className?: string; size?: string }) =>
+    mocks.authenticated ? (
+      <button type="button" className={className} data-size={size}>
+        Add to catalog
+      </button>
+    ) : null,
 }));
 
 vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
   useVoucherSheetSelection: () => ({ voucher: VOUCHER, open: vi.fn(), close: mocks.close }),
+}));
+
+vi.mock("wagmi", () => ({
+  useConnection: () => ({
+    address: mocks.authenticated ? (mocks.sessionAddress as `0x${string}`) : undefined,
+  }),
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
@@ -37,13 +56,37 @@ vi.mock("#/features/reviews/hooks/use-voucher-reviews", () => ({
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({
     isAuthenticated: mocks.authenticated,
+    isLoading: mocks.authLoading,
     session: mocks.authenticated ? { address: mocks.sessionAddress } : null,
   }),
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
   useAllAccountTokens: () => ({
-    tokens: mocks.balance === "0" ? [] : [{ tokenAddress: VOUCHER, balance: mocks.balance }],
+    tokens:
+      mocks.balance === "0"
+        ? []
+        : [
+            {
+              tokenAddress: VOUCHER,
+              tokenSymbol: "MALII",
+              tokenDecimals: 6,
+              balance: mocks.balance,
+            },
+          ],
+    isPending: mocks.balancePending,
+    isError: mocks.balanceError,
+    refetch: mocks.refetchBalance,
+  }),
+  useAccountTransfersInfinite: () => ({
+    data: { pages: [{ transfers: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
   }),
 }));
 
@@ -55,8 +98,8 @@ vi.mock("#/lib/default-maps", () => ({
 }));
 
 vi.mock("#/components/vouchers/voucher-offerings-panel", () => ({
-  VoucherOfferingsPanel: ({ maxItems }: { maxItems?: number }) => (
-    <div data-testid="offerings" data-max-items={maxItems}>
+  VoucherOfferingsPanel: ({ manualPageSize }: { manualPageSize?: number }) => (
+    <div data-testid="offerings" data-page-size={manualPageSize}>
       Offerings panel
     </div>
   ),
@@ -159,7 +202,6 @@ function Sheet({
   return (
     <VoucherSheet
       placeholder={placeholder}
-      origin={{ from: "wallet" }}
       snap={snap}
       onSnapChange={(next) => {
         onSnapChange?.(next);
@@ -185,7 +227,11 @@ beforeEach(() => {
   mocks.close.mockReset();
   mocks.maps = [];
   mocks.authenticated = false;
+  mocks.authLoading = false;
   mocks.balance = "0";
+  mocks.balancePending = false;
+  mocks.balanceError = false;
+  mocks.refetchBalance.mockReset();
   mocks.reviewSummary = { total: 0, average: 0 };
 });
 
@@ -228,7 +274,7 @@ describe("VoucherSheet summary", () => {
       await waitFor(() =>
         expect(share).toHaveBeenCalledWith({
           title: "Priscilah Malii",
-          url: `${window.location.origin}/?voucher=${VOUCHER}`,
+          url: `${window.location.origin}/vouchers/${VOUCHER}`,
         }),
       );
     } finally {
@@ -252,6 +298,38 @@ describe("VoucherSheet summary", () => {
     expect(screen.getByRole("link", { name: "Redeem" }).getAttribute("href")).toBe(
       `/wallet/send/amount?token=${VOUCHER}&recipient=${OWNER}`,
     );
+    const actions = screen.getByLabelText("Voucher actions");
+    const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
+    expect(addToCatalog.getAttribute("data-size")).toBe("sm");
+    expect(addToCatalog.className).toContain("h-9");
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("2.5 MALII (25 KSH)");
+  });
+
+  it("shows a verified zero, loading, and retryable unavailable balance without guessing", () => {
+    mocks.detail = detail();
+    mocks.authenticated = true;
+
+    const zero = renderSheet();
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("0 MALII (0 KSH)");
+    zero.unmount();
+
+    mocks.balancePending = true;
+    const loading = renderSheet();
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("Loading");
+    loading.unmount();
+
+    mocks.balancePending = false;
+    mocks.balanceError = true;
+    renderSheet();
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("Unavailable");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.refetchBalance).toHaveBeenCalledOnce();
+  });
+
+  it("does not show a wallet balance to a guest", () => {
+    mocks.detail = detail();
+    renderSheet();
+    expect(screen.queryByLabelText("Your Balance")).toBeNull();
   });
 
   it.each([null, "not-an-address", "0x0000000000000000000000000000000000000000"])(
@@ -277,15 +355,14 @@ describe("VoucherSheet summary", () => {
 });
 
 describe("VoucherSheet continuous content", () => {
-  it("mounts offerings and reviews at half and keeps them mounted after collapse", async () => {
+  it("mounts the shared content on first expansion and keeps it mounted after collapse", async () => {
     mocks.detail = detail();
     renderSheet();
     expect(screen.queryByText("Offerings panel")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
     expect(await screen.findByText("Offerings panel")).toBeTruthy();
     expect(screen.getByText("Reviews panel")).toBeTruthy();
-    expect(screen.getByTestId("offerings").getAttribute("data-max-items")).toBe("3");
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    expect(screen.getByTestId("offerings").getAttribute("data-page-size")).toBe("3");
     fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
     expect(screen.getByText("Offerings panel")).toBeTruthy();
   });
@@ -296,26 +373,56 @@ describe("VoucherSheet continuous content", () => {
     expect(await screen.findByText("Offerings panel")).toBeTruthy();
     expect(screen.queryByRole("tab")).toBeNull();
     expect(screen.queryByText("Pools with this voucher")).toBeNull();
-    expect(screen.queryByText("Fresh vegetables from the farm.")).toBeNull();
+    expect(screen.getByText("Fresh vegetables from the farm.")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Posts" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Info" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Activity" })).toBeTruthy();
   });
 
-  it("opens the complete voucher page with its origin", async () => {
+  it("does not need an escape link to a second voucher implementation", async () => {
     mocks.detail = detail();
     renderSheet({ initialSnap: "half" });
-    const page = await screen.findByRole("link", { name: "Open voucher page" });
-    expect(page.getAttribute("href")).toBe(`/vouchers/${VOUCHER}?from=wallet`);
+    expect(await screen.findByText("Offerings panel")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Open voucher page" })).toBeNull();
   });
 
   it("advances through snap points from the identity header", async () => {
     const onSnapChange = vi.fn();
     renderSheet({ onSnapChange });
     const title = screen.getByRole("heading", { name: "Priscilah Malii" });
-    const header = title.parentElement?.parentElement;
+    const header = title.closest("[data-voucher-identity]");
     if (!header) throw new Error("expected the voucher identity header");
     fireEvent.click(header);
     fireEvent.click(header);
     expect(onSnapChange.mock.calls).toEqual([["half"], ["full"]]);
     expect(await screen.findByText("Reviews panel")).toBeTruthy();
+  });
+
+  it("opens fully on an identity double-click", async () => {
+    const onSnapChange = vi.fn();
+    renderSheet({ onSnapChange });
+    const header = screen
+      .getByRole("heading", { name: "Priscilah Malii" })
+      .closest("[data-voucher-identity]");
+    if (!header) throw new Error("expected the voucher identity header");
+
+    fireEvent.doubleClick(header);
+
+    expect(onSnapChange).toHaveBeenLastCalledWith("full");
+    expect(await screen.findByText("Reviews panel")).toBeTruthy();
+  });
+
+  it("does not collapse when the identity header is clicked at full", () => {
+    const onSnapChange = vi.fn();
+    renderSheet({ initialSnap: "full", onSnapChange });
+    const header = screen
+      .getByRole("heading", { name: "Priscilah Malii" })
+      .closest("[data-voucher-identity]");
+    if (!header) throw new Error("expected the voucher identity header");
+
+    fireEvent.click(header);
+
+    expect(onSnapChange).not.toHaveBeenCalled();
   });
 });
 

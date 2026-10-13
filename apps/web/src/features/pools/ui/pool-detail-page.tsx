@@ -317,7 +317,6 @@ export function PoolDetailPage({
             (voucher) => voucher.tokenAddress.toLowerCase() === sheet.voucher?.toLowerCase(),
           ) ?? null
         }
-        origin={{ poolAddress }}
       />
     </div>
   );

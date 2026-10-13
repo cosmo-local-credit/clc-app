@@ -13,7 +13,7 @@ vi.mock("sonner", () => ({
   toast: { error: mocks.toastError, success: mocks.toastSuccess },
 }));
 
-vi.mock("../hooks/use-update-voucher-profile", () => ({
+vi.mock("#/features/vouchers/hooks/use-update-voucher-profile", () => ({
   useUpdateVoucherProfile: () => ({ mutateAsync: mocks.updateProfile, isPending: false }),
 }));
 

@@ -6,30 +6,22 @@ import { RiCloseLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import {
   MapSheet,
-  MapSheetDescription,
   MapSheetPeek,
   MapSheetTitle,
   type MapSheetSnap,
 } from "#/components/ui/map-sheet";
 import { Skeleton } from "#/components/ui/skeleton";
-import { VoucherAvatar } from "#/components/wallet";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { cn } from "#/lib/utils";
 import { useMarketDistanceLabel } from "./voucher-labels";
-import type { VoucherPageOrigin } from "./voucher-sheet-full";
 import { VoucherSheetFull } from "./voucher-sheet-full.lazy";
 import {
   ShareVoucherButton,
+  useVoucherBalanceSummary,
   VOUCHER_ACTION_PILL,
-  VoucherActionRow,
-  VoucherReviewSummaryContent,
-  VoucherTagList,
+  VoucherIdentitySummary,
 } from "./voucher-summary";
-
-export type { VoucherPageOrigin } from "./voucher-sheet-full";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -69,17 +61,15 @@ export function useVoucherSheetSnap(isOpen: boolean) {
  */
 export function VoucherSheet({
   placeholder = null,
-  origin,
   modal = true,
   realFix = null,
   snap: controlledSnap,
   onSnapChange,
   onCoveredHeightChange,
   floating,
+  bottomNavigationVisible = false,
 }: {
   placeholder?: VoucherPlaceholder | null;
-  /** Where the voucher's page should send Back once opened from the card. */
-  origin?: VoucherPageOrigin;
   /** False over the map, which stays live under the card. */
   modal?: boolean;
   realFix?: Coordinates | null;
@@ -88,6 +78,8 @@ export function VoucherSheet({
   onSnapChange?: (snap: MapSheetSnap) => void;
   onCoveredHeightChange?: (height: number, snap: MapSheetSnap) => void;
   floating?: ReactNode;
+  /** The non-modal map sheet sits beneath the authenticated app navigation. */
+  bottomNavigationVisible?: boolean;
 }) {
   const { t } = useLingui();
   const selection = useVoucherSheetSelection();
@@ -117,6 +109,8 @@ export function VoucherSheet({
       onClose={selection.close}
       onCoveredHeightChange={onCoveredHeightChange}
       floating={floating}
+      minimumPeekRatio={!modal ? 1 / 3 : undefined}
+      underBottomNavigation={!modal && bottomNavigationVisible}
     >
       {unavailable ? (
         <MapSheetPeek className="px-4 pb-4">
@@ -145,7 +139,6 @@ export function VoucherSheet({
           realFix={realFix}
           snap={snap}
           onSnapChange={setSnap}
-          origin={origin}
           onClose={selection.close}
         />
       )}
@@ -180,7 +173,6 @@ function VoucherCard({
   realFix,
   snap,
   onSnapChange,
-  origin,
   onClose,
 }: {
   address: `0x${string}`;
@@ -190,7 +182,6 @@ function VoucherCard({
   realFix: Coordinates | null;
   snap: MapSheetSnap;
   onSnapChange: (snap: MapSheetSnap) => void;
-  origin: VoucherPageOrigin | undefined;
   onClose: () => void;
 }) {
   const { t } = useLingui();
@@ -204,47 +195,45 @@ function VoucherCard({
   const locationName = detail?.locationName ?? placeholder?.locationName ?? null;
   const distanceLabel = useMarketDistanceLabel(realFix, coordinates);
   const place = distanceLabel ?? locationName;
-  const auth = useAuthStatus();
-  const holdings = useAllAccountTokens(
-    auth.isAuthenticated ? (auth.session?.address ?? undefined) : undefined,
-  );
-  const holding = holdings.tokens.find(
-    (token) => token.tokenAddress.toLowerCase() === address.toLowerCase(),
-  );
-  const hasPositiveBalance =
-    auth.isAuthenticated &&
-    !!holding &&
-    /^\d+$/.test(holding.balance) &&
-    BigInt(holding.balance) > 0n;
   const voucherPageAddress = detail?.address ?? address;
+  const balance = useVoucherBalanceSummary({
+    address: voucherPageAddress,
+    symbol,
+    decimals: detail?.decimals,
+    voucherValue: detail?.voucherValue,
+    voucherUoa: detail?.voucherUoa,
+  });
 
   return (
     <>
       <MapSheetPeek className="px-4 pb-4">
-        <div className="flex items-center gap-3">
-          {/* A pointer shortcut, as on the place sheet. The handle above is the
-              control that names the action for everyone else. */}
-          <div
-            className={cn(
-              "flex min-w-0 flex-1 items-center gap-3 select-none",
-              snap !== "full" && "cursor-pointer",
-            )}
-            onClick={
-              snap === "peek"
-                ? () => onSnapChange("half")
-                : snap === "half"
-                  ? () => onSnapChange("full")
-                  : undefined
-            }
-            onDoubleClick={snap === "full" ? undefined : () => onSnapChange("full")}
-          >
-            <VoucherAvatar
-              address={address}
-              symbol={symbol}
-              iconUrl={detail?.iconUrl ?? placeholder?.iconUrl ?? null}
-              size={40}
-            />
-            <div className="flex min-w-0 flex-1 items-baseline gap-2">
+        <VoucherIdentitySummary
+          address={voucherPageAddress}
+          name={name}
+          symbol={symbol}
+          iconUrl={detail?.iconUrl ?? placeholder?.iconUrl}
+          avatarSize={40}
+          balance={balance}
+          place={place}
+          tags={detail?.tags}
+          ownerAddress={detail?.ownerAddress}
+          locationName={locationName}
+          lat={lat}
+          lng={lng}
+          phone={detail?.phone}
+          website={detail?.website}
+          catalogResourceId={detail?.id}
+          catalogAddress={detail?.address}
+          onIdentityClick={
+            snap === "peek"
+              ? () => onSnapChange("half")
+              : snap === "half"
+                ? () => onSnapChange("full")
+                : undefined
+          }
+          onIdentityDoubleClick={snap === "full" ? undefined : () => onSnapChange("full")}
+          title={
+            <div className="flex min-w-0 items-baseline gap-2">
               <MapSheetTitle
                 dir="auto"
                 className="min-w-0 truncate font-heading font-semibold text-[1.375rem] leading-tight tracking-[-0.02em]"
@@ -258,34 +247,19 @@ function VoucherCard({
                 {symbol}
               </span>
             </div>
-          </div>
-          <div className="-me-3 flex shrink-0 items-center">
-            <ShareVoucherButton name={name} address={address} />
-            <CloseButton label={t`Close`} onClick={onClose} />
-          </div>
-        </div>
-        <MapSheetDescription className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-muted-foreground text-xs">
-          <VoucherReviewSummaryContent address={address} place={place} />
-        </MapSheetDescription>
-        <VoucherTagList tags={detail?.tags} className="mt-2" />
-
-        <VoucherActionRow
-          address={voucherPageAddress}
-          name={name}
-          ownerAddress={detail?.ownerAddress}
-          hasPositiveBalance={hasPositiveBalance}
-          locationName={locationName}
-          lat={lat}
-          lng={lng}
-          phone={detail?.phone}
-          website={detail?.website}
-          className="mt-3"
+          }
+          headerActions={
+            <>
+              <ShareVoucherButton name={name} address={address} destination="detail" />
+              <CloseButton label={t`Close`} onClick={onClose} />
+            </>
+          }
         />
       </MapSheetPeek>
 
       {reachedHalf ? (
         <Suspense fallback={<Skeleton className="mx-4 mt-6 h-40 rounded-none" />}>
-          <VoucherSheetFull address={address} detail={detail} origin={origin} />
+          <VoucherSheetFull address={address} detail={detail} onRetired={onClose} />
         </Suspense>
       ) : null}
     </>
