@@ -1,3 +1,4 @@
+import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -25,6 +26,7 @@ export function useRetireVoucher(address: string) {
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: voucherKeys.detail(address) });
       return Promise.all([
+        queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
         queryClient.invalidateQueries({
           queryKey: voucherKeys.all,
           predicate: (query) => query.queryKey[2] !== "detail",
