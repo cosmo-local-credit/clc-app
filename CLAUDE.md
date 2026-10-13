@@ -694,47 +694,6 @@ decimal comma and period grouping. Its CLDR plural categories are `one` and
 `other`. Product terminology uses **Fonds**, **Gutschein**, and **Geldbörse**;
 editable amounts and machine-readable values remain canonical ASCII.
 
-Filipino uses the canonical `fil` catalog, stays `ltr`, and uses `fil-PH` Intl
-formatting with Latin digits and comma grouping. Legacy Tagalog browser tags
-(`tl` and its regional or script variants) resolve to `fil`; only `fil` is
-persisted. Its CLDR plural categories are `one` and `other`, with the category
-depending on the final integer or fractional digit rather than English rules.
-Product terminology intentionally keeps familiar loanwords such as **pool**,
-**voucher**, and **wallet**. Editable amounts and machine-readable values remain
-canonical ASCII.
-
-Dutch uses the `nl` catalog, stays `ltr`, and uses `nl` Intl formatting with a
-decimal comma and period grouping. Its CLDR plural categories are `one` and
-`other`. Product terminology uses **fonds**, **waardebon**, and **portemonnee**;
-editable amounts and machine-readable values remain canonical ASCII.
-
-Flemish uses the separate `nl-BE` catalog for Belgian Dutch browser preferences,
-stays `ltr`, and uses `nl-BE` Intl formatting with a decimal comma and period
-grouping. Its CLDR plural categories are `one` and `other`. Product terminology
-uses **fonds**, **waardebon**, and **portefeuille**; generic Dutch and non-Belgian
-regional tags continue to resolve to `nl`. Editable amounts and machine-readable
-values remain canonical ASCII.
-
-Hindi uses the `hi` catalog, stays `ltr`, and uses `hi` Intl formatting with
-Latin digits and Indian grouping. Its CLDR plural categories are `one` and
-`other`, with zero and one selecting `one`. Product terminology uses **पूल**,
-**वाउचर**, and **वॉलेट**; editable amounts and machine-readable values remain
-canonical ASCII.
-
-Simplified Chinese uses the `zh` catalog, stays `ltr`, and uses `zh-CN` Intl
-formatting with Latin digits and comma grouping. Its CLDR plural rule has only
-the `other` category. Product terminology uses **资金池**, **代金券**, and
-**钱包**; editable amounts and machine-readable values remain canonical ASCII.
-The existing font stacks rely on platform CJK fallback; do not add a font
-dependency solely for Chinese.
-
-Traditional Chinese uses the `zh-Hant` catalog for explicit Hant script tags
-and the `zh-TW`, `zh-HK`, and `zh-MO` regions. It stays `ltr`, uses `zh-Hant`
-Intl formatting with Latin digits and comma grouping, and has only the `other`
-CLDR plural category. Product terminology uses **資金池**, **代金券**, and
-**錢包**. Explicit `Hans`/`Hant` script tags take precedence over their region;
-bare `zh` remains Simplified Chinese.
-
 ### Client / server / URL state
 
 Pick the right home for each kind of state. Misclassifying state — usually by
