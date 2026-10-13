@@ -17,8 +17,8 @@ export function translateRecipientError(error: unknown, i18n: I18n): string | nu
         id: "That name or symbol is already taken",
         message: "That name or symbol is already taken",
       });
-    case "username must be 3–24 letters, digits or hyphens, with at least one letter and no edge hyphens":
-      return translateValidationError("Username must be 3–24 letters, digits or hyphens", i18n);
+    case "username must contain 1–80 characters":
+      return translateValidationError("Username must contain 1–80 characters", i18n);
     default:
       return null;
   }

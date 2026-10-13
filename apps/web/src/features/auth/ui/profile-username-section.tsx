@@ -25,7 +25,7 @@ import { translateValidationError } from "#/lib/validation-i18n";
 
 // Blank means "pick one for me" at signup; here it would save nothing.
 const chosenUsernameSchema = usernameSchema.refine((value) => value !== "", {
-  message: "Username must be 3–24 letters, digits or hyphens",
+  message: "Username must contain 1–80 characters",
 });
 
 /**
@@ -58,7 +58,7 @@ export function ProfileUsernameSection({ profile }: { profile: ProfileResult }) 
           </p>
           {username ? (
             <p className="truncate font-medium font-mono text-sm">
-              <bdi dir="ltr">{username}</bdi>
+              <bdi dir="auto">{username}</bdi>
             </p>
           ) : (
             <p className="font-medium text-sm">
@@ -207,7 +207,7 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
           })}
         >
           {({ canSubmit, isSubmitting, username }) => {
-            const normalized = username.trim().toLowerCase();
+            const normalized = username.trim().normalize("NFC");
             return (
               <Button
                 type="submit"

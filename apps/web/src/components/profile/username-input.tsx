@@ -37,7 +37,7 @@ export function UsernameInput({
       </label>
       <Input
         id={id}
-        dir="ltr"
+        dir="auto"
         value={value}
         onChange={(event) => {
           setSuggestionError(null);
@@ -50,7 +50,6 @@ export function UsernameInput({
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
-        maxLength={24}
       />
       <p id={descriptionId} className="text-muted-foreground text-xs">
         {t`People can use this name to send vouchers to you.`}

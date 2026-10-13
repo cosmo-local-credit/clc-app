@@ -31,7 +31,7 @@ export function createRecipientsClient(http: HttpClient) {
     },
     async resolve(name: string, signal?: AbortSignal) {
       const result = await http.request<unknown>(
-        `/api/v2/recipients/resolve/${encodeURIComponent(name)}`,
+        `/api/v2/recipients/resolve?${new URLSearchParams({ name })}`,
         { method: "GET", signal, cache: "no-store" },
       );
       if (!isRecord(result) || !isRecipientIdentity(result.recipient)) {
@@ -63,11 +63,7 @@ export function createRecipientsClient(http: HttpClient) {
 }
 
 function isUsername(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    /^[a-z0-9][a-z0-9-]{1,22}[a-z0-9]$/.test(value) &&
-    /[a-z]/.test(value)
-  );
+  return typeof value === "string" && value.trim() !== "" && Array.from(value).length <= 80;
 }
 
 function isRecipientIdentity(value: unknown): value is RecipientIdentity {

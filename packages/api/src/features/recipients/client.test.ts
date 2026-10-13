@@ -30,7 +30,7 @@ describe("internal recipients", () => {
     const { client, fetcher } = setup({ recipient: pool });
     await expect(client.resolve("Sohail Pool")).resolves.toEqual(pool);
     expect(fetcher.mock.calls[0][0]).toBe(
-      "https://core.test/api/v2/recipients/resolve/Sohail%20Pool",
+      "https://core.test/api/v2/recipients/resolve?name=Sohail+Pool",
     );
     await expect(client.reverse(address)).resolves.toEqual(pool);
     expect(fetcher.mock.calls[1][0]).toBe(`https://core.test/api/v2/recipients/reverse/${address}`);
@@ -58,15 +58,23 @@ describe("internal recipients", () => {
       "Invalid recipient response",
     );
 
-    const malformedSuggestion = setup({ username: "bad username" });
+    const malformedSuggestion = setup({ username: " " });
     await expect(malformedSuggestion.client.suggest("Alice")).rejects.toThrow(
       "Invalid username suggestion response",
     );
 
-    const suggestion = setup({ username: "alice-2" });
-    await expect(suggestion.client.suggest("Alice Smith")).resolves.toBe("alice-2");
+    const suggestion = setup({ username: "Željko Petrović" });
+    await expect(suggestion.client.suggest("Alice Smith")).resolves.toBe("Željko Petrović");
     expect(suggestion.fetcher.mock.calls[0][0]).toBe(
       "https://core.test/api/v2/recipients/suggest?hint=Alice+Smith",
     );
   });
+});
+
+it("keeps username punctuation inside a query parameter", async () => {
+  const { client, fetcher } = setup({ recipient: pool });
+  await client.resolve("Ž / #?&");
+  const url = new URL(String(fetcher.mock.calls[0][0]));
+  expect(url.pathname).toBe("/api/v2/recipients/resolve");
+  expect(url.searchParams.get("name")).toBe("Ž / #?&");
 });
