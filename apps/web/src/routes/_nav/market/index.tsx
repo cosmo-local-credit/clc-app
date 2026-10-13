@@ -13,12 +13,44 @@ import {
   pickMarketplaceSearch,
   type MarketplaceRouteSearch,
 } from "#/lib/navigation/marketplace-search";
+import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+
+type MarketRouteSearch = MarketplaceRouteSearch & { voucher?: string };
+
+function pickMarketRouteSearch(search: unknown): MarketRouteSearch {
+  const marketplaceSearch = pickMarketplaceSearch(search);
+  if (typeof search !== "object" || search === null || !("voucher" in search)) {
+    return marketplaceSearch;
+  }
+  const voucher = (search as Record<string, unknown>).voucher;
+  if (voucher === undefined) return marketplaceSearch;
+  return {
+    ...marketplaceSearch,
+    voucher: typeof voucher === "string" ? voucher : "__invalid__",
+  };
+}
 
 export const Route = createFileRoute("/_nav/market/")({
   staticData: { navOwner: "market" },
-  validateSearch: (search): MarketplaceRouteSearch => pickMarketplaceSearch(search),
+  validateSearch: (search): MarketRouteSearch => pickMarketRouteSearch(search),
   beforeLoad: ({ search }) => {
+    const voucherAddress = parseVoucherAddress(search.voucher);
+    if (voucherAddress) {
+      throw redirect({
+        to: "/vouchers/$voucherAddress",
+        params: { voucherAddress },
+        search: { from: "market" },
+        replace: true,
+      });
+    }
+    if (search.voucher !== undefined) {
+      throw redirect({
+        to: "/market",
+        search: pickMarketplaceSearch(search),
+        replace: true,
+      });
+    }
     const next = canonicalMarketplaceSearch(search);
     if (next) throw redirect({ to: "/market", search: next, replace: true });
   },

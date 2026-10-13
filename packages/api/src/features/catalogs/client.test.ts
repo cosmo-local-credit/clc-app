@@ -64,6 +64,50 @@ describe("catalog HTTP contract", () => {
       description: "A local directory",
     });
   });
+  it("serializes tags, facets and verified pool references without broadening the request", async () => {
+    const fetcher = respond({ catalogs: [row], nextCursor: null, tagFacets: [] });
+    await api.list({
+      tags: ["Food", "Local"],
+      tagMatch: "all",
+      facets: true,
+      pools: [
+        { chainId: 100, address: `0x${"b".repeat(40)}` },
+        { chainId: 42220, address: `0x${"c".repeat(40)}` },
+      ],
+    });
+
+    const url = new URL(fetcher.mock.calls[0]?.[0]);
+    expect(url.searchParams.get("tags")).toBe("Food,Local");
+    expect(url.searchParams.get("tagMatch")).toBe("all");
+    expect(url.searchParams.get("facets")).toBe("true");
+    expect(url.searchParams.get("pools")).toBe(`100:0x${"b".repeat(40)},42220:0x${"c".repeat(40)}`);
+  });
+  it("reads both member kinds with an opaque cursor and updates an existing catalog", async () => {
+    const fetcher = respond({ items: [], nextCursor: null });
+    await api.members("7", "pool", "opaque+/=");
+    await api.members("7", "voucher");
+    expect(fetcher.mock.calls[0]?.[0]).toBe(
+      "https://api.test/api/v2/catalogs/7/pools?perPage=20&cursor=opaque%2B%2F%3D",
+    );
+    expect(fetcher.mock.calls[1]?.[0]).toBe(
+      "https://api.test/api/v2/catalogs/7/vouchers?perPage=20",
+    );
+
+    fetcher.mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true, result: { catalog: row } }), { status: 200 }),
+    );
+    await api.update("7", {
+      name: "Local",
+      description: "Updated directory",
+      imageUrl: "",
+      locationName: "Sarajevo",
+      geoLat: 43,
+      geoLng: 18,
+      tags: ["Local"],
+    });
+    expect(fetcher.mock.calls[2]?.[0]).toBe("https://api.test/api/v2/catalogs/7");
+    expect(fetcher.mock.calls[2]?.[1]).toMatchObject({ method: "PUT" });
+  });
   it("uses resource DB IDs and one pool-only membership write", async () => {
     const fetcher = respond({ added: true });
     await api.setMember("7", "pool", "12", true);

@@ -29,14 +29,11 @@ import { MarkdownContent } from "#/components/ui/markdown-content";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagBadge } from "#/components/ui/tag-badge";
-import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { BackChevron, EllipsizedAddress } from "#/components/wallet";
 import type { ReportAttachment, ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 import { useReport, useReportLocation } from "#/features/home/hooks/use-reports";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { openDefaultMaps } from "#/lib/default-maps";
-import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
-import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { formatReportDate, formatReportPeriod } from "#/lib/report-display";
 
 export function ReportPage({ reportId }: { reportId: string }) {
@@ -491,11 +488,7 @@ function attachmentMeta(
 }
 
 function RelatedVouchers({ report }: { report: ReportDetail }) {
-  const sheet = useVoucherSheetSelection();
   if (report.vouchers.length === 0) return null;
-  const sheetVoucher = report.vouchers.find(
-    (voucher) => voucher.address.toLowerCase() === sheet.voucher?.toLowerCase(),
-  );
 
   return (
     <section aria-labelledby="related-vouchers-heading">
@@ -507,13 +500,11 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
       </h2>
       <div className="mt-2 border border-border bg-card">
         {report.vouchers.map((voucher) => (
-          <button
+          <Link
             key={voucher.address}
-            type="button"
-            onClick={() => {
-              const address = parseVoucherAddress(voucher.address);
-              if (address) sheet.open(address);
-            }}
+            to="/vouchers/$voucherAddress"
+            params={{ voucherAddress: voucher.address }}
+            search={{ from: "posts", reportId: report.id }}
             className="flex min-h-12 w-full items-center gap-2 border-b border-border px-3 py-2 text-start last:border-b-0 active:bg-muted"
           >
             <span className="min-w-0 flex-1 truncate text-sm">{voucher.name}</span>
@@ -527,13 +518,9 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
               className="rtl:-scale-x-100 size-4 shrink-0 text-muted-foreground"
               aria-hidden="true"
             />
-          </button>
+          </Link>
         ))}
       </div>
-
-      <VoucherSheet
-        placeholder={sheetVoucher ? { name: sheetVoucher.name, symbol: sheetVoucher.symbol } : null}
-      />
     </section>
   );
 }

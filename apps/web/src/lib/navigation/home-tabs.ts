@@ -42,8 +42,9 @@ export function parseHomeSearch(
 export function isAtHomeTabRoot(search: unknown): boolean {
   const record = (search ?? {}) as Record<string, unknown>;
   const { tab, view, voucher } = parseHomeSearch(record);
-  // An open card is a step down from whichever tab it opened on.
-  if (voucher) return false;
+  // Only the map owns the voucher card. A stale legacy voucher parameter on
+  // another home tab cannot turn that tab into a nested sheet destination.
+  if (tab === "market" && view === "map" && voucher) return false;
   if (tab !== "market") return true;
   if (view !== "map") return false;
   return !isFilterSearchActive(catalogSearchForScope(search, false));

@@ -1,22 +1,41 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { z } from "zod";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { PoolDetailPage } from "#/features/pools/ui";
-import { voucherSheetSearchShape } from "#/lib/navigation/voucher-sheet-search";
+import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const searchSchema = z.object({
   tab: z
     .enum(["offerings", "vouchers", "holdings", "credit", "activity"])
     .optional()
     .catch(undefined),
-  ...voucherSheetSearchShape,
+  voucher: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
   staticData: { navOwner: "wallet" },
   validateSearch: searchSchema,
+  beforeLoad: ({ params, search }) => {
+    const voucherAddress = parseVoucherAddress(search.voucher);
+    if (voucherAddress) {
+      throw redirect({
+        to: "/vouchers/$voucherAddress",
+        params: { voucherAddress },
+        search: { poolAddress: params.poolAddress },
+        replace: true,
+      });
+    }
+    if (search.voucher !== undefined) {
+      throw redirect({
+        to: "/pools/$poolAddress",
+        params: { poolAddress: params.poolAddress },
+        search: { tab: search.tab },
+        replace: true,
+      });
+    }
+  },
   component: PoolDetailRoute,
 });
 

@@ -35,6 +35,46 @@ describe("catalog cache", () => {
       options.getNextPageParam({ catalogs: [], nextCursor: null }, [], undefined, []),
     ).toBeUndefined();
   });
+  it("isolates verified pools and forwards scoped discovery parameters", async () => {
+    const list = vi.fn().mockResolvedValue({ catalogs: [], nextCursor: null });
+    const client = { list } as unknown as CatalogsClient;
+    const pools = [{ chainId: 100, address: `0x${"A".repeat(40)}` }];
+    const options = catalogsInfiniteQueryOptions(client, {
+      scope: "nearby:account:100:1:2:500",
+      q: " maize ",
+      tags: ["Food"],
+      tagMatch: "all",
+      pools,
+    });
+
+    expect(options.queryKey).toEqual(
+      catalogKeys.list({
+        scope: "nearby:account:100:1:2:500",
+        q: " maize ",
+        tags: ["Food"],
+        tagMatch: "all",
+        pools,
+      }),
+    );
+    const signal = new AbortController().signal;
+    await options.queryFn?.({ pageParam: "opaque", signal } as never);
+    expect(list).toHaveBeenCalledWith(
+      {
+        cursor: "opaque",
+        nearby: true,
+        q: " maize ",
+        tags: ["Food"],
+        tagMatch: "all",
+        pools,
+        facets: true,
+      },
+      signal,
+    );
+
+    expect(catalogsInfiniteQueryOptions(client, "nearby:guest").queryKey).toEqual(
+      catalogKeys.list({ scope: "nearby:guest" }),
+    );
+  });
   it("refreshes counts and lists while retaining the confirmed membership", async () => {
     const queryClient = new QueryClient();
     const invalidate = vi.spyOn(queryClient, "invalidateQueries");

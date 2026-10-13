@@ -13,6 +13,7 @@ import {
   isPrivateHomeTab,
   parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
+import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
@@ -27,6 +28,31 @@ export const Route = createFileRoute("/_nav/")({
     ...pickMarketplaceSearch(search),
   }),
   beforeLoad: ({ search }) => {
+    const voucherAddress = parseVoucherAddress(search.voucher);
+    const isMapVoucher = search.tab === "market" && search.view === "map";
+    if (voucherAddress && !isMapVoucher) {
+      const from =
+        search.tab === "wallet"
+          ? "wallet"
+          : search.tab === "posts"
+            ? "posts"
+            : search.tab === "market"
+              ? "market"
+              : undefined;
+      if (from) {
+        throw redirect({
+          to: "/vouchers/$voucherAddress",
+          params: { voucherAddress },
+          search: { from },
+          replace: true,
+        });
+      }
+      throw redirect({
+        to: "/",
+        search: { ...search, voucher: undefined },
+        replace: true,
+      });
+    }
     if (search.tab === "market" && search.view === "list") {
       throw redirect({
         to: "/market",

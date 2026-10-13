@@ -46,6 +46,15 @@ describe("isAtHomeTabRoot", () => {
     expect(isAtHomeTabRoot({ tab: "settings", view: "list" })).toBe(true);
   });
 
+  it("ignores retired voucher-sheet state outside the map", () => {
+    expect(
+      isAtHomeTabRoot({
+        tab: "wallet",
+        voucher: "0x1111111111111111111111111111111111111111",
+      }),
+    ).toBe(true);
+  });
+
   it("treats the unfiltered map as the Market root and the list as a descendant", () => {
     expect(isAtHomeTabRoot({ tab: "market" })).toBe(true);
     expect(isAtHomeTabRoot({ tab: "market", view: "map" })).toBe(true);

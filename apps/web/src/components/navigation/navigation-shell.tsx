@@ -35,12 +35,16 @@ export function NavigationShell() {
     atActiveTabRoot = isAtMarketplaceRoot(search);
   } else if (navOwner === "voucher") {
     const from: VoucherOrigin | undefined =
-      search.from === "market" || search.from === "wallet" || search.from === "vouchers"
+      search.from === "market" ||
+      search.from === "posts" ||
+      search.from === "wallet" ||
+      search.from === "vouchers"
         ? search.from
         : undefined;
     activeTab = resolveVoucherNavigationOwner({
       from,
       poolAddress: typeof search.poolAddress === "string" ? search.poolAddress : undefined,
+      reportId: typeof search.reportId === "string" ? search.reportId : undefined,
     }).activeTab;
   } else {
     activeTab = navOwner;

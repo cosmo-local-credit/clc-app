@@ -145,6 +145,27 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   }),
 }));
 
+vi.mock("#/components/creditable-browse-control", () => ({
+  CreditableBrowseControl: ({
+    part,
+    onChange,
+    onClear,
+  }: {
+    part: "control" | "feedback";
+    onChange: (checked: boolean) => void;
+    onClear: () => void;
+  }) => (
+    <div data-testid={`credit-${part}`}>
+      <button type="button" onClick={() => onChange(true)}>
+        {part} Credit on
+      </button>
+      <button type="button" onClick={onClear}>
+        {part} Credit clear
+      </button>
+    </div>
+  ),
+}));
+
 vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
   useMarketplaceMapSearch: (_filter: unknown, _pools: unknown, enabled: boolean) => ({
     locations: enabled ? (filteredResult.current.data?.vouchers ?? []) : [],
@@ -401,6 +422,36 @@ beforeEach(() => {
 });
 
 describe("MarketPage location button", () => {
+  it("writes and clears Credit without leaving the canonical map route", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+
+    expect(mockNavigate).toHaveBeenCalledTimes(4);
+    const previous = { q: "food", creditable: false };
+    for (const [index, [call]] of mockNavigate.mock.calls.entries()) {
+      expect(call).toMatchObject({ to: "/", ...(index % 2 === 1 ? { replace: true } : {}) });
+      expect(call.search(previous)).toEqual({
+        q: "food",
+        tab: "market",
+        view: "map",
+        creditable: index % 2 === 0 ? true : false,
+      });
+    }
+  });
+
+  it("opens and closes the map filter sheet through the shared shell", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Close filters" }));
+    expect(screen.queryByRole("dialog", { name: "Filter vouchers" })).toBeNull();
+  });
+
   it.each([
     ["idle", "Use current location", false],
     ["requesting", "Finding location", true],

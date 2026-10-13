@@ -104,8 +104,10 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   transfers: [] as Array<Record<string, unknown>>,
+  transfersError: false,
   transfersHaveNextPage: false,
   fetchTransfers: vi.fn(),
+  refetchTransfers: vi.fn(),
 }));
 
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
@@ -252,12 +254,12 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
   useAccountTransfersInfinite: () => ({
     data: { pages: [{ transfers: mocks.transfers }] },
     isPending: false,
-    isError: false,
-    isSuccess: true,
+    isError: mocks.transfersError,
+    isSuccess: !mocks.transfersError,
     hasNextPage: mocks.transfersHaveNextPage,
     isFetchingNextPage: false,
     fetchNextPage: mocks.fetchTransfers,
-    refetch: vi.fn(),
+    refetch: mocks.refetchTransfers,
   }),
 }));
 
@@ -505,8 +507,10 @@ beforeEach(() => {
   };
   mocks.reportVoucher = undefined;
   mocks.transfers = [];
+  mocks.transfersError = false;
   mocks.transfersHaveNextPage = false;
   mocks.fetchTransfers.mockReset();
+  mocks.refetchTransfers.mockReset();
   mocks.reportsEnabled = false;
   mocks.reportsResult = {
     data: { pages: [{ reports: [report()] }] },
@@ -525,6 +529,12 @@ afterEach(() => {
 });
 
 describe("VoucherDetailPage", () => {
+  it("returns a related voucher to its source Post", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} origin="posts" reportId="3182" />);
+
+    expect(screen.getByRole("link", { name: "Posts" }).getAttribute("href")).toBe("/posts/3182");
+  });
+
   it("shows voucher creation as new supply without exposing the zero address", async () => {
     const zeroAddress = "0x0000000000000000000000000000000000000000";
     mocks.transfers = [
@@ -590,6 +600,54 @@ describe("VoucherDetailPage", () => {
     expect(mocks.fetchTransfers).not.toHaveBeenCalled();
     fireEvent.click(within(activity).getByRole("button", { name: "Load more" }));
     expect(mocks.fetchTransfers).toHaveBeenCalledOnce();
+  });
+
+  it("retries failed Activity without affecting the other voucher sections", () => {
+    mocks.transfersError = true;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    const activity = screen.getByRole("region", { name: "Activity" });
+    expect(within(activity).getByText("Couldn't load activity.")).toBeTruthy();
+    fireEvent.click(within(activity).getByRole("button", { name: "Try again" }));
+    expect(mocks.refetchTransfers).toHaveBeenCalledOnce();
+    expect(screen.getByRole("region", { name: "Info" })).toBeTruthy();
+  });
+
+  it("reveals local Activity rows in batches and clears the selected details on close", async () => {
+    const baseTransfer = {
+      id: 1,
+      txHash: `0x${"12".repeat(32)}`,
+      dateBlock: "2026-09-30T05:27:30Z",
+      direction: "OUT",
+      counterpartyAddress: "0x2222222222222222222222222222222222222222",
+      senderAddress: mocks.address,
+      recipientAddress: "0x2222222222222222222222222222222222222222",
+      tokenAddress: ADDRESS,
+      tokenSymbol: "MALII",
+      tokenName: "Priscilah Malii",
+      tokenDecimals: 2,
+      amount: "100",
+      success: true,
+    };
+    mocks.transfers = [1, 2, 3, 4].map((id) => ({
+      ...baseTransfer,
+      id,
+      txHash: `0x${String(id).padStart(64, "0")}`,
+      amount: String(id * 100),
+    }));
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    const activity = screen.getByRole("region", { name: "Activity" });
+    expect(within(activity).queryByText("4 MALII")).toBeNull();
+    fireEvent.click(within(activity).getByRole("button", { name: "Load more" }));
+    expect(within(activity).getByText("4 MALII")).toBeTruthy();
+
+    fireEvent.click(within(activity).getAllByRole("button")[0]!);
+    expect(screen.getByRole("dialog", { name: "Transaction details" })).toBeTruthy();
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Transaction details" })).toBeNull(),
+    );
   });
 
   it("puts the map-style summary and actions above continuous sections", () => {

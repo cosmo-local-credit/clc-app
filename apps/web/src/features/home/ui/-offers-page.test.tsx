@@ -1,5 +1,5 @@
 import type { Offering } from "@clc/api/features/offerings/client";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -83,10 +83,29 @@ vi.mock("#/components/catalog-filter-controls", () => ({
   CatalogFilterSheet: () => <div data-testid="filters" />,
 }));
 vi.mock("#/components/creditable-browse-control", () => ({
-  CreditableBrowseControl: () => <div data-testid="credit" />,
+  CreditableBrowseControl: ({
+    part,
+    onChange,
+    onClear,
+  }: {
+    part: "control" | "feedback";
+    onChange: (checked: boolean) => void;
+    onClear: () => void;
+  }) => (
+    <div data-testid={`credit-${part}`}>
+      <button type="button" onClick={() => onChange(true)}>
+        {part} Credit on
+      </button>
+      <button type="button" onClick={onClear}>
+        {part} Credit clear
+      </button>
+    </div>
+  ),
 }));
 vi.mock("#/components/marketplace-resource-navigation", () => ({
-  MarketplaceResourceNavigation: () => <nav data-testid="navigation" />,
+  MarketplaceResourceNavigation: ({ credit }: { credit?: ReactNode }) => (
+    <nav data-testid="navigation">{credit}</nav>
+  ),
 }));
 vi.mock("#/components/offerings", () => ({
   OfferingsPanel: (props: Record<string, unknown>) => {
@@ -152,9 +171,33 @@ beforeEach(() => {
   mocks.query.hasNextPage = false;
   mocks.queryOptions = undefined;
   mocks.panelProps = undefined;
+  mocks.navigate.mockReset();
 });
 
 describe("OffersPage", () => {
+  it("writes and clears Credit from both shell and feedback controls", () => {
+    render(<OffersPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+
+    expect(mocks.navigate).toHaveBeenCalledTimes(4);
+    const previous = { scope: "offers", q: "food", creditable: false };
+    const [shellOn, shellClear, feedbackOn, feedbackClear] = mocks.navigate.mock.calls.map(
+      ([call]) => call,
+    );
+    expect(shellOn).toMatchObject({ to: "/market" });
+    expect(shellOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(shellClear).toMatchObject({ to: "/market", replace: true });
+    expect(shellClear.search(previous)).toEqual({ scope: "offers", q: "food" });
+    expect(feedbackOn).toMatchObject({ to: "." });
+    expect(feedbackOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(feedbackClear).toMatchObject({ to: ".", replace: true });
+    expect(feedbackClear.search(previous)).toEqual({ scope: "offers", q: "food" });
+  });
+
   it("renders global discovery with direct voucher navigation metadata", () => {
     render(<OffersPage />);
 

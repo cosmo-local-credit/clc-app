@@ -1,6 +1,6 @@
 import { haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
@@ -8,7 +8,6 @@ import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
-import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import type { MarketVoucher } from "@clc/api/features/market/client";
@@ -16,7 +15,6 @@ import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catal
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
-import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./market-filter-ui";
 
@@ -33,7 +31,6 @@ export function MarketListPage({
 }) {
   const { t, i18n } = useLingui();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
-  const sheet = useVoucherSheetSelection();
   const navigate = useNavigate();
   const credit = useCreditableBrowse(creditableSearch);
   const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
@@ -227,7 +224,6 @@ export function MarketListPage({
                 key={voucher.id}
                 voucher={voucher}
                 realFix={distanceOrigin}
-                onOpen={sheet.open}
                 isLast={!hasMoreVisible && index === visibleVouchers.length - 1}
               />
             ))}
@@ -240,15 +236,6 @@ export function MarketListPage({
           </section>
         ) : null}
       </div>
-
-      <VoucherSheet
-        placeholder={
-          vouchers.find(
-            (voucher) => voucher.address.toLowerCase() === sheet.voucher?.toLowerCase(),
-          ) ?? null
-        }
-        realFix={distanceOrigin}
-      />
     </main>
   );
 }
@@ -256,21 +243,20 @@ export function MarketListPage({
 function MarketVoucherRow({
   voucher,
   realFix,
-  onOpen,
   isLast,
 }: {
   voucher: MarketVoucher;
   realFix: { lat: number; lng: number } | null;
-  onOpen: (address: `0x${string}`) => void;
   isLast: boolean;
 }) {
   const kindLabel = useMarketKindLabel(voucher.kind);
   const distanceLabel = useMarketDistanceLabel(realFix, voucher);
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(voucher.address)}
+    <Link
+      to="/vouchers/$voucherAddress"
+      params={{ voucherAddress: voucher.address }}
+      search={{ from: "market" }}
       className={[
         "flex min-h-16 w-full items-center gap-3 p-3 text-start active:bg-muted",
         isLast ? "" : "border-b border-border",
@@ -304,6 +290,6 @@ function MarketVoucherRow({
         className="rtl:-scale-x-100 size-5 shrink-0 text-muted-foreground"
         aria-hidden="true"
       />
-    </button>
+    </Link>
   );
 }
