@@ -78,11 +78,11 @@ export function CatalogForm({
         await onSaved(saved);
       } catch (cause) {
         setError(
-          cause instanceof BackendApiError && cause.status === 409
-            ? t`You already have a catalog.`
+          cause instanceof BackendApiError && cause.code === "E11"
+            ? t`Catalog limit reached. Ask an administrator to increase your allowance.`
             : t`Couldn't save the catalog. Try again.`,
         );
-        if (cause instanceof BackendApiError && cause.status === 409)
+        if (cause instanceof BackendApiError && cause.code === "E11")
           await queryClient.invalidateQueries({ queryKey: ["clc", "catalogs", "mine"] });
       }
     },

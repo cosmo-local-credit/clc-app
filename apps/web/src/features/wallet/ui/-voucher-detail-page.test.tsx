@@ -12,6 +12,19 @@ vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
       </button>
     ) : null,
 }));
+const quotaMock = vi.hoisted(() => ({
+  data: {
+    vouchers: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    catalogs: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    offers: { used: 0, limit: 3, canCreate: true, unlimited: false },
+    pools: { used: 0, limit: 10, canCreate: true, unlimited: false },
+  },
+  isPending: false,
+  isError: false,
+  refetch: vi.fn(),
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
+
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,

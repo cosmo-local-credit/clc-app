@@ -217,7 +217,7 @@ describe("ProfileEditPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /change username/i }));
     const sheet = await screen.findByRole("form", { name: /change username/i });
     fireEvent.change(within(sheet).getByLabelText(/^username$/i), {
-      target: { value: "Alice-New" },
+      target: { value: "Željko Petrović" },
     });
     fireEvent.click(within(sheet).getByRole("button", { name: /save username/i }));
 
@@ -225,7 +225,7 @@ describe("ProfileEditPage", () => {
     const body = JSON.parse(postBody(fetchMock)) as Record<string, unknown>;
     expect(body).toMatchObject({
       name: "Alice",
-      username: "alice-new",
+      username: "Željko Petrović",
       email: "alice@example.com",
       phone: "+254712345678",
       country: "KE",
@@ -234,7 +234,7 @@ describe("ProfileEditPage", () => {
       expect(body).not.toHaveProperty(key);
     }
     const section = screen.getByRole("region", { name: /^username$/i });
-    await waitFor(() => expect(within(section).getByText("alice-new")).toBeTruthy());
+    await waitFor(() => expect(within(section).getByText("Željko Petrović")).toBeTruthy());
     expect(historyBack).not.toHaveBeenCalled();
     expect(screen.getByDisplayValue("Alice Cooper")).toBeTruthy();
   });

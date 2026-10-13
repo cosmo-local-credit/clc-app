@@ -1,3 +1,5 @@
+import { useLingui } from "@lingui/react/macro";
+import { categoryLabel } from "#/lib/category-label";
 import type { ComponentProps } from "react";
 
 import { Badge } from "#/components/ui/badge";
@@ -10,13 +12,15 @@ export function TagBadge({
   labelClassName,
   ...props
 }: ComponentProps<"span"> & { tag: string; labelClassName?: string }) {
+  const { i18n } = useLingui();
+  const label = categoryLabel(tag, i18n);
   return (
     <Badge
       className={cn("border-transparent text-white", className)}
       style={{ backgroundColor: tagBackground(tag) }}
       {...props}
     >
-      {labelClassName ? <span className={labelClassName}>{tag}</span> : tag}
+      {labelClassName ? <span className={labelClassName}>{label}</span> : label}
     </Badge>
   );
 }
@@ -32,6 +36,8 @@ export function SelectableTagBadge({
   selected: boolean;
   count?: number;
 }) {
+  const { i18n } = useLingui();
+  const label = categoryLabel(tag, i18n);
   return (
     <button
       type="button"
@@ -45,7 +51,7 @@ export function SelectableTagBadge({
       style={selected ? { backgroundColor: tagBackground(tag) } : undefined}
       {...props}
     >
-      {tag}
+      {label}
       {count === undefined ? null : (
         <span
           className={cn(

@@ -12,5 +12,5 @@ export function useMyCatalog() {
     ),
     retry: false,
   });
-  return { ...query, catalog: query.data?.catalogs[0], auth };
+  return { ...query, catalogs: query.data?.catalogs ?? [], auth };
 }

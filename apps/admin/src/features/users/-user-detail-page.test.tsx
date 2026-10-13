@@ -63,6 +63,7 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 const listUsers = vi.hoisted(() => vi.fn());
 const getAccountStats = vi.hoisted(() => vi.fn());
 const updateUserProfile = vi.hoisted(() => vi.fn());
+const updateUserLimits = vi.hoisted(() => vi.fn());
 const getLatestAccountTokens = vi.hoisted(() => vi.fn());
 const getAccountTransfers = vi.hoisted(() => vi.fn());
 
@@ -72,6 +73,7 @@ vi.mock("#/lib/api", () => ({
       listUsers: (...args: unknown[]) => listUsers(...args),
       getAccountStats: (...args: unknown[]) => getAccountStats(...args),
       updateUserProfile: (...args: unknown[]) => updateUserProfile(...args),
+      updateUserLimits: (...args: unknown[]) => updateUserLimits(...args),
     },
     accounts: {
       getLatestAccountTokens: (...args: unknown[]) => getLatestAccountTokens(...args),
@@ -92,6 +94,8 @@ function account(overrides: Partial<AdminUser> = {}): AdminUser {
     status: "PENDING",
     maxPools: 10,
     maxTokens: 20,
+    maxCatalogs: 1,
+    maxOffers: 3,
     createdAt: "2026-08-13T11:00:00Z",
     updatedAt: "2026-08-13T11:00:00Z",
     avatarUrl: null,
@@ -189,6 +193,7 @@ beforeEach(() => {
     listUsers,
     getAccountStats,
     updateUserProfile,
+    updateUserLimits,
     getLatestAccountTokens,
     getAccountTransfers,
     reverseLocation,
@@ -520,6 +525,8 @@ describe("UserDetailPage", () => {
     // Deployment limits are edited here, seeded from the record.
     expect(fieldValue("Max pools")).toBe("10");
     expect(fieldValue("Max vouchers")).toBe("20");
+    expect(fieldValue("Max catalogs")).toBe("1");
+    expect(fieldValue("Max offers")).toBe("3");
     // Status and role are decisions with their own actions, not form fields.
     expect(screen.queryByRole("textbox", { name: /status/i })).toBeNull();
     expect(screen.queryByRole("textbox", { name: /role/i })).toBeNull();
@@ -595,4 +602,27 @@ describe("UserDetailPage photo", () => {
     expect(profile).toMatchObject({ clearAvatar: true });
     expect("avatarUrl" in (profile as object)).toBe(false);
   });
+});
+
+it("saves the per-user catalog and offer allowances without changing the profile", async () => {
+  listUsers.mockResolvedValue({ users: [account()], first: 0, last: 0, receivedCount: 1 });
+  getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+  getAccountTransfers.mockResolvedValue({ transfers: [] });
+  updateUserLimits.mockResolvedValue(account({ maxCatalogs: 2, maxOffers: 8 }));
+  renderDetailRoute();
+  await openProfileSheet();
+  fireEvent.change(screen.getByRole("textbox", { name: "Max catalogs" }), {
+    target: { value: "2" },
+  });
+  fireEvent.change(screen.getByRole("textbox", { name: "Max offers" }), { target: { value: "8" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+  await waitFor(() =>
+    expect(updateUserLimits).toHaveBeenCalledWith(ADDRESS, {
+      maxPools: 10,
+      maxTokens: 20,
+      maxCatalogs: 2,
+      maxOffers: 8,
+    }),
+  );
+  expect(updateUserProfile).not.toHaveBeenCalled();
 });

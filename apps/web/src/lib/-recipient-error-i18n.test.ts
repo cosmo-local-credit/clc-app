@@ -34,8 +34,8 @@ const messages = [
     message: "Use only letters and numbers for the pool symbol",
   },
   {
-    id: "Username must be 3–24 letters, digits or hyphens",
-    message: "Username must be 3–24 letters, digits or hyphens",
+    id: "Username must contain 1–80 characters",
+    message: "Username must contain 1–80 characters",
   },
   {
     id: "That username or pool name is already taken",
@@ -63,9 +63,9 @@ describe("recipient translations", () => {
         i18n,
       );
       expect(conflict).toBe(i18n._("That username or pool name is already taken"));
-      expect(
-        translateValidationError("Username must be 3–24 letters, digits or hyphens", i18n),
-      ).toBe(i18n._("Username must be 3–24 letters, digits or hyphens"));
+      expect(translateValidationError("Username must contain 1–80 characters", i18n)).toBe(
+        i18n._("Username must contain 1–80 characters"),
+      );
     },
   );
 
@@ -82,13 +82,10 @@ describe("recipient translations", () => {
     ).toBe(i18n._("That name or symbol is already taken"));
     expect(
       translateRecipientError(
-        new BackendApiError(
-          400,
-          "username must be 3–24 letters, digits or hyphens, with at least one letter and no edge hyphens",
-        ),
+        new BackendApiError(400, "username must contain 1–80 characters"),
         i18n,
       ),
-    ).toBe(translateValidationError("Username must be 3–24 letters, digits or hyphens", i18n));
+    ).toBe(translateValidationError("Username must contain 1–80 characters", i18n));
     expect(
       translateRecipientError(
         new BackendApiError(409, "email already linked to another account"),

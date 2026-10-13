@@ -46,6 +46,19 @@ const mocks = vi.hoisted(() => ({
   success: vi.fn(),
   error: vi.fn(),
 }));
+const quotaMock = vi.hoisted(() => ({
+  data: {
+    vouchers: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    catalogs: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    offers: { used: 0, limit: 3, canCreate: true, unlimited: false },
+    pools: { used: 0, limit: 10, canCreate: true, unlimited: false },
+  },
+  isPending: false,
+  isError: false,
+  refetch: vi.fn(),
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
+
 vi.mock("#/lib/api/catalogs", () => ({ catalogsClient: mocks.api }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
@@ -163,6 +176,8 @@ function mount(ui: ReactNode) {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  quotaMock.data.catalogs = { used: 0, limit: 1, canCreate: true, unlimited: false };
+  quotaMock.isError = false;
   window.localStorage.clear();
   useCatalogVisibilityStore.setState({ visibility: "1000" });
   mocks.auth.isAuthenticated = true;
@@ -312,10 +327,11 @@ describe("catalog curation", () => {
     expect(await screen.findByRole("textbox", { name: "Name" })).toBeTruthy();
     expect(mocks.api.mine).toHaveBeenCalledTimes(2);
   });
-  it("reports create conflicts without navigating or hiding the form", async () => {
+  it("reports quota failures without navigating or hiding the form", async () => {
     mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
-    mocks.api.create.mockRejectedValueOnce(new BackendApiError(409, "already exists"));
-    mount(<CatalogCreatePage />);
+    mocks.api.create.mockRejectedValueOnce(new BackendApiError(429, "limit reached", "E11"));
+    const view = mount(<CatalogCreatePage />);
+    const invalidate = vi.spyOn(view.queryClient, "invalidateQueries");
     fireEvent.change(await screen.findByRole("textbox", { name: "Name" }), {
       target: { value: "Local makers" },
     });
@@ -323,9 +339,10 @@ describe("catalog curation", () => {
 
     expect(await screen.findByRole("alert")).toHaveProperty(
       "textContent",
-      "You already have a catalog.",
+      "Catalog limit reached. Ask an administrator to increase your allowance.",
     );
     expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "catalogs", "mine"] });
     expect(screen.getByRole("button", { name: "Create catalog" })).toBeTruthy();
   });
   it("updates an existing catalog using its stored image and location", async () => {
@@ -351,7 +368,7 @@ describe("catalog curation", () => {
     });
     expect(mocks.api.create).not.toHaveBeenCalled();
   });
-  it("explains a duplicate catalog conflict and refreshes the owner catalog cache", async () => {
+  it("shows a general save error for conflicts without a quota code", async () => {
     mocks.api.update.mockRejectedValue(new BackendApiError(409, "already exists"));
     const view = mount(<CatalogForm catalog={{ ...catalog, tags: ["Food"] }} onSaved={vi.fn()} />);
     const invalidate = vi.spyOn(view.queryClient, "invalidateQueries");
@@ -361,9 +378,9 @@ describe("catalog curation", () => {
 
     expect(await screen.findByRole("alert")).toHaveProperty(
       "textContent",
-      "You already have a catalog.",
+      "Couldn't save the catalog. Try again.",
     );
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "catalogs", "mine"] });
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ["clc", "catalogs", "mine"] });
   });
   it("keeps a generic catalog save failure visible and retryable", async () => {
     mocks.api.update.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(catalog);
@@ -706,5 +723,40 @@ describe("catalog sharing", () => {
     expect(writeText).not.toHaveBeenCalled();
     fireEvent.click(copy);
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe("adjustable catalog allowance", () => {
+  it("allows a second catalog when an admin raises the allowance", async () => {
+    quotaMock.data.catalogs = { used: 1, limit: 2, canCreate: true, unlimited: false };
+    mount(<CatalogCreatePage />);
+    expect(await screen.findByRole("textbox", { name: "Name" })).toBeTruthy();
+    expect(screen.getByText(/1 of 2 used/)).toBeTruthy();
+  });
+  it("explains a full allowance and keeps existing catalogs accessible", async () => {
+    quotaMock.data.catalogs = { used: 1, limit: 1, canCreate: false, unlimited: false };
+    mount(<CatalogCreatePage />);
+    expect(
+      await screen.findByText("Limit reached. Ask an administrator to increase your allowance."),
+    ).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: "Name" })).toBeNull();
+    expect(screen.getByRole("link", { name: catalog.name }).getAttribute("href")).toBe(
+      "/catalogs/7",
+    );
+  });
+  it("adds an item to the catalog the user selects", async () => {
+    mocks.api.mine.mockResolvedValue({
+      catalogs: [catalog, { ...catalog, id: "8", name: "Second catalog" }],
+      nextCursor: null,
+    });
+    mount(<AddToCatalogButton {...intent} />);
+    fireEvent.change(await screen.findByLabelText("Choose catalog"), { target: { value: "8" } });
+    await waitFor(() =>
+      expect(
+        (screen.getByRole("button", { name: "Add to catalog" }) as HTMLButtonElement).disabled,
+      ).toBe(false),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Add to catalog" }));
+    await waitFor(() => expect(mocks.api.setMember).toHaveBeenCalledWith("8", "pool", "12", true));
   });
 });

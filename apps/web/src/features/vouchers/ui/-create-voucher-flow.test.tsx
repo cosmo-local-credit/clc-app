@@ -32,6 +32,19 @@ const DEFAULT_PROFILE: ProfileDefaults = {
   avatarUrl: "https://cdn.test/profile/avatar.webp",
 };
 
+const quotaMock = vi.hoisted(() => ({
+  data: {
+    vouchers: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    catalogs: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    offers: { used: 0, limit: 3, canCreate: true, unlimited: false },
+    pools: { used: 0, limit: 10, canCreate: true, unlimited: false },
+  },
+  isPending: false,
+  isError: false,
+  refetch: vi.fn(),
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
   useCanGoBack: () => false,
@@ -188,6 +201,8 @@ async function writeTerms(label: string, markdown: string) {
 }
 
 beforeEach(() => {
+  quotaMock.data.vouchers.canCreate = true;
+  quotaMock.isError = false;
   profile.current = { ...DEFAULT_PROFILE };
   getTakenSymbols.mockImplementation(async (kind: string, prefix: string) => ({
     kind,
@@ -919,4 +934,14 @@ describe("CreateVoucherFlow", () => {
       );
     });
   });
+});
+
+it("blocks a new voucher form when its allowance is exhausted", async () => {
+  quotaMock.data.vouchers.canCreate = false;
+  renderFlow(<CreateVoucherFlow step="voucher" />);
+  expect(
+    screen.getByText("Limit reached. Ask an administrator to increase your allowance."),
+  ).toBeTruthy();
+  expect(screen.queryByLabelText("Create vouchers")).toBeNull();
+  expect(deployMutateAsync).not.toHaveBeenCalled();
 });
