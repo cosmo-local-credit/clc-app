@@ -200,7 +200,10 @@ export function WalletPage({ address }: { address?: string }) {
                 </Button>
               </div>
             ) : null}
-            {vouchersQuery.isSuccess && vouchers.length === 0 ? (
+            {vouchersQuery.isSuccess &&
+            !resolved &&
+            !voucherGroups.pending &&
+            !voucherGroups.failed ? (
               <div className="space-y-3 p-3">
                 <p className="text-muted-foreground text-sm">
                   <Trans>No vouchers yet.</Trans>

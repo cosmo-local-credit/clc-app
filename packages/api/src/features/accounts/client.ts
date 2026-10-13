@@ -2,6 +2,8 @@ import type { HttpClient } from "../../client/http-client";
 import { getAddress } from "viem";
 
 export type AccountToken = {
+  /** Absent for tokens outside the local catalog; false means retired. */
+  catalogActive?: boolean;
   id: number;
   tokenAddress: string;
   tokenSymbol: string;

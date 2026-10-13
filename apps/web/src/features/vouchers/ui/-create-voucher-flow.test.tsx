@@ -302,6 +302,18 @@ describe("CreateVoucherFlow", () => {
     expect(screen.getByText("1 voucher = 1 TZS")).toBeTruthy();
   });
 
+  it("prefills the calling code from the profile phone even when its country differs", async () => {
+    profile.current = { ...DEFAULT_PROFILE, phone: "+38761123456", country: "KE" };
+    renderFlow(<CreateVoucherFlow step="place" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Country: BA" }).textContent).toContain("+387");
+      expect(
+        (screen.getByLabelText("Contact Phone") as HTMLInputElement).value.replace(/\D/g, ""),
+      ).toBe("61123456");
+    });
+  });
+
   it("keeps tags compact and prefills contact details from the profile", async () => {
     renderFlow(<CreateVoucherFlow step="place" />);
 

@@ -98,3 +98,28 @@ describe("partitionTokensByIssuer", () => {
     expect(partitionTokensByIssuer([issued], unowned, VIEWER).holdings).toEqual([issued]);
   });
 });
+
+it("hides retired vouchers even when their old owner lookup is cached or returns 404", () => {
+  const retired = { id: "0xretired", catalogActive: false };
+  const unknown = { id: "0xunknown" };
+  const active = { id: "0xactive", catalogActive: true };
+  for (const retiredOwner of [
+    { state: "known", ownerAddress: VIEWER },
+    { state: "missing" },
+    { state: "pending" },
+  ] satisfies CatalogOwner[]) {
+    const split = partitionTokensByIssuer(
+      [retired, unknown, active],
+      owners([
+        [retired.id, retiredOwner],
+        [unknown.id, { state: "missing" }],
+        [active.id, { state: "known", ownerAddress: VIEWER }],
+      ]),
+      VIEWER,
+    );
+    expect(split.holdings).toEqual([unknown]);
+    expect(split.issued).toEqual([active]);
+    expect(split.pending).toBe(false);
+    expect(split.failed).toBe(false);
+  }
+});
