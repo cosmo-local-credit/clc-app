@@ -1,5 +1,5 @@
 import type { Offering } from "@clc/api/features/offerings/client";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
@@ -150,5 +150,43 @@ describe("OfferingsPanel discovery mode", () => {
     expect(container.querySelector("img")?.getAttribute("src")).toBe(
       "https://content.example/offering.webp",
     );
+  });
+
+  it("fetches the next page only after an explicit manual Load more", async () => {
+    const fetchNextPage = vi.fn().mockResolvedValue(undefined);
+    render(
+      <OfferingsPanel
+        query={{
+          ...queryFor(offering),
+          hasNextPage: true,
+          fetchNextPage,
+        }}
+        emptyState="No offers"
+        manualPageSize={1}
+        autoLoadMore={false}
+        directNavigation
+      />,
+    );
+
+    expect(fetchNextPage).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Load more" }));
+    expect(fetchNextPage).toHaveBeenCalledOnce();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Load more" })).toBeTruthy());
+  });
+
+  it("falls back to initials when an image fails in the offering rollup", () => {
+    render(
+      <OfferingsPanel
+        query={queryFor({ ...offering, imageUrl: "https://content.example/broken.webp" })}
+        emptyState="No offers"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "View offering details: Fresh maize" }));
+    const dialog = screen.getByRole("dialog");
+    const images = dialog.querySelectorAll("img");
+    expect(images.length).toBeGreaterThan(0);
+    fireEvent.error(images[0]!);
+    expect(screen.getAllByText("FM").length).toBeGreaterThan(0);
   });
 });

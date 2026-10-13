@@ -51,6 +51,23 @@ describe("CashPage", () => {
     expect(writeText).not.toHaveBeenCalled();
   });
 
+  it("reports a missing clipboard without attempting a copy", async () => {
+    Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
+    render(<CashPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy address" }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't copy address"));
+    expect(writeText).not.toHaveBeenCalled();
+  });
+
+  it("reports a rejected clipboard write", async () => {
+    writeText.mockRejectedValueOnce(new Error("denied"));
+    render(<CashPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy address" }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't copy address"));
+  });
+
   it("uses the exact secure provider destinations and safety guidance", () => {
     render(<CashPage />);
     expect(

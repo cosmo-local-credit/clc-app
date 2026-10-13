@@ -10,7 +10,14 @@ const POOLS_FILTER_KEY = ownerScopedKey(
   CATALOG_FILTER_PREFERENCE_NAMES.pools,
 );
 
-const { creditableState, outputState, getPoolVouchers, routeSearch, navigate } = vi.hoisted(() => ({
+const {
+  creditableState,
+  creditControlHarness,
+  outputState,
+  getPoolVouchers,
+  routeSearch,
+  navigate,
+} = vi.hoisted(() => ({
   creditableState: {
     current: {
       pools: [] as Array<{ address: string; name: string; voucherCount: number; tags: string[] }>,
@@ -20,6 +27,7 @@ const { creditableState, outputState, getPoolVouchers, routeSearch, navigate } =
       retry: vi.fn(),
     },
   },
+  creditControlHarness: { current: false },
   outputState: {
     current: {
       pools: [] as Array<{ address: string; name: string; voucherCount: number; tags: string[] }>,
@@ -33,6 +41,36 @@ const { creditableState, outputState, getPoolVouchers, routeSearch, navigate } =
   routeSearch: { current: {} as Record<string, unknown> },
   navigate: vi.fn(),
 }));
+
+vi.mock("#/components/creditable-browse-control", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/components/creditable-browse-control")>();
+  return {
+    ...actual,
+    CreditableBrowseControl: (props: {
+      part?: "all" | "control" | "feedback";
+      state: unknown;
+      onChange: (enabled: boolean) => void;
+      onClear: () => void;
+    }) =>
+      creditControlHarness.current ? (
+        <div>
+          <button type="button" onClick={() => props.onChange(true)}>
+            {props.part} Credit on
+          </button>
+          <button type="button" onClick={props.onClear}>
+            {props.part} Credit clear
+          </button>
+        </div>
+      ) : (
+        <actual.CreditableBrowseControl
+          state={props.state as never}
+          onChange={props.onChange}
+          onClear={props.onClear}
+          part={props.part}
+        />
+      ),
+  };
+});
 
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
@@ -216,6 +254,7 @@ afterEach(() => {
     hasVerificationGaps: false,
     retry: vi.fn(),
   };
+  creditControlHarness.current = false;
   routeSearch.current = {};
   navigate.mockReset();
 });
@@ -326,6 +365,30 @@ describe("pools list", () => {
 });
 
 describe("creditable pools", () => {
+  it("writes and clears Credit from both shell and feedback callbacks", async () => {
+    creditControlHarness.current = true;
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+    await screen.findByText("Trade Pool");
+
+    fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+
+    expect(navigate).toHaveBeenCalledTimes(4);
+    const previous = { scope: "pools", q: "trade", creditable: false };
+    const [controlOn, controlClear, feedbackOn, feedbackClear] = navigate.mock.calls.map(
+      ([call]) => call,
+    );
+    expect(controlOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(controlClear.search(previous)).toEqual({ scope: "pools", q: "trade" });
+    expect(controlClear).toMatchObject({ to: "/market", replace: true });
+    expect(feedbackOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(feedbackClear.search(previous)).toEqual({ scope: "pools", q: "trade" });
+    expect(feedbackClear).toMatchObject({ to: "/market", replace: true });
+  });
+
   it("shows all pools with Credit off even when eligibility is not loaded", async () => {
     creditableState.current = { ...creditableState.current, status: "loading" };
     mockPoolsList();
@@ -608,6 +671,14 @@ describe("output voucher availability", () => {
     const first = renderWithQueryClient(<PoolsPage outputVoucherSearch="not-an-address" />);
     expect(await screen.findByText("This link contains an invalid output voucher.")).toBeTruthy();
     expect(screen.queryByText("Trade Pool")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Clear filter" }));
+    const clearCall = navigate.mock.calls.at(-1)?.[0] as {
+      search: (previous: Record<string, unknown>) => Record<string, unknown>;
+    };
+    expect(clearCall.search({ scope: "pools", out_voucher: "not-an-address" })).toEqual({
+      scope: "pools",
+      out_voucher: undefined,
+    });
     first.unmount();
 
     const retry = vi.fn();

@@ -16,10 +16,17 @@ const mocks = vi.hoisted(() => ({
   authLoading: false,
   sessionAddress: "0x9999999999999999999999999999999999999999",
   balance: "0",
+  balanceDecimals: 6,
   balancePending: false,
   balanceError: false,
   refetchBalance: vi.fn(),
   reviewSummary: { total: 0, average: 0 },
+  toastSuccess: vi.fn(),
+  toastError: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: mocks.toastSuccess, error: mocks.toastError },
 }));
 
 vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
@@ -70,7 +77,7 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
             {
               tokenAddress: VOUCHER,
               tokenSymbol: "MALII",
-              tokenDecimals: 6,
+              tokenDecimals: mocks.balanceDecimals,
               balance: mocks.balance,
             },
           ],
@@ -229,10 +236,13 @@ beforeEach(() => {
   mocks.authenticated = false;
   mocks.authLoading = false;
   mocks.balance = "0";
+  mocks.balanceDecimals = 6;
   mocks.balancePending = false;
   mocks.balanceError = false;
   mocks.refetchBalance.mockReset();
   mocks.reviewSummary = { total: 0, average: 0 };
+  mocks.toastSuccess.mockReset();
+  mocks.toastError.mockReset();
 });
 
 describe("VoucherSheet summary", () => {
@@ -282,6 +292,81 @@ describe("VoucherSheet summary", () => {
     }
   });
 
+  it("falls back to copying the canonical page link when native sharing is unavailable", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    try {
+      renderSheet();
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+
+      await waitFor(() =>
+        expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/vouchers/${VOUCHER}`),
+      );
+      expect(mocks.toastSuccess).toHaveBeenCalledWith("Link copied");
+    } finally {
+      Reflect.deleteProperty(navigator, "clipboard");
+    }
+  });
+
+  it("reports unavailable and rejected clipboard fallbacks", async () => {
+    const missingClipboard = renderSheet();
+    fireEvent.click(screen.getByRole("button", { name: "Share" }));
+    expect(mocks.toastError).toHaveBeenCalledWith("Couldn't copy link");
+    missingClipboard.unmount();
+
+    const writeText = vi.fn().mockRejectedValue(new Error("clipboard denied"));
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    try {
+      renderSheet();
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+      await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(2));
+    } finally {
+      Reflect.deleteProperty(navigator, "clipboard");
+    }
+  });
+
+  it("leaves Share unchanged when native sharing is cancelled", async () => {
+    const share = vi.fn().mockRejectedValue(new DOMException("cancelled", "AbortError"));
+    Object.defineProperty(navigator, "share", { value: share, configurable: true });
+    try {
+      renderSheet();
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+      await waitFor(() => expect(share).toHaveBeenCalledOnce());
+      expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
+      expect(screen.queryByRole("button", { name: "Copy link" })).toBeNull();
+    } finally {
+      Reflect.deleteProperty(navigator, "share");
+    }
+  });
+
+  it("offers an explicit copy after native sharing fails", async () => {
+    const share = vi.fn().mockRejectedValue(new Error("share failed"));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { value: share, configurable: true });
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    try {
+      renderSheet();
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+      const copy = await screen.findByRole("button", { name: "Copy link" });
+      fireEvent.click(copy);
+      await waitFor(() =>
+        expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/vouchers/${VOUCHER}`),
+      );
+    } finally {
+      Reflect.deleteProperty(navigator, "share");
+      Reflect.deleteProperty(navigator, "clipboard");
+    }
+  });
+
   it("shows Send and Redeem only for an authenticated positive balance", () => {
     mocks.detail = detail();
     const guest = renderSheet();
@@ -324,6 +409,35 @@ describe("VoucherSheet summary", () => {
     expect(screen.getByLabelText("Your Balance").textContent).toContain("Unavailable");
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(mocks.refetchBalance).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ["not-raw", 6],
+    ["1", -1],
+    ["1", 1.5],
+  ])("rejects an invalid indexed balance of %s with %s decimals", (balance, decimals) => {
+    mocks.detail = detail();
+    mocks.authenticated = true;
+    mocks.balance = balance;
+    mocks.balanceDecimals = decimals;
+
+    renderSheet();
+
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("Unavailable");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.refetchBalance).toHaveBeenCalledOnce();
+  });
+
+  it("shows the exact token balance without inventing a value when claim metadata is incomplete", () => {
+    mocks.detail = detail({ voucherValue: null, voucherUoa: null });
+    mocks.authenticated = true;
+    mocks.balance = "2500000";
+
+    renderSheet();
+
+    const balance = screen.getByLabelText("Your Balance");
+    expect(balance.textContent).toContain("2.5 MALII");
+    expect(balance.textContent).not.toContain("KSH");
   });
 
   it("does not show a wallet balance to a guest", () => {

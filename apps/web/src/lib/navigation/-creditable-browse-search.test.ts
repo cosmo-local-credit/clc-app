@@ -43,6 +43,19 @@ describe("Credit browse URL state", () => {
     });
   });
 
+  it("normalizes valid repeated values and marks every malformed shape invalid", () => {
+    expect(pickCreditableBrowseSearch(null)).toEqual({});
+    expect(pickCreditableBrowseSearch({ creditable: [true, "false"] })).toEqual({
+      creditable: [true, "false"],
+    });
+    expect(pickCreditableBrowseSearch({ creditable: [true, 1] })).toEqual({
+      creditable: ["__invalid__"],
+    });
+    expect(pickCreditableBrowseSearch({ creditable: 1 })).toEqual({
+      creditable: ["__invalid__"],
+    });
+  });
+
   it("canonicalizes case and whitespace without dropping other filters", () => {
     expect(
       canonicalCreditableBrowseSearch({

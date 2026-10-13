@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { BackendApiError } from "@clc/api/client/errors";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { useCatalogVisibilityStore } from "#/features/home/state/catalog-visibility";
 import { CatalogCreatePage } from "./catalog-create-page";
@@ -57,6 +58,26 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
     blocksResults: false,
   }),
 }));
+vi.mock("#/components/creditable-browse-control", () => ({
+  CreditableBrowseControl: ({
+    part,
+    onChange,
+    onClear,
+  }: {
+    part: "control" | "feedback";
+    onChange: (checked: boolean) => void;
+    onClear: () => void;
+  }) => (
+    <div data-testid={`credit-${part}`}>
+      <button type="button" onClick={() => onChange(true)}>
+        {part} Credit on
+      </button>
+      <button type="button" onClick={onClear}>
+        {part} Credit clear
+      </button>
+    </div>
+  ),
+}));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => mocks.profile }));
 vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
   useDiscoveryDistanceOrigin: () => {
@@ -95,7 +116,11 @@ vi.mock("@tanstack/react-router", () => ({
   },
 }));
 vi.mock("#/components/ui/image-upload-field", () => ({
-  ImageUploadField: () => <div>Image picker</div>,
+  ImageUploadField: ({ onChange }: { onChange: (url: string | null) => void }) => (
+    <button type="button" onClick={() => onChange(null)}>
+      Clear catalog picture
+    </button>
+  ),
 }));
 vi.mock("#/components/ui/location-picker", () => ({
   LocationPicker: ({ value, error }: { value?: { locationName: string }; error?: string }) => (
@@ -183,6 +208,29 @@ describe("catalog curation", () => {
     );
     expect(mocks.api.setMember).toHaveBeenCalledExactlyOnceWith("7", "pool", "12", true);
   });
+  it("retries both owner and membership reads after membership fails", async () => {
+    mocks.api.membership.mockRejectedValueOnce(new Error("offline")).mockResolvedValue({
+      added: false,
+    });
+    mount(<AddToCatalogButton {...intent} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(mocks.api.mine).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mocks.api.membership).toHaveBeenCalledTimes(2));
+  });
+  it("keeps Add to catalog usable and reports a failed mutation", async () => {
+    mocks.api.setMember.mockRejectedValueOnce(new Error("offline"));
+    mount(<AddToCatalogButton {...intent} />);
+    const add = await screen.findByRole("button", { name: "Add to catalog" });
+
+    await waitFor(() => expect(add).toHaveProperty("disabled", false));
+
+    fireEvent.click(add);
+    await waitFor(() =>
+      expect(mocks.error).toHaveBeenCalledWith("Couldn't update the catalog. Try again."),
+    );
+    expect(add).toHaveProperty("disabled", false);
+  });
   it("does not read owner data for guests", () => {
     mocks.auth.isAuthenticated = false;
     mount(<AddToCatalogButton {...intent} />);
@@ -215,17 +263,86 @@ describe("catalog curation", () => {
     expect(mocks.api.create).toHaveBeenCalledTimes(1);
     expect(mocks.api.setMember).toHaveBeenCalledTimes(2);
   });
+  it("routes a newly created catalog to its canonical detail page", async () => {
+    mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
+    mount(<CatalogCreatePage />);
+    fireEvent.change(await screen.findByRole("textbox", { name: "Name" }), {
+      target: { value: "Local makers" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create catalog" }));
+
+    await waitFor(() =>
+      expect(mocks.navigate).toHaveBeenCalledWith({
+        to: "/catalogs/$catalogId",
+        params: { catalogId: "7" },
+        replace: true,
+      }),
+    );
+  });
+  it("returns a voucher creation intent to the voucher after adding it", async () => {
+    const voucherIntent = {
+      kind: "voucher" as const,
+      resourceId: "13",
+      address: `0x${"c".repeat(40)}` as `0x${string}`,
+    };
+    mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
+    mount(<CatalogCreatePage intent={voucherIntent} />);
+    fireEvent.change(await screen.findByRole("textbox", { name: "Name" }), {
+      target: { value: "Local makers" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create catalog" }));
+
+    await waitFor(() =>
+      expect(mocks.navigate).toHaveBeenCalledWith({
+        to: "/vouchers/$voucherAddress",
+        params: { voucherAddress: voucherIntent.address },
+        replace: true,
+      }),
+    );
+    expect(mocks.api.setMember).toHaveBeenCalledWith("7", "voucher", "13", true);
+  });
+  it("retries a failed owner-catalog read before showing the create form", async () => {
+    mocks.api.mine
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValue({ catalogs: [], nextCursor: null });
+    mount(<CatalogCreatePage />);
+
+    expect(await screen.findByText("Couldn't load catalogs.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("textbox", { name: "Name" })).toBeTruthy();
+    expect(mocks.api.mine).toHaveBeenCalledTimes(2);
+  });
+  it("reports create conflicts without navigating or hiding the form", async () => {
+    mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
+    mocks.api.create.mockRejectedValueOnce(new BackendApiError(409, "already exists"));
+    mount(<CatalogCreatePage />);
+    fireEvent.change(await screen.findByRole("textbox", { name: "Name" }), {
+      target: { value: "Local makers" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create catalog" }));
+
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      "You already have a catalog.",
+    );
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Create catalog" })).toBeTruthy();
+  });
   it("updates an existing catalog using its stored image and location", async () => {
     const onSaved = vi.fn();
     mount(<CatalogForm catalog={catalog} onSaved={onSaved} />);
     fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
       target: { value: "New name" },
     });
+    fireEvent.change(screen.getByRole("textbox", { name: "Description" }), {
+      target: { value: "Updated directory" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Clear catalog picture" }));
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     expect(mocks.api.update).toHaveBeenCalledWith("7", {
       name: "New name",
-      description: "",
+      description: "Updated directory",
       imageUrl: "",
       geoLat: 43,
       geoLng: 18,
@@ -233,6 +350,34 @@ describe("catalog curation", () => {
       tags: [],
     });
     expect(mocks.api.create).not.toHaveBeenCalled();
+  });
+  it("explains a duplicate catalog conflict and refreshes the owner catalog cache", async () => {
+    mocks.api.update.mockRejectedValue(new BackendApiError(409, "already exists"));
+    const view = mount(<CatalogForm catalog={{ ...catalog, tags: ["Food"] }} onSaved={vi.fn()} />);
+    const invalidate = vi.spyOn(view.queryClient, "invalidateQueries");
+
+    expect(screen.getByRole("button", { name: "Remove Food" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      "You already have a catalog.",
+    );
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "catalogs", "mine"] });
+  });
+  it("keeps a generic catalog save failure visible and retryable", async () => {
+    mocks.api.update.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(catalog);
+    const onSaved = vi.fn();
+    mount(<CatalogForm catalog={catalog} onSaved={onSaved} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      "Couldn't save the catalog. Try again.",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(catalog));
   });
   it("shows editing only for the backend session owner", async () => {
     mocks.auth.session.address = `0x${"c".repeat(40)}`;
@@ -259,6 +404,79 @@ describe("catalog curation", () => {
       expect(mocks.api.setMember).toHaveBeenCalledExactlyOnceWith("7", "pool", "12", false),
     );
   });
+  it("paginates pool membership only after Load more", async () => {
+    const item = {
+      id: "12",
+      chainId: 100,
+      address: intent.address,
+      name: "Community pool",
+      imageUrl: null,
+    };
+    mocks.api.members.mockImplementation((_id, kind, cursor) =>
+      Promise.resolve(
+        kind === "pool"
+          ? { items: cursor ? [] : [item], nextCursor: cursor ? null : "next-pool" }
+          : { items: [], nextCursor: null },
+      ),
+    );
+    mount(<CatalogDetailPage id="7" />);
+
+    const pools = await screen.findByRole("region", { name: "Pools" });
+    expect(mocks.api.members).not.toHaveBeenCalledWith("7", "pool", "next-pool");
+    fireEvent.click(await within(pools).findByRole("button", { name: "Load more" }));
+    await waitFor(() =>
+      expect(mocks.api.members).toHaveBeenCalledWith("7", "pool", "next-pool", expect.anything()),
+    );
+  });
+  it("retries a failed member list and reports a failed removal", async () => {
+    const item = {
+      id: "12",
+      chainId: 100,
+      address: intent.address,
+      name: "Community pool",
+      imageUrl: null,
+    };
+    let poolAttempts = 0;
+    mocks.api.members.mockImplementation((_id, kind) => {
+      if (kind !== "pool") return Promise.resolve({ items: [], nextCursor: null });
+      poolAttempts += 1;
+      return poolAttempts === 1
+        ? Promise.reject(new Error("offline"))
+        : Promise.resolve({ items: [item], nextCursor: null });
+    });
+    mocks.api.setMember.mockRejectedValueOnce(new Error("offline"));
+    mount(<CatalogDetailPage id="7" />);
+
+    const pools = await screen.findByRole("region", { name: "Pools" });
+    fireEvent.click(await within(pools).findByRole("button", { name: "Retry" }));
+    const remove = await within(pools).findByRole("button", { name: "Remove Community pool" });
+    fireEvent.click(remove);
+    await waitFor(() =>
+      expect(mocks.error).toHaveBeenCalledWith("Couldn't update the catalog. Try again."),
+    );
+  });
+  it("renders description and tags, edits as the owner, and closes after saving", async () => {
+    const detailed = { ...catalog, description: "Local food and services", tags: ["Food"] };
+    mocks.api.detail.mockResolvedValue(detailed);
+    mocks.api.update.mockResolvedValue(detailed);
+    mount(<CatalogDetailPage id="7" />);
+
+    expect(await screen.findByText("Local food and services")).toBeTruthy();
+    expect(screen.getByText("Food")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Edit catalog" }));
+    expect(screen.getByRole("dialog", { name: "Edit catalog" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit catalog" })).toBeNull());
+  });
+  it("retries a failed catalog detail request", async () => {
+    mocks.api.detail.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(catalog);
+    mount(<CatalogDetailPage id="7" />);
+
+    expect(await screen.findByRole("heading", { name: "Couldn't load catalogs." })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("heading", { name: "Local makers" })).toBeTruthy();
+  });
   it("changes ownership data when the active session changes", async () => {
     const other = `0x${"c".repeat(40)}`;
     mocks.api.mine
@@ -277,6 +495,30 @@ describe("catalog curation", () => {
   });
 });
 describe("catalog discovery", () => {
+  it("writes and clears Credit from both shell and feedback controls", async () => {
+    mount(<CatalogsPage />);
+    await screen.findByText("Local makers");
+
+    fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+
+    expect(mocks.navigate).toHaveBeenCalledTimes(4);
+    const previous = { scope: "catalogs", q: "local", creditable: false };
+    const [shellOn, shellClear, feedbackOn, feedbackClear] = mocks.navigate.mock.calls.map(
+      ([call]) => call,
+    );
+    expect(shellOn).toMatchObject({ to: "/market" });
+    expect(shellOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(shellClear).toMatchObject({ to: "/market", replace: true });
+    expect(shellClear.search(previous)).toEqual({ scope: "catalogs", q: "local" });
+    expect(feedbackOn).toMatchObject({ to: "/market" });
+    expect(feedbackOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(feedbackClear).toMatchObject({ to: "/market", replace: true });
+    expect(feedbackClear.search(previous)).toEqual({ scope: "catalogs", q: "local" });
+  });
+
   it("uses nearby session discovery at the established radius", async () => {
     mocks.api.list.mockResolvedValue({
       catalogs: [{ ...catalog, geoLat: -10, geoLng: -10 }],

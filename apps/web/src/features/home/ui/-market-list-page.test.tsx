@@ -24,6 +24,27 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   }),
 }));
 
+vi.mock("#/components/creditable-browse-control", () => ({
+  CreditableBrowseControl: ({
+    part,
+    onChange,
+    onClear,
+  }: {
+    part: "control" | "feedback";
+    onChange: (checked: boolean) => void;
+    onClear: () => void;
+  }) => (
+    <div data-testid={`credit-${part}`}>
+      <button type="button" onClick={() => onChange(true)}>
+        {part} Credit on
+      </button>
+      <button type="button" onClick={onClear}>
+        {part} Credit clear
+      </button>
+    </div>
+  ),
+}));
+
 const MARKET_FILTER_PREFERENCES_KEY = ownerScopedKey(
   "0xabc0000000000000000000000000000000000123",
   MARKET_FILTER_PREFERENCES_NAME,
@@ -213,6 +234,29 @@ beforeEach(() => {
 });
 
 describe("MarketListPage", () => {
+  it("writes and clears Credit from both shell and feedback controls", () => {
+    render(<MarketListPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "control Credit clear" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit on" }));
+    fireEvent.click(screen.getByRole("button", { name: "feedback Credit clear" }));
+
+    expect(mocks.navigate).toHaveBeenCalledTimes(4);
+    const previous = { scope: "vouchers", q: "art", creditable: false };
+    const [shellOn, shellClear, feedbackOn, feedbackClear] = mocks.navigate.mock.calls.map(
+      ([call]) => call,
+    );
+    expect(shellOn).toMatchObject({ to: "/market" });
+    expect(shellOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(shellClear).toMatchObject({ to: "/market", replace: true });
+    expect(shellClear.search(previous)).toEqual({ scope: "vouchers", q: "art" });
+    expect(feedbackOn).toMatchObject({ to: "." });
+    expect(feedbackOn.search(previous)).toEqual({ ...previous, creditable: true });
+    expect(feedbackClear).toMatchObject({ to: ".", replace: true });
+    expect(feedbackClear.search(previous)).toEqual({ scope: "vouchers", q: "art" });
+  });
+
   it("renders the first catalog page immediately when no location fix exists", () => {
     mocks.catalog = {
       ...mocks.catalog,

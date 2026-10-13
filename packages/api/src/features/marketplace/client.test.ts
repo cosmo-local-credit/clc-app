@@ -81,4 +81,14 @@ describe("marketplace HTTP contract", () => {
     respond({ results: [{ ...offering, geoLat: null }], nextCursor: null });
     await expect(api.list({})).rejects.toBeInstanceOf(BackendApiError);
   });
+
+  it("forwards an opaque cursor without enabling all-tag matching for one tag", async () => {
+    const fetcher = respond({ results: [offering], nextCursor: null });
+    await api.list({ cursor: "opaque+/=", tags: ["Repair"], tagMatch: "all" });
+
+    const url = new URL(fetcher.mock.calls[0]?.[0]);
+    expect(url.searchParams.get("cursor")).toBe("opaque+/=");
+    expect(url.searchParams.get("tags")).toBe("Repair");
+    expect(url.searchParams.has("tagMatch")).toBe(false);
+  });
 });
