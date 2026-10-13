@@ -251,7 +251,6 @@ export function AllVouchersPage() {
               }
             : null
         }
-        origin={{ from: "vouchers" }}
       />
     </div>
   );

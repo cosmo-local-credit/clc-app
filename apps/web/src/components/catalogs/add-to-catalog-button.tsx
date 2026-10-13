@@ -6,12 +6,23 @@ import type { CatalogCreateIntent } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import type { ComponentProps } from "react";
 import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 import { catalogsClient } from "#/lib/api/catalogs";
+import { cn } from "#/lib/utils";
 
-export function AddToCatalogButton({ kind, resourceId, address }: CatalogCreateIntent) {
+type AddToCatalogButtonProps = CatalogCreateIntent &
+  Pick<ComponentProps<typeof Button>, "className" | "size">;
+
+export function AddToCatalogButton({
+  kind,
+  resourceId,
+  address,
+  className,
+  size,
+}: AddToCatalogButtonProps) {
   const { t } = useLingui();
   const mine = useMyCatalog();
   const owner = mine.auth.session?.address ?? "";
@@ -32,7 +43,8 @@ export function AddToCatalogButton({ kind, resourceId, address }: CatalogCreateI
     return (
       <Button
         variant="outline"
-        className="h-11 bg-card"
+        size={size}
+        className={cn("h-11 bg-card", className)}
         onClick={() => {
           void mine.refetch();
           if (mine.catalog) void membership.refetch();
@@ -43,7 +55,7 @@ export function AddToCatalogButton({ kind, resourceId, address }: CatalogCreateI
     );
   if (mine.isSuccess && !mine.catalog)
     return (
-      <Button asChild variant="outline" className="h-11 bg-card">
+      <Button asChild variant="outline" size={size} className={cn("h-11 bg-card", className)}>
         <Link to="/catalogs/create" search={{ kind, resourceId, address }}>
           <Trans>Add to catalog</Trans>
         </Link>
@@ -52,7 +64,8 @@ export function AddToCatalogButton({ kind, resourceId, address }: CatalogCreateI
   return (
     <Button
       variant="outline"
-      className="h-11 bg-card"
+      size={size}
+      className={cn("h-11 bg-card", className)}
       disabled={
         mine.isPending || membership.isPending || mutation.isPending || membership.data?.added
       }

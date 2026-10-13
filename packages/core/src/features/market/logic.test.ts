@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  formatCompactUnitOfAccountDisplayValue,
   formatOfferingDisplayPrice,
   formatOfferingDisplayValue,
   formatOfferingDisplayTotal,
@@ -48,6 +49,28 @@ describe("formatUnitOfAccountDisplayValue", () => {
 
   it("rejects malformed values", () => {
     expect(formatUnitOfAccountDisplayValue("1,000", "en")).toBeNull();
+  });
+});
+
+describe("formatCompactUnitOfAccountDisplayValue", () => {
+  it("rounds exactly to at most two localized decimal places", () => {
+    expect(formatCompactUnitOfAccountDisplayValue("848", "en")).toBe("848");
+    expect(formatCompactUnitOfAccountDisplayValue("848.5", "en")).toBe("848.5");
+    expect(formatCompactUnitOfAccountDisplayValue("848.567", "en")).toBe("848.57");
+    expect(formatCompactUnitOfAccountDisplayValue("848.50", "de")).toBe("848,5");
+    expect(formatCompactUnitOfAccountDisplayValue("999.999", "en")).toBe("1,000");
+  });
+
+  it("keeps tiny positive and arbitrarily large values honest", () => {
+    expect(formatCompactUnitOfAccountDisplayValue("0.000001", "en")).toBe("<0.01");
+    expect(formatCompactUnitOfAccountDisplayValue("0", "en")).toBe("0");
+    expect(formatCompactUnitOfAccountDisplayValue("90071992547409931234.555", "en")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+
+  it("rejects non-canonical input", () => {
+    expect(formatCompactUnitOfAccountDisplayValue("1,000", "en")).toBeNull();
   });
 });
 

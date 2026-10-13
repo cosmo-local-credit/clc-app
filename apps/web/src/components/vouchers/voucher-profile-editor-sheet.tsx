@@ -39,7 +39,7 @@ import { useTokenTags } from "#/hooks/use-deployment";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
 
-import { useUpdateVoucherProfile } from "../hooks/use-update-voucher-profile";
+import { useUpdateVoucherProfile } from "#/features/vouchers/hooks/use-update-voucher-profile";
 
 /** A stored place: the picker's country is never persisted, so it is not read back. */
 type VoucherPlace = Pick<LocationInput, "lat" | "lng" | "locationName">;
