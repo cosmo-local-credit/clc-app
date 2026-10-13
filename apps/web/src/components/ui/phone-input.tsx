@@ -1,7 +1,11 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Country } from "react-phone-number-input";
-import { getCountryCallingCode, isSupportedCountry } from "react-phone-number-input";
+import {
+  getCountryCallingCode,
+  isSupportedCountry,
+  parsePhoneNumber,
+} from "react-phone-number-input";
 import PhoneInput from "react-phone-number-input/input";
 import { CountrySheet } from "#/components/ui/country-sheet";
 import { getFlagEmoji } from "#/components/ui/country-utils";
@@ -42,15 +46,20 @@ export function PhoneInputField({
   "aria-invalid": ariaInvalid,
   "aria-label": ariaLabel,
 }: PhoneInputFieldProps) {
-  const [country, setCountry] = useState<Country>(toCountry(defaultCountry) ?? FALLBACK_COUNTRY);
+  const numberCountry = value ? parsePhoneNumber(value)?.country : undefined;
+  const [country, setCountry] = useState<Country>(
+    numberCountry ?? toCountry(defaultCountry) ?? FALLBACK_COUNTRY,
+  );
   const [sheetOpen, setSheetOpen] = useState(false);
   const countryWasChosen = useRef(false);
 
   const detected = toCountry(defaultCountry);
   useEffect(() => {
-    if (!detected || countryWasChosen.current || value !== "") return;
-    setCountry(detected);
-  }, [detected, value]);
+    if (countryWasChosen.current) return;
+    // A saved international number takes priority over location or build defaults.
+    if (numberCountry) setCountry(numberCountry);
+    else if (detected && value === "") setCountry(detected);
+  }, [detected, numberCountry, value]);
 
   const callingCode = getCountryCallingCode(country);
 

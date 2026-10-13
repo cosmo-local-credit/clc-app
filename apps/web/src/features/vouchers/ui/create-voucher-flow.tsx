@@ -815,6 +815,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   >
                     <PhoneInputField
                       id="voucher-phone"
+                      defaultCountry={profileQuery.data?.country}
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value)}
                       aria-invalid={field.state.meta.errors.length > 0}

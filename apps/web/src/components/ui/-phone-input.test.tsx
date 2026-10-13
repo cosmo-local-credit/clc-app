@@ -72,3 +72,20 @@ describe("PhoneInputField", () => {
     expect(screen.getByRole("button", { name: "Country: TZ" })).toBeTruthy();
   });
 });
+
+describe("saved phone numbers", () => {
+  it("uses the saved number's calling code instead of the default country", () => {
+    const onChange = vi.fn();
+    render(<PhoneInputField value="+38761123456" defaultCountry="KE" onChange={onChange} />);
+    expect(screen.getByRole("button", { name: "Country: BA" }).textContent).toContain("+387");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("adopts the calling code when the profile phone arrives later", () => {
+    const onChange = vi.fn();
+    const view = render(<PhoneInputField value="" onChange={onChange} />);
+    view.rerender(<PhoneInputField value="+381641234567" onChange={onChange} />);
+    expect(screen.getByRole("button", { name: "Country: RS" }).textContent).toContain("+381");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});
