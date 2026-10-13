@@ -1,3 +1,5 @@
+import { ResourceUsage } from "#/components/resource-usage";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
@@ -6,10 +8,11 @@ import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 
 export function MyCatalogSection() {
   const query = useMyCatalog();
+  const usage = useResourceUsage();
   return (
     <section aria-labelledby="my-catalog-title" className="space-y-2">
       <h2 id="my-catalog-title" className="font-heading text-base font-semibold">
-        <Trans>My catalog</Trans>
+        <Trans>My catalogs</Trans>
       </h2>
       {query.isPending ? (
         <p role="status">
@@ -24,14 +27,29 @@ export function MyCatalogSection() {
             <Trans>Retry</Trans>
           </Button>
         </div>
-      ) : query.catalog ? (
-        <CatalogRow catalog={query.catalog} />
       ) : (
-        <Button asChild variant="outline" className="h-11 w-full bg-card">
-          <Link to="/catalogs/create">
-            <Trans>Create catalog</Trans>
-          </Link>
-        </Button>
+        <>
+          {query.catalogs.map((catalog) => (
+            <CatalogRow key={catalog.id} catalog={catalog} />
+          ))}
+          <ResourceUsage resource="catalogs" />
+          <Button
+            asChild={!!usage.data?.catalogs.canCreate && !usage.isError}
+            disabled={!usage.data?.catalogs.canCreate || usage.isError}
+            variant="outline"
+            className="h-11 w-full bg-card"
+          >
+            {usage.data?.catalogs.canCreate && !usage.isError ? (
+              <Link to="/catalogs/create">
+                <Trans>Create catalog</Trans>
+              </Link>
+            ) : (
+              <span>
+                <Trans>Create catalog</Trans>
+              </span>
+            )}
+          </Button>
+        </>
       )}
     </section>
   );

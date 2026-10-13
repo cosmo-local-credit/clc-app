@@ -93,6 +93,12 @@ export function AccountProfileCard({ account }: { account: AdminUser }) {
           <RecordRow label="Max vouchers">
             <RecordData>{account.maxTokens}</RecordData>
           </RecordRow>
+          <RecordRow label="Max catalogs">
+            <RecordData>{account.maxCatalogs}</RecordData>
+          </RecordRow>
+          <RecordRow label="Max offers">
+            <RecordData>{account.maxOffers}</RecordData>
+          </RecordRow>
         </dl>
 
         {/* Renders nothing at all for an account with no place on record: an empty

@@ -1,3 +1,5 @@
+import { ResourceUsage } from "#/components/resource-usage";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { catalogMemberMutationOptions } from "@clc/api/features/catalogs/queries";
 import type { Catalog, CatalogCreateIntent } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -20,6 +22,7 @@ export function CatalogCreatePage({ intent }: { intent?: CatalogCreateIntent }) 
 function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
   const { t } = useLingui();
   const mine = useMyCatalog();
+  const usage = useResourceUsage();
   const profile = useAuthProfile({ enabled: mine.auth.isAuthenticated });
   const navigate = useNavigate();
   const [saved, setSaved] = useState<Catalog | undefined>();
@@ -31,7 +34,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
       mine.auth.session?.address ?? "",
     ),
   );
-  const catalog = saved ?? mine.catalog;
+  const catalog = saved;
 
   async function finish(current: Catalog) {
     setSaved(current);
@@ -80,16 +83,22 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         <Trans>Create catalog</Trans>
       </h1>
-      {mine.isPending || profile.isPending ? (
+      {mine.isPending || profile.isPending || usage.isPending ? (
         <p role="status">
           <Trans>Loading…</Trans>
         </p>
-      ) : mine.isError ? (
+      ) : mine.isError || usage.isError ? (
         <>
           <p>
             <Trans>Couldn't load catalogs.</Trans>
           </p>
-          <Button className="h-11" onClick={() => void mine.refetch()}>
+          <Button
+            className="h-11"
+            onClick={() => {
+              void mine.refetch();
+              void usage.refetch();
+            }}
+          >
             <Trans>Retry</Trans>
           </Button>
         </>
@@ -119,7 +128,17 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
           </Button>
         </div>
       ) : (
-        <CatalogForm initialPlace={place} onSaved={finish} />
+        <>
+          <ResourceUsage resource="catalogs" />
+          {usage.data?.catalogs.canCreate && <CatalogForm initialPlace={place} onSaved={finish} />}
+          {mine.catalogs.map((item) => (
+            <Button key={item.id} asChild variant="outline" className="h-11 bg-card">
+              <Link to="/catalogs/$catalogId" params={{ catalogId: item.id }}>
+                {item.name}
+              </Link>
+            </Button>
+          ))}
+        </>
       )}
     </div>
   );
