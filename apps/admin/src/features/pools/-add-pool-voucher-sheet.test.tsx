@@ -1,6 +1,7 @@
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { PoolVoucherEdit } from "./ui/pool-holdings-panel";
@@ -101,6 +102,7 @@ function member(address: string): PoolVoucher {
 }
 
 const onAdded = vi.fn();
+const onUpdated = vi.fn();
 
 function renderSheet(
   overrides: Partial<UserPool> = {},
@@ -108,7 +110,7 @@ function renderSheet(
   edit?: PoolVoucherEdit,
 ) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(
+  return render(
     <QueryClientProvider client={queryClient}>
       <AddPoolVoucherSheet
         pool={pool(overrides)}
@@ -117,6 +119,7 @@ function renderSheet(
         open
         onClose={() => {}}
         onAdded={onAdded}
+        onUpdated={onUpdated}
       />
     </QueryClientProvider>,
   );
@@ -131,6 +134,7 @@ async function pickKiriba() {
 
 beforeEach(() => {
   onAdded.mockReset();
+  onUpdated.mockReset();
   relayOperatorBatch.mockReset();
   getFilteredMarketVouchers.mockReset();
   getMarketVoucher.mockReset();
@@ -204,7 +208,7 @@ describe("AddPoolVoucherSheet", () => {
     expect(screen.queryByLabelText(/Rate \(PPM\)/)).toBeNull();
   });
 
-  it("updates an existing relative voucher without re-registering and accepts a zero cap", async () => {
+  it("updates a relative voucher's cap to zero without rewriting its rate", async () => {
     const voucher = member(RIBA);
     renderSheet({ quoterType: "relative" }, [voucher], {
       voucher,
@@ -217,8 +221,81 @@ describe("AddPoolVoucherSheet", () => {
     await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
     expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
       LIMITER,
+    ]);
+    expect(onUpdated).toHaveBeenCalledWith({ expectedCapRaw: "0" });
+  });
+
+  it("keeps a just-raised cap when the next edit sees the old indexed cap", async () => {
+    const voucher = member(RIBA);
+    const edit = { voucher, ratePpm: "1250000", capRaw: "300000000" };
+    const first = renderSheet({ quoterType: "relative" }, [voucher], edit);
+    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(onUpdated).toHaveBeenCalledWith({ expectedCapRaw: "600000000" }));
+    first.unmount();
+    relayOperatorBatch.mockClear();
+    onUpdated.mockClear();
+
+    // The confirmed cap is 600, but the catalog still supplies 300 to this edit.
+    renderSheet({ quoterType: "relative" }, [voucher], edit);
+    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "300.000000" } });
+    fireEvent.change(screen.getByLabelText("Exchange rate"), { target: { value: "2.5" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(onUpdated).toHaveBeenCalledWith({}));
+    expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
       QUOTER,
     ]);
+  });
+
+  it("signs both setters when the operator changes both the cap and relative rate", async () => {
+    const voucher = member(RIBA);
+    renderSheet({ quoterType: "relative" }, [voucher], {
+      voucher,
+      ratePpm: "1250000",
+      capRaw: "300000000",
+    });
+    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.change(screen.getByLabelText("Exchange rate"), { target: { value: "2.5" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
+      LIMITER,
+      QUOTER,
+    ]);
+  });
+
+  it("does not rewrite an unchanged oracle or poll for it during a cap-only edit", async () => {
+    const voucher = member(RIBA);
+    renderSheet({}, [voucher], { voucher, ratePpm: null, capRaw: "300000000" });
+    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "600" } });
+    fireEvent.change(screen.getByLabelText("Aggregator address"), {
+      target: { value: `0x${AGGREGATOR.slice(2).toUpperCase()}` },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(onUpdated).toHaveBeenCalledWith({ expectedCapRaw: "600000000" }));
+    expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
+      LIMITER,
+    ]);
+  });
+
+  it("does not ask for a signature when only amount formatting changed", async () => {
+    const info = vi.spyOn(toast, "info");
+    try {
+      const voucher = member(RIBA);
+      renderSheet({ quoterType: "relative" }, [voucher], {
+        voucher,
+        ratePpm: "1250000",
+        capRaw: "300000000",
+      });
+      fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "0300.000000" } });
+      fireEvent.change(screen.getByLabelText("Exchange rate"), { target: { value: "01.250000" } });
+      fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+      await waitFor(() => expect(info).toHaveBeenCalledWith("No changes to save."));
+      expect(relayOperatorBatch).not.toHaveBeenCalled();
+      expect(onUpdated).not.toHaveBeenCalled();
+    } finally {
+      info.mockRestore();
+    }
   });
 
   it("adds to a decimal pool without sending a quoter setter", async () => {

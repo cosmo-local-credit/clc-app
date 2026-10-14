@@ -229,10 +229,36 @@ export function AddPoolVoucherSheet({
       // pool with no limiter sends no cap at all, and one with a limiter cannot
       // reach this line without decimals.
       try {
-        const depositCapRaw =
+        const parsedCapRaw =
           hasLimiter && decimals !== null
             ? parseTokenAmount(value.depositCap.trim(), decimals)
             : undefined;
+        // An edit carries an indexer snapshot. Only write fields the operator
+        // changed, or a rate-only edit could restore a cap that is already stale.
+        const depositCapRaw =
+          edit &&
+          parsedCapRaw !== undefined &&
+          edit.capRaw !== null &&
+          BigInt(parsedCapRaw) === BigInt(edit.capRaw)
+            ? undefined
+            : parsedCapRaw;
+        const proposedPricing = toPricing(value);
+        const pricing =
+          edit &&
+          ((proposedPricing.kind === "relative" &&
+            edit.ratePpm !== null &&
+            BigInt(proposedPricing.exchangeRatePpm) === BigInt(edit.ratePpm)) ||
+            (proposedPricing.kind === "oracle" &&
+              proposedPricing.aggregatorAddress.toLowerCase() ===
+                edit.voucher.oracleAddress?.toLowerCase() &&
+              proposedPricing.maxStalenessSeconds === undefined) ||
+            proposedPricing.kind === "decimal")
+            ? undefined
+            : proposedPricing;
+        if (edit && depositCapRaw === undefined && pricing === undefined) {
+          toast.info("No changes to save.");
+          return;
+        }
         const result = await addVoucher.mutateAsync({
           poolAddress: pool.address,
           tokenAddress: selected.address,
@@ -241,13 +267,7 @@ export function AddPoolVoucherSheet({
           quoterAddress: pool.quoterAddress,
           register: !edit,
           ...(depositCapRaw === undefined ? {} : { depositCapRaw }),
-          pricing:
-            edit &&
-            value.pricing === "oracle" &&
-            value.aggregatorAddress.trim() === edit.voucher.oracleAddress &&
-            !value.maxStaleness.trim()
-              ? undefined
-              : toPricing(value),
+          ...(pricing === undefined ? {} : { pricing }),
         });
         toast.success(`${selected.symbol} ${edit ? "updated in" : "added to"} ${pool.name}.`, {
           description: `Confirmed in ${formatVoucherAddress(result.txHash as `0x${string}`)}`,
@@ -255,8 +275,8 @@ export function AddPoolVoucherSheet({
         if (edit)
           onUpdated?.({
             ...(depositCapRaw === undefined ? {} : { expectedCapRaw: depositCapRaw }),
-            ...(value.pricing === "oracle"
-              ? { expectedOracleAddress: value.aggregatorAddress.trim() }
+            ...(pricing?.kind === "oracle"
+              ? { expectedOracleAddress: pricing.aggregatorAddress }
               : {}),
           });
         else onAdded(selected.address);

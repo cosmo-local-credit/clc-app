@@ -145,6 +145,19 @@ describe("PoolHoldingsPanel", () => {
     expect(screen.getByText("7")).toBeTruthy();
   });
 
+  it("shows blocked credit as zero in both voucher and pool units", async () => {
+    mocks.treasury.mockReturnValue({
+      data: new Map([[token, { ...snapshot.get(token)!, limitRaw: "0" }]]),
+      isPending: false,
+      isError: false,
+      error: null,
+    });
+    renderPanel("relative", true);
+    const table = within(await screen.findByRole("table"));
+    expect(table.getAllByText("0")).toHaveLength(3);
+    expect(table.queryByText("—")).toBeNull();
+  });
+
   it("does not report an unread balance or headroom as zero", async () => {
     mocks.treasury.mockReturnValue({
       data: new Map(),

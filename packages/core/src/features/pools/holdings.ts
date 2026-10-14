@@ -275,7 +275,8 @@ function valued(
   | "capUnitValueRaw"
   | "headroomUnitValueRaw"
 > {
-  const capRaw = holding.cap.kind === "capped" ? holding.cap.raw : null;
+  const capRaw =
+    holding.cap.kind === "capped" ? holding.cap.raw : holding.cap.kind === "blocked" ? "0" : null;
   const headroomRaw = capRaw === null ? null : remaining(balanceRaw, capRaw);
   const priceIn = (raw: string | null) =>
     raw === null || !holding.priced ? null : unitValue(raw, holding.ratePpm, holding.decimals);

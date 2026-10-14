@@ -52,6 +52,24 @@ describe("shared pool holdings", () => {
     });
   });
 
+  it("reports a blocked voucher's credit as zero in both voucher and account units", () => {
+    const [holding] = buildPoolHoldings({
+      pool: { limiterAddress: "0xlimiter" },
+      vouchers: [voucher],
+      treasury: new Map([
+        [voucher.tokenAddress, { ...treasury.get(voucher.tokenAddress)!, limitRaw: "0" }],
+      ]),
+      rates: new Map([[voucher.tokenAddress, 2000000n]]),
+      requireRates: true,
+    });
+    expect(holding).toMatchObject({
+      cap: { kind: "blocked" },
+      headroomRaw: "0",
+      capUnitValueRaw: "0",
+      headroomUnitValueRaw: "0",
+    });
+  });
+
   it("keeps holdings and credit available without a readable quoter", () => {
     const [holding] = buildPoolHoldings({
       pool: { limiterAddress: "0xlimiter" },
