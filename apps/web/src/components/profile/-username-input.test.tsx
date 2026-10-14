@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 describe("UsernameInput", () => {
-  it("supports manual entry and connects its description and validation error", () => {
+  it("supports manual entry and connects its validation error", () => {
     render(<TestInput error="That username is unavailable" />);
     const input = screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement;
 
@@ -37,7 +37,7 @@ describe("UsernameInput", () => {
 
     expect(input.value).toBe("alice-2");
     expect(input.getAttribute("aria-invalid")).toBe("true");
-    expect(input.getAttribute("aria-describedby")).toBe("username-description username-error");
+    expect(input.getAttribute("aria-describedby")).toBe("username-error");
     expect(screen.getByRole("alert").textContent).toBe("That username is unavailable");
   });
 
@@ -71,7 +71,6 @@ describe("UsernameInput", () => {
       expect(screen.getByRole("button", { name: "Suggest username" })).toBeTruthy(),
     );
     expect(input.value).toBe("manual-name");
-    expect(screen.getByText("People can use this name to send vouchers to you.")).toBeTruthy();
     expect(screen.queryByText(/choose automatically/i)).toBeNull();
   });
 

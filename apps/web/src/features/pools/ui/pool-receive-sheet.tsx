@@ -58,9 +58,6 @@ export function PoolReceiveSheet({
                 <SheetTitle className="font-heading text-base font-semibold">
                   <Trans>Receive vouchers</Trans>
                 </SheetTitle>
-                <p className="text-muted-foreground text-sm">
-                  <Trans>Send supported vouchers to this pool address.</Trans>
-                </p>
               </SheetHeader>
 
               <div className="flex flex-col items-center px-4 pb-2">

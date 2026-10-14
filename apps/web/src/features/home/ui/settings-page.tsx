@@ -35,14 +35,9 @@ export function SettingsPage({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1>
-          <Trans>Settings</Trans>
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Manage your wallet session and app preferences.</Trans>
-        </p>
-      </div>
+      <h1>
+        <Trans>Settings</Trans>
+      </h1>
 
       <Button asChild variant="outline" className="h-11 w-full justify-start gap-3">
         <a href={PLATFORM_ABOUT_URL} target="_blank" rel="noopener noreferrer">
@@ -65,25 +60,12 @@ export function SettingsPage({
           <Trans>Preferences</Trans>
         </h2>
         <div className="border border-border bg-card p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-muted-foreground text-sm">
-              <Trans>Choose between light and dark mode.</Trans>
-            </p>
-            <ThemeSelector triggerClassName="w-32" />
-          </div>
+          <ThemeSelector triggerClassName="w-full" />
           <div className="-mx-4 my-3 h-px bg-border" />
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-muted-foreground text-sm">
-              <Trans>Choose the app display language.</Trans>
-            </p>
-            <LanguageSelector triggerClassName="w-32" />
-          </div>
+          <LanguageSelector triggerClassName="w-full" />
           <div className="-mx-4 my-3 h-px bg-border" />
-          <div id="visibility" className="flex scroll-mt-4 items-center justify-between gap-3">
-            <p className="text-muted-foreground text-sm">
-              <Trans>Choose how far away location-filtered discovery results can be.</Trans>
-            </p>
-            <VisibilitySelector triggerClassName="w-32" />
+          <div id="visibility" className="scroll-mt-4">
+            <VisibilitySelector triggerClassName="w-full" />
           </div>
         </div>
       </section>

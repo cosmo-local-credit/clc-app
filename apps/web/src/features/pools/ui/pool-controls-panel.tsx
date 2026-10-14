@@ -28,7 +28,6 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { SignHint } from "#/components/wallet";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
 import {
   type PoolFeeSettings,
@@ -307,7 +306,6 @@ function WithdrawLiquidityForm({
       </div>
 
       <SheetFooter>
-        <SignHint className="bg-card" />
         <Button
           type="button"
           className="h-11 w-full"
@@ -394,7 +392,6 @@ function CollectFeesForm({
       </div>
 
       <SheetFooter>
-        <SignHint className="bg-card" />
         <Button
           type="button"
           className="h-11 w-full"
@@ -488,7 +485,6 @@ function FeeSettingsForm({
         <Field
           label={t`Swap fee (%)`}
           htmlFor="pool-fee-percent"
-          hint={t`Charged on every swap this pool settles.`}
           error={trimmedFee && !feeIsValid ? t`Enter a fee from 0 to 100` : null}
         >
           <Input
@@ -509,7 +505,7 @@ function FeeSettingsForm({
           hint={
             address && !trimmedRecipient
               ? t`Collected swap fees are paid here. Your own wallet is ${formatVoucherAddress(address as `0x${string}`)}.`
-              : t`Collected swap fees are paid here.`
+              : undefined
           }
           error={trimmedRecipient && !recipientIsValid ? t`Enter a valid wallet address` : null}
         >
@@ -527,7 +523,6 @@ function FeeSettingsForm({
       </div>
 
       <SheetFooter>
-        <SignHint className="bg-card" />
         <Button
           type="button"
           className="h-11 w-full"

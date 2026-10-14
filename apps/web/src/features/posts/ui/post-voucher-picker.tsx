@@ -189,12 +189,6 @@ export function PostVoucherPicker({
         ) : null}
       </Combobox>
 
-      {atMax ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>You can link up to {max} vouchers.</Trans>
-        </p>
-      ) : null}
-
       {!atMax && query.trim().length > 0 && query.trim().length < VOUCHER_SEARCH_MIN_CHARS ? (
         <p className="text-muted-foreground text-xs">
           <Trans>Type at least two characters.</Trans>

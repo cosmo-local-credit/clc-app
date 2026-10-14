@@ -26,7 +26,6 @@ export function UsernameInput({
   const { t } = useLingui();
   const [busy, setBusy] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const descriptionId = `${id}-description`;
   const errorId = `${id}-error`;
   const error = validationError ?? suggestionError;
 
@@ -44,16 +43,13 @@ export function UsernameInput({
           onChange(event.target.value);
         }}
         onBlur={onBlur}
-        aria-describedby={`${descriptionId}${error ? ` ${errorId}` : ""}`}
+        aria-describedby={error ? errorId : undefined}
         aria-invalid={Boolean(validationError)}
         autoComplete="username"
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
       />
-      <p id={descriptionId} className="text-muted-foreground text-xs">
-        {t`People can use this name to send vouchers to you.`}
-      </p>
       <Button
         type="button"
         variant="outline"

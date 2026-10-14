@@ -24,7 +24,7 @@ export function PasskeySettingsSection({
   const disabled = passkey.busy || isSigningOut;
   const { platformLabel } = passkey;
 
-  let description: string;
+  let description: string | null = null;
   let badge: { label: string; linked: boolean } | null = null;
   switch (state.kind) {
     case "loading":
@@ -36,7 +36,7 @@ export function PasskeySettingsSection({
       break;
     case "linked-here":
       description = passkey.isPasskeySession
-        ? t`You are signed in with the passkey on this device.`
+        ? null
         : t`The passkey on this device is linked. Switch to it to sign with your passkey.`;
       badge = { label: t`Linked`, linked: true };
       break;
@@ -54,7 +54,7 @@ export function PasskeySettingsSection({
       break;
     case "available":
       description = !passkey.isPaperSession
-        ? t`No passkey is linked to this wallet.`
+        ? null
         : passkey.supported
           ? t`Link your passkey (${platformLabel})`
           : t`Linking a passkey works in Safari or Chrome on iPhone and Chrome on Android. Your paper wallet keeps working here.`;
@@ -122,7 +122,7 @@ export function PasskeySettingsSection({
               <p className="font-medium text-sm">
                 <Trans>Passkey</Trans>
               </p>
-              <p className="mt-1 text-muted-foreground text-xs" aria-live="polite">
+              <p className="mt-1 text-muted-foreground text-xs empty:hidden" aria-live="polite">
                 {passkey.busy ? busyLabel : description}
               </p>
             </div>

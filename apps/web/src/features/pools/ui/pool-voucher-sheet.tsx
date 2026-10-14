@@ -34,7 +34,6 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { SignHint } from "#/components/wallet";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import {
   useVoucherSearch,
@@ -339,7 +338,6 @@ function PoolVoucherForm({
       </div>
 
       <SheetFooter>
-        <SignHint className="bg-card" />
         <Button type="button" className="h-11 w-full" disabled>
           {voucher ? <Trans>Save changes</Trans> : <Trans>Approve voucher</Trans>}
         </Button>
@@ -494,7 +492,6 @@ function PoolVoucherConfigurationForm({
               onChange={field.handleChange}
               onBlur={field.handleBlur}
               error={getFieldError(field.state.meta.errors)}
-              hint={t`Exchange rate relative to the default voucher (${unitSymbol})`}
               placeholder="1"
             />
           )}
@@ -577,7 +574,6 @@ function PoolVoucherConfigurationForm({
       </div>
 
       <SheetFooter>
-        <SignHint className="bg-card" />
         <Button type="submit" className="h-11 w-full" disabled={!canSubmit}>
           {relay.isPending ? (
             <Trans>Waiting for the chain…</Trans>
@@ -675,7 +671,7 @@ function RateRow({
   onChange: (next: string) => void;
   onBlur: () => void;
   error: string | null;
-  hint: string;
+  hint?: string;
   placeholder: string;
 }) {
   return (
@@ -702,9 +698,9 @@ function RateRow({
       </div>
       {error ? (
         <FieldError error={error} />
-      ) : (
+      ) : hint ? (
         <p className="mt-2 text-muted-foreground text-xs">{hint}</p>
-      )}
+      ) : null}
     </div>
   );
 }

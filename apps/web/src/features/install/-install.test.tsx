@@ -160,7 +160,6 @@ describe("CLC installation", () => {
     await act(async () => {
       first.choose({ outcome: "dismissed" });
     });
-    expect(within(screen.getByRole("dialog")).getByText(/Installation cancelled/)).toBeTruthy();
     expect(window.__clcInstall!.promptEvent).toBeNull();
     expect(screen.queryByRole("button", { name: "Install now" })).toBeNull();
     const second = offerInstall();
@@ -248,7 +247,7 @@ describe("CLC installation", () => {
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/install`),
     );
-    expect(await screen.findByText("Link copied. Paste it into a message.")).toBeTruthy();
+    expect(await screen.findByText("Link copied")).toBeTruthy();
   });
 
   it("shows a selectable link when clipboard access fails", async () => {

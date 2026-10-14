@@ -28,9 +28,6 @@ export function InstallAppDialog({
           <DialogTitle className="font-heading text-xl font-bold">
             <Trans>Install CLC</Trans>
           </DialogTitle>
-          <p className="text-muted-foreground text-sm">
-            <Trans>Open your wallet and community market with one tap from your phone.</Trans>
-          </p>
           {promptEvent || status === "prompting" ? (
             <Button
               className="h-11 w-full"
@@ -46,13 +43,6 @@ export function InstallAppDialog({
           ) : (
             <InstallInstructions />
           )}
-          {status === "dismissed" ? (
-            <p role="status" className="text-muted-foreground text-sm">
-              <Trans>
-                Installation cancelled. You can keep using CLC in your browser or install it later.
-              </Trans>
-            </p>
-          ) : null}
           {status === "error" ? (
             <p role="alert" className="text-destructive text-sm">
               <Trans>

@@ -51,14 +51,9 @@ function AuthRequiredScreen() {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-20 pb-12">
       <div className="space-y-4">
-        <div className="space-y-1">
-          <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-            <Trans>Sign in to continue</Trans>
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            <Trans>Wallet actions are available after you sign up or sign in.</Trans>
-          </p>
-        </div>
+        <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+          <Trans>Sign in to continue</Trans>
+        </h1>
 
         <div className="space-y-2">
           {/*

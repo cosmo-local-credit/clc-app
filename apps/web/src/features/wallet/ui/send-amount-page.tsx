@@ -24,7 +24,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { SignHint, TokenLogo } from "#/components/wallet";
+import { TokenLogo } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
@@ -327,7 +327,6 @@ export function SendAmountPage({
 
       <div className="flex-1" />
 
-      <SignHint className="mb-2.5 bg-card" />
       <Button
         className="h-11 w-full"
         disabled={!canSend || sendVoucher.isPending}

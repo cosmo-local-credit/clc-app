@@ -461,9 +461,6 @@ export function VoucherDeploymentReceiptPage({
         <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>{contract.name} is live</Trans>
         </h1>
-        <p className="mt-2 text-muted-foreground text-sm">
-          <Trans>{contract.name} can be held, sent and redeemed.</Trans>
-        </p>
         <div className="mt-3">
           <StatusPill tone="success" label={t`Published`} />
         </div>

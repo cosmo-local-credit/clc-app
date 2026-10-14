@@ -69,9 +69,6 @@ export function InstallPage() {
         <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>CLC on your home screen</Trans>
         </h1>
-        <p className="text-muted-foreground">
-          <Trans>Open your wallet and community market with one tap from your phone.</Trans>
-        </p>
       </header>
 
       <section className="space-y-4" aria-label={t`App installation`}>
@@ -86,14 +83,6 @@ export function InstallPage() {
         ) : (
           <>
             <InstallAppButton />
-            {status === "dismissed" ? (
-              <p role="status" className="text-muted-foreground text-sm">
-                <Trans>
-                  Installation cancelled. You can keep using CLC in your browser or install it
-                  later.
-                </Trans>
-              </p>
-            ) : null}
             <div className="space-y-3 border border-border bg-card p-4">
               <h2>
                 <Trans>Add CLC to your phone</Trans>
@@ -116,9 +105,6 @@ export function InstallPage() {
         <h2 id="share-install-title">
           <Trans>Share CLC</Trans>
         </h2>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Send this link to help someone add CLC to their phone.</Trans>
-        </p>
         <Input
           aria-label={t`Installation link`}
           value={shareUrl}
@@ -135,7 +121,7 @@ export function InstallPage() {
           <Trans>Share installation link</Trans>
         </Button>
         <p role="status" className="text-muted-foreground text-sm">
-          {shareStatus === "copied" ? <Trans>Link copied. Paste it into a message.</Trans> : null}
+          {shareStatus === "copied" ? <Trans>Link copied</Trans> : null}
           {shareStatus === "manual" ? (
             <Trans>Select and copy the link above to share it.</Trans>
           ) : null}

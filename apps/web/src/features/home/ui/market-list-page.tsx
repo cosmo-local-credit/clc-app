@@ -228,11 +228,6 @@ export function MarketListPage({
               />
             ))}
             <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-            {hasMoreVisible ? (
-              <p className="p-3 text-center text-muted-foreground text-xs">
-                <Trans>Scroll for more</Trans>
-              </p>
-            ) : null}
           </section>
         ) : null}
       </div>

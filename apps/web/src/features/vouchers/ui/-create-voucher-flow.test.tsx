@@ -386,7 +386,6 @@ describe("CreateVoucherFlow", () => {
 
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
-    expect(screen.getByText("Link to the terms that apply to this voucher")).toBeTruthy();
     expect(screen.queryByLabelText("Shown to anyone holding this voucher")).toBeNull();
   });
 

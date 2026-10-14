@@ -448,7 +448,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   <Field
                     label={t`Create vouchers`}
                     htmlFor="voucher-supply"
-                    hint={t`How many vouchers to create once this voucher is published`}
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Input
@@ -497,7 +496,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   <Field
                     label={t`Voucher Description`}
                     htmlFor="voucher-description"
-                    hint={t`Shown on your voucher page`}
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Textarea
@@ -535,7 +533,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       <Field
                         label={t`Voucher Symbol`}
                         htmlFor="voucher-symbol"
-                        hint={t`Suggested from the name. You can change it.`}
                         error={getFieldError(field.state.meta.errors)}
                       >
                         <Input
@@ -907,13 +904,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                                 placeholder="https://example.com/terms"
                                 aria-invalid={field.state.meta.errors.length > 0}
                               />
-                              {error ? (
-                                <FieldError error={error} />
-                              ) : (
-                                <p className="mt-1 text-muted-foreground text-xs">
-                                  <Trans>Link to the terms that apply to this voucher</Trans>
-                                </p>
-                              )}
+                              {error ? <FieldError error={error} /> : null}
                             </div>
                           );
                         }}

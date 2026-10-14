@@ -180,12 +180,6 @@ export function OfferingOrderPicker({
         })}
       </div>
 
-      {selectedCount >= OFFERING_ORDER_MAX_ITEMS ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>You can add up to three offerings to one order.</Trans>
-        </p>
-      ) : null}
-
       {summary?.kind === "price-on-request" && summary.pricedSubtotal ? (
         <OrderSummaryRow
           label={<Trans>Priced subtotal</Trans>}

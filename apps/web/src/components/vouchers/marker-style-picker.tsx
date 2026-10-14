@@ -86,13 +86,6 @@ export function MarkerStylePicker({
           <p className="font-medium text-sm">
             <Trans>Map pin</Trans>
           </p>
-          <p className="text-muted-foreground text-xs">
-            {automatic ? (
-              <Trans>Follows what you offer until you choose one.</Trans>
-            ) : (
-              <Trans>Shown on the market map.</Trans>
-            )}
-          </p>
         </div>
         {automatic ? null : (
           <Button

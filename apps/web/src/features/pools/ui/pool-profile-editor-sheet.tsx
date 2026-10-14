@@ -174,7 +174,6 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
             <Field
               label={t`Display name`}
               htmlFor="pool-display-name"
-              hint={t`Changes how the pool is shown. The deployed contract keeps its name.`}
               error={getFieldError(field.state.meta.errors)}
             >
               <Input
@@ -439,13 +438,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                           placeholder="https://example.com/terms"
                           aria-invalid={field.state.meta.errors.length > 0}
                         />
-                        {error ? (
-                          <FieldError error={error} />
-                        ) : (
-                          <p className="mt-1 text-muted-foreground text-xs">
-                            <Trans>Link to the terms that apply to this pool</Trans>
-                          </p>
-                        )}
+                        {error ? <FieldError error={error} /> : null}
                       </div>
                     );
                   }}

@@ -62,7 +62,7 @@ it("changes every iPhone install step when the open dialog's language changes", 
   expect(navigator.language).toBe("en-US");
 }, 10_000);
 
-it("keeps the native event available through a language change and translates cancellation", async () => {
+it("keeps the native event available through a language change", async () => {
   let choose!: (choice: { outcome: "dismissed"; platform: string }) => void;
   const userChoice = new Promise<{ outcome: "dismissed"; platform: string }>((resolve) => {
     choose = resolve;
@@ -92,6 +92,5 @@ it("keeps the native event available through a language change and translates ca
   await act(async () => {
     choose({ outcome: "dismissed", platform: "web" });
   });
-  expect(within(dialog).getByText(/Инсталација је отказана/)).toBeTruthy();
   expect(within(dialog).queryByRole("button", { name: "Инсталирај сада" })).toBeNull();
 });

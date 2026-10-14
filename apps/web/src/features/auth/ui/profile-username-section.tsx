@@ -79,11 +79,6 @@ export function ProfileUsernameSection({ profile }: { profile: ProfileResult }) 
           </Button>
         ) : null}
       </div>
-      <p className="mt-2 text-muted-foreground text-xs">
-        {username
-          ? t`People can type your username to send you vouchers.`
-          : t`Choose one so people can send you vouchers without your wallet address.`}
-      </p>
       <Button
         type="button"
         variant="outline"

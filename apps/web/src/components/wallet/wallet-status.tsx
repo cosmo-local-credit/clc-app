@@ -4,7 +4,6 @@ import {
   RiArrowRightUpLine,
   RiCheckLine,
   RiCloseLine,
-  RiFingerprintLine,
   RiTimeLine,
 } from "react-icons/ri";
 
@@ -25,20 +24,6 @@ export function NetworkBadge({ className }: { className?: string }) {
       <span className="size-2 rounded-full bg-primary" />
       <Trans>{chainName} network</Trans>
     </Badge>
-  );
-}
-
-export function SignHint({ label, className }: { label?: ReactNode; className?: string }) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-2 border border-border bg-muted px-2.5 py-2 text-muted-foreground text-xs",
-        className,
-      )}
-    >
-      <RiFingerprintLine className="size-4 shrink-0 text-primary" aria-hidden="true" />
-      <span>{label ?? <Trans>You'll confirm with Face ID, fingerprint or PIN</Trans>}</span>
-    </div>
   );
 }
 

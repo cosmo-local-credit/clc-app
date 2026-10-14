@@ -51,10 +51,6 @@ vi.mock("sonner", () => ({
   toast: { error: mocks.toastError, success: mocks.toastSuccess },
 }));
 
-vi.mock("#/components/wallet", () => ({
-  SignHint: () => <p>Sign hint</p>,
-}));
-
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useRecipientSearch: () => ({ data: null, error: null, isPending: false }),
   useReverseRecipientResolution: () => ({ data: null, error: null, isPending: false }),

@@ -168,7 +168,6 @@ describe("TopUpPage", () => {
     renderWithQueryClient(<TopUpPage />);
 
     expect(await screen.findByRole("heading", { name: "Cash" })).toBeTruthy();
-    expect(screen.getByText("Buy or sell stables with local money.")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Add stables" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Withdraw" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Pretium history" })).toBeTruthy();

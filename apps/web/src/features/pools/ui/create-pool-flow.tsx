@@ -401,7 +401,6 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       <Field
                         label={t`Unit of Account`}
                         htmlFor="pool-unit"
-                        hint={t`The currency used to describe value in this pool`}
                         error={getFieldError(field.state.meta.errors)}
                       >
                         <UnitOfAccountCombobox
@@ -465,7 +464,6 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       <Field
                         label={t`Pool symbol`}
                         htmlFor="pool-symbol"
-                        hint={t`Suggested from the name. You can change it.`}
                         error={getFieldError(field.state.meta.errors)}
                       >
                         <Input
@@ -575,14 +573,9 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                               htmlFor="pool-fees-decoupled"
                               className="grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
                             >
-                              <span>
-                                <strong className="block font-medium text-sm">
-                                  <Trans>Take fees separately</Trans>
-                                </strong>
-                                <span className="mt-0.5 block text-muted-foreground text-xs">
-                                  <Trans>Fees are held apart from pool liquidity</Trans>
-                                </span>
-                              </span>
+                              <strong className="block font-medium text-sm">
+                                <Trans>Take fees separately</Trans>
+                              </strong>
                               <Checkbox
                                 id="pool-fees-decoupled"
                                 checked={field.state.value}
@@ -728,9 +721,6 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         onOpenChange={setTagsOpen}
                       />
                     ) : null}
-                    <p className="mt-1.5 text-muted-foreground text-xs">
-                      <Trans>Helps members find and understand your pool</Trans>
-                    </p>
                   </div>
                 )}
               </form.Field>
@@ -887,13 +877,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                                 placeholder="https://example.com/terms"
                                 aria-invalid={field.state.meta.errors.length > 0}
                               />
-                              {error ? (
-                                <FieldError error={error} />
-                              ) : (
-                                <p className="mt-1 text-muted-foreground text-xs">
-                                  <Trans>Link to the terms that apply to this pool</Trans>
-                                </p>
-                              )}
+                              {error ? <FieldError error={error} /> : null}
                             </div>
                           );
                         }}

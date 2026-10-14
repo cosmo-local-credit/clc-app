@@ -178,11 +178,7 @@ export function PostImageManager({
         </p>
       ) : null}
 
-      {images.length === 0 ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>Photos appear in the order you add them.</Trans>
-        </p>
-      ) : (
+      {images.length === 0 ? null : (
         <ul className="space-y-3">
           {images.map((image, index) => {
             const isCover = coverUrl === image.url;

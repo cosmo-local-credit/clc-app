@@ -8,7 +8,6 @@ export {
   PendingClock,
   SectionHeader,
   SignedAmount,
-  SignHint,
   StatusPill,
   SuccessCheck,
   TokenLogo,

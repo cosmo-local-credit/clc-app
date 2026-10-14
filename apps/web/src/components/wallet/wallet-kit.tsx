@@ -7,7 +7,6 @@ export {
   NetworkBadge,
   PendingClock,
   SignedAmount,
-  SignHint,
   StatusPill,
   SuccessCheck,
 } from "./wallet-status";

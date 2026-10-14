@@ -142,9 +142,6 @@ export function ImageCropSheet({
             <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Frame your photo</Trans>
             </SheetTitle>
-            <p className="text-muted-foreground text-xs">
-              <Trans>Drag to move, pinch or use the slider to zoom.</Trans>
-            </p>
           </SheetHeader>
 
           <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">

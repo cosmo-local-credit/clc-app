@@ -121,10 +121,6 @@ vi.mock("sonner", () => ({
   toast: { error: mocks.toastError, success: mocks.toastSuccess },
 }));
 
-vi.mock("#/components/wallet", () => ({
-  SignHint: () => <p>Sign hint</p>,
-}));
-
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 
 function pool(overrides: Partial<UserPool> = {}): UserPool {

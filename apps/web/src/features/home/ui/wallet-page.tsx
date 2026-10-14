@@ -134,14 +134,9 @@ export function WalletPage({ address }: { address?: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1>
-          <Trans>Wallet</Trans>
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Manage vouchers, pools, and local payments.</Trans>
-        </p>
-      </div>
+      <h1>
+        <Trans>Wallet</Trans>
+      </h1>
 
       <CompleteProfileBanner address={address} />
 
