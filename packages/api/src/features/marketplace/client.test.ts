@@ -77,6 +77,7 @@ describe("marketplace HTTP contract", () => {
     const fetcher = respond({ results: [offering], nextCursor: null });
     await api.list({});
     expect(fetcher.mock.calls[0]?.[1].credentials).toBe("omit");
+    expect(fetcher.mock.calls[0]?.[1].cache).toBe("no-store");
 
     respond({ results: [{ ...offering, geoLat: null }], nextCursor: null });
     await expect(api.list({})).rejects.toBeInstanceOf(BackendApiError);

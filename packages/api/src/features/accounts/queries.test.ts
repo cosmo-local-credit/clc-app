@@ -63,6 +63,14 @@ describe("infinite account options", () => {
     expect(tokens.getNextPageParam(full, [], undefined, [])).toBe(5);
   });
 
+  it("continues when a transaction tie makes the token page larger than requested", () => {
+    const tied = {
+      tokens: Array.from({ length: 24 }, () => ({})),
+      last: 100,
+    } as unknown as AccountTokensResult;
+    expect(tokens.getNextPageParam(tied, [], undefined, [])).toBe(100);
+  });
+
   it("stops when the backend returns no cursor", () => {
     const noCursor = {
       transfers: Array.from({ length: 20 }, () => ({})),

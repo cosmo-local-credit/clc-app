@@ -36,9 +36,15 @@ export type CreateClcApiOptions = CreateHttpClientOptions & {
    * when it does not.
    */
   catalogCache?: RequestCache;
+  /** Use the superadmin-only pool composition read, including retired vouchers. */
+  adminPoolComposition?: boolean;
 };
 
-export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) {
+export function createClcApi({
+  catalogCache,
+  adminPoolComposition,
+  ...options
+}: CreateClcApiOptions) {
   const http = createHttpClient(options);
 
   // The package exports the transport factory so apps can preserve route-level
@@ -52,7 +58,7 @@ export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) 
     deployments: createDeploymentsClient(http),
     market: createMarketClient(http, { cache: catalogCache }),
     offerings: createOfferingsClient(http, { cache: catalogCache }),
-    pools: createPoolsClient(http),
+    pools: createPoolsClient(http, { adminComposition: adminPoolComposition }),
     poolDeploy: createPoolDeployClient(http),
     pretium: createPretiumClient(http),
     reports: createReportsClient(http),

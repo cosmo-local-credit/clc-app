@@ -76,7 +76,11 @@ export type PoolComposition = {
   liveOffers: number;
 };
 
-export function poolComposition(pool: UserPool, vouchers: PoolVoucher[]): PoolComposition {
+export function poolComposition(
+  pool: UserPool,
+  vouchers: PoolVoucher[],
+  total = pool.voucherCount,
+): PoolComposition {
   const feeds = new Set<string>();
   let priced = 0;
   let blocked = 0;
@@ -95,7 +99,7 @@ export function poolComposition(pool: UserPool, vouchers: PoolVoucher[]): PoolCo
 
   return {
     loaded: vouchers.length,
-    total: pool.voucherCount,
+    total,
     priced,
     unpriced: vouchers.length - priced,
     blocked,
