@@ -5,9 +5,12 @@ import {
 } from "@clc/api/features/market/queries";
 import type { MarketVoucher } from "@clc/api/features/market/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import type { PoolVoucherPricing } from "@clc/core/features/pool-admin/logic";
+import {
+  POOL_PRICE_INDEX_DECIMALS,
+  type PoolVoucherPricing,
+} from "@clc/core/features/pool-admin/logic";
 import type { PoolPricing } from "@clc/core/features/pools/logic";
-import { parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
@@ -36,6 +39,8 @@ import {
 } from "#/components/ui/sheet";
 import { clcApi } from "#/lib/api";
 import { termFilter } from "#/lib/catalog-filter";
+import type { PoolVoucherEdit } from "./pool-holdings-panel";
+import type { SettlingVoucher } from "../use-pool-vouchers";
 import { useAddPoolVoucher } from "../use-add-pool-voucher";
 
 const CANDIDATE_PAGE_SIZE = 50;
@@ -72,22 +77,44 @@ const positiveInteger = z
  */
 const formSchema = z
   .object({
-    pricing: z.enum(["oracle", "decimal"]),
+    pricing: z.enum(["relative", "oracle", "decimal"]),
+    exchangeRate: z.string(),
     depositCap: z.string(),
     aggregatorAddress: z.string(),
     maxStaleness: z.string(),
     // Not edited: mirrored into the form so the schema can require a cap only
     // where the pool actually has a limiter to write it to.
     hasLimiter: z.boolean(),
+    editing: z.boolean(),
   })
   .superRefine((value, ctx) => {
     if (value.hasLimiter) {
-      const cap = positiveDecimal.safeParse(value.depositCap);
+      const cap = (
+        value.editing
+          ? z
+              .string()
+              .trim()
+              .regex(/^\d+(\.\d+)?$/, "Enter a cap of zero or more")
+          : positiveDecimal
+      ).safeParse(value.depositCap);
       if (!cap.success) {
         ctx.addIssue({
           code: "custom",
           path: ["depositCap"],
           message: cap.error.issues[0]?.message ?? "Enter a deposit cap",
+        });
+      }
+    }
+
+    if (value.pricing === "relative") {
+      try {
+        const rate = parseTokenAmount(value.exchangeRate.trim(), POOL_PRICE_INDEX_DECIMALS);
+        if (BigInt(rate) <= 0n) throw new Error("Invalid rate");
+      } catch {
+        ctx.addIssue({
+          code: "custom",
+          path: ["exchangeRate"],
+          message: "Enter a positive rate with at most six decimal places",
         });
       }
     }
@@ -132,8 +159,11 @@ export function AddPoolVoucherSheet({
   open,
   onClose,
   onAdded,
+  onUpdated,
+  edit,
 }: {
   pool: UserPool;
+  edit?: PoolVoucherEdit;
   poolVouchers: PoolVoucher[];
   open: boolean;
   onClose: () => void;
@@ -144,25 +174,30 @@ export function AddPoolVoucherSheet({
    * and showing the composition as it was.
    */
   onAdded: (tokenAddress: string) => void;
+  onUpdated?: (expected: Pick<SettlingVoucher, "expectedCapRaw" | "expectedOracleAddress">) => void;
 }) {
   const [term, setTerm] = useState("");
-  const [selected, setSelected] = useState<MarketVoucher | null>(null);
+  const [selected, setSelected] = useState<Pick<
+    MarketVoucher,
+    "address" | "name" | "symbol"
+  > | null>(
+    edit
+      ? { address: edit.voucher.tokenAddress, name: edit.voucher.name, symbol: edit.voucher.symbol }
+      : null,
+  );
   const addVoucher = useAddPoolVoucher();
 
-  // A pool still on the retired RelativeQuoter cannot be configured from here.
-  // Registering the voucher without a rate would not leave it unpriced — the
-  // quoter reads an unset token as parity — so the pool would quietly start
-  // quoting a 1:1 nobody chose. Refusing the whole batch is the honest outcome.
-  const legacyQuoter = pool.quoterType === "relative";
-  const knownPricing: PoolPricing | null =
-    pool.quoterType === "oracle" || pool.quoterType === "decimal" ? pool.quoterType : null;
+  const knownPricing = pool.quoterType;
   const hasLimiter = pool.limiterAddress !== null;
 
   // Only the selected voucher's decimals are needed, and the catalog list does
   // not carry them, so the detail is fetched once a voucher is chosen rather
   // than for every candidate in the list.
-  const detailQuery = useQuery(voucherQueryOptions(clcApi.market, selected?.address));
-  const decimals = detailQuery.data?.decimals ?? null;
+  const detailQuery = useQuery({
+    ...voucherQueryOptions(clcApi.market, selected?.address),
+    enabled: open && !edit && !!selected,
+  });
+  const decimals = edit?.voucher.decimals ?? detailQuery.data?.decimals ?? null;
 
   const form = useForm({
     defaultValues: {
@@ -170,10 +205,17 @@ export function AddPoolVoucherSheet({
       // every pool this console publishes with a price feed uses — but it is a
       // default the operator can see and change, not an assumption.
       pricing: (knownPricing ?? "oracle") as PoolPricing,
-      depositCap: "",
-      aggregatorAddress: "",
+      depositCap:
+        edit?.capRaw !== null && edit?.capRaw !== undefined && decimals !== null
+          ? formatTokenAmount(edit.capRaw, decimals, decimals)
+          : "",
+      exchangeRate: edit?.ratePpm
+        ? formatTokenAmount(edit.ratePpm, POOL_PRICE_INDEX_DECIMALS, POOL_PRICE_INDEX_DECIMALS)
+        : "",
+      aggregatorAddress: edit?.voucher.oracleAddress ?? "",
       maxStaleness: "",
       hasLimiter,
+      editing: !!edit,
     },
     validators: { onSubmit: formSchema },
     onSubmit: async ({ value }) => {
@@ -186,26 +228,58 @@ export function AddPoolVoucherSheet({
       // Scaled here rather than inline so the guard above is what narrows it: a
       // pool with no limiter sends no cap at all, and one with a limiter cannot
       // reach this line without decimals.
-      const depositCapRaw =
-        hasLimiter && decimals !== null
-          ? parseTokenAmount(value.depositCap.trim(), decimals)
-          : undefined;
-
       try {
+        const parsedCapRaw =
+          hasLimiter && decimals !== null
+            ? parseTokenAmount(value.depositCap.trim(), decimals)
+            : undefined;
+        // An edit carries an indexer snapshot. Only write fields the operator
+        // changed, or a rate-only edit could restore a cap that is already stale.
+        const depositCapRaw =
+          edit &&
+          parsedCapRaw !== undefined &&
+          edit.capRaw !== null &&
+          BigInt(parsedCapRaw) === BigInt(edit.capRaw)
+            ? undefined
+            : parsedCapRaw;
+        const proposedPricing = toPricing(value);
+        const pricing =
+          edit &&
+          ((proposedPricing.kind === "relative" &&
+            edit.ratePpm !== null &&
+            BigInt(proposedPricing.exchangeRatePpm) === BigInt(edit.ratePpm)) ||
+            (proposedPricing.kind === "oracle" &&
+              proposedPricing.aggregatorAddress.toLowerCase() ===
+                edit.voucher.oracleAddress?.toLowerCase() &&
+              proposedPricing.maxStalenessSeconds === undefined) ||
+            proposedPricing.kind === "decimal")
+            ? undefined
+            : proposedPricing;
+        if (edit && depositCapRaw === undefined && pricing === undefined) {
+          toast.info("No changes to save.");
+          return;
+        }
         const result = await addVoucher.mutateAsync({
           poolAddress: pool.address,
           tokenAddress: selected.address,
           registryAddress: pool.tokenRegistryAddress,
           limiterAddress: pool.limiterAddress,
           quoterAddress: pool.quoterAddress,
-          register: true,
+          register: !edit,
           ...(depositCapRaw === undefined ? {} : { depositCapRaw }),
-          pricing: toPricing(value),
+          ...(pricing === undefined ? {} : { pricing }),
         });
-        toast.success(`${selected.symbol} added to ${pool.name}.`, {
+        toast.success(`${selected.symbol} ${edit ? "updated in" : "added to"} ${pool.name}.`, {
           description: `Confirmed in ${formatVoucherAddress(result.txHash as `0x${string}`)}`,
         });
-        onAdded(selected.address);
+        if (edit)
+          onUpdated?.({
+            ...(depositCapRaw === undefined ? {} : { expectedCapRaw: depositCapRaw }),
+            ...(pricing?.kind === "oracle"
+              ? { expectedOracleAddress: pricing.aggregatorAddress }
+              : {}),
+          });
+        else onAdded(selected.address);
         close();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "The transaction failed.");
@@ -230,7 +304,7 @@ export function AddPoolVoucherSheet({
     >
       <SheetContent className="bg-card w-full shadow-none data-[side=right]:sm:max-w-[30rem]">
         <SheetHeader className="border-border border-b">
-          <SheetTitle>Add a voucher</SheetTitle>
+          <SheetTitle>{edit ? "Configure voucher" : "Add a voucher"}</SheetTitle>
           <SheetDescription>{pool.name}</SheetDescription>
         </SheetHeader>
 
@@ -246,8 +320,8 @@ export function AddPoolVoucherSheet({
               <SelectedVoucher
                 voucher={selected}
                 decimals={decimals}
-                loadingDecimals={detailQuery.isPending}
-                onChange={() => setSelected(null)}
+                loadingDecimals={!edit && detailQuery.isPending}
+                onChange={edit ? undefined : () => setSelected(null)}
               />
             ) : (
               <VoucherPicker
@@ -293,13 +367,7 @@ export function AddPoolVoucherSheet({
                 <div className="border-border flex flex-col gap-3 border-t pt-4">
                   <SectionLabel>Pricing</SectionLabel>
 
-                  {legacyQuoter ? (
-                    <p className="text-destructive text-sm">
-                      This pool prices with the retired RelativeQuoter, whose rates are maintained
-                      by hand. The console cannot set one, and adding a voucher without it would
-                      quote the pair at parity.
-                    </p>
-                  ) : knownPricing ? (
+                  {knownPricing ? (
                     <p className="text-sm">
                       This pool quotes with{" "}
                       <span className="font-medium">{PRICING_LABELS[knownPricing]}</span>.
@@ -335,7 +403,27 @@ export function AddPoolVoucherSheet({
 
                   <form.Subscribe selector={(state) => state.values.pricing}>
                     {(pricing) =>
-                      legacyQuoter ? null : pricing === "oracle" ? (
+                      pricing === "relative" ? (
+                        <form.Field name="exchangeRate">
+                          {(field) => (
+                            <Field
+                              htmlFor={field.name}
+                              label="Exchange rate"
+                              hint={`Value of one voucher in ${pool.unitOfAccount ?? pool.symbol}. One means parity.`}
+                              error={getFieldError(field.state.meta.errors)}
+                            >
+                              <Input
+                                id={field.name}
+                                inputMode="decimal"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                className="font-data"
+                              />
+                            </Field>
+                          )}
+                        </form.Field>
+                      ) : pricing === "oracle" ? (
                         <>
                           <form.Field name="aggregatorAddress">
                             {(field) => (
@@ -404,11 +492,9 @@ export function AddPoolVoucherSheet({
                   submit is better than scaling by a guess. */}
               <Button
                 type="submit"
-                disabled={
-                  !selected || legacyQuoter || detailQuery.isPending || addVoucher.isPending
-                }
+                disabled={!selected || (!edit && detailQuery.isPending) || addVoucher.isPending}
               >
-                {addVoucher.isPending ? "Adding…" : "Sign and add"}
+                {addVoucher.isPending ? "Waiting…" : edit ? "Sign and update" : "Sign and add"}
               </Button>
             </div>
           </div>
@@ -422,8 +508,14 @@ function toPricing(value: {
   pricing: PoolPricing;
   aggregatorAddress: string;
   maxStaleness: string;
+  exchangeRate: string;
 }): PoolVoucherPricing {
   if (value.pricing === "decimal") return { kind: "decimal" };
+  if (value.pricing === "relative")
+    return {
+      kind: "relative",
+      exchangeRatePpm: parseTokenAmount(value.exchangeRate.trim(), POOL_PRICE_INDEX_DECIMALS),
+    };
   const staleness = value.maxStaleness.trim();
   return {
     kind: "oracle",
@@ -438,10 +530,10 @@ function SelectedVoucher({
   loadingDecimals,
   onChange,
 }: {
-  voucher: MarketVoucher;
+  voucher: Pick<MarketVoucher, "address" | "name" | "symbol">;
   decimals: number | null;
   loadingDecimals: boolean;
-  onChange: () => void;
+  onChange?: () => void;
 }) {
   return (
     <div className="border-border flex items-start justify-between gap-3 border p-3">
@@ -453,9 +545,11 @@ function SelectedVoucher({
           {loadingDecimals ? " · reading decimals" : decimals === null ? "" : ` · ${decimals} dp`}
         </p>
       </div>
-      <Button type="button" variant="outline" size="sm" onClick={onChange}>
-        Change
-      </Button>
+      {onChange ? (
+        <Button type="button" variant="outline" size="sm" onClick={onChange}>
+          Change
+        </Button>
+      ) : null}
     </div>
   );
 }

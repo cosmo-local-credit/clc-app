@@ -58,6 +58,15 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: { email: "", phone: "" } }),
 }));
 
+vi.mock("#/hooks/use-resource-usage", () => ({
+  useResourceUsage: () => ({
+    data: { vouchers: { used: 0, limit: 1, canCreate: true, unlimited: false } },
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({
     data: ["Agriculture"],

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AddressCell, PoolCell, TokenAmount, TxLink } from "#/components/admin/chain-cells";
+import { PoolProtocolFee } from "#/components/admin/pool-protocol-fee";
 import { DataTable } from "#/components/admin/data-table";
 import { EmptyState } from "#/components/admin/empty-state";
 import { LoadingBlock } from "#/components/admin/loading-block";
@@ -83,14 +84,21 @@ const columns: Array<ColumnDef<AdminPoolTransaction>> = [
   },
   {
     id: "fee",
-    header: "Fee",
+    header: "Pool fee",
     enableSorting: false,
-    // Denominated in the out token, and excluding the protocol fee: the indexer
-    // only records that separately for pools that emit SwapSettlement, and there
-    // is no column for it yet.
     cell: ({ row }) => (
-      <TokenAmount amount={row.original.fee} decimals={row.original.tokenOutDecimals} />
+      <TokenAmount
+        amount={row.original.fee}
+        decimals={row.original.tokenOutDecimals}
+        symbol={row.original.tokenOutSymbol}
+      />
     ),
+  },
+  {
+    id: "protocolFee",
+    header: "Protocol fee",
+    enableSorting: false,
+    cell: ({ row }) => <PoolProtocolFee transaction={row.original} />,
   },
   {
     accessorKey: "success",

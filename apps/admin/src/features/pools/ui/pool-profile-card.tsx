@@ -90,6 +90,17 @@ export function PoolProfileCard({ pool }: { pool: UserPool }) {
           <RecordRow label="Owner">
             <RecordOwner address={pool.ownerAddress} />
           </RecordRow>
+          <RecordRow label="Pricing">
+            {pool.quoterType === "relative" ? (
+              "Relative rates"
+            ) : pool.quoterType === "decimal" ? (
+              "Decimals only"
+            ) : pool.quoterType === "oracle" ? (
+              "Oracle feeds"
+            ) : (
+              <RecordAbsent>Not recorded</RecordAbsent>
+            )}
+          </RecordRow>
           {/* Whether a token balance is liquidity or a fee owed to the recipient. */}
           <RecordRow label="Fee accounting">
             {pool.feesDecoupled ? "Held separately" : "Part of liquidity"}

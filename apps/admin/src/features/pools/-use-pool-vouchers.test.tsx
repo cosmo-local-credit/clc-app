@@ -66,6 +66,21 @@ describe("usePoolVouchers", () => {
     expect(getPoolVouchers).toHaveBeenCalledTimes(atArrival);
   });
 
+  it("polls an existing voucher until its changed cap is projected", async () => {
+    getPoolVouchers.mockResolvedValue({ vouchers: [{ ...voucher(RIBA), tokenLimit: "100" }] });
+    renderHook(() => usePoolVouchers(ADDRESS, settlingVoucher(RIBA, { expectedCapRaw: "200" })), {
+      wrapper: wrapper(),
+    });
+    await waitFor(() => expect(getPoolVouchers).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(7_000);
+    expect(getPoolVouchers.mock.calls.length).toBeGreaterThan(1);
+    getPoolVouchers.mockResolvedValue({ vouchers: [{ ...voucher(RIBA), tokenLimit: "200" }] });
+    await vi.advanceTimersByTimeAsync(4_000);
+    const arrived = getPoolVouchers.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(getPoolVouchers).toHaveBeenCalledTimes(arrived);
+  });
+
   it("gives up on a deadline rather than polling a row that is never coming", async () => {
     // If the tracker or the projection is down the row will not appear, and a
     // console left open must not poll all afternoon over it.

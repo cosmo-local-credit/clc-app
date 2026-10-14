@@ -422,8 +422,7 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
  * which contract call to sign, and a value no builder handles must not reach
  * that decision.
  *
- * `relative` is among the three even though no new pool can be published on it,
- * because pools already running one have to keep reading back as what they are.
+ * All three modes support publishing and voucher management.
  */
 function normalizePoolQuoterType(value: unknown): PoolQuoterType | null {
   return POOL_QUOTER_TYPES.find((candidate) => candidate === value) ?? null;

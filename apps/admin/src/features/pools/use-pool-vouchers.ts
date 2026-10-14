@@ -64,7 +64,7 @@ export function usePoolVouchers(address: string, settling: SettlingVoucher | nul
       if (!settling) return false;
       if (Date.now() > settling.deadline) return false;
       const vouchers = query.state.data?.vouchers ?? [];
-      return hasVoucher(vouchers, settling.tokenAddress) ? false : SETTLE_POLL_MS;
+      return hasVoucher(vouchers, settling.tokenAddress, settling) ? false : SETTLE_POLL_MS;
     },
     refetchIntervalInBackground: false,
   });
@@ -74,14 +74,29 @@ export function usePoolVouchers(address: string, settling: SettlingVoucher | nul
 export type SettlingVoucher = {
   tokenAddress: string;
   deadline: number;
+  expectedCapRaw?: string;
+  expectedOracleAddress?: string;
 };
 
-export function settlingVoucher(tokenAddress: string): SettlingVoucher {
-  return { tokenAddress, deadline: Date.now() + SETTLE_TIMEOUT_MS };
+export function settlingVoucher(
+  tokenAddress: string,
+  expected: Pick<SettlingVoucher, "expectedCapRaw" | "expectedOracleAddress"> = {},
+): SettlingVoucher {
+  return { tokenAddress, deadline: Date.now() + SETTLE_TIMEOUT_MS, ...expected };
 }
 
 /** Whether the projected composition has caught up with what was signed. */
-export function hasVoucher(vouchers: PoolVoucher[], tokenAddress: string): boolean {
+export function hasVoucher(
+  vouchers: PoolVoucher[],
+  tokenAddress: string,
+  expected?: Pick<SettlingVoucher, "expectedCapRaw" | "expectedOracleAddress">,
+): boolean {
   const wanted = tokenAddress.toLowerCase();
-  return vouchers.some((voucher) => voucher.tokenAddress.toLowerCase() === wanted);
+  return vouchers.some(
+    (voucher) =>
+      voucher.tokenAddress.toLowerCase() === wanted &&
+      (expected?.expectedCapRaw === undefined || voucher.tokenLimit === expected.expectedCapRaw) &&
+      (expected?.expectedOracleAddress === undefined ||
+        voucher.oracleAddress?.toLowerCase() === expected.expectedOracleAddress.toLowerCase()),
+  );
 }

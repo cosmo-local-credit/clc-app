@@ -97,7 +97,9 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Accept the terms to publish your voucher", i18n)).toBe(
       "Прихватите услове да бисте објавили ваучер",
     );
-    expect(translateValidationError("Pool name is required", i18n)).toBe("Назив пула је обавезан");
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Назив тржнице је обавезан",
+    );
   });
 
   it("translates known validation errors into French", async () => {

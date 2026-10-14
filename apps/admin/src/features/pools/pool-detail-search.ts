@@ -1,4 +1,11 @@
-export const POOL_DETAIL_TABS = ["vouchers", "feeds", "offerings", "activity"] as const;
+export const POOL_DETAIL_TABS = [
+  "vouchers",
+  "holdings",
+  "credit",
+  "feeds",
+  "offerings",
+  "activity",
+] as const;
 
 export type PoolDetailTab = (typeof POOL_DETAIL_TABS)[number];
 
