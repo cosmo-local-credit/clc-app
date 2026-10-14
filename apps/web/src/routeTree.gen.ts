@@ -13,16 +13,21 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as InstallRouteImport } from './routes/install'
 import { Route as NavRouteImport } from './routes/_nav'
 import { Route as WalletIndexRouteImport } from './routes/wallet/index'
-import { Route as VouchersIndexRouteImport } from './routes/vouchers/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as PostsIndexRouteImport } from './routes/posts/index'
 import { Route as NavIndexRouteImport } from './routes/_nav/index'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
 import { Route as WalletCollectRouteImport } from './routes/wallet/collect'
+import { Route as WalletCashRouteImport } from './routes/wallet/cash'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
+import { Route as CatalogsCreateRouteImport } from './routes/catalogs/create'
 import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
+import { Route as NavVouchersIndexRouteImport } from './routes/_nav/vouchers/index'
 import { Route as NavPoolsIndexRouteImport } from './routes/_nav/pools/index'
+import { Route as NavOffersIndexRouteImport } from './routes/_nav/offers/index'
+import { Route as NavMarketIndexRouteImport } from './routes/_nav/market/index'
+import { Route as NavCatalogsIndexRouteImport } from './routes/_nav/catalogs/index'
 import { Route as WalletSendReceiptRouteImport } from './routes/wallet/send/receipt'
 import { Route as WalletSendAmountRouteImport } from './routes/wallet/send/amount'
 import { Route as VouchersCreateReceiptRouteImport } from './routes/vouchers/create/receipt'
@@ -33,6 +38,7 @@ import { Route as NavWalletVouchersRouteImport } from './routes/_nav/wallet/vouc
 import { Route as NavVouchersVoucherAddressRouteImport } from './routes/_nav/vouchers/$voucherAddress'
 import { Route as NavPostsNewRouteImport } from './routes/_nav/posts/new'
 import { Route as NavPostsMineRouteImport } from './routes/_nav/posts/mine'
+import { Route as NavCatalogsCatalogIdRouteImport } from './routes/_nav/catalogs/$catalogId'
 import { Route as PoolsPoolAddressSwapIndexRouteImport } from './routes/pools/$poolAddress/swap/index'
 import { Route as NavPostsReportIdIndexRouteImport } from './routes/_nav/posts/$reportId/index'
 import { Route as NavPoolsPoolAddressIndexRouteImport } from './routes/_nav/pools/$poolAddress/index'
@@ -56,11 +62,6 @@ const NavRoute = NavRouteImport.update({
 const WalletIndexRoute = WalletIndexRouteImport.update({
   id: '/wallet/',
   path: '/wallet/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VouchersIndexRoute = VouchersIndexRouteImport.update({
-  id: '/vouchers/',
-  path: '/vouchers/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
@@ -93,9 +94,19 @@ const WalletCollectRoute = WalletCollectRouteImport.update({
   path: '/wallet/collect',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WalletCashRoute = WalletCashRouteImport.update({
+  id: '/wallet/cash',
+  path: '/wallet/cash',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsProfileRoute = SettingsProfileRouteImport.update({
   id: '/settings/profile',
   path: '/settings/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogsCreateRoute = CatalogsCreateRouteImport.update({
+  id: '/catalogs/create',
+  path: '/catalogs/create',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WalletSendIndexRoute = WalletSendIndexRouteImport.update({
@@ -103,9 +114,29 @@ const WalletSendIndexRoute = WalletSendIndexRouteImport.update({
   path: '/wallet/send/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NavVouchersIndexRoute = NavVouchersIndexRouteImport.update({
+  id: '/vouchers/',
+  path: '/vouchers/',
+  getParentRoute: () => NavRoute,
+} as any)
 const NavPoolsIndexRoute = NavPoolsIndexRouteImport.update({
   id: '/pools/',
   path: '/pools/',
+  getParentRoute: () => NavRoute,
+} as any)
+const NavOffersIndexRoute = NavOffersIndexRouteImport.update({
+  id: '/offers/',
+  path: '/offers/',
+  getParentRoute: () => NavRoute,
+} as any)
+const NavMarketIndexRoute = NavMarketIndexRouteImport.update({
+  id: '/market/',
+  path: '/market/',
+  getParentRoute: () => NavRoute,
+} as any)
+const NavCatalogsIndexRoute = NavCatalogsIndexRouteImport.update({
+  id: '/catalogs/',
+  path: '/catalogs/',
   getParentRoute: () => NavRoute,
 } as any)
 const WalletSendReceiptRoute = WalletSendReceiptRouteImport.update({
@@ -159,6 +190,11 @@ const NavPostsMineRoute = NavPostsMineRouteImport.update({
   path: '/posts/mine',
   getParentRoute: () => NavRoute,
 } as any)
+const NavCatalogsCatalogIdRoute = NavCatalogsCatalogIdRouteImport.update({
+  id: '/catalogs/$catalogId',
+  path: '/catalogs/$catalogId',
+  getParentRoute: () => NavRoute,
+} as any)
 const PoolsPoolAddressSwapIndexRoute =
   PoolsPoolAddressSwapIndexRouteImport.update({
     id: '/pools/$poolAddress/swap/',
@@ -192,14 +228,16 @@ export interface FileRoutesByFullPath {
   '/': typeof NavIndexRoute
   '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
+  '/catalogs/create': typeof CatalogsCreateRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/cash': typeof WalletCashRoute
   '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/posts/': typeof PostsIndexRoute
   '/settings/': typeof SettingsIndexRoute
-  '/vouchers/': typeof VouchersIndexRoute
   '/wallet/': typeof WalletIndexRoute
+  '/catalogs/$catalogId': typeof NavCatalogsCatalogIdRoute
   '/posts/mine': typeof NavPostsMineRoute
   '/posts/new': typeof NavPostsNewRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
@@ -210,7 +248,11 @@ export interface FileRoutesByFullPath {
   '/vouchers/create/receipt': typeof VouchersCreateReceiptRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
+  '/catalogs/': typeof NavCatalogsIndexRoute
+  '/market/': typeof NavMarketIndexRoute
+  '/offers/': typeof NavOffersIndexRoute
   '/pools/': typeof NavPoolsIndexRoute
+  '/vouchers/': typeof NavVouchersIndexRoute
   '/wallet/send/': typeof WalletSendIndexRoute
   '/posts/$reportId/edit': typeof NavPostsReportIdEditRoute
   '/pools/$poolAddress/swap/receipt': typeof PoolsPoolAddressSwapReceiptRoute
@@ -221,15 +263,17 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
+  '/catalogs/create': typeof CatalogsCreateRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/cash': typeof WalletCashRoute
   '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/': typeof NavIndexRoute
   '/posts': typeof PostsIndexRoute
   '/settings': typeof SettingsIndexRoute
-  '/vouchers': typeof VouchersIndexRoute
   '/wallet': typeof WalletIndexRoute
+  '/catalogs/$catalogId': typeof NavCatalogsCatalogIdRoute
   '/posts/mine': typeof NavPostsMineRoute
   '/posts/new': typeof NavPostsNewRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
@@ -240,7 +284,11 @@ export interface FileRoutesByTo {
   '/vouchers/create/receipt': typeof VouchersCreateReceiptRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
+  '/catalogs': typeof NavCatalogsIndexRoute
+  '/market': typeof NavMarketIndexRoute
+  '/offers': typeof NavOffersIndexRoute
   '/pools': typeof NavPoolsIndexRoute
+  '/vouchers': typeof NavVouchersIndexRoute
   '/wallet/send': typeof WalletSendIndexRoute
   '/posts/$reportId/edit': typeof NavPostsReportIdEditRoute
   '/pools/$poolAddress/swap/receipt': typeof PoolsPoolAddressSwapReceiptRoute
@@ -253,15 +301,17 @@ export interface FileRoutesById {
   '/_nav': typeof NavRouteWithChildren
   '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
+  '/catalogs/create': typeof CatalogsCreateRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/cash': typeof WalletCashRoute
   '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/_nav/': typeof NavIndexRoute
   '/posts/': typeof PostsIndexRoute
   '/settings/': typeof SettingsIndexRoute
-  '/vouchers/': typeof VouchersIndexRoute
   '/wallet/': typeof WalletIndexRoute
+  '/_nav/catalogs/$catalogId': typeof NavCatalogsCatalogIdRoute
   '/_nav/posts/mine': typeof NavPostsMineRoute
   '/_nav/posts/new': typeof NavPostsNewRoute
   '/_nav/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
@@ -272,7 +322,11 @@ export interface FileRoutesById {
   '/vouchers/create/receipt': typeof VouchersCreateReceiptRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
+  '/_nav/catalogs/': typeof NavCatalogsIndexRoute
+  '/_nav/market/': typeof NavMarketIndexRoute
+  '/_nav/offers/': typeof NavOffersIndexRoute
   '/_nav/pools/': typeof NavPoolsIndexRoute
+  '/_nav/vouchers/': typeof NavVouchersIndexRoute
   '/wallet/send/': typeof WalletSendIndexRoute
   '/_nav/posts/$reportId/edit': typeof NavPostsReportIdEditRoute
   '/pools/$poolAddress/swap/receipt': typeof PoolsPoolAddressSwapReceiptRoute
@@ -286,14 +340,16 @@ export interface FileRouteTypes {
     | '/'
     | '/install'
     | '/onboarding'
+    | '/catalogs/create'
     | '/settings/profile'
+    | '/wallet/cash'
     | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/posts/'
     | '/settings/'
-    | '/vouchers/'
     | '/wallet/'
+    | '/catalogs/$catalogId'
     | '/posts/mine'
     | '/posts/new'
     | '/vouchers/$voucherAddress'
@@ -304,7 +360,11 @@ export interface FileRouteTypes {
     | '/vouchers/create/receipt'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
+    | '/catalogs/'
+    | '/market/'
+    | '/offers/'
     | '/pools/'
+    | '/vouchers/'
     | '/wallet/send/'
     | '/posts/$reportId/edit'
     | '/pools/$poolAddress/swap/receipt'
@@ -315,15 +375,17 @@ export interface FileRouteTypes {
   to:
     | '/install'
     | '/onboarding'
+    | '/catalogs/create'
     | '/settings/profile'
+    | '/wallet/cash'
     | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/'
     | '/posts'
     | '/settings'
-    | '/vouchers'
     | '/wallet'
+    | '/catalogs/$catalogId'
     | '/posts/mine'
     | '/posts/new'
     | '/vouchers/$voucherAddress'
@@ -334,7 +396,11 @@ export interface FileRouteTypes {
     | '/vouchers/create/receipt'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
+    | '/catalogs'
+    | '/market'
+    | '/offers'
     | '/pools'
+    | '/vouchers'
     | '/wallet/send'
     | '/posts/$reportId/edit'
     | '/pools/$poolAddress/swap/receipt'
@@ -346,15 +412,17 @@ export interface FileRouteTypes {
     | '/_nav'
     | '/install'
     | '/onboarding'
+    | '/catalogs/create'
     | '/settings/profile'
+    | '/wallet/cash'
     | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/_nav/'
     | '/posts/'
     | '/settings/'
-    | '/vouchers/'
     | '/wallet/'
+    | '/_nav/catalogs/$catalogId'
     | '/_nav/posts/mine'
     | '/_nav/posts/new'
     | '/_nav/vouchers/$voucherAddress'
@@ -365,7 +433,11 @@ export interface FileRouteTypes {
     | '/vouchers/create/receipt'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
+    | '/_nav/catalogs/'
+    | '/_nav/market/'
+    | '/_nav/offers/'
     | '/_nav/pools/'
+    | '/_nav/vouchers/'
     | '/wallet/send/'
     | '/_nav/posts/$reportId/edit'
     | '/pools/$poolAddress/swap/receipt'
@@ -378,13 +450,14 @@ export interface RootRouteChildren {
   NavRoute: typeof NavRouteWithChildren
   InstallRoute: typeof InstallRoute
   OnboardingRoute: typeof OnboardingRoute
+  CatalogsCreateRoute: typeof CatalogsCreateRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
+  WalletCashRoute: typeof WalletCashRoute
   WalletCollectRoute: typeof WalletCollectRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
   WalletTopUpRoute: typeof WalletTopUpRoute
   PostsIndexRoute: typeof PostsIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
-  VouchersIndexRoute: typeof VouchersIndexRoute
   WalletIndexRoute: typeof WalletIndexRoute
   PoolsCreateStepRoute: typeof PoolsCreateStepRoute
   PoolsCreateReceiptRoute: typeof PoolsCreateReceiptRoute
@@ -425,13 +498,6 @@ declare module '@tanstack/react-router' {
       path: '/wallet'
       fullPath: '/wallet/'
       preLoaderRoute: typeof WalletIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/vouchers/': {
-      id: '/vouchers/'
-      path: '/vouchers'
-      fullPath: '/vouchers/'
-      preLoaderRoute: typeof VouchersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/': {
@@ -476,11 +542,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletCollectRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wallet/cash': {
+      id: '/wallet/cash'
+      path: '/wallet/cash'
+      fullPath: '/wallet/cash'
+      preLoaderRoute: typeof WalletCashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings/profile': {
       id: '/settings/profile'
       path: '/settings/profile'
       fullPath: '/settings/profile'
       preLoaderRoute: typeof SettingsProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalogs/create': {
+      id: '/catalogs/create'
+      path: '/catalogs/create'
+      fullPath: '/catalogs/create'
+      preLoaderRoute: typeof CatalogsCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wallet/send/': {
@@ -490,11 +570,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletSendIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_nav/vouchers/': {
+      id: '/_nav/vouchers/'
+      path: '/vouchers'
+      fullPath: '/vouchers/'
+      preLoaderRoute: typeof NavVouchersIndexRouteImport
+      parentRoute: typeof NavRoute
+    }
     '/_nav/pools/': {
       id: '/_nav/pools/'
       path: '/pools'
       fullPath: '/pools/'
       preLoaderRoute: typeof NavPoolsIndexRouteImport
+      parentRoute: typeof NavRoute
+    }
+    '/_nav/offers/': {
+      id: '/_nav/offers/'
+      path: '/offers'
+      fullPath: '/offers/'
+      preLoaderRoute: typeof NavOffersIndexRouteImport
+      parentRoute: typeof NavRoute
+    }
+    '/_nav/market/': {
+      id: '/_nav/market/'
+      path: '/market'
+      fullPath: '/market/'
+      preLoaderRoute: typeof NavMarketIndexRouteImport
+      parentRoute: typeof NavRoute
+    }
+    '/_nav/catalogs/': {
+      id: '/_nav/catalogs/'
+      path: '/catalogs'
+      fullPath: '/catalogs/'
+      preLoaderRoute: typeof NavCatalogsIndexRouteImport
       parentRoute: typeof NavRoute
     }
     '/wallet/send/receipt': {
@@ -567,6 +675,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NavPostsMineRouteImport
       parentRoute: typeof NavRoute
     }
+    '/_nav/catalogs/$catalogId': {
+      id: '/_nav/catalogs/$catalogId'
+      path: '/catalogs/$catalogId'
+      fullPath: '/catalogs/$catalogId'
+      preLoaderRoute: typeof NavCatalogsCatalogIdRouteImport
+      parentRoute: typeof NavRoute
+    }
     '/pools/$poolAddress/swap/': {
       id: '/pools/$poolAddress/swap/'
       path: '/pools/$poolAddress/swap'
@@ -607,11 +722,16 @@ declare module '@tanstack/react-router' {
 
 interface NavRouteChildren {
   NavIndexRoute: typeof NavIndexRoute
+  NavCatalogsCatalogIdRoute: typeof NavCatalogsCatalogIdRoute
   NavPostsMineRoute: typeof NavPostsMineRoute
   NavPostsNewRoute: typeof NavPostsNewRoute
   NavVouchersVoucherAddressRoute: typeof NavVouchersVoucherAddressRoute
   NavWalletVouchersRoute: typeof NavWalletVouchersRoute
+  NavCatalogsIndexRoute: typeof NavCatalogsIndexRoute
+  NavMarketIndexRoute: typeof NavMarketIndexRoute
+  NavOffersIndexRoute: typeof NavOffersIndexRoute
   NavPoolsIndexRoute: typeof NavPoolsIndexRoute
+  NavVouchersIndexRoute: typeof NavVouchersIndexRoute
   NavPostsReportIdEditRoute: typeof NavPostsReportIdEditRoute
   NavPoolsPoolAddressIndexRoute: typeof NavPoolsPoolAddressIndexRoute
   NavPostsReportIdIndexRoute: typeof NavPostsReportIdIndexRoute
@@ -619,11 +739,16 @@ interface NavRouteChildren {
 
 const NavRouteChildren: NavRouteChildren = {
   NavIndexRoute: NavIndexRoute,
+  NavCatalogsCatalogIdRoute: NavCatalogsCatalogIdRoute,
   NavPostsMineRoute: NavPostsMineRoute,
   NavPostsNewRoute: NavPostsNewRoute,
   NavVouchersVoucherAddressRoute: NavVouchersVoucherAddressRoute,
   NavWalletVouchersRoute: NavWalletVouchersRoute,
+  NavCatalogsIndexRoute: NavCatalogsIndexRoute,
+  NavMarketIndexRoute: NavMarketIndexRoute,
+  NavOffersIndexRoute: NavOffersIndexRoute,
   NavPoolsIndexRoute: NavPoolsIndexRoute,
+  NavVouchersIndexRoute: NavVouchersIndexRoute,
   NavPostsReportIdEditRoute: NavPostsReportIdEditRoute,
   NavPoolsPoolAddressIndexRoute: NavPoolsPoolAddressIndexRoute,
   NavPostsReportIdIndexRoute: NavPostsReportIdIndexRoute,
@@ -635,13 +760,14 @@ const rootRouteChildren: RootRouteChildren = {
   NavRoute: NavRouteWithChildren,
   InstallRoute: InstallRoute,
   OnboardingRoute: OnboardingRoute,
+  CatalogsCreateRoute: CatalogsCreateRoute,
   SettingsProfileRoute: SettingsProfileRoute,
+  WalletCashRoute: WalletCashRoute,
   WalletCollectRoute: WalletCollectRoute,
   WalletReceiveRoute: WalletReceiveRoute,
   WalletTopUpRoute: WalletTopUpRoute,
   PostsIndexRoute: PostsIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
-  VouchersIndexRoute: VouchersIndexRoute,
   WalletIndexRoute: WalletIndexRoute,
   PoolsCreateStepRoute: PoolsCreateStepRoute,
   PoolsCreateReceiptRoute: PoolsCreateReceiptRoute,

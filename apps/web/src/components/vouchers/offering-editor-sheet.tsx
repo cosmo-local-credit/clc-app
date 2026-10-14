@@ -1,3 +1,4 @@
+import { BackendApiError } from "@clc/api/client/errors";
 import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client";
 import {
   OFFERING_UNITS,
@@ -202,7 +203,13 @@ function OfferingForm({
         }
         onClose();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`Couldn't save the offering.`);
+        toast.error(
+          error instanceof BackendApiError && error.code === "E11"
+            ? t`Limit reached. Ask an administrator to increase your allowance.`
+            : error instanceof Error
+              ? error.message
+              : t`Couldn't save the offering.`,
+        );
       }
     },
   });

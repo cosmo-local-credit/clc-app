@@ -39,6 +39,8 @@ function user(address: string, status: string, overrides: Partial<AdminUser> = {
     status,
     maxPools: 10,
     maxTokens: 20,
+    maxCatalogs: 1,
+    maxOffers: 3,
     createdAt: "2026-07-24T10:43:16Z",
     updatedAt: "2026-07-24T10:43:16Z",
     avatarUrl: null,

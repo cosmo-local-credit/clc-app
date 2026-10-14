@@ -18,7 +18,10 @@ import {
   buildPoolActivity,
 } from "#/features/pools/logic/pool-activity";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
-import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import {
+  formatTransferDate,
+  formatTransferUnitValue,
+} from "#/features/wallet/logic/transfer-display";
 import { PoolActivityDetailsSheet } from "./pool-activity-details-sheet";
 
 /**
@@ -220,11 +223,13 @@ function EntrySubtitle({ entry }: { entry: PoolActivityEntry }) {
  * a different one, and nothing about the pair sums.
  */
 function EntryAmount({ entry }: { entry: PoolActivityEntry }) {
+  const { i18n } = useLingui();
+  const locale = i18n.locales?.[0] ?? i18n.locale;
   if (entry.kind !== "swap") {
     return (
       <SignedAmount
         direction={entry.kind === "mint" || entry.direction === "IN" ? "in" : "out"}
-        amount={legAmount(entry.leg)}
+        amount={legAmount(entry.leg, locale)}
       />
     );
   }
@@ -236,21 +241,27 @@ function EntryAmount({ entry }: { entry: PoolActivityEntry }) {
           box and change only how it fills the line. */}
       <SignedAmount
         direction="in"
-        amount={legAmount(entry.received)}
+        amount={legAmount(entry.received, locale)}
         className="flex justify-end"
       />
-      <SignedAmount direction="out" amount={legAmount(entry.sent)} className="flex justify-end" />
+      <SignedAmount
+        direction="out"
+        amount={legAmount(entry.sent, locale)}
+        className="flex justify-end"
+      />
       {entry.protocolFee ? (
         // Shown apart from the trader's side: it left the pool in the same
         // transaction but went to the protocol, not to whoever swapped.
         <span className="block font-mono text-muted-foreground text-[0.625rem] tabular-nums">
-          <Trans>Protocol fee</Trans> {legAmount(entry.protocolFee)}
+          <Trans>Protocol fee</Trans> {legAmount(entry.protocolFee, locale)}
         </span>
       ) : null}
     </>
   );
 }
 
-function legAmount(leg: PoolActivityLeg): string {
-  return `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
+function legAmount(leg: PoolActivityLeg, locale: string): string {
+  const tokenAmount = `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
+  const unitValue = formatTransferUnitValue(leg.uoaValue, leg.uoa, locale);
+  return `${tokenAmount}${unitValue ? ` (${unitValue})` : ""}`;
 }

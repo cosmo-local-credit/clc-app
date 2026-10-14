@@ -198,13 +198,29 @@ describe("profileEditSchema", () => {
 
 describe("usernameSchema", () => {
   it("normalizes manual names and allows deferred assignment", () => {
-    expect(usernameSchema.parse("  Sohail-1  ")).toBe("sohail-1");
+    expect(usernameSchema.parse("  Sohail-1  ")).toBe("Sohail-1");
     expect(usernameSchema.parse("  ")).toBe("");
     expect(profileSchema.safeParse({ ...VALID_BASE }).success).toBe(true);
   });
 
-  it.each(["ab", "a".repeat(25), "123456", "-alice", "alice-", "alice.eth", "Alice Smith"])(
-    "rejects unsupported username %s",
-    (username) => expect(usernameSchema.safeParse(username).success).toBe(false),
+  it.each([
+    "A",
+    "123456",
+    "-alice",
+    "alice-",
+    "alice.eth",
+    "Alice Smith",
+    "Željko",
+    "李明",
+    "سُهيل",
+    "Тијана",
+    "👩🏽‍🌾",
+  ])("accepts display-name username %s", (username) =>
+    expect(usernameSchema.parse(username)).toBe(username),
   );
+  it("normalizes accents and counts Unicode code points", () => {
+    expect(usernameSchema.parse(" Jose\u0301 ")).toBe("José");
+    expect(usernameSchema.safeParse("😀".repeat(80)).success).toBe(true);
+    expect(usernameSchema.safeParse("😀".repeat(81)).success).toBe(false);
+  });
 });

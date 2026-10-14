@@ -119,11 +119,6 @@ export function MarkerStyleField({
         <MarkerPin style={resolved} size={32} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">{describeMarker(kind, value)}</p>
-          <p className="text-muted-foreground text-xs">
-            {automatic
-              ? "Follows the voucher's offerings until an icon or colour is chosen."
-              : "Shown on the market map."}
-          </p>
         </div>
         {automatic ? null : (
           <Button

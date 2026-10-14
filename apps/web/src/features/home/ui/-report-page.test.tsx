@@ -95,38 +95,26 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
   ),
 }));
 
-// The card is covered on its own; here only that a voucher opens it.
-const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
-
-vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: null,
-    voucherTab: "offerings",
-    open: voucherSheet.open,
-    close: () => {},
-  }),
-}));
-
-vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
-
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     params,
+    search,
     children,
     ...props
   }: {
     to: string;
     params?: Record<string, string>;
-    search?: unknown;
+    search?: Record<string, string>;
     children: ReactNode;
   }) => {
     const path = Object.entries(params ?? {}).reduce(
       (value, [key, replacement]) => value.replace(`$${key}`, replacement),
       to,
     );
+    const query = new URLSearchParams(search).toString();
     return (
-      <a href={path} {...props}>
+      <a href={query ? `${path}?${query}` : path} {...props}>
         {children}
       </a>
     );
@@ -385,15 +373,14 @@ describe("ReportPage", () => {
     expect(screen.getByText("Author")).toBeTruthy();
   });
 
-  it("opens each related voucher's card over the post", () => {
-    voucherSheet.open.mockClear();
+  it("links each related voucher to its canonical page with a post fallback", () => {
     render(<ReportPage reportId="3182" />);
 
-    const voucher = screen.getByRole("button", { name: /Kiriba/ });
+    const voucher = screen.getByRole("link", { name: /Kiriba/ });
     expect(voucher.textContent).toContain("KCH");
-    fireEvent.click(voucher);
-
-    expect(voucherSheet.open).toHaveBeenCalledWith("0x2222222222222222222222222222222222222222");
+    expect(voucher.getAttribute("href")).toBe(
+      "/vouchers/0x2222222222222222222222222222222222222222?from=posts&reportId=3182",
+    );
   });
 
   it("reverse-geocodes the coordinates for the header, location panel, and Maps label", () => {

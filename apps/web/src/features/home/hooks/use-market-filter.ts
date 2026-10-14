@@ -16,6 +16,11 @@ export type MarketFilterControls = PersistedCatalogFilterControls;
  * stays a hook over the URL and storage with no dependency on the session query
  * — the screens that render it supply the owner they already know.
  */
-export function useMarketFilter(owner: StorageOwner | null): MarketFilterControls {
-  return usePersistedCatalogFilter(MARKET_FILTER_PREFERENCES_NAME, owner);
+export function useMarketFilter(
+  owner: StorageOwner | null,
+  externalFilterActive = false,
+): MarketFilterControls {
+  return usePersistedCatalogFilter(MARKET_FILTER_PREFERENCES_NAME, owner, {
+    externalFilterActive,
+  });
 }

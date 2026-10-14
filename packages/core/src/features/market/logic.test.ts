@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  formatCompactUnitOfAccountDisplayValue,
   formatOfferingDisplayPrice,
   formatOfferingDisplayValue,
   formatOfferingDisplayTotal,
   formatOfferingPrice,
   formatOfferingQuantity,
   formatOfferingTotal,
+  formatUnitOfAccountDisplayValue,
   formatVoucherRate,
+  formatVoucherUnitValue,
   sumDecimalAmounts,
 } from "./logic";
 
@@ -22,6 +25,52 @@ describe("formatOfferingDisplayValue", () => {
 
   it("rejects malformed values", () => {
     expect(formatOfferingDisplayValue("1,000", "en")).toBeNull();
+  });
+});
+
+describe("formatUnitOfAccountDisplayValue", () => {
+  it("rounds informational values to two localized decimal places", () => {
+    expect(formatUnitOfAccountDisplayValue("1.000001", "en")).toBe("1.00");
+    expect(formatUnitOfAccountDisplayValue("0.506", "en")).toBe("0.51");
+    expect(formatUnitOfAccountDisplayValue("2", "de")).toBe("2,00");
+  });
+
+  it("keeps a positive sub-cent value visible and renders true zero normally", () => {
+    expect(formatUnitOfAccountDisplayValue("0.009999", "en")).toBe("<0.01");
+    expect(formatUnitOfAccountDisplayValue("0.000001", "de")).toBe("<0,01");
+    expect(formatUnitOfAccountDisplayValue("0", "en")).toBe("0.00");
+  });
+
+  it("rounds large exact values without converting them to Number", () => {
+    expect(formatUnitOfAccountDisplayValue("90071992547409931234.555", "en")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+
+  it("rejects malformed values", () => {
+    expect(formatUnitOfAccountDisplayValue("1,000", "en")).toBeNull();
+  });
+});
+
+describe("formatCompactUnitOfAccountDisplayValue", () => {
+  it("rounds exactly to at most two localized decimal places", () => {
+    expect(formatCompactUnitOfAccountDisplayValue("848", "en")).toBe("848");
+    expect(formatCompactUnitOfAccountDisplayValue("848.5", "en")).toBe("848.5");
+    expect(formatCompactUnitOfAccountDisplayValue("848.567", "en")).toBe("848.57");
+    expect(formatCompactUnitOfAccountDisplayValue("848.50", "de")).toBe("848,5");
+    expect(formatCompactUnitOfAccountDisplayValue("999.999", "en")).toBe("1,000");
+  });
+
+  it("keeps tiny positive and arbitrarily large values honest", () => {
+    expect(formatCompactUnitOfAccountDisplayValue("0.000001", "en")).toBe("<0.01");
+    expect(formatCompactUnitOfAccountDisplayValue("0", "en")).toBe("0");
+    expect(formatCompactUnitOfAccountDisplayValue("90071992547409931234.555", "en")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+
+  it("rejects non-canonical input", () => {
+    expect(formatCompactUnitOfAccountDisplayValue("1,000", "en")).toBeNull();
   });
 });
 
@@ -84,6 +133,43 @@ describe("formatVoucherRate", () => {
   it("passes the unit through verbatim apart from surrounding space", () => {
     expect(formatVoucherRate("1", " Hours ")?.unit).toBe("Hours");
     expect(formatVoucherRate("1", "usd")?.unit).toBe("usd");
+  });
+});
+
+describe("formatVoucherUnitValue", () => {
+  it("converts whole and decimal voucher amounts exactly", () => {
+    expect(formatVoucherUnitValue("10", "1", "KES")).toEqual({ value: "10", unit: "KES" });
+    expect(formatVoucherUnitValue("12.5", "2.4", "KES")).toEqual({
+      value: "30",
+      unit: "KES",
+    });
+  });
+
+  it("keeps zero amounts while rejecting unset or incomplete rates", () => {
+    expect(formatVoucherUnitValue("0", "2", "KES")).toEqual({ value: "0", unit: "KES" });
+    expect(formatVoucherUnitValue("10", "0", "KES")).toBeNull();
+    expect(formatVoucherUnitValue("10", null, "KES")).toBeNull();
+    expect(formatVoucherUnitValue("10", "1", null)).toBeNull();
+  });
+
+  it("rejects malformed voucher amounts", () => {
+    expect(formatVoucherUnitValue("1,000", "2", "KES")).toBeNull();
+    expect(formatVoucherUnitValue("1.", "2", "KES")).toBeNull();
+    expect(formatVoucherUnitValue("-1", "2", "KES")).toBeNull();
+  });
+
+  it("does not lose values beyond JavaScript's safe integer range", () => {
+    expect(formatVoucherUnitValue("9007199254740993.25", "1.2", "KES")).toEqual({
+      value: "10808639105689191.9",
+      unit: "KES",
+    });
+  });
+
+  it("trims issuer-authored whitespace and stored decimal scale", () => {
+    expect(formatVoucherUnitValue("10.00", "1.000000", " Hours ")).toEqual({
+      value: "10",
+      unit: "Hours",
+    });
   });
 });
 

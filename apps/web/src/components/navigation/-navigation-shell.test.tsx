@@ -80,6 +80,12 @@ async function renderShell(initialEntry: string) {
     staticData: { navOwner: "posts" },
     component: () => <h1>Report</h1>,
   });
+  const marketRoute = createRoute({
+    getParentRoute: () => navRoute,
+    path: "/market",
+    staticData: { navOwner: "market" },
+    component: () => <h1>Marketplace</h1>,
+  });
   const poolRoute = createRoute({
     getParentRoute: () => navRoute,
     path: "/pools/$poolAddress",
@@ -100,7 +106,14 @@ async function renderShell(initialEntry: string) {
   });
   const router = createRouter({
     routeTree: rootRoute.addChildren([
-      navRoute.addChildren([homeRoute, reportRoute, poolRoute, vouchersRoute, voucherRoute]),
+      navRoute.addChildren([
+        homeRoute,
+        marketRoute,
+        reportRoute,
+        poolRoute,
+        vouchersRoute,
+        voucherRoute,
+      ]),
     ]),
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
@@ -121,6 +134,29 @@ beforeEach(() => {
 });
 
 describe("NavigationShell", () => {
+  it("owns the map as a Market descendant and the unfiltered list as the Market root", async () => {
+    const map = await renderShell("/");
+    const mapLink = await screen.findByRole("link", { name: "Market" });
+    expect(mapLink.getAttribute("href")).toBe("/market");
+    expect(mapLink.getAttribute("aria-current")).toBe("true");
+
+    map.unmount();
+    await renderShell("/market");
+    expect((await screen.findByRole("link", { name: "Market" })).getAttribute("aria-current")).toBe(
+      "page",
+    );
+  });
+
+  it("returns a scoped marketplace view to the unfiltered All list", async () => {
+    const { router } = await renderShell("/market?scope=pools&q=food");
+
+    const market = await screen.findByRole("link", { name: "Market" });
+    expect(market.getAttribute("aria-current")).toBe("true");
+    fireEvent.click(market);
+
+    await waitFor(() => expect(router.state.location.href).toBe("/market"));
+  });
+
   it("keeps Posts selected on an authenticated report", async () => {
     await renderShell("/posts/report-1");
 
@@ -133,6 +169,7 @@ describe("NavigationShell", () => {
     ["/pools/0x1111111111111111111111111111111111111111", "Wallet"],
     ["/wallet/vouchers", "Wallet"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=market", "Market"],
+    ["/vouchers/0x2222222222222222222222222222222222222222?from=posts&reportId=report-1", "Posts"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=wallet", "Wallet"],
     [
       "/vouchers/0x2222222222222222222222222222222222222222?from=market&poolAddress=0x1111111111111111111111111111111111111111",

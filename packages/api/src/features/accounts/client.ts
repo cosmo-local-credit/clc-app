@@ -1,6 +1,9 @@
 import type { HttpClient } from "../../client/http-client";
+import { getAddress } from "viem";
 
 export type AccountToken = {
+  /** Absent for tokens outside the local catalog; false means retired. */
+  catalogActive?: boolean;
   id: number;
   tokenAddress: string;
   tokenSymbol: string;
@@ -33,6 +36,9 @@ type AccountTransfer = {
   tokenDecimals: number;
   amount: string;
   success: boolean;
+  /** Immutable informational valuation captured when the transfer was submitted. */
+  uoaValue?: string;
+  uoa?: string;
   /**
    * Whether this transfer carries a private attachment (a message and/or
    * shared contact details) the caller is allowed to read. The backend joins
@@ -76,24 +82,27 @@ export function createAccountsClient(http: HttpClient) {
     // history rather than an empty array, so normalize to `[]` at the boundary to
     // keep the typed contract honest and every consumer's `.map` / `.length` safe.
     async getLatestAccountTokens(address: string): Promise<AccountTokensResult> {
+      const accountAddress = getAddress(address);
       const result = await http.request<AccountTokensResult>(
-        `/api/v2/accounts/${address}/tokens/latest`,
+        `/api/v2/accounts/${accountAddress}/tokens/latest`,
         ACCOUNT_READ_REQUEST,
       );
       return { ...result, tokens: result.tokens ?? [] };
     },
 
     async getAccountTokens(params: CursorPageParams): Promise<AccountTokensResult> {
+      const accountAddress = getAddress(params.address);
       const result = await http.request<AccountTokensResult>(
-        `/api/v2/accounts/${params.address}/tokens${formatCursorQuery(params)}`,
+        `/api/v2/accounts/${accountAddress}/tokens${formatCursorQuery(params)}`,
         ACCOUNT_READ_REQUEST,
       );
       return { ...result, tokens: result.tokens ?? [] };
     },
 
     async getAccountTransfers(params: CursorPageParams): Promise<AccountTransfersResult> {
+      const accountAddress = getAddress(params.address);
       const result = await http.request<AccountTransfersResult>(
-        `/api/v2/accounts/${params.address}/transfers${formatCursorQuery(params)}`,
+        `/api/v2/accounts/${accountAddress}/transfers${formatCursorQuery(params)}`,
         ACCOUNT_READ_REQUEST,
       );
       return { ...result, transfers: result.transfers ?? [] };
@@ -105,10 +114,14 @@ export function createAccountsClient(http: HttpClient) {
      * though a valid hex address needs no escaping.
      */
     async getAccountStatus(address: string, signal?: AbortSignal): Promise<AccountStatus> {
-      return http.request<AccountStatus>(`/api/v2/account/status/${encodeURIComponent(address)}`, {
-        ...ACCOUNT_READ_REQUEST,
-        signal,
-      });
+      const accountAddress = getAddress(address);
+      return http.request<AccountStatus>(
+        `/api/v2/account/status/${encodeURIComponent(accountAddress)}`,
+        {
+          ...ACCOUNT_READ_REQUEST,
+          signal,
+        },
+      );
     },
   };
 }

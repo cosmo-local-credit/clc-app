@@ -87,7 +87,7 @@ export function ReceivePage() {
                 <span className="text-muted-foreground text-[0.625rem]">
                   <Trans>Username</Trans>
                 </span>
-                <span dir="ltr" className="truncate font-mono text-muted-foreground text-xs">
+                <span dir="auto" className="truncate font-mono text-muted-foreground text-xs">
                   {username}
                 </span>
               </span>

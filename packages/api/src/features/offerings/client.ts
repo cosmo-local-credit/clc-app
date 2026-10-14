@@ -41,7 +41,13 @@ export type Offering = {
   voucherAddress: HexAddress;
   voucherName: string | null;
   voucherSymbol: string | null;
+  voucherUoa: string | null;
+  priceInUnitOfAccount: string | null;
   voucherDecimals: number | null;
+  voucherImageUrl?: string | null;
+  voucherLocationName?: string | null;
+  voucherGeoLat?: number | null;
+  voucherGeoLng?: number | null;
   /**
    * The historical seller. Provenance, not authority: writes are authorized
    * against the voucher's current owner, so this may name an address with no
@@ -84,6 +90,10 @@ export type Offering = {
   locationName: string | null;
   geoLat: number | null;
   geoLng: number | null;
+  effectiveLocationName?: string | null;
+  effectiveGeoLat?: number | null;
+  effectiveGeoLng?: number | null;
+  distanceMeters?: number | null;
   imageUrl: string | null;
   tags: string[];
   createdAt?: string;
@@ -98,6 +108,26 @@ export type OfferingPage = {
   receivedCount: number;
 };
 
+type OfferingTagFacet = { tag: string; count: number };
+
+export type OfferingDiscoveryParams = {
+  cursor?: string;
+  perPage?: number;
+  q?: string;
+  tags?: readonly string[];
+  tagMatch?: "any" | "all";
+  facets?: boolean;
+  nearby?: boolean;
+  pools?: readonly { chainId: number; address: string }[];
+};
+
+export type OfferingDiscoveryPage = {
+  offerings: Offering[];
+  nextCursor: string | null;
+  receivedCount: number;
+  tagFacets: OfferingTagFacet[] | null;
+};
+
 type BackendOffering = Partial<{
   id: string | number;
   sourceId: string | number | null;
@@ -105,7 +135,13 @@ type BackendOffering = Partial<{
   voucherAddress: string;
   voucherName: string | null;
   voucherSymbol: string | null;
+  voucherUoa: string | null;
+  priceInUnitOfAccount: string | number | null;
   voucherDecimals: string | number | null;
+  voucherImageUrl: string | null;
+  voucherLocationName: string | null;
+  voucherGeoLat: string | number | null;
+  voucherGeoLng: string | number | null;
   sellerAddress: string;
   commodityName: string;
   commodityType: string;
@@ -118,6 +154,10 @@ type BackendOffering = Partial<{
   locationName: string | null;
   geoLat: string | number | null;
   geoLng: string | number | null;
+  effectiveLocationName: string | null;
+  effectiveGeoLat: string | number | null;
+  effectiveGeoLng: string | number | null;
+  distanceMeters: string | number | null;
   imageUrl: string | null;
   tags: string[] | null;
   createdAt: string;
@@ -128,6 +168,8 @@ type BackendOfferingPage = {
   offerings?: BackendOffering[] | null;
   first?: number;
   last?: number;
+  nextCursor?: string | null;
+  tagFacets?: { tag?: unknown; count?: unknown }[] | null;
 };
 
 export type OfferingsClient = ReturnType<typeof createOfferingsClient>;
@@ -194,6 +236,28 @@ export function createOfferingsClient(
   }
 
   return {
+    async getOfferings(
+      params: OfferingDiscoveryParams,
+      signal?: AbortSignal,
+    ): Promise<OfferingDiscoveryPage> {
+      const query = formatOfferingDiscoveryQuery(params);
+      const result = await http.request<BackendOfferingPage>(`/api/v2/offerings?${query}`, {
+        method: "GET",
+        credentials: params.nearby ? "include" : "omit",
+        signal,
+        ...cachePolicy,
+        ...(params.nearby ? { cache: "no-store" as const } : {}),
+      });
+      const received = result.offerings ?? [];
+      return {
+        offerings: received.map(normalizeOffering).filter(isPresent),
+        nextCursor: typeof result.nextCursor === "string" ? result.nextCursor : null,
+        receivedCount: received.length,
+        tagFacets: result.tagFacets
+          ? result.tagFacets.map(normalizeOfferingTagFacet).filter(isPresent)
+          : null,
+      };
+    },
     /**
      * One voucher's offerings. Public and representation-invariant, so it sends
      * no cookie and by default leaves the browser cache to honour the endpoint's
@@ -220,9 +284,8 @@ export function createOfferingsClient(
     /**
      * Every offering backed by a voucher a pool allows.
      *
-     * Unlike the voucher route this one is authenticated, matching the rest of
-     * `/api/v2/pools/*` and the pool screen's own session requirement — hence
-     * the session cookie and `no-store` instead of a shared public cache.
+     * This is a public browse endpoint. It remains `no-store` because pool
+     * membership can change on-chain independently of the offering record.
      */
     async getPoolOfferings(
       poolAddress: string,
@@ -231,7 +294,7 @@ export function createOfferingsClient(
     ): Promise<OfferingPage> {
       return offeringPage(
         `/api/v2/pools/${encodeURIComponent(poolAddress)}/offerings${formatCursorQuery(params)}`,
-        { method: "GET", cache: "no-store", signal },
+        { method: "GET", credentials: "omit", cache: "no-store", signal },
       );
     },
 
@@ -337,7 +400,13 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
     voucherAddress,
     voucherName: normalizeText(offering.voucherName),
     voucherSymbol: normalizeText(offering.voucherSymbol),
+    voucherUoa: normalizeText(offering.voucherUoa),
+    priceInUnitOfAccount: normalizeNumericText(offering.priceInUnitOfAccount),
     voucherDecimals: normalizeNumber(offering.voucherDecimals),
+    voucherImageUrl: normalizeImageUrl(offering.voucherImageUrl),
+    voucherLocationName: normalizeText(offering.voucherLocationName),
+    voucherGeoLat: normalizeNumber(offering.voucherGeoLat),
+    voucherGeoLng: normalizeNumber(offering.voucherGeoLng),
     sellerAddress,
     name: normalizeText(offering.commodityName) ?? "Offering",
     commodityType: isOfferingCommodityType(offering.commodityType) ? offering.commodityType : null,
@@ -351,11 +420,50 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
     locationName: normalizeText(offering.locationName),
     geoLat: normalizeNumber(offering.geoLat),
     geoLng: normalizeNumber(offering.geoLng),
+    effectiveLocationName:
+      normalizeText(offering.effectiveLocationName) ??
+      normalizeText(offering.locationName) ??
+      normalizeText(offering.voucherLocationName),
+    effectiveGeoLat:
+      normalizeNumber(offering.effectiveGeoLat) ??
+      normalizeNumber(offering.geoLat) ??
+      normalizeNumber(offering.voucherGeoLat),
+    effectiveGeoLng:
+      normalizeNumber(offering.effectiveGeoLng) ??
+      normalizeNumber(offering.geoLng) ??
+      normalizeNumber(offering.voucherGeoLng),
+    distanceMeters: normalizeNumber(offering.distanceMeters),
     imageUrl: normalizeImageUrl(offering.imageUrl),
     tags: normalizeStringArray(offering.tags),
     createdAt: offering.createdAt,
     updatedAt: offering.updatedAt,
   };
+}
+
+function formatOfferingDiscoveryQuery(params: OfferingDiscoveryParams): string {
+  const query = new URLSearchParams({ perPage: String(params.perPage ?? 20) });
+  if (params.cursor) query.set("cursor", params.cursor);
+  if (params.q?.trim()) query.set("q", params.q.trim());
+  if (params.tags && params.tags.length > 0) query.set("tags", params.tags.join(","));
+  if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");
+  if (params.facets) query.set("facets", "true");
+  if (params.nearby) query.set("nearby", "true");
+  if (params.pools && params.pools.length > 0) {
+    query.set(
+      "pools",
+      params.pools.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(","),
+    );
+  }
+  return query.toString();
+}
+
+function normalizeOfferingTagFacet(value: {
+  tag?: unknown;
+  count?: unknown;
+}): OfferingTagFacet | null {
+  const tag = normalizeText(value.tag);
+  const count = normalizeNumber(value.count);
+  return tag && count !== null && count >= 0 ? { tag, count } : null;
 }
 
 /**

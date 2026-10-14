@@ -2,6 +2,7 @@ import { CHAIN_ID } from "#/lib/chain";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { getAddress } from "viem";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const navigate = vi.fn();
@@ -73,29 +74,48 @@ afterEach(() => {
 });
 
 describe("SendRecipientPage", () => {
-  it("waits for input before searching and only loads recent activity when requested", async () => {
-    const fetcher = mockFetch({ ok: false, description: "unavailable" }, 500);
+  it("loads recent activity and searches short names after the debounce", async () => {
+    const fetcher = vi.fn((url: string) => {
+      if (url.includes("/transfers")) {
+        return Promise.resolve(
+          createJsonResponse({ ok: false, description: "activity unavailable" }, 500),
+        );
+      }
+      return Promise.resolve(
+        createJsonResponse({ ok: false, description: "recipient unavailable" }, 500),
+      );
+    });
+    vi.stubGlobal("fetch", fetcher);
     renderWithQueryClient(<SendRecipientPage />);
     const input = screen.getByRole("textbox", { name: /recipient username/i });
 
-    for (const value of ["", "a", "ab"]) {
+    expect(await screen.findByText("Couldn't load activity.")).toBeTruthy();
+    expect(
+      fetcher.mock.calls.some(([url]) =>
+        String(url).includes(`/api/v2/accounts/${getAddress(OWNER)}/transfers`),
+      ),
+    ).toBe(true);
+    expect(screen.queryByRole("button", { name: "Recent recipients" })).toBeNull();
+
+    for (const value of ["a", "ab"]) {
       fireEvent.change(input, { target: { value } });
       await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
-      expect(fetcher).not.toHaveBeenCalled();
       expect(screen.queryByText("Couldn't load activity.")).toBeNull();
       expect(screen.queryByText("Loading activity…")).toBeNull();
+      expect(await screen.findByText("Couldn't resolve that recipient.")).toBeTruthy();
+      expect(
+        fetcher.mock.calls.some(([url]) => new URL(String(url)).searchParams.get("q") === value),
+      ).toBe(true);
     }
 
     fireEvent.change(input, { target: { value: "abc" } });
     expect(await screen.findByText("Couldn't resolve that recipient.")).toBeTruthy();
-    expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(String(fetcher.mock.calls[0]?.[0])).toContain("/recipients?");
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/recipients?"))).toHaveLength(
+      3,
+    );
 
     fireEvent.change(input, { target: { value: "" } });
-    expect(screen.queryByRole("alert")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Recent recipients" }));
     expect(await screen.findByText("Couldn't load activity.")).toBeTruthy();
-    expect(fetcher.mock.calls.some(([url]) => String(url).includes("/transfers"))).toBe(true);
   });
 
   it("selects a pool display-name result and saves its concrete address", async () => {
@@ -175,7 +195,6 @@ describe("SendRecipientPage", () => {
     });
     vi.stubGlobal("fetch", fetcher);
     renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
-    fireEvent.click(screen.getByRole("button", { name: "Recent recipients" }));
     fireEvent.click(await screen.findByRole("button", { name: /Amina \(new-name\)/ }));
     await waitFor(() => expect(screen.getByText("Amina (new-name)")).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
@@ -210,7 +229,6 @@ describe("SendRecipientPage", () => {
     );
     renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Recent recipients" }));
     fireEvent.click(await screen.findByRole("button", { name: /Saved Amina/ }));
     await waitFor(() => expect(screen.getByText("Saved Amina")).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
@@ -240,10 +258,14 @@ describe("SendRecipientPage", () => {
 
       const match = await screen.findByRole("button", { name: /Amina \(amina\)/ });
       expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);
-      expect(fetcher).toHaveBeenCalledTimes(1);
-      const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+      const recipientCalls = fetcher.mock.calls.filter(([url]) =>
+        String(url).includes("/recipients?"),
+      );
+      expect(recipientCalls).toHaveLength(1);
+      const url = new URL(String(recipientCalls[0]?.[0]));
       expect(url.pathname).toBe("/api/v2/recipients");
-      expect(url.searchParams.get("q")).toBe(phone.replace(/[+\s()-]/g, ""));
+      // Core normalizes phone punctuation; the client preserves the entered query.
+      expect(url.searchParams.get("q")).toBe(phone);
 
       fireEvent.click(match);
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));
@@ -355,7 +377,6 @@ describe("SendRecipientPage", () => {
     );
     renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Recent recipients" }));
     const recent = await screen.findByRole("region", { name: "Recent recipients" });
     expect(await within(recent).findByRole("button", { name: /Address/ })).toBeTruthy();
     expect(recent.textContent?.indexOf("Amina")).toBeLessThan(

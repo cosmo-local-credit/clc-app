@@ -243,7 +243,7 @@ describe("PostsPage", () => {
     expect(
       screen.queryByText("Field reports from pools, service providers, and stewards."),
     ).toBeNull();
-    expect(screen.getByRole("button", { name: "Filters" }).className).toContain("h-8");
+    expect(screen.getByRole("button", { name: "Filters" }).className).toContain("h-9");
     const row = within(feed()).getByRole("link");
     expect(row.getAttribute("href")).toBe("/posts/3182");
     expect(within(row).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();

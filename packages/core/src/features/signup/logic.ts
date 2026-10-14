@@ -10,13 +10,10 @@ const nameSchema = z
 
 export const usernameSchema = z
   .string()
-  .trim()
-  .toLowerCase()
-  .refine(
-    (value) =>
-      value === "" || (/^[a-z0-9][a-z0-9-]{1,22}[a-z0-9]$/.test(value) && /[a-z]/.test(value)),
-    { message: "Username must be 3–24 letters, digits or hyphens" },
-  );
+  .transform((value) => value.trim().normalize("NFC"))
+  .refine((value) => Array.from(value).length <= 80, {
+    message: "Username must contain 1–80 characters",
+  });
 
 const preferredCurrencySchema = z
   .string()

@@ -50,6 +50,12 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("ar")}>
         العربية
       </button>
+      <button type="button" onClick={() => setLocale("zh")}>
+        中文（简体）
+      </button>
+      <button type="button" onClick={() => setLocale("zh-Hant")}>
+        中文（繁體）
+      </button>
       <button type="button" onClick={() => setLocale("dz")}>
         རྫོང་ཁ
       </button>
@@ -62,11 +68,23 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("es")}>
         Español
       </button>
+      <button type="button" onClick={() => setLocale("fil")}>
+        Filipino
+      </button>
       <button type="button" onClick={() => setLocale("fr")}>
         Français
       </button>
+      <button type="button" onClick={() => setLocale("hi")}>
+        हिन्दी
+      </button>
       <button type="button" onClick={() => setLocale("it")}>
         Italiano
+      </button>
+      <button type="button" onClick={() => setLocale("nl")}>
+        Nederlands
+      </button>
+      <button type="button" onClick={() => setLocale("nl-BE")}>
+        Vlaams
       </button>
       <button type="button" onClick={() => setLocale("pt")}>
         Português
@@ -184,6 +202,19 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects legacy Tagalog as canonical Filipino and applies LTR", async () => {
+    setNavigatorLanguages(["tl-Latn-PH", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("fil");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("fil");
+      expect(document.documentElement.lang).toBe("fil");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
   it("detects Italian from a region-tagged device language", async () => {
     setNavigatorLanguages(["it-CH", "en"]);
 
@@ -198,6 +229,45 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects Hindi from a script-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["hi-Deva-IN", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("hi");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("hi");
+      expect(document.documentElement.lang).toBe("hi");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("detects Simplified Chinese and applies the generic LTR locale", async () => {
+    setNavigatorLanguages(["zh-Hans-CN", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("zh");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("zh");
+      expect(document.documentElement.lang).toBe("zh");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("detects Traditional Chinese and applies its canonical LTR locale", async () => {
+    setNavigatorLanguages(["zh-Hant-TW", "fr-FR"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("zh-Hant");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("zh-Hant");
+      expect(document.documentElement.lang).toBe("zh-Hant");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
   it("detects Portuguese from a region-tagged device language", async () => {
     setNavigatorLanguages(["pt-MZ", "en"]);
 
@@ -207,6 +277,32 @@ describe("AppI18nProvider", () => {
 
     await waitFor(() => {
       expect(localStorage.getItem("clc.locale")).toBe("pt");
+    });
+  });
+
+  it("detects Dutch from a non-Belgian region-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["nl-NL", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("nl");
+      expect(document.documentElement.lang).toBe("nl");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("detects Flemish from a Belgian Dutch device language and applies LTR", async () => {
+    setNavigatorLanguages(["nl-Latn-BE", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl-BE");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("nl-BE");
+      expect(document.documentElement.lang).toBe("nl-BE");
+      expect(document.documentElement.dir).toBe("ltr");
     });
   });
 
@@ -343,6 +439,23 @@ describe("AppI18nProvider", () => {
     expect(Cookies.get("clc_locale")).toBe("es");
   });
 
+  it("persists a Filipino locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Filipino" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("fil");
+    expect(document.documentElement.lang).toBe("fil");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("fil");
+    expect(Cookies.get("clc_locale")).toBe("fil");
+  });
+
   it("persists an Italian locale selection", async () => {
     renderProvider();
 
@@ -358,6 +471,57 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.dir).toBe("ltr");
     expect(localStorage.getItem("clc.locale")).toBe("it");
     expect(Cookies.get("clc_locale")).toBe("it");
+  });
+
+  it("persists a Hindi locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "हिन्दी" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("hi");
+    expect(document.documentElement.lang).toBe("hi");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("hi");
+    expect(Cookies.get("clc_locale")).toBe("hi");
+  });
+
+  it("persists a Simplified Chinese locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "中文（简体）" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("zh");
+    expect(document.documentElement.lang).toBe("zh");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("zh");
+    expect(Cookies.get("clc_locale")).toBe("zh");
+  });
+
+  it("persists a Traditional Chinese locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "中文（繁體）" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("zh-Hant");
+    expect(document.documentElement.lang).toBe("zh-Hant");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("zh-Hant");
+    expect(Cookies.get("clc_locale")).toBe("zh-Hant");
   });
 
   it("persists a Dzongkha locale selection", async () => {
@@ -391,6 +555,40 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.lang).toBe("pt");
     expect(localStorage.getItem("clc.locale")).toBe("pt");
     expect(Cookies.get("clc_locale")).toBe("pt");
+  });
+
+  it("persists a Dutch locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Nederlands" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl");
+    expect(document.documentElement.lang).toBe("nl");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("nl");
+    expect(Cookies.get("clc_locale")).toBe("nl");
+  });
+
+  it("persists a Flemish locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Vlaams" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl-BE");
+    expect(document.documentElement.lang).toBe("nl-BE");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("nl-BE");
+    expect(Cookies.get("clc_locale")).toBe("nl-BE");
   });
 
   it("persists Arabic and restores LTR when English is selected", async () => {

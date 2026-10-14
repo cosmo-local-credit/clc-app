@@ -28,16 +28,20 @@ export type MapSheetSnap = "peek" | "half" | "full";
 
 const HALF = 0.55;
 const FULL = 1;
-const SNAP_ORDER: readonly MapSheetSnap[] = ["peek", "half", "full"];
 /** Until the peek block has been laid out. */
 const PEEK_FALLBACK_PX = 160;
 
-type Layout = { viewport: number; popup: number; peek: number; floating: number };
+type Layout = {
+  viewport: number;
+  popup: number;
+  peek: number;
+  floating: number;
+  bottomInset: number;
+};
 
 const PeekContext = createContext<((element: HTMLElement | null) => void) | null>(null);
 
 export const MapSheetTitle = Drawer.Title;
-export const MapSheetDescription = Drawer.Description;
 
 /**
  * The essentials at the top of the sheet. The smallest snap point is measured
@@ -61,6 +65,8 @@ export function MapSheet({
   onClose,
   onCoveredHeightChange,
   floating,
+  minimumPeekRatio,
+  underBottomNavigation = false,
   children,
 }: {
   open: boolean;
@@ -87,6 +93,10 @@ export function MapSheet({
   onCoveredHeightChange?: (height: number, snap: MapSheetSnap) => void;
   /** Rides just above the sheet's top edge, and fades out above half. */
   floating?: ReactNode;
+  /** Optional minimum initial height as a fraction of the usable viewport. */
+  minimumPeekRatio?: number;
+  /** Keep the authenticated app navigation visibly layered over this sheet. */
+  underBottomNavigation?: boolean;
   children: ReactNode;
 }) {
   const { t } = useLingui();
@@ -106,7 +116,13 @@ export function MapSheet({
   const [peek, setPeek] = useState<HTMLElement | null>(null);
   const [safeArea, setSafeArea] = useState<HTMLDivElement | null>(null);
   const [floatingSlot, setFloatingSlot] = useState<HTMLDivElement | null>(null);
-  const [layout, setLayout] = useState<Layout>({ viewport: 0, popup: 0, peek: 0, floating: 0 });
+  const [layout, setLayout] = useState<Layout>({
+    viewport: 0,
+    popup: 0,
+    peek: 0,
+    floating: 0,
+    bottomInset: 0,
+  });
 
   // Collapsing from full would otherwise leave the content scrolled, with the
   // peek block out of sight under a sheet that no longer scrolls. A layout
@@ -131,35 +147,42 @@ export function MapSheet({
             : Math.round(
                 peek.getBoundingClientRect().bottom -
                   popup.getBoundingClientRect().top +
-                  (content?.scrollTop ?? 0) +
-                  (safeArea?.offsetHeight ?? 0),
+                  (content?.scrollTop ?? 0),
               ),
           floating: floatingSlot?.offsetHeight ?? 0,
+          bottomInset: safeArea?.offsetHeight ?? 0,
         };
         return next.viewport === previous.viewport &&
           next.popup === previous.popup &&
           next.peek === previous.peek &&
-          next.floating === previous.floating
+          next.floating === previous.floating &&
+          next.bottomInset === previous.bottomInset
           ? previous
           : next;
       });
     }
     measure();
     const observer = new ResizeObserver(measure);
-    for (const element of [viewport, popup, peek, floatingSlot]) {
+    for (const element of [viewport, popup, peek, safeArea, floatingSlot]) {
       if (element) observer.observe(element);
     }
     return () => observer.disconnect();
   }, [viewport, popup, content, peek, safeArea, floatingSlot, snap]);
 
-  const peekHeight = layout.peek > 0 ? layout.peek : PEEK_FALLBACK_PX;
+  const viewportHeight = layout.viewport || window.innerHeight;
+  const measuredPeekHeight =
+    (layout.peek > 0 ? layout.peek : PEEK_FALLBACK_PX) + layout.bottomInset;
+  const usableViewportHeight = Math.max(0, viewportHeight - layout.bottomInset);
+  const minimumPeekHeight = minimumPeekRatio
+    ? layout.bottomInset + Math.round(usableViewportHeight * minimumPeekRatio)
+    : 0;
+  const peekHeight = Math.max(measuredPeekHeight, minimumPeekHeight);
   const peekPoint = `${peekHeight}px`;
   const snapPoints = useMemo(() => [peekPoint, HALF, FULL], [peekPoint]);
   const snapPoint = snap === "full" ? FULL : snap === "half" ? HALF : peekPoint;
 
   // The same resolution Base UI applies: fractions of the viewport, clamped to
   // the popup, which stops short of the status bar.
-  const viewportHeight = layout.viewport || window.innerHeight;
   const maxHeight = Math.min(layout.popup || viewportHeight, viewportHeight);
   const sheetHeight =
     snap === "full"
@@ -174,12 +197,21 @@ export function MapSheet({
     if (isOpen) reportCoveredHeight(coveredHeight, snap);
   }, [isOpen, coveredHeight, snap]);
 
-  const nextSnap = SNAP_ORDER[(SNAP_ORDER.indexOf(snap) + 1) % SNAP_ORDER.length] ?? "peek";
-
   // Set while a swipe that would have closed the sheet from above the peek is
   // turned into a collapse. Base UI then restores the snap point the swipe
   // started from, which must not override the peek.
   const collapsingRef = useRef(false);
+  // Base UI may report the old pixel snap while a handle click also mounts
+  // more content and recalculates the measured peek. Keep that stale callback
+  // from undoing the explicit one-click jump to full (or back to peek).
+  const handleClickSnapRef = useRef<MapSheetSnap | null>(null);
+  useLayoutEffect(() => {
+    if (handleClickSnapRef.current !== snap) return;
+    const frame = requestAnimationFrame(() => {
+      handleClickSnapRef.current = null;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [snap]);
 
   return (
     <Drawer.Root
@@ -207,7 +239,11 @@ export function MapSheet({
       onSnapPointChange={(value) => {
         // Null is the swipe that closes the sheet; onOpenChange reports that.
         if (value === null || collapsingRef.current) return;
-        onSnapChange(value === FULL ? "full" : value === HALF ? "half" : "peek");
+        const next = value === FULL ? "full" : value === HALF ? "half" : "peek";
+        if (handleClickSnapRef.current) {
+          return;
+        }
+        onSnapChange(next);
       }}
     >
       <Drawer.Portal>
@@ -219,7 +255,13 @@ export function MapSheet({
         ) : null}
         {/* The viewport covers the screen but takes no input, or the map
             under it could not be panned. Only the popup does. */}
-        <Drawer.Viewport ref={setViewport} className="pointer-events-none fixed inset-0 z-40">
+        <Drawer.Viewport
+          ref={setViewport}
+          className={cn(
+            "pointer-events-none fixed inset-0",
+            underBottomNavigation ? "z-[25]" : "z-40",
+          )}
+        >
           <Drawer.Popup
             ref={setPopup}
             className={cn(
@@ -245,14 +287,23 @@ export function MapSheet({
             <div
               ref={setSafeArea}
               aria-hidden="true"
-              className="invisible absolute h-[env(safe-area-inset-bottom)] w-px"
+              className={cn(
+                "invisible absolute w-px",
+                underBottomNavigation
+                  ? "h-[calc(4rem+env(safe-area-inset-bottom))]"
+                  : "h-[env(safe-area-inset-bottom)]",
+              )}
             />
 
             <button
               type="button"
               aria-label={snap === "full" ? t`Collapse` : t`Expand`}
               className="flex h-11 w-full shrink-0 cursor-ns-resize touch-none select-none items-center justify-center"
-              onClick={() => onSnapChange(nextSnap)}
+              onClick={() => {
+                const next = snap === "full" ? "peek" : "full";
+                handleClickSnapRef.current = next;
+                onSnapChange(next);
+              }}
             >
               <span aria-hidden="true" className="h-1 w-10 rounded-full bg-muted-foreground/30" />
             </button>
@@ -261,7 +312,10 @@ export function MapSheet({
               <Drawer.Content
                 ref={setContent}
                 className={cn(
-                  "min-h-0 flex-1 overscroll-contain pb-[env(safe-area-inset-bottom)]",
+                  "min-h-0 flex-1 overscroll-contain",
+                  underBottomNavigation
+                    ? "pb-[calc(4rem+env(safe-area-inset-bottom))]"
+                    : "pb-[env(safe-area-inset-bottom)]",
                   snap === "full" ? "overflow-y-auto" : "overflow-hidden",
                 )}
               >

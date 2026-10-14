@@ -6,13 +6,11 @@ import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { resetVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { VoucherContactDetails } from "./voucher-contact-details";
@@ -21,13 +19,13 @@ function VoucherRow({
   voucher,
   open,
   onToggle,
-  onView,
+  voucherAddress,
   showBorder,
 }: {
   voucher: WalletToken;
   open: boolean;
   onToggle: () => void;
-  onView: () => void;
+  voucherAddress?: `0x${string}`;
   showBorder: boolean;
 }) {
   return (
@@ -65,10 +63,18 @@ function VoucherRow({
       {open ? (
         <div className="px-3 pt-1 pb-3">
           <VoucherContactDetails voucher={voucher} />
-          <Button className="mt-3 h-11 w-full gap-1.5 text-xs" onClick={onView}>
-            <Trans>View voucher</Trans>
-            <RiArrowRightSLine className="rtl:-scale-x-100 size-4" aria-hidden="true" />
-          </Button>
+          {voucherAddress ? (
+            <Button asChild className="mt-3 h-11 w-full gap-1.5 text-xs">
+              <Link
+                to="/vouchers/$voucherAddress"
+                params={{ voucherAddress }}
+                search={{ from: "vouchers" }}
+              >
+                <Trans>View voucher</Trans>
+                <RiArrowRightSLine className="rtl:-scale-x-100 size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -104,22 +110,20 @@ export function AllVouchersPage() {
     vouchers.length > 0 && !resolved && !voucherGroups.pending && voucherGroups.failed;
   const vouchersReady = vouchersQuery.isSuccess && vouchers.length > 0 && resolved;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const sheet = useVoucherSheetSelection();
-  const sheetVoucher = vouchers.find((voucher) => voucher.id === sheet.voucher?.toLowerCase());
   const renderGroup = (list: typeof vouchers) =>
-    list.map((voucher, index) => (
-      <VoucherRow
-        key={voucher.id}
-        voucher={voucher}
-        open={expanded[voucher.id] ?? false}
-        onToggle={() => setExpanded((prev) => ({ ...prev, [voucher.id]: !prev[voucher.id] }))}
-        onView={() => {
-          const address = parseVoucherAddress(voucher.contractAddress ?? voucher.id);
-          if (address) sheet.open(address);
-        }}
-        showBorder={index < list.length - 1}
-      />
-    ));
+    list.map((voucher, index) => {
+      const voucherAddress = parseVoucherAddress(voucher.contractAddress ?? voucher.id);
+      return (
+        <VoucherRow
+          key={voucher.id}
+          voucher={voucher}
+          open={expanded[voucher.id] ?? false}
+          onToggle={() => setExpanded((prev) => ({ ...prev, [voucher.id]: !prev[voucher.id] }))}
+          voucherAddress={voucherAddress}
+          showBorder={index < list.length - 1}
+        />
+      );
+    });
 
   useEffect(() => {
     resetVoucherCreateHistory();
@@ -164,7 +168,10 @@ export function AllVouchersPage() {
               </Button>
             </div>
           ) : null}
-          {vouchersQuery.isSuccess && vouchers.length === 0 ? (
+          {vouchersQuery.isSuccess &&
+          !resolved &&
+          !voucherGroups.pending &&
+          !voucherGroups.failed ? (
             <div className="flex min-h-14 items-center justify-between gap-3 p-3">
               <p className="text-muted-foreground text-sm">
                 <Trans>No vouchers yet.</Trans>
@@ -186,9 +193,9 @@ export function AllVouchersPage() {
             </section>
           ) : null}
           {voucherGroups.issued.length > 0 || (!vouchersQuery.hasNextPage && !unresolved) ? (
-            <section aria-labelledby="your-vouchers-title">
-              <h2 id="your-vouchers-title" className="font-heading mb-2 text-base font-semibold">
-                <Trans>Your Vouchers</Trans>
+            <section aria-labelledby="my-vouchers-title">
+              <h2 id="my-vouchers-title" className="font-heading mb-2 text-base font-semibold">
+                <Trans>My Vouchers</Trans>
               </h2>
               <div className="border-border bg-card border">
                 {voucherGroups.issued.length === 0 ? (
@@ -240,19 +247,6 @@ export function AllVouchersPage() {
           {vouchersQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}
         </Button>
       ) : null}
-
-      <VoucherSheet
-        placeholder={
-          sheetVoucher
-            ? {
-                name: sheetVoucher.name,
-                symbol: sheetVoucher.symbol,
-                iconUrl: sheetVoucher.iconUrl,
-              }
-            : null
-        }
-        origin={{ from: "vouchers" }}
-      />
     </div>
   );
 }

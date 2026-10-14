@@ -40,6 +40,7 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
       {holdings.map((holding, index, list) => (
         <PoolHoldingRowButton
           key={holding.tokenAddress}
+          poolAddress={pool.address}
           holding={holding}
           isLast={index === list.length - 1}
         >

@@ -79,7 +79,7 @@ describe("RecipientAddressInput", () => {
     },
   );
 
-  it("waits for three phone digits, clears phone selection and ignores incomplete addresses", async () => {
+  it("searches short numeric and 0x-prefixed names and clears selection", async () => {
     const fetcher = vi.fn((_url: string) =>
       Promise.resolve(
         json({
@@ -98,8 +98,8 @@ describe("RecipientAddressInput", () => {
     for (const value of ["+0 (7)", "0x123"]) {
       fireEvent.change(input, { target: { value } });
       await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
-      expect(fetcher).not.toHaveBeenCalled();
-      expect(screen.queryByText("Searching recipients…")).toBeNull();
+      expect(fetcher).toHaveBeenCalled();
+      expect(new URL(String(fetcher.mock.calls.at(-1)?.[0])).searchParams.get("q")).toBe(value);
     }
     fireEvent.change(input, { target: { value: "007" } });
     fireEvent.click(await screen.findByRole("button", { name: /Alice \(alice\)/ }));
@@ -112,7 +112,7 @@ describe("RecipientAddressInput", () => {
     expect(onRecipientChange).toHaveBeenLastCalledWith(null);
     expect(screen.queryByRole("list", { name: "Matching recipients" })).toBeNull();
     await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
-    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledTimes(4);
   });
 
   it("accepts an unknown full address when reverse lookup has no profile", async () => {
@@ -141,7 +141,7 @@ describe("RecipientAddressInput", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
-  it("searches only with three trimmed characters and hides results when shortened or cleared", async () => {
+  it("searches single-character names and hides results when cleared", async () => {
     const fetcher = vi.fn((_url: string) =>
       Promise.resolve(
         json({
@@ -158,7 +158,7 @@ describe("RecipientAddressInput", () => {
     renderInput();
     const input = screen.getByRole("textbox", { name: "Recipient" });
 
-    for (const value of ["", "a", "al", "  al  "]) {
+    for (const value of ["", "  "]) {
       fireEvent.change(input, { target: { value } });
       await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
       expect(fetcher).not.toHaveBeenCalled();
@@ -166,12 +166,12 @@ describe("RecipientAddressInput", () => {
       expect(screen.queryByText("No matching recipients.")).toBeNull();
     }
 
-    fireEvent.change(input, { target: { value: "  ali  " } });
+    fireEvent.change(input, { target: { value: "  李  " } });
     expect(await screen.findByRole("button", { name: /Alice \(alice\)/ })).toBeTruthy();
     expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.get("q")).toBe("ali");
+    expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.get("q")).toBe("李");
 
-    for (const value of ["al", ""]) {
+    for (const value of [""]) {
       fireEvent.change(input, { target: { value } });
       expect(screen.queryByRole("list", { name: "Matching recipients" })).toBeNull();
       await act(() => new Promise((resolve) => setTimeout(resolve, 300)));

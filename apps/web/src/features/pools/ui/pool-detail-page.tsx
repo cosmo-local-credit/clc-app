@@ -11,7 +11,7 @@ import {
   RiSettings3Line,
 } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
-import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
+import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
@@ -19,8 +19,6 @@ import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-to
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
-import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
-import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolCreditPanel } from "./pool-credit-panel";
@@ -68,7 +66,6 @@ export function PoolDetailPage({
   const poolVouchersQuery = usePoolVouchersWithStatus(pool, { all: true });
   const poolVouchers = poolVouchersQuery.vouchers;
   const vouchers = poolVouchers.filter((voucher) => voucher.active);
-  const sheet = useVoucherSheetSelection();
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const auth = useAuthStatus();
   // The same rule the voucher screen applies: the backend session's address
@@ -90,6 +87,9 @@ export function PoolDetailPage({
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
   const [approving, setApproving] = useState(false);
   const [receiving, setReceiving] = useState(false);
+  const visibleTabs = auth.isAuthenticated
+    ? POOL_TABS
+    : POOL_TABS.filter((tab) => tab === "offerings" || tab === "vouchers");
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -103,7 +103,7 @@ export function PoolDetailPage({
 
   return (
     <div className="space-y-3">
-      <BackChevron label={t`Pools`} to="/pools" />
+      <BackChevron label={t`Pools`} to="/market" search={{ scope: "pools" }} />
       <section className="border border-border bg-card p-3">
         <div className="flex items-start gap-3">
           <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
@@ -133,55 +133,65 @@ export function PoolDetailPage({
 
       {/* The three-up icon grid the wallet and voucher screens already use, so
           a pool's actions are read the same way as every other screen's. */}
-      <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
-        <Button asChild className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
-          <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
-            <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
-            <Trans>Swap</Trans>
-          </Link>
-        </Button>
-        {/* A shortcut into the ordinary send flow with the pool as the
+      {auth.isAuthenticated ? (
+        <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
+          <Button asChild className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+            <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
+              <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
+              <Trans>Swap</Trans>
+            </Link>
+          </Button>
+          {/* A shortcut into the ordinary send flow with the pool as the
             recipient, rather than a flow of its own. Back returns here on its
             own: BackChevron prefers real history over its deep-link fallback.
             `returnPool` rides along to the receipt so finishing the send lands
             back on this pool rather than on the wallet. */}
-        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
-          <Link
-            to="/wallet/send/amount"
-            search={{
-              recipient: pool.address,
-              recipientLabel: pool.name,
-              returnPool: pool.address,
-            }}
-          >
-            <RiArrowRightUpLine className="size-4" aria-hidden="true" />
-            <Trans>Deposit</Trans>
-          </Link>
-        </Button>
-        {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
+          <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+            <Link
+              to="/wallet/send/amount"
+              search={{
+                recipient: pool.address,
+                recipientLabel: pool.name,
+                returnPool: pool.address,
+              }}
+            >
+              <RiArrowRightUpLine className="size-4" aria-hidden="true" />
+              <Trans>Deposit</Trans>
+            </Link>
+          </Button>
+          {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
             one-word label so all three fit a 360px row. */}
-        <Button
-          variant="info"
-          className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
-          onClick={() => setReceiving(true)}
-        >
-          <RiQrCodeLine className="size-4" aria-hidden="true" />
-          <Trans>Receive</Trans>
-        </Button>
-      </section>
+          <Button
+            variant="info"
+            className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
+            onClick={() => setReceiving(true)}
+          >
+            <RiQrCodeLine className="size-4" aria-hidden="true" />
+            <Trans>Receive</Trans>
+          </Button>
+        </section>
+      ) : null}
 
-      <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
+      {auth.isAuthenticated ? (
+        <>
+          <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
+          <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
+        </>
+      ) : null}
 
       {canEditDetails ? (
         <PoolControlsPanel pool={pool} vouchers={vouchers} canManageOnChain={canManageOnChain} />
       ) : null}
 
       <div
-        className="grid grid-cols-5 border border-border bg-card p-1"
+        className={[
+          "grid border border-border bg-card p-1",
+          auth.isAuthenticated ? "grid-cols-5" : "grid-cols-2",
+        ].join(" ")}
         role="tablist"
         aria-label={t`Pool contents`}
       >
-        {POOL_TABS.map((tab) => {
+        {visibleTabs.map((tab) => {
           const label = TAB_LABELS[tab];
           // Five tabs leave about 60px a label at 360px. A label of two words
           // wraps onto a second line centred under the first; a single word
@@ -263,7 +273,6 @@ export function PoolDetailPage({
                   unitSymbol={pool.unitOfAccount ?? pool.symbol}
                   ratePpm={rates.data?.get(voucher.tokenAddress.toLowerCase())}
                   onManage={canManageOnChain ? () => setManaging(voucher) : undefined}
-                  onOpen={sheet.open}
                 />
               ))}
             </div>
@@ -296,15 +305,6 @@ export function PoolDetailPage({
           onClose={() => setManaging(null)}
         />
       ) : null}
-
-      <VoucherSheet
-        placeholder={
-          vouchers.find(
-            (voucher) => voucher.tokenAddress.toLowerCase() === sheet.voucher?.toLowerCase(),
-          ) ?? null
-        }
-        origin={{ poolAddress }}
-      />
     </div>
   );
 }
@@ -313,7 +313,7 @@ function DetailShell({ message }: { message: string }) {
   const { t } = useLingui();
   return (
     <div className="space-y-3">
-      <BackChevron label={t`Pools`} to="/pools" />
+      <BackChevron label={t`Pools`} to="/market" search={{ scope: "pools" }} />
       <p className="border border-border bg-card p-3 text-muted-foreground text-sm">{message}</p>
     </div>
   );
@@ -327,7 +327,6 @@ function VoucherRow({
   unitSymbol,
   ratePpm,
   onManage,
-  onOpen,
 }: {
   poolAddress: string;
   voucher: PoolVoucher;
@@ -338,18 +337,15 @@ function VoucherRow({
   ratePpm: bigint | undefined;
   /** Present only for the pool's owner; the row stays a plain link for everyone else. */
   onManage?: () => void;
-  onOpen: (address: `0x${string}`) => void;
 }) {
   const { t } = useLingui();
   const voucherAddress = voucher.tokenAddress.toLowerCase();
   return (
     <div className={["flex items-center", isLast ? "" : "border-b border-border"].join(" ")}>
-      <button
-        type="button"
-        onClick={() => {
-          const address = parseVoucherAddress(voucherAddress);
-          if (address) onOpen(address);
-        }}
+      <Link
+        to="/vouchers/$voucherAddress"
+        params={{ voucherAddress }}
+        search={{ poolAddress }}
         className="flex min-w-0 flex-1 items-center gap-3 p-3 text-start"
       >
         {token ? <TokenLogo token={token} size={36} /> : null}
@@ -362,7 +358,7 @@ function VoucherRow({
             </p>
           )}
         </div>
-      </button>
+      </Link>
       {/* Getting this voucher out of the pool is one tap from its row: the
           pool's swap opens with it already chosen under "You receive". A
           sibling of the row link, not inside it — links do not nest. Filled in

@@ -1,3 +1,5 @@
+import { ResourceUsage } from "#/components/resource-usage";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import type { Offering } from "@clc/api/features/offerings/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
@@ -41,6 +43,7 @@ export function VoucherOfferingsPanel({
   ownerAddress,
   isKnownEmpty,
   maxItems,
+  manualPageSize,
   autoLoadMore,
   presentation = "tabpanel",
   readOnly = false,
@@ -55,6 +58,7 @@ export function VoucherOfferingsPanel({
   /** `kind === "voucher"` already proves the result is empty — skip the request. */
   isKnownEmpty: boolean;
   maxItems?: number;
+  manualPageSize?: number;
   autoLoadMore?: boolean;
   presentation?: "tabpanel" | "section";
   readOnly?: boolean;
@@ -73,6 +77,8 @@ export function VoucherOfferingsPanel({
     Boolean(session?.address) &&
     Boolean(ownerAddress) &&
     session?.address?.toLowerCase() === ownerAddress?.toLowerCase();
+
+  const usage = useResourceUsage(isOwner);
 
   const [editor, setEditor] = useState<OfferingEditor | null>(null);
   const [deletingID, setDeletingID] = useState<string | null>(null);
@@ -104,13 +110,16 @@ export function VoucherOfferingsPanel({
       aria-labelledby={presentation === "tabpanel" ? "voucher-tab-offerings" : undefined}
     >
       {isOwner ? (
-        <Button
-          className="mb-3 h-11 w-full"
-          onClick={() => setEditor({ kind: "create" })}
-          disabled={!voucherAddress}
-        >
-          <Trans>Add offering</Trans>
-        </Button>
+        <>
+          <ResourceUsage resource="offers" />
+          <Button
+            className="mb-3 h-11 w-full"
+            onClick={() => setEditor({ kind: "create" })}
+            disabled={!voucherAddress || usage.isError || !usage.data?.offers.canCreate}
+          >
+            <Trans>Add offering</Trans>
+          </Button>
+        </>
       ) : null}
 
       <OfferingsPanel
@@ -119,6 +128,7 @@ export function VoucherOfferingsPanel({
         fallbackSymbol={voucherSymbol}
         resolveVoucherRate={() => ({ value: voucherValue, unit: voucherUoa })}
         maxItems={maxItems}
+        manualPageSize={manualPageSize}
         autoLoadMore={autoLoadMore}
         openVoucherPageAction={openVoucherPageAction}
         management={

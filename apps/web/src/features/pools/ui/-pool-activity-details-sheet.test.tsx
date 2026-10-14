@@ -105,4 +105,28 @@ describe("PoolActivityDetailsSheet", () => {
     expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("0.10 SAR0.20%");
     expect(screen.getByText("Total fees").parentElement?.textContent).toContain("1.10 SAR2.20%");
   });
+
+  it("shows both historical voucher values without recalculating them", () => {
+    const entry: PoolActivityEntry = {
+      ...base,
+      kind: "swap",
+      counterpartyAddress: TRADER,
+      received: { ...leg, uoaValue: "1.25", uoa: "KES" },
+      sent: {
+        ...leg,
+        tokenSymbol: "SAR",
+        tokenName: "Sarafu",
+        uoaValue: "2.5",
+        uoa: "USD",
+      },
+      protocolFee: null,
+    };
+
+    render(
+      <PoolActivityDetailsSheet poolAddress={POOL} entry={entry} open onOpenChange={() => {}} />,
+    );
+
+    expect(screen.getByText("+1 KAW (1.25 KES)")).toBeTruthy();
+    expect(screen.getByText("−1 SAR (2.50 USD)")).toBeTruthy();
+  });
 });

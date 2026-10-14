@@ -1,7 +1,10 @@
 import { type CaliburCall } from "@clc/core/features/webauthn/index";
 import { encodeFunctionData, erc20Abi } from "viem";
 
-import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
+import {
+  relayCaliburBatch,
+  type RelayCaliburBatchResult,
+} from "#/features/webauthn/api/relay-calibur-batch";
 import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 export type BuildVoucherTransferCallInput = {
@@ -16,10 +19,7 @@ export type RelayVoucherTransferInput = BuildVoucherTransferCallInput & {
   includeAuthorization?: boolean;
 };
 
-export type RelayVoucherTransferResult = {
-  trackingId: string;
-  signatureType: "secp256k1" | "webauthn";
-};
+export type RelayVoucherTransferResult = RelayCaliburBatchResult;
 
 export function buildVoucherTransferCall(input: BuildVoucherTransferCallInput): CaliburCall {
   const amount = BigInt(input.amountRaw);

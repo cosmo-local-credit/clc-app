@@ -4,6 +4,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { ReportSummary } from "@clc/api/features/reports/client";
+vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
+  AddToCatalogButton: ({ className, size }: { className?: string; size?: string }) =>
+    mocks.auth.isAuthenticated ? (
+      <button type="button" className={className} data-size={size}>
+        Add to catalog
+      </button>
+    ) : null,
+}));
+const quotaMock = vi.hoisted(() => ({
+  data: {
+    vouchers: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    catalogs: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    offers: { used: 0, limit: 3, canCreate: true, unlimited: false },
+    pools: { used: 0, limit: 10, canCreate: true, unlimited: false },
+  },
+  isPending: false,
+  isError: false,
+  refetch: vi.fn(),
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
@@ -36,6 +56,8 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   openDefaultMaps: vi.fn(),
+  reviewSummary: { total: 0, average: 0 },
+  distanceOrigin: null as { lat: number; lng: number } | null,
   offeringAddress: undefined as string | undefined,
   managedOfferingAddress: undefined as string | undefined,
   createOffering: vi.fn(),
@@ -94,14 +116,26 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   transfers: [] as Array<Record<string, unknown>>,
+  transfersError: false,
+  transfersHaveNextPage: false,
+  fetchTransfers: vi.fn(),
+  refetchTransfers: vi.fn(),
 }));
 
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
   VoucherReviewsPanel: ({ address }: { address: string }) => (
-    <div role="tabpanel" aria-labelledby="voucher-tab-reviews" data-address={address}>
+    <div data-testid="voucher-reviews" data-address={address}>
       Voucher reviews
     </div>
   ),
+}));
+
+vi.mock("#/features/reviews/hooks/use-voucher-reviews", () => ({
+  useVoucherReviewSummary: () => ({ summary: mocks.reviewSummary }),
+}));
+
+vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
+  useDiscoveryDistanceOrigin: () => mocks.distanceOrigin,
 }));
 
 vi.mock("wagmi", () => ({
@@ -214,36 +248,30 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
-  useAccountTokensInfinite: () => ({
-    data: {
-      pages: [
-        {
-          tokens: [
-            {
-              id: 1,
-              tokenAddress: ADDRESS,
-              tokenSymbol: "MALII",
-              tokenName: "Priscilah Malii",
-              tokenDecimals: 2,
-              balance: "1234",
-              iconUrl: null,
-              lastDateBlock: "2026-07-25T00:00:00Z",
-            },
-          ],
-        },
-      ],
-    },
+  useAllAccountTokens: () => ({
+    tokens: [
+      {
+        id: 1,
+        tokenAddress: ADDRESS,
+        tokenSymbol: "MALII",
+        tokenName: "Priscilah Malii",
+        tokenDecimals: 2,
+        balance: "1234",
+        iconUrl: null,
+        lastDateBlock: "2026-07-25T00:00:00Z",
+      },
+    ],
     isPending: false,
   }),
   useAccountTransfersInfinite: () => ({
     data: { pages: [{ transfers: mocks.transfers }] },
     isPending: false,
-    isError: false,
-    isSuccess: true,
-    hasNextPage: false,
+    isError: mocks.transfersError,
+    isSuccess: !mocks.transfersError,
+    hasNextPage: mocks.transfersHaveNextPage,
     isFetchingNextPage: false,
-    fetchNextPage: vi.fn(),
-    refetch: vi.fn(),
+    fetchNextPage: mocks.fetchTransfers,
+    refetch: mocks.refetchTransfers,
   }),
 }));
 
@@ -275,7 +303,7 @@ vi.mock("#/features/images/use-image-upload", () => ({
   }),
 }));
 
-vi.mock("#/features/wallet/hooks/use-update-voucher-profile", () => ({
+vi.mock("#/features/vouchers/hooks/use-update-voucher-profile", () => ({
   useUpdateVoucherProfile: () => ({
     mutateAsync: mocks.updateProfile,
     isPending: false,
@@ -409,6 +437,8 @@ beforeEach(() => {
     session: { address: OTHER, chainId: 42220 },
   };
   mocks.openDefaultMaps.mockReset();
+  mocks.reviewSummary = { total: 0, average: 0 };
+  mocks.distanceOrigin = null;
   mocks.createVouchers.mockReset();
   mocks.createVouchers.mockResolvedValue({ trackingId: "mint-1" });
   mocks.transferOwnership.mockReset();
@@ -489,6 +519,10 @@ beforeEach(() => {
   };
   mocks.reportVoucher = undefined;
   mocks.transfers = [];
+  mocks.transfersError = false;
+  mocks.transfersHaveNextPage = false;
+  mocks.fetchTransfers.mockReset();
+  mocks.refetchTransfers.mockReset();
   mocks.reportsEnabled = false;
   mocks.reportsResult = {
     data: { pages: [{ reports: [report()] }] },
@@ -507,6 +541,12 @@ afterEach(() => {
 });
 
 describe("VoucherDetailPage", () => {
+  it("returns a related voucher to its source Post", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} origin="posts" reportId="3182" />);
+
+    expect(screen.getByRole("link", { name: "Posts" }).getAttribute("href")).toBe("/posts/3182");
+  });
+
   it("shows voucher creation as new supply without exposing the zero address", async () => {
     const zeroAddress = "0x0000000000000000000000000000000000000000";
     mocks.transfers = [
@@ -531,41 +571,126 @@ describe("VoucherDetailPage", () => {
 
     expect(await screen.findByText("Created")).toBeTruthy();
     expect(screen.getByText(/New supply/)).toBeTruthy();
-    expect(screen.getByText("1000")).toBeTruthy();
+    expect(screen.getByText("1000 MALII")).toBeTruthy();
     expect(document.body.textContent).not.toContain("0x0000");
   });
 
-  it("puts balance and the three voucher actions above the tabs", () => {
+  it("shows the immutable Unit-of-Account snapshot in voucher activity", async () => {
+    mocks.transfers = [
+      {
+        id: 743841,
+        txHash: `0x${"12".repeat(32)}`,
+        dateBlock: "2026-09-30T05:27:30Z",
+        direction: "OUT",
+        counterpartyAddress: "0x2222222222222222222222222222222222222222",
+        senderAddress: mocks.address,
+        recipientAddress: "0x2222222222222222222222222222222222222222",
+        tokenAddress: ADDRESS,
+        tokenSymbol: "MALII",
+        tokenName: "Priscilah Malii",
+        tokenDecimals: 2,
+        amount: "1000",
+        success: true,
+        uoaValue: "125.5",
+        uoa: "KES",
+      },
+    ];
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    expect(await screen.findByText("Sent")).toBeTruthy();
+    expect(screen.getByText("10 MALII")).toBeTruthy();
+    expect(screen.getByText("(125.50 KES)")).toBeTruthy();
+  });
+
+  it("loads more Activity only after an explicit request", () => {
+    mocks.transfersHaveNextPage = true;
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    const activity = screen.getByRole("region", { name: "Activity" });
+    expect(mocks.fetchTransfers).not.toHaveBeenCalled();
+    fireEvent.click(within(activity).getByRole("button", { name: "Load more" }));
+    expect(mocks.fetchTransfers).toHaveBeenCalledOnce();
+  });
+
+  it("retries failed Activity without affecting the other voucher sections", () => {
+    mocks.transfersError = true;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    const activity = screen.getByRole("region", { name: "Activity" });
+    expect(within(activity).getByText("Couldn't load activity.")).toBeTruthy();
+    fireEvent.click(within(activity).getByRole("button", { name: "Try again" }));
+    expect(mocks.refetchTransfers).toHaveBeenCalledOnce();
+    expect(screen.getByRole("region", { name: "Info" })).toBeTruthy();
+  });
+
+  it("reveals local Activity rows in batches and clears the selected details on close", async () => {
+    const baseTransfer = {
+      id: 1,
+      txHash: `0x${"12".repeat(32)}`,
+      dateBlock: "2026-09-30T05:27:30Z",
+      direction: "OUT",
+      counterpartyAddress: "0x2222222222222222222222222222222222222222",
+      senderAddress: mocks.address,
+      recipientAddress: "0x2222222222222222222222222222222222222222",
+      tokenAddress: ADDRESS,
+      tokenSymbol: "MALII",
+      tokenName: "Priscilah Malii",
+      tokenDecimals: 2,
+      amount: "100",
+      success: true,
+    };
+    mocks.transfers = [1, 2, 3, 4].map((id) => ({
+      ...baseTransfer,
+      id,
+      txHash: `0x${String(id).padStart(64, "0")}`,
+      amount: String(id * 100),
+    }));
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    const activity = screen.getByRole("region", { name: "Activity" });
+    expect(within(activity).queryByText("4 MALII")).toBeNull();
+    fireEvent.click(within(activity).getByRole("button", { name: "Load more" }));
+    expect(within(activity).getByText("4 MALII")).toBeTruthy();
+
+    fireEvent.click(within(activity).getAllByRole("button")[0]!);
+    expect(screen.getByRole("dialog", { name: "Transaction details" })).toBeTruthy();
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Transaction details" })).toBeNull(),
+    );
+  });
+
+  it("puts the map-style summary and actions above continuous sections", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
     expect(screen.getByRole("heading", { name: "Priscilah Malii" })).toBeTruthy();
-    expect(screen.getByLabelText("Balance").textContent).toContain("12.34 MALII");
-    expect(screen.queryByText("KSH")).toBeNull();
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("12.34 MALII (123.4 KSH)");
+    expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "0 out of 5 stars" })).toBeTruthy();
+    expect(screen.getByText("Agriculture")).toBeTruthy();
 
     const actions = screen.getByLabelText("Voucher actions");
-    expect(actions.textContent).toBe("RedeemSendPools");
-    // Redeem is a send to the issuer, with the voucher already selected.
+    expect(actions.textContent).toBe("GetSendRedeemDirectionsCallWebsiteAdd to catalog");
+    const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
+    expect(addToCatalog.getAttribute("data-size")).toBe("sm");
+    expect(addToCatalog.className).toContain("h-9");
+    expect(within(actions).getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
+      `/market?scope=pools&out_voucher=${ADDRESS.toLowerCase()}`,
+    );
     const redeem = within(actions).getByRole("link", { name: "Redeem" });
-    expect(redeem.getAttribute("data-variant")).toBe("default");
+    expect(redeem.getAttribute("data-variant")).toBe("outline");
     expect(redeem.getAttribute("href")).toBe(
       `/wallet/send/amount?token=${ADDRESS}&recipient=0xDeF0000000000000000000000000000000000456`,
     );
-    const pools = within(actions).getByRole("link", { name: "Pools" });
-    expect(pools.getAttribute("data-variant")).toBe("info");
-    expect(pools.getAttribute("href")).toBe(`/pools?out_voucher=${ADDRESS.toLowerCase()}`);
-    expect(within(actions).queryByRole("link", { name: "Receive" })).toBeNull();
+    expect(within(actions).queryByRole("link", { name: "Pools" })).toBeNull();
 
-    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-      "Offerings",
-      "Info",
-      "Activity",
-      "Reviews",
-      "Posts",
-    ]);
-    expect(screen.getByRole("tab", { name: "Offerings" }).getAttribute("aria-selected")).toBe(
-      "true",
-    );
-    const offerings = screen.getByRole("tabpanel");
+    expect(screen.queryByRole("tab")).toBeNull();
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(["Offerings", "Reviews", "Posts", "Info", "Activity"]);
+    const offerings = screen.getByRole("region", { name: "Offerings" });
     expect(within(offerings).getByText("Vegetables")).toBeTruthy();
     // Price per unit, as one message: the unit is part of what the figure means.
     expect(within(offerings).getByText("100 KSH / kg")).toBeTruthy();
@@ -615,6 +740,80 @@ describe("VoucherDetailPage", () => {
     expect(within(dialog).getByText("Close").className).toContain("sr-only");
   });
 
+  it("shows the voucher rating, at most three tags, and the location fallback", () => {
+    mocks.reviewSummary = { total: 10, average: 4.4 };
+    mocks.detailResult.data = detail({ tags: ["Food", "Farming", "Local", "Extra"] });
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    expect(screen.getByRole("img", { name: "4.4 out of 5 stars" })).toBeTruthy();
+    expect(screen.getByText("(10)")).toBeTruthy();
+    expect(screen.getAllByText("C96, KEN").length).toBeGreaterThan(0);
+    expect(screen.getByText("Food")).toBeTruthy();
+    expect(screen.getByText("Farming")).toBeTruthy();
+    expect(screen.getByText("Local")).toBeTruthy();
+    expect(screen.queryByText("Extra")).toBeNull();
+  });
+
+  it("uses the trustworthy discovery origin for the compact distance", () => {
+    mocks.distanceOrigin = { lat: -1.450979, lng: 38.235115 };
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    expect(
+      screen.getByRole("img", { name: "0 out of 5 stars" }).parentElement?.textContent,
+    ).toContain("0 m");
+  });
+
+  it("shares the canonical voucher page without origin or legacy tab state", async () => {
+    const share = vi.fn(async () => {});
+    Object.defineProperty(navigator, "share", { value: share, configurable: true });
+    try {
+      render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" origin="wallet" />);
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+      await waitFor(() =>
+        expect(share).toHaveBeenCalledWith({
+          title: "Priscilah Malii",
+          url: `${window.location.origin}/vouchers/${ADDRESS}`,
+        }),
+      );
+    } finally {
+      Reflect.deleteProperty(navigator, "share");
+    }
+  });
+
+  it("reveals offerings three at a time without auto-loading past later sections", () => {
+    const page = mocks.offeringsResult.data?.pages[0];
+    const first = page?.offerings[0];
+    if (!page || !first) throw new Error("expected offering fixtures");
+    page.offerings.push(
+      { ...first, id: "3", name: "Third offering" },
+      { ...first, id: "4", name: "Fourth offering" },
+    );
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    const offerings = screen.getByRole("region", { name: "Offerings" });
+    expect(
+      within(offerings).getAllByRole("button", { name: /View offering details:/ }),
+    ).toHaveLength(3);
+    expect(within(offerings).queryByText("Fourth offering")).toBeNull();
+    fireEvent.click(within(offerings).getByRole("button", { name: "Load more" }));
+    expect(within(offerings).getByText("Fourth offering")).toBeTruthy();
+    expect(within(offerings).queryByRole("button", { name: "Load more" })).toBeNull();
+  });
+
+  it("hides Send and Redeem for guests while keeping public actions", () => {
+    mocks.auth = { isAuthenticated: false, isLoading: false, session: null };
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+
+    const actions = screen.getByLabelText("Voucher actions");
+    expect(within(actions).getByRole("link", { name: "Get" })).toBeTruthy();
+    expect(within(actions).queryByRole("link", { name: "Send" })).toBeNull();
+    expect(within(actions).queryByRole("link", { name: "Redeem" })).toBeNull();
+  });
+
   it("colours each tag from its own name so a tag looks the same everywhere", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
@@ -654,7 +853,7 @@ describe("VoucherDetailPage", () => {
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
-    const panel = screen.getByRole("tabpanel");
+    const panel = screen.getByRole("region", { name: "Offerings" });
     expect(within(panel).getByText("600 KES / hour")).toBeTruthy();
     expect(within(panel).queryByText("1 hour")).toBeNull();
 
@@ -676,15 +875,13 @@ describe("VoucherDetailPage", () => {
     expect(within(dialog).getByRole("button", { name: "Open voucher page" })).toBeTruthy();
   });
 
-  it("disables Redeem when the voucher has no known issuer to send back to", () => {
+  it("hides Redeem when the voucher has no known issuer to send back to", () => {
     mocks.detailResult.data = detail({ ownerAddress: null });
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
     const actions = screen.getByLabelText("Voucher actions");
     expect(within(actions).queryByRole("link", { name: "Redeem" })).toBeNull();
-    expect(
-      (within(actions).getByRole("button", { name: "Redeem" }) as HTMLButtonElement).disabled,
-    ).toBe(true);
+    expect(within(actions).queryByRole("button", { name: "Redeem" })).toBeNull();
   });
 
   it("skips the offerings request when the voucher kind proves the tab is empty", () => {
@@ -714,14 +911,11 @@ describe("VoucherDetailPage", () => {
   });
 
   it("shows zero when the account has no balance for the voucher", () => {
-    render(
-      <VoucherDetailPage
-        voucherAddress="0x9990000000000000000000000000000000000999"
-        activeTab="offerings"
-      />,
-    );
+    const unheldAddress = "0x9990000000000000000000000000000000000999";
+    mocks.detailResult.data = detail({ address: unheldAddress });
+    render(<VoucherDetailPage voucherAddress={unheldAddress} activeTab="offerings" />);
 
-    expect(screen.getByLabelText("Balance").textContent).toContain("0 MALII");
+    expect(screen.getByLabelText("Your Balance").textContent).toContain("0 MALII (0 KSH)");
   });
 
   it("keeps the profile image hidden behind a skeleton until load and omits the banner", () => {
@@ -762,7 +956,7 @@ describe("VoucherDetailPage", () => {
     vi.stubGlobal("navigator", { clipboard: { writeText: clipboardWrite } });
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
 
-    const panel = screen.getByRole("tabpanel");
+    const panel = screen.getByRole("region", { name: "Info" });
     expect(within(panel).queryByRole("link", { name: "Find this voucher in a pool" })).toBeNull();
     const rate = within(panel).getByText("1 MALII = 10 KSH");
     expect(rate.className).toContain("text-sm");
@@ -793,7 +987,7 @@ describe("VoucherDetailPage", () => {
     expect(terms.getAttribute("href")).toBe("https://example.org/terms");
     expect(terms.getAttribute("target")).toBe("_blank");
 
-    const location = screen.getByText("C96, KEN");
+    const location = within(panel).getByText("C96, KEN");
     expect(location.className).toContain("text-sm");
     const openMaps = screen.getByRole("button", { name: "Open in Maps" });
     expect(
@@ -819,7 +1013,7 @@ describe("VoucherDetailPage", () => {
     });
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
 
-    const panel = screen.getByRole("tabpanel");
+    const panel = screen.getByRole("region", { name: "Info" });
     const labels = Array.from(panel.querySelectorAll("dt"), (node) => node.textContent);
     expect(labels).not.toContain("Terms");
     expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
@@ -831,9 +1025,10 @@ describe("VoucherDetailPage", () => {
     mocks.detailResult.data = detail({ email: null, phone: null });
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
 
-    expect(screen.queryByText("Email")).toBeNull();
-    expect(screen.queryByText("Phone")).toBeNull();
-    expect(screen.getByText("Website")).toBeTruthy();
+    const panel = screen.getByRole("region", { name: "Info" });
+    expect(within(panel).queryByText("Email")).toBeNull();
+    expect(within(panel).queryByText("Phone")).toBeNull();
+    expect(within(panel).getByText("Website")).toBeTruthy();
   });
 
   it("uses a deliberate fallback instead of broken image elements", () => {
@@ -846,22 +1041,21 @@ describe("VoucherDetailPage", () => {
     expect(container.textContent).toContain("MA");
   });
 
-  it("preserves the reviews panel alongside the posts tab", () => {
+  it("preserves Reviews alongside Posts in the continuous page", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="reviews" />);
 
     expect(screen.getByText("Voucher reviews")).toBeTruthy();
-    expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(
-      "voucher-tab-reviews",
-    );
+    expect(screen.getByTestId("voucher-reviews").getAttribute("data-address")).toBe(ADDRESS);
+    expect(screen.queryByRole("tab")).toBeNull();
   });
 
-  it("renders only this voucher's posts in the posts tab", () => {
+  it("renders only this voucher's posts in the Posts section", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
 
     expect(mocks.reportVoucher).toEqual({ chainId: 42220, address: ADDRESS });
     expect(mocks.reportsEnabled).toBe(true);
-    const panel = screen.getByRole("tabpanel");
-    expect(panel.getAttribute("aria-labelledby")).toBe("voucher-tab-posts");
+    const panel = screen.getByRole("heading", { name: "Posts" }).closest("section");
+    if (!panel) throw new Error("expected Posts section");
     expect(within(panel).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
     expect(
       within(panel)
@@ -915,27 +1109,13 @@ describe("VoucherDetailPage", () => {
     expect(screen.getByText("Loading posts…")).toBeTruthy();
   });
 
-  it("loads the next related-post page when the sentinel enters view", () => {
-    let intersect: ((entries: Array<{ isIntersecting: boolean }>) => void) | undefined;
-    const observe = vi.fn();
-    const disconnect = vi.fn();
-    vi.stubGlobal(
-      "IntersectionObserver",
-      class {
-        constructor(callback: (entries: Array<{ isIntersecting: boolean }>) => void) {
-          intersect = callback;
-        }
-
-        observe = observe;
-        disconnect = disconnect;
-      },
-    );
+  it("loads the next related-post page only after an explicit request", () => {
     mocks.reportsResult.hasNextPage = true;
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
 
-    expect(observe).toHaveBeenCalledOnce();
-    act(() => intersect?.([{ isIntersecting: true }]));
+    expect(mocks.reportsResult.fetchNextPage).not.toHaveBeenCalled();
+    fireEvent.click(screen.getAllByRole("button", { name: "Load more" })[0]!);
     expect(mocks.reportsResult.fetchNextPage).toHaveBeenCalledOnce();
   });
 
@@ -998,7 +1178,7 @@ describe("VoucherOfferingsPanel ownership", () => {
     mocks.auth.session = { address: OWNER, chainId: 42220 };
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
-    const offerings = screen.getByRole("tabpanel");
+    const offerings = screen.getByRole("region", { name: "Offerings" });
     expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
     expect(within(offerings).getAllByRole("button", { name: "Edit" }).length).toBeGreaterThan(0);
     expect(within(offerings).getAllByRole("button", { name: "Remove" }).length).toBeGreaterThan(0);
@@ -1076,9 +1256,12 @@ describe("VoucherOfferingsPanel ownership", () => {
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
-    const remove = within(screen.getByRole("tabpanel")).getAllByRole("button", {
-      name: "Remove",
-    })[0];
+    const remove = within(screen.getByRole("region", { name: "Offerings" })).getAllByRole(
+      "button",
+      {
+        name: "Remove",
+      },
+    )[0];
     fireEvent.click(remove as HTMLElement);
     expect(confirm).toHaveBeenCalled();
     expect(mocks.deleteOffering).not.toHaveBeenCalled();
@@ -1221,7 +1404,7 @@ describe("VoucherDetailPage voucher details editor", () => {
     mocks.updateProfile.mockResolvedValue(detail({ name: "Malii Fresh" }));
   });
 
-  it("offers the editor only to the voucher's owner, and only on the Info tab", () => {
+  it("offers the continuous Info editor only to the voucher's owner", () => {
     mocks.auth.session = { address: OTHER, chainId: 42220 };
     const stranger = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
     expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
@@ -1233,7 +1416,7 @@ describe("VoucherDetailPage voucher details editor", () => {
     owner.unmount();
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
-    expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
   });
 
   it("lets a superadmin edit a voucher they do not own", () => {

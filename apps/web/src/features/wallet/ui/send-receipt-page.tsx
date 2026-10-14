@@ -6,6 +6,7 @@ import {
   type OfferingOrderLabels,
   type OfferingOrderLine,
 } from "@clc/core/features/offerings/order";
+import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic";
 import { buildSendSharePermission, sendShareFormSchema } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -92,6 +93,9 @@ export function SendReceiptPage({
   recipientLabel: submittedRecipientLabel,
   amount,
   symbol,
+  uoaValue,
+  uoa,
+  uoaUnavailable,
   returnPool,
 }: {
   token?: string;
@@ -100,6 +104,10 @@ export function SendReceiptPage({
   recipientLabel?: string;
   amount?: string;
   symbol?: string;
+  /** Exact informational valuation snapshotted when the transfer was submitted. */
+  uoaValue?: string;
+  uoa?: string;
+  uoaUnavailable?: boolean;
   /**
    * The pool a Deposit shortcut started this send from.
    *
@@ -128,7 +136,17 @@ export function SendReceiptPage({
             !entry.label.toLowerCase().startsWith("0x"),
         )?.label ??
         (submittedRecipientLabel?.trim() || null));
-  const amountLabel = amount && symbol ? `${amount} ${symbol}` : null;
+  const localizedUoaValue = uoaValue
+    ? formatUnitOfAccountDisplayValue(uoaValue, i18n.locales?.[0] ?? i18n.locale)
+    : null;
+  const uoaLabel =
+    localizedUoaValue && uoa
+      ? `${localizedUoaValue} ${uoa}`
+      : uoaUnavailable
+        ? t`Unavailable`
+        : null;
+  const amountLabel =
+    amount && symbol ? `${amount} ${symbol}${uoaLabel ? ` (${uoaLabel})` : ""}` : null;
   const outcome = tracking.outcome;
   const exitReceipt = () => {
     if (returnPool) {

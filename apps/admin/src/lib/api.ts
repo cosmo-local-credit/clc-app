@@ -24,4 +24,5 @@ export const clcApi = createClcApi({
   // body it cached up to five minutes earlier. The write is fine; only the read
   // lies. apps/web keeps the cache, which is what that header is for.
   catalogCache: "no-store",
+  adminPoolComposition: true,
 });

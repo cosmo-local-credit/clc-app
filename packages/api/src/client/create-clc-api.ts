@@ -10,6 +10,7 @@
  */
 
 import { createAccountsClient } from "../features/accounts/client";
+import { createCatalogsClient } from "../features/catalogs/client";
 import { createAdminClient } from "../features/admin/client";
 import { createAuthClient } from "../features/auth/client";
 import { createDeploymentsClient } from "../features/deployments/client";
@@ -35,9 +36,15 @@ export type CreateClcApiOptions = CreateHttpClientOptions & {
    * when it does not.
    */
   catalogCache?: RequestCache;
+  /** Use the superadmin-only pool composition read, including retired vouchers. */
+  adminPoolComposition?: boolean;
 };
 
-export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) {
+export function createClcApi({
+  catalogCache,
+  adminPoolComposition,
+  ...options
+}: CreateClcApiOptions) {
   const http = createHttpClient(options);
 
   // The package exports the transport factory so apps can preserve route-level
@@ -45,12 +52,13 @@ export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) 
   // caller needing a new request must add it to the appropriate module.
   return {
     accounts: createAccountsClient(http),
+    catalogs: createCatalogsClient(http),
     admin: createAdminClient(http),
     auth: createAuthClient(http),
     deployments: createDeploymentsClient(http),
     market: createMarketClient(http, { cache: catalogCache }),
     offerings: createOfferingsClient(http, { cache: catalogCache }),
-    pools: createPoolsClient(http),
+    pools: createPoolsClient(http, { adminComposition: adminPoolComposition }),
     poolDeploy: createPoolDeployClient(http),
     pretium: createPretiumClient(http),
     reports: createReportsClient(http),

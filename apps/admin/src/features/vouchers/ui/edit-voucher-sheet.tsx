@@ -204,7 +204,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
             <Field
               htmlFor={field.name}
               label="Display name"
-              hint="The public catalog label. It does not change the deployed contract name."
+              hint="Contract name stays unchanged."
               error={getFieldError(field.state.meta.errors)}
             >
               <Input
@@ -242,7 +242,6 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
                 <Field
                   htmlFor={field.name}
                   label="Unit of account"
-                  hint="What this voucher is priced in, for example KES."
                   error={getFieldError(field.state.meta.errors)}
                 >
                   <UnitOfAccountCombobox
@@ -340,7 +339,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               <Field
                 htmlFor={field.name}
                 label="Terms"
-                hint="A link to the terms, or the terms themselves written as Markdown."
+                hint="URL or Markdown."
                 error={getFieldError(field.state.meta.errors)}
               >
                 <Textarea
@@ -363,7 +362,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               {(field) => (
                 <ImageUploadField
                   label="Icon"
-                  hint="Square. Stored at 400px."
+                  hint="Square."
                   purpose="voucher.icon"
                   value={field.state.value === "" ? null : field.state.value}
                   onChange={(url) => field.handleChange(url ?? "")}
@@ -375,7 +374,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               {(field) => (
                 <ImageUploadField
                   label="Banner"
-                  hint="Wide. Stored at 1280px."
+                  hint="Wide."
                   purpose="voucher.banner"
                   value={field.state.value === "" ? null : field.state.value}
                   onChange={(url) => field.handleChange(url ?? "")}

@@ -11,7 +11,6 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { Route as PostsIndexRoute } from "./posts/index";
 import { Route as SettingsIndexRoute } from "./settings/index";
-import { Route as VouchersIndexRoute } from "./vouchers/index";
 import { Route as WalletIndexRoute } from "./wallet/index";
 
 // These routes ignore their beforeLoad context, so a zero-arg signature is
@@ -21,11 +20,6 @@ type BareRedirect = () => void;
 const BARE_PATHS = [
   { path: "/posts", search: "?tab=posts", beforeLoad: PostsIndexRoute.options.beforeLoad },
   { path: "/settings", search: "?tab=settings", beforeLoad: SettingsIndexRoute.options.beforeLoad },
-  {
-    path: "/vouchers",
-    search: "?tab=market&view=list",
-    beforeLoad: VouchersIndexRoute.options.beforeLoad,
-  },
   { path: "/wallet", search: "?tab=wallet", beforeLoad: WalletIndexRoute.options.beforeLoad },
 ] as const;
 

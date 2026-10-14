@@ -579,7 +579,7 @@ export function PoolPublishPage() {
                   <Field
                     label="Terms"
                     htmlFor={field.name}
-                    hint="A link to the terms, or the terms themselves written as Markdown."
+                    hint="URL or Markdown."
                     error={fieldError(field)}
                   >
                     <Textarea

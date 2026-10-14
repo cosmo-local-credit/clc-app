@@ -1,6 +1,7 @@
 import type { RouterHistory } from "@tanstack/react-router";
 import { toVocabularyTitleCase, validateCustomTag } from "@clc/core/features/vocabulary/logic";
 import { useLingui } from "@lingui/react/macro";
+import { categoryLabel } from "#/lib/category-label";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -41,7 +42,7 @@ export function TagCombobox({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -62,18 +63,26 @@ export function TagCombobox({
   const addCustomValue = useCallback(() => {
     const custom = toVocabularyTitleCase(inputValue);
     if (validateCustomTag(custom)) return;
-    const existing = items.find((item) => item.toLowerCase() === custom.toLowerCase());
+    const existing = items.find(
+      (item) =>
+        item.toLowerCase() === custom.toLowerCase() ||
+        categoryLabel(item, i18n).toLowerCase() === custom.toLowerCase(),
+    );
     const next = existing ?? custom;
     if (!value.some((item) => item.toLowerCase() === next.toLowerCase())) {
       onValueChange([...value, next]);
     }
     changeOpen(false);
-  }, [changeOpen, inputValue, items, onValueChange, value]);
+  }, [changeOpen, inputValue, items, onValueChange, value, i18n]);
 
   const customValue = toVocabularyTitleCase(inputValue);
   const canAddCustom =
     !validateCustomTag(customValue) &&
-    !items.some((item) => item.toLowerCase() === customValue.toLowerCase());
+    !items.some(
+      (item) =>
+        item.toLowerCase() === customValue.toLowerCase() ||
+        categoryLabel(item, i18n).toLowerCase() === customValue.toLowerCase(),
+    );
 
   useEffect(() => {
     if (!open) return;
@@ -108,6 +117,11 @@ export function TagCombobox({
         open={open}
         onOpenChange={changeOpen}
         items={items}
+        itemToStringLabel={(tag) => categoryLabel(tag, i18n)}
+        filter={(tag, query) =>
+          categoryLabel(tag, i18n).toLowerCase().includes(query.toLowerCase()) ||
+          tag.toLowerCase().includes(query.toLowerCase())
+        }
         inputValue={inputValue}
         onInputValueChange={setInputValue}
         value={value}
@@ -124,8 +138,8 @@ export function TagCombobox({
       >
         <ComboboxChips className="mt-2" aria-label={selectedLabel}>
           {value.map((tag) => (
-            <ComboboxChip key={tag} removeLabel={removeLabel(tag)}>
-              {tag}
+            <ComboboxChip key={tag} removeLabel={removeLabel(categoryLabel(tag, i18n))}>
+              {categoryLabel(tag, i18n)}
             </ComboboxChip>
           ))}
           <div className="w-full">
@@ -149,7 +163,7 @@ export function TagCombobox({
             <ComboboxList className="mt-2" aria-label={listLabel}>
               {(tag: string) => (
                 <ComboboxItem key={tag} value={tag}>
-                  <span className="flex-1 text-sm">{tag}</span>
+                  <span className="flex-1 text-sm">{categoryLabel(tag, i18n)}</span>
                   <ComboboxItemIndicator />
                 </ComboboxItem>
               )}

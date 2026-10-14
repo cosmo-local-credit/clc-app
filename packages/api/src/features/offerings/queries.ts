@@ -1,5 +1,10 @@
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
-import type { OfferingPage, OfferingReadOverrides, OfferingsClient } from "./client";
+import type {
+  OfferingDiscoveryParams,
+  OfferingPage,
+  OfferingReadOverrides,
+  OfferingsClient,
+} from "./client";
 
 /**
  * Canonical query identity and base options for offerings.
@@ -9,6 +14,18 @@ import type { OfferingPage, OfferingReadOverrides, OfferingsClient } from "./cli
  */
 export const offeringKeys = {
   all: ["clc", "offerings"] as const,
+  discovery: (params: Omit<OfferingDiscoveryParams, "cursor"> & { scope?: string }) =>
+    [
+      "clc",
+      "offerings",
+      "discovery",
+      {
+        ...params,
+        q: params.q?.trim() ?? "",
+        tags: [...(params.tags ?? [])],
+        pools: params.pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+      },
+    ] as const,
 
   /**
    * The prefix every read of one voucher's offerings shares.
@@ -55,6 +72,20 @@ export const offeringKeys = {
   byPoolInfinite: (address: string, perPage: number) =>
     ["clc", "offerings", "pool", "infinite", address.toLowerCase(), perPage] as const,
 } as const;
+
+export function offeringsDiscoveryInfiniteQueryOptions(
+  offerings: OfferingsClient,
+  params: Omit<OfferingDiscoveryParams, "cursor"> & { scope?: string },
+) {
+  const { scope: _scope, ...request } = params;
+  return infiniteQueryOptions({
+    queryKey: offeringKeys.discovery(params),
+    queryFn: ({ pageParam, signal }) =>
+      offerings.getOfferings({ ...request, cursor: pageParam }, signal),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+  });
+}
 
 /**
  * Termination rule for either offering cursor.

@@ -1,21 +1,21 @@
 import { haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { RiArrowRightSLine, RiGroupLine, RiMap2Line } from "react-icons/ri";
+import { RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
-import { Button } from "#/components/ui/button";
+import { CreditableBrowseControl } from "#/components/creditable-browse-control";
+import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
-import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import type { MarketVoucher } from "@clc/api/features/market/client";
-import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
-import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
+import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./market-filter-ui";
 
 const MARKET_LIST_BATCH_SIZE = 20;
@@ -23,14 +23,17 @@ const MARKET_LIST_BATCH_SIZE = 20;
 export function MarketListPage({
   onboardingBanner,
   locationOwner = GUEST_STORAGE_OWNER,
+  creditableSearch,
 }: {
   onboardingBanner?: ReactNode;
   locationOwner?: string;
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
 }) {
   const { t, i18n } = useLingui();
-  const { realFix } = useMarketCamera(locationOwner);
-  const sheet = useVoucherSheetSelection();
-  const filter = useMarketFilter(useStorageOwner());
+  const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
+  const navigate = useNavigate();
+  const credit = useCreditableBrowse(creditableSearch);
+  const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
   // instead of flashing an empty facet list on every open.
@@ -38,8 +41,9 @@ export function MarketListPage({
   const catalog = useMarketCatalogVouchers(
     filter,
     null,
-    !filter.isRestoringPreference,
+    !filter.isRestoringPreference && !credit.blocksResults,
     filtersEverOpened,
+    credit.enabled ? credit.poolRefs : undefined,
   );
   const { vouchers, isCatalogComplete, error, retry } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
@@ -53,25 +57,29 @@ export function MarketListPage({
   }
 
   const sortedVouchers = useMemo(() => {
-    if (!realFix) return vouchers;
+    if (!distanceOrigin) return vouchers;
     return vouchers
       .map((voucher) => ({
         voucher,
-        distance: haversineMeters(realFix, voucher),
+        distance: haversineMeters(distanceOrigin, voucher),
       }))
       .sort((left, right) => left.distance - right.distance)
       .map(({ voucher }) => voucher);
-  }, [realFix, vouchers]);
+  }, [distanceOrigin, vouchers]);
 
   const visibleVouchers = sortedVouchers.slice(0, visibleCount);
   const hasMoreVisible = visibleCount < sortedVouchers.length;
-  const canRenderCatalog = filter.isFiltered
-    ? catalog.status !== "loading"
-    : realFix === null || isCatalogComplete;
+  const canRenderCatalog =
+    !credit.blocksResults &&
+    (filter.isFiltered
+      ? catalog.status !== "loading"
+      : distanceOrigin === null || isCatalogComplete);
 
-  const showLoading = filter.isFiltered
-    ? catalog.status === "loading"
-    : !isCatalogComplete && !error && (!canRenderCatalog || visibleVouchers.length === 0);
+  const showLoading =
+    !credit.blocksResults &&
+    (filter.isFiltered
+      ? catalog.status === "loading"
+      : !isCatalogComplete && !error && (!canRenderCatalog || visibleVouchers.length === 0));
 
   const isRefining = catalog.status === "refining" || filter.isDebouncing;
 
@@ -107,22 +115,34 @@ export function MarketListPage({
 
   return (
     <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
-      <div className="pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
-            <Trans>Marketplace</Trans>
-          </h1>
-          <div className="ms-auto flex shrink-0 items-center gap-2">
-            <Button
-              asChild
-              variant="info"
-              className="relative h-8 px-2.5 before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-['']"
-            >
-              <Link to="/pools" search={{ creditable: false }}>
-                <RiGroupLine className="size-4" aria-hidden="true" />
-                <Trans>Pools</Trans>
-              </Link>
-            </Button>
+      <div>
+        <h1 className="sr-only">
+          <Trans>Vouchers</Trans>
+        </h1>
+        <MarketplaceSearchShell
+          current="vouchers"
+          className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
+          search={<CatalogSearchField filter={filter} label={t`Search by name or symbol`} />}
+          credit={
+            <CreditableBrowseControl
+              part="control"
+              state={credit}
+              onChange={(checked) =>
+                void navigate({
+                  to: "/market",
+                  search: (previous) => ({ ...previous, creditable: checked }),
+                })
+              }
+              onClear={() =>
+                void navigate({
+                  to: "/market",
+                  replace: true,
+                  search: (previous) => ({ ...previous, creditable: undefined }),
+                })
+              }
+            />
+          }
+          filters={
             <MarketFilterSheet
               filter={filter}
               facets={catalog.tagFacets}
@@ -132,32 +152,36 @@ export function MarketListPage({
                 setFiltersOpen(next);
               }}
             />
-            <Button
-              asChild
-              variant="outline"
-              size="icon-lg"
-              className="relative h-9 w-9 bg-card before:absolute before:-inset-1 before:content-['']"
-            >
-              <Link
-                to="/"
-                search={(previous) => ({ ...previous, tab: "market", view: "map" })}
-                aria-label={t`Map`}
-              >
-                <RiMap2Line className="size-4" aria-hidden="true" />
-              </Link>
-            </Button>
-          </div>
-        </div>
+          }
+        />
 
         {onboardingBanner ? <div className="mt-3">{onboardingBanner}</div> : null}
 
-        <div className="mt-4">
-          <CatalogSearchField filter={filter} label={t`Search by name or symbol`} />
+        <div className="mt-3">
+          <CreditableBrowseControl
+            part="feedback"
+            state={credit}
+            onChange={(checked) =>
+              void navigate({
+                to: ".",
+                search: (previous) => ({ ...previous, creditable: checked }),
+              })
+            }
+            onClear={() =>
+              void navigate({
+                to: ".",
+                replace: true,
+                search: (previous) => ({ ...previous, creditable: undefined }),
+              })
+            }
+          />
         </div>
 
         <MarketFilterFeedback filter={filter} error={error} onRetry={retry} />
 
-        {!error && (filter.isFiltered ? catalog.status !== "loading" : isCatalogComplete) ? (
+        {!credit.blocksResults &&
+        !error &&
+        (filter.isFiltered ? catalog.status !== "loading" : isCatalogComplete) ? (
           <p
             className="mt-4 font-medium text-sm tabular-nums"
             aria-live={filter.isFiltered ? "polite" : undefined}
@@ -172,7 +196,11 @@ export function MarketListPage({
           </div>
         ) : null}
 
-        {showEmpty ? (
+        {credit.enabled && credit.poolRefs?.length === 0 ? (
+          <div className="mt-4 border border-border bg-card p-4 text-muted-foreground text-sm">
+            <Trans>No vouchers are available through your Credit pools.</Trans>
+          </div>
+        ) : showEmpty ? (
           filter.isFiltered ? (
             <MarketFilteredEmpty onClear={filter.clear} />
           ) : (
@@ -189,14 +217,13 @@ export function MarketListPage({
               isRefining ? "opacity-60 transition-opacity" : "",
             ].join(" ")}
             aria-busy={isRefining}
-            aria-label={t`Marketplace vouchers`}
+            aria-label={t`Vouchers list`}
           >
             {visibleVouchers.map((voucher, index) => (
               <MarketVoucherRow
                 key={voucher.id}
                 voucher={voucher}
-                realFix={realFix}
-                onOpen={sheet.open}
+                realFix={distanceOrigin}
                 isLast={!hasMoreVisible && index === visibleVouchers.length - 1}
               />
             ))}
@@ -209,15 +236,6 @@ export function MarketListPage({
           </section>
         ) : null}
       </div>
-
-      <VoucherSheet
-        placeholder={
-          vouchers.find(
-            (voucher) => voucher.address.toLowerCase() === sheet.voucher?.toLowerCase(),
-          ) ?? null
-        }
-        realFix={realFix}
-      />
     </main>
   );
 }
@@ -225,21 +243,20 @@ export function MarketListPage({
 function MarketVoucherRow({
   voucher,
   realFix,
-  onOpen,
   isLast,
 }: {
   voucher: MarketVoucher;
   realFix: { lat: number; lng: number } | null;
-  onOpen: (address: `0x${string}`) => void;
   isLast: boolean;
 }) {
   const kindLabel = useMarketKindLabel(voucher.kind);
   const distanceLabel = useMarketDistanceLabel(realFix, voucher);
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(voucher.address)}
+    <Link
+      to="/vouchers/$voucherAddress"
+      params={{ voucherAddress: voucher.address }}
+      search={{ from: "market" }}
       className={[
         "flex min-h-16 w-full items-center gap-3 p-3 text-start active:bg-muted",
         isLast ? "" : "border-b border-border",
@@ -273,6 +290,6 @@ function MarketVoucherRow({
         className="rtl:-scale-x-100 size-5 shrink-0 text-muted-foreground"
         aria-hidden="true"
       />
-    </button>
+    </Link>
   );
 }

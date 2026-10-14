@@ -66,6 +66,8 @@ export type AdminUser = {
   status: string;
   maxPools: number;
   maxTokens: number;
+  maxCatalogs: number;
+  maxOffers: number;
   createdAt: string;
   updatedAt: string;
   /** The account's chosen ISO 4217 currency. Null for profiles created before it existed. */
@@ -107,8 +109,10 @@ type BackendAdminUser = Omit<
   }>;
 
 export type AdminUserLimits = {
-  maxPools: number;
-  maxTokens: number;
+  maxPools?: number;
+  maxTokens?: number;
+  maxCatalogs?: number;
+  maxOffers?: number;
 };
 
 /**

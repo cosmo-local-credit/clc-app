@@ -22,6 +22,11 @@ export type OfferingDisplayPrice = {
   unit: string;
 };
 
+export type VoucherUnitValue = {
+  value: string;
+  unit: string;
+};
+
 /**
  * A plain non-negative decimal, matching the column's `>= 0` check. No sign, no
  * exponent, no separators — `NUMERIC::TEXT` emits none of those, so anything
@@ -37,6 +42,62 @@ export function formatOfferingDisplayValue(value: string, locale?: string): stri
   return formatTokenAmountFixed(`${whole}${fraction}`, fraction.length, fraction.length, locale);
 }
 
+/**
+ * Formats an informational Unit-of-Account value to currency-like precision.
+ *
+ * The exact canonical value remains the source of truth for snapshots and
+ * calculations. Only its presentation is rounded, using integer arithmetic so
+ * large values never cross through `Number`. A positive value below one
+ * hundredth remains visible instead of being presented as zero.
+ */
+export function formatUnitOfAccountDisplayValue(value: string, locale?: string): string | null {
+  const trimmed = value.trim();
+  if (!DECIMAL.test(trimmed)) return null;
+
+  const [whole = "", fraction = ""] = trimmed.split(".");
+  const unscaled = BigInt(`${whole}${fraction}`);
+  const firstTwoFractionDigits = fraction.padEnd(2, "0").slice(0, 2);
+  if (unscaled > 0n && BigInt(whole) === 0n && firstTwoFractionDigits === "00") {
+    return `<${formatTokenAmountFixed("1", 2, 2, locale)}`;
+  }
+
+  let hundredths = BigInt(whole) * 100n + BigInt(firstTwoFractionDigits || "0");
+  if (fraction.length > 2 && (fraction[2] ?? "0") >= "5") {
+    hundredths += 1n;
+  }
+
+  return formatTokenAmountFixed(hundredths.toString(), 2, 2, locale);
+}
+
+/**
+ * The same exact currency-like rounding as `formatUnitOfAccountDisplayValue`,
+ * but without padding a compact balance summary with insignificant zeroes.
+ * Historical receipts deliberately keep their fixed two-decimal presentation;
+ * this variant belongs to short, live identity summaries only.
+ */
+export function formatCompactUnitOfAccountDisplayValue(
+  value: string,
+  locale?: string,
+): string | null {
+  const trimmed = value.trim();
+  if (!DECIMAL.test(trimmed)) return null;
+
+  const [whole = "", fraction = ""] = trimmed.split(".");
+  const unscaled = BigInt(`${whole}${fraction}`);
+  const firstTwoFractionDigits = fraction.padEnd(2, "0").slice(0, 2);
+  if (unscaled > 0n && BigInt(whole) === 0n && firstTwoFractionDigits === "00") {
+    return `<${formatTokenAmountFixed("1", 2, 2, locale)}`;
+  }
+
+  let hundredths = BigInt(whole) * 100n + BigInt(firstTwoFractionDigits || "0");
+  if (fraction.length > 2 && (fraction[2] ?? "0") >= "5") {
+    hundredths += 1n;
+  }
+
+  const fractionDigits = hundredths % 100n === 0n ? 0 : hundredths % 10n === 0n ? 1 : 2;
+  return formatTokenAmountFixed(hundredths.toString(), 2, fractionDigits, locale);
+}
+
 export function formatVoucherRate(value: string | null, unit: string | null): VoucherRate | null {
   // The unit is free text (KSH, Ksh, usd, Hour all occur), so it is only
   // trimmed. Normalising it would misreport what the issuer wrote.
@@ -45,6 +106,31 @@ export function formatVoucherRate(value: string | null, unit: string | null): Vo
   if (!trimmedUnit || !trimmedValue || !DECIMAL.test(trimmedValue)) return null;
 
   return { value: trimScale(trimmedValue), unit: trimmedUnit };
+}
+
+/**
+ * Restates a voucher amount in the issuer's saved unit of account.
+ *
+ * The result stays canonical decimal text so callers can persist an exact
+ * informational snapshot and localize it only at the display boundary. A zero
+ * amount is legitimate; a zero rate is not, because the voucher profile treats
+ * it as unset rather than claiming the voucher has no value.
+ */
+export function formatVoucherUnitValue(
+  amount: string,
+  voucherValue: string | null,
+  voucherUoa: string | null,
+): VoucherUnitValue | null {
+  const trimmedAmount = amount.trim();
+  if (!DECIMAL.test(trimmedAmount)) return null;
+
+  const rate = formatVoucherRate(voucherValue, voucherUoa);
+  if (!rate || isZero(rate.value)) return null;
+
+  return {
+    value: multiplyDecimals(trimScale(trimmedAmount), rate.value),
+    unit: rate.unit,
+  };
 }
 
 /**
@@ -74,13 +160,8 @@ export function formatOfferingDisplayPrice(
   const unitPrice = formatOfferingPrice(price);
   if (!unitPrice) return null;
 
-  const rate = formatVoucherRate(voucherValue, voucherUoa);
-  if (rate && !isZero(rate.value)) {
-    return {
-      value: multiplyDecimals(unitPrice.value, rate.value),
-      unit: rate.unit,
-    };
-  }
+  const converted = formatVoucherUnitValue(unitPrice.value, voucherValue, voucherUoa);
+  if (converted) return converted;
 
   const symbol = voucherSymbol.trim();
   return symbol ? { value: unitPrice.value, unit: symbol } : null;

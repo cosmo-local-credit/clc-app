@@ -1,3 +1,4 @@
+import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import {
   patchVoucherOfferingCaches,
   removeVoucherOfferingFromCaches,
@@ -38,6 +39,7 @@ export function useCreateVoucherOffering(voucherAddress: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (input: OfferingWrite) =>
       offeringsClient.createVoucherOffering(voucherAddress, input),
     onSuccess: (offering: Offering) => {
@@ -51,6 +53,7 @@ export function useUpdateVoucherOffering(voucherAddress: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: ({ id, input }: { id: string; input: OfferingWrite }) =>
       offeringsClient.updateVoucherOffering(voucherAddress, id, input),
     onSuccess: (offering: Offering) => {
@@ -64,6 +67,7 @@ export function useDeleteVoucherOffering(voucherAddress: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (id: string) => offeringsClient.deleteVoucherOffering(voucherAddress, id),
     onSuccess: (id: string) => {
       removeVoucherOfferingFromCaches(queryClient, voucherAddress, id);

@@ -1,7 +1,8 @@
 import type { RouterHistory } from "@tanstack/react-router";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { describe, expect, it } from "vite-plus/test";
+import { activateLocale } from "@clc/i18n/index";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { TagCombobox } from "./tag-combobox";
 
@@ -22,6 +23,8 @@ function TestTagCombobox({ history }: { history?: Pick<RouterHistory, "block"> }
     />
   );
 }
+
+afterEach(async () => activateLocale("en"));
 
 describe("TagCombobox", () => {
   it("releases input focus after a pointer selection so touch keyboards stay closed", () => {
@@ -140,4 +143,18 @@ describe("TagCombobox", () => {
       expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
     }
   });
+});
+
+it("translates selected categories and searches Serbian labels without duplicating vocabulary", async () => {
+  await activateLocale("sr");
+  render(<TestTagCombobox />);
+  const search = screen.getByRole("combobox", { name: "Search tags" });
+  fireEvent.focus(search);
+  fireEvent.change(search, { target: { value: "Пољопривреда" } });
+  const option = screen.getByRole("option", { name: "Пољопривреда" });
+  expect(screen.queryByRole("button", { name: /^Додај/ })).toBeNull();
+  fireEvent.click(option);
+  expect(screen.getByRole("button", { name: "Remove Пољопривреда" })).toBeTruthy();
+  fireEvent.change(search, { target: { value: "Agriculture" } });
+  expect(screen.getByRole("option", { name: "Пољопривреда" })).toBeTruthy();
 });

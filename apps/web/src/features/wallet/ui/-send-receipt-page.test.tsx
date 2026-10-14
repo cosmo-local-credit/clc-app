@@ -213,7 +213,14 @@ describe("SendReceiptPage", () => {
     });
 
     render(
-      <SendReceiptPage trackingId="tracking-1" recipient={RECIPIENT} amount="2.13" symbol="USDC" />,
+      <SendReceiptPage
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        amount="2.13"
+        symbol="USDC"
+        uoaValue="5.325"
+        uoa="KES"
+      />,
     );
 
     expect(screen.getByText("Alice")).toBeTruthy();
@@ -221,7 +228,7 @@ describe("SendReceiptPage", () => {
 
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
     const payload = share.mock.calls[0]?.[0] as { text: string };
-    expect(payload.text).toContain("2.13 USDC");
+    expect(payload.text).toContain("2.13 USDC (5.33 KES)");
     expect(payload.text).toContain("Alice");
     expect(payload.text).toContain(`Address: ${RECIPIENT}`);
     expect(payload.text).toContain(TX_HASH);
@@ -273,6 +280,53 @@ describe("SendReceiptPage", () => {
     useOtxTracking.mockReturnValue({ outcome: { kind: "success", otx: { txHash: TX_HASH } } });
     view.rerender(<SendReceiptPage {...props} />);
     expect(screen.getByTestId("review-prompt").textContent).toBe(props.token);
+  });
+
+  it("keeps the submitted valuation snapshot across every receipt outcome", () => {
+    const props = {
+      trackingId: "tracking-1",
+      recipient: RECIPIENT,
+      amount: "2.13",
+      symbol: "USDC",
+      uoaValue: "5.325",
+      uoa: "KES",
+    };
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+    const view = render(<SendReceiptPage {...props} />);
+    expect(screen.getByText("2.13 USDC (5.33 KES)")).toBeTruthy();
+
+    useOtxTracking.mockReturnValue({ outcome: { kind: "error", error: "Reverted" } });
+    view.rerender(<SendReceiptPage {...props} />);
+    expect(screen.getByText("2.13 USDC (5.33 KES)")).toBeTruthy();
+
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+    view.rerender(<SendReceiptPage {...props} />);
+    expect(screen.getByText("−2.13 USDC (5.33 KES)")).toBeTruthy();
+  });
+
+  it("shows a snapshotted unavailable valuation without recalculating it", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "999",
+      voucherUoa: "USD",
+      symbol: "USDC",
+    };
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+
+    render(
+      <SendReceiptPage
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        amount="2.13"
+        symbol="USDC"
+        uoaUnavailable
+      />,
+    );
+
+    expect(screen.getByText("2.13 USDC (Unavailable)")).toBeTruthy();
+    expect(document.body.textContent).not.toContain("USD)");
   });
 
   it("shows a pending on-chain confirmation state while polling the relayer endpoint", async () => {

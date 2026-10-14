@@ -177,10 +177,7 @@ export function VouchersPage({ search }: { search: VoucherListSearch }) {
           <AlertTitle>
             {dropped} voucher{dropped === 1 ? "" : "s"} hidden
           </AlertTitle>
-          <AlertDescription>
-            Rows without a usable address or chain are dropped at the API boundary. Unlike the
-            public catalog, this endpoint keeps rows with no coordinates.
-          </AlertDescription>
+          <AlertDescription>Missing wallet address or chain.</AlertDescription>
         </Alert>
       ) : null}
 

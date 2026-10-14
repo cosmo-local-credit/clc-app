@@ -88,10 +88,7 @@ export function DashboardPage({
       {failures.length > 0 ? (
         <Alert className="border-destructive/30 bg-destructive/10">
           <AlertTitle>Some figures could not be loaded</AlertTitle>
-          <AlertDescription>
-            Failed to load: {failures.join(", ")}. Affected figures show as unavailable rather than
-            zero.
-          </AlertDescription>
+          <AlertDescription>Unavailable: {failures.join(", ")}.</AlertDescription>
         </Alert>
       ) : null}
 

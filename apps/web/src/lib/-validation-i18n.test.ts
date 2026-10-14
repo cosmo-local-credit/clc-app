@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { translateValidationError } from "./validation-i18n";
 
 const knownErrors = [
-  "Username must be 3–24 letters, digits or hyphens",
+  "Username must contain 1–80 characters",
   "Name is required",
   "Name must be 80 characters or fewer",
   "Invalid email address",
@@ -130,6 +130,21 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Filipino", async () => {
+    await activateLocale("fil");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Piliin ang lokasyon");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "Hindi wastong numero ng telepono",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Kinakailangan ang pangalan ng voucher",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Kinakailangan ang pangalan ng pool",
+    );
+  });
+
   it("translates known validation errors into Arabic", async () => {
     await activateLocale("ar");
 
@@ -191,6 +206,55 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Dutch", async () => {
+    await activateLocale("nl");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Kies een locatie");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Ongeldig telefoonnummer");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Een naam voor de waardebon is verplicht",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe("Fondsnaam is verplicht");
+  });
+
+  it("translates known validation errors into Flemish", async () => {
+    await activateLocale("nl-BE");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Kies een locatie");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Ongeldig telefoonnummer");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Een naam voor de waardebon is verplicht",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe("Fondsnaam is verplicht");
+  });
+
+  it("translates known validation errors into Hindi", async () => {
+    await activateLocale("hi");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("एक स्थान चुनें");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("अमान्य फ़ोन नंबर");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("वाउचर नाम आवश्यक है");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("पूल का नाम आवश्यक है");
+  });
+
+  it("translates known validation errors into Simplified Chinese", async () => {
+    await activateLocale("zh");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("请选择位置");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("电话号码无效");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("请输入代金券名称");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("请输入资金池名称");
+  });
+
+  it("translates known validation errors into Traditional Chinese", async () => {
+    await activateLocale("zh-Hant");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("請選擇位置");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("電話號碼無效");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("請輸入代金券名稱");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("請輸入資金池名稱");
+  });
+
   it("translates known validation errors into Ukrainian", async () => {
     await activateLocale("uk");
 
@@ -203,7 +267,24 @@ describe("translateValidationError", () => {
   });
 
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["ar", "de", "dz", "es", "fr", "it", "pt", "sr", "sw", "uk"] as const) {
+    for (const locale of [
+      "ar",
+      "de",
+      "dz",
+      "es",
+      "fil",
+      "fr",
+      "hi",
+      "it",
+      "nl",
+      "nl-BE",
+      "pt",
+      "sr",
+      "sw",
+      "uk",
+      "zh",
+      "zh-Hant",
+    ] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {

@@ -12,6 +12,7 @@ import {
   HiOutlineTag,
   HiOutlineUsers,
 } from "react-icons/hi";
+import { MdOutlineNfc } from "react-icons/md";
 import {
   CommandDialog,
   CommandEmpty,
@@ -31,6 +32,7 @@ const pages = [
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
   { to: "/paper-wallets", label: "Paper wallets", icon: HiOutlineQrcode },
+  { to: "/nfc-cards", label: "NFC cards", icon: MdOutlineNfc },
   { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },
   { to: "/vocabulary", label: "Vocabulary", icon: HiOutlineTag },
   {

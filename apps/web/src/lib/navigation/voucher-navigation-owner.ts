@@ -1,18 +1,22 @@
-export type VoucherOrigin = "market" | "wallet" | "vouchers";
+import type { HomeTab } from "#/lib/navigation/home-tabs";
+
+export type VoucherOrigin = "market" | "posts" | "wallet" | "vouchers";
 
 export type VoucherNavigationOwner = {
-  activeTab: "market" | "wallet";
-  backDestination: "market" | "pool" | "vouchers" | "wallet";
+  activeTab: HomeTab;
+  backDestination: "market" | "pool" | "posts" | "vouchers" | "wallet";
   to: string;
-  search?: { tab: "wallet" };
+  search?: { tab: "posts" | "wallet" };
 };
 
 export function resolveVoucherNavigationOwner({
   from,
   poolAddress,
+  reportId,
 }: {
   from?: VoucherOrigin;
   poolAddress?: string;
+  reportId?: string;
 }): VoucherNavigationOwner {
   if (poolAddress) {
     return {
@@ -29,6 +33,21 @@ export function resolveVoucherNavigationOwner({
       to: "/",
       search: { tab: "wallet" },
     };
+  }
+
+  if (from === "posts") {
+    return reportId
+      ? {
+          activeTab: "posts",
+          backDestination: "posts",
+          to: `/posts/${reportId}`,
+        }
+      : {
+          activeTab: "posts",
+          backDestination: "posts",
+          to: "/",
+          search: { tab: "posts" },
+        };
   }
 
   if (from === "vouchers") {

@@ -1,5 +1,4 @@
 import { isAddress } from "viem";
-import { z } from "zod";
 
 /**
  * The search keys of any screen that opens vouchers in the card sheet.
@@ -11,11 +10,6 @@ import { z } from "zod";
  */
 export type VoucherSheetSearch = {
   voucher?: string;
-};
-
-/** The same keys for a route that validates its search with zod. */
-export const voucherSheetSearchShape = {
-  voucher: z.string().optional().catch(undefined),
 };
 
 /**

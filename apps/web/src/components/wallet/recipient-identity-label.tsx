@@ -65,7 +65,7 @@ export function RecipientIdentityText({
 
   return (
     <span className={className}>
-      <span dir="auto">{identity.name}</span> (<bdi dir="ltr">{identity.alias}</bdi>)
+      <span dir="auto">{identity.name}</span> (<bdi dir="auto">{identity.alias}</bdi>)
     </span>
   );
 }

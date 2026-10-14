@@ -399,6 +399,21 @@ describe("LocationPicker", () => {
     });
   });
 
+  it("shows an accessible required marker only when requested", () => {
+    const { rerender } = render(<LocationPicker onChange={vi.fn()} value={undefined} required />);
+
+    const search = screen.getByRole("searchbox", { name: "Location" });
+    expect(search.getAttribute("aria-required")).toBe("true");
+    expect(screen.getByText("Required").className).toContain("text-destructive");
+
+    rerender(<LocationPicker onChange={vi.fn()} value={undefined} />);
+
+    expect(screen.getByRole("searchbox", { name: "Location" }).hasAttribute("aria-required")).toBe(
+      false,
+    );
+    expect(screen.queryByText("Required")).toBeNull();
+  });
+
   it("reverse-geocodes map taps and blocks value when no country is identified", async () => {
     mockReverseLocation.mockResolvedValue(null);
     const onChange = vi.fn();

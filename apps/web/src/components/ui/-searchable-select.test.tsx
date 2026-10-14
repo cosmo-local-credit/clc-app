@@ -55,6 +55,24 @@ function CreatableHarness({ initial }: { initial: string }) {
 }
 
 describe("SearchableSelect", () => {
+  it("forwards an invalid state to its focusable input", () => {
+    render(
+      <SearchableSelect
+        id="invalid-currency"
+        options={OPTIONS}
+        value=""
+        onValueChange={() => undefined}
+        placeholder="Search currencies"
+        emptyMessage="No currencies found."
+        ariaInvalid
+      />,
+    );
+
+    const input = screen.getByRole("combobox");
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(input.className).toContain("aria-invalid:focus-visible:border-destructive");
+  });
+
   it("shows the chosen option's label after a press when nothing was selected before", () => {
     render(<Harness initial="" />);
     const input = screen.getByRole("combobox") as HTMLInputElement;

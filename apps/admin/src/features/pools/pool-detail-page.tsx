@@ -88,7 +88,7 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
   // False while the voucher page is in flight or after it failed, which turns
   // every count derived from it into "unavailable" instead of a confident zero.
   const vouchersAvailable = isFigureAvailable(vouchersState);
-  const composition = poolComposition(pool, vouchers);
+  const composition = poolComposition(pool, vouchers, vouchersQuery.data?.total);
   const activity = poolActivitySeries(
     activityQuery.data?.transactions ?? [],
     {
