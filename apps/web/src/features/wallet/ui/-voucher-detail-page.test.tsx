@@ -25,7 +25,6 @@ const quotaMock = vi.hoisted(() => ({
 }));
 vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
 
-
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
   auth: {

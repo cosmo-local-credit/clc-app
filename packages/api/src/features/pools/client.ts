@@ -202,6 +202,8 @@ export type UserPoolPage = {
 };
 
 export type PoolVoucherPage = {
+  /** Total allowed members, including retired vouchers, on the admin route. */
+  total?: number;
   vouchers: PoolVoucher[];
   first?: number;
   last?: number;
@@ -295,6 +297,7 @@ type BackendPoolPage = {
 };
 
 type BackendPoolVoucherPage = {
+  total?: number;
   vouchers?: BackendPoolVoucher[] | null;
   first?: number;
   last?: number;
@@ -308,7 +311,7 @@ function poolReadRequest(signal?: AbortSignal): RequestInit {
 
 export type PoolsClient = ReturnType<typeof createPoolsClient>;
 
-export function createPoolsClient(http: HttpClient) {
+export function createPoolsClient(http: HttpClient, options: { adminComposition?: boolean } = {}) {
   return {
     async getPools(
       params: CursorParams & { nearby?: boolean },
@@ -402,7 +405,7 @@ export function createPoolsClient(http: HttpClient) {
       signal?: AbortSignal,
     ): Promise<PoolVoucherPage> {
       const result = await http.request<BackendPoolVoucherPage>(
-        `/api/v2/pools/${encodeURIComponent(poolAddress)}/vouchers${formatCursorQuery(params)}`,
+        `/api/v2/${options.adminComposition ? "admin/" : ""}pools/${encodeURIComponent(poolAddress)}/vouchers${formatCursorQuery(params)}`,
         poolReadRequest(signal),
       );
       return {

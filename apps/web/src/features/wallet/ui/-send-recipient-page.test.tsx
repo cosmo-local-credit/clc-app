@@ -74,7 +74,7 @@ afterEach(() => {
 });
 
 describe("SendRecipientPage", () => {
-  it("loads recent activity immediately without searching for short input", async () => {
+  it("loads recent activity and searches short names after the debounce", async () => {
     const fetcher = vi.fn((url: string) => {
       if (url.includes("/transfers")) {
         return Promise.resolve(
@@ -102,13 +102,16 @@ describe("SendRecipientPage", () => {
       await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
       expect(screen.queryByText("Couldn't load activity.")).toBeNull();
       expect(screen.queryByText("Loading activity…")).toBeNull();
-      expect(fetcher.mock.calls.some(([url]) => String(url).includes("/recipients?"))).toBe(false);
+      expect(await screen.findByText("Couldn't resolve that recipient.")).toBeTruthy();
+      expect(
+        fetcher.mock.calls.some(([url]) => new URL(String(url)).searchParams.get("q") === value),
+      ).toBe(true);
     }
 
     fireEvent.change(input, { target: { value: "abc" } });
     expect(await screen.findByText("Couldn't resolve that recipient.")).toBeTruthy();
     expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/recipients?"))).toHaveLength(
-      1,
+      3,
     );
 
     fireEvent.change(input, { target: { value: "" } });
@@ -261,7 +264,8 @@ describe("SendRecipientPage", () => {
       expect(recipientCalls).toHaveLength(1);
       const url = new URL(String(recipientCalls[0]?.[0]));
       expect(url.pathname).toBe("/api/v2/recipients");
-      expect(url.searchParams.get("q")).toBe(phone.replace(/[+\s()-]/g, ""));
+      // Core normalizes phone punctuation; the client preserves the entered query.
+      expect(url.searchParams.get("q")).toBe(phone);
 
       fireEvent.click(match);
       fireEvent.click(screen.getByRole("button", { name: /continue/i }));

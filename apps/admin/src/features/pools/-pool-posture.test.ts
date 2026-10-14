@@ -292,3 +292,11 @@ describe("poolActivitySeries", () => {
     expect(activity.points.every((point) => point.swaps === 0)).toBe(true);
   });
 });
+
+describe("admin composition totals", () => {
+  it("uses the full admin count even when public count and loaded page are smaller", () => {
+    const composition = poolComposition(pool({ voucherCount: 1 }), [voucher()], 3);
+    expect(composition.total).toBe(3);
+    expect(composition.loaded).toBe(1);
+  });
+});

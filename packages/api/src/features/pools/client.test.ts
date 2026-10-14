@@ -24,6 +24,20 @@ afterEach(() => {
 });
 
 describe("pools client", () => {
+  it("uses the protected composition route for admin clients", async () => {
+    const fetcher = mockFetch({ ok: true, result: { vouchers: [], total: 3 } });
+    vi.stubGlobal("fetch", fetcher);
+    const admin = createPoolsClient(createHttpClient({ baseUrl: "https://api.test" }), {
+      adminComposition: true,
+    });
+    const page = await admin.getPoolVouchers("0x123", { perPage: 20 });
+    expect(page.total).toBe(3);
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v2/admin/pools/0x123/vouchers?perPage=20"),
+      expect.objectContaining({ cache: "no-store" }),
+    );
+  });
+
   it("fetches global pools with first-page pagination", async () => {
     const fetcher = mockFetch({
       ok: true,
