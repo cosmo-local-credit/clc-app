@@ -8,12 +8,7 @@ export function RouteError({ error }: { error: unknown }) {
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-start gap-4 p-6">
-      <div className="space-y-1">
-        <h1>Something went wrong</h1>
-        <p className="text-muted-foreground text-sm">
-          The console hit an error it could not recover from.
-        </p>
-      </div>
+      <h1>Something went wrong</h1>
       <pre className="border-border bg-card text-muted-foreground max-w-full overflow-x-auto border p-4 font-mono text-xs">
         {message}
       </pre>

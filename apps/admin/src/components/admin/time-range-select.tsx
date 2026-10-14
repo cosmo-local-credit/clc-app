@@ -215,8 +215,7 @@ export function TimeRangeSelect({
                 </div>
               </div>
               {customError ? <p className="text-destructive text-xs">{customError}</p> : null}
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-muted-foreground text-[0.7rem]">Times use your local timezone</p>
+              <div className="flex items-center justify-end gap-2">
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" onClick={() => setCustomOpen(false)}>
                     Cancel

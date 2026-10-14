@@ -209,12 +209,6 @@ export function PoolHoldingsPanel({
 
   return (
     <>
-      <p className="border-border text-muted-foreground border-b px-4 py-2.5 text-xs">
-        {credit
-          ? "Credit is the deposit cap minus the gross balance, floored at zero."
-          : "Available liquidity excludes accrued pool fees when fees are held separately."}{" "}
-        Amounts use each voucher's units.
-      </p>
       {vouchersState.kind === "error" ||
       vouchersState.kind === "stale" ||
       treasuryState.kind === "error" ||
@@ -233,14 +227,12 @@ export function PoolHoldingsPanel({
           state={state}
           errorTitle={`Could not load ${credit ? "credit limits" : "holdings"}`}
           emptyTitle="No holdings or listed vouchers"
-          emptyDescription="The pool holds no indexed tokens and lists no vouchers."
         >
           <DataTable columns={columns} data={holdings} className="border-0" />
         </SectionState>
       </RecordPanel>
       {indexed.hasNextPage ? (
-        <div className="border-border flex items-center justify-between gap-3 border-t px-4 py-3">
-          <p className="text-muted-foreground text-xs">More indexed holdings are available.</p>
+        <div className="border-border flex items-center justify-end gap-3 border-t px-4 py-3">
           <Button
             variant="outline"
             size="sm"

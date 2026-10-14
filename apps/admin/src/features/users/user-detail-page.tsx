@@ -76,8 +76,7 @@ export function UserDetailPage({ address, search }: { address: string; search: U
           <AccountProfileCard account={account} />
         ) : (
           <div className="border-border bg-card text-muted-foreground border p-4 text-sm">
-            This address holds vouchers but has no CLC account, so there is no profile, no limits
-            and no place on record. Its holdings and its history are still the chain's.
+            No CLC account.
           </div>
         )}
 

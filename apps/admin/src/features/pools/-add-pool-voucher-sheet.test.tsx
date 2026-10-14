@@ -166,7 +166,7 @@ describe("AddPoolVoucherSheet", () => {
     renderSheet({ quoterType: "oracle" });
     await pickKiriba();
 
-    expect(screen.getByText(/quotes with/).textContent).toContain("Oracle feed");
+    expect(screen.getByText("Oracle feed")).toBeTruthy();
     expect(screen.queryByLabelText("Quoter")).toBeNull();
     expect(screen.getByLabelText("Aggregator address")).toBeTruthy();
   });
@@ -176,7 +176,6 @@ describe("AddPoolVoucherSheet", () => {
     await pickKiriba();
 
     expect(screen.getByLabelText("Quoter")).toBeTruthy();
-    expect(screen.getByText(/does not record which quoter/)).toBeTruthy();
   });
 
   it("requires an explicit relative rate and signs its PPM setter", async () => {
@@ -203,7 +202,7 @@ describe("AddPoolVoucherSheet", () => {
     renderSheet({ quoterType: "decimal" });
     await pickKiriba();
 
-    expect(screen.getByText(/prices every pair from token decimals/)).toBeTruthy();
+    expect(screen.getByText("Decimals only")).toBeTruthy();
     expect(screen.queryByLabelText("Aggregator address")).toBeNull();
     expect(screen.queryByLabelText(/Rate \(PPM\)/)).toBeNull();
   });

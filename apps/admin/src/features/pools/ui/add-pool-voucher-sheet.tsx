@@ -342,7 +342,6 @@ export function AddPoolVoucherSheet({
                         <Field
                           htmlFor={field.name}
                           label={`Cap in ${selected.symbol}`}
-                          hint="The most the pool may hold of this voucher."
                           error={getFieldError(field.state.meta.errors)}
                         >
                           <Input
@@ -368,17 +367,13 @@ export function AddPoolVoucherSheet({
                   <SectionLabel>Pricing</SectionLabel>
 
                   {knownPricing ? (
-                    <p className="text-sm">
-                      This pool quotes with{" "}
-                      <span className="font-medium">{PRICING_LABELS[knownPricing]}</span>.
-                    </p>
+                    <p className="text-sm font-medium">{PRICING_LABELS[knownPricing]}</p>
                   ) : (
                     <form.Field name="pricing">
                       {(field) => (
                         <Field
                           htmlFor={field.name}
                           label="Quoter"
-                          hint="The catalog does not record which quoter this pool was published with."
                           error={getFieldError(field.state.meta.errors)}
                         >
                           <Select
@@ -409,7 +404,6 @@ export function AddPoolVoucherSheet({
                             <Field
                               htmlFor={field.name}
                               label="Exchange rate"
-                              hint={`Value of one voucher in ${pool.unitOfAccount ?? pool.symbol}. One means parity.`}
                               error={getFieldError(field.state.meta.errors)}
                             >
                               <Input
@@ -430,7 +424,6 @@ export function AddPoolVoucherSheet({
                               <Field
                                 htmlFor={field.name}
                                 label="Aggregator address"
-                                hint="The Chainlink feed this voucher is priced from."
                                 error={getFieldError(field.state.meta.errors)}
                               >
                                 <Input
@@ -449,7 +442,7 @@ export function AddPoolVoucherSheet({
                               <Field
                                 htmlFor={field.name}
                                 label="Freshness bound (seconds)"
-                                hint="Optional. Blank keeps the quoter's global bound."
+                                hint="Optional."
                                 error={getFieldError(field.state.meta.errors)}
                               >
                                 <Input
@@ -464,12 +457,7 @@ export function AddPoolVoucherSheet({
                             )}
                           </form.Field>
                         </>
-                      ) : (
-                        <p className="text-muted-foreground text-sm">
-                          A decimal quoter prices every pair from token decimals, so there is
-                          nothing to set for this voucher.
-                        </p>
-                      )
+                      ) : null
                     }
                   </form.Subscribe>
                 </div>
@@ -477,17 +465,17 @@ export function AddPoolVoucherSheet({
             ) : null}
           </div>
 
-          <div className="border-border bg-card sticky bottom-0 flex items-center justify-between gap-2 border-t p-4">
-            {/* Named plainly: the operator is about to be asked for a signature,
-                and a button that says "Save" would not prepare them for it. */}
-            <p className="text-muted-foreground text-xs">
-              {addVoucher.isPending ? "Waiting for the chain…" : "Signs one on-chain transaction."}
-            </p>
+          <div className="border-border bg-card sticky bottom-0 flex items-center justify-end gap-2 border-t p-4">
+            {addVoucher.isPending ? (
+              <p className="text-muted-foreground mr-auto text-xs">Waiting for the chain…</p>
+            ) : null}
             <div className="flex gap-2">
               <Button type="button" variant="ghost" onClick={close}>
                 Cancel
               </Button>
-              {/* A cap typed in token units is meaningless until the voucher's
+              {/* Named plainly: the operator is about to be asked for a signature,
+                  and a button that says "Save" would not prepare them for it.
+                  A cap typed in token units is meaningless until the voucher's
                   decimals are known, and the read is fast enough that blocking
                   submit is better than scaling by a guess. */}
               <Button

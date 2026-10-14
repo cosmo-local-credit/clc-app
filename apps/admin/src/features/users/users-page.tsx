@@ -141,16 +141,7 @@ export function UsersPage({ search }: { search: TableSearch }) {
                 search: { tab: "transactions", perPage: DEFAULT_PAGE_SIZE },
               })
             }
-            emptyState={
-              <EmptyState
-                title={term ? "No matching accounts" : "No accounts"}
-                description={
-                  term
-                    ? "No account in the directory matches this search."
-                    : "The backend returned no accounts."
-                }
-              />
-            }
+            emptyState={<EmptyState title={term ? "No matching accounts" : "No accounts"} />}
             footer={
               <TablePagination
                 search={search}

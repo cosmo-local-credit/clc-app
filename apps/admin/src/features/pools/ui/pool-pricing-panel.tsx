@@ -65,13 +65,6 @@ export function PoolPricingPanel({
         </span>
         <ContractAddress address={pool.quoterAddress} label="Copy quoter address" />
       </div>
-      <p className="text-muted-foreground border-border border-b px-4 py-2.5 text-xs">
-        {pool.quoterType === "relative"
-          ? "Rates value one voucher in the pool's unit of account. An unset rate means parity."
-          : pool.quoterType === "decimal"
-            ? "Every pair is exchanged at equal token value after adjusting for decimals. No feeds or per-voucher rates are required."
-            : "The catalog does not identify this quoter. Price-feed coverage cannot be inferred."}
-      </p>
       {rates.isError ? (
         <p role="status" className="text-muted-foreground px-4 py-2.5 text-xs">
           Relative rates could not be read. Missing rates are unavailable.

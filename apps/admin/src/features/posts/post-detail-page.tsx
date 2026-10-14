@@ -216,15 +216,6 @@ export function PostDetailPage({ reportId }: { reportId: string }) {
               <div className="mt-3">
                 <StateBadge state={post.status} kind="post" />
               </div>
-              {post.status === "APPROVED" ? (
-                <p className="text-muted-foreground mt-3 text-xs leading-5">
-                  Author edits require approval again.
-                </p>
-              ) : (
-                <p className="text-muted-foreground mt-3 text-xs leading-5">
-                  Approval cannot be undone.
-                </p>
-              )}
             </div>
 
             <dl>

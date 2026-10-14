@@ -227,7 +227,6 @@ function TransfersPanel({ address, search }: { address: string; search: UserDeta
           state={state}
           errorTitle="Could not load transactions"
           emptyTitle="No transactions"
-          emptyDescription="The indexer has recorded no transfer for this address."
           loadingRows={6}
         >
           <div className="overflow-x-auto">
@@ -300,7 +299,6 @@ function ReportsPanel({ address }: { address: string }) {
         state={state}
         errorTitle="Could not load posts"
         emptyTitle="No posts"
-        emptyDescription="This account has authored nothing."
         loadingRows={6}
       >
         <div className="overflow-x-auto">
@@ -391,7 +389,6 @@ function VouchersPanel({ address, search }: { address: string; search: UserDetai
           state={state}
           errorTitle="Could not load vouchers"
           emptyTitle="No vouchers created"
-          emptyDescription="This account issues no voucher the catalog can show."
           loadingRows={6}
         >
           <div className="overflow-x-auto">
@@ -479,7 +476,6 @@ function PoolsPanel({ address, search }: { address: string; search: UserDetailSe
           state={state}
           errorTitle="Could not load pool memberships"
           emptyTitle="No pool memberships"
-          emptyDescription="No pool allows a voucher this account owns."
           loadingRows={6}
         >
           <div className="overflow-x-auto">

@@ -15,7 +15,6 @@ import { Button } from "#/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -130,7 +129,6 @@ export function ImageCropDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Frame the image</DialogTitle>
-          <DialogDescription>Drag to move; use the slider to zoom.</DialogDescription>
         </DialogHeader>
 
         <div

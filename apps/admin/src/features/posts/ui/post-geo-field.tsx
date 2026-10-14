@@ -100,9 +100,6 @@ export function PostGeoField({
         >
           Clear place
         </Button>
-        <span className="text-muted-foreground text-xs">
-          Both values are saved together, or neither.
-        </span>
       </div>
 
       {error ? (

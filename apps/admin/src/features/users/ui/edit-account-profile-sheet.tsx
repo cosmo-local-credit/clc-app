@@ -299,7 +299,6 @@ export function EditAccountProfileSheet({
                 {(field) => (
                   <ImageUploadField
                     label="Profile photo"
-                    hint="JPEG, PNG or WebP. Stored at 400px."
                     purpose="profile.avatar"
                     value={field.state.value === "" ? null : field.state.value}
                     onChange={(url) => field.handleChange(url ?? "")}
@@ -339,11 +338,7 @@ export function EditAccountProfileSheet({
 
             <form.Field name="phone">
               {(field) => (
-                <Field
-                  label="Phone number"
-                  hint="Include the country code, for example +254700000000"
-                  error={getFieldError(field.state.meta.errors)}
-                >
+                <Field label="Phone number" error={getFieldError(field.state.meta.errors)}>
                   <Input
                     id={field.name}
                     inputMode="tel"
@@ -375,11 +370,7 @@ export function EditAccountProfileSheet({
               <SectionLabel>Profile preferences</SectionLabel>
               <form.Field name="preferredCurrency">
                 {(field) => (
-                  <Field
-                    label="Preferred currency"
-                    hint="Three-letter ISO 4217 code, for example KES"
-                    error={getFieldError(field.state.meta.errors)}
-                  >
+                  <Field label="Preferred currency" error={getFieldError(field.state.meta.errors)}>
                     <Input
                       id={field.name}
                       value={field.state.value}

@@ -171,14 +171,7 @@ export function PoolTransactionsPage({ search }: { search: PoolTransactionsSearc
             sorting={table.sorting}
             onSortChange={table.onSortChange}
             emptyState={
-              <EmptyState
-                title={filtered ? "No matching transactions" : "No transactions"}
-                description={
-                  filtered
-                    ? "No pool operation matches this filter."
-                    : "The indexer has recorded no swaps or deposits."
-                }
-              />
+              <EmptyState title={filtered ? "No matching transactions" : "No transactions"} />
             }
             footer={
               <TablePagination

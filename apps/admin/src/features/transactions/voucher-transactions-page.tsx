@@ -155,14 +155,7 @@ export function VoucherTransactionsPage({ search }: { search: VoucherTransaction
             sorting={table.sorting}
             onSortChange={table.onSortChange}
             emptyState={
-              <EmptyState
-                title={filtered ? "No matching transactions" : "No transactions"}
-                description={
-                  filtered
-                    ? "No voucher movement matches this filter."
-                    : "The indexer has recorded no voucher movements."
-                }
-              />
+              <EmptyState title={filtered ? "No matching transactions" : "No transactions"} />
             }
             footer={
               <TablePagination

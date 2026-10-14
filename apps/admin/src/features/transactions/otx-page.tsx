@@ -228,11 +228,6 @@ export function OTXPage({ search }: { search: OTXSearch }) {
             emptyState={
               <EmptyState
                 title={filtered ? "No matching transactions" : "No origin transactions"}
-                description={
-                  filtered
-                    ? "No dispatch matches this filter."
-                    : "This service has signed nothing yet."
-                }
               />
             }
             footer={

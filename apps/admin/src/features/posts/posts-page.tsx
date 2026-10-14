@@ -87,13 +87,6 @@ export function PostsPage({ search }: { search: PostSearch }) {
     navigate: (next) => void navigate({ to: "/posts", search: next }),
   });
 
-  const filtered =
-    search.status !== "SUBMITTED" ||
-    Boolean(search.q) ||
-    Boolean(search.author) ||
-    Boolean(search.tags) ||
-    Boolean(search.vouchers);
-
   async function runAction() {
     if (!action) return;
     try {
@@ -304,16 +297,7 @@ export function PostsPage({ search }: { search: PostSearch }) {
             onRowClick={(post) =>
               void navigate({ to: "/posts/$reportId", params: { reportId: post.id } })
             }
-            emptyState={
-              <EmptyState
-                title={emptyTitle(search)}
-                description={
-                  filtered
-                    ? "No post matches these filters. Change the status or clear the search."
-                    : "No post has been written yet."
-                }
-              />
-            }
+            emptyState={<EmptyState title={emptyTitle(search)} />}
             footer={
               <TablePagination
                 search={search}

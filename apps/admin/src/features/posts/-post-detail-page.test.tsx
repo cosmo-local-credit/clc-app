@@ -148,7 +148,6 @@ describe("the review page", () => {
   it("shows an unapproved post and its status", async () => {
     expect(await findTitle()).toBeTruthy();
     expect(screen.getByLabelText("post state awaiting approval")).toBeTruthy();
-    expect(screen.getByText(/Approval cannot be undone/)).toBeTruthy();
   });
 
   it("renders the body as markdown", async () => {
@@ -174,11 +173,10 @@ describe("the review page", () => {
     expect(screen.getByRole("link", { name: "Sarafu" })).toBeTruthy();
   });
 
-  it("shows the review rule for author edits", async () => {
+  it("offers no approval for an approved post", async () => {
     mocks.post = post({ status: "APPROVED" });
     await findTitle();
 
-    expect(screen.getByText(/Author edits require approval again/)).toBeTruthy();
     // Nothing left to approve.
     expect(screen.queryByRole("button", { name: /Approve/ })).toBeNull();
   });

@@ -242,9 +242,8 @@ describe("PoolDetailPage", () => {
     });
     renderDetailRoute([`/pools/${ADDRESS}?tab=feeds`]);
     const panel = await screen.findByRole("tabpanel");
-    await waitFor(() => expect(within(panel).getByText(/Every pair is exchanged/)).toBeTruthy());
+    await waitFor(() => expect(within(panel).getByText("Equal value")).toBeTruthy());
     expect(screen.queryByText(/vouchers unpriced/)).toBeNull();
-    expect(within(panel).getByText("Equal value")).toBeTruthy();
   });
 
   it("does not push history when the open tab is selected again", async () => {

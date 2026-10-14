@@ -202,7 +202,6 @@ function VouchersPanel({
         state={state}
         errorTitle="Could not load vouchers"
         emptyTitle="No vouchers"
-        emptyDescription="This pool's registry allows no voucher."
         loadingRows={6}
       >
         <div className="overflow-x-auto">
@@ -378,7 +377,6 @@ function FeedsPanel({
           state={state}
           errorTitle="Could not load price feeds"
           emptyTitle="No price feeds"
-          emptyDescription="No voucher in this pool is mapped to an aggregator."
           loadingRows={4}
         >
           <div className="overflow-x-auto">
@@ -447,7 +445,6 @@ function OfferingsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVouc
         state={state}
         errorTitle="Could not load offerings"
         emptyTitle="No offerings"
-        emptyDescription="Nothing is offered against this pool's vouchers."
         loadingRows={6}
       >
         <div className="overflow-x-auto">
@@ -555,7 +552,6 @@ function ActivityPanel({ pool }: { pool: UserPool }) {
           state={state}
           errorTitle="Could not load activity"
           emptyTitle="No indexed activity"
-          emptyDescription="The indexer has recorded no swap or deposit on this pool."
           loadingRows={6}
         >
           <div className="overflow-x-auto">
