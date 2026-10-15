@@ -44,6 +44,7 @@ export function createMarketplaceClient(http: HttpClient) {
       const parsed = marketplacePageSchema.safeParse(
         await http.request<unknown>(`/api/v2/marketplace?${query}`, {
           method: "GET",
+          cache: "no-store",
           credentials: params.nearby ? "include" : "omit",
           signal,
         }),

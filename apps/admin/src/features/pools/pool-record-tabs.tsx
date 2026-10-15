@@ -17,6 +17,12 @@ import {
   TxLink,
   VoucherCell,
 } from "#/components/admin/chain-cells";
+import { PoolProtocolFee } from "#/components/admin/pool-protocol-fee";
+import { Button } from "#/components/ui/button";
+import { PoolPricingPanel } from "./ui/pool-pricing-panel";
+import { PoolHoldingsPanel, type PoolVoucherEdit } from "./ui/pool-holdings-panel";
+import { usePoolRates } from "./use-pool-pricing";
+import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { RecordPanel } from "#/components/admin/record-panel";
 import { SectionState } from "#/components/admin/section-state";
 import { StateBadge } from "#/components/admin/state-badge";
@@ -48,6 +54,8 @@ const OFFERING_PAGE_SIZE = 100;
 
 const TAB_LABELS: Record<PoolDetailTab, string> = {
   vouchers: "Vouchers",
+  holdings: "Holdings",
+  credit: "Credit",
   feeds: "Price feeds",
   offerings: "Offerings",
   activity: "Activity",
@@ -71,6 +79,7 @@ export function PoolRecordTabs({
   vouchersState,
   settling,
   search,
+  onConfigure,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
@@ -78,6 +87,7 @@ export function PoolRecordTabs({
   /** A signed-for voucher whose catalog row has not appeared yet, if any. */
   settling: SettlingVoucher | null;
   search: PoolDetailSearch;
+  onConfigure: (edit: PoolVoucherEdit) => void;
 }) {
   const navigate = useNavigate();
   const tab = search.tab;
@@ -112,7 +122,9 @@ export function PoolRecordTabs({
               />
             }
           >
-            {TAB_LABELS[candidate]}
+            {candidate === "feeds" && pool.quoterType !== "oracle"
+              ? "Pricing"
+              : TAB_LABELS[candidate]}
           </TabsTab>
         ))}
       </TabsList>
@@ -124,6 +136,15 @@ export function PoolRecordTabs({
             vouchers={vouchers}
             state={vouchersState}
             settling={settling}
+            onConfigure={onConfigure}
+          />
+        ) : tab === "holdings" || tab === "credit" ? (
+          <PoolHoldingsPanel
+            pool={pool}
+            vouchers={vouchers}
+            vouchersState={vouchersState}
+            credit={tab === "credit"}
+            onConfigure={onConfigure}
           />
         ) : tab === "feeds" ? (
           <FeedsPanel pool={pool} vouchers={vouchers} state={vouchersState} />
@@ -151,21 +172,28 @@ function VouchersPanel({
   vouchers,
   state,
   settling,
+  onConfigure,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   state: DataState;
   settling: SettlingVoucher | null;
+  onConfigure: (edit: PoolVoucherEdit) => void;
 }) {
   // The transaction landed but the row has not. Saying so beats an unchanged
   // table, which reads as the add having silently failed.
-  const waiting = settling !== null && !hasVoucher(vouchers, settling.tokenAddress);
+  const rates = usePoolRates(
+    pool,
+    vouchers.map((voucher) => voucher.tokenAddress),
+    pool.quoterType === "relative",
+  );
+  const waiting = settling !== null && !hasVoucher(vouchers, settling.tokenAddress, settling);
 
   return (
     <RecordPanel state={state}>
       {waiting ? (
         <p className="border-border text-muted-foreground border-b px-4 py-2.5 text-xs">
-          Waiting for the indexer to record the voucher just added. The transaction has already
+          Waiting for the indexer to record the voucher change. The transaction has already
           confirmed on chain.
         </p>
       ) : null}
@@ -174,7 +202,6 @@ function VouchersPanel({
         state={state}
         errorTitle="Could not load vouchers"
         emptyTitle="No vouchers"
-        emptyDescription="This pool's registry allows no voucher."
         loadingRows={6}
       >
         <div className="overflow-x-auto">
@@ -184,9 +211,10 @@ function VouchersPanel({
                 <TableHead>Voucher</TableHead>
                 <TableHead>Address</TableHead>
                 <TableHead>Deposit cap</TableHead>
-                <TableHead>Price feed</TableHead>
+                <TableHead>{pool.quoterType === "oracle" ? "Price feed" : "Pricing"}</TableHead>
                 <TableHead>Offers</TableHead>
                 <TableHead>Synced</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -206,13 +234,35 @@ function VouchersPanel({
                     <DepositCapCell pool={pool} voucher={voucher} />
                   </TableCell>
                   <TableCell>
-                    <FeedCell voucher={voucher} />
+                    <PricingCell
+                      pool={pool}
+                      voucher={voucher}
+                      rate={rates.data?.[voucher.tokenAddress.toLowerCase()] ?? null}
+                    />
                   </TableCell>
                   <TableCell className="font-data text-xs">
                     {voucher.availableOfferCount}/{voucher.offerCount}
                   </TableCell>
                   <TableCell className="font-data text-muted-foreground text-xs">
                     {formatDateTime(voucher.syncedAt)}
+                  </TableCell>
+                  <TableCell>
+                    {pool.quoterType !== "decimal" || pool.limiterAddress !== null ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        aria-label={`Configure ${voucher.symbol}`}
+                        onClick={() =>
+                          onConfigure({
+                            voucher,
+                            ratePpm: rates.data?.[voucher.tokenAddress.toLowerCase()] ?? null,
+                            capRaw: voucher.tokenLimit,
+                          })
+                        }
+                      >
+                        Configure
+                      </Button>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}
@@ -251,6 +301,31 @@ function DepositCapCell({ pool, voucher }: { pool: UserPool; voucher: PoolVouche
   );
 }
 
+function PricingCell({
+  pool,
+  voucher,
+  rate,
+}: {
+  pool: UserPool;
+  voucher: PoolVoucher;
+  rate: string | null;
+}) {
+  if (pool.quoterType === "oracle") return <FeedCell voucher={voucher} />;
+  if (pool.quoterType === "relative")
+    return (
+      <TokenAmount
+        amount={rate}
+        decimals={POOL_PRICE_INDEX_DECIMALS}
+        symbol={pool.unitOfAccount ?? pool.symbol}
+      />
+    );
+  return (
+    <span className="text-muted-foreground font-mono text-xs">
+      {pool.quoterType === "decimal" ? "Equal value" : "Not recorded"}
+    </span>
+  );
+}
+
 function FeedCell({ voucher }: { voucher: PoolVoucher }) {
   if (!voucher.oracleFeedId) {
     return <span className="text-destructive font-mono text-xs">None</span>;
@@ -282,6 +357,8 @@ function FeedsPanel({
   vouchers: PoolVoucher[];
   state: DataState;
 }) {
+  if (pool.quoterType !== "oracle")
+    return <PoolPricingPanel pool={pool} vouchers={vouchers} state={state} />;
   const groups = groupPoolFeeds(vouchers);
 
   return (
@@ -300,7 +377,6 @@ function FeedsPanel({
           state={state}
           errorTitle="Could not load price feeds"
           emptyTitle="No price feeds"
-          emptyDescription="No voucher in this pool is mapped to an aggregator."
           loadingRows={4}
         >
           <div className="overflow-x-auto">
@@ -369,7 +445,6 @@ function OfferingsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVouc
         state={state}
         errorTitle="Could not load offerings"
         emptyTitle="No offerings"
-        emptyDescription="Nothing is offered against this pool's vouchers."
         loadingRows={6}
       >
         <div className="overflow-x-auto">
@@ -477,7 +552,6 @@ function ActivityPanel({ pool }: { pool: UserPool }) {
           state={state}
           errorTitle="Could not load activity"
           emptyTitle="No indexed activity"
-          emptyDescription="The indexer has recorded no swap or deposit on this pool."
           loadingRows={6}
         >
           <div className="overflow-x-auto">
@@ -489,7 +563,8 @@ function ActivityPanel({ pool }: { pool: UserPool }) {
                   <TableHead>Initiator</TableHead>
                   <TableHead>In</TableHead>
                   <TableHead>Out</TableHead>
-                  <TableHead>Fee</TableHead>
+                  <TableHead>Pool fee</TableHead>
+                  <TableHead>Protocol fee</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Tx</TableHead>
                 </TableRow>
@@ -530,7 +605,14 @@ function ActivityRow({ transaction }: { transaction: AdminPoolTransaction }) {
         />
       </TableCell>
       <TableCell>
-        <TokenAmount amount={transaction.fee} decimals={transaction.tokenOutDecimals} />
+        <TokenAmount
+          amount={transaction.fee}
+          decimals={transaction.tokenOutDecimals}
+          symbol={transaction.tokenOutSymbol}
+        />
+      </TableCell>
+      <TableCell>
+        <PoolProtocolFee transaction={transaction} />
       </TableCell>
       <TableCell>
         <StateBadge state={transaction.success ? "SUCCESS" : "REVERTED"} kind="pool transaction" />

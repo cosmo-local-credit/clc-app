@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { translateValidationError } from "./validation-i18n";
 
 const knownErrors = [
-  "Username must be 3–24 letters, digits or hyphens",
+  "Username must contain 1–80 characters",
   "Name is required",
   "Name must be 80 characters or fewer",
   "Invalid email address",
@@ -97,7 +97,9 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Accept the terms to publish your voucher", i18n)).toBe(
       "Прихватите услове да бисте објавили ваучер",
     );
-    expect(translateValidationError("Pool name is required", i18n)).toBe("Назив пула је обавезан");
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Назив тржнице је обавезан",
+    );
   });
 
   it("translates known validation errors into French", async () => {

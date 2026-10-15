@@ -70,7 +70,6 @@ describe("OfferingOrderPicker", () => {
     expect(
       screen.getByRole("checkbox", { name: /Add Four to order/ }).getAttribute("aria-disabled"),
     ).toBe("true");
-    expect(screen.getByText("You can add up to three offerings to one order.")).toBeTruthy();
     expect(screen.getByText("60 KES")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Increase One quantity" }));

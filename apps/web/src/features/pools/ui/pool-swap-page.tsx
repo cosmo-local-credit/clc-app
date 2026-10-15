@@ -25,7 +25,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { SignHint, TokenLogo, type WalletToken, WalletAmountInput } from "#/components/wallet";
+import { TokenLogo, type WalletToken, WalletAmountInput } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import {
   type PoolSwapQuoteMode,
@@ -480,7 +480,6 @@ export function PoolSwapPage({
 
       <div className="flex-1" />
 
-      <SignHint className="mb-2.5 bg-card" />
       <Button
         className="h-11 w-full"
         disabled={!isValidAmount || !selectedFrom || !selectedTo}

@@ -204,7 +204,6 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
             <Field
               htmlFor={field.name}
               label="Display name"
-              hint="Contract name stays unchanged."
               error={getFieldError(field.state.meta.errors)}
             >
               <Input
@@ -301,7 +300,6 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               <Field
                 htmlFor={field.name}
                 label="Phone number"
-                hint="Include the country code, for example +254700000000"
                 error={getFieldError(field.state.meta.errors)}
               >
                 <Input
@@ -339,7 +337,6 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               <Field
                 htmlFor={field.name}
                 label="Terms"
-                hint="URL or Markdown."
                 error={getFieldError(field.state.meta.errors)}
               >
                 <Textarea
@@ -362,7 +359,6 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               {(field) => (
                 <ImageUploadField
                   label="Icon"
-                  hint="Square."
                   purpose="voucher.icon"
                   value={field.state.value === "" ? null : field.state.value}
                   onChange={(url) => field.handleChange(url ?? "")}
@@ -374,7 +370,6 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               {(field) => (
                 <ImageUploadField
                   label="Banner"
-                  hint="Wide."
                   purpose="voucher.banner"
                   value={field.state.value === "" ? null : field.state.value}
                   onChange={(url) => field.handleChange(url ?? "")}

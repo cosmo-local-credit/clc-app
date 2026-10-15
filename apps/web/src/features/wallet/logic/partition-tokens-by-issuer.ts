@@ -45,7 +45,7 @@ export function catalogOwnerFromDetail(query: DetailQuery): CatalogOwner {
  * would call the viewer's own voucher someone else's for as long as the
  * catalog read takes.
  */
-export function partitionTokensByIssuer<T extends { id: string }>(
+export function partitionTokensByIssuer<T extends { id: string; catalogActive?: boolean }>(
   tokens: readonly T[],
   owners: ReadonlyMap<string, CatalogOwner>,
   viewer: string | undefined,
@@ -57,6 +57,8 @@ export function partitionTokensByIssuer<T extends { id: string }>(
   const viewerKey = viewer?.toLowerCase();
 
   for (const token of tokens) {
+    // Retirement hides the catalog voucher, but does not erase its chain balance.
+    if (token.catalogActive === false) continue;
     const owner = owners.get(token.id.toLowerCase());
     if (!owner || owner.state === "pending") {
       pending = true;

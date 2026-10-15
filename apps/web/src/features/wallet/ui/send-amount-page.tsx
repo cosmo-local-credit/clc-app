@@ -10,7 +10,7 @@ import {
 } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
@@ -24,10 +24,10 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { SignHint, TokenLogo } from "#/components/wallet";
+import { TokenLogo } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
@@ -67,16 +67,22 @@ export function SendAmountPage({
   const navigate = useNavigate();
   const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
-  const tokensQuery = useAccountTokensInfinite(address);
+  const tokensQuery = useAllAccountTokens(address);
   const sendVoucher = useSendVoucherTransfer();
-  const tokens =
-    tokensQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
+  const tokens = tokensQuery.tokens
+    .filter((item) => item.catalogActive !== false)
+    .map(accountTokenToWalletToken);
 
   // Preselect the token passed from the token detail page; fall back to the
-  // first token once balances load. `selectedId` mirrors the fetched token id
+  // first token once balances load if none was requested. Never substitute a
+  // different asset for a retired selection. `selectedId` mirrors the fetched token id
   // (the lowercased contract address).
   const [selectedId, setSelectedId] = useState<string | undefined>(token?.toLowerCase());
-  const selectedToken = tokens.find((item) => item.id === selectedId) ?? tokens[0];
+  const selectedToken = selectedId ? tokens.find((item) => item.id === selectedId) : tokens[0];
+  const firstTokenId = tokens[0]?.id;
+  useEffect(() => {
+    if (!selectedId && firstTokenId) setSelectedId(firstTokenId);
+  }, [selectedId, firstTokenId]);
   // Preserve the current token selection when editing the recipient.
   const tokenParam = selectedToken?.contractAddress ?? selectedToken?.id ?? token;
 
@@ -195,7 +201,7 @@ export function SendAmountPage({
         ref={tokenSelectorRef}
         type="button"
         onClick={() => setPickerOpen(true)}
-        disabled={!selectedToken}
+        disabled={tokens.length === 0}
         className="mb-2.5 flex h-11 w-full items-center gap-2.5 border border-border bg-card px-3 text-start disabled:opacity-60"
       >
         {selectedToken ? (
@@ -213,7 +219,9 @@ export function SendAmountPage({
             <p className="text-muted-foreground text-sm">
               {tokensQuery.isError ? (
                 <Trans>Couldn't load tokens</Trans>
-              ) : tokensQuery.isSuccess ? (
+              ) : tokens.length > 0 ? (
+                <Trans>Select a token</Trans>
+              ) : !tokensQuery.isPending ? (
                 <Trans>No tokens available</Trans>
               ) : (
                 <Trans>Loading tokens…</Trans>
@@ -319,7 +327,6 @@ export function SendAmountPage({
 
       <div className="flex-1" />
 
-      <SignHint className="mb-2.5 bg-card" />
       <Button
         className="h-11 w-full"
         disabled={!canSend || sendVoucher.isPending}

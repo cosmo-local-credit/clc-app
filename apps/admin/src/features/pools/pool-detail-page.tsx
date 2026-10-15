@@ -9,6 +9,7 @@ import { StaleNotice } from "#/components/admin/stale-notice";
 import { clcApi } from "#/lib/api";
 import { errorMessage, isFigureAvailable } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
+import { usePoolPricing } from "./use-pool-pricing";
 import type { PoolDetailSearch } from "./pool-detail-search";
 import {
   poolActivitySeries,
@@ -17,6 +18,7 @@ import {
   poolOfferSeries,
 } from "./pool-posture";
 import { PoolRecordTabs } from "./pool-record-tabs";
+import type { PoolVoucherEdit } from "./ui/pool-holdings-panel";
 import { AddPoolVoucherSheet } from "./ui/add-pool-voucher-sheet";
 import { EditPoolProfileSheet } from "./ui/edit-pool-profile-sheet";
 import { PoolActivityChart } from "./ui/pool-activity-chart";
@@ -42,9 +44,8 @@ const ACTIVITY_PAGE_SIZE = 100;
  * vouchers table and the feed grouping, and fetching it once means those four
  * can never disagree about what the pool contains.
  *
- * Everything on this screen is the catalog's view of the pool. The console holds
- * no chain client, so a dependency address that clc-core never recorded is shown
- * as unrecorded rather than guessed at — on SwapPool an unset pointer changes
+ * Dependency addresses come from the catalog and are shown as unrecorded when
+ * absent rather than guessed at — on SwapPool an unset pointer changes
  * behaviour rather than disabling it, and inventing one would be the worse error.
  */
 export function PoolDetailPage({ address, search }: { address: string; search: PoolDetailSearch }) {
@@ -55,6 +56,7 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
   // use-pool-vouchers.ts for why that lag exists at all.
   const [settling, setSettling] = useState<SettlingVoucher | null>(null);
   const [addingVoucher, setAddingVoucher] = useState(false);
+  const [editingVoucher, setEditingVoucher] = useState<PoolVoucherEdit | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
 
   const vouchersQuery = usePoolVouchers(address, settling);
@@ -65,13 +67,14 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
     }),
   );
 
+  const pricing = usePoolPricing(poolQuery.data);
   const poolState = useDataState(poolQuery, () => false);
   const vouchersState = useDataState(vouchersQuery, (page) => page.vouchers.length === 0);
   const activityState = useDataState(activityQuery, () => false);
 
   if (poolState.kind === "pending") return <LoadingBlock rows={8} />;
 
-  const pool = poolQuery.data;
+  const pool = poolQuery.data ? { ...poolQuery.data, quoterType: pricing } : undefined;
   if (!pool) {
     return (
       <PageState
@@ -85,7 +88,7 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
   // False while the voucher page is in flight or after it failed, which turns
   // every count derived from it into "unavailable" instead of a confident zero.
   const vouchersAvailable = isFigureAvailable(vouchersState);
-  const composition = poolComposition(pool, vouchers);
+  const composition = poolComposition(pool, vouchers, vouchersQuery.data?.total);
   const activity = poolActivitySeries(
     activityQuery.data?.transactions ?? [],
     {
@@ -139,18 +142,35 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
         vouchersState={vouchersState}
         settling={settling}
         search={search}
+        onConfigure={setEditingVoucher}
       />
 
       {/* The fetched page is handed over rather than refetched: the picker has to
           exclude vouchers the pool already allows, and re-registering one reverts
           the whole batch. */}
       <AddPoolVoucherSheet
+        key={`${pool.address}:${pool.quoterType}`}
         pool={pool}
         poolVouchers={vouchers}
         open={addingVoucher}
         onClose={() => setAddingVoucher(false)}
         onAdded={(tokenAddress) => setSettling(settlingVoucher(tokenAddress))}
       />
+
+      {editingVoucher ? (
+        <AddPoolVoucherSheet
+          key={editingVoucher.voucher.tokenAddress}
+          pool={pool}
+          poolVouchers={vouchers}
+          edit={editingVoucher}
+          open
+          onClose={() => setEditingVoucher(null)}
+          onAdded={() => {}}
+          onUpdated={(expected) =>
+            setSettling(settlingVoucher(editingVoucher.voucher.tokenAddress, expected))
+          }
+        />
+      ) : null}
 
       <EditPoolProfileSheet
         pool={pool}

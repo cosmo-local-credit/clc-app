@@ -134,14 +134,9 @@ export function WalletPage({ address }: { address?: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1>
-          <Trans>Wallet</Trans>
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Manage vouchers, pools, and local payments.</Trans>
-        </p>
-      </div>
+      <h1>
+        <Trans>Wallet</Trans>
+      </h1>
 
       <CompleteProfileBanner address={address} />
 
@@ -200,7 +195,10 @@ export function WalletPage({ address }: { address?: string }) {
                 </Button>
               </div>
             ) : null}
-            {vouchersQuery.isSuccess && vouchers.length === 0 ? (
+            {vouchersQuery.isSuccess &&
+            !resolved &&
+            !voucherGroups.pending &&
+            !voucherGroups.failed ? (
               <div className="space-y-3 p-3">
                 <p className="text-muted-foreground text-sm">
                   <Trans>No vouchers yet.</Trans>

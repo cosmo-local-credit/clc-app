@@ -2,10 +2,10 @@ import type { I18n } from "@lingui/core";
 
 export function translateValidationError(error: string, i18n: I18n) {
   switch (error) {
-    case "Username must be 3–24 letters, digits or hyphens":
+    case "Username must contain 1–80 characters":
       return i18n._({
-        id: "Username must be 3–24 letters, digits or hyphens",
-        message: "Username must be 3–24 letters, digits or hyphens",
+        id: "Username must contain 1–80 characters",
+        message: "Username must contain 1–80 characters",
       });
     case "Name is required":
       return i18n._({ id: "Name is required", message: "Name is required" });

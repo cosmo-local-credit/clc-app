@@ -240,9 +240,6 @@ function VoucherMintSheet({
             <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Create vouchers</Trans>
             </SheetTitle>
-            <p className="text-muted-foreground text-sm">
-              <Trans>Create new vouchers in your wallet.</Trans>
-            </p>
           </SheetHeader>
           <form
             className="flex min-h-0 flex-1 flex-col"

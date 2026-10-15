@@ -201,18 +201,7 @@ export function VouchersPage({ search }: { search: VoucherListSearch }) {
                 search: { tab: "offerings" },
               })
             }
-            emptyState={
-              <EmptyState
-                title={searched ? "No matching vouchers" : "No vouchers"}
-                description={
-                  searched
-                    ? "No voucher in the catalog matches this search."
-                    : search.status === "retired"
-                      ? "No voucher has been retired."
-                      : "The catalog is empty."
-                }
-              />
-            }
+            emptyState={<EmptyState title={searched ? "No matching vouchers" : "No vouchers"} />}
             footer={
               <TablePagination
                 search={search}

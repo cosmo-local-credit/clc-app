@@ -892,6 +892,13 @@ pattern first.
   overrides, and don't violate the Mobile UI rules — re-read them before writing
   layout. **In `apps/admin`:** breakpoints are expected; follow the Admin console
   UI rules instead.
+- Don't add explainer copy to any component, in either app: no subtitle under a
+  title or heading, no description or hint that restates a label, no unit or
+  caveat footnote, no sentence under an empty-state title. The only exceptions
+  are high-value concept explainers ("What's a pool?", "What's a voucher?"),
+  warnings that guard an irreversible or payment action, and instructions the
+  user needs to finish a step. Errors, validation and status messages are not
+  explainers.
 - Don't add `next-themes` to `apps/admin` — it uses the same Zustand theme store
   pattern as `apps/web`, with a pre-paint bootstrap script in `__root.tsx`.
 - Don't put icons outside `lucide-react` (shadcn internals) or `react-icons`.

@@ -1,77 +1,12 @@
-# Cloudflare Pages project for the admin console (Gnosis). See the root
-# wrangler.toml for why each branch keeps its own copy of this file:
-#
-#   Branch   Web project      Admin project      Hosts
-#   develop  clc-app-gnosis   clc-admin-gnosis   test.cosmolocal.credit, admin.test.cosmolocal.credit
-#   master   clc-app          clc-admin          app.cosmolocal.credit,  admin.cosmolocal.credit
-#
-# The two copies differ only in `name` and in the "Per environment" blocks
-# below; every other line, comments included, is identical on both branches.
-# That is what lets develop merge into master: a change to a shared line never
-# touches a line the branches disagree on, so the three-way merge keeps
-# master's own values without a conflict. Change a per-environment value on
-# both branches, each with its own value, in separate commits.
-#
-# A separate project from apps/web on purpose. A Pages project has one build
-# output directory, and serving the console from a path on the app's origin would
-# put it inside the scope of apps/web's service worker — which must never cache or
-# intercept anything here.
-#
-# The deploy is Git-connected, with these dashboard build settings:
-#   Production branch        develop (clc-admin-gnosis) / master (clc-admin)
-#   Root directory           apps/admin      <- must be this, not the repo root
-#   Build command            pnpm build
-#   Build output directory   dist
-#
-# The root directory is what makes the Pages platform read *this* file. It resolves
-# a Wrangler config from the project's configured root directory, and that config
-# supplies the asset output directory and the build environment variables. Left at
-# the repository root, the platform reads ../../wrangler.toml, takes `apps/web/dist`
-# and apps/web's vars, and fails the deploy after an otherwise successful build with
-# `Output directory "apps/web/dist" not found`.
-#
-# THIS FILE IS ALSO WHAT SEPARATES THE TWO PROJECTS AT BUILD TIME. Nitro resolves a
-# Wrangler config from the build's working directory; delete this and the resolution
-# walks up to the root config, generating a worker named after the web project and
-# carrying every one of apps/web's vars. Verified by building with and without it.
-#
-# It seeds the config the deploy actually uses, which Nitro generates at
-# dist/_worker.js/wrangler.json — hence the build-time warning that
-# `pages_build_output_dir` is overridden and ignored. That key is kept anyway
-# because Wrangler requires it in a Pages config, and a manual
-# `wrangler pages deploy -c apps/admin/wrangler.toml` reads it relative to here.
+# Cloudflare Pages config for the admin console. Keep this file: Nitro and Pages
+# use it to select the admin project settings.
 name = "clc-admin"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
-# Only the variables this app reads. Deliberately not copied wholesale from the
-# web project: the console has no RPC, and it never *registers* a passkey — only
-# asserts one — so it needs no relying-party name.
-#
-# It does relay operator batches, so it needs a Calibur address — but that comes
-# from the chain table in @clc/core, keyed by VITE_CHAIN_ID, and only a deployment
-# whose clc-core points at a different implementation sets VITE_CALIBUR_ADDRESS.
-#
-# VITE_STORAGE_URL is the same upload service apps/web uses in this environment.
-# Its origin allowlist (STORAGE_API__ORIGIN) must include this console's hosts or
-# the preflight fails while every other request on the page succeeds.
-#
-# VITE_PAPER_WALLET_ORIGIN is apps/web's host in this environment: the console
-# issues paper wallets in bulk, and each card's QR is a link that opens the app
-# and imports the key there. It must match the root wrangler.toml.
-#
-# VITE_RELYING_PARTY_ID is the same value apps/web carries, so one passkey works
-# on the app and this console. The backend does not verify it — the assertion
-# check compares `clientDataJSON.origin` against `relayer.allowed_origins`, which
-# is where this console's origins must be added, scheme included.
-#
-# VITE_MAPTILER_KEY is the same key apps/web uses — one MapTiler account serves
-# both — and the account's allowed-origins list must include this console's hosts
-# (and the pages.dev previews) or tiles 403 while everything else works.
 [vars]
-# ─── Per environment ─────────────────────────────────────────────────────────
-# The only lines that differ between develop and master. Keep them in this block.
+# Per-environment values; keep in sync with the corresponding master config.
 VITE_API_URL = "https://api.cosmolocal.credit"
 VITE_BRAND = "prod"
 VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
@@ -79,16 +14,14 @@ VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
 VITE_RELYING_PARTY_ID = "cosmolocal.credit"
 VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 
-# ─── Shared ──────────────────────────────────────────────────────────────────
-# Identical on develop and master. Add new variables here, not above.
+# Shared values.
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 
-# Preview deploys keep their own relying party, for the same reason as apps/web.
-# Every key is repeated because `vars` is non-inheritable.
+# Preview deploys use their pages.dev host as the relying party. Vars are
+# non-inheritable, so repeat all values in this block.
 [env.preview.vars]
-# ─── Per environment ─────────────────────────────────────────────────────────
-# The only lines that differ between develop and master. Keep them in this block.
+# Per-environment preview values.
 VITE_API_URL = "https://api.cosmolocal.credit"
 VITE_BRAND = "prod"
 VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
@@ -96,7 +29,6 @@ VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
 VITE_RELYING_PARTY_ID = "clc-admin.pages.dev"
 VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 
-# ─── Shared ──────────────────────────────────────────────────────────────────
-# Identical on develop and master. Add new variables here, not above.
+# Shared preview values.
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"

@@ -188,7 +188,6 @@ function VoucherProfileForm({
             <Field
               label={t`Display name`}
               htmlFor="voucher-display-name"
-              hint={t`Changes how the voucher is shown. The deployed contract keeps its name.`}
               error={getFieldError(field.state.meta.errors)}
             >
               <Input
@@ -492,13 +491,7 @@ function VoucherProfileForm({
                           placeholder="https://example.com/terms"
                           aria-invalid={field.state.meta.errors.length > 0}
                         />
-                        {error ? (
-                          <FieldError error={error} />
-                        ) : (
-                          <p className="mt-1 text-muted-foreground text-xs">
-                            <Trans>Link to the terms that apply to this voucher</Trans>
-                          </p>
-                        )}
+                        {error ? <FieldError error={error} /> : null}
                       </div>
                     );
                   }}

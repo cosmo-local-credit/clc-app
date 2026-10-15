@@ -1,60 +1,12 @@
-# Cloudflare Pages project for the mobile PWA (Gnosis, chain 100). The admin
-# console is a separate project — see apps/admin/wrangler.toml.
-#
-# `develop` (staging) and `master` (prod) share one codebase. Pages resolves one
-# config per root directory and that file's `name` binds it to one project, so
-# each branch keeps its own copy of this file at the same path:
-#
-#   Branch   Web project      Admin project      Hosts
-#   develop  clc-app-gnosis   clc-admin-gnosis   test.cosmolocal.credit, admin.test.cosmolocal.credit
-#   master   clc-app          clc-admin          app.cosmolocal.credit,  admin.cosmolocal.credit
-#
-# The two copies differ only in `name` and in the "Per environment" blocks
-# below; every other line, comments included, is identical on both branches.
-# That is what lets develop merge into master: a change to a shared line never
-# touches a line the branches disagree on, so the three-way merge keeps
-# master's own values without a conflict. Change a per-environment value on
-# both branches, each with its own value, in separate commits.
+# Cloudflare Pages config for the web app. Admin has a separate config at
+# apps/admin/wrangler.toml.
 name = "clc-app"
 pages_build_output_dir = "apps/web/dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
-# This file is the source of truth for the project: while it is present, Pages
-# shows these values in the dashboard but will not let them be edited there. Pages
-# supplies them to the build as well as to the Function, which is why VITE_
-# values belong here — they are inlined into the client bundle at build time.
-#
-# Each backend origin (api, relayer, storage) must list this project's hosts in
-# that box's `api.cors`, `relayer.allowed_origins` and `STORAGE_API__ORIGIN`.
-#
-# VITE_STORAGE_URL: staging and prod are separate buckets, so QA uploads never
-# land beside real user images. A stored image URL is absolute, so images
-# uploaded before prod moved to storage.cosmolocal.credit still resolve from
-# gnosis-storage, and that host has to stay up for prod.
-#
-# VITE_FULL_REACT_ERRORS: "true" sets `minify: false` and NODE_ENV=development for
-# the client build. A staging debugging tool; prod must stay "false".
-#
-# VITE_RELYING_PARTY_ID: the parent of this environment's hosts, so one passkey
-# works on the app and the admin console alike without being offered to the
-# other environment, whose backend is a different credential store.
-# `resolveRelyingPartyId` honours it only when it is a suffix of the serving host
-# — see the preview override below. CHANGING IT INVALIDATES EXISTING PASSKEYS:
-# WebAuthn credentials cannot be re-scoped. Paper wallets are unaffected. clc-core
-# does not verify it (the browser does); the backend setting that must list a new
-# origin is `relayer.allowed_origins`.
-#
-# PublicNode is independent of our node and Gnosis's starter RPC; the client
-# appends the chain default last and ranks all three by stability and latency.
-# VITE_PUBLIC_RPC_URL is our own Gnosis full node, the endpoint clc-core,
-# eth-tracker and eth-indexer use.
-#
-# No VITE_CALIBUR_ADDRESS: the implementation for chain 100 is in the chain table
-# in @clc/core and matches the stack's CORE_RELAYER__CALIBUR_ADDRESS.
 [vars]
-# ─── Per environment ─────────────────────────────────────────────────────────
-# The only lines that differ between develop and master. Keep them in this block.
+# Per-environment values; keep in sync with the corresponding master config.
 VITE_API_URL = "https://api.cosmolocal.credit"
 VITE_BRAND = "prod"
 VITE_FULL_REACT_ERRORS = "false"
@@ -63,8 +15,7 @@ VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
 VITE_RELYING_PARTY_ID = "cosmolocal.credit"
 VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 
-# ─── Shared ──────────────────────────────────────────────────────────────────
-# Identical on develop and master. Add new variables here, not above.
+# Shared values.
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
@@ -72,16 +23,10 @@ VITE_PUBLIC_RPC_FALLBACK_URLS = "https://gnosis-rpc.publicnode.com"
 VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
 VITE_RELYING_PARTY_NAME = "CLC"
 
-# Preview deploys keep their own relying party: the project's own pages.dev host.
-# The production value is not a suffix of any *.pages.dev host, so it would be
-# ignored there and each branch would fall back to its own hostname, while
-# `<project>.pages.dev` *is* a suffix of `<branch>.<project>.pages.dev`.
-#
-# Every key is repeated because `vars` is non-inheritable: overriding it for an
-# environment without restating the rest fails validation at deploy time.
+# Preview deploys use their pages.dev host as the relying party. Wrangler vars
+# are non-inheritable, so repeat all values in this block.
 [env.preview.vars]
-# ─── Per environment ─────────────────────────────────────────────────────────
-# The only lines that differ between develop and master. Keep them in this block.
+# Per-environment preview values.
 VITE_API_URL = "https://api.cosmolocal.credit"
 VITE_BRAND = "prod"
 VITE_FULL_REACT_ERRORS = "false"
@@ -90,8 +35,7 @@ VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
 VITE_RELYING_PARTY_ID = "clc-app.pages.dev"
 VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 
-# ─── Shared ──────────────────────────────────────────────────────────────────
-# Identical on develop and master. Add new variables here, not above.
+# Shared preview values.
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"

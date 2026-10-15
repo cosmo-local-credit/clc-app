@@ -61,7 +61,10 @@ function renderWithQueryClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
-function mockTokens({ usdcBalance = "245000000" }: { usdcBalance?: string } = {}) {
+function mockTokens({
+  usdcBalance = "245000000",
+  retired = false,
+}: { usdcBalance?: string; retired?: boolean } = {}) {
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue({
@@ -77,6 +80,7 @@ function mockTokens({ usdcBalance = "245000000" }: { usdcBalance?: string } = {}
                 {
                   id: 1,
                   tokenAddress: USDC,
+                  catalogActive: !retired,
                   tokenSymbol: "USDC",
                   tokenName: "USD Coin",
                   tokenDecimals: 6,
@@ -134,6 +138,17 @@ afterEach(() => {
 });
 
 describe("SendAmountPage", () => {
+  it("hides retired balances and does not substitute a different asset for a retired shortcut", async () => {
+    mockTokens({ retired: true });
+    renderWithQueryClient(<SendAmountPage token={USDC} recipient={RECIPIENT} amount="5" />);
+    const selector = await screen.findByRole("button", { name: /select a token/i });
+    expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
+    fireEvent.click(selector);
+    expect(screen.queryByText("USDC")).toBeNull();
+    expect(screen.getByText("BABAS")).not.toBeNull();
+    expect(sendMutateAsync).not.toHaveBeenCalled();
+  });
+
   // The "Use max" button reflects the selected token's balance uniquely — the
   // symbol itself appears in the picker list too, so it isn't a clean signal.
   it("starts with an empty amount", async () => {

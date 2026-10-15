@@ -1,3 +1,5 @@
+import { ResourceUsage } from "#/components/resource-usage";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
 import {
   type MarkerColor,
@@ -129,6 +131,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const router = useRouter();
   const { address } = useConnection();
   const deployVoucher = useDeployVoucher();
+  const usage = useResourceUsage();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
   const draft = useVoucherCreateDraft((state) => state.draft);
@@ -170,6 +173,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
       },
     },
     onSubmit: async ({ value }) => {
+      if (usage.isError || !usage.data?.vouchers.canCreate) return;
       if (!address) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
@@ -206,6 +210,10 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         // step 1 can be taken by the time they publish. Say which field is
         // wrong and put them back in front of it rather than leaving a raw
         // error code under a review screen they cannot act on.
+        if (error instanceof BackendApiError && error.code === "E11") {
+          toast.error(t`Limit reached. Ask an administrator to increase your allowance.`);
+          return;
+        }
         if (error instanceof BackendApiError && error.kind === "conflict") {
           toast.error(t`That voucher name was taken while you were filling this in.`);
           void navigate({ to: "/vouchers/create/$step", params: { step: "voucher" } });
@@ -331,6 +339,18 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         ? "/vouchers/create/voucher"
         : "/wallet/vouchers";
 
+  if (usage.isError || !usage.data?.vouchers.canCreate) {
+    return (
+      <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12">
+        <BackChevron label={t`Vouchers`} to="/" />
+        <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+          <Trans>Create voucher</Trans>
+        </h1>
+        <ResourceUsage resource="vouchers" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <BackChevron
@@ -341,6 +361,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
       />
 
       <StepProgress step={progressStep} total={3} />
+      <ResourceUsage resource="vouchers" />
 
       <form
         className="flex flex-1 flex-col"
@@ -427,7 +448,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   <Field
                     label={t`Create vouchers`}
                     htmlFor="voucher-supply"
-                    hint={t`How many vouchers to create once this voucher is published`}
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Input
@@ -476,7 +496,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   <Field
                     label={t`Voucher Description`}
                     htmlFor="voucher-description"
-                    hint={t`Shown on your voucher page`}
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Textarea
@@ -514,7 +533,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       <Field
                         label={t`Voucher Symbol`}
                         htmlFor="voucher-symbol"
-                        hint={t`Suggested from the name. You can change it.`}
                         error={getFieldError(field.state.meta.errors)}
                       >
                         <Input
@@ -794,6 +812,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   >
                     <PhoneInputField
                       id="voucher-phone"
+                      defaultCountry={profileQuery.data?.country}
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value)}
                       aria-invalid={field.state.meta.errors.length > 0}
@@ -885,13 +904,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                                 placeholder="https://example.com/terms"
                                 aria-invalid={field.state.meta.errors.length > 0}
                               />
-                              {error ? (
-                                <FieldError error={error} />
-                              ) : (
-                                <p className="mt-1 text-muted-foreground text-xs">
-                                  <Trans>Link to the terms that apply to this voucher</Trans>
-                                </p>
-                              )}
+                              {error ? <FieldError error={error} /> : null}
                             </div>
                           );
                         }}
@@ -963,7 +976,13 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   <Button
                     type="submit"
                     className="h-11 w-full"
-                    disabled={!acceptedTerms || isSubmitting || deployVoucher.isPending}
+                    disabled={
+                      !acceptedTerms ||
+                      isSubmitting ||
+                      deployVoucher.isPending ||
+                      usage.isError ||
+                      !usage.data?.vouchers.canCreate
+                    }
                   >
                     {isSubmitting || deployVoucher.isPending ? (
                       <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />

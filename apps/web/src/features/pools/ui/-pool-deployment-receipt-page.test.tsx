@@ -190,7 +190,6 @@ describe("PoolDeploymentReceiptPage", () => {
     renderReceipt();
 
     expect(screen.getByRole("heading", { name: "KGP1 is live" })).toBeTruthy();
-    expect(screen.getByText("Kilifi Growers is ready for vouchers and swaps.")).toBeTruthy();
     expect(screen.getByText("Published")).toBeTruthy();
     expect(screen.getByText("A growers pool.")).toBeTruthy();
     expect(screen.getByText("https://kilifi.example")).toBeTruthy();

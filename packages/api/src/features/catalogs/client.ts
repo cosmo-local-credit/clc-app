@@ -73,8 +73,23 @@ export function createCatalogsClient(http: HttpClient) {
         signal,
       });
     },
-    mine(signal?: AbortSignal) {
-      return read(catalogPageSchema, "/api/v2/users/me/catalogs", { method: "GET", signal });
+    async mine(signal?: AbortSignal) {
+      const catalogs: z.output<typeof catalogSchema>[] = [];
+      let cursor: string | null = null;
+      do {
+        const suffix: string = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
+        const page: z.output<typeof catalogPageSchema> = await read(
+          catalogPageSchema,
+          `/api/v2/users/me/catalogs${suffix}`,
+          {
+            method: "GET",
+            signal,
+          },
+        );
+        catalogs.push(...page.catalogs);
+        cursor = page.nextCursor;
+      } while (cursor);
+      return { catalogs, nextCursor: null };
     },
     async detail(id: string, signal?: AbortSignal) {
       return (

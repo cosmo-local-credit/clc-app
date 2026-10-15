@@ -10,6 +10,8 @@ describe("parsePoolDetailSearch", () => {
 
   it("accepts the linkable record tabs", () => {
     expect(parsePoolDetailSearch({ tab: "vouchers" })).toEqual({ tab: "vouchers" });
+    expect(parsePoolDetailSearch({ tab: "holdings" })).toEqual({ tab: "holdings" });
+    expect(parsePoolDetailSearch({ tab: "credit" })).toEqual({ tab: "credit" });
     expect(parsePoolDetailSearch({ tab: "feeds" })).toEqual({ tab: "feeds" });
     expect(parsePoolDetailSearch({ tab: "offerings" })).toEqual({ tab: "offerings" });
     expect(parsePoolDetailSearch({ tab: "activity" })).toEqual({ tab: "activity" });

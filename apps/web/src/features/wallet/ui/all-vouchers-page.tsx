@@ -133,15 +133,12 @@ export function AllVouchersPage() {
     <div className="bg-background pb-bottom-nav flex min-h-[100svh] flex-col px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="font-heading text-[1.75rem] leading-tight font-bold">
           <Trans>All Vouchers</Trans>
         </h1>
         <CreateVoucherButton />
       </div>
-      <p className="text-muted-foreground mt-1 mb-4 text-sm">
-        <Trans>Community vouchers and their details.</Trans>
-      </p>
 
       {!vouchersReady ? (
         <div className="border-border bg-card border">
@@ -168,7 +165,10 @@ export function AllVouchersPage() {
               </Button>
             </div>
           ) : null}
-          {vouchersQuery.isSuccess && vouchers.length === 0 ? (
+          {vouchersQuery.isSuccess &&
+          !resolved &&
+          !voucherGroups.pending &&
+          !voucherGroups.failed ? (
             <div className="flex min-h-14 items-center justify-between gap-3 p-3">
               <p className="text-muted-foreground text-sm">
                 <Trans>No vouchers yet.</Trans>

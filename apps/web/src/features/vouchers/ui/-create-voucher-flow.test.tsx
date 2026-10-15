@@ -32,6 +32,19 @@ const DEFAULT_PROFILE: ProfileDefaults = {
   avatarUrl: "https://cdn.test/profile/avatar.webp",
 };
 
+const quotaMock = vi.hoisted(() => ({
+  data: {
+    vouchers: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    catalogs: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    offers: { used: 0, limit: 3, canCreate: true, unlimited: false },
+    pools: { used: 0, limit: 10, canCreate: true, unlimited: false },
+  },
+  isPending: false,
+  isError: false,
+  refetch: vi.fn(),
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
   useCanGoBack: () => false,
@@ -188,6 +201,8 @@ async function writeTerms(label: string, markdown: string) {
 }
 
 beforeEach(() => {
+  quotaMock.data.vouchers.canCreate = true;
+  quotaMock.isError = false;
   profile.current = { ...DEFAULT_PROFILE };
   getTakenSymbols.mockImplementation(async (kind: string, prefix: string) => ({
     kind,
@@ -287,6 +302,18 @@ describe("CreateVoucherFlow", () => {
     expect(screen.getByText("1 voucher = 1 TZS")).toBeTruthy();
   });
 
+  it("prefills the calling code from the profile phone even when its country differs", async () => {
+    profile.current = { ...DEFAULT_PROFILE, phone: "+38761123456", country: "KE" };
+    renderFlow(<CreateVoucherFlow step="place" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Country: BA" }).textContent).toContain("+387");
+      expect(
+        (screen.getByLabelText("Contact Phone") as HTMLInputElement).value.replace(/\D/g, ""),
+      ).toBe("61123456");
+    });
+  });
+
   it("keeps tags compact and prefills contact details from the profile", async () => {
     renderFlow(<CreateVoucherFlow step="place" />);
 
@@ -359,7 +386,6 @@ describe("CreateVoucherFlow", () => {
 
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
-    expect(screen.getByText("Link to the terms that apply to this voucher")).toBeTruthy();
     expect(screen.queryByLabelText("Shown to anyone holding this voucher")).toBeNull();
   });
 
@@ -919,4 +945,14 @@ describe("CreateVoucherFlow", () => {
       );
     });
   });
+});
+
+it("blocks a new voucher form when its allowance is exhausted", async () => {
+  quotaMock.data.vouchers.canCreate = false;
+  renderFlow(<CreateVoucherFlow step="voucher" />);
+  expect(
+    screen.getByText("Limit reached. Ask an administrator to increase your allowance."),
+  ).toBeTruthy();
+  expect(screen.queryByLabelText("Create vouchers")).toBeNull();
+  expect(deployMutateAsync).not.toHaveBeenCalled();
 });

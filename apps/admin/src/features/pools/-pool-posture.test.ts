@@ -29,7 +29,7 @@ function pool(overrides: Partial<UserPool> = {}): UserPool {
     tokenRegistryAddress: null,
     limiterAddress: LIMITER,
     quoterAddress: null,
-    quoterType: null,
+    quoterType: "oracle",
     feePolicyAddress: null,
     protocolFeeControllerAddress: null,
     feesDecoupled: false,
@@ -137,6 +137,7 @@ describe("poolComposition", () => {
       loaded: 3,
       total: 3,
       priced: 2,
+      pricing: "oracle",
       unpriced: 1,
       blocked: 1,
       feeds: 1,
@@ -290,5 +291,26 @@ describe("poolActivitySeries", () => {
     );
 
     expect(activity.points.every((point) => point.swaps === 0)).toBe(true);
+  });
+});
+
+for (const quoterType of ["relative", "decimal", null] as const) {
+  it(`does not infer oracle faults for ${quoterType ?? "unknown"} pricing`, () => {
+    const record = pool({ quoterType });
+    const composition = poolComposition(record, [voucher({ oracleFeedId: null })]);
+    expect(composition.unpriced).toBe(0);
+    expect(
+      poolAdvisories(record, composition, { vouchersAvailable: true }).some(
+        (advisory) => advisory.id === "unpriced",
+      ),
+    ).toBe(false);
+  });
+}
+
+describe("admin composition totals", () => {
+  it("uses the full admin count even when public count and loaded page are smaller", () => {
+    const composition = poolComposition(pool({ voucherCount: 1 }), [voucher()], 3);
+    expect(composition.total).toBe(3);
+    expect(composition.loaded).toBe(1);
   });
 });

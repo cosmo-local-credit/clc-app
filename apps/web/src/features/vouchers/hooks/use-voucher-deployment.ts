@@ -1,3 +1,4 @@
+import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
 import { createVoucherDeployClient } from "@clc/api/features/vouchers/deploy-client";
 import { nameKeys } from "@clc/api/features/names/queries";
@@ -12,6 +13,7 @@ const voucherDeployClient = createVoucherDeployClient(clcHttp);
 export function useDeployVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (payload: VoucherDeployPayload) => voucherDeployClient.deployVoucher(payload),
     // The symbol and name just claimed are now occupied for the next form.
     onSuccess: () =>

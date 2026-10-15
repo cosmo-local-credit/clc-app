@@ -32,9 +32,6 @@ export function CashPage() {
           <Trans>Cash</Trans>
         </h1>
         <NetworkBadge className="mt-3" />
-        <p className="mt-3 text-muted-foreground text-sm">
-          <Trans>Buy or sell tokens using your Gnosis wallet address.</Trans>
-        </p>
       </div>
 
       <section className="mt-6 border border-border bg-card p-4" aria-labelledby="cash-address">
@@ -58,9 +55,6 @@ export function CashPage() {
             <Trans>No wallet address available.</Trans>
           </p>
         )}
-        <p className="mt-3 text-muted-foreground text-xs leading-relaxed">
-          <Trans>You can send any token to this address on the Gnosis blockchain.</Trans>
-        </p>
       </section>
 
       <div className="mt-6 space-y-7">

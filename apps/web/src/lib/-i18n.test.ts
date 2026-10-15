@@ -15,7 +15,6 @@ describe("i18n catalogs", () => {
     await activateLocale("en");
     expect(i18n._({ id: "MUtNry", values: { 0: 0 } })).toBe("0 reviews");
     expect(i18n._("hgG8Pq")).toBe("Redeem this voucher to leave a review within seven days.");
-    expect(i18n._("Pv07Of")).toBe("All reviews · newest first");
     expect(i18n._("dEETgs")).toBe("No reviews yet.");
   });
 

@@ -61,9 +61,6 @@ export function EncryptedPaperWalletImportForm({
           <p className="text-foreground text-sm font-medium">
             <Trans>Password-protected paper wallet</Trans>
           </p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            <Trans>Enter the password to unlock this paper wallet.</Trans>
-          </p>
         </div>
         <Button
           variant="ghost"

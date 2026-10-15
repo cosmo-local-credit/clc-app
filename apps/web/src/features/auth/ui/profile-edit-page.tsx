@@ -40,14 +40,9 @@ export function ProfileEditPage() {
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <BackChevron label={t`Settings`} to="/" search={{ tab: "settings" }} />
 
-      <div className="mb-6 space-y-1">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Edit profile</Trans>
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Update your contact details and location.</Trans>
-        </p>
-      </div>
+      <h1 className="mb-6 font-heading text-[1.75rem] font-bold leading-tight">
+        <Trans>Edit profile</Trans>
+      </h1>
 
       {profileQuery.isPending ? (
         <ProfileEditSkeleton />

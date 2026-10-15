@@ -1,3 +1,5 @@
+import { ResourceUsage } from "#/components/resource-usage";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import type { Offering } from "@clc/api/features/offerings/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
@@ -76,6 +78,8 @@ export function VoucherOfferingsPanel({
     Boolean(ownerAddress) &&
     session?.address?.toLowerCase() === ownerAddress?.toLowerCase();
 
+  const usage = useResourceUsage(isOwner);
+
   const [editor, setEditor] = useState<OfferingEditor | null>(null);
   const [deletingID, setDeletingID] = useState<string | null>(null);
   const remove = useDeleteVoucherOffering(voucherAddress ?? "");
@@ -106,13 +110,16 @@ export function VoucherOfferingsPanel({
       aria-labelledby={presentation === "tabpanel" ? "voucher-tab-offerings" : undefined}
     >
       {isOwner ? (
-        <Button
-          className="mb-3 h-11 w-full"
-          onClick={() => setEditor({ kind: "create" })}
-          disabled={!voucherAddress}
-        >
-          <Trans>Add offering</Trans>
-        </Button>
+        <>
+          <ResourceUsage resource="offers" />
+          <Button
+            className="mb-3 h-11 w-full"
+            onClick={() => setEditor({ kind: "create" })}
+            disabled={!voucherAddress || usage.isError || !usage.data?.offers.canCreate}
+          >
+            <Trans>Add offering</Trans>
+          </Button>
+        </>
       ) : null}
 
       <OfferingsPanel

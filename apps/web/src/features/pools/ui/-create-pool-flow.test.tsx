@@ -363,7 +363,6 @@ describe("CreatePoolFlow", () => {
 
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
-    expect(screen.getByText("Link to the terms that apply to this pool")).toBeTruthy();
   });
 
   it("lets the steward write pool terms in the rich text editor instead of linking", async () => {

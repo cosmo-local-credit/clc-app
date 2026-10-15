@@ -124,85 +124,77 @@ export function VoucherReviewsPanel({
         </div>
       ) : null}
 
-      <div className="space-y-3 border border-border bg-card p-4">
-        {!auth.isAuthenticated ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>Sign in after redeeming this voucher to leave a review.</Trans>
-          </p>
-        ) : access.isPending ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>Checking review eligibility…</Trans>
-          </p>
-        ) : access.isError ? (
-          <>
+      {viewer?.isOwner ? null : (
+        <div className="space-y-3 border border-border bg-card p-4">
+          {!auth.isAuthenticated ? (
             <p className="text-sm text-muted-foreground">
-              <Trans>Couldn't check your review access.</Trans>
+              <Trans>Sign in after redeeming this voucher to leave a review.</Trans>
             </p>
-            <Button variant="outline" onClick={() => access.refetch()}>
-              <Trans>Try again</Trans>
-            </Button>
-          </>
-        ) : viewer?.isOwner ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>
-              You can reply to reviews and report inappropriate content. You can edit only replies
-              you wrote yourself.
-            </Trans>
-          </p>
-        ) : viewer?.hidden ? (
-          <p className="text-sm text-muted-foreground">
-            <Trans>Your review was hidden by an admin.</Trans>
-          </p>
-        ) : (
-          <>
-            {viewer?.review ? (
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">
-                  <Trans>Your review</Trans>
-                </h3>
-                <ReviewStars stars={viewer.review.stars} />
-                <p className="text-sm break-words whitespace-pre-wrap">{viewer.review.comment}</p>
-              </div>
-            ) : null}
-            {canWrite ? (
-              <>
-                <p className="text-xs text-muted-foreground">
-                  <Trans>
-                    You can write or edit your review until{" "}
-                    {new Date(viewer!.editableUntil!).toLocaleString()}.
-                  </Trans>
-                </p>
-                {editor?.kind === "review" ? (
-                  renderEditor(editor)
-                ) : (
-                  <Button onClick={() => open({ kind: "review" })}>
-                    {viewer?.review ? t`Edit your review` : t`Write a review`}
-                  </Button>
-                )}
-              </>
-            ) : (
+          ) : access.isPending ? (
+            <p className="text-sm text-muted-foreground">
+              <Trans>Checking review eligibility…</Trans>
+            </p>
+          ) : access.isError ? (
+            <>
               <p className="text-sm text-muted-foreground">
-                {viewer?.review
-                  ? t`Redeem this voucher again to update your review.`
-                  : t`Redeem this voucher to leave a review within seven days.`}
+                <Trans>Couldn't check your review access.</Trans>
               </p>
-            )}
-          </>
-        )}
-      </div>
+              <Button variant="outline" onClick={() => access.refetch()}>
+                <Trans>Try again</Trans>
+              </Button>
+            </>
+          ) : viewer?.hidden ? (
+            <p className="text-sm text-muted-foreground">
+              <Trans>Your review was hidden by an admin.</Trans>
+            </p>
+          ) : (
+            <>
+              {viewer?.review ? (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">
+                    <Trans>Your review</Trans>
+                  </h3>
+                  <ReviewStars stars={viewer.review.stars} />
+                  <p className="text-sm break-words whitespace-pre-wrap">{viewer.review.comment}</p>
+                </div>
+              ) : null}
+              {canWrite ? (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    <Trans>
+                      You can write or edit your review until{" "}
+                      {new Date(viewer!.editableUntil!).toLocaleString()}.
+                    </Trans>
+                  </p>
+                  {editor?.kind === "review" ? (
+                    renderEditor(editor)
+                  ) : (
+                    <Button onClick={() => open({ kind: "review" })}>
+                      {viewer?.review ? t`Edit your review` : t`Write a review`}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {viewer?.review
+                    ? t`Redeem this voucher again to update your review.`
+                    : t`Redeem this voucher to leave a review within seven days.`}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {summary && summaryTotal > 0 ? (
         <>
-          <div className="flex min-h-10 items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>
-              {filter ? t`${filter}-star reviews · newest first` : t`All reviews · newest first`}
-            </span>
-            {filter ? (
+          {filter ? (
+            <div className="flex min-h-10 items-center justify-end">
               <Button variant="ghost" size="sm" onClick={() => setFilter(undefined)}>
                 <Trans>Show all</Trans>
               </Button>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
           {items.length === 0 ? (
             <p className="border border-border bg-card p-4 text-sm text-muted-foreground">
               {filter ? t`No reviews with this rating.` : t`No reviews yet.`}

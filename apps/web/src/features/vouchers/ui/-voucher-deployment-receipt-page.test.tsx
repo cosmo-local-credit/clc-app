@@ -214,7 +214,6 @@ describe("VoucherDeploymentReceiptPage", () => {
     renderReceipt({ mintTrackingId: "mint-1", mintAmount: "100" });
 
     expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
-    expect(screen.getByText("Kilifi Harvest can be held, sent and redeemed.")).toBeTruthy();
     expect(screen.getByText("Published")).toBeTruthy();
     expect(screen.getByText("100 KES")).toBeTruthy();
     expect(screen.getByText("Standard")).toBeTruthy();

@@ -1,3 +1,4 @@
+import { resourceLimitKeys } from "../resource-limits/queries";
 import type { CatalogKind, CatalogWrite } from "@clc/core/features/catalogs/logic";
 import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
@@ -110,6 +111,7 @@ export function saveCatalogMutationOptions(
 ) {
   return mutationOptions({
     mutationKey: [...catalogKeys.all, "save"],
+    onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (input: CatalogWrite) => (id ? client.update(id, input) : client.create(input)),
     onSuccess: async (catalog) => {
       queryClient.setQueryData(catalogKeys.detail(catalog.id), catalog);

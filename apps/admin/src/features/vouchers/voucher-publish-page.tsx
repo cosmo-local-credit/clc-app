@@ -628,12 +628,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
               </form.Field>
               <form.Field name="terms">
                 {(field) => (
-                  <Field
-                    htmlFor={field.name}
-                    label="Terms"
-                    hint="URL or Markdown."
-                    error={fieldError(field)}
-                  >
+                  <Field htmlFor={field.name} label="Terms" error={fieldError(field)}>
                     <Textarea
                       id={field.name}
                       rows={3}

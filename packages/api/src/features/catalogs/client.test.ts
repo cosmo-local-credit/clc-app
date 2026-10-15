@@ -131,3 +131,22 @@ describe("catalog HTTP contract", () => {
     await expect(api.list({})).rejects.toBeInstanceOf(BackendApiError);
   });
 });
+
+it("loads every owned catalog page so raised limits remain usable", async () => {
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true, result: { catalogs: [row], nextCursor: "next" } }), {
+        status: 200,
+      }),
+    )
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ ok: true, result: { catalogs: [{ ...row, id: 8 }], nextCursor: null } }),
+        { status: 200 },
+      ),
+    );
+  vi.stubGlobal("fetch", fetcher);
+  expect((await api.mine()).catalogs.map((catalog) => catalog.id)).toEqual(["7", "8"]);
+  expect(String(fetcher.mock.calls[1]?.[0])).toContain("/api/v2/users/me/catalogs?cursor=next");
+});

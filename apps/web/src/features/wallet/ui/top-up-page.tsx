@@ -105,14 +105,9 @@ export function TopUpPage() {
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
 
-      <div className="mb-6 space-y-1">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Cash</Trans>
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Buy or sell stables with local money.</Trans>
-        </p>
-      </div>
+      <h1 className="mb-6 font-heading text-[1.75rem] font-bold leading-tight">
+        <Trans>Cash</Trans>
+      </h1>
 
       <div className="space-y-5">
         <section aria-labelledby="add-stables-title" className="space-y-2">
@@ -159,9 +154,6 @@ export function TopUpPage() {
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-sm">
                 <Trans>MPESA via Pretium</Trans>
-              </p>
-              <p className="text-muted-foreground text-xs">
-                <Trans>Sell stables to local money.</Trans>
               </p>
             </div>
             <RiArrowRightSLine
@@ -463,14 +455,9 @@ function PretiumHistory({
         {!isPending && !isError && transactions.length === 0 ? (
           <div className="flex gap-3 p-4 text-muted-foreground">
             <RiHistoryLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <div className="space-y-1">
-              <p className="font-medium text-foreground text-sm">
-                <Trans>No cash activity yet.</Trans>
-              </p>
-              <p className="text-xs">
-                <Trans>Pretium deposits and withdrawals will appear here.</Trans>
-              </p>
-            </div>
+            <p className="font-medium text-foreground text-sm">
+              <Trans>No cash activity yet.</Trans>
+            </p>
           </div>
         ) : null}
         {transactions.map((transaction, index, list) => {

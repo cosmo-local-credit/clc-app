@@ -42,12 +42,7 @@ export function ActivityPage({ address }: { address?: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1>{t`Activity`}</h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Recent voucher transfers for this wallet.</Trans>
-        </p>
-      </div>
+      <h1>{t`Activity`}</h1>
 
       <section className="border border-border bg-card" aria-label={t`Transfer history`}>
         {transfersQuery.isPending ? (

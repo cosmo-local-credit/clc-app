@@ -168,7 +168,6 @@ function OfferingsPanel({
         state={state}
         errorTitle="Could not load offerings"
         emptyTitle="No offerings"
-        emptyDescription="Nobody is offering anything for this voucher yet."
         loadingRows={4}
       >
         {/* Thumbnails, so the density is the point: eight across from xl, which is
@@ -223,7 +222,6 @@ function TransactionsPanel({ address }: { address: string }) {
           state={state}
           errorTitle="Could not load transactions"
           emptyTitle="No indexed activity"
-          emptyDescription="The indexer has recorded no transfer of this voucher."
           loadingRows={6}
         >
           <div className="overflow-x-auto">
@@ -340,7 +338,6 @@ function ReportsPanel({ filter }: { filter: CatalogFilter }) {
         state={state}
         errorTitle="Could not load posts"
         emptyTitle="No approved posts"
-        emptyDescription="No approved post references this voucher."
         loadingRows={6}
       >
         <div className="overflow-x-auto">
@@ -405,7 +402,6 @@ function PoolsPanel({ filter }: { filter: CatalogFilter }) {
         state={state}
         errorTitle="Could not load pools"
         emptyTitle="Not in any pool"
-        emptyDescription="No pool's registry allows this voucher, so it cannot be swapped."
         loadingRows={6}
       >
         <div className="overflow-x-auto">

@@ -136,9 +136,7 @@ export function LocationField({
             </Button>
           ) : null}
         </div>
-      ) : (
-        <p className="text-muted-foreground text-xs">Click the map to drop a pin.</p>
-      )}
+      ) : null}
       {coordinateError ? (
         <p role="alert" className="text-destructive text-xs">
           {coordinateError}

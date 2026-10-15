@@ -191,10 +191,7 @@ export function TokenAmount({
 
   if (decimals === null) {
     return (
-      <span
-        className={cn("font-data text-xs", className)}
-        title="This voucher is not in the catalog, so its decimals are unknown. Shown as the raw on-chain integer."
-      >
+      <span className={cn("font-data text-xs", className)}>
         {amount}
         <span className="text-muted-foreground ml-1 font-mono text-[0.625rem] tracking-wide uppercase">
           raw

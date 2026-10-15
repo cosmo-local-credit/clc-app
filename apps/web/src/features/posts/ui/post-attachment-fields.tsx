@@ -63,11 +63,7 @@ export function PostAttachmentFields({
 
   return (
     <div className="space-y-3">
-      {attachments.length === 0 ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>Link a video, a document or an external page.</Trans>
-        </p>
-      ) : (
+      {attachments.length === 0 ? null : (
         <ul className="space-y-3">
           {attachments.map((attachment, index) => (
             <li

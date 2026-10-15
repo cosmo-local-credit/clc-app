@@ -1,3 +1,8 @@
+import { offeringKeys } from "@clc/api/features/offerings/queries";
+import { poolKeys } from "@clc/api/features/pools/queries";
+import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
+import { catalogKeys } from "@clc/api/features/catalogs/queries";
+import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -24,7 +29,14 @@ export function useRetireVoucher(address: string) {
     mutationFn: () => marketClient.retireVoucher(address),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: voucherKeys.detail(address) });
+      // Clear cached offers immediately, including inactive views. Public reads
+      // use no-store so refetches cannot reintroduce a browser-cached result.
       return Promise.all([
+        queryClient.resetQueries({ queryKey: offeringKeys.all }),
+        queryClient.resetQueries({ queryKey: marketplaceKeys.all }),
+        queryClient.resetQueries({ queryKey: poolKeys.all }),
+        queryClient.resetQueries({ queryKey: catalogKeys.all }),
+        queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
         queryClient.invalidateQueries({
           queryKey: voucherKeys.all,
           predicate: (query) => query.queryKey[2] !== "detail",

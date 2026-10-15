@@ -160,7 +160,7 @@ export function VocabularyPage() {
             />
           </VocabularySection>
 
-          <VocabularySection title="Default tags" description="Cannot be deleted.">
+          <VocabularySection title="Default tags">
             <DataTable
               columns={tagColumns}
               data={vocabulary.data.tags.filter((row) => !row.isCustom)}
@@ -170,10 +170,7 @@ export function VocabularyPage() {
             />
           </VocabularySection>
 
-          <VocabularySection
-            title="Default offering units"
-            description="Cannot be renamed or deleted."
-          >
+          <VocabularySection title="Default offering units">
             <DataTable
               columns={unitColumns}
               data={vocabulary.data.units.filter((row) => !row.isCustom)}
@@ -211,23 +208,12 @@ export function VocabularyPage() {
   );
 }
 
-function VocabularySection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
+function VocabularySection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <div className="space-y-1">
-        <h2 className="font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground">
-          {title}
-        </h2>
-        {description ? <p className="text-muted-foreground text-sm">{description}</p> : null}
-      </div>
+      <h2 className="font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground">
+        {title}
+      </h2>
       {children}
     </section>
   );

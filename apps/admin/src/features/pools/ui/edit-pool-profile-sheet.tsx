@@ -244,7 +244,6 @@ export function EditPoolProfileSheet({
                   <Field
                     htmlFor={field.name}
                     label="Phone number"
-                    hint="Include the country code, for example +254700000000"
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Input
@@ -282,7 +281,6 @@ export function EditPoolProfileSheet({
                   <Field
                     htmlFor={field.name}
                     label="Terms"
-                    hint="URL or Markdown."
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Textarea
@@ -304,7 +302,6 @@ export function EditPoolProfileSheet({
                   {(field) => (
                     <ImageUploadField
                       label="Logo"
-                      hint="Square."
                       purpose="pool.image"
                       value={field.state.value === "" ? null : field.state.value}
                       onChange={(url) => field.handleChange(url ?? "")}
@@ -316,7 +313,6 @@ export function EditPoolProfileSheet({
                   {(field) => (
                     <ImageUploadField
                       label="Banner"
-                      hint="Wide."
                       purpose="pool.banner"
                       value={field.state.value === "" ? null : field.state.value}
                       onChange={(url) => field.handleChange(url ?? "")}

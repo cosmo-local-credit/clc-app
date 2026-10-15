@@ -18,6 +18,8 @@ function user(overrides: Partial<AdminUser> = {}): AdminUser {
     status: "APPROVED",
     maxPools: 10,
     maxTokens: 20,
+    maxCatalogs: 1,
+    maxOffers: 3,
     createdAt: "2026-07-24T10:43:16.051912+03:00",
     updatedAt: "2026-07-24T10:43:16.051912+03:00",
     avatarUrl: null,
@@ -626,6 +628,26 @@ describe("listPoolTransactions", () => {
     expect(lastCall().url).toBe(
       `${BASE_URL}/api/v2/admin/transactions/pools?perPage=25&type=swap&pool=${ADDRESS}&q=0xfeed`,
     );
+  });
+
+  it("keeps protocol fee precision and distinguishes zero from missing history", async () => {
+    fetchMock.mockResolvedValue(
+      ok({
+        transactions: [
+          { ...swap, protocolFee: "123456789012345678901" },
+          { ...swap, protocolFee: "0" },
+          { ...swap, protocolFee: null },
+          { ...swap },
+        ],
+      }),
+    );
+    const page = await client().listPoolTransactions({ perPage: 10 });
+    expect(page.transactions.map((row) => row.protocolFee)).toEqual([
+      "123456789012345678901",
+      "0",
+      null,
+      null,
+    ]);
   });
 
   it("leaves a deposit's out side null, since nothing left the pool", async () => {

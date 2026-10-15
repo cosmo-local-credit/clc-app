@@ -42,7 +42,9 @@ const limitSchema = z
   .trim()
   // A text field rather than a number input, which yields an empty string for
   // invalid text and would read as zero — a quota of none.
-  .refine((value) => /^\d+$/.test(value), { message: "Enter a whole number, 0 or more" });
+  .refine((value) => /^\d+$/.test(value) && Number(value) <= 2147483647, {
+    message: "Enter a whole number from 0 to 2147483647",
+  });
 
 const profileSchema = z
   .object({
@@ -77,6 +79,8 @@ const profileSchema = z
     avatarUrl: storedImageUrlSchema,
     maxPools: limitSchema,
     maxTokens: limitSchema,
+    maxCatalogs: limitSchema,
+    maxOffers: limitSchema,
   })
   .superRefine((value, ctx) => {
     // A label with no pin, or a pin with no label, describes a place nobody can
@@ -161,6 +165,8 @@ export function EditAccountProfileSheet({
       longitude: account.geoLng === null ? "" : String(account.geoLng),
       maxPools: String(account.maxPools),
       maxTokens: String(account.maxTokens),
+      maxCatalogs: String(account.maxCatalogs),
+      maxOffers: String(account.maxOffers),
       // Already a stored URL: ImageUploadField uploads on selection, so this
       // field never holds a File. Empty string is "no image", which keeps the
       // form value a string like every other field here.
@@ -204,14 +210,22 @@ export function EditAccountProfileSheet({
         ...location,
         ...avatar,
       };
-      const limits = { maxPools: Number(value.maxPools), maxTokens: Number(value.maxTokens) };
+      const limits = {
+        maxPools: Number(value.maxPools),
+        maxTokens: Number(value.maxTokens),
+        maxCatalogs: Number(value.maxCatalogs),
+        maxOffers: Number(value.maxOffers),
+      };
 
       // Profile and limits are separate endpoints, so each is called only when it
       // has something to change. The profile goes first: if limits then fail, the
       // toast says so and the profile edit that did land is already on screen,
       // rather than both being reported as one failure.
       const limitsChanged =
-        limits.maxPools !== account.maxPools || limits.maxTokens !== account.maxTokens;
+        limits.maxPools !== account.maxPools ||
+        limits.maxTokens !== account.maxTokens ||
+        limits.maxCatalogs !== account.maxCatalogs ||
+        limits.maxOffers !== account.maxOffers;
       const profileChanged =
         profile.name !== account.name ||
         profile.email !== account.email ||
@@ -285,7 +299,6 @@ export function EditAccountProfileSheet({
                 {(field) => (
                   <ImageUploadField
                     label="Profile photo"
-                    hint="JPEG, PNG or WebP. Stored at 400px."
                     purpose="profile.avatar"
                     value={field.state.value === "" ? null : field.state.value}
                     onChange={(url) => field.handleChange(url ?? "")}
@@ -325,11 +338,7 @@ export function EditAccountProfileSheet({
 
             <form.Field name="phone">
               {(field) => (
-                <Field
-                  label="Phone number"
-                  hint="Include the country code, for example +254700000000"
-                  error={getFieldError(field.state.meta.errors)}
-                >
+                <Field label="Phone number" error={getFieldError(field.state.meta.errors)}>
                   <Input
                     id={field.name}
                     inputMode="tel"
@@ -361,11 +370,7 @@ export function EditAccountProfileSheet({
               <SectionLabel>Profile preferences</SectionLabel>
               <form.Field name="preferredCurrency">
                 {(field) => (
-                  <Field
-                    label="Preferred currency"
-                    hint="Three-letter ISO 4217 code, for example KES"
-                    error={getFieldError(field.state.meta.errors)}
-                  >
+                  <Field label="Preferred currency" error={getFieldError(field.state.meta.errors)}>
                     <Input
                       id={field.name}
                       value={field.state.value}
@@ -440,7 +445,7 @@ export function EditAccountProfileSheet({
             </div>
 
             <div className="border-border flex flex-col gap-3 border-t pt-4">
-              <SectionLabel>Deployment limits</SectionLabel>
+              <SectionLabel>Resource limits</SectionLabel>
               <div className="grid grid-cols-2 gap-3">
                 <form.Field name="maxPools">
                   {(field) => (
@@ -460,6 +465,34 @@ export function EditAccountProfileSheet({
                 <form.Field name="maxTokens">
                   {(field) => (
                     <Field label="Max vouchers" error={getFieldError(field.state.meta.errors)}>
+                      <Input
+                        id={field.name}
+                        inputMode="numeric"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) => field.handleChange(event.target.value)}
+                        className="font-data"
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+                <form.Field name="maxCatalogs">
+                  {(field) => (
+                    <Field label="Max catalogs" error={getFieldError(field.state.meta.errors)}>
+                      <Input
+                        id={field.name}
+                        inputMode="numeric"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) => field.handleChange(event.target.value)}
+                        className="font-data"
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+                <form.Field name="maxOffers">
+                  {(field) => (
+                    <Field label="Max offers" error={getFieldError(field.state.meta.errors)}>
                       <Input
                         id={field.name}
                         inputMode="numeric"

@@ -68,6 +68,7 @@ export type PoolComposition = {
   /** The pool record's own total, so a partial page is visible as one. */
   total: number;
   priced: number;
+  pricing: UserPool["quoterType"];
   unpriced: number;
   blocked: number;
   /** Distinct recorded feeds, not counting the unpriced group. */
@@ -76,7 +77,11 @@ export type PoolComposition = {
   liveOffers: number;
 };
 
-export function poolComposition(pool: UserPool, vouchers: PoolVoucher[]): PoolComposition {
+export function poolComposition(
+  pool: UserPool,
+  vouchers: PoolVoucher[],
+  total = pool.voucherCount,
+): PoolComposition {
   const feeds = new Set<string>();
   let priced = 0;
   let blocked = 0;
@@ -84,8 +89,13 @@ export function poolComposition(pool: UserPool, vouchers: PoolVoucher[]): PoolCo
   let liveOffers = 0;
 
   for (const voucher of vouchers) {
-    if (voucher.oracleFeedId) {
+    if (
+      pool.quoterType === "relative" ||
+      pool.quoterType === "decimal" ||
+      (pool.quoterType === "oracle" && voucher.oracleFeedId)
+    )
       priced += 1;
+    if (pool.quoterType === "oracle" && voucher.oracleFeedId) {
       feeds.add(voucher.oracleFeedId);
     }
     if (poolDepositCap(pool, voucher).kind === "blocked") blocked += 1;
@@ -95,9 +105,10 @@ export function poolComposition(pool: UserPool, vouchers: PoolVoucher[]): PoolCo
 
   return {
     loaded: vouchers.length,
-    total: pool.voucherCount,
+    total,
     priced,
-    unpriced: vouchers.length - priced,
+    pricing: pool.quoterType,
+    unpriced: pool.quoterType === "oracle" ? vouchers.length - priced : 0,
     blocked,
     feeds: feeds.size,
     offers,
@@ -195,7 +206,7 @@ export function poolAdvisories(
   // advisory built on zero rows would report a healthy pool.
   if (!vouchersAvailable) return advisories;
 
-  if (composition.unpriced > 0) {
+  if (pool.quoterType === "oracle" && composition.unpriced > 0) {
     advisories.push({
       id: "unpriced",
       tone: "danger",

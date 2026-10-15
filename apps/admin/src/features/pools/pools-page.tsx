@@ -142,12 +142,7 @@ export function PoolsPage({ search }: { search: TableSearch }) {
                 search: { tab: "vouchers" },
               })
             }
-            emptyState={
-              <EmptyState
-                title={searched ? "No matching pools" : "No pools"}
-                description={searched ? "No pool matches this search." : "No pools are available."}
-              />
-            }
+            emptyState={<EmptyState title={searched ? "No matching pools" : "No pools"} />}
             footer={
               <TablePagination
                 search={search}

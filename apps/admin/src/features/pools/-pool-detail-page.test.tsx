@@ -31,6 +31,7 @@ const listPoolTransactions = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
+    accounts: { getAccountTokens: () => Promise.resolve({ tokens: [] }) },
     pools: {
       getPoolByAddress: (...args: unknown[]) => getPoolByAddress(...args),
       getPoolVouchers: (...args: unknown[]) => getPoolVouchers(...args),
@@ -57,7 +58,7 @@ function pool(overrides: Partial<UserPool> = {}): UserPool {
     tokenRegistryAddress: null,
     limiterAddress: null,
     quoterAddress: null,
-    quoterType: null,
+    quoterType: "oracle",
     feePolicyAddress: null,
     protocolFeeControllerAddress: null,
     feesDecoupled: false,
@@ -219,6 +220,30 @@ describe("PoolDetailPage", () => {
       router.history.back();
     });
     await waitFor(() => expect(router.state.location.search).toMatchObject({ tab: "vouchers" }));
+  });
+
+  it("links holdings and credit and restores each tab on Back", async () => {
+    getPoolByAddress.mockResolvedValue(pool({ quoterType: "decimal" }));
+    const router = renderDetailRoute();
+    fireEvent.click(await screen.findByRole("tab", { name: "Holdings" }));
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ tab: "holdings" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Credit" }));
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ tab: "credit" }));
+    act(() => router.history.back());
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { selected: true }).textContent).toBe("Holdings"),
+    );
+  });
+
+  it("shows decimal pricing without missing-feed warnings", async () => {
+    getPoolByAddress.mockResolvedValue(pool({ quoterType: "decimal" }));
+    getPoolVouchers.mockResolvedValue({
+      vouchers: [poolVoucher({ oracleFeedId: null, oracleAddress: null })],
+    });
+    renderDetailRoute([`/pools/${ADDRESS}?tab=feeds`]);
+    const panel = await screen.findByRole("tabpanel");
+    await waitFor(() => expect(within(panel).getByText("Equal value")).toBeTruthy());
+    expect(screen.queryByText(/vouchers unpriced/)).toBeNull();
   });
 
   it("does not push history when the open tab is selected again", async () => {

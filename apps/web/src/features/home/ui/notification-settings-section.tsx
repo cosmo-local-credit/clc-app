@@ -84,7 +84,9 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-medium text-sm">{presentation.title}</p>
-            <p className="mt-1 text-muted-foreground text-xs">{presentation.description}</p>
+            {presentation.description ? (
+              <p className="mt-1 text-muted-foreground text-xs">{presentation.description}</p>
+            ) : null}
           </div>
         </div>
 
@@ -111,14 +113,13 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
 function notificationSettingsPresentation(state: NotificationSettingsState): {
   Icon: IconType;
   canEnable: boolean;
-  description: ReactNode;
+  description?: ReactNode;
   title: ReactNode;
 } {
   if (state.status === "loading") {
     return {
       Icon: RiNotification3Line,
       canEnable: false,
-      description: <Trans>Checking notification support on this device.</Trans>,
       title: <Trans>Checking availability...</Trans>,
     };
   }
@@ -178,7 +179,6 @@ function notificationSettingsPresentation(state: NotificationSettingsState): {
   return {
     Icon: RiNotification3Line,
     canEnable: true,
-    description: <Trans>Receive voucher, swap, and off-ramp updates when the app is closed.</Trans>,
     title: <Trans>Notifications are off</Trans>,
   };
 }
@@ -186,7 +186,6 @@ function notificationSettingsPresentation(state: NotificationSettingsState): {
 const enabledPresentation = {
   Icon: RiCheckboxCircleLine,
   canEnable: false,
-  description: <Trans>This device is subscribed to wallet notifications.</Trans>,
   title: <Trans>Notifications are enabled</Trans>,
 };
 

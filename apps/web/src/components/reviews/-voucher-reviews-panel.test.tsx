@@ -66,7 +66,6 @@ describe("voucher reviews", () => {
     mount();
     expect(await screen.findByText("No reviews yet.")).toBeTruthy();
     expect(screen.queryByLabelText("Ratings distribution")).toBeNull();
-    expect(screen.queryByText("All reviews · newest first")).toBeNull();
     expect(screen.queryByText("—")).toBeNull();
     expect(
       screen.getByText("Sign in after redeeming this voucher to leave a review."),
