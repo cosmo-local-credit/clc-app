@@ -381,9 +381,9 @@ file's `name` binds it to one project:
 
 **The two copies of each Wrangler file differ only in `name` and in their
 "Per environment" blocks.** Every other line, comments included, is identical
-on both branches, so a develop → master merge that touches a shared line (a new
-shared variable, a comment) leaves master's values alone without a conflict.
-Keep it that way:
+on both branches. Git can retain master's environment values when promoting
+shared changes, provided those edits do not overlap the environment overrides
+or their neighboring lines. Keep it that way:
 
 - A new variable that is the same everywhere goes in the "Shared" block, on
   develop only. It reaches master with the next promote.
@@ -394,6 +394,13 @@ Keep it that way:
   "Resolve conflicts" button does exactly that). It records master as the new
   merge base, and the next promote then silently carries staging's `name` and
   URLs onto master. Resolve on the master side, keeping master's lines.
+- Editing comments or whitespace immediately beside environment values can also
+  conflict with master's overrides. Keep that layout identical on both branches;
+  when resolving a promotion, take develop's shared text and master's values.
+- `python3 tooling/check_promotion.py --master master --develop develop` checks
+  both environments and simulates the next Wrangler merge without modifying the
+  checkout. The `Wrangler promotion safety` CI check runs on pushes and pull
+  requests to both branches and rejects conflicts or leaked staging settings.
 
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
 Green is the product brand (prod); red marks staging.
