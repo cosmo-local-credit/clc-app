@@ -51,7 +51,7 @@ export function PoolReceiveSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+        <SheetContent>
           {open ? (
             <>
               <SheetHeader>

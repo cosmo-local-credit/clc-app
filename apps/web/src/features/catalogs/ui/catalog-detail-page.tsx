@@ -93,7 +93,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
             <SheetRoot open={editing} onOpenChange={setEditing}>
               <SheetPortal>
                 <SheetBackdrop />
-                <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+                <SheetContent>
                   <SheetHeader>
                     <SheetTitle>
                       <Trans>Edit catalog</Trans>

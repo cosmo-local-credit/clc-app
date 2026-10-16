@@ -430,7 +430,7 @@ function ProfileEditSkeleton() {
           </div>
         ))}
       </div>
-      <div className="h-52 w-full rounded-xl border border-border bg-card" />
+      <div className="h-52 w-full rounded-none border border-border bg-card" />
     </div>
   );
 }

@@ -235,7 +235,7 @@ function VoucherMintSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
             <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Create vouchers</Trans>
@@ -349,7 +349,7 @@ function VoucherOwnershipTransferSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
             <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Transfer ownership</Trans>
@@ -454,7 +454,7 @@ function VoucherRetireSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
             <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Retire {voucher.symbol}?</Trans>

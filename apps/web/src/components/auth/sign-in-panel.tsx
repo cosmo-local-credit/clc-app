@@ -482,7 +482,7 @@ export function SignInPanel({
       <SheetRoot open={accountNotFoundOpen} onOpenChange={setAccountNotFoundOpen}>
         <SheetPortal>
           <SheetBackdrop />
-          <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+          <SheetContent className="[&>div:first-child]:hidden">
             <SheetHeader className="px-6 pt-6">
               <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
                 <Trans>Account not found</Trans>

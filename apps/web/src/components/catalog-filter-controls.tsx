@@ -270,7 +270,7 @@ export function CatalogFilterSheet({
       <SheetRoot open={open} onOpenChange={changeOpen}>
         <SheetPortal>
           <SheetBackdrop />
-          <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+          <SheetContent>
             {showHeader ? (
               <SheetHeader className="flex-row items-center justify-between gap-3 px-4 pt-4 pb-3">
                 <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
