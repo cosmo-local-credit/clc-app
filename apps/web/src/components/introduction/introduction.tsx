@@ -8,34 +8,49 @@ import { CLCLogo } from "#/components/ui/clc-logo";
 import { StepProgress } from "#/components/ui/step-progress";
 import { useLocale } from "#/providers/i18n";
 
-type Props = { replay?: boolean; onExit: (action: "skip" | "create" | "signin" | "done") => void };
+type Props = {
+  inline?: boolean;
+  replay?: boolean;
+  onExit: (action: "skip" | "create" | "signin" | "done") => void;
+};
 
-export function Introduction({ replay = false, onExit }: Props) {
+export function Introduction({ inline = false, replay = false, onExit }: Props) {
   const { i18n } = useLingui();
   const { loading, error } = useLocale();
-  const [step, setStep] = useState(replay ? 0 : -1);
+  const [step, setStep] = useState(replay || inline ? 0 : -1);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    heading.current?.focus();
-  }, [step, loading]);
+    if (!inline) heading.current?.focus();
+  }, [step, loading, inline]);
   const slide = slides[step];
   const last = step === slides.length - 1;
 
+  const Container = inline ? "section" : "main";
+  const Heading = inline ? "h2" : "h1";
+
   return (
-    <main className="mx-auto flex min-h-[100svh] w-full max-w-lg flex-col bg-background px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <header className="flex items-start justify-between gap-4">
-        <CLCLogo className="size-10" sharp />
-        {step >= 0 ? <LanguageSelector /> : null}
-      </header>
+    <Container
+      className={
+        inline
+          ? "flex w-full flex-col py-4"
+          : "mx-auto flex min-h-[100svh] w-full max-w-lg flex-col bg-background px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+      }
+    >
+      {!inline ? (
+        <header className="flex items-start justify-between gap-4">
+          <CLCLogo className="size-10" sharp />
+          {step >= 0 ? <LanguageSelector /> : null}
+        </header>
+      ) : null}
       {step < 0 ? (
         <section className="flex flex-1 flex-col justify-center gap-6 py-12">
-          <h1
+          <Heading
             ref={heading}
             tabIndex={-1}
             className="font-heading break-words text-3xl font-bold outline-none"
           >
             <Trans id="intro.language">Choose your language</Trans>
-          </h1>
+          </Heading>
           <LanguageSelector triggerClassName="h-12 w-full text-base" />
         </section>
       ) : loading || error ? (
@@ -45,12 +60,13 @@ export function Introduction({ replay = false, onExit }: Props) {
       ) : (
         <section
           key={step}
-          className="flex flex-1 flex-col justify-center py-8 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+          aria-live={inline ? "polite" : undefined}
+          className="flex flex-1 flex-col justify-center py-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
         >
           <StepProgress step={step + 1} total={slides.length} />
           <div
             aria-hidden="true"
-            className="mb-8 flex min-h-48 items-center justify-center gap-3 border border-border bg-card px-4"
+            className={`mb-6 flex ${inline ? "min-h-24" : "min-h-48"} items-center justify-center gap-3 border border-border bg-card px-4`}
           >
             {slide.icons.map((Icon, index) => (
               <div key={index} className="flex items-center gap-3">
@@ -67,13 +83,13 @@ export function Introduction({ replay = false, onExit }: Props) {
               </div>
             ))}
           </div>
-          <h1
+          <Heading
             ref={heading}
             tabIndex={-1}
             className="mb-4 font-heading break-words text-3xl font-bold leading-tight outline-none"
           >
             {i18n._(slide.title)}
-          </h1>
+          </Heading>
           <p className="break-words text-base leading-relaxed text-muted-foreground">
             {i18n._(slide.body)}
           </p>
@@ -88,9 +104,15 @@ export function Introduction({ replay = false, onExit }: Props) {
         <Button
           className="min-h-11 w-full"
           disabled={loading || !!error}
-          onClick={() => (last ? onExit(replay ? "done" : "create") : setStep(step + 1))}
+          onClick={() =>
+            inline
+              ? setStep((step + 1) % slides.length)
+              : last
+                ? onExit(replay ? "done" : "create")
+                : setStep(step + 1)
+          }
         >
-          {last ? (
+          {last && !inline ? (
             replay ? (
               <Trans>Done</Trans>
             ) : (
@@ -102,7 +124,7 @@ export function Introduction({ replay = false, onExit }: Props) {
             <Trans>Next</Trans>
           )}
         </Button>
-        {last && !replay ? (
+        {last && !replay && !inline ? (
           <Button variant="outline" className="min-h-11 w-full" onClick={() => onExit("signin")}>
             <Trans>I already have an account</Trans>
           </Button>
@@ -111,18 +133,20 @@ export function Introduction({ replay = false, onExit }: Props) {
           <Button
             variant="ghost"
             className="min-h-11"
-            disabled={step <= (replay ? 0 : -1)}
+            disabled={step <= (replay || inline ? 0 : -1)}
             onClick={() => setStep(step - 1)}
           >
             <Trans>Back</Trans>
           </Button>
-          <Button
-            variant="ghost"
-            className="min-h-11"
-            onClick={() => onExit(replay ? "done" : "skip")}
-          >
-            <Trans>Skip</Trans>
-          </Button>
+          {!inline ? (
+            <Button
+              variant="ghost"
+              className="min-h-11"
+              onClick={() => onExit(replay ? "done" : "skip")}
+            >
+              <Trans>Skip</Trans>
+            </Button>
+          ) : null}
         </div>
         {step < 0 && !replay ? (
           <Button variant="link" className="min-h-11 w-full" onClick={() => onExit("signin")}>
@@ -130,6 +154,6 @@ export function Introduction({ replay = false, onExit }: Props) {
           </Button>
         ) : null}
       </footer>
-    </main>
+    </Container>
   );
 }
