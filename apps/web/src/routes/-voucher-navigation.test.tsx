@@ -245,7 +245,8 @@ function renderAt(initialPath: string) {
         <VoucherDetailPage
           voucherAddress={voucherAddress}
           activeTab={activeTab}
-          origin={from ?? "market"}
+          // Non-strict search spans every route, Install's "settings" included.
+          origin={from === "wallet" || from === "vouchers" ? from : "market"}
         />
       ) : null;
     },

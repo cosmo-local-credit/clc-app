@@ -11,15 +11,15 @@ vi.mock("sonner", () => ({ toast }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
-    search: _search,
+    search,
     children,
     ...props
   }: {
     to: string;
-    search?: unknown;
+    search?: Record<string, string>;
     children: React.ReactNode;
   }) => (
-    <a href={to} {...props}>
+    <a href={search ? `${to}?${new URLSearchParams(search).toString()}` : to} {...props}>
       {children}
     </a>
   ),
@@ -114,7 +114,8 @@ describe("SettingsPage", () => {
       <SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />,
     );
     const install = within(group("App")).getByRole("link", { name: "Install CLC" });
-    expect(install.getAttribute("href")).toBe("/install");
+    // Install knows it was opened from here, so its Back returns to Settings.
+    expect(install.getAttribute("href")).toBe("/install?from=settings");
     unmount();
 
     useInstallStore.setState({ installed: true });

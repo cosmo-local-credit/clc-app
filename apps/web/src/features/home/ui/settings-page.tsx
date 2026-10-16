@@ -76,7 +76,7 @@ export function SettingsPage({
             )
           }
           label={installed ? t`Share CLC` : t`Install CLC`}
-          render={<Link to="/install" />}
+          render={<Link to="/install" search={{ from: "settings" }} />}
         />
         <ActionRow
           icon={<RiInformationLine className="size-4" aria-hidden="true" />}

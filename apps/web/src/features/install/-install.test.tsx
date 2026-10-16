@@ -79,6 +79,7 @@ async function renderPage(initialEntries = ["/install"]) {
   const install = createRoute({
     getParentRoute: () => root,
     path: "/install",
+    validateSearch: InstallRoute.options.validateSearch,
     component: InstallRoute.options.component,
   });
   const router = createRouter({
@@ -236,6 +237,52 @@ describe("CLC installation", () => {
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
     await screen.findByText("Home screen");
     expect(router.state.location.searchStr).toBe("?tab=market");
+  });
+
+  it("goes Back to Settings through history when opened from Settings, with no exit to Market", async () => {
+    startBrowser();
+    const router = await renderPage(["/?tab=settings", "/install?from=settings"]);
+    expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Continue in browser" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("link", { name: "Settings" }));
+    await screen.findByText("Home screen");
+    expect(router.state.location.searchStr).toBe("?tab=settings");
+
+    // Back popped the entry rather than pushing Settings on top of Install,
+    // so Forward still returns to it.
+    act(() => {
+      router.history.forward();
+    });
+    await screen.findByRole("heading", { name: "CLC on your home screen" });
+    expect(router.state.location.searchStr).toBe("?from=settings");
+  });
+
+  it("falls back to Settings when opened from Settings with no history", async () => {
+    startBrowser();
+    const router = await renderPage(["/install?from=settings"]);
+    fireEvent.click(screen.getByRole("link", { name: "Settings" }));
+    await screen.findByText("Home screen");
+    expect(router.state.location.searchStr).toBe("?tab=settings");
+  });
+
+  it("hides Continue to CLC from Settings once installed", async () => {
+    vi.spyOn(
+      navigator as Navigator & { standalone?: boolean },
+      "standalone",
+      "get",
+    ).mockReturnValue(true);
+    startBrowser("iPhone Safari/604.1");
+    await renderPage(["/?tab=settings", "/install?from=settings"]);
+    expect(screen.getByText(/CLC is installed/)).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Continue to CLC" })).toBeNull();
+  });
+
+  it("treats an unknown origin as any other entry point", async () => {
+    startBrowser();
+    await renderPage(["/install?from=elsewhere"]);
+    expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Continue in browser" })).toBeTruthy();
   });
 
   it("copies a clean installation URL when native sharing is unavailable", async () => {
