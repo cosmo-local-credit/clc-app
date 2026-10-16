@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 
+vi.mock("#/providers/i18n", () => ({ useLocale: () => ({ loading: false, error: null }) }));
 vi.mock("#/components/install-app-link", () => ({
   InstallAppLink: () => <a href="/install">Install CLC</a>,
 }));
@@ -52,6 +53,8 @@ describe("LandingPage", () => {
     expect(screen.getByRole("button", { name: /create account/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /i already have an account/i })).toBeTruthy();
     expect(screen.queryByTestId("sign-in-panel")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Your wallet" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "How to use CLC" })).toBeNull();
   });
 
   it("navigates to the profile step when Create account is clicked", () => {

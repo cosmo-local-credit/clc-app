@@ -1,4 +1,5 @@
-import { Trans } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
+import { RiBookOpenLine } from "react-icons/ri";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   createContext,
@@ -9,7 +10,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Button } from "#/components/ui/button";
+import { ActionRow } from "#/components/ui/action-row";
+import { LandingPage } from "#/features/onboarding/ui/landing-page";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import {
@@ -88,7 +90,15 @@ export function IntroductionProvider({
         <div className="min-h-[100svh] bg-background" aria-busy="true" />
       ) : show ? (
         <Suspense fallback={<div className="min-h-[100svh] bg-background" />}>
-          <Introduction replay={replay} onExit={exit} />
+          {replay ? (
+            <Introduction replay onExit={exit} />
+          ) : (
+            <LandingPage
+              redirectTo={
+                typeof location.search.redirect === "string" ? location.search.redirect : undefined
+              }
+            />
+          )}
         </Suspense>
       ) : (
         children
@@ -98,11 +108,14 @@ export function IntroductionProvider({
 }
 
 export function IntroductionReplayButton() {
+  const { t } = useLingui();
   const replay = useContext(ReplayContext);
   if (!replay) return null;
   return (
-    <Button variant="outline" className="min-h-11 w-full" onClick={replay}>
-      <Trans id="intro.replay">How to use CLC</Trans>
-    </Button>
+    <ActionRow
+      icon={<RiBookOpenLine className="size-4" aria-hidden="true" />}
+      label={t({ id: "intro.replay", message: "How to use CLC" })}
+      onClick={replay}
+    />
   );
 }
