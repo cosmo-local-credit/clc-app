@@ -137,7 +137,7 @@ export function ImageCropSheet({
     <SheetRoot open={file !== null} onOpenChange={(next) => !next && onCancel()}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="border-border bg-background rounded-none border-t shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
             <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Frame your photo</Trans>

@@ -294,7 +294,7 @@ function AddStablesSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
             <div className="flex items-center gap-3">
               <PretiumLogo />
@@ -539,7 +539,7 @@ function OnrampDetailsSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
             <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
               <Trans>Onramp</Trans>
@@ -650,7 +650,7 @@ function OfframpDetailsSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
             <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
               <Trans>Offramp</Trans>

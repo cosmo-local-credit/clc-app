@@ -9,13 +9,21 @@ import { LanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
+import { BackChevron } from "#/components/wallet";
 import { useInstallStore } from "../install-store";
 
-export function InstallPage() {
+/**
+ * Opened from Settings, Install is a Settings subpage: a Back chevron named
+ * after it, as Edit profile has, and no exit onward to the Market, because
+ * Back is the way out. From anywhere else it is a landing page in its own
+ * right and keeps its Back button and Continue link.
+ */
+export function InstallPage({ from }: { from?: "settings" }) {
   const { t } = useLingui();
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const { installed, status } = useInstallStore();
+  const fromSettings = from === "settings";
   const [shareUrl, setShareUrl] = useState("");
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "manual">("idle");
   useEffect(() => {
@@ -50,17 +58,21 @@ export function InstallPage() {
   return (
     <main className="flex min-h-[100svh] flex-col gap-8 bg-background px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between gap-3">
-        <Button
-          variant="outline"
-          className="h-11"
-          onClick={() => {
-            if (canGoBack) router.history.back();
-            else void router.navigate({ to: "/", search: { tab: "market" }, replace: true });
-          }}
-        >
-          <RiArrowLeftLine className="rtl:-scale-x-100" aria-hidden="true" />
-          <Trans>Back</Trans>
-        </Button>
+        {fromSettings ? (
+          <BackChevron label={t`Settings`} to="/" search={{ tab: "settings" }} />
+        ) : (
+          <Button
+            variant="outline"
+            className="h-11"
+            onClick={() => {
+              if (canGoBack) router.history.back();
+              else void router.navigate({ to: "/", search: { tab: "market" }, replace: true });
+            }}
+          >
+            <RiArrowLeftLine className="rtl:-scale-x-100" aria-hidden="true" />
+            <Trans>Back</Trans>
+          </Button>
+        )}
         <LanguageSelector />
       </div>
 
@@ -91,11 +103,13 @@ export function InstallPage() {
             </div>
           </>
         )}
-        <Button asChild variant="outline" className="h-11 w-full">
-          <Link to="/" search={{ tab: "market" }}>
-            {installed ? <Trans>Continue to CLC</Trans> : <Trans>Continue in browser</Trans>}
-          </Link>
-        </Button>
+        {fromSettings ? null : (
+          <Button asChild variant="outline" className="h-11 w-full">
+            <Link to="/" search={{ tab: "market" }}>
+              {installed ? <Trans>Continue to CLC</Trans> : <Trans>Continue in browser</Trans>}
+            </Link>
+          </Button>
+        )}
       </section>
 
       <section

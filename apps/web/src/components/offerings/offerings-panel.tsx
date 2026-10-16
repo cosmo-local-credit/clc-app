@@ -487,7 +487,7 @@ function OfferingDetailsSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+        <SheetContent>
           <SheetClose className="sr-only">
             <Trans>Close</Trans>
           </SheetClose>

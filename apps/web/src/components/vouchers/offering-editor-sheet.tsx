@@ -118,7 +118,7 @@ export function OfferingEditorSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+        <SheetContent>
           <SheetHeader>
             <SheetTitle className="font-heading text-base font-semibold">
               {offering ? <Trans>Edit offering</Trans> : <Trans>Add offering</Trans>}

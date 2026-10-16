@@ -46,8 +46,9 @@ function SheetContent({
       <Drawer.Popup
         className={cn(
           "pointer-events-auto absolute inset-x-0 bottom-0",
-          "flex max-h-[85dvh] flex-col rounded-t-2xl bg-background outline-none",
-          "shadow-xl",
+          // Square and flat like every other Lyra surface: a top rule, not a
+          // radius and a shadow, separates it from the dimmed page.
+          "flex max-h-[85dvh] flex-col rounded-none border-t border-border bg-background outline-none",
           "[transform:translateY(var(--drawer-swipe-movement-y))]",
           "transition-transform duration-[450ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
           "data-[ending-style]:duration-[calc(var(--drawer-swipe-strength)*450ms)] data-[swiping]:duration-0 data-[swiping]:select-none motion-reduce:duration-0",
@@ -56,7 +57,7 @@ function SheetContent({
         )}
         {...props}
       >
-        <div className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
+        <div className="mx-auto mt-3 h-1 w-10 shrink-0 bg-muted-foreground/30" />
         {children}
       </Drawer.Popup>
     </Drawer.Viewport>

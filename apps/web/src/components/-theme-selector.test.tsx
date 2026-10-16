@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("#/components/ui/select", () => ({
@@ -23,7 +23,7 @@ vi.mock("#/components/ui/select", () => ({
   ),
 }));
 
-const { ThemeSelector, ThemeToggle } = await import("./theme-selector");
+const { ThemeSelector, ThemeSettingsRow, ThemeToggle } = await import("./theme-selector");
 const { useThemeStore, THEME_STORAGE_KEY } = await import("#/providers/theme");
 
 function mockPrefersColorScheme(dark: boolean) {
@@ -94,5 +94,30 @@ describe("ThemeToggle", () => {
     const button = screen.getByRole("button", { name: /toggle theme/i });
     expect(button.getAttribute("aria-pressed")).toBe("true");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
+  });
+});
+
+describe("ThemeSettingsRow", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    document.documentElement.classList.remove("dark");
+    useThemeStore.setState({ theme: "light" });
+    mockPrefersColorScheme(false);
+  });
+
+  it("shows the current theme, applies a choice from its sheet and closes", async () => {
+    render(<ThemeSettingsRow />);
+    const row = screen.getByRole("button", { name: /theme/i });
+    expect(row.textContent).toContain("Light");
+
+    fireEvent.click(row);
+    const sheet = within(await screen.findByRole("dialog", { name: "Theme" }));
+    expect(sheet.getByRole("radio", { name: "Light" }).getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(sheet.getByRole("radio", { name: "Dark" }));
+
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(row.textContent).toContain("Dark");
   });
 });

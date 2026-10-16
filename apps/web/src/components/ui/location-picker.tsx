@@ -221,7 +221,7 @@ export function LocationPicker({
           />
           <button
             type="button"
-            className="absolute top-1/2 end-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
+            className="absolute top-1/2 end-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-none bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
             onClick={geolocation.request}
             disabled={geoUnavailable || geoRequesting}
             aria-label={geoUnavailable ? t`Location unavailable` : t`Use my location`}

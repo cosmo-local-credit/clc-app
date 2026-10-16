@@ -83,7 +83,7 @@ export function VoucherProfileEditorSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+        <SheetContent>
           <SheetHeader>
             <SheetTitle className="font-heading text-base font-semibold">
               <Trans>Edit voucher details</Trans>

@@ -89,7 +89,7 @@ export function PhotoSourcePicker({
       <SheetRoot open={open} onOpenChange={setOpen}>
         <SheetPortal>
           <SheetBackdrop />
-          <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+          <SheetContent className="[&>div:first-child]:hidden">
             <SheetHeader className="px-6 pt-5 pb-3">
               <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
                 {t`Choose a photo`}

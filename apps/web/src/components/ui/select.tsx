@@ -79,7 +79,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
     <Select.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-default select-none items-center gap-2 rounded-sm py-1.5 pe-8 ps-2 text-sm outline-hidden",
+        "relative flex w-full cursor-default select-none items-center gap-2 rounded-none py-1.5 pe-8 ps-2 text-sm outline-hidden",
         "focus:bg-accent focus:text-accent-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,

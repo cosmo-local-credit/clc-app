@@ -54,9 +54,12 @@ afterEach(() => {
 });
 
 describe("AccountSettingsSection", () => {
-  it("links to the profile edit route", () => {
+  it("holds a skeleton row while the profile loads, then links to the profile edit route", async () => {
     mockProfile({});
     const { container } = renderWithQueryClient(<AccountSettingsSection />);
+    expect(container.querySelector("[aria-busy='true']")).toBeTruthy();
+    expect(container.querySelector("a")).toBeNull();
+    await screen.findByText("Alice");
     expect(container.querySelector("a")?.getAttribute("to")).toBe("/settings/profile");
   });
 
@@ -67,11 +70,44 @@ describe("AccountSettingsSection", () => {
     expect(screen.getByText("+254712345678")).toBeTruthy();
   });
 
+  it("isolates the contact line left-to-right so a phone number keeps its order in Arabic", async () => {
+    mockProfile({});
+    renderWithQueryClient(<AccountSettingsSection />);
+    const phone = await screen.findByText("+254712345678");
+    expect(phone.tagName).toBe("BDI");
+    expect(phone.getAttribute("dir")).toBe("ltr");
+  });
+
+  it("isolates a real email when there is no phone", async () => {
+    mockProfile({ phone: "" });
+    renderWithQueryClient(<AccountSettingsSection />);
+    const email = await screen.findByText("alice@example.com");
+    expect(email.tagName).toBe("BDI");
+    expect(email.getAttribute("dir")).toBe("ltr");
+  });
+
   it("shows the username on its own line, apart from a name that may truncate", async () => {
     mockProfile({ name: "Alice Wanjiru Kamau Otieno", username: "alice" });
     renderWithQueryClient(<AccountSettingsSection />);
     expect(await screen.findByText("Alice Wanjiru Kamau Otieno")).toBeTruthy();
-    expect(screen.getByText("alice").closest("p")?.textContent).toBe("alice");
+    const username = screen.getByText("alice");
+    expect(username.tagName).toBe("BDI");
+    expect(username.parentElement?.textContent).toBe("alice");
+  });
+
+  it("shows the profile photo in a round avatar", async () => {
+    mockProfile({ avatarUrl: "https://images.example/profile/alice.webp" });
+    const { container } = renderWithQueryClient(<AccountSettingsSection />);
+    await screen.findByText("Alice");
+    const photo = container.querySelector("img");
+    expect(photo?.getAttribute("src")).toBe("https://images.example/profile/alice.webp");
+    expect(photo?.parentElement?.className).toContain("rounded-full");
+  });
+
+  it("falls back to initials without a photo", async () => {
+    mockProfile({ name: "Alice Wanjiru" });
+    renderWithQueryClient(<AccountSettingsSection />);
+    expect(await screen.findByText("AW")).toBeTruthy();
   });
 
   it("hides a placeholder email and prompts for contact details", async () => {
