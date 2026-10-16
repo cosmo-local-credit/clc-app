@@ -384,7 +384,7 @@ msgstr "A ativar na blockchain..."
 msgid "Activating smart wallet..."
 msgstr "A ativar a carteira inteligente..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Active"
 msgstr "Ativo"
 
@@ -518,7 +518,7 @@ msgstr "Endereço"
 msgid "Address book"
 msgstr "Livro de endereços"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:151
+#: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:22
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -807,6 +807,7 @@ msgstr "Acesso à câmara recusada."
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:489
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:522
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:224
+#: apps/web/src/features/home/ui/settings-page.tsx:153
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:469
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:744
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
@@ -1024,7 +1025,7 @@ msgstr "A verificar quais vales este fundo aceita…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:147
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Checking…"
 msgstr "A verificar…"
 
@@ -1348,7 +1349,7 @@ msgstr "Ligue a sua carteira para emitir vales."
 msgid "Connect your wallet to use MPESA."
 msgstr "Ligue a sua carteira para usar o MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:168
+#: apps/web/src/features/home/ui/settings-page.tsx:216
 msgid "Connected address"
 msgstr "Endereço ligado"
 
@@ -1446,7 +1447,7 @@ msgstr "Endereço do contrato copiado"
 msgid "Copy"
 msgstr "Copiar"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:186
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 #: apps/web/src/features/wallet/ui/cash-page.tsx:50
 msgid "Copy address"
 msgstr "Copiar endereço"
@@ -1578,8 +1579,8 @@ msgstr "Não foi possível verificar quais vales este fundo aceita."
 msgid "Couldn't check your review access."
 msgstr "Não foi possível verificar seu acesso às avaliações."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:146
-#: apps/web/src/features/home/ui/settings-page.tsx:152
+#: apps/web/src/features/home/ui/settings-page.tsx:194
+#: apps/web/src/features/home/ui/settings-page.tsx:200
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:17
@@ -2114,7 +2115,7 @@ msgstr "Diminuir a quantidade de {0}"
 msgid "Default"
 msgstr "Predefinição"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:195
+#: apps/web/src/features/home/ui/settings-page.tsx:243
 msgid "Delegated to Calibur"
 msgstr "Delegado a Calibur"
 
@@ -2862,7 +2863,7 @@ msgstr "Na rede"
 #~ msgid "In this pool"
 #~ msgstr "Neste fundo"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Inactive"
 msgstr "Inativo"
 
@@ -3622,7 +3623,7 @@ msgstr "Ainda não foram acumuladas taxas de {0}."
 msgid "No activity yet."
 msgstr "Ainda não há atividade."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:178
+#: apps/web/src/features/home/ui/settings-page.tsx:226
 msgid "No address available"
 msgstr "Não existe endereço disponível"
 
@@ -5595,9 +5596,14 @@ msgstr "Inicie sessão com uma chave privada"
 #~ msgstr "Inicie sessão com o bloqueio de ecrã do dispositivo em vez do cartão de "
 #~ "papel. O pedido aparecerá através de {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:110
+#: apps/web/src/features/home/ui/settings-page.tsx:132
+#: apps/web/src/features/home/ui/settings-page.tsx:150
 msgid "Sign out"
 msgstr "Terminar sessão"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:138
+msgid "Sign out?"
+msgstr "Terminar sessão?"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Sign-in"
@@ -5615,7 +5621,7 @@ msgstr "Método de autenticação"
 #~ msgid "Signing out..."
 #~ msgstr "A terminar sessão..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:110
+#: apps/web/src/features/home/ui/settings-page.tsx:132
 msgid "Signing out…"
 msgstr "A terminar sessão…"
 
@@ -6927,8 +6933,8 @@ msgstr "Ações da carteira"
 #~ msgstr "As ações da carteira ficam disponíveis depois de criar uma conta ou "
 #~ "iniciar sessão."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:159
-#: apps/web/src/features/home/ui/settings-page.tsx:163
+#: apps/web/src/features/home/ui/settings-page.tsx:207
+#: apps/web/src/features/home/ui/settings-page.tsx:211
 msgid "Wallet session"
 msgstr "Sessão da carteira"
 
@@ -7141,6 +7147,11 @@ msgstr "Envia"
 #: apps/web/src/components/wallet/wallet-status.tsx:40
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "Confirmará com Face ID, impressão digital ou PIN"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:159
+msgid "You’ll need your paper card or passkey to sign back in."
+msgstr "Vai precisar do seu cartão de papel ou da chave de acesso para iniciar "
+"sessão novamente."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:361
 msgid "You'll receive"

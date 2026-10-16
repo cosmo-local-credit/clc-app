@@ -98,20 +98,62 @@ export function SettingsPage({
       </SettingsGroup>
 
       <SettingsGroup label={t`Session`}>
-        <ActionRow
-          tone="destructive"
-          icon={
-            isSigningOut ? (
-              <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-            ) : (
-              <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
-            )
-          }
-          label={isSigningOut ? t`Signing out…` : t`Sign out`}
-          onClick={isSigningOut ? undefined : onSignOut}
-        />
+        <SignOutRow isSigningOut={isSigningOut} onSignOut={onSignOut} />
       </SettingsGroup>
     </div>
+  );
+}
+
+/**
+ * Signing out clears this device's wallet secrets, so it asks first: a
+ * paper-wallet member without the card to hand cannot get back in.
+ */
+function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSignOut: () => void }) {
+  const { t } = useLingui();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <ActionRow
+        tone="destructive"
+        icon={
+          isSigningOut ? (
+            <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
+          )
+        }
+        label={isSigningOut ? t`Signing out…` : t`Sign out`}
+        onClick={isSigningOut ? undefined : () => setOpen(true)}
+      />
+      <SettingsSheet
+        open={open}
+        onOpenChange={setOpen}
+        title={t`Sign out?`}
+        footer={
+          <>
+            <Button
+              variant="outline"
+              className="h-11 w-full border-destructive text-destructive hover:bg-destructive/10"
+              onClick={() => {
+                setOpen(false);
+                onSignOut();
+              }}
+            >
+              <RiLogoutBoxRLine aria-hidden="true" />
+              <Trans>Sign out</Trans>
+            </Button>
+            <Button variant="outline" className="h-11 w-full" onClick={() => setOpen(false)}>
+              <Trans>Cancel</Trans>
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm">
+          <Trans>You’ll need your paper card or passkey to sign back in.</Trans>
+        </p>
+      </SettingsSheet>
+    </>
   );
 }
 

@@ -376,7 +376,7 @@ msgstr "Активація в блокчейні…"
 msgid "Activating smart wallet..."
 msgstr "Активація смартгаманця…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Active"
 msgstr "Активний"
 
@@ -510,7 +510,7 @@ msgstr "Адреса"
 msgid "Address book"
 msgstr "Адресна книга"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:151
+#: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:22
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -799,6 +799,7 @@ msgstr "Доступ до камери заборонено."
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:489
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:522
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:224
+#: apps/web/src/features/home/ui/settings-page.tsx:153
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:469
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:744
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
@@ -1015,7 +1016,7 @@ msgstr "Перевіряємо, які ваучери приймає цей пу
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:147
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Checking…"
 msgstr "Перевірка…"
 
@@ -1338,7 +1339,7 @@ msgstr "Під’єднайте гаманець, щоб випустити ва
 msgid "Connect your wallet to use MPESA."
 msgstr "Під’єднайте гаманець, щоб користуватися MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:168
+#: apps/web/src/features/home/ui/settings-page.tsx:216
 msgid "Connected address"
 msgstr "Під’єднана адреса"
 
@@ -1436,7 +1437,7 @@ msgstr "Адресу контракту скопійовано"
 msgid "Copy"
 msgstr "Копіювати"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:186
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 #: apps/web/src/features/wallet/ui/cash-page.tsx:50
 msgid "Copy address"
 msgstr "Копіювати адресу"
@@ -1568,8 +1569,8 @@ msgstr "Не вдалося перевірити, які ваучери прий
 msgid "Couldn't check your review access."
 msgstr "Не вдалося перевірити ваше право на відгук."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:146
-#: apps/web/src/features/home/ui/settings-page.tsx:152
+#: apps/web/src/features/home/ui/settings-page.tsx:194
+#: apps/web/src/features/home/ui/settings-page.tsx:200
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:17
@@ -2104,7 +2105,7 @@ msgstr "Зменште кількість для {0}"
 msgid "Default"
 msgstr "За замовчуванням"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:195
+#: apps/web/src/features/home/ui/settings-page.tsx:243
 msgid "Delegated to Calibur"
 msgstr "Делеговано Calibur"
 
@@ -2845,7 +2846,7 @@ msgstr "У мережі"
 #~ msgid "In this pool"
 #~ msgstr "У цьому пулі"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Inactive"
 msgstr "Неактивний"
 
@@ -3600,7 +3601,7 @@ msgstr "Комісії {0} ще не накопичилися."
 msgid "No activity yet."
 msgstr "Активності ще немає."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:178
+#: apps/web/src/features/home/ui/settings-page.tsx:226
 msgid "No address available"
 msgstr "Адреса недоступна"
 
@@ -5557,9 +5558,14 @@ msgstr "Увійти за допомогою приватного ключа"
 #~ msgstr "Увійдіть за допомогою блокування екрана пристрою замість паперової "
 #~ "картки. Пристрій надішле запит через {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:110
+#: apps/web/src/features/home/ui/settings-page.tsx:132
+#: apps/web/src/features/home/ui/settings-page.tsx:150
 msgid "Sign out"
 msgstr "Вийти"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:138
+msgid "Sign out?"
+msgstr "Вийти?"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Sign-in"
@@ -5577,7 +5583,7 @@ msgstr "Спосіб входу"
 #~ msgid "Signing out..."
 #~ msgstr "Вихід..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:110
+#: apps/web/src/features/home/ui/settings-page.tsx:132
 msgid "Signing out…"
 msgstr "Вихід…"
 
@@ -6881,8 +6887,8 @@ msgstr "Дії з гаманцем"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "Дії з гаманцем стануть доступні після реєстрації або входу."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:159
-#: apps/web/src/features/home/ui/settings-page.tsx:163
+#: apps/web/src/features/home/ui/settings-page.tsx:207
+#: apps/web/src/features/home/ui/settings-page.tsx:211
 msgid "Wallet session"
 msgstr "Сеанс гаманця"
 
@@ -7094,6 +7100,10 @@ msgstr "Ви надсилаєте"
 #: apps/web/src/components/wallet/wallet-status.tsx:40
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "Ви підтвердите дію за допомогою Face ID, відбитка пальця або PIN-коду"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:159
+msgid "You’ll need your paper card or passkey to sign back in."
+msgstr "Щоб увійти знову, вам знадобиться паперова картка або ключ доступу."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:361
 msgid "You'll receive"

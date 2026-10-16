@@ -210,13 +210,34 @@ describe("SettingsPage", () => {
     expect(screen.getByTestId("notification-row").textContent).toBe(ADDRESS);
   });
 
-  it("signs out from the Session group", () => {
+  it("asks before signing out, and signs out only once confirmed", async () => {
     const onSignOut = vi.fn();
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={onSignOut} />);
-    const signOut = within(group("Session")).getByRole("button", { name: "Sign out" });
-    expect(signOut.className).toContain("text-start");
-    fireEvent.click(signOut);
+
+    fireEvent.click(within(group("Session")).getByRole("button", { name: "Sign out" }));
+    const sheet = within(await screen.findByRole("dialog", { name: "Sign out?" }));
+    expect(onSignOut).not.toHaveBeenCalled();
+    expect(sheet.getByText("You’ll need your paper card or passkey to sign back in.")).toBeTruthy();
+
+    const confirm = sheet.getByRole("button", { name: "Sign out" });
+    expect(confirm.className).toContain("text-destructive");
+    expect(confirm.dataset.variant).toBe("outline");
+    fireEvent.click(confirm);
+
     expect(onSignOut).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("keeps the session when the confirmation is cancelled", async () => {
+    const onSignOut = vi.fn();
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={onSignOut} />);
+
+    fireEvent.click(within(group("Session")).getByRole("button", { name: "Sign out" }));
+    const sheet = within(await screen.findByRole("dialog", { name: "Sign out?" }));
+    fireEvent.click(sheet.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(onSignOut).not.toHaveBeenCalled();
   });
 
   it("shows a spinner and 'Signing out…' on a static row while signing out", () => {

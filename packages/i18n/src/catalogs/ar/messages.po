@@ -382,7 +382,7 @@ msgstr "جارٍ التفعيل على السلسلة..."
 msgid "Activating smart wallet..."
 msgstr "جارٍ تفعيل المحفظة الذكية..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Active"
 msgstr "نشط"
 
@@ -515,7 +515,7 @@ msgstr "العنوان"
 msgid "Address book"
 msgstr "دفتر العناوين"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:151
+#: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:22
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -802,6 +802,7 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:489
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:522
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:224
+#: apps/web/src/features/home/ui/settings-page.tsx:153
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:469
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:744
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
@@ -1016,7 +1017,7 @@ msgstr "جارٍ التحقق من القسائم التي يقبلها هذا �
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:147
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Checking…"
 msgstr "جارٍ التحقق…"
 
@@ -1338,7 +1339,7 @@ msgstr "اربط محفظتك لإصدار القسائم."
 msgid "Connect your wallet to use MPESA."
 msgstr "اربط محفظتك لاستخدام MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:168
+#: apps/web/src/features/home/ui/settings-page.tsx:216
 msgid "Connected address"
 msgstr "العنوان المتصل"
 
@@ -1436,7 +1437,7 @@ msgstr "تم نسخ عنوان العقد"
 msgid "Copy"
 msgstr "نسخ"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:186
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 #: apps/web/src/features/wallet/ui/cash-page.tsx:50
 msgid "Copy address"
 msgstr "نسخ العنوان"
@@ -1568,8 +1569,8 @@ msgstr "تعذّر التحقق من القسائم التي يقبلها هذا
 msgid "Couldn't check your review access."
 msgstr "تعذّر التحقق من صلاحية وصولك إلى المراجعات."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:146
-#: apps/web/src/features/home/ui/settings-page.tsx:152
+#: apps/web/src/features/home/ui/settings-page.tsx:194
+#: apps/web/src/features/home/ui/settings-page.tsx:200
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:17
@@ -2097,7 +2098,7 @@ msgstr "تقليل كمية {0}"
 msgid "Default"
 msgstr "افتراضي"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:195
+#: apps/web/src/features/home/ui/settings-page.tsx:243
 msgid "Delegated to Calibur"
 msgstr "مفوّض إلى Calibur"
 
@@ -2841,7 +2842,7 @@ msgstr "ضمن الشبكة"
 #~ msgid "In this pool"
 #~ msgstr "في هذا الصندوق"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:209
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Inactive"
 msgstr "غير نشط"
 
@@ -3595,7 +3596,7 @@ msgstr "لم تتراكم أي رسوم {0} بعد."
 msgid "No activity yet."
 msgstr "لا يوجد نشاط بعد."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:178
+#: apps/web/src/features/home/ui/settings-page.tsx:226
 msgid "No address available"
 msgstr "لا يوجد عنوان متاح"
 
@@ -5551,9 +5552,14 @@ msgstr "سجّل الدخول باستخدام المفتاح الخاص"
 #~ msgstr "سجّل الدخول باستخدام قفل شاشة جهازك بدلاً من بطاقتك الورقية. سيطلب "
 #~ "جهازك ذلك عبر {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:110
+#: apps/web/src/features/home/ui/settings-page.tsx:132
+#: apps/web/src/features/home/ui/settings-page.tsx:150
 msgid "Sign out"
 msgstr "تسجيل الخروج"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:138
+msgid "Sign out?"
+msgstr "تسجيل الخروج؟"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Sign-in"
@@ -5571,7 +5577,7 @@ msgstr "طريقة تسجيل الدخول"
 #~ msgid "Signing out..."
 #~ msgstr "جارٍ تسجيل الخروج..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:110
+#: apps/web/src/features/home/ui/settings-page.tsx:132
 msgid "Signing out…"
 msgstr "جارٍ تسجيل الخروج…"
 
@@ -6869,8 +6875,8 @@ msgstr "إجراءات المحفظة"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "تتاح إجراءات المحفظة بعد إنشاء حساب أو تسجيل الدخول."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:159
-#: apps/web/src/features/home/ui/settings-page.tsx:163
+#: apps/web/src/features/home/ui/settings-page.tsx:207
+#: apps/web/src/features/home/ui/settings-page.tsx:211
 msgid "Wallet session"
 msgstr "جلسة المحفظة"
 
@@ -7081,6 +7087,10 @@ msgstr "أنت ترسل"
 #: apps/web/src/components/wallet/wallet-status.tsx:40
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "ستؤكد باستخدام Face ID أو بصمة الإصبع أو رمز PIN"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:159
+msgid "You’ll need your paper card or passkey to sign back in."
+msgstr "ستحتاج إلى بطاقتك الورقية أو مفتاح المرور لتسجيل الدخول مجددًا."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:361
 msgid "You'll receive"
