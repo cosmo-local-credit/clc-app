@@ -53,7 +53,7 @@ export function UsernameInput({
       <Button
         type="button"
         variant="outline"
-        size="sm"
+        size="lg"
         disabled={busy}
         aria-busy={busy}
         onClick={async () => {

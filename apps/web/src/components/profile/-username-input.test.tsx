@@ -45,7 +45,10 @@ describe("UsernameInput", () => {
     suggest.mockResolvedValue("alice-example");
     render(<TestInput />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Suggest username" }));
+    const suggestButton = screen.getByRole("button", { name: "Suggest username" });
+    // A 36px target at least, the height of the input above it.
+    expect(suggestButton.className).toContain("h-9");
+    fireEvent.click(suggestButton);
 
     await waitFor(() =>
       expect((screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement).value).toBe(

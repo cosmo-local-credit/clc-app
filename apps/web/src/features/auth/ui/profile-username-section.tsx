@@ -4,11 +4,12 @@ import { usernameSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
-import { RiFileCopyLine } from "react-icons/ri";
+import { RiAtLine, RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { UsernameInput } from "#/components/profile/username-input";
+import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import {
   SheetBackdrop,
@@ -50,43 +51,41 @@ export function ProfileUsernameSection({ profile }: { profile: ProfileResult }) 
   };
 
   return (
-    <section aria-labelledby="profile-username-label" className="border border-border bg-card p-4">
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <p id="profile-username-label" className="text-muted-foreground text-xs">
-            <Trans>Username</Trans>
-          </p>
-          {username ? (
-            <p className="truncate font-medium font-mono text-sm">
-              <bdi dir="auto">{username}</bdi>
-            </p>
-          ) : (
-            <p className="font-medium text-sm">
-              <Trans>You don't have a username yet.</Trans>
-            </p>
-          )}
-        </div>
-        {username ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-lg"
-            className="bg-card"
-            aria-label={t`Copy wallet username`}
-            onClick={() => copy(username)}
-          >
-            <RiFileCopyLine className="size-4" aria-hidden="true" />
-          </Button>
-        ) : null}
+    // One row split in two: the row opens the username sheet, and copying gets
+    // its own 44px cell rather than a second control stacked under the name.
+    <section aria-label={t`Username`} className="flex border border-border bg-card">
+      <div className="min-w-0 flex-1">
+        <ActionRow
+          icon={<RiAtLine className="size-4" aria-hidden="true" />}
+          label={t`Username`}
+          value={
+            username ? (
+              <bdi dir="auto" className="font-mono">
+                {username}
+              </bdi>
+            ) : (
+              t`Not set`
+            )
+          }
+          render={
+            <button
+              type="button"
+              aria-label={username ? t`Change username` : t`Choose username`}
+              onClick={() => setOpen(true)}
+            />
+          }
+        />
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        className="mt-3 h-11 w-full bg-card"
-        onClick={() => setOpen(true)}
-      >
-        {username ? t`Change username` : t`Choose username`}
-      </Button>
+      {username ? (
+        <button
+          type="button"
+          aria-label={t`Copy wallet username`}
+          onClick={() => copy(username)}
+          className="flex w-11 shrink-0 items-center justify-center border-border border-s text-muted-foreground outline-none active:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground"
+        >
+          <RiFileCopyLine className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
 
       <SheetRoot
         open={open}
