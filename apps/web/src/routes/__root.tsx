@@ -48,6 +48,7 @@ import { RouteError } from "#/components/route-error";
 import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
 import { useInstallPromptListener } from "#/features/install/install-store";
 import { installBootstrapScript } from "#/features/install/install-bootstrap";
+import { IntroductionProvider } from "#/components/introduction/introduction-provider";
 import appCss from "../styles.css?url";
 
 const AppDevtools = import.meta.env.DEV
@@ -263,7 +264,9 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
-      <Outlet />
+      <IntroductionProvider suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}>
+        <Outlet />
+      </IntroductionProvider>
       {pendingEncryptedKey ? (
         <DialogRoot
           open={true}

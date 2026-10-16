@@ -305,12 +305,12 @@ msgstr "Un bien"
 msgid "A new version is available"
 msgstr "Hay una nueva versión disponible"
 
-#: apps/web/src/routes/__root.tsx:309
+#: apps/web/src/routes/__root.tsx:312
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Se abrió un enlace de billetera de papel. ¿Desea iniciar sesión con "
 "esta dirección?"
 
-#: apps/web/src/routes/__root.tsx:307
+#: apps/web/src/routes/__root.tsx:310
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Se escaneó el código QR de una billetera de papel. ¿Desea importar esta "
 "dirección?"
@@ -332,12 +332,18 @@ msgstr "Un vale funciona como una tarjeta de regalo para sus ofertas. Cuando "
 "alguien canjea su vale, usted se compromete a proporcionarle sus "
 "ofertas."
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:25
+msgid "intro.voucher.body"
+msgstr "Un vale representa la promesa de su emisor de proporcionar bienes o "
+"servicios. Consulta para qué se puede usar y quién lo acepta."
+
 #: apps/web/src/components/app-menu.tsx:65
 msgid "About"
 msgstr "Acerca de"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:83
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/features/home/ui/settings-page.tsx:86
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "About Cosmo-Local Credit"
 msgstr "Acerca de Cosmo-Local Credit"
 
@@ -355,7 +361,7 @@ msgstr "Acepte los términos para publicar su fondo"
 msgid "Accept the terms to publish your voucher"
 msgstr "Acepte los términos para publicar su vale"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:53
+#: apps/web/src/features/home/ui/settings-page.tsx:54
 msgid "Account"
 msgstr "Cuenta"
 
@@ -383,7 +389,7 @@ msgstr "Activando en la cadena..."
 msgid "Activating smart wallet..."
 msgstr "Activando la billetera inteligente..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:251
+#: apps/web/src/features/home/ui/settings-page.tsx:254
 msgid "Active"
 msgstr "Activo"
 
@@ -517,7 +523,7 @@ msgstr "Dirección"
 msgid "Address book"
 msgstr "Libreta de direcciones"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:193
+#: apps/web/src/features/home/ui/settings-page.tsx:196
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:22
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -617,6 +623,12 @@ msgstr "Importe en el fondo"
 msgid "Amount to collect"
 msgstr "Importe a cobrar"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:34
+msgid "intro.offer.body"
+msgstr "Una oferta describe bienes o servicios que alguien proporciona. "
+"Consulta los detalles, el precio y qué vale se acepta."
+
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
 msgstr "Ya hay otra lectura de tarjeta en curso. Inténtelo de nuevo."
@@ -626,7 +638,7 @@ msgstr "Ya hay otra lectura de tarjeta en curso. Inténtelo de nuevo."
 msgid "Any selected"
 msgstr "Al menos uno seleccionado"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:69
+#: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "App"
 msgstr "Aplicación"
 
@@ -639,7 +651,7 @@ msgstr "Instalación de la aplicación"
 msgid "App menu"
 msgstr "Menú de la aplicación"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:93
 msgid "App version"
 msgstr "Versión de la app"
 
@@ -682,6 +694,7 @@ msgstr "Etiquetas disponibles"
 msgid "Awaiting approval"
 msgstr "Pendiente de aprobación"
 
+#: apps/web/src/components/introduction/introduction.tsx:117
 #: apps/web/src/components/paper-wallet-scanner.tsx:191
 #: apps/web/src/components/paper-wallet-scanner.tsx:214
 #: apps/web/src/features/install/ui/install-page.tsx:73
@@ -806,7 +819,7 @@ msgstr "Acceso a la cámara denegado."
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:489
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:522
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:223
-#: apps/web/src/features/home/ui/settings-page.tsx:147
+#: apps/web/src/features/home/ui/settings-page.tsx:150
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:469
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:744
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
@@ -816,7 +829,7 @@ msgstr "Acceso a la cámara denegado."
 #: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:482
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:86
-#: apps/web/src/routes/__root.tsx:323
+#: apps/web/src/routes/__root.tsx:326
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -1025,7 +1038,7 @@ msgstr "Comprobando qué vales acepta este fondo…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:147
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
-#: apps/web/src/features/home/ui/settings-page.tsx:251
+#: apps/web/src/features/home/ui/settings-page.tsx:254
 msgid "Checking…"
 msgstr "Comprobando…"
 
@@ -1038,6 +1051,11 @@ msgstr "Elija un archivo o contenido incrustado"
 #: apps/web/src/components/ui/image-upload-field.tsx:89
 msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Elija una imagen JPEG, PNG o WebP."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:85
+msgid "intro.languageError"
+msgstr "Vuelve a elegir un idioma para continuar."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
@@ -1065,6 +1083,12 @@ msgstr "Elija una moneda preferida"
 #: apps/web/src/components/ui/avatar-picker.tsx:101
 msgid "Choose a profile photo"
 msgstr "Elija una foto de perfil"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:43
+msgid "intro.send.body"
+msgstr "Elige un destinatario, un vale que tengas y el importe. Revisa los "
+"datos antes de confirmar y espera el resultado de la transferencia."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:260
@@ -1133,6 +1157,11 @@ msgstr "Elija tipos de cambio definidos por usted o un valor equivalente cuando 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:153
 msgid "Choose username"
 msgstr "Elegir nombre de usuario"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:37
+msgid "intro.language"
+msgstr "Elige tu idioma"
 
 #: apps/web/src/features/install/ui/install-page.tsx:89
 msgid "CLC is installed. Find it on your home screen."
@@ -1350,7 +1379,7 @@ msgstr "Conecte su billetera para emitir vales."
 msgid "Connect your wallet to use MPESA."
 msgstr "Conecte su billetera para usar MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:210
+#: apps/web/src/features/home/ui/settings-page.tsx:213
 msgid "Connected address"
 msgstr "Dirección conectada"
 
@@ -1364,14 +1393,14 @@ msgid "Connecting..."
 msgstr "Conectando..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:161
-#: apps/web/src/routes/__root.tsx:315
+#: apps/web/src/routes/__root.tsx:318
 msgid "Connecting…"
 msgstr "Conectando…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:226
-#: apps/web/src/routes/__root.tsx:257
+#: apps/web/src/routes/__root.tsx:227
+#: apps/web/src/routes/__root.tsx:258
 msgid "Connection failed."
 msgstr "No se pudo establecer la conexión."
 
@@ -1400,6 +1429,7 @@ msgstr "Teléfono de contacto"
 msgid "Contact Website"
 msgstr "Sitio web de contacto"
 
+#: apps/web/src/components/introduction/introduction.tsx:100
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:162
@@ -1448,7 +1478,7 @@ msgstr "Dirección del contrato copiada"
 msgid "Copy"
 msgstr "Copiar"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:228
+#: apps/web/src/features/home/ui/settings-page.tsx:231
 #: apps/web/src/features/wallet/ui/cash-page.tsx:50
 msgid "Copy address"
 msgstr "Copiar dirección"
@@ -1513,11 +1543,11 @@ msgstr "Copiar dirección de la billetera"
 msgid "Copy wallet username"
 msgstr "Copiar nombre de usuario de la billetera"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:34
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:38
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit ayuda a personas y organizaciones a apoyar, "
@@ -1580,8 +1610,8 @@ msgstr "No se pudo comprobar qué vales acepta este fondo."
 msgid "Couldn't check your review access."
 msgstr "No se pudo comprobar tu acceso a las reseñas."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:188
-#: apps/web/src/features/home/ui/settings-page.tsx:194
+#: apps/web/src/features/home/ui/settings-page.tsx:191
+#: apps/web/src/features/home/ui/settings-page.tsx:197
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:17
@@ -1957,7 +1987,8 @@ msgid "Create"
 msgstr "Crear"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:65
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
+#: apps/web/src/components/introduction/introduction.tsx:97
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:161
 msgid "Create account"
 msgstr "Crear cuenta"
@@ -2116,7 +2147,7 @@ msgstr "Reducir la cantidad de {0}"
 msgid "Default"
 msgstr "Predeterminado"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:237
+#: apps/web/src/features/home/ui/settings-page.tsx:240
 msgid "Delegated to Calibur"
 msgstr "Delegado a Calibur"
 
@@ -2186,6 +2217,7 @@ msgstr "El nombre para mostrar es obligatorio"
 msgid "Display name must be 120 characters or fewer"
 msgstr "El nombre para mostrar debe tener 120 caracteres o menos"
 
+#: apps/web/src/components/introduction/introduction.tsx:95
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:347
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:397
@@ -2787,12 +2819,19 @@ msgstr "¿Cómo deben coincidir las categorías?"
 msgid "How should vouchers match?"
 msgstr "¿Cómo deben coincidir los vales?"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-provider.tsx:105
+msgid "intro.replay"
+msgstr "Cómo usar CLC"
+
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:63
 msgid "How was your experience?"
 msgstr "¿Cómo fue tu experiencia?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:58
+#: apps/web/src/components/introduction/introduction.tsx:107
+#: apps/web/src/components/introduction/introduction.tsx:129
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:59
 msgid "I already have an account"
 msgstr "Ya tengo una cuenta"
 
@@ -2847,11 +2886,11 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "Si aparece, mantenga activada la opción Abrir como aplicación web y "
 "toque Añadir."
 
-#: apps/web/src/routes/__root.tsx:303
+#: apps/web/src/routes/__root.tsx:306
 msgid "Import paper wallet?"
 msgstr "¿Importar billetera de papel?"
 
-#: apps/web/src/routes/__root.tsx:315
+#: apps/web/src/routes/__root.tsx:318
 msgid "Import wallet"
 msgstr "Importar billetera"
 
@@ -2864,7 +2903,7 @@ msgstr "En la red"
 #~ msgid "In this pool"
 #~ msgstr "En este fondo"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:251
+#: apps/web/src/features/home/ui/settings-page.tsx:254
 msgid "Inactive"
 msgstr "Inactivo"
 
@@ -2884,7 +2923,7 @@ msgstr "Información"
 #: apps/web/src/components/install-app-button.tsx:60
 #: apps/web/src/components/install-app-dialog.tsx:29
 #: apps/web/src/components/install-app-link.tsx:17
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:81
 #: apps/web/src/features/install/ui/install-page.tsx:38
 msgid "Install CLC"
 msgstr "Instalar CLC"
@@ -3241,6 +3280,10 @@ msgstr "Cargando sus publicaciones…"
 msgid "Loading your profile…"
 msgstr "Cargando su perfil…"
 
+#: apps/web/src/components/introduction/introduction.tsx:43
+msgid "Loading..."
+msgstr "Cargando..."
+
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:19
 #: apps/web/src/components/nearby-catalog.tsx:87
 #: apps/web/src/components/nearby-catalog.tsx:105
@@ -3588,6 +3631,7 @@ msgstr "Nueva emisión"
 msgid "New to CLC?"
 msgstr "¿Es nuevo en CLC?"
 
+#: apps/web/src/components/introduction/introduction.tsx:102
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:637
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:901
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:631
@@ -3625,7 +3669,7 @@ msgstr "Todavía no se han acumulado comisiones de {0}."
 msgid "No activity yet."
 msgstr "Todavía no hay actividad."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:220
+#: apps/web/src/features/home/ui/settings-page.tsx:223
 msgid "No address available"
 msgstr "No hay dirección disponible"
 
@@ -4028,6 +4072,13 @@ msgstr "Abrir la búsqueda del mercado"
 msgid "Open menu"
 msgstr "Abrir menú"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:52
+msgid "intro.receive.body"
+msgstr "Abre Recibir y comparte tu código QR de recepción o la dirección de tu "
+"cartera con quien te envía el vale. No compartas la clave privada de tu "
+"cartera."
+
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
 "Safari on iPhone."
@@ -4201,7 +4252,7 @@ msgid "Password cannot be empty."
 msgstr "La contraseña no puede estar vacía."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:278
+#: apps/web/src/routes/__root.tsx:281
 msgid "Password-protected paper wallet"
 msgstr "Billetera de papel protegida con contraseña"
 
@@ -4568,7 +4619,7 @@ msgstr "Publicaciones"
 msgid "Posts aren't available for this voucher."
 msgstr "Las publicaciones no están disponibles para este vale."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:58
 msgid "Preferences"
 msgstr "Preferencias"
 
@@ -4844,6 +4895,11 @@ msgstr "Recibo copiado"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
 msgstr "Recibir"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:51
+msgid "intro.receive.title"
+msgstr "Recibir un vale"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:67
 msgid "Receive details"
@@ -5389,6 +5445,11 @@ msgstr "Enviar"
 msgid "Send {0}"
 msgstr "Enviar {0}"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:42
+msgid "intro.send.title"
+msgstr "Enviar un vale"
+
 #: apps/web/src/features/wallet/ui/cash-page.tsx:117
 msgid "Send from your Gnosis wallet through Jumper to an exchange, then "
 "withdraw to your bank or M-Pesa."
@@ -5444,7 +5505,7 @@ msgid "Serving"
 msgstr "Porción"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:79
-#: apps/web/src/features/home/ui/settings-page.tsx:100
+#: apps/web/src/features/home/ui/settings-page.tsx:103
 msgid "Session"
 msgstr "Sesión"
 
@@ -5471,7 +5532,7 @@ msgstr "Configurando su billetera…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:43
-#: apps/web/src/features/home/ui/settings-page.tsx:50
+#: apps/web/src/features/home/ui/settings-page.tsx:51
 #: apps/web/src/features/install/ui/install-page.tsx:62
 msgid "Settings"
 msgstr "Configuración"
@@ -5488,7 +5549,7 @@ msgid "Share card"
 msgstr "Compartir tarjeta"
 
 #: apps/web/src/components/install-app-link.tsx:17
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:81
 #: apps/web/src/features/install/ui/install-page.tsx:120
 msgid "Share CLC"
 msgstr "Compartir CLC"
@@ -5607,16 +5668,16 @@ msgstr "Inicie sesión con una clave privada"
 #~ "usar la tarjeta de papel. Su dispositivo se lo solicitará mediante "
 #~ "{platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:126
-#: apps/web/src/features/home/ui/settings-page.tsx:144
+#: apps/web/src/features/home/ui/settings-page.tsx:129
+#: apps/web/src/features/home/ui/settings-page.tsx:147
 msgid "Sign out"
 msgstr "Cerrar sesión"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:132
+#: apps/web/src/features/home/ui/settings-page.tsx:135
 msgid "Sign out?"
 msgstr "¿Cerrar sesión?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:64
+#: apps/web/src/features/home/ui/settings-page.tsx:67
 msgid "Sign-in"
 msgstr "Inicio de sesión"
 
@@ -5632,9 +5693,13 @@ msgstr "Método de inicio de sesión"
 #~ msgid "Signing out..."
 #~ msgstr "Cerrando sesión…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:126
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Signing out…"
 msgstr "Cerrando sesión…"
+
+#: apps/web/src/components/introduction/introduction.tsx:124
+msgid "Skip"
+msgstr "Omitir"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -5841,11 +5906,11 @@ msgstr "Intercambiando…"
 msgid "Swaps settle within the market association..."
 msgstr "Los intercambios se liquidan dentro de la asociación del mercado…"
 
-#: apps/web/src/routes/__root.tsx:315
+#: apps/web/src/routes/__root.tsx:318
 msgid "Switch wallet"
 msgstr "Cambiar de billetera"
 
-#: apps/web/src/routes/__root.tsx:303
+#: apps/web/src/routes/__root.tsx:306
 msgid "Switch wallet?"
 msgstr "¿Quiere cambiar de billetera?"
 
@@ -6945,8 +7010,8 @@ msgstr "Acciones de la billetera"
 #~ msgstr "Las acciones de la billetera estarán disponibles después de registrarse "
 #~ "o iniciar sesión."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:201
-#: apps/web/src/features/home/ui/settings-page.tsx:205
+#: apps/web/src/features/home/ui/settings-page.tsx:204
+#: apps/web/src/features/home/ui/settings-page.tsx:208
 msgid "Wallet session"
 msgstr "Sesión de la billetera"
 
@@ -7001,6 +7066,16 @@ msgstr "Le damos la bienvenida"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:251
 msgid "What are you offering?"
 msgstr "¿Qué ofrece?"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:24
+msgid "intro.voucher.title"
+msgstr "¿Qué es un vale?"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:33
+msgid "intro.offer.title"
+msgstr "¿Qué es una oferta?"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:100
 msgid "What they offer"
@@ -7160,7 +7235,7 @@ msgstr "Usted envía"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "Confirmará con Face ID, huella digital o PIN"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:153
+#: apps/web/src/features/home/ui/settings-page.tsx:156
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "Necesitará su tarjeta de papel o su clave de acceso para volver a "
 "iniciar sesión."
@@ -7285,11 +7360,22 @@ msgstr "Se perderán los cambios sin guardar de esta publicación."
 msgid "Your wallet"
 msgstr "Su billetera"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:15
+msgid "intro.wallet.title"
+msgstr "Tu cartera"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:611
 msgid "Your wallet by default. Enter another address to send the swap fees "
 "there."
 msgstr "Su billetera se usa de forma predeterminada. Introduzca otra dirección "
 "para enviar allí las comisiones de intercambio."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:16
+msgid "intro.wallet.body"
+msgstr "Tu cartera guarda tus vales. Crea una cuenta y guarda los datos de "
+"acceso a tu cartera para empezar."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:95
 msgid "Your wallet or session changed. Sign in again, then retry."
