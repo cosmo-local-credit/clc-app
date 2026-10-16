@@ -1,3 +1,4 @@
+import { IntroductionReplayButton } from "#/components/introduction/introduction-provider";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
@@ -60,6 +61,8 @@ export function SettingsPage({
         <VisibilitySettingsRow />
         <NotificationSettingsSection walletAddress={address} />
       </SettingsGroup>
+
+      <IntroductionReplayButton />
 
       <SettingsGroup label={t`Sign-in`}>
         <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />

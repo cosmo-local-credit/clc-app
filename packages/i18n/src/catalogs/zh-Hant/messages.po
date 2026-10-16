@@ -301,11 +301,11 @@ msgstr "商品"
 msgid "A new version is available"
 msgstr "有新版本可用"
 
-#: apps/web/src/routes/__root.tsx:309
+#: apps/web/src/routes/__root.tsx:312
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "紙錢包連結已開啟。用這個地址登入？"
 
-#: apps/web/src/routes/__root.tsx:307
+#: apps/web/src/routes/__root.tsx:310
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "掃描了紙錢包 QR。匯入這個地址？"
 
@@ -323,12 +323,17 @@ msgid "A voucher acts like a gift card for your offers. When someone redeems "
 "your voucher, you are committing to provide them with your offers."
 msgstr "代金券類似於您為商品或服務發行的禮品卡。有人兌付您的代金券時，您承諾向其提供相應的商品或服務。"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:25
+msgid "intro.voucher.body"
+msgstr "憑證代表發行者提供商品或服務的承諾。請確認它可用於哪些用途，以及誰接受它。"
+
 #: apps/web/src/components/app-menu.tsx:65
 msgid "About"
 msgstr "關於"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:83
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/features/home/ui/settings-page.tsx:86
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "About Cosmo-Local Credit"
 msgstr "關於 Cosmo-Local Credit"
 
@@ -346,7 +351,7 @@ msgstr "接受條款以發佈您的資金池"
 msgid "Accept the terms to publish your voucher"
 msgstr "接受條款以發佈您的代金券"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:53
+#: apps/web/src/features/home/ui/settings-page.tsx:54
 msgid "Account"
 msgstr "帳戶"
 
@@ -374,7 +379,7 @@ msgstr "正在鏈上啟用…"
 msgid "Activating smart wallet..."
 msgstr "正在啟用智能錢包…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:251
+#: apps/web/src/features/home/ui/settings-page.tsx:254
 msgid "Active"
 msgstr "啟用"
 
@@ -510,7 +515,7 @@ msgstr "地址"
 msgid "Address book"
 msgstr "地址簿"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:193
+#: apps/web/src/features/home/ui/settings-page.tsx:196
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:22
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -608,6 +613,11 @@ msgstr "資金池中的金額"
 msgid "Amount to collect"
 msgstr "收取金額"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:34
+msgid "intro.offer.body"
+msgstr "供給描述某人提供的商品或服務。請查看詳情、價格以及接受哪種憑證。"
+
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
 msgstr "另一項卡片掃描正在進行。請重試。"
@@ -617,7 +627,7 @@ msgstr "另一項卡片掃描正在進行。請重試。"
 msgid "Any selected"
 msgstr "任意選擇"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:69
+#: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "App"
 msgstr "應用程式"
 
@@ -630,7 +640,7 @@ msgstr "應用程式安裝"
 msgid "App menu"
 msgstr "應用程式選單"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:93
 msgid "App version"
 msgstr "應用程式版本"
 
@@ -673,6 +683,7 @@ msgstr "可用標籤"
 msgid "Awaiting approval"
 msgstr "等待批准"
 
+#: apps/web/src/components/introduction/introduction.tsx:117
 #: apps/web/src/components/paper-wallet-scanner.tsx:191
 #: apps/web/src/components/paper-wallet-scanner.tsx:214
 #: apps/web/src/features/install/ui/install-page.tsx:73
@@ -797,7 +808,7 @@ msgstr "相機存取被拒絕。"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:489
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:522
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:223
-#: apps/web/src/features/home/ui/settings-page.tsx:147
+#: apps/web/src/features/home/ui/settings-page.tsx:150
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:469
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:744
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
@@ -807,7 +818,7 @@ msgstr "相機存取被拒絕。"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:482
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:86
-#: apps/web/src/routes/__root.tsx:323
+#: apps/web/src/routes/__root.tsx:326
 msgid "Cancel"
 msgstr "取消"
 
@@ -1012,7 +1023,7 @@ msgstr "正在檢查此資金池接受哪些代金券…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:147
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
-#: apps/web/src/features/home/ui/settings-page.tsx:251
+#: apps/web/src/features/home/ui/settings-page.tsx:254
 msgid "Checking…"
 msgstr "檢查…"
 
@@ -1025,6 +1036,11 @@ msgstr "選擇檔案或嵌入"
 #: apps/web/src/components/ui/image-upload-field.tsx:89
 msgid "Choose a JPEG, PNG or WebP image."
 msgstr "選擇 JPEG、PNG 或 WebP 圖片。"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:85
+msgid "intro.languageError"
+msgstr "請重新選擇語言以繼續。"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
@@ -1052,6 +1068,11 @@ msgstr "選擇首選貨幣"
 #: apps/web/src/components/ui/avatar-picker.tsx:101
 msgid "Choose a profile photo"
 msgstr "選擇個人資料照片"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:43
+msgid "intro.send.body"
+msgstr "選擇接收人、你持有的憑證和金額。確認前檢查資訊，然後等待轉帳結果。"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:260
@@ -1118,6 +1139,11 @@ msgstr "當計價單位沒有價格源時，請選擇自定義匯率或等值定
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:153
 msgid "Choose username"
 msgstr "選擇使用者名稱"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:37
+msgid "intro.language"
+msgstr "選擇你的語言"
 
 #: apps/web/src/features/install/ui/install-page.tsx:89
 msgid "CLC is installed. Find it on your home screen."
@@ -1333,7 +1359,7 @@ msgstr "請連線錢包以發行代金券。"
 msgid "Connect your wallet to use MPESA."
 msgstr "連線錢包以使用 MPESA。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:210
+#: apps/web/src/features/home/ui/settings-page.tsx:213
 msgid "Connected address"
 msgstr "連線地址"
 
@@ -1347,14 +1373,14 @@ msgid "Connecting..."
 msgstr "正在連線…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:161
-#: apps/web/src/routes/__root.tsx:315
+#: apps/web/src/routes/__root.tsx:318
 msgid "Connecting…"
 msgstr "正在連線…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:226
-#: apps/web/src/routes/__root.tsx:257
+#: apps/web/src/routes/__root.tsx:227
+#: apps/web/src/routes/__root.tsx:258
 msgid "Connection failed."
 msgstr "連線失敗。"
 
@@ -1383,6 +1409,7 @@ msgstr "聯絡電話"
 msgid "Contact Website"
 msgstr "聯絡網站"
 
+#: apps/web/src/components/introduction/introduction.tsx:100
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:162
@@ -1431,7 +1458,7 @@ msgstr "合約地址已複製"
 msgid "Copy"
 msgstr "複製"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:228
+#: apps/web/src/features/home/ui/settings-page.tsx:231
 #: apps/web/src/features/wallet/ui/cash-page.tsx:50
 msgid "Copy address"
 msgstr "複製地址"
@@ -1496,11 +1523,11 @@ msgstr "複製錢包地址"
 msgid "Copy wallet username"
 msgstr "複製錢包使用者名稱"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:34
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:38
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit 幫助個人與組織支持、分享及交換商品和服務。"
@@ -1562,8 +1589,8 @@ msgstr "無法檢查此資金池接受哪些代金券。"
 msgid "Couldn't check your review access."
 msgstr "無法檢查您的評價存取權限。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:188
-#: apps/web/src/features/home/ui/settings-page.tsx:194
+#: apps/web/src/features/home/ui/settings-page.tsx:191
+#: apps/web/src/features/home/ui/settings-page.tsx:197
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:17
@@ -1932,7 +1959,8 @@ msgid "Create"
 msgstr "建立"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:65
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
+#: apps/web/src/components/introduction/introduction.tsx:97
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:161
 msgid "Create account"
 msgstr "建立帳戶"
@@ -2091,7 +2119,7 @@ msgstr "減少{0}數量"
 msgid "Default"
 msgstr "預設"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:237
+#: apps/web/src/features/home/ui/settings-page.tsx:240
 msgid "Delegated to Calibur"
 msgstr "委託給 Calibur"
 
@@ -2161,6 +2189,7 @@ msgstr "顯示名稱為必填項"
 msgid "Display name must be 120 characters or fewer"
 msgstr "顯示名稱不得超過 120 個字元"
 
+#: apps/web/src/components/introduction/introduction.tsx:95
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:347
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:397
@@ -2758,12 +2787,19 @@ msgstr "類別應該如何匹配？"
 msgid "How should vouchers match?"
 msgstr "代金券應該如何匹配？"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-provider.tsx:105
+msgid "intro.replay"
+msgstr "如何使用 CLC"
+
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:63
 msgid "How was your experience?"
 msgstr "您的體驗如何？"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:58
+#: apps/web/src/components/introduction/introduction.tsx:107
+#: apps/web/src/components/introduction/introduction.tsx:129
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:59
 msgid "I already have an account"
 msgstr "我已經有一個帳戶"
 
@@ -2816,11 +2852,11 @@ msgstr "正在識別位置…"
 msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "如果出現該選項，請保持「作為 Web App 開啟」處於開啟狀態，然後輕觸「新增」。"
 
-#: apps/web/src/routes/__root.tsx:303
+#: apps/web/src/routes/__root.tsx:306
 msgid "Import paper wallet?"
 msgstr "匯入紙錢包？"
 
-#: apps/web/src/routes/__root.tsx:315
+#: apps/web/src/routes/__root.tsx:318
 msgid "Import wallet"
 msgstr "匯入錢包"
 
@@ -2833,7 +2869,7 @@ msgstr "網路內"
 #~ msgid "In this pool"
 #~ msgstr "在這個資金池中"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:251
+#: apps/web/src/features/home/ui/settings-page.tsx:254
 msgid "Inactive"
 msgstr "未啟用"
 
@@ -2853,7 +2889,7 @@ msgstr "資訊"
 #: apps/web/src/components/install-app-button.tsx:60
 #: apps/web/src/components/install-app-dialog.tsx:29
 #: apps/web/src/components/install-app-link.tsx:17
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:81
 #: apps/web/src/features/install/ui/install-page.tsx:38
 msgid "Install CLC"
 msgstr "安裝 CLC"
@@ -3204,6 +3240,10 @@ msgstr "正在載入您的貼文…"
 msgid "Loading your profile…"
 msgstr "正在載入您的個人資料…"
 
+#: apps/web/src/components/introduction/introduction.tsx:43
+msgid "Loading..."
+msgstr "正在載入..."
+
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:19
 #: apps/web/src/components/nearby-catalog.tsx:87
 #: apps/web/src/components/nearby-catalog.tsx:105
@@ -3548,6 +3588,7 @@ msgstr "新增發行量"
 msgid "New to CLC?"
 msgstr "CLC 新手？"
 
+#: apps/web/src/components/introduction/introduction.tsx:102
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:637
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:901
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:631
@@ -3583,7 +3624,7 @@ msgstr "尚未產生 {0} 費用。"
 msgid "No activity yet."
 msgstr "還沒有活動。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:220
+#: apps/web/src/features/home/ui/settings-page.tsx:223
 msgid "No address available"
 msgstr "無可用地址"
 
@@ -3980,6 +4021,11 @@ msgstr "開啟市場搜尋"
 msgid "Open menu"
 msgstr "開啟選單"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:52
+msgid "intro.receive.body"
+msgstr "開啟「接收」，將收款 QR 碼或錢包地址分享給傳送人。請勿分享錢包私鑰。"
+
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
 "Safari on iPhone."
@@ -4149,7 +4195,7 @@ msgid "Password cannot be empty."
 msgstr "密碼不能為空。"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:278
+#: apps/web/src/routes/__root.tsx:281
 msgid "Password-protected paper wallet"
 msgstr "受密碼保護的紙錢包"
 
@@ -4511,7 +4557,7 @@ msgstr "貼文"
 msgid "Posts aren't available for this voucher."
 msgstr "貼文不適用於此代金券。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:58
 msgid "Preferences"
 msgstr "偏好設定"
 
@@ -4786,6 +4832,11 @@ msgstr "收據已複製"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
 msgstr "接收"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:51
+msgid "intro.receive.title"
+msgstr "接收憑證"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:67
 msgid "Receive details"
@@ -5330,6 +5381,11 @@ msgstr "傳送"
 msgid "Send {0}"
 msgstr "傳送{0}"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:42
+msgid "intro.send.title"
+msgstr "傳送憑證"
+
 #: apps/web/src/features/wallet/ui/cash-page.tsx:117
 msgid "Send from your Gnosis wallet through Jumper to an exchange, then "
 "withdraw to your bank or M-Pesa."
@@ -5383,7 +5439,7 @@ msgid "Serving"
 msgstr "份"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:79
-#: apps/web/src/features/home/ui/settings-page.tsx:100
+#: apps/web/src/features/home/ui/settings-page.tsx:103
 msgid "Session"
 msgstr "登入狀態"
 
@@ -5409,7 +5465,7 @@ msgstr "正在設定您的錢包…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:43
-#: apps/web/src/features/home/ui/settings-page.tsx:50
+#: apps/web/src/features/home/ui/settings-page.tsx:51
 #: apps/web/src/features/install/ui/install-page.tsx:62
 msgid "Settings"
 msgstr "設定"
@@ -5426,7 +5482,7 @@ msgid "Share card"
 msgstr "分享卡片"
 
 #: apps/web/src/components/install-app-link.tsx:17
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:81
 #: apps/web/src/features/install/ui/install-page.tsx:120
 msgid "Share CLC"
 msgstr "分享 CLC"
@@ -5540,16 +5596,16 @@ msgstr "使用私鑰登入"
 #~ "device will ask through {platformLabel}."
 #~ msgstr "使用裝置的螢幕鎖而不是紙卡登入。您的裝置將透過 {platformLabel} 詢問。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:126
-#: apps/web/src/features/home/ui/settings-page.tsx:144
+#: apps/web/src/features/home/ui/settings-page.tsx:129
+#: apps/web/src/features/home/ui/settings-page.tsx:147
 msgid "Sign out"
 msgstr "退出登入"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:132
+#: apps/web/src/features/home/ui/settings-page.tsx:135
 msgid "Sign out?"
 msgstr "退出登入？"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:64
+#: apps/web/src/features/home/ui/settings-page.tsx:67
 msgid "Sign-in"
 msgstr "登入"
 
@@ -5565,9 +5621,13 @@ msgstr "登入方式"
 #~ msgid "Signing out..."
 #~ msgstr "正在退出…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:126
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Signing out…"
 msgstr "正在退出…"
+
+#: apps/web/src/components/introduction/introduction.tsx:124
+msgid "Skip"
+msgstr "略過"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -5772,11 +5832,11 @@ msgstr "正在兌換…"
 msgid "Swaps settle within the market association..."
 msgstr "兌換在市場協會內結算…"
 
-#: apps/web/src/routes/__root.tsx:315
+#: apps/web/src/routes/__root.tsx:318
 msgid "Switch wallet"
 msgstr "切換錢包"
 
-#: apps/web/src/routes/__root.tsx:303
+#: apps/web/src/routes/__root.tsx:306
 msgid "Switch wallet?"
 msgstr "切換錢包？"
 
@@ -6858,8 +6918,8 @@ msgstr "錢包操作"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "註冊或登入後即可執行錢包操作。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:201
-#: apps/web/src/features/home/ui/settings-page.tsx:205
+#: apps/web/src/features/home/ui/settings-page.tsx:204
+#: apps/web/src/features/home/ui/settings-page.tsx:208
 msgid "Wallet session"
 msgstr "錢包登入狀態"
 
@@ -6912,6 +6972,16 @@ msgstr "歡迎回來"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:251
 msgid "What are you offering?"
 msgstr "您提供什麼商品或服務？"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:24
+msgid "intro.voucher.title"
+msgstr "什麼是憑證？"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:33
+msgid "intro.offer.title"
+msgstr "什麼是供給？"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:100
 msgid "What they offer"
@@ -7069,7 +7139,7 @@ msgstr "您傳送"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "您將使用 Face ID、指紋或 PIN 進行確認"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:153
+#: apps/web/src/features/home/ui/settings-page.tsx:156
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "重新登入需要您的紙本卡片或通行金鑰。"
 
@@ -7185,10 +7255,20 @@ msgstr "您對此貼文未儲存的更改將會丟失。"
 msgid "Your wallet"
 msgstr "您的錢包"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:15
+msgid "intro.wallet.title"
+msgstr "你的錢包"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:611
 msgid "Your wallet by default. Enter another address to send the swap fees "
 "there."
 msgstr "預設使用您的錢包。輸入其他地址，可將兌換費傳送到該地址。"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction-content.ts:16
+msgid "intro.wallet.body"
+msgstr "你的錢包用於存放憑證。建立帳戶並妥善保存錢包的存取資料，即可開始使用。"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:95
 msgid "Your wallet or session changed. Sign in again, then retry."

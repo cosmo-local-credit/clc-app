@@ -1,3 +1,4 @@
+import { IntroductionReplayButton } from "#/components/introduction/introduction-provider";
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -57,6 +58,7 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
         <Button variant="outline" className="h-11 w-full" onClick={() => go("signin")}>
           <Trans>I already have an account</Trans>
         </Button>
+        <IntroductionReplayButton />
         <InstallAppLink openDialog />
       </div>
     </div>

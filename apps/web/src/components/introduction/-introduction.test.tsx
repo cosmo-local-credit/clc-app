@@ -1,0 +1,64 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, expect, it, vi } from "vite-plus/test";
+import { Introduction } from "./introduction";
+const locale = vi.hoisted(() => ({
+  loading: false,
+  error: null as string | null,
+  locale: "en",
+  setLocale: vi.fn(),
+}));
+vi.mock("#/providers/i18n", () => ({ useLocale: () => locale }));
+vi.mock("#/components/language-selector", () => ({
+  LanguageSelector: () => <button>Language</button>,
+}));
+beforeEach(() => {
+  locale.loading = false;
+  locale.error = null;
+});
+
+it("shows language before five slides and creates an account only at the end", () => {
+  const exit = vi.fn();
+  render(<Introduction onExit={exit} />);
+  expect(screen.queryByText("Your wallet")).toBeNull();
+  fireEvent.click(screen.getByText("Continue"));
+  for (const title of [
+    "Your wallet",
+    "What is a voucher?",
+    "What is an offer?",
+    "Send a voucher",
+  ]) {
+    expect(screen.getByRole("heading", { name: title })).toBe(document.activeElement);
+    fireEvent.click(screen.getByText("Next"));
+    expect(exit).not.toHaveBeenCalled();
+  }
+  expect(screen.getByRole("heading", { name: "Receive a voucher" })).toBeTruthy();
+  fireEvent.click(screen.getByText("Create account"));
+  expect(exit).toHaveBeenCalledWith("create");
+});
+
+it("preserves the slide while language loads and blocks progression after a load error", () => {
+  const view = render(<Introduction replay onExit={vi.fn()} />);
+  fireEvent.click(screen.getByText("Next"));
+  locale.loading = true;
+  view.rerender(<Introduction replay onExit={vi.fn()} />);
+  expect((screen.getByText("Next").closest("button") as HTMLButtonElement).disabled).toBe(true);
+  locale.loading = false;
+  view.rerender(<Introduction replay onExit={vi.fn()} />);
+  expect(screen.getByRole("heading", { name: "What is a voucher?" })).toBeTruthy();
+  locale.error = "Load failed";
+  view.rerender(<Introduction replay onExit={vi.fn()} />);
+  expect(screen.queryByRole("heading")).toBeNull();
+  expect((screen.getByText("Next").closest("button") as HTMLButtonElement).disabled).toBe(true);
+});
+
+it("supports Back and ends replay without account actions", () => {
+  const exit = vi.fn();
+  render(<Introduction replay onExit={exit} />);
+  fireEvent.click(screen.getByText("Next"));
+  fireEvent.click(screen.getByText("Back"));
+  expect(screen.getByRole("heading", { name: "Your wallet" })).toBeTruthy();
+  for (let n = 0; n < 4; n++) fireEvent.click(screen.getByText("Next"));
+  expect(screen.queryByText("Create account")).toBeNull();
+  fireEvent.click(screen.getByText("Done"));
+  expect(exit).toHaveBeenCalledWith("done");
+});
