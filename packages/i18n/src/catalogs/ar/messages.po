@@ -93,7 +93,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "فشلت {0} على السلسلة. لم يتم إنشاء الصندوق."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:362
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:364
 msgid "{0} fees sent to the fee recipient."
 msgstr "أُرسلت رسوم {0} إلى مستلم الرسوم."
 
@@ -179,7 +179,7 @@ msgid "{0} wallet address"
 msgstr "عنوان محفظة {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:250
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:252
 msgid "{amount} {0} withdrawn."
 msgstr "تم سحب {amount} {0}."
 
@@ -258,7 +258,7 @@ msgid "{value} stars"
 msgstr "{value} نجوم"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:280
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:282
 msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
 msgstr "يتوفر {withdrawable} {0}. تبقى الرسوم المخصصة للتحصيل في الصندوق."
 
@@ -284,19 +284,19 @@ msgstr "1 {symbol} = {0} {1}"
 msgid "1 voucher"
 msgstr "قسيمة واحدة"
 
-#: apps/web/src/components/visibility-selector.tsx:22
+#: apps/web/src/components/visibility-selector.tsx:26
 msgid "1,000 km"
 msgstr "١٬٠٠٠ كم"
 
-#: apps/web/src/components/visibility-selector.tsx:24
+#: apps/web/src/components/visibility-selector.tsx:28
 msgid "100 km"
 msgstr "١٠٠ كم"
 
-#: apps/web/src/components/visibility-selector.tsx:25
+#: apps/web/src/components/visibility-selector.tsx:29
 msgid "50 km"
 msgstr "٥٠ كم"
 
-#: apps/web/src/components/visibility-selector.tsx:23
+#: apps/web/src/components/visibility-selector.tsx:27
 msgid "500 km"
 msgstr "٥٠٠ كم"
 
@@ -335,7 +335,7 @@ msgstr "تعمل القسيمة مثل بطاقة هدية لعروضك. عند�
 msgid "About"
 msgstr "حول"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:46
+#: apps/web/src/features/home/ui/settings-page.tsx:83
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:47
 msgid "About Cosmo-Local Credit"
 msgstr "حول Cosmo-Local Credit"
@@ -354,7 +354,7 @@ msgstr "اقبل الشروط لنشر صندوقك"
 msgid "Accept the terms to publish your voucher"
 msgstr "اقبل الشروط لنشر قسيمتك"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:22
+#: apps/web/src/features/home/ui/settings-page.tsx:53
 msgid "Account"
 msgstr "الحساب"
 
@@ -382,7 +382,7 @@ msgstr "جارٍ التفعيل على السلسلة..."
 msgid "Activating smart wallet..."
 msgstr "جارٍ تفعيل المحفظة الذكية..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:141
+#: apps/web/src/features/home/ui/settings-page.tsx:209
 msgid "Active"
 msgstr "نشط"
 
@@ -441,7 +441,7 @@ msgstr "أضف 20 مرفقًا كحد أقصى"
 msgid "Add at most 50 images"
 msgstr "أضف 50 صورة كحد أقصى"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:196
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:220
 msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 msgstr "أضف CLC إلى الشاشة الرئيسية في iPhone، وافتح التطبيق المثبّت، ثم فعّل "
@@ -493,7 +493,7 @@ msgstr "إضافة إلى الكتالوج"
 msgid "Add what you accept this voucher for, and it appears in the marketplace."
 msgstr "أضف ما تقبله مقابل هذه القسيمة لتظهر في السوق."
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:17
+#: apps/web/src/features/home/ui/account-settings-section.tsx:67
 msgid "Add your contact details"
 msgstr "إضافة بيانات الاتصال"
 
@@ -515,6 +515,7 @@ msgstr "العنوان"
 msgid "Address book"
 msgstr "دفتر العناوين"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:22
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -587,7 +588,7 @@ msgstr "تأكد دائمًا من تطابق الرمز والشبكة قبل �
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:160
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:276
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:278
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:256
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:444
@@ -621,6 +622,10 @@ msgstr "تجري قراءة بطاقة أخرى بالفعل. حاول مرة أ
 msgid "Any selected"
 msgstr "أي عنصر محدد"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:69
+msgid "App"
+msgstr "التطبيق"
+
 #: apps/web/src/features/install/ui/install-page.tsx:74
 msgid "App installation"
 msgstr "تثبيت التطبيق"
@@ -630,7 +635,7 @@ msgstr "تثبيت التطبيق"
 msgid "App menu"
 msgstr "قائمة التطبيق"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:126
+#: apps/web/src/features/home/ui/settings-page.tsx:90
 msgid "App version"
 msgstr "إصدار التطبيق"
 
@@ -729,6 +734,10 @@ msgstr "يجب ألا تتجاوز النبذة 500 حرف"
 msgid "Biodiversity"
 msgstr "التنوع البيولوجي"
 
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:228
+msgid "Blocked"
+msgstr "محظورة"
+
 #: apps/web/src/components/vouchers/voucher-labels.ts:73
 msgid "Blue"
 msgstr "أزرق"
@@ -801,7 +810,7 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
 #: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:482
-#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:89
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:86
 #: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "إلغاء"
@@ -944,8 +953,8 @@ msgid "Checking approved vouchers…"
 msgstr "جارٍ التحقق من القسائم الموافق عليها…"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:123
-msgid "Checking availability..."
-msgstr "جارٍ التحقق من التوفر..."
+#~ msgid "Checking availability..."
+#~ msgstr "جارٍ التحقق من التوفر..."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:372
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:421
@@ -980,7 +989,7 @@ msgstr "جارٍ التحقق من توفر الرسائل…"
 msgid "Checking order availability…"
 msgstr "جارٍ التحقق من توفر الطلب…"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 msgid "Checking passkey status…"
 msgstr "جارٍ التحقق من حالة مفتاح المرور…"
 
@@ -1004,9 +1013,10 @@ msgstr "جارٍ التحقق من توفر القسيمة…"
 msgid "Checking which vouchers this pool takes…"
 msgstr "جارٍ التحقق من القسائم التي يقبلها هذا الصندوق…"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
-#: apps/web/src/features/home/ui/settings-page.tsx:141
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:147
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:209
 msgid "Checking…"
 msgstr "جارٍ التحقق…"
 
@@ -1212,7 +1222,7 @@ msgstr "التحصيل مرة أخرى من هذه البطاقة"
 msgid "Collect by card"
 msgstr "التحصيل بالبطاقة"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:401
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:403
 msgid "Collect fees"
 msgstr "تحصيل الرسوم"
 
@@ -1221,7 +1231,7 @@ msgstr "تحصيل الرسوم"
 #~ msgstr "تُدفع رسوم المبادلة المحصلة هنا."
 
 #. placeholder {0}: formatVoucherAddress(address as `0x${string}`)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:507
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:509
 msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "تُدفع رسوم المبادلة المحصلة هنا. محفظتك هي {0}."
 
@@ -1246,7 +1256,7 @@ msgstr "إكمال"
 msgid "Complete fee details are unavailable for this swap."
 msgstr "تفاصيل الرسوم الكاملة غير متاحة لهذه المبادلة."
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:131
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:154
 msgid "Complete the browser permission prompt to continue."
 msgstr "أكمل طلب إذن المتصفح للمتابعة."
 
@@ -1299,15 +1309,15 @@ msgstr "تأكيد المبادلة"
 msgid "Confirmed"
 msgstr "تم التأكيد"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:49
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 msgid "Confirming"
 msgstr "جارٍ التأكيد"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:48
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 msgid "Confirming your passkey on the network. This can take a minute."
 msgstr "جارٍ تأكيد مفتاح المرور الخاص بك على الشبكة. قد يستغرق ذلك دقيقة."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:76
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:80
 msgid "Confirming your passkey on the network…"
 msgstr "جارٍ تأكيد مفتاح المرور الخاص بك على الشبكة…"
 
@@ -1328,7 +1338,7 @@ msgstr "اربط محفظتك لإصدار القسائم."
 msgid "Connect your wallet to use MPESA."
 msgstr "اربط محفظتك لاستخدام MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:87
+#: apps/web/src/features/home/ui/settings-page.tsx:168
 msgid "Connected address"
 msgstr "العنوان المتصل"
 
@@ -1341,7 +1351,7 @@ msgstr "جارٍ ربط المحفظة..."
 msgid "Connecting..."
 msgstr "جارٍ الاتصال..."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:161
 #: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "جارٍ الاتصال…"
@@ -1426,6 +1436,7 @@ msgstr "تم نسخ عنوان العقد"
 msgid "Copy"
 msgstr "نسخ"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:186
 #: apps/web/src/features/wallet/ui/cash-page.tsx:50
 msgid "Copy address"
 msgstr "نسخ العنوان"
@@ -1557,6 +1568,8 @@ msgstr "تعذّر التحقق من القسائم التي يقبلها هذا
 msgid "Couldn't check your review access."
 msgstr "تعذّر التحقق من صلاحية وصولك إلى المراجعات."
 
+#: apps/web/src/features/home/ui/settings-page.tsx:146
+#: apps/web/src/features/home/ui/settings-page.tsx:152
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:17
@@ -2044,7 +2057,7 @@ msgstr "سماوي"
 msgid "Daily"
 msgstr "يوميًا"
 
-#: apps/web/src/components/theme-selector.tsx:20
+#: apps/web/src/components/theme-selector.tsx:24
 msgid "Dark"
 msgstr "داكن"
 
@@ -2084,7 +2097,7 @@ msgstr "تقليل كمية {0}"
 msgid "Default"
 msgstr "افتراضي"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:104
+#: apps/web/src/features/home/ui/settings-page.tsx:195
 msgid "Delegated to Calibur"
 msgstr "مفوّض إلى Calibur"
 
@@ -2301,17 +2314,21 @@ msgstr "كبار السن"
 msgid "Email"
 msgstr "البريد الإلكتروني"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:104
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:115
 msgid "Enable notifications"
 msgstr "تفعيل الإشعارات"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:132
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:155
 msgid "Enabling notifications"
 msgstr "جارٍ تفعيل الإشعارات"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:102
-msgid "Enabling notifications..."
-msgstr "جارٍ تفعيل الإشعارات..."
+#~ msgid "Enabling notifications..."
+#~ msgstr "جارٍ تفعيل الإشعارات..."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:110
+msgid "Enabling notifications…"
+msgstr "جارٍ تفعيل الإشعارات…"
 
 #: apps/web/src/lib/category-label.ts:12
 msgid "Endowments"
@@ -2326,7 +2343,7 @@ msgstr "ينتهي"
 msgid "Enter a credit limit greater than zero"
 msgstr "أدخل حد ائتمان أكبر من صفر"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:488
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
 msgid "Enter a fee from 0 to 100"
 msgstr "أدخل رسومًا من 0 إلى 100"
 
@@ -2352,7 +2369,7 @@ msgstr "أدخل تاريخًا ووقتًا صالحين"
 msgid "Enter a valid private key or paper wallet."
 msgstr "أدخل مفتاحًا خاصًا صالحًا أو محفظة ورقية صالحة."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:510
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:512
 msgid "Enter a valid wallet address"
 msgstr "أدخل عنوان محفظة صالحًا"
 
@@ -2361,12 +2378,12 @@ msgstr "أدخل عنوان محفظة صالحًا"
 msgid "Enter a valid website URL including https://"
 msgstr "أدخل رابط موقع ويب صالحًا يتضمن https://"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:233
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:235
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:477
 msgid "Enter an amount greater than zero."
 msgstr "أدخل مبلغًا أكبر من صفر."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:229
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:231
 msgid "Enter an amount this voucher supports."
 msgstr "أدخل مبلغًا تدعمه هذه القسيمة."
 
@@ -2480,7 +2497,7 @@ msgstr "الزراعة"
 #~ msgstr "رسم"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:100
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:151
 msgid "Fee % and recipient"
 msgstr "نسبة الرسم ومستلمه"
 
@@ -2499,8 +2516,8 @@ msgstr "سياسة الرسوم"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:609
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:622
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:503
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:519
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:505
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:521
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:48
 msgid "Fee recipient"
 msgstr "مستلم الرسوم"
@@ -2518,7 +2535,7 @@ msgstr "تم نسخ مستلم الرسوم"
 #~ msgstr "تُحفظ الرسوم منفصلة عن سيولة الصندوق"
 
 #. placeholder {0}: formatVoucherAddress(feeAddress)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:376
 msgid "Fees are paid to {0}."
 msgstr "تُدفع الرسوم إلى {0}."
 
@@ -2605,7 +2622,7 @@ msgstr "جارٍ البحث عن اسم…"
 msgid "Finding location"
 msgstr "جارٍ تحديد الموقع"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:70
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:74
 msgid "Follow the prompt on your device…"
 msgstr "اتبع المطالبة على جهازك…"
 
@@ -2649,7 +2666,7 @@ msgstr "التجمعات"
 msgid "Get"
 msgstr "احصل عليها"
 
-#: apps/web/src/components/visibility-selector.tsx:21
+#: apps/web/src/components/visibility-selector.tsx:25
 msgid "Global"
 msgstr "عالمي"
 
@@ -2824,7 +2841,7 @@ msgstr "ضمن الشبكة"
 #~ msgid "In this pool"
 #~ msgstr "في هذا الصندوق"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:141
+#: apps/web/src/features/home/ui/settings-page.tsx:209
 msgid "Inactive"
 msgstr "غير نشط"
 
@@ -2844,6 +2861,7 @@ msgstr "معلومات"
 #: apps/web/src/components/install-app-button.tsx:60
 #: apps/web/src/components/install-app-dialog.tsx:29
 #: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/home/ui/settings-page.tsx:78
 #: apps/web/src/features/install/ui/install-page.tsx:30
 msgid "Install CLC"
 msgstr "تثبيت CLC"
@@ -2852,7 +2870,7 @@ msgstr "تثبيت CLC"
 msgid "Install now"
 msgstr "التثبيت الآن"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:200
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:224
 msgid "Install the app first"
 msgstr "ثبّت التطبيق أولاً"
 
@@ -2911,7 +2929,10 @@ msgid "Kilogram"
 msgstr "كيلوغرام"
 
 #: apps/web/src/components/app-menu.tsx:80
-#: apps/web/src/components/language-selector.tsx:33
+#: apps/web/src/components/language-selector.tsx:39
+#: apps/web/src/components/language-selector.tsx:98
+#: apps/web/src/components/language-selector.tsx:108
+#: apps/web/src/components/language-selector.tsx:140
 msgid "Language"
 msgstr "اللغة"
 
@@ -2932,7 +2953,7 @@ msgstr "هل تريد المغادرة من دون حفظ؟"
 msgid "Lending"
 msgstr "الإقراض"
 
-#: apps/web/src/components/theme-selector.tsx:19
+#: apps/web/src/components/theme-selector.tsx:23
 msgid "Light"
 msgstr "فاتح"
 
@@ -2980,7 +3001,7 @@ msgstr "ربط {providerLabel}"
 msgid "Link {providerLabel}?"
 msgstr "هل تريد ربط {providerLabel}؟"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:153
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:152
 msgid "Link a passkey"
 msgstr "ربط مفتاح مرور"
 
@@ -3021,12 +3042,12 @@ msgstr "تم نسخ الرابط"
 msgid "Link wallet to {providerLabel}"
 msgstr "ربط المحفظة بـ {providerLabel}"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:59
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:63
 msgid "Link your passkey ({platformLabel})"
 msgstr "اربط مفتاح المرور الخاص بك ({platformLabel})"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:41
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:45
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:49
 msgid "Linked"
 msgstr "مرتبط"
 
@@ -3034,7 +3055,7 @@ msgstr "مرتبط"
 msgid "Linked vouchers"
 msgstr "القسائم المرتبطة"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:60
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:64
 msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
 "Android. Your paper wallet keeps working here."
 msgstr "يمكن ربط مفتاح مرور باستخدام Safari أو Chrome على iPhone، وChrome على "
@@ -3044,11 +3065,11 @@ msgstr "يمكن ربط مفتاح مرور باستخدام Safari أو Chrome 
 msgid "Linking passkey..."
 msgstr "جارٍ ربط مفتاح المرور..."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:153
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:152
 msgid "Linking passkey…"
 msgstr "جارٍ ربط مفتاح المرور…"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:107
 msgid "Linking the passkey failed. Your paper wallet is unchanged."
 msgstr "فشل ربط مفتاح المرور. لم تتغير محفظتك الورقية."
 
@@ -3317,7 +3338,7 @@ msgstr "تطابق"
 msgid "Matching recipients"
 msgstr "المستلمون المطابقون"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:301
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:303
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:300
 msgid "Max"
 msgstr "الحد الأقصى"
@@ -3565,7 +3586,7 @@ msgid "No"
 msgstr "لا"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:352
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:354
 msgid "No {0} fees have accrued yet."
 msgstr "لم تتراكم أي رسوم {0} بعد."
 
@@ -3574,7 +3595,7 @@ msgstr "لم تتراكم أي رسوم {0} بعد."
 msgid "No activity yet."
 msgstr "لا يوجد نشاط بعد."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:178
 msgid "No address available"
 msgstr "لا يوجد عنوان متاح"
 
@@ -3820,7 +3841,7 @@ msgstr "غير معتمد"
 msgid "Not held"
 msgstr "غير محتفظ به"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:61
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:65
 msgid "Not linked"
 msgstr "غير مرتبط"
 
@@ -3828,7 +3849,7 @@ msgstr "غير مرتبط"
 msgid "Not sent"
 msgstr "لم يُرسل"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:103
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:104
 msgid "Not set"
 msgstr "غير محدد"
 
@@ -3850,40 +3871,40 @@ msgstr "لا يحمل أي عنصر يطابق «{searchTerm}» فئة."
 #~ msgid "Nothing to preview yet."
 #~ msgstr "لا يوجد شيء لمعاينته بعد."
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:209
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:233
 msgid "Notification permission denied"
 msgstr "رُفض إذن الإشعارات"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:225
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:249
 msgid "Notification storage is unavailable"
 msgstr "تخزين الإشعارات غير متاح"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:78
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:88
 msgid "Notifications"
 msgstr "الإشعارات"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:207
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:231
 msgid "Notifications are blocked. Allow them in your browser or device "
 "settings."
 msgstr "الإشعارات محظورة. اسمح بها في إعدادات المتصفح أو الجهاز."
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:189
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:213
 msgid "Notifications are enabled"
 msgstr "الإشعارات مفعّلة"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:182
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:205
 msgid "Notifications are off"
 msgstr "الإشعارات متوقفة"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:218
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:242
 msgid "Notifications are unavailable"
 msgstr "الإشعارات غير متاحة"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:159
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 msgid "Notifications could not be enabled"
 msgstr "تعذّر تفعيل الإشعارات"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:216
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:240
 msgid "Notifications currently require Chrome on Android or the installed "
 "iPhone app."
 msgstr "تتطلب الإشعارات حاليًا Chrome على Android أو تطبيق iPhone المثبّت."
@@ -3891,6 +3912,13 @@ msgstr "تتطلب الإشعارات حاليًا Chrome على Android أو ت
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:549
 msgid "Numbered list"
 msgstr "قائمة مرقمة"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:152
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:177
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:203
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:217
+msgid "Off"
+msgstr "متوقفة"
 
 #: apps/web/src/features/home/ui/marketplace-page.tsx:271
 msgid "Offer"
@@ -3928,6 +3956,10 @@ msgstr "بيع الرصيد"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:659
 msgid "Offramp details"
 msgstr "تفاصيل بيع الرصيد"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:210
+msgid "On"
+msgstr "مفعّلة"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:123
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
@@ -4092,11 +4124,12 @@ msgstr "المشاركون"
 msgid "Participants must be 100 characters or fewer"
 msgstr "يجب ألا تتجاوز قائمة المشاركين 100 حرف"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:123
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:128
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:136
 msgid "Passkey"
 msgstr "مفتاح المرور"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:94
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:98
 msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "أُلغي إنشاء مفتاح المرور. لم تتغير محفظتك الورقية."
 
@@ -4112,7 +4145,7 @@ msgstr "تم ربط مفتاح المرور... جارٍ التأكيد على ا
 msgid "Passkey linked, but wallet connection failed."
 msgstr "تم ربط مفتاح المرور، لكن تعذّر الاتصال بالمحفظة."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:39
 msgid "Passkey status could not be checked."
 msgstr "تعذّر التحقق من حالة مفتاح المرور."
 
@@ -4342,7 +4375,7 @@ msgstr "رسوم الصندوق"
 #~ msgid "Pool fee ({poolFeePercent})"
 #~ msgstr "رسوم الصندوق ({poolFeePercent})"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:465
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:467
 msgid "Pool fee updated."
 msgstr "تم تحديث رسوم الصندوق."
 
@@ -4490,7 +4523,7 @@ msgstr "المنشورات"
 msgid "Posts aren't available for this voucher."
 msgstr "المنشورات غير متاحة لهذه القسيمة."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:60
+#: apps/web/src/features/home/ui/settings-page.tsx:57
 msgid "Preferences"
 msgstr "التفضيلات"
 
@@ -4516,7 +4549,7 @@ msgid "Preparing..."
 msgstr "جارٍ الإعداد..."
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:260
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:82
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:86
 msgid "Preparing…"
 msgstr "جارٍ الإعداد…"
 
@@ -4728,16 +4761,16 @@ msgstr "توزيع التقييمات"
 msgid "Reading the current rate…"
 msgstr "جارٍ قراءة سعر الصرف الحالي…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:281
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:283
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:317
 msgid "Reading the pool's balance…"
 msgstr "جارٍ قراءة رصيد الصندوق…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:477
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:479
 msgid "Reading this pool's fee…"
 msgstr "جارٍ قراءة رسوم هذا الصندوق…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:107
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:776
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:790
 msgid "Reading…"
@@ -4864,11 +4897,11 @@ msgstr "إعادة"
 msgid "Regenerative Agriculture"
 msgstr "الزراعة التجديدية"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:77
 msgid "Registering your passkey…"
 msgstr "جارٍ تسجيل مفتاح المرور…"
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:157
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:180
 msgid "Registration failed. Check your connection and try again."
 msgstr "فشل التسجيل. تحقق من اتصالك وحاول مرة أخرى."
 
@@ -5050,7 +5083,7 @@ msgstr "إعادة المحاولة"
 msgid "Retry {providerLabel} connection"
 msgstr "إعادة محاولة الاتصال بـ {providerLabel}"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:161
 msgid "Retry connection"
 msgstr "إعادة محاولة الاتصال"
 
@@ -5088,7 +5121,7 @@ msgstr "حفظ"
 msgid "Save changes"
 msgstr "حفظ التغييرات"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:535
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:537
 msgid "Save fee settings"
 msgstr "حفظ إعدادات الرسوم"
 
@@ -5252,7 +5285,7 @@ msgstr "جارٍ البحث…"
 #~ msgstr "عرض الكل"
 
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:223
-#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:48
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:45
 msgid "Select a token"
 msgstr "اختر رمزًا"
 
@@ -5360,6 +5393,7 @@ msgid "Serving"
 msgstr "حصة"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:79
+#: apps/web/src/features/home/ui/settings-page.tsx:100
 msgid "Session"
 msgstr "الجلسة"
 
@@ -5371,7 +5405,7 @@ msgstr "فشل التحقق من الجلسة"
 msgid "Session could not be verified. Try again."
 msgstr "تعذّر التحقق من الجلسة. حاول مرة أخرى."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:378
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:380
 msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
 msgstr "حدّد مستلمًا للرسوم قبل تحصيلها، وإلا فلن يجد الصندوق جهة يدفع لها."
 
@@ -5385,7 +5419,7 @@ msgstr "جارٍ إعداد محفظتك..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
-#: apps/web/src/features/home/ui/settings-page.tsx:39
+#: apps/web/src/features/home/ui/settings-page.tsx:50
 msgid "Settings"
 msgstr "الإعدادات"
 
@@ -5401,6 +5435,7 @@ msgid "Share card"
 msgstr "مشاركة البطاقة"
 
 #: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/home/ui/settings-page.tsx:78
 #: apps/web/src/features/install/ui/install-page.tsx:106
 msgid "Share CLC"
 msgstr "مشاركة CLC"
@@ -5516,21 +5551,29 @@ msgstr "سجّل الدخول باستخدام المفتاح الخاص"
 #~ msgstr "سجّل الدخول باستخدام قفل شاشة جهازك بدلاً من بطاقتك الورقية. سيطلب "
 #~ "جهازك ذلك عبر {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:119
+#: apps/web/src/features/home/ui/settings-page.tsx:110
 msgid "Sign out"
 msgstr "تسجيل الخروج"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:64
+msgid "Sign-in"
+msgstr "تسجيل الدخول"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
 msgid "Sign-in method"
 msgstr "طريقة تسجيل الدخول"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
-msgid "Sign-in methods"
-msgstr "طرق تسجيل الدخول"
+#~ msgid "Sign-in methods"
+#~ msgstr "طرق تسجيل الدخول"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:119
-msgid "Signing out..."
-msgstr "جارٍ تسجيل الخروج..."
+#~ msgid "Signing out..."
+#~ msgstr "جارٍ تسجيل الخروج..."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:110
+msgid "Signing out…"
+msgstr "جارٍ تسجيل الخروج…"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -5680,7 +5723,7 @@ msgstr "مبادلة"
 msgid "Swap fee"
 msgstr "رسوم المبادلة"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:486
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:488
 msgid "Swap fee (%)"
 msgstr "رسوم المبادلة (%)"
 
@@ -5744,7 +5787,7 @@ msgstr "تبديل المحفظة"
 msgid "Switch wallet?"
 msgstr "هل تريد تبديل المحفظة؟"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:79
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:83
 msgid "Switching to your passkey…"
 msgstr "جارٍ التبديل إلى مفتاح مرورك…"
 
@@ -5949,7 +5992,7 @@ msgstr "يجب ألا يزيد طول الرسالة والطلب على 500 ح�
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "يمكن للمالك الجديد إنشاء القسائم ونقل الملكية."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:40
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:44
 msgid "The passkey on this device is linked. Switch to it to sign with your "
 "passkey."
 msgstr "مفتاح المرور الموجود على هذا الجهاز مرتبط. بدّل إليه للتوقيع باستخدام "
@@ -5988,7 +6031,7 @@ msgid "The pool could not be published."
 msgstr "تعذّر نشر الصندوق."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:237
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:239
 msgid "The pool doesn't hold that much {0}."
 msgstr "لا يحتوي الصندوق على هذا المقدار من {0}."
 
@@ -6006,9 +6049,9 @@ msgstr "انتهت مهلة الطلب دون استجابة من خدمة ال�
 msgid "The selected unit does not have a configured price feed."
 msgstr "لا توجد خلاصة أسعار مضبوطة للوحدة المحددة."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:253
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:365
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:468
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:255
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:367
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:470
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:438
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:455
 msgid "The transaction failed."
@@ -6019,7 +6062,10 @@ msgid "The voucher could not be published."
 msgstr "تعذّر نشر القسيمة."
 
 #: apps/web/src/components/app-menu.tsx:74
-#: apps/web/src/components/theme-selector.tsx:32
+#: apps/web/src/components/theme-selector.tsx:42
+#: apps/web/src/components/theme-selector.tsx:72
+#: apps/web/src/components/theme-selector.tsx:76
+#: apps/web/src/components/theme-selector.tsx:78
 msgid "Theme"
 msgstr "المظهر"
 
@@ -6040,7 +6086,7 @@ msgid "This account cannot be approved. Contact support if you think this is a "
 "mistake."
 msgstr "لا يمكن اعتماد هذا الحساب. تواصل مع الدعم إذا كنت تعتقد أن هذا خطأ."
 
-#: apps/web/src/features/home/ui/notification-settings-section.tsx:224
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:248
 msgid "This browser cannot store notification registration safely."
 msgstr "لا يستطيع هذا المتصفح تخزين تسجيل الإشعارات بأمان."
 
@@ -6082,7 +6128,7 @@ msgstr "لا يزال تأكيد آخر دفعة من هذه البطاقة جا
 msgid "This card's wallet key is damaged and can't be used."
 msgstr "مفتاح المحفظة في هذه البطاقة تالف ولا يمكن استخدامه."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:92
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
 msgstr "لا يحتوي هذا الجهاز على مفتاح محفظتك الورقية. سجّل الدخول بمحفظتك "
@@ -6168,7 +6214,7 @@ msgid "This pool has no limiter, so deposits are uncapped and no credit limit "
 msgstr "لا يملك هذا الصندوق آلية لتحديد الحد، لذلك لا سقف للإيداعات ولا يمكن "
 "تعيين حد ائتماني."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:558
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:560
 msgid "This pool holds no vouchers yet."
 msgstr "لا يحتوي هذا الصندوق على قسائم بعد."
 
@@ -6243,7 +6289,7 @@ msgstr "يجب ألا يتجاوز العنوان 200 حرف"
 msgid "To"
 msgstr "إلى"
 
-#: apps/web/src/components/theme-selector.tsx:63
+#: apps/web/src/components/theme-selector.tsx:113
 msgid "Toggle theme"
 msgstr "تبديل المظهر"
 
@@ -6335,7 +6381,7 @@ msgstr "رحلة"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:356
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:60
 #: apps/web/src/features/home/ui/activity-page.tsx:64
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:142
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:83
 #: apps/web/src/features/home/ui/wallet-page.tsx:194
@@ -6371,12 +6417,15 @@ msgstr "اكتب {VOUCHER_SEARCH_MIN_CHARS} أحرف على الأقل للبح�
 msgid "Type at least two characters."
 msgstr "اكتب حرفين على الأقل."
 
-#: apps/web/src/components/language-selector.tsx:51
+#: apps/web/src/components/language-selector.tsx:57
+#: apps/web/src/components/language-selector.tsx:110
 msgid "Unable to load language. Reverted to English."
 msgstr "تعذّر تحميل اللغة. تمت العودة إلى الإنجليزية."
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:149
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:105
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:237
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:246
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:304
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:328
@@ -6619,7 +6668,10 @@ msgid "View voucher"
 msgstr "عرض القسيمة"
 
 #: apps/web/src/components/app-menu.tsx:87
-#: apps/web/src/components/visibility-selector.tsx:39
+#: apps/web/src/components/visibility-selector.tsx:51
+#: apps/web/src/components/visibility-selector.tsx:86
+#: apps/web/src/components/visibility-selector.tsx:90
+#: apps/web/src/components/visibility-selector.tsx:92
 msgid "Visibility"
 msgstr "نطاق العرض"
 
@@ -6789,9 +6841,9 @@ msgstr "في انتظار التأكيد…"
 msgid "Waiting for on-chain confirmation"
 msgstr "في انتظار التأكيد على السلسلة"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:315
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:401
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:533
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:317
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:403
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:535
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:579
 msgid "Waiting for the chain…"
 msgstr "في انتظار السلسلة…"
@@ -6817,7 +6869,8 @@ msgstr "إجراءات المحفظة"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "تتاح إجراءات المحفظة بعد إنشاء حساب أو تسجيل الدخول."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:77
+#: apps/web/src/features/home/ui/settings-page.tsx:159
+#: apps/web/src/features/home/ui/settings-page.tsx:163
 msgid "Wallet session"
 msgstr "جلسة المحفظة"
 
@@ -6893,7 +6946,7 @@ msgstr "أين ولأي غرض"
 msgid "Where did this happen?"
 msgstr "أين حدث هذا؟"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:315
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:317
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:144
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:194
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:335
@@ -6901,12 +6954,12 @@ msgid "Withdraw"
 msgstr "سحب"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:95
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:135
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:137
 msgid "Withdraw fees"
 msgstr "سحب الرسوم"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:90
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:122
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 msgid "Withdraw liquidity"
 msgstr "سحب السيولة"
 
@@ -7037,7 +7090,7 @@ msgstr "ستستلم"
 msgid "You'll send"
 msgstr "سترسل"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:44
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:48
 msgid "Your account has a passkey, but it is not on this device. Your paper "
 "card still works here. Adding another passkey is not available yet."
 msgstr "يحتوي حسابك على مفتاح مرور، لكنه غير موجود على هذا الجهاز. لا تزال "
@@ -7077,17 +7130,17 @@ msgstr "لن يظهر اسمك أو عنوان محفظتك. تجنّب تضمي
 msgid "Your paper wallet"
 msgstr "محفظتك الورقية"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
 msgid "Your passkey is being verified."
 msgstr "جارٍ التحقق من مفتاح مرورك."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:104
 msgid "Your passkey is linked, but the app could not switch to it. Your paper "
 "wallet is still connected."
 msgstr "مفتاح مرورك مرتبط، لكن التطبيق تعذّر عليه التبديل إليه. لا تزال محفظتك "
 "الورقية متصلة."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:101
 msgid "Your passkey is still confirming. You can keep using your paper wallet "
 "meanwhile."
 msgstr "لا يزال مفتاح مرورك قيد التأكيد. يمكنك متابعة استخدام محفظتك الورقية في "
@@ -7097,7 +7150,7 @@ msgstr "لا يزال مفتاح مرورك قيد التأكيد. يمكنك م
 #~ msgid "Your Pools"
 #~ msgstr "صناديقك"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:33
+#: apps/web/src/features/home/ui/account-settings-section.tsx:56
 msgid "Your profile"
 msgstr "ملفك الشخصي"
 
@@ -7151,7 +7204,7 @@ msgid "Your wallet by default. Enter another address to send the swap fees "
 "there."
 msgstr "تُستخدم محفظتك افتراضيًا. أدخل عنوانًا آخر لإرسال رسوم المبادلة إليه."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:95
 msgid "Your wallet or session changed. Sign in again, then retry."
 msgstr "تغيّرت محفظتك أو جلستك. سجّل الدخول مرة أخرى، ثم أعد المحاولة."
 

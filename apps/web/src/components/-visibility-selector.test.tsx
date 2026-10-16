@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -26,7 +26,7 @@ vi.mock("#/components/ui/select", () => ({
   ),
 }));
 
-const { VisibilitySelector } = await import("./visibility-selector");
+const { VisibilitySelector, VisibilitySettingsRow } = await import("./visibility-selector");
 const { CATALOG_VISIBILITY_STORAGE_KEY, DEFAULT_CATALOG_VISIBILITY, useCatalogVisibilityStore } =
   await import("#/features/home/state/catalog-visibility");
 
@@ -55,5 +55,35 @@ describe("VisibilitySelector", () => {
     fireEvent.change(select, { target: { value: "50" } });
     expect(window.localStorage.getItem(CATALOG_VISIBILITY_STORAGE_KEY)).toBe("50");
     expect(useCatalogVisibilityStore.getState().visibility).toBe("50");
+  });
+});
+
+describe("VisibilitySettingsRow", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY });
+  });
+
+  it("carries the anchor the catalogs page links to", () => {
+    render(<VisibilitySettingsRow />);
+    expect(screen.getByRole("button", { name: /visibility/i }).id).toBe("visibility");
+  });
+
+  it("persists a distance chosen in its sheet and closes", async () => {
+    render(<VisibilitySettingsRow />);
+    const row = screen.getByRole("button", { name: /visibility/i });
+    await waitFor(() => expect(row.textContent).toContain("1,000 km"));
+
+    fireEvent.click(row);
+    const sheet = within(await screen.findByRole("dialog", { name: "Visibility" }));
+    expect(sheet.getAllByRole("radio")).toHaveLength(5);
+    expect(sheet.getByRole("radio", { name: "1,000 km" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    fireEvent.click(sheet.getByRole("radio", { name: "50 km" }));
+
+    expect(window.localStorage.getItem(CATALOG_VISIBILITY_STORAGE_KEY)).toBe("50");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(row.textContent).toContain("50 km");
   });
 });

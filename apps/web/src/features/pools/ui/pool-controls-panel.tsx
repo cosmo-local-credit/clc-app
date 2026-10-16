@@ -99,11 +99,13 @@ export function PoolControlsPanel({
               icon={<RiWalletLine className="size-4" aria-hidden="true" />}
               label={t`Fee % and recipient`}
               value={
-                fee
-                  ? `${fee.feePercent}% · ${fee.feeAddress ? formatVoucherAddress(fee.feeAddress) : t`Not set`}`
-                  : feeSettings.isError
-                    ? t`Unavailable`
-                    : t`Reading…`
+                <span className="font-mono">
+                  {fee
+                    ? `${fee.feePercent}% · ${fee.feeAddress ? formatVoucherAddress(fee.feeAddress) : t`Not set`}`
+                    : feeSettings.isError
+                      ? t`Unavailable`
+                      : t`Reading…`}
+                </span>
               }
               onClick={() => setSheet("feeSettings")}
             />

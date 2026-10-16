@@ -1,8 +1,9 @@
 import type { SupportedLocale } from "@clc/i18n/locales";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 let currentLocale: SupportedLocale = "en";
+const catalog = { loading: false, error: null as string | null };
 const setLocale = vi.fn((locale: SupportedLocale) => {
   currentLocale = locale;
 });
@@ -11,8 +12,8 @@ vi.mock("#/providers/i18n", () => ({
   useLocale: () => ({
     locale: currentLocale,
     setLocale,
-    loading: false,
-    error: null,
+    loading: catalog.loading,
+    error: catalog.error,
   }),
 }));
 
@@ -50,7 +51,7 @@ vi.mock("#/components/ui/select", () => ({
   ),
 }));
 
-const { LanguageSelector } = await import("./language-selector");
+const { LanguageSelector, LanguageSettingsRow } = await import("./language-selector");
 
 function renderSelector() {
   return render(<LanguageSelector />);
@@ -59,6 +60,8 @@ function renderSelector() {
 describe("LanguageSelector", () => {
   beforeEach(() => {
     currentLocale = "en";
+    catalog.loading = false;
+    catalog.error = null;
     setLocale.mockClear();
   });
 
@@ -234,5 +237,72 @@ describe("LanguageSelector", () => {
       target: { value: "uk" },
     });
     expect(setLocale).toHaveBeenCalledWith("uk");
+  });
+});
+
+describe("LanguageSettingsRow", () => {
+  beforeEach(() => {
+    currentLocale = "en";
+    catalog.loading = false;
+    catalog.error = null;
+    setLocale.mockClear();
+  });
+
+  async function openSheet() {
+    fireEvent.click(screen.getByRole("button", { name: /language/i }));
+    return within(await screen.findByRole("dialog", { name: "Language" }));
+  }
+
+  it("lists every language by its native name, with its name in the active language beneath", async () => {
+    render(<LanguageSettingsRow />);
+    expect(screen.getByRole("button", { name: /language/i }).textContent).toContain("English");
+
+    const sheet = await openSheet();
+    expect(sheet.getAllByRole("radio")).toHaveLength(17);
+    expect(sheet.getByRole("radio", { name: "English" }).getAttribute("aria-checked")).toBe("true");
+    const swahili = sheet.getByText("Kiswahili").closest("label");
+    expect(swahili?.textContent).toBe("KiswahiliSwahili");
+    expect(sheet.getByText("العربية").getAttribute("dir")).toBe("rtl");
+    expect(sheet.getByText("Arabic")).toBeTruthy();
+    expect(sheet.getByText("Simplified Chinese")).toBeTruthy();
+    // No second line repeats the native name.
+    expect(sheet.getByText("English").closest("label")?.textContent).toBe("English");
+  });
+
+  it("shows a spinner on the chosen language while its catalog loads, then closes", async () => {
+    const { rerender } = render(<LanguageSettingsRow />);
+    const sheet = await openSheet();
+
+    fireEvent.click(sheet.getByRole("radio", { name: /kiswahili/i }));
+    expect(setLocale).toHaveBeenCalledWith("sw");
+
+    catalog.loading = true;
+    rerender(<LanguageSettingsRow />);
+    const chosen = sheet.getByText("Kiswahili").closest("label");
+    expect(chosen?.getAttribute("aria-busy")).toBe("true");
+    expect(chosen?.querySelector(".animate-spin")).toBeTruthy();
+    expect(screen.getByRole("dialog")).toBeTruthy();
+
+    catalog.loading = false;
+    rerender(<LanguageSettingsRow />);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("stays open on the error when the catalog fails to load", async () => {
+    const { rerender } = render(<LanguageSettingsRow />);
+    const sheet = await openSheet();
+
+    fireEvent.click(sheet.getByRole("radio", { name: /kiswahili/i }));
+    catalog.loading = true;
+    rerender(<LanguageSettingsRow />);
+    currentLocale = "en";
+    catalog.loading = false;
+    catalog.error = "Unable to load language. Reverted to English.";
+    rerender(<LanguageSettingsRow />);
+
+    expect((await sheet.findByRole("alert")).textContent).toBe(
+      "Unable to load language. Reverted to English.",
+    );
+    expect(screen.getByRole("dialog")).toBeTruthy();
   });
 });
