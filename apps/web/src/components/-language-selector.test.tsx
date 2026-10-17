@@ -51,7 +51,8 @@ vi.mock("#/components/ui/select", () => ({
   ),
 }));
 
-const { LanguageSelector, LanguageSettingsRow } = await import("./language-selector");
+const { LanguageSelector, LanguageSettingsRow, LanguageSettingsButton, OnboardingMenu } =
+  await import("./language-selector");
 
 function renderSelector() {
   return render(<LanguageSelector />);
@@ -240,7 +241,10 @@ describe("LanguageSelector", () => {
   });
 });
 
-describe("LanguageSettingsRow", () => {
+describe.each([
+  ["row", LanguageSettingsRow],
+  ["icon button", LanguageSettingsButton],
+] as const)("Language settings %s", (variant, Control) => {
   beforeEach(() => {
     currentLocale = "en";
     catalog.loading = false;
@@ -254,8 +258,10 @@ describe("LanguageSettingsRow", () => {
   }
 
   it("lists every language by its native name, with its name in the active language beneath", async () => {
-    render(<LanguageSettingsRow />);
-    expect(screen.getByRole("button", { name: /language/i }).textContent).toContain("English");
+    render(<Control />);
+    if (variant === "row") {
+      expect(screen.getByRole("button", { name: /language/i }).textContent).toContain("English");
+    }
 
     const sheet = await openSheet();
     expect(sheet.getAllByRole("radio")).toHaveLength(17);
@@ -270,39 +276,55 @@ describe("LanguageSettingsRow", () => {
   });
 
   it("shows a spinner on the chosen language while its catalog loads, then closes", async () => {
-    const { rerender } = render(<LanguageSettingsRow />);
+    const { rerender } = render(<Control />);
     const sheet = await openSheet();
 
     fireEvent.click(sheet.getByRole("radio", { name: /kiswahili/i }));
     expect(setLocale).toHaveBeenCalledWith("sw");
 
     catalog.loading = true;
-    rerender(<LanguageSettingsRow />);
+    rerender(<Control />);
     const chosen = sheet.getByText("Kiswahili").closest("label");
     expect(chosen?.getAttribute("aria-busy")).toBe("true");
     expect(chosen?.querySelector(".animate-spin")).toBeTruthy();
     expect(screen.getByRole("dialog")).toBeTruthy();
 
     catalog.loading = false;
-    rerender(<LanguageSettingsRow />);
+    rerender(<Control />);
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 
   it("stays open on the error when the catalog fails to load", async () => {
-    const { rerender } = render(<LanguageSettingsRow />);
+    const { rerender } = render(<Control />);
     const sheet = await openSheet();
 
     fireEvent.click(sheet.getByRole("radio", { name: /kiswahili/i }));
     catalog.loading = true;
-    rerender(<LanguageSettingsRow />);
+    rerender(<Control />);
     currentLocale = "en";
     catalog.loading = false;
     catalog.error = "Unable to load language. Reverted to English.";
-    rerender(<LanguageSettingsRow />);
+    rerender(<Control />);
 
     expect((await sheet.findByRole("alert")).textContent).toBe(
       "Unable to load language. Reverted to English.",
     );
     expect(screen.getByRole("dialog")).toBeTruthy();
   });
+});
+
+it("opens the settings sheets from both onboarding icon buttons", async () => {
+  currentLocale = "en";
+  catalog.loading = false;
+  catalog.error = null;
+  render(<OnboardingMenu />);
+  expect(screen.queryByRole("combobox")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Theme" }));
+  const theme = await screen.findByRole("dialog", { name: "Theme" });
+  expect(within(theme).getByRole("radio", { name: "Dark" })).toBeTruthy();
+  fireEvent.click(within(theme).getByRole("radio", { name: "Dark" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  fireEvent.click(screen.getByRole("button", { name: "Language" }));
+  const language = await screen.findByRole("dialog", { name: "Language" });
+  expect(within(language).getAllByRole("radio")).toHaveLength(17);
 });

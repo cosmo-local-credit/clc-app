@@ -23,7 +23,7 @@ vi.mock("#/components/ui/select", () => ({
   ),
 }));
 
-const { ThemeSelector, ThemeSettingsRow, ThemeToggle } = await import("./theme-selector");
+const { ThemeSelector, ThemeSettingsRow, ThemeSettingsButton } = await import("./theme-selector");
 const { useThemeStore, THEME_STORAGE_KEY } = await import("#/providers/theme");
 
 function mockPrefersColorScheme(dark: boolean) {
@@ -67,37 +67,10 @@ describe("ThemeSelector", () => {
   });
 });
 
-describe("ThemeToggle", () => {
-  beforeEach(() => {
-    window.localStorage.clear();
-    document.documentElement.classList.remove("dark");
-    useThemeStore.setState({ theme: "light" });
-    mockPrefersColorScheme(false);
-  });
-
-  it("renders unpressed in light mode", () => {
-    render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: /toggle theme/i });
-    expect(button.getAttribute("aria-pressed")).toBe("false");
-  });
-
-  it("switches to dark and persists when pressed", () => {
-    render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole("button", { name: /toggle theme/i }));
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
-    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
-  });
-
-  it("reflects a stored dark preference as pressed", () => {
-    window.localStorage.setItem(THEME_STORAGE_KEY, "dark");
-    render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: /toggle theme/i });
-    expect(button.getAttribute("aria-pressed")).toBe("true");
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
-  });
-});
-
-describe("ThemeSettingsRow", () => {
+describe.each([
+  ["row", ThemeSettingsRow],
+  ["icon button", ThemeSettingsButton],
+] as const)("Theme settings %s", (variant, Control) => {
   beforeEach(() => {
     window.localStorage.clear();
     document.documentElement.classList.remove("dark");
@@ -106,9 +79,9 @@ describe("ThemeSettingsRow", () => {
   });
 
   it("shows the current theme, applies a choice from its sheet and closes", async () => {
-    render(<ThemeSettingsRow />);
+    render(<Control />);
     const row = screen.getByRole("button", { name: /theme/i });
-    expect(row.textContent).toContain("Light");
+    if (variant === "row") expect(row.textContent).toContain("Light");
 
     fireEvent.click(row);
     const sheet = within(await screen.findByRole("dialog", { name: "Theme" }));
@@ -118,6 +91,6 @@ describe("ThemeSettingsRow", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    expect(row.textContent).toContain("Dark");
+    if (variant === "row") expect(row.textContent).toContain("Dark");
   });
 });

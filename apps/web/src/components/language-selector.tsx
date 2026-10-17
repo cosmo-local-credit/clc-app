@@ -1,9 +1,10 @@
 import { isSupportedLocale, LOCALE_OPTIONS, type SupportedLocale } from "@clc/i18n/locales";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RiTranslate2 } from "react-icons/ri";
+import { RiGlobalLine } from "react-icons/ri";
 
-import { ThemeToggle } from "#/components/theme-selector";
+import { ThemeSettingsButton } from "#/components/theme-selector";
+import { Button } from "#/components/ui/button";
 import { ActionRow } from "#/components/ui/action-row";
 import { RadioGroup, RadioGroupRow } from "#/components/ui/radio-group";
 import {
@@ -71,6 +72,14 @@ export function LanguageSelector({ triggerClassName }: { triggerClassName?: stri
  * fails, the provider reverts and the sheet stays open on the error.
  */
 export function LanguageSettingsRow() {
+  return <LanguageSettingsControl />;
+}
+
+export function LanguageSettingsButton() {
+  return <LanguageSettingsControl iconOnly />;
+}
+
+function LanguageSettingsControl({ iconOnly = false }: { iconOnly?: boolean }) {
   const { t } = useLingui();
   const { locale, setLocale, loading, error } = useLocale();
   const [open, setOpen] = useState(false);
@@ -93,18 +102,32 @@ export function LanguageSettingsRow() {
 
   return (
     <>
-      <ActionRow
-        icon={<RiTranslate2 className="size-4" aria-hidden="true" />}
-        label={t`Language`}
-        value={
-          current ? (
-            <bdi dir={current.direction} lang={current.code}>
-              {current.nativeLabel}
-            </bdi>
-          ) : null
-        }
-        onClick={() => setOpen(true)}
-      />
+      {iconOnly ? (
+        <Button
+          variant="outline"
+          size="icon"
+          tap
+          aria-label={t`Language`}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+        >
+          <RiGlobalLine className="size-4" aria-hidden="true" />
+        </Button>
+      ) : (
+        <ActionRow
+          icon={<RiGlobalLine className="size-4" aria-hidden="true" />}
+          label={t`Language`}
+          value={
+            current ? (
+              <bdi dir={current.direction} lang={current.code}>
+                {current.nativeLabel}
+              </bdi>
+            ) : null
+          }
+          onClick={() => setOpen(true)}
+        />
+      )}
       <SettingsSheet open={open} onOpenChange={setOpen} title={t`Language`}>
         {error ? (
           <SettingsSheetAlert>{t`Unable to load language. Reverted to English.`}</SettingsSheetAlert>
@@ -191,8 +214,8 @@ function languageNamesIn(locale: SupportedLocale): Map<SupportedLocale, string> 
 export function OnboardingMenu() {
   return (
     <div className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] end-4 z-10 flex items-center gap-2">
-      <ThemeToggle />
-      <LanguageSelector />
+      <ThemeSettingsButton />
+      <LanguageSettingsButton />
     </div>
   );
 }
