@@ -1,7 +1,7 @@
 import { isSupportedLocale, LOCALE_OPTIONS, type SupportedLocale } from "@clc/i18n/locales";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RiGlobalLine } from "react-icons/ri";
+import { RiTranslate2 } from "react-icons/ri";
 
 import { ThemeSettingsButton } from "#/components/theme-selector";
 import { Button } from "#/components/ui/button";
@@ -112,11 +112,11 @@ function LanguageSettingsControl({ iconOnly = false }: { iconOnly?: boolean }) {
           aria-expanded={open}
           onClick={() => setOpen(true)}
         >
-          <RiGlobalLine className="size-4" aria-hidden="true" />
+          <RiTranslate2 className="size-4" aria-hidden="true" />
         </Button>
       ) : (
         <ActionRow
-          icon={<RiGlobalLine className="size-4" aria-hidden="true" />}
+          icon={<RiTranslate2 className="size-4" aria-hidden="true" />}
           label={t`Language`}
           value={
             current ? (
