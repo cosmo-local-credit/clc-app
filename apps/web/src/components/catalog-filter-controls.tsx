@@ -550,10 +550,24 @@ export function CatalogFilterSheet({
               ) : null}
             </div>
 
-            <SheetFooter className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 bg-card px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {/* Stacked like every other sheet footer: beside Reset, "Apply
+                filters" outgrows a 360px row in Dutch. */}
+            <SheetFooter className="bg-card px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
+                  onOpenChange(false);
+                }}
+              >
+                <RiCheckLine className="size-4" aria-hidden="true" />
+                <Trans>Apply filters</Trans>
+              </Button>
               <Button
                 variant="outline"
                 size="lg"
+                className="w-full"
                 disabled={draftTags.length === 0 && draftVouchers.length === 0}
                 onClick={() => {
                   setDraftTags([]);
@@ -563,16 +577,6 @@ export function CatalogFilterSheet({
                 }}
               >
                 <Trans>Reset</Trans>
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => {
-                  onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
-                  onOpenChange(false);
-                }}
-              >
-                <RiCheckLine className="size-4" aria-hidden="true" />
-                <Trans>Apply filters</Trans>
               </Button>
             </SheetFooter>
             {!showHeader ? (

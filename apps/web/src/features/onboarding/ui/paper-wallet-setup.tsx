@@ -278,7 +278,9 @@ export function usePaperWalletSetup({
 
   const downloadButton = (
     <div>
-      <div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
+      {/* Stacked: "Download card" beside Print outgrows a 360px row in French,
+          Dutch, Portuguese, Serbian and Ukrainian. */}
+      <div className="mt-4 flex flex-col gap-3">
         <Button
           size="lg"
           className="w-full"
@@ -296,6 +298,7 @@ export function usePaperWalletSetup({
         <Button
           variant="outline"
           size="lg"
+          className="w-full"
           onClick={() => void handlePrintSheet()}
           disabled={downloading || printing || downloadDisabled}
           aria-label={t`Save printable A4 sheet`}
@@ -307,19 +310,19 @@ export function usePaperWalletSetup({
           )}
           {t`Print`}
         </Button>
+        {shareSupported ? (
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => void handleShare()}
+            disabled={downloading || printing || downloadDisabled}
+          >
+            <FiShare2 className="me-2 size-4" />
+            {t`Share card`}
+          </Button>
+        ) : null}
       </div>
-      {shareSupported ? (
-        <Button
-          variant="outline"
-          size="lg"
-          className="mt-3 w-full"
-          onClick={() => void handleShare()}
-          disabled={downloading || printing || downloadDisabled}
-        >
-          <FiShare2 className="me-2 size-4" />
-          {t`Share card`}
-        </Button>
-      ) : null}
       {downloadError ? <p className="text-destructive mt-2 text-xs">{downloadError}</p> : null}
       {savedCardUrl ? (
         <div className="mt-3 space-y-2 border border-border bg-card p-3">

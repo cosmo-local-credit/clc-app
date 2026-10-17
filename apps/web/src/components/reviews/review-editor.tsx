@@ -134,7 +134,8 @@ export function ReviewEditor({
           {error}
         </p>
       ) : null}
-      <div className="flex gap-2">
+      {/* Stacked: German's "Send report" and "Cancel" outgrow one 360px row. */}
+      <div className="flex flex-col gap-2">
         <Button
           type="submit"
           size="lg"

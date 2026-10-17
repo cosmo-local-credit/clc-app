@@ -132,17 +132,14 @@ export function PoolDetailPage({
       </section>
 
       {/* The three-up action row the wallet screen already uses, so a pool's
-          actions are read the same way as every other screen's. Labels are
-          ellipsized rather than spilling where a translation outgrows a third
-          of a 360px row. */}
+          actions are read the same way as every other screen's: the icon over
+          a 12px label, which fits a third of a 360px row in every catalog. */}
       {auth.isAuthenticated ? (
         <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
-          <Button asChild size="lg" className="gap-1.5 px-1">
+          <Button asChild size="lg" className="flex-col gap-1 px-1 text-xs leading-tight">
             <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
               <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
-              <span className="min-w-0 truncate">
-                <Trans>Swap</Trans>
-              </span>
+              <Trans>Swap</Trans>
             </Link>
           </Button>
           {/* A shortcut into the ordinary send flow with the pool as the
@@ -150,7 +147,12 @@ export function PoolDetailPage({
             own: BackChevron prefers real history over its deep-link fallback.
             `returnPool` rides along to the receipt so finishing the send lands
             back on this pool rather than on the wallet. */}
-          <Button asChild variant="outline" size="lg" className="gap-1.5 px-1">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="flex-col gap-1 px-1 text-xs leading-tight"
+          >
             <Link
               to="/wallet/send/amount"
               search={{
@@ -160,9 +162,7 @@ export function PoolDetailPage({
               }}
             >
               <RiArrowRightUpLine className="size-4" aria-hidden="true" />
-              <span className="min-w-0 truncate">
-                <Trans>Deposit</Trans>
-              </span>
+              <Trans>Deposit</Trans>
             </Link>
           </Button>
           {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
@@ -170,13 +170,11 @@ export function PoolDetailPage({
           <Button
             variant="info"
             size="lg"
-            className="gap-1.5 px-1"
+            className="flex-col gap-1 px-1 text-xs leading-tight"
             onClick={() => setReceiving(true)}
           >
             <RiQrCodeLine className="size-4" aria-hidden="true" />
-            <span className="min-w-0 truncate">
-              <Trans>Receive</Trans>
-            </span>
+            <Trans>Receive</Trans>
           </Button>
         </section>
       ) : null}

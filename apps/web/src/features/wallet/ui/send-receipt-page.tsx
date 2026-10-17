@@ -258,12 +258,14 @@ export function SendReceiptPage({
         />
       ) : null}
 
-      <div className="flex gap-3">
-        <Button size="lg" className="flex-1" onClick={exitReceipt}>
+      {/* Stacked rather than side by side: half a 360px row is too narrow for
+          "Back to pool" in German, Dutch, Serbian and Swahili. */}
+      <div className="flex flex-col gap-2.5">
+        <Button size="lg" onClick={exitReceipt}>
           {returnPool ? t`Back to pool` : t`Done`}
         </Button>
         {explorerUrl ? (
-          <Button asChild size="lg" className="flex-1" variant="outline">
+          <Button asChild size="lg" variant="outline">
             <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
               {CHAIN_INFO.explorerName}
             </a>
