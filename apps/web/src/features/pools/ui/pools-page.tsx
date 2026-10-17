@@ -17,6 +17,7 @@ import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/po
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { MarketBar } from "#/components/market-bar";
+import { MissingLocationNotice } from "#/components/nearby-catalog";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -198,6 +199,7 @@ export function PoolsPage({
           />
         }
       />
+      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}

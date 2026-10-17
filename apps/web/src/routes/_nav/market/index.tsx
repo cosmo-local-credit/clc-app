@@ -71,7 +71,7 @@ function MarketListRoute() {
     return <CatalogsPage creditableSearch={search.creditable} />;
   }
   return (
-    <NearbyCatalog>
+    <NearbyCatalog allowMissingLocation>
       {scope === "offers" ? (
         <OffersPage creditableSearch={search.creditable} locationOwner={owner} />
       ) : scope === "vouchers" ? (

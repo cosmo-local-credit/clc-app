@@ -5,6 +5,10 @@ import { RiFocus3Line } from "react-icons/ri";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import {
+  MissingLocationNotice,
+  useNearbyCatalogMissingLocation,
+} from "#/components/nearby-catalog";
 import { Button } from "#/components/ui/button";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
@@ -270,6 +274,7 @@ export function MarketPage({
     filter.result.ok &&
     (usesUnifiedSearch ? unifiedSearch.status === "ready" : isCatalogComplete);
 
+  const missingLocation = useNearbyCatalogMissingLocation();
   const changeCredit = (checked: boolean) =>
     void navigate({
       to: "/",
@@ -289,6 +294,8 @@ export function MarketPage({
       onChange={changeCredit}
       onClear={clearCredit}
     />
+  ) : missingLocation ? (
+    <MissingLocationNotice />
   ) : credit.enabled && credit.poolRefs?.length === 0 ? (
     <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
       <Trans>No marketplace results are available through your Credit pools.</Trans>

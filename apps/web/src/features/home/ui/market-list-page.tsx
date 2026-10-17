@@ -6,6 +6,7 @@ import { RiArrowRightSLine } from "react-icons/ri";
 
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MissingLocationNotice } from "#/components/nearby-catalog";
 import { Badge } from "#/components/ui/badge";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
 import { VoucherAvatar } from "#/components/wallet";
@@ -153,6 +154,7 @@ export function MarketListPage({
             />
           }
         />
+        <MissingLocationNotice className="mt-3" />
 
         <div className="mt-3">
           <CreditableBrowseControl

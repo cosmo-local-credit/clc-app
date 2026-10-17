@@ -14,12 +14,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:140
+#: apps/web/src/features/pools/ui/pools-page.tsx:141
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, one {# Fonds} other {# Fonds}}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-list-page.tsx:110
+#: apps/web/src/features/home/ui/market-list-page.tsx:111
 msgid "{count, plural, one {# voucher} other {# vouchers}}"
 msgstr "{count, plural, one {# Gutschein} other {# Gutscheine}}"
 
@@ -110,7 +110,7 @@ msgstr "{0} ist live"
 #. placeholder {0}: localized.value
 #. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:87
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:88
 msgid "{0} km"
 msgstr "{0} km"
 
@@ -160,7 +160,7 @@ msgstr "{0} aktualisiert."
 
 #. placeholder {0}: pool.voucherCount
 #: apps/web/src/features/home/ui/wallet-page.tsx:328
-#: apps/web/src/features/pools/ui/pools-page.tsx:398
+#: apps/web/src/features/pools/ui/pools-page.tsx:400
 msgid "{0} vouchers"
 msgstr "{0} Gutscheine"
 
@@ -236,11 +236,11 @@ msgstr "{used} von {limit} genutzt"
 msgid "{used} used · Unlimited"
 msgstr "{used} genutzt · Unbegrenzt"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:256
 msgid "{value} km"
 msgstr "{value} km"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:256
 msgid "{value} m"
 msgstr "{value} m"
 
@@ -267,7 +267,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgstr "1 Angebot"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:326
-#: apps/web/src/features/pools/ui/pools-page.tsx:396
+#: apps/web/src/features/pools/ui/pools-page.tsx:398
 msgid "1 voucher"
 msgstr "1 Gutschein"
 
@@ -903,7 +903,7 @@ msgstr "Katalog gespeichert. Der Eintrag konnte nicht hinzugefügt werden. "
 #: apps/web/src/components/market-bar.tsx:112
 #: apps/web/src/components/resource-usage.tsx:11
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:38
 msgid "Catalogs"
 msgstr "Kataloge"
 
@@ -1024,7 +1024,7 @@ msgstr "Berechtigung zur Bewertung wird geprüft…"
 msgid "Checking supply…"
 msgstr "Bestand wird geprüft…"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:294
+#: apps/web/src/features/pools/ui/pools-page.tsx:296
 msgid "Checking voucher availability…"
 msgstr "Gutscheinverfügbarkeit wird geprüft…"
 
@@ -1059,7 +1059,8 @@ msgstr "Wähle erneut eine Sprache, um fortzufahren."
 msgid "Choose a location"
 msgstr "Wählen Sie einen Standort"
 
-#: apps/web/src/components/nearby-catalog.tsx:149
+#: apps/web/src/components/nearby-catalog.tsx:54
+#: apps/web/src/components/nearby-catalog.tsx:202
 msgid "Choose a location"
 msgstr "Wählen Sie einen Standort"
 
@@ -1179,7 +1180,7 @@ msgstr "Reinigung"
 #~ msgstr "klar"
 
 #: apps/web/src/components/creditable-browse-control.tsx:47
-#: apps/web/src/features/pools/ui/pools-page.tsx:250
+#: apps/web/src/features/pools/ui/pools-page.tsx:252
 msgid "Clear filter"
 msgstr "Klarfilter"
 
@@ -1187,8 +1188,8 @@ msgstr "Klarfilter"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:41
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:125
-#: apps/web/src/features/home/ui/market-page.tsx:316
-#: apps/web/src/features/home/ui/offers-page.tsx:162
+#: apps/web/src/features/home/ui/market-page.tsx:323
+#: apps/web/src/features/home/ui/offers-page.tsx:164
 #: apps/web/src/features/home/ui/posts-page.tsx:130
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:64
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:73
@@ -1196,7 +1197,7 @@ msgstr "Klarfilter"
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:56
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:65
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:76
-#: apps/web/src/features/pools/ui/pools-page.tsx:324
+#: apps/web/src/features/pools/ui/pools-page.tsx:326
 msgid "Clear filters"
 msgstr "Filter löschen"
 
@@ -1596,7 +1597,7 @@ msgstr "Die Verfügbarkeit der Nachrichten konnte nicht überprüft werden."
 msgid "Couldn't check order availability."
 msgstr "Die Bestellmöglichkeit konnte nicht geprüft werden."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:261
+#: apps/web/src/features/pools/ui/pools-page.tsx:263
 msgid "Couldn't check voucher availability."
 msgstr "Die Verfügbarkeit des Gutscheins konnte nicht überprüft werden."
 
@@ -1721,11 +1722,11 @@ msgstr "Katalogeinträge konnten nicht geladen werden."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:25
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:195
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:197
 msgid "Couldn't load catalogs."
 msgstr "Kataloge konnten nicht geladen werden."
 
-#: apps/web/src/features/home/ui/market-page.tsx:237
+#: apps/web/src/features/home/ui/market-page.tsx:241
 msgid "Couldn't load complete marketplace results."
 msgstr "Die vollständigen Marktplatzergebnisse konnten nicht geladen werden."
 
@@ -1751,7 +1752,7 @@ msgstr "Die Angebote konnten nicht geladen werden."
 msgid "Couldn't load pool tags."
 msgstr "Die Schlagwörter des Fonds konnten nicht geladen werden."
 
-#: apps/web/src/features/home/ui/market-page.tsx:245
+#: apps/web/src/features/home/ui/market-page.tsx:249
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "Die Fonds konnten nicht geladen werden."
@@ -2346,7 +2347,8 @@ msgstr "Fondsdetails bearbeiten"
 msgid "Edit post"
 msgstr "Beitrag bearbeiten"
 
-#: apps/web/src/components/nearby-catalog.tsx:153
+#: apps/web/src/components/nearby-catalog.tsx:58
+#: apps/web/src/components/nearby-catalog.tsx:206
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
@@ -2650,7 +2652,7 @@ msgstr "Die Datei ist zu groß ({0} KB). Zulässig sind höchstens 512 KB."
 msgid "Filter by tag"
 msgstr "Nach Schlagwort filtern"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:120
 msgid "Filter catalogs"
 msgstr "Kataloge filtern"
 
@@ -2658,7 +2660,7 @@ msgstr "Kataloge filtern"
 #~ msgid "Filter marketplace"
 #~ msgstr "Marktplatz filtern"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:129
+#: apps/web/src/features/home/ui/offers-page.tsx:130
 msgid "Filter offers"
 msgstr "Angebote filtern"
 
@@ -2687,7 +2689,7 @@ msgstr "Filter"
 msgid "Finding a name…"
 msgstr "Einen Namen finden..."
 
-#: apps/web/src/features/home/ui/market-page.tsx:180
+#: apps/web/src/features/home/ui/market-page.tsx:184
 msgid "Finding location"
 msgstr "Ort des Findens"
 
@@ -3165,7 +3167,7 @@ msgstr "Liter"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:302
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:453
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:227
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 msgid "Load more"
 msgstr "Mehr Ladung"
@@ -3206,7 +3208,7 @@ msgstr "Beladebetriebe ..."
 msgid "Loading location map"
 msgstr "Standortkarte wird geladen"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:194
 msgid "Loading marketplace…"
 msgstr "Marktplatz wird geladen…"
 
@@ -3214,7 +3216,7 @@ msgstr "Marktplatz wird geladen…"
 #: apps/web/src/features/home/ui/activity-page.tsx:162
 #: apps/web/src/features/home/ui/posts-page.tsx:145
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:108
-#: apps/web/src/features/pools/ui/pools-page.tsx:352
+#: apps/web/src/features/pools/ui/pools-page.tsx:354
 msgid "Loading more…"
 msgstr "Weitere Einträge werden geladen…"
 
@@ -3228,7 +3230,7 @@ msgid "Loading pool…"
 msgstr "Fonds wird geladen…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:281
-#: apps/web/src/features/pools/ui/pools-page.tsx:288
+#: apps/web/src/features/pools/ui/pools-page.tsx:290
 msgid "Loading pools…"
 msgstr "Fonds werden geladen…"
 
@@ -3297,8 +3299,8 @@ msgstr "Ihr Profil wird geladen…"
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:20
 #: apps/web/src/components/introduction/introduction.tsx:43
-#: apps/web/src/components/nearby-catalog.tsx:87
-#: apps/web/src/components/nearby-catalog.tsx:105
+#: apps/web/src/components/nearby-catalog.tsx:129
+#: apps/web/src/components/nearby-catalog.tsx:147
 #: apps/web/src/components/offerings/offerings-panel.tsx:236
 #: apps/web/src/components/resource-usage.tsx:35
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:269
@@ -3309,8 +3311,8 @@ msgstr "Ihr Profil wird geladen…"
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:189
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:191
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:227
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
@@ -3330,7 +3332,7 @@ msgstr "Lokales Geld und M-Pesa"
 msgid "Location"
 msgstr "Standort"
 
-#: apps/web/src/features/home/ui/market-page.tsx:182
+#: apps/web/src/features/home/ui/market-page.tsx:186
 msgid "Location denied"
 msgstr "Standort verweigert"
 
@@ -3339,7 +3341,7 @@ msgid "Location map"
 msgstr "Standortkarte"
 
 #: apps/web/src/components/ui/location-picker.tsx:228
-#: apps/web/src/features/home/ui/market-page.tsx:184
+#: apps/web/src/features/home/ui/market-page.tsx:188
 msgid "Location unavailable"
 msgstr "Standort nicht verfügbar"
 
@@ -3393,7 +3395,7 @@ msgstr "Kartennadel"
 #~ msgstr "Markdown: **fett**, # Überschriften, - Listen, [Links](https://…)"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
-#: apps/web/src/features/home/ui/market-page.tsx:328
+#: apps/web/src/features/home/ui/market-page.tsx:335
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:59
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3678,11 +3680,11 @@ msgstr "Keine Kamera auf diesem Gerät gefunden."
 msgid "No cash activity yet."
 msgstr "Noch keine Cash-Aktivität."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:185
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:187
 msgid "No catalogs are available through your Credit pools."
 msgstr "Über Ihre Kreditfonds sind keine Kataloge verfügbar."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:209
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:211
 msgid "No catalogs found."
 msgstr "Keine Kataloge gefunden."
 
@@ -3706,20 +3708,20 @@ msgstr "Kein Kreditlimit"
 msgid "No credit offered"
 msgstr "Kein Kredit angeboten"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:227
-#: apps/web/src/features/pools/ui/pools-page.tsx:315
+#: apps/web/src/features/pools/ui/pools-page.tsx:229
+#: apps/web/src/features/pools/ui/pools-page.tsx:317
 msgid "No creditable pools are available."
 msgstr "Es sind keine Fonds mit Kreditmöglichkeit verfügbar."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:307
+#: apps/web/src/features/pools/ui/pools-page.tsx:309
 msgid "No creditable pools have this voucher available."
 msgstr "In keinem Fonds mit Kreditmöglichkeit ist dieser Gutschein verfügbar."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:313
+#: apps/web/src/features/pools/ui/pools-page.tsx:315
 msgid "No creditable pools match this search."
 msgstr "Keine Fonds mit Kreditmöglichkeit entsprechen dieser Suche."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:305
+#: apps/web/src/features/pools/ui/pools-page.tsx:307
 msgid "No creditable pools with this voucher match these filters."
 msgstr "Kein Fonds mit Kreditmöglichkeit und diesem Gutschein entspricht diesen "
 "Filtern."
@@ -3744,7 +3746,7 @@ msgid "No items yet. Add pools or vouchers from their detail pages."
 msgstr "Noch keine Einträge. Füge Pools oder Gutscheine auf ihren Detailseiten "
 "hinzu."
 
-#: apps/web/src/features/home/ui/market-page.tsx:294
+#: apps/web/src/features/home/ui/market-page.tsx:301
 msgid "No marketplace results are available through your Credit pools."
 msgstr "Über Ihre Kreditfonds sind keine Marktplatzergebnisse verfügbar."
 
@@ -3752,11 +3754,11 @@ msgstr "Über Ihre Kreditfonds sind keine Marktplatzergebnisse verfügbar."
 #~ msgid "No marketplace results found."
 #~ msgstr "Keine Marktplatzergebnisse gefunden."
 
-#: apps/web/src/features/home/ui/market-page.tsx:313
+#: apps/web/src/features/home/ui/market-page.tsx:320
 msgid "No marketplace results match this search."
 msgstr "Keine Marktplatzergebnisse entsprechen dieser Suche."
 
-#: apps/web/src/features/home/ui/market-page.tsx:320
+#: apps/web/src/features/home/ui/market-page.tsx:327
 msgid "No marketplace results to show yet."
 msgstr "Noch keine Marktplatzergebnisse zum Anzeigen."
 
@@ -3768,11 +3770,11 @@ msgstr "Keine übereinstimmenden Empfänger."
 msgid "No offerings yet"
 msgstr "Noch keine Angebote"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:168
+#: apps/web/src/features/home/ui/offers-page.tsx:170
 msgid "No offers are available through your Credit pools."
 msgstr "Über Ihre Kreditfonds sind keine Angebote verfügbar."
 
-#: apps/web/src/features/home/ui/offers-page.tsx:173
+#: apps/web/src/features/home/ui/offers-page.tsx:175
 msgid "No offers match this search."
 msgstr "Keine Angebote entsprechen dieser Suche."
 
@@ -3784,19 +3786,19 @@ msgstr "Keine Angebote entsprechen dieser Suche."
 #~ msgid "No pool vouchers match this search."
 #~ msgstr "Keine Fondsgutscheine entsprechen dieser Suche."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:311
+#: apps/web/src/features/pools/ui/pools-page.tsx:313
 msgid "No pools have this voucher available."
 msgstr "Dieser Gutschein ist in keinem Fonds verfügbar."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:317
+#: apps/web/src/features/pools/ui/pools-page.tsx:319
 msgid "No pools match this search."
 msgstr "Keine Fonds entsprechen dieser Suche."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:309
+#: apps/web/src/features/pools/ui/pools-page.tsx:311
 msgid "No pools with this voucher match these filters."
 msgstr "Kein Fonds mit diesem Gutschein entspricht diesen Filtern."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:319
+#: apps/web/src/features/pools/ui/pools-page.tsx:321
 msgid "No pools yet."
 msgstr "Noch keine Fonds."
 
@@ -3847,7 +3849,7 @@ msgstr "Kein USDm-, USDT- oder USDC-Guthaben zum Abheben verfügbar."
 msgid "No voucher in this pool is offering anything yet."
 msgstr "Noch gibt es für keinen Gutschein in diesem Fonds ein Angebot."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:198
+#: apps/web/src/features/home/ui/market-list-page.tsx:200
 msgid "No vouchers are available through your Credit pools."
 msgstr "Über Ihre Kreditfonds sind keine Gutscheine verfügbar."
 
@@ -3870,7 +3872,7 @@ msgstr "Keine Gutscheine passen zu dieser Suche."
 msgid "No vouchers to collect"
 msgstr "Keine Gutscheine zum Kassieren"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:205
+#: apps/web/src/features/home/ui/market-list-page.tsx:207
 msgid "No vouchers to show yet."
 msgstr "Noch keine Gutscheine zu zeigen."
 
@@ -4014,7 +4016,7 @@ msgstr "Angebote"
 
 #: apps/web/src/components/market-bar.tsx:111
 #: apps/web/src/components/resource-usage.tsx:12
-#: apps/web/src/features/home/ui/offers-page.tsx:99
+#: apps/web/src/features/home/ui/offers-page.tsx:100
 msgid "Offers"
 msgstr "Angebote"
 
@@ -4554,11 +4556,11 @@ msgstr "Details zum Fonds-Tracking fehlen."
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:321
-#: apps/web/src/features/pools/ui/pools-page.tsx:163
+#: apps/web/src/features/pools/ui/pools-page.tsx:164
 msgid "Pools"
 msgstr "Fonds"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:339
+#: apps/web/src/features/pools/ui/pools-page.tsx:341
 msgid "Pools list"
 msgstr "Liste der Fonds"
 
@@ -5158,11 +5160,11 @@ msgstr "Auszeit"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:54
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:52
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:203
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:205
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:822
-#: apps/web/src/features/home/ui/market-page.tsx:238
-#: apps/web/src/features/home/ui/market-page.tsx:246
+#: apps/web/src/features/home/ui/market-page.tsx:242
+#: apps/web/src/features/home/ui/market-page.tsx:250
 #: apps/web/src/features/home/ui/report-page.tsx:57
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:718
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
@@ -5172,7 +5174,7 @@ msgstr "Auszeit"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:960
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1045
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1061
-#: apps/web/src/features/pools/ui/pools-page.tsx:269
+#: apps/web/src/features/pools/ui/pools-page.tsx:271
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:211
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:560
@@ -5283,11 +5285,11 @@ msgstr "Empfängeradresse des Scans"
 msgid "Search “{query}”"
 msgstr "„{query}“ suchen"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:124
+#: apps/web/src/features/home/ui/market-list-page.tsx:125
 msgid "Search by name or symbol"
 msgstr "Nach Name oder Symbol suchen"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:95
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:96
 msgid "Search catalogs"
 msgstr "Kataloge durchsuchen"
 
@@ -5308,7 +5310,7 @@ msgstr "Nach einer Stadt oder einem Ort suchen"
 #~ msgid "Search offers"
 #~ msgstr "Angebote durchsuchen"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:105
+#: apps/web/src/features/home/ui/offers-page.tsx:106
 msgid "Search offers, vouchers, descriptions, or tags"
 msgstr "Angebote, Gutscheine, Beschreibungen oder Schlagwörter durchsuchen"
 
@@ -5325,7 +5327,7 @@ msgstr "Durchsuchung oder Einreise"
 msgid "Search pool tags"
 msgstr "Schlagwörter von Fonds suchen"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:169
+#: apps/web/src/features/pools/ui/pools-page.tsx:170
 msgid "Search pools"
 msgstr "SuchFonds"
 
@@ -5345,7 +5347,7 @@ msgstr "Suchen Sie Beiträge nach Titel oder Beschreibung"
 msgid "Search tags"
 msgstr "Schlagwörter suchen"
 
-#: apps/web/src/features/home/ui/market-page.tsx:352
+#: apps/web/src/features/home/ui/market-page.tsx:359
 msgid "Search the marketplace"
 msgstr "Marktplatz durchsuchen"
 
@@ -5589,7 +5591,7 @@ msgstr "{stars}-Sterne-Bewertungen anzeigen"
 msgid "Show all"
 msgstr "Alle anzeigen"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:168
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:170
 msgid "Showing catalogs <0>globally</0>."
 msgstr "Kataloge werden <0>weltweit</0> angezeigt."
 
@@ -5597,7 +5599,7 @@ msgstr "Kataloge werden <0>weltweit</0> angezeigt."
 msgid "Showing recent vouchers only."
 msgstr "Nur kürzlich verwendete Gutscheine werden angezeigt."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:148
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:150
 msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
 "location</1>."
 msgstr "Ergebnisse im Umkreis von <0>{radiusLabel}</0> um Ihren gespeicherten "
@@ -5728,7 +5730,7 @@ msgid "Some photos didn't upload. Try adding them again."
 msgstr "Einige Fotos wurden nicht hochgeladen. Versuchen Sie sie noch einmal "
 "hinzuzufügen."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:282
+#: apps/web/src/features/pools/ui/pools-page.tsx:284
 msgid "Some pools couldn't be checked. Showing verified results."
 msgstr "Einige Fonds konnten nicht überprüft werden."
 
@@ -5937,8 +5939,8 @@ msgstr "Symbol wurde genommen, stattdessen {0} verwendend."
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:120
-#: apps/web/src/features/home/ui/offers-page.tsx:130
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:121
+#: apps/web/src/features/home/ui/offers-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:262
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:535
@@ -6211,7 +6213,7 @@ msgid "There is nothing available for exchange with this voucher yet."
 msgstr "Für den Umtausch mit diesem Gutschein steht noch nichts zur Verfügung."
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:52
-#: apps/web/src/features/home/ui/offers-page.tsx:159
+#: apps/web/src/features/home/ui/offers-page.tsx:161
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:82
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:75
 msgid "These filters aren't valid."
@@ -6285,7 +6287,7 @@ msgstr "Auf diesem Gerät ist der Schlüssel Ihrer Papiergeldbörse nicht "
 msgid "This link contains an invalid Credit filter."
 msgstr "Dieser Link enthält einen ungültigen Kreditfilter."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:237
+#: apps/web/src/features/pools/ui/pools-page.tsx:239
 msgid "This link contains an invalid output voucher."
 msgstr "Dieser Link enthält einen ungültigen Ausgabe-Gutschein."
 
@@ -6519,7 +6521,7 @@ msgstr "Reise"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:36
 #: apps/web/src/components/catalog-filter-controls.tsx:391
-#: apps/web/src/components/nearby-catalog.tsx:126
+#: apps/web/src/components/nearby-catalog.tsx:168
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:182
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:86
@@ -6710,7 +6712,7 @@ msgstr "Nutzen Sie <0>Binance</0> oder eine andere lokale Börse und "
 "anschließend <1>Jumper</1>, um Guthaben an Ihre Gnosis-Wallet zu "
 "senden."
 
-#: apps/web/src/features/home/ui/market-page.tsx:185
+#: apps/web/src/features/home/ui/market-page.tsx:189
 msgid "Use current location"
 msgstr "Aktuelle Position verwenden"
 
@@ -6953,7 +6955,7 @@ msgstr "Angaben zur Gutscheinverfolgung fehlen."
 #: apps/web/src/components/market-bar.tsx:110
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
-#: apps/web/src/features/home/ui/market-list-page.tsx:118
+#: apps/web/src/features/home/ui/market-list-page.tsx:119
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:352
@@ -6962,7 +6964,7 @@ msgstr "Angaben zur Gutscheinverfolgung fehlen."
 msgid "Vouchers"
 msgstr "Gutscheine"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:217
+#: apps/web/src/features/home/ui/market-list-page.tsx:219
 msgid "Vouchers list"
 msgstr "Gutscheinliste"
 
@@ -7047,7 +7049,7 @@ msgstr "Wir konnten Ihre Sitzung nicht überprüfen. Überprüfen Sie Ihre "
 msgid "We couldn't load your profile phone number."
 msgstr "Ihre Telefonnummer konnte nicht aus dem Profil geladen werden."
 
-#: apps/web/src/components/nearby-catalog.tsx:116
+#: apps/web/src/components/nearby-catalog.tsx:158
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:53
 msgid "We couldn't load your profile."
 msgstr "Ihr Profil konnte nicht geladen werden."

@@ -7,7 +7,12 @@ import {
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { useState, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
-import { NearbyCatalog, isWithinNearbyCatalog, useNearbyCatalog } from "./nearby-catalog";
+import {
+  MissingLocationNotice,
+  NearbyCatalog,
+  isWithinNearbyCatalog,
+  useNearbyCatalog,
+} from "./nearby-catalog";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
@@ -346,4 +351,49 @@ it("does not load catalogs while authentication is loading", () => {
   expect(state.market).not.toHaveBeenCalled();
   expect(state.pools).not.toHaveBeenCalled();
   expect(state.reports).not.toHaveBeenCalled();
+});
+
+function ScopeProbe() {
+  return (
+    <>
+      <MissingLocationNotice />
+      <p data-testid="scope">{useNearbyCatalog() ?? "global"}</p>
+    </>
+  );
+}
+
+it("blocks a screen behind Choose a location when a distance has no profile location", () => {
+  state.profile.data = {} as never;
+  render(
+    <NearbyCatalog>
+      <ScopeProbe />
+    </NearbyCatalog>,
+  );
+
+  expect(screen.getByText("Choose a location")).toBeTruthy();
+  expect(screen.queryByTestId("scope")).toBeNull();
+});
+
+it("keeps the market browsable everywhere with a notice when it allows a missing location", () => {
+  state.profile.data = {} as never;
+  render(
+    <NearbyCatalog allowMissingLocation>
+      <ScopeProbe />
+    </NearbyCatalog>,
+  );
+
+  expect(screen.getByTestId("scope").textContent).toBe("global");
+  expect(screen.getByRole("status").textContent).toContain("Choose a location");
+  expect(screen.getByText("Edit profile")).toBeTruthy();
+});
+
+it("shows no notice once the profile has a location", () => {
+  render(
+    <NearbyCatalog allowMissingLocation>
+      <ScopeProbe />
+    </NearbyCatalog>,
+  );
+
+  expect(screen.getByTestId("scope").textContent).toContain("nearby:");
+  expect(screen.queryByText("Choose a location")).toBeNull();
 });

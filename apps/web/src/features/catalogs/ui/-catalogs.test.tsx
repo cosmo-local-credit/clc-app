@@ -641,11 +641,13 @@ describe("catalog discovery", () => {
     expect(screen.queryByText("Outside radius")).toBeNull();
     expect(screen.queryByRole("button", { name: "Load more" })).toBeNull();
   });
-  it("does not silently fall back to a global list when the profile lacks a location", () => {
+  it("lists catalogs everywhere, saying so, when the profile lacks a location", async () => {
     mocks.profile.data.geoLat = null;
     mount(<CatalogsPage />);
+    expect(screen.getByText("Choose a location")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Edit profile" })).toBeTruthy();
-    expect(mocks.api.list).not.toHaveBeenCalled();
+    await waitFor(() => expect(mocks.api.list).toHaveBeenCalled());
+    expect(mocks.api.list.mock.calls[0]?.[0]).not.toHaveProperty("nearby", true);
   });
 
   it("keeps discovery hidden and retries a failed profile request", () => {

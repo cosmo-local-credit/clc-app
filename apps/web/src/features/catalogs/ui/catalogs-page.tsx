@@ -7,6 +7,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CatalogRow } from "#/components/catalogs/catalog-row";
 import {
+  MissingLocationNotice,
   NearbyCatalog,
   isWithinNearbyCatalog,
   nearbyQueryPolicy,
@@ -31,7 +32,7 @@ export function CatalogsPage({
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 }) {
   return (
-    <NearbyCatalog>
+    <NearbyCatalog allowMissingLocation>
       <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-market-list">
         <h1 className="sr-only">
           <Trans>Catalogs</Trans>
@@ -126,6 +127,7 @@ function CatalogList({
           />
         }
       />
+      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}
