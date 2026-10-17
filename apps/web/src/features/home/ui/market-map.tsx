@@ -477,6 +477,10 @@ export function MarketMap({
   onDeselectRef.current = onDeselect;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
+  // Seed each map instance from the current camera without rebuilding it when
+  // the camera changes. Starting at Nairobi would flash before the load handler.
+  const cameraRef = useRef(camera);
+  cameraRef.current = camera;
 
   const reportViewport = useCallback((map: MapLibreGL.Map) => {
     const report = onViewportSettledRef.current;
@@ -503,11 +507,12 @@ export function MarketMap({
 
     let map: MapLibreGL.Map;
     try {
+      const initialCamera = cameraRef.current;
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: maptilerStyle,
-        center: [NAIROBI.lng, NAIROBI.lat],
-        zoom: DEFAULT_ZOOM,
+        center: initialCamera ? [initialCamera.lng, initialCamera.lat] : [NAIROBI.lng, NAIROBI.lat],
+        zoom: initialCamera?.zoom ?? DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
         bearing: 0,
         pitch: 0,

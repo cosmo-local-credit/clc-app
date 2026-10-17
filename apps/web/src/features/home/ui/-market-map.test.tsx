@@ -474,6 +474,35 @@ function renderWithCamera(camera: React.ComponentProps<typeof MarketMap>["camera
 }
 
 describe("MarketMap ranked camera", () => {
+  it.each<MarketCamera>([
+    { lat: 43.8563, lng: 18.4131, zoom: 14, rank: 4 },
+    { lat: 48.2082, lng: 16.3738, zoom: 14, rank: 3 },
+    { lat: 43.9, lng: 18.5, zoom: 16, rank: 2, restore: { fitKey: null } },
+  ])("starts at the known camera before tiles load (rank $rank)", (camera) => {
+    const { unmount } = renderWithCamera(camera);
+    const first = firstMap();
+    expect(first.options).toMatchObject({
+      center: [camera.lng, camera.lat],
+      zoom: camera.zoom,
+    });
+
+    loadedMap();
+    unmount();
+    renderWithCamera(camera);
+
+    // Returning from Wallet creates a new map, which must also start here.
+    expect(mapInstances).toHaveLength(2);
+    expect(mapInstances[1]?.options).toMatchObject({
+      center: [camera.lng, camera.lat],
+      zoom: camera.zoom,
+    });
+  });
+
+  it("keeps the fallback camera when no location or saved view is known", () => {
+    renderWithCamera(null);
+    expect(firstMap().options).toMatchObject({ center: [36.8219, -1.2921], zoom: 12 });
+  });
+
   it("applies a candidate once the map has loaded", () => {
     renderWithCamera({ lat: -1.29, lng: 36.82, zoom: 14, rank: 1 });
     const map = loadedMap();

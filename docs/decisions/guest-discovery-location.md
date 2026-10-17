@@ -28,6 +28,13 @@ labels or a live user marker.
 constants and types live outside the map rendering module. Moving a map or
 changing the radius does not create a new location request owner.
 
+Map construction uses the already resolved camera's coordinates and zoom. The
+Nairobi fallback applies only when no camera is available. Previously, returning
+from Wallet created a map at Nairobi and applied the known camera after loading,
+causing a visible jump. The constructor reads the current camera through a ref
+so subsequent camera updates do not destroy and rebuild the map. Existing
+camera priority, user-pan protection, and filter framing still apply after load.
+
 ## Request policy and cache identity
 
 `NearbyRequest` is explicit: public (`nearby: false`) or authenticated nearby
@@ -84,3 +91,9 @@ passed 4,327 tests and found five navigation fixtures missing the new location
 boundary. After correcting those fixtures and adding form-preservation coverage,
 the final focused run passed 106 tests in 13 files. Live browser verification
 remains pending.
+
+Map return regression: three tests first reproduced the Nairobi initialization
+for live, profile, and restored cameras. After the fix, 167 tests across the map,
+market page, and camera hook pass, including initial construction and remount
+before tiles load. `vp check` passes on Node 24.16.0. Real-device visual
+verification remains pending.
