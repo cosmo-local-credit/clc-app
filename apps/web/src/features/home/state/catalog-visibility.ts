@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { create } from "zustand";
 
 import { readStorageItem, writeStorageItem } from "#/lib/storage/local-storage";
@@ -22,28 +22,37 @@ function readCatalogVisibility(): CatalogVisibility {
 
 type CatalogVisibilityState = {
   visibility: CatalogVisibility;
+  /** The device preference has been read on this page load. */
+  hydrated: boolean;
   setVisibility: (visibility: CatalogVisibility) => void;
+  hydrate: () => void;
 };
 
 export const useCatalogVisibilityStore = create<CatalogVisibilityState>((set) => ({
   visibility: DEFAULT_CATALOG_VISIBILITY,
+  hydrated: false,
   setVisibility: (visibility) => {
     writeStorageItem(CATALOG_VISIBILITY_STORAGE_KEY, visibility);
-    set({ visibility });
+    set({ visibility, hydrated: true });
   },
+  hydrate: () => set({ visibility: readCatalogVisibility(), hydrated: true }),
 }));
 
-/** Keep the server render stable, then reflect the device preference after mount. */
+/**
+ * Keep the server render stable, then reflect the device preference after the
+ * first mount. Hydration is once per page load, not once per mount: a mount
+ * that waited for its own effect painted "Loading…" for a frame on every tab
+ * and badge switch.
+ */
 export function useHydratedCatalogVisibility() {
   const visibility = useCatalogVisibilityStore((state) => state.visibility);
   const setVisibility = useCatalogVisibilityStore((state) => state.setVisibility);
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useCatalogVisibilityStore((state) => state.hydrated);
+  const hydrate = useCatalogVisibilityStore((state) => state.hydrate);
 
   useEffect(() => {
-    const initial = readCatalogVisibility();
-    if (initial !== useCatalogVisibilityStore.getState().visibility) setVisibility(initial);
-    setHydrated(true);
-  }, [setVisibility]);
+    if (!hydrated) hydrate();
+  }, [hydrated, hydrate]);
 
   return { visibility, setVisibility, hydrated };
 }

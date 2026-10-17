@@ -133,7 +133,7 @@ export function NearbyCatalog({
 
   if (!hydrated) {
     return (
-      <p className="p-6">
+      <p role="status" className="sr-only">
         <Trans>Loading…</Trans>
       </p>
     );
@@ -151,7 +151,7 @@ export function NearbyCatalog({
 
   if (auth.isLoading || (auth.isAuthenticated && profile.isPending)) {
     return (
-      <p className="p-6">
+      <p role="status" className="sr-only">
         <Trans>Loading…</Trans>
       </p>
     );

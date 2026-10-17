@@ -5,7 +5,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { fireEvent, act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import {
   MissingLocationNotice,
@@ -92,7 +92,7 @@ beforeEach(() => {
   state.profile.isPending = false;
   state.profile.isError = false;
   window.localStorage.clear();
-  useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY });
+  useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY, hydrated: false });
   state.market.mockReset().mockResolvedValue({ vouchers: [], receivedCount: 0, first: 0, last: 0 });
   state.pools.mockReset().mockResolvedValue({ pools: [], receivedCount: 0 });
   state.reports.mockReset().mockResolvedValue({ reports: [] });
@@ -105,6 +105,32 @@ beforeEach(() => {
   state.filteredReports
     .mockReset()
     .mockResolvedValue({ reports: [], tagFacets: [], voucherFacets: [] });
+});
+
+it("paints its content at once on every mount after the first", () => {
+  // The stored distance is read after the first paint of the page. A later
+  // mount, as a badge or tab switch makes, must not blink "Loading…" first.
+  render(
+    <NearbyCatalog>
+      <p>Results</p>
+    </NearbyCatalog>,
+  ).unmount();
+  const painted: string[] = [];
+  function FirstPaint({ children }: { children: ReactNode }) {
+    const ref = useRef<HTMLDivElement>(null);
+    useLayoutEffect(() => {
+      painted.push(ref.current?.textContent ?? "");
+    }, []);
+    return <div ref={ref}>{children}</div>;
+  }
+  render(
+    <FirstPaint>
+      <NearbyCatalog>
+        <p>Results</p>
+      </NearbyCatalog>
+    </FirstPaint>,
+  );
+  expect(painted).toEqual(["Results"]);
 });
 
 it("uses exact saved-location radii and lets Global include every coordinate", () => {
