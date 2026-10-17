@@ -7,6 +7,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CatalogRow } from "#/components/catalogs/catalog-row";
 import {
+  MissingLocationNotice,
   NearbyCatalog,
   isWithinNearbyCatalog,
   nearbyQueryPolicy,
@@ -16,8 +17,8 @@ import {
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
-import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
+import { MarketBar } from "#/components/market-bar";
+import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { useCatalogFilter } from "#/lib/navigation/use-catalog-filter";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
@@ -31,8 +32,8 @@ export function CatalogsPage({
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 }) {
   return (
-    <NearbyCatalog>
-      <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-bottom-nav">
+    <NearbyCatalog allowMissingLocation>
+      <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-market-list">
         <h1 className="sr-only">
           <Trans>Catalogs</Trans>
         </h1>
@@ -88,10 +89,11 @@ function CatalogList({
     : null;
   return (
     <div className="space-y-3">
-      <MarketplaceSearchShell
+      <MarketBar
         current="catalogs"
         className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-        search={<CatalogSearchField filter={search} label={t`Search catalogs`} />}
+        filter={search}
+        searchLabel={t`Search catalogs`}
         credit={
           <CreditableBrowseControl
             part="control"
@@ -118,13 +120,14 @@ function CatalogList({
             title={<Trans>Filter catalogs</Trans>}
             facetTitle={<Trans>Tags</Trans>}
             showHeader={false}
-            trigger="marketplace-icon"
+            trigger="bar"
             open={filtersOpen}
             onOpenChange={setFiltersOpen}
             onApply={search.setFacets}
           />
         }
       />
+      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}

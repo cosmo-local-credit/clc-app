@@ -290,7 +290,7 @@ describe("pools list", () => {
 
     const trigger = screen.getByRole("button", { name: "Filters" });
     expect(trigger.className).toContain("size-11");
-    expect(trigger.className).toContain("bg-destructive");
+    expect(trigger.getAttribute("data-variant")).toBe("ghost");
     expect(trigger.textContent).toBe("");
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });
@@ -337,14 +337,6 @@ describe("pools list", () => {
     expect(screen.queryByRole("link", { name: "Create" })).toBeNull();
   });
 
-  it("sizes the search field with the default input height", async () => {
-    mockPoolsList();
-    renderWithQueryClient(<PoolsPage />);
-
-    const search = await screen.findByLabelText("Search pools");
-    expect(search.className).not.toContain("h-11");
-  });
-
   it("shows each pool's own curated tags on the row", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
@@ -355,12 +347,20 @@ describe("pools list", () => {
     expect(within(row as HTMLElement).getByText("Growing")).toBeTruthy();
   });
 
-  it("has a search field that is no longer read-only", async () => {
+  it("searches pools from the search screen the field opens", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
+    await screen.findByText("Trade Pool");
 
-    const search = (await screen.findByLabelText("Search pools")) as HTMLInputElement;
-    expect(search.readOnly).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "Search pools" }));
+    const dialog = screen.getByRole("dialog", { name: "Search pools" });
+    fireEvent.change(within(dialog).getByRole("searchbox", { name: "Search pools" }), {
+      target: { value: "trade" },
+    });
+    fireEvent.submit(within(dialog).getByRole("search"));
+
+    expect(screen.queryByRole("dialog", { name: "Search pools" })).toBeNull();
+    expect(screen.getByRole("button", { name: /Search pools/ }).textContent).toContain("trade");
   });
 });
 

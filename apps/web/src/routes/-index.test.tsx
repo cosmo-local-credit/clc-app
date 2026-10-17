@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mockNavigate, mockUseSearch, mockAuthStatus } = vi.hoisted(() => ({
@@ -23,20 +23,16 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mockAuthStatus,
 }));
 
+vi.mock("#/components/auth/authenticated-route", () => ({
+  AuthenticatedRoute: ({ children }: { children: ReactNode }) =>
+    mockAuthStatus.isAuthenticated ? children : <div data-testid="sign-in-screen" />,
+}));
+
 vi.mock("#/features/home/ui/home-page", () => ({
-  HomePage: ({
-    activeTab,
-    marketView,
-    isAuthenticated,
-  }: {
-    activeTab: string;
-    marketView: string;
-    isAuthenticated: boolean;
-  }) => (
+  HomePage: ({ activeTab, isAuthenticated }: { activeTab: string; isAuthenticated: boolean }) => (
     <div
       data-testid="home-page"
       data-tab={activeTab}
-      data-market-view={marketView}
       data-authenticated={String(isAuthenticated)}
     />
   ),
@@ -82,22 +78,26 @@ describe("IndexPage routing", () => {
   it("renders the market map for disconnected users", async () => {
     renderIndex();
     expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("market");
-    expect(screen.getByTestId("home-page").getAttribute("data-market-view")).toBe("map");
     expect(screen.getByTestId("home-page").getAttribute("data-authenticated")).toBe("false");
   });
 
-  it("normalizes private tabs for guests without adding history", async () => {
-    mockUseSearch.mockReturnValue({ tab: "wallet", view: "map" });
+  it.each(["wallet", "activity", "settings"])(
+    "shows a guest the sign-in screen on %s and stays on that tab",
+    async (tab) => {
+      mockUseSearch.mockReturnValue({ tab, view: "map" });
+      renderIndex();
+
+      expect(await screen.findByTestId("sign-in-screen")).toBeTruthy();
+      expect(screen.queryByTestId("home-page")).toBeNull();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it("keeps Posts public for a guest", async () => {
+    mockUseSearch.mockReturnValue({ tab: "posts", view: "map" });
     renderIndex();
 
-    expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("market");
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/",
-        search: { tab: "market" },
-        replace: true,
-      });
-    });
+    expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("posts");
   });
 
   it("passes private tabs through for authenticated users", async () => {

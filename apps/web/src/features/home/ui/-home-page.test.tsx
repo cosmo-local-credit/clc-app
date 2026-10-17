@@ -21,13 +21,19 @@ vi.mock("@tanstack/react-router", () => ({
 
 const PRIVATE_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" as const;
 
-const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mockDisconnect } =
-  vi.hoisted(() => ({
-    mockAbortWalletSwitch: vi.fn(),
-    mockClearPersistedLocation: vi.fn(),
-    mockBackendLogout: vi.fn(),
-    mockDisconnect: vi.fn(),
-  }));
+const {
+  mockAbortWalletSwitch,
+  mockClearPersistedLocation,
+  mockClearMarketCamera,
+  mockBackendLogout,
+  mockDisconnect,
+} = vi.hoisted(() => ({
+  mockAbortWalletSwitch: vi.fn(),
+  mockClearPersistedLocation: vi.fn(),
+  mockClearMarketCamera: vi.fn(),
+  mockBackendLogout: vi.fn(),
+  mockDisconnect: vi.fn(),
+}));
 
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0xabc" as `0x${string}` }),
@@ -40,6 +46,10 @@ vi.mock("#/features/auth/hooks/use-auth-session", () => ({
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
   clearPersistedLocation: mockClearPersistedLocation,
+}));
+
+vi.mock("#/features/home/api/market-camera-storage", () => ({
+  clearMarketCamera: mockClearMarketCamera,
 }));
 
 vi.mock("#/lib/wallet-session", () => ({
@@ -60,11 +70,9 @@ vi.mock("./activity-page", () => ({
 
 vi.mock("./market-page", () => ({
   MarketPage: ({
-    onboardingBanner,
     isAuthenticated,
     locationOwner,
   }: {
-    onboardingBanner?: ReactNode;
     isAuthenticated?: boolean;
     locationOwner?: string;
   }) => (
@@ -72,28 +80,8 @@ vi.mock("./market-page", () => ({
       data-testid="market-page"
       data-authenticated={isAuthenticated ? "true" : "false"}
       data-location-owner={locationOwner}
-    >
-      {onboardingBanner}
-    </div>
+    />
   ),
-}));
-
-vi.mock("./market-list-page", () => ({
-  MarketListPage: ({
-    onboardingBanner,
-    locationOwner,
-  }: {
-    onboardingBanner?: ReactNode;
-    locationOwner?: string;
-  }) => (
-    <div data-testid="market-list-page" data-location-owner={locationOwner}>
-      {onboardingBanner}
-    </div>
-  ),
-}));
-
-vi.mock("./onboarding-banner", () => ({
-  OnboardingBanner: () => <div data-testid="onboarding-banner" />,
 }));
 
 vi.mock("./posts-page", () => ({
@@ -122,6 +110,7 @@ beforeEach(() => {
   localStorage.clear();
   mockAbortWalletSwitch.mockClear();
   mockClearPersistedLocation.mockClear();
+  mockClearMarketCamera.mockClear();
   mockBackendLogout.mockReset();
   mockBackendLogout.mockResolvedValue(undefined);
   mockDisconnect.mockReset();
@@ -132,14 +121,7 @@ describe("HomePage tabs", () => {
   it("shows the market map by default", () => {
     renderHome(<HomePage />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-list-page")).toBeNull();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
-  });
-
-  it("shows the Browse-all list for the explicit market list view", () => {
-    renderHome(<HomePage marketView="list" />);
-    expect(screen.getByTestId("market-list-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-page")).toBeNull();
   });
 
   it("renders the requested wallet tab", () => {
@@ -174,7 +156,6 @@ describe("HomePage guest mode", () => {
     nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage isAuthenticated={false} />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByText("Sign in or sign up")).toBeNull();
   });
 
   it("does not render private content for a requested private tab", () => {
@@ -197,13 +178,14 @@ describe("HomePage sign-out", () => {
     });
   });
 
-  it("clears the persisted precise location on sign-out", async () => {
+  it("clears the persisted precise location and the map's last view on sign-out", async () => {
     renderHome(<HomePage activeTab="settings" />);
 
     fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
 
     await waitFor(() => {
       expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
+      expect(mockClearMarketCamera).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -290,6 +272,6 @@ describe("HomePage location scope", () => {
     renderHome(<HomePage isAuthenticated={false} />);
 
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByText("Sign in or sign up")).toBeNull();
+    expect(screen.getByTestId("market-page").getAttribute("data-authenticated")).toBe("false");
   });
 });

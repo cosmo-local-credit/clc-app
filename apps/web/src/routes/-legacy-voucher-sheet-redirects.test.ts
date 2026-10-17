@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from "vite-plus/test";
 vi.mock("#/components/nearby-catalog", () => ({ NearbyCatalog: () => null }));
 vi.mock("#/features/catalogs/ui/catalogs-page", () => ({ CatalogsPage: () => null }));
 vi.mock("#/features/home/ui/market-list-page", () => ({ MarketListPage: () => null }));
-vi.mock("#/features/home/ui/marketplace-page", () => ({ MarketplacePage: () => null }));
 vi.mock("#/features/home/ui/offers-page", () => ({ OffersPage: () => null }));
 vi.mock("#/features/pools/ui", () => ({ PoolDetailPage: () => null, PoolsPage: () => null }));
 
@@ -192,5 +191,45 @@ describe("legacy non-map voucher sheet links", () => {
     expect(
       redirectOptions(() => beforeLoad({ params: {}, search: { voucher: "not-an-address" } })),
     ).toMatchObject({ to: "/wallet/vouchers", search: {}, replace: true });
+  });
+});
+
+describe("the retired All list", () => {
+  it.each([{}, { scope: "all" }, { scope: "everything" }])(
+    "sends /market without a list to the map, keeping the search: %o",
+    (extra) => {
+      const beforeLoad = MarketRoute.options.beforeLoad as unknown as BeforeLoad;
+      const search = validateMarketSearch({
+        ...extra,
+        q: "food",
+        tags: "Repair",
+        creditable: "true",
+        out_voucher: POOL,
+      });
+      const options = redirectOptions(() => beforeLoad({ params: {}, search }));
+      expect(options).toMatchObject({ to: "/", replace: true });
+      expect(options.search).toEqual({
+        q: "food",
+        tags: "Repair",
+        tagMatch: undefined,
+        creditable: "true",
+      });
+    },
+  );
+
+  it("keeps each list where it is", () => {
+    const beforeLoad = MarketRoute.options.beforeLoad as unknown as BeforeLoad;
+    expect(() =>
+      beforeLoad({ params: {}, search: validateMarketSearch({ scope: "offers", q: "food" }) }),
+    ).not.toThrow();
+  });
+
+  it("sends the retired list view of the map to the map", () => {
+    const beforeLoad = HomeRoute.options.beforeLoad as unknown as BeforeLoad;
+    expect(
+      redirectOptions(() =>
+        beforeLoad({ params: {}, search: { tab: "market", view: "list", q: "food" } }),
+      ),
+    ).toMatchObject({ to: "/", search: { tab: "market", view: undefined, q: "food" } });
   });
 });

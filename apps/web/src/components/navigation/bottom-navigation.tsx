@@ -1,7 +1,13 @@
 import { useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { MouseEvent, ReactNode } from "react";
-import { RiArticleLine, RiNotification3Line, RiSettings3Line, RiWallet3Line } from "react-icons/ri";
+import {
+  RiArticleLine,
+  RiLockLine,
+  RiNotification3Line,
+  RiSettings3Line,
+  RiWallet3Line,
+} from "react-icons/ri";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 import type { HomeTab } from "#/lib/navigation/home-tabs";
@@ -10,9 +16,12 @@ import { cn } from "#/lib/utils";
 export function BottomNavigation({
   activeTab,
   atActiveTabRoot,
+  locked = false,
 }: {
   activeTab: HomeTab;
   atActiveTabRoot: boolean;
+  /** A guest: the private tabs carry a lock and open the sign-in screen. */
+  locked?: boolean;
 }) {
   const { t } = useLingui();
   return (
@@ -23,6 +32,7 @@ export function BottomNavigation({
       <div className="grid h-16 grid-cols-5">
         <NavLink
           tab="wallet"
+          locked={locked}
           label={t`Wallet`}
           activeTab={activeTab}
           atActiveTabRoot={atActiveTabRoot}
@@ -30,6 +40,7 @@ export function BottomNavigation({
         />
         <NavLink
           tab="activity"
+          locked={locked}
           label={t`Activity`}
           activeTab={activeTab}
           atActiveTabRoot={atActiveTabRoot}
@@ -45,6 +56,7 @@ export function BottomNavigation({
         />
         <NavLink
           tab="settings"
+          locked={locked}
           label={t`Settings`}
           activeTab={activeTab}
           atActiveTabRoot={atActiveTabRoot}
@@ -61,12 +73,14 @@ function NavLink({
   activeTab,
   atActiveTabRoot,
   icon,
+  locked = false,
 }: {
   tab: HomeTab;
   label: string;
   activeTab: HomeTab;
   atActiveTabRoot: boolean;
   icon: ReactNode;
+  locked?: boolean;
 }) {
   const active = activeTab === tab;
   return (
@@ -81,7 +95,15 @@ function NavLink({
       )}
       onClick={(event) => preventActiveNavigation(event, active && atActiveTabRoot)}
     >
-      <span className="flex size-6 items-center justify-center [&_svg]:size-4">{icon}</span>
+      <span className="relative flex size-6 items-center justify-center [&_svg]:size-4">
+        {icon}
+        {locked ? (
+          <RiLockLine
+            className="-end-1.5 absolute top-0 size-2.5! text-muted-foreground"
+            aria-hidden="true"
+          />
+        ) : null}
+      </span>
       <span className={cn("font-medium text-2xs", active && "font-semibold")}>{label}</span>
     </Link>
   );
@@ -99,7 +121,7 @@ function MarketNavLink({
   const active = activeTab === "market";
   return (
     <Link
-      to="/market"
+      to="/"
       search={{}}
       activeOptions={{ exact: true, explicitUndefined: true }}
       aria-current={active ? (atActiveTabRoot ? "page" : "true") : undefined}

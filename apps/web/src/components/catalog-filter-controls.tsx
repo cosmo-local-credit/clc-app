@@ -160,7 +160,8 @@ export function CatalogFilterSheet({
     voucherMatch: TagMatch,
   ) => void;
   children?: ReactNode;
-  trigger?: "default" | "marketplace-icon";
+  /** `bar` is the market bar's square, joined to the end of its search field. */
+  trigger?: "default" | "bar";
 }) {
   const { t } = useLingui();
   const categoryHeadingId = useId();
@@ -242,28 +243,22 @@ export function CatalogFilterSheet({
         onClick={openSheet}
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-label={trigger === "marketplace-icon" ? t`Filters` : undefined}
-        title={trigger === "marketplace-icon" ? t`Filters` : undefined}
-        size={trigger === "marketplace-icon" ? "icon-lg" : "default"}
+        aria-label={trigger === "bar" ? t`Filters` : undefined}
+        title={trigger === "bar" ? t`Filters` : undefined}
+        variant={trigger === "bar" ? "ghost" : "default"}
+        size={trigger === "bar" ? "icon-lg" : "default"}
         tap={trigger === "default"}
-        className={
-          trigger === "marketplace-icon"
-            ? "relative bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            : undefined
-        }
+        className={trigger === "bar" ? "relative border-0 text-foreground" : undefined}
       >
-        <RiFilter3Line
-          className={trigger === "marketplace-icon" ? "size-5" : "size-4"}
-          aria-hidden="true"
-        />
+        <RiFilter3Line className={trigger === "bar" ? "size-5" : "size-4"} aria-hidden="true" />
         {trigger === "default" ? <Trans>Filters</Trans> : null}
         {appliedCount > 0 ? (
           <Badge
             aria-hidden="true"
             size="sm"
             className={
-              trigger === "marketplace-icon"
-                ? "absolute -end-1 -top-1 h-4 min-w-4 justify-center border-destructive bg-card px-0.5 text-foreground tabular-nums"
+              trigger === "bar"
+                ? "absolute end-1 top-1 h-4 min-w-4 justify-center border-primary bg-primary px-0.5 text-primary-foreground tabular-nums"
                 : "min-w-5 justify-center border-primary-foreground/30 bg-primary-foreground/15 text-current tabular-nums"
             }
           >
