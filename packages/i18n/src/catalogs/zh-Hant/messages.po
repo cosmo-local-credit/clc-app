@@ -14,22 +14,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:141
+#: apps/web/src/features/pools/ui/pools-page.tsx:140
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, other {# 個資金池}}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:127
-msgid "{requested, plural, one {# filter} other {# filters}}"
-msgstr "{requested, plural, other {# 個篩選條件}}"
-
-#. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:134
-msgid "{count, plural, one {# tag} other {# tags}}"
-msgstr "{count, plural, other {# 個標籤}}"
-
-#. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-list-page.tsx:113
+#: apps/web/src/features/home/ui/market-list-page.tsx:110
 msgid "{count, plural, one {# voucher} other {# vouchers}}"
 msgstr "{count, plural, other {# 張代金券}}"
 
@@ -37,6 +27,16 @@ msgstr "{count, plural, other {# 張代金券}}"
 #: apps/web/src/features/home/ui/posts-page.tsx:47
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, other {# 篇貼文}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:127
+#~ msgid "{requested, plural, one {# filter} other {# filters}}"
+#~ msgstr "{requested, plural, other {# 個篩選條件}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:134
+#~ msgid "{count, plural, one {# tag} other {# tags}}"
+#~ msgstr "{count, plural, other {# 個標籤}}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:148
@@ -120,12 +120,12 @@ msgid "{0} m"
 msgstr "{0} 米"
 
 #. placeholder {0}: draftTags.length
-#: apps/web/src/components/catalog-filter-controls.tsx:487
+#: apps/web/src/components/catalog-filter-controls.tsx:482
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} / {CATALOG_MAX_TAGS}"
 
 #. placeholder {0}: draftVouchers.length
-#: apps/web/src/components/catalog-filter-controls.tsx:310
+#: apps/web/src/components/catalog-filter-controls.tsx:305
 msgid "{0} of {CATALOG_MAX_VOUCHERS}"
 msgstr "{0} / {CATALOG_MAX_VOUCHERS}"
 
@@ -238,11 +238,11 @@ msgstr "已使用 {used} / {limit}"
 msgid "{used} used · Unlimited"
 msgstr "已使用 {used} · 無限制"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:253
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
 msgid "{value} km"
 msgstr "{value} 公里"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:253
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
 msgid "{value} m"
 msgstr "{value} 公尺"
 
@@ -391,7 +391,7 @@ msgstr "正在啟用智能錢包…"
 msgid "Active"
 msgstr "啟用"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:33
+#: apps/web/src/components/navigation/bottom-navigation.tsx:44
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
 #: apps/web/src/features/home/ui/activity-page.tsx:45
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:45
@@ -569,8 +569,8 @@ msgstr "全部資金池"
 #~ msgid "All reviews · newest first"
 #~ msgstr "全部評價 · 最新優先"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:468
-#: apps/web/src/components/catalog-filter-controls.tsx:552
+#: apps/web/src/components/catalog-filter-controls.tsx:463
+#: apps/web/src/components/catalog-filter-controls.tsx:547
 msgid "All selected"
 msgstr "全部選中"
 
@@ -630,8 +630,8 @@ msgstr "供給描述某人提供的商品或服務。請查看詳情、價格以
 msgid "Another card scan is already running. Try again."
 msgstr "另一項卡片掃描正在進行。請重試。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:463
-#: apps/web/src/components/catalog-filter-controls.tsx:547
+#: apps/web/src/components/catalog-filter-controls.tsx:458
+#: apps/web/src/components/catalog-filter-controls.tsx:542
 msgid "Any selected"
 msgstr "任意選擇"
 
@@ -656,7 +656,7 @@ msgstr "應用程式版本"
 msgid "Apply"
 msgstr "應用"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:571
+#: apps/web/src/components/catalog-filter-controls.tsx:566
 msgid "Apply filters"
 msgstr "應用篩選條件"
 
@@ -875,7 +875,7 @@ msgstr "現金"
 msgid "Cash services aren't available on {0}."
 msgstr "{0} 不提供現金服務。"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:280
+#: apps/web/src/features/home/ui/marketplace-page.tsx:281
 msgid "Catalog"
 msgstr "目錄"
 
@@ -1166,21 +1166,21 @@ msgid "Cleaning"
 msgstr "清潔"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:152
-msgid "Clear"
-msgstr "清除"
+#~ msgid "Clear"
+#~ msgstr "清除"
 
 #: apps/web/src/components/creditable-browse-control.tsx:35
 #: apps/web/src/features/pools/ui/pools-page.tsx:250
 msgid "Clear filter"
 msgstr "清除篩選條件"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:33
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:43
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:55
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:165
-#: apps/web/src/features/home/ui/market-page.tsx:371
-#: apps/web/src/features/home/ui/marketplace-page.tsx:142
-#: apps/web/src/features/home/ui/offers-page.tsx:166
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:31
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:41
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:53
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:125
+#: apps/web/src/features/home/ui/market-page.tsx:368
+#: apps/web/src/features/home/ui/marketplace-page.tsx:143
+#: apps/web/src/features/home/ui/offers-page.tsx:162
 #: apps/web/src/features/home/ui/posts-page.tsx:130
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:64
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:73
@@ -1197,7 +1197,8 @@ msgid "Clear location"
 msgstr "清除位置"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
-#: apps/web/src/components/catalog-filter-controls.tsx:528
+#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/market-bar.tsx:87
 msgid "Clear search"
 msgstr "清除搜尋"
 
@@ -1208,8 +1209,8 @@ msgstr "清除搜尋"
 msgid "Close"
 msgstr "關閉"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:285
-#: apps/web/src/components/catalog-filter-controls.tsx:590
+#: apps/web/src/components/catalog-filter-controls.tsx:280
+#: apps/web/src/components/catalog-filter-controls.tsx:585
 msgid "Close filters"
 msgstr "關閉篩選條件"
 
@@ -1239,8 +1240,8 @@ msgstr "收起"
 
 #: apps/web/src/components/marketplace-search-shell.tsx:67
 #: apps/web/src/components/marketplace-search-shell.tsx:71
-msgid "Collapse marketplace search"
-msgstr "收合市場搜尋"
+#~ msgid "Collapse marketplace search"
+#~ msgstr "收合市場搜尋"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:263
 msgid "Collect again from this card"
@@ -1549,7 +1550,7 @@ msgstr "Cosmo-Local Credit 幫助個人與組織支持、分享及交換商品�
 msgid "Could not import this paper wallet."
 msgstr "無法匯入紙錢包。"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:61
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:59
 msgid "Could not load vouchers."
 msgstr "無法載入代金券。"
 
@@ -1707,11 +1708,11 @@ msgstr "無法載入目錄項目。"
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:25
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:194
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:195
 msgid "Couldn't load catalogs."
 msgstr "無法載入目錄。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:199
+#: apps/web/src/features/home/ui/market-page.tsx:196
 msgid "Couldn't load complete marketplace results."
 msgstr "無法載入完整的市場結果。"
 
@@ -1724,7 +1725,7 @@ msgstr "無法載入信用額度。"
 msgid "Couldn't load holdings."
 msgstr "無法載入持有的代金券。"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:157
+#: apps/web/src/features/home/ui/marketplace-page.tsx:158
 msgid "Couldn't load marketplace results."
 msgstr "無法載入市場結果。"
 
@@ -1737,7 +1738,7 @@ msgstr "無法載入商品或服務項目。"
 msgid "Couldn't load pool tags."
 msgstr "無法載入資金池標籤。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:207
+#: apps/web/src/features/home/ui/market-page.tsx:204
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "無法載入資金池。"
@@ -1914,7 +1915,7 @@ msgstr "無法儲存您的使用者名稱。"
 msgid "Couldn't save. Please try again."
 msgstr "無法儲存。請再試一次。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:388
+#: apps/web/src/components/catalog-filter-controls.tsx:383
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
@@ -2304,8 +2305,8 @@ msgid "Edit details"
 msgstr "編輯詳細資訊"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:147
-msgid "Edit filters"
-msgstr "編輯篩選條件"
+#~ msgid "Edit filters"
+#~ msgstr "編輯篩選條件"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:124
 msgid "Edit offering"
@@ -2618,19 +2619,19 @@ msgstr "檔名不得超過 255 個字元"
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "檔案太大 ({0} KB)。最大為 512 KB。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:501
+#: apps/web/src/components/catalog-filter-controls.tsx:496
 msgid "Filter by tag"
 msgstr "按標籤篩選"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:118
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
 msgid "Filter catalogs"
 msgstr "篩選目錄"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:109
+#: apps/web/src/features/home/ui/marketplace-page.tsx:110
 msgid "Filter marketplace"
 msgstr "篩選市場"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:133
+#: apps/web/src/features/home/ui/offers-page.tsx:129
 msgid "Filter offers"
 msgstr "篩選商品或服務項目"
 
@@ -2642,15 +2643,13 @@ msgstr "篩選資金池"
 msgid "Filter posts"
 msgstr "篩選貼文"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:109
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:107
 msgid "Filter vouchers"
 msgstr "篩選代金券"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:245
 #: apps/web/src/components/catalog-filter-controls.tsx:246
-#: apps/web/src/components/catalog-filter-controls.tsx:259
-#: apps/web/src/components/marketplace-search-shell.tsx:57
-#: apps/web/src/components/marketplace-search-shell.tsx:58
+#: apps/web/src/components/catalog-filter-controls.tsx:247
+#: apps/web/src/components/catalog-filter-controls.tsx:254
 msgid "Filters"
 msgstr "篩選條件"
 
@@ -2662,7 +2661,7 @@ msgstr "篩選條件"
 msgid "Finding a name…"
 msgstr "正在尋找名稱…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:164
+#: apps/web/src/features/home/ui/market-page.tsx:161
 msgid "Finding location"
 msgstr "正在尋找位置"
 
@@ -2801,11 +2800,11 @@ msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
 "vouchers?"
 msgstr "使用 {0} 代金券時，可從資金池兌換多少 {unitSymbol} 價值？"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:541
+#: apps/web/src/components/catalog-filter-controls.tsx:536
 msgid "How should categories match?"
 msgstr "類別應該如何匹配？"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:453
+#: apps/web/src/components/catalog-filter-controls.tsx:448
 msgid "How should vouchers match?"
 msgstr "代金券應該如何匹配？"
 
@@ -3011,7 +3010,7 @@ msgstr "淺色"
 #~ msgid "Limit not set"
 #~ msgstr "未設定限制"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:370
+#: apps/web/src/components/catalog-filter-controls.tsx:365
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "已達到 {CATALOG_MAX_VOUCHERS} 代金券的限制。刪除一個以新增另一個。"
@@ -3135,8 +3134,8 @@ msgstr "升"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:302
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:453
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:224
-#: apps/web/src/features/home/ui/marketplace-page.tsx:191
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/home/ui/marketplace-page.tsx:192
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 msgid "Load more"
 msgstr "載入更多"
@@ -3177,8 +3176,8 @@ msgstr "正在載入持有的代金券…"
 msgid "Loading location map"
 msgstr "載入位置圖"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:196
-#: apps/web/src/features/home/ui/marketplace-page.tsx:152
+#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/marketplace-page.tsx:153
 msgid "Loading marketplace…"
 msgstr "正在載入市場…"
 
@@ -3281,9 +3280,9 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:188
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:224
-#: apps/web/src/features/home/ui/marketplace-page.tsx:191
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:189
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/home/ui/marketplace-page.tsx:192
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
@@ -3303,7 +3302,7 @@ msgstr "本地貨幣和 M-Pesa"
 msgid "Location"
 msgstr "地點"
 
-#: apps/web/src/features/home/ui/market-page.tsx:166
+#: apps/web/src/features/home/ui/market-page.tsx:163
 msgid "Location denied"
 msgstr "位置被拒絕"
 
@@ -3312,7 +3311,7 @@ msgid "Location map"
 msgstr "位置圖"
 
 #: apps/web/src/components/ui/location-picker.tsx:228
-#: apps/web/src/features/home/ui/market-page.tsx:168
+#: apps/web/src/features/home/ui/market-page.tsx:165
 msgid "Location unavailable"
 msgstr "位置不可用"
 
@@ -3368,8 +3367,8 @@ msgstr "地圖示記"
 #~ msgid "Markdown: **bold**, # headings, - lists, [links](https://…)"
 #~ msgstr "Markdown：**粗體**，# 標題，- 列表，[連結](https://…)"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:38
-#: apps/web/src/features/home/ui/market-page.tsx:238
+#: apps/web/src/components/navigation/bottom-navigation.tsx:49
+#: apps/web/src/features/home/ui/market-page.tsx:235
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:59
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3387,7 +3386,7 @@ msgstr "市場分區"
 #~ msgid "Marketplace vouchers"
 #~ msgstr "市場代金券"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:543
+#: apps/web/src/components/catalog-filter-controls.tsx:538
 msgid "Match"
 msgstr "匹配"
 
@@ -3664,19 +3663,19 @@ msgstr "在此裝置上找不到相機。"
 msgid "No cash activity yet."
 msgstr "尚無現金活動。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:184
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:185
 msgid "No catalogs are available through your Credit pools."
 msgstr "您的可存入資金池中沒有可用目錄。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:208
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:209
 msgid "No catalogs found."
 msgstr "找不到任何目錄。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/catalog-filter-controls.tsx:518
 msgid "No categories are available for the current results."
 msgstr "當前結果沒有可用的類別。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:495
+#: apps/web/src/components/catalog-filter-controls.tsx:490
 msgid "No category filters are available."
 msgstr "沒有可用的類別篩選條件。"
 
@@ -3729,20 +3728,20 @@ msgstr "未找到貨幣。"
 msgid "No items yet. Add pools or vouchers from their detail pages."
 msgstr "尚無項目。請從資金池或代金券的詳情頁面新增。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:342
-#: apps/web/src/features/home/ui/marketplace-page.tsx:148
+#: apps/web/src/features/home/ui/market-page.tsx:339
+#: apps/web/src/features/home/ui/marketplace-page.tsx:149
 msgid "No marketplace results are available through your Credit pools."
 msgstr "您的可存入資金池中沒有可用的市場結果。"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:170
+#: apps/web/src/features/home/ui/marketplace-page.tsx:171
 msgid "No marketplace results found."
 msgstr "找不到市場結果。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:368
+#: apps/web/src/features/home/ui/market-page.tsx:365
 msgid "No marketplace results match this search."
 msgstr "沒有符合此搜尋的市場結果。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:375
+#: apps/web/src/features/home/ui/market-page.tsx:372
 msgid "No marketplace results to show yet."
 msgstr "暫無可顯示的市場結果。"
 
@@ -3754,11 +3753,11 @@ msgstr "沒有匹配的接收方。"
 msgid "No offerings yet"
 msgstr "還沒有商品或服務項目"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:172
+#: apps/web/src/features/home/ui/offers-page.tsx:168
 msgid "No offers are available through your Credit pools."
 msgstr "您的信用資金池中沒有可用的商品或服務項目。"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:177
+#: apps/web/src/features/home/ui/offers-page.tsx:173
 msgid "No offers match this search."
 msgstr "沒有與此搜尋相符的商品或服務項目。"
 
@@ -3832,7 +3831,7 @@ msgstr "沒有可提取的 USDm、USDT 或 USDC 餘額。"
 msgid "No voucher in this pool is offering anything yet."
 msgstr "此資金池中的代金券暫時沒有商品或服務項目。"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:202
+#: apps/web/src/features/home/ui/market-list-page.tsx:198
 msgid "No vouchers are available through your Credit pools."
 msgstr "您的信用資金池中沒有可用的代金券。"
 
@@ -3846,8 +3845,8 @@ msgstr "此資金池中還沒有代金券。"
 msgid "No vouchers match that search."
 msgstr "沒有代金券與該搜尋匹配。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:409
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:162
+#: apps/web/src/components/catalog-filter-controls.tsx:404
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:122
 msgid "No vouchers match this search."
 msgstr "沒有代金券與此搜尋匹配。"
 
@@ -3855,7 +3854,7 @@ msgstr "沒有代金券與此搜尋匹配。"
 msgid "No vouchers to collect"
 msgstr "沒有可領取的代金券"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:209
+#: apps/web/src/features/home/ui/market-list-page.tsx:205
 msgid "No vouchers to show yet."
 msgstr "暫無代金券可顯示。"
 
@@ -3918,7 +3917,7 @@ msgstr "沒有任何更改。"
 msgid "Nothing has moved through this pool yet."
 msgstr "尚無資金流經此資金池。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:521
+#: apps/web/src/components/catalog-filter-controls.tsx:516
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "與「{searchTerm}」相符的結果都沒有類別。"
 
@@ -3981,7 +3980,7 @@ msgstr "編號列表"
 msgid "Off"
 msgstr "已關閉"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:277
+#: apps/web/src/features/home/ui/marketplace-page.tsx:278
 msgid "Offer"
 msgstr "商品或服務項目"
 
@@ -4042,8 +4041,8 @@ msgid "Open in Maps"
 msgstr "在地圖中開啟"
 
 #: apps/web/src/components/marketplace-search-shell.tsx:40
-msgid "Open marketplace search"
-msgstr "開啟市場搜尋"
+#~ msgid "Open marketplace search"
+#~ msgstr "開啟市場搜尋"
 
 #: apps/web/src/components/app-menu.tsx:41
 msgid "Open menu"
@@ -4369,7 +4368,7 @@ msgid "Plant Nursery"
 msgstr "苗圃"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
-#: apps/web/src/features/home/ui/marketplace-page.tsx:279
+#: apps/web/src/features/home/ui/marketplace-page.tsx:280
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:292
@@ -4536,7 +4535,7 @@ msgstr "資金池跟蹤詳細資訊丟失。"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:321
-#: apps/web/src/features/pools/ui/pools-page.tsx:164
+#: apps/web/src/features/pools/ui/pools-page.tsx:163
 msgid "Pools"
 msgstr "資金池"
 
@@ -4577,7 +4576,7 @@ msgstr "貼文文字太長"
 msgid "Post updated."
 msgstr "貼文已更新。"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:41
+#: apps/web/src/components/navigation/bottom-navigation.tsx:52
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:142
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:278
 #: apps/web/src/features/home/ui/posts-page.tsx:71
@@ -4712,7 +4711,7 @@ msgstr "已定價項目小計"
 msgid "Pricing"
 msgstr "定價"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:20
+#: apps/web/src/components/navigation/bottom-navigation.tsx:29
 msgid "Primary navigation"
 msgstr "主要導航"
 
@@ -5025,7 +5024,7 @@ msgstr "從市場移除「{0}」？"
 
 #. placeholder {0}: item.name
 #. placeholder {0}: voucherLabel(voucher)
-#: apps/web/src/components/catalog-filter-controls.tsx:350
+#: apps/web/src/components/catalog-filter-controls.tsx:345
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:95
 msgid "Remove {0}"
 msgstr "刪除{0}"
@@ -5105,7 +5104,7 @@ msgstr "已舉報"
 msgid "Required"
 msgstr "必填"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:585
+#: apps/web/src/components/catalog-filter-controls.tsx:580
 msgid "Reset"
 msgstr "重置"
 
@@ -5145,12 +5144,12 @@ msgstr "靜修"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:54
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:52
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:202
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:62
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:203
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:854
-#: apps/web/src/features/home/ui/market-page.tsx:200
-#: apps/web/src/features/home/ui/market-page.tsx:208
-#: apps/web/src/features/home/ui/marketplace-page.tsx:165
+#: apps/web/src/features/home/ui/market-page.tsx:197
+#: apps/web/src/features/home/ui/market-page.tsx:205
+#: apps/web/src/features/home/ui/marketplace-page.tsx:166
 #: apps/web/src/features/home/ui/report-page.tsx:57
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:718
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
@@ -5268,11 +5267,11 @@ msgstr "掃描接收方地址"
 #~ msgid "Scroll for more"
 #~ msgstr "滾動查看更多"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:126
+#: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "按名稱或符號搜尋"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:95
 msgid "Search catalogs"
 msgstr "搜尋目錄"
 
@@ -5293,7 +5292,7 @@ msgstr "搜尋城鎮或地點"
 #~ msgid "Search offers"
 #~ msgstr "搜尋商品或服務項目"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:107
+#: apps/web/src/features/home/ui/offers-page.tsx:105
 msgid "Search offers, vouchers, descriptions, or tags"
 msgstr "搜尋商品或服務項目、代金券、描述或標籤"
 
@@ -5330,12 +5329,12 @@ msgstr "按標題或描述搜尋貼文"
 msgid "Search tags"
 msgstr "搜尋標籤"
 
-#: apps/web/src/features/home/ui/market-page.tsx:266
-#: apps/web/src/features/home/ui/marketplace-page.tsx:85
+#: apps/web/src/features/home/ui/market-page.tsx:264
+#: apps/web/src/features/home/ui/marketplace-page.tsx:86
 msgid "Search the marketplace"
 msgstr "搜尋市場"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:362
+#: apps/web/src/components/catalog-filter-controls.tsx:357
 msgid "Search voucher filters"
 msgstr "搜尋代金券篩選條件"
 
@@ -5344,7 +5343,7 @@ msgstr "搜尋代金券篩選條件"
 msgid "Search voucher tags"
 msgstr "搜尋代金券標籤"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:361
+#: apps/web/src/components/catalog-filter-controls.tsx:356
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
@@ -5363,7 +5362,7 @@ msgstr "搜尋地點…"
 msgid "Searching recipients…"
 msgstr "正在搜尋接收方…"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:383
+#: apps/web/src/components/catalog-filter-controls.tsx:378
 msgid "Searching vouchers…"
 msgstr "正在搜尋代金券…"
 
@@ -5403,7 +5402,7 @@ msgstr "已選標籤"
 msgid "Selected voucher tags"
 msgstr "選定的代金券標籤"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:346
+#: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Selected vouchers"
 msgstr "已選擇代金券"
 
@@ -5517,7 +5516,7 @@ msgstr "提取費用前請先設定費用接收方，否則資金池無法支付
 msgid "Setting up your wallet…"
 msgstr "正在設定您的錢包…"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:48
+#: apps/web/src/components/navigation/bottom-navigation.tsx:60
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
 #: apps/web/src/features/home/ui/settings-page.tsx:51
 #: apps/web/src/features/install/ui/install-page.tsx:63
@@ -5575,7 +5574,7 @@ msgstr "顯示 {stars} 星級評價"
 msgid "Show all"
 msgstr "顯示全部"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:167
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:168
 msgid "Showing catalogs <0>globally</0>."
 msgstr "正在<0>全球</0>顯示目錄。"
 
@@ -5583,7 +5582,7 @@ msgstr "正在<0>全球</0>顯示目錄。"
 msgid "Showing recent vouchers only."
 msgstr "僅顯示最近的代金券。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:147
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:148
 msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
 "location</1>."
 msgstr "正在顯示已儲存的<1>個人資料位置</1>周圍 <0>{radiusLabel}</0> 內的結果。"
@@ -5614,6 +5613,7 @@ msgid "Shown to anyone using this pool"
 msgstr "向任何使用此資金池的人展示"
 
 #: apps/web/src/components/creditable-browse-control.tsx:50
+#: apps/web/src/components/market-bar.tsx:55
 msgid "Sign in"
 msgstr "登入"
 
@@ -5622,8 +5622,8 @@ msgid "Sign in after redeeming this voucher to leave a review."
 msgstr "兌付此代金券後登入，即可留下評價。"
 
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:13
-msgid "Sign in or sign up"
-msgstr "登入或註冊"
+#~ msgid "Sign in or sign up"
+#~ msgstr "登入或註冊"
 
 #: apps/web/src/components/creditable-browse-control.tsx:46
 msgid "Sign in to browse results available through your Credit pools."
@@ -5914,9 +5914,9 @@ msgstr "符號已被佔用，改用 {0}。"
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
-#: apps/web/src/features/home/ui/marketplace-page.tsx:110
-#: apps/web/src/features/home/ui/offers-page.tsx:134
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:120
+#: apps/web/src/features/home/ui/marketplace-page.tsx:111
+#: apps/web/src/features/home/ui/offers-page.tsx:130
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:262
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:535
@@ -6176,9 +6176,9 @@ msgstr "主題"
 msgid "There is nothing available for exchange with this voucher yet."
 msgstr "暫時沒有可與此代金券兌換的內容。"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:54
-#: apps/web/src/features/home/ui/marketplace-page.tsx:139
-#: apps/web/src/features/home/ui/offers-page.tsx:163
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:52
+#: apps/web/src/features/home/ui/marketplace-page.tsx:140
+#: apps/web/src/features/home/ui/offers-page.tsx:159
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:82
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:75
 msgid "These filters aren't valid."
@@ -6254,7 +6254,7 @@ msgstr "此連結包含無效的代金券篩選條件。"
 
 #. placeholder {0}: filter.result.requested
 #. placeholder {1}: filter.result.max
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:32
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:30
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:63
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:55
 msgid "This link has too many filters ({0}, maximum {1})."
@@ -6392,13 +6392,13 @@ msgstr "到"
 msgid "Toggle theme"
 msgstr "切換主題"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:42
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:40
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:72
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:64
 msgid "Too many matches to show. Try a more specific search."
 msgstr "匹配結果過多，無法全部顯示。請使用更具體的搜尋條件。"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:49
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:47
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:78
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:70
 msgid "Too many searches. Try again in a moment."
@@ -6470,7 +6470,7 @@ msgid "Trip"
 msgstr "旅行"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:36
-#: apps/web/src/components/catalog-filter-controls.tsx:396
+#: apps/web/src/components/catalog-filter-controls.tsx:391
 #: apps/web/src/components/nearby-catalog.tsx:126
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:182
@@ -6507,7 +6507,7 @@ msgstr "再試一次"
 msgid "Type"
 msgstr "類型"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:377
+#: apps/web/src/components/catalog-filter-controls.tsx:372
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "至少輸入 {VOUCHER_SEARCH_MIN_CHARS} 個字元來搜尋代金券。"
 
@@ -6662,7 +6662,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 "funds to your Gnosis wallet."
 msgstr "使用 <0>Binance</0> 或其他本地交易所，再透過 <1>Jumper</1> 將資金傳送到您的 Gnosis 錢包。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:169
+#: apps/web/src/features/home/ui/market-page.tsx:166
 msgid "Use current location"
 msgstr "使用當前位置"
 
@@ -6794,7 +6794,7 @@ msgstr "代金券"
 #: apps/web/src/components/marketplace-resource-navigation.tsx:69
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/home/ui/marketplace-page.tsx:278
+#: apps/web/src/features/home/ui/marketplace-page.tsx:279
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:165
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
@@ -6847,7 +6847,7 @@ msgstr "代金券詳細資訊不可用"
 msgid "Voucher details updated."
 msgstr "代金券詳細資訊已更新。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:458
+#: apps/web/src/components/catalog-filter-controls.tsx:453
 msgid "Voucher match"
 msgstr "代金券匹配"
 
@@ -6877,7 +6877,7 @@ msgstr "代金券已停用。"
 msgid "Voucher review"
 msgstr "代金券評價"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:420
+#: apps/web/src/components/catalog-filter-controls.tsx:415
 msgid "Voucher search results"
 msgstr "代金券搜尋結果"
 
@@ -6904,10 +6904,10 @@ msgstr "代金券標籤"
 msgid "Voucher tracking details are missing."
 msgstr "缺少代金券跟蹤詳情。"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:307
+#: apps/web/src/components/catalog-filter-controls.tsx:302
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
-#: apps/web/src/features/home/ui/market-list-page.tsx:121
+#: apps/web/src/features/home/ui/market-list-page.tsx:118
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:352
@@ -6916,7 +6916,7 @@ msgstr "缺少代金券跟蹤詳情。"
 msgid "Vouchers"
 msgstr "代金券"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:221
+#: apps/web/src/features/home/ui/market-list-page.tsx:217
 msgid "Vouchers list"
 msgstr "代金券清單"
 
@@ -6961,7 +6961,7 @@ msgstr "正在等待鏈上確認"
 msgid "Waiting for the chain…"
 msgstr "正在等待鏈上確認…"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:26
+#: apps/web/src/components/navigation/bottom-navigation.tsx:36
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:140
@@ -7047,7 +7047,7 @@ msgstr "什麼是憑證？"
 msgid "intro.offer.title"
 msgstr "什麼是供給？"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:110
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:108
 msgid "What they offer"
 msgstr "提供的商品或服務"
 

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
-import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { PoolLogo } from "#/components/wallet";
@@ -17,7 +16,7 @@ import { CHAIN_ID } from "#/lib/chain";
 import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { MarketBar } from "#/components/market-bar";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -163,10 +162,11 @@ export function PoolsPage({
       <h1 className="sr-only">
         <Trans>Pools</Trans>
       </h1>
-      <MarketplaceSearchShell
+      <MarketBar
         current="pools"
         className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-        search={<CatalogSearchField filter={filter} label={t`Search pools`} />}
+        filter={filter}
+        searchLabel={t`Search pools`}
         credit={
           <CreditableBrowseControl
             part="control"

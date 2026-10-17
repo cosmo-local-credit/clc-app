@@ -25,7 +25,7 @@ export function PoolFilterSheet({
       title={<Trans>Filter pools</Trans>}
       facetTitle={<Trans>Categories</Trans>}
       showHeader={false}
-      trigger="marketplace-icon"
+      trigger="bar"
       open={open}
       onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}

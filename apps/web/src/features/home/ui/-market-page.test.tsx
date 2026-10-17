@@ -473,16 +473,21 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("places the shared app menu inside the search shell and sign-in below it", () => {
-    renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
+  it("puts the menu, the search field with its joined filters, and Sign in on one row", () => {
+    renderPage();
 
-    expect(screen.getByTestId("app-menu")).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("inset-x-4");
-    expect(
-      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("top-[calc(env(safe-area-inset-top)+9rem)]");
+    const menu = screen.getByRole("button", { name: "Open menu" });
+    const search = screen.getByRole("searchbox", { name: "Search the marketplace" });
+    const filters = screen.getByRole("button", { name: "Filters" });
+    const signIn = screen.getByRole("link", { name: "Sign in" });
+
+    expect(menu.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(search.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(filters.compareDocumentPosition(signIn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The field and the filter button share one outlined box.
+    expect(search.closest(".border")?.contains(filters)).toBe(true);
+    expect(signIn.getAttribute("href")).toBe("/onboarding?step=welcome");
+    expect(screen.queryByText("Sign in or sign up")).toBeNull();
   });
 
   it("does not request a private profile for guests, or hand the menu a location action", () => {
@@ -1097,8 +1102,8 @@ describe("MarketPage filtering", () => {
     expect(lastMapProps.current?.fitBounds).toBeNull();
   });
 
-  it("shows the filter summary with a way to clear and a way to edit", () => {
-    routeSearch.current = { q: "art" };
+  it("shows the query in the search field and the tag count on the filter button", () => {
+    routeSearch.current = { q: "art", tags: "Art,Food" };
     filteredResult.current = {
       ...filteredResult.current,
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
@@ -1106,32 +1111,11 @@ describe("MarketPage filtering", () => {
 
     render(<MarketPage />);
 
-    expect(screen.getByText("\u201cart\u201d")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
-    const edit = screen.getByRole("link", { name: "Edit filters" });
-    expect(edit.getAttribute("href")).toContain("/market");
-    expect(edit.getAttribute("href")).toContain("q=art");
-  });
-
-  it("hides the summary when nothing is filtered", () => {
-    render(<MarketPage />);
-
-    expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
-  });
-
-  it("keeps the filter summary after removing Browse all", () => {
-    routeSearch.current = { q: "art", tags: "Art" };
-    filteredResult.current = {
-      ...filteredResult.current,
-      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
-    };
-
-    render(<MarketPage />);
-
-    const summary = screen.getByRole("link", { name: "Edit filters" });
-    expect(summary.textContent).toContain("“art”");
-    expect(summary.textContent).toContain("1 tag");
-    expect(screen.queryByRole("link", { name: "Browse all" })).toBeNull();
+    expect(
+      (screen.getByRole("searchbox", { name: "Search the marketplace" }) as HTMLInputElement).value,
+    ).toBe("art");
+    expect(screen.getByRole("button", { name: "Filters" }).textContent).toContain("2");
+    expect(screen.queryByRole("link", { name: "Edit filters" })).toBeNull();
   });
 
   it("distinguishes a filtered-empty map from an empty catalog", () => {

@@ -60,11 +60,9 @@ vi.mock("./activity-page", () => ({
 
 vi.mock("./market-page", () => ({
   MarketPage: ({
-    onboardingBanner,
     isAuthenticated,
     locationOwner,
   }: {
-    onboardingBanner?: ReactNode;
     isAuthenticated?: boolean;
     locationOwner?: string;
   }) => (
@@ -72,28 +70,14 @@ vi.mock("./market-page", () => ({
       data-testid="market-page"
       data-authenticated={isAuthenticated ? "true" : "false"}
       data-location-owner={locationOwner}
-    >
-      {onboardingBanner}
-    </div>
+    />
   ),
 }));
 
 vi.mock("./market-list-page", () => ({
-  MarketListPage: ({
-    onboardingBanner,
-    locationOwner,
-  }: {
-    onboardingBanner?: ReactNode;
-    locationOwner?: string;
-  }) => (
-    <div data-testid="market-list-page" data-location-owner={locationOwner}>
-      {onboardingBanner}
-    </div>
+  MarketListPage: ({ locationOwner }: { locationOwner?: string }) => (
+    <div data-testid="market-list-page" data-location-owner={locationOwner} />
   ),
-}));
-
-vi.mock("./onboarding-banner", () => ({
-  OnboardingBanner: () => <div data-testid="onboarding-banner" />,
 }));
 
 vi.mock("./posts-page", () => ({
@@ -174,7 +158,6 @@ describe("HomePage guest mode", () => {
     nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage isAuthenticated={false} />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByText("Sign in or sign up")).toBeNull();
   });
 
   it("does not render private content for a requested private tab", () => {
@@ -290,6 +273,6 @@ describe("HomePage location scope", () => {
     renderHome(<HomePage isAuthenticated={false} />);
 
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByText("Sign in or sign up")).toBeNull();
+    expect(screen.getByTestId("market-page").getAttribute("data-authenticated")).toBe("false");
   });
 });

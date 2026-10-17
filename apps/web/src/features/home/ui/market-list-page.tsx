@@ -1,12 +1,11 @@
 import { haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
-import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { MarketBar } from "#/components/market-bar";
 import { Badge } from "#/components/ui/badge";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
 import { VoucherAvatar } from "#/components/wallet";
@@ -22,11 +21,9 @@ import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./
 const MARKET_LIST_BATCH_SIZE = 20;
 
 export function MarketListPage({
-  onboardingBanner,
   locationOwner = GUEST_STORAGE_OWNER,
   creditableSearch,
 }: {
-  onboardingBanner?: ReactNode;
   locationOwner?: string;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 }) {
@@ -120,10 +117,11 @@ export function MarketListPage({
         <h1 className="sr-only">
           <Trans>Vouchers</Trans>
         </h1>
-        <MarketplaceSearchShell
+        <MarketBar
           current="vouchers"
           className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-          search={<CatalogSearchField filter={filter} label={t`Search by name or symbol`} />}
+          filter={filter}
+          searchLabel={t`Search by name or symbol`}
           credit={
             <CreditableBrowseControl
               part="control"
@@ -155,8 +153,6 @@ export function MarketListPage({
             />
           }
         />
-
-        {onboardingBanner ? <div className="mt-3">{onboardingBanner}</div> : null}
 
         <div className="mt-3">
           <CreditableBrowseControl

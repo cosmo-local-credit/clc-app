@@ -1,11 +1,10 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { RiFocus3Line } from "react-icons/ri";
 
-import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { MarketBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import { useVoucherSheetSnap, VoucherSheet } from "#/components/vouchers/voucher-sheet";
@@ -25,19 +24,17 @@ import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { cn } from "#/lib/utils";
-import { MarketFilterSheet, MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
+import { MarketFilterSheet, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
 
 type Coordinates = { lat: number; lng: number };
 
 export function MarketPage({
-  onboardingBanner,
   isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
   creditableSearch,
 }: {
-  onboardingBanner?: ReactNode;
   isAuthenticated?: boolean;
   locationOwner?: string;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
@@ -256,14 +253,15 @@ export function MarketPage({
         />
       </Suspense>
 
-      <MarketplaceSearchShell
+      <MarketBar
         current="map"
         surface="map"
         className={cn(
           "absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)]",
           isCardOpen ? "z-20" : "z-30",
         )}
-        search={<CatalogSearchField filter={filter} label={t`Search the marketplace`} />}
+        filter={filter}
+        searchLabel={t`Search the marketplace`}
         credit={
           <CreditableBrowseControl
             part="control"
@@ -307,7 +305,6 @@ export function MarketPage({
       />
 
       <div className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top)+9rem)] z-20 space-y-2">
-        {onboardingBanner}
         <div className="pointer-events-auto">
           <CreditableBrowseControl
             part="feedback"
@@ -381,7 +378,6 @@ export function MarketPage({
       {/* With a card open, only the location button stays, riding the sheet. */}
       {isCardOpen ? null : (
         <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
-          <MarketFilterSummary filter={filter} />
           <div className="flex justify-end">{locationButton}</div>
         </div>
       )}

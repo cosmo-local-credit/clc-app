@@ -290,7 +290,7 @@ describe("pools list", () => {
 
     const trigger = screen.getByRole("button", { name: "Filters" });
     expect(trigger.className).toContain("size-11");
-    expect(trigger.className).toContain("bg-destructive");
+    expect(trigger.getAttribute("data-variant")).toBe("ghost");
     expect(trigger.textContent).toBe("");
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });

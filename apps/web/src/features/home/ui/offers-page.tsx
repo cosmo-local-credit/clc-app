@@ -5,9 +5,9 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
+import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { MarketBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
 import {
   isWithinNearbyCatalog,
@@ -98,15 +98,11 @@ export function OffersPage({
       <h1 className="sr-only">
         <Trans>Offers</Trans>
       </h1>
-      <MarketplaceSearchShell
+      <MarketBar
         current="offers"
         className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-        search={
-          <CatalogSearchField
-            filter={filter}
-            label={t`Search offers, vouchers, descriptions, or tags`}
-          />
-        }
+        filter={filter}
+        searchLabel={t`Search offers, vouchers, descriptions, or tags`}
         credit={
           <CreditableBrowseControl
             part="control"
@@ -133,7 +129,7 @@ export function OffersPage({
             title={<Trans>Filter offers</Trans>}
             facetTitle={<Trans>Tags</Trans>}
             showHeader={false}
-            trigger="marketplace-icon"
+            trigger="bar"
             open={filtersOpen}
             onOpenChange={setFiltersOpen}
             onApply={filter.applyFacetFilters}

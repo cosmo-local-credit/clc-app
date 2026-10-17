@@ -13,22 +13,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:141
+#: apps/web/src/features/pools/ui/pools-page.tsx:140
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, one {# puli} other {# puli}}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:127
-msgid "{requested, plural, one {# filter} other {# filters}}"
-msgstr "{requested, plural, one {kichujio #} other {vichujio #}}"
-
-#. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:134
-msgid "{count, plural, one {# tag} other {# tags}}"
-msgstr "{count, plural, one {lebo #} other {lebo #}}"
-
-#. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-list-page.tsx:113
+#: apps/web/src/features/home/ui/market-list-page.tsx:110
 msgid "{count, plural, one {# voucher} other {# vouchers}}"
 msgstr "{count, plural, one {vocha #} other {vocha #}}"
 
@@ -36,6 +26,16 @@ msgstr "{count, plural, one {vocha #} other {vocha #}}"
 #: apps/web/src/features/home/ui/posts-page.tsx:47
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, one {# chapisho} other {# machapisho}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:127
+#~ msgid "{requested, plural, one {# filter} other {# filters}}"
+#~ msgstr "{requested, plural, one {kichujio #} other {vichujio #}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:134
+#~ msgid "{count, plural, one {# tag} other {# tags}}"
+#~ msgstr "{count, plural, one {lebo #} other {lebo #}}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:148
@@ -120,12 +120,12 @@ msgid "{0} m"
 msgstr "m {0}"
 
 #. placeholder {0}: draftTags.length
-#: apps/web/src/components/catalog-filter-controls.tsx:487
+#: apps/web/src/components/catalog-filter-controls.tsx:482
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} kati ya {CATALOG_MAX_TAGS}"
 
 #. placeholder {0}: draftVouchers.length
-#: apps/web/src/components/catalog-filter-controls.tsx:310
+#: apps/web/src/components/catalog-filter-controls.tsx:305
 msgid "{0} of {CATALOG_MAX_VOUCHERS}"
 msgstr "{0} kati ya {CATALOG_MAX_VOUCHERS}"
 
@@ -238,11 +238,11 @@ msgstr "{used} kati ya {limit} zimetumika"
 msgid "{used} used · Unlimited"
 msgstr "{used} zimetumika · Bila kikomo"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:253
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
 msgid "{value} km"
 msgstr "{value} km"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:253
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
 msgid "{value} m"
 msgstr "{value} m"
 
@@ -395,7 +395,7 @@ msgstr "Inawezesha mkoba mahiri…"
 msgid "Active"
 msgstr "Imewashwa"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:33
+#: apps/web/src/components/navigation/bottom-navigation.tsx:44
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
 #: apps/web/src/features/home/ui/activity-page.tsx:45
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:45
@@ -571,8 +571,8 @@ msgstr "Vikundi vyote"
 #~ msgid "All reviews · newest first"
 #~ msgstr "Maoni yote · mapya zaidi kwanza"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:468
-#: apps/web/src/components/catalog-filter-controls.tsx:552
+#: apps/web/src/components/catalog-filter-controls.tsx:463
+#: apps/web/src/components/catalog-filter-controls.tsx:547
 msgid "All selected"
 msgstr "Zote zilizochaguliwa"
 
@@ -634,8 +634,8 @@ msgstr "Ofa inaeleza bidhaa au huduma ambazo mtu anatoa. Angalia maelezo, bei "
 msgid "Another card scan is already running. Try again."
 msgstr "Usomaji mwingine wa kadi tayari unaendelea. Jaribu tena."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:463
-#: apps/web/src/components/catalog-filter-controls.tsx:547
+#: apps/web/src/components/catalog-filter-controls.tsx:458
+#: apps/web/src/components/catalog-filter-controls.tsx:542
 msgid "Any selected"
 msgstr "Yoyote iliyochaguliwa"
 
@@ -660,7 +660,7 @@ msgstr "Toleo la programu"
 msgid "Apply"
 msgstr "Tumia"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:571
+#: apps/web/src/components/catalog-filter-controls.tsx:566
 msgid "Apply filters"
 msgstr "Tumia vichujio"
 
@@ -879,7 +879,7 @@ msgstr "Pesa"
 msgid "Cash services aren't available on {0}."
 msgstr "Huduma za fedha taslimu hazipatikani kwenye {0}."
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:280
+#: apps/web/src/features/home/ui/marketplace-page.tsx:281
 msgid "Catalog"
 msgstr "Katalogi"
 
@@ -1175,21 +1175,21 @@ msgid "Cleaning"
 msgstr "Usafi"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:152
-msgid "Clear"
-msgstr "Ondoa"
+#~ msgid "Clear"
+#~ msgstr "Ondoa"
 
 #: apps/web/src/components/creditable-browse-control.tsx:35
 #: apps/web/src/features/pools/ui/pools-page.tsx:250
 msgid "Clear filter"
 msgstr "Ondoa kichujio"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:33
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:43
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:55
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:165
-#: apps/web/src/features/home/ui/market-page.tsx:371
-#: apps/web/src/features/home/ui/marketplace-page.tsx:142
-#: apps/web/src/features/home/ui/offers-page.tsx:166
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:31
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:41
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:53
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:125
+#: apps/web/src/features/home/ui/market-page.tsx:368
+#: apps/web/src/features/home/ui/marketplace-page.tsx:143
+#: apps/web/src/features/home/ui/offers-page.tsx:162
 #: apps/web/src/features/home/ui/posts-page.tsx:130
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:64
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:73
@@ -1206,7 +1206,8 @@ msgid "Clear location"
 msgstr "Futa eneo"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
-#: apps/web/src/components/catalog-filter-controls.tsx:528
+#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/market-bar.tsx:87
 msgid "Clear search"
 msgstr "Ondoa utafutaji"
 
@@ -1217,8 +1218,8 @@ msgstr "Ondoa utafutaji"
 msgid "Close"
 msgstr "Funga"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:285
-#: apps/web/src/components/catalog-filter-controls.tsx:590
+#: apps/web/src/components/catalog-filter-controls.tsx:280
+#: apps/web/src/components/catalog-filter-controls.tsx:585
 msgid "Close filters"
 msgstr "Funga vichujio"
 
@@ -1248,8 +1249,8 @@ msgstr "Kunja"
 
 #: apps/web/src/components/marketplace-search-shell.tsx:67
 #: apps/web/src/components/marketplace-search-shell.tsx:71
-msgid "Collapse marketplace search"
-msgstr "Kunja utafutaji wa soko"
+#~ msgid "Collapse marketplace search"
+#~ msgstr "Kunja utafutaji wa soko"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:263
 msgid "Collect again from this card"
@@ -1561,7 +1562,7 @@ msgstr "Cosmo-Local Credit huwasaidia watu na mashirika kuunga mkono, kushiriki 
 msgid "Could not import this paper wallet."
 msgstr "Haikuwezekana kuingiza mkoba huu wa karatasi."
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:61
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:59
 msgid "Could not load vouchers."
 msgstr "Imeshindwa kupakia vocha."
 
@@ -1719,11 +1720,11 @@ msgstr "Imeshindikana kupakia vipengee vya katalogi."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:25
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:194
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:195
 msgid "Couldn't load catalogs."
 msgstr "Imeshindikana kupakia katalogi."
 
-#: apps/web/src/features/home/ui/market-page.tsx:199
+#: apps/web/src/features/home/ui/market-page.tsx:196
 msgid "Couldn't load complete marketplace results."
 msgstr "Imeshindikana kupakia matokeo kamili ya soko."
 
@@ -1736,7 +1737,7 @@ msgstr "Imeshindwa kupakia vikomo vya mkopo."
 msgid "Couldn't load holdings."
 msgstr "Imeshindwa kupakia hazina."
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:157
+#: apps/web/src/features/home/ui/marketplace-page.tsx:158
 msgid "Couldn't load marketplace results."
 msgstr "Imeshindikana kupakia matokeo ya soko."
 
@@ -1749,7 +1750,7 @@ msgstr "Imeshindikana kupakia matoleo."
 msgid "Couldn't load pool tags."
 msgstr "Imeshindikana kupakia lebo za puli."
 
-#: apps/web/src/features/home/ui/market-page.tsx:207
+#: apps/web/src/features/home/ui/market-page.tsx:204
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "Haikuwezekana kupakia puli."
@@ -1932,7 +1933,7 @@ msgstr "Imeshindwa kuhifadhi jina lako la mtumiaji."
 msgid "Couldn't save. Please try again."
 msgstr "Imeshindwa kuhifadhi. Tafadhali jaribu tena."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:388
+#: apps/web/src/components/catalog-filter-controls.tsx:383
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
@@ -2322,8 +2323,8 @@ msgid "Edit details"
 msgstr "Hariri maelezo"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:147
-msgid "Edit filters"
-msgstr "Badilisha vichujio"
+#~ msgid "Edit filters"
+#~ msgstr "Badilisha vichujio"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:124
 msgid "Edit offering"
@@ -2638,19 +2639,19 @@ msgstr "Jina la faili lisizidi herufi 255"
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Faili ni kubwa mno ({0} KB). Kiwango cha juu ni 512 KB."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:501
+#: apps/web/src/components/catalog-filter-controls.tsx:496
 msgid "Filter by tag"
 msgstr "Chuja kwa lebo"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:118
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
 msgid "Filter catalogs"
 msgstr "Chuja katalogi"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:109
+#: apps/web/src/features/home/ui/marketplace-page.tsx:110
 msgid "Filter marketplace"
 msgstr "Chuja soko"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:133
+#: apps/web/src/features/home/ui/offers-page.tsx:129
 msgid "Filter offers"
 msgstr "Chuja matoleo"
 
@@ -2662,15 +2663,13 @@ msgstr "Chuja puli"
 msgid "Filter posts"
 msgstr "Chuja machapisho"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:109
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:107
 msgid "Filter vouchers"
 msgstr "Chuja vocha"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:245
 #: apps/web/src/components/catalog-filter-controls.tsx:246
-#: apps/web/src/components/catalog-filter-controls.tsx:259
-#: apps/web/src/components/marketplace-search-shell.tsx:57
-#: apps/web/src/components/marketplace-search-shell.tsx:58
+#: apps/web/src/components/catalog-filter-controls.tsx:247
+#: apps/web/src/components/catalog-filter-controls.tsx:254
 msgid "Filters"
 msgstr "Vichujio"
 
@@ -2682,7 +2681,7 @@ msgstr "Vichujio"
 msgid "Finding a name…"
 msgstr "Tunatafuta jina…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:164
+#: apps/web/src/features/home/ui/market-page.tsx:161
 msgid "Finding location"
 msgstr "Inatafuta eneo"
 
@@ -2822,11 +2821,11 @@ msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
 msgstr "Ni thamani kiasi gani ya {unitSymbol} inaweza kubadilishwa kutoka "
 "kwenye puli kwa kutumia vocha za {0}?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:541
+#: apps/web/src/components/catalog-filter-controls.tsx:536
 msgid "How should categories match?"
 msgstr "Kategoria zilingane vipi?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:453
+#: apps/web/src/components/catalog-filter-controls.tsx:448
 msgid "How should vouchers match?"
 msgstr "Vocha zilingane vipi?"
 
@@ -3034,7 +3033,7 @@ msgstr "Mwanga"
 #~ msgid "Limit not set"
 #~ msgstr "Kikomo hakijawekwa"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:370
+#: apps/web/src/components/catalog-filter-controls.tsx:365
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "Umefikia kikomo cha vocha {CATALOG_MAX_VOUCHERS}. Ondoa moja ili "
@@ -3162,8 +3161,8 @@ msgstr "Lita"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:302
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:453
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:224
-#: apps/web/src/features/home/ui/marketplace-page.tsx:191
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/home/ui/marketplace-page.tsx:192
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 msgid "Load more"
 msgstr "Pakia zaidi"
@@ -3204,8 +3203,8 @@ msgstr "Inapakia hazina…"
 msgid "Loading location map"
 msgstr "Inapakia ramani ya eneo"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:196
-#: apps/web/src/features/home/ui/marketplace-page.tsx:152
+#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/marketplace-page.tsx:153
 msgid "Loading marketplace…"
 msgstr "Inapakia soko…"
 
@@ -3308,9 +3307,9 @@ msgstr "Inapakia wasifu wako…"
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:188
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:224
-#: apps/web/src/features/home/ui/marketplace-page.tsx:191
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:189
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/home/ui/marketplace-page.tsx:192
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
@@ -3330,7 +3329,7 @@ msgstr "Pesa za ndani na M-Pesa"
 msgid "Location"
 msgstr "Eneo"
 
-#: apps/web/src/features/home/ui/market-page.tsx:166
+#: apps/web/src/features/home/ui/market-page.tsx:163
 msgid "Location denied"
 msgstr "Eneo limekataliwa"
 
@@ -3339,7 +3338,7 @@ msgid "Location map"
 msgstr "Ramani ya eneo"
 
 #: apps/web/src/components/ui/location-picker.tsx:228
-#: apps/web/src/features/home/ui/market-page.tsx:168
+#: apps/web/src/features/home/ui/market-page.tsx:165
 msgid "Location unavailable"
 msgstr "Eneo halipatikani"
 
@@ -3397,8 +3396,8 @@ msgstr "Alama ya ramani"
 #~ msgid "Markdown: **bold**, # headings, - lists, [links](https://…)"
 #~ msgstr "Markdown: **nene**, # vichwa, - orodha, [viungo](https://…)"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:38
-#: apps/web/src/features/home/ui/market-page.tsx:238
+#: apps/web/src/components/navigation/bottom-navigation.tsx:49
+#: apps/web/src/features/home/ui/market-page.tsx:235
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:59
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3416,7 +3415,7 @@ msgstr "Sehemu za soko"
 #~ msgid "Marketplace vouchers"
 #~ msgstr "Vocha za sokoni"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:543
+#: apps/web/src/components/catalog-filter-controls.tsx:538
 msgid "Match"
 msgstr "Linganisha"
 
@@ -3696,19 +3695,19 @@ msgstr "Hakuna kamera iliyopatikana kwenye kifaa hiki."
 msgid "No cash activity yet."
 msgstr "Bado hakuna shughuli za pesa."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:184
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:185
 msgid "No catalogs are available through your Credit pools."
 msgstr "Hakuna katalogi zinazopatikana kupitia vikundi vyako vya mkopo."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:208
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:209
 msgid "No catalogs found."
 msgstr "Hakuna katalogi zilizopatikana."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/catalog-filter-controls.tsx:518
 msgid "No categories are available for the current results."
 msgstr "Hakuna kategoria zinazopatikana kwa matokeo ya sasa."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:495
+#: apps/web/src/components/catalog-filter-controls.tsx:490
 msgid "No category filters are available."
 msgstr "Hakuna vichujio vya kategoria vinavyopatikana."
 
@@ -3764,20 +3763,20 @@ msgid "No items yet. Add pools or vouchers from their detail pages."
 msgstr "Bado hakuna vipengee. Ongeza pool au vocha kutoka kurasa zake za "
 "maelezo."
 
-#: apps/web/src/features/home/ui/market-page.tsx:342
-#: apps/web/src/features/home/ui/marketplace-page.tsx:148
+#: apps/web/src/features/home/ui/market-page.tsx:339
+#: apps/web/src/features/home/ui/marketplace-page.tsx:149
 msgid "No marketplace results are available through your Credit pools."
 msgstr "Hakuna matokeo ya soko yanayopatikana kupitia vikundi vyako vya mkopo."
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:170
+#: apps/web/src/features/home/ui/marketplace-page.tsx:171
 msgid "No marketplace results found."
 msgstr "Hakuna matokeo ya soko yaliyopatikana."
 
-#: apps/web/src/features/home/ui/market-page.tsx:368
+#: apps/web/src/features/home/ui/market-page.tsx:365
 msgid "No marketplace results match this search."
 msgstr "Hakuna matokeo ya soko yanayolingana na utafutaji huu."
 
-#: apps/web/src/features/home/ui/market-page.tsx:375
+#: apps/web/src/features/home/ui/market-page.tsx:372
 msgid "No marketplace results to show yet."
 msgstr "Bado hakuna matokeo ya soko ya kuonyesha."
 
@@ -3789,11 +3788,11 @@ msgstr "Hakuna wapokeaji wanaolingana."
 msgid "No offerings yet"
 msgstr "Bado hakuna matoleo"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:172
+#: apps/web/src/features/home/ui/offers-page.tsx:168
 msgid "No offers are available through your Credit pools."
 msgstr "Hakuna matoleo yanayopatikana kupitia hazina zako za Mkopo."
 
-#: apps/web/src/features/home/ui/offers-page.tsx:177
+#: apps/web/src/features/home/ui/offers-page.tsx:173
 msgid "No offers match this search."
 msgstr "Hakuna matoleo yanayolingana na utafutaji huu."
 
@@ -3868,7 +3867,7 @@ msgstr "Hakuna salio la USDm, USDT, au USDC linalopatikana kwa kutoa pesa."
 msgid "No voucher in this pool is offering anything yet."
 msgstr "Hakuna vocha katika kikundi hiki inayotoa kitu bado."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:202
+#: apps/web/src/features/home/ui/market-list-page.tsx:198
 msgid "No vouchers are available through your Credit pools."
 msgstr "Hakuna vocha zinazopatikana kupitia hazina zako za Mkopo."
 
@@ -3882,8 +3881,8 @@ msgstr "Bado hakuna vocha katika puli hii."
 msgid "No vouchers match that search."
 msgstr "Hakuna vocha inayolingana na utafutaji huo."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:409
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:162
+#: apps/web/src/components/catalog-filter-controls.tsx:404
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:122
 msgid "No vouchers match this search."
 msgstr "Hakuna vocha inayolingana na utafutaji huu."
 
@@ -3891,7 +3890,7 @@ msgstr "Hakuna vocha inayolingana na utafutaji huu."
 msgid "No vouchers to collect"
 msgstr "Hakuna vocha za kupokea"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:209
+#: apps/web/src/features/home/ui/market-list-page.tsx:205
 msgid "No vouchers to show yet."
 msgstr "Bado hakuna vocha za kuonyesha."
 
@@ -3954,7 +3953,7 @@ msgstr "Hakuna kilichobadilika."
 msgid "Nothing has moved through this pool yet."
 msgstr "Hakuna kilichopita katika kikundi hiki bado."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:521
+#: apps/web/src/components/catalog-filter-controls.tsx:516
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Hakuna kinacholingana na “{searchTerm}” chenye kategoria."
 
@@ -4015,7 +4014,7 @@ msgstr "Orodha yenye nambari"
 msgid "Off"
 msgstr "Zimezimwa"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:277
+#: apps/web/src/features/home/ui/marketplace-page.tsx:278
 msgid "Offer"
 msgstr "Toleo"
 
@@ -4077,8 +4076,8 @@ msgid "Open in Maps"
 msgstr "Fungua kwenye Ramani"
 
 #: apps/web/src/components/marketplace-search-shell.tsx:40
-msgid "Open marketplace search"
-msgstr "Fungua utafutaji wa soko"
+#~ msgid "Open marketplace search"
+#~ msgstr "Fungua utafutaji wa soko"
 
 #: apps/web/src/components/app-menu.tsx:41
 msgid "Open menu"
@@ -4409,7 +4408,7 @@ msgid "Plant Nursery"
 msgstr "Kitalu cha mimea"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
-#: apps/web/src/features/home/ui/marketplace-page.tsx:279
+#: apps/web/src/features/home/ui/marketplace-page.tsx:280
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:292
@@ -4577,7 +4576,7 @@ msgstr "Maelezo ya kufuatilia puli hayapo."
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:321
-#: apps/web/src/features/pools/ui/pools-page.tsx:164
+#: apps/web/src/features/pools/ui/pools-page.tsx:163
 msgid "Pools"
 msgstr "Vikundi"
 
@@ -4618,7 +4617,7 @@ msgstr "Maandishi ya chapisho ni marefu mno"
 msgid "Post updated."
 msgstr "Chapisho limehaririwa."
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:41
+#: apps/web/src/components/navigation/bottom-navigation.tsx:52
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:142
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:278
 #: apps/web/src/features/home/ui/posts-page.tsx:71
@@ -4754,7 +4753,7 @@ msgstr "Jumla ndogo ya bidhaa zenye bei"
 msgid "Pricing"
 msgstr "Upangaji wa bei"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:20
+#: apps/web/src/components/navigation/bottom-navigation.tsx:29
 msgid "Primary navigation"
 msgstr "Urambazaji wa msingi"
 
@@ -5070,7 +5069,7 @@ msgstr "Ondoa “{0}” kutoka sokoni?"
 
 #. placeholder {0}: item.name
 #. placeholder {0}: voucherLabel(voucher)
-#: apps/web/src/components/catalog-filter-controls.tsx:350
+#: apps/web/src/components/catalog-filter-controls.tsx:345
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:95
 msgid "Remove {0}"
 msgstr "Ondoa {0}"
@@ -5146,7 +5145,7 @@ msgstr "Imeripotiwa"
 msgid "Required"
 msgstr "Inahitajika"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:585
+#: apps/web/src/components/catalog-filter-controls.tsx:580
 msgid "Reset"
 msgstr "Weka upya"
 
@@ -5186,12 +5185,12 @@ msgstr "Mapumziko"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:54
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:52
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:202
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:62
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:203
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:854
-#: apps/web/src/features/home/ui/market-page.tsx:200
-#: apps/web/src/features/home/ui/market-page.tsx:208
-#: apps/web/src/features/home/ui/marketplace-page.tsx:165
+#: apps/web/src/features/home/ui/market-page.tsx:197
+#: apps/web/src/features/home/ui/market-page.tsx:205
+#: apps/web/src/features/home/ui/marketplace-page.tsx:166
 #: apps/web/src/features/home/ui/report-page.tsx:57
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:718
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
@@ -5310,11 +5309,11 @@ msgstr "Changanua anwani ya mpokeaji"
 #~ msgid "Scroll for more"
 #~ msgstr "Sogeza kuona zaidi"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:126
+#: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "Tafuta kwa jina au alama"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:95
 msgid "Search catalogs"
 msgstr "Tafuta katalogi"
 
@@ -5335,7 +5334,7 @@ msgstr "Tafuta mji au eneo"
 #~ msgid "Search offers"
 #~ msgstr "Tafuta matoleo"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:107
+#: apps/web/src/features/home/ui/offers-page.tsx:105
 msgid "Search offers, vouchers, descriptions, or tags"
 msgstr "Tafuta matoleo, vocha, maelezo au lebo"
 
@@ -5372,12 +5371,12 @@ msgstr "Tafuta machapisho kwa kichwa au maelezo"
 msgid "Search tags"
 msgstr "Tafuta lebo"
 
-#: apps/web/src/features/home/ui/market-page.tsx:266
-#: apps/web/src/features/home/ui/marketplace-page.tsx:85
+#: apps/web/src/features/home/ui/market-page.tsx:264
+#: apps/web/src/features/home/ui/marketplace-page.tsx:86
 msgid "Search the marketplace"
 msgstr "Tafuta kwenye soko"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:362
+#: apps/web/src/components/catalog-filter-controls.tsx:357
 msgid "Search voucher filters"
 msgstr "Tafuta vichujio vya vocha"
 
@@ -5386,7 +5385,7 @@ msgstr "Tafuta vichujio vya vocha"
 msgid "Search voucher tags"
 msgstr "Tafuta lebo za vocha"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:361
+#: apps/web/src/components/catalog-filter-controls.tsx:356
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
@@ -5405,7 +5404,7 @@ msgstr "Inatafuta maeneo…"
 msgid "Searching recipients…"
 msgstr "Tunatafuta wapokeaji…"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:383
+#: apps/web/src/components/catalog-filter-controls.tsx:378
 msgid "Searching vouchers…"
 msgstr "Inatafuta vocha…"
 
@@ -5445,7 +5444,7 @@ msgstr "Lebo zilizochaguliwa"
 msgid "Selected voucher tags"
 msgstr "Lebo za vocha zilizochaguliwa"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:346
+#: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Selected vouchers"
 msgstr "Vocha zilizochaguliwa"
 
@@ -5561,7 +5560,7 @@ msgstr "Weka mpokeaji wa ada kabla ya kukusanya, vinginevyo puli haina pa "
 msgid "Setting up your wallet…"
 msgstr "Inaandaa pochi yako…"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:48
+#: apps/web/src/components/navigation/bottom-navigation.tsx:60
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
 #: apps/web/src/features/home/ui/settings-page.tsx:51
 #: apps/web/src/features/install/ui/install-page.tsx:63
@@ -5619,7 +5618,7 @@ msgstr "Onyesha maoni ya nyota {stars}"
 msgid "Show all"
 msgstr "Onyesha yote"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:167
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:168
 msgid "Showing catalogs <0>globally</0>."
 msgstr "Katalogi zinaonyeshwa <0>ulimwenguni kote</0>."
 
@@ -5627,7 +5626,7 @@ msgstr "Katalogi zinaonyeshwa <0>ulimwenguni kote</0>."
 msgid "Showing recent vouchers only."
 msgstr "Inaonyesha vocha za hivi karibuni pekee."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:147
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:148
 msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
 "location</1>."
 msgstr "Matokeo yanaonyeshwa ndani ya <0>{radiusLabel}</0> kutoka <1>eneo la "
@@ -5660,6 +5659,7 @@ msgid "Shown to anyone using this pool"
 msgstr "Inaonyeshwa kwa yeyote anayetumia bwawa hili"
 
 #: apps/web/src/components/creditable-browse-control.tsx:50
+#: apps/web/src/components/market-bar.tsx:55
 msgid "Sign in"
 msgstr "Ingia"
 
@@ -5668,8 +5668,8 @@ msgid "Sign in after redeeming this voucher to leave a review."
 msgstr "Ingia baada ya kutumia vocha hii ili kutoa maoni."
 
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:13
-msgid "Sign in or sign up"
-msgstr "Ingia au jisajili"
+#~ msgid "Sign in or sign up"
+#~ msgstr "Ingia au jisajili"
 
 #: apps/web/src/components/creditable-browse-control.tsx:46
 msgid "Sign in to browse results available through your Credit pools."
@@ -5962,9 +5962,9 @@ msgstr "Alama ilikuwa imechukuliwa, inatumia {0} badala yake."
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
-#: apps/web/src/features/home/ui/marketplace-page.tsx:110
-#: apps/web/src/features/home/ui/offers-page.tsx:134
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:120
+#: apps/web/src/features/home/ui/marketplace-page.tsx:111
+#: apps/web/src/features/home/ui/offers-page.tsx:130
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:262
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:535
@@ -6231,9 +6231,9 @@ msgstr "Mandhari"
 msgid "There is nothing available for exchange with this voucher yet."
 msgstr "Bado hakuna kinachopatikana kwa kubadilishana kwa kutumia vocha hii."
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:54
-#: apps/web/src/features/home/ui/marketplace-page.tsx:139
-#: apps/web/src/features/home/ui/offers-page.tsx:163
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:52
+#: apps/web/src/features/home/ui/marketplace-page.tsx:140
+#: apps/web/src/features/home/ui/offers-page.tsx:159
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:82
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:75
 msgid "These filters aren't valid."
@@ -6312,7 +6312,7 @@ msgstr "Kiungo hiki kina kichujio cha vocha kisicho sahihi."
 
 #. placeholder {0}: filter.result.requested
 #. placeholder {1}: filter.result.max
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:32
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:30
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:63
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:55
 msgid "This link has too many filters ({0}, maximum {1})."
@@ -6454,13 +6454,13 @@ msgstr "Kwa"
 msgid "Toggle theme"
 msgstr "Badilisha mandhari"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:42
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:40
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:72
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:64
 msgid "Too many matches to show. Try a more specific search."
 msgstr "Matokeo ni mengi mno kuonyeshwa. Jaribu utafutaji mahususi zaidi."
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:49
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:47
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:78
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:70
 msgid "Too many searches. Try again in a moment."
@@ -6532,7 +6532,7 @@ msgid "Trip"
 msgstr "Safari"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:36
-#: apps/web/src/components/catalog-filter-controls.tsx:396
+#: apps/web/src/components/catalog-filter-controls.tsx:391
 #: apps/web/src/components/nearby-catalog.tsx:126
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:182
@@ -6569,7 +6569,7 @@ msgstr "Jaribu tena"
 msgid "Type"
 msgstr "Aina"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:377
+#: apps/web/src/components/catalog-filter-controls.tsx:372
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Andika angalau herufi {VOUCHER_SEARCH_MIN_CHARS} kutafuta vocha."
 
@@ -6721,7 +6721,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "Tumia <0>Binance</0> au soko jingine la ndani, kisha <1>Jumper</1> "
 "kutuma fedha kwenye pochi yako ya Gnosis."
 
-#: apps/web/src/features/home/ui/market-page.tsx:169
+#: apps/web/src/features/home/ui/market-page.tsx:166
 msgid "Use current location"
 msgstr "Tumia eneo la sasa"
 
@@ -6853,7 +6853,7 @@ msgstr "vocha"
 #: apps/web/src/components/marketplace-resource-navigation.tsx:69
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/home/ui/marketplace-page.tsx:278
+#: apps/web/src/features/home/ui/marketplace-page.tsx:279
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:165
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
@@ -6906,7 +6906,7 @@ msgstr "Maelezo ya vocha hayapatikani"
 msgid "Voucher details updated."
 msgstr "Maelezo ya vocha yamesasishwa."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:458
+#: apps/web/src/components/catalog-filter-controls.tsx:453
 msgid "Voucher match"
 msgstr "Ulinganifu wa vocha"
 
@@ -6936,7 +6936,7 @@ msgstr "Vocha imestaafishwa."
 msgid "Voucher review"
 msgstr "Maoni kuhusu vocha"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:420
+#: apps/web/src/components/catalog-filter-controls.tsx:415
 msgid "Voucher search results"
 msgstr "Matokeo ya utafutaji wa vocha"
 
@@ -6963,10 +6963,10 @@ msgstr "Lebo za vocha"
 msgid "Voucher tracking details are missing."
 msgstr "Maelezo ya kufuatilia vocha hayapo."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:307
+#: apps/web/src/components/catalog-filter-controls.tsx:302
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
-#: apps/web/src/features/home/ui/market-list-page.tsx:121
+#: apps/web/src/features/home/ui/market-list-page.tsx:118
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:352
@@ -6975,7 +6975,7 @@ msgstr "Maelezo ya kufuatilia vocha hayapo."
 msgid "Vouchers"
 msgstr "Vocha"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:221
+#: apps/web/src/features/home/ui/market-list-page.tsx:217
 msgid "Vouchers list"
 msgstr "Orodha ya vocha"
 
@@ -7020,7 +7020,7 @@ msgstr "Inasubiri uthibitisho kwenye mnyororo"
 msgid "Waiting for the chain…"
 msgstr "Inasubiri mnyororo…"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:26
+#: apps/web/src/components/navigation/bottom-navigation.tsx:36
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:140
@@ -7108,7 +7108,7 @@ msgstr "Vocha ni nini?"
 msgid "intro.offer.title"
 msgstr "Ofa ni nini?"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:110
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:108
 msgid "What they offer"
 msgstr "Kile wanachotoa"
 

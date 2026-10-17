@@ -8,9 +8,9 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiBookOpenLine, RiCoupon3Line, RiGroupLine, RiStore2Line } from "react-icons/ri";
 
-import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
+import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { MarketBar } from "#/components/market-bar";
 import {
   isWithinNearbyCatalog,
   nearbyQueryPolicy,
@@ -79,10 +79,11 @@ export function MarketplacePage({
       <h1 className="sr-only">
         <Trans>Marketplace</Trans>
       </h1>
-      <MarketplaceSearchShell
+      <MarketBar
         current="all"
         className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-        search={<CatalogSearchField filter={filter} label={t`Search the marketplace`} />}
+        filter={filter}
+        searchLabel={t`Search the marketplace`}
         credit={
           <CreditableBrowseControl
             part="control"
@@ -109,7 +110,7 @@ export function MarketplacePage({
             title={<Trans>Filter marketplace</Trans>}
             facetTitle={<Trans>Tags</Trans>}
             showHeader={false}
-            trigger="marketplace-icon"
+            trigger="bar"
             open={filtersOpen}
             onOpenChange={setFiltersOpen}
             onApply={filter.applyFacetFilters}

@@ -13,7 +13,6 @@ import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-dele
 import { ActivityPage } from "./activity-page";
 import { MarketListPage } from "./market-list-page";
 import { MarketPage } from "./market-page";
-import { OnboardingBanner } from "./onboarding-banner";
 import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
 import { isPrivateHomeTab, type HomeTab, type MarketView } from "#/lib/navigation/home-tabs";
@@ -86,16 +85,12 @@ export function HomePage({
         <NearbyCatalog>
           {marketView === "map" ? (
             <MarketPage
-              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
               isAuthenticated={isAuthenticated}
               locationOwner={locationOwner}
               creditableSearch={creditableSearch}
             />
           ) : (
-            <MarketListPage
-              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-              locationOwner={locationOwner}
-            />
+            <MarketListPage locationOwner={locationOwner} />
           )}
         </NearbyCatalog>
       ) : (

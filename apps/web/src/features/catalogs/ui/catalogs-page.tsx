@@ -16,8 +16,8 @@ import {
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
-import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
+import { MarketBar } from "#/components/market-bar";
+import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { useCatalogFilter } from "#/lib/navigation/use-catalog-filter";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
@@ -88,10 +88,11 @@ function CatalogList({
     : null;
   return (
     <div className="space-y-3">
-      <MarketplaceSearchShell
+      <MarketBar
         current="catalogs"
         className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-        search={<CatalogSearchField filter={search} label={t`Search catalogs`} />}
+        filter={search}
+        searchLabel={t`Search catalogs`}
         credit={
           <CreditableBrowseControl
             part="control"
@@ -118,7 +119,7 @@ function CatalogList({
             title={<Trans>Filter catalogs</Trans>}
             facetTitle={<Trans>Tags</Trans>}
             showHeader={false}
-            trigger="marketplace-icon"
+            trigger="bar"
             open={filtersOpen}
             onOpenChange={setFiltersOpen}
             onApply={search.setFacets}

@@ -14,22 +14,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:141
+#: apps/web/src/features/pools/ui/pools-page.tsx:140
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, other {# མཉམ་སྤྱོད་དངུལ་ཁུངས}}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:127
-msgid "{requested, plural, one {# filter} other {# filters}}"
-msgstr "{requested, plural, other {# ཚགས་མ}}"
-
-#. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:134
-msgid "{count, plural, one {# tag} other {# tags}}"
-msgstr "{count, plural, other {# ངོ་རྟགས}}"
-
-#. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/market-list-page.tsx:113
+#: apps/web/src/features/home/ui/market-list-page.tsx:110
 msgid "{count, plural, one {# voucher} other {# vouchers}}"
 msgstr "{count, plural, other {# འཛིན་ཤོག}}"
 
@@ -37,6 +27,16 @@ msgstr "{count, plural, other {# འཛིན་ཤོག}}"
 #: apps/web/src/features/home/ui/posts-page.tsx:47
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, other {# གསལ་བསྒྲགས}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:127
+#~ msgid "{requested, plural, one {# filter} other {# filters}}"
+#~ msgstr "{requested, plural, other {# ཚགས་མ}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:134
+#~ msgid "{count, plural, one {# tag} other {# tags}}"
+#~ msgstr "{count, plural, other {# ངོ་རྟགས}}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:148
@@ -123,12 +123,12 @@ msgid "{0} m"
 msgstr "མི་ཊར་ {0}"
 
 #. placeholder {0}: draftTags.length
-#: apps/web/src/components/catalog-filter-controls.tsx:487
+#: apps/web/src/components/catalog-filter-controls.tsx:482
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{CATALOG_MAX_TAGS} ལས་ {0}"
 
 #. placeholder {0}: draftVouchers.length
-#: apps/web/src/components/catalog-filter-controls.tsx:310
+#: apps/web/src/components/catalog-filter-controls.tsx:305
 msgid "{0} of {CATALOG_MAX_VOUCHERS}"
 msgstr "{CATALOG_MAX_VOUCHERS} ལས་ {0}"
 
@@ -241,11 +241,11 @@ msgstr "{limit} ལས་ {used} ལག་ལེན་འཐབ་ཡོད།"
 msgid "{used} used · Unlimited"
 msgstr "{used} ལག་ལེན་འཐབ་ཡོད། · ཚད་མེད།"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:253
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
 msgid "{value} km"
 msgstr "{value} ཀི་མི"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:253
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:254
 msgid "{value} m"
 msgstr "{value} མི"
 
@@ -401,7 +401,7 @@ msgstr "རིག་པ་ཅན་གྱི་དངུལ་ཁུག་ཤུ
 msgid "Active"
 msgstr "ཤུགས་ལྡན།"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:33
+#: apps/web/src/components/navigation/bottom-navigation.tsx:44
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
 #: apps/web/src/features/home/ui/activity-page.tsx:45
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:45
@@ -578,8 +578,8 @@ msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཆ་མཉ
 #~ msgid "All reviews · newest first"
 #~ msgstr "བསྐྱར་ཞིབ་ཆ་མཉམ་ · གསརཔ་ཧེ་མ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:468
-#: apps/web/src/components/catalog-filter-controls.tsx:552
+#: apps/web/src/components/catalog-filter-controls.tsx:463
+#: apps/web/src/components/catalog-filter-controls.tsx:547
 msgid "All selected"
 msgstr "ཆ་མཉམ་གདམ་ཡོད།"
 
@@ -640,8 +640,8 @@ msgstr "མཁོ་སྤྲོད་ཀྱིས་མི་ཅིག་གི
 msgid "Another card scan is already running. Try again."
 msgstr "ཤོག་བྱང་བཤེར་ནི་གཞན་ཅིག་ད་ལྟོ་རང་འབད་དེ་ཡོད། ལོག་སྟེ་འབད།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:463
-#: apps/web/src/components/catalog-filter-controls.tsx:547
+#: apps/web/src/components/catalog-filter-controls.tsx:458
+#: apps/web/src/components/catalog-filter-controls.tsx:542
 msgid "Any selected"
 msgstr "གང་རུང་གདམ་ཡོད།"
 
@@ -666,7 +666,7 @@ msgstr "ལས་རིམ་ཐོན་རིམ།"
 msgid "Apply"
 msgstr "ལག་ལེན་འཐབ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:571
+#: apps/web/src/components/catalog-filter-controls.tsx:566
 msgid "Apply filters"
 msgstr "ཚགས་མ་ལག་ལེན་འཐབ།"
 
@@ -885,7 +885,7 @@ msgstr "དངུལ་རྐྱང་།"
 msgid "Cash services aren't available on {0}."
 msgstr "{0} གུ་དངུལ་རྐྱང་ཞབས་ཏོག་མི་འཐོབ།"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:280
+#: apps/web/src/features/home/ui/marketplace-page.tsx:281
 msgid "Catalog"
 msgstr "ཐོ་གཞུང་།"
 
@@ -1184,21 +1184,21 @@ msgid "Cleaning"
 msgstr "གཙང་སྦྲ།"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:152
-msgid "Clear"
-msgstr "བསལ།"
+#~ msgid "Clear"
+#~ msgstr "བསལ།"
 
 #: apps/web/src/components/creditable-browse-control.tsx:35
 #: apps/web/src/features/pools/ui/pools-page.tsx:250
 msgid "Clear filter"
 msgstr "ཚགས་མ་བསལ།"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:33
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:43
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:55
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:165
-#: apps/web/src/features/home/ui/market-page.tsx:371
-#: apps/web/src/features/home/ui/marketplace-page.tsx:142
-#: apps/web/src/features/home/ui/offers-page.tsx:166
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:31
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:41
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:53
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:125
+#: apps/web/src/features/home/ui/market-page.tsx:368
+#: apps/web/src/features/home/ui/marketplace-page.tsx:143
+#: apps/web/src/features/home/ui/offers-page.tsx:162
 #: apps/web/src/features/home/ui/posts-page.tsx:130
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:64
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:73
@@ -1215,7 +1215,8 @@ msgid "Clear location"
 msgstr "ས་གནས་བསལ།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
-#: apps/web/src/components/catalog-filter-controls.tsx:528
+#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/market-bar.tsx:87
 msgid "Clear search"
 msgstr "འཚོལ་ཞིབ་བསལ།"
 
@@ -1226,8 +1227,8 @@ msgstr "འཚོལ་ཞིབ་བསལ།"
 msgid "Close"
 msgstr "ཁ་བསྡམ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:285
-#: apps/web/src/components/catalog-filter-controls.tsx:590
+#: apps/web/src/components/catalog-filter-controls.tsx:280
+#: apps/web/src/components/catalog-filter-controls.tsx:585
 msgid "Close filters"
 msgstr "ཚགས་མ་ཁ་བསྡམ།"
 
@@ -1257,8 +1258,8 @@ msgstr "བསྡུ།"
 
 #: apps/web/src/components/marketplace-search-shell.tsx:67
 #: apps/web/src/components/marketplace-search-shell.tsx:71
-msgid "Collapse marketplace search"
-msgstr "ཚོང་རའི་འཚོལ་ཞིབ་བསྡུ།"
+#~ msgid "Collapse marketplace search"
+#~ msgstr "ཚོང་རའི་འཚོལ་ཞིབ་བསྡུ།"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:263
 msgid "Collect again from this card"
@@ -1571,7 +1572,7 @@ msgstr "Cosmo-Local Credit གིས་ མི་ངོམ་དང་ལས་�
 msgid "Could not import this paper wallet."
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་འདི་ནང་འདྲེན་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:61
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:59
 msgid "Could not load vouchers."
 msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
@@ -1729,11 +1730,11 @@ msgstr "ཐོ་གཞུང་གི་ཅ་ཆས་ཚུ་བཀལ་མ
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:25
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:194
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:195
 msgid "Couldn't load catalogs."
 msgstr "ཐོ་གཞུང་ཚུ་བཀལ་མ་ཚུགས།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:199
+#: apps/web/src/features/home/ui/market-page.tsx:196
 msgid "Couldn't load complete marketplace results."
 msgstr "ཚོང་རའི་གྲུབ་འབྲས་ཆ་ཚང་བཀལ་མ་ཚུགས།"
 
@@ -1746,7 +1747,7 @@ msgstr "ཡིད་རྟོན་ཚད་ཚུ་མངོན་གསལ་
 msgid "Couldn't load holdings."
 msgstr "བཟུང་བཞག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:157
+#: apps/web/src/features/home/ui/marketplace-page.tsx:158
 msgid "Couldn't load marketplace results."
 msgstr "ཚོང་རའི་གྲུབ་འབྲས་བཀལ་མ་ཚུགས།"
 
@@ -1759,7 +1760,7 @@ msgstr "གོ་སྐབས་ཚུ་མངོན་གསལ་འབད་
 msgid "Couldn't load pool tags."
 msgstr "དངུལ་ཁུངས་ཀྱི་ངོ་རྟགས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:207
+#: apps/web/src/features/home/ui/market-page.tsx:204
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "དངུལ་ཁུངས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
@@ -1941,7 +1942,7 @@ msgstr "ལག་ལེན་པའི་མིང་སྲུང་མ་ཚུ
 msgid "Couldn't save. Please try again."
 msgstr "སྲུང་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:388
+#: apps/web/src/components/catalog-filter-controls.tsx:383
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
@@ -2333,8 +2334,8 @@ msgid "Edit details"
 msgstr "ཁ་གསལ་ཞུན་དག"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:147
-msgid "Edit filters"
-msgstr "ཚགས་མ་ཞུན་དག"
+#~ msgid "Edit filters"
+#~ msgstr "ཚགས་མ་ཞུན་དག"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:124
 msgid "Edit offering"
@@ -2648,19 +2649,19 @@ msgstr "ཡིག་ཆའི་མིང་ཡིག་འབྲུ་ ༢༥�
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "ཡིག་ཆ་སྦོམ་དྲགས་པས་ ({0} KB)། མཐོ་ཚད་ ༥༡༢ KB ཨིན།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:501
+#: apps/web/src/components/catalog-filter-controls.tsx:496
 msgid "Filter by tag"
 msgstr "ངོ་རྟགས་ཀྱིས་ཚགས་མ་རྐྱབ།"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:118
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
 msgid "Filter catalogs"
 msgstr "ཐོ་གཞུང་ཚུ་ཚགས་མ་རྐྱབ།"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:109
+#: apps/web/src/features/home/ui/marketplace-page.tsx:110
 msgid "Filter marketplace"
 msgstr "ཚོང་ར་ཚགས་མ་རྐྱབ།"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:133
+#: apps/web/src/features/home/ui/offers-page.tsx:129
 msgid "Filter offers"
 msgstr "འབུལ་བ་ཚུ་ཚགས་མ་རྐྱབ།"
 
@@ -2672,15 +2673,13 @@ msgstr "དངུལ་ཁུངས་ཚུ་ཚགས་མ་རྐྱབ།
 msgid "Filter posts"
 msgstr "གསལ་བསྒྲགས་ཚུ་ཚགས་མ་རྐྱབ།"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:109
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:107
 msgid "Filter vouchers"
 msgstr "འཛིན་ཤོག་ཚུ་ཚགས་མ་རྐྱབ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:245
 #: apps/web/src/components/catalog-filter-controls.tsx:246
-#: apps/web/src/components/catalog-filter-controls.tsx:259
-#: apps/web/src/components/marketplace-search-shell.tsx:57
-#: apps/web/src/components/marketplace-search-shell.tsx:58
+#: apps/web/src/components/catalog-filter-controls.tsx:247
+#: apps/web/src/components/catalog-filter-controls.tsx:254
 msgid "Filters"
 msgstr "ཚགས་མ་ཚུ།"
 
@@ -2692,7 +2691,7 @@ msgstr "ཚགས་མ་ཚུ།"
 msgid "Finding a name…"
 msgstr "མིང་འཚོལ་དོ…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:164
+#: apps/web/src/features/home/ui/market-page.tsx:161
 msgid "Finding location"
 msgstr "ས་གནས་འཚོལ་དོ།"
 
@@ -2830,11 +2829,11 @@ msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
 msgstr "{0} འཛིན་ཤོག་ལག་ལེན་འཐབ་སྟེ་དངུལ་ཁུངས་ནང་ལས་ {unitSymbol} "
 "གི་གནས་གོང་ག་དེམ་ཅིག་བརྗེ་ལེན་འབད་ཚུགས་ག?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:541
+#: apps/web/src/components/catalog-filter-controls.tsx:536
 msgid "How should categories match?"
 msgstr "དབྱེ་རིམ་ཚུ་ག་དེ་སྦེ་མཐུན་དགོ་ག?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:453
+#: apps/web/src/components/catalog-filter-controls.tsx:448
 msgid "How should vouchers match?"
 msgstr "འཛིན་ཤོག་ཚུ་ག་དེ་སྦེ་མཐུན་དགོ་ག?"
 
@@ -3045,7 +3044,7 @@ msgstr "དཀརཔོ།"
 #~ msgid "Limit not set"
 #~ msgstr "ཚད་བཀལ་མ་ཚར།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:370
+#: apps/web/src/components/catalog-filter-controls.tsx:365
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "འཛིན་ཤོག་ {CATALOG_MAX_VOUCHERS} གི་ཚད་ལུ་ལྷོད་ཡོད། "
@@ -3173,8 +3172,8 @@ msgstr "ལི་ཊར།"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:302
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:453
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:224
-#: apps/web/src/features/home/ui/marketplace-page.tsx:191
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/home/ui/marketplace-page.tsx:192
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 msgid "Load more"
 msgstr "ཧེང་བཀལ་མངོན་གསལ།"
@@ -3215,8 +3214,8 @@ msgstr "བཟུང་བཞག་ཚུ་མངོན་གསལ་འབད
 msgid "Loading location map"
 msgstr "ས་གནས་ས་ཁྲ་མངོན་གསལ་འབད་དོ།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:196
-#: apps/web/src/features/home/ui/marketplace-page.tsx:152
+#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/marketplace-page.tsx:153
 msgid "Loading marketplace…"
 msgstr "ཚོང་ར་མངོན་གསལ་འབད་དོ…"
 
@@ -3319,9 +3318,9 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:125
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:188
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:224
-#: apps/web/src/features/home/ui/marketplace-page.tsx:191
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:189
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:225
+#: apps/web/src/features/home/ui/marketplace-page.tsx:192
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
@@ -3341,7 +3340,7 @@ msgstr "ས་གནས་དངུལ་དང་ M-Pesa"
 msgid "Location"
 msgstr "ས་གནས།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:166
+#: apps/web/src/features/home/ui/market-page.tsx:163
 msgid "Location denied"
 msgstr "ས་གནས་གནང་བ་མ་བྱིན།"
 
@@ -3350,7 +3349,7 @@ msgid "Location map"
 msgstr "ས་གནས་ས་ཁྲ།"
 
 #: apps/web/src/components/ui/location-picker.tsx:228
-#: apps/web/src/features/home/ui/market-page.tsx:168
+#: apps/web/src/features/home/ui/market-page.tsx:165
 msgid "Location unavailable"
 msgstr "ས་གནས་མི་འཐོབ།"
 
@@ -3408,8 +3407,8 @@ msgstr "ས་ཁྲའི་རྟགས།"
 #~ msgstr "Markdown: **ཡིག་གཟུགས་སྦོམ**, # མགོ་མིང་, - ཐོ་ཡིག་, "
 #~ "[འབྲེལ་ལམ](https://…)"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:38
-#: apps/web/src/features/home/ui/market-page.tsx:238
+#: apps/web/src/components/navigation/bottom-navigation.tsx:49
+#: apps/web/src/features/home/ui/market-page.tsx:235
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:59
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3427,7 +3426,7 @@ msgstr "ཚོང་རའི་དབྱེ་ཚན་ཚུ།"
 #~ msgid "Marketplace vouchers"
 #~ msgstr "ཚོང་རའི་འཛིན་ཤོག"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:543
+#: apps/web/src/components/catalog-filter-controls.tsx:538
 msgid "Match"
 msgstr "མཐུན།"
 
@@ -3706,19 +3705,19 @@ msgstr "ཐབས་འཕྲུལ་འདི་གུ་པར་ཆས་མ
 msgid "No cash activity yet."
 msgstr "ད་ཚུན་དངུལ་རྐྱང་བྱ་བ་མེད།"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:184
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:185
 msgid "No catalogs are available through your Credit pools."
 msgstr "ཁྱོད་ཀྱི་ཡིད་རྟོན་དངུལ་ཁུངས་བརྒྱུད་དེ་ཐོ་གཞུང་མིན་འདུག"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:208
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:209
 msgid "No catalogs found."
 msgstr "ཐོ་གཞུང་ག་ནི་ཡང་འཚོལ་མ་ཐོབ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/catalog-filter-controls.tsx:518
 msgid "No categories are available for the current results."
 msgstr "ད་ལྟོའི་གྲུབ་འབྲས་ཀྱི་དོན་ལུ་དབྱེ་རིམ་ཐོབ་མི་ཚུགས།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:495
+#: apps/web/src/components/catalog-filter-controls.tsx:490
 msgid "No category filters are available."
 msgstr "དབྱེ་རིམ་ཚགས་མ་ཐོབ་མི་ཚུགས།"
 
@@ -3774,20 +3773,20 @@ msgid "No items yet. Add pools or vouchers from their detail pages."
 msgstr "ད་ལྟོ་ཅ་ཆས་མེད། "
 "ཁ་གསལ་ཤོག་ལེབ་ལས་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཡང་ན་འཛིན་ཤོག་ཁ་སྐོང་རྐྱབ།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:342
-#: apps/web/src/features/home/ui/marketplace-page.tsx:148
+#: apps/web/src/features/home/ui/market-page.tsx:339
+#: apps/web/src/features/home/ui/marketplace-page.tsx:149
 msgid "No marketplace results are available through your Credit pools."
 msgstr "ཁྱོད་ཀྱི་ཡིད་རྟོན་དངུལ་ཁུངས་བརྒྱུད་དེ་ཚོང་རའི་གྲུབ་འབྲས་མིན་འདུག"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:170
+#: apps/web/src/features/home/ui/marketplace-page.tsx:171
 msgid "No marketplace results found."
 msgstr "ཚོང་རའི་གྲུབ་འབྲས་མ་ཐོབ།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:368
+#: apps/web/src/features/home/ui/market-page.tsx:365
 msgid "No marketplace results match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་ཚོང་རའི་གྲུབ་འབྲས་མིན་འདུག"
 
-#: apps/web/src/features/home/ui/market-page.tsx:375
+#: apps/web/src/features/home/ui/market-page.tsx:372
 msgid "No marketplace results to show yet."
 msgstr "ད་ལྟོ་སྟོན་ནིའི་ཚོང་རའི་གྲུབ་འབྲས་མིན་འདུག"
 
@@ -3799,11 +3798,11 @@ msgstr "མཐུན་པའི་ལེན་མཁན་མིན་འདུ
 msgid "No offerings yet"
 msgstr "ད་ཚུན་གོ་སྐབས་མེད།"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:172
+#: apps/web/src/features/home/ui/offers-page.tsx:168
 msgid "No offers are available through your Credit pools."
 msgstr "ཁྱོད་ཀྱི་ཡིད་རྟོན་མ་དངུལ་ཚུ་བརྒྱུད་དེ་འབུལ་བ་མིན་འདུག།"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:177
+#: apps/web/src/features/home/ui/offers-page.tsx:173
 msgid "No offers match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་འབུལ་བ་མིན་འདུག།"
 
@@ -3877,7 +3876,7 @@ msgstr "ཕྱིར་བཏོན་འབད་ཆོག་པའི་ USDm,
 msgid "No voucher in this pool is offering anything yet."
 msgstr "དངུལ་ཁུངས་འདི་ནང་གི་འཛིན་ཤོག་ག་གིས་ཡང་ད་ཚུན་གོ་སྐབས་ག་ཅི་ཡང་མ་བྱིན།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:202
+#: apps/web/src/features/home/ui/market-list-page.tsx:198
 msgid "No vouchers are available through your Credit pools."
 msgstr "ཁྱོད་ཀྱི་ཡིད་རྟོན་མ་དངུལ་ཚུ་བརྒྱུད་དེ་འཛིན་ཤོག་མིན་འདུག།"
 
@@ -3891,8 +3890,8 @@ msgstr "ད་ཚུན་དངུལ་ཁུངས་འདི་ནང་འ
 msgid "No vouchers match that search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་འཛིན་ཤོག་མེད།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:409
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:162
+#: apps/web/src/components/catalog-filter-controls.tsx:404
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:122
 msgid "No vouchers match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་འཛིན་ཤོག་མེད།"
 
@@ -3900,7 +3899,7 @@ msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི
 msgid "No vouchers to collect"
 msgstr "བསྡུ་ལེན་འབད་ནིའི་འཛིན་ཤོག་མེད།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:209
+#: apps/web/src/features/home/ui/market-list-page.tsx:205
 msgid "No vouchers to show yet."
 msgstr "ད་ཚུན་སྟོན་ནིའི་འཛིན་ཤོག་མེད།"
 
@@ -3964,7 +3963,7 @@ msgstr "ག་ཅི་ཡང་བསྒྱུར་བ་མེད།"
 msgid "Nothing has moved through this pool yet."
 msgstr "ད་ཚུན་དངུལ་ཁུངས་འདི་བརྒྱུད་དེ་ག་ཅི་ཡང་སྤོ་བཤུད་མ་འབད།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:521
+#: apps/web/src/components/catalog-filter-controls.tsx:516
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "“{searchTerm}” དང་མཐུན་མི་ག་ཅི་ལུ་ཡང་དབྱེ་རིམ་མེད།"
 
@@ -4025,7 +4024,7 @@ msgstr "ཨང་བཀོད་ཐོ་ཡིག"
 msgid "Off"
 msgstr "ཁ་བསྡམས་ཡོད།"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:277
+#: apps/web/src/features/home/ui/marketplace-page.tsx:278
 msgid "Offer"
 msgstr "འབུལ་བ།"
 
@@ -4088,8 +4087,8 @@ msgid "Open in Maps"
 msgstr "ས་ཁྲ་ནང་ཁ་ཕྱེ།"
 
 #: apps/web/src/components/marketplace-search-shell.tsx:40
-msgid "Open marketplace search"
-msgstr "ཚོང་རའི་འཚོལ་ཞིབ་ཁ་ཕྱེ།"
+#~ msgid "Open marketplace search"
+#~ msgstr "ཚོང་རའི་འཚོལ་ཞིབ་ཁ་ཕྱེ།"
 
 #: apps/web/src/components/app-menu.tsx:41
 msgid "Open menu"
@@ -4422,7 +4421,7 @@ msgid "Plant Nursery"
 msgstr "ལྕང་རའི་ལྡུམ་ར།"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
-#: apps/web/src/features/home/ui/marketplace-page.tsx:279
+#: apps/web/src/features/home/ui/marketplace-page.tsx:280
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:292
@@ -4590,7 +4589,7 @@ msgstr "དངུལ་ཁུངས་རྗེས་འདེད་ཁ་གས
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:321
-#: apps/web/src/features/pools/ui/pools-page.tsx:164
+#: apps/web/src/features/pools/ui/pools-page.tsx:163
 msgid "Pools"
 msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ།"
 
@@ -4631,7 +4630,7 @@ msgstr "གསལ་བསྒྲགས་ཡི་གུ་རིང་དྲག
 msgid "Post updated."
 msgstr "གསལ་བསྒྲགས་དུས་མཐུན་བཟོ་ཡོད།"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:41
+#: apps/web/src/components/navigation/bottom-navigation.tsx:52
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:142
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:278
 #: apps/web/src/features/home/ui/posts-page.tsx:71
@@ -4766,7 +4765,7 @@ msgstr "གནས་གོང་བཀོད་པའི་བསྡོམས་
 msgid "Pricing"
 msgstr "གནས་གོང་བཀལ་ཐངས།"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:20
+#: apps/web/src/components/navigation/bottom-navigation.tsx:29
 msgid "Primary navigation"
 msgstr "གཙོ་བོའི་འགྲུལ་ལམ།"
 
@@ -5085,7 +5084,7 @@ msgstr "“{0}” འདི་ཚོང་ར་ནང་ལས་བཏོན�
 
 #. placeholder {0}: item.name
 #. placeholder {0}: voucherLabel(voucher)
-#: apps/web/src/components/catalog-filter-controls.tsx:350
+#: apps/web/src/components/catalog-filter-controls.tsx:345
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:95
 msgid "Remove {0}"
 msgstr "{0} བཏོན།"
@@ -5161,7 +5160,7 @@ msgstr "སྙན་ཞུ་གྲུབ།"
 msgid "Required"
 msgstr "ངེས་པར་དགོ"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:585
+#: apps/web/src/components/catalog-filter-controls.tsx:580
 msgid "Reset"
 msgstr "བསྐྱར་སྒྲིག"
 
@@ -5201,12 +5200,12 @@ msgstr "མཚམས་སྡོད།"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:54
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:52
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:202
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:62
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:203
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:854
-#: apps/web/src/features/home/ui/market-page.tsx:200
-#: apps/web/src/features/home/ui/market-page.tsx:208
-#: apps/web/src/features/home/ui/marketplace-page.tsx:165
+#: apps/web/src/features/home/ui/market-page.tsx:197
+#: apps/web/src/features/home/ui/market-page.tsx:205
+#: apps/web/src/features/home/ui/marketplace-page.tsx:166
 #: apps/web/src/features/home/ui/report-page.tsx:57
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:718
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
@@ -5323,11 +5322,11 @@ msgstr "ལེན་མིའི་ཁ་བྱང་བཤེར།"
 #~ msgid "Scroll for more"
 #~ msgstr "ཧེང་བཀལ་གྱི་དོན་ལུ་ཡར་མར་སྤོ།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:126
+#: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "མིང་ཡང་ན་མཚོན་རྟགས་ཀྱིས་འཚོལ།"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:95
 msgid "Search catalogs"
 msgstr "ཐོ་གཞུང་ཚུ་འཚོལ།"
 
@@ -5348,7 +5347,7 @@ msgstr "ཁྲོམ་ཡང་ན་ས་གནས་ཅིག་འཚོལ
 #~ msgid "Search offers"
 #~ msgstr "འབུལ་བ་ཚུ་འཚོལ།"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:107
+#: apps/web/src/features/home/ui/offers-page.tsx:105
 msgid "Search offers, vouchers, descriptions, or tags"
 msgstr "འབུལ་བ་ འཛིན་ཤོག་ འགྲེལ་བཤད་ ཡང་ན་ ངོ་རྟགས་ཚུ་འཚོལ།"
 
@@ -5385,12 +5384,12 @@ msgstr "མགོ་མིང་ཡང་ན་འགྲེལ་བཤད་ཀ
 msgid "Search tags"
 msgstr "ངོ་རྟགས་འཚོལ།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:266
-#: apps/web/src/features/home/ui/marketplace-page.tsx:85
+#: apps/web/src/features/home/ui/market-page.tsx:264
+#: apps/web/src/features/home/ui/marketplace-page.tsx:86
 msgid "Search the marketplace"
 msgstr "ཚོང་རའི་ནང་འཚོལ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:362
+#: apps/web/src/components/catalog-filter-controls.tsx:357
 msgid "Search voucher filters"
 msgstr "འཛིན་ཤོག་ཚགས་མ་འཚོལ།"
 
@@ -5399,7 +5398,7 @@ msgstr "འཛིན་ཤོག་ཚགས་མ་འཚོལ།"
 msgid "Search voucher tags"
 msgstr "འཛིན་ཤོག་ངོ་རྟགས་འཚོལ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:361
+#: apps/web/src/components/catalog-filter-controls.tsx:356
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
@@ -5418,7 +5417,7 @@ msgstr "ས་གནས་ཚུ་འཚོལ་དོ…"
 msgid "Searching recipients…"
 msgstr "ལེན་མཁན་འཚོལ་དོ…"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:383
+#: apps/web/src/components/catalog-filter-controls.tsx:378
 msgid "Searching vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་འཚོལ་དོ…"
 
@@ -5458,7 +5457,7 @@ msgstr "གདམ་ཁ་རྐྱབ་པའི་ངོ་རྟགས་ཚ
 msgid "Selected voucher tags"
 msgstr "གདམ་ཁ་རྐྱབ་མི་འཛིན་ཤོག་ངོ་རྟགས།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:346
+#: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Selected vouchers"
 msgstr "གདམ་ཁ་རྐྱབ་མི་འཛིན་ཤོག"
 
@@ -5574,7 +5573,7 @@ msgstr "བསྡུ་ལེན་མ་འབད་བའི་ཧེ་མ་
 msgid "Setting up your wallet…"
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་སྒྲིག་དོ…"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:48
+#: apps/web/src/components/navigation/bottom-navigation.tsx:60
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
 #: apps/web/src/features/home/ui/settings-page.tsx:51
 #: apps/web/src/features/install/ui/install-page.tsx:63
@@ -5632,7 +5631,7 @@ msgstr "སྐར་མ་ {stars} གི་བསྐྱར་ཞིབ་སྟ
 msgid "Show all"
 msgstr "ཆ་མཉམ་སྟོན།"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:167
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:168
 msgid "Showing catalogs <0>globally</0>."
 msgstr "ཐོ་གཞུང་ཚུ་<0>འཛམ་གླིང་ཡོངས་ལུ</0>་སྟོན་དོ།"
 
@@ -5640,7 +5639,7 @@ msgstr "ཐོ་གཞུང་ཚུ་<0>འཛམ་གླིང་ཡོང
 msgid "Showing recent vouchers only."
 msgstr "ཉེ་ཆར་གྱི་འཛིན་ཤོག་ཚུ་རྐྱངམ་ཅིག་སྟོན་དོ།"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:147
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:148
 msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
 "location</1>."
 msgstr "ཁྱོད་ཀྱི་བསྲུངས་པའི་<1>གསལ་སྡུད་ས་གནས</1>་ལས་<0>{radiusLabel}</0>་ནང་འཁ"
@@ -5673,6 +5672,7 @@ msgid "Shown to anyone using this pool"
 msgstr "དངུལ་ཁུངས་འདི་ལག་ལེན་འཐབ་མི་ག་ར་ལུ་སྟོན་འོང་།"
 
 #: apps/web/src/components/creditable-browse-control.tsx:50
+#: apps/web/src/components/market-bar.tsx:55
 msgid "Sign in"
 msgstr "ནང་འཛུལ།"
 
@@ -5682,8 +5682,8 @@ msgstr "འཛིན་ཤོག་འདི་བསྐྱར་ཉོ་འབ
 "འབད།"
 
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:13
-msgid "Sign in or sign up"
-msgstr "ནང་འཛུལ་ཡང་ན་ཐོ་བཀོད།"
+#~ msgid "Sign in or sign up"
+#~ msgstr "ནང་འཛུལ་ཡང་ན་ཐོ་བཀོད།"
 
 #: apps/web/src/components/creditable-browse-control.tsx:46
 msgid "Sign in to browse results available through your Credit pools."
@@ -5977,9 +5977,9 @@ msgstr "མཚོན་རྟགས་འདི་གཞན་གྱིས་ལ
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:119
-#: apps/web/src/features/home/ui/marketplace-page.tsx:110
-#: apps/web/src/features/home/ui/offers-page.tsx:134
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:120
+#: apps/web/src/features/home/ui/marketplace-page.tsx:111
+#: apps/web/src/features/home/ui/offers-page.tsx:130
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:262
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:535
@@ -6246,9 +6246,9 @@ msgstr "བཟོ་རྣམ།"
 msgid "There is nothing available for exchange with this voucher yet."
 msgstr "ད་ཚུན་འཛིན་ཤོག་འདི་དང་བརྗེ་ལེན་འབད་ནི་ག་ཅི་ཡང་མེད།"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:54
-#: apps/web/src/features/home/ui/marketplace-page.tsx:139
-#: apps/web/src/features/home/ui/offers-page.tsx:163
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:52
+#: apps/web/src/features/home/ui/marketplace-page.tsx:140
+#: apps/web/src/features/home/ui/offers-page.tsx:159
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:82
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:75
 msgid "These filters aren't valid."
@@ -6330,7 +6330,7 @@ msgstr "འབྲེལ་ལམ་འདི་ནང་ཆ་གནས་མེ
 
 #. placeholder {0}: filter.result.requested
 #. placeholder {1}: filter.result.max
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:32
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:30
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:63
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:55
 msgid "This link has too many filters ({0}, maximum {1})."
@@ -6473,13 +6473,13 @@ msgstr "གང་ལུ།"
 msgid "Toggle theme"
 msgstr "བཟོ་རྣམ་བསྒྱུར།"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:42
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:40
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:72
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:64
 msgid "Too many matches to show. Try a more specific search."
 msgstr "སྟོན་ནིའི་མཐུན་མི་མང་དྲགས་པས། ཁ་གསལ་ཅན་གྱི་འཚོལ་ཞིབ་ཅིག་འབད།"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:49
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:47
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:78
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:70
 msgid "Too many searches. Try again in a moment."
@@ -6551,7 +6551,7 @@ msgid "Trip"
 msgstr "འགྲུལ་བཞུད།"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:36
-#: apps/web/src/components/catalog-filter-controls.tsx:396
+#: apps/web/src/components/catalog-filter-controls.tsx:391
 #: apps/web/src/components/nearby-catalog.tsx:126
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:182
@@ -6588,7 +6588,7 @@ msgstr "ལོག་སྟེ་འབད།"
 msgid "Type"
 msgstr "དབྱེ་བ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:377
+#: apps/web/src/components/catalog-filter-controls.tsx:372
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "འཛིན་ཤོག་འཚོལ་ནིའི་དོན་ལུ་ཉུང་མཐའ་ {VOUCHER_SEARCH_MIN_CHARS} "
 "ཡིག་འབྲུ་བཙུགས།"
@@ -6741,7 +6741,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "<0>Binance</0> ཡང་ན་ས་གནས་བརྗེ་སོར་གཞན་ལག་ལེན་འཐབ་ དེ་ལས་ <1>Jumper</1> "
 "གིས་ཁྱེད་རའི་ Gnosis དངུལ་ཁུག་ལུ་དངུལ་གཏང་གནང་།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:169
+#: apps/web/src/features/home/ui/market-page.tsx:166
 msgid "Use current location"
 msgstr "ད་ལྟོའི་ས་གནས་ལག་ལེན་འཐབ།"
 
@@ -6873,7 +6873,7 @@ msgstr "འཛིན་ཤོག"
 #: apps/web/src/components/marketplace-resource-navigation.tsx:69
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/home/ui/marketplace-page.tsx:278
+#: apps/web/src/features/home/ui/marketplace-page.tsx:279
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:165
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
@@ -6926,7 +6926,7 @@ msgstr "འཛིན་ཤོག་ཁ་གསལ་མི་འཐོབ།"
 msgid "Voucher details updated."
 msgstr "འཛིན་ཤོག་ཁ་གསལ་དུས་མཐུན་བཟོ་ཡོད།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:458
+#: apps/web/src/components/catalog-filter-controls.tsx:453
 msgid "Voucher match"
 msgstr "འཛིན་ཤོག་མཐུན་སྒྲིག"
 
@@ -6956,7 +6956,7 @@ msgstr "འཛིན་ཤོག་ལག་ལེན་ལས་བཏོན་
 msgid "Voucher review"
 msgstr "འཛིན་ཤོག་བསྐྱར་ཞིབ།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:420
+#: apps/web/src/components/catalog-filter-controls.tsx:415
 msgid "Voucher search results"
 msgstr "འཛིན་ཤོག་འཚོལ་ཞིབ་གྲུབ་འབྲས།"
 
@@ -6983,10 +6983,10 @@ msgstr "འཛིན་ཤོག་ངོ་རྟགས།"
 msgid "Voucher tracking details are missing."
 msgstr "འཛིན་ཤོག་རྗེས་འདེད་ཁ་གསལ་མེད།"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:307
+#: apps/web/src/components/catalog-filter-controls.tsx:302
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
-#: apps/web/src/features/home/ui/market-list-page.tsx:121
+#: apps/web/src/features/home/ui/market-list-page.tsx:118
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:352
@@ -6995,7 +6995,7 @@ msgstr "འཛིན་ཤོག་རྗེས་འདེད་ཁ་གསལ
 msgid "Vouchers"
 msgstr "འཛིན་ཤོག་ཚུ།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:221
+#: apps/web/src/features/home/ui/market-list-page.tsx:217
 msgid "Vouchers list"
 msgstr "འཛིན་ཤོག་ཐོ་གཞུང་།"
 
@@ -7040,7 +7040,7 @@ msgstr "བཀག་ཐག་གུ་ངེས་གཏན་བསྒུག་
 msgid "Waiting for the chain…"
 msgstr "བཀག་ཐག་བསྒུག་དོ…"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:26
+#: apps/web/src/components/navigation/bottom-navigation.tsx:36
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:140
@@ -7129,7 +7129,7 @@ msgstr "བའུ་ཆར་ཟེར་མི་ག་ཅི་སྨོ?"
 msgid "intro.offer.title"
 msgstr "མཁོ་སྤྲོད་ཟེར་མི་ག་ཅི་སྨོ?"
 
-#: apps/web/src/features/home/ui/market-filter-ui.tsx:110
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:108
 msgid "What they offer"
 msgstr "ཁོང་གིས་བྱིན་མི།"
 

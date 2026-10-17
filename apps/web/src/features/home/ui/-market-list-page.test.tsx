@@ -13,6 +13,10 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: false, isLoading: false }),
+}));
+
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   useCreditableBrowse: () => ({
     auth: { isAuthenticated: false, isLoading: false },
@@ -354,7 +358,7 @@ describe("MarketListPage", () => {
     expect(pools.className).toContain("size-11");
     expect(catalogs.className).toContain("size-11");
     expect(filters.className).toContain("size-11");
-    expect(filters.className).toContain("bg-destructive");
+    expect(screen.getByRole("searchbox").closest(".border")?.contains(filters)).toBe(true);
     expect(vouchers.getAttribute("aria-current")).toBe("page");
     expect(
       offers.compareDocumentPosition(vouchers) & Node.DOCUMENT_POSITION_FOLLOWING,
