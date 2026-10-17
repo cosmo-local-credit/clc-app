@@ -95,9 +95,7 @@ export function VoucherReviewsPanel({
         <div className="border border-border bg-card p-4">
           <div className="flex items-center gap-5">
             <div className="shrink-0 text-center">
-              <p className="text-[1.75rem] font-semibold leading-tight tabular-nums">
-                {summaryAverage.toFixed(1)}
-              </p>
+              <p className="font-heading text-4xl font-bold">{summaryAverage.toFixed(1)}</p>
               <ReviewStars stars={summaryAverage} />
               <p className="mt-1 text-xs text-muted-foreground">
                 <Trans>{summaryTotal} reviews</Trans>

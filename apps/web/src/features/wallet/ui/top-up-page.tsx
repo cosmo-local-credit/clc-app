@@ -335,7 +335,7 @@ function AddStablesSheet({
                     disabled={entryDisabled}
                     aria-invalid={amount !== "" && !hasValidAmount}
                     className={cn(
-                      "bg-transparent text-end text-sm font-semibold tabular-nums caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                      "bg-transparent text-end font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
                       amount !== "" && !hasValidAmount && "text-destructive",
                       entryDisabled && "opacity-50",
                     )}
@@ -353,7 +353,7 @@ function AddStablesSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>MPESA phone</Trans>
                 </span>
-                <span className="text-xs font-semibold tabular-nums">
+                <span className="font-mono text-xs font-semibold">
                   {profilePending ? "…" : phone || "—"}
                 </span>
               </div>
@@ -362,7 +362,7 @@ function AddStablesSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>You'll receive</Trans>
                 </span>
-                <span className="text-xs font-semibold tabular-nums">
+                <span className="font-mono text-xs font-semibold">
                   {ratesQuery.isPending ? (
                     <span className="text-muted-foreground">…</span>
                   ) : approxUsdt !== null ? (
@@ -505,7 +505,7 @@ function PretiumHistory({
                   {formatCashDate(transaction.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                 </p>
               </div>
-              <span className="shrink-0 text-xs font-semibold tabular-nums">
+              <span className="shrink-0 font-mono text-xs font-semibold">
                 KES {formatHistoryKes(transaction)}
               </span>
             </button>
@@ -570,7 +570,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="text-xs font-semibold tabular-nums">
+                  <span className="font-mono text-xs font-semibold">
                     KES {onramp.amountKes || "—"}
                   </span>
                 </div>
@@ -578,7 +578,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Date</Trans>
                   </span>
-                  <time className="text-xs font-semibold" dateTime={onramp.createdAt}>
+                  <time className="font-mono text-xs font-semibold" dateTime={onramp.createdAt}>
                     {formatCashDate(onramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>
@@ -678,7 +678,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="text-xs font-semibold tabular-nums">
+                  <span className="font-mono text-xs font-semibold">
                     KES {offramp.amountKes || "—"}
                   </span>
                 </div>
@@ -686,7 +686,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Stable sent</Trans>
                   </span>
-                  <span className="text-xs font-semibold tabular-nums">
+                  <span className="font-mono text-xs font-semibold">
                     {offramp.amountUsd || "—"}
                   </span>
                 </div>
@@ -694,7 +694,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>MPESA phone</Trans>
                   </span>
-                  <span className="text-xs font-semibold tabular-nums">
+                  <span className="font-mono text-xs font-semibold">
                     {offramp.phoneNumber || "—"}
                   </span>
                 </div>
@@ -712,7 +712,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Date</Trans>
                   </span>
-                  <time className="text-xs font-semibold" dateTime={offramp.createdAt}>
+                  <time className="font-mono text-xs font-semibold" dateTime={offramp.createdAt}>
                     {formatCashDate(offramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>

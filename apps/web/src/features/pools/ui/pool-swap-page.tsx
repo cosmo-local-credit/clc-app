@@ -352,7 +352,7 @@ export function PoolSwapPage({
           <span className="text-muted-foreground text-xs">
             <Trans>Rate</Trans>
           </span>
-          <span dir="ltr" className="text-xs font-semibold tabular-nums">
+          <span dir="ltr" className="font-mono text-xs font-semibold">
             1 {selectedFrom?.token.symbol ?? "—"} = {rate} {selectedTo?.token.symbol ?? "—"}
           </span>
         </div>
@@ -770,7 +770,7 @@ function SwapConfirmationRow({
       )}
     >
       <span className="text-muted-foreground text-xs">{label}</span>
-      <span dir="ltr" className="min-w-0 break-words text-end text-xs font-semibold tabular-nums">
+      <span dir="ltr" className="min-w-0 break-words text-end font-mono text-xs font-semibold">
         {children}
       </span>
     </div>
@@ -833,7 +833,7 @@ function SwapField({
             tap
             disabled={actionsDisabled}
             onClick={onMax}
-            className="font-semibold tabular-nums"
+            className="font-mono font-semibold"
           >
             <Trans>
               Max {max} {symbol}
@@ -876,7 +876,7 @@ function SwapField({
         />
       </div>
       {unitValue ? (
-        <p className="mt-1 text-end text-muted-foreground text-xs tabular-nums" aria-live="polite">
+        <p className="mt-1 text-end font-mono text-muted-foreground text-xs" aria-live="polite">
           ({unitValue})
         </p>
       ) : null}
@@ -1008,7 +1008,7 @@ function PoolTokenPickerRow({
         <p className="truncate text-muted-foreground text-xs">{token.token.name}</p>
         <PoolTokenPickerReason token={token} variant={variant} />
       </div>
-      <span dir="ltr" className="shrink-0 text-xs font-semibold tabular-nums">
+      <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
         {amount}
       </span>
       {selected ? (

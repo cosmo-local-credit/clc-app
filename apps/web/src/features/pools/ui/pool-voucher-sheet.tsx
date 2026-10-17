@@ -695,7 +695,7 @@ function RateRow({
     <div className="border border-border bg-card p-4">
       <p className="mb-3 font-medium text-muted-foreground text-xs">{heading}</p>
       <div className="flex items-center gap-2">
-        <span className="shrink-0 truncate text-sm font-semibold tabular-nums">{leading}</span>
+        <span className="shrink-0 truncate font-mono text-sm font-semibold">{leading}</span>
         <span className="shrink-0 text-muted-foreground text-sm">=</span>
         <label htmlFor={id} className="sr-only">
           {heading}
@@ -709,9 +709,9 @@ function RateRow({
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
           aria-invalid={!!error}
-          className="min-w-0 flex-1 tabular-nums"
+          className="min-w-0 flex-1 font-mono"
         />
-        <span className="shrink-0 text-sm font-semibold">{unitSymbol}</span>
+        <span className="shrink-0 font-mono text-sm font-semibold">{unitSymbol}</span>
       </div>
       {error ? (
         <FieldError error={error} />
@@ -790,7 +790,7 @@ function SelectedVoucher({
           <dt className="text-muted-foreground">
             <Trans>Amount in pool</Trans>
           </dt>
-          <dd dir="ltr" className="text-end font-semibold tabular-nums">
+          <dd dir="ltr" className="text-end font-mono font-semibold">
             {balance.status === "loading" ? (
               <Trans>Reading…</Trans>
             ) : amount === null ? (
@@ -804,7 +804,7 @@ function SelectedVoucher({
           <dt className="text-muted-foreground">
             <Trans>Value in {unitSymbol}</Trans>
           </dt>
-          <dd dir="ltr" className="text-end font-semibold tabular-nums">
+          <dd dir="ltr" className="text-end font-mono font-semibold">
             {balance.status === "loading" ? (
               <Trans>Reading…</Trans>
             ) : unitValue === null ? (

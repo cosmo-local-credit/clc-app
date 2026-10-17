@@ -279,7 +279,7 @@ export function SendAmountPage({
               aria-invalid={exceedsMax}
               aria-describedby={unitValueLabel ? "send-amount-uoa-value" : undefined}
               className={cn(
-                "min-w-0 bg-transparent text-center text-[1.75rem] font-semibold leading-none tabular-nums caret-primary outline-none [field-sizing:content]",
+                "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight caret-primary outline-none [field-sizing:content]",
                 exceedsMax && "text-destructive",
               )}
             />
@@ -295,7 +295,7 @@ export function SendAmountPage({
         {unitValueLabel ? (
           <p
             id="send-amount-uoa-value"
-            className="relative mt-2 text-muted-foreground text-sm tabular-nums"
+            className="relative mt-2 font-mono text-muted-foreground text-sm tabular-nums"
             aria-live="polite"
           >
             ({unitValueLabel})
@@ -445,7 +445,7 @@ function SendConfirmationSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>Amount</Trans>
                 </span>
-                <span className="min-w-0 text-end text-xs font-semibold tabular-nums [overflow-wrap:anywhere]">
+                <span className="min-w-0 text-end font-mono text-xs font-semibold [overflow-wrap:anywhere]">
                   {amount} {symbol}
                   {unitValueLabel ? ` (${unitValueLabel})` : ""}
                 </span>

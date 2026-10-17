@@ -8,7 +8,11 @@ const SRC = resolve(import.meta.dirname, "..");
  * Arbitrary sizes that stay arbitrary, by file. 1.75rem, the locked page
  * title, is allowed everywhere and is not listed.
  */
-const ARBITRARY_SIZE_EXCEPTIONS: Record<string, readonly string[]> = {};
+const ARBITRARY_SIZE_EXCEPTIONS: Record<string, readonly string[]> = {
+  // The amounts being entered keep the sizes master gave them.
+  "components/wallet/amount-input.tsx": ["text-[1.375rem]"],
+  "features/wallet/ui/send-amount-page.tsx": ["text-[2.5rem]"],
+};
 
 /**
  * Sizes above the page title, by file. Each is a decorative initial filling an
@@ -17,6 +21,31 @@ const ARBITRARY_SIZE_EXCEPTIONS: Record<string, readonly string[]> = {};
 const DISPLAY_SIZE_EXCEPTIONS: Record<string, readonly string[]> = {
   // An offering without a photo: its initials fill the tile and the sheet.
   "components/offerings/offerings-panel.tsx": ["text-3xl", "text-5xl"],
+  // The review average keeps master's size.
+  "components/reviews/voucher-reviews-panel.tsx": ["text-4xl"],
+};
+
+/**
+ * Counts master draws in plain Inter with tabular figures. Every other figure
+ * is mono or, for a balance, the heading font.
+ */
+const INTER_COUNT_FILES = new Set([
+  "components/catalog-filter-controls.tsx",
+  "components/reviews/voucher-reviews-panel.tsx",
+  "components/ui/step-progress.tsx",
+  "components/ui/tag-badge.tsx",
+  "features/home/ui/market-list-page.tsx",
+  "features/home/ui/posts-page.tsx",
+  "features/pools/ui/pools-page.tsx",
+  "features/posts/ui/post-attachment-fields.tsx",
+  "features/posts/ui/post-image-manager.tsx",
+]);
+
+/** Balances in voucher and token rows, set in the heading font as on master. */
+const HEADING_BALANCES: Record<string, string> = {
+  "features/home/ui/wallet-page.tsx": "{token.amount}",
+  "features/wallet/ui/all-vouchers-page.tsx": "{voucher.amount}",
+  "features/wallet/ui/token-picker-sheet.tsx": "{token.amount}",
 };
 
 function sourceFiles(directory: string): string[] {
@@ -101,6 +130,28 @@ describe("type and button contract", () => {
         (match) => !match.endsWith("text-[1.75rem]"),
       ),
     ).toEqual([]);
+  });
+
+  it("draws figures in mono or the heading font, never Inter tabular-nums", () => {
+    const inter = FILES.flatMap(({ path, text }) =>
+      INTER_COUNT_FILES.has(path)
+        ? []
+        : [...text.matchAll(/["'`][^"'`]*\btabular-nums\b[^"'`]*["'`]/g)]
+            .map((match) => match[0])
+            .filter((value) => !/\bfont-(?:mono|heading)\b/.test(value))
+            .map((value) => `${path}: ${value}`),
+    );
+    expect(inter).toEqual([]);
+  });
+
+  it("sets each row balance in the heading font, as master does", () => {
+    const wrong = Object.entries(HEADING_BALANCES).flatMap(([path, expression]) => {
+      const text = FILES.find((file) => file.path === path)?.text ?? "";
+      const index = text.indexOf(expression);
+      const tag = text.slice(text.lastIndexOf("<", index), index);
+      return index >= 0 && /font-heading/.test(tag) && /tracking-tight/.test(tag) ? [] : [path];
+    });
+    expect(wrong).toEqual([]);
   });
 
   it("sets nothing larger than the page title", () => {

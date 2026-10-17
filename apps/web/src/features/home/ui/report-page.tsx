@@ -205,7 +205,7 @@ function ReportGallery({ images, title }: { images: ReportImage[]; title: string
         />
         <p
           aria-live="polite"
-          className="absolute end-2 bottom-2 bg-background/80 px-2 py-0.5 text-2xs font-semibold tabular-nums"
+          className="absolute end-2 bottom-2 bg-background/80 px-2 py-0.5 font-mono text-2xs font-semibold tabular-nums"
         >
           <Trans>
             {current} / {images.length}
@@ -336,7 +336,7 @@ function FullScreenCarousel({
       />
       <p
         aria-live="polite"
-        className="absolute end-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 text-white text-xs tabular-nums"
+        className="absolute end-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 font-mono text-white text-xs tabular-nums"
       >
         <Trans>
           {current} / {images.length}

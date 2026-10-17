@@ -336,7 +336,7 @@ function OfferingForm({
                       dir="ltr"
                       inputMode="decimal"
                       autoComplete="off"
-                      className="min-w-0 flex-1 bg-card tabular-nums"
+                      className="min-w-0 flex-1 bg-card font-mono"
                       value={priceField.state.value}
                       onBlur={priceField.handleBlur}
                       onChange={(event) => priceField.handleChange(event.target.value)}

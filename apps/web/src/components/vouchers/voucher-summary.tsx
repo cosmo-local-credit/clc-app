@@ -157,7 +157,7 @@ function VoucherBalanceSummaryLine({
           </Button>
         </>
       ) : (
-        <span dir="ltr" className="font-semibold text-sm tabular-nums">
+        <span dir="ltr" className="font-mono font-semibold text-sm">
           {balance.amount} {balance.symbol}
           {balance.unitValue ? (
             <span className="text-muted-foreground">
@@ -289,9 +289,9 @@ function VoucherReviewSummaryContent({
 
   return (
     <>
-      <span className="tabular-nums">{formattedAverage}</span>
+      <span className="font-mono tabular-nums">{formattedAverage}</span>
       <ReviewStars stars={reviewAverage} />
-      <span className="tabular-nums">({formattedReviewCount})</span>
+      <span className="font-mono tabular-nums">({formattedReviewCount})</span>
       {place ? (
         <>
           <span aria-hidden="true">·</span>

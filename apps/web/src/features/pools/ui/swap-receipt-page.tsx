@@ -247,7 +247,7 @@ export function SwapReceiptPage({
         </ReceiptRow>
         {submittedAt ? (
           <ReceiptRow label={<Trans>Submitted</Trans>}>
-            <time className="text-xs font-semibold" dateTime={submittedAt}>
+            <time className="font-mono text-xs font-semibold" dateTime={submittedAt}>
               {formatSubmittedAt(submittedAt, i18n.locales?.[0] ?? i18n.locale)}
             </time>
           </ReceiptRow>

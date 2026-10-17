@@ -40,7 +40,7 @@ export function SignedAmount({
     <span
       dir="ltr"
       className={cn(
-        "inline-flex min-w-0 items-center gap-1.5 text-end text-xs font-semibold tabular-nums",
+        "inline-flex min-w-0 items-center gap-1.5 text-end font-mono text-xs font-semibold",
         incoming ? "text-primary" : "text-destructive",
         className,
       )}

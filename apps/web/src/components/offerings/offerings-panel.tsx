@@ -333,7 +333,7 @@ function OfferingTile({
         <span className="line-clamp-2 text-sm font-semibold leading-tight [overflow-wrap:anywhere]">
           {offering.name}
         </span>
-        <span className="mt-1 block truncate text-xs font-semibold text-primary tabular-nums">
+        <span className="mt-1 block truncate font-mono text-2xs font-semibold text-primary">
           {price ? (
             `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
           ) : hasFixedPrice ? (
@@ -516,7 +516,7 @@ function OfferingDetailsSheet({
           <div className="min-h-0 flex-1 overflow-y-auto">
             <SheetHeader className="px-6 pt-4 pb-0">
               <SheetTitle className="[overflow-wrap:anywhere]">{offering.name}</SheetTitle>
-              <p className="text-sm font-semibold text-primary tabular-nums">
+              <p className="font-mono text-sm font-semibold text-primary">
                 {price ? (
                   `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
                 ) : hasFixedPrice ? (

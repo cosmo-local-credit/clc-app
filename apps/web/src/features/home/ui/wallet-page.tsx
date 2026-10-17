@@ -34,7 +34,7 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
           <p className="text-muted-foreground truncate text-xs">{token.name}</p>
         </div>
         <div className="shrink-0 text-end">
-          <p className="text-sm font-semibold tabular-nums">{token.amount}</p>
+          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
         </div>
       </>
     );

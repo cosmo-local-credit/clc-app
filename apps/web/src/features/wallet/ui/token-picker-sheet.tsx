@@ -66,8 +66,10 @@ export function TokenPickerSheet({
                     <p className="truncate text-muted-foreground text-xs">{token.name}</p>
                   </div>
                   <div className="text-end">
-                    <p className="font-semibold text-sm tabular-nums">{token.amount}</p>
-                    <p className="text-muted-foreground text-xs tabular-nums">{token.fiat}</p>
+                    <p className="font-heading font-semibold text-sm tracking-tight">
+                      {token.amount}
+                    </p>
+                    <p className="font-mono text-muted-foreground text-2xs">{token.fiat}</p>
                   </div>
                   {active ? (
                     <RiCheckLine className="size-4 shrink-0 text-primary" aria-hidden="true" />

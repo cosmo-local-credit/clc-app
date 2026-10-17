@@ -252,7 +252,7 @@ function EntryAmount({ entry }: { entry: PoolActivityEntry }) {
       {entry.protocolFee ? (
         // Shown apart from the trader's side: it left the pool in the same
         // transaction but went to the protocol, not to whoever swapped.
-        <span className="block text-muted-foreground text-xs tabular-nums">
+        <span className="block font-mono text-muted-foreground text-2xs tabular-nums">
           <Trans>Protocol fee</Trans> {legAmount(entry.protocolFee, locale)}
         </span>
       ) : null}

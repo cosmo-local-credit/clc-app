@@ -39,7 +39,7 @@ function WalletAmountInput({
       value={value}
       onChange={(event) => onValueChange(event.target.value)}
       className={cn(
-        "truncate px-2 text-end text-xl font-semibold leading-none tabular-nums",
+        "truncate px-2 text-end font-heading text-[1.375rem] font-semibold leading-none tracking-tight",
         highlighted && "border-primary focus-visible:border-primary",
       )}
     />

@@ -159,7 +159,7 @@ export function PoolHoldingIdentity({ holding, unit }: { holding: PoolHolding; u
             parity is what the contract falls back to rather than what it was
             told. */}
         {holding.ratePpm === null ? null : (
-          <p className="truncate text-muted-foreground text-xs tabular-nums">
+          <p className="truncate font-mono text-muted-foreground text-xs">
             1 {holding.symbol} = {formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}{" "}
             {unit}
           </p>

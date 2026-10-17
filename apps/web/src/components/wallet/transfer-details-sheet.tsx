@@ -125,7 +125,7 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="text-end text-xs font-semibold tabular-nums">
+                  <span className="text-end font-mono text-xs font-semibold">
                     <span className="block">
                       {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                       <Link
@@ -147,7 +147,7 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Date</Trans>
                   </span>
-                  <time className="text-xs font-semibold" dateTime={transfer.dateBlock}>
+                  <time className="font-mono text-xs font-semibold" dateTime={transfer.dateBlock}>
                     {transferDate}
                   </time>
                 </div>

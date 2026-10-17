@@ -119,7 +119,7 @@ export function ReportList({
                       <Badge
                         variant="outline"
                         size="sm"
-                        className="text-muted-foreground tabular-nums"
+                        className="font-mono text-muted-foreground"
                       >
                         {extraVouchers}+
                       </Badge>

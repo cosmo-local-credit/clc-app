@@ -218,7 +218,7 @@ export function SendReceiptPage({
         </ReceiptRow>
         {submittedAt ? (
           <ReceiptRow label={t`Submitted`}>
-            <time className="text-xs font-semibold" dateTime={outcome.otx.createdAt}>
+            <time className="font-mono text-xs font-semibold" dateTime={outcome.otx.createdAt}>
               {submittedAt}
             </time>
           </ReceiptRow>

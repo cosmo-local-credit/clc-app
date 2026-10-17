@@ -44,7 +44,7 @@ export function VoucherAbout({
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">
           {rate ? (
-            <p className="text-sm font-semibold leading-tight text-primary tabular-nums">
+            <p className="font-mono text-sm font-semibold leading-tight text-primary">
               <Trans>
                 1 {symbol} = {rate.value} {rate.unit}
               </Trans>

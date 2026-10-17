@@ -118,7 +118,7 @@ function CreditLine({ holding, unit }: { holding: PoolHolding; unit: string }) {
         track="bg-muted"
         label={t`${holding.name} available credit`}
       />
-      <p className="mt-1 text-muted-foreground text-xs tabular-nums">
+      <p className="mt-1 font-mono text-muted-foreground text-2xs tabular-nums">
         <Trans>
           {available} of {limit} {denomination} available credit
         </Trans>

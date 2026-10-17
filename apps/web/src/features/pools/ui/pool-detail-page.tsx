@@ -357,7 +357,7 @@ function VoucherRow({
         <div className="min-w-0 flex-1 overflow-hidden">
           <p className="truncate font-semibold text-sm">{voucher.name}</p>
           {ratePpm === undefined ? null : (
-            <p className="truncate text-muted-foreground text-xs tabular-nums">
+            <p className="truncate font-mono text-muted-foreground text-xs">
               1 {voucher.symbol} ={" "}
               {formatTokenAmount(ratePpm.toString(), POOL_PRICE_INDEX_DECIMALS)} {unitSymbol}
             </p>

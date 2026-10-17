@@ -49,7 +49,9 @@ function VoucherRow({
           </div>
           <p className="text-muted-foreground text-xs">{voucher.name}</p>
         </div>
-        <p className="shrink-0 text-sm font-semibold tabular-nums">{voucher.amount}</p>
+        <p className="font-heading shrink-0 text-sm font-semibold tracking-tight">
+          {voucher.amount}
+        </p>
         <RiArrowDownSLine
           className={[
             "size-4 shrink-0 text-muted-foreground transition-transform",

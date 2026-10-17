@@ -395,7 +395,7 @@ export function VoucherDeploymentReceiptPage({
               />
             </Field>
             {supplyValue ? (
-              <p className="mt-1 text-muted-foreground text-xs tabular-nums">
+              <p className="mt-1 font-mono text-muted-foreground text-xs tabular-nums">
                 <Trans>
                   Value: {supplyValue.value} {supplyValue.unit}
                 </Trans>

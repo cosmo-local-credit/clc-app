@@ -189,7 +189,7 @@ export function PoolActivityDetailsSheet({
                 </DetailRow>
 
                 <DetailRow label={t`Date`}>
-                  <time className="text-xs font-semibold" dateTime={entry.dateBlock}>
+                  <time className="font-mono text-xs font-semibold" dateTime={entry.dateBlock}>
                     {formatTransferDate(entry.dateBlock)}
                   </time>
                 </DetailRow>

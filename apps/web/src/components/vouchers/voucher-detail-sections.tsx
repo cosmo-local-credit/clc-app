@@ -420,7 +420,7 @@ function VoucherActivityPanel({
                   ) : null}
                 </span>
               </span>
-              <span className="shrink-0 text-end text-xs font-semibold tabular-nums">
+              <span className="shrink-0 text-end font-mono text-xs font-semibold">
                 <span className="block">
                   {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                   {transfer.tokenSymbol}

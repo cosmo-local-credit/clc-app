@@ -99,7 +99,7 @@ export function PoolControlsPanel({
               icon={<RiWalletLine className="size-4" aria-hidden="true" />}
               label={t`Fee % and recipient`}
               value={
-                <span className="tabular-nums">
+                <span className="font-mono">
                   {fee
                     ? `${fee.feePercent}% · ${fee.feeAddress ? formatVoucherAddress(fee.feeAddress) : t`Not set`}`
                     : feeSettings.isError
@@ -291,7 +291,7 @@ function WithdrawLiquidityForm({
                 value={amount}
                 placeholder="0"
                 onChange={(event) => setAmount(event.target.value)}
-                className="tabular-nums"
+                className="font-mono"
               />
               <Button
                 type="button"
@@ -500,7 +500,7 @@ function FeeSettingsForm({
             value={feePercent}
             placeholder="0"
             onChange={(event) => setFeePercent(event.target.value)}
-            className="tabular-nums"
+            className="font-mono"
             aria-invalid={!!trimmedFee && !feeIsValid}
           />
         </Field>
@@ -592,7 +592,7 @@ function TokenChooser({
                   {voucher.symbol}
                 </span>
               </span>
-              <span className="shrink-0 text-sm font-semibold tabular-nums">{amount ?? "—"}</span>
+              <span className="shrink-0 font-mono text-sm font-semibold">{amount ?? "—"}</span>
             </button>
           </li>
         );

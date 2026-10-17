@@ -85,7 +85,7 @@ export function PhoneInputField({
           )}
         >
           <span className="text-base leading-none">{getFlagEmoji(country)}</span>
-          <span className="text-muted-foreground text-xs tabular-nums">+{callingCode}</span>
+          <span className="font-mono text-muted-foreground text-xs">+{callingCode}</span>
           <ChevronDown className="size-3 text-muted-foreground" />
         </button>
 
