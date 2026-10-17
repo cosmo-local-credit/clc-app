@@ -733,7 +733,7 @@ describe("adjustable catalog allowance", () => {
     quotaMock.data.catalogs = { used: 1, limit: 2, canCreate: true, unlimited: false };
     mount(<CatalogCreatePage />);
     expect(await screen.findByRole("textbox", { name: "Name" })).toBeTruthy();
-    expect(screen.getByText(/1 of 2 used/)).toBeTruthy();
+    expect(screen.queryByText(/1 of 2 used/)).toBeNull();
   });
   it("explains a full allowance and keeps existing catalogs accessible", async () => {
     quotaMock.data.catalogs = { used: 1, limit: 1, canCreate: false, unlimited: false };

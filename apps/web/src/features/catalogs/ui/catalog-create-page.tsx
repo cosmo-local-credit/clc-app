@@ -126,7 +126,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
         </div>
       ) : (
         <>
-          <ResourceUsage resource="catalogs" />
+          <ResourceUsage resource="catalogs" count={false} />
           {usage.data?.catalogs.canCreate && <CatalogForm initialPlace={place} onSaved={finish} />}
           {mine.catalogs.map((item) => (
             <Button key={item.id} asChild variant="outline" tap>

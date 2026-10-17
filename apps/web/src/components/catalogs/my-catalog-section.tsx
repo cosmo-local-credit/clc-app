@@ -38,7 +38,7 @@ export function MyCatalogSection() {
           {query.catalogs.map((catalog) => (
             <CatalogRow key={catalog.id} catalog={catalog} />
           ))}
-          <ResourceUsage resource="catalogs" />
+          <ResourceUsage resource="catalogs" count={false} />
           <Button
             asChild={!!usage.data?.catalogs.canCreate && !usage.isError}
             disabled={!usage.data?.catalogs.canCreate || usage.isError}
