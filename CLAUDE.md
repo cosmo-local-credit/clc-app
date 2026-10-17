@@ -397,10 +397,6 @@ or their neighboring lines. Keep it that way:
 - Editing comments or whitespace immediately beside environment values can also
   conflict with master's overrides. Keep that layout identical on both branches;
   when resolving a promotion, take develop's shared text and master's values.
-- `python3 tooling/check_promotion.py --master master --develop develop` checks
-  both environments and simulates the next Wrangler merge without modifying the
-  checkout. The `Wrangler promotion safety` CI check runs on pushes and pull
-  requests to both branches and rejects conflicts or leaked staging settings.
 
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
 Green is the product brand (prod); red marks staging.
