@@ -163,7 +163,7 @@ msgid "{0} updated."
 msgstr "{0} aggiornato."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/wallet-page.tsx:328
+#: apps/web/src/features/home/ui/wallet-page.tsx:319
 #: apps/web/src/features/pools/ui/pools-page.tsx:400
 msgid "{0} vouchers"
 msgstr "{0} buoni"
@@ -231,12 +231,12 @@ msgid "{summaryTotal} reviews"
 msgstr "{summaryTotal} recensioni"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/resource-usage.tsx:46
+#: apps/web/src/components/resource-usage.tsx:58
 msgid "{used} of {limit} used"
 msgstr "{used} di {limit} utilizzati"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/resource-usage.tsx:44
+#: apps/web/src/components/resource-usage.tsx:56
 msgid "{used} used · Unlimited"
 msgstr "{used} utilizzati · Illimitato"
 
@@ -275,7 +275,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 offerta"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:326
+#: apps/web/src/features/home/ui/wallet-page.tsx:317
 #: apps/web/src/features/pools/ui/pools-page.tsx:398
 msgid "1 voucher"
 msgstr "1 buono"
@@ -568,7 +568,7 @@ msgstr "Agricoltura"
 #~ msgid "All"
 #~ msgstr "Tutto"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:275
+#: apps/web/src/features/home/ui/wallet-page.tsx:266
 msgid "All pools"
 msgstr "Tutti i fondi"
 
@@ -906,8 +906,8 @@ msgstr "Immagine del catalogo"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Catalogo salvato. Non è stato possibile aggiungere l’elemento. Riprova."
 
-#: apps/web/src/components/market-bar.tsx:112
-#: apps/web/src/components/resource-usage.tsx:11
+#: apps/web/src/components/market-bar.tsx:130
+#: apps/web/src/components/resource-usage.tsx:22
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:38
 msgid "Catalogs"
@@ -1725,7 +1725,7 @@ msgstr "Non è stato possibile caricare l’attività."
 msgid "Couldn't load catalog items."
 msgstr "Impossibile caricare gli elementi del catalogo."
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:25
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:44
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:197
@@ -1772,7 +1772,7 @@ msgstr "Non è stato possibile caricare le pubblicazioni."
 msgid "Couldn't load Pretium history."
 msgstr "Non è stato possibile caricare la cronologia di Pretium."
 
-#: apps/web/src/components/resource-usage.tsx:20
+#: apps/web/src/components/resource-usage.tsx:31
 msgid "Couldn't load resource limits."
 msgstr "Impossibile caricare i limiti delle risorse."
 
@@ -1827,12 +1827,12 @@ msgstr "Non è stato possibile caricare le etichette dei buoni."
 msgid "Couldn't load vouchers"
 msgstr "Non è stato possibile caricare i buoni"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:189
+#: apps/web/src/features/home/ui/wallet-page.tsx:180
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:152
 msgid "Couldn't load vouchers."
 msgstr "Non è stato possibile caricare i buoni."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:287
+#: apps/web/src/features/home/ui/wallet-page.tsx:278
 msgid "Couldn't load your pools."
 msgstr "Non è stato possibile caricare i suoi fondi."
 
@@ -2011,8 +2011,8 @@ msgstr "Crei un account"
 msgid "Create an account"
 msgstr "Crei un account"
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:51
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:55
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:23
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:27
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:84
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:200
 msgid "Create catalog"
@@ -2022,7 +2022,7 @@ msgstr "Crea catalogo"
 #~ msgid "Create new vouchers in your wallet."
 #~ msgstr "Emetta nuovi buoni nel suo portafoglio."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:306
+#: apps/web/src/features/home/ui/wallet-page.tsx:297
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:342
 msgid "Create pool"
 msgstr "Crei un fondo"
@@ -2036,8 +2036,8 @@ msgid "Create the first supply to finish publishing this voucher."
 msgstr "Emetta la quantità iniziale per completare la pubblicazione di questo "
 "buono."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:214
-#: apps/web/src/features/home/ui/wallet-page.tsx:250
+#: apps/web/src/features/home/ui/wallet-page.tsx:205
+#: apps/web/src/features/home/ui/wallet-page.tsx:241
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:354
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:384
 msgid "Create voucher"
@@ -2788,7 +2788,7 @@ msgstr "Salute"
 msgid "Hold the card flat against the back of your phone."
 msgstr "Tenga la carta appoggiata al retro del telefono."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:225
+#: apps/web/src/features/home/ui/wallet-page.tsx:216
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:184
 msgid "Holdings"
 msgstr "Disponibilità"
@@ -3051,7 +3051,7 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "È stato raggiunto il limite di {CATALOG_MAX_VOUCHERS} buoni. Ne rimuova "
 "uno per aggiungerne un altro."
 
-#: apps/web/src/components/resource-usage.tsx:53
+#: apps/web/src/components/resource-usage.tsx:66
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3236,7 +3236,7 @@ msgstr "Caricamento delle offerte…"
 msgid "Loading pool…"
 msgstr "Caricamento del fondo…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:281
+#: apps/web/src/features/home/ui/wallet-page.tsx:272
 #: apps/web/src/features/pools/ui/pools-page.tsx:290
 msgid "Loading pools…"
 msgstr "Caricamento dei fondi…"
@@ -3279,7 +3279,7 @@ msgid "Loading voucher…"
 msgstr "Caricamento del buono…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:76
-#: apps/web/src/features/home/ui/wallet-page.tsx:183
+#: apps/web/src/features/home/ui/wallet-page.tsx:174
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:940
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:211
@@ -3304,12 +3304,12 @@ msgstr "Caricamento del profilo…"
 #~ msgid "Loading..."
 #~ msgstr "Caricamento..."
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:20
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:39
 #: apps/web/src/components/introduction/introduction.tsx:43
 #: apps/web/src/components/nearby-catalog.tsx:129
 #: apps/web/src/components/nearby-catalog.tsx:147
 #: apps/web/src/components/offerings/offerings-panel.tsx:236
-#: apps/web/src/components/resource-usage.tsx:35
+#: apps/web/src/components/resource-usage.tsx:46
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:269
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:302
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:453
@@ -3388,8 +3388,8 @@ msgstr "Gestisca il buono"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "Gestisca la sessione del portafoglio e le preferenze dell’app."
 
-#: apps/web/src/components/market-bar.tsx:168
-#: apps/web/src/components/market-bar.tsx:169
+#: apps/web/src/components/market-bar.tsx:184
+#: apps/web/src/components/market-bar.tsx:185
 msgid "Map"
 msgstr "Mappa"
 
@@ -3415,7 +3415,7 @@ msgstr "Mercato"
 #~ msgid "Marketplace"
 #~ msgstr "Mercato"
 
-#: apps/web/src/components/market-bar.tsx:116
+#: apps/web/src/components/market-bar.tsx:134
 msgid "Marketplace sections"
 msgstr "Sezioni del mercato"
 
@@ -3563,11 +3563,11 @@ msgstr "MPESA tramite Pretium"
 msgid "My catalog"
 msgstr "Il mio catalogo"
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:16
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:35
 msgid "My catalogs"
 msgstr "I miei cataloghi"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:274
+#: apps/web/src/features/home/ui/wallet-page.tsx:265
 msgid "My Pools"
 msgstr "I miei fondi"
 
@@ -3578,8 +3578,8 @@ msgstr "I miei fondi"
 msgid "My posts"
 msgstr "Le mie pubblicazioni"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:174
-#: apps/web/src/features/home/ui/wallet-page.tsx:234
+#: apps/web/src/features/home/ui/wallet-page.tsx:165
+#: apps/web/src/features/home/ui/wallet-page.tsx:225
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:194
 msgid "My Vouchers"
 msgstr "I miei buoni"
@@ -3900,7 +3900,7 @@ msgstr "Nessun buono da incassare"
 msgid "No vouchers to show yet."
 msgstr "Nessun buono da mostrare per ora."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:210
+#: apps/web/src/features/home/ui/wallet-page.tsx:201
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:173
 msgid "No vouchers yet."
 msgstr "Nessun buono per ora."
@@ -4042,8 +4042,8 @@ msgstr "Offerta aggiornata."
 msgid "Offerings"
 msgstr "Offerte"
 
-#: apps/web/src/components/market-bar.tsx:111
-#: apps/web/src/components/resource-usage.tsx:12
+#: apps/web/src/components/market-bar.tsx:129
+#: apps/web/src/components/resource-usage.tsx:23
 #: apps/web/src/features/home/ui/offers-page.tsx:100
 msgid "Offers"
 msgstr "Offerte"
@@ -4580,8 +4580,8 @@ msgstr "Etichette del fondo"
 msgid "Pool tracking details are missing."
 msgstr "Mancano i dettagli di tracciamento del fondo."
 
-#: apps/web/src/components/market-bar.tsx:109
-#: apps/web/src/components/resource-usage.tsx:13
+#: apps/web/src/components/market-bar.tsx:127
+#: apps/web/src/components/resource-usage.tsx:24
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -5189,9 +5189,9 @@ msgid "Retreat"
 msgstr "Ritiro"
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:33
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:52
 #: apps/web/src/components/creditable-browse-control.tsx:114
-#: apps/web/src/components/resource-usage.tsx:28
+#: apps/web/src/components/resource-usage.tsx:39
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
@@ -5673,7 +5673,7 @@ msgid "Shown to anyone using this pool"
 msgstr "Mostrato a chiunque usi questo fondo"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:70
+#: apps/web/src/components/market-bar.tsx:77
 msgid "Sign in"
 msgstr "Acceda"
 
@@ -6573,8 +6573,8 @@ msgstr "Viaggio"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:89
 #: apps/web/src/features/home/ui/wallet-page.tsx:85
-#: apps/web/src/features/home/ui/wallet-page.tsx:200
-#: apps/web/src/features/home/ui/wallet-page.tsx:295
+#: apps/web/src/features/home/ui/wallet-page.tsx:191
+#: apps/web/src/features/home/ui/wallet-page.tsx:286
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:222
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
@@ -6830,8 +6830,8 @@ msgstr "Valore: {0} {1} di offerte"
 msgid "View"
 msgstr "Visualizzi"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:175
-#: apps/web/src/features/home/ui/wallet-page.tsx:235
+#: apps/web/src/features/home/ui/wallet-page.tsx:166
+#: apps/web/src/features/home/ui/wallet-page.tsx:226
 msgid "View all"
 msgstr "Visualizzi tutto"
 
@@ -6989,8 +6989,8 @@ msgid "Voucher tracking details are missing."
 msgstr "Mancano i dettagli di tracciamento del buono."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:302
-#: apps/web/src/components/market-bar.tsx:110
-#: apps/web/src/components/resource-usage.tsx:10
+#: apps/web/src/components/market-bar.tsx:128
+#: apps/web/src/components/resource-usage.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/home/ui/market-list-page.tsx:119
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -7249,7 +7249,7 @@ msgstr "Hai già un catalogo."
 msgid "You can write or edit your review until {0}."
 msgstr "Puoi scrivere o modificare la tua recensione fino al {0}."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:246
+#: apps/web/src/features/home/ui/wallet-page.tsx:237
 msgid "You didn't issue any of these."
 msgstr "Non ha emesso nessuno di questi buoni."
 
@@ -7266,7 +7266,11 @@ msgid "You have seven days after redemption to write or edit your review."
 msgstr "Hai sette giorni dal riscatto per scrivere o modificare la tua "
 "recensione."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:302
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:61
+msgid "You haven't created a catalog yet."
+msgstr "Non ha ancora creato un catalogo."
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:293
 msgid "You haven't created a pool yet."
 msgstr "Non ha ancora creato un fondo."
 

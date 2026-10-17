@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendApiError } from "@clc/api/client/errors";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
+import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
 import { useCatalogVisibilityStore } from "#/features/home/state/catalog-visibility";
 import { CatalogCreatePage } from "./catalog-create-page";
 import { CatalogDetailPage } from "./catalog-detail-page";
@@ -729,6 +730,20 @@ describe("catalog sharing", () => {
 });
 
 describe("adjustable catalog allowance", () => {
+  it("shows a member without catalogs the same empty card as vouchers and pools", async () => {
+    mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
+    quotaMock.data.catalogs = { used: 0, limit: 2, canCreate: true, unlimited: false };
+    mount(<MyCatalogSection />);
+    const empty = await screen.findByText("You haven't created a catalog yet.");
+    const card = empty.closest("div.border");
+    expect(card).toBeTruthy();
+    expect(
+      within(card as HTMLElement)
+        .getByRole("link", { name: "Create catalog" })
+        .getAttribute("href"),
+    ).toBe("/catalogs/create");
+    expect(screen.queryByText(/0 of 2 used/)).toBeNull();
+  });
   it("allows a second catalog when an admin raises the allowance", async () => {
     quotaMock.data.catalogs = { used: 1, limit: 2, canCreate: true, unlimited: false };
     mount(<CatalogCreatePage />);
