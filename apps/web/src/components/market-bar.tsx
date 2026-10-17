@@ -134,12 +134,7 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
       aria-label={t`Marketplace sections`}
       className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {credit ? (
-        <>
-          {credit}
-          <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-muted-foreground/40" />
-        </>
-      ) : null}
+      {credit}
       {(Object.keys(labels) as MarketplaceScope[]).map((scope) => {
         const active = scope === current;
         const Icon = BADGE_ICONS[scope];
