@@ -681,7 +681,7 @@ function SwapConfirmationSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Confirm swap</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -931,9 +931,7 @@ function PoolTokenPickerSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
-              {title}
-            </SheetTitle>
+            <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
           <div className="max-h-[50svh] overflow-y-auto px-2 pb-2">
             {isPending ? (

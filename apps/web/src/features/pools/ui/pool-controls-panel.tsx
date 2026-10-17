@@ -179,7 +179,7 @@ function ControlSheetShell({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">{title}</SheetTitle>
+            <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
           {/* Mounted only while open so each visit starts from the current
               balances rather than the ones the sheet last closed on. */}

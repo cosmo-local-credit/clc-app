@@ -234,6 +234,9 @@ export function MarketPage({
 
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
+      <h1 className="sr-only">
+        <Trans>Market</Trans>
+      </h1>
       <Suspense
         fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
       >

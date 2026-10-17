@@ -120,7 +120,7 @@ export function OfferingEditorSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               {offering ? <Trans>Edit offering</Trans> : <Trans>Add offering</Trans>}
             </SheetTitle>
           </SheetHeader>

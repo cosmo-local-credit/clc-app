@@ -6,6 +6,7 @@ import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher
 import { useReviewAccess } from "#/features/reviews/hooks/use-voucher-reviews";
 import { saveReview } from "#/features/reviews/api/reviews-client";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { ReviewEditor } from "./review-editor";
 
 /** Receipt hints only select the UI. The server independently verifies redemption. */
@@ -59,9 +60,9 @@ function EligiblePrompt({ address }: { address: string }) {
     );
   return (
     <section className="mb-5 space-y-3 border border-border bg-card p-4">
-      <h2 className="font-heading font-semibold">
+      <SectionHeading>
         {access.data.review ? t`Update your review` : t`How was your experience?`}
-      </h2>
+      </SectionHeading>
       <p className="text-xs text-muted-foreground">
         <Trans>You have seven days after redemption to write or edit your review.</Trans>
       </p>

@@ -82,7 +82,7 @@ export function PoolProfileEditorSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               <Trans>Edit pool details</Trans>
             </SheetTitle>
           </SheetHeader>

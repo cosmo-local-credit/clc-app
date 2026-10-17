@@ -27,6 +27,7 @@ import { InfoRow } from "#/components/ui/info-row";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { MarkdownContent } from "#/components/ui/markdown-content";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { BackChevron, EllipsizedAddress } from "#/components/wallet";
@@ -406,12 +407,9 @@ function ReportDetails({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="report-details-heading">
-      <h2
-        id="report-details-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-details-heading">
         <Trans>Report details</Trans>
-      </h2>
+      </SectionHeading>
       <dl className="mt-2 border border-border bg-card">
         {period ? <InfoRow label={t`Report period`}>{period}</InfoRow> : null}
         {report.hostName ? (
@@ -440,12 +438,9 @@ function ReportAttachments({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="report-attachments-heading">
-      <h2
-        id="report-attachments-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-attachments-heading">
         <Trans>Links</Trans>
-      </h2>
+      </SectionHeading>
       <ul className="mt-2 border border-border bg-card">
         {report.attachments.map((attachment) => (
           <li
@@ -496,12 +491,9 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="related-vouchers-heading">
-      <h2
-        id="related-vouchers-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="related-vouchers-heading">
         <Trans>Related vouchers</Trans>
-      </h2>
+      </SectionHeading>
       <div className="mt-2 border border-border bg-card">
         {report.vouchers.map((voucher) => (
           <Link
@@ -535,12 +527,9 @@ function ReportProvenance({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="report-provenance-heading">
-      <h2
-        id="report-provenance-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-provenance-heading">
         <Trans>Report provenance</Trans>
-      </h2>
+      </SectionHeading>
       <dl className="mt-2 border border-border bg-card">
         <InfoRow label={t`Author`}>
           {report.authorAddress ? <EllipsizedAddress address={report.authorAddress} /> : "—"}
@@ -561,12 +550,9 @@ function ReportLocation({ report, label }: { report: ReportDetail; label: string
 
   return (
     <section aria-labelledby="report-location-heading">
-      <h2
-        id="report-location-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-location-heading">
         <Trans>Location</Trans>
-      </h2>
+      </SectionHeading>
       <div className="mt-2 border border-border bg-card p-4">
         <p className="font-heading text-sm font-semibold leading-snug">{label}</p>
         {hasCoordinates && report.lat !== null && report.lng !== null ? (

@@ -32,6 +32,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { SelectableTagBadge } from "#/components/ui/tag-badge";
 import { Toggle } from "#/components/ui/toggle";
 import type { MarketVoucher } from "@clc/api/features/market/client";
@@ -275,9 +276,7 @@ export function CatalogFilterSheet({
           <SheetContent>
             {showHeader ? (
               <SheetHeader className="flex-row items-center justify-between gap-3 px-4 pt-4 pb-3">
-                <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
-                  {title}
-                </SheetTitle>
+                <SheetTitle>{title}</SheetTitle>
                 <Button
                   variant="outline"
                   size="icon-lg"
@@ -302,9 +301,9 @@ export function CatalogFilterSheet({
                   aria-labelledby={voucherHeadingId}
                 >
                   <div className="flex items-baseline justify-between gap-3">
-                    <h3 id={voucherHeadingId} className="font-heading text-sm font-semibold">
+                    <SectionHeading id={voucherHeadingId} variant="group" as="h3">
                       <Trans>Vouchers</Trans>
-                    </h3>
+                    </SectionHeading>
                     <span className="text-muted-foreground text-xs tabular-nums">
                       <Trans>
                         {draftVouchers.length} of {CATALOG_MAX_VOUCHERS}
@@ -448,9 +447,9 @@ export function CatalogFilterSheet({
                       className="mt-6 border-t border-border pt-4"
                       aria-labelledby={voucherMatchHeadingId}
                     >
-                      <h3 id={voucherMatchHeadingId} className="font-heading text-sm font-semibold">
+                      <SectionHeading id={voucherMatchHeadingId} variant="group" as="h3">
                         <Trans>How should vouchers match?</Trans>
-                      </h3>
+                      </SectionHeading>
                       <div
                         className="mt-3 grid grid-cols-2 gap-2"
                         role="group"
@@ -479,9 +478,9 @@ export function CatalogFilterSheet({
                 aria-labelledby={categoryHeadingId}
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <h3 id={categoryHeadingId} className="font-heading text-sm font-semibold">
+                  <SectionHeading id={categoryHeadingId} variant="group" as="h3">
                     {facetTitle}
-                  </h3>
+                  </SectionHeading>
                   <span className="text-muted-foreground text-xs tabular-nums">
                     <Trans>
                       {draftTags.length} of {CATALOG_MAX_TAGS}
@@ -536,9 +535,9 @@ export function CatalogFilterSheet({
                   className="mt-6 border-t border-border pt-4"
                   aria-labelledby={matchHeadingId}
                 >
-                  <h3 id={matchHeadingId} className="font-heading text-sm font-semibold">
+                  <SectionHeading id={matchHeadingId} variant="group" as="h3">
                     <Trans>How should categories match?</Trans>
-                  </h3>
+                  </SectionHeading>
                   <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label={t`Match`}>
                     <TagMatchToggle
                       pressed={draftTagMatch === "any"}

@@ -3,6 +3,7 @@ import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { CatalogRow } from "#/components/catalogs/catalog-row";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 
@@ -11,9 +12,9 @@ export function MyCatalogSection() {
   const usage = useResourceUsage();
   return (
     <section aria-labelledby="my-catalog-title" className="space-y-2">
-      <h2 id="my-catalog-title" className="font-heading text-base font-semibold">
+      <SectionHeading id="my-catalog-title">
         <Trans>My catalogs</Trans>
-      </h2>
+      </SectionHeading>
       {query.isPending ? (
         <p role="status">
           <Trans>Loading…</Trans>

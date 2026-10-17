@@ -515,9 +515,7 @@ function OfferingDetailsSheet({
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             <SheetHeader className="px-6 pt-4 pb-0">
-              <SheetTitle className="font-heading text-xl font-semibold leading-tight [overflow-wrap:anywhere]">
-                {offering.name}
-              </SheetTitle>
+              <SheetTitle className="[overflow-wrap:anywhere]">{offering.name}</SheetTitle>
               <p className="font-mono text-sm font-semibold text-primary">
                 {price ? (
                   `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`

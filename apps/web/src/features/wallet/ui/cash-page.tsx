@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { BackChevron, HighlightAddress, NetworkBadge } from "#/components/wallet";
 import { CHAIN_INFO } from "#/lib/chain";
 
@@ -140,7 +141,7 @@ export function CashPage() {
 function InstructionSection({ title, children }: { title: ReactNode; children: ReactNode }) {
   return (
     <section className="space-y-2">
-      <h2 className="font-heading text-lg font-semibold">{title}</h2>
+      <SectionHeading>{title}</SectionHeading>
       {children}
     </section>
   );

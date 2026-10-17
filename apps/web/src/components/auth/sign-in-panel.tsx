@@ -486,7 +486,7 @@ export function SignInPanel({
           <SheetBackdrop />
           <SheetContent className="[&>div:first-child]:hidden">
             <SheetHeader className="px-6 pt-6">
-              <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
+              <SheetTitle>
                 <Trans>Account not found</Trans>
               </SheetTitle>
               <p className="text-muted-foreground text-sm">

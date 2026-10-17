@@ -85,7 +85,7 @@ export function VoucherProfileEditorSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               <Trans>Edit voucher details</Trans>
             </SheetTitle>
           </SheetHeader>

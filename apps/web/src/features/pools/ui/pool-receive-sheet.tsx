@@ -55,7 +55,7 @@ export function PoolReceiveSheet({
           {open ? (
             <>
               <SheetHeader>
-                <SheetTitle className="font-heading text-base font-semibold">
+                <SheetTitle>
                   <Trans>Receive vouchers</Trans>
                 </SheetTitle>
               </SheetHeader>

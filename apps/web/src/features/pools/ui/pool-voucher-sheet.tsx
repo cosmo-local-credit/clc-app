@@ -113,7 +113,7 @@ export function PoolVoucherSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               {voucher ? <Trans>Manage voucher</Trans> : <Trans>Approve voucher</Trans>}
             </SheetTitle>
           </SheetHeader>

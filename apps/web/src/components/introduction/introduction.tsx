@@ -32,7 +32,7 @@ export function Introduction({ replay = false, onExit }: Props) {
           <h1
             ref={heading}
             tabIndex={-1}
-            className="font-heading break-words text-3xl font-bold outline-none"
+            className="break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
           >
             <Trans id="intro.language">Choose your language</Trans>
           </h1>
@@ -70,7 +70,7 @@ export function Introduction({ replay = false, onExit }: Props) {
           <h1
             ref={heading}
             tabIndex={-1}
-            className="mb-4 font-heading break-words text-3xl font-bold leading-tight outline-none"
+            className="mb-4 break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
           >
             {i18n._(slide.title)}
           </h1>

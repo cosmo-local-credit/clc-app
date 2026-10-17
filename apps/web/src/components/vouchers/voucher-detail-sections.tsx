@@ -17,6 +17,7 @@ import { ReportList } from "#/components/reports/report-list";
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
@@ -194,22 +195,17 @@ function VoucherSection({
   children: ReactNode;
 }) {
   const headingID = `${idPrefix}-${id}`;
-  const headingClass =
-    headingLevel === 2
-      ? "mb-3 scroll-mt-4 font-heading text-[1.375rem] font-semibold leading-tight tracking-[-0.02em] focus:outline-none"
-      : "mb-3 scroll-mt-4 font-heading text-[1.125rem] font-semibold leading-tight tracking-[-0.015em] focus:outline-none";
 
   return (
     <section aria-labelledby={headingID}>
-      {headingLevel === 2 ? (
-        <h2 id={headingID} tabIndex={-1} className={headingClass}>
-          {title}
-        </h2>
-      ) : (
-        <h3 id={headingID} tabIndex={-1} className={headingClass}>
-          {title}
-        </h3>
-      )}
+      <SectionHeading
+        as={headingLevel === 2 ? "h2" : "h3"}
+        id={headingID}
+        tabIndex={-1}
+        className="mb-3 scroll-mt-4 focus:outline-none"
+      >
+        {title}
+      </SectionHeading>
       {children}
     </section>
   );

@@ -10,6 +10,7 @@ import { useConnection } from "wagmi";
 
 import { NfcCardPrompt, useNfcMessages } from "#/components/nfc-card-prompt";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Spinner } from "#/components/ui/spinner";
 import { StatusPill, TokenLogo, WalletAmountInput } from "#/components/wallet";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
@@ -277,9 +278,9 @@ export function CollectPage({ token }: { token?: string }) {
 
       {collection.submissions.length > 0 ? (
         <section className="mt-6" aria-label={t`Recent collections`}>
-          <h2 className="mb-2 font-heading text-[1.125rem] font-semibold tracking-tight">
+          <SectionHeading className="mb-2">
             <Trans>Recent collections</Trans>
-          </h2>
+          </SectionHeading>
           <ul className="border border-border bg-card">
             {collection.submissions.map((submission) => (
               <CollectionRow

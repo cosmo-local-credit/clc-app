@@ -302,7 +302,7 @@ function AppInner() {
           <DialogPortal>
             <DialogBackdrop />
             <DialogContent>
-              <DialogTitle className="text-base font-semibold">
+              <DialogTitle>
                 {address ? <Trans>Switch wallet?</Trans> : <Trans>Import paper wallet?</Trans>}
               </DialogTitle>
               <p className="text-muted-foreground mt-1 text-sm">

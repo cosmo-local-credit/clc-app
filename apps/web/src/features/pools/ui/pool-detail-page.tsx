@@ -108,7 +108,7 @@ export function PoolDetailPage({
         <div className="flex items-start gap-3">
           <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
           <div className="min-w-0 flex-1 overflow-hidden">
-            <h1 className="truncate font-heading text-[1.375rem] font-bold leading-tight">
+            <h1 className="truncate font-heading text-[1.75rem] font-bold leading-tight">
               {pool.name}
             </h1>
             <p

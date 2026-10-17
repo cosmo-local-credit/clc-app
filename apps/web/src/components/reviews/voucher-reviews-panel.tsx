@@ -2,6 +2,7 @@ import { canWriteReview, REVIEW_STARS, type VoucherReview } from "@clc/core/feat
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { useVoucherReviews } from "#/features/reviews/hooks/use-voucher-reviews";
 import { ReviewEditor, ReviewStars } from "./review-editor";
 
@@ -94,7 +95,9 @@ export function VoucherReviewsPanel({
         <div className="border border-border bg-card p-4">
           <div className="flex items-center gap-5">
             <div className="shrink-0 text-center">
-              <p className="font-heading text-4xl font-bold">{summaryAverage.toFixed(1)}</p>
+              <p className="font-heading text-[1.75rem] font-bold leading-tight">
+                {summaryAverage.toFixed(1)}
+              </p>
               <ReviewStars stars={summaryAverage} />
               <p className="mt-1 text-xs text-muted-foreground">
                 <Trans>{summaryTotal} reviews</Trans>
@@ -161,9 +164,9 @@ export function VoucherReviewsPanel({
             <>
               {viewer?.review ? (
                 <div className="space-y-2">
-                  <h3 className="text-sm font-semibold">
+                  <SectionHeading variant="group" as="h3">
                     <Trans>Your review</Trans>
-                  </h3>
+                  </SectionHeading>
                   <ReviewStars stars={viewer.review.stars} />
                   <p className="text-sm break-words whitespace-pre-wrap">{viewer.review.comment}</p>
                 </div>
@@ -222,9 +225,9 @@ export function VoucherReviewsPanel({
               ) : null}
               {review.reply ? (
                 <div className="space-y-1 border-l-2 border-primary bg-muted/40 p-3">
-                  <h3 className="text-xs font-semibold">
+                  <SectionHeading variant="group" as="h3">
                     <Trans>Owner reply</Trans>
-                  </h3>
+                  </SectionHeading>
                   <p className="text-sm break-words whitespace-pre-wrap">{review.reply}</p>
                 </div>
               ) : null}

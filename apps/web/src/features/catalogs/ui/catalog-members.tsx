@@ -9,6 +9,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
 
@@ -29,9 +30,9 @@ export function CatalogMembers({
   );
   return (
     <section className="space-y-3" aria-labelledby={`catalog-${kind}-title`}>
-      <h2 id={`catalog-${kind}-title`} className="font-heading text-[1.375rem] font-semibold">
+      <SectionHeading id={`catalog-${kind}-title`}>
         {kind === "pool" ? <Trans>Pools</Trans> : <Trans>Vouchers</Trans>}
-      </h2>
+      </SectionHeading>
       {query.isPending ? (
         <p role="status">
           <Trans>Loading…</Trans>

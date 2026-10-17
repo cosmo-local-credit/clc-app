@@ -231,10 +231,7 @@ function VoucherCard({
           onIdentityDoubleClick={snap === "full" ? undefined : () => onSnapChange("full")}
           title={
             <div className="flex min-w-0 items-baseline gap-2">
-              <MapSheetTitle
-                dir="auto"
-                className="min-w-0 truncate font-heading font-semibold text-[1.375rem] leading-tight tracking-[-0.02em]"
-              >
+              <MapSheetTitle dir="auto" className="min-w-0 truncate">
                 {name}
               </MapSheetTitle>
               <span

@@ -15,6 +15,7 @@ import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import {
   SheetBackdrop,
   SheetContent,
@@ -112,9 +113,9 @@ export function TopUpPage() {
       <div className="space-y-5">
         <section aria-labelledby="add-stables-title" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <h2 id="add-stables-title" className="font-heading font-semibold text-base">
+            <SectionHeading id="add-stables-title">
               <Trans>Add stables</Trans>
-            </h2>
+            </SectionHeading>
           </div>
 
           <button
@@ -140,9 +141,9 @@ export function TopUpPage() {
 
         <section aria-labelledby="withdraw-title" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <h2 id="withdraw-title" className="font-heading font-semibold text-base">
+            <SectionHeading id="withdraw-title">
               <Trans>Withdraw</Trans>
-            </h2>
+            </SectionHeading>
           </div>
 
           <button
@@ -300,7 +301,7 @@ function AddStablesSheet({
             <div className="flex items-center gap-3">
               <PretiumLogo />
               <div>
-                <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+                <SheetTitle>
                   <Trans>Add stables</Trans>
                 </SheetTitle>
                 <p className="text-muted-foreground text-xs">
@@ -438,9 +439,9 @@ function PretiumHistory({
 
   return (
     <section aria-labelledby="pretium-history-title" className="space-y-2">
-      <h2 id="pretium-history-title" className="font-heading font-semibold text-base">
+      <SectionHeading id="pretium-history-title">
         <Trans>Pretium history</Trans>
-      </h2>
+      </SectionHeading>
       <div className="border border-border bg-card">
         {isPending ? (
           <div className="p-4 text-muted-foreground text-sm">

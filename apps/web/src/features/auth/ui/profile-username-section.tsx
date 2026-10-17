@@ -97,7 +97,7 @@ export function ProfileUsernameSection({ profile }: { profile: ProfileResult }) 
           <SheetBackdrop />
           <SheetContent>
             <SheetHeader>
-              <SheetTitle className="font-heading text-base font-semibold">
+              <SheetTitle>
                 {username ? <Trans>Change username</Trans> : <Trans>Choose username</Trans>}
               </SheetTitle>
             </SheetHeader>

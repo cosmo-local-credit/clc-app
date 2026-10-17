@@ -9,6 +9,7 @@ import { LanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { BackChevron } from "#/components/wallet";
 import { useInstallStore } from "../install-store";
 
@@ -96,9 +97,9 @@ export function InstallPage({ from }: { from?: "settings" }) {
           <>
             <InstallAppButton size="lg" />
             <div className="space-y-3 border border-border bg-card p-4">
-              <h2>
+              <SectionHeading>
                 <Trans>Add CLC to your phone</Trans>
-              </h2>
+              </SectionHeading>
               <InstallInstructions />
             </div>
           </>
@@ -116,9 +117,9 @@ export function InstallPage({ from }: { from?: "settings" }) {
         className="space-y-3 border-t border-border pt-6"
         aria-labelledby="share-install-title"
       >
-        <h2 id="share-install-title">
+        <SectionHeading id="share-install-title">
           <Trans>Share CLC</Trans>
-        </h2>
+        </SectionHeading>
         <Input
           aria-label={t`Installation link`}
           value={shareUrl}

@@ -6,6 +6,7 @@ import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
@@ -181,9 +182,9 @@ export function AllVouchersPage() {
         <div className="space-y-6">
           {voucherGroups.holdings.length > 0 ? (
             <section aria-labelledby="holdings-title">
-              <h2 id="holdings-title" className="font-heading mb-2 text-base font-semibold">
+              <SectionHeading id="holdings-title" className="mb-2">
                 <Trans>Holdings</Trans>
-              </h2>
+              </SectionHeading>
               <div className="border-border bg-card border">
                 {renderGroup(voucherGroups.holdings)}
               </div>
@@ -191,9 +192,9 @@ export function AllVouchersPage() {
           ) : null}
           {voucherGroups.issued.length > 0 || (!vouchersQuery.hasNextPage && !unresolved) ? (
             <section aria-labelledby="my-vouchers-title">
-              <h2 id="my-vouchers-title" className="font-heading mb-2 text-base font-semibold">
+              <SectionHeading id="my-vouchers-title" className="mb-2">
                 <Trans>My Vouchers</Trans>
-              </h2>
+              </SectionHeading>
               <div className="border-border bg-card border">
                 {voucherGroups.issued.length === 0 ? (
                   <p className="text-muted-foreground p-3 text-sm">

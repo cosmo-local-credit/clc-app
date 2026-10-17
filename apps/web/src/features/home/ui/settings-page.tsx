@@ -19,6 +19,7 @@ import { ThemeSettingsRow } from "#/components/theme-selector";
 import { ActionRow } from "#/components/ui/action-row";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { SettingsSheet } from "#/components/ui/settings-sheet";
 import { VisibilitySettingsRow } from "#/components/visibility-selector";
 import { EllipsizedAddress, HighlightAddress } from "#/components/wallet";
@@ -163,9 +164,9 @@ function SettingsGroup({ label, children }: { label: string; children: ReactNode
   const id = useId();
   return (
     <section aria-labelledby={id}>
-      <h2 id={id} className="mb-2 font-heading font-semibold text-foreground text-sm">
+      <SectionHeading id={id} variant="group" className="mb-2 text-foreground">
         {label}
-      </h2>
+      </SectionHeading>
       <div className="border border-border bg-card">{children}</div>
     </section>
   );
