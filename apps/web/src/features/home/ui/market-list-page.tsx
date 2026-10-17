@@ -1,12 +1,13 @@
 import { haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
-import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { MarketBar } from "#/components/market-bar";
+import { MissingLocationNotice } from "#/components/nearby-catalog";
+import { Badge } from "#/components/ui/badge";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -21,11 +22,9 @@ import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./
 const MARKET_LIST_BATCH_SIZE = 20;
 
 export function MarketListPage({
-  onboardingBanner,
   locationOwner = GUEST_STORAGE_OWNER,
   creditableSearch,
 }: {
-  onboardingBanner?: ReactNode;
   locationOwner?: string;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 }) {
@@ -45,7 +44,7 @@ export function MarketListPage({
     filtersEverOpened,
     credit.enabled ? credit.poolRefs : undefined,
   );
-  const { vouchers, isCatalogComplete, error, retry } = catalog;
+  const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -114,15 +113,16 @@ export function MarketListPage({
   });
 
   return (
-    <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
+    <main className="relative min-h-[100svh] bg-background px-4 pb-market-list">
       <div>
         <h1 className="sr-only">
           <Trans>Vouchers</Trans>
         </h1>
-        <MarketplaceSearchShell
+        <MarketBar
           current="vouchers"
           className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-          search={<CatalogSearchField filter={filter} label={t`Search by name or symbol`} />}
+          filter={filter}
+          searchLabel={t`Search by name or symbol`}
           credit={
             <CreditableBrowseControl
               part="control"
@@ -154,8 +154,7 @@ export function MarketListPage({
             />
           }
         />
-
-        {onboardingBanner ? <div className="mt-3">{onboardingBanner}</div> : null}
+        <MissingLocationNotice className="mt-3" />
 
         <div className="mt-3">
           <CreditableBrowseControl
@@ -177,7 +176,7 @@ export function MarketListPage({
           />
         </div>
 
-        <MarketFilterFeedback filter={filter} error={error} onRetry={retry} />
+        <MarketFilterFeedback filter={filter} error={error} onRetry={retry} retrying={retrying} />
 
         {!credit.blocksResults &&
         !error &&
@@ -265,15 +264,15 @@ function MarketVoucherRow({
       />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">
-          <span className="truncate font-heading text-sm font-semibold">{voucher.name}</span>
-          <span className="shrink-0 font-mono text-[0.6875rem] text-muted-foreground">
+          <span className="truncate text-sm font-semibold">{voucher.name}</span>
+          <span className="shrink-0 font-mono text-2xs text-muted-foreground">
             {voucher.symbol}
           </span>
         </span>
         <span className="mt-1 flex min-w-0 items-center gap-2">
-          <span className="shrink-0 border border-border bg-background px-1.5 py-0.5 text-[0.6875rem] text-muted-foreground">
+          <Badge variant="muted" size="sm">
             {kindLabel}
-          </span>
+          </Badge>
           {distanceLabel ? (
             <span className="truncate text-muted-foreground text-xs">{distanceLabel}</span>
           ) : voucher.locationName ? (

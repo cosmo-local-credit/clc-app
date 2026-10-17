@@ -27,6 +27,7 @@ import { InfoRow } from "#/components/ui/info-row";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { MarkdownContent } from "#/components/ui/markdown-content";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { BackChevron, EllipsizedAddress } from "#/components/wallet";
@@ -49,9 +50,9 @@ export function ReportPage({ reportId }: { reportId: string }) {
       <ReportShell message={t`Couldn't load this post.`}>
         <Button
           variant="outline"
-          size="sm"
-          className="bg-card"
-          onClick={() => reportQuery.refetch()}
+          size="lg"
+          pending={reportQuery.isFetching}
+          onClick={() => void reportQuery.refetch()}
         >
           <Trans>Retry</Trans>
         </Button>
@@ -81,7 +82,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
               {report.title}
             </h1>
             {isAuthor ? (
-              <Button asChild variant="outline" size="sm" className="h-9 shrink-0 bg-card">
+              <Button asChild variant="outline" tap>
                 <Link to="/posts/$reportId/edit" params={{ reportId: report.id }}>
                   <Trans>Edit</Trans>
                 </Link>
@@ -121,10 +122,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
         ) : null}
 
         {report.description ? (
-          <p
-            dir="auto"
-            className="whitespace-pre-wrap text-[0.9375rem] leading-6 [overflow-wrap:anywhere]"
-          >
+          <p dir="auto" className="whitespace-pre-wrap leading-6 [overflow-wrap:anywhere]">
             {report.description}
           </p>
         ) : null}
@@ -197,15 +195,17 @@ function ReportGallery({ images, title }: { images: ReportImage[]; title: string
 
         <CarouselPrevious
           label={t`Previous image`}
-          className="start-2 size-11 border-transparent bg-background/80 text-foreground"
+          tap
+          className="start-2 border-transparent bg-background/80 text-foreground"
         />
         <CarouselNext
           label={t`Next image`}
-          className="end-2 size-11 border-transparent bg-background/80 text-foreground"
+          tap
+          className="end-2 border-transparent bg-background/80 text-foreground"
         />
         <p
           aria-live="polite"
-          className="absolute end-2 bottom-2 bg-background/80 px-2 py-0.5 font-mono text-[0.6875rem] font-semibold tabular-nums"
+          className="absolute end-2 bottom-2 bg-background/80 px-2 py-0.5 text-2xs font-semibold tabular-nums"
         >
           <Trans>
             {current} / {images.length}
@@ -326,15 +326,17 @@ function FullScreenCarousel({
       </CarouselContent>
       <CarouselPrevious
         label={t`Previous image`}
-        className="start-3 size-11 border-white/30 bg-black/70 text-white"
+        size="icon-lg"
+        className="start-3 border-white/30 bg-black/70 text-white"
       />
       <CarouselNext
         label={t`Next image`}
-        className="end-3 size-11 border-white/30 bg-black/70 text-white"
+        size="icon-lg"
+        className="end-3 border-white/30 bg-black/70 text-white"
       />
       <p
         aria-live="polite"
-        className="absolute end-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 font-mono text-white text-xs tabular-nums"
+        className="absolute end-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 text-white text-xs tabular-nums"
       >
         <Trans>
           {current} / {images.length}
@@ -402,12 +404,9 @@ function ReportDetails({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="report-details-heading">
-      <h2
-        id="report-details-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-details-heading">
         <Trans>Report details</Trans>
-      </h2>
+      </SectionHeading>
       <dl className="mt-2 border border-border bg-card">
         {period ? <InfoRow label={t`Report period`}>{period}</InfoRow> : null}
         {report.hostName ? (
@@ -436,12 +435,9 @@ function ReportAttachments({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="report-attachments-heading">
-      <h2
-        id="report-attachments-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-attachments-heading">
         <Trans>Links</Trans>
-      </h2>
+      </SectionHeading>
       <ul className="mt-2 border border-border bg-card">
         {report.attachments.map((attachment) => (
           <li
@@ -492,12 +488,9 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="related-vouchers-heading">
-      <h2
-        id="related-vouchers-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="related-vouchers-heading">
         <Trans>Related vouchers</Trans>
-      </h2>
+      </SectionHeading>
       <div className="mt-2 border border-border bg-card">
         {report.vouchers.map((voucher) => (
           <Link
@@ -508,10 +501,7 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
             className="flex min-h-12 w-full items-center gap-2 border-b border-border px-3 py-2 text-start last:border-b-0 active:bg-muted"
           >
             <span className="min-w-0 flex-1 truncate text-sm">{voucher.name}</span>
-            <Badge
-              variant="outline"
-              className="h-5 max-w-20 truncate px-1.5 font-mono text-[0.625rem] text-info"
-            >
+            <Badge variant="outline" size="sm" className="max-w-20 truncate font-mono text-info">
               {voucher.symbol}
             </Badge>
             <RiArrowRightSLine
@@ -531,12 +521,9 @@ function ReportProvenance({ report }: { report: ReportDetail }) {
 
   return (
     <section aria-labelledby="report-provenance-heading">
-      <h2
-        id="report-provenance-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-provenance-heading">
         <Trans>Report provenance</Trans>
-      </h2>
+      </SectionHeading>
       <dl className="mt-2 border border-border bg-card">
         <InfoRow label={t`Author`}>
           {report.authorAddress ? <EllipsizedAddress address={report.authorAddress} /> : "—"}
@@ -557,14 +544,11 @@ function ReportLocation({ report, label }: { report: ReportDetail; label: string
 
   return (
     <section aria-labelledby="report-location-heading">
-      <h2
-        id="report-location-heading"
-        className="font-heading text-[1.125rem] font-semibold leading-snug"
-      >
+      <SectionHeading id="report-location-heading">
         <Trans>Location</Trans>
-      </h2>
+      </SectionHeading>
       <div className="mt-2 border border-border bg-card p-4">
-        <p className="font-heading text-sm font-semibold leading-snug">{label}</p>
+        <p className="text-sm font-semibold leading-snug">{label}</p>
         {hasCoordinates && report.lat !== null && report.lng !== null ? (
           <>
             <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>
@@ -576,7 +560,8 @@ function ReportLocation({ report, label }: { report: ReportDetail; label: string
             </Suspense>
             <Button
               variant="outline"
-              className="mt-3 h-11 w-full bg-card"
+              tap
+              className="mt-3 w-full"
               onClick={() => openDefaultMaps({ label, lat: report.lat, lng: report.lng })}
             >
               <RiNavigationLine className="size-4" aria-hidden="true" />

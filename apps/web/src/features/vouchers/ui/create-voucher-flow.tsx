@@ -32,7 +32,6 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -145,6 +144,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const checkNameAvailable = useNameAvailabilityValidator("voucher");
   const [tagsOpen, setTagsOpen] = useState(false);
   const [iconBusy, setIconBusy] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
 
   const defaultValues: VoucherFormValues = draft
     ? {
@@ -314,13 +314,20 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   }
 
   async function goToPlace() {
-    // Blur may not have fired, or its lookup may still be in flight.
-    await fillSuggestedSymbol();
-    if (!(await fieldsAreValid(DETAIL_FIELDS))) {
-      if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
-        if (advancedRef.current) advancedRef.current.open = true;
+    // The symbol lookup and the name check reach the backend, so Next waits
+    // visibly rather than looking dead.
+    setAdvancing(true);
+    try {
+      // Blur may not have fired, or its lookup may still be in flight.
+      await fillSuggestedSymbol();
+      if (!(await fieldsAreValid(DETAIL_FIELDS))) {
+        if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
+          if (advancedRef.current) advancedRef.current.open = true;
+        }
+        return;
       }
-      return;
+    } finally {
+      setAdvancing(false);
     }
     void navigate({ to: "/vouchers/create/$step", params: { step: "place" } });
   }
@@ -476,7 +483,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {([supply, price, unit, name]) => {
                   const value = formatOfferingDisplayPrice(supply, price, unit, name);
                   return value ? (
-                    <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                    <p className="-mt-2 text-muted-foreground text-xs tabular-nums">
                       <Trans>
                         Value: {value.value} {value.unit} of offerings
                       </Trans>
@@ -616,7 +623,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     {([name, price, unit]) => {
                       const voucherName = name.trim() || t`voucher`;
                       return (
-                        <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                        <p className="-mt-2 text-muted-foreground text-xs tabular-nums">
                           {`1 ${voucherName} = ${price || "—"} ${unit}`}
                         </p>
                       );
@@ -627,7 +634,13 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </div>
 
             <div className="mt-auto pt-6">
-              <Button type="button" className="h-11 w-full" onClick={() => void goToPlace()}>
+              <Button
+                type="button"
+                size="lg"
+                className="w-full"
+                pending={advancing}
+                onClick={() => void goToPlace()}
+              >
                 <Trans>Next</Trans>
               </Button>
             </div>
@@ -721,10 +734,10 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         </p>
                         <Button
                           type="button"
-                          size="sm"
                           variant="outline"
-                          className="bg-card"
-                          onClick={() => tagsQuery.refetch()}
+                          tap
+                          pending={tagsQuery.isFetching}
+                          onClick={() => void tagsQuery.refetch()}
                         >
                           <Trans>Retry</Trans>
                         </Button>
@@ -918,13 +931,11 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             <div className="mt-auto pt-6">
               <Button
                 type="button"
-                className="h-11 w-full"
-                disabled={iconBusy}
+                size="lg"
+                className="w-full"
+                pending={iconBusy}
                 onClick={() => void goToReview()}
               >
-                {iconBusy ? (
-                  <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-                ) : null}
                 {iconBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
               </Button>
             </div>
@@ -945,7 +956,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   </dl>
                   {values.terms !== "" && !isHttpUrl(values.terms) ? (
                     <div className="mt-3.5 border border-border bg-card p-4">
-                      <p className="font-heading text-sm font-semibold leading-snug">
+                      <p className="text-sm font-semibold leading-snug">
                         <Trans>Terms</Trans>
                       </p>
                       <MarkdownContent className="mt-2">{values.terms}</MarkdownContent>
@@ -975,18 +986,11 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {([isSubmitting, acceptedTerms]) => (
                   <Button
                     type="submit"
-                    className="h-11 w-full"
-                    disabled={
-                      !acceptedTerms ||
-                      isSubmitting ||
-                      deployVoucher.isPending ||
-                      usage.isError ||
-                      !usage.data?.vouchers.canCreate
-                    }
+                    size="lg"
+                    className="w-full"
+                    disabled={!acceptedTerms || usage.isError || !usage.data?.vouchers.canCreate}
+                    pending={isSubmitting || deployVoucher.isPending}
                   >
-                    {isSubmitting || deployVoucher.isPending ? (
-                      <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-                    ) : null}
                     {isSubmitting || deployVoucher.isPending ? (
                       <Trans>Publishing…</Trans>
                     ) : (

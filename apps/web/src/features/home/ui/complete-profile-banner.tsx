@@ -41,7 +41,7 @@ export function CompleteProfileBanner({ address }: { address?: string }) {
         <p className="font-medium text-sm">
           <Trans>Complete your profile</Trans>
         </p>
-        <Button asChild variant="outline" className="mt-2">
+        <Button asChild variant="outline" tap className="mt-2">
           <Link to="/settings/profile">
             <Trans>Edit profile</Trans>
           </Link>
@@ -50,6 +50,7 @@ export function CompleteProfileBanner({ address }: { address?: string }) {
       <Button
         variant="ghost"
         size="icon"
+        tap
         aria-label={t`Dismiss`}
         onClick={() => {
           writeOwnerScoped(owner, DISMISSED_KEY, "1");

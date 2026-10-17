@@ -129,9 +129,9 @@ export function VoucherDetailPage({
       <VoucherShell back={back} message={t`Couldn't load this voucher.`}>
         <Button
           variant="outline"
-          size="sm"
-          className="bg-card"
-          onClick={() => detailQuery.refetch()}
+          size="lg"
+          pending={detailQuery.isFetching}
+          onClick={() => void detailQuery.refetch()}
         >
           {t`Retry`}
         </Button>

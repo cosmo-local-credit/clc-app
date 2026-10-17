@@ -294,7 +294,8 @@ describe("PostsPage", () => {
     expect(time?.className).toContain("items-center");
     expect(time?.className).toContain("text-xs");
     expect(voucher.parentElement?.className).toContain("h-full");
-    expect(voucher.className).toContain("h-full");
+    // The small Badge is the row's own 20px, so it centres beside the date.
+    expect(voucher.className).toContain("h-5");
   });
 
   it("lazy-loads the main image so a page of rows costs no bytes up front", () => {

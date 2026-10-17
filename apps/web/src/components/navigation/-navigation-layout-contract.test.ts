@@ -12,7 +12,7 @@ describe("bottom-navigation layout contract", () => {
   it("preserves safe-area clearance for navigation content and Market controls", () => {
     const styles = source("styles.css");
     const marketMap = source("features/home/ui/market-page.tsx");
-    const marketList = source("features/home/ui/market-list-page.tsx");
+    const marketBar = source("components/market-bar.tsx");
 
     expect(styles).toContain("--bottom-nav-offset: 0px");
     expect(styles).toContain("@utility pb-bottom-nav");
@@ -20,7 +20,14 @@ describe("bottom-navigation layout contract", () => {
     expect(
       marketMap.match(/max\(var\(--bottom-nav-offset\),env\(safe-area-inset-bottom\)\)\+1\.25rem/g),
     ).toHaveLength(1);
-    expect(marketList).toContain("max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem");
+    // The lists clear the navigation and the Map button floating above it.
+    expect(marketBar).toContain(
+      "bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1rem)]",
+    );
+    expect(styles).toContain("@utility pb-market-list");
+    expect(styles).toContain(
+      "calc(max(var(--bottom-nav-offset), env(safe-area-inset-bottom)) + 5.5rem)",
+    );
   });
 
   it("stacks navigation below shared backdrops and popup content", () => {

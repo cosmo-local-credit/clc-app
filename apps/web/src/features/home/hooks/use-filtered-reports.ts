@@ -186,6 +186,8 @@ export type ReportFeed = {
   status: "loading" | "refining" | "ready" | "error";
   error: Error | null;
   retry: () => void;
+  /** The list is loading again after `retry`. */
+  retrying: boolean;
   tagFacets: ReportTagFacet[];
   voucherFacets: ReportVoucherFacet[];
   hasMore: boolean;
@@ -200,6 +202,7 @@ export function useReportFeed(
     isPending: boolean;
     error: Error | null;
     retry: () => void;
+    retrying: boolean;
     hasNextPage: boolean;
     fetchNextPage: () => void;
     isFetchingNextPage: boolean;
@@ -254,6 +257,7 @@ export function useReportFeed(
         status: unfiltered.error ? "error" : unfiltered.isPending ? "loading" : "ready",
         error: unfiltered.error,
         retry: unfiltered.retry,
+        retrying: unfiltered.retrying,
         tagFacets: chipFacets,
         voucherFacets,
         hasMore: unfiltered.hasNextPage,
@@ -269,6 +273,7 @@ export function useReportFeed(
       status: state.status === "disabled" ? "ready" : state.status,
       error: state.status === "error" ? state.error : null,
       retry: () => void filtered.refetch(),
+      retrying: filtered.isFetching,
       tagFacets: chipFacets,
       voucherFacets,
       hasMore: false,

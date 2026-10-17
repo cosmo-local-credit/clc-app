@@ -1,12 +1,12 @@
 import { isAddress } from "viem";
 
 /**
- * The search keys of any screen that opens vouchers in the card sheet.
+ * `?voucher=` on the market map: a link that centres the map on a voucher and
+ * selects its pin. Older links on other screens redirect to the voucher page.
  *
  * `voucher` is typed as a string because other routes name a `voucher` too,
  * and links spread one route's search into another's; `parseVoucherAddress`
- * admits only an address. Legacy `voucherTab` values are intentionally ignored:
- * the sheet is now one continuous view.
+ * admits only an address. Legacy `voucherTab` values are intentionally ignored.
  */
 export type VoucherSheetSearch = {
   voucher?: string;

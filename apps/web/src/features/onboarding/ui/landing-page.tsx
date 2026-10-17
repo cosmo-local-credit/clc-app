@@ -28,7 +28,7 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
   }
 
   return (
-    <div className="relative mx-auto flex min-h-[100svh] w-full max-w-lg flex-col bg-background px-6 pt-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="relative flex min-h-[100svh] flex-col bg-background px-6 pt-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <OnboardingMenu />
       <div className="mt-8 flex flex-col gap-6">
         <CLCLogo className="size-14" sharp />
@@ -36,7 +36,7 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
             <Trans>Cosmo-Local Credit</Trans>
           </h1>
-          <p className="text-muted-foreground text-[0.9375rem] leading-relaxed">
+          <p className="text-muted-foreground leading-relaxed">
             <Trans>
               Cosmo-Local Credit helps people and organizations support, share, and exchange goods
               and services.
@@ -54,10 +54,10 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
       </div>
 
       <div className="space-y-3 pt-8 pb-2">
-        <Button className="h-11 w-full" onClick={() => go("profile")}>
+        <Button size="lg" className="w-full" onClick={() => go("profile")}>
           <Trans>Create account</Trans>
         </Button>
-        <Button variant="outline" className="h-11 w-full" onClick={() => go("signin")}>
+        <Button variant="outline" size="lg" className="w-full" onClick={() => go("signin")}>
           <Trans>I already have an account</Trans>
         </Button>
         <InstallAppLink openDialog />

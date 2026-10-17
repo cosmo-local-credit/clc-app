@@ -7,28 +7,25 @@ import { clearIdentitySecrets, clearScopedQueries } from "#/features/auth/api/id
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { clearPersistedLocation } from "#/features/home/api/last-location-storage";
+import { clearMarketCamera } from "#/features/home/api/market-camera-storage";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
-import { MarketListPage } from "./market-list-page";
 import { MarketPage } from "./market-page";
-import { OnboardingBanner } from "./onboarding-banner";
 import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
-import { isPrivateHomeTab, type HomeTab, type MarketView } from "#/lib/navigation/home-tabs";
+import { isPrivateHomeTab, type HomeTab } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
 
 export type HomePageProps = {
   activeTab?: HomeTab;
-  marketView?: MarketView;
   isAuthenticated?: boolean;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 };
 
 export function HomePage({
   activeTab = "market",
-  marketView = "map",
   isAuthenticated = true,
   creditableSearch,
 }: HomePageProps) {
@@ -59,8 +56,10 @@ export function HomePage({
     // only ever cleaned up after itself, so a paper-wallet sign-out left a
     // passkey registered during the session behind for the next person to use.
     clearIdentitySecrets("none");
-    // Drop the precise location too. It must not survive on a shared device.
+    // Drop the precise location too, and the last view of the map, which can
+    // show the same thing. Neither may survive on a shared device.
     clearPersistedLocation();
+    clearMarketCamera();
     clearScopedQueries(queryClient);
     setIsSigningOut(true);
     try {
@@ -83,20 +82,12 @@ export function HomePage({
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        <NearbyCatalog>
-          {marketView === "map" ? (
-            <MarketPage
-              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-              isAuthenticated={isAuthenticated}
-              locationOwner={locationOwner}
-              creditableSearch={creditableSearch}
-            />
-          ) : (
-            <MarketListPage
-              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-              locationOwner={locationOwner}
-            />
-          )}
+        <NearbyCatalog allowMissingLocation>
+          <MarketPage
+            isAuthenticated={isAuthenticated}
+            locationOwner={locationOwner}
+            creditableSearch={creditableSearch}
+          />
         </NearbyCatalog>
       ) : (
         <div className="min-h-[100svh] pb-bottom-nav">

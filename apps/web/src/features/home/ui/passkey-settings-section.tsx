@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
-import { RiFingerprintLine, RiLoader4Line } from "react-icons/ri";
+import { RiFingerprintLine } from "react-icons/ri";
 
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
@@ -25,7 +25,6 @@ export function PasskeySettingsSection({
   const [open, setOpen] = useState(false);
   const passkey = useLinkPasskey(address);
   const { state } = passkey;
-  const disabled = passkey.busy || isSigningOut;
   const { platformLabel } = passkey;
 
   let description: string | null = null;
@@ -138,25 +137,35 @@ export function PasskeySettingsSection({
           canRetryStatus || canLink || canSwitch ? (
             <>
               {canRetryStatus ? (
-                <Button variant="outline" className="h-11 w-full" onClick={passkey.retryStatus}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  pending={passkey.retryingStatus}
+                  onClick={passkey.retryStatus}
+                >
                   <Trans>Try again</Trans>
                 </Button>
               ) : null}
               {canLink ? (
-                <Button className="h-11 w-full" onClick={passkey.link} disabled={disabled}>
-                  {passkey.busy ? (
-                    <RiLoader4Line className="animate-spin" aria-hidden="true" />
-                  ) : (
-                    <RiFingerprintLine aria-hidden="true" />
-                  )}
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={passkey.link}
+                  disabled={isSigningOut}
+                  pending={passkey.busy}
+                >
+                  <RiFingerprintLine aria-hidden="true" />
                   {passkey.busy ? <Trans>Linking passkey…</Trans> : <Trans>Link a passkey</Trans>}
                 </Button>
               ) : null}
               {canSwitch ? (
                 <Button
-                  className="h-11 w-full"
+                  size="lg"
+                  className="w-full"
                   onClick={passkey.retryConnection}
-                  disabled={disabled}
+                  disabled={isSigningOut}
+                  pending={passkey.busy}
                 >
                   {passkey.busy ? <Trans>Connecting…</Trans> : <Trans>Retry connection</Trans>}
                 </Button>

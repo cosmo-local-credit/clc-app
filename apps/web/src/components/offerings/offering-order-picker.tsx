@@ -114,7 +114,7 @@ export function OfferingOrderPicker({
                   <span dir="auto" className="block font-semibold text-sm [overflow-wrap:anywhere]">
                     {offering.name}
                   </span>
-                  <span className="mt-0.5 block font-mono text-primary text-xs">
+                  <span className="mt-0.5 block text-primary text-xs tabular-nums">
                     {price ? (
                       `${formatOfferingDisplayValue(price.value, locale) ?? price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
                     ) : (
@@ -138,7 +138,7 @@ export function OfferingOrderPicker({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="size-11 bg-card"
+                      tap
                       disabled={line.quantity === "1"}
                       aria-label={t`Decrease ${offering.name} quantity`}
                       onClick={() => changeQuantity(offering.id, -1n)}
@@ -146,7 +146,7 @@ export function OfferingOrderPicker({
                       <RiSubtractLine aria-hidden="true" />
                     </Button>
                     <output
-                      className="min-w-10 text-center font-mono text-sm tabular-nums"
+                      className="min-w-10 text-center text-sm tabular-nums"
                       aria-label={t`${offering.name} quantity`}
                     >
                       {new Intl.NumberFormat(locale).format(BigInt(line.quantity))}
@@ -155,14 +155,14 @@ export function OfferingOrderPicker({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="size-11 bg-card"
+                      tap
                       aria-label={t`Increase ${offering.name} quantity`}
                       onClick={() => changeQuantity(offering.id, 1n)}
                     >
                       <RiAddLine aria-hidden="true" />
                     </Button>
                   </div>
-                  <span className="text-end font-mono text-primary text-xs">
+                  <span className="text-end text-primary text-xs tabular-nums">
                     {line.pricing === "fixed" ? (
                       <>
                         {formatOfferingDisplayValue(line.lineTotal.value, locale) ??
@@ -204,7 +204,7 @@ function OrderSummaryRow({ label, value }: { label: React.ReactNode; value: stri
   return (
     <div className="flex min-h-11 items-center justify-between gap-3 border border-border bg-card px-3 py-2">
       <span className="font-semibold text-sm">{label}</span>
-      <span className="text-end font-mono font-semibold text-primary text-sm">{value}</span>
+      <span className="text-end font-semibold text-primary text-sm tabular-nums">{value}</span>
     </div>
   );
 }

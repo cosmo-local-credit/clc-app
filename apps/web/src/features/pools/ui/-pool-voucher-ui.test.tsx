@@ -861,7 +861,7 @@ describe("pool voucher UI", () => {
     // in, so it alone is outlined in the brand colour.
     for (const input of [receiveInput, sendInput]) {
       expect(input.className).toContain("h-9");
-      expect(input.className).toContain("text-[1.375rem]");
+      expect(input.className).toContain("text-xl");
     }
     expect(receiveInput.className).toContain("border-primary");
     expect(sendInput.className).not.toContain("border-primary");

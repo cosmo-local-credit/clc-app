@@ -66,6 +66,8 @@ export type CreditablePoolsResult = {
   isRefreshing: boolean;
   hasVerificationGaps: boolean;
   retry: () => void;
+  /** Any of the reads is running, including again after `retry`. */
+  retrying: boolean;
 };
 
 type PoolCreditCapacityResult = {
@@ -165,16 +167,13 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
     : loading
       ? "loading"
       : "ready";
+  const fetching =
+    holdings.isFetching || vocabulary.isFetching || candidates.isFetching || capacity.isFetching;
 
   return {
     pools,
     status,
-    isRefreshing:
-      status === "ready" &&
-      (holdings.isFetching ||
-        vocabulary.isFetching ||
-        candidates.isFetching ||
-        capacity.isFetching),
+    isRefreshing: status === "ready" && fetching,
     hasVerificationGaps:
       (capacity.data?.hasVerificationGaps ?? false) || (status === "ready" && backgroundError),
     retry: () => {
@@ -183,6 +182,7 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
       void candidates.refetch();
       if (candidatePools.length > 0) void capacity.refetch();
     },
+    retrying: fetching,
   };
 }
 

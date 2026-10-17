@@ -11,7 +11,7 @@ export function InstallAppLink({ openDialog = false }: { openDialog?: boolean })
   if (openDialog && !installed) return <InstallAppButton showHelpLink />;
   const Icon = installed ? RiShareLine : RiDownloadLine;
   return (
-    <Button asChild variant="outline" className="h-11 w-full">
+    <Button asChild variant="outline" tap className="w-full">
       <Link to="/install">
         <Icon aria-hidden="true" />
         {installed ? <Trans>Share CLC</Trans> : <Trans>Install CLC</Trans>}

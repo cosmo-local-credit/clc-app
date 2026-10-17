@@ -13,8 +13,8 @@ const toggleVariants = cva(
         outline: "border border-border bg-card",
       },
       size: {
-        default: "h-8 min-w-8 px-2",
-        sm: "h-7 min-w-7 px-1.5",
+        default: "h-9 min-w-9 px-3",
+        lg: "h-11 min-w-11 px-4 text-sm",
         icon: "size-9",
       },
     },

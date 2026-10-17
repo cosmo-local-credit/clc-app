@@ -15,6 +15,7 @@ import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import {
   SheetBackdrop,
   SheetContent,
@@ -112,9 +113,9 @@ export function TopUpPage() {
       <div className="space-y-5">
         <section aria-labelledby="add-stables-title" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <h2 id="add-stables-title" className="font-heading font-semibold text-base">
+            <SectionHeading id="add-stables-title">
               <Trans>Add stables</Trans>
-            </h2>
+            </SectionHeading>
           </div>
 
           <button
@@ -140,9 +141,9 @@ export function TopUpPage() {
 
         <section aria-labelledby="withdraw-title" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <h2 id="withdraw-title" className="font-heading font-semibold text-base">
+            <SectionHeading id="withdraw-title">
               <Trans>Withdraw</Trans>
-            </h2>
+            </SectionHeading>
           </div>
 
           <button
@@ -167,6 +168,7 @@ export function TopUpPage() {
           transactions={cashTransactions}
           isPending={!!cashAddress && transactionsQuery.isPending}
           isError={!!cashAddress && transactionsQuery.isError}
+          retrying={transactionsQuery.isFetching}
           onRetry={() => {
             void transactionsQuery.refetch();
           }}
@@ -299,7 +301,7 @@ function AddStablesSheet({
             <div className="flex items-center gap-3">
               <PretiumLogo />
               <div>
-                <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+                <SheetTitle>
                   <Trans>Add stables</Trans>
                 </SheetTitle>
                 <p className="text-muted-foreground text-xs">
@@ -333,7 +335,7 @@ function AddStablesSheet({
                     disabled={entryDisabled}
                     aria-invalid={amount !== "" && !hasValidAmount}
                     className={cn(
-                      "bg-transparent text-end font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                      "bg-transparent text-end text-sm font-semibold tabular-nums caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
                       amount !== "" && !hasValidAmount && "text-destructive",
                       entryDisabled && "opacity-50",
                     )}
@@ -351,7 +353,7 @@ function AddStablesSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>MPESA phone</Trans>
                 </span>
-                <span className="font-mono text-xs font-semibold">
+                <span className="text-xs font-semibold tabular-nums">
                   {profilePending ? "…" : phone || "—"}
                 </span>
               </div>
@@ -360,7 +362,7 @@ function AddStablesSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>You'll receive</Trans>
                 </span>
-                <span className="font-mono text-xs font-semibold">
+                <span className="text-xs font-semibold tabular-nums">
                   {ratesQuery.isPending ? (
                     <span className="text-muted-foreground">…</span>
                   ) : approxUsdt !== null ? (
@@ -401,8 +403,10 @@ function AddStablesSheet({
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button
-              className="h-11 w-full"
-              disabled={!canContinue || triggerOnramp.isPending}
+              size="lg"
+              className="w-full"
+              disabled={!canContinue}
+              pending={triggerOnramp.isPending}
               onClick={() => void onContinue()}
             >
               {triggerOnramp.isPending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
@@ -418,6 +422,7 @@ function PretiumHistory({
   transactions,
   isPending,
   isError,
+  retrying,
   onRetry,
   onSelectOnramp,
   onSelectOfframp,
@@ -425,6 +430,7 @@ function PretiumHistory({
   transactions: PretiumCashTransaction[];
   isPending: boolean;
   isError: boolean;
+  retrying: boolean;
   onRetry: () => void;
   onSelectOnramp: (transaction: PretiumCashTransaction) => void;
   onSelectOfframp: (transaction: PretiumCashTransaction) => void;
@@ -433,9 +439,9 @@ function PretiumHistory({
 
   return (
     <section aria-labelledby="pretium-history-title" className="space-y-2">
-      <h2 id="pretium-history-title" className="font-heading font-semibold text-base">
+      <SectionHeading id="pretium-history-title">
         <Trans>Pretium history</Trans>
-      </h2>
+      </SectionHeading>
       <div className="border border-border bg-card">
         {isPending ? (
           <div className="p-4 text-muted-foreground text-sm">
@@ -447,7 +453,7 @@ function PretiumHistory({
             <p className="text-muted-foreground text-sm">
               <Trans>Couldn't load Pretium history.</Trans>
             </p>
-            <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onRetry}>
+            <Button variant="outline" tap pending={retrying} onClick={onRetry}>
               <Trans>Try again</Trans>
             </Button>
           </div>
@@ -495,11 +501,11 @@ function PretiumHistory({
                 <p className={cn("font-medium text-sm", incoming && "text-primary")}>
                   {incoming ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}
                 </p>
-                <p className="truncate text-muted-foreground text-[0.6875rem]">
+                <p className="truncate text-muted-foreground text-xs">
                   {formatCashDate(transaction.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                 </p>
               </div>
-              <span className="shrink-0 font-mono text-xs font-semibold">
+              <span className="shrink-0 text-xs font-semibold tabular-nums">
                 KES {formatHistoryKes(transaction)}
               </span>
             </button>
@@ -541,7 +547,7 @@ function OnrampDetailsSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+            <Badge caps>
               <Trans>Onramp</Trans>
             </Badge>
             <SheetTitle className="sr-only">
@@ -556,10 +562,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Status</Trans>
                   </span>
-                  <Badge
-                    variant={isComplete ? "primary" : "muted"}
-                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
-                  >
+                  <Badge variant={isComplete ? "primary" : "muted"} size="sm" caps>
                     {onramp.status}
                   </Badge>
                 </div>
@@ -567,7 +570,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     KES {onramp.amountKes || "—"}
                   </span>
                 </div>
@@ -575,7 +578,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Date</Trans>
                   </span>
-                  <time className="font-mono text-xs font-semibold" dateTime={onramp.createdAt}>
+                  <time className="text-xs font-semibold" dateTime={onramp.createdAt}>
                     {formatCashDate(onramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>
@@ -607,7 +610,7 @@ function OnrampDetailsSheet({
 
           {hasTxHash ? (
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button asChild className="h-11 w-full">
+              <Button asChild size="lg" className="w-full">
                 <a href={explorerUrl} target="_blank" rel="noreferrer">
                   <Trans>View on block explorer</Trans>
                 </a>
@@ -652,7 +655,7 @@ function OfframpDetailsSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+            <Badge caps>
               <Trans>Offramp</Trans>
             </Badge>
             <SheetTitle className="sr-only">
@@ -667,10 +670,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Status</Trans>
                   </span>
-                  <Badge
-                    variant={isComplete ? "primary" : "muted"}
-                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
-                  >
+                  <Badge variant={isComplete ? "primary" : "muted"} size="sm" caps>
                     {offramp.status}
                   </Badge>
                 </div>
@@ -678,7 +678,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     KES {offramp.amountKes || "—"}
                   </span>
                 </div>
@@ -686,7 +686,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Stable sent</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     {offramp.amountUsd || "—"}
                   </span>
                 </div>
@@ -694,7 +694,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>MPESA phone</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     {offramp.phoneNumber || "—"}
                   </span>
                 </div>
@@ -712,7 +712,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Date</Trans>
                   </span>
-                  <time className="font-mono text-xs font-semibold" dateTime={offramp.createdAt}>
+                  <time className="text-xs font-semibold" dateTime={offramp.createdAt}>
                     {formatCashDate(offramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>
@@ -744,7 +744,7 @@ function OfframpDetailsSheet({
 
           {hasTxHash ? (
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button asChild className="h-11 w-full">
+              <Button asChild size="lg" className="w-full">
                 <a href={explorerUrl} target="_blank" rel="noreferrer">
                   <Trans>View on block explorer</Trans>
                 </a>

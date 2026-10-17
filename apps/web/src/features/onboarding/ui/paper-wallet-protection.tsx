@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { FiLoader, FiLock, FiUnlock } from "react-icons/fi";
+import { FiLock, FiUnlock } from "react-icons/fi";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
@@ -143,17 +143,14 @@ export function usePaperWalletProtection({
           </div>
 
           <Button
-            className="h-11 w-full"
-            disabled={encrypting}
+            size="lg"
+            className="w-full"
+            pending={encrypting}
             onClick={() => void handleProtect()}
           >
-            {encrypting ? (
-              <FiLoader className="me-2 size-4 animate-spin" />
-            ) : (
-              <FiLock className="me-2 size-4" />
-            )}
+            <FiLock className="size-4" />
             {encrypting
-              ? t`Protecting paper wallet...`
+              ? t`Protecting paper wallet…`
               : encryptedPayload
                 ? t`Update protected paper wallet`
                 : t`Protect paper wallet`}

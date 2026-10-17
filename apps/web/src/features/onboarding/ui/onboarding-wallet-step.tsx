@@ -132,21 +132,21 @@ export function OnboardingWalletStep({
     caliburConnecting || (upgradeStep === "done" && !linkConnectError && !sessionError);
 
   const statusText = isRegistering
-    ? t`Creating account...`
+    ? t`Creating account…`
     : upgradeStep === "confirming"
-      ? t`Passkey linked ... confirming on-chain...`
+      ? t`Passkey linked … confirming on-chain…`
       : isUpgrading
-        ? t`Linking passkey...`
+        ? t`Linking passkey…`
         : caliburPending
-          ? t`Connecting wallet...`
+          ? t`Connecting wallet…`
           : passkeyRegistered && !linkConnectError && !sessionError
             ? t`Passkey linked`
             : delegateStep === "confirming"
-              ? t`Activating on chain...`
+              ? t`Activating on chain…`
               : isDelegating
-                ? t`Activating smart wallet...`
+                ? t`Activating smart wallet…`
                 : connecting
-                  ? t`Opening paper wallet...`
+                  ? t`Opening paper wallet…`
                   : null;
 
   useEffect(() => {
@@ -369,6 +369,10 @@ export function OnboardingWalletStep({
     workInProgress ||
     (passkeyRegistered && !linkConnectError && !sessionError && !caliburPending);
   const paperBusy = formBlocked || workInProgress;
+  // The form stays up behind an error, so a retry that is under way shows on
+  // the button that started it.
+  const linkPending = pendingMethod === "passkey" && workInProgress;
+  const paperPending = pendingMethod === "paper" && workInProgress;
   const pendingError =
     backendSignup.error ||
     sessionError ||
@@ -464,29 +468,35 @@ export function OnboardingWalletStep({
           {linkPasskey ? (
             <>
               <Button
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
                 onClick={() => void handleLinkPasskey()}
                 disabled={linkBusy}
+                pending={linkPending}
               >
-                <ProviderIcon className="me-2 size-4" />
+                <ProviderIcon className="size-4" />
                 {passkeyRegistered && (linkConnectError || sessionError)
                   ? t`Retry ${providerLabel} connection`
                   : t`Link wallet to ${providerLabel}`}
               </Button>
               <Button
                 variant={linkFailed ? "default" : "outline"}
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
                 onClick={() => void handleContinue()}
                 disabled={paperBusy}
+                pending={paperPending}
               >
                 <Trans>Continue with paper wallet</Trans>
               </Button>
             </>
           ) : (
             <Button
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               onClick={() => void handleContinue()}
               disabled={paperBusy}
+              pending={paperPending}
             >
               <Trans>Continue to wallet</Trans>
             </Button>
@@ -506,10 +516,10 @@ function OnboardingWalletPending({ status }: { status: string | null }) {
       <div className="flex flex-col items-center text-center">
         <PendingClock />
         <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Setting up your wallet...</Trans>
+          <Trans>Setting up your wallet…</Trans>
         </h1>
         <p className="mt-2 text-muted-foreground text-sm">
-          {status ?? <Trans>Waiting for blockchain confirmation...</Trans>}
+          {status ?? <Trans>Waiting for blockchain confirmation…</Trans>}
         </p>
         <div className="mt-3">
           <StatusPill tone="pending" label={<Trans>Pending</Trans>} />

@@ -11,7 +11,6 @@ import { buildSendSharePermission, sendShareFormSchema } from "@clc/core/feature
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { isAddress } from "viem";
 import { useEffect, useState } from "react";
@@ -24,10 +23,10 @@ import {
 import { RedemptionReviewPrompt } from "#/components/reviews/redemption-review-prompt";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
+import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Field } from "#/components/ui/field";
 import { Textarea } from "#/components/ui/textarea";
 import {
-  EllipsizedAddress,
   FailureCross,
   PendingClock,
   ShareReceiptButton,
@@ -59,30 +58,6 @@ function ReceiptRow({ label, children }: { label: React.ReactNode; children: Rea
       <span className="shrink-0 text-muted-foreground text-xs">{label}</span>
       {children}
     </div>
-  );
-}
-
-function CopyableMono({
-  value,
-  label,
-  onCopy,
-}: {
-  value: string;
-  label: string;
-  onCopy: (value: string) => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="flex min-w-0 items-center gap-1.5 bg-card text-end"
-      aria-label={label}
-      onClick={() => onCopy(value)}
-    >
-      <EllipsizedAddress address={value} />
-      <span className="flex size-6 shrink-0 items-center justify-center bg-muted text-muted-foreground">
-        <RiFileCopyLine className="size-3" aria-hidden="true" />
-      </span>
-    </button>
   );
 }
 
@@ -235,7 +210,7 @@ export function SendReceiptPage({
         ) : null}
         {txHash ? (
           <ReceiptRow label={t`Transaction`}>
-            <CopyableMono value={txHash} label={t`Copy transaction hash`} onCopy={copy} />
+            <CopyableInfoValue value={txHash} label={t`Copy transaction hash`} onCopy={copy} />
           </ReceiptRow>
         ) : null}
         <ReceiptRow label={t`Network`}>
@@ -243,7 +218,7 @@ export function SendReceiptPage({
         </ReceiptRow>
         {submittedAt ? (
           <ReceiptRow label={t`Submitted`}>
-            <time className="font-mono text-xs font-semibold" dateTime={outcome.otx.createdAt}>
+            <time className="text-xs font-semibold" dateTime={outcome.otx.createdAt}>
               {submittedAt}
             </time>
           </ReceiptRow>
@@ -270,7 +245,7 @@ export function SendReceiptPage({
 
       {explorerUrl ? (
         <ShareReceiptButton
-          className="mb-2.5 h-11 w-full"
+          className="mb-2.5 w-full"
           title={t`Payment receipt`}
           lines={[
             amountLabel && recipientLabel
@@ -283,12 +258,14 @@ export function SendReceiptPage({
         />
       ) : null}
 
-      <div className="flex gap-3">
-        <Button className="h-11 flex-1" onClick={exitReceipt}>
+      {/* Stacked rather than side by side: half a 360px row is too narrow for
+          "Back to pool" in German, Dutch, Serbian and Swahili. */}
+      <div className="flex flex-col gap-2.5">
+        <Button size="lg" onClick={exitReceipt}>
           {returnPool ? t`Back to pool` : t`Done`}
         </Button>
         {explorerUrl ? (
-          <Button asChild className="h-11 flex-1" variant="outline">
+          <Button asChild size="lg" variant="outline">
             <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
               {CHAIN_INFO.explorerName}
             </a>
@@ -417,7 +394,7 @@ function SendSharePanel({
 
   if (eligibility.isPending) {
     return (
-      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-sm">
         <Trans>Checking message availability…</Trans>
       </p>
     );
@@ -426,15 +403,15 @@ function SendSharePanel({
   if (eligibility.isError) {
     return (
       <div className="mb-5 flex items-center justify-between gap-3 border border-border bg-card p-3">
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           <Trans>Couldn't check message availability.</Trans>
         </p>
         <Button
           type="button"
-          size="sm"
           variant="outline"
-          className="bg-card"
-          onClick={() => eligibility.refetch()}
+          tap
+          pending={eligibility.isFetching}
+          onClick={() => void eligibility.refetch()}
         >
           <Trans>Retry</Trans>
         </Button>
@@ -444,7 +421,7 @@ function SendSharePanel({
 
   if (!eligibility.data) {
     return (
-      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-sm">
         <Trans>Messages are available only for registered Cosmo users.</Trans>
       </p>
     );
@@ -464,7 +441,7 @@ function SendSharePanel({
 
   if (orderCheckLoading) {
     return (
-      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-sm">
         <Trans>Checking order availability…</Trans>
       </p>
     );
@@ -479,9 +456,8 @@ function SendSharePanel({
           </p>
           <Button
             type="button"
-            size="sm"
             variant="outline"
-            className="bg-card"
+            tap
             onClick={() => {
               if (voucher.isError) {
                 void voucher.refetch();
@@ -489,6 +465,7 @@ function SendSharePanel({
               }
               void offeringsQuery.refetch();
             }}
+            pending={voucher.isFetching || offeringsQuery.isFetching}
           >
             <Trans>Retry</Trans>
           </Button>
@@ -619,8 +596,10 @@ function SendSharePanel({
               return (
                 <Button
                   type="submit"
-                  className="h-11 w-full"
-                  disabled={!hasContent || !note.ok || createShare.isPending}
+                  size="lg"
+                  className="w-full"
+                  disabled={!hasContent || !note.ok}
+                  pending={createShare.isPending}
                 >
                   {createShare.isPending ? <Trans>Sharing…</Trans> : <Trans>Share</Trans>}
                 </Button>
@@ -730,7 +709,7 @@ function ReceiptShell({
       <div className="flex-1" />
 
       {onDone ? (
-        <Button className="h-11 w-full" onClick={onDone}>
+        <Button size="lg" className="w-full" onClick={onDone}>
           <Trans>Done</Trans>
         </Button>
       ) : null}

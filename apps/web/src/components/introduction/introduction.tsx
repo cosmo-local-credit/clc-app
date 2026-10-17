@@ -5,6 +5,7 @@ import { introductionSlides as slides } from "./introduction-content";
 import { LanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { StepProgress } from "#/components/ui/step-progress";
 import { useLocale } from "#/providers/i18n";
 
@@ -26,14 +27,14 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
   const last = step === slides.length - 1;
 
   const Container = inline ? "section" : "main";
-  const Heading = inline ? "h2" : "h1";
+  const Heading = inline ? SectionHeading : "h1";
 
   return (
     <Container
       className={
         inline
           ? "flex w-full flex-col py-4"
-          : "mx-auto flex min-h-[100svh] w-full max-w-lg flex-col bg-background px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+          : "flex min-h-[100svh] w-full flex-col bg-background px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
       }
     >
       {!inline ? (
@@ -47,7 +48,7 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
           <Heading
             ref={heading}
             tabIndex={-1}
-            className="font-heading break-words text-3xl font-bold outline-none"
+            className="break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
           >
             <Trans id="intro.language">Choose your language</Trans>
           </Heading>
@@ -55,7 +56,7 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
         </section>
       ) : loading || error ? (
         <div className="flex flex-1 items-center justify-center" role="status">
-          {loading ? <Trans>Loading...</Trans> : null}
+          {loading ? <Trans>Loading…</Trans> : null}
         </div>
       ) : (
         <section
@@ -86,7 +87,11 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
           <Heading
             ref={heading}
             tabIndex={-1}
-            className="mb-4 font-heading break-words text-3xl font-bold leading-tight outline-none"
+            className={
+              inline
+                ? "mb-4 break-words outline-none"
+                : "mb-4 break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
+            }
           >
             {i18n._(slide.title)}
           </Heading>
@@ -102,7 +107,8 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
           </p>
         ) : null}
         <Button
-          className="min-h-11 w-full"
+          size="lg"
+          className="w-full"
           disabled={loading || !!error}
           onClick={() =>
             inline
@@ -125,31 +131,27 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
           )}
         </Button>
         {last && !replay && !inline ? (
-          <Button variant="outline" className="min-h-11 w-full" onClick={() => onExit("signin")}>
+          <Button variant="outline" size="lg" className="w-full" onClick={() => onExit("signin")}>
             <Trans>I already have an account</Trans>
           </Button>
         ) : null}
         <div className="flex items-center justify-between gap-3">
           <Button
             variant="ghost"
-            className="min-h-11"
+            tap
             disabled={step <= (replay || inline ? 0 : -1)}
             onClick={() => setStep(step - 1)}
           >
             <Trans>Back</Trans>
           </Button>
           {!inline ? (
-            <Button
-              variant="ghost"
-              className="min-h-11"
-              onClick={() => onExit(replay ? "done" : "skip")}
-            >
+            <Button variant="ghost" tap onClick={() => onExit(replay ? "done" : "skip")}>
               <Trans>Skip</Trans>
             </Button>
           ) : null}
         </div>
         {step < 0 && !replay ? (
-          <Button variant="link" className="min-h-11 w-full" onClick={() => onExit("signin")}>
+          <Button variant="link" size="lg" className="w-full" onClick={() => onExit("signin")}>
             <Trans>I already have an account</Trans>
           </Button>
         ) : null}

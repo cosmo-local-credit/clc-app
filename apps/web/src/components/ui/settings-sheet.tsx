@@ -38,7 +38,7 @@ export function SettingsSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">{title}</SheetTitle>
+            <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
           {children ? (
             <div

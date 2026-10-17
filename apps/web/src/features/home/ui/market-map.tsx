@@ -100,6 +100,11 @@ export type MarketCamera = {
   lng: number;
   zoom: number;
   rank: number;
+  /**
+   * A view being given back rather than a place being found: it jumps
+   * instead of easing, and the results fit it was taken under is not redone.
+   */
+  restore?: { fitKey: string | null };
 };
 
 export const EXPLICIT_CAMERA_RANK = 0;
@@ -110,6 +115,9 @@ export type MarketViewport = {
   east: number;
   north: number;
   zoom: number;
+  /** The camera's centre, which the bounds' midpoint is not under Mercator. */
+  lat: number;
+  lng: number;
 };
 
 export type MarketFitBounds = {
@@ -124,9 +132,6 @@ const FILTER_FIT_MAX_ZOOM = 14;
 
 const FILTER_FIT_PADDING = { top: 96, bottom: 160, left: 48, right: 48 };
 
-/** How far above a sheet's edge a selected pin's tip must sit to count as visible. */
-const REVEAL_MARGIN = 24;
-
 type MarketMapProps = {
   locations: MarketLocation[];
   selectedLocationId: string | null;
@@ -137,13 +142,6 @@ type MarketMapProps = {
   onSelectLocation: (id: string) => void;
   /** A tap on the map that lands on nothing. */
   onDeselect?: () => void;
-  /** The viewer started dragging the map. */
-  onUserPan?: () => void;
-  /**
-   * Pixels covered at the bottom by a sheet and the controls riding it. The
-   * camera frames the area above, and names keep clear of it.
-   */
-  bottomInset?: number;
   onViewportSettled?: (viewport: MarketViewport) => void;
   className?: string;
 };
@@ -457,8 +455,6 @@ export function MarketMap({
   userLocation,
   onSelectLocation,
   onDeselect,
-  onUserPan,
-  bottomInset = 0,
   onViewportSettled,
   className,
 }: MarketMapProps) {
@@ -467,7 +463,8 @@ export function MarketMap({
   const userMarkerRef = useRef<MapLibreGL.Marker | null>(null);
   const appliedCameraRef = useRef<MarketCamera | null>(null);
   const appliedFitKeyRef = useRef<string | null>(null);
-  const appliedInsetRef = useRef(0);
+  // The fit a restored view was taken under, which must not move it again.
+  const restoredFitKeyRef = useRef<string | null>(null);
   const userHasInteractedRef = useRef(false);
   const loadedRef = useRef(false);
   const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
@@ -486,14 +483,10 @@ export function MarketMap({
   stacksRef.current = stacks;
   const locationsRef = useRef(locations);
   locationsRef.current = locations;
-  const bottomInsetRef = useRef(bottomInset);
-  bottomInsetRef.current = bottomInset;
   const onSelectRef = useRef(onSelectLocation);
   onSelectRef.current = onSelectLocation;
   const onDeselectRef = useRef(onDeselect);
   onDeselectRef.current = onDeselect;
-  const onUserPanRef = useRef(onUserPan);
-  onUserPanRef.current = onUserPan;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
 
@@ -501,12 +494,15 @@ export function MarketMap({
     const report = onViewportSettledRef.current;
     if (!report) return;
     const bounds = map.getBounds().adjustAntiMeridian();
+    const center = map.getCenter();
     report({
       west: bounds.getWest(),
       south: bounds.getSouth(),
       east: bounds.getEast(),
       north: bounds.getNorth(),
       zoom: map.getZoom(),
+      lat: center.lat,
+      lng: center.lng,
     });
   }, []);
 
@@ -601,11 +597,6 @@ export function MarketMap({
       if (event?.originalEvent) userHasInteractedRef.current = true;
     }
 
-    function handleDragStart(event: { originalEvent?: unknown }) {
-      handleUserInteraction(event);
-      if (event?.originalEvent) onUserPanRef.current?.();
-    }
-
     function handleZoomStart() {
       setSpider(null);
     }
@@ -617,7 +608,7 @@ export function MarketMap({
 
     function handleLoad() {
       addMarketLayers(map, locationsRef.current, stacksRef.current);
-      removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map, () => bottomInsetRef.current);
+      removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map);
       loadedRef.current = true;
       setLoaded(true);
     }
@@ -630,7 +621,7 @@ export function MarketMap({
     map.on("load", handleLoad);
     map.on("error", handleError);
     map.on("click", handleMapClick);
-    map.on("dragstart", handleDragStart);
+    map.on("dragstart", handleUserInteraction);
     map.on("zoomstart", handleUserInteraction);
     map.on("zoomstart", handleZoomStart);
     map.on("moveend", handleMoveEnd);
@@ -641,7 +632,7 @@ export function MarketMap({
       map.off("load", handleLoad);
       map.off("error", handleError);
       map.off("click", handleMapClick);
-      map.off("dragstart", handleDragStart);
+      map.off("dragstart", handleUserInteraction);
       map.off("zoomstart", handleUserInteraction);
       map.off("zoomstart", handleZoomStart);
       map.off("moveend", handleMoveEnd);
@@ -651,7 +642,7 @@ export function MarketMap({
       mapRef.current = null;
       appliedCameraRef.current = null;
       appliedFitKeyRef.current = null;
-      appliedInsetRef.current = 0;
+      restoredFitKeyRef.current = null;
       userHasInteractedRef.current = false;
       loadedRef.current = false;
       setLoaded(false);
@@ -733,34 +724,6 @@ export function MarketMap({
     ]);
   }, [loaded, selectedLocationId]);
 
-  // Pads the camera by the sheet without moving the view: whatever sits at the
-  // centre of the area left above the sheet becomes the camera's centre. Every
-  // later move then frames that area.
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !loaded || appliedInsetRef.current === bottomInset) return;
-    appliedInsetRef.current = bottomInset;
-    const { clientWidth, clientHeight } = map.getCanvas();
-    const center = map.unproject([clientWidth / 2, (clientHeight - bottomInset) / 2]);
-    map.easeTo({
-      center: [center.lng, center.lat],
-      padding: { top: 0, right: 0, bottom: bottomInset, left: 0 },
-      duration: 0,
-    });
-  }, [bottomInset, loaded]);
-
-  // A selected pin the sheet would cover is panned into the area above it, on
-  // selection and whenever the sheet grows. A pin already in view stays put.
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !loaded || !selectedLocationId) return;
-    const location = locationsRef.current.find((candidate) => candidate.id === selectedLocationId);
-    if (!location) return;
-    const tip = map.project([location.lng, location.lat]);
-    if (tip.y <= map.getCanvas().clientHeight - bottomInset - REVEAL_MARGIN) return;
-    map.easeTo({ center: [location.lng, location.lat] });
-  }, [bottomInset, loaded, selectedLocationId]);
-
   useEffect(() => {
     appliedCameraRef.current = null;
   }, [cameraScope]);
@@ -769,6 +732,15 @@ export function MarketMap({
     const map = mapRef.current;
     if (!map || !loaded || !camera) return;
     if (appliedCameraRef.current === camera) return;
+
+    if (camera.restore) {
+      appliedCameraRef.current = camera;
+      // A filter changed since the view was taken: fitting its results wins.
+      if (fitBounds && fitBounds.key !== camera.restore.fitKey) return;
+      restoredFitKeyRef.current = camera.restore.fitKey;
+      map.jumpTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
+      return;
+    }
 
     const applied = appliedCameraRef.current;
     if (camera.rank !== EXPLICIT_CAMERA_RANK) {
@@ -797,19 +769,15 @@ export function MarketMap({
     if (appliedFitKeyRef.current === fitBounds.key) return;
 
     appliedFitKeyRef.current = fitBounds.key;
+    const restoredUnderThisFit = restoredFitKeyRef.current === fitBounds.key;
+    restoredFitKeyRef.current = null;
+    if (restoredUnderThisFit) return;
     map.fitBounds(
       [
         [fitBounds.west, fitBounds.south],
         [fitBounds.east, fitBounds.north],
       ],
-      {
-        maxZoom: FILTER_FIT_MAX_ZOOM,
-        // Added to the camera's own padding, which already clears the sheet.
-        padding: {
-          ...FILTER_FIT_PADDING,
-          bottom: Math.max(0, FILTER_FIT_PADDING.bottom - bottomInsetRef.current),
-        },
-      },
+      { maxZoom: FILTER_FIT_MAX_ZOOM, padding: FILTER_FIT_PADDING },
     );
   }, [fitBounds, loaded]);
 
@@ -850,12 +818,7 @@ export function MarketMap({
             )}
           </p>
           {failure === "error" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-card"
-              onClick={() => setFailure(null)}
-            >
+            <Button variant="outline" tap onClick={() => setFailure(null)}>
               <Trans>Retry</Trans>
             </Button>
           ) : null}

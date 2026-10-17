@@ -85,7 +85,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
         message={t`Pool tracking details are missing.`}
         status={<StatusPill tone="error" label={t`Unavailable`} />}
         actions={
-          <Button variant="outline" className="h-11 w-full bg-card" onClick={() => exit("/pools/")}>
+          <Button variant="outline" size="lg" className="w-full" onClick={() => exit("/pools/")}>
             <Trans>Back to pools</Trans>
           </Button>
         }
@@ -110,15 +110,11 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
         stages={stages}
         actions={
           <>
-            <Button className="h-11 w-full" onClick={() => exit("/pools/create/review", true)}>
+            <Button size="lg" className="w-full" onClick={() => exit("/pools/create/review", true)}>
               <RiRefreshLine className="size-4" aria-hidden="true" />
               <Trans>Try again</Trans>
             </Button>
-            <Button
-              variant="outline"
-              className="h-11 w-full bg-card"
-              onClick={() => exit("/pools/")}
-            >
+            <Button variant="outline" size="lg" className="w-full" onClick={() => exit("/pools/")}>
               <Trans>Back to pools</Trans>
             </Button>
           </>
@@ -131,8 +127,8 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
     return (
       <DeploymentStateShell
         icon={<PendingClock />}
-        title={t`Publishing your pool...`}
-        message={t`Waiting for blockchain confirmation...`}
+        title={t`Publishing your pool…`}
+        message={t`Waiting for blockchain confirmation…`}
         status={<StatusPill tone="pending" label={t`Pending`} />}
         stages={stages}
         progress={{
@@ -207,7 +203,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
       </dl>
 
       <div className="mt-auto pt-6">
-        <Button className="h-11 w-full" onClick={() => exit(`/pools/${address}`)}>
+        <Button size="lg" className="w-full" onClick={() => exit(`/pools/${address}`)}>
           <Trans>View pool</Trans>
         </Button>
       </div>
@@ -279,7 +275,7 @@ function DeploymentChecklist({
             {stage.label}
           </span>
           <span
-            className={`font-mono text-[10px] uppercase tracking-wide ${
+            className={`text-xs ${
               stage.state === "failed" ? "text-destructive" : "text-muted-foreground"
             }`}
           >

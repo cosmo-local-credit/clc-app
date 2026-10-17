@@ -14,7 +14,13 @@ import { cn } from "#/lib/utils.ts";
 export const SheetRoot = Drawer.Root;
 export const SheetPortal = Drawer.Portal;
 export const SheetClose = Drawer.Close;
-export const SheetTitle = Drawer.Title;
+
+/** Every sheet title is the 16px section heading; a call site adds layout only. */
+function SheetTitle({ className, ...props }: React.ComponentProps<typeof Drawer.Title>) {
+  return (
+    <Drawer.Title className={cn("font-heading text-base font-semibold", className)} {...props} />
+  );
+}
 
 function SheetBackdrop({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -72,4 +78,4 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return <div className={cn("flex flex-col gap-2 px-4 pt-2 pb-6", className)} {...props} />;
 }
 
-export { SheetBackdrop, SheetContent, SheetFooter, SheetHeader };
+export { SheetBackdrop, SheetContent, SheetFooter, SheetHeader, SheetTitle };

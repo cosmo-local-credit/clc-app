@@ -25,13 +25,14 @@ export function InstallAppDialog({
         <DialogBackdrop />
         <DialogContent className="max-h-[calc(100svh-3rem)] space-y-5 overflow-y-auto">
           <LanguageSelector />
-          <DialogTitle className="font-heading text-xl font-bold">
+          <DialogTitle>
             <Trans>Install CLC</Trans>
           </DialogTitle>
           {promptEvent || status === "prompting" ? (
             <Button
-              className="h-11 w-full"
-              disabled={status === "prompting"}
+              size="lg"
+              className="w-full"
+              pending={status === "prompting"}
               onClick={() => void requestInstall()}
             >
               {status === "prompting" ? (
@@ -50,7 +51,12 @@ export function InstallAppDialog({
               </Trans>
             </p>
           ) : null}
-          <Button variant="outline" className="h-11 w-full" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => onOpenChange(false)}
+          >
             <Trans>Continue in browser</Trans>
           </Button>
         </DialogContent>

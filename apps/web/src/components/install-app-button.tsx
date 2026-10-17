@@ -8,7 +8,13 @@ import { useInstallStore } from "#/features/install/install-store";
 
 type InstallDialogComponent = typeof import("./install-app-dialog").InstallAppDialog;
 
-export function InstallAppButton({ showHelpLink = false }: { showHelpLink?: boolean }) {
+export function InstallAppButton({
+  showHelpLink = false,
+  size = "default",
+}: {
+  showHelpLink?: boolean;
+  size?: "default" | "lg";
+}) {
   const { status, installed } = useInstallStore();
   const [DialogComponent, setDialogComponent] = useState<InstallDialogComponent | null>(null);
   const [open, setOpen] = useState(false);
@@ -48,9 +54,11 @@ export function InstallAppButton({ showHelpLink = false }: { showHelpLink?: bool
   return (
     <div className="space-y-3">
       <Button
-        className="h-11 w-full"
+        className="w-full"
         variant="outline"
-        disabled={loading || status === "prompting"}
+        size={size}
+        tap
+        pending={loading || status === "prompting"}
         onClick={() => void showDialog()}
       >
         <RiDownloadLine aria-hidden="true" />
@@ -66,9 +74,16 @@ export function InstallAppButton({ showHelpLink = false }: { showHelpLink?: bool
         </p>
       ) : null}
       {showHelpLink ? (
-        <Link to="/install" className="block text-center text-muted-foreground text-sm underline">
-          <Trans>Add CLC to your phone</Trans>
-        </Link>
+        <Button
+          asChild
+          variant="link"
+          tap
+          className="w-full text-muted-foreground underline hover:text-foreground"
+        >
+          <Link to="/install">
+            <Trans>Add CLC to your phone</Trans>
+          </Link>
+        </Button>
       ) : null}
       {DialogComponent ? <DialogComponent open={open} onOpenChange={setOpen} /> : null}
     </div>

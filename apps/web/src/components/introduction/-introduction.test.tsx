@@ -62,3 +62,15 @@ it("supports Back and ends replay without account actions", () => {
   fireEvent.click(screen.getByText("Done"));
   expect(exit).toHaveBeenCalledWith("done");
 });
+
+it("keeps inline guidance in the welcome page when the last slide advances", () => {
+  const exit = vi.fn();
+  render(<Introduction inline onExit={exit} />);
+  expect(screen.getByRole("heading", { name: "Your wallet", level: 2 })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Skip" })).toBeNull();
+  for (let n = 0; n < 4; n++) fireEvent.click(screen.getByRole("button", { name: "Next" }));
+  expect(screen.getByRole("heading", { name: "Receive a voucher", level: 2 })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Next" }));
+  expect(screen.getByRole("heading", { name: "Your wallet", level: 2 })).toBeTruthy();
+  expect(exit).not.toHaveBeenCalled();
+});

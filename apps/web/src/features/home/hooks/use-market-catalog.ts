@@ -18,6 +18,8 @@ export type MarketCatalog = {
   status: "loading" | "refining" | "ready" | "error";
   error: Error | null;
   retry: () => void;
+  /** The vouchers are loading again after `retry`. */
+  retrying: boolean;
   tagFacets: MarketTagFacet[];
   filterKey: string;
 };
@@ -67,6 +69,7 @@ export function useMarketCatalogVouchers(
         status: "loading",
         error: null,
         retry: unfiltered.retry,
+        retrying: false,
         tagFacets: chipFacets,
         filterKey: "restoring-preference",
       };
@@ -79,6 +82,7 @@ export function useMarketCatalogVouchers(
         status: unfiltered.error ? "error" : unfiltered.isLoading ? "loading" : "ready",
         error: unfiltered.error,
         retry: unfiltered.retry,
+        retrying: unfiltered.retrying,
         tagFacets: chipFacets,
         filterKey: "",
       };
@@ -91,6 +95,7 @@ export function useMarketCatalogVouchers(
         status: "ready",
         error: null,
         retry: retryFiltered,
+        retrying: false,
         tagFacets: chipFacets,
         filterKey: `${filterIdentity(filter)}\u0000${poolIdentity(pools)}`,
       };
@@ -107,6 +112,7 @@ export function useMarketCatalogVouchers(
       status: filteredState.status,
       error: filteredState.status === "error" ? filteredState.error : null,
       retry: retryFiltered,
+      retrying: filtered.isFetching,
       tagFacets: chipFacets,
       filterKey: `${filterIdentity(filter)}\u0000${poolIdentity(pools)}`,
     };

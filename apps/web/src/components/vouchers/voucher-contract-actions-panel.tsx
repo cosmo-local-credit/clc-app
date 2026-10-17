@@ -5,13 +5,7 @@ import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import {
-  RiDeleteBin6Line,
-  RiLoader4Line,
-  RiPencilLine,
-  RiSparkling2Line,
-  RiUserSharedLine,
-} from "react-icons/ri";
+import { RiDeleteBin6Line, RiPencilLine, RiSparkling2Line, RiUserSharedLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { isAddress, zeroAddress } from "viem";
 import { z } from "zod";
@@ -237,7 +231,7 @@ function VoucherMintSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Create vouchers</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -273,10 +267,7 @@ function VoucherMintSheet({
               </form.Field>
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button type="submit" className="h-11 w-full" disabled={pending}>
-                {pending ? (
-                  <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-                ) : null}
+              <Button type="submit" size="lg" className="w-full" pending={pending}>
                 {delegationStatus === "checking" ? (
                   <Trans>Preparing wallet…</Trans>
                 ) : pending ? (
@@ -351,7 +342,7 @@ function VoucherOwnershipTransferSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Transfer ownership</Trans>
             </SheetTitle>
             <p className="text-muted-foreground text-sm">
@@ -390,10 +381,7 @@ function VoucherOwnershipTransferSheet({
               </form.Field>
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button type="submit" className="h-11 w-full" disabled={pending}>
-                {pending ? (
-                  <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-                ) : null}
+              <Button type="submit" size="lg" className="w-full" pending={pending}>
                 {delegationStatus === "checking" ? (
                   <Trans>Preparing wallet…</Trans>
                 ) : pending ? (
@@ -456,7 +444,7 @@ function VoucherRetireSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Retire {voucher.symbol}?</Trans>
             </SheetTitle>
             <p className="text-muted-foreground text-sm">
@@ -470,19 +458,18 @@ function VoucherRetireSheet({
             <Button
               type="button"
               variant="destructive"
-              className="h-11 w-full"
-              disabled={retire.isPending}
+              size="lg"
+              className="w-full"
+              pending={retire.isPending}
               onClick={() => void confirm()}
             >
-              {retire.isPending ? (
-                <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-              ) : null}
               {retire.isPending ? <Trans>Retiring…</Trans> : <Trans>Retire voucher</Trans>}
             </Button>
             <Button
               type="button"
               variant="outline"
-              className="h-11 w-full bg-card"
+              size="lg"
+              className="w-full"
               disabled={retire.isPending}
               onClick={onClose}
             >

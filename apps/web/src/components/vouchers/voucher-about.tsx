@@ -44,7 +44,7 @@ export function VoucherAbout({
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">
           {rate ? (
-            <p className="font-mono text-sm font-semibold leading-tight text-primary">
+            <p className="text-sm font-semibold leading-tight text-primary tabular-nums">
               <Trans>
                 1 {symbol} = {rate.value} {rate.unit}
               </Trans>
@@ -135,7 +135,7 @@ export function VoucherAbout({
 
       {terms && !isHttpUrl(terms) ? (
         <div className="border border-border bg-card p-4">
-          <p className="font-heading text-sm font-semibold leading-snug">
+          <p className="text-sm font-semibold leading-snug">
             <Trans>Terms</Trans>
           </p>
           <MarkdownContent className="mt-2">{terms}</MarkdownContent>
