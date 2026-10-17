@@ -394,7 +394,7 @@ export function MarketPage({
         onSnapChange={setSnap}
         onCoveredHeightChange={handleCoveredHeightChange}
         floating={locationButton}
-        bottomNavigationVisible={isAuthenticated}
+        bottomNavigationVisible
       />
     </main>
   );

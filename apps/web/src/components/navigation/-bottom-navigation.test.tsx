@@ -30,10 +30,12 @@ async function renderNavigation({
   initialEntry = "/?tab=wallet",
   activeTab,
   atActiveTabRoot,
+  locked,
 }: {
   initialEntry?: string;
   activeTab?: HomeTab;
   atActiveTabRoot?: boolean;
+  locked?: boolean;
 } = {}) {
   function NavigationFixture() {
     const search = useSearch({ strict: false });
@@ -47,7 +49,9 @@ async function renderNavigation({
         : selectedTab === "market"
           ? false
           : isAtHomeTabRoot(search));
-    return <BottomNavigation activeTab={selectedTab} atActiveTabRoot={selectedAtRoot} />;
+    return (
+      <BottomNavigation activeTab={selectedTab} atActiveTabRoot={selectedAtRoot} locked={locked} />
+    );
   }
 
   const rootRoute = createRootRoute({ component: Outlet });
@@ -87,6 +91,19 @@ describe("BottomNavigation", () => {
         tab === "market" ? "/market" : `/?tab=${tab}`,
       );
     }
+  });
+
+  it("locks Wallet, Activity and Settings for a guest and keeps their destinations", async () => {
+    const { history } = await renderNavigation({ initialEntry: "/?tab=market", locked: true });
+
+    for (const [tab, label] of Object.entries(LABELS) as [HomeTab, string][]) {
+      const link = screen.getByRole("link", { name: label });
+      const locks = tab === "wallet" || tab === "activity" || tab === "settings" ? 2 : 1;
+      expect(link.querySelectorAll("svg")).toHaveLength(locks);
+    }
+
+    fireEvent.click(screen.getByRole("link", { name: "Wallet" }));
+    await waitFor(() => expect(history.location.href).toBe("/?tab=wallet"));
   });
 
   it("only marks the active tab with aria-current='page'", async () => {

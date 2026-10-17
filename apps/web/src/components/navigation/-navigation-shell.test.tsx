@@ -193,7 +193,7 @@ describe("NavigationShell", () => {
   });
 
   it.each(["/", "/vouchers/0x2222222222222222222222222222222222222222"])(
-    "renders no primary navigation for a resolved guest at %s",
+    "shows a resolved guest the navigation with the private tabs locked at %s",
     async (initialEntry) => {
       setAuth({
         state: "guest",
@@ -204,33 +204,31 @@ describe("NavigationShell", () => {
 
       await renderShell(initialEntry);
 
-      expect(await screen.findByRole("heading")).toBeTruthy();
-      expect(screen.queryByRole("navigation", { name: "Primary navigation" })).toBeNull();
+      const navigation = await screen.findByRole("navigation", { name: "Primary navigation" });
+      expect(navigation.querySelectorAll("a svg + svg")).toHaveLength(3);
+      for (const label of ["Wallet", "Activity", "Settings"]) {
+        expect(screen.getByRole("link", { name: label }).querySelectorAll("svg")).toHaveLength(2);
+      }
+      for (const label of ["Posts", "Market"]) {
+        expect(screen.getByRole("link", { name: label }).querySelectorAll("svg")).toHaveLength(1);
+      }
     },
   );
 
-  it("reserves voucher clearance while authentication is loading without showing a landmark", async () => {
-    setAuth({ state: "loading", isLoading: true, isAuthenticated: false, session: undefined });
-
-    await renderShell("/vouchers/0x2222222222222222222222222222222222222222");
-
-    const voucher = await screen.findByRole("heading", { name: "Voucher" });
-    expect(voucher.parentElement?.style.getPropertyValue("--bottom-nav-offset")).toBe(
-      "calc(4rem + env(safe-area-inset-bottom))",
-    );
-    expect(screen.queryByRole("navigation", { name: "Primary navigation" })).toBeNull();
-  });
-
-  it("does not reserve pending clearance on non-voucher routes", async () => {
+  it("reserves the navigation's clearance on every route, before auth resolves", async () => {
     setAuth({ state: "loading", isLoading: true, isAuthenticated: false, session: undefined });
 
     await renderShell("/");
 
     const home = await screen.findByRole("heading", { name: "Home" });
-    expect(home.parentElement?.style.getPropertyValue("--bottom-nav-offset")).toBe("0px");
+    expect(home.parentElement?.style.getPropertyValue("--bottom-nav-offset")).toBe(
+      "calc(4rem + env(safe-area-inset-bottom))",
+    );
+    // No locks until the session is known, so a member never sees them flash.
+    expect(screen.getByRole("link", { name: "Wallet" }).querySelectorAll("svg")).toHaveLength(1);
   });
 
-  it("keeps navigation during a session check error only for a matching cached session", async () => {
+  it("keeps the private tabs open during a session check error only for a matching cached session", async () => {
     setAuth({
       state: "sessionCheckError",
       isAuthenticated: false,
@@ -240,13 +238,14 @@ describe("NavigationShell", () => {
     const { rerender, router } = await renderShell(
       "/vouchers/0x2222222222222222222222222222222222222222",
     );
-    expect(await screen.findByRole("navigation", { name: "Primary navigation" })).toBeTruthy();
+    const wallet = await screen.findByRole("link", { name: "Wallet" });
+    expect(wallet.querySelectorAll("svg")).toHaveLength(1);
 
     setAuth({ session: { address: "0x3333333333333333333333333333333333333333" } });
     rerender(<RouterProvider router={router} />);
 
     await waitFor(() =>
-      expect(screen.queryByRole("navigation", { name: "Primary navigation" })).toBeNull(),
+      expect(screen.getByRole("link", { name: "Wallet" }).querySelectorAll("svg")).toHaveLength(2),
     );
   });
 
@@ -260,7 +259,7 @@ describe("NavigationShell", () => {
     expect(screen.getByRole("navigation", { name: "Primary navigation" })).toBe(navigation);
   });
 
-  it("removes navigation and its offset after sign-out", async () => {
+  it("keeps navigation and locks the private tabs after sign-out", async () => {
     const { rerender, router } = await renderShell(
       "/vouchers/0x2222222222222222222222222222222222222222",
     );
@@ -275,11 +274,12 @@ describe("NavigationShell", () => {
     });
     rerender(<RouterProvider router={router} />);
 
-    expect(screen.queryByRole("navigation", { name: "Primary navigation" })).toBeNull();
+    expect(screen.getByRole("navigation", { name: "Primary navigation" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Wallet" }).querySelectorAll("svg")).toHaveLength(2);
     expect(
       screen
         .getByRole("heading", { name: "Voucher" })
         .parentElement?.style.getPropertyValue("--bottom-nav-offset"),
-    ).toBe("0px");
+    ).toBe("calc(4rem + env(safe-area-inset-bottom))");
   });
 });

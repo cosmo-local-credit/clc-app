@@ -11,7 +11,7 @@ import {
 } from "#/lib/navigation/voucher-navigation-owner";
 import { BottomNavigation } from "./bottom-navigation";
 
-const ACTIVE_BOTTOM_NAV_OFFSET = "calc(4rem + env(safe-area-inset-bottom))";
+const BOTTOM_NAV_OFFSET = "calc(4rem + env(safe-area-inset-bottom))";
 
 export function NavigationShell() {
   const auth = useAuthStatus();
@@ -50,29 +50,30 @@ export function NavigationShell() {
     activeTab = navOwner;
   }
 
-  const showNavigation =
+  // A session that failed to re-check but still names this wallet keeps the
+  // private tabs open; anyone else resolved as signed out sees them locked.
+  const signedIn =
     auth.isAuthenticated ||
     (auth.state === "sessionCheckError" &&
       !!auth.address &&
       auth.session?.address.toLowerCase() === auth.address.toLowerCase());
-  const reservePendingVoucherOffset = navOwner === "voucher" && auth.isLoading;
-  const bottomNavOffset =
-    showNavigation || reservePendingVoucherOffset ? ACTIVE_BOTTOM_NAV_OFFSET : "0px";
 
   return (
     <>
       <div
         style={
           {
-            "--bottom-nav-offset": bottomNavOffset,
+            "--bottom-nav-offset": BOTTOM_NAV_OFFSET,
           } as CSSProperties & Record<"--bottom-nav-offset", string>
         }
       >
         <Outlet />
       </div>
-      {showNavigation ? (
-        <BottomNavigation activeTab={activeTab} atActiveTabRoot={atActiveTabRoot} />
-      ) : null}
+      <BottomNavigation
+        activeTab={activeTab}
+        atActiveTabRoot={atActiveTabRoot}
+        locked={!auth.isLoading && !signedIn}
+      />
     </>
   );
 }

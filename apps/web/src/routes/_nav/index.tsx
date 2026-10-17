@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 
+import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { canonicalRedirectSearch } from "#/lib/navigation/catalog-search";
 import {
@@ -69,28 +70,23 @@ export const Route = createFileRoute("/_nav/")({
 
 function IndexPage() {
   const auth = useAuthStatus();
-  const { tab, view, creditable } = Route.useSearch();
-  const navigate = Route.useNavigate();
-  const activeTab = auth.isAuthenticated ? tab : isPrivateHomeTab(tab ?? "market") ? "market" : tab;
-
-  useEffect(() => {
-    if (!auth.isLoading && !auth.isAuthenticated && isPrivateHomeTab(tab ?? "market")) {
-      void navigate({ to: "/", search: { tab: "market" }, replace: true });
-    }
-  }, [auth.isAuthenticated, auth.isLoading, navigate, tab]);
+  const { tab = "market", view, creditable } = Route.useSearch();
 
   if (auth.isLoading) return <HomePageFallback />;
 
-  return (
+  const page = (
     <Suspense fallback={<HomePageFallback />}>
       <HomePage
-        activeTab={activeTab}
+        activeTab={tab}
         marketView={view}
         isAuthenticated={auth.isAuthenticated}
         creditableSearch={creditable}
       />
     </Suspense>
   );
+  // A guest's Wallet, Activity or Settings is the sign-in screen, under the
+  // bottom navigation that led there.
+  return isPrivateHomeTab(tab) ? <AuthenticatedRoute>{page}</AuthenticatedRoute> : page;
 }
 
 function HomePageFallback() {
