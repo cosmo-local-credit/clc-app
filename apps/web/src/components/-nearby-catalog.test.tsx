@@ -4,7 +4,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { useState, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import {
@@ -40,6 +40,12 @@ const state = vi.hoisted(() => ({
     retry: vi.fn(),
   },
   profile: { data: { geoLat: 0, geoLng: 0 }, isPending: false, isError: false, refetch: vi.fn() },
+  camera: {
+    realFix: null as { lat: number; lng: number } | null,
+    locationStatus: "idle",
+    requestLocation: vi.fn(),
+  },
+  ip: { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false },
   market: vi.fn(),
   pools: vi.fn(),
   reports: vi.fn(),
@@ -47,6 +53,8 @@ const state = vi.hoisted(() => ({
   filteredPools: vi.fn(),
   filteredReports: vi.fn(),
 }));
+vi.mock("#/features/home/hooks/use-market-camera", () => ({ useMarketCamera: () => state.camera }));
+vi.mock("#/features/home/hooks/use-ip-camera", () => ({ useIPCamera: () => state.ip }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => state.auth }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => state.profile }));
 vi.mock("#/lib/api/market", () => ({
@@ -66,6 +74,10 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 beforeEach(() => {
+  state.camera.realFix = null;
+  state.camera.locationStatus = "idle";
+  state.camera.requestLocation.mockReset();
+  state.ip = { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false };
   state.auth.isAuthenticated = true;
   state.auth.isLoading = false;
   state.auth.address = "0xaaa";
@@ -330,7 +342,7 @@ it("loads public results for guests and remounts when signing in or out", async 
   state.auth.isAuthenticated = false;
   const view = mount();
   await waitFor(() => expect(state.market).toHaveBeenCalled());
-  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBe("guest-nearby:0:0:500");
   for (const request of [state.market, state.reports]) {
     expect(request.mock.calls[0]?.[0].nearby).toBeUndefined();
   }
@@ -340,7 +352,9 @@ it("loads public results for guests and remounts when signing in or out", async 
   expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toContain("nearby:");
   state.auth.isAuthenticated = false;
   await act(async () => view.rerender(view.tree()));
-  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toBeNull();
+  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toBe(
+    "guest-nearby:0:0:500",
+  );
 });
 
 it("does not load catalogs while authentication is loading", () => {
@@ -396,4 +410,67 @@ it("shows no notice once the profile has a location", () => {
 
   expect(screen.getByTestId("scope").textContent).toContain("nearby:");
   expect(screen.queryByText("Choose a location")).toBeNull();
+});
+
+it("defaults guests to 500 km and changes visible rows when choosing 50 km or Global", async () => {
+  state.auth.isAuthenticated = false;
+  state.market.mockResolvedValue({
+    vouchers: [
+      { id: "near", name: "Near", lat: 0.1, lng: 0 },
+      { id: "middle", name: "Middle", lat: 2, lng: 0 },
+      { id: "far", name: "Far", lat: 8, lng: 0 },
+    ],
+    receivedCount: 3,
+    first: 3,
+    last: 0,
+  });
+  mount();
+  await screen.findByText("Middle");
+  expect(screen.queryByText("Far")).toBeNull();
+  act(() => useCatalogVisibilityStore.getState().setVisibility("50"));
+  await screen.findByText("Near");
+  expect(screen.queryByText("Middle")).toBeNull();
+  act(() => useCatalogVisibilityStore.getState().setVisibility("global"));
+  await screen.findByText("Far");
+  for (const request of [state.market, state.pools, state.reports]) {
+    expect(request.mock.calls.every(([params]) => params.nearby !== true)).toBe(true);
+  }
+});
+
+it("uses device coordinates ahead of IP and drops old rows when the device moves", async () => {
+  state.auth.isAuthenticated = false;
+  state.camera.realFix = { lat: 20, lng: 30 };
+  const view = mount();
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBe("guest-nearby:20:30:500");
+  state.camera.realFix = { lat: 40, lng: 50 };
+  view.rerender(view.tree());
+  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toBe(
+    "guest-nearby:40:50:500",
+  );
+});
+
+it("asks guests for location instead of filtering around a fallback country", async () => {
+  state.auth.isAuthenticated = false;
+  state.ip.data.source = "country-default";
+  const view = mount();
+  expect(screen.getByText("Choose a location")).toBeTruthy();
+  expect(state.market).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
+  expect(state.camera.requestLocation).toHaveBeenCalledOnce();
+  state.camera.locationStatus = "denied";
+  view.rerender(view.tree());
+  expect(screen.getByText("Location denied")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Global" }));
+  await waitFor(() => expect(state.market).toHaveBeenCalled());
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
+});
+
+it("keeps Global available while IP lookup is pending", async () => {
+  state.auth.isAuthenticated = false;
+  state.ip.data.source = "country-default";
+  state.ip.isPending = true;
+  mount();
+  expect(state.market).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Global" }));
+  await waitFor(() => expect(state.market).toHaveBeenCalled());
 });

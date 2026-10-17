@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import { resourceLimitKeys } from "../resource-limits/queries";
 import type { CatalogKind, CatalogWrite } from "@clc/core/features/catalogs/logic";
 import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
@@ -56,7 +57,7 @@ export function catalogsInfiniteQueryOptions(
       client.list(
         {
           cursor: pageParam,
-          nearby: !!params.scope,
+          nearby: isAccountNearbyScope(params.scope),
           q: params.q,
           tags: params.tags,
           tagMatch: params.tagMatch,

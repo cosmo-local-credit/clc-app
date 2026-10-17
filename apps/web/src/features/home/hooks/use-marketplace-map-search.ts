@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { EMPTY_CATALOG_FILTER, type CatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
@@ -44,7 +45,7 @@ export function useMarketplaceMapSearch(
     tags: parsed.tags,
     tagMatch: parsed.tagMatch,
     kinds: ["voucher", "pool"] as const,
-    nearby: !!nearby,
+    nearby: isAccountNearbyScope(nearby),
     scope: nearby,
     ...(pools ? { pools } : {}),
   };

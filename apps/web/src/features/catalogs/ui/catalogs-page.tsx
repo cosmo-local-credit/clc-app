@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import { catalogsInfiniteQueryOptions } from "@clc/api/features/catalogs/queries";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import type { Catalog } from "@clc/core/features/catalogs/logic";
@@ -72,13 +73,15 @@ function CatalogList({
   const catalogs = query.data?.pages.flatMap((page) => page.catalogs) ?? [];
   // The backend's nearby endpoint is itself the complete 1,000 km result.
   // Narrower device preferences refine that nearest-first stream locally.
-  const narrowingFilter = filter?.radiusKm === 1_000 ? undefined : filter;
+  const narrowingFilter =
+    isAccountNearbyScope(scope) && filter?.radiusKm === 1_000 ? undefined : filter;
   const visibleCatalogs = narrowingFilter
     ? catalogs.filter((catalog) =>
         isWithinNearbyCatalog(narrowingFilter, { lat: catalog.geoLat, lng: catalog.geoLng }),
       )
     : catalogs;
   const crossedDistanceBoundary =
+    isAccountNearbyScope(scope) &&
     narrowingFilter !== undefined &&
     catalogs.some(
       (catalog) =>

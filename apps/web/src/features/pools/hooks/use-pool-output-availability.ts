@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
   useNearbyCatalog,
   useNearbyCatalogFilter,
@@ -84,7 +85,7 @@ export function usePoolOutputAvailability(
             voucherMatch: "any",
           },
           signal,
-          nearby: !!nearby,
+          nearby: isAccountNearbyScope(nearby),
           visibilityFilter,
         }).then((catalog) => catalog.pools);
       } catch (error) {

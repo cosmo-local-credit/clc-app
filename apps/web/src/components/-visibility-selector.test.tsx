@@ -39,7 +39,7 @@ describe("VisibilitySelector", () => {
   it("offers Global and each supported distance in the requested order", async () => {
     render(<VisibilitySelector />);
     const select = screen.getByRole("combobox") as HTMLSelectElement;
-    await waitFor(() => expect(select.value).toBe("1000"));
+    await waitFor(() => expect(select.value).toBe("500"));
     expect([...select.options].map((option) => option.text)).toEqual([
       "Global",
       "1,000 km",
@@ -72,14 +72,12 @@ describe("VisibilitySettingsRow", () => {
   it("persists a distance chosen in its sheet and closes", async () => {
     render(<VisibilitySettingsRow />);
     const row = screen.getByRole("button", { name: /visibility/i });
-    await waitFor(() => expect(row.textContent).toContain("1,000 km"));
+    await waitFor(() => expect(row.textContent).toContain("500 km"));
 
     fireEvent.click(row);
     const sheet = within(await screen.findByRole("dialog", { name: "Visibility" }));
     expect(sheet.getAllByRole("radio")).toHaveLength(5);
-    expect(sheet.getByRole("radio", { name: "1,000 km" }).getAttribute("aria-checked")).toBe(
-      "true",
-    );
+    expect(sheet.getByRole("radio", { name: "500 km" }).getAttribute("aria-checked")).toBe("true");
     fireEvent.click(sheet.getByRole("radio", { name: "50 km" }));
 
     expect(window.localStorage.getItem(CATALOG_VISIBILITY_STORAGE_KEY)).toBe("50");

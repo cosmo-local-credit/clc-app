@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
   filterNearbyCatalog,
   type NearbyCatalogFilter,
@@ -149,7 +150,7 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
         facets: true,
         perPage,
         signal,
-        nearby: !!nearby,
+        nearby: isAccountNearbyScope(nearby),
         visibilityFilter,
       });
     },
@@ -176,7 +177,7 @@ export function usePoolFacetVocabulary(enabled: boolean) {
           perPage: 1,
           filter: EMPTY_CATALOG_FILTER,
           facets: true,
-          ...(nearby ? { nearby: true } : {}),
+          ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
         },
         signal,
       );

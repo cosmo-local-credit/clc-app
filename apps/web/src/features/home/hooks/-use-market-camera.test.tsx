@@ -26,6 +26,7 @@ vi.mock("#/lib/use-browser-geolocation", () => ({
 }));
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
+  LOCATION_CHANGED_EVENT: "clc:location-changed",
   readPersistedLocation,
   writePersistedLocation,
   clearPersistedLocation: vi.fn(),
@@ -315,4 +316,14 @@ describe("useMarketCamera location ownership", () => {
 
     expect(result.current.camera?.rank).toBe(CAMERA_RANK.ipCity);
   });
+});
+
+it("refreshes mounted guest filters after another location action stores a fix", () => {
+  const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
+  expect(result.current.realFix).toBeNull();
+  readPersistedLocation.mockReturnValue({ ...PERSISTED, lat: 43, lng: 18 });
+  act(() => {
+    window.dispatchEvent(new Event("clc:location-changed"));
+  });
+  expect(result.current.realFix).toEqual({ lat: 43, lng: 18 });
 });

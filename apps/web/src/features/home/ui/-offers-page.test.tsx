@@ -230,6 +230,19 @@ describe("OffersPage", () => {
     expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("false");
   });
 
+  it("keeps guest pagination available after a distant row", () => {
+    mocks.nearbyScope = "guest-nearby:0:0:500";
+    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 500 };
+    mocks.query.data = {
+      pages: [{ offerings: [offering("1", 0.5), offering("2", 8)], tagFacets: [] }],
+    };
+    mocks.query.hasNextPage = true;
+    render(<OffersPage />);
+    expect(screen.getByText("Offer 1")).toBeTruthy();
+    expect(screen.queryByText("Offer 2")).toBeNull();
+    expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("true");
+  });
+
   it("never renders an unfiltered list while Credit verification blocks it", () => {
     mocks.credit.enabled = true;
     mocks.credit.poolRefs = [];

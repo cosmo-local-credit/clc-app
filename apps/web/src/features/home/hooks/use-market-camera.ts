@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   type PersistedLocation,
+  LOCATION_CHANGED_EVENT,
   readPersistedLocation,
   writePersistedLocation,
 } from "#/features/home/api/last-location-storage";
@@ -76,7 +77,10 @@ export function useMarketCamera(owner: string): MarketCameraResult {
   // Rank 2 is read after the client boundary so the server and the hydration
   // render start from the same camera and no mismatch warning is emitted.
   useEffect(() => {
-    setPersistedFor({ owner, value: readPersistedLocation(owner) });
+    const refresh = () => setPersistedFor({ owner, value: readPersistedLocation(owner) });
+    refresh();
+    window.addEventListener(LOCATION_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(LOCATION_CHANGED_EVENT, refresh);
   }, [owner]);
 
   const persisted = persistedFor?.owner === owner ? persistedFor.value : null;

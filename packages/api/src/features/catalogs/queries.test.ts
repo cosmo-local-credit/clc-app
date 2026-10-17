@@ -100,3 +100,15 @@ describe("catalog cache", () => {
     expect(invalidate).toHaveBeenCalled();
   });
 });
+
+it("keeps guest radii in cache keys without enabling profile-only server filtering", async () => {
+  const list = vi.fn().mockResolvedValue({ catalogs: [], nextCursor: null });
+  const client = { list } as unknown as CatalogsClient;
+  const options = catalogsInfiniteQueryOptions(client, "guest-nearby:43:18:500");
+  expect(options.queryKey).not.toEqual(
+    catalogsInfiniteQueryOptions(client, "guest-nearby:43:18:50").queryKey,
+  );
+  const signal = new AbortController().signal;
+  await options.queryFn?.({ pageParam: undefined, signal } as never);
+  expect(list).toHaveBeenCalledWith(expect.objectContaining({ nearby: false }), signal);
+});

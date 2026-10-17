@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -85,7 +86,7 @@ export function reportFeedInfiniteQueryOptions(
     queryKey: nearby ? ([...reportKeys.feed(perPage), nearby] as const) : reportKeys.feed(perPage),
     queryFn: ({ pageParam, signal }) =>
       reports.getReports(
-        { perPage, cursor: pageParam, ...(nearby ? { nearby: true } : {}) },
+        { perPage, cursor: pageParam, ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}) },
         signal,
       ),
     initialPageParam: undefined as ReportCursor | undefined,

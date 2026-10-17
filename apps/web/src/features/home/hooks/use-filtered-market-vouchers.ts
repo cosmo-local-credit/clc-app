@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
   filterNearbyCatalog,
   useNearbyCatalog,
@@ -63,7 +64,7 @@ export function useFilteredMarketVouchers(
       for (let index = 0; index < MAX_FILTERED_PAGES; index++) {
         const page = await marketClient.getFilteredMarketVouchers(
           {
-            ...(nearby ? { nearby: true } : {}),
+            ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
             perPage,
             cursor,
             next: cursor === undefined ? undefined : true,
@@ -115,7 +116,7 @@ export function useMarketFacetVocabulary(enabled: boolean) {
           perPage: 1,
           filter: EMPTY_CATALOG_FILTER,
           facets: true,
-          ...(nearby ? { nearby: true } : {}),
+          ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
         },
         signal,
       );

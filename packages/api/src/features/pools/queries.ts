@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import { type CatalogFilter, EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { PoolsClient, UserPoolPage } from "./client";
@@ -118,7 +119,7 @@ export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number
           perPage,
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
-          ...(nearby ? { nearby: true } : {}),
+          ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
         },
         signal,
       ),

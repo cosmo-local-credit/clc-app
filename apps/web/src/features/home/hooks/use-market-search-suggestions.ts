@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import { marketplaceInfiniteQueryOptions } from "@clc/api/features/marketplace/queries";
 import { parseCatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
@@ -36,7 +37,7 @@ export function useMarketSearchSuggestions(draft: string) {
     ...marketplaceInfiniteQueryOptions(marketplaceClient, {
       perPage: 1,
       facets: true,
-      nearby: !!nearby,
+      nearby: isAccountNearbyScope(nearby),
       scope: nearby,
     }),
     ...nearbyQueryPolicy(nearby),
@@ -46,7 +47,7 @@ export function useMarketSearchSuggestions(draft: string) {
       perPage: SUGGESTION_ROWS,
       q: term,
       kinds: ["voucher", "pool"],
-      nearby: !!nearby,
+      nearby: isAccountNearbyScope(nearby),
       scope: nearby,
     }),
     enabled: term !== "",

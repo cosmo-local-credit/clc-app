@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type {
@@ -179,7 +180,7 @@ export function voucherCatalogInfiniteQueryOptions(
           perPage,
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
-          ...(nearby ? { nearby: true } : {}),
+          ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
         },
         signal,
       ),
@@ -202,7 +203,10 @@ export function voucherViewportQueryOptions(
     queryFn: async ({ signal }) => {
       const pages = await Promise.all(
         boxes.map((bbox) =>
-          market.getMarketVouchers({ perPage, bbox, ...(nearby ? { nearby: true } : {}) }, signal),
+          market.getMarketVouchers(
+            { perPage, bbox, ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}) },
+            signal,
+          ),
         ),
       );
       return pages.flatMap((entry) => entry.vouchers);

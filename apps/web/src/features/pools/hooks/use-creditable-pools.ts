@@ -1,3 +1,4 @@
+import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
   type NearbyCatalogFilter,
   useNearbyCatalog,
@@ -114,7 +115,12 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
   const candidates = useQuery({
     queryKey: nearbyQueryKey(poolCreditQueryKeys.candidates(heldVoucherRefs), nearby),
     queryFn: ({ signal }) =>
-      fetchPoolCreditCandidates(heldVoucherRefs, signal, !!nearby, visibilityFilter),
+      fetchPoolCreditCandidates(
+        heldVoucherRefs,
+        signal,
+        isAccountNearbyScope(nearby),
+        visibilityFilter,
+      ),
     enabled: sourceReady,
     staleTime: CANDIDATE_STALE_TIME_MS,
     ...nearbyQueryPolicy(nearby),

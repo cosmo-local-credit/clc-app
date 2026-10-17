@@ -3,6 +3,9 @@ import { Link } from "@tanstack/react-router";
 import { createContext, type ReactNode, useContext } from "react";
 import { haversineMeters } from "@clc/core/lib/geo/distance";
 
+import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
+import { useIPCamera } from "#/features/home/hooks/use-ip-camera";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -10,6 +13,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
   catalogVisibilityRadiusKm,
   useHydratedCatalogVisibility,
+  useCatalogVisibilityStore,
 } from "#/features/home/state/catalog-visibility";
 
 // Only Catalogs, Market, Pools browsing, and Posts opt in. Other consumers of
@@ -171,11 +175,7 @@ export function NearbyCatalog({
     );
   }
   if (!auth.isAuthenticated) {
-    return (
-      <NearbyCatalogContext.Provider key="public" value={undefined}>
-        {children}
-      </NearbyCatalogContext.Provider>
-    );
+    return <GuestNearbyCatalog radiusKm={radiusKm}>{children}</GuestNearbyCatalog>;
   }
   if (
     typeof lat !== "number" ||
@@ -217,6 +217,48 @@ export function NearbyCatalog({
   return (
     <NearbyCatalogContext.Provider key={scope} value={scope}>
       <NearbyCatalogFilterContext.Provider value={filter}>
+        {children}
+      </NearbyCatalogFilterContext.Provider>
+    </NearbyCatalogContext.Provider>
+  );
+}
+
+/** Guests filter public rows locally; the server nearby mode requires a profile. */
+function GuestNearbyCatalog({ children, radiusKm }: { children: ReactNode; radiusKm: number }) {
+  const { realFix, locationStatus, requestLocation } = useMarketCamera(GUEST_STORAGE_OWNER);
+  const ip = useIPCamera();
+  const setVisibility = useCatalogVisibilityStore((state) => state.setVisibility);
+  // A country/default camera is not evidence of the visitor's location.
+  const origin = realFix ?? (ip.data?.source === "ip-city" ? ip.data : null);
+
+  if (!origin) {
+    return (
+      <div className="space-y-3 p-6">
+        <p role="status">
+          {ip.isPending && locationStatus === "idle" ? (
+            <Trans>Loading…</Trans>
+          ) : locationStatus === "denied" ? (
+            <Trans>Location denied</Trans>
+          ) : locationStatus === "unavailable" || locationStatus === "error" ? (
+            <Trans>Location unavailable</Trans>
+          ) : (
+            <Trans>Choose a location</Trans>
+          )}
+        </p>
+        <Button size="lg" pending={locationStatus === "requesting"} onClick={requestLocation}>
+          <Trans>Use my location</Trans>
+        </Button>
+        <Button variant="outline" size="lg" onClick={() => setVisibility("global")}>
+          <Trans>Global</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  const scope = `guest-nearby:${origin.lat}:${origin.lng}:${radiusKm}`;
+  return (
+    <NearbyCatalogContext.Provider key={scope} value={scope}>
+      <NearbyCatalogFilterContext.Provider value={{ lat: origin.lat, lng: origin.lng, radiusKm }}>
         {children}
       </NearbyCatalogFilterContext.Provider>
     </NearbyCatalogContext.Provider>
