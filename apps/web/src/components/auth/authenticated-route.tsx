@@ -3,6 +3,8 @@ import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { Button } from "#/components/ui/button";
+import { useFirstVisitIntroduction } from "#/components/introduction/introduction-provider";
+import { Introduction } from "#/components/introduction/introduction";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { sanitizeInternalRedirect } from "./redirect";
@@ -46,6 +48,7 @@ function SessionCheckError({ onRetry, retrying }: { onRetry: () => void; retryin
  */
 function AuthRequiredScreen() {
   const location = useLocation();
+  const introduction = useFirstVisitIntroduction();
   const redirectTo = sanitizeInternalRedirect(
     `${location.pathname}${location.searchStr}${location.hash}`,
   );
@@ -57,18 +60,30 @@ function AuthRequiredScreen() {
           <Trans>Sign in to continue</Trans>
         </h1>
 
+        {introduction.show ? <Introduction inline /> : null}
+
         <div className="space-y-2">
           {/*
             Replace the protected URL so onboarding does not stack above it.
             Finish then replaces the single onboarding slot with the destination.
           */}
           <Button asChild tap className="w-full">
-            <Link to="/onboarding" search={onboardingSearch("profile", redirectTo)} replace>
+            <Link
+              to="/onboarding"
+              search={onboardingSearch("profile", redirectTo)}
+              replace
+              onClick={introduction.complete}
+            >
               <Trans>Create account</Trans>
             </Link>
           </Button>
           <Button asChild variant="outline" tap className="w-full">
-            <Link to="/onboarding" search={onboardingSearch("signin", redirectTo)} replace>
+            <Link
+              to="/onboarding"
+              search={onboardingSearch("signin", redirectTo)}
+              replace
+              onClick={introduction.complete}
+            >
               <Trans>I already have an account</Trans>
             </Link>
           </Button>

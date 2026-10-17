@@ -60,7 +60,9 @@ export function LandingPage({
         </div>
       </div>
 
-      <div className="space-y-3 pt-8 pb-2">
+      <Introduction inline />
+
+      <div className="space-y-3 pt-4 pb-2">
         <Button tap className="w-full" onClick={() => go("profile")}>
           <Trans>Create account</Trans>
         </Button>
@@ -80,7 +82,6 @@ export function LandingPage({
         </Button>
         <InstallAppLink openDialog />
       </div>
-      <Introduction inline />
     </div>
   );
 }
