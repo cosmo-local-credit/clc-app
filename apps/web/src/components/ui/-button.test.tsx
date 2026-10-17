@@ -39,6 +39,15 @@ describe("Button", () => {
     expect(classes).not.toContain("text-xs");
   });
 
+  it("draws a visible edge around a white outline button", () => {
+    render(<Button variant="outline">Receive</Button>);
+    const classes = classesOf(screen.getByRole("button", { name: "Receive" }));
+
+    expect(classes).toContain("bg-card");
+    expect(classes).toContain("border-foreground/25");
+    expect(classes).not.toContain("border-border");
+  });
+
   it("sizes icon buttons to 36px and 44px", () => {
     render(
       <>

@@ -69,7 +69,32 @@ function openingTags(text: string, name: string): string[] {
   return tags;
 }
 
+/** The stylesheet with every `@layer` block cut out, leaving what outranks the utilities. */
+function unlayeredStyles(): string {
+  const css = readFileSync(resolve(SRC, "styles.css"), "utf8");
+  let out = "";
+  let index = 0;
+  for (const match of css.matchAll(/@layer[^{;]*\{/g)) {
+    if (match.index < index) continue;
+    out += css.slice(index, match.index);
+    let depth = 0;
+    for (index = match.index; index < css.length; index++) {
+      if (css[index] === "{") depth++;
+      else if (css[index] === "}" && --depth === 0) break;
+    }
+    index++;
+  }
+  return out + css.slice(index);
+}
+
 describe("type and button contract", () => {
+  it("leaves border colour to the base layer, so a border utility can win", () => {
+    // An unlayered `border-color` outranks every layered utility: it greyed
+    // out each outline, focus and error border and drew a divider inside the
+    // market search field.
+    expect(unlayeredStyles().match(/(?<![-\w])border-color\s*:[^;]*/g) ?? []).toEqual([]);
+  });
+
   it("draws text sizes from the scale, not arbitrary values", () => {
     expect(
       matchesOf(/\btext-\[(?:\d|\.)[^\]]*\]/g, ARBITRARY_SIZE_EXCEPTIONS).filter(

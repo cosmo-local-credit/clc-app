@@ -311,6 +311,11 @@ the 56 px receipt status badges, and the progress bar.
 Never use `bg-background` or `bg-transparent` for interactive elements (inputs,
 buttons) placed on the gray page background — they become invisible.
 
+A white control — outline `Button`, outline `Toggle`, unselected tag chip —
+draws its edge in `border-foreground/25`, so it still reads on a white sheet.
+`styles.css` sets `border-color` only inside `@layer base`: an unlayered one
+outranks every border utility, and the contract test fails on it.
+
 **Wallet amount inputs:** New or migrated transactional amount controls use
 `WalletAmountInput` from `#/components/wallet`. The component owns the square
 white surface, visible border, amount typography, placeholder, and focus,
