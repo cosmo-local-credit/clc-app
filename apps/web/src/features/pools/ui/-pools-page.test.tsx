@@ -309,7 +309,16 @@ describe("pools list", () => {
     fireEvent.click(await within(sheet).findByRole("button", { name: /Food/ }));
     expect(navigate).not.toHaveBeenCalled();
 
-    fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
+    // Apply and Reset stand as tall as the Wallet's create buttons, and Reset
+    // carries the brand's outline rather than a plain white one.
+    const apply = within(sheet).getByRole("button", { name: "Apply filters" });
+    const reset = within(sheet).getByRole("button", { name: "Reset" });
+    expect(apply.getAttribute("data-size")).toBe("default");
+    expect(reset.getAttribute("data-size")).toBe("default");
+    expect(reset.className).toContain("border-primary!");
+    expect(reset.className).toContain("text-primary");
+
+    fireEvent.click(apply);
     expect(navigate).toHaveBeenCalledTimes(1);
     expect(JSON.parse(window.localStorage.getItem(POOLS_FILTER_KEY) ?? "null")).toEqual({
       tags: ["Food"],

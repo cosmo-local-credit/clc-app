@@ -289,6 +289,9 @@ the 56 px receipt status badges, and the progress bar.
   quick actions.
 - `size="tile"` is the 56px icon-over-label tile, for the Wallet's Send,
   Receive and Cash only: the screen's main doors earn the extra height.
+- One sheet footer stays `default`: the market filter sheet's Apply filters
+  and Reset match the Wallet's create buttons, and Reset takes the primary
+  outline.
 - `icon` / `icon-lg` are the 36 and 44px squares. Toggle has the same sizes.
 - No `h-*`, `size-*` or `min-h-*` class on a `Button` or `Toggle`; the
   contract test fails on one. Inputs keep the default `h-9`.

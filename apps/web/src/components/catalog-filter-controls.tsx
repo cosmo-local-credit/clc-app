@@ -555,10 +555,11 @@ export function CatalogFilterSheet({
             </div>
 
             {/* Stacked like every other sheet footer: beside Reset, "Apply
-                filters" outgrows a 360px row in Dutch. */}
+                filters" outgrows a 360px row in Dutch. Both stand as tall as
+                the Wallet's create buttons. */}
             <SheetFooter className="bg-card px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <Button
-                size="lg"
+                tap
                 className="w-full"
                 onClick={() => {
                   onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
@@ -570,8 +571,8 @@ export function CatalogFilterSheet({
               </Button>
               <Button
                 variant="outline"
-                size="lg"
-                className="w-full"
+                tap
+                className="w-full border-primary! text-primary hover:bg-primary/10 hover:text-primary"
                 disabled={draftTags.length === 0 && draftVouchers.length === 0}
                 onClick={() => {
                   setDraftTags([]);
