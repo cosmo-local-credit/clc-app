@@ -37,6 +37,10 @@ const buttonVariants = cva(
         lg: "h-11 gap-2 px-4 text-sm has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3",
         icon: "size-9",
         "icon-lg": "size-11",
+        // The Wallet's Send, Receive and Cash: the screen's three main doors,
+        // an icon over an 11px label so a third of a 360px row fits every
+        // catalog's word.
+        tile: "h-14 flex-col gap-1 px-1 text-2xs",
       },
       // Pads a compact button's hit area out to 44px with an invisible
       // pseudo-element, so it meets the touch-target minimum without taking

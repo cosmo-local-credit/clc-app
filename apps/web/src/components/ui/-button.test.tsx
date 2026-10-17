@@ -29,6 +29,16 @@ describe("Button", () => {
     expect(button.getAttribute("data-size")).toBe("lg");
   });
 
+  it("stacks the icon over an 11px label in a 56px tile", () => {
+    render(<Button size="tile">Cash</Button>);
+    const classes = classesOf(screen.getByRole("button", { name: "Cash" }));
+
+    expect(classes).toContain("h-14");
+    expect(classes).toContain("flex-col");
+    expect(classes).toContain("text-2xs");
+    expect(classes).not.toContain("text-xs");
+  });
+
   it("sizes icon buttons to 36px and 44px", () => {
     render(
       <>

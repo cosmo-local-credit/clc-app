@@ -285,8 +285,10 @@ the 56 px receipt status badges, and the progress bar.
   completes something: form submits and save bars, sheet and dialog
   confirm/cancel pairs, Send, Swap, Top-up, Withdraw, Publish, destructive
   confirmations, the Create account / I already have an account fork, a
-  full-screen error whose only action is Retry, map controls, and the wallet
-  and pool quick actions.
+  full-screen error whose only action is Retry, map controls, and the pool
+  quick actions.
+- `size="tile"` is the 56px icon-over-label tile, for the Wallet's Send,
+  Receive and Cash only: the screen's main doors earn the extra height.
 - `icon` / `icon-lg` are the 36 and 44px squares. Toggle has the same sizes.
 - No `h-*`, `size-*` or `min-h-*` class on a `Button` or `Toggle`; the
   contract test fails on one. Inputs keep the default `h-9`.

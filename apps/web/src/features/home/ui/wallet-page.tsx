@@ -143,20 +143,11 @@ export function WalletPage({ address }: { address?: string }) {
       <CompleteProfileBanner address={address} />
 
       <section aria-label={t`Wallet actions`} className="space-y-3">
-        {/* The icon sits over a 12px label: a third of a 360px row leaves
-            about 89px, which every catalog's label fits whole, where beside
-            the icon at 14px several did not. */}
         <div className="grid grid-cols-3 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
-              <Button
-                key={action.id}
-                asChild
-                variant={action.variant}
-                size="lg"
-                className="flex-col gap-1 px-1 text-xs leading-tight"
-              >
+              <Button key={action.id} asChild variant={action.variant} size="tile">
                 <Link to={action.to}>
                   <Icon className="size-4" aria-hidden="true" />
                   {action.label}
