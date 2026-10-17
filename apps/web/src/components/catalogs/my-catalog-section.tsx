@@ -23,7 +23,12 @@ export function MyCatalogSection() {
           <p>
             <Trans>Couldn't load catalogs.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>

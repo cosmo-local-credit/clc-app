@@ -18,7 +18,7 @@ import {
  */
 export function PoolCreditPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const { t } = useLingui();
-  const { holdings, unit, isPending, capsPending, isError, refetch } = usePoolHoldings(
+  const { holdings, unit, isPending, capsPending, isError, isFetching, refetch } = usePoolHoldings(
     pool,
     vouchers,
   );
@@ -31,6 +31,7 @@ export function PoolCreditPanel({ pool, vouchers }: { pool: UserPool; vouchers: 
       isError={isError}
       isEmpty={holdings.length === 0}
       onRetry={refetch}
+      retrying={isFetching}
       messages={{
         loading: <Trans>Loading credit limits…</Trans>,
         error: <Trans>Couldn't load credit limits.</Trans>,

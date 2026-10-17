@@ -1,8 +1,8 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiLoader4Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 
 type State = ReturnType<typeof useCreditableBrowse>;
@@ -80,9 +80,7 @@ export function CreditableBrowseControl({
           onClick={() => onChange(!state.enabled)}
         >
           <Trans>Credit</Trans>
-          {state.enabled && state.verification.status === "loading" ? (
-            <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-          ) : null}
+          {state.enabled && state.verification.status === "loading" ? <Spinner /> : null}
         </Button>
       ) : null}
       {showFeedback && state.enabled && state.verification.status === "error" ? (
@@ -93,7 +91,12 @@ export function CreditableBrowseControl({
           <p className="text-sm">
             <Trans>Couldn't check creditable pools.</Trans>
           </p>
-          <Button variant="outline" tap onClick={state.verification.retry}>
+          <Button
+            variant="outline"
+            tap
+            pending={state.verification.retrying}
+            onClick={state.verification.retry}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>

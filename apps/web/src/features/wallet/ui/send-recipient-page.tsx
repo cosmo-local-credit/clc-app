@@ -130,6 +130,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
           onRetry={() => {
             void transfersQuery.refetch();
           }}
+          retrying={transfersQuery.isFetching}
           onSelect={handleSelectRecipient}
         />
       ) : null}
@@ -156,7 +157,8 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
       <Button
         size="lg"
         className="mt-2.5 w-full"
-        disabled={!recipient || upsertRecipient.isPending}
+        disabled={!recipient}
+        pending={upsertRecipient.isPending}
         onClick={() => {
           void handleContinue();
         }}
@@ -179,12 +181,14 @@ function RecentRecipients({
   pending,
   failed,
   onRetry,
+  retrying,
   onSelect,
 }: {
   recipients: readonly Recipient[];
   pending: boolean;
   failed: boolean;
   onRetry: () => void;
+  retrying: boolean;
   onSelect: (recipient: Recipient) => void;
 }) {
   if (!pending && !failed && recipients.length === 0) return null;
@@ -204,7 +208,7 @@ function RecentRecipients({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't load activity.</Trans>
           </p>
-          <Button type="button" variant="outline" tap onClick={onRetry}>
+          <Button type="button" variant="outline" tap pending={retrying} onClick={onRetry}>
             <Trans>Try again</Trans>
           </Button>
         </div>

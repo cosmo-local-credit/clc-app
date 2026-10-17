@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from
 import { Link } from "@tanstack/react-router";
 
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import {
   SheetBackdrop,
@@ -36,6 +37,7 @@ type OfferingsQueryLike = {
   isPending: boolean;
   isError: boolean;
   isSuccess: boolean;
+  isFetching: boolean;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => unknown;
@@ -171,7 +173,12 @@ export function OfferingsPanel({
           <p className="text-muted-foreground text-sm">
             <Trans>Couldn't load offerings.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -215,7 +222,7 @@ export function OfferingsPanel({
           variant="outline"
           tap
           className="mt-3 w-full"
-          disabled={query.isFetchingNextPage}
+          pending={query.isFetchingNextPage}
           onClick={() => {
             if (manualLimit >= offerings.length && query.hasNextPage) {
               void Promise.resolve(query.fetchNextPage()).then(() =>
@@ -388,12 +395,16 @@ function OfferingTile({
           </button>
           <button
             type="button"
-            className="h-9 flex-1 bg-card text-[0.6875rem] font-semibold text-destructive"
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 bg-card text-[0.6875rem] font-semibold text-destructive"
             disabled={management.deletingID === offering.id}
+            aria-busy={management.deletingID === offering.id || undefined}
             onClick={() => management.onDelete(offering)}
           >
             {management.deletingID === offering.id ? (
-              <Trans>Removing…</Trans>
+              <>
+                <Spinner />
+                <Trans>Removing…</Trans>
+              </>
             ) : (
               <Trans>Remove</Trans>
             )}

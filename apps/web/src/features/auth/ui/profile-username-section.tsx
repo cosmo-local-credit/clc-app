@@ -207,7 +207,8 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={!canSubmit || isSubmitting || normalized === "" || normalized === current}
+                disabled={!canSubmit || normalized === "" || normalized === current}
+                pending={isSubmitting}
               >
                 {isSubmitting ? t`Saving…` : t`Save username`}
               </Button>

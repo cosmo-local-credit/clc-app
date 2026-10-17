@@ -206,7 +206,13 @@ export function PostVoucherPicker({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't search vouchers.</Trans>
           </p>
-          <Button type="button" variant="outline" tap onClick={search.retry}>
+          <Button
+            type="button"
+            variant="outline"
+            tap
+            pending={search.retrying}
+            onClick={search.retry}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>

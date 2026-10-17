@@ -1,6 +1,14 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { cloneElement, isValidElement, type ComponentProps, type ReactElement } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  type ComponentProps,
+  type MouseEvent,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 
+import { Spinner } from "#/components/ui/spinner";
 import { cn } from "#/lib/utils.ts";
 
 const buttonVariants = cva(
@@ -62,6 +70,18 @@ const buttonVariants = cva(
 type ButtonProps = ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    /**
+     * The button is waiting on the network, the chain, an upload or a
+     * signature. The Spinner takes the leading place, the button's own icons
+     * hide, and it is disabled and `aria-busy` until the work settles. The
+     * label stays the caller's: pass the pending wording ("Saving…") alongside.
+     *
+     * With `asChild` the child is usually a link, which `disabled` means
+     * nothing to. It gets the Spinner ahead of its own content, `aria-busy`
+     * and `aria-disabled`, drops pointer events and swallows clicks, so
+     * keyboard activation cannot navigate either.
+     */
+    pending?: boolean;
   };
 
 function Button({
@@ -70,23 +90,47 @@ function Button({
   size = "default",
   tap = false,
   asChild = false,
+  pending = false,
   children,
   disabled,
   onClick,
   type,
   ...props
 }: ButtonProps) {
-  const classes = cn(buttonVariants({ variant, size, tap, className }));
+  const classes = cn(
+    buttonVariants({ variant, size, tap, className }),
+    // The caller's own icons hide while pending; the Spinner stands in for them.
+    pending && "[&>svg:not([data-slot=spinner])]:hidden",
+  );
+  const pendingProps = pending ? { "aria-busy": true, "data-pending": "" } : {};
   if (asChild && isValidElement(children)) {
     const child = children as ReactElement<Record<string, unknown>>;
     return cloneElement(child, {
       ...props,
-      className: cn(classes, child.props.className as string | undefined),
+      ...pendingProps,
+      className: cn(
+        classes,
+        child.props.className as string | undefined,
+        pending && "pointer-events-none opacity-50",
+      ),
       "data-slot": "button",
       "data-variant": variant,
       "data-size": size,
       ...(disabled !== undefined ? { disabled } : {}),
-      ...(onClick !== undefined ? { onClick } : {}),
+      ...(pending
+        ? {
+            "aria-disabled": true,
+            onClick: (event: MouseEvent) => event.preventDefault(),
+            children: (
+              <>
+                <Spinner />
+                {child.props.children as ReactNode}
+              </>
+            ),
+          }
+        : onClick !== undefined
+          ? { onClick }
+          : {}),
     });
   }
   return (
@@ -96,10 +140,12 @@ function Button({
       data-variant={variant}
       data-size={size}
       className={classes}
-      disabled={disabled}
+      disabled={disabled || pending}
       onClick={onClick}
+      {...pendingProps}
       {...props}
     >
+      {pending ? <Spinner /> : null}
       {children}
     </button>
   );

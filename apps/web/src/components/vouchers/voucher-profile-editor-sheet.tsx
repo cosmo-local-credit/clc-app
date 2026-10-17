@@ -324,7 +324,13 @@ function VoucherProfileForm({
                   <p className="text-destructive text-xs">
                     <Trans>Couldn't load voucher tags.</Trans>
                   </p>
-                  <Button type="button" variant="outline" tap onClick={() => tagsQuery.refetch()}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    tap
+                    pending={tagsQuery.isFetching}
+                    onClick={() => void tagsQuery.refetch()}
+                  >
                     <Trans>Retry</Trans>
                   </Button>
                 </div>
@@ -497,7 +503,7 @@ function VoucherProfileForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit" size="lg" className="w-full" disabled={update.isPending || iconBusy}>
+        <Button type="submit" size="lg" className="w-full" pending={update.isPending || iconBusy}>
           {iconBusy ? (
             <Trans>Uploading…</Trans>
           ) : update.isPending ? (

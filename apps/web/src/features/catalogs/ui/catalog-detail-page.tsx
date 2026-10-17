@@ -45,7 +45,12 @@ export function CatalogDetailPage({ id }: { id: string }) {
               <Trans>Couldn't load catalogs.</Trans>
             )}
           </h1>
-          <Button variant="outline" size="lg" onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            size="lg"
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>

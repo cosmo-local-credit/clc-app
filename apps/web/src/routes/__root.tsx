@@ -317,7 +317,7 @@ function AppInner() {
                 <Button
                   size="lg"
                   className="w-full"
-                  disabled={switching}
+                  pending={switching}
                   onClick={handleConfirmSwitch}
                 >
                   {switching ? t`Connecting…` : address ? t`Switch wallet` : t`Import wallet`}

@@ -35,7 +35,7 @@ import { cn } from "#/lib/utils";
 export type VoucherBalanceSummary =
   | { status: "hidden"; hasPositiveBalance: false }
   | { status: "loading"; hasPositiveBalance: false }
-  | { status: "unavailable"; hasPositiveBalance: false; retry: () => void }
+  | { status: "unavailable"; hasPositiveBalance: false; retry: () => void; retrying: boolean }
   | {
       status: "ready";
       hasPositiveBalance: boolean;
@@ -77,6 +77,7 @@ export function useVoucherBalanceSummary({
       status: "unavailable",
       hasPositiveBalance: false,
       retry: () => void holdings.refetch(),
+      retrying: holdings.isFetching,
     };
   }
 
@@ -90,6 +91,7 @@ export function useVoucherBalanceSummary({
       status: "unavailable",
       hasPositiveBalance: false,
       retry: () => void holdings.refetch(),
+      retrying: holdings.isFetching,
     };
   }
 
@@ -144,7 +146,13 @@ function VoucherBalanceSummaryLine({
           <span className="text-destructive text-xs">
             <Trans>Unavailable</Trans>
           </span>
-          <Button type="button" variant="ghost" tap onClick={balance.retry}>
+          <Button
+            type="button"
+            variant="ghost"
+            tap
+            pending={balance.retrying}
+            onClick={balance.retry}
+          >
             <Trans>Retry</Trans>
           </Button>
         </>

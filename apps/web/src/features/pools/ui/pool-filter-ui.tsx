@@ -37,10 +37,12 @@ export function PoolFilterFeedback({
   filter,
   error,
   onRetry,
+  retrying,
 }: {
   filter: PersistedCatalogFilterControls;
   error: Error | null;
   onRetry: () => void;
+  retrying: boolean;
 }) {
   const { t } = useLingui();
 
@@ -76,7 +78,12 @@ export function PoolFilterFeedback({
       };
     }
 
-    return { message: t`Couldn't load pools.`, actionLabel: t`Try again`, onAction: onRetry };
+    return {
+      message: t`Couldn't load pools.`,
+      actionLabel: t`Try again`,
+      onAction: onRetry,
+      actionPending: retrying,
+    };
   })();
 
   if (!notice) return null;
@@ -85,7 +92,12 @@ export function PoolFilterFeedback({
     <div className="space-y-2 border border-border bg-card p-3" role="alert">
       <p className="text-muted-foreground text-sm">{notice.message}</p>
       {notice.actionLabel && notice.onAction ? (
-        <Button variant="outline" tap onClick={notice.onAction}>
+        <Button
+          variant="outline"
+          tap
+          pending={"actionPending" in notice && notice.actionPending}
+          onClick={notice.onAction}
+        >
           {notice.actionLabel}
         </Button>
       ) : null}

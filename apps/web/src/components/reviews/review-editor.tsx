@@ -139,7 +139,8 @@ export function ReviewEditor({
         <Button
           type="submit"
           size="lg"
-          disabled={pending || (kind === "review" ? stars === 0 : !text.trim())}
+          disabled={kind === "review" ? stars === 0 : !text.trim()}
+          pending={pending}
         >
           {pending ? t`Saving…` : kind === "flag" ? t`Send report` : t`Save`}
         </Button>

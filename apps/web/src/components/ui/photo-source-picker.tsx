@@ -18,6 +18,8 @@ type Props = {
   onSelect: (file: File) => void;
   cameraFacing: "user" | "environment";
   disabled?: boolean;
+  /** The chosen photo is uploading; the trigger shows the Spinner. */
+  pending?: boolean;
   required?: boolean;
   ariaInvalid?: boolean;
   ariaDescribedBy?: string;
@@ -30,6 +32,7 @@ export function PhotoSourcePicker({
   onSelect,
   cameraFacing,
   disabled,
+  pending,
   required,
   ariaInvalid,
   ariaDescribedBy,
@@ -75,6 +78,7 @@ export function PhotoSourcePicker({
         type="button"
         variant="outline"
         disabled={disabled}
+        pending={pending}
         aria-invalid={ariaInvalid}
         aria-describedby={ariaDescribedBy}
         aria-haspopup="dialog"

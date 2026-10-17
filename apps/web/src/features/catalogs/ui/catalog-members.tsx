@@ -42,7 +42,12 @@ export function CatalogMembers({
           <p role="alert">
             <Trans>Couldn't load catalog items.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -88,6 +93,7 @@ export function CatalogMembers({
                   tap
                   aria-label={t`Remove ${item.name}`}
                   disabled={remove.isPending}
+                  pending={remove.isPending && remove.variables?.resourceId === item.id}
                   onClick={async () => {
                     try {
                       await remove.mutateAsync({
@@ -112,10 +118,10 @@ export function CatalogMembers({
           variant="outline"
           tap
           className="w-full"
-          disabled={query.isFetchingNextPage}
+          pending={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >
-          <Trans>Load more</Trans>
+          {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>
       ) : null}
     </section>

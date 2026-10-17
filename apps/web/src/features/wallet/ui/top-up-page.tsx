@@ -167,6 +167,7 @@ export function TopUpPage() {
           transactions={cashTransactions}
           isPending={!!cashAddress && transactionsQuery.isPending}
           isError={!!cashAddress && transactionsQuery.isError}
+          retrying={transactionsQuery.isFetching}
           onRetry={() => {
             void transactionsQuery.refetch();
           }}
@@ -403,7 +404,8 @@ function AddStablesSheet({
             <Button
               size="lg"
               className="w-full"
-              disabled={!canContinue || triggerOnramp.isPending}
+              disabled={!canContinue}
+              pending={triggerOnramp.isPending}
               onClick={() => void onContinue()}
             >
               {triggerOnramp.isPending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
@@ -419,6 +421,7 @@ function PretiumHistory({
   transactions,
   isPending,
   isError,
+  retrying,
   onRetry,
   onSelectOnramp,
   onSelectOfframp,
@@ -426,6 +429,7 @@ function PretiumHistory({
   transactions: PretiumCashTransaction[];
   isPending: boolean;
   isError: boolean;
+  retrying: boolean;
   onRetry: () => void;
   onSelectOnramp: (transaction: PretiumCashTransaction) => void;
   onSelectOfframp: (transaction: PretiumCashTransaction) => void;
@@ -448,7 +452,7 @@ function PretiumHistory({
             <p className="text-muted-foreground text-sm">
               <Trans>Couldn't load Pretium history.</Trans>
             </p>
-            <Button variant="outline" tap onClick={onRetry}>
+            <Button variant="outline" tap pending={retrying} onClick={onRetry}>
               <Trans>Try again</Trans>
             </Button>
           </div>

@@ -159,7 +159,8 @@ export function PostImageManager({
           type="button"
           variant="outline"
           tap
-          disabled={disabled || busy || remaining <= 0}
+          disabled={disabled || remaining <= 0}
+          pending={busy}
           onClick={() => inputRef.current?.click()}
         >
           <FaCamera aria-hidden className="me-2 size-4" />

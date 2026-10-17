@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState, type ReactNode } from "react";
-import { RiLoader4Line, RiNotification3Line } from "react-icons/ri";
+import { RiNotification3Line } from "react-icons/ri";
 
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
@@ -100,21 +100,16 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
               variant="outline"
               size="lg"
               className="w-full"
-              disabled={state.status === "enabling"}
+              pending={state.status === "enabling"}
               onClick={() => {
                 void handleEnable();
               }}
             >
+              <RiNotification3Line aria-hidden="true" />
               {state.status === "enabling" ? (
-                <>
-                  <RiLoader4Line className="animate-spin" aria-hidden="true" />
-                  <Trans>Enabling notifications…</Trans>
-                </>
+                <Trans>Enabling notifications…</Trans>
               ) : (
-                <>
-                  <RiNotification3Line aria-hidden="true" />
-                  <Trans>Enable notifications</Trans>
-                </>
+                <Trans>Enable notifications</Trans>
               )}
             </Button>
           ) : null

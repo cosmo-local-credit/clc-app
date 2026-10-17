@@ -386,7 +386,12 @@ export function CatalogFilterSheet({
                         <p className="text-muted-foreground text-sm">
                           <Trans>Couldn't search vouchers.</Trans>
                         </p>
-                        <Button variant="outline" tap onClick={voucherSearch.retry}>
+                        <Button
+                          variant="outline"
+                          tap
+                          pending={voucherSearch.retrying}
+                          onClick={voucherSearch.retry}
+                        >
                           <Trans>Try again</Trans>
                         </Button>
                       </div>

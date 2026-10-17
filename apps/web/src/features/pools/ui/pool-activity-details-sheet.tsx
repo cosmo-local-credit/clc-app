@@ -216,7 +216,12 @@ export function PoolActivityDetailsSheet({
                     <Trans>Fee details unavailable.</Trans>
                   </p>
                   {settlement.canLoad ? (
-                    <Button variant="outline" tap onClick={() => settlement.refetch()}>
+                    <Button
+                      variant="outline"
+                      tap
+                      pending={settlement.isFetching}
+                      onClick={() => void settlement.refetch()}
+                    >
                       <Trans>Try again</Trans>
                     </Button>
                   ) : null}

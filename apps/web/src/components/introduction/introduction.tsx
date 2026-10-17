@@ -40,7 +40,7 @@ export function Introduction({ replay = false, onExit }: Props) {
         </section>
       ) : loading || error ? (
         <div className="flex flex-1 items-center justify-center" role="status">
-          {loading ? <Trans>Loading...</Trans> : null}
+          {loading ? <Trans>Loading…</Trans> : null}
         </div>
       ) : (
         <section

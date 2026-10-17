@@ -255,7 +255,8 @@ export function ImageCropSheet({
                 type="button"
                 size="lg"
                 className="w-full"
-                disabled={!source || working}
+                disabled={!source}
+                pending={working}
                 onClick={() => void useThisPhoto()}
               >
                 {working ? t`Preparing…` : t`Use photo`}

@@ -154,7 +154,7 @@ describe("VoucherDeploymentReceiptPage", () => {
   it("shows the publishing state while OTX confirmation is pending", () => {
     renderReceipt();
 
-    expect(screen.getByRole("heading", { name: "Publishing your voucher..." })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Publishing your voucher…" })).toBeTruthy();
     expect(screen.getByText("Voucher contract")).toBeTruthy();
     expect(screen.getByText("In network")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Done" })).toBeNull();
@@ -172,7 +172,7 @@ describe("VoucherDeploymentReceiptPage", () => {
     };
 
     renderReceipt();
-    expect(screen.getByRole("heading", { name: "Publishing your voucher..." })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Publishing your voucher…" })).toBeTruthy();
   });
 
   it("shows the live voucher address and exits forward to its detail page", async () => {

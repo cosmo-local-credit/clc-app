@@ -406,7 +406,13 @@ function SendSharePanel({
         <p className="text-muted-foreground text-xs">
           <Trans>Couldn't check message availability.</Trans>
         </p>
-        <Button type="button" variant="outline" tap onClick={() => eligibility.refetch()}>
+        <Button
+          type="button"
+          variant="outline"
+          tap
+          pending={eligibility.isFetching}
+          onClick={() => void eligibility.refetch()}
+        >
           <Trans>Retry</Trans>
         </Button>
       </div>
@@ -459,6 +465,7 @@ function SendSharePanel({
               }
               void offeringsQuery.refetch();
             }}
+            pending={voucher.isFetching || offeringsQuery.isFetching}
           >
             <Trans>Retry</Trans>
           </Button>
@@ -591,7 +598,8 @@ function SendSharePanel({
                   type="submit"
                   size="lg"
                   className="w-full"
-                  disabled={!hasContent || !note.ok || createShare.isPending}
+                  disabled={!hasContent || !note.ok}
+                  pending={createShare.isPending}
                 >
                   {createShare.isPending ? <Trans>Sharing…</Trans> : <Trans>Share</Trans>}
                 </Button>

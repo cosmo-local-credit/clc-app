@@ -47,7 +47,12 @@ export function ReportPage({ reportId }: { reportId: string }) {
   if (reportQuery.isError) {
     return (
       <ReportShell message={t`Couldn't load this post.`}>
-        <Button variant="outline" size="lg" onClick={() => reportQuery.refetch()}>
+        <Button
+          variant="outline"
+          size="lg"
+          pending={reportQuery.isFetching}
+          onClick={() => void reportQuery.refetch()}
+        >
           <Trans>Retry</Trans>
         </Button>
       </ReportShell>

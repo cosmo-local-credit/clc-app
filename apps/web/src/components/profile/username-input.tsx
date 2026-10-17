@@ -54,8 +54,7 @@ export function UsernameInput({
         type="button"
         variant="outline"
         tap
-        disabled={busy}
-        aria-busy={busy}
+        pending={busy}
         onClick={async () => {
           const before = currentValue.current;
           setBusy(true);

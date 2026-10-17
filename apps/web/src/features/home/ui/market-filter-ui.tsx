@@ -14,12 +14,15 @@ export type MarketFilterNotice = {
   message: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** The action is under way: a retry that is loading again. */
+  actionPending?: boolean;
 };
 
 export function useMarketFilterNotice(
   filter: CatalogFilterControls,
   error: Error | null,
   onRetry: () => void,
+  retrying: boolean,
 ): MarketFilterNotice | null {
   const { t } = useLingui();
 
@@ -54,26 +57,33 @@ export function useMarketFilterNotice(
     };
   }
 
-  return { message: t`Could not load vouchers.`, actionLabel: t`Retry`, onAction: onRetry };
+  return {
+    message: t`Could not load vouchers.`,
+    actionLabel: t`Retry`,
+    onAction: onRetry,
+    actionPending: retrying,
+  };
 }
 
 export function MarketFilterFeedback({
   filter,
   error,
   onRetry,
+  retrying,
 }: {
   filter: CatalogFilterControls;
   error: Error | null;
   onRetry: () => void;
+  retrying: boolean;
 }) {
-  const notice = useMarketFilterNotice(filter, error, onRetry);
+  const notice = useMarketFilterNotice(filter, error, onRetry, retrying);
   if (!notice) return null;
 
   return (
     <div className="mt-4 space-y-3 border border-border bg-card p-4" role="alert">
       <p className="text-muted-foreground text-sm">{notice.message}</p>
       {notice.actionLabel && notice.onAction ? (
-        <Button variant="outline" tap onClick={notice.onAction}>
+        <Button variant="outline" tap pending={notice.actionPending} onClick={notice.onAction}>
           {notice.actionLabel}
         </Button>
       ) : null}

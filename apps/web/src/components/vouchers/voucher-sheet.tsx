@@ -116,7 +116,13 @@ export function VoucherSheet({
             </MapSheetTitle>
             <CloseButton label={t`Close`} onClick={selection.close} />
           </div>
-          <Button variant="outline" tap className="mt-3" onClick={() => void detailQuery.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            className="mt-3"
+            pending={detailQuery.isFetching}
+            onClick={() => void detailQuery.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </MapSheetPeek>

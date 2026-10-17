@@ -1,5 +1,50 @@
 import { defineConfig } from "vite-plus";
 
+const SPINNER_MESSAGE =
+  "Use Spinner from #/components/ui/spinner, or Button's pending, so every wait looks the same and stops under reduced motion.";
+
+// apps/web's own import bans. Oxlint keeps only the last matching override's
+// options for a rule, so the features/*/ui override restates these rather than
+// dropping them for every file it matches.
+const webRestrictedImports = {
+  paths: [
+    {
+      name: "@clc/api/client/create-clc-api",
+      message: "Use the exact #/lib/api/<resource> module so web route splitting is preserved.",
+    },
+    {
+      name: "@clc/api/features/admin",
+      message: "Admin endpoints belong to apps/admin, never apps/web.",
+    },
+    { name: "react-icons/fi", importNames: ["FiLoader"], message: SPINNER_MESSAGE },
+    { name: "react-icons/im", importNames: ["ImSpinner2"], message: SPINNER_MESSAGE },
+    { name: "lucide-react", importNames: ["LoaderCircle", "Loader2"], message: SPINNER_MESSAGE },
+  ],
+  patterns: [
+    {
+      group: [
+        "**/web/src/**",
+        "**/admin/src/**",
+        "@clc/web",
+        "@clc/web/**",
+        "@clc/admin",
+        "@clc/admin/**",
+      ],
+      message: "Apps must not import each other. Move shared logic to @clc/core or @clc/api.",
+    },
+    {
+      group: ["@clc/api/features/admin/**"],
+      message: "Admin endpoints belong to apps/admin, never apps/web.",
+    },
+  ],
+};
+
+const featureUiPattern = {
+  group: ["#/features/*/ui", "#/features/*/ui/**", "@/features/*/ui", "@/features/*/ui/**"],
+  message:
+    "Don't import another feature's ui/ — cross-feature reuse goes through logic/ or components/ui/. Sibling files in the same feature use relative paths.",
+};
+
 export default defineConfig({
   staged: {
     "*": "vp check --fix",
@@ -205,64 +250,28 @@ export default defineConfig({
       {
         // Web keeps backend resources route-scoped. The aggregate and admin
         // client are valid in the desktop console, never in the mobile graph.
+        // The old loader icons are banned too: waiting is drawn by Spinner.
         files: ["apps/web/src/**"],
+        rules: {
+          "no-restricted-imports": ["error", webRestrictedImports],
+        },
+      },
+      {
+        files: ["apps/web/src/features/*/ui/**"],
         rules: {
           "no-restricted-imports": [
             "error",
             {
-              paths: [
-                {
-                  name: "@clc/api/client/create-clc-api",
-                  message:
-                    "Use the exact #/lib/api/<resource> module so web route splitting is preserved.",
-                },
-                {
-                  name: "@clc/api/features/admin",
-                  message: "Admin endpoints belong to apps/admin, never apps/web.",
-                },
-              ],
-              patterns: [
-                {
-                  group: [
-                    "**/web/src/**",
-                    "**/admin/src/**",
-                    "@clc/web",
-                    "@clc/web/**",
-                    "@clc/admin",
-                    "@clc/admin/**",
-                  ],
-                  message:
-                    "Apps must not import each other. Move shared logic to @clc/core or @clc/api.",
-                },
-                {
-                  group: ["@clc/api/features/admin/**"],
-                  message: "Admin endpoints belong to apps/admin, never apps/web.",
-                },
-              ],
+              paths: webRestrictedImports.paths,
+              patterns: [...webRestrictedImports.patterns, featureUiPattern],
             },
           ],
         },
       },
       {
-        files: ["apps/web/src/features/*/ui/**", "apps/admin/src/features/*/ui/**"],
+        files: ["apps/admin/src/features/*/ui/**"],
         rules: {
-          "no-restricted-imports": [
-            "error",
-            {
-              patterns: [
-                {
-                  group: [
-                    "#/features/*/ui",
-                    "#/features/*/ui/**",
-                    "@/features/*/ui",
-                    "@/features/*/ui/**",
-                  ],
-                  message:
-                    "Don't import another feature's ui/ — cross-feature reuse goes through logic/ or components/ui/. Sibling files in the same feature use relative paths.",
-                },
-              ],
-            },
-          ],
+          "no-restricted-imports": ["error", { patterns: [featureUiPattern] }],
         },
       },
     ],

@@ -475,7 +475,7 @@ function SendConfirmationSheet({
             <Button
               size="lg"
               className="w-full"
-              disabled={isPending}
+              pending={isPending}
               onClick={() => void onConfirm()}
             >
               {isPending ? <Trans>Sending…</Trans> : <Trans>Confirm and send</Trans>}

@@ -189,7 +189,8 @@ export function CatalogForm({
             type="submit"
             size="lg"
             className="w-full"
-            disabled={submitting || imageBusy || save.isPending}
+            disabled={imageBusy}
+            pending={submitting || save.isPending}
           >
             {submitting ? (
               <Trans>Saving…</Trans>

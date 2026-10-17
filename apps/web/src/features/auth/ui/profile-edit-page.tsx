@@ -6,7 +6,6 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
@@ -53,7 +52,12 @@ export function ProfileEditPage() {
           <p className="text-muted-foreground text-sm">
             <Trans>We couldn't load your profile.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => void profileQuery.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={profileQuery.isFetching}
+            onClick={() => void profileQuery.refetch()}
+          >
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -417,18 +421,11 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
               // file finished.
               <Button
                 type="submit"
-                disabled={
-                  !(isDirty || avatarUrl !== storedAvatarUrl) ||
-                  !canSubmit ||
-                  isSubmitting ||
-                  avatarBusy
-                }
+                disabled={!(isDirty || avatarUrl !== storedAvatarUrl) || !canSubmit}
+                pending={isSubmitting || avatarBusy}
                 size="lg"
                 className="w-full"
               >
-                {isSubmitting ? (
-                  <RiLoader4Line className="animate-spin" aria-hidden="true" />
-                ) : null}
                 {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
               </Button>
             )}

@@ -12,7 +12,9 @@ export function AuthenticatedRoute({ children }: { children: ReactNode }) {
 
   if (auth.isLoading) return <AuthRouteFallback />;
   if (auth.isAuthenticated) return <>{children}</>;
-  if (auth.state === "sessionCheckError") return <SessionCheckError onRetry={auth.retry} />;
+  if (auth.state === "sessionCheckError") {
+    return <SessionCheckError onRetry={auth.retry} retrying={auth.retrying} />;
+  }
   return <AuthRequiredScreen />;
 }
 
@@ -20,7 +22,7 @@ function AuthRouteFallback() {
   return <div className="min-h-[100svh] bg-background" />;
 }
 
-function SessionCheckError({ onRetry }: { onRetry: () => void }) {
+function SessionCheckError({ onRetry, retrying }: { onRetry: () => void; retrying: boolean }) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-20 pb-12">
       <div className="rounded-xl border border-border bg-card p-4">
@@ -30,7 +32,7 @@ function SessionCheckError({ onRetry }: { onRetry: () => void }) {
         <p className="mt-2 text-muted-foreground text-sm">
           <Trans>We could not verify your session. Check your connection and try again.</Trans>
         </p>
-        <Button size="lg" className="mt-4 w-full" onClick={onRetry}>
+        <Button size="lg" className="mt-4 w-full" pending={retrying} onClick={onRetry}>
           <Trans>Try again</Trans>
         </Button>
       </div>

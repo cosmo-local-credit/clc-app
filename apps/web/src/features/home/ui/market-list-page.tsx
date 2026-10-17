@@ -45,7 +45,7 @@ export function MarketListPage({
     filtersEverOpened,
     credit.enabled ? credit.poolRefs : undefined,
   );
-  const { vouchers, isCatalogComplete, error, retry } = catalog;
+  const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -177,7 +177,7 @@ export function MarketListPage({
           />
         </div>
 
-        <MarketFilterFeedback filter={filter} error={error} onRetry={retry} />
+        <MarketFilterFeedback filter={filter} error={error} onRetry={retry} retrying={retrying} />
 
         {!credit.blocksResults &&
         !error &&

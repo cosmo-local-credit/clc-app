@@ -98,6 +98,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
               void mine.refetch();
               void usage.refetch();
             }}
+            pending={mine.isFetching || usage.isFetching}
           >
             <Trans>Retry</Trans>
           </Button>
@@ -113,7 +114,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
             </p>
           ) : null}
           {intent ? (
-            <Button size="lg" disabled={member.isPending} onClick={() => void finish(catalog)}>
+            <Button size="lg" pending={member.isPending} onClick={() => void finish(catalog)}>
               <Trans>Add to catalog</Trans>
             </Button>
           ) : null}

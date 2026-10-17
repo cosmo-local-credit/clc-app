@@ -36,6 +36,7 @@ export function PostsPage() {
       isPending: reportsQuery.isPending,
       error: reportsQuery.error ?? null,
       retry: () => void reportsQuery.refetch(),
+      retrying: reportsQuery.isFetching,
       hasNextPage: reportsQuery.hasNextPage,
       fetchNextPage: () => void reportsQuery.fetchNextPage(),
       isFetchingNextPage: reportsQuery.isFetchingNextPage,
@@ -99,7 +100,12 @@ export function PostsPage() {
 
       <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
 
-      <ReportFilterFeedback filter={filter} error={feed.error} onRetry={feed.retry} />
+      <ReportFilterFeedback
+        filter={filter}
+        error={feed.error}
+        onRetry={feed.retry}
+        retrying={feed.retrying}
+      />
 
       {feed.status === "loading" ? (
         <div className="border border-border bg-card p-4 text-muted-foreground text-sm">

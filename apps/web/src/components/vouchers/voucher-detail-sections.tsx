@@ -262,7 +262,12 @@ function VoucherPostsPanel({
         <p className="text-muted-foreground text-sm">
           <Trans>Couldn't load posts.</Trans>
         </p>
-        <Button variant="outline" tap onClick={() => reportsQuery.refetch()}>
+        <Button
+          variant="outline"
+          tap
+          pending={reportsQuery.isFetching}
+          onClick={() => void reportsQuery.refetch()}
+        >
           <Trans>Try again</Trans>
         </Button>
       </div>
@@ -295,7 +300,7 @@ function VoucherPostsPanel({
           variant="outline"
           tap
           className="w-full"
-          disabled={reportsQuery.isFetchingNextPage}
+          pending={reportsQuery.isFetchingNextPage}
           onClick={() => void reportsQuery.fetchNextPage()}
         >
           {reportsQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}
@@ -343,7 +348,12 @@ function VoucherActivityPanel({
             <p className="text-muted-foreground text-sm">
               <Trans>Couldn't load activity.</Trans>
             </p>
-            <Button variant="outline" tap onClick={() => transfersQuery.refetch()}>
+            <Button
+              variant="outline"
+              tap
+              pending={transfersQuery.isFetching}
+              onClick={() => void transfersQuery.refetch()}
+            >
               <Trans>Try again</Trans>
             </Button>
           </div>
@@ -433,7 +443,7 @@ function VoucherActivityPanel({
           variant="outline"
           tap
           className="w-full"
-          disabled={transfersQuery.isFetchingNextPage}
+          pending={transfersQuery.isFetchingNextPage}
           onClick={() => {
             if (visibleCount >= transfers.length && transfersQuery.hasNextPage) {
               void Promise.resolve(transfersQuery.fetchNextPage()).then(() =>

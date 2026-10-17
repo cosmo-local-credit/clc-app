@@ -46,6 +46,8 @@ export type PoolOutputAvailabilityResult = {
   isRefreshing: boolean;
   hasVerificationGaps: boolean;
   retry: () => void;
+  /** Either read is running, including again after `retry`. */
+  retrying: boolean;
 };
 
 type OutputAvailabilityRead = {
@@ -125,6 +127,7 @@ export function usePoolOutputAvailability(
       isRefreshing: false,
       hasVerificationGaps: false,
       retry: () => {},
+      retrying: false,
     };
   }
 
@@ -142,17 +145,19 @@ export function usePoolOutputAvailability(
       ? "loading"
       : "ready";
   const backgroundError = candidates.isError || availability.isError;
+  const fetching = candidates.isFetching || availability.isFetching;
 
   return {
     pools: candidatePools.length === 0 ? [] : (availability.data?.pools ?? []),
     status,
-    isRefreshing: status === "ready" && (candidates.isFetching || availability.isFetching),
+    isRefreshing: status === "ready" && fetching,
     hasVerificationGaps:
       (availability.data?.hasVerificationGaps ?? false) || (status === "ready" && backgroundError),
     retry: () => {
       void candidates.refetch();
       if (candidatePools.length > 0) void availability.refetch();
     },
+    retrying: fetching,
   };
 }
 

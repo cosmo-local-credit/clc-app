@@ -3,10 +3,10 @@ import {
   RiCheckboxCircleLine,
   RiErrorWarningLine,
   RiInformationLine,
-  RiLoader4Line,
 } from "react-icons/ri";
 import { Toaster, type ToasterProps } from "sonner";
 import { getLocaleDirection } from "@clc/i18n/locales";
+import { Spinner } from "#/components/ui/spinner";
 import { useLocale } from "#/providers/i18n";
 
 const toastClassNames = {
@@ -33,9 +33,7 @@ const toastIcons = {
   error: <RiErrorWarningLine className="size-4 text-destructive" aria-hidden="true" />,
   info: <RiInformationLine className="size-4 text-foreground" aria-hidden="true" />,
   warning: <RiAlertLine className="size-4 text-[oklch(0.58_0.14_70)]" aria-hidden="true" />,
-  loading: (
-    <RiLoader4Line className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
-  ),
+  loading: <Spinner className="text-muted-foreground" />,
 } satisfies ToasterProps["icons"];
 
 export function AppToaster() {

@@ -148,6 +148,7 @@ export function ImageUploadField({
             onSelect={select}
             cameraFacing="environment"
             disabled={busy}
+            pending={upload.isPending}
           />
 
           {value ? (

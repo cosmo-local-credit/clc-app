@@ -127,8 +127,8 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
     return (
       <DeploymentStateShell
         icon={<PendingClock />}
-        title={t`Publishing your pool...`}
-        message={t`Waiting for blockchain confirmation...`}
+        title={t`Publishing your pool…`}
+        message={t`Waiting for blockchain confirmation…`}
         status={<StatusPill tone="pending" label={t`Pending`} />}
         stages={stages}
         progress={{

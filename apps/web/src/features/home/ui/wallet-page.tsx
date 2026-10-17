@@ -60,11 +60,13 @@ function UnresolvedVouchersRow({
   failed,
   bordered,
   onRetry,
+  retrying,
 }: {
   pending: boolean;
   failed: boolean;
   bordered: boolean;
   onRetry: () => void;
+  retrying: boolean;
 }) {
   if (!pending && !failed) return null;
   return (
@@ -79,7 +81,7 @@ function UnresolvedVouchersRow({
           <p className="text-muted-foreground text-sm">
             <Trans>Some vouchers couldn't load.</Trans>
           </p>
-          <Button variant="outline" tap onClick={onRetry}>
+          <Button variant="outline" tap pending={retrying} onClick={onRetry}>
             <Trans>Try again</Trans>
           </Button>
         </>
@@ -189,6 +191,7 @@ export function WalletPage({ address }: { address?: string }) {
                 <Button
                   variant="outline"
                   tap
+                  pending={vouchersQuery.isFetching || voucherGroups.isFetching}
                   onClick={() => {
                     void vouchersQuery.refetch();
                     void voucherGroups.refetch();
@@ -258,6 +261,7 @@ export function WalletPage({ address }: { address?: string }) {
                 onRetry={() => {
                   void voucherGroups.refetch();
                 }}
+                retrying={voucherGroups.isFetching}
               />
             </div>
           </section>
@@ -282,7 +286,12 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>Couldn't load your pools.</Trans>
               </p>
-              <Button variant="outline" tap onClick={() => ownedPoolsQuery.refetch()}>
+              <Button
+                variant="outline"
+                tap
+                pending={ownedPoolsQuery.isFetching}
+                onClick={() => void ownedPoolsQuery.refetch()}
+              >
                 <Trans>Try again</Trans>
               </Button>
             </div>

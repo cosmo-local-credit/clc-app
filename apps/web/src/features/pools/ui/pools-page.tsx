@@ -68,6 +68,7 @@ export function PoolsPage({
       isPending: poolsQuery.isPending,
       error: poolsQuery.error ?? null,
       retry: () => void poolsQuery.refetch(),
+      retrying: poolsQuery.isFetching,
       hasNextPage: poolsQuery.hasNextPage,
       fetchNextPage: () => void poolsQuery.fetchNextPage(),
       isFetchingNextPage: poolsQuery.isFetchingNextPage,
@@ -214,7 +215,12 @@ export function PoolsPage({
           })
         }
       />
-      <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
+      <PoolFilterFeedback
+        filter={filter}
+        error={catalog.error}
+        onRetry={catalog.retry}
+        retrying={catalog.retrying}
+      />
 
       {credit.enabled && credit.poolRefs?.length === 0 ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
@@ -254,7 +260,12 @@ export function PoolsPage({
           <p className="text-sm">
             <Trans>Couldn't check voucher availability.</Trans>
           </p>
-          <Button variant="outline" tap onClick={outputAvailability.retry}>
+          <Button
+            variant="outline"
+            tap
+            pending={outputAvailability.retrying}
+            onClick={outputAvailability.retry}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>

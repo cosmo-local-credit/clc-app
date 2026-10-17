@@ -265,7 +265,12 @@ export function SwapReceiptPage({
             <Trans>Fee details unavailable.</Trans>
           </p>
           {settlement.isError ? (
-            <Button variant="outline" tap onClick={() => void settlement.refetch()}>
+            <Button
+              variant="outline"
+              tap
+              pending={settlement.isFetching}
+              onClick={() => void settlement.refetch()}
+            >
               <Trans>Try again</Trans>
             </Button>
           ) : null}

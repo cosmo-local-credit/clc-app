@@ -412,6 +412,7 @@ export function PoolSwapPage({
               vouchersQuery.refetch();
               void reads.refetch();
             }}
+            pending={vouchersQuery.isFetching || reads.isFetching}
           >
             <Trans>Try again</Trans>
           </Button>
@@ -433,7 +434,12 @@ export function PoolSwapPage({
           >
             <Trans>Couldn't estimate this swap.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => quote.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={quote.isFetching}
+            onClick={() => void quote.refetch()}
+          >
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -730,7 +736,7 @@ function SwapConfirmationSheet({
             <Button
               size="lg"
               className="w-full"
-              disabled={isPending}
+              pending={isPending}
               onClick={() => void onConfirm()}
             >
               {isPending ? <Trans>Swapping…</Trans> : <Trans>Confirm swap</Trans>}

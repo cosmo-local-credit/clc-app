@@ -210,7 +210,7 @@ export function WithdrawSheet({
                   <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                   <Trans>Couldn't verify your MPESA link.</Trans>
                 </p>
-                <Button variant="outline" tap onClick={onRetryLink}>
+                <Button variant="outline" tap onClick={onRetryLink} pending={linkQuery.isFetching}>
                   <Trans>Try again</Trans>
                 </Button>
               </div>
@@ -331,7 +331,8 @@ export function WithdrawSheet({
             <Button
               size="lg"
               className="w-full"
-              disabled={!canWithdraw || sendTransfer.isPending}
+              disabled={!canWithdraw}
+              pending={sendTransfer.isPending}
               onClick={() => void onWithdraw()}
             >
               {sendTransfer.isPending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}

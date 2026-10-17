@@ -63,6 +63,7 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
      */
     capsPending: indexed.isPending || treasury.isLoading,
     isError: treasury.isError && indexed.isError,
+    isFetching: treasury.isFetching || indexed.isFetching,
     refetch: () => {
       void treasury.refetch();
       void indexed.refetch();

@@ -32,7 +32,7 @@ export function InstallAppDialog({
             <Button
               size="lg"
               className="w-full"
-              disabled={status === "prompting"}
+              pending={status === "prompting"}
               onClick={() => void requestInstall()}
             >
               {status === "prompting" ? (

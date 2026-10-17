@@ -1,8 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ChangeEvent, ReactNode } from "react";
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
-import { RiCameraLine, RiCloseLine, RiLoader4Line, RiUploadLine } from "react-icons/ri";
+import { RiCameraLine, RiCloseLine, RiUploadLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import { QrCameraError, startQrCamera } from "#/lib/qr-camera";
 import { decodeQrImageFile } from "#/lib/qr-decode";
 
@@ -165,7 +166,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               aria-hidden
             />
             {cameraStarting ? (
-              <RiLoader4Line className="relative size-6 animate-spin text-white/80" />
+              <Spinner className="relative size-6 text-white/80" />
             ) : (
               // An aiming guide only: the whole frame is read.
               <div className="relative aspect-square w-3/5 border-2 border-white/90 shadow-[0_0_0_9999px_rgb(0_0_0/0.4)]" />

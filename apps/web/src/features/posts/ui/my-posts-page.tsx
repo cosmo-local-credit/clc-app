@@ -49,7 +49,12 @@ export function MyPostsPage() {
           <p className="text-muted-foreground text-sm">
             <Trans>Couldn't load your posts.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => postsQuery.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={postsQuery.isFetching}
+            onClick={() => void postsQuery.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>

@@ -247,6 +247,7 @@ it("refreshes stale searches and facet counts on reconnect for all three catalog
     isPending: false,
     error: null,
     retry: vi.fn(),
+    retrying: false,
     hasNextPage: false,
     fetchNextPage: vi.fn(),
     isFetchingNextPage: false,

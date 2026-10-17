@@ -312,7 +312,8 @@ function WithdrawLiquidityForm({
           type="button"
           size="lg"
           className="w-full"
-          disabled={!selected || !amount.trim() || relay.isPending}
+          disabled={!selected || !amount.trim()}
+          pending={relay.isPending}
           onClick={() => void submit()}
         >
           {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Withdraw</Trans>}
@@ -399,7 +400,8 @@ function CollectFeesForm({
           type="button"
           size="lg"
           className="w-full"
-          disabled={!selected || !feeAddress || relay.isPending}
+          disabled={!selected || !feeAddress}
+          pending={relay.isPending}
           onClick={() => void submit()}
         >
           {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Collect fees</Trans>}
@@ -531,7 +533,8 @@ function FeeSettingsForm({
           type="button"
           size="lg"
           className="w-full"
-          disabled={!canSubmit || relay.isPending}
+          disabled={!canSubmit}
+          pending={relay.isPending}
           onClick={() => void submit()}
         >
           {relay.isPending ? (

@@ -117,7 +117,7 @@ export function AppUpdateBanner({ suppressed }: { suppressed: boolean }) {
               </p>
             ) : null}
           </div>
-          <Button tap disabled={checking || mutating} onClick={() => void handleUpdate()}>
+          <Button tap disabled={mutating} pending={checking} onClick={() => void handleUpdate()}>
             {checking ? t`Updating…` : t`Update`}
           </Button>
           {status.kind === "available" ? (

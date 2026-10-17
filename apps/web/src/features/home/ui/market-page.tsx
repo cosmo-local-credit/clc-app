@@ -103,7 +103,7 @@ export function MarketPage({
     filtersEverOpened,
     credit.enabled ? credit.poolRefs : undefined,
   );
-  const { vouchers, isCatalogComplete, error, retry } = catalog;
+  const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   // The filter's terms and tags are a voucher vocabulary, so a filtered map
   // shows only the vouchers it matched.
   const poolCatalog = useMarketMapPools(!filter.isRestoringPreference && !usesUnifiedSearch);
@@ -193,16 +193,22 @@ export function MarketPage({
 
   // The vouchers' notice wins: their retry is the one that fills an empty map.
   const notice =
-    useMarketFilterNotice(filter, error, retry) ??
+    useMarketFilterNotice(filter, error, retry, retrying) ??
     (unifiedSearch.error
       ? {
           message: t`Couldn't load complete marketplace results.`,
           actionLabel: t`Retry`,
           onAction: unifiedSearch.retry,
+          actionPending: unifiedSearch.retrying,
         }
       : null) ??
     (poolCatalog.error
-      ? { message: t`Couldn't load pools.`, actionLabel: t`Retry`, onAction: poolCatalog.retry }
+      ? {
+          message: t`Couldn't load pools.`,
+          actionLabel: t`Retry`,
+          onAction: poolCatalog.retry,
+          actionPending: poolCatalog.retrying,
+        }
       : null);
 
   const locationButton = (
@@ -340,7 +346,12 @@ export function MarketPage({
           >
             <span className="min-w-0 text-sm">{notice.message}</span>
             {notice.actionLabel && notice.onAction ? (
-              <Button variant="outline" tap onClick={notice.onAction}>
+              <Button
+                variant="outline"
+                tap
+                pending={notice.actionPending}
+                onClick={notice.onAction}
+              >
                 {notice.actionLabel}
               </Button>
             ) : null}

@@ -55,7 +55,12 @@ export function ActivityPage({ address }: { address?: string }) {
             <p className="text-muted-foreground text-sm">
               <Trans>Couldn't load activity.</Trans>
             </p>
-            <Button variant="outline" tap onClick={() => transfersQuery.refetch()}>
+            <Button
+              variant="outline"
+              tap
+              pending={transfersQuery.isFetching}
+              onClick={() => void transfersQuery.refetch()}
+            >
               <Trans>Try again</Trans>
             </Button>
           </div>

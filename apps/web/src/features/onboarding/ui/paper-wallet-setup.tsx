@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FiDownload, FiLoader, FiPrinter, FiShare2 } from "react-icons/fi";
+import { FiDownload, FiPrinter, FiShare2 } from "react-icons/fi";
 
 import { Button } from "#/components/ui/button";
 import { PaperWalletCard } from "./paper-wallet-card";
@@ -288,14 +288,11 @@ export function usePaperWalletSetup({
           className="w-full"
           onClick={handleDownload}
           disabled={busy}
+          pending={downloading}
           aria-label={t`Download card`}
         >
-          {downloading ? (
-            <FiLoader className="me-2 size-4 animate-spin" />
-          ) : (
-            <FiDownload className="me-2 size-4" />
-          )}
-          {downloading ? t`Preparing...` : t`Download card`}
+          <FiDownload className="size-4" />
+          {downloading ? t`Preparing…` : t`Download card`}
         </Button>
         <Button
           variant="outline"
@@ -303,13 +300,10 @@ export function usePaperWalletSetup({
           className="w-full"
           onClick={() => void handlePrintSheet()}
           disabled={busy}
+          pending={printing}
           aria-label={t`Save printable A4 sheet`}
         >
-          {printing ? (
-            <FiLoader className="me-2 size-4 animate-spin" />
-          ) : (
-            <FiPrinter className="me-2 size-4" />
-          )}
+          <FiPrinter className="size-4" />
           {t`Print`}
         </Button>
         {shareSupported ? (
@@ -319,13 +313,10 @@ export function usePaperWalletSetup({
             className="w-full"
             onClick={() => void handleShare()}
             disabled={busy}
+            pending={sharing}
           >
-            {sharing ? (
-              <FiLoader className="me-2 size-4 animate-spin" />
-            ) : (
-              <FiShare2 className="me-2 size-4" />
-            )}
-            {sharing ? t`Preparing...` : t`Share card`}
+            <FiShare2 className="size-4" />
+            {sharing ? t`Preparing…` : t`Share card`}
           </Button>
         ) : null}
       </div>

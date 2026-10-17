@@ -155,6 +155,7 @@ export function AllVouchersPage() {
               <Button
                 variant="outline"
                 tap
+                pending={vouchersQuery.isFetching || voucherGroups.isFetching}
                 onClick={() => {
                   void vouchersQuery.refetch();
                   void voucherGroups.refetch();
@@ -219,6 +220,7 @@ export function AllVouchersPage() {
                   <Button
                     variant="outline"
                     tap
+                    pending={voucherGroups.isFetching}
                     onClick={() => {
                       void voucherGroups.refetch();
                     }}
@@ -237,7 +239,7 @@ export function AllVouchersPage() {
           variant="outline"
           tap
           className="mt-3 w-full"
-          disabled={vouchersQuery.isFetchingNextPage}
+          pending={vouchersQuery.isFetchingNextPage}
           onClick={() => vouchersQuery.fetchNextPage()}
         >
           {vouchersQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}

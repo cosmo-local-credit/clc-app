@@ -1,8 +1,8 @@
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
 import type * as React from "react";
-import { RiLoader4Line } from "react-icons/ri";
 
+import { Spinner } from "#/components/ui/spinner";
 import { cn } from "#/lib/utils.ts";
 
 function RadioGroup({ className, ...props }: React.ComponentProps<typeof RadioGroupPrimitive>) {
@@ -74,12 +74,7 @@ function RadioGroupRow({
           <span className="block text-muted-foreground text-xs">{description}</span>
         ) : null}
       </span>
-      {busy ? (
-        <RiLoader4Line
-          className="size-4 shrink-0 animate-spin text-muted-foreground"
-          aria-hidden="true"
-        />
-      ) : null}
+      {busy ? <Spinner className="text-muted-foreground" /> : null}
       <RadioGroupItem value={value} disabled={disabled} className={busy ? "sr-only" : undefined} />
     </label>
   );

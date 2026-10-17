@@ -117,6 +117,7 @@ export function NearbyCatalog({ children }: { children: ReactNode }) {
         </p>
         <Button
           size="lg"
+          pending={auth.retrying || profile.isFetching}
           onClick={() => {
             auth.retry();
             void profile.refetch();

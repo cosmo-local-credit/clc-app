@@ -156,7 +156,12 @@ export function MarketplacePage({
           <p>
             <Trans>Couldn't load marketplace results.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -180,10 +185,10 @@ export function MarketplacePage({
           variant="outline"
           tap
           className="w-full"
-          disabled={query.isFetchingNextPage}
+          pending={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >
-          <Trans>Load more</Trans>
+          {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>
       ) : null}
     </main>

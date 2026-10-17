@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { lazy, Suspense, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
-import { FiKey, FiLoader, FiX } from "react-icons/fi";
+import { FiKey, FiX } from "react-icons/fi";
 import { TbNfc, TbScan } from "react-icons/tb";
 import { useConnection, useDisconnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
@@ -12,6 +12,7 @@ import { connect as connectAction } from "wagmi/actions";
 import { NfcCardPrompt, type NfcCardProblem } from "#/components/nfc-card-prompt";
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
@@ -313,9 +314,9 @@ export function SignInPanel({
     <div className="space-y-3">
       {connecting ? (
         <div className="flex flex-col items-center gap-2 py-3">
-          <FiLoader className="size-6 animate-spin text-primary" />
+          <Spinner className="size-6 text-primary" />
           <p className="text-muted-foreground text-sm" aria-live="polite">
-            {cardRead ? <Trans>Card read — signing in</Trans> : <Trans>Connecting...</Trans>}
+            {cardRead ? <Trans>Card read — signing in</Trans> : <Trans>Connecting…</Trans>}
           </p>
         </div>
       ) : null}
@@ -368,15 +369,11 @@ export function SignInPanel({
 
       {!showScanner && !showPkInput && !showNfc && !encryptedPaperWallet && !connecting ? (
         <>
+          {/* Hidden while connecting, when the panel above shows the progress. */}
           {available ? (
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={() => void signInWithPasskey()}
-              disabled={isSigningIn}
-            >
-              {isSigningIn ? null : <ProviderIcon className="me-2 size-4" />}
-              {isSigningIn ? t`Connecting...` : t`Continue with ${providerLabel}`}
+            <Button size="lg" className="w-full" onClick={() => void signInWithPasskey()}>
+              <ProviderIcon className="me-2 size-4" />
+              {t`Continue with ${providerLabel}`}
             </Button>
           ) : null}
 

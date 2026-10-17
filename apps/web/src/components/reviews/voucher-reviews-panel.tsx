@@ -76,7 +76,12 @@ export function VoucherReviewsPanel({
           <p>
             <Trans>Couldn't load reviews.</Trans>
           </p>
-          <Button variant="outline" tap onClick={() => reviews.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={reviews.isFetching}
+            onClick={() => void reviews.refetch()}
+          >
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -139,7 +144,12 @@ export function VoucherReviewsPanel({
               <p className="text-sm text-muted-foreground">
                 <Trans>Couldn't check your review access.</Trans>
               </p>
-              <Button variant="outline" tap onClick={() => access.refetch()}>
+              <Button
+                variant="outline"
+                tap
+                pending={access.isFetching}
+                onClick={() => void access.refetch()}
+              >
                 <Trans>Try again</Trans>
               </Button>
             </>
@@ -250,7 +260,7 @@ export function VoucherReviewsPanel({
               variant="outline"
               tap
               className="w-full"
-              disabled={reviews.isFetchingNextPage}
+              pending={reviews.isFetchingNextPage}
               onClick={() => reviews.fetchNextPage()}
             >
               {reviews.isFetchingNextPage ? t`Loading…` : t`Load more reviews`}

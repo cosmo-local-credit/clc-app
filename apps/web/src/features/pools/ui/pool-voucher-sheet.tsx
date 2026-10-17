@@ -226,6 +226,7 @@ function PoolVoucherForm({
     if (canConfigure) void rates.refetch();
     void treasury.refetch();
   };
+  const retryingReads = (canConfigure && rates.isFetching) || treasury.isFetching;
   const retryBlockedReads = () => {
     if (membershipUnread) void membership.refetch();
     if (rateUnread || capUnread) retryReads();
@@ -266,6 +267,7 @@ function PoolVoucherForm({
         register={register}
         registrationUnknown={registrationUnknown}
         onRetryReads={retryReads}
+        retryingReads={retryingReads}
         onChange={voucher ? undefined : () => setPicked(null)}
         onClose={onClose}
       />
@@ -290,6 +292,7 @@ function PoolVoucherForm({
             }
             balance={balance}
             onRetry={retryReads}
+            retrying={retryingReads}
             loadingDecimals={decimalsPending}
             onChange={voucher ? undefined : () => setPicked(null)}
           />
@@ -323,7 +326,13 @@ function PoolVoucherForm({
               {blockedReason}
             </p>
             {(membershipUnread || rateUnread || capUnread) && selected ? (
-              <Button type="button" variant="outline" tap onClick={retryBlockedReads}>
+              <Button
+                type="button"
+                variant="outline"
+                tap
+                pending={membership.isFetching || retryingReads}
+                onClick={retryBlockedReads}
+              >
                 <Trans>Retry</Trans>
               </Button>
             ) : null}
@@ -361,6 +370,7 @@ function PoolVoucherConfigurationForm({
   register,
   registrationUnknown,
   onRetryReads,
+  retryingReads,
   onChange,
   onClose,
 }: {
@@ -376,12 +386,16 @@ function PoolVoucherConfigurationForm({
   register: boolean;
   registrationUnknown: boolean;
   onRetryReads: () => void;
+  retryingReads: boolean;
   onChange?: () => void;
   onClose: () => void;
 }) {
   const { t } = useLingui();
   const relay = usePoolAdminRelay();
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
+  // Save and Remove share one relay; this says which of the two is waiting.
+  const [removing, setRemoving] = useState(false);
+  const saving = relay.isPending && !removing;
   const form = useForm({
     defaultValues: seed,
     validators: { onSubmit: poolVoucherRateSchema({ requireCreditLimit: hasLimiter }) },
@@ -436,6 +450,7 @@ function PoolVoucherConfigurationForm({
 
   const remove = async () => {
     if (!voucher) return;
+    setRemoving(true);
     try {
       await relay.mutateAsync(
         buildRemovePoolVoucherCalls({
@@ -447,6 +462,8 @@ function PoolVoucherConfigurationForm({
       onClose();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -469,6 +486,7 @@ function PoolVoucherConfigurationForm({
               exchangeRate={exchangeRate}
               balance={balance}
               onRetry={onRetryReads}
+              retrying={retryingReads}
               loadingDecimals={false}
               onChange={onChange}
             />
@@ -537,6 +555,7 @@ function PoolVoucherConfigurationForm({
                     size="lg"
                     className="flex-1"
                     disabled={relay.isPending}
+                    pending={removing}
                     onClick={() => void remove()}
                   >
                     <Trans>Remove</Trans>
@@ -571,8 +590,8 @@ function PoolVoucherConfigurationForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-          {relay.isPending ? (
+        <Button type="submit" size="lg" className="w-full" disabled={!canSubmit} pending={saving}>
+          {saving ? (
             <Trans>Waiting for the chain…</Trans>
           ) : voucher ? (
             <Trans>Save changes</Trans>
@@ -709,6 +728,7 @@ function SelectedVoucher({
   exchangeRate,
   balance,
   onRetry,
+  retrying,
   loadingDecimals,
   onChange,
 }: {
@@ -717,6 +737,7 @@ function SelectedVoucher({
   exchangeRate: string | null;
   balance: VoucherBalanceState;
   onRetry: () => void;
+  retrying: boolean;
   loadingDecimals: boolean;
   onChange?: () => void;
 }) {
@@ -796,7 +817,14 @@ function SelectedVoucher({
       </dl>
 
       {balance.status === "unavailable" ? (
-        <Button type="button" variant="outline" tap className="mt-2" onClick={onRetry}>
+        <Button
+          type="button"
+          variant="outline"
+          tap
+          className="mt-2"
+          pending={retrying}
+          onClick={onRetry}
+        >
           <Trans>Retry</Trans>
         </Button>
       ) : null}
@@ -881,7 +909,13 @@ function VoucherPicker({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't check which vouchers are already approved.</Trans>
           </p>
-          <Button type="button" variant="outline" tap onClick={() => void registry.refetch()}>
+          <Button
+            type="button"
+            variant="outline"
+            tap
+            pending={registry.isFetching}
+            onClick={() => void registry.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -916,7 +950,13 @@ function SearchResults({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't search vouchers.</Trans>
           </p>
-          <Button type="button" variant="outline" tap onClick={search.retry}>
+          <Button
+            type="button"
+            variant="outline"
+            tap
+            pending={search.retrying}
+            onClick={search.retry}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -995,7 +1035,13 @@ function SuggestionLists({
               <p role="status" className="text-muted-foreground text-xs">
                 <Trans>Unavailable</Trans>
               </p>
-              <Button type="button" variant="outline" tap onClick={group.source.retry}>
+              <Button
+                type="button"
+                variant="outline"
+                tap
+                pending={group.source.retrying}
+                onClick={group.source.retry}
+              >
                 <Trans>Retry</Trans>
               </Button>
             </div>
@@ -1005,7 +1051,13 @@ function SuggestionLists({
               <p role="status" className="text-muted-foreground text-xs">
                 <Trans>Showing recent vouchers only.</Trans>
               </p>
-              <Button type="button" variant="outline" tap onClick={group.source.retry}>
+              <Button
+                type="button"
+                variant="outline"
+                tap
+                pending={group.source.retrying}
+                onClick={group.source.retry}
+              >
                 <Trans>Retry</Trans>
               </Button>
             </div>

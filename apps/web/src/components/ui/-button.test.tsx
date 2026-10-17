@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vite-plus/test";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { RiSendPlane2Line } from "react-icons/ri";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { Button } from "./button";
 
@@ -100,5 +101,70 @@ describe("Button", () => {
 
     expect(classes).toContain("absolute");
     expect(classes).not.toContain("relative");
+  });
+
+  describe("pending", () => {
+    it("leads with the Spinner, disables the button and marks it busy", () => {
+      const onClick = vi.fn();
+      render(
+        <Button size="lg" pending onClick={onClick}>
+          <RiSendPlane2Line data-testid="own-icon" aria-hidden="true" />
+          Sending…
+        </Button>,
+      );
+      const button = screen.getByRole("button", { name: "Sending…" }) as HTMLButtonElement;
+      const spinner = button.querySelector("[data-slot=spinner]");
+
+      expect(spinner).not.toBeNull();
+      expect(button.firstElementChild).toBe(spinner);
+      expect(button.disabled).toBe(true);
+      expect(button.getAttribute("aria-busy")).toBe("true");
+      expect(button.hasAttribute("data-pending")).toBe(true);
+      fireEvent.click(button);
+      expect(onClick).not.toHaveBeenCalled();
+    });
+
+    it("hides the button's own icons but not the Spinner", () => {
+      render(
+        <Button pending>
+          <RiSendPlane2Line aria-hidden="true" />
+          Saving…
+        </Button>,
+      );
+      const button = screen.getByRole("button", { name: "Saving…" });
+
+      expect(classesOf(button)).toContain("[&>svg:not([data-slot=spinner])]:hidden");
+      expect(button.querySelectorAll("svg")).toHaveLength(2);
+    });
+
+    it("draws nothing extra and stays enabled when not pending", () => {
+      render(<Button>Save</Button>);
+      const button = screen.getByRole("button", { name: "Save" }) as HTMLButtonElement;
+
+      expect(button.querySelector("[data-slot=spinner]")).toBeNull();
+      expect(button.disabled).toBe(false);
+      expect(button.hasAttribute("aria-busy")).toBe(false);
+      expect(button.hasAttribute("data-pending")).toBe(false);
+      expect(classesOf(button).some((name) => name.includes("data-slot=spinner"))).toBe(false);
+    });
+
+    it("keeps a link from navigating while pending through asChild", () => {
+      const onClick = vi.fn();
+      render(
+        <Button asChild pending onClick={onClick}>
+          <a href="/wallet">Open wallet</a>
+        </Button>,
+      );
+      const link = screen.getByRole("link", { name: "Open wallet" });
+
+      expect(link.firstElementChild?.getAttribute("data-slot")).toBe("spinner");
+      expect(link.getAttribute("aria-busy")).toBe("true");
+      expect(link.getAttribute("aria-disabled")).toBe("true");
+      expect(classesOf(link)).toContain("pointer-events-none");
+      const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+      link.dispatchEvent(click);
+      expect(click.defaultPrevented).toBe(true);
+      expect(onClick).not.toHaveBeenCalled();
+    });
   });
 });

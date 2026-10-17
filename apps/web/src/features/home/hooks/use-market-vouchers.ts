@@ -77,6 +77,8 @@ export type MarketMapVouchers = {
   isCatalogComplete: boolean;
   error: Error | null;
   retry: () => void;
+  /** The catalog is loading, including again after `retry`. */
+  retrying: boolean;
 };
 
 export function useMarketMapVouchers(
@@ -129,5 +131,6 @@ export function useMarketMapVouchers(
     isCatalogComplete,
     error: error ?? null,
     retry,
+    retrying: isFetching,
   };
 }

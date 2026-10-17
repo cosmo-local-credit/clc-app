@@ -8,7 +8,6 @@ import {
   RiExternalLinkLine,
   RiFileCopyLine,
   RiInformationLine,
-  RiLoader4Line,
   RiLogoutBoxRLine,
   RiShareLine,
   RiShieldFlashLine,
@@ -119,15 +118,10 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
     <>
       <ActionRow
         tone="destructive"
-        icon={
-          isSigningOut ? (
-            <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
-          )
-        }
+        icon={<RiLogoutBoxRLine className="size-4" aria-hidden="true" />}
+        busy={isSigningOut}
         label={isSigningOut ? t`Signing out…` : t`Sign out`}
-        onClick={isSigningOut ? undefined : () => setOpen(true)}
+        onClick={() => setOpen(true)}
       />
       <SettingsSheet
         open={open}

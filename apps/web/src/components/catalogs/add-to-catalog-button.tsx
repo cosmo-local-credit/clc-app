@@ -54,6 +54,7 @@ export function AddToCatalogButton({
           void mine.refetch();
           if (catalog) void membership.refetch();
         }}
+        pending={mine.isFetching || membership.isFetching}
       >
         <Trans>Retry</Trans>
       </Button>
@@ -93,9 +94,8 @@ export function AddToCatalogButton({
         size={size}
         tap={tap}
         className={className}
-        disabled={
-          mine.isPending || membership.isPending || mutation.isPending || membership.data?.added
-        }
+        disabled={mine.isPending || membership.isPending || membership.data?.added}
+        pending={mutation.isPending}
         onClick={async () => {
           if (!catalog) return;
           try {

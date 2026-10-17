@@ -58,7 +58,7 @@ export function InstallAppButton({
         variant="outline"
         size={size}
         tap
-        disabled={loading || status === "prompting"}
+        pending={loading || status === "prompting"}
         onClick={() => void showDialog()}
       >
         <RiDownloadLine aria-hidden="true" />
