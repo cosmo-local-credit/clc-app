@@ -71,15 +71,7 @@ function wrapper(client: QueryClient) {
   );
 }
 
-const NAIROBI_VIEWPORT = {
-  west: 36.6,
-  south: -1.5,
-  east: 37.1,
-  north: -1.1,
-  zoom: 12,
-  lat: -1.3,
-  lng: 36.85,
-};
+const NAIROBI_VIEWPORT = { west: 36.6, south: -1.5, east: 37.1, north: -1.1, zoom: 12 };
 
 beforeEach(() => {
   getMarketVouchers.mockReset();
@@ -271,16 +263,7 @@ describe("useMarketMapVouchers viewport bootstrap", () => {
     const client = newClient();
 
     renderHook(
-      () =>
-        useMarketMapVouchers({
-          west: 179,
-          south: -1.5,
-          east: -179,
-          north: -1.1,
-          zoom: 12,
-          lat: -1.3,
-          lng: 180,
-        }),
+      () => useMarketMapVouchers({ west: 179, south: -1.5, east: -179, north: -1.1, zoom: 12 }),
       { wrapper: wrapper(client) },
     );
 

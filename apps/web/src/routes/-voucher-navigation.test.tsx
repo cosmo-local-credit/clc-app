@@ -9,7 +9,7 @@ import {
   useParams,
   useSearch,
 } from "@tanstack/react-router";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
@@ -59,12 +59,11 @@ vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: {
     explicit: 0,
     selectedVoucher: 1,
-    restored: 2,
-    savedProfile: 3,
-    liveGps: 4,
-    persistedGps: 5,
-    ipCity: 6,
-    countryDefault: 7,
+    savedProfile: 2,
+    liveGps: 3,
+    persistedGps: 4,
+    ipCity: 5,
+    countryDefault: 6,
   },
   REAL_FIX_ZOOM: 14,
   useMarketCamera: () => ({
@@ -278,19 +277,32 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+/** Inspect the complete sheet, then follow a dedicated voucher route. */
+async function openVoucherPageAfterInspectingSheet(router: ReturnType<typeof renderAt>) {
+  fireEvent.click(screen.getByTestId("marker-2710"));
+  const dialog = await screen.findByRole("dialog", { name: "Priscilah Malii" });
+  fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
+  expect(await within(dialog).findByRole("heading", { name: "Info" })).toBeTruthy();
+  expect(within(dialog).queryByRole("link", { name: "Open voucher page" })).toBeNull();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("dialog", { name: "Priscilah Malii" })).toBeNull());
+  await act(async () => {
+    await router.navigate({
+      to: "/vouchers/$voucherAddress",
+      params: { voucherAddress: VOUCHER_ADDRESS },
+    });
+  });
+}
+
 describe("voucher navigation", () => {
-  it("opens the voucher page from its pin and returns to the map in one Back", async () => {
+  it("opens the continuous voucher page and returns to the map in one Back", async () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
-    fireEvent.click(screen.getByTestId("marker-2710"));
+    await openVoucherPageAfterInspectingSheet(router);
 
-    await waitFor(() =>
-      expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("Priscilah Malii"),
-    );
-    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(router.state.location.pathname).toBe(`/vouchers/${VOUCHER_ADDRESS}`);
-    expect(router.state.location.search).toMatchObject({ from: "market" });
     expect(screen.getByText("No offerings yet")).toBeTruthy();
     expect(screen.getByText("issuer@example.org")).toBeTruthy();
     expect(screen.getByText("No posts yet.")).toBeTruthy();
@@ -328,13 +340,16 @@ describe("voucher navigation", () => {
     expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("href")).toBe("/?tab=wallet");
   });
 
-  it("fetches the voucher once for the page a pin opens", async () => {
+  // The card and the page share one query key, so the tap that opened the card
+  // is the only fetch. Regressing this makes the page flash a loading state.
+  it("reuses the card's fetch instead of refetching on navigation", async () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
-    fireEvent.click(screen.getByTestId("marker-2710"));
+    await openVoucherPageAfterInspectingSheet(router);
     await waitFor(() => expect(router.state.location.pathname).not.toBe("/"));
 
+    // Rendered from cache: detail-backed info is already part of the page.
     expect(await screen.findByText("1 MALII = 10 KSH")).toBeTruthy();
     expect(getMarketVoucher).toHaveBeenCalledTimes(1);
   });

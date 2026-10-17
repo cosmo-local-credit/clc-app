@@ -16,20 +16,14 @@ export const CAMERA_RANK = {
    */
   selectedVoucher: 1,
   /**
-   * The view the map was left on, given back when it is opened again in the
-   * same tab. Back to that map always restores it; a fresh visit still lets a
-   * voucher link win.
-   */
-  restored: 2,
-  /**
    * The location saved on the signed-in profile. The map opens there, and only
    * the location button moves it to a live fix.
    */
-  savedProfile: 3,
-  liveGps: 4,
-  persistedGps: 5,
-  ipCity: 6,
-  countryDefault: 7,
+  savedProfile: 2,
+  liveGps: 3,
+  persistedGps: 4,
+  ipCity: 5,
+  countryDefault: 6,
 } as const;
 
 export const REAL_FIX_ZOOM = 14;

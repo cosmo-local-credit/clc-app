@@ -7,7 +7,6 @@ import { clearIdentitySecrets, clearScopedQueries } from "#/features/auth/api/id
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { clearPersistedLocation } from "#/features/home/api/last-location-storage";
-import { clearMarketCamera } from "#/features/home/api/market-camera-storage";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
@@ -56,10 +55,8 @@ export function HomePage({
     // only ever cleaned up after itself, so a paper-wallet sign-out left a
     // passkey registered during the session behind for the next person to use.
     clearIdentitySecrets("none");
-    // Drop the precise location too, and the last view of the map, which can
-    // show the same thing. Neither may survive on a shared device.
+    // Drop the precise location too. It must not survive on a shared device.
     clearPersistedLocation();
-    clearMarketCamera();
     clearScopedQueries(queryClient);
     setIsSigningOut(true);
     try {

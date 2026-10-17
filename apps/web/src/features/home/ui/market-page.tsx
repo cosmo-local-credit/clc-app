@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { RiFocus3Line } from "react-icons/ri";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
@@ -10,13 +10,10 @@ import {
   useNearbyCatalogMissingLocation,
 } from "#/components/nearby-catalog";
 import { Button } from "#/components/ui/button";
+import type { MapSheetSnap } from "#/components/ui/map-sheet";
+import { useVoucherSheetSnap, VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import {
-  readMarketCamera,
-  type StoredMarketCamera,
-  writeMarketCamera,
-} from "#/features/home/api/market-camera-storage";
 import {
   CAMERA_RANK,
   REAL_FIX_ZOOM,
@@ -29,7 +26,8 @@ import { useMarketplaceMapSearch } from "#/features/home/hooks/use-marketplace-m
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
-import { parseVoucherSheetSearch } from "#/lib/navigation/voucher-sheet-search";
+import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import { cn } from "#/lib/utils";
 import { MarketFilterSheet, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
@@ -48,18 +46,17 @@ export function MarketPage({
   const { t } = useLingui();
   const {
     camera: automaticCamera,
+    realFix,
     userLocation,
     locationStatus,
     requestLocation,
   } = useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
-  // `?voucher=` selects that voucher's pin.
-  const { voucher: selectedVoucher = null } = parseVoucherSheetSearch(useSearch({ strict: false }));
-  const historyIndex = useRouterState({ select: (state) => state.location.state.__TSR_index });
+  const selection = useVoucherSheetSelection();
 
-  // A link that opens the market on a voucher centres the map on it, which may
-  // lie far outside anything the catalog has loaded.
-  const [linkedVoucher] = useState(selectedVoucher);
+  // A link that opens the market on a card centres the map on its voucher,
+  // which may lie far outside anything the catalog has loaded.
+  const [linkedVoucher] = useState(selection.voucher);
   const linkedDetail = useMarketVoucherDetail(linkedVoucher ?? undefined).data;
   const linkedLat = linkedDetail?.lat ?? undefined;
   const linkedLng = linkedDetail?.lng ?? undefined;
@@ -90,39 +87,10 @@ export function MarketPage({
         : null,
     [savedLat, savedLng],
   );
-
-  // Coming back to the map finds the view it was left on. Back to the same
-  // history entry always does; a fresh visit still lets a voucher link win.
-  const [stored, setStored] = useState<StoredMarketCamera | null>(null);
-  const [storedEntry, setStoredEntry] = useState(false);
-  const historyIndexRef = useRef(historyIndex);
-  historyIndexRef.current = historyIndex;
-  // Read once per owner, after the client boundary: the map writes it on every pan.
-  useEffect(() => {
-    const camera = readMarketCamera(locationOwner);
-    setStored(camera);
-    setStoredEntry(camera?.index === historyIndexRef.current);
-  }, [locationOwner]);
-  const restoredCamera = useMemo<MarketCamera | null>(
-    () =>
-      stored
-        ? {
-            lat: stored.lat,
-            lng: stored.lng,
-            zoom: stored.zoom,
-            rank: CAMERA_RANK.restored,
-            restore: { fitKey: stored.fitKey },
-          }
-        : null,
-    [stored],
-  );
-
   const camera =
     automaticCamera?.rank === CAMERA_RANK.explicit
       ? automaticCamera
-      : storedEntry
-        ? restoredCamera
-        : (voucherCamera ?? restoredCamera ?? savedCamera ?? automaticCamera);
+      : (voucherCamera ?? savedCamera ?? automaticCamera);
 
   const filter = useMarketFilter(useStorageOwner());
   const credit = useCreditableBrowse(creditableSearch);
@@ -170,14 +138,27 @@ export function MarketPage({
     return { key: `${catalog.filterKey}:${credit.enabled}`, west, south, east, north };
   }, [catalog.filterKey, credit.enabled, locations, unifiedSearch.status, usesUnifiedSearch]);
 
-  const selectedAddress = selectedVoucher?.toLowerCase() ?? null;
+  const isCardOpen = selection.voucher !== null;
+  const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
+  const cardAddress = selection.voucher?.toLowerCase() ?? null;
+  const cardCatalogVoucher = useMemo(
+    () => vouchers.find((voucher) => voucher.address.toLowerCase() === cardAddress) ?? null,
+    [vouchers, cardAddress],
+  );
   const selectedLocationId =
     locations.find(
-      (location) =>
-        location.kind !== "pool" &&
-        "address" in location &&
-        location.address.toLowerCase() === selectedAddress,
+      (location) => "address" in location && location.address.toLowerCase() === cardAddress,
     )?.id ?? null;
+
+  const [sheetInset, setSheetInset] = useState(0);
+  const handleCoveredHeightChange = useCallback((height: number, at: MapSheetSnap) => {
+    // At full the map is out of sight: keep framing the area it last showed.
+    if (at !== "full") setSheetInset(height);
+  }, []);
+  // Panning never fights a half-height card.
+  const handleUserPan = useCallback(() => {
+    setSnap((current) => (current === "half" ? "peek" : current));
+  }, []);
 
   const locationButtonLabel =
     locationStatus === "requesting"
@@ -189,49 +170,27 @@ export function MarketPage({
           : t`Use current location`;
 
   const navigate = useNavigate();
-  // A pin opens its full page; Back returns to this view of the map.
+  const { open } = selection;
   const handleSelectLocation = useCallback(
     (id: string) => {
       const location = locations.find((candidate) => candidate.id === id);
-      if (!location || !("address" in location)) return;
+      if (!location) return;
       if (location.kind === "pool") {
-        void navigate({ to: "/pools/$poolAddress", params: { poolAddress: location.address } });
+        void navigate({
+          to: "/pools/$poolAddress",
+          params: { poolAddress: location.address },
+        });
         return;
       }
-      void navigate({
-        to: "/vouchers/$voucherAddress",
-        params: { voucherAddress: location.address },
-        search: { from: "market" },
-      });
+      const voucher = "address" in location ? location : undefined;
+      if (voucher) open(voucher.address);
     },
-    [locations, navigate],
+    [locations, navigate, open],
   );
 
-  const handleDeselect = useCallback(() => {
-    if (selectedVoucher === null) return;
-    void navigate({
-      to: ".",
-      search: (previous) => ({ ...previous, voucher: undefined }),
-      replace: true,
-      resetScroll: false,
-    });
-  }, [navigate, selectedVoucher]);
-
-  const fitKey = fitBounds?.key ?? null;
-  const handleViewportSettled = useCallback(
-    (settled: MarketViewport) => {
-      setViewport(settled);
-      writeMarketCamera({
-        owner: locationOwner,
-        index: historyIndex,
-        lat: settled.lat,
-        lng: settled.lng,
-        zoom: settled.zoom,
-        fitKey,
-      });
-    },
-    [fitKey, historyIndex, locationOwner],
-  );
+  const handleViewportSettled = useCallback((settled: MarketViewport) => {
+    setViewport(settled);
+  }, []);
 
   // The vouchers' notice wins: their retry is the one that fills an empty map.
   const notice =
@@ -345,7 +304,9 @@ export function MarketPage({
           cameraScope={locationOwner}
           userLocation={userLocation}
           onSelectLocation={handleSelectLocation}
-          onDeselect={handleDeselect}
+          onDeselect={selection.close}
+          onUserPan={handleUserPan}
+          bottomInset={isCardOpen ? sheetInset : 0}
           onViewportSettled={handleViewportSettled}
           className="absolute inset-0 h-full w-full"
         />
@@ -354,7 +315,10 @@ export function MarketPage({
       <MarketBar
         current="map"
         surface="map"
-        className="absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30"
+        className={cn(
+          "absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)]",
+          isCardOpen ? "z-20" : "z-30",
+        )}
         filter={filter}
         searchLabel={t`Search the marketplace`}
         credit={
@@ -385,9 +349,23 @@ export function MarketPage({
         </div>
       ) : null}
 
-      <div className="pointer-events-none absolute end-4 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20">
-        {locationButton}
-      </div>
+      {/* With a card open, only the location button stays, riding the sheet. */}
+      {isCardOpen ? null : (
+        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
+          <div className="flex justify-end">{locationButton}</div>
+        </div>
+      )}
+
+      <VoucherSheet
+        modal={false}
+        placeholder={cardCatalogVoucher}
+        realFix={realFix}
+        snap={snap}
+        onSnapChange={setSnap}
+        onCoveredHeightChange={handleCoveredHeightChange}
+        floating={locationButton}
+        bottomNavigationVisible
+      />
     </main>
   );
 }

@@ -141,8 +141,6 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
       return this.maxZoom;
     }
 
-    getCenter = () => ({ lat: -1.3, lng: 36.85 });
-
     getBounds = () => {
       const { west, south, east, north } = this.bounds;
       const view = {
@@ -746,8 +744,6 @@ describe("MarketMap viewport reporting", () => {
         east: 37.1,
         north: -1.1,
         zoom: 12,
-        lat: -1.3,
-        lng: 36.85,
       });
     } finally {
       vi.useRealTimers();
@@ -1913,68 +1909,130 @@ describe("MarketMap filtered framing", () => {
   });
 });
 
-describe("MarketMap restored view", () => {
-  const RESTORED = { lat: -1.25, lng: 36.9, zoom: 15, rank: 2 };
-  const FIT = { key: "f", west: 36.8, south: -1.3, east: 36.9, north: -1.2 };
+describe("MarketMap under a sheet", () => {
+  // The mock projects [lng, lat] to (lng * 100, lat * 100) on a 360 x 640 canvas.
+  const LOW: MarketLocation = {
+    id: "low",
+    name: "Low",
+    kind: "goods",
+    markerIcon: null,
+    markerColor: null,
+    lat: 6,
+    lng: 1,
+    locationName: null,
+  };
+  const HIGH: MarketLocation = {
+    id: "high",
+    name: "High",
+    kind: "goods",
+    markerIcon: null,
+    markerColor: null,
+    lat: 3,
+    lng: 1,
+    locationName: null,
+  };
 
-  it("jumps straight to a restored view instead of easing there", () => {
-    renderWithCamera({ ...RESTORED, restore: { fitKey: null } });
+  function revealCalls(map: ReturnType<typeof loadedMap>) {
+    return map.easeTo.mock.calls.filter(
+      ([options]) => !(options as { padding?: unknown }).padding,
+    ) as [{ center: [number, number] }][];
+  }
+
+  it("pads the camera by the sheet without moving the view", () => {
+    const { rerender } = renderMap([HIGH]);
     const map = loadedMap();
-
-    expect(map.jumpTo).toHaveBeenCalledWith({ center: [36.9, -1.25], zoom: 15 });
     expect(map.easeTo).not.toHaveBeenCalled();
-  });
-
-  it("does not refit the results a restored view was taken under", () => {
-    renderWithCamera({ ...RESTORED, restore: { fitKey: "f" } }, { fitBounds: FIT });
-    const map = loadedMap();
-
-    expect(map.jumpTo).toHaveBeenCalledTimes(1);
-    expect(map.fitBounds).not.toHaveBeenCalled();
-  });
-
-  it("keeps the view when that fit arrives after it", () => {
-    const camera = { ...RESTORED, restore: { fitKey: "f" } };
-    const { rerender } = renderWithCamera(camera);
-    const map = loadedMap();
 
     rerender(
       <MarketMap
-        locations={LOCATIONS}
+        locations={[HIGH]}
         selectedLocationId={null}
-        camera={camera}
-        fitBounds={FIT}
+        camera={null}
         userLocation={null}
         onSelectLocation={vi.fn()}
+        bottomInset={300}
       />,
     );
 
-    expect(map.jumpTo).toHaveBeenCalledTimes(1);
-    expect(map.fitBounds).not.toHaveBeenCalled();
+    // What sat at the centre of the 340 px left above the sheet becomes the centre.
+    expect(map.easeTo).toHaveBeenCalledWith({
+      center: [1.8, 1.7],
+      padding: { top: 0, right: 0, bottom: 300, left: 0 },
+      duration: 0,
+    });
   });
 
-  it("fits a filter that changed since the view was taken, and does not jump", () => {
-    renderWithCamera({ ...RESTORED, restore: { fitKey: "old" } }, { fitBounds: FIT });
+  it("re-centres a selected pin the sheet covers, and leaves a visible one", () => {
+    const { rerender } = renderMap([LOW, HIGH], { selectedLocationId: "high", bottomInset: 200 });
     const map = loadedMap();
-
-    expect(map.jumpTo).not.toHaveBeenCalled();
-    expect(map.fitBounds).toHaveBeenCalledTimes(1);
-  });
-
-  it("leaves a restored view to the location button", () => {
-    const { rerender } = renderWithCamera({ ...RESTORED, restore: { fitKey: null } });
-    const map = loadedMap();
+    expect(revealCalls(map)).toEqual([]);
 
     rerender(
       <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={{ lat: -1.1, lng: 36.7, zoom: 14, rank: 0 }}
+        locations={[LOW, HIGH]}
+        selectedLocationId="low"
+        camera={null}
         userLocation={null}
         onSelectLocation={vi.fn()}
+        bottomInset={200}
       />,
     );
 
-    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.7, -1.1], zoom: 14 });
+    expect(revealCalls(map)).toEqual([[{ center: [1, 6] }]]);
+  });
+
+  it("reveals the selected pin again when the sheet grows over it", () => {
+    const props = {
+      locations: [HIGH],
+      selectedLocationId: "high",
+      camera: null,
+      userLocation: null,
+      onSelectLocation: vi.fn(),
+    };
+    const { rerender } = render(<MarketMap {...props} bottomInset={160} />);
+    const map = loadedMap();
+    expect(revealCalls(map)).toEqual([]);
+
+    rerender(<MarketMap {...props} bottomInset={420} />);
+
+    expect(revealCalls(map)).toEqual([[{ center: [1, 3] }]]);
+  });
+
+  it("keeps names above the sheet's edge", () => {
+    renderMap(LOCATIONS, { bottomInset: 200 });
+    const map = loadedMap();
+
+    const source = map.getSource("market-label-edges");
+    if (!source) throw new Error("expected the label edge source");
+    const bottomRow = (
+      source.spec.data as {
+        features: { properties: { anchor: string }; geometry: { coordinates: number[] } }[];
+      }
+    ).features.filter((feature) => feature.properties.anchor === "top");
+    // 640 - 200, less the 2 px inset; the mock unprojects y / 100.
+    expect(bottomRow.map((feature) => feature.geometry.coordinates[1])).toEqual([4.38, 4.38]);
+  });
+
+  it("frames filtered results in the area above the sheet without padding twice", () => {
+    renderMap(LOCATIONS, {
+      bottomInset: 300,
+      fitBounds: { key: "f", west: 36.8, south: -1.3, east: 36.9, north: -1.2 },
+    });
+    const map = loadedMap();
+
+    const [, options] = map.fitBounds.mock.calls[0] as [unknown, { padding: { bottom: number } }];
+    expect(options.padding.bottom).toBe(0);
+  });
+
+  it("reports a drag the viewer starts, and no programmatic move", () => {
+    const onUserPan = vi.fn();
+    renderMap(LOCATIONS, { onUserPan });
+    const map = loadedMap();
+
+    act(() => map.trigger("dragstart", {}));
+    expect(onUserPan).not.toHaveBeenCalled();
+
+    act(() => map.trigger("dragstart", { originalEvent: new Event("pointerdown") }));
+    expect(onUserPan).toHaveBeenCalledTimes(1);
   });
 });
