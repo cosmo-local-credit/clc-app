@@ -468,7 +468,7 @@ export function OnboardingWalletStep({
           {linkPasskey ? (
             <>
               <Button
-                size="lg"
+                tap
                 className="w-full"
                 onClick={() => void handleLinkPasskey()}
                 disabled={linkBusy}
@@ -481,7 +481,7 @@ export function OnboardingWalletStep({
               </Button>
               <Button
                 variant={linkFailed ? "default" : "outline"}
-                size="lg"
+                tap
                 className="w-full"
                 onClick={() => void handleContinue()}
                 disabled={paperBusy}
@@ -492,7 +492,7 @@ export function OnboardingWalletStep({
             </>
           ) : (
             <Button
-              size="lg"
+              tap
               className="w-full"
               onClick={() => void handleContinue()}
               disabled={paperBusy}

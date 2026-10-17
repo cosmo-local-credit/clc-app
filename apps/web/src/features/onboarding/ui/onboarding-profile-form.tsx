@@ -417,7 +417,7 @@ export function OnboardingProfileForm({
                 type="submit"
                 disabled={!isStorageConfigured}
                 pending={isSubmitting}
-                size="lg"
+                tap
                 className="w-full"
               >
                 {isSubmitting ? t`Saving…` : t`Continue`}

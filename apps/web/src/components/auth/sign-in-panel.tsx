@@ -371,14 +371,14 @@ export function SignInPanel({
         <>
           {/* Hidden while connecting, when the panel above shows the progress. */}
           {available ? (
-            <Button size="lg" className="w-full" onClick={() => void signInWithPasskey()}>
+            <Button tap className="w-full" onClick={() => void signInWithPasskey()}>
               <ProviderIcon className="me-2 size-4" />
               {t`Continue with ${providerLabel}`}
             </Button>
           ) : null}
 
           <Button
-            size="lg"
+            tap
             className="w-full"
             onClick={() => {
               setShowScanner(true);
@@ -390,7 +390,7 @@ export function SignInPanel({
           </Button>
 
           {nfcSupported ? (
-            <Button variant="outline" size="lg" className="w-full" onClick={startNfc}>
+            <Button variant="outline" tap className="w-full" onClick={startNfc}>
               <TbNfc className="me-2 size-4" />
               <Trans>Tap NFC card</Trans>
             </Button>
@@ -412,7 +412,7 @@ export function SignInPanel({
           {showAdvanced ? (
             <Button
               variant="outline"
-              size="lg"
+              tap
               className="w-full"
               onClick={() => {
                 setShowPkInput(true);
@@ -456,7 +456,7 @@ export function SignInPanel({
             aria-invalid={!!error}
             aria-label={t`Private key`}
           />
-          <Button type="submit" size="lg" disabled={!pkInput.trim()} className="w-full">
+          <Button type="submit" tap disabled={!pkInput.trim()} className="w-full">
             <FiKey className="me-2 size-4" />
             <Trans>Sign in with private key</Trans>
           </Button>
@@ -464,7 +464,7 @@ export function SignInPanel({
       ) : null}
 
       {onCancel ? (
-        <Button variant="ghost" size="lg" className="w-full" onClick={onCancel}>
+        <Button variant="ghost" tap className="w-full" onClick={onCancel}>
           <Trans>Cancel</Trans>
         </Button>
       ) : null}
@@ -494,7 +494,7 @@ export function SignInPanel({
               </p>
             </SheetHeader>
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button size="lg" className="w-full" onClick={routeToSignup}>
+              <Button tap className="w-full" onClick={routeToSignup}>
                 <Trans>Create an account</Trans>
               </Button>
             </SheetFooter>

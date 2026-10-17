@@ -546,11 +546,11 @@ function OfferingDetailsSheet({
 
           <SheetFooter className="px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             {openVoucherPageAction === "close" ? (
-              <Button size="lg" className="w-full" onClick={() => onOpenChange(false)}>
+              <Button tap className="w-full" onClick={() => onOpenChange(false)}>
                 <Trans>Open voucher page</Trans>
               </Button>
             ) : (
-              <Button asChild size="lg" className="w-full">
+              <Button asChild tap className="w-full">
                 <Link
                   to="/vouchers/$voucherAddress"
                   params={{ voucherAddress: offering.voucherAddress }}

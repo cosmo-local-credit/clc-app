@@ -99,7 +99,7 @@ export function EncryptedPaperWalletImportForm({
 
       <Button
         type="submit"
-        size="lg"
+        tap
         disabled={!passphrase.trim()}
         pending={decrypting}
         className="w-full"

@@ -503,7 +503,7 @@ function VoucherProfileForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit" size="lg" className="w-full" pending={update.isPending || iconBusy}>
+        <Button type="submit" tap className="w-full" pending={update.isPending || iconBusy}>
           {iconBusy ? (
             <Trans>Uploading…</Trans>
           ) : update.isPending ? (
@@ -515,7 +515,7 @@ function VoucherProfileForm({
         <Button
           type="button"
           variant="outline"
-          size="lg"
+          tap
           className="w-full"
           disabled={update.isPending}
           onClick={onClose}

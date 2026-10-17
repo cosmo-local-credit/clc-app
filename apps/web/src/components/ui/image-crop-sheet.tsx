@@ -253,7 +253,7 @@ export function ImageCropSheet({
             <div className="mt-5 flex flex-col gap-2">
               <Button
                 type="button"
-                size="lg"
+                tap
                 className="w-full"
                 disabled={!source}
                 pending={working}
@@ -264,7 +264,7 @@ export function ImageCropSheet({
               <Button
                 type="button"
                 variant="outline"
-                size="lg"
+                tap
                 className="w-full"
                 disabled={working}
                 onClick={onCancel}

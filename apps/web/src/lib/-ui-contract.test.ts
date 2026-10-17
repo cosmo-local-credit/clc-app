@@ -107,6 +107,24 @@ describe("type and button contract", () => {
     expect(matchesOf(/\btext-(?:[3-9]xl)\b/g, DISPLAY_SIZE_EXCEPTIONS)).toEqual([]);
   });
 
+  it("keeps 44px text buttons to the ones beside a 44px control", () => {
+    const allowed = new Set([
+      // Credit and Sign in match the market search field.
+      "components/creditable-browse-control.tsx",
+      "components/market-bar.tsx",
+      // The pool's three quick actions.
+      "features/pools/ui/pool-detail-page.tsx",
+    ]);
+    const large = FILES.flatMap(({ path, text }) =>
+      allowed.has(path)
+        ? []
+        : openingTags(text, "Button")
+            .filter((tag) => /\ssize=(?:"lg"|\{[^}]*"lg")/.test(tag))
+            .map(() => path),
+    );
+    expect(large).toEqual([]);
+  });
+
   it("takes a button's height from its size prop, not a class", () => {
     const sized = FILES.flatMap(({ path, text }) =>
       ["Button", "Toggle"].flatMap((name) =>

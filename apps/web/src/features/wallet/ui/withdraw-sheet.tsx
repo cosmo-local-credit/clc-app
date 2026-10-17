@@ -329,7 +329,7 @@ export function WithdrawSheet({
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button
-              size="lg"
+              tap
               className="w-full"
               disabled={!canWithdraw}
               pending={sendTransfer.isPending}

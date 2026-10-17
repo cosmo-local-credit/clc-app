@@ -142,12 +142,7 @@ export function usePaperWalletProtection({
             />
           </div>
 
-          <Button
-            size="lg"
-            className="w-full"
-            pending={encrypting}
-            onClick={() => void handleProtect()}
-          >
+          <Button tap className="w-full" pending={encrypting} onClick={() => void handleProtect()}>
             <FiLock className="size-4" />
             {encrypting
               ? t`Protecting paper wallet…`

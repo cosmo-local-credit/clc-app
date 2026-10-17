@@ -79,7 +79,7 @@ export function TokenPickerSheet({
           <SheetFooter>
             <Button
               variant="link"
-              size="lg"
+              tap
               className="w-full text-foreground"
               onClick={() => onOpenChange(false)}
             >

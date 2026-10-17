@@ -261,11 +261,11 @@ export function SendReceiptPage({
       {/* Stacked rather than side by side: half a 360px row is too narrow for
           "Back to pool" in German, Dutch, Serbian and Swahili. */}
       <div className="flex flex-col gap-2.5">
-        <Button size="lg" onClick={exitReceipt}>
+        <Button tap onClick={exitReceipt}>
           {returnPool ? t`Back to pool` : t`Done`}
         </Button>
         {explorerUrl ? (
-          <Button asChild size="lg" variant="outline">
+          <Button asChild tap variant="outline">
             <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
               {CHAIN_INFO.explorerName}
             </a>
@@ -596,7 +596,7 @@ function SendSharePanel({
               return (
                 <Button
                   type="submit"
-                  size="lg"
+                  tap
                   className="w-full"
                   disabled={!hasContent || !note.ok}
                   pending={createShare.isPending}
@@ -709,7 +709,7 @@ function ReceiptShell({
       <div className="flex-1" />
 
       {onDone ? (
-        <Button size="lg" className="w-full" onClick={onDone}>
+        <Button tap className="w-full" onClick={onDone}>
           <Trans>Done</Trans>
         </Button>
       ) : null}

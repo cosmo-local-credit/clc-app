@@ -329,7 +329,7 @@ export function SendAmountPage({
       <div className="flex-1" />
 
       <Button
-        size="lg"
+        tap
         className="w-full"
         disabled={!canSend || sendVoucher.isPending}
         onClick={() => setConfirmOpen(true)}
@@ -472,17 +472,12 @@ function SendConfirmationSheet({
           ) : null}
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button
-              size="lg"
-              className="w-full"
-              pending={isPending}
-              onClick={() => void onConfirm()}
-            >
+            <Button tap className="w-full" pending={isPending} onClick={() => void onConfirm()}>
               {isPending ? <Trans>Sending…</Trans> : <Trans>Confirm and send</Trans>}
             </Button>
             <Button
               variant="ghost"
-              size="lg"
+              tap
               className="w-full"
               disabled={isPending}
               onClick={() => onOpenChange(false)}

@@ -204,7 +204,7 @@ function PostEditorLoader({ reportId }: { reportId: string }) {
         </p>
         <Button
           variant="outline"
-          size="lg"
+          tap
           pending={postQuery.isFetching}
           onClick={() => void postQuery.refetch()}
         >
@@ -628,7 +628,7 @@ function PostEditorForm({
           </form.Field>
         </Section>
 
-        <Button type="submit" size="lg" className="w-full" pending={saving || imagesBusy}>
+        <Button type="submit" tap className="w-full" pending={saving || imagesBusy}>
           {imagesBusy ? (
             <Trans>Uploading photos…</Trans>
           ) : saving ? (

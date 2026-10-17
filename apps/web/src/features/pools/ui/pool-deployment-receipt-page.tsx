@@ -85,7 +85,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
         message={t`Pool tracking details are missing.`}
         status={<StatusPill tone="error" label={t`Unavailable`} />}
         actions={
-          <Button variant="outline" size="lg" className="w-full" onClick={() => exit("/pools/")}>
+          <Button variant="outline" tap className="w-full" onClick={() => exit("/pools/")}>
             <Trans>Back to pools</Trans>
           </Button>
         }
@@ -110,11 +110,11 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
         stages={stages}
         actions={
           <>
-            <Button size="lg" className="w-full" onClick={() => exit("/pools/create/review", true)}>
+            <Button tap className="w-full" onClick={() => exit("/pools/create/review", true)}>
               <RiRefreshLine className="size-4" aria-hidden="true" />
               <Trans>Try again</Trans>
             </Button>
-            <Button variant="outline" size="lg" className="w-full" onClick={() => exit("/pools/")}>
+            <Button variant="outline" tap className="w-full" onClick={() => exit("/pools/")}>
               <Trans>Back to pools</Trans>
             </Button>
           </>
@@ -203,7 +203,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
       </dl>
 
       <div className="mt-auto pt-6">
-        <Button size="lg" className="w-full" onClick={() => exit(`/pools/${address}`)}>
+        <Button tap className="w-full" onClick={() => exit(`/pools/${address}`)}>
           <Trans>View pool</Trans>
         </Button>
       </div>

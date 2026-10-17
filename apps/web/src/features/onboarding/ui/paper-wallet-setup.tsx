@@ -284,7 +284,7 @@ export function usePaperWalletSetup({
           Dutch, Portuguese, Serbian and Ukrainian. */}
       <div className="mt-4 flex flex-col gap-3">
         <Button
-          size="lg"
+          tap
           className="w-full"
           onClick={handleDownload}
           disabled={busy}
@@ -296,7 +296,7 @@ export function usePaperWalletSetup({
         </Button>
         <Button
           variant="outline"
-          size="lg"
+          tap
           className="w-full"
           onClick={() => void handlePrintSheet()}
           disabled={busy}
@@ -309,7 +309,7 @@ export function usePaperWalletSetup({
         {shareSupported ? (
           <Button
             variant="outline"
-            size="lg"
+            tap
             className="w-full"
             onClick={() => void handleShare()}
             disabled={busy}

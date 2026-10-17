@@ -423,7 +423,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 type="submit"
                 disabled={!(isDirty || avatarUrl !== storedAvatarUrl) || !canSubmit}
                 pending={isSubmitting || avatarBusy}
-                size="lg"
+                tap
                 className="w-full"
               >
                 {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}

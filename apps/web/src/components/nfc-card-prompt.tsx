@@ -107,13 +107,13 @@ export function NfcCardPrompt({
         ) : null}
       </div>
       {failed || stopped ? (
-        <Button size="lg" className="w-full" onClick={onRetry}>
+        <Button tap className="w-full" onClick={onRetry}>
           <TbNfc className="me-2 size-4" />
           <Trans>Try again</Trans>
         </Button>
       ) : null}
       {onCancel ? (
-        <Button variant="ghost" size="lg" className="w-full" onClick={onCancel}>
+        <Button variant="ghost" tap className="w-full" onClick={onCancel}>
           <Trans>Cancel</Trans>
         </Button>
       ) : null}

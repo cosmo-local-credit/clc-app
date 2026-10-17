@@ -139,7 +139,7 @@ export function PasskeySettingsSection({
               {canRetryStatus ? (
                 <Button
                   variant="outline"
-                  size="lg"
+                  tap
                   className="w-full"
                   pending={passkey.retryingStatus}
                   onClick={passkey.retryStatus}
@@ -149,7 +149,7 @@ export function PasskeySettingsSection({
               ) : null}
               {canLink ? (
                 <Button
-                  size="lg"
+                  tap
                   className="w-full"
                   onClick={passkey.link}
                   disabled={isSigningOut}
@@ -161,7 +161,7 @@ export function PasskeySettingsSection({
               ) : null}
               {canSwitch ? (
                 <Button
-                  size="lg"
+                  tap
                   className="w-full"
                   onClick={passkey.retryConnection}
                   disabled={isSigningOut}

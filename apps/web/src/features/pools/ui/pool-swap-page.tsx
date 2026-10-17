@@ -482,7 +482,7 @@ export function PoolSwapPage({
       <div className="flex-1" />
 
       <Button
-        size="lg"
+        tap
         className="w-full"
         disabled={!isValidAmount || !selectedFrom || !selectedTo}
         onClick={() => {
@@ -734,17 +734,12 @@ function SwapConfirmationSheet({
             </p>
           ) : null}
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button
-              size="lg"
-              className="w-full"
-              pending={isPending}
-              onClick={() => void onConfirm()}
-            >
+            <Button tap className="w-full" pending={isPending} onClick={() => void onConfirm()}>
               {isPending ? <Trans>Swapping…</Trans> : <Trans>Confirm swap</Trans>}
             </Button>
             <Button
               variant="ghost"
-              size="lg"
+              tap
               className="w-full"
               disabled={isPending}
               onClick={() => onOpenChange(false)}

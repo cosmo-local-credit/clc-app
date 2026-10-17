@@ -93,7 +93,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
             <Trans>Couldn't load catalogs.</Trans>
           </p>
           <Button
-            size="lg"
+            tap
             onClick={() => {
               void mine.refetch();
               void usage.refetch();
@@ -114,7 +114,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
             </p>
           ) : null}
           {intent ? (
-            <Button size="lg" pending={member.isPending} onClick={() => void finish(catalog)}>
+            <Button tap pending={member.isPending} onClick={() => void finish(catalog)}>
               <Trans>Add to catalog</Trans>
             </Button>
           ) : null}

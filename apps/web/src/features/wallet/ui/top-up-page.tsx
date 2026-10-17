@@ -403,7 +403,7 @@ function AddStablesSheet({
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button
-              size="lg"
+              tap
               className="w-full"
               disabled={!canContinue}
               pending={triggerOnramp.isPending}
@@ -610,7 +610,7 @@ function OnrampDetailsSheet({
 
           {hasTxHash ? (
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button asChild size="lg" className="w-full">
+              <Button asChild tap className="w-full">
                 <a href={explorerUrl} target="_blank" rel="noreferrer">
                   <Trans>View on block explorer</Trans>
                 </a>
@@ -744,7 +744,7 @@ function OfframpDetailsSheet({
 
           {hasTxHash ? (
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button asChild size="lg" className="w-full">
+              <Button asChild tap className="w-full">
                 <a href={explorerUrl} target="_blank" rel="noreferrer">
                   <Trans>View on block explorer</Trans>
                 </a>

@@ -310,7 +310,7 @@ function WithdrawLiquidityForm({
       <SheetFooter>
         <Button
           type="button"
-          size="lg"
+          tap
           className="w-full"
           disabled={!selected || !amount.trim()}
           pending={relay.isPending}
@@ -398,7 +398,7 @@ function CollectFeesForm({
       <SheetFooter>
         <Button
           type="button"
-          size="lg"
+          tap
           className="w-full"
           disabled={!selected || !feeAddress}
           pending={relay.isPending}
@@ -531,7 +531,7 @@ function FeeSettingsForm({
       <SheetFooter>
         <Button
           type="button"
-          size="lg"
+          tap
           className="w-full"
           disabled={!canSubmit}
           pending={relay.isPending}

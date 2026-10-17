@@ -8,13 +8,7 @@ import { useInstallStore } from "#/features/install/install-store";
 
 type InstallDialogComponent = typeof import("./install-app-dialog").InstallAppDialog;
 
-export function InstallAppButton({
-  showHelpLink = false,
-  size = "default",
-}: {
-  showHelpLink?: boolean;
-  size?: "default" | "lg";
-}) {
+export function InstallAppButton({ showHelpLink = false }: { showHelpLink?: boolean }) {
   const { status, installed } = useInstallStore();
   const [DialogComponent, setDialogComponent] = useState<InstallDialogComponent | null>(null);
   const [open, setOpen] = useState(false);
@@ -56,7 +50,6 @@ export function InstallAppButton({
       <Button
         className="w-full"
         variant="outline"
-        size={size}
         tap
         pending={loading || status === "prompting"}
         onClick={() => void showDialog()}

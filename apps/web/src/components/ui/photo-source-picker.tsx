@@ -101,7 +101,7 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                size="lg"
+                tap
                 className="w-full"
                 onClick={() => openInput(cameraInputRef.current)}
               >
@@ -111,7 +111,7 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                size="lg"
+                tap
                 className="w-full"
                 onClick={() => openInput(libraryInputRef.current)}
               >
@@ -121,7 +121,7 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                size="lg"
+                tap
                 className="w-full"
                 onClick={() => setOpen(false)}
               >

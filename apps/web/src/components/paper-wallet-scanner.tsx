@@ -132,13 +132,13 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
 
       {mode === "choose" ? (
         <div className="space-y-2">
-          <Button size="lg" className="w-full" onClick={handleCameraScan} disabled={cameraStarting}>
+          <Button tap className="w-full" onClick={handleCameraScan} disabled={cameraStarting}>
             <RiCameraLine className="me-2 size-4" />
             <Trans>Scan QR Code</Trans>
           </Button>
           <Button
             variant="outline"
-            size="lg"
+            tap
             className="w-full"
             onClick={() => {
               setMode("upload");
@@ -178,7 +178,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               {error.type === "camera-denied" ? (
                 <Button
                   variant="outline"
-                  size="lg"
+                  tap
                   className="w-full"
                   onClick={() => {
                     setMode("upload");
@@ -207,7 +207,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
           />
           <Button
             variant="outline"
-            size="lg"
+            tap
             className="w-full"
             onClick={() => fileInputRef.current?.click()}
           >

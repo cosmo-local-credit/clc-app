@@ -450,7 +450,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
       </div>
 
       <SheetFooter>
-        <Button type="submit" size="lg" className="w-full" pending={update.isPending || imageBusy}>
+        <Button type="submit" tap className="w-full" pending={update.isPending || imageBusy}>
           {imageBusy ? (
             <Trans>Uploading…</Trans>
           ) : update.isPending ? (
@@ -462,7 +462,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
         <Button
           type="button"
           variant="outline"
-          size="lg"
+          tap
           className="w-full"
           disabled={update.isPending}
           onClick={onClose}

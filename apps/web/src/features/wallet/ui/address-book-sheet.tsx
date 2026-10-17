@@ -69,12 +69,7 @@ export function AddressBookSheet({
             ))}
           </div>
           <SheetFooter>
-            <Button
-              variant="ghost"
-              size="lg"
-              className="w-full"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant="ghost" tap className="w-full" onClick={() => onOpenChange(false)}>
               {t`Cancel`}
             </Button>
           </SheetFooter>

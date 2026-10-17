@@ -307,21 +307,21 @@ export function SwapReceiptPage({
       ) : null}
       {sendReceived ? (
         redeemReceived ? (
-          <Button asChild size="lg" className="mb-2.5 w-full">
+          <Button asChild tap className="mb-2.5 w-full">
             <Link to="/wallet/send/amount" search={redeemReceived}>
               <RiCoinLine className="size-4" aria-hidden="true" />
               <Trans>Redeem</Trans>
             </Link>
           </Button>
         ) : (
-          <Button size="lg" className="mb-2.5 w-full" disabled>
+          <Button tap className="mb-2.5 w-full" disabled>
             <RiCoinLine className="size-4" aria-hidden="true" />
             <Trans>Redeem</Trans>
           </Button>
         )
       ) : null}
       {sendReceived ? (
-        <Button asChild size="lg" className="mb-2.5 w-full" variant="outline">
+        <Button asChild tap className="mb-2.5 w-full" variant="outline">
           <Link to="/wallet/send" search={sendReceived}>
             <RiSendPlane2Line className="size-4" aria-hidden="true" />
             <Trans>Send {details.receiveSymbol}</Trans>
@@ -330,7 +330,7 @@ export function SwapReceiptPage({
       ) : null}
       <div className="flex gap-3">
         <Button
-          size="lg"
+          tap
           className="flex-1"
           variant={sendReceived ? "outline" : "default"}
           onClick={exitReceipt}
@@ -338,7 +338,7 @@ export function SwapReceiptPage({
           <Trans>Done</Trans>
         </Button>
         {explorerUrl ? (
-          <Button asChild size="lg" className="flex-1" variant="outline">
+          <Button asChild tap className="flex-1" variant="outline">
             <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
               {CHAIN_INFO.explorerName}
             </a>
@@ -384,7 +384,7 @@ function ReceiptShell({
       </div>
       <div className="flex-1" />
       {onDone ? (
-        <Button size="lg" className="w-full" onClick={onDone}>
+        <Button tap className="w-full" onClick={onDone}>
           <Trans>Done</Trans>
         </Button>
       ) : null}

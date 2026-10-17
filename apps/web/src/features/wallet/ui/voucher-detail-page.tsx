@@ -132,7 +132,7 @@ export function VoucherDetailPage({
       <VoucherShell back={back} message={t`Couldn't load this voucher.`}>
         <Button
           variant="outline"
-          size="lg"
+          tap
           pending={detailQuery.isFetching}
           onClick={() => void detailQuery.refetch()}
         >

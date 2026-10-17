@@ -128,7 +128,7 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
           </p>
         ) : null}
         <Button
-          size="lg"
+          tap
           className="w-full"
           disabled={loading || !!error}
           onClick={() =>
@@ -155,20 +155,15 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
             full-screen guide, so Next stays where Create account appears. */}
         {!replay && !inline ? (
           last ? (
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={() => onExit?.("signin")}
-            >
+            <Button variant="outline" tap className="w-full" onClick={() => onExit?.("signin")}>
               <Trans>I already have an account</Trans>
             </Button>
           ) : step < 0 ? (
-            <Button variant="link" size="lg" className="w-full" onClick={() => onExit?.("signin")}>
+            <Button variant="link" tap className="w-full" onClick={() => onExit?.("signin")}>
               <Trans>I already have an account</Trans>
             </Button>
           ) : (
-            <div aria-hidden="true" className="h-11" />
+            <div aria-hidden="true" className="h-9" />
           )
         ) : null}
         <div className="flex items-center justify-between gap-3">

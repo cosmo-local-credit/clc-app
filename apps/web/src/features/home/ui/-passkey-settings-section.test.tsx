@@ -40,7 +40,7 @@ async function openSheet() {
 }
 
 describe("PasskeySettingsSection", () => {
-  it("offers a 44px primary link action to a paper-wallet session, naming the platform prompt", async () => {
+  it("offers a 36px primary link action to a paper-wallet session, naming the platform prompt", async () => {
     render(<PasskeySettingsSection address={ADDRESS} isSigningOut={false} />);
     expect(row().textContent).toContain("Not linked");
     expect(screen.queryByText("Link your passkey (Google)")).toBeNull();
@@ -49,7 +49,7 @@ describe("PasskeySettingsSection", () => {
     expect(sheet.getByText("Link your passkey (Google)")).toBeTruthy();
     expect(sheet.queryByText(/paper wallet card/i)).toBeNull();
     const button = sheet.getByRole("button", { name: /link a passkey/i });
-    expect(button.className).toContain("h-11");
+    expect(button.className).toContain("h-9");
     expect(button.dataset.variant).toBe("default");
     fireEvent.click(button);
     expect(hook.value.link).toHaveBeenCalledTimes(1);

@@ -408,7 +408,7 @@ export function VoucherDeploymentReceiptPage({
 
         <div className="mt-auto pt-6">
           <Button
-            size="lg"
+            tap
             className="w-full"
             disabled={ownerUnavailable || ownerMismatch || !walletAddress}
             pending={minting || mint.isPending || supplyChecking || walletPreparing}
@@ -501,11 +501,7 @@ export function VoucherDeploymentReceiptPage({
       </AdvancedDeploymentDetails>
 
       <div className="mt-auto pt-6">
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={() => exit(`/vouchers/${address}?from=vouchers`)}
-        >
+        <Button tap className="w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
           <Trans>View voucher</Trans>
         </Button>
       </div>

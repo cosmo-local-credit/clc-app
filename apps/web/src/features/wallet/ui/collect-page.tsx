@@ -220,21 +220,21 @@ export function CollectPage({ token }: { token?: string }) {
             {notice?.kind === "latched" && heldPayer && draft ? (
               <Button
                 variant="outline"
-                size="lg"
+                tap
                 className="w-full"
                 onClick={() => collection.collectAgain(draft)}
               >
                 <Trans>Charge this card {amountText}</Trans>
               </Button>
             ) : null}
-            <Button variant="ghost" size="lg" className="w-full" onClick={collection.cancelArmed}>
+            <Button variant="ghost" tap className="w-full" onClick={collection.cancelArmed}>
               <Trans>Cancel</Trans>
             </Button>
           </>
         ) : editable ? (
           <>
             <Button
-              size="lg"
+              tap
               className="w-full"
               disabled={!canArm}
               onClick={() => {
@@ -252,7 +252,7 @@ export function CollectPage({ token }: { token?: string }) {
               <>
                 <Button
                   variant="outline"
-                  size="lg"
+                  tap
                   className="w-full"
                   disabled={!canArm}
                   pending={heldPayerBusy}
@@ -262,12 +262,7 @@ export function CollectPage({ token }: { token?: string }) {
                 >
                   <Trans>Collect again from this card</Trans>
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="w-full"
-                  onClick={collection.finishCustomer}
-                >
+                <Button variant="ghost" tap className="w-full" onClick={collection.finishCustomer}>
                   <Trans>Done with this customer</Trans>
                 </Button>
               </>

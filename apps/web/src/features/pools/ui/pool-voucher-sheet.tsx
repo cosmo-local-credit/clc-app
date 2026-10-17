@@ -341,10 +341,10 @@ function PoolVoucherForm({
       </div>
 
       <SheetFooter>
-        <Button type="button" size="lg" className="w-full" disabled>
+        <Button type="button" tap className="w-full" disabled>
           {voucher ? <Trans>Save changes</Trans> : <Trans>Approve voucher</Trans>}
         </Button>
-        <Button type="button" variant="outline" size="lg" className="w-full" onClick={onClose}>
+        <Button type="button" variant="outline" tap className="w-full" onClick={onClose}>
           <Trans>Cancel</Trans>
         </Button>
       </SheetFooter>
@@ -552,7 +552,7 @@ function PoolVoucherConfigurationForm({
                   <Button
                     type="button"
                     variant="destructive"
-                    size="lg"
+                    tap
                     className="flex-1"
                     disabled={relay.isPending}
                     pending={removing}
@@ -563,7 +563,7 @@ function PoolVoucherConfigurationForm({
                   <Button
                     type="button"
                     variant="outline"
-                    size="lg"
+                    tap
                     className="flex-1"
                     disabled={relay.isPending}
                     onClick={() => setConfirmingRemoval(false)}
@@ -590,7 +590,7 @@ function PoolVoucherConfigurationForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit" size="lg" className="w-full" disabled={!canSubmit} pending={saving}>
+        <Button type="submit" tap className="w-full" disabled={!canSubmit} pending={saving}>
           {saving ? (
             <Trans>Waiting for the chain…</Trans>
           ) : voucher ? (
@@ -602,7 +602,7 @@ function PoolVoucherConfigurationForm({
         <Button
           type="button"
           variant="outline"
-          size="lg"
+          tap
           className="w-full"
           disabled={relay.isPending}
           onClick={onClose}

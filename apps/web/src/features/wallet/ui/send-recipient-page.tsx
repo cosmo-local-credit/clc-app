@@ -155,7 +155,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
       <div className="flex-1" />
 
       <Button
-        size="lg"
+        tap
         className="mt-2.5 w-full"
         disabled={!recipient}
         pending={upsertRecipient.isPending}

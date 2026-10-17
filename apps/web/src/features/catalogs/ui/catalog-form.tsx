@@ -187,7 +187,7 @@ export function CatalogForm({
         {([submitting]) => (
           <Button
             type="submit"
-            size="lg"
+            tap
             className="w-full"
             disabled={imageBusy}
             pending={submitting || save.isPending}

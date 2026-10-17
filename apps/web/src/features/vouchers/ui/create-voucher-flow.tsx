@@ -636,7 +636,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             <div className="mt-auto pt-6">
               <Button
                 type="button"
-                size="lg"
+                tap
                 className="w-full"
                 pending={advancing}
                 onClick={() => void goToPlace()}
@@ -931,7 +931,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             <div className="mt-auto pt-6">
               <Button
                 type="button"
-                size="lg"
+                tap
                 className="w-full"
                 pending={iconBusy}
                 onClick={() => void goToReview()}
@@ -986,7 +986,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {([isSubmitting, acceptedTerms]) => (
                   <Button
                     type="submit"
-                    size="lg"
+                    tap
                     className="w-full"
                     disabled={!acceptedTerms || usage.isError || !usage.data?.vouchers.canCreate}
                     pending={isSubmitting || deployVoucher.isPending}

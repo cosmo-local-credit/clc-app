@@ -267,7 +267,7 @@ function VoucherMintSheet({
               </form.Field>
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button type="submit" size="lg" className="w-full" pending={pending}>
+              <Button type="submit" tap className="w-full" pending={pending}>
                 {delegationStatus === "checking" ? (
                   <Trans>Preparing wallet…</Trans>
                 ) : pending ? (
@@ -381,7 +381,7 @@ function VoucherOwnershipTransferSheet({
               </form.Field>
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button type="submit" size="lg" className="w-full" pending={pending}>
+              <Button type="submit" tap className="w-full" pending={pending}>
                 {delegationStatus === "checking" ? (
                   <Trans>Preparing wallet…</Trans>
                 ) : pending ? (
@@ -458,7 +458,7 @@ function VoucherRetireSheet({
             <Button
               type="button"
               variant="destructive"
-              size="lg"
+              tap
               className="w-full"
               pending={retire.isPending}
               onClick={() => void confirm()}
@@ -468,7 +468,7 @@ function VoucherRetireSheet({
             <Button
               type="button"
               variant="outline"
-              size="lg"
+              tap
               className="w-full"
               disabled={retire.isPending}
               onClick={onClose}

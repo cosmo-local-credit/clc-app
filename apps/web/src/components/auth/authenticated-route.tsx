@@ -32,7 +32,7 @@ function SessionCheckError({ onRetry, retrying }: { onRetry: () => void; retryin
         <p className="mt-2 text-muted-foreground text-sm">
           <Trans>We could not verify your session. Check your connection and try again.</Trans>
         </p>
-        <Button size="lg" className="mt-4 w-full" pending={retrying} onClick={onRetry}>
+        <Button tap className="mt-4 w-full" pending={retrying} onClick={onRetry}>
           <Trans>Try again</Trans>
         </Button>
       </div>
@@ -62,12 +62,12 @@ function AuthRequiredScreen() {
             Replace the protected URL so onboarding does not stack above it.
             Finish then replaces the single onboarding slot with the destination.
           */}
-          <Button asChild size="lg" className="w-full">
+          <Button asChild tap className="w-full">
             <Link to="/onboarding" search={onboardingSearch("profile", redirectTo)} replace>
               <Trans>Create account</Trans>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="w-full">
+          <Button asChild variant="outline" tap className="w-full">
             <Link to="/onboarding" search={onboardingSearch("signin", redirectTo)} replace>
               <Trans>I already have an account</Trans>
             </Link>

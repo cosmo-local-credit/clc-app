@@ -228,7 +228,7 @@ export function PoolActivityDetailsSheet({
           ) : null}
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button asChild size="lg" className="w-full">
+            <Button asChild tap className="w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
                 <Trans>View on block explorer</Trans>
               </a>

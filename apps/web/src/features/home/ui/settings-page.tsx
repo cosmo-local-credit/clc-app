@@ -131,7 +131,7 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
           <>
             <Button
               variant="destructive"
-              size="lg"
+              tap
               className="w-full"
               onClick={() => {
                 setOpen(false);
@@ -141,7 +141,7 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
               <RiLogoutBoxRLine aria-hidden="true" />
               <Trans>Sign out</Trans>
             </Button>
-            <Button variant="outline" size="lg" className="w-full" onClick={() => setOpen(false)}>
+            <Button variant="outline" tap className="w-full" onClick={() => setOpen(false)}>
               <Trans>Cancel</Trans>
             </Button>
           </>

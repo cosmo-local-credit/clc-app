@@ -275,23 +275,19 @@ background.
 stays only for genuinely circular shapes — status dots, radio marks, avatars,
 the 56 px receipt status badges, and the progress bar.
 
-**Buttons:** two heights, picked by use, never by className.
+**Buttons:** one height for text buttons, never set by className.
 
-- `default` is 36px with a 12px label. Everything inside content: secondary
-  actions, Edit, View, Reply, Remove, Load more, Retry in a notice, Max, voucher
-  pills, per-row Swap, View all, copy buttons, and search-row icons beside a
-  36px input. Pass `tap` to pad the hit area to 44px without taking the space.
-- `size="lg"` is 44px with a 14px label, for the thumb-zone action that
-  completes something: form submits and save bars, sheet and dialog
-  confirm/cancel pairs, Send, Swap, Top-up, Withdraw, Publish, destructive
-  confirmations, the Create account / I already have an account fork, a
-  full-screen error whose only action is Retry, map controls, and the pool
-  quick actions.
+- `default` is 36px with a 12px label, for every text button, full-width ones
+  included: form submits and save bars, sheet and dialog confirm/cancel pairs,
+  Send, Swap, Install, the Create account / I already have an account fork,
+  Retry, Edit, Load more, Max, and the Wallet's Create pool/voucher/catalog.
+  Pass `tap` to pad the hit area to 44px without taking the space.
+- `size="lg"` is 44px with a 14px label, kept only where a button stands
+  beside a 44px control and must match it: Credit and Sign in in the market
+  search row, and the pool's three quick actions. The contract test holds it
+  to those files.
 - `size="tile"` is the 56px icon-over-label tile, for the Wallet's Send,
   Receive and Cash only: the screen's main doors earn the extra height.
-- One sheet footer stays `default`: the market filter sheet's Apply filters
-  and Reset match the Wallet's create buttons, and Reset takes the primary
-  outline.
 - `icon` / `icon-lg` are the 36 and 44px squares. Toggle has the same sizes.
 - No `h-*`, `size-*` or `min-h-*` class on a `Button` or `Toggle`; the
   contract test fails on one. Inputs keep the default `h-9`.

@@ -61,15 +61,15 @@ export function LandingPage({
       </div>
 
       <div className="space-y-3 pt-8 pb-2">
-        <Button size="lg" className="w-full" onClick={() => go("profile")}>
+        <Button tap className="w-full" onClick={() => go("profile")}>
           <Trans>Create account</Trans>
         </Button>
-        <Button variant="outline" size="lg" className="w-full" onClick={() => go("signin")}>
+        <Button variant="outline" tap className="w-full" onClick={() => go("signin")}>
           <Trans>I already have an account</Trans>
         </Button>
         <Button
           variant="ghost"
-          size="lg"
+          tap
           className="w-full"
           onClick={() => {
             complete();

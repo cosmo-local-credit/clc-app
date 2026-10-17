@@ -50,7 +50,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
       <ReportShell message={t`Couldn't load this post.`}>
         <Button
           variant="outline"
-          size="lg"
+          tap
           pending={reportQuery.isFetching}
           onClick={() => void reportQuery.refetch()}
         >

@@ -47,7 +47,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
           </h1>
           <Button
             variant="outline"
-            size="lg"
+            tap
             pending={query.isFetching}
             onClick={() => void query.refetch()}
           >

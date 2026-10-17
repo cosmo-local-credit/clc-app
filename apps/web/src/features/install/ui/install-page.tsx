@@ -64,7 +64,7 @@ export function InstallPage({ from }: { from?: "settings" }) {
         ) : (
           <Button
             variant="outline"
-            size="lg"
+            tap
             onClick={() => {
               if (canGoBack) router.history.back();
               else void router.navigate({ to: "/", search: { tab: "market" }, replace: true });
@@ -95,7 +95,7 @@ export function InstallPage({ from }: { from?: "settings" }) {
           </p>
         ) : (
           <>
-            <InstallAppButton size="lg" />
+            <InstallAppButton />
             <div className="space-y-3 border border-border bg-card p-4">
               <SectionHeading>
                 <Trans>Add CLC to your phone</Trans>
@@ -105,7 +105,7 @@ export function InstallPage({ from }: { from?: "settings" }) {
           </>
         )}
         {fromSettings ? null : (
-          <Button asChild variant="outline" size="lg" className="w-full">
+          <Button asChild variant="outline" tap className="w-full">
             <Link to="/" search={{ tab: "market" }}>
               {installed ? <Trans>Continue to CLC</Trans> : <Trans>Continue in browser</Trans>}
             </Link>

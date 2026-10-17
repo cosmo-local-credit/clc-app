@@ -30,7 +30,7 @@ export function InstallAppDialog({
           </DialogTitle>
           {promptEvent || status === "prompting" ? (
             <Button
-              size="lg"
+              tap
               className="w-full"
               pending={status === "prompting"}
               onClick={() => void requestInstall()}
@@ -51,12 +51,7 @@ export function InstallAppDialog({
               </Trans>
             </p>
           ) : null}
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant="outline" tap className="w-full" onClick={() => onOpenChange(false)}>
             <Trans>Continue in browser</Trans>
           </Button>
         </DialogContent>

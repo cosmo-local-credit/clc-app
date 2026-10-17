@@ -208,7 +208,7 @@ export function TransferDetailsSheet({
                 url={explorerUrl}
               />
             ) : null}
-            <Button asChild size="lg" className="w-full">
+            <Button asChild tap className="w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
                 <Trans>View on block explorer</Trans>
               </a>

@@ -166,7 +166,7 @@ export function NearbyCatalog({
           <Trans>We couldn't load your profile.</Trans>
         </p>
         <Button
-          size="lg"
+          tap
           pending={auth.retrying || profile.isFetching}
           onClick={() => {
             auth.retry();
@@ -205,7 +205,7 @@ export function NearbyCatalog({
         <p>
           <Trans>Choose a location</Trans>
         </p>
-        <Button asChild size="lg">
+        <Button asChild tap>
           <Link to="/settings/profile">
             <Trans>Edit profile</Trans>
           </Link>
@@ -248,10 +248,10 @@ function GuestNearbyCatalog({ children, radiusKm }: { children: ReactNode; radiu
             <Trans>Choose a location</Trans>
           )}
         </p>
-        <Button size="lg" pending={locationStatus === "requesting"} onClick={requestLocation}>
+        <Button tap pending={locationStatus === "requesting"} onClick={requestLocation}>
           <Trans>Use my location</Trans>
         </Button>
-        <Button variant="outline" size="lg" onClick={() => setVisibility("global")}>
+        <Button variant="outline" tap onClick={() => setVisibility("global")}>
           <Trans>Global</Trans>
         </Button>
       </div>

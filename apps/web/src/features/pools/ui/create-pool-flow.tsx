@@ -642,7 +642,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             <div className="mt-auto pt-6">
               <Button
                 type="button"
-                size="lg"
+                tap
                 className="w-full"
                 pending={advancing}
                 onClick={() => void goToPlace()}
@@ -904,7 +904,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             <div className="mt-auto pt-6">
               <Button
                 type="button"
-                size="lg"
+                tap
                 className="w-full"
                 pending={logoBusy}
                 onClick={() => void goToReview()}
@@ -962,7 +962,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   <>
                     <Button
                       type="submit"
-                      size="lg"
+                      tap
                       className="w-full"
                       disabled={!acceptedTerms}
                       pending={isSubmitting || deployPool.isPending}

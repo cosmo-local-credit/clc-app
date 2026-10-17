@@ -64,7 +64,7 @@ export function ShareReceiptButton({
     <Button
       className={className}
       variant="outline"
-      size="lg"
+      tap
       onClick={() => {
         if (copyOnly) copy();
         else void share();
