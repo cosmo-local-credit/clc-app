@@ -2,7 +2,14 @@ import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
-import { RiMap2Line } from "react-icons/ri";
+import type { IconType } from "react-icons";
+import {
+  RiBookOpenLine,
+  RiCoupon3Line,
+  RiGroupLine,
+  RiMap2Line,
+  RiStore2Line,
+} from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { MarketSearchField, MarketSearchScreen } from "#/components/market-search";
@@ -95,12 +102,23 @@ export function MarketBar({
   );
 }
 
-/** The hue each list's badge takes while its list is open. */
+/**
+ * Each list's badge keeps its own hue: the icon and label always read in its
+ * ink, and the open list's badge adds the outline and tint.
+ */
 const BADGE_HUES: Record<MarketplaceScope, string> = {
   pools: "[--hue:var(--color-info)] [--ink:var(--color-info-ink)]",
   vouchers: "[--hue:var(--color-voucher)] [--ink:var(--color-voucher-ink)]",
   offers: "[--hue:var(--color-offer)] [--ink:var(--color-offer-ink)]",
   catalogs: "[--hue:var(--color-catalog)] [--ink:var(--color-catalog-ink)]",
+};
+
+/** The icon each list carried in the old section row. */
+const BADGE_ICONS: Record<MarketplaceScope, IconType> = {
+  pools: RiGroupLine,
+  vouchers: RiCoupon3Line,
+  offers: RiStore2Line,
+  catalogs: RiBookOpenLine,
 };
 
 function MarketBadges({ current, credit }: { current: MarketSurface; credit?: ReactNode }) {
@@ -124,6 +142,7 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
       ) : null}
       {(Object.keys(labels) as MarketplaceScope[]).map((scope) => {
         const active = scope === current;
+        const Icon = BADGE_ICONS[scope];
         return (
           <Button
             key={scope}
@@ -131,7 +150,7 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
             variant="outline"
             tap
             className={cn(
-              "font-semibold text-muted-foreground",
+              "font-semibold text-(--ink) hover:text-(--ink)",
               BADGE_HUES[scope],
               active &&
                 "border-(--hue)! bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))] text-(--ink) shadow-[inset_0_0_0_1px_var(--hue)] hover:bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))] hover:text-(--ink)",
@@ -140,6 +159,7 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
             {/* The open list's badge leads back to the map. */}
             {active ? (
               <Link to="/" search={(previous) => mapSearchFrom(previous)} aria-current="page">
+                <Icon aria-hidden="true" />
                 {labels[scope]}
               </Link>
             ) : (
@@ -149,6 +169,7 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
                   marketplaceSearchForScope(pickMarketplaceSearch(previous), scope)
                 }
               >
+                <Icon aria-hidden="true" />
                 {labels[scope]}
               </Link>
             )}
