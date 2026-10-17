@@ -1,6 +1,6 @@
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
+import { useDiscoveryLocation } from "#/lib/discovery-location";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -14,7 +14,7 @@ type Coordinates = { lat: number; lng: number };
 export function useDiscoveryDistanceOrigin(locationOwner: string): Coordinates | null {
   const auth = useAuthStatus();
   const profile = useAuthProfile({ enabled: auth.isAuthenticated });
-  const { realFix } = useMarketCamera(locationOwner);
+  const { realFix } = useDiscoveryLocation(locationOwner);
 
   if (auth.isAuthenticated) {
     const lat = profile.data?.geoLat;

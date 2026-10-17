@@ -101,8 +101,12 @@ vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
       : null;
   },
 }));
-vi.mock("#/features/home/hooks/use-market-camera", () => ({
-  useMarketCamera: () => ({ realFix: null, locationStatus: "idle", requestLocation: vi.fn() }),
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: () => ({
+    origin: { lat: 43, lng: 18 },
+    locationStatus: "idle",
+    requestLocation: vi.fn(),
+  }),
 }));
 vi.mock("#/features/home/hooks/use-ip-camera", () => ({
   useIPCamera: () => ({ data: { source: "ip-city", lat: 43, lng: 18 }, isPending: false }),

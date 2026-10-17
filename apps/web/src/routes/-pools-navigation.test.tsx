@@ -388,3 +388,12 @@ describe("pools filter canonicalization through the router", () => {
     expect(router.state.location.search.tags).toEqual(tags);
   });
 });
+
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: () => ({
+    realFix: null,
+    origin: { lat: 0, lng: 0 },
+    locationStatus: "idle",
+    requestLocation: vi.fn(),
+  }),
+}));

@@ -1,4 +1,4 @@
-import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
+import { useEffect } from "react";
 import { marketplaceInfiniteQueryOptions } from "@clc/api/features/marketplace/queries";
 import { parseCatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
@@ -14,6 +14,7 @@ import { marketplaceClient } from "#/lib/api/marketplace";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 
 const SUGGESTION_ROWS = 10;
+const AUTO_PAGE_BUDGET = 6;
 const SUGGESTED_VOUCHERS = 5;
 const SUGGESTED_POOLS = 3;
 
@@ -37,8 +38,8 @@ export function useMarketSearchSuggestions(draft: string) {
     ...marketplaceInfiniteQueryOptions(marketplaceClient, {
       perPage: 1,
       facets: true,
-      nearby: isAccountNearbyScope(nearby),
-      scope: nearby,
+      nearby: nearby?.nearby === true,
+      scope: nearby?.nearby ? nearby.scope : undefined,
     }),
     ...nearbyQueryPolicy(nearby),
   });
@@ -47,8 +48,8 @@ export function useMarketSearchSuggestions(draft: string) {
       perPage: SUGGESTION_ROWS,
       q: term,
       kinds: ["voucher", "pool"],
-      nearby: isAccountNearbyScope(nearby),
-      scope: nearby,
+      nearby: nearby?.nearby === true,
+      scope: nearby?.nearby ? nearby.scope : undefined,
     }),
     enabled: term !== "",
     ...nearbyQueryPolicy(nearby),
@@ -57,19 +58,36 @@ export function useMarketSearchSuggestions(draft: string) {
   const rows =
     term === ""
       ? []
-      : (matches.data?.pages[0]?.results ?? []).filter((row) =>
+      : (matches.data?.pages.flatMap((page) => page.results) ?? []).filter((row) =>
           isWithinNearbyCatalog(visibility, { lat: row.geoLat, lng: row.geoLng }),
         );
 
+  const vouchers = rows
+    .filter((row): row is VoucherSuggestion => row.kind === "voucher")
+    .slice(0, SUGGESTED_VOUCHERS);
+  const pools = rows
+    .filter((row): row is PoolSuggestion => row.kind === "pool")
+    .slice(0, SUGGESTED_POOLS);
+  const needsMore =
+    term !== "" && (vouchers.length < SUGGESTED_VOUCHERS || pools.length < SUGGESTED_POOLS);
+  const pageCount = matches.data?.pages.length ?? 0;
+  const autoPage = needsMore && matches.hasNextPage && pageCount < AUTO_PAGE_BUDGET;
+  const { fetchNextPage, isFetching, isError } = matches;
+  useEffect(() => {
+    if (autoPage && !isFetching && !isError) void fetchNextPage();
+  }, [autoPage, pageCount, isFetching, isError, fetchNextPage]);
+
   return {
+    // This is vocabulary for public search, not a count of nearby matches.
     tags: (vocabulary.data?.pages[0]?.tagFacets ?? [])
       .filter((facet) => facet.count > 0)
       .map((facet) => facet.tag),
-    vouchers: rows
-      .filter((row): row is VoucherSuggestion => row.kind === "voucher")
-      .slice(0, SUGGESTED_VOUCHERS),
-    pools: rows
-      .filter((row): row is PoolSuggestion => row.kind === "pool")
-      .slice(0, SUGGESTED_POOLS),
+    vouchers,
+    pools,
+    isLoading: term !== "" && (matches.isFetching || (autoPage && !matches.isError)),
+    isError: term !== "" && matches.isError,
+    hasMore: needsMore && matches.hasNextPage,
+    loadMore: () => void matches.fetchNextPage(),
+    retry: () => void (matches.isFetchNextPageError ? matches.fetchNextPage() : matches.refetch()),
   };
 }

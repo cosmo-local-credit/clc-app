@@ -1,7 +1,5 @@
-import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
-  filterNearbyCatalog,
-  type NearbyCatalogFilter,
+  isWithinNearbyCatalog,
   useNearbyCatalog,
   useNearbyCatalogFilter,
   nearbyQueryKey,
@@ -92,14 +90,12 @@ export async function fetchFilteredPoolCatalog({
   perPage = POOLS_FILTER_PAGE_SIZE,
   signal,
   nearby = false,
-  visibilityFilter,
 }: {
   filter: CatalogFilter;
   facets?: boolean;
   perPage?: number;
   signal?: AbortSignal;
   nearby?: boolean;
-  visibilityFilter?: NearbyCatalogFilter;
 }): Promise<FilteredPoolCatalog> {
   const pages: FilteredPoolPage[] = [];
   let cursor: number | undefined;
@@ -129,10 +125,7 @@ export async function fetchFilteredPoolCatalog({
   }
 
   return {
-    pools: filterNearbyCatalog(
-      [...byAddress.values()].map((pool) => ({ ...pool, lat: pool.geoLat, lng: pool.geoLng })),
-      visibilityFilter,
-    ).map(({ lat: _lat, lng: _lng, ...pool }) => pool),
+    pools: [...byAddress.values()],
     tagFacets: pages[0]?.tagFacets ?? null,
     voucherFacets: pages[0]?.voucherFacets ?? null,
   };
@@ -150,10 +143,15 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
         facets: true,
         perPage,
         signal,
-        nearby: isAccountNearbyScope(nearby),
-        visibilityFilter,
+        nearby: nearby?.nearby === true,
       });
     },
+    select: (data) => ({
+      ...data,
+      pools: data.pools.filter((pool) =>
+        isWithinNearbyCatalog(visibilityFilter, { lat: pool.geoLat, lng: pool.geoLng }),
+      ),
+    }),
     enabled: filter !== null,
     placeholderData: keepPreviousData,
     staleTime: POOLS_STALE_TIME,
@@ -177,7 +175,7 @@ export function usePoolFacetVocabulary(enabled: boolean) {
           perPage: 1,
           filter: EMPTY_CATALOG_FILTER,
           facets: true,
-          ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
+          ...(nearby?.nearby === true ? { nearby: true } : {}),
         },
         signal,
       );

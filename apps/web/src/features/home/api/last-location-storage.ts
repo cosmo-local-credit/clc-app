@@ -67,12 +67,9 @@ export function readPersistedLocation(owner: string): PersistedLocation | null {
   return parsed.owner === owner ? parsed : null;
 }
 
-export const LOCATION_CHANGED_EVENT = "clc:location-changed";
-
 export function writePersistedLocation(location: PersistedLocation): void {
   // A full or blocked store must never break the camera; the write is best-effort.
   writeStorageItem(STORAGE_KEY, JSON.stringify(location));
-  window.dispatchEvent(new Event(LOCATION_CHANGED_EVENT));
 }
 
 export function clearPersistedLocation(): void {

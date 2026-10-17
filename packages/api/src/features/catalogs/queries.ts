@@ -1,4 +1,3 @@
-import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import { resourceLimitKeys } from "../resource-limits/queries";
 import type { CatalogKind, CatalogWrite } from "@clc/core/features/catalogs/logic";
 import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
@@ -11,6 +10,7 @@ export const catalogKeys = {
     input:
       | {
           scope?: string;
+          nearby?: boolean;
           q?: string;
           tags?: readonly string[];
           tagMatch?: "any" | "all";
@@ -18,12 +18,13 @@ export const catalogKeys = {
         }
       | string = {},
   ) => {
-    const params = typeof input === "string" ? { scope: input } : input;
+    const params = typeof input === "string" ? { scope: input, nearby: false } : input;
     return [
       "clc",
       "catalogs",
       "list",
       params.scope ?? "public",
+      params.nearby === true,
       params.q?.trim() ?? "",
       [...(params.tags ?? [])],
       params.tagMatch ?? "any",
@@ -42,6 +43,7 @@ export function catalogsInfiniteQueryOptions(
   input:
     | {
         scope?: string;
+        nearby?: boolean;
         q?: string;
         tags?: readonly string[];
         tagMatch?: "any" | "all";
@@ -49,7 +51,7 @@ export function catalogsInfiniteQueryOptions(
       }
     | string = {},
 ) {
-  const params = typeof input === "string" ? { scope: input } : input;
+  const params = typeof input === "string" ? { scope: input, nearby: false } : input;
   return infiniteQueryOptions({
     queryKey: catalogKeys.list(params),
     initialPageParam: undefined as string | undefined,
@@ -57,7 +59,7 @@ export function catalogsInfiniteQueryOptions(
       client.list(
         {
           cursor: pageParam,
-          nearby: isAccountNearbyScope(params.scope),
+          nearby: params.nearby === true,
           q: params.q,
           tags: params.tags,
           tagMatch: params.tagMatch,

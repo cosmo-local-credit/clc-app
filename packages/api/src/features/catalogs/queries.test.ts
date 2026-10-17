@@ -41,6 +41,7 @@ describe("catalog cache", () => {
     const pools = [{ chainId: 100, address: `0x${"A".repeat(40)}` }];
     const options = catalogsInfiniteQueryOptions(client, {
       scope: "nearby:account:100:1:2:500",
+      nearby: true,
       q: " maize ",
       tags: ["Food"],
       tagMatch: "all",
@@ -50,6 +51,7 @@ describe("catalog cache", () => {
     expect(options.queryKey).toEqual(
       catalogKeys.list({
         scope: "nearby:account:100:1:2:500",
+        nearby: true,
         q: " maize ",
         tags: ["Food"],
         tagMatch: "all",
@@ -101,13 +103,10 @@ describe("catalog cache", () => {
   });
 });
 
-it("keeps guest radii in cache keys without enabling profile-only server filtering", async () => {
+it("does not infer request credentials from cache identity", async () => {
   const list = vi.fn().mockResolvedValue({ catalogs: [], nextCursor: null });
   const client = { list } as unknown as CatalogsClient;
-  const options = catalogsInfiniteQueryOptions(client, "guest-nearby:43:18:500");
-  expect(options.queryKey).not.toEqual(
-    catalogsInfiniteQueryOptions(client, "guest-nearby:43:18:50").queryKey,
-  );
+  const options = catalogsInfiniteQueryOptions(client, { scope: "nearby:arbitrary-label" });
   const signal = new AbortController().signal;
   await options.queryFn?.({ pageParam: undefined, signal } as never);
   expect(list).toHaveBeenCalledWith(expect.objectContaining({ nearby: false }), signal);

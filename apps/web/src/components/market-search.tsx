@@ -241,61 +241,76 @@ export function MarketSearchScreen({
                 ) : null}
               </>
             ) : (
-              <ul className="divide-y divide-border border border-border bg-card">
-                <li>
-                  <button type="button" className={rowClassName} onClick={() => search(draft)}>
-                    <RiSearchLine
-                      className="size-4 shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <span dir="auto" className="min-w-0 flex-1 truncate text-sm">
-                      <Trans>Search “{query}”</Trans>
-                    </span>
-                  </button>
-                </li>
-                {suggestions.vouchers.map((row) => (
-                  <li key={`voucher:${row.id}`}>
-                    <SuggestionLink row={row} query={query}>
-                      <VoucherAvatar
-                        address={row.address}
-                        symbol={row.symbol ?? ""}
-                        iconUrl={row.imageUrl}
-                        size={28}
-                      />
-                    </SuggestionLink>
-                  </li>
-                ))}
-                {suggestions.pools.map((row) => (
-                  <li key={`pool:${row.id}`}>
-                    <SuggestionLink row={row} query={query}>
-                      <PoolLogo
-                        imageUrl={row.imageUrl}
-                        name={row.name}
-                        seed={row.address}
-                        size={28}
-                      />
-                    </SuggestionLink>
-                  </li>
-                ))}
-                {matchingTags.map((tag) => (
-                  <li key={`tag:${tag}`}>
-                    <button
-                      type="button"
-                      className={rowClassName}
-                      disabled={!filter.tags.includes(tag) && filter.isAtTagLimit}
-                      onClick={() => pickTag(tag)}
-                    >
-                      <RiPriceTag3Line
+              <>
+                <ul className="divide-y divide-border border border-border bg-card">
+                  <li>
+                    <button type="button" className={rowClassName} onClick={() => search(draft)}>
+                      <RiSearchLine
                         className="size-4 shrink-0 text-muted-foreground"
                         aria-hidden="true"
                       />
-                      <span className="min-w-0 flex-1 truncate text-sm">
-                        <Highlight text={categoryLabel(tag, i18n)} query={query} />
+                      <span dir="auto" className="min-w-0 flex-1 truncate text-sm">
+                        <Trans>Search “{query}”</Trans>
                       </span>
                     </button>
                   </li>
-                ))}
-              </ul>
+                  {suggestions.vouchers.map((row) => (
+                    <li key={`voucher:${row.id}`}>
+                      <SuggestionLink row={row} query={query}>
+                        <VoucherAvatar
+                          address={row.address}
+                          symbol={row.symbol ?? ""}
+                          iconUrl={row.imageUrl}
+                          size={28}
+                        />
+                      </SuggestionLink>
+                    </li>
+                  ))}
+                  {suggestions.pools.map((row) => (
+                    <li key={`pool:${row.id}`}>
+                      <SuggestionLink row={row} query={query}>
+                        <PoolLogo
+                          imageUrl={row.imageUrl}
+                          name={row.name}
+                          seed={row.address}
+                          size={28}
+                        />
+                      </SuggestionLink>
+                    </li>
+                  ))}
+                  {matchingTags.map((tag) => (
+                    <li key={`tag:${tag}`}>
+                      <button
+                        type="button"
+                        className={rowClassName}
+                        disabled={!filter.tags.includes(tag) && filter.isAtTagLimit}
+                        onClick={() => pickTag(tag)}
+                      >
+                        <RiPriceTag3Line
+                          className="size-4 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          <Highlight text={categoryLabel(tag, i18n)} query={query} />
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {suggestions.isLoading ? (
+                  <p role="status">
+                    <Trans>Loading…</Trans>
+                  </p>
+                ) : suggestions.isError ? (
+                  <Button variant="outline" onClick={suggestions.retry}>
+                    <Trans>Try again</Trans>
+                  </Button>
+                ) : suggestions.hasMore ? (
+                  <Button variant="outline" onClick={suggestions.loadMore}>
+                    <Trans>Load more</Trans>
+                  </Button>
+                ) : null}
+              </>
             )}
           </div>
         </Dialog.Popup>

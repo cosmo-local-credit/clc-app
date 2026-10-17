@@ -1,4 +1,3 @@
-import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import { offeringsDiscoveryInfiniteQueryOptions } from "@clc/api/features/offerings/queries";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -53,8 +52,8 @@ export function OffersPage({
       tags: parsedFilter.tags,
       tagMatch: parsedFilter.tagMatch,
       facets: true,
-      nearby: isAccountNearbyScope(nearby),
-      scope: nearby,
+      nearby: nearby?.nearby === true,
+      scope: nearby?.nearby ? nearby.scope : undefined,
       ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
     enabled:
@@ -74,7 +73,7 @@ export function OffersPage({
       )
     : allOfferings;
   const crossedDistanceBoundary =
-    isAccountNearbyScope(nearby) &&
+    nearby?.nearby === true &&
     visibilityFilter !== undefined &&
     visibleOfferings.length !== allOfferings.length;
   const viewQuery = useMemo(

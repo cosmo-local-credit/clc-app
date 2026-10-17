@@ -1,3 +1,4 @@
+import { DiscoveryLocationProvider } from "#/lib/discovery-location";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -26,7 +27,6 @@ vi.mock("#/lib/use-browser-geolocation", () => ({
 }));
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
-  LOCATION_CHANGED_EVENT: "clc:location-changed",
   readPersistedLocation,
   writePersistedLocation,
   clearPersistedLocation: vi.fn(),
@@ -37,9 +37,14 @@ vi.mock("./use-ip-camera", () => ({
   ipCameraQueryKeys: { all: ["ip-camera"], current: () => ["ip-camera", "current"] },
 }));
 
+let providerOwner = "guest";
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      <DiscoveryLocationProvider owner={providerOwner}>{children}</DiscoveryLocationProvider>
+    </QueryClientProvider>
+  );
 }
 
 const PERSISTED = {
@@ -50,6 +55,7 @@ const PERSISTED = {
 };
 
 beforeEach(() => {
+  providerOwner = "guest";
   geoState.current = { status: "idle" };
   ipCameraResult.current = { data: undefined };
   mockRequest.mockReset();
@@ -261,6 +267,7 @@ describe("useMarketCamera location ownership", () => {
   it("reads and writes under the owner it is given", async () => {
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
 
+    providerOwner = "0xabc";
     renderHook(() => useMarketCamera("0xabc"), { wrapper });
 
     await waitFor(() => expect(writePersistedLocation).toHaveBeenCalled());
@@ -274,12 +281,14 @@ describe("useMarketCamera location ownership", () => {
     readPersistedLocation.mockImplementation((owner: string) =>
       owner === "0xabc" ? PERSISTED : null,
     );
+    providerOwner = "0xabc";
     const { result, rerender } = renderHook(({ owner }) => useMarketCamera(owner), {
       wrapper,
       initialProps: { owner: "0xabc" },
     });
     await waitFor(() => expect(result.current.camera?.rank).toBe(CAMERA_RANK.persistedGps));
 
+    providerOwner = "guest";
     rerender({ owner: "guest" });
 
     expect(result.current.camera).toBeNull();
@@ -290,12 +299,14 @@ describe("useMarketCamera location ownership", () => {
     readPersistedLocation.mockImplementation((owner: string) =>
       owner === "0xaaa" ? PERSISTED : null,
     );
+    providerOwner = "0xaaa";
     const { result, rerender } = renderHook(({ owner }) => useMarketCamera(owner), {
       wrapper,
       initialProps: { owner: "0xaaa" },
     });
     await waitFor(() => expect(result.current.realFix).toEqual({ lat: -1.2, lng: 36.7 }));
 
+    providerOwner = "0xbbb";
     rerender({ owner: "0xbbb" });
 
     expect(result.current.realFix).toBeNull();
@@ -306,24 +317,16 @@ describe("useMarketCamera location ownership", () => {
       owner === "0xabc" ? PERSISTED : null,
     );
     ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
+    providerOwner = "0xabc";
     const { result, rerender } = renderHook(({ owner }) => useMarketCamera(owner), {
       wrapper,
       initialProps: { owner: "0xabc" },
     });
     await waitFor(() => expect(result.current.camera?.rank).toBe(CAMERA_RANK.persistedGps));
 
+    providerOwner = "guest";
     rerender({ owner: "guest" });
 
     expect(result.current.camera?.rank).toBe(CAMERA_RANK.ipCity);
   });
-});
-
-it("refreshes mounted guest filters after another location action stores a fix", () => {
-  const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
-  expect(result.current.realFix).toBeNull();
-  readPersistedLocation.mockReturnValue({ ...PERSISTED, lat: 43, lng: 18 });
-  act(() => {
-    window.dispatchEvent(new Event("clc:location-changed"));
-  });
-  expect(result.current.realFix).toEqual({ lat: 43, lng: 18 });
 });

@@ -210,7 +210,8 @@ vi.mock("maplibre-gl", () => ({
 
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
-import { EXPLICIT_CAMERA_RANK, type MarketCamera, MarketMap } from "./market-map";
+import { EXPLICIT_CAMERA_RANK } from "#/features/home/logic/market-camera";
+import { type MarketCamera, MarketMap } from "./market-map";
 import {
   POOL_PIN_HEX,
   POOL_PIN_IMAGE_ID,

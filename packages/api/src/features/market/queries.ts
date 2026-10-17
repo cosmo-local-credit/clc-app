@@ -1,4 +1,4 @@
-import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
+import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type {
@@ -168,11 +168,11 @@ export function voucherFilteredPageQueryOptions(
 export function voucherCatalogInfiniteQueryOptions(
   market: MarketClient,
   perPage: number,
-  nearby?: string,
+  nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby
-      ? ([...voucherKeys.catalog(perPage), nearby] as const)
+    queryKey: nearby?.nearby
+      ? ([...voucherKeys.catalog(perPage), nearby.scope] as const)
       : voucherKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>
       market.getMarketVouchers(
@@ -180,7 +180,7 @@ export function voucherCatalogInfiniteQueryOptions(
           perPage,
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
-          ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
+          ...(nearby?.nearby === true ? { nearby: true } : {}),
         },
         signal,
       ),
@@ -194,17 +194,17 @@ export function voucherViewportQueryOptions(
   market: MarketClient,
   boxes: ReadonlyArray<MarketBoundingBox>,
   perPage: number,
-  nearby?: string,
+  nearby?: NearbyRequest,
 ) {
   return queryOptions({
-    queryKey: nearby
-      ? ([...voucherKeys.viewport(boxes, perPage), nearby] as const)
+    queryKey: nearby?.nearby
+      ? ([...voucherKeys.viewport(boxes, perPage), nearby.scope] as const)
       : voucherKeys.viewport(boxes, perPage),
     queryFn: async ({ signal }) => {
       const pages = await Promise.all(
         boxes.map((bbox) =>
           market.getMarketVouchers(
-            { perPage, bbox, ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}) },
+            { perPage, bbox, ...(nearby?.nearby === true ? { nearby: true } : {}) },
             signal,
           ),
         ),

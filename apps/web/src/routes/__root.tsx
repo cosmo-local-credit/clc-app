@@ -1,3 +1,5 @@
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { DiscoveryLocationProvider } from "#/lib/discovery-location";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
@@ -265,7 +267,9 @@ function AppInner() {
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
       <IntroductionProvider suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}>
-        <Outlet />
+        <RootDiscoveryLocation>
+          <Outlet />
+        </RootDiscoveryLocation>
       </IntroductionProvider>
       {pendingEncryptedKey ? (
         <DialogRoot
@@ -430,5 +434,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function RootDiscoveryLocation({ children }: { children: React.ReactNode }) {
+  const owner = useStorageOwner();
+  return (
+    <DiscoveryLocationProvider owner={owner ?? "pending"}>{children}</DiscoveryLocationProvider>
   );
 }

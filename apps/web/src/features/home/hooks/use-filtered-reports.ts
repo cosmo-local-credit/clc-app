@@ -1,4 +1,3 @@
-import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
   filterNearbyCatalog,
   useNearbyCatalog,
@@ -87,7 +86,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
             cursor,
             filter,
             facets: index === 0,
-            ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
+            ...(nearby?.nearby === true ? { nearby: true } : {}),
           },
           signal,
         );
@@ -112,11 +111,15 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
       }
 
       return {
-        reports: filterNearbyCatalog([...byId.values()], visibilityFilter),
+        reports: [...byId.values()],
         tagFacets: pages[0]?.tagFacets ?? null,
         voucherFacets: pages[0]?.voucherFacets ?? null,
       };
     },
+    select: (data: FilteredReportFeed) => ({
+      ...data,
+      reports: filterNearbyCatalog(data.reports, visibilityFilter),
+    }),
     enabled: filter !== null,
     placeholderData: keepPreviousData,
     staleTime: REPORTS_STALE_TIME,
@@ -140,7 +143,7 @@ function useReportFacetVocabulary(enabled: boolean) {
           perPage: 1,
           filter: EMPTY_CATALOG_FILTER,
           facets: true,
-          ...(isAccountNearbyScope(nearby) ? { nearby: true } : {}),
+          ...(nearby?.nearby === true ? { nearby: true } : {}),
         },
         signal,
       );

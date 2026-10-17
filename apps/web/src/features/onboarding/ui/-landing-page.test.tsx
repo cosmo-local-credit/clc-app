@@ -75,3 +75,11 @@ describe("LandingPage", () => {
     });
   });
 });
+
+it("opens the public market and completes the welcome screen", () => {
+  const onComplete = vi.fn();
+  render(<LandingPage onComplete={onComplete} />);
+  fireEvent.click(screen.getByRole("button", { name: "Market" }));
+  expect(onComplete).toHaveBeenCalledOnce();
+  expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
+});

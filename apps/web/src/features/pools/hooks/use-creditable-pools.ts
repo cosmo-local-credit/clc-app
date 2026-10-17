@@ -1,6 +1,5 @@
-import { isAccountNearbyScope } from "@clc/core/features/catalog/nearby";
 import {
-  type NearbyCatalogFilter,
+  isWithinNearbyCatalog,
   useNearbyCatalog,
   useNearbyCatalogFilter,
   nearbyQueryKey,
@@ -115,15 +114,14 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
   const candidates = useQuery({
     queryKey: nearbyQueryKey(poolCreditQueryKeys.candidates(heldVoucherRefs), nearby),
     queryFn: ({ signal }) =>
-      fetchPoolCreditCandidates(
-        heldVoucherRefs,
-        signal,
-        isAccountNearbyScope(nearby),
-        visibilityFilter,
-      ),
+      fetchPoolCreditCandidates(heldVoucherRefs, signal, nearby?.nearby === true),
     enabled: sourceReady,
     staleTime: CANDIDATE_STALE_TIME_MS,
     ...nearbyQueryPolicy(nearby),
+    select: (candidates) =>
+      candidates.filter(({ pool }) =>
+        isWithinNearbyCatalog(visibilityFilter, { lat: pool.geoLat, lng: pool.geoLng }),
+      ),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 
@@ -196,7 +194,6 @@ async function fetchPoolCreditCandidates(
   vouchers: readonly VoucherRef[],
   signal: AbortSignal,
   nearby = false,
-  visibilityFilter?: NearbyCatalogFilter,
 ): Promise<PoolCreditCandidate[]> {
   const chunks = chunkPoolCreditVouchers(vouchers);
   if (chunks.length === 0) return [];
@@ -212,7 +209,6 @@ async function fetchPoolCreditCandidates(
       },
       signal,
       nearby,
-      visibilityFilter,
     });
     return {
       pools: catalog.pools,
