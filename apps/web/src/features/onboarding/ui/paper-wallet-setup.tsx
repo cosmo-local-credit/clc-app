@@ -69,6 +69,7 @@ export function usePaperWalletSetup({
   const [previewScale, setPreviewScale] = useState(PAPER_WALLET_PREVIEW_SCALE);
   const [downloading, setDownloading] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [shareSupported, setShareSupported] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   /** The rendered PNG, shown for long-press saving in an installed iOS PWA. */
@@ -223,7 +224,7 @@ export function usePaperWalletSetup({
 
   async function handleShare() {
     if (!cardRef.current) return;
-    setDownloading(true);
+    setSharing(true);
     setDownloadError(null);
     try {
       const { file } = await prepareCard();
@@ -237,10 +238,11 @@ export function usePaperWalletSetup({
         setDownloadError(t`Could not share the paper wallet. Try downloading it instead.`);
       }
     } finally {
-      setDownloading(false);
+      setSharing(false);
     }
   }
 
+  const busy = downloading || printing || sharing || downloadDisabled;
   const previewWidth = PAPER_WALLET_WIDTH * previewScale;
   const previewHeight = PAPER_WALLET_HEIGHT * previewScale;
 
@@ -285,7 +287,7 @@ export function usePaperWalletSetup({
           size="lg"
           className="w-full"
           onClick={handleDownload}
-          disabled={downloading || printing || downloadDisabled}
+          disabled={busy}
           aria-label={t`Download card`}
         >
           {downloading ? (
@@ -300,7 +302,7 @@ export function usePaperWalletSetup({
           size="lg"
           className="w-full"
           onClick={() => void handlePrintSheet()}
-          disabled={downloading || printing || downloadDisabled}
+          disabled={busy}
           aria-label={t`Save printable A4 sheet`}
         >
           {printing ? (
@@ -316,10 +318,14 @@ export function usePaperWalletSetup({
             size="lg"
             className="w-full"
             onClick={() => void handleShare()}
-            disabled={downloading || printing || downloadDisabled}
+            disabled={busy}
           >
-            <FiShare2 className="me-2 size-4" />
-            {t`Share card`}
+            {sharing ? (
+              <FiLoader className="me-2 size-4 animate-spin" />
+            ) : (
+              <FiShare2 className="me-2 size-4" />
+            )}
+            {sharing ? t`Preparing...` : t`Share card`}
           </Button>
         ) : null}
       </div>
