@@ -42,6 +42,13 @@
 	--offer-foreground: oklch(0.985 0 0);
 	--voucher: oklch(0.78 0.15 80);
 	--voucher-foreground: oklch(0.24 0.04 70);
+	--catalog: oklch(0.5 0.17 300);
+	/* Text in each hue on a light tint of it, 4.5:1 or better. */
+	--success-ink: oklch(0.42 0.1 165);
+	--info-ink: oklch(0.46 0.12 250);
+	--voucher-ink: oklch(0.47 0.11 70);
+	--offer-ink: oklch(0.52 0.17 40);
+	--catalog-ink: oklch(0.5 0.17 300);
 	--border: oklch(0.922 0 0);
 	--input: oklch(0.922 0 0);
 	--ring: oklch(0.708 0 0);
@@ -88,6 +95,12 @@
 	--offer-foreground: oklch(0.16 0.02 45);
 	--voucher: oklch(0.8 0.14 80);
 	--voucher-foreground: oklch(0.18 0.03 70);
+	--catalog: oklch(0.62 0.16 300);
+	--success-ink: oklch(0.8 0.11 165);
+	--info-ink: oklch(0.76 0.1 250);
+	--voucher-ink: oklch(0.84 0.13 80);
+	--offer-ink: oklch(0.77 0.15 45);
+	--catalog-ink: oklch(0.77 0.12 300);
 	--border: oklch(1 0 0 / 12%);
 	--input: oklch(1 0 0 / 16%);
 	--ring: oklch(0.556 0 0);
@@ -148,6 +161,12 @@
 	--color-offer-foreground: var(--offer-foreground);
 	--color-voucher: var(--voucher);
 	--color-voucher-foreground: var(--voucher-foreground);
+	--color-catalog: var(--catalog);
+	--color-success-ink: var(--success-ink);
+	--color-info-ink: var(--info-ink);
+	--color-voucher-ink: var(--voucher-ink);
+	--color-offer-ink: var(--offer-ink);
+	--color-catalog-ink: var(--catalog-ink);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
@@ -245,6 +264,11 @@ body {
 .maplibregl-ctrl-attrib,
 .maplibregl-ctrl-logo {
 	display: none !important;
+}
+
+/* A market list clears the navigation and the Map button that floats above it. */
+@utility pb-market-list {
+	padding-bottom: calc(max(var(--bottom-nav-offset), env(safe-area-inset-bottom)) + 5.5rem);
 }
 
 @utility pb-bottom-nav {

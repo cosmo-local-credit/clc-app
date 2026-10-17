@@ -70,7 +70,7 @@ vi.mock("#/lib/navigation/use-persisted-catalog-filter", () => ({
   usePersistedCatalogFilter: () => mocks.filter,
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: false, isLoading: false }),
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({

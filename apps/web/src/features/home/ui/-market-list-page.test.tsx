@@ -14,7 +14,7 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: false, isLoading: false }),
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
@@ -341,32 +341,34 @@ describe("MarketListPage", () => {
     expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
-  it("places Filters in the search row before the scope controls", () => {
+  it("puts Filters in the search row, Credit and the list badges below, and Map at the end", () => {
     render(<MarketListPage />);
 
-    const offers = screen.getByRole("link", { name: "Offers" });
-    const vouchers = screen.getByRole("button", { name: "Voucher" });
+    const filters = screen.getByRole("button", { name: "Filters" });
+    const credit = screen.getByRole("button", { name: "control Credit on" });
     const pools = screen.getByRole("link", { name: "Pools" });
+    const vouchers = screen.getByRole("link", { name: "Vouchers" });
+    const offers = screen.getByRole("link", { name: "Offers" });
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
     const map = screen.getByRole("link", { name: "Map" });
-    const filters = screen.getByRole("button", { name: "Filters" });
 
-    expect(offers.getAttribute("href")).toBe("/market?scope=offers");
-    expect(pools.getAttribute("href")).toBe("/market?scope=pools");
-    expect(catalogs.getAttribute("href")).toBe("/market?scope=catalogs");
-    expect(offers.className).toContain("size-11");
-    expect(pools.className).toContain("size-11");
-    expect(catalogs.className).toContain("size-11");
-    expect(filters.className).toContain("size-11");
     expect(screen.getByRole("searchbox").closest(".border")?.contains(filters)).toBe(true);
+    expect(pools.getAttribute("href")).toBe("/market?scope=pools");
+    expect(offers.getAttribute("href")).toBe("/market?scope=offers");
+    expect(catalogs.getAttribute("href")).toBe("/market?scope=catalogs");
+    // The open list's badge goes back to the map.
     expect(vouchers.getAttribute("aria-current")).toBe("page");
-    expect(
-      offers.compareDocumentPosition(vouchers) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(vouchers.compareDocumentPosition(pools) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(pools.compareDocumentPosition(catalogs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(catalogs.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(filters.compareDocumentPosition(offers) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(vouchers.getAttribute("href")).toBe("/");
+    for (const [before, after] of [
+      [filters, credit],
+      [credit, pools],
+      [pools, vouchers],
+      [vouchers, offers],
+      [offers, catalogs],
+      [catalogs, map],
+    ] as const) {
+      expect(before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
     expect(catalogs.parentElement?.className).toContain("overflow-x-auto");
   });
 

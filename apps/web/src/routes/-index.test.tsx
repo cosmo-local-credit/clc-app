@@ -29,19 +29,10 @@ vi.mock("#/components/auth/authenticated-route", () => ({
 }));
 
 vi.mock("#/features/home/ui/home-page", () => ({
-  HomePage: ({
-    activeTab,
-    marketView,
-    isAuthenticated,
-  }: {
-    activeTab: string;
-    marketView: string;
-    isAuthenticated: boolean;
-  }) => (
+  HomePage: ({ activeTab, isAuthenticated }: { activeTab: string; isAuthenticated: boolean }) => (
     <div
       data-testid="home-page"
       data-tab={activeTab}
-      data-market-view={marketView}
       data-authenticated={String(isAuthenticated)}
     />
   ),
@@ -87,7 +78,6 @@ describe("IndexPage routing", () => {
   it("renders the market map for disconnected users", async () => {
     renderIndex();
     expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("market");
-    expect(screen.getByTestId("home-page").getAttribute("data-market-view")).toBe("map");
     expect(screen.getByTestId("home-page").getAttribute("data-authenticated")).toBe("false");
   });
 

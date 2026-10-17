@@ -11,23 +11,20 @@ import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
-import { MarketListPage } from "./market-list-page";
 import { MarketPage } from "./market-page";
 import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
-import { isPrivateHomeTab, type HomeTab, type MarketView } from "#/lib/navigation/home-tabs";
+import { isPrivateHomeTab, type HomeTab } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
 
 export type HomePageProps = {
   activeTab?: HomeTab;
-  marketView?: MarketView;
   isAuthenticated?: boolean;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 };
 
 export function HomePage({
   activeTab = "market",
-  marketView = "map",
   isAuthenticated = true,
   creditableSearch,
 }: HomePageProps) {
@@ -83,15 +80,11 @@ export function HomePage({
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
         <NearbyCatalog>
-          {marketView === "map" ? (
-            <MarketPage
-              isAuthenticated={isAuthenticated}
-              locationOwner={locationOwner}
-              creditableSearch={creditableSearch}
-            />
-          ) : (
-            <MarketListPage locationOwner={locationOwner} />
-          )}
+          <MarketPage
+            isAuthenticated={isAuthenticated}
+            locationOwner={locationOwner}
+            creditableSearch={creditableSearch}
+          />
         </NearbyCatalog>
       ) : (
         <div className="min-h-[100svh] pb-bottom-nav">

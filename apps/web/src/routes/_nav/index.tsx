@@ -5,7 +5,6 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { canonicalRedirectSearch } from "#/lib/navigation/catalog-search";
 import {
-  marketplaceSearchForScope,
   pickMarketplaceSearch,
   type MarketplaceRouteSearch,
 } from "#/lib/navigation/marketplace-search";
@@ -54,12 +53,9 @@ export const Route = createFileRoute("/_nav/")({
         replace: true,
       });
     }
-    if (search.tab === "market" && search.view === "list") {
-      throw redirect({
-        to: "/market",
-        search: marketplaceSearchForScope(pickMarketplaceSearch(search), null),
-        replace: true,
-      });
+    // The retired list view of the map: the map is the market now.
+    if (search.view === "list") {
+      throw redirect({ to: "/", search: { ...search, view: undefined }, replace: true });
     }
     const next = canonicalRedirectSearch(search, { voucherRelationships: search.tab === "posts" });
     if (!next) return;
@@ -70,7 +66,7 @@ export const Route = createFileRoute("/_nav/")({
 
 function IndexPage() {
   const auth = useAuthStatus();
-  const { tab = "market", view, creditable } = Route.useSearch();
+  const { tab = "market", creditable } = Route.useSearch();
 
   if (auth.isLoading) return <HomePageFallback />;
 
@@ -78,7 +74,6 @@ function IndexPage() {
     <Suspense fallback={<HomePageFallback />}>
       <HomePage
         activeTab={tab}
-        marketView={view}
         isAuthenticated={auth.isAuthenticated}
         creditableSearch={creditable}
       />

@@ -43,12 +43,7 @@ async function renderNavigation({
     const selectedTab =
       activeTab ?? (location.pathname === "/market" ? "market" : parseHomeTab(search.tab));
     const selectedAtRoot =
-      atActiveTabRoot ??
-      (location.pathname === "/market"
-        ? Object.keys(search).length === 0
-        : selectedTab === "market"
-          ? false
-          : isAtHomeTabRoot(search));
+      atActiveTabRoot ?? (location.pathname === "/market" ? false : isAtHomeTabRoot(search));
     return (
       <BottomNavigation activeTab={selectedTab} atActiveTabRoot={selectedAtRoot} locked={locked} />
     );
@@ -58,9 +53,9 @@ async function renderNavigation({
   const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/",
-    validateSearch: (search): { tab: HomeTab; view?: "list" } => ({
+    validateSearch: (search): { tab: HomeTab; q?: string } => ({
       tab: parseHomeTab(search.tab),
-      view: search.view === "list" ? "list" : undefined,
+      q: typeof search.q === "string" ? search.q : undefined,
     }),
     component: NavigationFixture,
   });
@@ -88,7 +83,7 @@ describe("BottomNavigation", () => {
 
     for (const [tab, label] of Object.entries(LABELS) as [HomeTab, string][]) {
       expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe(
-        tab === "market" ? "/market" : `/?tab=${tab}`,
+        tab === "market" ? "/" : `/?tab=${tab}`,
       );
     }
   });
@@ -119,12 +114,26 @@ describe("BottomNavigation", () => {
     }
   });
 
-  it("moves the active map destination to the canonical marketplace list", async () => {
+  it("does nothing on the unfiltered map, the Market root", async () => {
     const { history } = await renderNavigation({ initialEntry: "/" });
+    const market = screen.getByRole("link", { name: "Market" });
+    expect(market.getAttribute("aria-current")).toBe("page");
+
+    fireEvent.click(market);
+
+    expect(history.location.pathname).toBe("/");
+    expect(history.length).toBe(1);
+  });
+
+  it("returns a filtered map to the unfiltered map", async () => {
+    const { history } = await renderNavigation({ initialEntry: "/?q=bike" });
+    expect(screen.getByRole("link", { name: "Market" }).getAttribute("aria-current")).toBe("true");
 
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
 
-    await waitFor(() => expect(history.location.href).toBe("/market"));
+    await waitFor(() => expect(history.location.search).not.toContain("q="));
+    expect(history.location.pathname).toBe("/");
+    expect(history.length).toBe(2);
   });
 
   it("marks an active descendant and navigates it to the owning root", async () => {
@@ -141,7 +150,7 @@ describe("BottomNavigation", () => {
     await waitFor(() => expect(history.location.href).toBe("/?tab=wallet"));
   });
 
-  it("returns a scoped Market descendant to the unfiltered All list", async () => {
+  it("returns a list to the map, and Back reopens the list", async () => {
     const { history } = await renderNavigation({
       initialEntry: "/market?scope=pools",
       activeTab: "market",
@@ -151,7 +160,7 @@ describe("BottomNavigation", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
 
-    await waitFor(() => expect(history.location.href).toBe("/market"));
+    await waitFor(() => expect(history.location.pathname).toBe("/"));
 
     await act(async () => {
       history.back();

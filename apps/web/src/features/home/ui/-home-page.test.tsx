@@ -74,12 +74,6 @@ vi.mock("./market-page", () => ({
   ),
 }));
 
-vi.mock("./market-list-page", () => ({
-  MarketListPage: ({ locationOwner }: { locationOwner?: string }) => (
-    <div data-testid="market-list-page" data-location-owner={locationOwner} />
-  ),
-}));
-
 vi.mock("./posts-page", () => ({
   PostsPage: () => <div data-testid="posts-page" />,
 }));
@@ -116,14 +110,7 @@ describe("HomePage tabs", () => {
   it("shows the market map by default", () => {
     renderHome(<HomePage />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-list-page")).toBeNull();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
-  });
-
-  it("shows the Browse-all list for the explicit market list view", () => {
-    renderHome(<HomePage marketView="list" />);
-    expect(screen.getByTestId("market-list-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-page")).toBeNull();
   });
 
   it("renders the requested wallet tab", () => {

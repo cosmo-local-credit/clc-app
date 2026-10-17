@@ -134,27 +134,26 @@ beforeEach(() => {
 });
 
 describe("NavigationShell", () => {
-  it("owns the map as a Market descendant and the unfiltered list as the Market root", async () => {
+  it("owns the unfiltered map as the Market root and every list as beneath it", async () => {
     const map = await renderShell("/");
     const mapLink = await screen.findByRole("link", { name: "Market" });
-    expect(mapLink.getAttribute("href")).toBe("/market");
-    expect(mapLink.getAttribute("aria-current")).toBe("true");
+    expect(mapLink.getAttribute("href")).toBe("/");
+    expect(mapLink.getAttribute("aria-current")).toBe("page");
 
     map.unmount();
-    await renderShell("/market");
+    await renderShell("/market?scope=pools");
     expect((await screen.findByRole("link", { name: "Market" })).getAttribute("aria-current")).toBe(
-      "page",
+      "true",
     );
   });
 
-  it("returns a scoped marketplace view to the unfiltered All list", async () => {
+  it("returns a list to the map", async () => {
     const { router } = await renderShell("/market?scope=pools&q=food");
 
     const market = await screen.findByRole("link", { name: "Market" });
-    expect(market.getAttribute("aria-current")).toBe("true");
     fireEvent.click(market);
 
-    await waitFor(() => expect(router.state.location.href).toBe("/market"));
+    await waitFor(() => expect(router.state.location.href).toBe("/"));
   });
 
   it("keeps Posts selected on an authenticated report", async () => {

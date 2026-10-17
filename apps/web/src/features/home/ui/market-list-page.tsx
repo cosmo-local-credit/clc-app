@@ -112,7 +112,7 @@ export function MarketListPage({
   });
 
   return (
-    <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
+    <main className="relative min-h-[100svh] bg-background px-4 pb-market-list">
       <div>
         <h1 className="sr-only">
           <Trans>Vouchers</Trans>

@@ -35,6 +35,8 @@ type MapProps = {
 };
 
 const {
+  authState,
+  creditFeedback,
   cameraResult,
   vouchersResult,
   detailResult,
@@ -51,6 +53,8 @@ const {
   selection,
   poolsResult,
 } = vi.hoisted(() => ({
+  authState: { current: { isAuthenticated: false, isLoading: false, session: null } },
+  creditFeedback: { current: false },
   poolsResult: {
     current: [] as MarketPoolLocation[],
     error: null as Error | null,
@@ -127,7 +131,7 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: false, session: null }),
+  useAuthStatus: () => authState.current,
 }));
 
 vi.mock("wagmi", () => ({
@@ -146,6 +150,7 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
 }));
 
 vi.mock("#/components/creditable-browse-control", () => ({
+  hasCreditFeedback: () => creditFeedback.current,
   CreditableBrowseControl: ({
     part,
     onChange,
@@ -378,6 +383,8 @@ function renderPage(node: ReactNode = <MarketPage />) {
 }
 
 beforeEach(() => {
+  authState.current = { isAuthenticated: false, isLoading: false, session: null };
+  creditFeedback.current = false;
   window.localStorage.clear();
   mockRequestLocation.mockReset();
   mockRetry.mockReset();
@@ -423,6 +430,8 @@ beforeEach(() => {
 
 describe("MarketPage location button", () => {
   it("writes and clears Credit without leaving the canonical map route", () => {
+    authState.current = { ...authState.current, isAuthenticated: true };
+    creditFeedback.current = true;
     renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
@@ -1140,6 +1149,28 @@ describe("MarketPage filtering", () => {
 
     expect(screen.queryByText("No marketplace results match this search.")).toBeNull();
     expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
+  });
+});
+
+describe("MarketPage notices", () => {
+  it("shows one notice at a time, the Credit feedback first", () => {
+    authState.current = { ...authState.current, isAuthenticated: true };
+    creditFeedback.current = true;
+    vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
+
+    render(<MarketPage />);
+
+    expect(screen.getByTestId("credit-feedback")).toBeTruthy();
+    expect(screen.queryByText("Could not load vouchers.")).toBeNull();
+  });
+
+  it("puts the list badges under the bar and no Map button over the map", () => {
+    render(<MarketPage />);
+
+    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
+      "/market?scope=pools",
+    );
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 });
 

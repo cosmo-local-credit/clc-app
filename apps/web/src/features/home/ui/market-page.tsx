@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState } from "react";
 import { RiFocus3Line } from "react-icons/ri";
 
-import { CreditableBrowseControl } from "#/components/creditable-browse-control";
+import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
@@ -229,6 +229,58 @@ export function MarketPage({
     filter.result.ok &&
     (usesUnifiedSearch ? unifiedSearch.status === "ready" : isCatalogComplete);
 
+  const changeCredit = (checked: boolean) =>
+    void navigate({
+      to: "/",
+      search: (previous) => ({ ...previous, tab: "market", view: "map", creditable: checked }),
+    });
+  const clearCredit = () =>
+    void navigate({
+      to: "/",
+      replace: true,
+      search: (previous) => ({ ...previous, tab: "market", view: "map", creditable: false }),
+    });
+
+  const mapNotice = hasCreditFeedback(credit) ? (
+    <CreditableBrowseControl
+      part="feedback"
+      state={credit}
+      onChange={changeCredit}
+      onClear={clearCredit}
+    />
+  ) : credit.enabled && credit.poolRefs?.length === 0 ? (
+    <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+      <Trans>No marketplace results are available through your Credit pools.</Trans>
+    </div>
+  ) : notice ? (
+    <div
+      className="flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
+      role="alert"
+    >
+      <span className="min-w-0 text-sm">{notice.message}</span>
+      {notice.actionLabel && notice.onAction ? (
+        <Button variant="outline" tap pending={notice.actionPending} onClick={notice.onAction}>
+          {notice.actionLabel}
+        </Button>
+      ) : null}
+    </div>
+  ) : isEmpty ? (
+    <div className="space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
+      {filter.isFiltered ? (
+        <>
+          <p>
+            <Trans>No marketplace results match this search.</Trans>
+          </p>
+          <Button variant="outline" tap onClick={filter.clear}>
+            <Trans>Clear filters</Trans>
+          </Button>
+        </>
+      ) : (
+        <Trans>No marketplace results to show yet.</Trans>
+      )}
+    </div>
+  ) : null;
+
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
       <h1 className="sr-only">
@@ -266,29 +318,8 @@ export function MarketPage({
           <CreditableBrowseControl
             part="control"
             state={credit}
-            onChange={(checked) =>
-              void navigate({
-                to: "/",
-                search: (previous) => ({
-                  ...previous,
-                  tab: "market",
-                  view: "map",
-                  creditable: checked,
-                }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: "/",
-                replace: true,
-                search: (previous) => ({
-                  ...previous,
-                  tab: "market",
-                  view: "map",
-                  creditable: false,
-                }),
-              })
-            }
+            onChange={changeCredit}
+            onClear={clearCredit}
           />
         }
         filters={
@@ -304,76 +335,12 @@ export function MarketPage({
         }
       />
 
-      <div className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top)+9rem)] z-20 space-y-2">
-        <div className="pointer-events-auto">
-          <CreditableBrowseControl
-            part="feedback"
-            state={credit}
-            onChange={(checked) =>
-              void navigate({
-                to: "/",
-                search: (previous) => ({
-                  ...previous,
-                  tab: "market",
-                  view: "map",
-                  creditable: checked,
-                }),
-              })
-            }
-            onClear={() =>
-              void navigate({
-                to: "/",
-                replace: true,
-                search: (previous) => ({
-                  ...previous,
-                  tab: "market",
-                  view: "map",
-                  creditable: false,
-                }),
-              })
-            }
-          />
+      {/* One notice at a time, under the badges: the first that applies wins. */}
+      {mapNotice ? (
+        <div className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top)+7.5rem)] z-20">
+          <div className="pointer-events-auto">{mapNotice}</div>
         </div>
-        {credit.enabled && credit.poolRefs?.length === 0 ? (
-          <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-            <Trans>No marketplace results are available through your Credit pools.</Trans>
-          </div>
-        ) : null}
-        {notice ? (
-          <div
-            className="pointer-events-auto flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
-            role="alert"
-          >
-            <span className="min-w-0 text-sm">{notice.message}</span>
-            {notice.actionLabel && notice.onAction ? (
-              <Button
-                variant="outline"
-                tap
-                pending={notice.actionPending}
-                onClick={notice.onAction}
-              >
-                {notice.actionLabel}
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
-        {isEmpty && !notice ? (
-          <div className="pointer-events-auto space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
-            {filter.isFiltered ? (
-              <>
-                <p>
-                  <Trans>No marketplace results match this search.</Trans>
-                </p>
-                <Button variant="outline" tap onClick={filter.clear}>
-                  <Trans>Clear filters</Trans>
-                </Button>
-              </>
-            ) : (
-              <Trans>No marketplace results to show yet.</Trans>
-            )}
-          </div>
-        ) : null}
-      </div>
+      ) : null}
 
       {/* With a card open, only the location button stays, riding the sheet. */}
       {isCardOpen ? null : (
