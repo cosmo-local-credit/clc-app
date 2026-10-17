@@ -335,7 +335,7 @@ function AddStablesSheet({
                     disabled={entryDisabled}
                     aria-invalid={amount !== "" && !hasValidAmount}
                     className={cn(
-                      "bg-transparent text-end font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                      "bg-transparent text-end text-sm font-semibold tabular-nums caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
                       amount !== "" && !hasValidAmount && "text-destructive",
                       entryDisabled && "opacity-50",
                     )}
@@ -353,7 +353,7 @@ function AddStablesSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>MPESA phone</Trans>
                 </span>
-                <span className="font-mono text-xs font-semibold">
+                <span className="text-xs font-semibold tabular-nums">
                   {profilePending ? "…" : phone || "—"}
                 </span>
               </div>
@@ -362,7 +362,7 @@ function AddStablesSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>You'll receive</Trans>
                 </span>
-                <span className="font-mono text-xs font-semibold">
+                <span className="text-xs font-semibold tabular-nums">
                   {ratesQuery.isPending ? (
                     <span className="text-muted-foreground">…</span>
                   ) : approxUsdt !== null ? (
@@ -501,11 +501,11 @@ function PretiumHistory({
                 <p className={cn("font-medium text-sm", incoming && "text-primary")}>
                   {incoming ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}
                 </p>
-                <p className="truncate text-muted-foreground text-[0.6875rem]">
+                <p className="truncate text-muted-foreground text-xs">
                   {formatCashDate(transaction.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                 </p>
               </div>
-              <span className="shrink-0 font-mono text-xs font-semibold">
+              <span className="shrink-0 text-xs font-semibold tabular-nums">
                 KES {formatHistoryKes(transaction)}
               </span>
             </button>
@@ -547,7 +547,7 @@ function OnrampDetailsSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+            <Badge caps>
               <Trans>Onramp</Trans>
             </Badge>
             <SheetTitle className="sr-only">
@@ -562,10 +562,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Status</Trans>
                   </span>
-                  <Badge
-                    variant={isComplete ? "primary" : "muted"}
-                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
-                  >
+                  <Badge variant={isComplete ? "primary" : "muted"} size="sm" caps>
                     {onramp.status}
                   </Badge>
                 </div>
@@ -573,7 +570,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     KES {onramp.amountKes || "—"}
                   </span>
                 </div>
@@ -581,7 +578,7 @@ function OnrampDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Date</Trans>
                   </span>
-                  <time className="font-mono text-xs font-semibold" dateTime={onramp.createdAt}>
+                  <time className="text-xs font-semibold" dateTime={onramp.createdAt}>
                     {formatCashDate(onramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>
@@ -658,7 +655,7 @@ function OfframpDetailsSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+            <Badge caps>
               <Trans>Offramp</Trans>
             </Badge>
             <SheetTitle className="sr-only">
@@ -673,10 +670,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Status</Trans>
                   </span>
-                  <Badge
-                    variant={isComplete ? "primary" : "muted"}
-                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
-                  >
+                  <Badge variant={isComplete ? "primary" : "muted"} size="sm" caps>
                     {offramp.status}
                   </Badge>
                 </div>
@@ -684,7 +678,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     KES {offramp.amountKes || "—"}
                   </span>
                 </div>
@@ -692,7 +686,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Stable sent</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     {offramp.amountUsd || "—"}
                   </span>
                 </div>
@@ -700,7 +694,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>MPESA phone</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
+                  <span className="text-xs font-semibold tabular-nums">
                     {offramp.phoneNumber || "—"}
                   </span>
                 </div>
@@ -718,7 +712,7 @@ function OfframpDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Date</Trans>
                   </span>
-                  <time className="font-mono text-xs font-semibold" dateTime={offramp.createdAt}>
+                  <time className="text-xs font-semibold" dateTime={offramp.createdAt}>
                     {formatCashDate(offramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>

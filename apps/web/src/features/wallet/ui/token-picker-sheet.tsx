@@ -62,14 +62,12 @@ export function TokenPickerSheet({
                 >
                   <TokenLogo token={token} size={36} />
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm tracking-tight">{token.symbol}</p>
+                    <p className="font-semibold text-sm">{token.symbol}</p>
                     <p className="truncate text-muted-foreground text-xs">{token.name}</p>
                   </div>
                   <div className="text-end">
-                    <p className="font-heading font-semibold text-sm tracking-tight">
-                      {token.amount}
-                    </p>
-                    <p className="font-mono text-muted-foreground text-[0.6875rem]">{token.fiat}</p>
+                    <p className="font-semibold text-sm tabular-nums">{token.amount}</p>
+                    <p className="text-muted-foreground text-xs tabular-nums">{token.fiat}</p>
                   </div>
                   {active ? (
                     <RiCheckLine className="size-4 shrink-0 text-primary" aria-hidden="true" />

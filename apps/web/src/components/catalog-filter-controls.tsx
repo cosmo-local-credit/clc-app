@@ -10,6 +10,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { RiCheckLine, RiCloseLine, RiFilter3Line, RiSearchLine } from "react-icons/ri";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
   Combobox,
@@ -257,16 +258,17 @@ export function CatalogFilterSheet({
         />
         {trigger === "default" ? <Trans>Filters</Trans> : null}
         {appliedCount > 0 ? (
-          <span
+          <Badge
             aria-hidden="true"
+            size="sm"
             className={
               trigger === "marketplace-icon"
-                ? "absolute -end-1 -top-1 flex min-h-4 min-w-4 items-center justify-center border border-destructive bg-card px-0.5 text-[9px] text-foreground tabular-nums"
-                : "min-w-4 border border-primary-foreground/30 bg-primary-foreground/15 px-1 text-[10px] tabular-nums"
+                ? "absolute -end-1 -top-1 h-4 min-w-4 justify-center border-destructive bg-card px-0.5 text-foreground tabular-nums"
+                : "min-w-5 justify-center border-primary-foreground/30 bg-primary-foreground/15 text-current tabular-nums"
             }
           >
             {appliedCount}
-          </span>
+          </Badge>
         ) : null}
       </Button>
 

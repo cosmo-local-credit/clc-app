@@ -155,7 +155,7 @@ function ActivityRow({
         <p className="text-sm font-medium">
           <EntryTitle entry={entry} />
         </p>
-        <p className="truncate text-muted-foreground text-[0.6875rem]">
+        <p className="truncate text-muted-foreground text-xs">
           <EntrySubtitle entry={entry} />
           {date ? (
             <>
@@ -252,7 +252,7 @@ function EntryAmount({ entry }: { entry: PoolActivityEntry }) {
       {entry.protocolFee ? (
         // Shown apart from the trader's side: it left the pool in the same
         // transaction but went to the protocol, not to whoever swapped.
-        <span className="block font-mono text-muted-foreground text-[0.625rem] tabular-nums">
+        <span className="block text-muted-foreground text-xs tabular-nums">
           <Trans>Protocol fee</Trans> {legAmount(entry.protocolFee, locale)}
         </span>
       ) : null}

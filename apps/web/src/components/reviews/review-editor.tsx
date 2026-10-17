@@ -64,7 +64,7 @@ export function ReviewEditor({
     >
       {kind === "review" ? (
         <fieldset disabled={pending}>
-          <legend className="mb-1 text-sm font-semibold">
+          <legend className="mb-1.5 font-medium text-sm">
             <Trans>Your rating</Trans>
           </legend>
           <div className="flex gap-1">
@@ -94,7 +94,7 @@ export function ReviewEditor({
         </fieldset>
       ) : null}
       <div>
-        <label htmlFor={id} className="mb-1 block text-sm font-semibold">
+        <label htmlFor={id} className="mb-1.5 block font-medium text-sm">
           {kind === "review"
             ? t`Comment (optional)`
             : kind === "reply"

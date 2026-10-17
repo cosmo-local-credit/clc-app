@@ -155,7 +155,7 @@ export function CollectPage({ token }: { token?: string }) {
         {selectedToken ? (
           <>
             <TokenLogo token={selectedToken} size={30} />
-            <p className="min-w-0 flex-1 truncate text-sm font-bold">{selectedToken.symbol}</p>
+            <p className="min-w-0 flex-1 truncate text-sm font-semibold">{selectedToken.symbol}</p>
           </>
         ) : (
           <p className="min-w-0 flex-1 text-muted-foreground text-sm">
@@ -419,7 +419,7 @@ function CollectStatus({
             <Trans>Payment accepted — confirming</Trans>
           )}
         </p>
-        <p dir="ltr" className="font-mono text-muted-foreground text-xs">
+        <p dir="ltr" className="text-muted-foreground text-xs tabular-nums">
           {amount}
         </p>
       </div>
@@ -499,7 +499,7 @@ function CollectionRow({
   return (
     <li className="flex min-h-12 items-center justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0">
       <div className="min-w-0">
-        <p dir="ltr" className="font-mono text-xs font-semibold">
+        <p dir="ltr" className="text-xs font-semibold tabular-nums">
           {submission.amountLabel} {submission.token.symbol}
         </p>
         <EllipsizedAddress address={submission.payer} />

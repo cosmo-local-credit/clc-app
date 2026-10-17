@@ -483,7 +483,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {([supply, price, unit, name]) => {
                   const value = formatOfferingDisplayPrice(supply, price, unit, name);
                   return value ? (
-                    <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                    <p className="-mt-2 text-muted-foreground text-xs tabular-nums">
                       <Trans>
                         Value: {value.value} {value.unit} of offerings
                       </Trans>
@@ -623,7 +623,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     {([name, price, unit]) => {
                       const voucherName = name.trim() || t`voucher`;
                       return (
-                        <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                        <p className="-mt-2 text-muted-foreground text-xs tabular-nums">
                           {`1 ${voucherName} = ${price || "—"} ${unit}`}
                         </p>
                       );
@@ -956,7 +956,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   </dl>
                   {values.terms !== "" && !isHttpUrl(values.terms) ? (
                     <div className="mt-3.5 border border-border bg-card p-4">
-                      <p className="font-heading text-sm font-semibold leading-snug">
+                      <p className="text-sm font-semibold leading-snug">
                         <Trans>Terms</Trans>
                       </p>
                       <MarkdownContent className="mt-2">{values.terms}</MarkdownContent>

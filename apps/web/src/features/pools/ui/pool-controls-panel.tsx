@@ -99,7 +99,7 @@ export function PoolControlsPanel({
               icon={<RiWalletLine className="size-4" aria-hidden="true" />}
               label={t`Fee % and recipient`}
               value={
-                <span className="font-mono">
+                <span className="tabular-nums">
                   {fee
                     ? `${fee.feePercent}% · ${fee.feeAddress ? formatVoucherAddress(fee.feeAddress) : t`Not set`}`
                     : feeSettings.isError
@@ -291,7 +291,7 @@ function WithdrawLiquidityForm({
                 value={amount}
                 placeholder="0"
                 onChange={(event) => setAmount(event.target.value)}
-                className="font-mono"
+                className="tabular-nums"
               />
               <Button
                 type="button"
@@ -378,7 +378,7 @@ function CollectFeesForm({
             <Trans>Fees are paid to {formatVoucherAddress(feeAddress)}.</Trans>
           </p>
         ) : (
-          <p role="alert" className="border border-border bg-card p-4 text-destructive text-xs">
+          <p role="alert" className="border border-border bg-card p-4 text-destructive text-sm">
             <Trans>Set a fee recipient before collecting, or the pool has nowhere to pay.</Trans>
           </p>
         )}
@@ -500,7 +500,7 @@ function FeeSettingsForm({
             value={feePercent}
             placeholder="0"
             onChange={(event) => setFeePercent(event.target.value)}
-            className="font-mono"
+            className="tabular-nums"
             aria-invalid={!!trimmedFee && !feeIsValid}
           />
         </Field>
@@ -562,7 +562,7 @@ function TokenChooser({
 }) {
   if (vouchers.length === 0) {
     return (
-      <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
+      <p className="border border-border bg-card p-4 text-muted-foreground text-sm">
         <Trans>This pool holds no vouchers yet.</Trans>
       </p>
     );
@@ -587,14 +587,12 @@ function TokenChooser({
               ].join(" ")}
             >
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-bold text-sm tracking-tight">
-                  {voucher.name}
-                </span>
+                <span className="block truncate font-semibold text-sm">{voucher.name}</span>
                 <span className="block font-mono text-muted-foreground text-xs">
                   {voucher.symbol}
                 </span>
               </span>
-              <span className="shrink-0 font-mono text-sm font-semibold">{amount ?? "—"}</span>
+              <span className="shrink-0 text-sm font-semibold tabular-nums">{amount ?? "—"}</span>
             </button>
           </li>
         );

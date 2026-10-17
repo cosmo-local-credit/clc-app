@@ -53,7 +53,7 @@ export function LanguageSelector({ triggerClassName }: { triggerClassName?: stri
         </SelectContent>
       </SelectRoot>
       {error ? (
-        <p className="max-w-40 text-end text-[11px] text-destructive" role="alert">
+        <p className="max-w-40 text-end text-xs text-destructive" role="alert">
           {t`Unable to load language. Reverted to English.`}
         </p>
       ) : null}

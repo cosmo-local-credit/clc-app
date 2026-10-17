@@ -11,7 +11,7 @@ import { useLocale } from "#/providers/i18n";
 
 const toastClassNames = {
   toast:
-    "relative flex w-[calc(100vw-2rem)] items-start gap-3 rounded-none border border-s-2 border-border bg-card px-3.5 py-3 pe-8 font-sans text-foreground text-[0.8125rem] shadow-none outline-none",
+    "relative flex w-[calc(100vw-2rem)] items-start gap-3 rounded-none border border-s-2 border-border bg-card px-3.5 py-3 pe-8 font-sans text-foreground text-sm shadow-none outline-none",
   title: "font-heading font-semibold leading-tight tracking-[-0.01em] text-foreground",
   description: "mt-1 font-body text-muted-foreground text-xs leading-snug",
   content: "min-w-0 flex-1",

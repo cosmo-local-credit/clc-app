@@ -122,10 +122,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
         ) : null}
 
         {report.description ? (
-          <p
-            dir="auto"
-            className="whitespace-pre-wrap text-[0.9375rem] leading-6 [overflow-wrap:anywhere]"
-          >
+          <p dir="auto" className="whitespace-pre-wrap leading-6 [overflow-wrap:anywhere]">
             {report.description}
           </p>
         ) : null}
@@ -208,7 +205,7 @@ function ReportGallery({ images, title }: { images: ReportImage[]; title: string
         />
         <p
           aria-live="polite"
-          className="absolute end-2 bottom-2 bg-background/80 px-2 py-0.5 font-mono text-[0.6875rem] font-semibold tabular-nums"
+          className="absolute end-2 bottom-2 bg-background/80 px-2 py-0.5 text-2xs font-semibold tabular-nums"
         >
           <Trans>
             {current} / {images.length}
@@ -339,7 +336,7 @@ function FullScreenCarousel({
       />
       <p
         aria-live="polite"
-        className="absolute end-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 font-mono text-white text-xs tabular-nums"
+        className="absolute end-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 text-white text-xs tabular-nums"
       >
         <Trans>
           {current} / {images.length}
@@ -504,10 +501,7 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
             className="flex min-h-12 w-full items-center gap-2 border-b border-border px-3 py-2 text-start last:border-b-0 active:bg-muted"
           >
             <span className="min-w-0 flex-1 truncate text-sm">{voucher.name}</span>
-            <Badge
-              variant="outline"
-              className="h-5 max-w-20 truncate px-1.5 font-mono text-[0.625rem] text-info"
-            >
+            <Badge variant="outline" size="sm" className="max-w-20 truncate font-mono text-info">
               {voucher.symbol}
             </Badge>
             <RiArrowRightSLine
@@ -554,7 +548,7 @@ function ReportLocation({ report, label }: { report: ReportDetail; label: string
         <Trans>Location</Trans>
       </SectionHeading>
       <div className="mt-2 border border-border bg-card p-4">
-        <p className="font-heading text-sm font-semibold leading-snug">{label}</p>
+        <p className="text-sm font-semibold leading-snug">{label}</p>
         {hasCoordinates && report.lat !== null && report.lng !== null ? (
           <>
             <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>

@@ -44,7 +44,7 @@ describe("WalletAmountInput", () => {
     expect(input.className).toContain("rounded-none");
     expect(input.className).toContain("border-input");
     expect(input.className).toContain("bg-card");
-    expect(input.className).toContain("text-[1.375rem]");
+    expect(input.className).toContain("text-xl");
     expect(input.className).toContain("focus-visible:border-foreground");
     expect(input.className).toContain("aria-invalid:border-destructive");
 
@@ -79,7 +79,7 @@ describe("WalletAmountInput", () => {
     expect(highlighted.className).toContain("aria-invalid:border-destructive");
     for (const input of [highlighted, plain]) {
       expect(input.className).toContain("h-9");
-      expect(input.className).toContain("text-[1.375rem]");
+      expect(input.className).toContain("text-xl");
       expect(input.className).toContain("bg-card");
       expect(input.className).toContain("rounded-none");
     }

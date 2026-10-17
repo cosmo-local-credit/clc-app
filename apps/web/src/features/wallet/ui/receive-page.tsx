@@ -84,7 +84,7 @@ export function ReceivePage() {
               onClick={() => copy(username, true)}
             >
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-muted-foreground text-[0.625rem]">
+                <span className="text-muted-foreground text-xs">
                   <Trans>Username</Trans>
                 </span>
                 <span dir="auto" className="truncate font-mono text-muted-foreground text-xs">
@@ -104,13 +104,13 @@ export function ReceivePage() {
             onClick={() => copy(address)}
           >
             <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[0.625rem]">
+              <span className="text-muted-foreground text-xs">
                 <Trans>{chainName} address</Trans>
               </span>
               <HighlightAddress
                 address={address}
                 tailLength={6}
-                className="min-w-0 break-all text-[0.625rem] leading-tight"
+                className="min-w-0 break-all text-xs"
               />
             </span>
             <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />

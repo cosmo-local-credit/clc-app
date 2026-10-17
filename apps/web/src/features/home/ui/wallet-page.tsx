@@ -28,11 +28,11 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
       <>
         <TokenLogo token={token} size={34} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
+          <p className="text-sm font-semibold">{token.symbol}</p>
           <p className="text-muted-foreground truncate text-xs">{token.name}</p>
         </div>
         <div className="shrink-0 text-end">
-          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
+          <p className="text-sm font-semibold tabular-nums">{token.amount}</p>
         </div>
       </>
     );
@@ -320,7 +320,7 @@ export function WalletPage({ address }: { address?: string }) {
             >
               <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={34} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold tracking-tight">{pool.name}</p>
+                <p className="truncate text-sm font-semibold">{pool.name}</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">
                   {pool.voucherCount === 1 ? (
                     <Trans>1 voucher</Trans>

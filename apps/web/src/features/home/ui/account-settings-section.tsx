@@ -42,7 +42,7 @@ export function AccountSettingsSection() {
       className="flex items-center gap-3 p-3 outline-none active:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground"
     >
       {/* `relative` anchors ProgressiveImage's skeleton to the avatar. */}
-      <span className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted font-heading font-semibold text-[0.8125rem] text-foreground">
+      <span className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted font-heading font-semibold text-sm text-foreground">
         {avatarUrl ? (
           <ProgressiveImage src={avatarUrl} alt="" className="size-full object-cover" />
         ) : initials ? (

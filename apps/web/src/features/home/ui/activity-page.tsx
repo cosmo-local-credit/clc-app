@@ -125,7 +125,7 @@ export function ActivityPage({ address }: { address?: string }) {
                 </p>
                 {/* Only the counterparty truncates: a long name and username
                     must not push the date off the row. */}
-                <p className="flex min-w-0 text-muted-foreground text-[0.6875rem]">
+                <p className="flex min-w-0 text-muted-foreground text-xs">
                   <span className="min-w-0 truncate">
                     {created ? (
                       <Trans>New supply</Trans>
@@ -144,7 +144,7 @@ export function ActivityPage({ address }: { address?: string }) {
                   ) : null}
                 </p>
               </div>
-              <span className="shrink-0 text-end font-mono text-xs font-semibold">
+              <span className="shrink-0 text-end text-xs font-semibold tabular-nums">
                 <span className="block">
                   {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                   {transfer.tokenSymbol}

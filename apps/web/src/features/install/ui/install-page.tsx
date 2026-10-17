@@ -86,11 +86,11 @@ export function InstallPage({ from }: { from?: "settings" }) {
 
       <section className="space-y-4" aria-label={t`App installation`}>
         {installed ? (
-          <p role="status" className="border border-border bg-card p-4 text-primary">
+          <p role="status" className="border border-border bg-card p-4 text-primary text-sm">
             <Trans>CLC is installed. Find it on your home screen.</Trans>
           </p>
         ) : status === "accepted" ? (
-          <p role="status" className="border border-border bg-card p-4">
+          <p role="status" className="border border-border bg-card p-4 text-sm">
             <Trans>Installation requested. Follow your browser's instructions to finish.</Trans>
           </p>
         ) : (

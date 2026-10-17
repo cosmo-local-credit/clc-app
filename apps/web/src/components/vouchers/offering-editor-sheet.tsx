@@ -336,7 +336,7 @@ function OfferingForm({
                       dir="ltr"
                       inputMode="decimal"
                       autoComplete="off"
-                      className="min-w-0 flex-1 bg-card font-mono"
+                      className="min-w-0 flex-1 bg-card tabular-nums"
                       value={priceField.state.value}
                       onBlur={priceField.handleBlur}
                       onChange={(event) => priceField.handleChange(event.target.value)}
@@ -452,7 +452,7 @@ function Field({
       </label>
       {children}
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-xs">
           {error}
         </p>
       ) : null}

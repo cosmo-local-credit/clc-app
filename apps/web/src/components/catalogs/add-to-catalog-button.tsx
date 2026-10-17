@@ -10,6 +10,7 @@ import { Link } from "@tanstack/react-router";
 import type { ComponentProps } from "react";
 import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
+import { Field } from "#/components/ui/field";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 import { catalogsClient } from "#/lib/api/catalogs";
 
@@ -70,10 +71,7 @@ export function AddToCatalogButton({
   return (
     <div className="space-y-2">
       {mine.catalogs.length > 1 && (
-        <div className="space-y-1">
-          <label htmlFor={selectId} className="text-sm">
-            <Trans>Choose catalog</Trans>
-          </label>
+        <Field label={t`Choose catalog`} htmlFor={selectId}>
           <select
             id={selectId}
             className="h-11 w-full border border-border bg-card px-3"
@@ -87,7 +85,7 @@ export function AddToCatalogButton({
               </option>
             ))}
           </select>
-        </div>
+        </Field>
       )}
       <Button
         variant="outline"

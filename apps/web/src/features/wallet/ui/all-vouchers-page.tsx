@@ -40,18 +40,16 @@ function VoucherRow({
         <TokenLogo token={voucher} size={36} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-bold tracking-tight">{voucher.symbol}</p>
+            <p className="text-sm font-semibold">{voucher.symbol}</p>
             {voucher.admin ? (
-              <Badge className="h-4 px-1 text-[0.5rem] tracking-[0.06em] uppercase">
+              <Badge size="sm" caps>
                 <Trans>Admin</Trans>
               </Badge>
             ) : null}
           </div>
           <p className="text-muted-foreground text-xs">{voucher.name}</p>
         </div>
-        <p className="font-heading shrink-0 text-sm font-semibold tracking-tight">
-          {voucher.amount}
-        </p>
+        <p className="shrink-0 text-sm font-semibold tabular-nums">{voucher.amount}</p>
         <RiArrowDownSLine
           className={[
             "size-4 shrink-0 text-muted-foreground transition-transform",

@@ -174,7 +174,7 @@ export function PostImageManager({
       </div>
 
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-xs">
           {error}
         </p>
       ) : null}

@@ -287,7 +287,7 @@ export function WithdrawSheet({
                         size={Math.max(amount.length, 2)}
                         aria-invalid={amount !== "" && !hasValidAmount}
                         className={cn(
-                          "bg-transparent text-end font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                          "bg-transparent text-end text-sm font-semibold tabular-nums caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
                           amount !== "" && !hasValidAmount && "text-destructive",
                         )}
                       />
@@ -307,7 +307,7 @@ export function WithdrawSheet({
                     <span className="text-muted-foreground text-xs">
                       <Trans>You'll send</Trans>
                     </span>
-                    <span className="font-mono text-xs font-semibold">
+                    <span className="text-xs font-semibold tabular-nums">
                       {selected && hasValidAmount
                         ? `≈ ${tokenToSend.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
                             maximumFractionDigits: 4,

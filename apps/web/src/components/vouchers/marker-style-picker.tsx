@@ -123,9 +123,7 @@ export function MarkerStylePicker({
             )}
           >
             <MarkerPin style={{ icon, color: resolved.color }} size={24} />
-            <span className="w-full truncate text-center text-[11px] leading-tight">
-              {labels.icon(icon)}
-            </span>
+            <span className="w-full truncate text-center text-2xs">{labels.icon(icon)}</span>
           </Radio.Root>
         ))}
       </RadioGroup>

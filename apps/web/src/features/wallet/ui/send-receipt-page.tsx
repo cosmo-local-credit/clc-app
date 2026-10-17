@@ -218,7 +218,7 @@ export function SendReceiptPage({
         </ReceiptRow>
         {submittedAt ? (
           <ReceiptRow label={t`Submitted`}>
-            <time className="font-mono text-xs font-semibold" dateTime={outcome.otx.createdAt}>
+            <time className="text-xs font-semibold" dateTime={outcome.otx.createdAt}>
               {submittedAt}
             </time>
           </ReceiptRow>
@@ -394,7 +394,7 @@ function SendSharePanel({
 
   if (eligibility.isPending) {
     return (
-      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-sm">
         <Trans>Checking message availability…</Trans>
       </p>
     );
@@ -403,7 +403,7 @@ function SendSharePanel({
   if (eligibility.isError) {
     return (
       <div className="mb-5 flex items-center justify-between gap-3 border border-border bg-card p-3">
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           <Trans>Couldn't check message availability.</Trans>
         </p>
         <Button
@@ -421,7 +421,7 @@ function SendSharePanel({
 
   if (!eligibility.data) {
     return (
-      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-sm">
         <Trans>Messages are available only for registered Cosmo users.</Trans>
       </p>
     );
@@ -441,7 +441,7 @@ function SendSharePanel({
 
   if (orderCheckLoading) {
     return (
-      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-sm">
         <Trans>Checking order availability…</Trans>
       </p>
     );

@@ -90,7 +90,7 @@ function MyPostRow({ post, locale }: { post: ManagedReportSummary; locale: strin
   return (
     <li className="space-y-2 border border-border bg-card p-3">
       <div className="flex items-start justify-between gap-3">
-        <p className="min-w-0 flex-1 font-heading text-base font-semibold leading-snug [overflow-wrap:anywhere]">
+        <p className="min-w-0 flex-1 text-sm font-semibold leading-snug [overflow-wrap:anywhere]">
           {post.title}
         </p>
         <PostStatusBadge status={post.status} />

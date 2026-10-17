@@ -78,7 +78,7 @@ export function PostAttachmentFields({
               </p>
 
               <Input
-                className="bg-card font-mono text-xs"
+                className="bg-card text-xs"
                 aria-label={t`Link ${index + 1}`}
                 value={attachment.url}
                 disabled={disabled}
@@ -143,7 +143,7 @@ export function PostAttachmentFields({
       ) : null}
 
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-xs">
           {error}
         </p>
       ) : null}

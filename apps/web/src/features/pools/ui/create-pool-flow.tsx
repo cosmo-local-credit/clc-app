@@ -929,7 +929,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   </dl>
                   {values.terms !== "" && !isHttpUrl(values.terms) ? (
                     <div className="mt-3.5 border border-border bg-card p-4">
-                      <p className="font-heading text-sm font-semibold leading-snug">
+                      <p className="text-sm font-semibold leading-snug">
                         <Trans>Terms</Trans>
                       </p>
                       <MarkdownContent className="mt-2">{values.terms}</MarkdownContent>
@@ -1005,7 +1005,7 @@ function PricingOption({
         <span className="flex flex-wrap items-center gap-2">
           <strong className="text-sm font-semibold">{title}</strong>
           {isDefault ? (
-            <Badge variant="muted" className="h-5 px-2 text-[10px]">
+            <Badge variant="muted" size="sm">
               <Trans>Default</Trans>
             </Badge>
           ) : null}

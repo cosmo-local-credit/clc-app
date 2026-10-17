@@ -275,7 +275,7 @@ function DeploymentChecklist({
             {stage.label}
           </span>
           <span
-            className={`font-mono text-[10px] uppercase tracking-wide ${
+            className={`text-xs ${
               stage.state === "failed" ? "text-destructive" : "text-muted-foreground"
             }`}
           >

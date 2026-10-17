@@ -531,7 +531,7 @@ function PoolVoucherConfigurationForm({
             )}
           </form.Subscribe>
         ) : (
-          <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
+          <p className="border border-border bg-card p-4 text-muted-foreground text-sm">
             <Trans>
               This pool has no limiter, so deposits are uncapped and no credit limit can be set.
             </Trans>
@@ -695,7 +695,7 @@ function RateRow({
     <div className="border border-border bg-card p-4">
       <p className="mb-3 font-medium text-muted-foreground text-xs">{heading}</p>
       <div className="flex items-center gap-2">
-        <span className="shrink-0 truncate font-mono text-sm font-semibold">{leading}</span>
+        <span className="shrink-0 truncate text-sm font-semibold tabular-nums">{leading}</span>
         <span className="shrink-0 text-muted-foreground text-sm">=</span>
         <label htmlFor={id} className="sr-only">
           {heading}
@@ -709,9 +709,9 @@ function RateRow({
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
           aria-invalid={!!error}
-          className="min-w-0 flex-1 font-mono"
+          className="min-w-0 flex-1 tabular-nums"
         />
-        <span className="shrink-0 font-mono text-sm font-semibold">{unitSymbol}</span>
+        <span className="shrink-0 text-sm font-semibold">{unitSymbol}</span>
       </div>
       {error ? (
         <FieldError error={error} />
@@ -765,7 +765,7 @@ function SelectedVoucher({
     <div className="border border-border bg-card p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
+          <p className="truncate font-semibold text-sm">{voucher.name}</p>
           <p dir="ltr" className="font-mono text-muted-foreground text-xs">
             {voucher.symbol}
           </p>
@@ -790,7 +790,7 @@ function SelectedVoucher({
           <dt className="text-muted-foreground">
             <Trans>Amount in pool</Trans>
           </dt>
-          <dd dir="ltr" className="text-end font-mono font-semibold">
+          <dd dir="ltr" className="text-end font-semibold tabular-nums">
             {balance.status === "loading" ? (
               <Trans>Reading…</Trans>
             ) : amount === null ? (
@@ -804,7 +804,7 @@ function SelectedVoucher({
           <dt className="text-muted-foreground">
             <Trans>Value in {unitSymbol}</Trans>
           </dt>
-          <dd dir="ltr" className="text-end font-mono font-semibold">
+          <dd dir="ltr" className="text-end font-semibold tabular-nums">
             {balance.status === "loading" ? (
               <Trans>Reading…</Trans>
             ) : unitValue === null ? (
@@ -1088,14 +1088,12 @@ function CandidateList({
             ].join(" ")}
           >
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-bold text-sm tracking-tight">
-                {voucher.name}
-              </span>
+              <span className="block truncate font-semibold text-sm">{voucher.name}</span>
               <span className="block font-mono text-muted-foreground text-xs">
                 {formatVoucherAddress(voucher.address)}
               </span>
             </span>
-            <Badge variant="outline" className="shrink-0 font-mono text-[0.625rem]">
+            <Badge variant="outline" size="sm" className="font-mono">
               {voucher.symbol}
             </Badge>
           </button>

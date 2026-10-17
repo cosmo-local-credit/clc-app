@@ -34,7 +34,7 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
             <Trans>Cosmo-Local Credit</Trans>
           </h1>
-          <p className="text-muted-foreground text-[0.9375rem] leading-relaxed">
+          <p className="text-muted-foreground leading-relaxed">
             <Trans>
               Cosmo-Local Credit helps people and organizations support, share, and exchange goods
               and services.

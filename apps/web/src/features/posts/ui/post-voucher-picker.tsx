@@ -175,10 +175,7 @@ export function PostVoucherPicker({
               <ComboboxItem key={option.value} value={option}>
                 <span className="min-w-0 flex-1 truncate text-sm">{option.label}</span>
                 {option.symbol ? (
-                  <Badge
-                    variant="outline"
-                    className="h-5 max-w-20 truncate px-1.5 font-mono text-[0.625rem]"
-                  >
+                  <Badge variant="outline" size="sm" className="max-w-20 truncate font-mono">
                     {option.symbol}
                   </Badge>
                 ) : null}

@@ -209,7 +209,7 @@ export function SendAmountPage({
           <>
             <TokenLogo token={selectedToken} size={30} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold">{selectedToken.symbol}</p>
+              <p className="text-sm font-semibold">{selectedToken.symbol}</p>
               <p className="text-muted-foreground text-xs">
                 <Trans>Balance {selectedToken.amount}</Trans>
               </p>
@@ -279,23 +279,23 @@ export function SendAmountPage({
               aria-invalid={exceedsMax}
               aria-describedby={unitValueLabel ? "send-amount-uoa-value" : undefined}
               className={cn(
-                "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight caret-primary outline-none [field-sizing:content]",
+                "min-w-0 bg-transparent text-center text-[1.75rem] font-semibold leading-none tabular-nums caret-primary outline-none [field-sizing:content]",
                 exceedsMax && "text-destructive",
               )}
             />
             {!amount && !amountFocused ? (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-1/2 h-9 w-px -translate-x-1/2 -translate-y-1/2 animate-pulse bg-primary"
+                className="pointer-events-none absolute top-1/2 left-1/2 h-7 w-px -translate-x-1/2 -translate-y-1/2 animate-pulse bg-primary"
               />
             ) : null}
           </div>
-          <span className="text-[1.25rem] text-muted-foreground">{selectedToken?.symbol}</span>
+          <span className="text-xl text-muted-foreground">{selectedToken?.symbol}</span>
         </div>
         {unitValueLabel ? (
           <p
             id="send-amount-uoa-value"
-            className="relative mt-2 font-mono text-muted-foreground text-sm tabular-nums"
+            className="relative mt-2 text-muted-foreground text-sm tabular-nums"
             aria-live="polite"
           >
             ({unitValueLabel})
@@ -445,7 +445,7 @@ function SendConfirmationSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>Amount</Trans>
                 </span>
-                <span className="min-w-0 text-end font-mono text-xs font-semibold [overflow-wrap:anywhere]">
+                <span className="min-w-0 text-end text-xs font-semibold tabular-nums [overflow-wrap:anywhere]">
                   {amount} {symbol}
                   {unitValueLabel ? ` (${unitValueLabel})` : ""}
                 </span>

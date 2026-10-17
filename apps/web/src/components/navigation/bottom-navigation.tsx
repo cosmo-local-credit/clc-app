@@ -82,7 +82,7 @@ function NavLink({
       onClick={(event) => preventActiveNavigation(event, active && atActiveTabRoot)}
     >
       <span className="flex size-6 items-center justify-center [&_svg]:size-4">{icon}</span>
-      <span className={cn("font-medium text-[0.6875rem]", active && "font-semibold")}>{label}</span>
+      <span className={cn("font-medium text-2xs", active && "font-semibold")}>{label}</span>
     </Link>
   );
 }
@@ -114,9 +114,7 @@ function MarketNavLink({
       >
         <CLCLogo className="size-8" />
       </span>
-      <span
-        className={cn("font-medium text-[0.6875rem]", active && "font-semibold text-foreground")}
-      >
+      <span className={cn("font-medium text-2xs", active && "font-semibold text-foreground")}>
         {label}
       </span>
     </Link>

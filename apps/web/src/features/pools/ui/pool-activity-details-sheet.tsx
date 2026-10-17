@@ -93,7 +93,7 @@ export function PoolActivityDetailsSheet({
         <SheetBackdrop />
         <SheetContent className="max-h-[85svh] overflow-y-auto [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">{kind}</Badge>
+            <Badge caps>{kind}</Badge>
             <SheetTitle className="sr-only">
               <Trans>Pool activity details</Trans>
             </SheetTitle>
@@ -103,10 +103,7 @@ export function PoolActivityDetailsSheet({
             <div className="space-y-3 px-6 pb-2">
               <div className="border border-border bg-card">
                 <DetailRow label={t`Status`}>
-                  <Badge
-                    variant={entry.success ? "primary" : "muted"}
-                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
-                  >
+                  <Badge variant={entry.success ? "primary" : "muted"} size="sm" caps>
                     {entry.success ? t`Confirmed` : t`Failed`}
                   </Badge>
                 </DetailRow>
@@ -192,7 +189,7 @@ export function PoolActivityDetailsSheet({
                 </DetailRow>
 
                 <DetailRow label={t`Date`}>
-                  <time className="font-mono text-xs font-semibold" dateTime={entry.dateBlock}>
+                  <time className="text-xs font-semibold" dateTime={entry.dateBlock}>
                     {formatTransferDate(entry.dateBlock)}
                   </time>
                 </DetailRow>

@@ -403,7 +403,7 @@ function VoucherActivityPanel({
                     <Trans>Sent</Trans>
                   )}
                 </span>
-                <span className="block truncate text-muted-foreground text-[0.6875rem]">
+                <span className="block truncate text-muted-foreground text-xs">
                   {created ? (
                     <Trans>New supply</Trans>
                   ) : (
@@ -420,7 +420,7 @@ function VoucherActivityPanel({
                   ) : null}
                 </span>
               </span>
-              <span className="shrink-0 text-end font-mono text-xs font-semibold">
+              <span className="shrink-0 text-end text-xs font-semibold tabular-nums">
                 <span className="block">
                   {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                   {transfer.tokenSymbol}
@@ -489,7 +489,7 @@ function VoucherInfoPanel({
 
       {locationLabel ? (
         <div className="border border-border bg-card p-4">
-          <p className="font-heading text-sm font-semibold leading-snug">{locationLabel}</p>
+          <p className="text-sm font-semibold leading-snug">{locationLabel}</p>
           {hasCoordinates ? (
             <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>
               <LocationMap lat={lat} lng={lng} className="mt-3 h-36 rounded-none border-0" />

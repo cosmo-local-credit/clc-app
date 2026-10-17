@@ -152,14 +152,14 @@ export function PoolHoldingIdentity({ holding, unit }: { holding: PoolHolding; u
           knows it by what it is called; the symbol still appears below,
           against the rate and the amount it denominates. */}
       <div className="min-w-0 flex-1 overflow-hidden">
-        <p className="truncate font-bold text-sm tracking-tight">{holding.name}</p>
+        <p className="truncate font-semibold text-sm">{holding.name}</p>
         {/* The same line the vouchers tab prints, so one voucher reads the
             same way on every tab. Present only where the quoter publishes a
             rate: on an oracle- or decimal-quoted pool nothing was read, and
             parity is what the contract falls back to rather than what it was
             told. */}
         {holding.ratePpm === null ? null : (
-          <p className="truncate font-mono text-muted-foreground text-xs">
+          <p className="truncate text-muted-foreground text-xs tabular-nums">
             1 {holding.symbol} = {formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}{" "}
             {unit}
           </p>

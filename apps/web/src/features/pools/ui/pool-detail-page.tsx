@@ -10,6 +10,7 @@ import {
   RiQrCodeLine,
   RiSettings3Line,
 } from "react-icons/ri";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
@@ -119,12 +120,9 @@ export function PoolDetailPage({
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {pool.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="border border-border bg-muted px-1.5 py-0.5 text-[0.625rem]"
-                >
+                <Badge key={tag} variant="muted" size="sm">
                   {tag}
-                </span>
+                </Badge>
               ))}
             </div>
           </div>
@@ -204,7 +202,7 @@ export function PoolDetailPage({
           // wraps onto a second line centred under the first; a single word
           // has to fit, which is what the tab's own `context` is for.
           const className = [
-            "flex h-10 min-w-0 items-center justify-center px-1 text-center text-[0.6875rem] leading-tight font-semibold",
+            "flex h-10 min-w-0 items-center justify-center px-1 text-center text-2xs leading-tight font-semibold",
             activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
           ].join(" ");
 
@@ -357,9 +355,9 @@ function VoucherRow({
       >
         {token ? <TokenLogo token={token} size={36} /> : null}
         <div className="min-w-0 flex-1 overflow-hidden">
-          <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
+          <p className="truncate font-semibold text-sm">{voucher.name}</p>
           {ratePpm === undefined ? null : (
-            <p className="truncate font-mono text-muted-foreground text-xs">
+            <p className="truncate text-muted-foreground text-xs tabular-nums">
               1 {voucher.symbol} ={" "}
               {formatTokenAmount(ratePpm.toString(), POOL_PRICE_INDEX_DECIMALS)} {unitSymbol}
             </p>

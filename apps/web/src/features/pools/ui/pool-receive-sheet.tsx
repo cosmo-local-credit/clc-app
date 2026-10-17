@@ -79,7 +79,7 @@ export function PoolReceiveSheet({
                     <HighlightAddress
                       address={pool.address}
                       tailLength={6}
-                      className="min-w-0 break-all text-[0.625rem] leading-tight"
+                      className="min-w-0 break-all text-xs"
                     />
                   )}
                   <RiFileCopyLine

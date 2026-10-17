@@ -226,14 +226,14 @@ function MarketplaceResultRow({ row, locale }: { row: MarketplaceResult; locale:
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <span className="block text-xs text-muted-foreground">
           <ResultKind kind={row.kind} />
         </span>
-        <span dir="auto" className="block break-words font-heading font-semibold">
+        <span dir="auto" className="block break-words text-sm font-semibold">
           {row.name}
         </span>
         {row.kind === "offering" && row.voucherName ? (
-          <span className="mt-1 block text-sm text-muted-foreground">
+          <span className="mt-1 block text-xs text-muted-foreground">
             {row.voucherName}
             {row.voucherSymbol ? ` · ${row.voucherSymbol}` : ""}
           </span>
