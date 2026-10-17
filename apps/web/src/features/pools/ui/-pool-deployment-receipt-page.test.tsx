@@ -106,7 +106,7 @@ describe("PoolDeploymentReceiptPage", () => {
     };
     renderReceipt();
 
-    expect(screen.getByRole("heading", { name: "Publishing your pool..." })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Publishing your pool…" })).toBeTruthy();
     expect(screen.getByText("Voucher registry")).toBeTruthy();
     expect(screen.getByText("Limits")).toBeTruthy();
     expect(screen.getByText("Fee policy")).toBeTruthy();

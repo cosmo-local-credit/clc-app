@@ -7,13 +7,13 @@ import { formatOfferingDisplayValue } from "@clc/core/features/market/logic";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { RiCoinLine, RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
+import { RiCoinLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { isAddress } from "viem";
 
 import { Button } from "#/components/ui/button";
+import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import {
-  EllipsizedAddress,
   FailureCross,
   PendingClock,
   ShareReceiptButton,
@@ -239,17 +239,7 @@ export function SwapReceiptPage({
         ) : null}
         {txHash ? (
           <ReceiptRow label={<Trans>Transaction</Trans>}>
-            <button
-              type="button"
-              className="flex min-w-0 items-center gap-1.5 bg-card text-end"
-              aria-label={t`Copy transaction hash`}
-              onClick={() => copy(txHash)}
-            >
-              <EllipsizedAddress address={txHash} />
-              <span className="flex size-6 shrink-0 items-center justify-center bg-muted text-muted-foreground">
-                <RiFileCopyLine className="size-3" aria-hidden="true" />
-              </span>
-            </button>
+            <CopyableInfoValue value={txHash} label={t`Copy transaction hash`} onCopy={copy} />
           </ReceiptRow>
         ) : null}
         <ReceiptRow label={<Trans>Network</Trans>}>
@@ -257,7 +247,7 @@ export function SwapReceiptPage({
         </ReceiptRow>
         {submittedAt ? (
           <ReceiptRow label={<Trans>Submitted</Trans>}>
-            <time className="font-mono text-xs font-semibold" dateTime={submittedAt}>
+            <time className="text-xs font-semibold" dateTime={submittedAt}>
               {formatSubmittedAt(submittedAt, i18n.locales?.[0] ?? i18n.locale)}
             </time>
           </ReceiptRow>
@@ -277,8 +267,8 @@ export function SwapReceiptPage({
           {settlement.isError ? (
             <Button
               variant="outline"
-              size="sm"
-              className="h-9 bg-card"
+              tap
+              pending={settlement.isFetching}
               onClick={() => void settlement.refetch()}
             >
               <Trans>Try again</Trans>
@@ -289,7 +279,7 @@ export function SwapReceiptPage({
       <div className="flex-1" />
       {explorerUrl ? (
         <ShareReceiptButton
-          className="mb-2.5 h-11 w-full"
+          className="mb-2.5 w-full"
           title={t`Swap receipt`}
           lines={[
             amountLabel && sentLabel
@@ -317,21 +307,21 @@ export function SwapReceiptPage({
       ) : null}
       {sendReceived ? (
         redeemReceived ? (
-          <Button asChild className="mb-2.5 h-11 w-full">
+          <Button asChild size="lg" className="mb-2.5 w-full">
             <Link to="/wallet/send/amount" search={redeemReceived}>
               <RiCoinLine className="size-4" aria-hidden="true" />
               <Trans>Redeem</Trans>
             </Link>
           </Button>
         ) : (
-          <Button className="mb-2.5 h-11 w-full" disabled>
+          <Button size="lg" className="mb-2.5 w-full" disabled>
             <RiCoinLine className="size-4" aria-hidden="true" />
             <Trans>Redeem</Trans>
           </Button>
         )
       ) : null}
       {sendReceived ? (
-        <Button asChild className="mb-2.5 h-11 w-full" variant="outline">
+        <Button asChild size="lg" className="mb-2.5 w-full" variant="outline">
           <Link to="/wallet/send" search={sendReceived}>
             <RiSendPlane2Line className="size-4" aria-hidden="true" />
             <Trans>Send {details.receiveSymbol}</Trans>
@@ -340,14 +330,15 @@ export function SwapReceiptPage({
       ) : null}
       <div className="flex gap-3">
         <Button
-          className="h-11 flex-1"
+          size="lg"
+          className="flex-1"
           variant={sendReceived ? "outline" : "default"}
           onClick={exitReceipt}
         >
           <Trans>Done</Trans>
         </Button>
         {explorerUrl ? (
-          <Button asChild className="h-11 flex-1" variant="outline">
+          <Button asChild size="lg" className="flex-1" variant="outline">
             <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
               {CHAIN_INFO.explorerName}
             </a>
@@ -393,7 +384,7 @@ function ReceiptShell({
       </div>
       <div className="flex-1" />
       {onDone ? (
-        <Button className="h-11 w-full" onClick={onDone}>
+        <Button size="lg" className="w-full" onClick={onDone}>
           <Trans>Done</Trans>
         </Button>
       ) : null}

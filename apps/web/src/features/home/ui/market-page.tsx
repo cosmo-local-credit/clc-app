@@ -103,7 +103,7 @@ export function MarketPage({
     filtersEverOpened,
     credit.enabled ? credit.poolRefs : undefined,
   );
-  const { vouchers, isCatalogComplete, error, retry } = catalog;
+  const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   // The filter's terms and tags are a voucher vocabulary, so a filtered map
   // shows only the vouchers it matched.
   const poolCatalog = useMarketMapPools(!filter.isRestoringPreference && !usesUnifiedSearch);
@@ -193,22 +193,28 @@ export function MarketPage({
 
   // The vouchers' notice wins: their retry is the one that fills an empty map.
   const notice =
-    useMarketFilterNotice(filter, error, retry) ??
+    useMarketFilterNotice(filter, error, retry, retrying) ??
     (unifiedSearch.error
       ? {
           message: t`Couldn't load complete marketplace results.`,
           actionLabel: t`Retry`,
           onAction: unifiedSearch.retry,
+          actionPending: unifiedSearch.retrying,
         }
       : null) ??
     (poolCatalog.error
-      ? { message: t`Couldn't load pools.`, actionLabel: t`Retry`, onAction: poolCatalog.retry }
+      ? {
+          message: t`Couldn't load pools.`,
+          actionLabel: t`Retry`,
+          onAction: poolCatalog.retry,
+          actionPending: poolCatalog.retrying,
+        }
       : null);
 
   const locationButton = (
     <Button
       size="icon-lg"
-      className="pointer-events-auto h-11 w-11 shrink-0 bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
+      className="pointer-events-auto bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
       aria-label={locationButtonLabel}
       disabled={
         locationStatus === "requesting" ||
@@ -228,6 +234,9 @@ export function MarketPage({
 
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
+      <h1 className="sr-only">
+        <Trans>Market</Trans>
+      </h1>
       <Suspense
         fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
       >
@@ -341,9 +350,9 @@ export function MarketPage({
             <span className="min-w-0 text-sm">{notice.message}</span>
             {notice.actionLabel && notice.onAction ? (
               <Button
-                size="sm"
                 variant="outline"
-                className="shrink-0 bg-card"
+                tap
+                pending={notice.actionPending}
                 onClick={notice.onAction}
               >
                 {notice.actionLabel}
@@ -358,7 +367,7 @@ export function MarketPage({
                 <p>
                   <Trans>No marketplace results match this search.</Trans>
                 </p>
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                <Button variant="outline" tap onClick={filter.clear}>
                   <Trans>Clear filters</Trans>
                 </Button>
               </>

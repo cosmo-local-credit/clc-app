@@ -68,6 +68,7 @@ export function PoolsPage({
       isPending: poolsQuery.isPending,
       error: poolsQuery.error ?? null,
       retry: () => void poolsQuery.refetch(),
+      retrying: poolsQuery.isFetching,
       hasNextPage: poolsQuery.hasNextPage,
       fetchNextPage: () => void poolsQuery.fetchNextPage(),
       isFetchingNextPage: poolsQuery.isFetchingNextPage,
@@ -214,7 +215,12 @@ export function PoolsPage({
           })
         }
       />
-      <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
+      <PoolFilterFeedback
+        filter={filter}
+        error={catalog.error}
+        onRetry={catalog.retry}
+        retrying={catalog.retrying}
+      />
 
       {credit.enabled && credit.poolRefs?.length === 0 ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
@@ -232,8 +238,7 @@ export function PoolsPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
+            tap
             onClick={() =>
               void navigate({
                 to: ".",
@@ -257,8 +262,8 @@ export function PoolsPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
+            tap
+            pending={outputAvailability.retrying}
             onClick={outputAvailability.retry}
           >
             <Trans>Retry</Trans>
@@ -315,7 +320,7 @@ export function PoolsPage({
                 )}
               </p>
               {filter.isFiltered ? (
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                <Button variant="outline" tap onClick={filter.clear}>
                   <Trans>Clear filters</Trans>
                 </Button>
               ) : null}
@@ -385,8 +390,8 @@ function PoolRow({
     >
       <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
       <div className="min-w-0 flex-1 overflow-hidden">
-        <p className="truncate font-bold text-sm tracking-tight">{pool.name}</p>
-        <p className="mt-1 text-primary text-[0.6875rem] font-semibold">
+        <p className="truncate font-semibold text-sm">{pool.name}</p>
+        <p className="mt-1 text-primary text-xs font-semibold">
           {pool.voucherCount === 1 ? (
             <Trans>1 voucher</Trans>
           ) : (
@@ -394,17 +399,17 @@ function PoolRow({
           )}
         </p>
         {pool.locationName || distanceLabel ? (
-          <p className="mt-1 truncate text-[0.6875rem] text-muted-foreground">
+          <p className="mt-1 truncate text-xs text-muted-foreground">
             {[pool.locationName, distanceLabel].filter(Boolean).join(" · ")}
           </p>
         ) : null}
         {pool.tags.length > 0 ? (
           <span className="mt-1.5 flex gap-1 overflow-hidden">
             {pool.tags.slice(0, POOL_ROW_TAG_LIMIT).map((tag) => (
-              <TagBadge key={tag} tag={tag} className="h-5 shrink-0 px-1.5 text-[10px]" />
+              <TagBadge key={tag} tag={tag} size="sm" />
             ))}
             {pool.tags.length > POOL_ROW_TAG_LIMIT ? (
-              <span className="shrink-0 self-center text-muted-foreground text-[10px]">
+              <span className="shrink-0 self-center text-muted-foreground text-2xs">
                 +{pool.tags.length - POOL_ROW_TAG_LIMIT}
               </span>
             ) : null}

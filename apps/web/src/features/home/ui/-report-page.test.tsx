@@ -259,7 +259,8 @@ describe("ReportPage", () => {
 
     const description = screen.getByText("7 members helped Patricia Makau harvest greengrams.");
     expect(description.tagName).toBe("P");
-    expect(description.className).toContain("text-[0.9375rem]");
+    // Body size comes from the base p rule, not a smaller utility.
+    expect(description.className).not.toMatch(/\btext-(?:xs|sm)\b/);
     expect(description.className).not.toContain("bg-card");
   });
 

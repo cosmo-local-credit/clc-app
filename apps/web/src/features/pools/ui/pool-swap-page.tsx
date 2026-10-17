@@ -25,6 +25,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { TokenLogo, type WalletToken, WalletAmountInput } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import {
@@ -351,7 +352,7 @@ export function PoolSwapPage({
           <span className="text-muted-foreground text-xs">
             <Trans>Rate</Trans>
           </span>
-          <span dir="ltr" className="font-mono text-xs font-semibold">
+          <span dir="ltr" className="text-xs font-semibold tabular-nums">
             1 {selectedFrom?.token.symbol ?? "—"} = {rate} {selectedTo?.token.symbol ?? "—"}
           </span>
         </div>
@@ -407,12 +408,12 @@ export function PoolSwapPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
+            tap
             onClick={() => {
               vouchersQuery.refetch();
               void reads.refetch();
             }}
+            pending={vouchersQuery.isFetching || reads.isFetching}
           >
             <Trans>Try again</Trans>
           </Button>
@@ -436,9 +437,9 @@ export function PoolSwapPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
-            onClick={() => quote.refetch()}
+            tap
+            pending={quote.isFetching}
+            onClick={() => void quote.refetch()}
           >
             <Trans>Try again</Trans>
           </Button>
@@ -481,7 +482,8 @@ export function PoolSwapPage({
       <div className="flex-1" />
 
       <Button
-        className="h-11 w-full"
+        size="lg"
+        className="w-full"
         disabled={!isValidAmount || !selectedFrom || !selectedTo}
         onClick={() => {
           if (!selectedFrom || !selectedTo || !isValidAmount) return;
@@ -680,7 +682,7 @@ function SwapConfirmationSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Confirm swap</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -732,12 +734,18 @@ function SwapConfirmationSheet({
             </p>
           ) : null}
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button className="h-11 w-full" disabled={isPending} onClick={() => void onConfirm()}>
+            <Button
+              size="lg"
+              className="w-full"
+              pending={isPending}
+              onClick={() => void onConfirm()}
+            >
               {isPending ? <Trans>Swapping…</Trans> : <Trans>Confirm swap</Trans>}
             </Button>
             <Button
               variant="ghost"
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={isPending}
               onClick={() => onOpenChange(false)}
             >
@@ -767,7 +775,7 @@ function SwapConfirmationRow({
       )}
     >
       <span className="text-muted-foreground text-xs">{label}</span>
-      <span dir="ltr" className="min-w-0 break-words text-end font-mono text-xs font-semibold">
+      <span dir="ltr" className="min-w-0 break-words text-end text-xs font-semibold tabular-nums">
         {children}
       </span>
     </div>
@@ -821,16 +829,16 @@ function SwapField({
   return (
     <div role="group" aria-label={label}>
       <div className="mb-1.5 flex min-h-7 items-center justify-between">
-        <label htmlFor={id} className="font-heading text-base font-semibold">
+        <label htmlFor={id} className="font-medium text-sm">
           {label}
         </label>
         {max !== undefined ? (
           <Button
             variant="ghost"
-            size="sm"
+            tap
             disabled={actionsDisabled}
             onClick={onMax}
-            className="font-mono text-[0.6875rem] font-semibold"
+            className="font-semibold tabular-nums"
           >
             <Trans>
               Max {max} {symbol}
@@ -851,7 +859,7 @@ function SwapField({
           )}
           <span
             dir="ltr"
-            className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-start text-sm font-bold"
+            className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-start text-sm font-semibold"
           >
             {token?.symbol ?? "—"}
           </span>
@@ -873,7 +881,7 @@ function SwapField({
         />
       </div>
       {unitValue ? (
-        <p className="mt-1 text-end font-mono text-muted-foreground text-xs" aria-live="polite">
+        <p className="mt-1 text-end text-muted-foreground text-xs tabular-nums" aria-live="polite">
           ({unitValue})
         </p>
       ) : null}
@@ -924,9 +932,7 @@ function PoolTokenPickerSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
-              {title}
-            </SheetTitle>
+            <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
           <div className="max-h-[50svh] overflow-y-auto px-2 pb-2">
             {isPending ? (
@@ -945,9 +951,9 @@ function PoolTokenPickerSheet({
               tokens.map((token, index) => (
                 <div key={token.id}>
                   {index === firstUnheldIndex && index > 0 ? (
-                    <p className="px-4 pt-3 pb-1 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">
+                    <SectionHeading variant="group" as="h3" className="px-4 pt-3 pb-1">
                       <Trans>Not held</Trans>
-                    </p>
+                    </SectionHeading>
                   ) : null}
                   <PoolTokenPickerRow
                     token={token}
@@ -1003,11 +1009,11 @@ function PoolTokenPickerRow({
     >
       <TokenLogo token={token.token} size={34} />
       <div className="min-w-0 flex-1">
-        <p className="font-heading font-semibold text-sm tracking-tight">{token.token.symbol}</p>
+        <p className="font-semibold text-sm">{token.token.symbol}</p>
         <p className="truncate text-muted-foreground text-xs">{token.token.name}</p>
         <PoolTokenPickerReason token={token} variant={variant} />
       </div>
-      <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
+      <span dir="ltr" className="shrink-0 text-xs font-semibold tabular-nums">
         {amount}
       </span>
       {selected ? (
@@ -1033,21 +1039,21 @@ function PoolTokenPickerReason({
 }) {
   if (token.decimals === null) {
     return (
-      <p className="text-[0.6875rem] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         <Trans>Voucher details unavailable</Trans>
       </p>
     );
   }
   if (variant === "from" && token.held && token.depositHeadroomRaw === "0") {
     return (
-      <p className="text-[0.6875rem] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         <Trans>The credit limit has been reached. No more can be added to this pool.</Trans>
       </p>
     );
   }
   if (variant === "to" && !token.canSwapOut) {
     return (
-      <p className="text-[0.6875rem] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         <Trans>None left to swap for</Trans>
       </p>
     );

@@ -7,6 +7,7 @@ import { RiArrowRightSLine } from "react-icons/ri";
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { Badge } from "#/components/ui/badge";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -45,7 +46,7 @@ export function MarketListPage({
     filtersEverOpened,
     credit.enabled ? credit.poolRefs : undefined,
   );
-  const { vouchers, isCatalogComplete, error, retry } = catalog;
+  const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -177,7 +178,7 @@ export function MarketListPage({
           />
         </div>
 
-        <MarketFilterFeedback filter={filter} error={error} onRetry={retry} />
+        <MarketFilterFeedback filter={filter} error={error} onRetry={retry} retrying={retrying} />
 
         {!credit.blocksResults &&
         !error &&
@@ -265,15 +266,15 @@ function MarketVoucherRow({
       />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">
-          <span className="truncate font-heading text-sm font-semibold">{voucher.name}</span>
-          <span className="shrink-0 font-mono text-[0.6875rem] text-muted-foreground">
+          <span className="truncate text-sm font-semibold">{voucher.name}</span>
+          <span className="shrink-0 font-mono text-2xs text-muted-foreground">
             {voucher.symbol}
           </span>
         </span>
         <span className="mt-1 flex min-w-0 items-center gap-2">
-          <span className="shrink-0 border border-border bg-background px-1.5 py-0.5 text-[0.6875rem] text-muted-foreground">
+          <Badge variant="muted" size="sm">
             {kindLabel}
-          </span>
+          </Badge>
           {distanceLabel ? (
             <span className="truncate text-muted-foreground text-xs">{distanceLabel}</span>
           ) : voucher.locationName ? (

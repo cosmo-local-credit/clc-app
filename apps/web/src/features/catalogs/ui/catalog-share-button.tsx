@@ -28,7 +28,7 @@ export function CatalogShareButton({ id, name }: { id: string; name: string }) {
     }
   }
   return (
-    <Button variant="outline" className="h-11 bg-card" onClick={() => void share()}>
+    <Button variant="outline" tap onClick={() => void share()}>
       {copyOnly ? <Trans>Copy link</Trans> : <Trans>Share</Trans>}
     </Button>
   );

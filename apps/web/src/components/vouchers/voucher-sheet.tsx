@@ -13,13 +13,11 @@ import {
 import { Skeleton } from "#/components/ui/skeleton";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
-import { cn } from "#/lib/utils";
 import { useMarketDistanceLabel } from "./voucher-labels";
 import { VoucherSheetFull } from "./voucher-sheet-full.lazy";
 import {
   ShareVoucherButton,
   useVoucherBalanceSummary,
-  VOUCHER_ACTION_PILL,
   VoucherIdentitySummary,
 } from "./voucher-summary";
 
@@ -120,8 +118,9 @@ export function VoucherSheet({
           </div>
           <Button
             variant="outline"
-            size="sm"
-            className={cn(VOUCHER_ACTION_PILL, "mt-3 bg-card")}
+            tap
+            className="mt-3"
+            pending={detailQuery.isFetching}
             onClick={() => void detailQuery.refetch()}
           >
             <Trans>Retry</Trans>
@@ -154,7 +153,7 @@ function CloseButton({ label, onClick }: { label: string; onClick: () => void })
     <Button
       variant="ghost"
       size="icon-lg"
-      className="-me-3 size-11 shrink-0 border-0 text-muted-foreground"
+      className="-me-3 border-0 text-muted-foreground"
       aria-label={label}
       onClick={onClick}
     >
@@ -232,10 +231,7 @@ function VoucherCard({
           onIdentityDoubleClick={snap === "full" ? undefined : () => onSnapChange("full")}
           title={
             <div className="flex min-w-0 items-baseline gap-2">
-              <MapSheetTitle
-                dir="auto"
-                className="min-w-0 truncate font-heading font-semibold text-[1.375rem] leading-tight tracking-[-0.02em]"
-              >
+              <MapSheetTitle dir="auto" className="min-w-0 truncate">
                 {name}
               </MapSheetTitle>
               <span

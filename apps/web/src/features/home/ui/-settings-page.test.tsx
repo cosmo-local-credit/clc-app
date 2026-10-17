@@ -222,7 +222,7 @@ describe("SettingsPage", () => {
 
     const confirm = sheet.getByRole("button", { name: "Sign out" });
     expect(confirm.className).toContain("text-destructive");
-    expect(confirm.dataset.variant).toBe("outline");
+    expect(confirm.dataset.variant).toBe("destructive");
     fireEvent.click(confirm);
 
     expect(onSignOut).toHaveBeenCalledTimes(1);
@@ -241,11 +241,11 @@ describe("SettingsPage", () => {
     expect(onSignOut).not.toHaveBeenCalled();
   });
 
-  it("shows a spinner and 'Signing out…' on a static row while signing out", () => {
+  it("shows the Spinner and 'Signing out…' on a busy row while signing out", () => {
     render(<SettingsPage delegationStatus="checking" isSigningOut={true} onSignOut={vi.fn()} />);
-    const session = within(group("Session"));
-    expect(session.getByText("Signing out…")).toBeTruthy();
-    expect(session.queryByRole("button")).toBeNull();
-    expect(group("Session").querySelector(".animate-spin")).toBeTruthy();
+    const row = within(group("Session")).getByRole("button", { name: "Signing out…" });
+    expect((row as HTMLButtonElement).disabled).toBe(true);
+    expect(row.getAttribute("aria-busy")).toBe("true");
+    expect(row.querySelector("[data-slot=spinner]")).toBeTruthy();
   });
 });

@@ -9,6 +9,7 @@ import { LanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { BackChevron } from "#/components/wallet";
 import { useInstallStore } from "../install-store";
 
@@ -63,7 +64,7 @@ export function InstallPage({ from }: { from?: "settings" }) {
         ) : (
           <Button
             variant="outline"
-            className="h-11"
+            size="lg"
             onClick={() => {
               if (canGoBack) router.history.back();
               else void router.navigate({ to: "/", search: { tab: "market" }, replace: true });
@@ -85,26 +86,26 @@ export function InstallPage({ from }: { from?: "settings" }) {
 
       <section className="space-y-4" aria-label={t`App installation`}>
         {installed ? (
-          <p role="status" className="border border-border bg-card p-4 text-primary">
+          <p role="status" className="border border-border bg-card p-4 text-primary text-sm">
             <Trans>CLC is installed. Find it on your home screen.</Trans>
           </p>
         ) : status === "accepted" ? (
-          <p role="status" className="border border-border bg-card p-4">
+          <p role="status" className="border border-border bg-card p-4 text-sm">
             <Trans>Installation requested. Follow your browser's instructions to finish.</Trans>
           </p>
         ) : (
           <>
-            <InstallAppButton />
+            <InstallAppButton size="lg" />
             <div className="space-y-3 border border-border bg-card p-4">
-              <h2>
+              <SectionHeading>
                 <Trans>Add CLC to your phone</Trans>
-              </h2>
+              </SectionHeading>
               <InstallInstructions />
             </div>
           </>
         )}
         {fromSettings ? null : (
-          <Button asChild variant="outline" className="h-11 w-full">
+          <Button asChild variant="outline" size="lg" className="w-full">
             <Link to="/" search={{ tab: "market" }}>
               {installed ? <Trans>Continue to CLC</Trans> : <Trans>Continue in browser</Trans>}
             </Link>
@@ -116,9 +117,9 @@ export function InstallPage({ from }: { from?: "settings" }) {
         className="space-y-3 border-t border-border pt-6"
         aria-labelledby="share-install-title"
       >
-        <h2 id="share-install-title">
+        <SectionHeading id="share-install-title">
           <Trans>Share CLC</Trans>
-        </h2>
+        </SectionHeading>
         <Input
           aria-label={t`Installation link`}
           value={shareUrl}
@@ -127,7 +128,8 @@ export function InstallPage({ from }: { from?: "settings" }) {
         />
         <Button
           variant="outline"
-          className="h-11 w-full"
+          tap
+          className="w-full"
           disabled={!shareUrl}
           onClick={() => void share()}
         >

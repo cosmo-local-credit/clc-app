@@ -99,7 +99,7 @@ export function PoolControlsPanel({
               icon={<RiWalletLine className="size-4" aria-hidden="true" />}
               label={t`Fee % and recipient`}
               value={
-                <span className="font-mono">
+                <span className="tabular-nums">
                   {fee
                     ? `${fee.feePercent}% · ${fee.feeAddress ? formatVoucherAddress(fee.feeAddress) : t`Not set`}`
                     : feeSettings.isError
@@ -179,7 +179,7 @@ function ControlSheetShell({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">{title}</SheetTitle>
+            <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
           {/* Mounted only while open so each visit starts from the current
               balances rather than the ones the sheet last closed on. */}
@@ -291,12 +291,12 @@ function WithdrawLiquidityForm({
                 value={amount}
                 placeholder="0"
                 onChange={(event) => setAmount(event.target.value)}
-                className="font-mono"
+                className="tabular-nums"
               />
               <Button
                 type="button"
                 variant="outline"
-                className="h-9 shrink-0 bg-card"
+                tap
                 disabled={!withdrawable}
                 onClick={() => withdrawable && setAmount(withdrawable)}
               >
@@ -310,8 +310,10 @@ function WithdrawLiquidityForm({
       <SheetFooter>
         <Button
           type="button"
-          className="h-11 w-full"
-          disabled={!selected || !amount.trim() || relay.isPending}
+          size="lg"
+          className="w-full"
+          disabled={!selected || !amount.trim()}
+          pending={relay.isPending}
           onClick={() => void submit()}
         >
           {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Withdraw</Trans>}
@@ -376,7 +378,7 @@ function CollectFeesForm({
             <Trans>Fees are paid to {formatVoucherAddress(feeAddress)}.</Trans>
           </p>
         ) : (
-          <p role="alert" className="border border-border bg-card p-4 text-destructive text-xs">
+          <p role="alert" className="border border-border bg-card p-4 text-destructive text-sm">
             <Trans>Set a fee recipient before collecting, or the pool has nowhere to pay.</Trans>
           </p>
         )}
@@ -396,8 +398,10 @@ function CollectFeesForm({
       <SheetFooter>
         <Button
           type="button"
-          className="h-11 w-full"
-          disabled={!selected || !feeAddress || relay.isPending}
+          size="lg"
+          className="w-full"
+          disabled={!selected || !feeAddress}
+          pending={relay.isPending}
           onClick={() => void submit()}
         >
           {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Collect fees</Trans>}
@@ -496,7 +500,7 @@ function FeeSettingsForm({
             value={feePercent}
             placeholder="0"
             onChange={(event) => setFeePercent(event.target.value)}
-            className="font-mono"
+            className="tabular-nums"
             aria-invalid={!!trimmedFee && !feeIsValid}
           />
         </Field>
@@ -527,8 +531,10 @@ function FeeSettingsForm({
       <SheetFooter>
         <Button
           type="button"
-          className="h-11 w-full"
-          disabled={!canSubmit || relay.isPending}
+          size="lg"
+          className="w-full"
+          disabled={!canSubmit}
+          pending={relay.isPending}
           onClick={() => void submit()}
         >
           {relay.isPending ? (
@@ -556,7 +562,7 @@ function TokenChooser({
 }) {
   if (vouchers.length === 0) {
     return (
-      <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
+      <p className="border border-border bg-card p-4 text-muted-foreground text-sm">
         <Trans>This pool holds no vouchers yet.</Trans>
       </p>
     );
@@ -581,14 +587,12 @@ function TokenChooser({
               ].join(" ")}
             >
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-bold text-sm tracking-tight">
-                  {voucher.name}
-                </span>
+                <span className="block truncate font-semibold text-sm">{voucher.name}</span>
                 <span className="block font-mono text-muted-foreground text-xs">
                   {voucher.symbol}
                 </span>
               </span>
-              <span className="shrink-0 font-mono text-sm font-semibold">{amount ?? "—"}</span>
+              <span className="shrink-0 text-sm font-semibold tabular-nums">{amount ?? "—"}</span>
             </button>
           </li>
         );

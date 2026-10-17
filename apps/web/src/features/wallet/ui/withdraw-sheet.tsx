@@ -190,7 +190,7 @@ export function WithdrawSheet({
         <SheetBackdrop />
         <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Withdraw</Trans>
             </SheetTitle>
             <p className="text-muted-foreground text-xs">
@@ -210,7 +210,7 @@ export function WithdrawSheet({
                   <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                   <Trans>Couldn't verify your MPESA link.</Trans>
                 </p>
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onRetryLink}>
+                <Button variant="outline" tap onClick={onRetryLink} pending={linkQuery.isFetching}>
                   <Trans>Try again</Trans>
                 </Button>
               </div>
@@ -287,18 +287,19 @@ export function WithdrawSheet({
                         size={Math.max(amount.length, 2)}
                         aria-invalid={amount !== "" && !hasValidAmount}
                         className={cn(
-                          "bg-transparent text-end font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                          "bg-transparent text-end text-sm font-semibold tabular-nums caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
                           amount !== "" && !hasValidAmount && "text-destructive",
                         )}
                       />
-                      <button
-                        type="button"
+                      <Button
+                        variant="link"
+                        tap
                         disabled={!hasRate || maxKes <= 0}
                         onClick={() => setAmount(maxKes.toString())}
-                        className="ms-1 font-semibold text-primary text-xs hover:underline disabled:opacity-50"
+                        className="-my-2 -me-3"
                       >
                         <Trans>Max</Trans>
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -306,7 +307,7 @@ export function WithdrawSheet({
                     <span className="text-muted-foreground text-xs">
                       <Trans>You'll send</Trans>
                     </span>
-                    <span className="font-mono text-xs font-semibold">
+                    <span className="text-xs font-semibold tabular-nums">
                       {selected && hasValidAmount
                         ? `≈ ${tokenToSend.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
                             maximumFractionDigits: 4,
@@ -328,8 +329,10 @@ export function WithdrawSheet({
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button
-              className="h-11 w-full"
-              disabled={!canWithdraw || sendTransfer.isPending}
+              size="lg"
+              className="w-full"
+              disabled={!canWithdraw}
+              pending={sendTransfer.isPending}
               onClick={() => void onWithdraw()}
             >
               {sendTransfer.isPending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}

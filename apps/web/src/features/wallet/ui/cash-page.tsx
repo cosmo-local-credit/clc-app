@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { BackChevron, HighlightAddress, NetworkBadge } from "#/components/wallet";
 import { CHAIN_INFO } from "#/lib/chain";
 
@@ -45,7 +46,7 @@ export function CashPage() {
               tailLength={8}
               className="mt-2 block break-all text-xs leading-relaxed"
             />
-            <Button variant="outline" className="mt-3 h-11 w-full bg-card" onClick={copyAddress}>
+            <Button variant="outline" tap className="mt-3 w-full" onClick={copyAddress}>
               <RiFileCopyLine className="size-4" aria-hidden="true" />
               <Trans>Copy address</Trans>
             </Button>
@@ -140,7 +141,7 @@ export function CashPage() {
 function InstructionSection({ title, children }: { title: ReactNode; children: ReactNode }) {
   return (
     <section className="space-y-2">
-      <h2 className="font-heading text-lg font-semibold">{title}</h2>
+      <SectionHeading>{title}</SectionHeading>
       {children}
     </section>
   );

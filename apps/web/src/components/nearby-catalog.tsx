@@ -116,6 +116,8 @@ export function NearbyCatalog({ children }: { children: ReactNode }) {
           <Trans>We couldn't load your profile.</Trans>
         </p>
         <Button
+          size="lg"
+          pending={auth.retrying || profile.isFetching}
           onClick={() => {
             auth.retry();
             void profile.refetch();
@@ -146,7 +148,7 @@ export function NearbyCatalog({ children }: { children: ReactNode }) {
         <p>
           <Trans>Choose a location</Trans>
         </p>
-        <Button asChild>
+        <Button asChild size="lg">
           <Link to="/settings/profile">
             <Trans>Edit profile</Trans>
           </Link>

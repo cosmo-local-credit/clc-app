@@ -18,6 +18,8 @@ type Props = {
   onSelect: (file: File) => void;
   cameraFacing: "user" | "environment";
   disabled?: boolean;
+  /** The chosen photo is uploading; the trigger shows the Spinner. */
+  pending?: boolean;
   required?: boolean;
   ariaInvalid?: boolean;
   ariaDescribedBy?: string;
@@ -30,6 +32,7 @@ export function PhotoSourcePicker({
   onSelect,
   cameraFacing,
   disabled,
+  pending,
   required,
   ariaInvalid,
   ariaDescribedBy,
@@ -75,12 +78,13 @@ export function PhotoSourcePicker({
         type="button"
         variant="outline"
         disabled={disabled}
+        pending={pending}
         aria-invalid={ariaInvalid}
         aria-describedby={ariaDescribedBy}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="h-11 bg-card"
+        tap
       >
         <FaCamera aria-hidden className="me-2 size-4" />
         {buttonLabel}
@@ -91,15 +95,14 @@ export function PhotoSourcePicker({
           <SheetBackdrop />
           <SheetContent className="[&>div:first-child]:hidden">
             <SheetHeader className="px-6 pt-5 pb-3">
-              <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
-                {t`Choose a photo`}
-              </SheetTitle>
+              <SheetTitle>{t`Choose a photo`}</SheetTitle>
             </SheetHeader>
             <div className="space-y-3 px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full bg-card"
+                size="lg"
+                className="w-full"
                 onClick={() => openInput(cameraInputRef.current)}
               >
                 <FaCamera aria-hidden className="me-2 size-4" />
@@ -108,7 +111,8 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full bg-card"
+                size="lg"
+                className="w-full"
                 onClick={() => openInput(libraryInputRef.current)}
               >
                 <FaImages aria-hidden className="me-2 size-4" />
@@ -117,7 +121,8 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full bg-card"
+                size="lg"
+                className="w-full"
                 onClick={() => setOpen(false)}
               >
                 {t`Cancel`}

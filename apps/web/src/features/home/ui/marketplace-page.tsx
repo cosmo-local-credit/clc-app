@@ -138,9 +138,9 @@ export function MarketplacePage({
           <p className="text-sm">
             <Trans>These filters aren't valid.</Trans>
           </p>
-          <button type="button" className="underline" onClick={filter.clear}>
+          <Button variant="outline" tap onClick={filter.clear}>
             <Trans>Clear filters</Trans>
-          </button>
+          </Button>
         </div>
       ) : null}
       {credit.enabled && credit.poolRefs?.length === 0 ? (
@@ -156,7 +156,12 @@ export function MarketplacePage({
           <p>
             <Trans>Couldn't load marketplace results.</Trans>
           </p>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -178,11 +183,12 @@ export function MarketplacePage({
       {query.hasNextPage && !crossedDistanceBoundary && !credit.blocksResults ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
-          disabled={query.isFetchingNextPage}
+          tap
+          className="w-full"
+          pending={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >
-          <Trans>Load more</Trans>
+          {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>
       ) : null}
     </main>
@@ -220,14 +226,14 @@ function MarketplaceResultRow({ row, locale }: { row: MarketplaceResult; locale:
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <span className="block text-xs text-muted-foreground">
           <ResultKind kind={row.kind} />
         </span>
-        <span dir="auto" className="block break-words font-heading font-semibold">
+        <span dir="auto" className="block break-words text-sm font-semibold">
           {row.name}
         </span>
         {row.kind === "offering" && row.voucherName ? (
-          <span className="mt-1 block text-sm text-muted-foreground">
+          <span className="mt-1 block text-xs text-muted-foreground">
             {row.voucherName}
             {row.voucherSymbol ? ` · ${row.voucherSymbol}` : ""}
           </span>

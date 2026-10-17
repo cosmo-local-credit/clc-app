@@ -43,6 +43,7 @@ export function usePartitionedVouchers<T extends { id: string }>(
         // Only the failed reads: the rest are cached and still right.
         refetch: () =>
           Promise.all(results.filter((result) => result.isError).map((result) => result.refetch())),
+        isFetching: results.some((result) => result.isFetching),
       };
     },
   });

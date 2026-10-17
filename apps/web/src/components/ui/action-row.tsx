@@ -1,6 +1,7 @@
 import { cloneElement, type ReactElement, type ReactNode } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
+import { Spinner } from "#/components/ui/spinner";
 import { cn } from "#/lib/utils";
 
 /**
@@ -19,6 +20,11 @@ import { cn } from "#/lib/utils";
  *
  * A row with neither `onClick` nor `render` has nothing behind it, so it is
  * static and drops the chevron: tapping it would do nothing.
+ *
+ * `busy` puts the Spinner in the icon slot while the row's action is under
+ * way, marks the row `aria-busy` and disables a button row so it cannot be
+ * started twice. The row keeps its place and its chevron; pass the in-progress
+ * label ("Signing out…") alongside.
  */
 export function ActionRow({
   icon,
@@ -27,6 +33,7 @@ export function ActionRow({
   valueTone = "default",
   tone = "default",
   trailingIcon,
+  busy = false,
   id,
   className,
   onClick,
@@ -47,6 +54,7 @@ export function ActionRow({
   tone?: "default" | "destructive";
   /** Replaces the chevron, e.g. with an external-link glyph. */
   trailingIcon?: ReactNode;
+  busy?: boolean;
   id?: string;
   className?: string;
   onClick?: () => void;
@@ -64,7 +72,7 @@ export function ActionRow({
   const content = (
     <>
       <span className={cn("shrink-0", destructive ? "text-destructive" : "text-muted-foreground")}>
-        {icon}
+        {busy ? <Spinner /> : icon}
       </span>
       <span
         className={cn(
@@ -92,22 +100,31 @@ export function ActionRow({
     </>
   );
 
+  const busyProps = busy ? { "aria-busy": true } : {};
   if (render) {
     return cloneElement(render, {
       id,
+      ...busyProps,
       className: cn(classes, render.props.className),
       children: content,
     });
   }
   if (onClick) {
     return (
-      <button type="button" id={id} onClick={onClick} className={classes}>
+      <button
+        type="button"
+        id={id}
+        onClick={onClick}
+        disabled={busy}
+        className={classes}
+        {...busyProps}
+      >
         {content}
       </button>
     );
   }
   return (
-    <div id={id} className={classes}>
+    <div id={id} className={classes} {...busyProps}>
       {content}
     </div>
   );

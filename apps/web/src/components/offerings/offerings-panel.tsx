@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from
 import { Link } from "@tanstack/react-router";
 
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import {
   SheetBackdrop,
@@ -36,6 +37,7 @@ type OfferingsQueryLike = {
   isPending: boolean;
   isError: boolean;
   isSuccess: boolean;
+  isFetching: boolean;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => unknown;
@@ -173,9 +175,9 @@ export function OfferingsPanel({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={() => query.refetch()}
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
           >
             <Trans>Try again</Trans>
           </Button>
@@ -218,8 +220,9 @@ export function OfferingsPanel({
       {hasManualNext ? (
         <Button
           variant="outline"
-          className="mt-3 h-11 w-full bg-card"
-          disabled={query.isFetchingNextPage}
+          tap
+          className="mt-3 w-full"
+          pending={query.isFetchingNextPage}
           onClick={() => {
             if (manualLimit >= offerings.length && query.hasNextPage) {
               void Promise.resolve(query.fetchNextPage()).then(() =>
@@ -240,7 +243,7 @@ export function OfferingsPanel({
 function OfferingsEmptyState({ children }: { children: ReactNode }) {
   return (
     <div className="border border-border bg-card p-4">
-      <p className="font-heading text-sm font-semibold">
+      <p className="text-sm font-semibold">
         <Trans>No offerings yet</Trans>
       </p>
       <p className="mt-1 text-muted-foreground text-sm">{children}</p>
@@ -320,17 +323,17 @@ function OfferingTile({
         {showVoucher ? (
           <span
             data-slot="offering-voucher"
-            className="mb-0.5 block truncate font-mono text-[0.625rem] font-semibold text-info"
+            className="mb-0.5 block truncate font-mono text-2xs font-semibold text-info"
           >
             {showVoucherName && offering.voucherName
               ? `${offering.voucherName} · ${voucherSymbol}`
               : voucherSymbol}
           </span>
         ) : null}
-        <span className="line-clamp-2 font-heading text-xs font-semibold leading-tight [overflow-wrap:anywhere]">
+        <span className="line-clamp-2 text-sm font-semibold leading-tight [overflow-wrap:anywhere]">
           {offering.name}
         </span>
-        <span className="mt-1 block truncate font-mono text-[0.6875rem] font-semibold text-primary">
+        <span className="mt-1 block truncate text-xs font-semibold text-primary tabular-nums">
           {price ? (
             `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
           ) : hasFixedPrice ? (
@@ -340,7 +343,7 @@ function OfferingTile({
           )}
         </span>
         {quantityValue || frequency ? (
-          <span className="block truncate text-[0.6875rem] text-muted-foreground">
+          <span className="block truncate text-xs text-muted-foreground">
             {quantityValue}
             {quantityValue && quantity?.unit ? ` ${quantity.unit}` : null}
             {quantityValue && frequency ? <span aria-hidden="true"> · </span> : null}
@@ -348,7 +351,7 @@ function OfferingTile({
           </span>
         ) : null}
         {locationLabel ? (
-          <span className="mt-1 line-clamp-2 block text-[0.6875rem] text-muted-foreground">
+          <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
             {locationLabel}
           </span>
         ) : null}
@@ -385,19 +388,23 @@ function OfferingTile({
         <span data-slot="offering-actions" className="flex border-x border-b border-border">
           <button
             type="button"
-            className="flex-1 border-e border-border bg-card py-2 text-[0.6875rem] font-semibold"
+            className="h-9 flex-1 border-e border-border bg-card text-xs font-semibold"
             onClick={() => management.onEdit(offering)}
           >
             <Trans>Edit</Trans>
           </button>
           <button
             type="button"
-            className="flex-1 bg-card py-2 text-[0.6875rem] font-semibold text-destructive"
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 bg-card text-xs font-semibold text-destructive"
             disabled={management.deletingID === offering.id}
+            aria-busy={management.deletingID === offering.id || undefined}
             onClick={() => management.onDelete(offering)}
           >
             {management.deletingID === offering.id ? (
-              <Trans>Removing…</Trans>
+              <>
+                <Spinner />
+                <Trans>Removing…</Trans>
+              </>
             ) : (
               <Trans>Remove</Trans>
             )}
@@ -508,10 +515,8 @@ function OfferingDetailsSheet({
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             <SheetHeader className="px-6 pt-4 pb-0">
-              <SheetTitle className="font-heading text-xl font-semibold leading-tight [overflow-wrap:anywhere]">
-                {offering.name}
-              </SheetTitle>
-              <p className="font-mono text-sm font-semibold text-primary">
+              <SheetTitle className="[overflow-wrap:anywhere]">{offering.name}</SheetTitle>
+              <p className="text-sm font-semibold text-primary tabular-nums">
                 {price ? (
                   `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
                 ) : hasFixedPrice ? (
@@ -541,11 +546,11 @@ function OfferingDetailsSheet({
 
           <SheetFooter className="px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             {openVoucherPageAction === "close" ? (
-              <Button className="h-11 w-full" onClick={() => onOpenChange(false)}>
+              <Button size="lg" className="w-full" onClick={() => onOpenChange(false)}>
                 <Trans>Open voucher page</Trans>
               </Button>
             ) : (
-              <Button asChild className="h-11 w-full">
+              <Button asChild size="lg" className="w-full">
                 <Link
                   to="/vouchers/$voucherAddress"
                   params={{ voucherAddress: offering.voucherAddress }}

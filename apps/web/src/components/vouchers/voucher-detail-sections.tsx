@@ -17,6 +17,7 @@ import { ReportList } from "#/components/reports/report-list";
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
@@ -194,22 +195,17 @@ function VoucherSection({
   children: ReactNode;
 }) {
   const headingID = `${idPrefix}-${id}`;
-  const headingClass =
-    headingLevel === 2
-      ? "mb-3 scroll-mt-4 font-heading text-[1.375rem] font-semibold leading-tight tracking-[-0.02em] focus:outline-none"
-      : "mb-3 scroll-mt-4 font-heading text-[1.125rem] font-semibold leading-tight tracking-[-0.015em] focus:outline-none";
 
   return (
     <section aria-labelledby={headingID}>
-      {headingLevel === 2 ? (
-        <h2 id={headingID} tabIndex={-1} className={headingClass}>
-          {title}
-        </h2>
-      ) : (
-        <h3 id={headingID} tabIndex={-1} className={headingClass}>
-          {title}
-        </h3>
-      )}
+      <SectionHeading
+        as={headingLevel === 2 ? "h2" : "h3"}
+        id={headingID}
+        tabIndex={-1}
+        className="mb-3 scroll-mt-4 focus:outline-none"
+      >
+        {title}
+      </SectionHeading>
       {children}
     </section>
   );
@@ -264,9 +260,9 @@ function VoucherPostsPanel({
         </p>
         <Button
           variant="outline"
-          size="sm"
-          className="h-9 bg-card"
-          onClick={() => reportsQuery.refetch()}
+          tap
+          pending={reportsQuery.isFetching}
+          onClick={() => void reportsQuery.refetch()}
         >
           <Trans>Try again</Trans>
         </Button>
@@ -285,7 +281,7 @@ function VoucherPostsPanel({
   return (
     <div className="space-y-2">
       {canWritePost && voucher ? (
-        <Button asChild className="h-9 w-full">
+        <Button asChild tap className="w-full">
           <Link
             to="/posts/new"
             search={{ voucher: voucher.address, chainId: voucher.chainId, voucherName }}
@@ -298,8 +294,9 @@ function VoucherPostsPanel({
       {reportsQuery.hasNextPage ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
-          disabled={reportsQuery.isFetchingNextPage}
+          tap
+          className="w-full"
+          pending={reportsQuery.isFetchingNextPage}
           onClick={() => void reportsQuery.fetchNextPage()}
         >
           {reportsQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}
@@ -349,9 +346,9 @@ function VoucherActivityPanel({
             </p>
             <Button
               variant="outline"
-              size="sm"
-              className="h-9 bg-card"
-              onClick={() => transfersQuery.refetch()}
+              tap
+              pending={transfersQuery.isFetching}
+              onClick={() => void transfersQuery.refetch()}
             >
               <Trans>Try again</Trans>
             </Button>
@@ -406,7 +403,7 @@ function VoucherActivityPanel({
                     <Trans>Sent</Trans>
                   )}
                 </span>
-                <span className="block truncate text-muted-foreground text-[0.6875rem]">
+                <span className="block truncate text-muted-foreground text-xs">
                   {created ? (
                     <Trans>New supply</Trans>
                   ) : (
@@ -423,7 +420,7 @@ function VoucherActivityPanel({
                   ) : null}
                 </span>
               </span>
-              <span className="shrink-0 text-end font-mono text-xs font-semibold">
+              <span className="shrink-0 text-end text-xs font-semibold tabular-nums">
                 <span className="block">
                   {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                   {transfer.tokenSymbol}
@@ -440,8 +437,9 @@ function VoucherActivityPanel({
       {hasMoreTransfers ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
-          disabled={transfersQuery.isFetchingNextPage}
+          tap
+          className="w-full"
+          pending={transfersQuery.isFetchingNextPage}
           onClick={() => {
             if (visibleCount >= transfers.length && transfersQuery.hasNextPage) {
               void Promise.resolve(transfersQuery.fetchNextPage()).then(() =>
@@ -491,7 +489,7 @@ function VoucherInfoPanel({
 
       {locationLabel ? (
         <div className="border border-border bg-card p-4">
-          <p className="font-heading text-sm font-semibold leading-snug">{locationLabel}</p>
+          <p className="text-sm font-semibold leading-snug">{locationLabel}</p>
           {hasCoordinates ? (
             <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>
               <LocationMap lat={lat} lng={lng} className="mt-3 h-36 rounded-none border-0" />
@@ -499,7 +497,8 @@ function VoucherInfoPanel({
           ) : null}
           <Button
             variant="outline"
-            className="mt-3 h-11 w-full bg-card"
+            tap
+            className="mt-3 w-full"
             onClick={() => openDefaultMaps({ label: locationName, lat, lng })}
           >
             <RiNavigationLine className="size-4" aria-hidden="true" />

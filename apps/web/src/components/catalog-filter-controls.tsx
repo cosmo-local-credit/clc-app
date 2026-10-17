@@ -10,6 +10,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { RiCheckLine, RiCloseLine, RiFilter3Line, RiSearchLine } from "react-icons/ri";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
   Combobox,
@@ -32,6 +33,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { SelectableTagBadge } from "#/components/ui/tag-badge";
 import { Toggle } from "#/components/ui/toggle";
 import type { MarketVoucher } from "@clc/api/features/market/client";
@@ -68,9 +70,10 @@ export function CatalogSearchField({
         <Button
           variant="ghost"
           size="icon"
+          tap
           onClick={filter.clearTerm}
           aria-label={t`Clear search`}
-          className="absolute top-1/2 end-1 -translate-y-1/2 border-0 bg-transparent text-muted-foreground before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
+          className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
         >
           <RiCloseLine className="size-4" aria-hidden="true" />
         </Button>
@@ -241,11 +244,12 @@ export function CatalogFilterSheet({
         aria-expanded={open}
         aria-label={trigger === "marketplace-icon" ? t`Filters` : undefined}
         title={trigger === "marketplace-icon" ? t`Filters` : undefined}
-        size={trigger === "marketplace-icon" ? "icon" : undefined}
+        size={trigger === "marketplace-icon" ? "icon-lg" : "default"}
+        tap={trigger === "default"}
         className={
           trigger === "marketplace-icon"
-            ? "relative size-11 bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            : "relative h-9 px-2.5 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
+            ? "relative bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            : undefined
         }
       >
         <RiFilter3Line
@@ -254,16 +258,17 @@ export function CatalogFilterSheet({
         />
         {trigger === "default" ? <Trans>Filters</Trans> : null}
         {appliedCount > 0 ? (
-          <span
+          <Badge
             aria-hidden="true"
+            size="sm"
             className={
               trigger === "marketplace-icon"
-                ? "absolute -end-1 -top-1 flex min-h-4 min-w-4 items-center justify-center border border-destructive bg-card px-0.5 text-[9px] text-foreground tabular-nums"
-                : "min-w-4 border border-primary-foreground/30 bg-primary-foreground/15 px-1 text-[10px] tabular-nums"
+                ? "absolute -end-1 -top-1 h-4 min-w-4 justify-center border-destructive bg-card px-0.5 text-foreground tabular-nums"
+                : "min-w-5 justify-center border-primary-foreground/30 bg-primary-foreground/15 text-current tabular-nums"
             }
           >
             {appliedCount}
-          </span>
+          </Badge>
         ) : null}
       </Button>
 
@@ -273,13 +278,10 @@ export function CatalogFilterSheet({
           <SheetContent>
             {showHeader ? (
               <SheetHeader className="flex-row items-center justify-between gap-3 px-4 pt-4 pb-3">
-                <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
-                  {title}
-                </SheetTitle>
+                <SheetTitle>{title}</SheetTitle>
                 <Button
                   variant="outline"
                   size="icon-lg"
-                  className="relative h-9 w-9 bg-card before:absolute before:-inset-1 before:content-['']"
                   aria-label={t`Close filters`}
                   onClick={() => changeOpen(false)}
                 >
@@ -301,9 +303,9 @@ export function CatalogFilterSheet({
                   aria-labelledby={voucherHeadingId}
                 >
                   <div className="flex items-baseline justify-between gap-3">
-                    <h3 id={voucherHeadingId} className="font-heading text-sm font-semibold">
+                    <SectionHeading id={voucherHeadingId} variant="group" as="h3">
                       <Trans>Vouchers</Trans>
-                    </h3>
+                    </SectionHeading>
                     <span className="text-muted-foreground text-xs tabular-nums">
                       <Trans>
                         {draftVouchers.length} of {CATALOG_MAX_VOUCHERS}
@@ -387,8 +389,8 @@ export function CatalogFilterSheet({
                         </p>
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="h-9 bg-card"
+                          tap
+                          pending={voucherSearch.retrying}
                           onClick={voucherSearch.retry}
                         >
                           <Trans>Try again</Trans>
@@ -447,9 +449,9 @@ export function CatalogFilterSheet({
                       className="mt-6 border-t border-border pt-4"
                       aria-labelledby={voucherMatchHeadingId}
                     >
-                      <h3 id={voucherMatchHeadingId} className="font-heading text-sm font-semibold">
+                      <SectionHeading id={voucherMatchHeadingId} variant="group" as="h3">
                         <Trans>How should vouchers match?</Trans>
-                      </h3>
+                      </SectionHeading>
                       <div
                         className="mt-3 grid grid-cols-2 gap-2"
                         role="group"
@@ -478,9 +480,9 @@ export function CatalogFilterSheet({
                 aria-labelledby={categoryHeadingId}
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <h3 id={categoryHeadingId} className="font-heading text-sm font-semibold">
+                  <SectionHeading id={categoryHeadingId} variant="group" as="h3">
                     {facetTitle}
-                  </h3>
+                  </SectionHeading>
                   <span className="text-muted-foreground text-xs tabular-nums">
                     <Trans>
                       {draftTags.length} of {CATALOG_MAX_TAGS}
@@ -506,7 +508,6 @@ export function CatalogFilterSheet({
                           tag={facet.tag}
                           selected={selected}
                           count={showCounts ? facet.count : undefined}
-                          className="relative h-9 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
                           disabled={!selected && (facet.count === 0 || atTagLimit)}
                           onClick={() => toggleDraftTag(facet.tag)}
                         />
@@ -523,12 +524,7 @@ export function CatalogFilterSheet({
                       )}
                     </p>
                     {searchTerm !== "" ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 bg-card"
-                        onClick={filter.clearTerm}
-                      >
+                      <Button variant="outline" tap onClick={filter.clearTerm}>
                         <Trans>Clear search</Trans>
                       </Button>
                     ) : null}
@@ -541,9 +537,9 @@ export function CatalogFilterSheet({
                   className="mt-6 border-t border-border pt-4"
                   aria-labelledby={matchHeadingId}
                 >
-                  <h3 id={matchHeadingId} className="font-heading text-sm font-semibold">
+                  <SectionHeading id={matchHeadingId} variant="group" as="h3">
                     <Trans>How should categories match?</Trans>
-                  </h3>
+                  </SectionHeading>
                   <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label={t`Match`}>
                     <TagMatchToggle
                       pressed={draftTagMatch === "any"}
@@ -560,10 +556,24 @@ export function CatalogFilterSheet({
               ) : null}
             </div>
 
-            <SheetFooter className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 bg-card px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {/* Stacked like every other sheet footer: beside Reset, "Apply
+                filters" outgrows a 360px row in Dutch. */}
+            <SheetFooter className="bg-card px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
+                  onOpenChange(false);
+                }}
+              >
+                <RiCheckLine className="size-4" aria-hidden="true" />
+                <Trans>Apply filters</Trans>
+              </Button>
               <Button
                 variant="outline"
-                className="h-11 bg-card px-4"
+                size="lg"
+                className="w-full"
                 disabled={draftTags.length === 0 && draftVouchers.length === 0}
                 onClick={() => {
                   setDraftTags([]);
@@ -573,16 +583,6 @@ export function CatalogFilterSheet({
                 }}
               >
                 <Trans>Reset</Trans>
-              </Button>
-              <Button
-                className="h-11"
-                onClick={() => {
-                  onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
-                  onOpenChange(false);
-                }}
-              >
-                <RiCheckLine className="size-4" aria-hidden="true" />
-                <Trans>Apply filters</Trans>
               </Button>
             </SheetFooter>
             {!showHeader ? (
@@ -613,7 +613,7 @@ function TagMatchToggle({
       onPressedChange={(nextPressed) => {
         if (nextPressed) onPressed();
       }}
-      className="h-11 bg-card data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
+      className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
     >
       {pressed ? <RiCheckLine className="size-4" aria-hidden="true" /> : null}
       {label}

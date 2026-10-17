@@ -4,13 +4,14 @@ import { isPayerUnresolved } from "@clc/core/features/nfc/collect";
 import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { FiLoader } from "react-icons/fi";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { TbNfc } from "react-icons/tb";
 import { useConnection } from "wagmi";
 
 import { NfcCardPrompt, useNfcMessages } from "#/components/nfc-card-prompt";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
+import { Spinner } from "#/components/ui/spinner";
 import { StatusPill, TokenLogo, WalletAmountInput } from "#/components/wallet";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
 import { BackChevron } from "#/components/wallet/wallet-layout";
@@ -154,7 +155,7 @@ export function CollectPage({ token }: { token?: string }) {
         {selectedToken ? (
           <>
             <TokenLogo token={selectedToken} size={30} />
-            <p className="min-w-0 flex-1 truncate text-sm font-bold">{selectedToken.symbol}</p>
+            <p className="min-w-0 flex-1 truncate text-sm font-semibold">{selectedToken.symbol}</p>
           </>
         ) : (
           <p className="min-w-0 flex-1 text-muted-foreground text-sm">
@@ -219,20 +220,22 @@ export function CollectPage({ token }: { token?: string }) {
             {notice?.kind === "latched" && heldPayer && draft ? (
               <Button
                 variant="outline"
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
                 onClick={() => collection.collectAgain(draft)}
               >
                 <Trans>Charge this card {amountText}</Trans>
               </Button>
             ) : null}
-            <Button variant="ghost" className="h-11 w-full" onClick={collection.cancelArmed}>
+            <Button variant="ghost" size="lg" className="w-full" onClick={collection.cancelArmed}>
               <Trans>Cancel</Trans>
             </Button>
           </>
         ) : editable ? (
           <>
             <Button
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={!canArm}
               onClick={() => {
                 if (draft) collection.arm(draft);
@@ -249,15 +252,22 @@ export function CollectPage({ token }: { token?: string }) {
               <>
                 <Button
                   variant="outline"
-                  className="h-11 w-full"
-                  disabled={!canArm || heldPayerBusy}
+                  size="lg"
+                  className="w-full"
+                  disabled={!canArm}
+                  pending={heldPayerBusy}
                   onClick={() => {
                     if (draft) collection.collectAgain(draft);
                   }}
                 >
                   <Trans>Collect again from this card</Trans>
                 </Button>
-                <Button variant="ghost" className="h-11 w-full" onClick={collection.finishCustomer}>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="w-full"
+                  onClick={collection.finishCustomer}
+                >
                   <Trans>Done with this customer</Trans>
                 </Button>
               </>
@@ -268,9 +278,9 @@ export function CollectPage({ token }: { token?: string }) {
 
       {collection.submissions.length > 0 ? (
         <section className="mt-6" aria-label={t`Recent collections`}>
-          <h2 className="mb-2 font-heading text-[1.125rem] font-semibold tracking-tight">
+          <SectionHeading className="mb-2">
             <Trans>Recent collections</Trans>
-          </h2>
+          </SectionHeading>
           <ul className="border border-border bg-card">
             {collection.submissions.map((submission) => (
               <CollectionRow
@@ -319,7 +329,7 @@ function CollectStatus({
   if (state.phase === "processing") {
     return (
       <div className="flex items-center gap-3 border border-border bg-card p-4" aria-live="polite">
-        <FiLoader className="size-5 shrink-0 animate-spin text-primary" aria-hidden="true" />
+        <Spinner className="size-5 text-primary" />
         <div className="min-w-0">
           <p className="font-medium text-sm">
             <Trans>Card read — processing {amount}</Trans>
@@ -334,7 +344,7 @@ function CollectStatus({
     return (
       <div className="space-y-1 border border-border bg-card p-4" aria-live="polite">
         <p className="flex items-center gap-2 font-medium text-sm">
-          <FiLoader className="size-4 animate-spin text-primary" aria-hidden="true" />
+          <Spinner className="text-primary" />
           <Trans>Checking payment…</Trans>
         </p>
         <p className="text-muted-foreground text-xs">
@@ -409,7 +419,7 @@ function CollectStatus({
             <Trans>Payment accepted — confirming</Trans>
           )}
         </p>
-        <p dir="ltr" className="font-mono text-muted-foreground text-xs">
+        <p dir="ltr" className="text-muted-foreground text-xs tabular-nums">
           {amount}
         </p>
       </div>
@@ -489,7 +499,7 @@ function CollectionRow({
   return (
     <li className="flex min-h-12 items-center justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0">
       <div className="min-w-0">
-        <p dir="ltr" className="font-mono text-xs font-semibold">
+        <p dir="ltr" className="text-xs font-semibold tabular-nums">
           {submission.amountLabel} {submission.token.symbol}
         </p>
         <EllipsizedAddress address={submission.payer} />

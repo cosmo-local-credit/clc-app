@@ -229,6 +229,8 @@ export type PoolCatalog = {
   status: "loading" | "refining" | "ready" | "error";
   error: Error | null;
   retry: () => void;
+  /** The list is loading again after `retry`. */
+  retrying: boolean;
   tagFacets: PoolTagFacet[];
   voucherFacets: PoolVoucherFacet[];
   hasMore: boolean;
@@ -243,6 +245,7 @@ export function usePoolCatalog(
     isPending: boolean;
     error: Error | null;
     retry: () => void;
+    retrying: boolean;
     hasNextPage: boolean;
     fetchNextPage: () => void;
     isFetchingNextPage: boolean;
@@ -297,6 +300,7 @@ export function usePoolCatalog(
         status: unfiltered.error ? "error" : unfiltered.isPending ? "loading" : "ready",
         error: unfiltered.error,
         retry: unfiltered.retry,
+        retrying: unfiltered.retrying,
         tagFacets: chipFacets,
         voucherFacets,
         hasMore: unfiltered.hasNextPage,
@@ -312,6 +316,7 @@ export function usePoolCatalog(
       status: state.status === "disabled" ? "ready" : state.status,
       error: state.status === "error" ? state.error : null,
       retry: () => void filtered.refetch(),
+      retrying: filtered.isFetching,
       tagFacets: chipFacets,
       voucherFacets,
       hasMore: false,

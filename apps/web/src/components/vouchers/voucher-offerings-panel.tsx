@@ -113,7 +113,8 @@ export function VoucherOfferingsPanel({
         <>
           <ResourceUsage resource="offers" />
           <Button
-            className="mb-3 h-11 w-full"
+            tap
+            className="mb-3 w-full"
             onClick={() => setEditor({ kind: "create" })}
             disabled={!voucherAddress || usage.isError || !usage.data?.offers.canCreate}
           >

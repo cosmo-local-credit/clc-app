@@ -57,6 +57,7 @@ export function usePoolVouchersWithStatus(
     // bug this option exists to close.
     isPending: query.isPending || (all && (hasNextPage || isFetchingNextPage)),
     isError: query.isError,
+    isFetching: query.isFetching,
     refetch: query.refetch,
   };
 }

@@ -13,6 +13,8 @@ export type MarketMapPools = {
   pools: MarketPoolLocation[];
   error: Error | null;
   retry: () => void;
+  /** The pools are loading, including again after `retry`. */
+  retrying: boolean;
 };
 
 /**
@@ -74,8 +76,9 @@ export function useMarketMapPools(enabled: boolean): MarketMapPools {
     return [...byAddress.values()];
   }, [enabled, data?.pages]);
 
+  const retrying = enabled && (isFetching || isFetchingNextPage);
   return useMemo(
-    () => ({ pools, error: enabled ? error : null, retry }),
-    [pools, enabled, error, retry],
+    () => ({ pools, error: enabled ? error : null, retry, retrying }),
+    [pools, enabled, error, retry, retrying],
   );
 }

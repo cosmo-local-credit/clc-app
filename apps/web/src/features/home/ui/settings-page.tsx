@@ -8,7 +8,6 @@ import {
   RiExternalLinkLine,
   RiFileCopyLine,
   RiInformationLine,
-  RiLoader4Line,
   RiLogoutBoxRLine,
   RiShareLine,
   RiShieldFlashLine,
@@ -20,6 +19,7 @@ import { ThemeSettingsRow } from "#/components/theme-selector";
 import { ActionRow } from "#/components/ui/action-row";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { SettingsSheet } from "#/components/ui/settings-sheet";
 import { VisibilitySettingsRow } from "#/components/visibility-selector";
 import { EllipsizedAddress, HighlightAddress } from "#/components/wallet";
@@ -119,15 +119,10 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
     <>
       <ActionRow
         tone="destructive"
-        icon={
-          isSigningOut ? (
-            <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
-          )
-        }
+        icon={<RiLogoutBoxRLine className="size-4" aria-hidden="true" />}
+        busy={isSigningOut}
         label={isSigningOut ? t`Signing out…` : t`Sign out`}
-        onClick={isSigningOut ? undefined : () => setOpen(true)}
+        onClick={() => setOpen(true)}
       />
       <SettingsSheet
         open={open}
@@ -136,8 +131,9 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
         footer={
           <>
             <Button
-              variant="outline"
-              className="h-11 w-full border-destructive text-destructive hover:bg-destructive/10"
+              variant="destructive"
+              size="lg"
+              className="w-full"
               onClick={() => {
                 setOpen(false);
                 onSignOut();
@@ -146,7 +142,7 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
               <RiLogoutBoxRLine aria-hidden="true" />
               <Trans>Sign out</Trans>
             </Button>
-            <Button variant="outline" className="h-11 w-full" onClick={() => setOpen(false)}>
+            <Button variant="outline" size="lg" className="w-full" onClick={() => setOpen(false)}>
               <Trans>Cancel</Trans>
             </Button>
           </>
@@ -168,9 +164,9 @@ function SettingsGroup({ label, children }: { label: string; children: ReactNode
   const id = useId();
   return (
     <section aria-labelledby={id}>
-      <h2 id={id} className="mb-2 font-heading font-semibold text-foreground text-sm">
+      <SectionHeading id={id} variant="group" className="mb-2 text-foreground">
         {label}
-      </h2>
+      </SectionHeading>
       <div className="border border-border bg-card">{children}</div>
     </section>
   );
@@ -227,7 +223,8 @@ function WalletSessionRow({
             {address ? (
               <Button
                 variant="outline"
-                size="icon-lg"
+                size="icon"
+                tap
                 aria-label={t`Copy address`}
                 onClick={copyAddress}
               >

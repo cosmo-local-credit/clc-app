@@ -302,7 +302,7 @@ function AppInner() {
           <DialogPortal>
             <DialogBackdrop />
             <DialogContent>
-              <DialogTitle className="text-base font-semibold">
+              <DialogTitle>
                 {address ? <Trans>Switch wallet?</Trans> : <Trans>Import paper wallet?</Trans>}
               </DialogTitle>
               <p className="text-muted-foreground mt-1 text-sm">
@@ -314,12 +314,18 @@ function AppInner() {
               </p>
               <p className="text-foreground mt-2 truncate font-mono text-xs">{pendingAddress}</p>
               <div className="mt-5 flex flex-col gap-2">
-                <Button className="h-11 w-full" disabled={switching} onClick={handleConfirmSwitch}>
+                <Button
+                  size="lg"
+                  className="w-full"
+                  pending={switching}
+                  onClick={handleConfirmSwitch}
+                >
                   {switching ? t`Connecting…` : address ? t`Switch wallet` : t`Import wallet`}
                 </Button>
                 <Button
                   variant="ghost"
-                  className="h-11 w-full"
+                  size="lg"
+                  className="w-full"
                   onClick={clearPendingKey}
                   disabled={switching}
                 >

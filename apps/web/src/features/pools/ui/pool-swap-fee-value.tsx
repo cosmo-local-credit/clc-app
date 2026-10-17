@@ -52,11 +52,11 @@ export function PoolSwapFeeValue({
     : null;
 
   return (
-    <span dir="ltr" className="flex min-w-0 flex-col items-end font-mono tabular-nums">
+    <span dir="ltr" className="flex min-w-0 flex-col items-end tabular-nums">
       <span className="break-words text-end text-xs font-semibold">
         {amount} {symbol}
       </span>
-      <span className="text-muted-foreground text-[0.625rem]">{percentage ?? "—"}</span>
+      <span className="text-muted-foreground text-2xs">{percentage ?? "—"}</span>
     </span>
   );
 }

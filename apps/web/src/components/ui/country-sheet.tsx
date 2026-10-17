@@ -56,7 +56,7 @@ export function CountrySheet({ open, onClose, mode, value, onChange }: CountrySh
         <SheetBackdrop />
         <SheetContent className="h-[50dvh] max-h-[50dvh]" initialFocus={false}>
           <SheetHeader>
-            <SheetTitle className="font-semibold text-base">
+            <SheetTitle>
               {mode === "phone-country" ? "Select country code" : "Select country"}
             </SheetTitle>
           </SheetHeader>
@@ -102,7 +102,7 @@ export function CountrySheet({ open, onClose, mode, value, onChange }: CountrySh
                         <span className="text-base leading-none">{getFlagEmoji(code)}</span>
                         {mode === "phone-country" ? (
                           <>
-                            <span className="w-12 shrink-0 font-mono text-muted-foreground text-xs">
+                            <span className="w-12 shrink-0 text-muted-foreground text-xs tabular-nums">
                               +{getCountryCallingCode(code)}
                             </span>
                             <span className="truncate">{name}</span>

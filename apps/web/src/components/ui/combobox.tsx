@@ -35,7 +35,7 @@ function ComboboxChip({
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
       className={cn(
-        "inline-flex h-8 max-w-full shrink-0 items-center border border-border bg-card ps-3 font-semibold text-[11px] text-foreground",
+        "inline-flex h-8 max-w-full shrink-0 items-center border border-border bg-card ps-3 font-semibold text-2xs text-foreground",
         "data-highlighted:border-foreground",
         className,
       )}

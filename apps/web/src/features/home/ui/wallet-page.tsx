@@ -28,11 +28,11 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
       <>
         <TokenLogo token={token} size={34} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
+          <p className="text-sm font-semibold">{token.symbol}</p>
           <p className="text-muted-foreground truncate text-xs">{token.name}</p>
         </div>
         <div className="shrink-0 text-end">
-          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
+          <p className="text-sm font-semibold tabular-nums">{token.amount}</p>
         </div>
       </>
     );
@@ -60,11 +60,13 @@ function UnresolvedVouchersRow({
   failed,
   bordered,
   onRetry,
+  retrying,
 }: {
   pending: boolean;
   failed: boolean;
   bordered: boolean;
   onRetry: () => void;
+  retrying: boolean;
 }) {
   if (!pending && !failed) return null;
   return (
@@ -79,7 +81,7 @@ function UnresolvedVouchersRow({
           <p className="text-muted-foreground text-sm">
             <Trans>Some vouchers couldn't load.</Trans>
           </p>
-          <Button variant="outline" size="sm" className="bg-card h-9" onClick={onRetry}>
+          <Button variant="outline" tap pending={retrying} onClick={onRetry}>
             <Trans>Try again</Trans>
           </Button>
         </>
@@ -141,6 +143,9 @@ export function WalletPage({ address }: { address?: string }) {
       <CompleteProfileBanner address={address} />
 
       <section aria-label={t`Wallet actions`} className="space-y-3">
+        {/* The icon sits over a 12px label: a third of a 360px row leaves
+            about 89px, which every catalog's label fits whole, where beside
+            the icon at 14px several did not. */}
         <div className="grid grid-cols-3 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
@@ -149,7 +154,8 @@ export function WalletPage({ address }: { address?: string }) {
                 key={action.id}
                 asChild
                 variant={action.variant}
-                className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
+                size="lg"
+                className="flex-col gap-1 px-1 text-xs leading-tight"
               >
                 <Link to={action.to}>
                   <Icon className="size-4" aria-hidden="true" />
@@ -184,8 +190,8 @@ export function WalletPage({ address }: { address?: string }) {
                 </p>
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="bg-card h-9"
+                  tap
+                  pending={vouchersQuery.isFetching || voucherGroups.isFetching}
                   onClick={() => {
                     void vouchersQuery.refetch();
                     void voucherGroups.refetch();
@@ -203,7 +209,7 @@ export function WalletPage({ address }: { address?: string }) {
                 <p className="text-muted-foreground text-sm">
                   <Trans>No vouchers yet.</Trans>
                 </p>
-                <Button asChild variant="outline" className="bg-card h-9 w-full">
+                <Button asChild variant="outline" tap className="w-full">
                   <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
                     <Trans>Create voucher</Trans>
                   </Link>
@@ -239,7 +245,7 @@ export function WalletPage({ address }: { address?: string }) {
                   <p className="text-muted-foreground text-sm">
                     <Trans>You didn't issue any of these.</Trans>
                   </p>
-                  <Button asChild variant="outline" className="bg-card h-9 w-full">
+                  <Button asChild variant="outline" tap className="w-full">
                     <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
                       <Trans>Create voucher</Trans>
                     </Link>
@@ -255,6 +261,7 @@ export function WalletPage({ address }: { address?: string }) {
                 onRetry={() => {
                   void voucherGroups.refetch();
                 }}
+                retrying={voucherGroups.isFetching}
               />
             </div>
           </section>
@@ -281,9 +288,9 @@ export function WalletPage({ address }: { address?: string }) {
               </p>
               <Button
                 variant="outline"
-                size="sm"
-                className="bg-card h-9"
-                onClick={() => ownedPoolsQuery.refetch()}
+                tap
+                pending={ownedPoolsQuery.isFetching}
+                onClick={() => void ownedPoolsQuery.refetch()}
               >
                 <Trans>Try again</Trans>
               </Button>
@@ -294,7 +301,7 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>You haven't created a pool yet.</Trans>
               </p>
-              <Button asChild variant="outline" className="bg-card h-9 w-full">
+              <Button asChild variant="outline" tap className="w-full">
                 <Link to="/pools/create/$step" params={{ step: "pool" }}>
                   <Trans>Create pool</Trans>
                 </Link>
@@ -313,7 +320,7 @@ export function WalletPage({ address }: { address?: string }) {
             >
               <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={34} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold tracking-tight">{pool.name}</p>
+                <p className="truncate text-sm font-semibold">{pool.name}</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">
                   {pool.voucherCount === 1 ? (
                     <Trans>1 voucher</Trans>

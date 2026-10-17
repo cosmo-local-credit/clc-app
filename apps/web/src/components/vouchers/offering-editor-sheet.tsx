@@ -120,7 +120,7 @@ export function OfferingEditorSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               {offering ? <Trans>Edit offering</Trans> : <Trans>Add offering</Trans>}
             </SheetTitle>
           </SheetHeader>
@@ -336,7 +336,7 @@ function OfferingForm({
                       dir="ltr"
                       inputMode="decimal"
                       autoComplete="off"
-                      className="min-w-0 flex-1 bg-card font-mono"
+                      className="min-w-0 flex-1 bg-card tabular-nums"
                       value={priceField.state.value}
                       onBlur={priceField.handleBlur}
                       onChange={(event) => priceField.handleChange(event.target.value)}
@@ -382,7 +382,7 @@ function OfferingForm({
       <SheetFooter>
         {/* Disabled while the photo uploads, or submit would persist the URL the
             form held before the new file finished. */}
-        <Button type="submit" className="h-11 w-full" disabled={saving || photoBusy}>
+        <Button type="submit" size="lg" className="w-full" pending={saving || photoBusy}>
           {photoBusy ? (
             <Trans>Uploading photo…</Trans>
           ) : saving ? (
@@ -396,7 +396,8 @@ function OfferingForm({
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={saving}
           onClick={onClose}
         >
@@ -451,7 +452,7 @@ function Field({
       </label>
       {children}
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-xs">
           {error}
         </p>
       ) : null}

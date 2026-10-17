@@ -193,7 +193,12 @@ function CatalogList({
           <p role="alert">
             <Trans>Couldn't load catalogs.</Trans>
           </p>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -211,11 +216,12 @@ function CatalogList({
       {!credit.blocksResults && query.hasNextPage && !crossedDistanceBoundary ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
-          disabled={query.isFetchingNextPage}
+          tap
+          className="w-full"
+          pending={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >
-          <Trans>Load more</Trans>
+          {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>
       ) : null}
     </div>

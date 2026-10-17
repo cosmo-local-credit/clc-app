@@ -97,7 +97,7 @@ export function ProfileUsernameSection({ profile }: { profile: ProfileResult }) 
           <SheetBackdrop />
           <SheetContent>
             <SheetHeader>
-              <SheetTitle className="font-heading text-base font-semibold">
+              <SheetTitle>
                 {username ? <Trans>Change username</Trans> : <Trans>Choose username</Trans>}
               </SheetTitle>
             </SheetHeader>
@@ -205,8 +205,10 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
             return (
               <Button
                 type="submit"
-                className="h-11 w-full"
-                disabled={!canSubmit || isSubmitting || normalized === "" || normalized === current}
+                size="lg"
+                className="w-full"
+                disabled={!canSubmit || normalized === "" || normalized === current}
+                pending={isSubmitting}
               >
                 {isSubmitting ? t`Saving…` : t`Save username`}
               </Button>
@@ -216,7 +218,8 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={updateProfile.isPending}
           onClick={onClose}
         >

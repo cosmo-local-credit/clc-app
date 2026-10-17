@@ -9,6 +9,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
 
@@ -29,9 +30,9 @@ export function CatalogMembers({
   );
   return (
     <section className="space-y-3" aria-labelledby={`catalog-${kind}-title`}>
-      <h2 id={`catalog-${kind}-title`} className="font-heading text-[1.375rem] font-semibold">
+      <SectionHeading id={`catalog-${kind}-title`}>
         {kind === "pool" ? <Trans>Pools</Trans> : <Trans>Vouchers</Trans>}
-      </h2>
+      </SectionHeading>
       {query.isPending ? (
         <p role="status">
           <Trans>Loading…</Trans>
@@ -42,7 +43,12 @@ export function CatalogMembers({
           <p role="alert">
             <Trans>Couldn't load catalog items.</Trans>
           </p>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -85,9 +91,10 @@ export function CatalogMembers({
               {canEdit ? (
                 <Button
                   variant="outline"
-                  className="h-11 shrink-0 bg-card"
+                  tap
                   aria-label={t`Remove ${item.name}`}
                   disabled={remove.isPending}
+                  pending={remove.isPending && remove.variables?.resourceId === item.id}
                   onClick={async () => {
                     try {
                       await remove.mutateAsync({
@@ -110,11 +117,12 @@ export function CatalogMembers({
       {query.hasNextPage ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
-          disabled={query.isFetchingNextPage}
+          tap
+          className="w-full"
+          pending={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >
-          <Trans>Load more</Trans>
+          {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>
       ) : null}
     </section>

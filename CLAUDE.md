@@ -173,17 +173,51 @@ elevated against the background.
 | Element    | Size             | Weight | Letter-spacing |
 | ---------- | ---------------- | ------ | -------------- |
 | `h1`       | 1.75rem          | 700    | −0.025em       |
-| `h2`       | 1.375rem         | 600    | −0.02em        |
-| `h3`       | 1.125rem         | 600    | −0.015em       |
+| `h2`       | 1rem             | 600    | −0.01em        |
+| `h3`       | 0.875rem         | 600    | −0.01em        |
 | `body / p` | 0.9375rem (15px) | —      | —              |
+| `text-2xs` | 0.6875rem (11px) | —      | —              |
 
 Page titles use one locked mobile style everywhere: `h1` at 1.75rem, weight
 700, tight line height (`font-heading text-[1.75rem] font-bold leading-tight`).
 Do not mix page-title sizes such as `text-2xl` on one screen and base `h1` on
 another.
 
+Below the title there are two heading levels, both through `SectionHeading`
+(`#/components/ui/section-heading`); `as` sets the document level, never the
+look:
+
+| Level                   | Classes                                        | Example                     |
+| ----------------------- | ---------------------------------------------- | --------------------------- |
+| `variant="section"`     | `font-heading text-base font-semibold`         | Holdings, Reviews, Location |
+| `variant="group"`       | `font-heading text-sm font-semibold`           | Settings group labels       |
+| Sheet and dialog titles | 16px, the `SheetTitle` / `DialogTitle` default | Confirm send                |
+
+Do not restyle a sheet or dialog title at the call site; add layout classes
+only.
+
 No desktop heading sizes (`text-4xl`, `text-5xl`, `text-6xl`). On 360–430px
 the largest heading is the base `h1` (1.75rem).
+
+**One style per text role:**
+
+| Role                | Style                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| List-row title      | Inter `text-sm font-semibold`. No `font-bold`, `tracking-tight`, `font-heading`         |
+| List-row subtitle   | `text-xs text-muted-foreground`                                                         |
+| Field label         | `Field` (`#/components/ui/field`), or its classes `text-sm font-medium`                 |
+| Helper text         | `text-xs text-muted-foreground`                                                         |
+| Field error         | `text-xs text-destructive`                                                              |
+| Boxed notice, alert | `text-sm`                                                                               |
+| Chip or badge       | `Badge` (`text-2xs font-semibold`); `size="sm"` in rows, `caps` for status              |
+| Amount, price       | Inter `font-semibold tabular-nums`. Never `font-heading` or `font-mono`                 |
+| Mono                | Addresses, keys, hashes, code, version/SHA, confirmation codes, tickers, usernames only |
+| Heading font        | Headings and avatar initials only                                                       |
+
+No arbitrary `text-[…]` size except the 1.75rem title, nothing from `text-3xl`
+up except decorative initials, and no `tracking-tight` on Inter. Positive
+tracking lives only in `Badge caps`. `apps/web/src/lib/-ui-contract.test.ts`
+enforces the sizes; an exception goes in its allowlist with a reason.
 
 The type sizes above are **`apps/web` only**. `apps/admin` uses the same font
 trio but an ops-console scale (`h1` 1.5rem / `h2` 1.25rem / `h3` 1.125rem,
@@ -241,8 +275,26 @@ background.
 stays only for genuinely circular shapes — status dots, radio marks, avatars,
 the 56 px receipt status badges, and the progress bar.
 
-**Touch targets:** Primary CTA buttons `h-11` (44 px — iOS HIG minimum).
-Inputs use default `h-9`; don't override with `h-11`.
+**Buttons:** two heights, picked by use, never by className.
+
+- `default` is 36px with a 12px label. Everything inside content: secondary
+  actions, Edit, View, Reply, Remove, Load more, Retry in a notice, Max, voucher
+  pills, per-row Swap, View all, copy buttons, and search-row icons beside a
+  36px input. Pass `tap` to pad the hit area to 44px without taking the space.
+- `size="lg"` is 44px with a 14px label, for the thumb-zone action that
+  completes something: form submits and save bars, sheet and dialog
+  confirm/cancel pairs, Send, Swap, Top-up, Withdraw, Publish, destructive
+  confirmations, the Create account / I already have an account fork, a
+  full-screen error whose only action is Retry, map controls, and the wallet
+  and pool quick actions.
+- `icon` / `icon-lg` are the 36 and 44px squares. Toggle has the same sizes.
+- No `h-*`, `size-*` or `min-h-*` class on a `Button` or `Toggle`; the
+  contract test fails on one. Inputs keep the default `h-9`.
+- A button that awaits the network, the chain, an upload or a signature passes
+  `pending`: the shared `Spinner` (`#/components/ui/spinner`) leads, the button
+  is disabled and `aria-busy`, and the caller keeps its "Saving…" label. Other
+  waits use the same `Spinner`. `FiLoader`, `ImSpinner2`, `LoaderCircle` and
+  `Loader2` are lint-banned.
 
 **Surface colors — always distinguish from background:**
 
@@ -397,10 +449,6 @@ or their neighboring lines. Keep it that way:
 - Editing comments or whitespace immediately beside environment values can also
   conflict with master's overrides. Keep that layout identical on both branches;
   when resolving a promotion, take develop's shared text and master's values.
-- `python3 tooling/check_promotion.py --master master --develop develop` checks
-  both environments and simulates the next Wrangler merge without modifying the
-  checkout. The `Wrangler promotion safety` CI check runs on pushes and pull
-  requests to both branches and rejects conflicts or leaked staging settings.
 
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
 Green is the product brand (prod); red marks staging.

@@ -82,7 +82,7 @@ export function PoolProfileEditorSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               <Trans>Edit pool details</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -273,10 +273,10 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                   </p>
                   <Button
                     type="button"
-                    size="sm"
                     variant="outline"
-                    className="bg-card"
-                    onClick={() => tagsQuery.refetch()}
+                    tap
+                    pending={tagsQuery.isFetching}
+                    onClick={() => void tagsQuery.refetch()}
                   >
                     <Trans>Retry</Trans>
                   </Button>
@@ -450,7 +450,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
       </div>
 
       <SheetFooter>
-        <Button type="submit" className="h-11 w-full" disabled={update.isPending || imageBusy}>
+        <Button type="submit" size="lg" className="w-full" pending={update.isPending || imageBusy}>
           {imageBusy ? (
             <Trans>Uploading…</Trans>
           ) : update.isPending ? (
@@ -462,7 +462,8 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={update.isPending}
           onClick={onClose}
         >

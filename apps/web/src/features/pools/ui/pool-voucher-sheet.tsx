@@ -113,7 +113,7 @@ export function PoolVoucherSheet({
         <SheetBackdrop />
         <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               {voucher ? <Trans>Manage voucher</Trans> : <Trans>Approve voucher</Trans>}
             </SheetTitle>
           </SheetHeader>
@@ -226,6 +226,7 @@ function PoolVoucherForm({
     if (canConfigure) void rates.refetch();
     void treasury.refetch();
   };
+  const retryingReads = (canConfigure && rates.isFetching) || treasury.isFetching;
   const retryBlockedReads = () => {
     if (membershipUnread) void membership.refetch();
     if (rateUnread || capUnread) retryReads();
@@ -266,6 +267,7 @@ function PoolVoucherForm({
         register={register}
         registrationUnknown={registrationUnknown}
         onRetryReads={retryReads}
+        retryingReads={retryingReads}
         onChange={voucher ? undefined : () => setPicked(null)}
         onClose={onClose}
       />
@@ -290,6 +292,7 @@ function PoolVoucherForm({
             }
             balance={balance}
             onRetry={retryReads}
+            retrying={retryingReads}
             loadingDecimals={decimalsPending}
             onChange={voucher ? undefined : () => setPicked(null)}
           />
@@ -326,8 +329,8 @@ function PoolVoucherForm({
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                className="bg-card"
+                tap
+                pending={membership.isFetching || retryingReads}
                 onClick={retryBlockedReads}
               >
                 <Trans>Retry</Trans>
@@ -338,10 +341,10 @@ function PoolVoucherForm({
       </div>
 
       <SheetFooter>
-        <Button type="button" className="h-11 w-full" disabled>
+        <Button type="button" size="lg" className="w-full" disabled>
           {voucher ? <Trans>Save changes</Trans> : <Trans>Approve voucher</Trans>}
         </Button>
-        <Button type="button" variant="outline" className="h-11 w-full bg-card" onClick={onClose}>
+        <Button type="button" variant="outline" size="lg" className="w-full" onClick={onClose}>
           <Trans>Cancel</Trans>
         </Button>
       </SheetFooter>
@@ -367,6 +370,7 @@ function PoolVoucherConfigurationForm({
   register,
   registrationUnknown,
   onRetryReads,
+  retryingReads,
   onChange,
   onClose,
 }: {
@@ -382,12 +386,16 @@ function PoolVoucherConfigurationForm({
   register: boolean;
   registrationUnknown: boolean;
   onRetryReads: () => void;
+  retryingReads: boolean;
   onChange?: () => void;
   onClose: () => void;
 }) {
   const { t } = useLingui();
   const relay = usePoolAdminRelay();
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
+  // Save and Remove share one relay; this says which of the two is waiting.
+  const [removing, setRemoving] = useState(false);
+  const saving = relay.isPending && !removing;
   const form = useForm({
     defaultValues: seed,
     validators: { onSubmit: poolVoucherRateSchema({ requireCreditLimit: hasLimiter }) },
@@ -442,6 +450,7 @@ function PoolVoucherConfigurationForm({
 
   const remove = async () => {
     if (!voucher) return;
+    setRemoving(true);
     try {
       await relay.mutateAsync(
         buildRemovePoolVoucherCalls({
@@ -453,6 +462,8 @@ function PoolVoucherConfigurationForm({
       onClose();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -475,6 +486,7 @@ function PoolVoucherConfigurationForm({
               exchangeRate={exchangeRate}
               balance={balance}
               onRetry={onRetryReads}
+              retrying={retryingReads}
               loadingDecimals={false}
               onChange={onChange}
             />
@@ -519,7 +531,7 @@ function PoolVoucherConfigurationForm({
             )}
           </form.Subscribe>
         ) : (
-          <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
+          <p className="border border-border bg-card p-4 text-muted-foreground text-sm">
             <Trans>
               This pool has no limiter, so deposits are uncapped and no credit limit can be set.
             </Trans>
@@ -540,8 +552,10 @@ function PoolVoucherConfigurationForm({
                   <Button
                     type="button"
                     variant="destructive"
-                    className="h-11 flex-1"
+                    size="lg"
+                    className="flex-1"
                     disabled={relay.isPending}
+                    pending={removing}
                     onClick={() => void remove()}
                   >
                     <Trans>Remove</Trans>
@@ -549,7 +563,8 @@ function PoolVoucherConfigurationForm({
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-11 flex-1 bg-card"
+                    size="lg"
+                    className="flex-1"
                     disabled={relay.isPending}
                     onClick={() => setConfirmingRemoval(false)}
                   >
@@ -561,7 +576,8 @@ function PoolVoucherConfigurationForm({
               <Button
                 type="button"
                 variant="destructive"
-                className="h-11 w-full"
+                tap
+                className="w-full"
                 disabled={relay.isPending}
                 onClick={() => setConfirmingRemoval(true)}
               >
@@ -574,8 +590,8 @@ function PoolVoucherConfigurationForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit" className="h-11 w-full" disabled={!canSubmit}>
-          {relay.isPending ? (
+        <Button type="submit" size="lg" className="w-full" disabled={!canSubmit} pending={saving}>
+          {saving ? (
             <Trans>Waiting for the chain…</Trans>
           ) : voucher ? (
             <Trans>Save changes</Trans>
@@ -586,7 +602,8 @@ function PoolVoucherConfigurationForm({
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={relay.isPending}
           onClick={onClose}
         >
@@ -678,7 +695,7 @@ function RateRow({
     <div className="border border-border bg-card p-4">
       <p className="mb-3 font-medium text-muted-foreground text-xs">{heading}</p>
       <div className="flex items-center gap-2">
-        <span className="shrink-0 truncate font-mono text-sm font-semibold">{leading}</span>
+        <span className="shrink-0 truncate text-sm font-semibold tabular-nums">{leading}</span>
         <span className="shrink-0 text-muted-foreground text-sm">=</span>
         <label htmlFor={id} className="sr-only">
           {heading}
@@ -692,9 +709,9 @@ function RateRow({
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
           aria-invalid={!!error}
-          className="min-w-0 flex-1 font-mono"
+          className="min-w-0 flex-1 tabular-nums"
         />
-        <span className="shrink-0 font-mono text-sm font-semibold">{unitSymbol}</span>
+        <span className="shrink-0 text-sm font-semibold">{unitSymbol}</span>
       </div>
       {error ? (
         <FieldError error={error} />
@@ -711,6 +728,7 @@ function SelectedVoucher({
   exchangeRate,
   balance,
   onRetry,
+  retrying,
   loadingDecimals,
   onChange,
 }: {
@@ -719,6 +737,7 @@ function SelectedVoucher({
   exchangeRate: string | null;
   balance: VoucherBalanceState;
   onRetry: () => void;
+  retrying: boolean;
   loadingDecimals: boolean;
   onChange?: () => void;
 }) {
@@ -746,7 +765,7 @@ function SelectedVoucher({
     <div className="border border-border bg-card p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
+          <p className="truncate font-semibold text-sm">{voucher.name}</p>
           <p dir="ltr" className="font-mono text-muted-foreground text-xs">
             {voucher.symbol}
           </p>
@@ -760,7 +779,7 @@ function SelectedVoucher({
           </p>
         </div>
         {onChange ? (
-          <Button type="button" variant="outline" size="sm" className="bg-card" onClick={onChange}>
+          <Button type="button" variant="outline" tap onClick={onChange}>
             <Trans>Change</Trans>
           </Button>
         ) : null}
@@ -771,7 +790,7 @@ function SelectedVoucher({
           <dt className="text-muted-foreground">
             <Trans>Amount in pool</Trans>
           </dt>
-          <dd dir="ltr" className="text-end font-mono font-semibold">
+          <dd dir="ltr" className="text-end font-semibold tabular-nums">
             {balance.status === "loading" ? (
               <Trans>Reading…</Trans>
             ) : amount === null ? (
@@ -785,7 +804,7 @@ function SelectedVoucher({
           <dt className="text-muted-foreground">
             <Trans>Value in {unitSymbol}</Trans>
           </dt>
-          <dd dir="ltr" className="text-end font-mono font-semibold">
+          <dd dir="ltr" className="text-end font-semibold tabular-nums">
             {balance.status === "loading" ? (
               <Trans>Reading…</Trans>
             ) : unitValue === null ? (
@@ -801,8 +820,9 @@ function SelectedVoucher({
         <Button
           type="button"
           variant="outline"
-          size="sm"
-          className="mt-2 bg-card"
+          tap
+          className="mt-2"
+          pending={retrying}
           onClick={onRetry}
         >
           <Trans>Retry</Trans>
@@ -892,8 +912,8 @@ function VoucherPicker({
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
+            tap
+            pending={registry.isFetching}
             onClick={() => void registry.refetch()}
           >
             <Trans>Retry</Trans>
@@ -933,8 +953,8 @@ function SearchResults({
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
+            tap
+            pending={search.retrying}
             onClick={search.retry}
           >
             <Trans>Retry</Trans>
@@ -1018,8 +1038,8 @@ function SuggestionLists({
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                className="h-9 bg-card"
+                tap
+                pending={group.source.retrying}
                 onClick={group.source.retry}
               >
                 <Trans>Retry</Trans>
@@ -1034,8 +1054,8 @@ function SuggestionLists({
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                className="h-9 bg-card"
+                tap
+                pending={group.source.retrying}
                 onClick={group.source.retry}
               >
                 <Trans>Retry</Trans>
@@ -1068,14 +1088,12 @@ function CandidateList({
             ].join(" ")}
           >
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-bold text-sm tracking-tight">
-                {voucher.name}
-              </span>
+              <span className="block truncate font-semibold text-sm">{voucher.name}</span>
               <span className="block font-mono text-muted-foreground text-xs">
                 {formatVoucherAddress(voucher.address)}
               </span>
             </span>
-            <Badge variant="outline" className="shrink-0 font-mono text-[0.625rem]">
+            <Badge variant="outline" size="sm" className="font-mono">
               {voucher.symbol}
             </Badge>
           </button>

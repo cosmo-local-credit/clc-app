@@ -163,7 +163,8 @@ export function RecipientAddressInput({
         />
         <Button
           variant="outline"
-          size="icon-lg"
+          size="icon"
+          tap
           aria-label={t`Scan QR`}
           disabled={disabled}
           onClick={() => setScannerOpen(true)}

@@ -6,7 +6,6 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
@@ -55,8 +54,8 @@ export function ProfileEditPage() {
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
+            tap
+            pending={profileQuery.isFetching}
             onClick={() => void profileQuery.refetch()}
           >
             <Trans>Try again</Trans>
@@ -359,7 +358,8 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-11 w-full bg-card"
+                            tap
+                            className="w-full"
                             onClick={() => field.handleChange(undefined)}
                           >
                             <Trans>Clear location</Trans>
@@ -421,17 +421,11 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
               // file finished.
               <Button
                 type="submit"
-                disabled={
-                  !(isDirty || avatarUrl !== storedAvatarUrl) ||
-                  !canSubmit ||
-                  isSubmitting ||
-                  avatarBusy
-                }
-                className="h-11 w-full"
+                disabled={!(isDirty || avatarUrl !== storedAvatarUrl) || !canSubmit}
+                pending={isSubmitting || avatarBusy}
+                size="lg"
+                className="w-full"
               >
-                {isSubmitting ? (
-                  <RiLoader4Line className="animate-spin" aria-hidden="true" />
-                ) : null}
                 {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
               </Button>
             )}

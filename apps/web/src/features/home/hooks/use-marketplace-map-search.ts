@@ -103,5 +103,6 @@ export function useMarketplaceMapSearch(
     status: !enabled ? "disabled" : query.isPending ? "loading" : query.isError ? "error" : "ready",
     error: enabled ? query.error : null,
     retry,
+    retrying: enabled && query.isFetching,
   } as const;
 }

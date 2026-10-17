@@ -6,6 +6,7 @@ import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
@@ -39,18 +40,16 @@ function VoucherRow({
         <TokenLogo token={voucher} size={36} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-bold tracking-tight">{voucher.symbol}</p>
+            <p className="text-sm font-semibold">{voucher.symbol}</p>
             {voucher.admin ? (
-              <Badge className="h-4 px-1 text-[0.5rem] tracking-[0.06em] uppercase">
+              <Badge size="sm" caps>
                 <Trans>Admin</Trans>
               </Badge>
             ) : null}
           </div>
           <p className="text-muted-foreground text-xs">{voucher.name}</p>
         </div>
-        <p className="font-heading shrink-0 text-sm font-semibold tracking-tight">
-          {voucher.amount}
-        </p>
+        <p className="shrink-0 text-sm font-semibold tabular-nums">{voucher.amount}</p>
         <RiArrowDownSLine
           className={[
             "size-4 shrink-0 text-muted-foreground transition-transform",
@@ -64,7 +63,7 @@ function VoucherRow({
         <div className="px-3 pt-1 pb-3">
           <VoucherContactDetails voucher={voucher} />
           {voucherAddress ? (
-            <Button asChild className="mt-3 h-11 w-full gap-1.5 text-xs">
+            <Button asChild tap className="mt-3 w-full">
               <Link
                 to="/vouchers/$voucherAddress"
                 params={{ voucherAddress }}
@@ -83,7 +82,7 @@ function VoucherRow({
 
 function CreateVoucherButton() {
   return (
-    <Button asChild variant="outline" className="bg-card">
+    <Button asChild variant="outline" tap>
       <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
         <RiAddLine className="size-4" aria-hidden="true" />
         <Trans>Create</Trans>
@@ -154,8 +153,8 @@ export function AllVouchersPage() {
               </p>
               <Button
                 variant="outline"
-                size="sm"
-                className="bg-card h-9"
+                tap
+                pending={vouchersQuery.isFetching || voucherGroups.isFetching}
                 onClick={() => {
                   void vouchersQuery.refetch();
                   void voucherGroups.refetch();
@@ -181,9 +180,9 @@ export function AllVouchersPage() {
         <div className="space-y-6">
           {voucherGroups.holdings.length > 0 ? (
             <section aria-labelledby="holdings-title">
-              <h2 id="holdings-title" className="font-heading mb-2 text-base font-semibold">
+              <SectionHeading id="holdings-title" className="mb-2">
                 <Trans>Holdings</Trans>
-              </h2>
+              </SectionHeading>
               <div className="border-border bg-card border">
                 {renderGroup(voucherGroups.holdings)}
               </div>
@@ -191,9 +190,9 @@ export function AllVouchersPage() {
           ) : null}
           {voucherGroups.issued.length > 0 || (!vouchersQuery.hasNextPage && !unresolved) ? (
             <section aria-labelledby="my-vouchers-title">
-              <h2 id="my-vouchers-title" className="font-heading mb-2 text-base font-semibold">
+              <SectionHeading id="my-vouchers-title" className="mb-2">
                 <Trans>My Vouchers</Trans>
-              </h2>
+              </SectionHeading>
               <div className="border-border bg-card border">
                 {voucherGroups.issued.length === 0 ? (
                   <p className="text-muted-foreground p-3 text-sm">
@@ -219,8 +218,8 @@ export function AllVouchersPage() {
                   </p>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="bg-card h-9"
+                    tap
+                    pending={voucherGroups.isFetching}
                     onClick={() => {
                       void voucherGroups.refetch();
                     }}
@@ -237,8 +236,9 @@ export function AllVouchersPage() {
       {vouchersQuery.hasNextPage ? (
         <Button
           variant="outline"
-          className="bg-card mt-3 h-11 w-full"
-          disabled={vouchersQuery.isFetchingNextPage}
+          tap
+          className="mt-3 w-full"
+          pending={vouchersQuery.isFetchingNextPage}
           onClick={() => vouchersQuery.fetchNextPage()}
         >
           {vouchersQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}

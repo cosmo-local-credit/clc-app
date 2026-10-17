@@ -5,7 +5,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
@@ -214,8 +213,8 @@ export function VoucherDeploymentReceiptPage({
     return (
       <DeploymentStateShell
         icon={<PendingClock />}
-        title={t`Publishing your voucher...`}
-        message={t`Waiting for blockchain confirmation...`}
+        title={t`Publishing your voucher…`}
+        message={t`Waiting for blockchain confirmation…`}
         status={<StatusPill tone="pending" label={t`Pending`} />}
         showContractRow
       />
@@ -329,7 +328,7 @@ export function VoucherDeploymentReceiptPage({
             ) : supplyCheckFailed ? (
               <Trans>Supply check unavailable</Trans>
             ) : minting ? (
-              <Trans>Creating {contract.symbol}...</Trans>
+              <Trans>Creating {contract.symbol}…</Trans>
             ) : (
               <Trans>{contract.name} is deployed</Trans>
             )}
@@ -396,7 +395,7 @@ export function VoucherDeploymentReceiptPage({
               />
             </Field>
             {supplyValue ? (
-              <p className="mt-1 font-mono text-muted-foreground text-xs tabular-nums">
+              <p className="mt-1 text-muted-foreground text-xs tabular-nums">
                 <Trans>
                   Value: {supplyValue.value} {supplyValue.unit}
                 </Trans>
@@ -409,21 +408,12 @@ export function VoucherDeploymentReceiptPage({
 
         <div className="mt-auto pt-6">
           <Button
-            className="h-11 w-full"
-            disabled={
-              minting ||
-              mint.isPending ||
-              supplyChecking ||
-              ownerUnavailable ||
-              ownerMismatch ||
-              !walletAddress ||
-              walletPreparing
-            }
+            size="lg"
+            className="w-full"
+            disabled={ownerUnavailable || ownerMismatch || !walletAddress}
+            pending={minting || mint.isPending || supplyChecking || walletPreparing}
             onClick={primaryAction}
           >
-            {minting || mint.isPending || supplyChecking || walletPreparing ? (
-              <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-            ) : null}
             {trackingUnavailable ? (
               <Trans>Check creation status</Trans>
             ) : supplyCheckFailed ? (
@@ -511,7 +501,11 @@ export function VoucherDeploymentReceiptPage({
       </AdvancedDeploymentDetails>
 
       <div className="mt-auto pt-6">
-        <Button className="h-11 w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={() => exit(`/vouchers/${address}?from=vouchers`)}
+        >
           <Trans>View voucher</Trans>
         </Button>
       </div>

@@ -29,6 +29,8 @@ export type ApprovalSuggestionSource = {
   status: "idle" | "loading" | "ready" | "error";
   completeness: "complete" | "partial";
   retry: () => void;
+  /** A source that failed is loading again after `retry`. */
+  retrying: boolean;
 };
 
 /**
@@ -75,6 +77,7 @@ export function useApprovalSuggestions(poolAddress: string | undefined) {
       status: sourceStatus(owner, issuedQuery),
       completeness: "complete",
       retry: () => void issuedQuery.refetch(),
+      retrying: issuedQuery.isFetching,
     } satisfies ApprovalSuggestionSource,
     holdings,
     deposited,
@@ -101,7 +104,13 @@ function useAccountSuggestionSource(address: string | undefined): ApprovalSugges
   });
 
   if (!address) {
-    return { rows: [], status: "idle", completeness: "complete", retry: () => undefined };
+    return {
+      rows: [],
+      status: "idle",
+      completeness: "complete",
+      retry: () => undefined,
+      retrying: false,
+    };
   }
 
   const completeTokens = complete.data?.pages.flatMap((page) => page.tokens) ?? [];
@@ -112,6 +121,7 @@ function useAccountSuggestionSource(address: string | undefined): ApprovalSugges
       status: draining ? "loading" : "ready",
       completeness: "complete",
       retry: () => void complete.refetch(),
+      retrying: complete.isFetching,
     };
   }
 
@@ -125,6 +135,7 @@ function useAccountSuggestionSource(address: string | undefined): ApprovalSugges
       void complete.refetch();
       if (recent.isError) void recent.refetch();
     },
+    retrying: complete.isFetching || recent.isFetching,
   };
 }
 

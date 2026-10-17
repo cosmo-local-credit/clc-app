@@ -79,14 +79,14 @@ export function MarketplaceResourceNavigation({
           const active = resource.id === current;
           const inactiveClass =
             resource.id === "offers"
-              ? "border-offer bg-card text-offer hover:bg-offer/10"
+              ? "border-offer text-offer hover:bg-offer/10"
               : resource.id === "vouchers"
-                ? "border-voucher bg-card text-voucher hover:bg-voucher/10"
+                ? "border-voucher text-voucher hover:bg-voucher/10"
                 : resource.id === "pools"
-                  ? "border-info bg-card text-info hover:bg-info/10"
+                  ? "border-info text-info hover:bg-info/10"
                   : resource.id === "catalogs"
-                    ? "border-success bg-card text-success hover:bg-success/10"
-                    : "bg-card";
+                    ? "border-success text-success hover:bg-success/10"
+                    : undefined;
           const content = (
             <>
               <Icon className="size-5" aria-hidden="true" />
@@ -102,7 +102,8 @@ export function MarketplaceResourceNavigation({
                 disabled
                 aria-current="page"
                 title={titleFor(resource.id)}
-                className="size-11 opacity-100"
+                size="icon-lg"
+                className="opacity-100"
               >
                 {content}
               </Button>
@@ -110,7 +111,7 @@ export function MarketplaceResourceNavigation({
           }
           if (resource.id === "map") {
             return (
-              <Button key={resource.id} asChild variant="outline" className="size-11 bg-card">
+              <Button key={resource.id} asChild variant="outline" size="icon-lg">
                 <Link
                   to="/"
                   title={t`Map`}
@@ -135,7 +136,8 @@ export function MarketplaceResourceNavigation({
               key={resource.id}
               asChild
               variant="outline"
-              className={`size-11 ${inactiveClass}`}
+              size="icon-lg"
+              className={inactiveClass}
             >
               <Link
                 to="/market"
