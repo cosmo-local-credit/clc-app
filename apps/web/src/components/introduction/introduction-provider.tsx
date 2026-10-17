@@ -24,6 +24,7 @@ const Introduction = lazy(() =>
   import("./introduction").then((module) => ({ default: module.Introduction })),
 );
 const ReplayContext = createContext<(() => void) | null>(null);
+const FirstVisitContext = createContext({ show: false, complete: completeIntroduction });
 
 export function IntroductionProvider({
   children,
@@ -71,27 +72,46 @@ export function IntroductionProvider({
   }
 
   return (
-    <ReplayContext.Provider value={() => setReplay(true)}>
-      {waiting ? (
-        <div className="min-h-[100svh] bg-background" aria-busy="true" />
-      ) : show ? (
-        <Suspense fallback={<div className="min-h-[100svh] bg-background" />}>
-          {replay ? (
-            <Introduction replay onExit={complete} />
-          ) : (
-            <LandingPage
-              onComplete={complete}
-              redirectTo={
-                typeof location.search.redirect === "string" ? location.search.redirect : undefined
-              }
-            />
-          )}
-        </Suspense>
-      ) : (
-        children
-      )}
-    </ReplayContext.Provider>
+    <FirstVisitContext.Provider
+      value={{
+        show:
+          !suppressed &&
+          !auth.isLoading &&
+          auth.state === "guest" &&
+          !auth.address &&
+          seen === false,
+        complete,
+      }}
+    >
+      <ReplayContext.Provider value={() => setReplay(true)}>
+        {waiting ? (
+          <div className="min-h-[100svh] bg-background" aria-busy="true" />
+        ) : show ? (
+          <Suspense fallback={<div className="min-h-[100svh] bg-background" />}>
+            {replay ? (
+              <Introduction replay onExit={complete} />
+            ) : (
+              <LandingPage
+                onComplete={complete}
+                redirectTo={
+                  typeof location.search.redirect === "string"
+                    ? location.search.redirect
+                    : undefined
+                }
+              />
+            )}
+          </Suspense>
+        ) : (
+          children
+        )}
+      </ReplayContext.Provider>
+    </FirstVisitContext.Provider>
   );
+}
+
+/** Locked pages share welcome's completion state and action. */
+export function useFirstVisitIntroduction() {
+  return useContext(FirstVisitContext);
 }
 
 export function IntroductionReplayButton() {
