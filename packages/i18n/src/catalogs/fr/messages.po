@@ -706,6 +706,7 @@ msgid "Awaiting approval"
 msgstr "En attente d’approbation"
 
 #: apps/web/src/components/introduction/introduction.tsx:118
+#: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:74
@@ -911,7 +912,7 @@ msgstr "Image du catalogue"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Catalogue enregistré. L’élément n’a pas pu être ajouté. Réessayez."
 
-#: apps/web/src/components/market-bar.tsx:87
+#: apps/web/src/components/market-bar.tsx:112
 #: apps/web/src/components/resource-usage.tsx:11
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
@@ -1217,7 +1218,8 @@ msgstr "Effacer l’emplacement"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
 #: apps/web/src/components/catalog-filter-controls.tsx:523
-#: apps/web/src/components/market-bar.tsx:174
+#: apps/web/src/components/market-search.tsx:73
+#: apps/web/src/components/market-search.tsx:180
 msgid "Clear search"
 msgstr "Effacer la recherche"
 
@@ -3395,8 +3397,8 @@ msgstr "Gérer le bon d’échange"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "Gérez votre session de portefeuille et vos préférences d’application."
 
-#: apps/web/src/components/market-bar.tsx:143
-#: apps/web/src/components/market-bar.tsx:144
+#: apps/web/src/components/market-bar.tsx:168
+#: apps/web/src/components/market-bar.tsx:169
 msgid "Map"
 msgstr "Carte"
 
@@ -3422,7 +3424,7 @@ msgstr "Marché"
 #~ msgid "Marketplace"
 #~ msgstr "Marché"
 
-#: apps/web/src/components/market-bar.tsx:91
+#: apps/web/src/components/market-bar.tsx:116
 msgid "Marketplace sections"
 msgstr "Sections du marché"
 
@@ -4052,7 +4054,7 @@ msgstr "Offre mise à jour."
 msgid "Offerings"
 msgstr "Offres"
 
-#: apps/web/src/components/market-bar.tsx:86
+#: apps/web/src/components/market-bar.tsx:111
 #: apps/web/src/components/resource-usage.tsx:12
 #: apps/web/src/features/home/ui/offers-page.tsx:99
 msgid "Offers"
@@ -4430,6 +4432,7 @@ msgstr "Lieu"
 msgid "Plant Nursery"
 msgstr "Pépinière"
 
+#: apps/web/src/components/market-search.tsx:319
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -4591,7 +4594,7 @@ msgstr "Étiquettes du bassin"
 msgid "Pool tracking details are missing."
 msgstr "Les informations de suivi du bassin sont manquantes."
 
-#: apps/web/src/components/market-bar.tsx:84
+#: apps/web/src/components/market-bar.tsx:109
 #: apps/web/src/components/resource-usage.tsx:13
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
@@ -4977,6 +4980,10 @@ msgstr "Reçu"
 msgid "Received voucher"
 msgstr "Bon d’échange reçu"
 
+#: apps/web/src/components/market-search.tsx:198
+msgid "Recent"
+msgstr "Récentes"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:280
 #: apps/web/src/features/wallet/ui/collect-page.tsx:282
 msgid "Recent collections"
@@ -5330,6 +5337,10 @@ msgstr "Scanner l’adresse du destinataire"
 #~ msgid "Scroll for more"
 #~ msgstr "Faites défiler pour afficher la suite"
 
+#: apps/web/src/components/market-search.tsx:252
+msgid "Search “{query}”"
+msgstr "Rechercher « {query} »"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "Rechercher par nom ou symbole"
@@ -5680,7 +5691,7 @@ msgid "Shown to anyone using this pool"
 msgstr "Affiché à toute personne utilisant ce bassin"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:62
+#: apps/web/src/components/market-bar.tsx:70
 msgid "Sign in"
 msgstr "Se connecter"
 
@@ -5986,6 +5997,7 @@ msgstr "Symbole"
 msgid "Symbol was taken, using {0} instead."
 msgstr "Ce symbole était déjà utilisé ; {0} sera utilisé à la place."
 
+#: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
@@ -6997,7 +7009,7 @@ msgid "Voucher tracking details are missing."
 msgstr "Les informations de suivi du bon d’échange sont manquantes."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:302
-#: apps/web/src/components/market-bar.tsx:85
+#: apps/web/src/components/market-bar.tsx:110
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/home/ui/market-list-page.tsx:118

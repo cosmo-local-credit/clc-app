@@ -697,6 +697,7 @@ msgid "Awaiting approval"
 msgstr "Чека одобрење"
 
 #: apps/web/src/components/introduction/introduction.tsx:118
+#: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:74
@@ -901,7 +902,7 @@ msgstr "Слика каталога"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Каталог је сачуван. Ставка није могла бити додата. Покушајте поново."
 
-#: apps/web/src/components/market-bar.tsx:87
+#: apps/web/src/components/market-bar.tsx:112
 #: apps/web/src/components/resource-usage.tsx:11
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
@@ -1205,7 +1206,8 @@ msgstr "Обриши локацију"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
 #: apps/web/src/components/catalog-filter-controls.tsx:523
-#: apps/web/src/components/market-bar.tsx:174
+#: apps/web/src/components/market-search.tsx:73
+#: apps/web/src/components/market-search.tsx:180
 msgid "Clear search"
 msgstr "Обриши претрагу"
 
@@ -3373,8 +3375,8 @@ msgstr "Управљање ваучером"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "Управљајте сесијом новчаника и подешавањима апликације."
 
-#: apps/web/src/components/market-bar.tsx:143
-#: apps/web/src/components/market-bar.tsx:144
+#: apps/web/src/components/market-bar.tsx:168
+#: apps/web/src/components/market-bar.tsx:169
 msgid "Map"
 msgstr "Мапа"
 
@@ -3400,7 +3402,7 @@ msgstr "Тржиште"
 #~ msgid "Marketplace"
 #~ msgstr "Тржиште"
 
-#: apps/web/src/components/market-bar.tsx:91
+#: apps/web/src/components/market-bar.tsx:116
 msgid "Marketplace sections"
 msgstr "Одељци тржишта"
 
@@ -4027,7 +4029,7 @@ msgstr "Понуда је ажурирана."
 msgid "Offerings"
 msgstr "Понуде"
 
-#: apps/web/src/components/market-bar.tsx:86
+#: apps/web/src/components/market-bar.tsx:111
 #: apps/web/src/components/resource-usage.tsx:12
 #: apps/web/src/features/home/ui/offers-page.tsx:99
 msgid "Offers"
@@ -4399,6 +4401,7 @@ msgstr "Мјесто"
 msgid "Plant Nursery"
 msgstr "Расадник"
 
+#: apps/web/src/components/market-search.tsx:319
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -4560,7 +4563,7 @@ msgstr "Ознаке тржнице"
 msgid "Pool tracking details are missing."
 msgstr "Недостају подаци за праћење тржнице."
 
-#: apps/web/src/components/market-bar.tsx:84
+#: apps/web/src/components/market-bar.tsx:109
 #: apps/web/src/components/resource-usage.tsx:13
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
@@ -4945,6 +4948,10 @@ msgstr "Примљено"
 msgid "Received voucher"
 msgstr "Примљен ваучер"
 
+#: apps/web/src/components/market-search.tsx:198
+msgid "Recent"
+msgstr "Недавно"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:280
 #: apps/web/src/features/wallet/ui/collect-page.tsx:282
 msgid "Recent collections"
@@ -5298,6 +5305,10 @@ msgstr "Скенирај адресу примаоца"
 #~ msgid "Scroll for more"
 #~ msgstr "Померите за још"
 
+#: apps/web/src/components/market-search.tsx:252
+msgid "Search “{query}”"
+msgstr "Претражи „{query}”"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "Претражи по имену или симболу"
@@ -5647,7 +5658,7 @@ msgid "Shown to anyone using this pool"
 msgstr "Приказује се свакоме ко користи ову тржницу"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:62
+#: apps/web/src/components/market-bar.tsx:70
 msgid "Sign in"
 msgstr "Пријавите се"
 
@@ -5949,6 +5960,7 @@ msgstr "Ознака"
 msgid "Symbol was taken, using {0} instead."
 msgstr "Симбол је заузет, уместо њега се користи {0}."
 
+#: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
@@ -6948,7 +6960,7 @@ msgid "Voucher tracking details are missing."
 msgstr "Недостају подаци за праћење ваучера."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:302
-#: apps/web/src/components/market-bar.tsx:85
+#: apps/web/src/components/market-bar.tsx:110
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/home/ui/market-list-page.tsx:118

@@ -702,6 +702,7 @@ msgid "Awaiting approval"
 msgstr "ཆ་འཇོག་བསྒུག་པའི་སྒང་།"
 
 #: apps/web/src/components/introduction/introduction.tsx:118
+#: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:74
@@ -906,7 +907,7 @@ msgstr "ཐོ་གཞུང་གི་པར།"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "ཐོ་གཞུང་བསྲུངས་ཡོད། ཅ་ཆས་ཁ་སྐོང་རྐྱབ་མ་ཚུགས། ལོག་འབད་རྩོལ་བསྐྱེད།"
 
-#: apps/web/src/components/market-bar.tsx:87
+#: apps/web/src/components/market-bar.tsx:112
 #: apps/web/src/components/resource-usage.tsx:11
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
@@ -1214,7 +1215,8 @@ msgstr "ས་གནས་བསལ།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
 #: apps/web/src/components/catalog-filter-controls.tsx:523
-#: apps/web/src/components/market-bar.tsx:174
+#: apps/web/src/components/market-search.tsx:73
+#: apps/web/src/components/market-search.tsx:180
 msgid "Clear search"
 msgstr "འཚོལ་ཞིབ་བསལ།"
 
@@ -3384,8 +3386,8 @@ msgstr "འཛིན་ཤོག་འཛིན་སྐྱོང་།"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་ལཱ་ཡུན་དང་ལས་རིམ་དགའ་མོས་འཛིན་སྐྱོང་འབད།"
 
-#: apps/web/src/components/market-bar.tsx:143
-#: apps/web/src/components/market-bar.tsx:144
+#: apps/web/src/components/market-bar.tsx:168
+#: apps/web/src/components/market-bar.tsx:169
 msgid "Map"
 msgstr "ས་ཁྲ།"
 
@@ -3412,7 +3414,7 @@ msgstr "ཚོང་ར།"
 #~ msgid "Marketplace"
 #~ msgstr "ཚོང་ར།"
 
-#: apps/web/src/components/market-bar.tsx:91
+#: apps/web/src/components/market-bar.tsx:116
 msgid "Marketplace sections"
 msgstr "ཚོང་རའི་དབྱེ་ཚན་ཚུ།"
 
@@ -4038,7 +4040,7 @@ msgstr "གོ་སྐབས་དུས་མཐུན་བཟོ་ཡོད
 msgid "Offerings"
 msgstr "གོ་སྐབས་ཚུ།"
 
-#: apps/web/src/components/market-bar.tsx:86
+#: apps/web/src/components/market-bar.tsx:111
 #: apps/web/src/components/resource-usage.tsx:12
 #: apps/web/src/features/home/ui/offers-page.tsx:99
 msgid "Offers"
@@ -4412,6 +4414,7 @@ msgstr "ས་གནས།"
 msgid "Plant Nursery"
 msgstr "ལྕང་རའི་ལྡུམ་ར།"
 
+#: apps/web/src/components/market-search.tsx:319
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -4573,7 +4576,7 @@ msgstr "དངུལ་ཁུངས་ངོ་རྟགས།"
 msgid "Pool tracking details are missing."
 msgstr "དངུལ་ཁུངས་རྗེས་འདེད་ཁ་གསལ་མེད།"
 
-#: apps/web/src/components/market-bar.tsx:84
+#: apps/web/src/components/market-bar.tsx:109
 #: apps/web/src/components/resource-usage.tsx:13
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
@@ -4958,6 +4961,10 @@ msgstr "ལེན་ཚར།"
 msgid "Received voucher"
 msgstr "འཛིན་ཤོག་ལེན་ཚར།"
 
+#: apps/web/src/components/market-search.tsx:198
+msgid "Recent"
+msgstr "ཉེ་ཆར།"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:280
 #: apps/web/src/features/wallet/ui/collect-page.tsx:282
 msgid "Recent collections"
@@ -5311,6 +5318,10 @@ msgstr "ལེན་མིའི་ཁ་བྱང་བཤེར།"
 #~ msgid "Scroll for more"
 #~ msgstr "ཧེང་བཀལ་གྱི་དོན་ལུ་ཡར་མར་སྤོ།"
 
+#: apps/web/src/components/market-search.tsx:252
+msgid "Search “{query}”"
+msgstr "“{query}” འཚོལ།"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "མིང་ཡང་ན་མཚོན་རྟགས་ཀྱིས་འཚོལ།"
@@ -5660,7 +5671,7 @@ msgid "Shown to anyone using this pool"
 msgstr "དངུལ་ཁུངས་འདི་ལག་ལེན་འཐབ་མི་ག་ར་ལུ་སྟོན་འོང་།"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:62
+#: apps/web/src/components/market-bar.tsx:70
 msgid "Sign in"
 msgstr "ནང་འཛུལ།"
 
@@ -5962,6 +5973,7 @@ msgstr "མཚོན་རྟགས།"
 msgid "Symbol was taken, using {0} instead."
 msgstr "མཚོན་རྟགས་འདི་གཞན་གྱིས་ལེན་ཚར་ཡོད་པས། ཚབ་ལུ་ {0} ལག་ལེན་འཐབ་དོ།"
 
+#: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
@@ -6967,7 +6979,7 @@ msgid "Voucher tracking details are missing."
 msgstr "འཛིན་ཤོག་རྗེས་འདེད་ཁ་གསལ་མེད།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:302
-#: apps/web/src/components/market-bar.tsx:85
+#: apps/web/src/components/market-bar.tsx:110
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/home/ui/market-list-page.tsx:118

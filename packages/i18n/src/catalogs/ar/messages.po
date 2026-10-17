@@ -699,6 +699,7 @@ msgid "Awaiting approval"
 msgstr "بانتظار الموافقة"
 
 #: apps/web/src/components/introduction/introduction.tsx:118
+#: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:74
@@ -902,7 +903,7 @@ msgstr "صورة الكتالوج"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "تم حفظ الكتالوج. تعذرت إضافة العنصر. حاول مجددًا."
 
-#: apps/web/src/components/market-bar.tsx:87
+#: apps/web/src/components/market-bar.tsx:112
 #: apps/web/src/components/resource-usage.tsx:11
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
@@ -1205,7 +1206,8 @@ msgstr "مسح الموقع"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
 #: apps/web/src/components/catalog-filter-controls.tsx:523
-#: apps/web/src/components/market-bar.tsx:174
+#: apps/web/src/components/market-search.tsx:73
+#: apps/web/src/components/market-search.tsx:180
 msgid "Clear search"
 msgstr "مسح البحث"
 
@@ -3360,8 +3362,8 @@ msgstr "إدارة القسيمة"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "أدِر جلسة محفظتك وتفضيلات التطبيق."
 
-#: apps/web/src/components/market-bar.tsx:143
-#: apps/web/src/components/market-bar.tsx:144
+#: apps/web/src/components/market-bar.tsx:168
+#: apps/web/src/components/market-bar.tsx:169
 msgid "Map"
 msgstr "الخريطة"
 
@@ -3387,7 +3389,7 @@ msgstr "السوق"
 #~ msgid "Marketplace"
 #~ msgstr "السوق"
 
-#: apps/web/src/components/market-bar.tsx:91
+#: apps/web/src/components/market-bar.tsx:116
 msgid "Marketplace sections"
 msgstr "أقسام السوق"
 
@@ -4007,7 +4009,7 @@ msgstr "تم تحديث العرض."
 msgid "Offerings"
 msgstr "العروض"
 
-#: apps/web/src/components/market-bar.tsx:86
+#: apps/web/src/components/market-bar.tsx:111
 #: apps/web/src/components/resource-usage.tsx:12
 #: apps/web/src/features/home/ui/offers-page.tsx:99
 msgid "Offers"
@@ -4377,6 +4379,7 @@ msgstr "المكان"
 msgid "Plant Nursery"
 msgstr "مشتل النباتات"
 
+#: apps/web/src/components/market-search.tsx:319
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -4537,7 +4540,7 @@ msgstr "وسوم الصندوق"
 msgid "Pool tracking details are missing."
 msgstr "تفاصيل تتبّع الصندوق مفقودة."
 
-#: apps/web/src/components/market-bar.tsx:84
+#: apps/web/src/components/market-bar.tsx:109
 #: apps/web/src/components/resource-usage.tsx:13
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
@@ -4921,6 +4924,10 @@ msgstr "تم الاستلام"
 msgid "Received voucher"
 msgstr "قسيمة مستلمة"
 
+#: apps/web/src/components/market-search.tsx:198
+msgid "Recent"
+msgstr "الأخيرة"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:280
 #: apps/web/src/features/wallet/ui/collect-page.tsx:282
 msgid "Recent collections"
@@ -5271,6 +5278,10 @@ msgstr "مسح عنوان المستلم"
 #~ msgid "Scroll for more"
 #~ msgstr "مرّر لرؤية المزيد"
 
+#: apps/web/src/components/market-search.tsx:252
+msgid "Search “{query}”"
+msgstr "البحث عن «{query}»"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "البحث بالاسم أو الرمز"
@@ -5618,7 +5629,7 @@ msgid "Shown to anyone using this pool"
 msgstr "يظهر لأي شخص يستخدم هذا الصندوق"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:62
+#: apps/web/src/components/market-bar.tsx:70
 msgid "Sign in"
 msgstr "تسجيل الدخول"
 
@@ -5918,6 +5929,7 @@ msgstr "الرمز"
 msgid "Symbol was taken, using {0} instead."
 msgstr "الرمز مستخدم بالفعل، سيُستخدم {0} بدلاً منه."
 
+#: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
@@ -6912,7 +6924,7 @@ msgid "Voucher tracking details are missing."
 msgstr "تفاصيل تتبّع القسيمة مفقودة."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:302
-#: apps/web/src/components/market-bar.tsx:85
+#: apps/web/src/components/market-bar.tsx:110
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/home/ui/market-list-page.tsx:118

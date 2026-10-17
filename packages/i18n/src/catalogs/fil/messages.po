@@ -689,6 +689,7 @@ msgid "Awaiting approval"
 msgstr "Naghihintay ng pag-apruba"
 
 #: apps/web/src/components/introduction/introduction.tsx:118
+#: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:74
@@ -894,7 +895,7 @@ msgstr "Larawan ng katalogo"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Na-save ang katalogo. Hindi maidagdag ang item. Subukan muli."
 
-#: apps/web/src/components/market-bar.tsx:87
+#: apps/web/src/components/market-bar.tsx:112
 #: apps/web/src/components/resource-usage.tsx:11
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:37
@@ -1199,7 +1200,8 @@ msgstr "I-clear ang lokasyon"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:75
 #: apps/web/src/components/catalog-filter-controls.tsx:523
-#: apps/web/src/components/market-bar.tsx:174
+#: apps/web/src/components/market-search.tsx:73
+#: apps/web/src/components/market-search.tsx:180
 msgid "Clear search"
 msgstr "I-clear ang paghahanap"
 
@@ -3353,8 +3355,8 @@ msgstr "Pamahalaan ang voucher"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "Pamahalaan ang session ng inyong wallet at mga kagustuhan sa app."
 
-#: apps/web/src/components/market-bar.tsx:143
-#: apps/web/src/components/market-bar.tsx:144
+#: apps/web/src/components/market-bar.tsx:168
+#: apps/web/src/components/market-bar.tsx:169
 msgid "Map"
 msgstr "Mapa"
 
@@ -3378,7 +3380,7 @@ msgstr "Pamilihan"
 #~ msgid "Marketplace"
 #~ msgstr "Pamilihan"
 
-#: apps/web/src/components/market-bar.tsx:91
+#: apps/web/src/components/market-bar.tsx:116
 msgid "Marketplace sections"
 msgstr "Mga seksyon ng pamilihan"
 
@@ -3991,7 +3993,7 @@ msgstr "Na-update ang alok."
 msgid "Offerings"
 msgstr "Mga alok"
 
-#: apps/web/src/components/market-bar.tsx:86
+#: apps/web/src/components/market-bar.tsx:111
 #: apps/web/src/components/resource-usage.tsx:12
 #: apps/web/src/features/home/ui/offers-page.tsx:99
 msgid "Offers"
@@ -4368,6 +4370,7 @@ msgstr "Lugar"
 msgid "Plant Nursery"
 msgstr "Punlaan"
 
+#: apps/web/src/components/market-search.tsx:319
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -4526,7 +4529,7 @@ msgstr "Mga Tag ng Pool"
 msgid "Pool tracking details are missing."
 msgstr "Ang mga detalye ng pagsubaybay ng pool ay nawawala."
 
-#: apps/web/src/components/market-bar.tsx:84
+#: apps/web/src/components/market-bar.tsx:109
 #: apps/web/src/components/resource-usage.tsx:13
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
@@ -4904,6 +4907,10 @@ msgstr "Natanggap"
 msgid "Received voucher"
 msgstr "Nakatanggap na voucher"
 
+#: apps/web/src/components/market-search.tsx:198
+msgid "Recent"
+msgstr "Kamakailan"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:280
 #: apps/web/src/features/wallet/ui/collect-page.tsx:282
 msgid "Recent collections"
@@ -5252,6 +5259,10 @@ msgstr "I-scan ang address ng tatanggap"
 #~ msgid "Scroll for more"
 #~ msgstr "Mag- scroll para sa higit pa"
 
+#: apps/web/src/components/market-search.tsx:252
+msgid "Search “{query}”"
+msgstr "Hanapin ang “{query}”"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Search by name or symbol"
 msgstr "Maghanap ayon sa pangalan o simbolo"
@@ -5598,7 +5609,7 @@ msgid "Shown to anyone using this pool"
 msgstr "Ipinakita sa sinumang gumagamit ng pool"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:62
+#: apps/web/src/components/market-bar.tsx:70
 msgid "Sign in"
 msgstr "Mag-sign in"
 
@@ -5901,6 +5912,7 @@ msgstr "Simbolo"
 msgid "Symbol was taken, using {0} instead."
 msgstr "May gumagamit na ng simbolo, kaya {0} ang gagamitin."
 
+#: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
@@ -6904,7 +6916,7 @@ msgid "Voucher tracking details are missing."
 msgstr "Ang mga detalye ng pagsubaybay ng voucher ay nawawala."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:302
-#: apps/web/src/components/market-bar.tsx:85
+#: apps/web/src/components/market-bar.tsx:110
 #: apps/web/src/components/resource-usage.tsx:10
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:34
 #: apps/web/src/features/home/ui/market-list-page.tsx:118

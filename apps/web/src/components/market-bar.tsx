@@ -1,10 +1,11 @@
 import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { RiCloseLine, RiMap2Line, RiSearchLine } from "react-icons/ri";
+import { type ReactNode, useState } from "react";
+import { RiMap2Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
+import { MarketSearchField, MarketSearchScreen } from "#/components/market-search";
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import {
@@ -13,6 +14,7 @@ import {
   pickMarketplaceSearch,
 } from "#/lib/navigation/marketplace-search";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
 
@@ -35,7 +37,8 @@ export function MarketBar({
   className,
 }: {
   current: MarketSurface;
-  filter: CatalogFilterControls;
+  /** A remembered filter keeps the tags the search screen adds. */
+  filter: CatalogFilterControls | PersistedCatalogFilterControls;
   searchLabel: string;
   /** The filter sheet, whose trigger joins the end of the search field. */
   filters: ReactNode;
@@ -45,6 +48,7 @@ export function MarketBar({
   className?: string;
 }) {
   const auth = useAuthStatus();
+  const [searchOpen, setSearchOpen] = useState(false);
   const surfaceClassName =
     surface === "map" ? "bg-transparent" : "border-b border-border bg-background pb-3";
 
@@ -53,7 +57,11 @@ export function MarketBar({
       <div className="flex items-center gap-2">
         <AppMenu />
         <div className="flex h-11 min-w-0 flex-1 items-center border border-input bg-card focus-within:border-foreground">
-          <MarketSearchInput filter={filter} label={searchLabel} />
+          <MarketSearchField
+            filter={filter}
+            label={searchLabel}
+            onOpen={() => setSearchOpen(true)}
+          />
           {filters}
         </div>
         {!auth.isLoading && !auth.isAuthenticated ? (
@@ -65,6 +73,23 @@ export function MarketBar({
         ) : null}
       </div>
       <MarketBadges current={current} credit={auth.isAuthenticated ? credit : undefined} />
+      {searchOpen ? (
+        <MarketSearchScreen
+          onClose={() => setSearchOpen(false)}
+          filter={filter}
+          label={searchLabel}
+          onApplyTags={(tags) =>
+            "applyFacetFilters" in filter
+              ? filter.applyFacetFilters(
+                  tags,
+                  filter.tagMatch,
+                  filter.vouchers,
+                  filter.voucherMatch,
+                )
+              : filter.setTags(tags, filter.tagMatch)
+          }
+        />
+      ) : null}
       {current === "map" ? null : <MarketMapButton />}
     </div>
   );
@@ -146,37 +171,5 @@ function MarketMapButton() {
     >
       <RiMap2Line className="size-6" aria-hidden="true" />
     </Link>
-  );
-}
-
-function MarketSearchInput({ filter, label }: { filter: CatalogFilterControls; label: string }) {
-  const { t } = useLingui();
-  return (
-    <div className="relative flex h-full min-w-0 flex-1 items-center">
-      <RiSearchLine
-        className="pointer-events-none absolute start-3 size-4 text-muted-foreground"
-        aria-hidden="true"
-      />
-      <input
-        dir="auto"
-        type="search"
-        value={filter.term}
-        onChange={(event) => filter.setTerm(event.target.value)}
-        aria-label={label}
-        placeholder={label}
-        className="h-full min-w-0 flex-1 appearance-none bg-transparent ps-9 pe-2 text-base outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-      />
-      {filter.term !== "" ? (
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          onClick={filter.clearTerm}
-          aria-label={t`Clear search`}
-          className="text-muted-foreground"
-        >
-          <RiCloseLine className="size-4" aria-hidden="true" />
-        </Button>
-      ) : null}
-    </div>
   );
 }

@@ -486,7 +486,7 @@ describe("MarketPage guest entry", () => {
     renderPage();
 
     const menu = screen.getByRole("button", { name: "Open menu" });
-    const search = screen.getByRole("searchbox", { name: "Search the marketplace" });
+    const search = screen.getByRole("button", { name: "Search the marketplace" });
     const filters = screen.getByRole("button", { name: "Filters" });
     const signIn = screen.getByRole("link", { name: "Sign in" });
 
@@ -1120,9 +1120,9 @@ describe("MarketPage filtering", () => {
 
     render(<MarketPage />);
 
-    expect(
-      (screen.getByRole("searchbox", { name: "Search the marketplace" }) as HTMLInputElement).value,
-    ).toBe("art");
+    expect(screen.getByRole("button", { name: /^Search the marketplace/ }).textContent).toBe(
+      "Search the marketplace art",
+    );
     expect(screen.getByRole("button", { name: "Filters" }).textContent).toContain("2");
     expect(screen.queryByRole("link", { name: "Edit filters" })).toBeNull();
   });

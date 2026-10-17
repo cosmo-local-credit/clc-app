@@ -13,6 +13,10 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
+vi.mock("#/features/home/hooks/use-market-search-suggestions", () => ({
+  useMarketSearchSuggestions: () => ({ tags: [], vouchers: [], pools: [] }),
+}));
+
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
 }));
@@ -352,7 +356,9 @@ describe("MarketListPage", () => {
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
     const map = screen.getByRole("link", { name: "Map" });
 
-    expect(screen.getByRole("searchbox").closest(".border")?.contains(filters)).toBe(true);
+    expect(screen.getByRole("button", { name: FIELD }).closest(".border")?.contains(filters)).toBe(
+      true,
+    );
     expect(pools.getAttribute("href")).toBe("/market?scope=pools");
     expect(offers.getAttribute("href")).toBe("/market?scope=offers");
     expect(catalogs.getAttribute("href")).toBe("/market?scope=catalogs");
@@ -460,13 +466,12 @@ describe("MarketListPage", () => {
 });
 
 describe("MarketListPage search", () => {
-  it("keeps the first character in the box and issues no request for it", () => {
+  it("keeps a one-character search in the field and issues no request for it", () => {
     render(<MarketListPage />);
 
-    const input = screen.getByLabelText("Search by name or symbol") as HTMLInputElement;
-    fireEvent.change(input, { target: { value: "a" } });
+    searchFor("a");
 
-    expect(input.value).toBe("a");
+    expect(fieldText()).toBe("a");
     expect(mocks.filteredFilters.every((filter) => filter === null)).toBe(true);
   });
 
@@ -560,20 +565,37 @@ async function settleDebounce() {
   });
 }
 
+const FIELD = "Search by name or symbol";
+
+/** Searches through the screen the bar's field opens, as a person does. */
+function searchFor(term: string) {
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(`^${FIELD}`) }));
+  const dialog = screen.getByRole("dialog", { name: FIELD });
+  fireEvent.change(within(dialog).getByRole("searchbox", { name: FIELD }), {
+    target: { value: term },
+  });
+  fireEvent.submit(within(dialog).getByRole("search"));
+}
+
+function fieldText() {
+  return screen
+    .getByRole("button", { name: new RegExp(`^${FIELD}`) })
+    .textContent?.slice(FIELD.length)
+    .trim();
+}
+
 describe("MarketListPage filter transitions", () => {
-  it("keeps the typed term after it settles, and queries it exactly once", async () => {
+  it("keeps the searched term after it settles, and queries it exactly once", async () => {
     render(<MarketListPage />);
 
-    const input = screen.getByLabelText("Search by name or symbol") as HTMLInputElement;
-    fireEvent.change(input, { target: { value: "a" } });
-    fireEvent.change(input, { target: { value: "ar" } });
+    searchFor("ar");
 
     expect(mocks.filteredFilters.every((filter) => filter === null)).toBe(true);
     expect(mocks.navigate).not.toHaveBeenCalled();
 
     await settleDebounce();
 
-    expect(input.value).toBe("ar");
+    expect(fieldText()).toBe("ar");
 
     expect(mocks.navigate).toHaveBeenCalledTimes(1);
     const search = mocks.navigate.mock.calls[0]?.[0]?.search as (
@@ -585,9 +607,7 @@ describe("MarketListPage filter transitions", () => {
   it("never enables the query with a filter the key does not yet hold", async () => {
     render(<MarketListPage />);
 
-    fireEvent.change(screen.getByLabelText("Search by name or symbol"), {
-      target: { value: "ar" },
-    });
+    searchFor("ar");
 
     expect(mocks.filteredFilters.some((filter) => filter !== null)).toBe(false);
 
@@ -607,8 +627,7 @@ describe("MarketListPage filter transitions", () => {
     rerender(<MarketListPage />);
     await settleDebounce();
 
-    const input = screen.getByLabelText("Search by name or symbol") as HTMLInputElement;
-    expect(input.value).toBe("");
+    expect(fieldText()).toBe("");
     expect(mocks.navigate).not.toHaveBeenCalled();
   });
 
@@ -616,15 +635,14 @@ describe("MarketListPage filter transitions", () => {
     mocks.search = { q: "art" };
     render(<MarketListPage />);
 
-    const input = screen.getByLabelText("Search by name or symbol") as HTMLInputElement;
-    fireEvent.change(input, { target: { value: "artis" } });
+    searchFor("artis");
     fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
 
-    expect(input.value).toBe("");
+    expect(fieldText()).toBe("");
 
     await settleDebounce();
 
-    expect(input.value).toBe("");
+    expect(fieldText()).toBe("");
     const last = mocks.navigate.mock.calls.at(-1)?.[0]?.search as (
       previous: Record<string, unknown>,
     ) => Record<string, unknown>;
