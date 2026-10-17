@@ -10,7 +10,8 @@
   "tags": ["-devtool"],
   "workspaces": {
     "apps/web": {
-      "entry": ["src/sw.ts!"]
+      "entry": ["src/sw.ts!"],
+      "ignoreDependencies": ["@tanstack/react-form"]
     },
     "packages/core": {
       "ignoreIssues": {
