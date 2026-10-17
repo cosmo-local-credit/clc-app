@@ -2,7 +2,6 @@ import type { MouseEvent, ReactNode } from "react";
 import { RiArrowLeftLine } from "react-icons/ri";
 
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { cn } from "#/lib/utils";
 
@@ -93,13 +92,20 @@ export function SectionHeader({
       <SectionHeading id={id}>{title}</SectionHeading>
       {action ? (
         actionTo ? (
-          <Button asChild variant="link" tap className="-me-3 text-foreground">
-            <Link to={actionTo}>{action}</Link>
-          </Button>
-        ) : (
-          <Button variant="link" tap className="-me-3 text-foreground" onClick={onAction}>
+          <Link
+            to={actionTo}
+            className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
+          >
             {action}
-          </Button>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={onAction}
+            className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
+          >
+            {action}
+          </button>
         )
       ) : null}
     </div>
