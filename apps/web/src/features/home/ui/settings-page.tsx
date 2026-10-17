@@ -62,14 +62,13 @@ export function SettingsPage({
         <NotificationSettingsSection walletAddress={address} />
       </SettingsGroup>
 
-      <IntroductionReplayButton />
-
       <SettingsGroup label={t`Sign-in`}>
         <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />
         <WalletSessionRow address={address} delegationStatus={delegationStatus} />
       </SettingsGroup>
 
       <SettingsGroup label={t`App`}>
+        <IntroductionReplayButton />
         <ActionRow
           icon={
             installed ? (

@@ -20,14 +20,12 @@ vi.mock("./introduction-state", async (original) => ({
   hasSeenIntroduction: () => false,
   completeIntroduction: vi.fn(),
 }));
-vi.mock("./introduction", () => ({
-  Introduction: ({ onExit }: { onExit: (value: string) => void }) => (
-    <button onClick={() => onExit("create")}>Finish introduction</button>
-  ),
-}));
+vi.mock("#/components/install-app-link", () => ({ InstallAppLink: () => null }));
+vi.mock("#/components/language-selector", () => ({ OnboardingMenu: () => null }));
+vi.mock("./introduction", () => ({ Introduction: () => <p>Inline introduction</p> }));
 
 it.each(["/", "/onboarding?redirect=%2Fwallet%2Fsend"])(
-  "shows introduction at %s and enters setup after completion",
+  "shows inline introduction at %s and enters setup on Create account",
   async (url) => {
     const root = createRootRoute({
       component: () => (
@@ -53,7 +51,8 @@ it.each(["/", "/onboarding?redirect=%2Fwallet%2Fsend"])(
       history: createMemoryHistory({ initialEntries: [url] }),
     });
     render(<RouterProvider router={router} />);
-    fireEvent.click(await screen.findByText("Finish introduction"));
+    await screen.findByText("Inline introduction");
+    fireEvent.click(screen.getByRole("button", { name: "Create account" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/onboarding"));
     expect(router.state.location.search).toMatchObject({ step: "profile" });
     if (url.includes("redirect"))

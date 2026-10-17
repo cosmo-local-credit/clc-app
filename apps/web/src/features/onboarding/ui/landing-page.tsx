@@ -1,4 +1,5 @@
-import { IntroductionReplayButton } from "#/components/introduction/introduction-provider";
+import { Introduction } from "#/components/introduction/introduction";
+import { completeIntroduction } from "#/components/introduction/introduction-state";
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -18,6 +19,7 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
   const navigate = useNavigate();
 
   function go(step: "profile" | "signin") {
+    completeIntroduction();
     // Push so screen Back and browser Back both return to welcome.
     void navigate({
       to: "/onboarding",
@@ -51,16 +53,16 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
         </div>
       </div>
 
-      <div className="mt-auto space-y-3 pt-8 pb-2">
+      <div className="space-y-3 pt-8 pb-2">
         <Button size="lg" className="w-full" onClick={() => go("profile")}>
           <Trans>Create account</Trans>
         </Button>
         <Button variant="outline" size="lg" className="w-full" onClick={() => go("signin")}>
           <Trans>I already have an account</Trans>
         </Button>
-        <IntroductionReplayButton />
         <InstallAppLink openDialog />
       </div>
+      <Introduction inline onExit={() => {}} />
     </div>
   );
 }
