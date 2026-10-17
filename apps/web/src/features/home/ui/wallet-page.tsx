@@ -15,7 +15,9 @@ import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
+import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/resource-tone";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
+import { cn } from "#/lib/utils";
 
 function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
   return tokens.map((token, index, list) => {
@@ -200,8 +202,14 @@ export function WalletPage({ address }: { address?: string }) {
                 <p className="text-muted-foreground text-sm">
                   <Trans>No vouchers yet.</Trans>
                 </p>
-                <Button asChild variant="outline" tap className="w-full">
+                <Button
+                  asChild
+                  variant="outline"
+                  tap
+                  className={cn("w-full", RESOURCE_HUE.vouchers, RESOURCE_OUTLINE)}
+                >
                   <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
+                    <RESOURCE_ICON.vouchers aria-hidden="true" />
                     <Trans>Create voucher</Trans>
                   </Link>
                 </Button>
@@ -236,8 +244,14 @@ export function WalletPage({ address }: { address?: string }) {
                   <p className="text-muted-foreground text-sm">
                     <Trans>You didn't issue any of these.</Trans>
                   </p>
-                  <Button asChild variant="outline" tap className="w-full">
+                  <Button
+                    asChild
+                    variant="outline"
+                    tap
+                    className={cn("w-full", RESOURCE_HUE.vouchers, RESOURCE_OUTLINE)}
+                  >
                     <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
+                      <RESOURCE_ICON.vouchers aria-hidden="true" />
                       <Trans>Create voucher</Trans>
                     </Link>
                   </Button>
@@ -292,8 +306,14 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>You haven't created a pool yet.</Trans>
               </p>
-              <Button asChild variant="outline" tap className="w-full">
+              <Button
+                asChild
+                variant="outline"
+                tap
+                className={cn("w-full", RESOURCE_HUE.pools, RESOURCE_OUTLINE)}
+              >
                 <Link to="/pools/create/$step" params={{ step: "pool" }}>
+                  <RESOURCE_ICON.pools aria-hidden="true" />
                   <Trans>Create pool</Trans>
                 </Link>
               </Button>

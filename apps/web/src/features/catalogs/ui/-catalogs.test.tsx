@@ -737,11 +737,8 @@ describe("adjustable catalog allowance", () => {
     const empty = await screen.findByText("You haven't created a catalog yet.");
     const card = empty.closest("div.border");
     expect(card).toBeTruthy();
-    expect(
-      within(card as HTMLElement)
-        .getByRole("link", { name: "Create catalog" })
-        .getAttribute("href"),
-    ).toBe("/catalogs/create");
+    const create = within(card as HTMLElement).getByRole("link", { name: "Create catalog" });
+    expect(create.getAttribute("href")).toBe("/catalogs/create");
     expect(screen.queryByText(/0 of 2 used/)).toBeNull();
   });
   it("allows a second catalog when an admin raises the allowance", async () => {

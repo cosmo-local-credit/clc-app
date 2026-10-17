@@ -5,6 +5,8 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { CatalogRow } from "#/components/catalogs/catalog-row";
+import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/resource-tone";
+import { cn } from "#/lib/utils";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 
 export function MyCatalogSection() {
@@ -16,14 +18,16 @@ export function MyCatalogSection() {
       disabled={!usage.data?.catalogs.canCreate || usage.isError}
       variant="outline"
       tap
-      className="w-full"
+      className={cn("w-full", RESOURCE_HUE.catalogs, RESOURCE_OUTLINE)}
     >
       {usage.data?.catalogs.canCreate && !usage.isError ? (
         <Link to="/catalogs/create">
+          <RESOURCE_ICON.catalogs aria-hidden="true" />
           <Trans>Create catalog</Trans>
         </Link>
       ) : (
         <span>
+          <RESOURCE_ICON.catalogs aria-hidden="true" />
           <Trans>Create catalog</Trans>
         </span>
       )}

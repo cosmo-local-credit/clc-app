@@ -2,16 +2,10 @@ import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
-import type { IconType } from "react-icons";
-import {
-  RiBookOpenLine,
-  RiCoupon3Line,
-  RiGroupLine,
-  RiMap2Line,
-  RiStore2Line,
-} from "react-icons/ri";
+import { RiMap2Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
+import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
 import { MarketSearchField, MarketSearchScreen } from "#/components/market-search";
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -102,25 +96,6 @@ export function MarketBar({
   );
 }
 
-/**
- * Each list's badge keeps its own hue: the icon and label always read in its
- * ink, and the open list's badge adds the outline and tint.
- */
-const BADGE_HUES: Record<MarketplaceScope, string> = {
-  pools: "[--hue:var(--color-info)] [--ink:var(--color-info-ink)]",
-  vouchers: "[--hue:var(--color-voucher)] [--ink:var(--color-voucher-ink)]",
-  offers: "[--hue:var(--color-offer)] [--ink:var(--color-offer-ink)]",
-  catalogs: "[--hue:var(--color-catalog)] [--ink:var(--color-catalog-ink)]",
-};
-
-/** The icon each list carried in the old section row. */
-const BADGE_ICONS: Record<MarketplaceScope, IconType> = {
-  pools: RiGroupLine,
-  vouchers: RiCoupon3Line,
-  offers: RiStore2Line,
-  catalogs: RiBookOpenLine,
-};
-
 function MarketBadges({ current, credit }: { current: MarketSurface; credit?: ReactNode }) {
   const { t } = useLingui();
   const labels: Record<MarketplaceScope, string> = {
@@ -137,7 +112,7 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
       {credit}
       {(Object.keys(labels) as MarketplaceScope[]).map((scope) => {
         const active = scope === current;
-        const Icon = BADGE_ICONS[scope];
+        const Icon = RESOURCE_ICON[scope];
         return (
           <Button
             key={scope}
@@ -146,7 +121,7 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
             tap
             className={cn(
               "font-semibold text-(--ink) hover:text-(--ink)",
-              BADGE_HUES[scope],
+              RESOURCE_HUE[scope],
               active &&
                 "border-(--hue)! bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))] text-(--ink) shadow-[inset_0_0_0_1px_var(--hue)] hover:bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))] hover:text-(--ink)",
             )}
