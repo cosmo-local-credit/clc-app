@@ -12,6 +12,7 @@ import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogMembers({
   catalogId,
@@ -33,11 +34,7 @@ export function CatalogMembers({
       <SectionHeading id={`catalog-${kind}-title`}>
         {kind === "pool" ? <Trans>Pools</Trans> : <Trans>Vouchers</Trans>}
       </SectionHeading>
-      {query.isPending ? (
-        <p role="status">
-          <Trans>Loading…</Trans>
-        </p>
-      ) : null}
+      {query.isPending ? <ListSkeleton count={3} label={<Trans>Loading…</Trans>} /> : null}
       {query.isError ? (
         <div className="space-y-2">
           <p role="alert">

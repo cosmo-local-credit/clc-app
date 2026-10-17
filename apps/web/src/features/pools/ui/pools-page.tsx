@@ -24,6 +24,7 @@ import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 const POOL_ROW_TAG_LIMIT = 3;
 
@@ -285,11 +286,7 @@ export function PoolsPage({
         </div>
       ) : null}
 
-      {catalog.status === "loading" ? (
-        <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
-          <Trans>Loading pools…</Trans>
-        </div>
-      ) : null}
+      {catalog.status === "loading" ? <ListSkeleton label={<Trans>Loading pools…</Trans>} /> : null}
 
       {outputFilterActive && outputAvailability.status === "loading" ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">

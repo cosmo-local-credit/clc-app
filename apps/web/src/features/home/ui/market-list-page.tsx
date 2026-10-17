@@ -18,6 +18,7 @@ import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./market-filter-ui";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 const MARKET_LIST_BATCH_SIZE = 20;
 
@@ -190,9 +191,7 @@ export function MarketListPage({
         ) : null}
 
         {showLoading ? (
-          <div className="mt-4 border border-border bg-card p-4 text-muted-foreground text-sm">
-            <Trans>Loading marketplace…</Trans>
-          </div>
+          <ListSkeleton className="mt-4" label={<Trans>Loading marketplace…</Trans>} />
         ) : null}
 
         {credit.enabled && credit.poolRefs?.length === 0 ? (

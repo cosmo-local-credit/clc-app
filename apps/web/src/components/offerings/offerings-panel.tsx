@@ -26,6 +26,7 @@ import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
 import type { Offering, OfferingFrequency } from "@clc/api/features/offerings/client";
 import { cn } from "#/lib/utils";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 /**
  * The shape both offering screens' infinite queries satisfy. Declared
@@ -163,9 +164,7 @@ export function OfferingsPanel({
       {suppressed ? <OfferingsEmptyState>{emptyState}</OfferingsEmptyState> : null}
 
       {!suppressed && query.isPending ? (
-        <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
-          <Trans>Loading offerings…</Trans>
-        </div>
+        <ListSkeleton shape="tiles" label={<Trans>Loading offerings…</Trans>} />
       ) : null}
 
       {!suppressed && query.isError ? (

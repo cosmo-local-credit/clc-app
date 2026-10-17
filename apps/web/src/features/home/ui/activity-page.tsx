@@ -12,6 +12,7 @@ import {
 import { Button } from "#/components/ui/button";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 import {
   formatTransferDate,
   formatTransferUnitValue,
@@ -46,9 +47,7 @@ export function ActivityPage({ address }: { address?: string }) {
 
       <section className="border border-border bg-card" aria-label={t`Transfer history`}>
         {transfersQuery.isPending ? (
-          <div className="p-3 text-muted-foreground text-sm">
-            <Trans>Loading activity…</Trans>
-          </div>
+          <ListSkeleton framed={false} label={<Trans>Loading activity…</Trans>} />
         ) : null}
         {transfersQuery.isError ? (
           <div className="space-y-2 p-3">

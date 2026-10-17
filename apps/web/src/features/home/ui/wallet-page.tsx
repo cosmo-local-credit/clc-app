@@ -18,6 +18,7 @@ import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
 import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/resource-tone";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
   return tokens.map((token, index, list) => {
@@ -172,9 +173,7 @@ export function WalletPage({ address }: { address?: string }) {
           />
           <div className="border-border bg-card border">
             {vouchersQuery.isPending || ownersPending ? (
-              <div className="text-muted-foreground p-3 text-sm">
-                <Trans>Loading vouchers…</Trans>
-              </div>
+              <ListSkeleton framed={false} count={3} label={<Trans>Loading vouchers…</Trans>} />
             ) : null}
             {vouchersQuery.isError || ownersFailed ? (
               <div className="space-y-2 p-3">
@@ -282,9 +281,7 @@ export function WalletPage({ address }: { address?: string }) {
         />
         <div className="border-border bg-card border">
           {ownedPoolsQuery.isPending ? (
-            <div className="text-muted-foreground p-3 text-sm">
-              <Trans>Loading pools…</Trans>
-            </div>
+            <ListSkeleton framed={false} count={2} label={<Trans>Loading pools…</Trans>} />
           ) : null}
           {ownedPoolsQuery.isError ? (
             <div className="space-y-2 p-3">

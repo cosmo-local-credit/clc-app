@@ -25,6 +25,7 @@ import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogsPage({
   creditableSearch,
@@ -189,9 +190,7 @@ function CatalogList({
           <Trans>No catalogs are available through your Credit pools.</Trans>
         </p>
       ) : credit.blocksResults ? null : query.isPending ? (
-        <p role="status">
-          <Trans>Loading…</Trans>
-        </p>
+        <ListSkeleton shape="cards" label={<Trans>Loading…</Trans>} />
       ) : null}
       {!credit.blocksResults && query.isError ? (
         <div className="space-y-2">

@@ -8,6 +8,7 @@ import { CatalogRow } from "#/components/catalogs/catalog-row";
 import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/resource-tone";
 import { cn } from "#/lib/utils";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function MyCatalogSection() {
   const query = useMyCatalog();
@@ -39,9 +40,7 @@ export function MyCatalogSection() {
         <Trans>My catalogs</Trans>
       </SectionHeading>
       {query.isPending ? (
-        <p role="status">
-          <Trans>Loading…</Trans>
-        </p>
+        <ListSkeleton shape="cards" count={1} label={<Trans>Loading…</Trans>} />
       ) : query.isError ? (
         <div className="space-y-2 border border-border bg-card p-3">
           <p>

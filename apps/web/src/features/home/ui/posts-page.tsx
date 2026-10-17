@@ -11,6 +11,7 @@ import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { ReportFilterFeedback, ReportFilterSheet } from "./report-filter-ui";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function PostsPage() {
   const { t, i18n } = useLingui();
@@ -108,9 +109,7 @@ export function PostsPage() {
       />
 
       {feed.status === "loading" ? (
-        <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
-          <Trans>Loading posts…</Trans>
-        </div>
+        <ListSkeleton avatar="square" label={<Trans>Loading posts…</Trans>} />
       ) : null}
 
       {feed.status === "ready" && filter.result.ok ? (

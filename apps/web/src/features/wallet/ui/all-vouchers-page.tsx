@@ -15,6 +15,7 @@ import { BackChevron } from "#/components/wallet/wallet-kit";
 import { resetVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { VoucherContactDetails } from "./voucher-contact-details";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 function VoucherRow({
   voucher,
@@ -144,9 +145,7 @@ export function AllVouchersPage() {
       {!vouchersReady ? (
         <div className="border-border bg-card border">
           {vouchersQuery.isPending || ownersPending ? (
-            <div className="text-muted-foreground p-3 text-sm">
-              <Trans>Loading vouchers…</Trans>
-            </div>
+            <ListSkeleton framed={false} count={4} label={<Trans>Loading vouchers…</Trans>} />
           ) : null}
           {vouchersQuery.isError || ownersFailed ? (
             <div className="space-y-2 p-3">
