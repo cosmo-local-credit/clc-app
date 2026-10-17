@@ -74,3 +74,24 @@ it("keeps inline guidance in the welcome page when the last slide advances", () 
   expect(screen.getByRole("heading", { name: "Your wallet", level: 2 })).toBeTruthy();
   expect(exit).not.toHaveBeenCalled();
 });
+
+it("lays every slide's text in one cell so the guide never shifts between slides", () => {
+  render(<Introduction inline onExit={vi.fn()} />);
+  // All five slides' text is present to size the cell; only the current one is exposed.
+  const cell = screen.getByRole("heading", { name: "Your wallet", level: 2 }).closest(".grid");
+  expect(cell?.children).toHaveLength(5);
+  expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
+  fireEvent.click(screen.getByRole("button", { name: "Next" }));
+  expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
+  expect(screen.getByRole("heading", { name: "What is a voucher?", level: 2 })).toBeTruthy();
+});
+
+it("keeps the second button's place so Next stays put until Create account", () => {
+  render(<Introduction replay={false} onExit={vi.fn()} />);
+  fireEvent.click(screen.getByText("Continue"));
+  const footer = screen.getByText("Next").closest("footer") as HTMLElement;
+  const before = footer.children.length;
+  for (let n = 0; n < 4; n++) fireEvent.click(screen.getByText("Next"));
+  expect(screen.getByText("Create account")).toBeTruthy();
+  expect(footer.children.length).toBe(before);
+});

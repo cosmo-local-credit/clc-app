@@ -8,6 +8,7 @@ import { CLCLogo } from "#/components/ui/clc-logo";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { StepProgress } from "#/components/ui/step-progress";
 import { useLocale } from "#/providers/i18n";
+import { cn } from "#/lib/utils";
 
 type Props = {
   inline?: boolean;
@@ -44,7 +45,7 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
         </header>
       ) : null}
       {step < 0 ? (
-        <section className="flex flex-1 flex-col justify-center gap-6 py-12">
+        <section className="flex flex-1 flex-col gap-6 py-4">
           <Heading
             ref={heading}
             tabIndex={-1}
@@ -59,15 +60,15 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
           {loading ? <Trans>Loading…</Trans> : null}
         </div>
       ) : (
-        <section
-          key={step}
-          aria-live={inline ? "polite" : undefined}
-          className="flex flex-1 flex-col justify-center py-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
-        >
+        <section aria-live={inline ? "polite" : undefined} className="flex flex-1 flex-col py-4">
           <StepProgress step={step + 1} total={slides.length} />
           <div
+            key={step}
             aria-hidden="true"
-            className={`mb-6 flex ${inline ? "min-h-24" : "min-h-48"} items-center justify-center gap-3 border border-border bg-card px-4`}
+            className={cn(
+              "mb-6 flex items-center justify-center gap-3 border border-border bg-card px-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300",
+              inline ? "min-h-24" : "min-h-48",
+            )}
           >
             {slide.icons.map((Icon, index) => (
               <div key={index} className="flex items-center gap-3">
@@ -84,20 +85,41 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
               </div>
             ))}
           </div>
-          <Heading
-            ref={heading}
-            tabIndex={-1}
-            className={
-              inline
-                ? "mb-4 break-words outline-none"
-                : "mb-4 break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
-            }
-          >
-            {i18n._(slide.title)}
-          </Heading>
-          <p className="break-words text-base leading-relaxed text-muted-foreground">
-            {i18n._(slide.body)}
-          </p>
+          {/* Every slide's text shares one grid cell, so the tallest one sets
+              the height in every language and nothing around it moves as the
+              slides change. Only the current slide is visible or announced. */}
+          <div className="grid">
+            {slides.map((item, index) => {
+              const current = index === step;
+              return (
+                <div
+                  key={index}
+                  aria-hidden={current ? undefined : true}
+                  className={cn(
+                    "col-start-1 row-start-1",
+                    current
+                      ? "motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+                      : "invisible",
+                  )}
+                >
+                  <Heading
+                    ref={current ? heading : undefined}
+                    tabIndex={current ? -1 : undefined}
+                    className={
+                      inline
+                        ? "mb-4 break-words outline-none"
+                        : "mb-4 break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
+                    }
+                  >
+                    {i18n._(item.title)}
+                  </Heading>
+                  <p className="break-words text-base leading-relaxed text-muted-foreground">
+                    {i18n._(item.body)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
       <footer className="space-y-3">
@@ -130,10 +152,20 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
             <Trans>Next</Trans>
           )}
         </Button>
-        {last && !replay && !inline ? (
-          <Button variant="outline" size="lg" className="w-full" onClick={() => onExit("signin")}>
-            <Trans>I already have an account</Trans>
-          </Button>
+        {/* The second button's place is kept on every screen of the
+            full-screen guide, so Next stays where Create account appears. */}
+        {!replay && !inline ? (
+          last ? (
+            <Button variant="outline" size="lg" className="w-full" onClick={() => onExit("signin")}>
+              <Trans>I already have an account</Trans>
+            </Button>
+          ) : step < 0 ? (
+            <Button variant="link" size="lg" className="w-full" onClick={() => onExit("signin")}>
+              <Trans>I already have an account</Trans>
+            </Button>
+          ) : (
+            <div aria-hidden="true" className="h-11" />
+          )
         ) : null}
         <div className="flex items-center justify-between gap-3">
           <Button
@@ -150,11 +182,6 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
             </Button>
           ) : null}
         </div>
-        {step < 0 && !replay ? (
-          <Button variant="link" size="lg" className="w-full" onClick={() => onExit("signin")}>
-            <Trans>I already have an account</Trans>
-          </Button>
-        ) : null}
       </footer>
     </Container>
   );
