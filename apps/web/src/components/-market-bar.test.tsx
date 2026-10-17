@@ -97,13 +97,14 @@ describe("MarketBar", () => {
     expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/?q=bike");
   });
 
-  it("leads with Credit straight into the badges for a member, and offers no Sign in", () => {
+  it("puts Credit at the end of the search row for a member, and offers no Sign in", () => {
     mocks.auth = { isAuthenticated: true, isLoading: false };
     renderBar("vouchers");
 
+    const field = screen.getByRole("button", { name: "Filters" }).parentElement;
+    expect(field?.nextElementSibling).toBe(screen.getByRole("button", { name: "Credit" }));
     const sections = screen.getByRole("navigation", { name: "Marketplace sections" });
-    expect(sections.firstElementChild?.textContent).toBe("Credit");
-    expect(sections.children[1]?.textContent).toBe("Pools");
+    expect(sections.firstElementChild?.textContent).toBe("Pools");
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
   });
 

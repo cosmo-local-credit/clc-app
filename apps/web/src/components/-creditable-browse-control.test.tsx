@@ -119,7 +119,7 @@ describe("CreditableBrowseControl", () => {
     expect(credit.textContent).toBe("Credit");
   });
 
-  it("stays tinted green while off, turns solid when on, and spins while checking", () => {
+  it("stands 44px and solid green, rings itself when on, and spins while checking", () => {
     const view = render(
       <CreditableBrowseControl
         state={state()}
@@ -129,9 +129,22 @@ describe("CreditableBrowseControl", () => {
       />,
     );
     const off = screen.getByRole("button", { name: "Credit" });
-    expect(off.className).toContain("text-success-ink");
-    expect(off.className).not.toContain("bg-success ");
+    expect(off.getAttribute("data-size")).toBe("lg");
+    expect(off.className).toContain("bg-success");
+    expect(off.className).not.toContain("shadow-[inset");
     expect(off.querySelector("[data-slot=spinner]")).toBeNull();
+
+    view.rerender(
+      <CreditableBrowseControl
+        state={state({ enabled: true })}
+        onChange={vi.fn()}
+        onClear={vi.fn()}
+        part="control"
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Credit" }).className).toContain(
+      "shadow-[inset_0_0_0_2px_var(--color-success-foreground)]",
+    );
 
     view.rerender(
       <CreditableBrowseControl

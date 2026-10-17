@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiCopperDiamondLine } from "react-icons/ri";
+import { RiCheckLine, RiHandCoinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
@@ -78,22 +78,27 @@ export function CreditableBrowseControl({
   return (
     <>
       {showControl && state.auth.isAuthenticated ? (
-        // A filter rather than a list: always in the success green, solid while on.
+        // A filter rather than a list, so it sits beside the search field at its
+        // height, solid green either way. On, a check leads and a ring sets it in.
         <Button
-          variant="outline"
-          tap
+          variant="success"
+          size="lg"
           className={cn(
-            "font-semibold",
-            state.enabled
-              ? "border-success! bg-success text-success-foreground hover:bg-success/90 hover:text-success-foreground"
-              : "border-[color-mix(in_oklab,var(--color-success)_40%,var(--color-card))]! bg-[color-mix(in_oklab,var(--color-success)_12%,var(--color-card))] text-success-ink hover:bg-[color-mix(in_oklab,var(--color-success)_20%,var(--color-card))] hover:text-success-ink",
+            "font-semibold hover:bg-success/90",
+            state.enabled && "shadow-[inset_0_0_0_2px_var(--color-success-foreground)]",
           )}
           aria-pressed={state.enabled}
           aria-busy={checking}
           disabled={state.auth.isLoading}
           onClick={() => onChange(!state.enabled)}
         >
-          {checking ? <Spinner /> : <RiCopperDiamondLine aria-hidden="true" />}
+          {checking ? (
+            <Spinner />
+          ) : state.enabled ? (
+            <RiCheckLine aria-hidden="true" />
+          ) : (
+            <RiHandCoinLine aria-hidden="true" />
+          )}
           <Trans>Credit</Trans>
         </Button>
       ) : null}

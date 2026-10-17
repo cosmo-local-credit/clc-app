@@ -25,8 +25,9 @@ export type MarketSurface = "map" | MarketplaceScope;
 /**
  * The market's top bar, the same over the map and above every list: the app
  * menu on its own square, the search field with the filter button joined to
- * its end, and Sign in beside them for a guest. The badges below open the
- * lists; in a list, a Map button floats above the navigation.
+ * its end, and beside them Credit for a member or Sign in for a guest. The
+ * badges below open the lists; in a list, a Map button floats above the
+ * navigation.
  */
 export function MarketBar({
   current,
@@ -43,7 +44,7 @@ export function MarketBar({
   searchLabel: string;
   /** The filter sheet, whose trigger joins the end of the search field. */
   filters: ReactNode;
-  /** The Credit badge, for a signed-in member. */
+  /** The Credit filter, beside the search field for a signed-in member. */
   credit?: ReactNode;
   surface?: "map" | "page";
   className?: string;
@@ -65,6 +66,7 @@ export function MarketBar({
           />
           {filters}
         </div>
+        {auth.isAuthenticated ? credit : null}
         {!auth.isLoading && !auth.isAuthenticated ? (
           <Button asChild size="lg">
             <Link to="/onboarding" search={onboardingSearch("welcome")}>
@@ -73,7 +75,7 @@ export function MarketBar({
           </Button>
         ) : null}
       </div>
-      <MarketBadges current={current} credit={auth.isAuthenticated ? credit : undefined} />
+      <MarketBadges current={current} />
       {searchOpen ? (
         <MarketSearchScreen
           onClose={() => setSearchOpen(false)}
@@ -96,7 +98,7 @@ export function MarketBar({
   );
 }
 
-function MarketBadges({ current, credit }: { current: MarketSurface; credit?: ReactNode }) {
+function MarketBadges({ current }: { current: MarketSurface }) {
   const { t } = useLingui();
   const labels: Record<MarketplaceScope, string> = {
     pools: t`Pools`,
@@ -109,7 +111,6 @@ function MarketBadges({ current, credit }: { current: MarketSurface; credit?: Re
       aria-label={t`Marketplace sections`}
       className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {credit}
       {(Object.keys(labels) as MarketplaceScope[]).map((scope) => {
         const active = scope === current;
         const Icon = RESOURCE_ICON[scope];
