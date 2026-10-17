@@ -179,30 +179,29 @@ export function MarketListPage({
 
         <MarketFilterFeedback filter={filter} error={error} onRetry={retry} retrying={retrying} />
 
-        {!credit.blocksResults &&
+        {/* The count answers a search, a filter or Credit; at rest it says nothing. */}
+        {(filter.isFiltered || credit.enabled) &&
+        !credit.blocksResults &&
         !error &&
         (filter.isFiltered ? catalog.status !== "loading" : isCatalogComplete) ? (
-          <p
-            className="mt-4 font-medium text-sm tabular-nums"
-            aria-live={filter.isFiltered ? "polite" : undefined}
-          >
+          <p className="mt-3 text-muted-foreground text-xs tabular-nums" aria-live="polite">
             {resultCountLabel}
           </p>
         ) : null}
 
         {showLoading ? (
-          <ListSkeleton className="mt-4" label={<Trans>Loading marketplace…</Trans>} />
+          <ListSkeleton className="mt-3" label={<Trans>Loading marketplace…</Trans>} />
         ) : null}
 
         {credit.enabled && credit.poolRefs?.length === 0 ? (
-          <div className="mt-4 border border-border bg-card p-4 text-muted-foreground text-sm">
+          <div className="mt-3 border border-border bg-card p-4 text-muted-foreground text-sm">
             <Trans>No vouchers are available through your Credit pools.</Trans>
           </div>
         ) : showEmpty ? (
           filter.isFiltered ? (
             <MarketFilteredEmpty onClear={filter.clear} />
           ) : (
-            <div className="mt-4 border border-border bg-card p-4 text-muted-foreground text-sm">
+            <div className="mt-3 border border-border bg-card p-4 text-muted-foreground text-sm">
               <Trans>No vouchers to show yet.</Trans>
             </div>
           )

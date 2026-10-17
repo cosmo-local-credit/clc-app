@@ -1,7 +1,7 @@
 import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { RiMap2Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
@@ -51,8 +51,23 @@ export function MarketBar({
 }) {
   const auth = useAuthStatus();
   const [searchOpen, setSearchOpen] = useState(false);
+  // Above a list the bar draws its edge only once rows scroll beneath it; at
+  // rest the list starts straight under the badges with no line between.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    if (surface === "map") return;
+    const update = () => setScrolled(window.scrollY > 0);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [surface]);
   const surfaceClassName =
-    surface === "map" ? "bg-transparent" : "border-b border-border bg-background pb-3";
+    surface === "map"
+      ? "bg-transparent"
+      : cn(
+          "border-b bg-background pb-2 transition-colors",
+          scrolled ? "border-border" : "border-transparent",
+        );
 
   return (
     <div className={cn("space-y-2", surfaceClassName, className)}>

@@ -420,7 +420,8 @@ describe("creditable pools", () => {
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.getByText("Empty Pool")).toBeTruthy();
     expect(screen.getByText("Solo Pool")).toBeTruthy();
-    expect(screen.getByText("3 pools")).toBeTruthy();
+    // Nothing narrows the list, so it carries no count.
+    expect(screen.queryByText("3 pools")).toBeNull();
   });
 
   it("writes Credit on to the URL when the unchecked control is selected", async () => {

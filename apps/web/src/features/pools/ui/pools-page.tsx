@@ -160,7 +160,7 @@ export function PoolsPage({
   }, [catalog.isLoadingMore, catalog.loadMore, hasMore]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h1 className="sr-only">
         <Trans>Pools</Trans>
       </h1>
@@ -296,7 +296,12 @@ export function PoolsPage({
 
       {catalog.status === "ready" && filter.result.ok ? (
         <>
-          <p className="min-h-11 py-3 font-medium text-sm tabular-nums">{resultCountLabel}</p>
+          {/* The count answers a search, a filter or Credit; at rest it says nothing. */}
+          {filter.isFiltered || credit.enabled || outputFilterActive ? (
+            <p className="text-muted-foreground text-xs tabular-nums" aria-live="polite">
+              {resultCountLabel}
+            </p>
+          ) : null}
           {canShowResults && pools.length === 0 ? (
             <div className="space-y-3 border border-border bg-card p-3">
               <p className="text-muted-foreground text-sm">

@@ -97,7 +97,7 @@ export function OffersPage({
   const facets = query.data?.pages[0]?.tagFacets ?? [];
 
   return (
-    <main className="min-h-[100svh] space-y-4 bg-background px-4 pb-market-list">
+    <main className="min-h-[100svh] space-y-3 bg-background px-4 pb-market-list">
       <h1 className="sr-only">
         <Trans>Offers</Trans>
       </h1>
