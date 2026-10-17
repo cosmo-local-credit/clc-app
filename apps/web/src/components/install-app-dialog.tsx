@@ -7,7 +7,6 @@ import {
   DialogRoot,
   DialogTitle,
 } from "#/components/ui/dialog";
-import { LanguageSelector } from "#/components/language-selector";
 import { InstallInstructions } from "#/components/install-instructions";
 import { requestInstall, useInstallStore } from "#/features/install/install-store";
 
@@ -24,7 +23,6 @@ export function InstallAppDialog({
       <DialogPortal>
         <DialogBackdrop />
         <DialogContent className="max-h-[calc(100svh-3rem)] space-y-5 overflow-y-auto">
-          <LanguageSelector />
           <DialogTitle>
             <Trans>Install CLC</Trans>
           </DialogTitle>

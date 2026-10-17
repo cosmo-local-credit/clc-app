@@ -5,7 +5,8 @@ import { RiArrowLeftLine, RiShareLine } from "react-icons/ri";
 
 import { InstallInstructions } from "#/components/install-instructions";
 import { InstallAppButton } from "#/components/install-app-button";
-import { LanguageSelector } from "#/components/language-selector";
+import { LanguageSettingsButton } from "#/components/language-selector";
+import { ThemeSettingsButton } from "#/components/theme-selector";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
@@ -74,7 +75,12 @@ export function InstallPage({ from }: { from?: "settings" }) {
             <Trans>Back</Trans>
           </Button>
         )}
-        <LanguageSelector />
+        {/* Install is open to visitors who have not signed in, so it carries
+            the onboarding screens' theme and language buttons. */}
+        <div className="flex items-center gap-2">
+          <ThemeSettingsButton />
+          <LanguageSettingsButton />
+        </div>
       </div>
 
       <header className="space-y-4">

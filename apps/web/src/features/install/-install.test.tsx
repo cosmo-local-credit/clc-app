@@ -16,7 +16,12 @@ import { initializeInstallEvents, useInstallStore } from "./install-store";
 import { installBootstrapScript, type InstallPromptEvent } from "./install-bootstrap";
 import { InstallAppButton } from "#/components/install-app-button";
 
-vi.mock("#/components/language-selector", () => ({ LanguageSelector: () => null }));
+vi.mock("#/components/language-selector", () => ({
+  LanguageSettingsButton: () => <button type="button">Language</button>,
+}));
+vi.mock("#/components/theme-selector", () => ({
+  ThemeSettingsButton: () => <button type="button">Theme</button>,
+}));
 
 // A browser event can precede React. Run the actual inline bootstrap once for
 // this document, then reset its snapshot between tests without adding listeners.
@@ -99,6 +104,14 @@ describe("CLC installation", () => {
     expect(screen.getByRole("button", { name: "Install CLC" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Continue in browser" })).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("gives a visitor the onboarding theme and language buttons", async () => {
+    startBrowser();
+    await renderPage();
+    expect(screen.getByRole("button", { name: "Theme" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Language" })).toBeTruthy();
+    expect(screen.queryByRole("combobox")).toBeNull();
   });
 
   it("captures before hydration and prompts only once from the dialog button", async () => {
