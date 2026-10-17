@@ -382,7 +382,7 @@ function OfferingForm({
       <SheetFooter>
         {/* Disabled while the photo uploads, or submit would persist the URL the
             form held before the new file finished. */}
-        <Button type="submit" className="h-11 w-full" disabled={saving || photoBusy}>
+        <Button type="submit" size="lg" className="w-full" disabled={saving || photoBusy}>
           {photoBusy ? (
             <Trans>Uploading photo…</Trans>
           ) : saving ? (
@@ -396,7 +396,8 @@ function OfferingForm({
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={saving}
           onClick={onClose}
         >

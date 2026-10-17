@@ -208,7 +208,7 @@ export function MarketPage({
   const locationButton = (
     <Button
       size="icon-lg"
-      className="pointer-events-auto h-11 w-11 shrink-0 bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
+      className="pointer-events-auto bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
       aria-label={locationButtonLabel}
       disabled={
         locationStatus === "requesting" ||
@@ -340,12 +340,7 @@ export function MarketPage({
           >
             <span className="min-w-0 text-sm">{notice.message}</span>
             {notice.actionLabel && notice.onAction ? (
-              <Button
-                size="sm"
-                variant="outline"
-                className="shrink-0 bg-card"
-                onClick={notice.onAction}
-              >
+              <Button variant="outline" tap onClick={notice.onAction}>
                 {notice.actionLabel}
               </Button>
             ) : null}
@@ -358,7 +353,7 @@ export function MarketPage({
                 <p>
                   <Trans>No marketplace results match this search.</Trans>
                 </p>
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                <Button variant="outline" tap onClick={filter.clear}>
                   <Trans>Clear filters</Trans>
                 </Button>
               </>

@@ -296,7 +296,7 @@ function WithdrawLiquidityForm({
               <Button
                 type="button"
                 variant="outline"
-                className="h-9 shrink-0 bg-card"
+                tap
                 disabled={!withdrawable}
                 onClick={() => withdrawable && setAmount(withdrawable)}
               >
@@ -310,7 +310,8 @@ function WithdrawLiquidityForm({
       <SheetFooter>
         <Button
           type="button"
-          className="h-11 w-full"
+          size="lg"
+          className="w-full"
           disabled={!selected || !amount.trim() || relay.isPending}
           onClick={() => void submit()}
         >
@@ -396,7 +397,8 @@ function CollectFeesForm({
       <SheetFooter>
         <Button
           type="button"
-          className="h-11 w-full"
+          size="lg"
+          className="w-full"
           disabled={!selected || !feeAddress || relay.isPending}
           onClick={() => void submit()}
         >
@@ -527,7 +529,8 @@ function FeeSettingsForm({
       <SheetFooter>
         <Button
           type="button"
-          className="h-11 w-full"
+          size="lg"
+          className="w-full"
           disabled={!canSubmit || relay.isPending}
           onClick={() => void submit()}
         >

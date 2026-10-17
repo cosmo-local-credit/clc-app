@@ -31,7 +31,7 @@ export function CreditableBrowseControl({
         <p className="text-sm">
           <Trans>This link contains an invalid Credit filter.</Trans>
         </p>
-        <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onClear}>
+        <Button variant="outline" tap onClick={onClear}>
           <Trans>Clear filter</Trans>
         </Button>
       </div>
@@ -45,7 +45,7 @@ export function CreditableBrowseControl({
         <p className="text-sm">
           <Trans>Sign in to browse results available through your Credit pools.</Trans>
         </p>
-        <Button asChild className="h-11 w-full">
+        <Button asChild tap className="w-full">
           <Link to="/onboarding" search={{ step: "welcome" }}>
             <Trans>Sign in</Trans>
           </Link>
@@ -68,10 +68,11 @@ export function CreditableBrowseControl({
       {showControl && state.auth.isAuthenticated ? (
         <Button
           variant="outline"
+          size="lg"
           className={
             state.enabled
-              ? "h-11 border-destructive bg-destructive px-2.5 text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground"
-              : "h-11 bg-card px-2.5"
+              ? "border-destructive bg-destructive px-2.5 text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground"
+              : "px-2.5"
           }
           aria-pressed={state.enabled}
           aria-busy={state.enabled && state.verification.status === "loading"}
@@ -92,12 +93,7 @@ export function CreditableBrowseControl({
           <p className="text-sm">
             <Trans>Couldn't check creditable pools.</Trans>
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={state.verification.retry}
-          >
+          <Button variant="outline" tap onClick={state.verification.retry}>
             <Trans>Retry</Trans>
           </Button>
         </div>

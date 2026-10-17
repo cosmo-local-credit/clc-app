@@ -627,7 +627,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </div>
 
             <div className="mt-auto pt-6">
-              <Button type="button" className="h-11 w-full" onClick={() => void goToPlace()}>
+              <Button type="button" size="lg" className="w-full" onClick={() => void goToPlace()}>
                 <Trans>Next</Trans>
               </Button>
             </div>
@@ -721,9 +721,8 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         </p>
                         <Button
                           type="button"
-                          size="sm"
                           variant="outline"
-                          className="bg-card"
+                          tap
                           onClick={() => tagsQuery.refetch()}
                         >
                           <Trans>Retry</Trans>
@@ -918,7 +917,8 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             <div className="mt-auto pt-6">
               <Button
                 type="button"
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
                 disabled={iconBusy}
                 onClick={() => void goToReview()}
               >
@@ -975,7 +975,8 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {([isSubmitting, acceptedTerms]) => (
                   <Button
                     type="submit"
-                    className="h-11 w-full"
+                    size="lg"
+                    className="w-full"
                     disabled={
                       !acceptedTerms ||
                       isSubmitting ||

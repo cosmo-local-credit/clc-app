@@ -171,12 +171,7 @@ export function OfferingsPanel({
           <p className="text-muted-foreground text-sm">
             <Trans>Couldn't load offerings.</Trans>
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={() => query.refetch()}
-          >
+          <Button variant="outline" tap onClick={() => query.refetch()}>
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -218,7 +213,8 @@ export function OfferingsPanel({
       {hasManualNext ? (
         <Button
           variant="outline"
-          className="mt-3 h-11 w-full bg-card"
+          tap
+          className="mt-3 w-full"
           disabled={query.isFetchingNextPage}
           onClick={() => {
             if (manualLimit >= offerings.length && query.hasNextPage) {
@@ -385,14 +381,14 @@ function OfferingTile({
         <span data-slot="offering-actions" className="flex border-x border-b border-border">
           <button
             type="button"
-            className="flex-1 border-e border-border bg-card py-2 text-[0.6875rem] font-semibold"
+            className="h-9 flex-1 border-e border-border bg-card text-[0.6875rem] font-semibold"
             onClick={() => management.onEdit(offering)}
           >
             <Trans>Edit</Trans>
           </button>
           <button
             type="button"
-            className="flex-1 bg-card py-2 text-[0.6875rem] font-semibold text-destructive"
+            className="h-9 flex-1 bg-card text-[0.6875rem] font-semibold text-destructive"
             disabled={management.deletingID === offering.id}
             onClick={() => management.onDelete(offering)}
           >
@@ -541,11 +537,11 @@ function OfferingDetailsSheet({
 
           <SheetFooter className="px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             {openVoucherPageAction === "close" ? (
-              <Button className="h-11 w-full" onClick={() => onOpenChange(false)}>
+              <Button size="lg" className="w-full" onClick={() => onOpenChange(false)}>
                 <Trans>Open voucher page</Trans>
               </Button>
             ) : (
-              <Button asChild className="h-11 w-full">
+              <Button asChild size="lg" className="w-full">
                 <Link
                   to="/vouchers/$voucherAddress"
                   params={{ voucherAddress: offering.voucherAddress }}

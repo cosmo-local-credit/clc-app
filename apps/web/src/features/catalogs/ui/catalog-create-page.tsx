@@ -93,7 +93,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
             <Trans>Couldn't load catalogs.</Trans>
           </p>
           <Button
-            className="h-11"
+            size="lg"
             onClick={() => {
               void mine.refetch();
               void usage.refetch();
@@ -113,15 +113,11 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
             </p>
           ) : null}
           {intent ? (
-            <Button
-              className="h-11"
-              disabled={member.isPending}
-              onClick={() => void finish(catalog)}
-            >
+            <Button size="lg" disabled={member.isPending} onClick={() => void finish(catalog)}>
               <Trans>Add to catalog</Trans>
             </Button>
           ) : null}
-          <Button asChild variant="outline" className="h-11 bg-card">
+          <Button asChild variant="outline" tap>
             <Link to="/catalogs/$catalogId" params={{ catalogId: catalog.id }}>
               <Trans>My catalog</Trans>
             </Link>
@@ -132,7 +128,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
           <ResourceUsage resource="catalogs" />
           {usage.data?.catalogs.canCreate && <CatalogForm initialPlace={place} onSaved={finish} />}
           {mine.catalogs.map((item) => (
-            <Button key={item.id} asChild variant="outline" className="h-11 bg-card">
+            <Button key={item.id} asChild variant="outline" tap>
               <Link to="/catalogs/$catalogId" params={{ catalogId: item.id }}>
                 {item.name}
               </Link>

@@ -52,7 +52,7 @@ function EligiblePrompt({ address }: { address: string }) {
             later in the voucher’s Reviews tab.
           </Trans>
         </p>
-        <Button variant="ghost" onClick={() => setDismissed(true)}>
+        <Button variant="ghost" tap onClick={() => setDismissed(true)}>
           <Trans>Later</Trans>
         </Button>
       </div>

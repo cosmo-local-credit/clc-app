@@ -30,9 +30,17 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
-  AddToCatalogButton: ({ className, size }: { className?: string; size?: string }) =>
+  AddToCatalogButton: ({
+    className,
+    size,
+    tap,
+  }: {
+    className?: string;
+    size?: string;
+    tap?: boolean;
+  }) =>
     mocks.authenticated ? (
-      <button type="button" className={className} data-size={size}>
+      <button type="button" className={className} data-size={size} data-tap={tap}>
         Add to catalog
       </button>
     ) : null,
@@ -385,8 +393,9 @@ describe("VoucherSheet summary", () => {
     );
     const actions = screen.getByLabelText("Voucher actions");
     const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
-    expect(addToCatalog.getAttribute("data-size")).toBe("sm");
-    expect(addToCatalog.className).toContain("h-9");
+    // Compact like the pills beside it, with the same padded 44px target.
+    expect(addToCatalog.getAttribute("data-size")).toBeNull();
+    expect(addToCatalog.getAttribute("data-tap")).toBe("true");
     expect(screen.getByLabelText("Your Balance").textContent).toContain("2.5 MALII (25 KSH)");
   });
 

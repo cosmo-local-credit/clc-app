@@ -15,7 +15,7 @@ export function ApprovalPending({ onRetry, busy }: { onRetry?: () => void; busy?
         </Trans>
       </p>
       {onRetry ? (
-        <Button className="mt-3 h-11 w-full" onClick={onRetry} disabled={busy}>
+        <Button size="lg" className="mt-3 w-full" onClick={onRetry} disabled={busy}>
           <Trans>Check again</Trans>
         </Button>
       ) : null}

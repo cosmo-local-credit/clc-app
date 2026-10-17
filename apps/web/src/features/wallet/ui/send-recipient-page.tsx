@@ -136,7 +136,8 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
 
       <Button
         variant="outline"
-        className="mb-3 h-11 w-full justify-between"
+        tap
+        className="mb-3 w-full justify-between"
         onClick={() => setAddressBookOpen(true)}
       >
         <span className="inline-flex items-center gap-2">
@@ -153,7 +154,8 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
       <div className="flex-1" />
 
       <Button
-        className="mt-2.5 h-11 w-full"
+        size="lg"
+        className="mt-2.5 w-full"
         disabled={!recipient || upsertRecipient.isPending}
         onClick={() => {
           void handleContinue();
@@ -202,13 +204,7 @@ function RecentRecipients({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't load activity.</Trans>
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={onRetry}
-          >
+          <Button type="button" variant="outline" tap onClick={onRetry}>
             <Trans>Try again</Trans>
           </Button>
         </div>

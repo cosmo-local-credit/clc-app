@@ -73,7 +73,7 @@ export function MarketFilterFeedback({
     <div className="mt-4 space-y-3 border border-border bg-card p-4" role="alert">
       <p className="text-muted-foreground text-sm">{notice.message}</p>
       {notice.actionLabel && notice.onAction ? (
-        <Button variant="outline" size="sm" className="h-9 bg-card" onClick={notice.onAction}>
+        <Button variant="outline" tap onClick={notice.onAction}>
           {notice.actionLabel}
         </Button>
       ) : null}
@@ -138,12 +138,7 @@ export function MarketFilterSummary({ filter }: { filter: CatalogFilterControls 
       >
         {summary}
       </Link>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-9 shrink-0 px-3 text-muted-foreground"
-        onClick={filter.clear}
-      >
+      <Button variant="ghost" tap className="text-muted-foreground" onClick={filter.clear}>
         <Trans>Clear</Trans>
       </Button>
     </div>
@@ -156,7 +151,7 @@ export function MarketFilteredEmpty({ onClear }: { onClear: () => void }) {
       <p className="text-muted-foreground text-sm">
         <Trans>No vouchers match this search.</Trans>
       </p>
-      <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onClear}>
+      <Button variant="outline" tap onClick={onClear}>
         <Trans>Clear filters</Trans>
       </Button>
     </div>

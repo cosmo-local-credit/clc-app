@@ -85,12 +85,12 @@ export function PostsPage() {
           approved-only, so an author needs somewhere to write and somewhere to
           find what they have already submitted. */}
       <div className="flex gap-2">
-        <Button asChild className="h-9 flex-1">
+        <Button asChild tap className="flex-1">
           <Link to="/posts/new">
             <Trans>New post</Trans>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-9 flex-1">
+        <Button asChild variant="outline" tap className="flex-1">
           <Link to="/posts/mine">
             <Trans>My posts</Trans>
           </Link>
@@ -120,7 +120,7 @@ export function PostsPage() {
                 )}
               </p>
               {filter.isFiltered ? (
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                <Button variant="outline" tap onClick={filter.clear}>
                   <Trans>Clear filters</Trans>
                 </Button>
               ) : null}

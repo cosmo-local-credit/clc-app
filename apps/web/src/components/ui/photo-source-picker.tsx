@@ -80,7 +80,7 @@ export function PhotoSourcePicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="h-11 bg-card"
+        tap
       >
         <FaCamera aria-hidden className="me-2 size-4" />
         {buttonLabel}
@@ -99,7 +99,8 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full bg-card"
+                size="lg"
+                className="w-full"
                 onClick={() => openInput(cameraInputRef.current)}
               >
                 <FaCamera aria-hidden className="me-2 size-4" />
@@ -108,7 +109,8 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full bg-card"
+                size="lg"
+                className="w-full"
                 onClick={() => openInput(libraryInputRef.current)}
               >
                 <FaImages aria-hidden className="me-2 size-4" />
@@ -117,7 +119,8 @@ export function PhotoSourcePicker({
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full bg-card"
+                size="lg"
+                className="w-full"
                 onClick={() => setOpen(false)}
               >
                 {t`Cancel`}

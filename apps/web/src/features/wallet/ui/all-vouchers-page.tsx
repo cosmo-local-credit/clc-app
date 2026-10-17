@@ -64,7 +64,7 @@ function VoucherRow({
         <div className="px-3 pt-1 pb-3">
           <VoucherContactDetails voucher={voucher} />
           {voucherAddress ? (
-            <Button asChild className="mt-3 h-11 w-full gap-1.5 text-xs">
+            <Button asChild tap className="mt-3 w-full">
               <Link
                 to="/vouchers/$voucherAddress"
                 params={{ voucherAddress }}
@@ -83,7 +83,7 @@ function VoucherRow({
 
 function CreateVoucherButton() {
   return (
-    <Button asChild variant="outline" className="bg-card">
+    <Button asChild variant="outline" tap>
       <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
         <RiAddLine className="size-4" aria-hidden="true" />
         <Trans>Create</Trans>
@@ -154,8 +154,7 @@ export function AllVouchersPage() {
               </p>
               <Button
                 variant="outline"
-                size="sm"
-                className="bg-card h-9"
+                tap
                 onClick={() => {
                   void vouchersQuery.refetch();
                   void voucherGroups.refetch();
@@ -219,8 +218,7 @@ export function AllVouchersPage() {
                   </p>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="bg-card h-9"
+                    tap
                     onClick={() => {
                       void voucherGroups.refetch();
                     }}
@@ -237,7 +235,8 @@ export function AllVouchersPage() {
       {vouchersQuery.hasNextPage ? (
         <Button
           variant="outline"
-          className="bg-card mt-3 h-11 w-full"
+          tap
+          className="mt-3 w-full"
           disabled={vouchersQuery.isFetchingNextPage}
           onClick={() => vouchersQuery.fetchNextPage()}
         >

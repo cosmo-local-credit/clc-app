@@ -2,6 +2,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { RiArrowLeftLine } from "react-icons/ri";
 
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
+import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
 
 export function BackChevron({
@@ -93,20 +94,13 @@ export function SectionHeader({
       </h2>
       {action ? (
         actionTo ? (
-          <Link
-            to={actionTo}
-            className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
-          >
-            {action}
-          </Link>
+          <Button asChild variant="link" tap className="-me-3 text-foreground">
+            <Link to={actionTo}>{action}</Link>
+          </Button>
         ) : (
-          <button
-            type="button"
-            onClick={onAction}
-            className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
-          >
+          <Button variant="link" tap className="-me-3 text-foreground" onClick={onAction}>
             {action}
-          </button>
+          </Button>
         )
       ) : null}
     </div>

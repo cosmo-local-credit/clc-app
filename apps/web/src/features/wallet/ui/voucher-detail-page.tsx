@@ -127,12 +127,7 @@ export function VoucherDetailPage({
   if (!baseToken && !detail && detailQuery.isError) {
     return (
       <VoucherShell back={back} message={t`Couldn't load this voucher.`}>
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-card"
-          onClick={() => detailQuery.refetch()}
-        >
+        <Button variant="outline" size="lg" onClick={() => detailQuery.refetch()}>
           {t`Retry`}
         </Button>
       </VoucherShell>

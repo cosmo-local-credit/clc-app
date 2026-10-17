@@ -323,13 +323,7 @@ function PoolVoucherForm({
               {blockedReason}
             </p>
             {(membershipUnread || rateUnread || capUnread) && selected ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="bg-card"
-                onClick={retryBlockedReads}
-              >
+              <Button type="button" variant="outline" tap onClick={retryBlockedReads}>
                 <Trans>Retry</Trans>
               </Button>
             ) : null}
@@ -338,10 +332,10 @@ function PoolVoucherForm({
       </div>
 
       <SheetFooter>
-        <Button type="button" className="h-11 w-full" disabled>
+        <Button type="button" size="lg" className="w-full" disabled>
           {voucher ? <Trans>Save changes</Trans> : <Trans>Approve voucher</Trans>}
         </Button>
-        <Button type="button" variant="outline" className="h-11 w-full bg-card" onClick={onClose}>
+        <Button type="button" variant="outline" size="lg" className="w-full" onClick={onClose}>
           <Trans>Cancel</Trans>
         </Button>
       </SheetFooter>
@@ -540,7 +534,8 @@ function PoolVoucherConfigurationForm({
                   <Button
                     type="button"
                     variant="destructive"
-                    className="h-11 flex-1"
+                    size="lg"
+                    className="flex-1"
                     disabled={relay.isPending}
                     onClick={() => void remove()}
                   >
@@ -549,7 +544,8 @@ function PoolVoucherConfigurationForm({
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-11 flex-1 bg-card"
+                    size="lg"
+                    className="flex-1"
                     disabled={relay.isPending}
                     onClick={() => setConfirmingRemoval(false)}
                   >
@@ -561,7 +557,8 @@ function PoolVoucherConfigurationForm({
               <Button
                 type="button"
                 variant="destructive"
-                className="h-11 w-full"
+                tap
+                className="w-full"
                 disabled={relay.isPending}
                 onClick={() => setConfirmingRemoval(true)}
               >
@@ -574,7 +571,7 @@ function PoolVoucherConfigurationForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit" className="h-11 w-full" disabled={!canSubmit}>
+        <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
           {relay.isPending ? (
             <Trans>Waiting for the chain…</Trans>
           ) : voucher ? (
@@ -586,7 +583,8 @@ function PoolVoucherConfigurationForm({
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={relay.isPending}
           onClick={onClose}
         >
@@ -760,7 +758,7 @@ function SelectedVoucher({
           </p>
         </div>
         {onChange ? (
-          <Button type="button" variant="outline" size="sm" className="bg-card" onClick={onChange}>
+          <Button type="button" variant="outline" tap onClick={onChange}>
             <Trans>Change</Trans>
           </Button>
         ) : null}
@@ -798,13 +796,7 @@ function SelectedVoucher({
       </dl>
 
       {balance.status === "unavailable" ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="mt-2 bg-card"
-          onClick={onRetry}
-        >
+        <Button type="button" variant="outline" tap className="mt-2" onClick={onRetry}>
           <Trans>Retry</Trans>
         </Button>
       ) : null}
@@ -889,13 +881,7 @@ function VoucherPicker({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't check which vouchers are already approved.</Trans>
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={() => void registry.refetch()}
-          >
+          <Button type="button" variant="outline" tap onClick={() => void registry.refetch()}>
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -930,13 +916,7 @@ function SearchResults({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't search vouchers.</Trans>
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={search.retry}
-          >
+          <Button type="button" variant="outline" tap onClick={search.retry}>
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -1015,13 +995,7 @@ function SuggestionLists({
               <p role="status" className="text-muted-foreground text-xs">
                 <Trans>Unavailable</Trans>
               </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 bg-card"
-                onClick={group.source.retry}
-              >
+              <Button type="button" variant="outline" tap onClick={group.source.retry}>
                 <Trans>Retry</Trans>
               </Button>
             </div>
@@ -1031,13 +1005,7 @@ function SuggestionLists({
               <p role="status" className="text-muted-foreground text-xs">
                 <Trans>Showing recent vouchers only.</Trans>
               </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 bg-card"
-                onClick={group.source.retry}
-              >
+              <Button type="button" variant="outline" tap onClick={group.source.retry}>
                 <Trans>Retry</Trans>
               </Button>
             </div>

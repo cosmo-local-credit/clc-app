@@ -158,7 +158,7 @@ export function PostImageManager({
         <Button
           type="button"
           variant="outline"
-          className="h-11 bg-card"
+          tap
           disabled={disabled || busy || remaining <= 0}
           onClick={() => inputRef.current?.click()}
         >
@@ -224,8 +224,8 @@ export function PostImageManager({
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    className="h-9 bg-card"
+                    size="icon"
+                    tap
                     disabled={disabled || index === 0}
                     aria-label={t`Move photo ${index + 1} up`}
                     onClick={() => move(index, -1)}
@@ -235,8 +235,8 @@ export function PostImageManager({
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    className="h-9 bg-card"
+                    size="icon"
+                    tap
                     disabled={disabled || index === images.length - 1}
                     aria-label={t`Move photo ${index + 1} down`}
                     onClick={() => move(index, 1)}
@@ -246,8 +246,9 @@ export function PostImageManager({
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    className="h-9 bg-card text-destructive"
+                    size="icon"
+                    tap
+                    className="text-destructive"
                     disabled={disabled}
                     aria-label={t`Remove photo ${index + 1}`}
                     onClick={() => remove(index)}

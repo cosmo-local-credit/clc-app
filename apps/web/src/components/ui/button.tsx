@@ -25,19 +25,36 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
-        xs: "h-6 gap-1 rounded-none px-2 text-xs has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-none px-2.5 has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
-        icon: "size-8",
-        "icon-xs": "size-6 rounded-none [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-7 rounded-none",
-        "icon-lg": "size-9",
+          "h-9 gap-1.5 px-3 has-data-[icon=inline-end]:pe-2.5 has-data-[icon=inline-start]:ps-2.5",
+        lg: "h-11 gap-2 px-4 text-sm has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3",
+        icon: "size-9",
+        "icon-lg": "size-11",
+      },
+      // Pads a compact button's hit area out to 44px with an invisible
+      // pseudo-element, so it meets the touch-target minimum without taking
+      // 44px of layout. The 44px sizes already meet it and ignore the flag.
+      tap: {
+        true: "",
+        false: "",
       },
     },
+    compoundVariants: [
+      {
+        tap: true,
+        size: "default",
+        className:
+          "relative before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']",
+      },
+      {
+        tap: true,
+        size: "icon",
+        className: "relative before:absolute before:-inset-1 before:content-['']",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",
+      tap: false,
     },
   },
 );
@@ -51,6 +68,7 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  tap = false,
   asChild = false,
   children,
   disabled,
@@ -58,7 +76,7 @@ function Button({
   type,
   ...props
 }: ButtonProps) {
-  const classes = cn(buttonVariants({ variant, size, className }));
+  const classes = cn(buttonVariants({ variant, size, tap, className }));
   if (asChild && isValidElement(children)) {
     const child = children as ReactElement<Record<string, unknown>>;
     return cloneElement(child, {

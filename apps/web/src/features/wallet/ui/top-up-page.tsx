@@ -401,7 +401,8 @@ function AddStablesSheet({
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={!canContinue || triggerOnramp.isPending}
               onClick={() => void onContinue()}
             >
@@ -447,7 +448,7 @@ function PretiumHistory({
             <p className="text-muted-foreground text-sm">
               <Trans>Couldn't load Pretium history.</Trans>
             </p>
-            <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onRetry}>
+            <Button variant="outline" tap onClick={onRetry}>
               <Trans>Try again</Trans>
             </Button>
           </div>
@@ -607,7 +608,7 @@ function OnrampDetailsSheet({
 
           {hasTxHash ? (
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button asChild className="h-11 w-full">
+              <Button asChild size="lg" className="w-full">
                 <a href={explorerUrl} target="_blank" rel="noreferrer">
                   <Trans>View on block explorer</Trans>
                 </a>
@@ -744,7 +745,7 @@ function OfframpDetailsSheet({
 
           {hasTxHash ? (
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button asChild className="h-11 w-full">
+              <Button asChild size="lg" className="w-full">
                 <a href={explorerUrl} target="_blank" rel="noreferrer">
                   <Trans>View on block explorer</Trans>
                 </a>

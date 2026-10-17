@@ -86,7 +86,8 @@ export function Introduction({ replay = false, onExit }: Props) {
           </p>
         ) : null}
         <Button
-          className="min-h-11 w-full"
+          size="lg"
+          className="w-full"
           disabled={loading || !!error}
           onClick={() => (last ? onExit(replay ? "done" : "create") : setStep(step + 1))}
         >
@@ -103,29 +104,25 @@ export function Introduction({ replay = false, onExit }: Props) {
           )}
         </Button>
         {last && !replay ? (
-          <Button variant="outline" className="min-h-11 w-full" onClick={() => onExit("signin")}>
+          <Button variant="outline" size="lg" className="w-full" onClick={() => onExit("signin")}>
             <Trans>I already have an account</Trans>
           </Button>
         ) : null}
         <div className="flex items-center justify-between gap-3">
           <Button
             variant="ghost"
-            className="min-h-11"
+            tap
             disabled={step <= (replay ? 0 : -1)}
             onClick={() => setStep(step - 1)}
           >
             <Trans>Back</Trans>
           </Button>
-          <Button
-            variant="ghost"
-            className="min-h-11"
-            onClick={() => onExit(replay ? "done" : "skip")}
-          >
+          <Button variant="ghost" tap onClick={() => onExit(replay ? "done" : "skip")}>
             <Trans>Skip</Trans>
           </Button>
         </div>
         {step < 0 && !replay ? (
-          <Button variant="link" className="min-h-11 w-full" onClick={() => onExit("signin")}>
+          <Button variant="link" size="lg" className="w-full" onClick={() => onExit("signin")}>
             <Trans>I already have an account</Trans>
           </Button>
         ) : null}

@@ -30,7 +30,7 @@ export function MyPostsPage() {
         <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>My posts</Trans>
         </h1>
-        <Button asChild size="sm" className="h-9 shrink-0">
+        <Button asChild tap>
           <Link to="/posts/new">
             <Trans>New post</Trans>
           </Link>
@@ -49,12 +49,7 @@ export function MyPostsPage() {
           <p className="text-muted-foreground text-sm">
             <Trans>Couldn't load your posts.</Trans>
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={() => postsQuery.refetch()}
-          >
+          <Button variant="outline" tap onClick={() => postsQuery.refetch()}>
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -65,7 +60,7 @@ export function MyPostsPage() {
           <p className="text-muted-foreground text-sm">
             <Trans>You haven't written any posts yet.</Trans>
           </p>
-          <Button asChild variant="outline" size="sm" className="h-9 bg-card">
+          <Button asChild variant="outline" tap>
             <Link to="/posts/new">
               <Trans>Write your first post</Trans>
             </Link>
@@ -106,13 +101,13 @@ function MyPostRow({ post, locale }: { post: ManagedReportSummary; locale: strin
         {/* Only an approved post has a public detail page; anything else
             answers 404 there. */}
         {post.status === "APPROVED" ? (
-          <Button asChild variant="outline" size="sm" className="h-9 bg-card">
+          <Button asChild variant="outline" tap>
             <Link to="/posts/$reportId" params={{ reportId: post.id }}>
               <Trans>View</Trans>
             </Link>
           </Button>
         ) : null}
-        <Button asChild variant="outline" size="sm" className="h-9 bg-card">
+        <Button asChild variant="outline" tap>
           <Link to="/posts/$reportId/edit" params={{ reportId: post.id }}>
             <Trans>Edit</Trans>
           </Link>

@@ -120,7 +120,8 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
         <p className="font-medium text-sm">{title ?? <Trans>Paper Wallet</Trans>}</p>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
+          tap
           aria-label={t`Close paper wallet scanner`}
           onClick={onCancel}
         >
@@ -130,13 +131,14 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
 
       {mode === "choose" ? (
         <div className="space-y-2">
-          <Button className="h-11 w-full" onClick={handleCameraScan} disabled={cameraStarting}>
+          <Button size="lg" className="w-full" onClick={handleCameraScan} disabled={cameraStarting}>
             <RiCameraLine className="me-2 size-4" />
             <Trans>Scan QR Code</Trans>
           </Button>
           <Button
             variant="outline"
-            className="h-11 w-full"
+            size="lg"
+            className="w-full"
             onClick={() => {
               setMode("upload");
               setError(null);
@@ -175,7 +177,8 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               {error.type === "camera-denied" ? (
                 <Button
                   variant="outline"
-                  className="h-11 w-full"
+                  size="lg"
+                  className="w-full"
                   onClick={() => {
                     setMode("upload");
                     setError(null);
@@ -187,7 +190,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               ) : null}
             </div>
           ) : null}
-          <Button variant="ghost" className="h-9 w-full" onClick={handleCancel}>
+          <Button variant="ghost" tap className="w-full" onClick={handleCancel}>
             <Trans>Back</Trans>
           </Button>
         </div>
@@ -203,14 +206,15 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
           />
           <Button
             variant="outline"
-            className="h-11 w-full"
+            size="lg"
+            className="w-full"
             onClick={() => fileInputRef.current?.click()}
           >
             <RiUploadLine className="me-2 size-4" />
             <Trans>Choose Image</Trans>
           </Button>
           {error ? <p className="text-destructive text-xs">{error.message}</p> : null}
-          <Button variant="ghost" className="h-9 w-full" onClick={handleCancel}>
+          <Button variant="ghost" tap className="w-full" onClick={handleCancel}>
             <Trans>Back</Trans>
           </Button>
         </div>

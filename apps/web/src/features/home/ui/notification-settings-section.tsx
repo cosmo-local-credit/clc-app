@@ -98,7 +98,8 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
           presentation.canEnable ? (
             <Button
               variant="outline"
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={state.status === "enabling"}
               onClick={() => {
                 void handleEnable();

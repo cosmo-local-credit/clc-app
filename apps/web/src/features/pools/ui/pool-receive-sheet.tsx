@@ -90,7 +90,7 @@ export function PoolReceiveSheet({
               </div>
 
               <SheetFooter>
-                <Button className="h-11 w-full" onClick={onClose}>
+                <Button size="lg" className="w-full" onClick={onClose}>
                   <Trans>Done</Trans>
                 </Button>
               </SheetFooter>

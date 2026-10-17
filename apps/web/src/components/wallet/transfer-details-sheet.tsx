@@ -190,7 +190,7 @@ export function TransferDetailsSheet({
             {transfer?.success && transfer.txHash ? (
               <ShareReceiptButton
                 key={transfer.txHash}
-                className="h-11 w-full"
+                className="w-full"
                 title={created ? t`Voucher creation receipt` : t`Payment receipt`}
                 lines={[
                   created
@@ -211,7 +211,7 @@ export function TransferDetailsSheet({
                 url={explorerUrl}
               />
             ) : null}
-            <Button asChild className="h-11 w-full">
+            <Button asChild size="lg" className="w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
                 <Trans>View on block explorer</Trans>
               </a>

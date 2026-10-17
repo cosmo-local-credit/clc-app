@@ -79,7 +79,7 @@ function UnresolvedVouchersRow({
           <p className="text-muted-foreground text-sm">
             <Trans>Some vouchers couldn't load.</Trans>
           </p>
-          <Button variant="outline" size="sm" className="bg-card h-9" onClick={onRetry}>
+          <Button variant="outline" tap onClick={onRetry}>
             <Trans>Try again</Trans>
           </Button>
         </>
@@ -149,11 +149,14 @@ export function WalletPage({ address }: { address?: string }) {
                 key={action.id}
                 asChild
                 variant={action.variant}
-                className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
+                size="lg"
+                className="gap-1.5 px-1"
               >
                 <Link to={action.to}>
                   <Icon className="size-4" aria-hidden="true" />
-                  {action.label}
+                  {/* Ellipsized rather than spilling into the next action where a
+                      translation outgrows a third of a 360px row. */}
+                  <span className="min-w-0 truncate">{action.label}</span>
                 </Link>
               </Button>
             );
@@ -184,8 +187,7 @@ export function WalletPage({ address }: { address?: string }) {
                 </p>
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="bg-card h-9"
+                  tap
                   onClick={() => {
                     void vouchersQuery.refetch();
                     void voucherGroups.refetch();
@@ -203,7 +205,7 @@ export function WalletPage({ address }: { address?: string }) {
                 <p className="text-muted-foreground text-sm">
                   <Trans>No vouchers yet.</Trans>
                 </p>
-                <Button asChild variant="outline" className="bg-card h-9 w-full">
+                <Button asChild variant="outline" tap className="w-full">
                   <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
                     <Trans>Create voucher</Trans>
                   </Link>
@@ -239,7 +241,7 @@ export function WalletPage({ address }: { address?: string }) {
                   <p className="text-muted-foreground text-sm">
                     <Trans>You didn't issue any of these.</Trans>
                   </p>
-                  <Button asChild variant="outline" className="bg-card h-9 w-full">
+                  <Button asChild variant="outline" tap className="w-full">
                     <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
                       <Trans>Create voucher</Trans>
                     </Link>
@@ -279,12 +281,7 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>Couldn't load your pools.</Trans>
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-card h-9"
-                onClick={() => ownedPoolsQuery.refetch()}
-              >
+              <Button variant="outline" tap onClick={() => ownedPoolsQuery.refetch()}>
                 <Trans>Try again</Trans>
               </Button>
             </div>
@@ -294,7 +291,7 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>You haven't created a pool yet.</Trans>
               </p>
-              <Button asChild variant="outline" className="bg-card h-9 w-full">
+              <Button asChild variant="outline" tap className="w-full">
                 <Link to="/pools/create/$step" params={{ step: "pool" }}>
                   <Trans>Create pool</Trans>
                 </Link>

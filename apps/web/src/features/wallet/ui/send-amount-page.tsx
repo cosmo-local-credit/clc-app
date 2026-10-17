@@ -185,15 +185,16 @@ export function SendAmountPage({
           {/* Changing the recipient leaves the deposit: `returnPool` is not
               carried, because a send to someone else should end on the wallet
               rather than on a pool it never reached. */}
-          <button
-            type="button"
-            className="font-semibold text-primary text-xs hover:underline"
+          <Button
+            variant="link"
+            tap
+            className="-me-3"
             onClick={() => {
               void navigate({ to: "/wallet/send", search: { token: tokenParam } });
             }}
           >
             <Trans>Edit</Trans>
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -303,8 +304,8 @@ export function SendAmountPage({
         {selectedToken ? (
           <Button
             variant="secondary"
-            size="sm"
-            className="relative mt-3 h-8"
+            tap
+            className="mt-3"
             onClick={() => {
               if (selectedToken.balance) {
                 setAmount(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
@@ -328,7 +329,8 @@ export function SendAmountPage({
       <div className="flex-1" />
 
       <Button
-        className="h-11 w-full"
+        size="lg"
+        className="w-full"
         disabled={!canSend || sendVoucher.isPending}
         onClick={() => setConfirmOpen(true)}
       >
@@ -470,12 +472,18 @@ function SendConfirmationSheet({
           ) : null}
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button className="h-11 w-full" disabled={isPending} onClick={() => void onConfirm()}>
+            <Button
+              size="lg"
+              className="w-full"
+              disabled={isPending}
+              onClick={() => void onConfirm()}
+            >
               {isPending ? <Trans>Sending…</Trans> : <Trans>Confirm and send</Trans>}
             </Button>
             <Button
               variant="ghost"
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={isPending}
               onClick={() => onOpenChange(false)}
             >

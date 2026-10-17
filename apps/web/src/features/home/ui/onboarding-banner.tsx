@@ -8,7 +8,7 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 // routes to /onboarding, which handles both sign-up and sign-in.
 export function OnboardingBanner({ redirectTo }: { redirectTo?: string }) {
   return (
-    <Button asChild className="pointer-events-auto h-11 w-full">
+    <Button asChild size="lg" className="pointer-events-auto w-full">
       <Link to="/onboarding" search={onboardingSearch("welcome", redirectTo)}>
         <Trans>Sign in or sign up</Trans>
       </Link>

@@ -187,7 +187,8 @@ export function CatalogForm({
         {([submitting]) => (
           <Button
             type="submit"
-            className="h-11 w-full"
+            size="lg"
+            className="w-full"
             disabled={submitting || imageBusy || save.isPending}
           >
             {submitting ? (

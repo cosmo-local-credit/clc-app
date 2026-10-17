@@ -464,7 +464,8 @@ export function OnboardingWalletStep({
           {linkPasskey ? (
             <>
               <Button
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
                 onClick={() => void handleLinkPasskey()}
                 disabled={linkBusy}
               >
@@ -475,7 +476,8 @@ export function OnboardingWalletStep({
               </Button>
               <Button
                 variant={linkFailed ? "default" : "outline"}
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
                 onClick={() => void handleContinue()}
                 disabled={paperBusy}
               >
@@ -484,7 +486,8 @@ export function OnboardingWalletStep({
             </>
           ) : (
             <Button
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               onClick={() => void handleContinue()}
               disabled={paperBusy}
             >

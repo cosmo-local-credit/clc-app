@@ -32,10 +32,6 @@ import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balance
 import { openDefaultMaps } from "#/lib/default-maps";
 import { cn } from "#/lib/utils";
 
-/** A 36 px pill whose invisible inset keeps the complete target at 44 px. */
-export const VOUCHER_ACTION_PILL =
-  "relative h-9 shrink-0 gap-1.5 px-3 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
-
 export type VoucherBalanceSummary =
   | { status: "hidden"; hasPositiveBalance: false }
   | { status: "loading"; hasPositiveBalance: false }
@@ -148,13 +144,7 @@ function VoucherBalanceSummaryLine({
           <span className="text-destructive text-xs">
             <Trans>Unavailable</Trans>
           </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-9 px-2 text-xs"
-            onClick={balance.retry}
-          >
+          <Button type="button" variant="ghost" tap onClick={balance.retry}>
             <Trans>Retry</Trans>
           </Button>
         </>
@@ -361,14 +351,14 @@ function VoucherActionRow({
       role="group"
       aria-label={t`Voucher actions`}
     >
-      <Button asChild size="sm" className={VOUCHER_ACTION_PILL}>
+      <Button asChild tap>
         <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
           <RiHandCoinLine aria-hidden="true" />
           <Trans>Get</Trans>
         </Link>
       </Button>
       {hasPositiveBalance ? (
-        <Button asChild variant="outline" size="sm" className={cn(VOUCHER_ACTION_PILL, "bg-card")}>
+        <Button asChild variant="outline" tap>
           <Link to="/wallet/send" search={{ token: address }}>
             <RiSendPlane2Line aria-hidden="true" />
             <Trans>Send</Trans>
@@ -376,7 +366,7 @@ function VoucherActionRow({
         </Button>
       ) : null}
       {hasPositiveBalance && verifiedOwnerAddress ? (
-        <Button asChild variant="outline" size="sm" className={cn(VOUCHER_ACTION_PILL, "bg-card")}>
+        <Button asChild variant="outline" tap>
           <Link
             to="/wallet/send/amount"
             search={{ token: address, recipient: verifiedOwnerAddress }}
@@ -389,8 +379,7 @@ function VoucherActionRow({
       {coordinates || locationName ? (
         <Button
           variant="outline"
-          size="sm"
-          className={cn(VOUCHER_ACTION_PILL, "bg-card")}
+          tap
           onClick={() => openDefaultMaps({ label: locationName ?? name, lat, lng })}
         >
           <RiNavigationLine aria-hidden="true" />
@@ -398,7 +387,7 @@ function VoucherActionRow({
         </Button>
       ) : null}
       {phone ? (
-        <Button asChild variant="outline" size="sm" className={cn(VOUCHER_ACTION_PILL, "bg-card")}>
+        <Button asChild variant="outline" tap>
           <a href={`tel:${phone}`}>
             <RiPhoneLine aria-hidden="true" />
             <Trans>Call</Trans>
@@ -406,7 +395,7 @@ function VoucherActionRow({
         </Button>
       ) : null}
       {verifiedWebsite ? (
-        <Button asChild variant="outline" size="sm" className={cn(VOUCHER_ACTION_PILL, "bg-card")}>
+        <Button asChild variant="outline" tap>
           <a href={verifiedWebsite} target="_blank" rel="noreferrer noopener">
             <RiGlobalLine aria-hidden="true" />
             <Trans>Website</Trans>
@@ -418,8 +407,7 @@ function VoucherActionRow({
           kind="voucher"
           resourceId={catalogResourceId}
           address={catalogAddress}
-          size="sm"
-          className={cn(VOUCHER_ACTION_PILL, "bg-card")}
+          tap
         />
       ) : null}
     </div>
@@ -477,7 +465,7 @@ export function ShareVoucherButton({
     <Button
       variant="ghost"
       size="icon-lg"
-      className={cn("size-11 shrink-0 border-0 text-muted-foreground", className)}
+      className={cn("border-0 text-muted-foreground", className)}
       aria-label={label}
       onClick={() => {
         if (copyOnly) copy();

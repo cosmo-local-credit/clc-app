@@ -222,7 +222,7 @@ describe("SettingsPage", () => {
 
     const confirm = sheet.getByRole("button", { name: "Sign out" });
     expect(confirm.className).toContain("text-destructive");
-    expect(confirm.dataset.variant).toBe("outline");
+    expect(confirm.dataset.variant).toBe("destructive");
     fireEvent.click(confirm);
 
     expect(onSignOut).toHaveBeenCalledTimes(1);

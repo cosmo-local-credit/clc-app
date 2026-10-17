@@ -11,6 +11,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { Button } from "#/components/ui/button";
 import { TokenLogo } from "#/components/wallet";
 import type { WalletToken } from "#/components/wallet/wallet-data";
 import { cn } from "#/lib/utils";
@@ -78,13 +79,14 @@ export function TokenPickerSheet({
             })}
           </div>
           <SheetFooter>
-            <button
-              type="button"
+            <Button
+              variant="link"
+              size="lg"
+              className="w-full text-foreground"
               onClick={() => onOpenChange(false)}
-              className="h-11 w-full font-medium text-foreground text-sm hover:underline"
             >
               {t`Cancel`}
-            </button>
+            </Button>
           </SheetFooter>
         </SheetContent>
       </SheetPortal>

@@ -19,7 +19,7 @@ export function ResourceUsage({ resource }: { resource: ResourceKind }) {
         <p>
           <Trans>Couldn't load resource limits.</Trans>
         </p>
-        <Button variant="outline" onClick={() => void query.refetch()}>
+        <Button variant="outline" tap onClick={() => void query.refetch()}>
           <Trans>Retry</Trans>
         </Button>
       </div>

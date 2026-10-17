@@ -76,7 +76,7 @@ export function VoucherReviewsPanel({
           <p>
             <Trans>Couldn't load reviews.</Trans>
           </p>
-          <Button variant="outline" onClick={() => reviews.refetch()}>
+          <Button variant="outline" tap onClick={() => reviews.refetch()}>
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -139,7 +139,7 @@ export function VoucherReviewsPanel({
               <p className="text-sm text-muted-foreground">
                 <Trans>Couldn't check your review access.</Trans>
               </p>
-              <Button variant="outline" onClick={() => access.refetch()}>
+              <Button variant="outline" tap onClick={() => access.refetch()}>
                 <Trans>Try again</Trans>
               </Button>
             </>
@@ -169,7 +169,7 @@ export function VoucherReviewsPanel({
                   {editor?.kind === "review" ? (
                     renderEditor(editor)
                   ) : (
-                    <Button onClick={() => open({ kind: "review" })}>
+                    <Button tap onClick={() => open({ kind: "review" })}>
                       {viewer?.review ? t`Edit your review` : t`Write a review`}
                     </Button>
                   )}
@@ -190,7 +190,7 @@ export function VoucherReviewsPanel({
         <>
           {filter ? (
             <div className="flex min-h-10 items-center justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setFilter(undefined)}>
+              <Button variant="ghost" tap onClick={() => setFilter(undefined)}>
                 <Trans>Show all</Trans>
               </Button>
             </div>
@@ -221,17 +221,13 @@ export function VoucherReviewsPanel({
               {viewer?.isOwner ? (
                 <div className="flex flex-wrap gap-2">
                   {!review.reply || viewer.editableReplyIds.includes(review.id) ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => open({ kind: "reply", review })}
-                    >
+                    <Button variant="outline" tap onClick={() => open({ kind: "reply", review })}>
                       {review.reply ? t`Edit your reply` : t`Reply`}
                     </Button>
                   ) : null}
                   <Button
                     variant="ghost"
-                    size="sm"
+                    tap
                     disabled={viewer.flaggedReviewIds.includes(review.id)}
                     onClick={() => open({ kind: "flag", review })}
                   >
@@ -252,6 +248,7 @@ export function VoucherReviewsPanel({
           {reviews.hasNextPage ? (
             <Button
               variant="outline"
+              tap
               className="w-full"
               disabled={reviews.isFetchingNextPage}
               onClick={() => reviews.fetchNextPage()}

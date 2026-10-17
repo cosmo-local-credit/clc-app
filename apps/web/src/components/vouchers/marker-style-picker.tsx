@@ -91,8 +91,8 @@ export function MarkerStylePicker({
           <Button
             type="button"
             variant="destructive"
-            size="sm"
-            className="h-11 bg-destructive px-4 text-white hover:bg-destructive/90"
+            tap
+            className="bg-destructive text-white hover:bg-destructive/90"
             disabled={disabled}
             onClick={() => onChange({ icon: null, color: null })}
           >

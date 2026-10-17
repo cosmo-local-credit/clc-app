@@ -79,12 +79,7 @@ export function PoolActivityPanel({ pool }: { pool: UserPool }) {
             <p className="text-muted-foreground text-sm">
               <Trans>Couldn't load activity.</Trans>
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 bg-card"
-              onClick={() => transfersQuery.refetch()}
-            >
+            <Button variant="outline" tap onClick={() => transfersQuery.refetch()}>
               <Trans>Try again</Trans>
             </Button>
           </div>

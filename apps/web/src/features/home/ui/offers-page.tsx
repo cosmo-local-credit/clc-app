@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { Button } from "#/components/ui/button";
 import {
   isWithinNearbyCatalog,
   nearbyQueryPolicy,
@@ -161,9 +162,9 @@ export function OffersPage({
           <p className="text-sm">
             <Trans>These filters aren't valid.</Trans>
           </p>
-          <button type="button" className="underline" onClick={filter.clear}>
+          <Button variant="outline" tap onClick={filter.clear}>
             <Trans>Clear filters</Trans>
-          </button>
+          </Button>
         </div>
       ) : null}
       {credit.enabled && credit.poolRefs?.length === 0 ? (

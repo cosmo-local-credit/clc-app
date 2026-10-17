@@ -583,14 +583,14 @@ function MarkdownToolbar({ disabled }: { disabled: boolean }) {
               applyLink();
             }}
           />
-          <Button type="button" size="lg" onClick={applyLink} disabled={!isLinkableUrl(linkUrl)}>
+          <Button type="button" tap onClick={applyLink} disabled={!isLinkableUrl(linkUrl)}>
             <Trans>Apply</Trans>
           </Button>
           {state.link ? (
             <Button
               type="button"
-              size="lg"
               variant="outline"
+              tap
               onClick={() => {
                 editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
                 setLinkOpen(false);
@@ -632,7 +632,7 @@ function ToolbarButton({
       // Pressed has to read as more than hovered — the shared `Toggle` gives
       // both the same muted fill — because on a toolbar it is state, not
       // feedback.
-      className="size-11 shrink-0 data-[pressed]:bg-primary/10 data-[pressed]:text-primary"
+      className="data-[pressed]:bg-primary/10 data-[pressed]:text-primary"
       onMouseDown={(event) => event.preventDefault()}
       onPressedChange={onPress}
     >

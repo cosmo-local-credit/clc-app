@@ -37,12 +37,7 @@ export function MarketplaceSearchShell({
     return (
       <div className={cn("flex gap-1", surfaceClassName, className)}>
         <AppMenu />
-        <Button
-          size="icon"
-          className="size-11"
-          onClick={expand}
-          aria-label={t`Open marketplace search`}
-        >
+        <Button size="icon-lg" onClick={expand} aria-label={t`Open marketplace search`}>
           <RiSearch2Line className="size-5" aria-hidden="true" />
         </Button>
       </div>
@@ -57,8 +52,8 @@ export function MarketplaceSearchShell({
         {filters ?? (
           <Button
             disabled
-            size="icon"
-            className="size-11 bg-destructive text-destructive-foreground opacity-100"
+            size="icon-lg"
+            className="bg-destructive text-destructive-foreground opacity-100"
             aria-label={t`Filters`}
             title={t`Filters`}
           >
@@ -67,8 +62,7 @@ export function MarketplaceSearchShell({
         )}
         <Button
           variant="outline"
-          size="icon"
-          className="size-11 bg-card"
+          size="icon-lg"
           onClick={collapse}
           aria-label={t`Collapse marketplace search`}
         >

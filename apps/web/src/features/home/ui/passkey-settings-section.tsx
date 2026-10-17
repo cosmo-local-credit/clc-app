@@ -138,12 +138,17 @@ export function PasskeySettingsSection({
           canRetryStatus || canLink || canSwitch ? (
             <>
               {canRetryStatus ? (
-                <Button variant="outline" className="h-11 w-full" onClick={passkey.retryStatus}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  onClick={passkey.retryStatus}
+                >
                   <Trans>Try again</Trans>
                 </Button>
               ) : null}
               {canLink ? (
-                <Button className="h-11 w-full" onClick={passkey.link} disabled={disabled}>
+                <Button size="lg" className="w-full" onClick={passkey.link} disabled={disabled}>
                   {passkey.busy ? (
                     <RiLoader4Line className="animate-spin" aria-hidden="true" />
                   ) : (
@@ -154,7 +159,8 @@ export function PasskeySettingsSection({
               ) : null}
               {canSwitch ? (
                 <Button
-                  className="h-11 w-full"
+                  size="lg"
+                  className="w-full"
                   onClick={passkey.retryConnection}
                   disabled={disabled}
                 >

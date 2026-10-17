@@ -210,7 +210,7 @@ export function WithdrawSheet({
                   <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                   <Trans>Couldn't verify your MPESA link.</Trans>
                 </p>
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onRetryLink}>
+                <Button variant="outline" tap onClick={onRetryLink}>
                   <Trans>Try again</Trans>
                 </Button>
               </div>
@@ -291,14 +291,15 @@ export function WithdrawSheet({
                           amount !== "" && !hasValidAmount && "text-destructive",
                         )}
                       />
-                      <button
-                        type="button"
+                      <Button
+                        variant="link"
+                        tap
                         disabled={!hasRate || maxKes <= 0}
                         onClick={() => setAmount(maxKes.toString())}
-                        className="ms-1 font-semibold text-primary text-xs hover:underline disabled:opacity-50"
+                        className="-my-2 -me-3"
                       >
                         <Trans>Max</Trans>
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -328,7 +329,8 @@ export function WithdrawSheet({
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={!canWithdraw || sendTransfer.isPending}
               onClick={() => void onWithdraw()}
             >

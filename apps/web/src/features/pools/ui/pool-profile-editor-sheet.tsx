@@ -271,13 +271,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                   <p className="text-destructive text-xs">
                     <Trans>Couldn't load pool tags.</Trans>
                   </p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="bg-card"
-                    onClick={() => tagsQuery.refetch()}
-                  >
+                  <Button type="button" variant="outline" tap onClick={() => tagsQuery.refetch()}>
                     <Trans>Retry</Trans>
                   </Button>
                 </div>
@@ -450,7 +444,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
       </div>
 
       <SheetFooter>
-        <Button type="submit" className="h-11 w-full" disabled={update.isPending || imageBusy}>
+        <Button type="submit" size="lg" className="w-full" disabled={update.isPending || imageBusy}>
           {imageBusy ? (
             <Trans>Uploading…</Trans>
           ) : update.isPending ? (
@@ -462,7 +456,8 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={update.isPending}
           onClick={onClose}
         >

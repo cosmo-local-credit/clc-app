@@ -280,7 +280,8 @@ export function usePaperWalletSetup({
     <div>
       <div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
         <Button
-          className="h-11 w-full"
+          size="lg"
+          className="w-full"
           onClick={handleDownload}
           disabled={downloading || printing || downloadDisabled}
           aria-label={t`Download card`}
@@ -294,7 +295,7 @@ export function usePaperWalletSetup({
         </Button>
         <Button
           variant="outline"
-          className="h-11 px-4"
+          size="lg"
           onClick={() => void handlePrintSheet()}
           disabled={downloading || printing || downloadDisabled}
           aria-label={t`Save printable A4 sheet`}
@@ -310,7 +311,8 @@ export function usePaperWalletSetup({
       {shareSupported ? (
         <Button
           variant="outline"
-          className="mt-3 h-11 w-full"
+          size="lg"
+          className="mt-3 w-full"
           onClick={() => void handleShare()}
           disabled={downloading || printing || downloadDisabled}
         >

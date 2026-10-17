@@ -31,7 +31,7 @@ export function RouteError({ error }: { error: unknown }) {
           Something went wrong
         </h1>
         <p className="text-muted-foreground text-sm">Please reload the app and try again.</p>
-        <Button className="h-11" onClick={() => window.location.reload()}>
+        <Button size="lg" onClick={() => window.location.reload()}>
           Reload
         </Button>
       </div>

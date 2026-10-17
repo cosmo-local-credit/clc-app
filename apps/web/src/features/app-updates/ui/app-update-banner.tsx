@@ -117,18 +117,14 @@ export function AppUpdateBanner({ suppressed }: { suppressed: boolean }) {
               </p>
             ) : null}
           </div>
-          <Button
-            className="h-11 shrink-0"
-            disabled={checking || mutating}
-            onClick={() => void handleUpdate()}
-          >
+          <Button tap disabled={checking || mutating} onClick={() => void handleUpdate()}>
             {checking ? t`Updating…` : t`Update`}
           </Button>
           {status.kind === "available" ? (
             <Button
               variant="ghost"
               size="icon"
-              className="size-11 shrink-0"
+              tap
               aria-label={t`Dismiss`}
               onClick={() => setDismissedBuildId(status.target.buildId)}
             >

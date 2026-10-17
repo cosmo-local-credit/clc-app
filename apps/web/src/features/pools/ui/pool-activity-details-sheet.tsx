@@ -216,12 +216,7 @@ export function PoolActivityDetailsSheet({
                     <Trans>Fee details unavailable.</Trans>
                   </p>
                   {settlement.canLoad ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 bg-card"
-                      onClick={() => settlement.refetch()}
-                    >
+                    <Button variant="outline" tap onClick={() => settlement.refetch()}>
                       <Trans>Try again</Trans>
                     </Button>
                   ) : null}
@@ -231,7 +226,7 @@ export function PoolActivityDetailsSheet({
           ) : null}
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button asChild className="h-11 w-full">
+            <Button asChild size="lg" className="w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
                 <Trans>View on block explorer</Trans>
               </a>

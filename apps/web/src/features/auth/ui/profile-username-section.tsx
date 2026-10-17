@@ -205,7 +205,8 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
             return (
               <Button
                 type="submit"
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
                 disabled={!canSubmit || isSubmitting || normalized === "" || normalized === current}
               >
                 {isSubmitting ? t`Saving…` : t`Save username`}
@@ -216,7 +217,8 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          size="lg"
+          className="w-full"
           disabled={updateProfile.isPending}
           onClick={onClose}
         >

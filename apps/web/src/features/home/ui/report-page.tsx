@@ -47,12 +47,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
   if (reportQuery.isError) {
     return (
       <ReportShell message={t`Couldn't load this post.`}>
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-card"
-          onClick={() => reportQuery.refetch()}
-        >
+        <Button variant="outline" size="lg" onClick={() => reportQuery.refetch()}>
           <Trans>Retry</Trans>
         </Button>
       </ReportShell>
@@ -81,7 +76,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
               {report.title}
             </h1>
             {isAuthor ? (
-              <Button asChild variant="outline" size="sm" className="h-9 shrink-0 bg-card">
+              <Button asChild variant="outline" tap>
                 <Link to="/posts/$reportId/edit" params={{ reportId: report.id }}>
                   <Trans>Edit</Trans>
                 </Link>
@@ -197,11 +192,13 @@ function ReportGallery({ images, title }: { images: ReportImage[]; title: string
 
         <CarouselPrevious
           label={t`Previous image`}
-          className="start-2 size-11 border-transparent bg-background/80 text-foreground"
+          tap
+          className="start-2 border-transparent bg-background/80 text-foreground"
         />
         <CarouselNext
           label={t`Next image`}
-          className="end-2 size-11 border-transparent bg-background/80 text-foreground"
+          tap
+          className="end-2 border-transparent bg-background/80 text-foreground"
         />
         <p
           aria-live="polite"
@@ -326,11 +323,13 @@ function FullScreenCarousel({
       </CarouselContent>
       <CarouselPrevious
         label={t`Previous image`}
-        className="start-3 size-11 border-white/30 bg-black/70 text-white"
+        size="icon-lg"
+        className="start-3 border-white/30 bg-black/70 text-white"
       />
       <CarouselNext
         label={t`Next image`}
-        className="end-3 size-11 border-white/30 bg-black/70 text-white"
+        size="icon-lg"
+        className="end-3 border-white/30 bg-black/70 text-white"
       />
       <p
         aria-live="polite"
@@ -576,7 +575,8 @@ function ReportLocation({ report, label }: { report: ReportDetail; label: string
             </Suspense>
             <Button
               variant="outline"
-              className="mt-3 h-11 w-full bg-card"
+              tap
+              className="mt-3 w-full"
               onClick={() => openDefaultMaps({ label, lat: report.lat, lng: report.lng })}
             >
               <RiNavigationLine className="size-4" aria-hidden="true" />

@@ -138,9 +138,9 @@ export function MarketplacePage({
           <p className="text-sm">
             <Trans>These filters aren't valid.</Trans>
           </p>
-          <button type="button" className="underline" onClick={filter.clear}>
+          <Button variant="outline" tap onClick={filter.clear}>
             <Trans>Clear filters</Trans>
-          </button>
+          </Button>
         </div>
       ) : null}
       {credit.enabled && credit.poolRefs?.length === 0 ? (
@@ -156,7 +156,7 @@ export function MarketplacePage({
           <p>
             <Trans>Couldn't load marketplace results.</Trans>
           </p>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button variant="outline" tap onClick={() => void query.refetch()}>
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -178,7 +178,8 @@ export function MarketplacePage({
       {query.hasNextPage && !crossedDistanceBoundary && !credit.blocksResults ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
+          tap
+          className="w-full"
           disabled={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >

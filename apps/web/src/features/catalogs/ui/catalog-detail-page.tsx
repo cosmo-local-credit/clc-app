@@ -45,7 +45,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
               <Trans>Couldn't load catalogs.</Trans>
             )}
           </h1>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button variant="outline" size="lg" onClick={() => void query.refetch()}>
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -82,7 +82,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
           <div className="flex flex-wrap gap-2">
             <CatalogShareButton id={catalog.id} name={catalog.name} />
             {owner ? (
-              <Button variant="outline" className="h-11 bg-card" onClick={() => setEditing(true)}>
+              <Button variant="outline" tap onClick={() => setEditing(true)}>
                 <Trans>Edit catalog</Trans>
               </Button>
             ) : null}

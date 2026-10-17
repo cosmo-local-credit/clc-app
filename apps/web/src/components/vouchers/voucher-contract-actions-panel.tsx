@@ -273,7 +273,7 @@ function VoucherMintSheet({
               </form.Field>
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button type="submit" className="h-11 w-full" disabled={pending}>
+              <Button type="submit" size="lg" className="w-full" disabled={pending}>
                 {pending ? (
                   <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
                 ) : null}
@@ -390,7 +390,7 @@ function VoucherOwnershipTransferSheet({
               </form.Field>
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button type="submit" className="h-11 w-full" disabled={pending}>
+              <Button type="submit" size="lg" className="w-full" disabled={pending}>
                 {pending ? (
                   <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
                 ) : null}
@@ -470,7 +470,8 @@ function VoucherRetireSheet({
             <Button
               type="button"
               variant="destructive"
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={retire.isPending}
               onClick={() => void confirm()}
             >
@@ -482,7 +483,8 @@ function VoucherRetireSheet({
             <Button
               type="button"
               variant="outline"
-              className="h-11 w-full bg-card"
+              size="lg"
+              className="w-full"
               disabled={retire.isPending}
               onClick={onClose}
             >

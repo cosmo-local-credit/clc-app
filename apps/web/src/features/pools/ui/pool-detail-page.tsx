@@ -131,14 +131,18 @@ export function PoolDetailPage({
         </div>
       </section>
 
-      {/* The three-up icon grid the wallet and voucher screens already use, so
-          a pool's actions are read the same way as every other screen's. */}
+      {/* The three-up action row the wallet screen already uses, so a pool's
+          actions are read the same way as every other screen's. Labels are
+          ellipsized rather than spilling where a translation outgrows a third
+          of a 360px row. */}
       {auth.isAuthenticated ? (
         <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
-          <Button asChild className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+          <Button asChild size="lg" className="gap-1.5 px-1">
             <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
               <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
-              <Trans>Swap</Trans>
+              <span className="min-w-0 truncate">
+                <Trans>Swap</Trans>
+              </span>
             </Link>
           </Button>
           {/* A shortcut into the ordinary send flow with the pool as the
@@ -146,7 +150,7 @@ export function PoolDetailPage({
             own: BackChevron prefers real history over its deep-link fallback.
             `returnPool` rides along to the receipt so finishing the send lands
             back on this pool rather than on the wallet. */}
-          <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+          <Button asChild variant="outline" size="lg" className="gap-1.5 px-1">
             <Link
               to="/wallet/send/amount"
               search={{
@@ -156,18 +160,23 @@ export function PoolDetailPage({
               }}
             >
               <RiArrowRightUpLine className="size-4" aria-hidden="true" />
-              <Trans>Deposit</Trans>
+              <span className="min-w-0 truncate">
+                <Trans>Deposit</Trans>
+              </span>
             </Link>
           </Button>
           {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
             one-word label so all three fit a 360px row. */}
           <Button
             variant="info"
-            className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
+            size="lg"
+            className="gap-1.5 px-1"
             onClick={() => setReceiving(true)}
           >
             <RiQrCodeLine className="size-4" aria-hidden="true" />
-            <Trans>Receive</Trans>
+            <span className="min-w-0 truncate">
+              <Trans>Receive</Trans>
+            </span>
           </Button>
         </section>
       ) : null}
@@ -175,7 +184,7 @@ export function PoolDetailPage({
       {auth.isAuthenticated ? (
         <>
           <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
-          <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
+          <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} tap />
         </>
       ) : null}
 
@@ -251,7 +260,7 @@ export function PoolDetailPage({
           className="space-y-3"
         >
           {canManageOnChain ? (
-            <Button variant="outline" className="h-9 w-full" onClick={() => setApproving(true)}>
+            <Button variant="outline" tap className="w-full" onClick={() => setApproving(true)}>
               <RiAddLine className="size-4" aria-hidden="true" />
               <Trans>Approve voucher</Trans>
             </Button>
@@ -364,11 +373,7 @@ function VoucherRow({
           sibling of the row link, not inside it — links do not nest. Filled in
           the brand colour, like the pool's own Swap, so it does not read as
           part of the white row. */}
-      <Button
-        asChild
-        size="sm"
-        className={["text-[0.6875rem] font-semibold", onManage ? "" : "me-3"].join(" ")}
-      >
+      <Button asChild tap className={onManage ? undefined : "me-3"}>
         <Link
           to="/pools/$poolAddress/swap"
           params={{ poolAddress }}

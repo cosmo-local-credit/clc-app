@@ -12,10 +12,9 @@ import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 import { catalogsClient } from "#/lib/api/catalogs";
-import { cn } from "#/lib/utils";
 
 type AddToCatalogButtonProps = CatalogCreateIntent &
-  Pick<ComponentProps<typeof Button>, "className" | "size">;
+  Pick<ComponentProps<typeof Button>, "className" | "size" | "tap">;
 
 export function AddToCatalogButton({
   kind,
@@ -23,6 +22,7 @@ export function AddToCatalogButton({
   address,
   className,
   size,
+  tap,
 }: AddToCatalogButtonProps) {
   const { t } = useLingui();
   const mine = useMyCatalog();
@@ -48,7 +48,8 @@ export function AddToCatalogButton({
       <Button
         variant="outline"
         size={size}
-        className={cn("h-11 bg-card", className)}
+        tap={tap}
+        className={className}
         onClick={() => {
           void mine.refetch();
           if (catalog) void membership.refetch();
@@ -59,7 +60,7 @@ export function AddToCatalogButton({
     );
   if (mine.isSuccess && !catalog)
     return (
-      <Button asChild variant="outline" size={size} className={cn("h-11 bg-card", className)}>
+      <Button asChild variant="outline" size={size} tap={tap} className={className}>
         <Link to="/catalogs/create" search={{ kind, resourceId, address }}>
           <Trans>Add to catalog</Trans>
         </Link>
@@ -90,7 +91,8 @@ export function AddToCatalogButton({
       <Button
         variant="outline"
         size={size}
-        className={cn("h-11 bg-card", className)}
+        tap={tap}
+        className={className}
         disabled={
           mine.isPending || membership.isPending || mutation.isPending || membership.data?.added
         }

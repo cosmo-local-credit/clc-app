@@ -409,7 +409,8 @@ export function VoucherDeploymentReceiptPage({
 
         <div className="mt-auto pt-6">
           <Button
-            className="h-11 w-full"
+            size="lg"
+            className="w-full"
             disabled={
               minting ||
               mint.isPending ||
@@ -511,7 +512,11 @@ export function VoucherDeploymentReceiptPage({
       </AdvancedDeploymentDetails>
 
       <div className="mt-auto pt-6">
-        <Button className="h-11 w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={() => exit(`/vouchers/${address}?from=vouchers`)}
+        >
           <Trans>View voucher</Trans>
         </Button>
       </div>

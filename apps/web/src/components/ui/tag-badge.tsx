@@ -43,7 +43,7 @@ export function SelectableTagBadge({
       type="button"
       aria-pressed={selected}
       className={cn(
-        "inline-flex h-8 shrink-0 items-center gap-1.5 border px-3 font-semibold text-[11px] transition-colors",
+        "relative inline-flex h-9 shrink-0 items-center gap-1.5 border px-3 font-semibold text-[11px] transition-colors before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']",
         "disabled:cursor-not-allowed disabled:opacity-45",
         selected ? "border-transparent text-white" : "border-border bg-card text-foreground",
         className,

@@ -49,7 +49,7 @@ export function PoolHoldingListPanel({
             {isError ? (
               <div className="space-y-2 p-3">
                 <p className="text-muted-foreground text-sm">{messages.error}</p>
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onRetry}>
+                <Button variant="outline" tap onClick={onRetry}>
                   <Trans>Try again</Trans>
                 </Button>
               </div>

@@ -850,12 +850,7 @@ export function MarketMap({
             )}
           </p>
           {failure === "error" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-card"
-              onClick={() => setFailure(null)}
-            >
+            <Button variant="outline" tap onClick={() => setFailure(null)}>
               <Trans>Retry</Trans>
             </Button>
           ) : null}

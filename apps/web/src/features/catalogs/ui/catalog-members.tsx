@@ -42,7 +42,7 @@ export function CatalogMembers({
           <p role="alert">
             <Trans>Couldn't load catalog items.</Trans>
           </p>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button variant="outline" tap onClick={() => void query.refetch()}>
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -85,7 +85,7 @@ export function CatalogMembers({
               {canEdit ? (
                 <Button
                   variant="outline"
-                  className="h-11 shrink-0 bg-card"
+                  tap
                   aria-label={t`Remove ${item.name}`}
                   disabled={remove.isPending}
                   onClick={async () => {
@@ -110,7 +110,8 @@ export function CatalogMembers({
       {query.hasNextPage ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
+          tap
+          className="w-full"
           disabled={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >

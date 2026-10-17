@@ -202,7 +202,7 @@ function PostEditorLoader({ reportId }: { reportId: string }) {
         <p className="border border-border bg-card p-3 text-muted-foreground text-sm">
           <Trans>Couldn't load this post. You can only edit posts you wrote.</Trans>
         </p>
-        <Button variant="outline" size="sm" className="bg-card" onClick={() => postQuery.refetch()}>
+        <Button variant="outline" size="lg" onClick={() => postQuery.refetch()}>
           <Trans>Retry</Trans>
         </Button>
       </EditorShell>
@@ -342,13 +342,7 @@ function PostEditorForm({
           <p className="text-muted-foreground text-sm">
             <Trans>Picked up where you left off — this post has not been submitted yet.</Trans>
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={draft.onStartOver}
-          >
+          <Button type="button" variant="outline" tap onClick={draft.onStartOver}>
             <Trans>Start over</Trans>
           </Button>
         </div>
@@ -554,8 +548,7 @@ function PostEditorForm({
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
-                        className="h-9 bg-card"
+                        tap
                         onClick={() => tagsQuery.refetch()}
                       >
                         <Trans>Retry</Trans>
@@ -629,7 +622,7 @@ function PostEditorForm({
           </form.Field>
         </Section>
 
-        <Button type="submit" className="h-11 w-full" disabled={saving || imagesBusy}>
+        <Button type="submit" size="lg" className="w-full" disabled={saving || imagesBusy}>
           {imagesBusy ? (
             <Trans>Uploading photos…</Trans>
           ) : saving ? (

@@ -314,12 +314,18 @@ function AppInner() {
               </p>
               <p className="text-foreground mt-2 truncate font-mono text-xs">{pendingAddress}</p>
               <div className="mt-5 flex flex-col gap-2">
-                <Button className="h-11 w-full" disabled={switching} onClick={handleConfirmSwitch}>
+                <Button
+                  size="lg"
+                  className="w-full"
+                  disabled={switching}
+                  onClick={handleConfirmSwitch}
+                >
                   {switching ? t`Connecting…` : address ? t`Switch wallet` : t`Import wallet`}
                 </Button>
                 <Button
                   variant="ghost"
-                  className="h-11 w-full"
+                  size="lg"
+                  className="w-full"
                   onClick={clearPendingKey}
                   disabled={switching}
                 >

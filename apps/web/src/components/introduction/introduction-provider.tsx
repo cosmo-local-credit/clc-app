@@ -101,7 +101,7 @@ export function IntroductionReplayButton() {
   const replay = useContext(ReplayContext);
   if (!replay) return null;
   return (
-    <Button variant="outline" className="min-h-11 w-full" onClick={replay}>
+    <Button variant="outline" tap className="w-full" onClick={replay}>
       <Trans id="intro.replay">How to use CLC</Trans>
     </Button>
   );

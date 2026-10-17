@@ -143,7 +143,8 @@ export function usePaperWalletProtection({
           </div>
 
           <Button
-            className="h-11 w-full"
+            size="lg"
+            className="w-full"
             disabled={encrypting}
             onClick={() => void handleProtect()}
           >

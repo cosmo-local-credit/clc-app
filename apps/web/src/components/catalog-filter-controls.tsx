@@ -68,9 +68,10 @@ export function CatalogSearchField({
         <Button
           variant="ghost"
           size="icon"
+          tap
           onClick={filter.clearTerm}
           aria-label={t`Clear search`}
-          className="absolute top-1/2 end-1 -translate-y-1/2 border-0 bg-transparent text-muted-foreground before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
+          className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
         >
           <RiCloseLine className="size-4" aria-hidden="true" />
         </Button>
@@ -241,11 +242,12 @@ export function CatalogFilterSheet({
         aria-expanded={open}
         aria-label={trigger === "marketplace-icon" ? t`Filters` : undefined}
         title={trigger === "marketplace-icon" ? t`Filters` : undefined}
-        size={trigger === "marketplace-icon" ? "icon" : undefined}
+        size={trigger === "marketplace-icon" ? "icon-lg" : "default"}
+        tap={trigger === "default"}
         className={
           trigger === "marketplace-icon"
-            ? "relative size-11 bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            : "relative h-9 px-2.5 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
+            ? "relative bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            : undefined
         }
       >
         <RiFilter3Line
@@ -279,7 +281,6 @@ export function CatalogFilterSheet({
                 <Button
                   variant="outline"
                   size="icon-lg"
-                  className="relative h-9 w-9 bg-card before:absolute before:-inset-1 before:content-['']"
                   aria-label={t`Close filters`}
                   onClick={() => changeOpen(false)}
                 >
@@ -385,12 +386,7 @@ export function CatalogFilterSheet({
                         <p className="text-muted-foreground text-sm">
                           <Trans>Couldn't search vouchers.</Trans>
                         </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 bg-card"
-                          onClick={voucherSearch.retry}
-                        >
+                        <Button variant="outline" tap onClick={voucherSearch.retry}>
                           <Trans>Try again</Trans>
                         </Button>
                       </div>
@@ -506,7 +502,6 @@ export function CatalogFilterSheet({
                           tag={facet.tag}
                           selected={selected}
                           count={showCounts ? facet.count : undefined}
-                          className="relative h-9 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
                           disabled={!selected && (facet.count === 0 || atTagLimit)}
                           onClick={() => toggleDraftTag(facet.tag)}
                         />
@@ -523,12 +518,7 @@ export function CatalogFilterSheet({
                       )}
                     </p>
                     {searchTerm !== "" ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 bg-card"
-                        onClick={filter.clearTerm}
-                      >
+                      <Button variant="outline" tap onClick={filter.clearTerm}>
                         <Trans>Clear search</Trans>
                       </Button>
                     ) : null}
@@ -563,7 +553,7 @@ export function CatalogFilterSheet({
             <SheetFooter className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 bg-card px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <Button
                 variant="outline"
-                className="h-11 bg-card px-4"
+                size="lg"
                 disabled={draftTags.length === 0 && draftVouchers.length === 0}
                 onClick={() => {
                   setDraftTags([]);
@@ -575,7 +565,7 @@ export function CatalogFilterSheet({
                 <Trans>Reset</Trans>
               </Button>
               <Button
-                className="h-11"
+                size="lg"
                 onClick={() => {
                   onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
                   onOpenChange(false);
@@ -613,7 +603,7 @@ function TagMatchToggle({
       onPressedChange={(nextPressed) => {
         if (nextPressed) onPressed();
       }}
-      className="h-11 bg-card data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
+      className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
     >
       {pressed ? <RiCheckLine className="size-4" aria-hidden="true" /> : null}
       {label}

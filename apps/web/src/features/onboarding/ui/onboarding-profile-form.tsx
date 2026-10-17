@@ -417,7 +417,8 @@ export function OnboardingProfileForm({
               <Button
                 type="submit"
                 disabled={isSubmitting || !isStorageConfigured}
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
               >
                 {isSubmitting ? <LoaderCircle className="me-2 size-4 animate-spin" /> : null}
                 {isSubmitting ? t`Saving…` : t`Continue`}

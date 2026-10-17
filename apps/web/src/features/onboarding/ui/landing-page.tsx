@@ -52,10 +52,10 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
       </div>
 
       <div className="mt-auto space-y-3 pt-8 pb-2">
-        <Button className="h-11 w-full" onClick={() => go("profile")}>
+        <Button size="lg" className="w-full" onClick={() => go("profile")}>
           <Trans>Create account</Trans>
         </Button>
-        <Button variant="outline" className="h-11 w-full" onClick={() => go("signin")}>
+        <Button variant="outline" size="lg" className="w-full" onClick={() => go("signin")}>
           <Trans>I already have an account</Trans>
         </Button>
         <IntroductionReplayButton />

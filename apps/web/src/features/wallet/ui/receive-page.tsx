@@ -132,7 +132,7 @@ export function ReceivePage() {
       {/* Collecting from a card is its own operation — the payer's card signs a
           transfer to this wallet — not this address QR delivered over NFC. */}
       {nfcSupported && address ? (
-        <Button asChild variant="outline" className="mb-2 h-11 w-full">
+        <Button asChild variant="outline" size="lg" className="mb-2 w-full">
           <Link to="/wallet/collect">
             <TbNfc className="size-4" aria-hidden="true" />
             <Trans>Collect by card</Trans>
@@ -143,14 +143,15 @@ export function ReceivePage() {
       <div className="flex gap-2">
         <Button
           variant="outline"
-          className="h-11 flex-1"
+          size="lg"
+          className="flex-1"
           disabled={!address}
           onClick={() => address && copy(address)}
         >
           <RiFileCopyLine className="size-4" aria-hidden="true" />
           <Trans>Copy</Trans>
         </Button>
-        <Button className="h-11 flex-1" disabled={!address} onClick={() => void share()}>
+        <Button size="lg" className="flex-1" disabled={!address} onClick={() => void share()}>
           <RiShareLine className="size-4" aria-hidden="true" />
           <Trans>Share</Trans>
         </Button>

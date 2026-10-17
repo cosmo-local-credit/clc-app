@@ -129,7 +129,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              tap
               onClick={() => fileInputRef.current?.click()}
             >
               <Trans>Upload logo</Trans>
@@ -152,13 +152,9 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
             ) : null}
 
             {value.logoDataUrl ? (
-              <button
-                type="button"
-                className="text-destructive text-sm underline-offset-2 hover:underline"
-                onClick={handleResetLogo}
-              >
+              <Button variant="link" tap className="text-destructive" onClick={handleResetLogo}>
                 <Trans>Reset logo</Trans>
-              </button>
+              </Button>
             ) : null}
           </div>
 

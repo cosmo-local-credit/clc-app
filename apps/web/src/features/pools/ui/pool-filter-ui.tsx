@@ -85,7 +85,7 @@ export function PoolFilterFeedback({
     <div className="space-y-2 border border-border bg-card p-3" role="alert">
       <p className="text-muted-foreground text-sm">{notice.message}</p>
       {notice.actionLabel && notice.onAction ? (
-        <Button variant="outline" size="sm" className="h-9 bg-card" onClick={notice.onAction}>
+        <Button variant="outline" tap onClick={notice.onAction}>
           {notice.actionLabel}
         </Button>
       ) : null}

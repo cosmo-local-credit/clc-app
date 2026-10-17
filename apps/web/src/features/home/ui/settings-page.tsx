@@ -136,8 +136,9 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
         footer={
           <>
             <Button
-              variant="outline"
-              className="h-11 w-full border-destructive text-destructive hover:bg-destructive/10"
+              variant="destructive"
+              size="lg"
+              className="w-full"
               onClick={() => {
                 setOpen(false);
                 onSignOut();
@@ -146,7 +147,7 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
               <RiLogoutBoxRLine aria-hidden="true" />
               <Trans>Sign out</Trans>
             </Button>
-            <Button variant="outline" className="h-11 w-full" onClick={() => setOpen(false)}>
+            <Button variant="outline" size="lg" className="w-full" onClick={() => setOpen(false)}>
               <Trans>Cancel</Trans>
             </Button>
           </>
@@ -227,7 +228,8 @@ function WalletSessionRow({
             {address ? (
               <Button
                 variant="outline"
-                size="icon-lg"
+                size="icon"
+                tap
                 aria-label={t`Copy address`}
                 onClick={copyAddress}
               >

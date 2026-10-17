@@ -137,11 +137,12 @@ export function ReviewEditor({
       <div className="flex gap-2">
         <Button
           type="submit"
+          size="lg"
           disabled={pending || (kind === "review" ? stars === 0 : !text.trim())}
         >
           {pending ? t`Saving…` : kind === "flag" ? t`Send report` : t`Save`}
         </Button>
-        <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
+        <Button type="button" variant="outline" size="lg" disabled={pending} onClick={onCancel}>
           <Trans>Cancel</Trans>
         </Button>
       </div>

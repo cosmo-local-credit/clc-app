@@ -64,7 +64,8 @@ export function EncryptedPaperWalletImportForm({
         </div>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
+          tap
           aria-label={t`Close password-protected wallet import`}
           onClick={onCancel}
           disabled={decrypting}
@@ -96,7 +97,12 @@ export function EncryptedPaperWalletImportForm({
         </p>
       ) : null}
 
-      <Button type="submit" disabled={!passphrase.trim() || decrypting} className="h-11 w-full">
+      <Button
+        type="submit"
+        size="lg"
+        disabled={!passphrase.trim() || decrypting}
+        className="w-full"
+      >
         {decrypting ? (
           <FiLoader className="me-2 size-4 animate-spin" />
         ) : (

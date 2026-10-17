@@ -262,12 +262,7 @@ function VoucherPostsPanel({
         <p className="text-muted-foreground text-sm">
           <Trans>Couldn't load posts.</Trans>
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9 bg-card"
-          onClick={() => reportsQuery.refetch()}
-        >
+        <Button variant="outline" tap onClick={() => reportsQuery.refetch()}>
           <Trans>Try again</Trans>
         </Button>
       </div>
@@ -285,7 +280,7 @@ function VoucherPostsPanel({
   return (
     <div className="space-y-2">
       {canWritePost && voucher ? (
-        <Button asChild className="h-9 w-full">
+        <Button asChild tap className="w-full">
           <Link
             to="/posts/new"
             search={{ voucher: voucher.address, chainId: voucher.chainId, voucherName }}
@@ -298,7 +293,8 @@ function VoucherPostsPanel({
       {reportsQuery.hasNextPage ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
+          tap
+          className="w-full"
           disabled={reportsQuery.isFetchingNextPage}
           onClick={() => void reportsQuery.fetchNextPage()}
         >
@@ -347,12 +343,7 @@ function VoucherActivityPanel({
             <p className="text-muted-foreground text-sm">
               <Trans>Couldn't load activity.</Trans>
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 bg-card"
-              onClick={() => transfersQuery.refetch()}
-            >
+            <Button variant="outline" tap onClick={() => transfersQuery.refetch()}>
               <Trans>Try again</Trans>
             </Button>
           </div>
@@ -440,7 +431,8 @@ function VoucherActivityPanel({
       {hasMoreTransfers ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
+          tap
+          className="w-full"
           disabled={transfersQuery.isFetchingNextPage}
           onClick={() => {
             if (visibleCount >= transfers.length && transfersQuery.hasNextPage) {
@@ -499,7 +491,8 @@ function VoucherInfoPanel({
           ) : null}
           <Button
             variant="outline"
-            className="mt-3 h-11 w-full bg-card"
+            tap
+            className="mt-3 w-full"
             onClick={() => openDefaultMaps({ label: locationName, lat, lng })}
           >
             <RiNavigationLine className="size-4" aria-hidden="true" />

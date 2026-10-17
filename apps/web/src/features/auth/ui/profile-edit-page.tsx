@@ -53,12 +53,7 @@ export function ProfileEditPage() {
           <p className="text-muted-foreground text-sm">
             <Trans>We couldn't load your profile.</Trans>
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={() => void profileQuery.refetch()}
-          >
+          <Button variant="outline" tap onClick={() => void profileQuery.refetch()}>
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -359,7 +354,8 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-11 w-full bg-card"
+                            tap
+                            className="w-full"
                             onClick={() => field.handleChange(undefined)}
                           >
                             <Trans>Clear location</Trans>
@@ -427,7 +423,8 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                   isSubmitting ||
                   avatarBusy
                 }
-                className="h-11 w-full"
+                size="lg"
+                className="w-full"
               >
                 {isSubmitting ? (
                   <RiLoader4Line className="animate-spin" aria-hidden="true" />

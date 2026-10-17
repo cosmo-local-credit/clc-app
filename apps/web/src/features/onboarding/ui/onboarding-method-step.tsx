@@ -105,7 +105,7 @@ export function OnboardingMethodStep({ redirectTo, initialChoice = "link", onCon
           </form.Field>
 
           <div className="mt-auto pt-8">
-            <Button type="submit" className="h-11 w-full">
+            <Button type="submit" size="lg" className="w-full">
               <Trans>Continue</Trans>
             </Button>
           </div>

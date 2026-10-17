@@ -30,7 +30,7 @@ function SessionCheckError({ onRetry }: { onRetry: () => void }) {
         <p className="mt-2 text-muted-foreground text-sm">
           <Trans>We could not verify your session. Check your connection and try again.</Trans>
         </p>
-        <Button className="mt-4 h-11 w-full" onClick={onRetry}>
+        <Button size="lg" className="mt-4 w-full" onClick={onRetry}>
           <Trans>Try again</Trans>
         </Button>
       </div>
@@ -60,25 +60,28 @@ function AuthRequiredScreen() {
             Replace the protected URL so onboarding does not stack above it.
             Finish then replaces the single onboarding slot with the destination.
           */}
-          <Button asChild className="h-11 w-full">
+          <Button asChild size="lg" className="w-full">
             <Link to="/onboarding" search={onboardingSearch("profile", redirectTo)} replace>
               <Trans>Create account</Trans>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-11 w-full">
+          <Button asChild variant="outline" size="lg" className="w-full">
             <Link to="/onboarding" search={onboardingSearch("signin", redirectTo)} replace>
               <Trans>I already have an account</Trans>
             </Link>
           </Button>
         </div>
 
-        <Link
-          to="/"
-          replace
-          className="block text-center text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+        <Button
+          asChild
+          variant="link"
+          tap
+          className="w-full text-muted-foreground hover:text-foreground"
         >
-          <Trans>Back to market</Trans>
-        </Link>
+          <Link to="/" replace>
+            <Trans>Back to market</Trans>
+          </Link>
+        </Button>
       </div>
     </div>
   );

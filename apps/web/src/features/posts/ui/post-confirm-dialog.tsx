@@ -49,15 +49,10 @@ export function PostConfirmDialog({
           </DialogTitle>
           <div className="mt-2 text-muted-foreground text-sm leading-6">{children}</div>
           <div className="mt-5 space-y-2">
-            <Button type="button" className="h-11 w-full" onClick={onConfirm}>
+            <Button type="button" size="lg" className="w-full" onClick={onConfirm}>
               {confirmLabel}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 w-full bg-card"
-              onClick={onCancel}
-            >
+            <Button type="button" variant="outline" size="lg" className="w-full" onClick={onCancel}>
               {t`Cancel`}
             </Button>
           </div>

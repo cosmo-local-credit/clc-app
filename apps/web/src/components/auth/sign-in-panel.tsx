@@ -370,7 +370,8 @@ export function SignInPanel({
         <>
           {available ? (
             <Button
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               onClick={() => void signInWithPasskey()}
               disabled={isSigningIn}
             >
@@ -380,7 +381,8 @@ export function SignInPanel({
           ) : null}
 
           <Button
-            className="h-11 w-full"
+            size="lg"
+            className="w-full"
             onClick={() => {
               setShowScanner(true);
               setError(null);
@@ -391,15 +393,16 @@ export function SignInPanel({
           </Button>
 
           {nfcSupported ? (
-            <Button variant="outline" className="h-11 w-full" onClick={startNfc}>
+            <Button variant="outline" size="lg" className="w-full" onClick={startNfc}>
               <TbNfc className="me-2 size-4" />
               <Trans>Tap NFC card</Trans>
             </Button>
           ) : null}
 
-          <button
-            type="button"
-            className="w-full pt-1 text-center text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+          <Button
+            variant="link"
+            tap
+            className="w-full text-muted-foreground hover:text-foreground"
             onClick={() => {
               setShowAdvanced((current) => !current);
               setShowPkInput(false);
@@ -407,12 +410,13 @@ export function SignInPanel({
             }}
           >
             <Trans>Advanced options</Trans>
-          </button>
+          </Button>
 
           {showAdvanced ? (
             <Button
               variant="outline"
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               onClick={() => {
                 setShowPkInput(true);
                 setError(null);
@@ -433,7 +437,8 @@ export function SignInPanel({
             </p>
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon"
+              tap
               aria-label={t`Close private key form`}
               onClick={() => {
                 setShowPkInput(false);
@@ -454,7 +459,7 @@ export function SignInPanel({
             aria-invalid={!!error}
             aria-label={t`Private key`}
           />
-          <Button type="submit" disabled={!pkInput.trim()} className="h-11 w-full">
+          <Button type="submit" size="lg" disabled={!pkInput.trim()} className="w-full">
             <FiKey className="me-2 size-4" />
             <Trans>Sign in with private key</Trans>
           </Button>
@@ -462,7 +467,7 @@ export function SignInPanel({
       ) : null}
 
       {onCancel ? (
-        <Button variant="ghost" className="h-11 w-full" onClick={onCancel}>
+        <Button variant="ghost" size="lg" className="w-full" onClick={onCancel}>
           <Trans>Cancel</Trans>
         </Button>
       ) : null}
@@ -492,7 +497,7 @@ export function SignInPanel({
               </p>
             </SheetHeader>
             <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button className="h-11 w-full" onClick={routeToSignup}>
+              <Button size="lg" className="w-full" onClick={routeToSignup}>
                 <Trans>Create an account</Trans>
               </Button>
             </SheetFooter>

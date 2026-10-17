@@ -407,8 +407,7 @@ export function PoolSwapPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
+            tap
             onClick={() => {
               vouchersQuery.refetch();
               void reads.refetch();
@@ -434,12 +433,7 @@ export function PoolSwapPage({
           >
             <Trans>Couldn't estimate this swap.</Trans>
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
-            onClick={() => quote.refetch()}
-          >
+          <Button variant="outline" tap onClick={() => quote.refetch()}>
             <Trans>Try again</Trans>
           </Button>
         </div>
@@ -481,7 +475,8 @@ export function PoolSwapPage({
       <div className="flex-1" />
 
       <Button
-        className="h-11 w-full"
+        size="lg"
+        className="w-full"
         disabled={!isValidAmount || !selectedFrom || !selectedTo}
         onClick={() => {
           if (!selectedFrom || !selectedTo || !isValidAmount) return;
@@ -732,12 +727,18 @@ function SwapConfirmationSheet({
             </p>
           ) : null}
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button className="h-11 w-full" disabled={isPending} onClick={() => void onConfirm()}>
+            <Button
+              size="lg"
+              className="w-full"
+              disabled={isPending}
+              onClick={() => void onConfirm()}
+            >
               {isPending ? <Trans>Swapping…</Trans> : <Trans>Confirm swap</Trans>}
             </Button>
             <Button
               variant="ghost"
-              className="h-11 w-full"
+              size="lg"
+              className="w-full"
               disabled={isPending}
               onClick={() => onOpenChange(false)}
             >
@@ -827,10 +828,10 @@ function SwapField({
         {max !== undefined ? (
           <Button
             variant="ghost"
-            size="sm"
+            tap
             disabled={actionsDisabled}
             onClick={onMax}
-            className="font-mono text-[0.6875rem] font-semibold"
+            className="font-mono font-semibold"
           >
             <Trans>
               Max {max} {symbol}

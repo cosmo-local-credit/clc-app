@@ -45,7 +45,7 @@ export function CashPage() {
               tailLength={8}
               className="mt-2 block break-all text-xs leading-relaxed"
             />
-            <Button variant="outline" className="mt-3 h-11 w-full bg-card" onClick={copyAddress}>
+            <Button variant="outline" tap className="mt-3 w-full" onClick={copyAddress}>
               <RiFileCopyLine className="size-4" aria-hidden="true" />
               <Trans>Copy address</Trans>
             </Button>

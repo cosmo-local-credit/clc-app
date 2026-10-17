@@ -232,8 +232,7 @@ export function PoolsPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
+            tap
             onClick={() =>
               void navigate({
                 to: ".",
@@ -255,12 +254,7 @@ export function PoolsPage({
           <p className="text-sm">
             <Trans>Couldn't check voucher availability.</Trans>
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
-            onClick={outputAvailability.retry}
-          >
+          <Button variant="outline" tap onClick={outputAvailability.retry}>
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -315,7 +309,7 @@ export function PoolsPage({
                 )}
               </p>
               {filter.isFiltered ? (
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                <Button variant="outline" tap onClick={filter.clear}>
                   <Trans>Clear filters</Trans>
                 </Button>
               ) : null}

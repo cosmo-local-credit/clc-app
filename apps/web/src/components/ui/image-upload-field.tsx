@@ -154,7 +154,7 @@ export function ImageUploadField({
             <Button
               type="button"
               variant="outline"
-              className="h-11 bg-card"
+              tap
               disabled={busy}
               onClick={() => {
                 setRejection(null);
