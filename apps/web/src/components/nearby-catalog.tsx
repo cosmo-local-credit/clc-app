@@ -1,8 +1,11 @@
+import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { createContext, type ReactNode, useContext } from "react";
 import { haversineMeters } from "@clc/core/lib/geo/distance";
 
+import { useDiscoveryLocation } from "#/lib/discovery-location";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -10,11 +13,13 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
   catalogVisibilityRadiusKm,
   useHydratedCatalogVisibility,
+  useCatalogVisibilityStore,
 } from "#/features/home/state/catalog-visibility";
 
 // Only Catalogs, Market, Pools browsing, and Posts opt in. Other consumers of
 // the same catalog hooks (wallet, pickers, and details) retain ordinary reads.
-const NearbyCatalogContext = createContext<string | undefined>(undefined);
+const PUBLIC_REQUEST: NearbyRequest = { nearby: false };
+const NearbyCatalogContext = createContext<NearbyRequest | undefined>(undefined);
 
 export type NearbyCatalogFilter = {
   lat: number;
@@ -86,13 +91,16 @@ export function filterNearbyCatalog<T extends { lat?: number | null; lng?: numbe
   return filter ? rows.filter((row) => isWithinNearbyCatalog(filter, row)) : [...rows];
 }
 
-export function nearbyQueryKey<T extends readonly unknown[]>(key: T, scope: string | undefined) {
-  return scope ? ([...key, scope] as const) : key;
+export function nearbyQueryKey<T extends readonly unknown[]>(
+  key: T,
+  scope: NearbyRequest | undefined,
+) {
+  return scope?.nearby ? ([...key, scope.scope] as const) : key;
 }
 
 // Reuse recent nearby snapshots on short return visits. Stale results refresh
 // on entry, focus, or reconnect; account/location changes use separate keys.
-export function nearbyQueryPolicy(scope: string | undefined) {
+export function nearbyQueryPolicy(scope: NearbyRequest | undefined) {
   return scope
     ? {
         staleTime: 60_000,
@@ -133,7 +141,7 @@ export function NearbyCatalog({
 
   if (radiusKm === null) {
     return (
-      <NearbyCatalogContext.Provider key="global" value={undefined}>
+      <NearbyCatalogContext.Provider key="global" value={PUBLIC_REQUEST}>
         <NearbyCatalogFilterContext.Provider value={undefined}>
           {children}
         </NearbyCatalogFilterContext.Provider>
@@ -171,11 +179,7 @@ export function NearbyCatalog({
     );
   }
   if (!auth.isAuthenticated) {
-    return (
-      <NearbyCatalogContext.Provider key="public" value={undefined}>
-        {children}
-      </NearbyCatalogContext.Provider>
-    );
+    return <GuestNearbyCatalog radiusKm={radiusKm}>{children}</GuestNearbyCatalog>;
   }
   if (
     typeof lat !== "number" ||
@@ -188,7 +192,7 @@ export function NearbyCatalog({
     if (allowMissingLocation) {
       return (
         <NearbyCatalogMissingLocationContext.Provider value>
-          <NearbyCatalogContext.Provider key="missing-location" value={undefined}>
+          <NearbyCatalogContext.Provider key="missing-location" value={PUBLIC_REQUEST}>
             <NearbyCatalogFilterContext.Provider value={undefined}>
               {children}
             </NearbyCatalogFilterContext.Provider>
@@ -215,8 +219,48 @@ export function NearbyCatalog({
   // Remount on identity/location change so previous-data placeholders and local
   // selections cannot carry records from the old radius into the new screen.
   return (
-    <NearbyCatalogContext.Provider key={scope} value={scope}>
+    <NearbyCatalogContext.Provider key={scope} value={{ nearby: true, scope }}>
       <NearbyCatalogFilterContext.Provider value={filter}>
+        {children}
+      </NearbyCatalogFilterContext.Provider>
+    </NearbyCatalogContext.Provider>
+  );
+}
+
+/** Guests filter public rows locally; the server nearby mode requires a profile. */
+function GuestNearbyCatalog({ children, radiusKm }: { children: ReactNode; radiusKm: number }) {
+  const { origin, locationStatus, requestLocation, ipPending } =
+    useDiscoveryLocation(GUEST_STORAGE_OWNER);
+  const setVisibility = useCatalogVisibilityStore((state) => state.setVisibility);
+  // A country/default camera is not evidence of the visitor's location.
+
+  if (!origin) {
+    return (
+      <div className="space-y-3 p-6">
+        <p role="status">
+          {ipPending && locationStatus === "idle" ? (
+            <Trans>Loading…</Trans>
+          ) : locationStatus === "denied" ? (
+            <Trans>Location denied</Trans>
+          ) : locationStatus === "unavailable" || locationStatus === "error" ? (
+            <Trans>Location unavailable</Trans>
+          ) : (
+            <Trans>Choose a location</Trans>
+          )}
+        </p>
+        <Button size="lg" pending={locationStatus === "requesting"} onClick={requestLocation}>
+          <Trans>Use my location</Trans>
+        </Button>
+        <Button variant="outline" size="lg" onClick={() => setVisibility("global")}>
+          <Trans>Global</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <NearbyCatalogContext.Provider value={PUBLIC_REQUEST}>
+      <NearbyCatalogFilterContext.Provider value={{ lat: origin.lat, lng: origin.lng, radiusKm }}>
         {children}
       </NearbyCatalogFilterContext.Provider>
     </NearbyCatalogContext.Provider>

@@ -52,8 +52,8 @@ export function OffersPage({
       tags: parsedFilter.tags,
       tagMatch: parsedFilter.tagMatch,
       facets: true,
-      nearby: !!nearby,
-      scope: nearby,
+      nearby: nearby?.nearby === true,
+      scope: nearby?.nearby ? nearby.scope : undefined,
       ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
     enabled:
@@ -73,7 +73,9 @@ export function OffersPage({
       )
     : allOfferings;
   const crossedDistanceBoundary =
-    visibilityFilter !== undefined && visibleOfferings.length !== allOfferings.length;
+    nearby?.nearby === true &&
+    visibilityFilter !== undefined &&
+    visibleOfferings.length !== allOfferings.length;
   const viewQuery = useMemo(
     () => ({
       ...query,

@@ -101,6 +101,16 @@ vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
       : null;
   },
 }));
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: () => ({
+    origin: { lat: 43, lng: 18 },
+    locationStatus: "idle",
+    requestLocation: vi.fn(),
+  }),
+}));
+vi.mock("#/features/home/hooks/use-ip-camera", () => ({
+  useIPCamera: () => ({ data: { source: "ip-city", lat: 43, lng: 18 }, isPending: false }),
+}));
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }));
 vi.mock("#/components/wallet", () => ({ BackChevron: () => <a href="/">Back</a> }));
 vi.mock("@tanstack/react-router", () => ({
@@ -538,6 +548,7 @@ describe("catalog discovery", () => {
   });
 
   it("uses nearby session discovery at the established radius", async () => {
+    useCatalogVisibilityStore.getState().setVisibility("1000");
     mocks.api.list.mockResolvedValue({
       catalogs: [{ ...catalog, geoLat: -10, geoLng: -10 }],
       nextCursor: null,

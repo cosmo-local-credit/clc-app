@@ -9,7 +9,7 @@ export const CATALOG_VISIBILITIES = ["global", "1000", "500", "100", "50"] as co
 
 export type CatalogVisibility = (typeof CATALOG_VISIBILITIES)[number];
 
-export const DEFAULT_CATALOG_VISIBILITY: CatalogVisibility = "1000";
+export const DEFAULT_CATALOG_VISIBILITY: CatalogVisibility = "500";
 
 function isCatalogVisibility(value: unknown): value is CatalogVisibility {
   return CATALOG_VISIBILITIES.some((option) => option === value);

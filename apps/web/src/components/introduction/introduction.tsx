@@ -10,11 +10,10 @@ import { StepProgress } from "#/components/ui/step-progress";
 import { useLocale } from "#/providers/i18n";
 import { cn } from "#/lib/utils";
 
-type Props = {
-  inline?: boolean;
-  replay?: boolean;
-  onExit: (action: "skip" | "create" | "signin" | "done") => void;
-};
+type Props = { replay?: boolean } & (
+  | { inline: true; onExit?: never }
+  | { inline?: false; onExit: (action: "skip" | "create" | "signin" | "done") => void }
+);
 
 export function Introduction({ inline = false, replay = false, onExit }: Props) {
   const { i18n } = useLingui();
@@ -136,7 +135,7 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
             inline
               ? setStep((step + 1) % slides.length)
               : last
-                ? onExit(replay ? "done" : "create")
+                ? onExit?.(replay ? "done" : "create")
                 : setStep(step + 1)
           }
         >
@@ -156,11 +155,16 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
             full-screen guide, so Next stays where Create account appears. */}
         {!replay && !inline ? (
           last ? (
-            <Button variant="outline" size="lg" className="w-full" onClick={() => onExit("signin")}>
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => onExit?.("signin")}
+            >
               <Trans>I already have an account</Trans>
             </Button>
           ) : step < 0 ? (
-            <Button variant="link" size="lg" className="w-full" onClick={() => onExit("signin")}>
+            <Button variant="link" size="lg" className="w-full" onClick={() => onExit?.("signin")}>
               <Trans>I already have an account</Trans>
             </Button>
           ) : (
@@ -177,7 +181,7 @@ export function Introduction({ inline = false, replay = false, onExit }: Props) 
             <Trans>Back</Trans>
           </Button>
           {!inline ? (
-            <Button variant="ghost" tap onClick={() => onExit(replay ? "done" : "skip")}>
+            <Button variant="ghost" tap onClick={() => onExit?.(replay ? "done" : "skip")}>
               <Trans>Skip</Trans>
             </Button>
           ) : null}

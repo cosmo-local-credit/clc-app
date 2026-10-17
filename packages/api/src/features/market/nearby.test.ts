@@ -65,13 +65,41 @@ describe("nearby catalog requests", () => {
   it("keeps ordinary, account A, and account B query keys separate", () => {
     const http = createHttpClient({ baseUrl: "https://api.test" });
     const factories = [
-      (scope?: string) => voucherCatalogInfiniteQueryOptions(createMarketClient(http), 20, scope),
-      (scope?: string) => poolListInfiniteQueryOptions(createPoolsClient(http), 20, scope),
-      (scope?: string) => reportFeedInfiniteQueryOptions(createReportsClient(http), 20, scope),
+      (scope?: string) =>
+        voucherCatalogInfiniteQueryOptions(
+          createMarketClient(http),
+          20,
+          scope ? { nearby: true, scope } : undefined,
+        ),
+      (scope?: string) =>
+        poolListInfiniteQueryOptions(
+          createPoolsClient(http),
+          20,
+          scope ? { nearby: true, scope } : undefined,
+        ),
+      (scope?: string) =>
+        reportFeedInfiniteQueryOptions(
+          createReportsClient(http),
+          20,
+          scope ? { nearby: true, scope } : undefined,
+        ),
     ];
     for (const factory of factories) {
       expect(factory("nearby:A").queryKey).not.toEqual(factory().queryKey);
       expect(factory("nearby:A").queryKey).not.toEqual(factory("nearby:B").queryKey);
     }
   });
+});
+
+it("shares raw public keys while keeping explicit authenticated requests separate", () => {
+  const http = createHttpClient({ baseUrl: "https://api.test" });
+  expect(
+    voucherCatalogInfiniteQueryOptions(createMarketClient(http), 20, { nearby: false }).queryKey,
+  ).toEqual(voucherCatalogInfiniteQueryOptions(createMarketClient(http), 20).queryKey);
+  expect(
+    poolListInfiniteQueryOptions(createPoolsClient(http), 20, { nearby: false }).queryKey,
+  ).toEqual(poolListInfiniteQueryOptions(createPoolsClient(http), 20).queryKey);
+  expect(
+    reportFeedInfiniteQueryOptions(createReportsClient(http), 20, { nearby: false }).queryKey,
+  ).toEqual(reportFeedInfiniteQueryOptions(createReportsClient(http), 20).queryKey);
 });

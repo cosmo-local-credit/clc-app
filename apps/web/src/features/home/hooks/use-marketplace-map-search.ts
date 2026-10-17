@@ -44,8 +44,8 @@ export function useMarketplaceMapSearch(
     tags: parsed.tags,
     tagMatch: parsed.tagMatch,
     kinds: ["voucher", "pool"] as const,
-    nearby: !!nearby,
-    scope: nearby,
+    nearby: nearby?.nearby === true,
+    scope: nearby?.nearby ? nearby.scope : undefined,
     ...(pools ? { pools } : {}),
   };
   const query = useQuery({

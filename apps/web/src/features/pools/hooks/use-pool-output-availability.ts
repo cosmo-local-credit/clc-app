@@ -1,4 +1,5 @@
 import {
+  isWithinNearbyCatalog,
   useNearbyCatalog,
   useNearbyCatalogFilter,
   nearbyQueryKey,
@@ -84,8 +85,7 @@ export function usePoolOutputAvailability(
             voucherMatch: "any",
           },
           signal,
-          nearby: !!nearby,
-          visibilityFilter,
+          nearby: nearby?.nearby === true,
         }).then((catalog) => catalog.pools);
       } catch (error) {
         // A syntactically valid deep-link address that is not in the catalog is
@@ -94,6 +94,10 @@ export function usePoolOutputAvailability(
         throw error;
       }
     },
+    select: (pools) =>
+      pools.filter((pool) =>
+        isWithinNearbyCatalog(visibilityFilter, { lat: pool.geoLat, lng: pool.geoLng }),
+      ),
     enabled: voucher !== undefined,
     staleTime: CANDIDATE_STALE_TIME_MS,
     ...nearbyQueryPolicy(nearby),

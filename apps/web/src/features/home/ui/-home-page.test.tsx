@@ -44,6 +44,18 @@ vi.mock("#/features/auth/hooks/use-auth-session", () => ({
   useBackendLogout: () => ({ mutateAsync: mockBackendLogout }),
 }));
 
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: () => ({
+    realFix: { lat: 0, lng: 0 },
+    origin: { lat: 0, lng: 0 },
+    locationStatus: "granted",
+    requestLocation: vi.fn(),
+  }),
+}));
+vi.mock("#/features/home/hooks/use-ip-camera", () => ({
+  useIPCamera: () => ({ data: undefined, isPending: false }),
+}));
+
 vi.mock("#/features/home/api/last-location-storage", () => ({
   clearPersistedLocation: mockClearPersistedLocation,
 }));

@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { RiBookOpenLine } from "react-icons/ri";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useRouterState } from "@tanstack/react-router";
 import {
   createContext,
   lazy,
@@ -13,7 +13,6 @@ import {
 import { ActionRow } from "#/components/ui/action-row";
 import { LandingPage } from "#/features/onboarding/ui/landing-page";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { onboardingSearch } from "#/lib/onboarding-search";
 import {
   completeIntroduction,
   hasSeenIntroduction,
@@ -34,7 +33,6 @@ export function IntroductionProvider({
   suppressed?: boolean;
 }) {
   const auth = useAuthStatus();
-  const navigate = useNavigate();
   const location = useRouterState({ select: (state) => state.location });
   const [seen, setSeen] = useState<boolean | null>(null);
   const [replay, setReplay] = useState(false);
@@ -66,22 +64,10 @@ export function IntroductionProvider({
   const waiting = !suppressed && !replay && entry && (seen === null || auth.isLoading);
   const show = !suppressed && (replay || (entry && auth.state === "guest" && seen === false));
 
-  function exit(action: "skip" | "create" | "signin" | "done") {
+  function complete() {
     completeIntroduction();
     setSeen(true);
     setReplay(false);
-    if (replay) return;
-    const redirect =
-      "redirect" in location.search && typeof location.search.redirect === "string"
-        ? location.search.redirect
-        : undefined;
-    void navigate({
-      to: "/onboarding",
-      search: onboardingSearch(
-        action === "signin" ? "signin" : action === "create" ? "profile" : "welcome",
-        redirect,
-      ),
-    });
   }
 
   return (
@@ -91,9 +77,10 @@ export function IntroductionProvider({
       ) : show ? (
         <Suspense fallback={<div className="min-h-[100svh] bg-background" />}>
           {replay ? (
-            <Introduction replay onExit={exit} />
+            <Introduction replay onExit={complete} />
           ) : (
             <LandingPage
+              onComplete={complete}
               redirectTo={
                 typeof location.search.redirect === "string" ? location.search.redirect : undefined
               }

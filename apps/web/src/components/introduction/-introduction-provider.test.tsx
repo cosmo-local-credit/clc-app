@@ -32,7 +32,11 @@ vi.mock("./introduction-state", async (original) => ({
   },
 }));
 vi.mock("#/features/onboarding/ui/landing-page", () => ({
-  LandingPage: () => <div data-testid="welcome">Welcome with inline introduction</div>,
+  LandingPage: ({ onComplete }: { onComplete: () => void }) => (
+    <div data-testid="welcome">
+      <button onClick={onComplete}>Market</button>
+    </div>
+  ),
 }));
 vi.mock("./introduction", () => ({
   Introduction: ({ replay, onExit }: { replay: boolean; onExit: (value: string) => void }) => (
@@ -100,4 +104,11 @@ it("honors completion from another tab", async () => {
     ),
   );
   await waitFor(() => expect(screen.queryByTestId("welcome")).toBeNull());
+});
+
+it("releases the route immediately when a guest chooses Market", async () => {
+  render(<App />);
+  fireEvent.click(await screen.findByRole("button", { name: "Market" }));
+  expect(screen.getByText("App content")).toBeTruthy();
+  expect(screen.queryByTestId("welcome")).toBeNull();
 });

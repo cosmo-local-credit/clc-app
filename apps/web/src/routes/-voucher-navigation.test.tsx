@@ -339,3 +339,5 @@ describe("voucher navigation", () => {
     expect(getMarketVoucher).toHaveBeenCalledTimes(1);
   });
 });
+
+vi.mock("#/lib/discovery-location", () => ({ useDiscoveryLocation: () => ({ realFix: null }) }));

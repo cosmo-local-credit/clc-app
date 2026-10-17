@@ -1,3 +1,5 @@
+import { EXPLICIT_CAMERA_RANK, type MarketCamera } from "#/features/home/logic/market-camera";
+export type { MarketCamera } from "#/features/home/logic/market-camera";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Trans } from "@lingui/react/macro";
 import MapLibreGL, {
@@ -94,20 +96,6 @@ const USER_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height=
 type UserLocation = { lat: number; lng: number };
 
 type SymbolLayer = Extract<LayerSpecification, { type: "symbol" }>;
-
-export type MarketCamera = {
-  lat: number;
-  lng: number;
-  zoom: number;
-  rank: number;
-  /**
-   * A view being given back rather than a place being found: it jumps
-   * instead of easing, and the results fit it was taken under is not redone.
-   */
-  restore?: { fitKey: string | null };
-};
-
-export const EXPLICIT_CAMERA_RANK = 0;
 
 export type MarketViewport = {
   west: number;
@@ -489,6 +477,10 @@ export function MarketMap({
   onDeselectRef.current = onDeselect;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
+  // Seed each map instance from the current camera without rebuilding it when
+  // the camera changes. Starting at Nairobi would flash before the load handler.
+  const cameraRef = useRef(camera);
+  cameraRef.current = camera;
 
   const reportViewport = useCallback((map: MapLibreGL.Map) => {
     const report = onViewportSettledRef.current;
@@ -515,11 +507,12 @@ export function MarketMap({
 
     let map: MapLibreGL.Map;
     try {
+      const initialCamera = cameraRef.current;
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: maptilerStyle,
-        center: [NAIROBI.lng, NAIROBI.lat],
-        zoom: DEFAULT_ZOOM,
+        center: initialCamera ? [initialCamera.lng, initialCamera.lat] : [NAIROBI.lng, NAIROBI.lat],
+        zoom: initialCamera?.zoom ?? DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
         bearing: 0,
         pitch: 0,

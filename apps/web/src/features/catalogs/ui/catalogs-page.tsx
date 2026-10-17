@@ -60,7 +60,8 @@ function CatalogList({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const query = useInfiniteQuery({
     ...catalogsInfiniteQueryOptions(catalogsClient, {
-      scope,
+      scope: scope?.nearby ? scope.scope : undefined,
+      nearby: scope?.nearby === true,
       q: search.result.ok ? search.result.filter.term : "",
       tags: search.result.ok ? search.result.filter.tags : [],
       tagMatch: search.result.ok ? search.result.filter.tagMatch : "any",
@@ -72,13 +73,14 @@ function CatalogList({
   const catalogs = query.data?.pages.flatMap((page) => page.catalogs) ?? [];
   // The backend's nearby endpoint is itself the complete 1,000 km result.
   // Narrower device preferences refine that nearest-first stream locally.
-  const narrowingFilter = filter?.radiusKm === 1_000 ? undefined : filter;
+  const narrowingFilter = scope?.nearby === true && filter?.radiusKm === 1_000 ? undefined : filter;
   const visibleCatalogs = narrowingFilter
     ? catalogs.filter((catalog) =>
         isWithinNearbyCatalog(narrowingFilter, { lat: catalog.geoLat, lng: catalog.geoLng }),
       )
     : catalogs;
   const crossedDistanceBoundary =
+    scope?.nearby === true &&
     narrowingFilter !== undefined &&
     catalogs.some(
       (catalog) =>
