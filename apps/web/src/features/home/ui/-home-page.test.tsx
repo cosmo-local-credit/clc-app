@@ -21,13 +21,19 @@ vi.mock("@tanstack/react-router", () => ({
 
 const PRIVATE_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" as const;
 
-const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mockDisconnect } =
-  vi.hoisted(() => ({
-    mockAbortWalletSwitch: vi.fn(),
-    mockClearPersistedLocation: vi.fn(),
-    mockBackendLogout: vi.fn(),
-    mockDisconnect: vi.fn(),
-  }));
+const {
+  mockAbortWalletSwitch,
+  mockClearPersistedLocation,
+  mockClearMarketCamera,
+  mockBackendLogout,
+  mockDisconnect,
+} = vi.hoisted(() => ({
+  mockAbortWalletSwitch: vi.fn(),
+  mockClearPersistedLocation: vi.fn(),
+  mockClearMarketCamera: vi.fn(),
+  mockBackendLogout: vi.fn(),
+  mockDisconnect: vi.fn(),
+}));
 
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0xabc" as `0x${string}` }),
@@ -40,6 +46,10 @@ vi.mock("#/features/auth/hooks/use-auth-session", () => ({
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
   clearPersistedLocation: mockClearPersistedLocation,
+}));
+
+vi.mock("#/features/home/api/market-camera-storage", () => ({
+  clearMarketCamera: mockClearMarketCamera,
 }));
 
 vi.mock("#/lib/wallet-session", () => ({
@@ -100,6 +110,7 @@ beforeEach(() => {
   localStorage.clear();
   mockAbortWalletSwitch.mockClear();
   mockClearPersistedLocation.mockClear();
+  mockClearMarketCamera.mockClear();
   mockBackendLogout.mockReset();
   mockBackendLogout.mockResolvedValue(undefined);
   mockDisconnect.mockReset();
@@ -167,13 +178,14 @@ describe("HomePage sign-out", () => {
     });
   });
 
-  it("clears the persisted precise location on sign-out", async () => {
+  it("clears the persisted precise location and the map's last view on sign-out", async () => {
     renderHome(<HomePage activeTab="settings" />);
 
     fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
 
     await waitFor(() => {
       expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
+      expect(mockClearMarketCamera).toHaveBeenCalledTimes(1);
     });
   });
 

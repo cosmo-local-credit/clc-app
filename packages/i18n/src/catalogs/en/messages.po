@@ -1183,7 +1183,7 @@ msgstr "Clear filter"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:41
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:125
-#: apps/web/src/features/home/ui/market-page.tsx:275
+#: apps/web/src/features/home/ui/market-page.tsx:316
 #: apps/web/src/features/home/ui/offers-page.tsx:162
 #: apps/web/src/features/home/ui/posts-page.tsx:130
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:64
@@ -1208,8 +1208,6 @@ msgid "Clear search"
 msgstr "Clear search"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:499
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:117
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:248
 #: apps/web/src/features/home/ui/report-page.tsx:287
 msgid "Close"
 msgstr "Close"
@@ -1240,8 +1238,8 @@ msgid "Collaboration"
 msgstr "Collaboration"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-msgid "Collapse"
-msgstr "Collapse"
+#~ msgid "Collapse"
+#~ msgstr "Collapse"
 
 #: apps/web/src/components/marketplace-search-shell.tsx:67
 #: apps/web/src/components/marketplace-search-shell.tsx:71
@@ -1718,7 +1716,7 @@ msgstr "Couldn't load catalog items."
 msgid "Couldn't load catalogs."
 msgstr "Couldn't load catalogs."
 
-#: apps/web/src/features/home/ui/market-page.tsx:196
+#: apps/web/src/features/home/ui/market-page.tsx:237
 msgid "Couldn't load complete marketplace results."
 msgstr "Couldn't load complete marketplace results."
 
@@ -1744,7 +1742,7 @@ msgstr "Couldn't load offerings."
 msgid "Couldn't load pool tags."
 msgstr "Couldn't load pool tags."
 
-#: apps/web/src/features/home/ui/market-page.tsx:204
+#: apps/web/src/features/home/ui/market-page.tsx:245
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "Couldn't load pools."
@@ -1791,7 +1789,6 @@ msgstr "Couldn't load this post."
 msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "Couldn't load this post. You can only edit posts you wrote."
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:115
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:129
 msgid "Couldn't load this voucher."
 msgstr "Couldn't load this voucher."
@@ -2512,8 +2509,8 @@ msgstr "Exchange rate"
 #~ msgstr "Exchange rate relative to the default voucher ({unitSymbol})"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-msgid "Expand"
-msgstr "Expand"
+#~ msgid "Expand"
+#~ msgstr "Expand"
 
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:40
 msgid "Expiration"
@@ -2671,7 +2668,7 @@ msgstr "Filters"
 msgid "Finding a name…"
 msgstr "Finding a name…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:161
+#: apps/web/src/features/home/ui/market-page.tsx:180
 msgid "Finding location"
 msgstr "Finding location"
 
@@ -3313,7 +3310,7 @@ msgstr "Local money and M-Pesa"
 msgid "Location"
 msgstr "Location"
 
-#: apps/web/src/features/home/ui/market-page.tsx:163
+#: apps/web/src/features/home/ui/market-page.tsx:182
 msgid "Location denied"
 msgstr "Location denied"
 
@@ -3322,7 +3319,7 @@ msgid "Location map"
 msgstr "Location map"
 
 #: apps/web/src/components/ui/location-picker.tsx:228
-#: apps/web/src/features/home/ui/market-page.tsx:165
+#: apps/web/src/features/home/ui/market-page.tsx:184
 msgid "Location unavailable"
 msgstr "Location unavailable"
 
@@ -3379,7 +3376,7 @@ msgstr "Map pin"
 #~ msgstr "Markdown: **bold**, # headings, - lists, [links](https://…)"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
-#: apps/web/src/features/home/ui/market-page.tsx:287
+#: apps/web/src/features/home/ui/market-page.tsx:328
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:59
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3740,7 +3737,7 @@ msgstr "No currencies found."
 msgid "No items yet. Add pools or vouchers from their detail pages."
 msgstr "No items yet. Add pools or vouchers from their detail pages."
 
-#: apps/web/src/features/home/ui/market-page.tsx:253
+#: apps/web/src/features/home/ui/market-page.tsx:294
 msgid "No marketplace results are available through your Credit pools."
 msgstr "No marketplace results are available through your Credit pools."
 
@@ -3748,11 +3745,11 @@ msgstr "No marketplace results are available through your Credit pools."
 #~ msgid "No marketplace results found."
 #~ msgstr "No marketplace results found."
 
-#: apps/web/src/features/home/ui/market-page.tsx:272
+#: apps/web/src/features/home/ui/market-page.tsx:313
 msgid "No marketplace results match this search."
 msgstr "No marketplace results match this search."
 
-#: apps/web/src/features/home/ui/market-page.tsx:279
+#: apps/web/src/features/home/ui/market-page.tsx:320
 msgid "No marketplace results to show yet."
 msgstr "No marketplace results to show yet."
 
@@ -5151,16 +5148,15 @@ msgstr "Retreat"
 #: apps/web/src/components/creditable-browse-control.tsx:114
 #: apps/web/src/components/resource-usage.tsx:28
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:54
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:52
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:203
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
-#: apps/web/src/features/home/ui/market-map.tsx:854
-#: apps/web/src/features/home/ui/market-page.tsx:197
-#: apps/web/src/features/home/ui/market-page.tsx:205
+#: apps/web/src/features/home/ui/market-map.tsx:822
+#: apps/web/src/features/home/ui/market-page.tsx:238
+#: apps/web/src/features/home/ui/market-page.tsx:246
 #: apps/web/src/features/home/ui/report-page.tsx:57
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:718
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
@@ -5345,7 +5341,7 @@ msgstr "Search posts by title or description"
 msgid "Search tags"
 msgstr "Search tags"
 
-#: apps/web/src/features/home/ui/market-page.tsx:316
+#: apps/web/src/features/home/ui/market-page.tsx:352
 msgid "Search the marketplace"
 msgstr "Search the marketplace"
 
@@ -6100,11 +6096,11 @@ msgstr "The credit limit has been reached. No more can be added to this pool."
 msgid "The end of the period must not be before its start"
 msgstr "The end of the period must not be before its start"
 
-#: apps/web/src/features/home/ui/market-map.tsx:847
+#: apps/web/src/features/home/ui/market-map.tsx:815
 msgid "The map could not be loaded."
 msgstr "The map could not be loaded."
 
-#: apps/web/src/features/home/ui/market-map.tsx:849
+#: apps/web/src/features/home/ui/market-map.tsx:817
 msgid "The map is not supported on this device."
 msgstr "The map is not supported on this device."
 
@@ -6684,7 +6680,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to "
 "send funds to your Gnosis wallet."
 
-#: apps/web/src/features/home/ui/market-page.tsx:166
+#: apps/web/src/features/home/ui/market-page.tsx:185
 msgid "Use current location"
 msgstr "Use current location"
 
