@@ -29,6 +29,8 @@ export type UsePaperWalletSetupProps = {
   qrUrl: string;
   defaultName: string;
   downloadDisabled?: boolean;
+  /** Once saved, Download steps back to outline so the screen's own Continue leads. */
+  downloaded?: boolean;
   /**
    * Called after a download starts (card or A4 sheet), a share succeeds, or an
    * iOS save image is shown.
@@ -44,7 +46,7 @@ export type PaperWalletSetupSlots = {
 
 /**
  * Shared paper wallet screen logic: preview wrapper, customization state,
- * download handler, and the "Customize" disclosure.
+ * download handler, and the customization fields the screen puts in a sheet.
  *
  * Hook returning slot nodes so parent screens (onboarding, standalone) can
  * compose their own surrounding flow while sharing state, ref, and download
@@ -55,6 +57,7 @@ export function usePaperWalletSetup({
   qrUrl,
   defaultName,
   downloadDisabled = false,
+  downloaded = false,
   onDownloaded,
 }: UsePaperWalletSetupProps): PaperWalletSetupSlots {
   const { t } = useLingui();
@@ -280,10 +283,12 @@ export function usePaperWalletSetup({
 
   const downloadButton = (
     <div>
-      {/* Stacked: "Download card" beside Print outgrows a 360px row in French,
-          Dutch, Portuguese, Serbian and Ukrainian. */}
-      <div className="mt-4 flex flex-col gap-3">
+      {/* Download on its own row: "Download card" beside Print outgrows a 360px
+          row in French, Dutch, Portuguese, Serbian and Ukrainian. Print and
+          Share card, both short, share the row under it. */}
+      <div className="flex flex-col gap-3">
         <Button
+          variant={downloaded ? "outline" : "default"}
           tap
           className="w-full"
           onClick={handleDownload}
@@ -294,31 +299,33 @@ export function usePaperWalletSetup({
           <FiDownload className="size-4" />
           {downloading ? t`Preparing…` : t`Download card`}
         </Button>
-        <Button
-          variant="outline"
-          tap
-          className="w-full"
-          onClick={() => void handlePrintSheet()}
-          disabled={busy}
-          pending={printing}
-          aria-label={t`Save printable A4 sheet`}
-        >
-          <FiPrinter className="size-4" />
-          {t`Print`}
-        </Button>
-        {shareSupported ? (
+        <div className={shareSupported ? "grid grid-cols-2 gap-3" : "grid"}>
           <Button
             variant="outline"
             tap
-            className="w-full"
-            onClick={() => void handleShare()}
+            className="w-full min-w-0"
+            onClick={() => void handlePrintSheet()}
             disabled={busy}
-            pending={sharing}
+            pending={printing}
+            aria-label={t`Save printable A4 sheet`}
           >
-            <FiShare2 className="size-4" />
-            {sharing ? t`Preparing…` : t`Share card`}
+            <FiPrinter className="size-4" />
+            {t`Print`}
           </Button>
-        ) : null}
+          {shareSupported ? (
+            <Button
+              variant="outline"
+              tap
+              className="w-full min-w-0"
+              onClick={() => void handleShare()}
+              disabled={busy}
+              pending={sharing}
+            >
+              <FiShare2 className="size-4" />
+              {sharing ? t`Preparing…` : t`Share card`}
+            </Button>
+          ) : null}
+        </div>
       </div>
       {downloadError ? <p className="text-destructive mt-2 text-xs">{downloadError}</p> : null}
       {savedCardUrl ? (

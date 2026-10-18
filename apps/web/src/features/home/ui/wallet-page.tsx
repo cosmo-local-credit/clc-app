@@ -8,16 +8,12 @@ import {
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { Badge } from "#/components/ui/badge";
-import { PoolLogo, SectionHeader, TokenLogo } from "#/components/wallet";
+import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
 import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
-import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
-import { useAllOwnedVouchers } from "#/features/wallet/hooks/use-owned-vouchers";
-import {
-  groupWalletVouchers,
-  type WalletVoucherListItem,
-} from "#/features/wallet/logic/owned-voucher-groups";
+import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
+import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
+import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
@@ -26,7 +22,7 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 
-function WalletVoucherRows({ tokens }: { tokens: readonly WalletVoucherListItem[] }) {
+function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
   return tokens.map((token, index, list) => {
     const address = parseVoucherAddress(token.contractAddress ?? token.id);
     const className = [
@@ -37,32 +33,15 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletVoucherListItem[
       <>
         <TokenLogo token={token} size={34} />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <p className="text-sm font-semibold">{token.symbol}</p>
-            {token.catalogActive === false ? (
-              <Badge size="sm" variant="outline">
-                <Trans>Retired</Trans>
-              </Badge>
-            ) : null}
-          </div>
+          <p className="text-sm font-semibold">{token.symbol}</p>
           <p className="text-muted-foreground truncate text-xs">{token.name}</p>
         </div>
         <div className="shrink-0 text-end">
-          {token.balanceState === "ready" ? (
-            <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
-          ) : (
-            <p className="font-heading text-sm font-semibold tracking-tight">
-              {token.balanceState === "loading" ? (
-                <Trans>Loading…</Trans>
-              ) : (
-                <Trans>Unavailable</Trans>
-              )}
-            </p>
-          )}
+          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
         </div>
       </>
     );
-    return address && token.catalogActive !== false ? (
+    return address ? (
       <Link
         key={token.id}
         to="/vouchers/$voucherAddress"
@@ -100,17 +79,10 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/cash",
     },
   ] as const;
-  const balancesQuery = useAllAccountTokens(address, { poll: true });
-  const ownedVouchersQuery = useAllOwnedVouchers(address, { poll: true });
-  const balanceState = balancesQuery.isError
-    ? "unavailable"
-    : balancesQuery.isPending
-      ? "loading"
-      : "complete";
-  const voucherGroups = groupWalletVouchers(
-    ownedVouchersQuery.vouchers,
-    balancesQuery.tokens,
-    balanceState,
+  const balancesQuery = useLatestAccountTokens(address);
+  const voucherGroups = usePartitionedVouchers(
+    balancesQuery.data?.tokens.map(accountTokenToWalletToken) ?? [],
+    address,
   );
   const usage = useResourceUsage();
   // Only the first page: this is a shortcut into pools a steward manages, not a
@@ -166,7 +138,7 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       ) : null}
 
-      {ownedVouchersQuery.isPending ? (
+      {voucherGroups.isPending || balancesQuery.isPending ? (
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
@@ -188,7 +160,7 @@ export function WalletPage({ address }: { address?: string }) {
             <ListSkeleton framed={false} count={3} label={<Trans>Loading vouchers…</Trans>} />
           </div>
         </section>
-      ) : ownedVouchersQuery.isError ? (
+      ) : voucherGroups.isError ? (
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
@@ -212,8 +184,8 @@ export function WalletPage({ address }: { address?: string }) {
               <Button
                 variant="outline"
                 tap
-                pending={ownedVouchersQuery.isFetching}
-                onClick={() => void ownedVouchersQuery.refetch()}
+                pending={voucherGroups.isFetching}
+                onClick={() => void voucherGroups.refetch()}
               >
                 <Trans>Try again</Trans>
               </Button>
@@ -263,7 +235,7 @@ export function WalletPage({ address }: { address?: string }) {
               }}
             />
             <div className="border-border bg-card border">
-              {voucherGroups.owned.length === 0 ? (
+              {voucherGroups.issued.length === 0 ? (
                 <div className="space-y-3 p-3">
                   <p className="text-muted-foreground text-sm">
                     <Trans>No vouchers yet.</Trans>
@@ -290,7 +262,7 @@ export function WalletPage({ address }: { address?: string }) {
                   </Button>
                 </div>
               ) : (
-                <WalletVoucherRows tokens={voucherGroups.owned} />
+                <WalletVoucherRows tokens={voucherGroups.issued} />
               )}
             </div>
           </section>

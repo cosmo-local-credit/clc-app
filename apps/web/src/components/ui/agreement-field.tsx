@@ -8,6 +8,7 @@ export function AgreementField({
   checked,
   onCheckedChange,
   error,
+  disabled,
   children,
   className,
 }: {
@@ -15,6 +16,7 @@ export function AgreementField({
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   error?: string | null;
+  disabled?: boolean;
   children: ReactNode;
   className?: string;
 }) {
@@ -26,6 +28,7 @@ export function AgreementField({
           checked={checked}
           onCheckedChange={onCheckedChange}
           aria-invalid={!!error}
+          disabled={disabled}
           className="mt-0.5"
         />
         <span className="text-muted-foreground text-sm">{children}</span>

@@ -1,12 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { Button } from "#/components/ui/button";
-import {
-  DialogBackdrop,
-  DialogContent,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from "#/components/ui/dialog";
+import { SettingsSheet, SettingsSheetAlert } from "#/components/ui/settings-sheet";
 import { InstallInstructions } from "#/components/install-instructions";
 import { requestInstall, useInstallStore } from "#/features/install/install-store";
 
@@ -19,13 +13,12 @@ export function InstallAppDialog({
 }) {
   const { promptEvent, status } = useInstallStore();
   return (
-    <DialogRoot open={open} onOpenChange={onOpenChange}>
-      <DialogPortal>
-        <DialogBackdrop />
-        <DialogContent className="max-h-[calc(100svh-3rem)] space-y-5 overflow-y-auto">
-          <DialogTitle>
-            <Trans>Install CLC</Trans>
-          </DialogTitle>
+    <SettingsSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={<Trans>Install CLC</Trans>}
+      footer={
+        <>
           {promptEvent || status === "prompting" ? (
             <Button
               tap
@@ -39,21 +32,19 @@ export function InstallAppDialog({
                 <Trans>Install now</Trans>
               )}
             </Button>
-          ) : (
-            <InstallInstructions />
-          )}
-          {status === "error" ? (
-            <p role="alert" className="text-destructive text-sm">
-              <Trans>
-                Couldn't open installation. Follow these instructions or try again later.
-              </Trans>
-            </p>
           ) : null}
           <Button variant="outline" tap className="w-full" onClick={() => onOpenChange(false)}>
             <Trans>Continue in browser</Trans>
           </Button>
-        </DialogContent>
-      </DialogPortal>
-    </DialogRoot>
+        </>
+      }
+    >
+      {promptEvent || status === "prompting" ? null : <InstallInstructions />}
+      {status === "error" ? (
+        <SettingsSheetAlert>
+          <Trans>Couldn't open installation. Follow these instructions or try again later.</Trans>
+        </SettingsSheetAlert>
+      ) : null}
+    </SettingsSheet>
   );
 }

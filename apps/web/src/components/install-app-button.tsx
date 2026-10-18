@@ -1,5 +1,4 @@
 import { Trans } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { RiDownloadLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
@@ -8,7 +7,12 @@ import { useInstallStore } from "#/features/install/install-store";
 
 type InstallDialogComponent = typeof import("./install-app-dialog").InstallAppDialog;
 
-export function InstallAppButton({ showHelpLink = false }: { showHelpLink?: boolean }) {
+/**
+ * Install CLC: the browser's own prompt where it offers one, the steps
+ * otherwise. `quiet` is the ghost button in Welcome's bottom row, which drops
+ * the request notice because the browser is already showing its prompt.
+ */
+export function InstallAppButton({ quiet = false }: { quiet?: boolean }) {
   const { status, installed } = useInstallStore();
   const [DialogComponent, setDialogComponent] = useState<InstallDialogComponent | null>(null);
   const [open, setOpen] = useState(false);
@@ -40,16 +44,16 @@ export function InstallAppButton({ showHelpLink = false }: { showHelpLink?: bool
 
   if (installed) return null;
   if (status === "accepted")
-    return (
+    return quiet ? null : (
       <p role="status" className="text-muted-foreground text-sm">
         <Trans>Installation requested. Follow your browser's instructions to finish.</Trans>
       </p>
     );
   return (
-    <div className="space-y-3">
+    <div className={quiet ? "min-w-0" : "space-y-3"}>
       <Button
         className="w-full"
-        variant="outline"
+        variant={quiet ? "ghost" : "outline"}
         tap
         pending={loading || status === "prompting"}
         onClick={() => void showDialog()}
@@ -65,18 +69,6 @@ export function InstallAppButton({ showHelpLink = false }: { showHelpLink?: bool
         <p role="alert" className="text-destructive text-sm">
           <Trans>Couldn't open installation. Follow the steps below or try again later.</Trans>
         </p>
-      ) : null}
-      {showHelpLink ? (
-        <Button
-          asChild
-          variant="link"
-          tap
-          className="w-full text-muted-foreground underline hover:text-foreground"
-        >
-          <Link to="/install">
-            <Trans>Add CLC to your phone</Trans>
-          </Link>
-        </Button>
       ) : null}
       {DialogComponent ? <DialogComponent open={open} onOpenChange={setOpen} /> : null}
     </div>

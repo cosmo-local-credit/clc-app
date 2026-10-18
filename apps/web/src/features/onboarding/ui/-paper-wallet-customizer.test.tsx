@@ -14,18 +14,9 @@ function defaults(overrides?: Partial<PaperWalletCustomization>): PaperWalletCus
 }
 
 describe("PaperWalletCustomizer", () => {
-  it("renders a closed disclosure with 'Customize' label by default", () => {
+  it("shows its fields straight away, for the sheet that holds them", () => {
     render(<PaperWalletCustomizer value={defaults()} onChange={vi.fn()} />);
-    expect(screen.getByText("Customize")).toBeTruthy();
-    const details = document.querySelector("details") as HTMLDetailsElement;
-    expect(details.open).toBe(false);
-  });
-
-  it("shows inputs when disclosure is opened", () => {
-    render(<PaperWalletCustomizer value={defaults()} onChange={vi.fn()} />);
-    fireEvent.click(screen.getByText("Customize"));
-    const details = document.querySelector("details") as HTMLDetailsElement;
-    expect(details.open).toBe(true);
+    expect(document.querySelector("details")).toBeNull();
     expect(screen.getByLabelText("Name on wallet")).toBeTruthy();
     expect(screen.getByLabelText("Website")).toBeTruthy();
     expect(screen.getByLabelText("Description")).toBeTruthy();
@@ -34,7 +25,6 @@ describe("PaperWalletCustomizer", () => {
   it("name input has maxLength of 32 and reflects the value", () => {
     const onChange = vi.fn();
     render(<PaperWalletCustomizer value={defaults({ name: "Alice" })} onChange={onChange} />);
-    fireEvent.click(screen.getByText("Customize"));
     const input = screen.getByLabelText("Name on wallet");
     expect(input).toHaveProperty("maxLength", 32);
     expect(input).toHaveProperty("value", "Alice");
@@ -44,7 +34,6 @@ describe("PaperWalletCustomizer", () => {
     render(
       <PaperWalletCustomizer value={defaults({ website: "example.com" })} onChange={vi.fn()} />,
     );
-    fireEvent.click(screen.getByText("Customize"));
     const input = screen.getByLabelText("Website");
     expect(input).toHaveProperty("maxLength", 40);
     expect(input).toHaveProperty("value", "example.com");
@@ -57,7 +46,6 @@ describe("PaperWalletCustomizer", () => {
         onChange={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByText("Customize"));
     const textarea = screen.getByLabelText("Description");
     expect(textarea).toHaveProperty("maxLength", 80);
     expect(textarea).toHaveProperty("value", "A test description");
@@ -66,7 +54,6 @@ describe("PaperWalletCustomizer", () => {
   it("calls onChange with updated name when user types", () => {
     const onChange = vi.fn();
     render(<PaperWalletCustomizer value={defaults()} onChange={onChange} />);
-    fireEvent.click(screen.getByText("Customize"));
     fireEvent.change(screen.getByLabelText("Name on wallet"), {
       target: { value: "New Name" },
     });
@@ -76,7 +63,6 @@ describe("PaperWalletCustomizer", () => {
   it("calls onChange with updated website when user types", () => {
     const onChange = vi.fn();
     render(<PaperWalletCustomizer value={defaults()} onChange={onChange} />);
-    fireEvent.click(screen.getByText("Customize"));
     fireEvent.change(screen.getByLabelText("Website"), {
       target: { value: "new-site.org" },
     });
@@ -85,14 +71,12 @@ describe("PaperWalletCustomizer", () => {
 
   it("shows an upload logo button", () => {
     render(<PaperWalletCustomizer value={defaults()} onChange={vi.fn()} />);
-    fireEvent.click(screen.getByText("Customize"));
     expect(screen.getByRole("button", { name: /upload logo/i })).toBeTruthy();
   });
 
   it("rejects SVG files with an inline error and does not call onChange", () => {
     const onChange = vi.fn();
     render(<PaperWalletCustomizer value={defaults()} onChange={onChange} />);
-    fireEvent.click(screen.getByText("Customize"));
     const fileInput = document.querySelector("input[type='file']") as HTMLInputElement;
 
     const file = new File(["<svg></svg>"], "logo.svg", {
@@ -107,7 +91,6 @@ describe("PaperWalletCustomizer", () => {
   it("rejects files larger than 512 KB with an inline error and does not call onChange", () => {
     const onChange = vi.fn();
     render(<PaperWalletCustomizer value={defaults()} onChange={onChange} />);
-    fireEvent.click(screen.getByText("Customize"));
     const fileInput = document.querySelector("input[type='file']") as HTMLInputElement;
 
     const largeFile = new File([new ArrayBuffer(600_000)], "big-logo.png", {
@@ -126,7 +109,6 @@ describe("PaperWalletCustomizer", () => {
         onChange={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByText("Customize"));
     expect(screen.getByText(/reset logo/i)).toBeTruthy();
   });
 
@@ -138,7 +120,6 @@ describe("PaperWalletCustomizer", () => {
         onChange={onChange}
       />,
     );
-    fireEvent.click(screen.getByText("Customize"));
     fireEvent.click(screen.getByText(/reset logo/i));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ logoDataUrl: null }));
   });

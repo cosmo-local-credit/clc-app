@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
@@ -157,6 +157,7 @@ vi.mock("#/lib/api/auth", async () => ({
 
 import { BackendApiError } from "@clc/api/client/errors";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
+import type { WalletPage } from "#/lib/onboarding-search";
 import { OnboardingWalletStep } from "./onboarding-wallet-step";
 
 const PROFILE: ProfileInput = {
@@ -178,32 +179,59 @@ const STABLE_PK =
   "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" as `0x${string}`;
 const PHOTO = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
 
-function WalletStepFixture({ linkPasskey = false }: { linkPasskey?: boolean }) {
+/** Plays the flow's part: the page lives in state, as the URL step would. */
+function WalletStepFixture({
+  linkPasskey = false,
+  startPage = "card",
+}: {
+  linkPasskey?: boolean;
+  startPage?: WalletPage;
+}) {
+  const [page, setPage] = useState<WalletPage>(startPage);
   return (
-    <OnboardingWalletStep
-      profileData={PROFILE}
-      avatarFile={PHOTO}
-      privateKey={STABLE_PK}
-      backendRegistered={false}
-      onBackendRegistered={vi.fn()}
-      progressStep={linkPasskey ? 3 : 2}
-      progressTotal={linkPasskey ? 3 : 2}
-      linkPasskey={linkPasskey}
-      onDone={mockOnDone}
-    />
+    <>
+      <span data-testid="page">{page}</span>
+      <OnboardingWalletStep
+        page={page}
+        onPage={setPage}
+        onReplace={setPage}
+        profileData={PROFILE}
+        avatarFile={PHOTO}
+        privateKey={STABLE_PK}
+        backendRegistered={false}
+        onBackendRegistered={vi.fn()}
+        progressTotal={linkPasskey ? 6 : 5}
+        linkPasskey={linkPasskey}
+        onDone={mockOnDone}
+      />
+    </>
   );
 }
 
-function renderWalletStep(overrides: { linkPasskey?: boolean } = {}) {
-  return render(<WalletStepFixture linkPasskey={overrides.linkPasskey} />);
+function renderWalletStep(overrides: { linkPasskey?: boolean; startPage?: WalletPage } = {}) {
+  return render(
+    <WalletStepFixture linkPasskey={overrides.linkPasskey} startPage={overrides.startPage} />,
+  );
+}
+
+const page = () => screen.getByTestId("page").textContent;
+const button = (name: RegExp) => screen.getByRole("button", { name });
+const passwordSwitch = () =>
+  screen.getByRole("switch", { name: /protect paper wallet with a password/i });
+const savedKey = () => screen.getByRole("checkbox", { name: /i have saved this key/i });
+
+/** Your paper wallet: turn the password off and move on to Save your card. */
+function skipPassword() {
+  fireEvent.click(passwordSwitch());
+  fireEvent.click(button(/^continue$/i));
 }
 
 async function savePaperWallet() {
-  fireEvent.click(screen.getByLabelText(/protect paper wallet with a password/i));
+  skipPassword();
   await act(async () => {
-    fireEvent.click(screen.getByRole("button", { name: /download card/i }));
+    fireEvent.click(button(/download card/i));
   });
-  fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+  fireEvent.click(savedKey());
 }
 
 function acceptPlatformTerms() {
@@ -211,8 +239,10 @@ function acceptPlatformTerms() {
   if (!terms.hasAttribute("data-checked")) fireEvent.click(terms);
 }
 
-async function completeWalletRequirements() {
+/** Every page done up to the last button: Continue to wallet, or Link's two. */
+async function completeWalletRequirements({ linkPasskey = false } = {}) {
   await savePaperWallet();
+  if (linkPasskey) fireEvent.click(button(/^continue$/i));
   acceptPlatformTerms();
 }
 
@@ -252,53 +282,94 @@ beforeEach(() => {
   mockGetSession.mockResolvedValue({ address: FAKE_ADDRESS, chainId: 42220 });
 });
 
-describe("OnboardingWalletStep rendering", () => {
-  it("shows the paper wallet card with the generated address", () => {
+describe("OnboardingWalletStep pages", () => {
+  it("starts on Your paper wallet with the password on and nothing to download yet", () => {
     renderWalletStep();
+    expect(screen.getByRole("heading", { name: "Your paper wallet" })).toBeTruthy();
+    expect(passwordSwitch().getAttribute("aria-checked")).toBe("true");
+    expect(button(/^protect paper wallet$/i)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /download card/i })).toBeNull();
+  });
+
+  it("shows the card, Download and the acknowledgement on Save your card", () => {
+    renderWalletStep();
+    skipPassword();
+    expect(page()).toBe("save");
     expect(screen.getByTestId("paper-wallet-card")).toBeTruthy();
     expect(screen.getByText(FAKE_ADDRESS)).toBeTruthy();
+    expect(button(/download card/i)).toBeTruthy();
+    expect(savedKey()).toBeTruthy();
   });
 
-  it("shows the download button", () => {
+  it("customizes the card from a sheet over the preview", async () => {
     renderWalletStep();
-    expect(screen.getByRole("button", { name: /download/i })).toBeTruthy();
+    skipPassword();
+    fireEvent.click(button(/customize/i));
+    const sheet = await screen.findByRole("dialog", { name: "Customize" });
+    expect(sheet.textContent).toContain("Name on wallet");
+    expect(screen.getByLabelText("Name on wallet")).toHaveProperty("value", "Alice");
   });
 
-  it("shows the acknowledgement checkbox", () => {
-    renderWalletStep();
-    expect(screen.getByLabelText(/i have saved this key/i)).toBeTruthy();
-  });
-
-  it("hides Link button when linkPasskey is false", () => {
+  it("finishes on Save, with the terms, where no passkey can be linked", () => {
     renderWalletStep({ linkPasskey: false });
+    skipPassword();
     expect(screen.queryByRole("button", { name: /link wallet/i })).toBeNull();
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toBeTruthy();
+    expect(button(/continue to wallet/i)).toBeTruthy();
+    expect(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" })).toBeTruthy();
   });
 
-  it("shows Link and paper continue when linkPasskey is true", () => {
+  it("offers Link and the paper wallet on the last page where a passkey can be linked", async () => {
     mockPickPasskeyProvider.mockReturnValue("google");
     renderWalletStep({ linkPasskey: true });
-    expect(screen.getByRole("button", { name: /link wallet to google/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toBeTruthy();
+    await savePaperWallet();
+    expect(screen.queryByRole("checkbox", { name: "Accept Terms and Conditions" })).toBeNull();
+    fireEvent.click(button(/^continue$/i));
+    expect(page()).toBe("link");
+    expect(screen.getByRole("heading", { name: "Link Google?" })).toBeTruthy();
+    expect(button(/link wallet to google/i)).toBeTruthy();
+    expect(button(/continue with paper wallet/i)).toBeTruthy();
   });
 
-  it("shows Link wallet to Apple ID button when linking Apple", () => {
+  it("shows Link wallet to Apple ID button when linking Apple", async () => {
     mockPickPasskeyProvider.mockReturnValue("apple");
     renderWalletStep({ linkPasskey: true });
-    expect(screen.getByRole("button", { name: /link wallet to apple id/i })).toBeTruthy();
+    await completeWalletRequirements({ linkPasskey: true });
+    expect(button(/link wallet to apple id/i)).toBeTruthy();
+  });
+
+  it("sends a page reached early back to the one it needs", () => {
+    const { unmount } = renderWalletStep({ startPage: "save" });
+    expect(page()).toBe("card");
+    unmount();
+    renderWalletStep({ linkPasskey: true, startPage: "link" });
+    expect(page()).toBe("card");
+  });
+
+  it("does not open Link until the card is saved and acknowledged", async () => {
+    renderWalletStep({ linkPasskey: true });
+    skipPassword();
+    expect(button(/^continue$/i)).toHaveProperty("disabled", true);
+    await act(async () => {
+      fireEvent.click(button(/download card/i));
+    });
+    expect(button(/^continue$/i)).toHaveProperty("disabled", true);
+    fireEvent.click(savedKey());
+    expect(button(/^continue$/i)).toHaveProperty("disabled", false);
+  });
+});
+
+describe("OnboardingWalletStep passkey connection", () => {
+  beforeEach(() => {
+    mockPickPasskeyProvider.mockReturnValue("google");
   });
 
   it("connects Calibur and finishes after passkey linking succeeds", async () => {
-    mockPickPasskeyProvider.mockReturnValue("google");
     mockUpgradeStep.current = "done";
     renderWalletStep({ linkPasskey: true });
+    await completeWalletRequirements({ linkPasskey: true });
 
     // While Calibur connects, paper continue stays disabled.
-    expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toHaveProperty(
-      "disabled",
-      true,
-    );
-
+    expect(button(/continue with paper wallet/i)).toHaveProperty("disabled", true);
     await act(async () => {});
     expect(mockConnect).toHaveBeenCalledWith(
       {},
@@ -308,31 +379,21 @@ describe("OnboardingWalletStep rendering", () => {
   });
 
   it("on Calibur connect failure: paper continues and Link retries connect only", async () => {
-    mockPickPasskeyProvider.mockReturnValue("google");
     mockUpgradeStep.current = "done";
     // Persistent reject — React Strict Mode double-mount would consume a single Once.
     mockConnect.mockRejectedValue(new Error("calibur failed"));
     renderWalletStep({ linkPasskey: true });
+    await waitFor(() => expect(mockConnect).toHaveBeenCalled());
 
-    await waitFor(() => {
-      expect(mockConnect).toHaveBeenCalled();
-    });
-    await waitFor(() => {
-      // Production surfaces err.message when present.
-      expect(screen.getByText(/calibur failed/i)).toBeTruthy();
-    });
-
-    // Paper path available after connector failure.
-    await completeWalletRequirements();
-    expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toHaveProperty(
-      "disabled",
-      false,
-    );
+    await completeWalletRequirements({ linkPasskey: true });
+    // Production surfaces err.message when present.
+    await waitFor(() => expect(screen.getByText(/calibur failed/i)).toBeTruthy());
+    expect(button(/continue with paper wallet/i)).toHaveProperty("disabled", false);
 
     mockConnect.mockClear();
     mockConnect.mockResolvedValue(undefined);
     mockUpgradeAndLinkMutate.mockClear();
-    fireEvent.click(screen.getByRole("button", { name: /retry google connection/i }));
+    fireEvent.click(button(/retry google connection/i));
     await waitFor(() => {
       expect(mockConnect).toHaveBeenCalledWith(
         {},
@@ -344,109 +405,74 @@ describe("OnboardingWalletStep rendering", () => {
   });
 
   it("on session verification failure: allows retry and does not latch finish", async () => {
-    mockPickPasskeyProvider.mockReturnValue("google");
     mockUpgradeStep.current = "done";
     mockGetSession.mockResolvedValue(null);
     renderWalletStep({ linkPasskey: true });
+    await completeWalletRequirements({ linkPasskey: true });
 
-    await waitFor(() => {
-      expect(screen.getByText(/session could not be verified/i)).toBeTruthy();
-    });
+    await waitFor(() => expect(screen.getByText(/session could not be verified/i)).toBeTruthy());
     expect(mockOnDone).not.toHaveBeenCalled();
-
-    await completeWalletRequirements();
-    expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toHaveProperty(
-      "disabled",
-      false,
-    );
+    expect(button(/continue with paper wallet/i)).toHaveProperty("disabled", false);
 
     mockGetSession.mockResolvedValue({ address: FAKE_ADDRESS, chainId: 42220 });
     const connectCallsAfterFail = mockConnect.mock.calls.length;
-    fireEvent.click(screen.getByRole("button", { name: /retry google connection/i }));
-    await waitFor(() => {
-      expect(mockOnDone).toHaveBeenCalled();
-    });
+    fireEvent.click(button(/retry google connection/i));
+    await waitFor(() => expect(mockOnDone).toHaveBeenCalled());
     // Session-only recovery: must not call connect again after connector succeeded.
     expect(mockConnect.mock.calls.length).toBe(connectCallsAfterFail);
-  });
-
-  it("paper path: session failure after connect does not clear the key and retries session only", async () => {
-    mockGetSession.mockResolvedValueOnce(null).mockResolvedValue({
-      address: FAKE_ADDRESS,
-      chainId: 42220,
-    });
-    const { rerender } = renderWalletStep({ linkPasskey: false });
-    await completeWalletRequirements();
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
-    });
-
-    expect(screen.getByRole("heading", { name: /setting up your wallet/i })).toBeTruthy();
-    expect(mockStorePrivateKey).not.toHaveBeenCalled();
-
-    mockDelegateStep.current = "done";
-    rerender(<WalletStepFixture />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/session could not be verified/i)).toBeTruthy();
-    });
-    expect(mockStorePrivateKey).toHaveBeenCalled();
-    // Key must not be cleared after a successful connector + failed session.
-    // Asserted as ordering rather than "never called", because this flow now
-    // clears any *previous* user's credentials immediately before storing this
-    // key — a device the app is shared on may hold someone else's. What must
-    // never happen is a clear landing after the store.
-    const lastStore = Math.max(...mockStorePrivateKey.mock.invocationCallOrder);
-    expect(mockClearPrivateKey.mock.invocationCallOrder.filter((at) => at > lastStore)).toEqual([]);
-    expect(mockOnDone).not.toHaveBeenCalled();
-
-    const connectCalls = mockConnect.mock.calls.length;
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
-    });
-    await waitFor(() => {
-      expect(mockOnDone).toHaveBeenCalled();
-    });
-    expect(mockConnect.mock.calls.length).toBe(connectCalls);
   });
 });
 
 describe("OnboardingWalletStep continue flow", () => {
-  it("requires a password by default and allows an explicit opt-out", () => {
+  it("asks for the password before moving on, and lets it be turned off", () => {
     renderWalletStep({ linkPasskey: false });
-    const protection = screen.getByLabelText(/protect paper wallet with a password/i);
-    expect(protection).toHaveProperty("checked", true);
-    expect(screen.getByRole("button", { name: /download card/i })).toHaveProperty("disabled", true);
-    fireEvent.click(protection);
-    expect(protection).toHaveProperty("checked", false);
-    expect(screen.getByRole("button", { name: /download card/i })).toHaveProperty(
-      "disabled",
-      false,
-    );
+    expect(screen.queryByRole("button", { name: /^continue$/i })).toBeNull();
+    fireEvent.click(passwordSwitch());
+    expect(passwordSwitch().getAttribute("aria-checked")).toBe("false");
+    expect(screen.getByText("QR currently contains the raw private key.")).toBeTruthy();
+    expect(button(/^continue$/i)).toBeTruthy();
   });
 
-  it("Continue button is disabled before acknowledging", () => {
+  it("applies the password, then moves on to a protected card", async () => {
     renderWalletStep({ linkPasskey: false });
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      true,
-    );
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: "wallet passphrase" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), {
+      target: { value: "wallet passphrase" },
+    });
+    await act(async () => {
+      fireEvent.click(button(/^protect paper wallet$/i));
+    });
+
+    expect(mockEncryptPaperWalletPrivateKey).toHaveBeenCalledWith(STABLE_PK, "wallet passphrase");
+    expect(
+      screen.getByText("Paper wallet is protected. Keep the password separate from the card."),
+    ).toBeTruthy();
+    fireEvent.click(button(/^continue$/i));
+    expect(page()).toBe("save");
+    expect(button(/download card/i)).toHaveProperty("disabled", false);
+  });
+
+  it("keeps Continue to wallet disabled before acknowledging", () => {
+    renderWalletStep({ linkPasskey: false });
+    skipPassword();
+    expect(button(/continue to wallet/i)).toHaveProperty("disabled", true);
   });
 
   it("requires a paper-wallet download before the acknowledgement unlocks Continue", async () => {
     renderWalletStep({ linkPasskey: false });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      true,
-    );
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
-    await completeWalletRequirements();
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      false,
-    );
+    skipPassword();
+    expect(screen.getByText("Download your paper wallet before continuing.")).toBeTruthy();
+    fireEvent.click(savedKey());
+    acceptPlatformTerms();
+    expect(button(/continue to wallet/i)).toHaveProperty("disabled", true);
+
+    await act(async () => {
+      fireEvent.click(button(/download card/i));
+    });
+    expect(screen.queryByText("Download your paper wallet before continuing.")).toBeNull();
+    expect(button(/continue to wallet/i)).toHaveProperty("disabled", false);
   });
 
   it("requires explicit platform terms acceptance after saving the paper wallet", async () => {
@@ -455,7 +481,7 @@ describe("OnboardingWalletStep continue flow", () => {
 
     const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
     const link = screen.getByRole("link", { name: "Terms and Conditions" });
-    const continueButton = screen.getByRole("button", { name: /continue to wallet/i });
+    const continueButton = button(/continue to wallet/i);
 
     expect(link.getAttribute("href")).toBe("https://docs.cosmolocal.credit/governance/terms");
     expect(continueButton).toHaveProperty("disabled", true);
@@ -468,50 +494,12 @@ describe("OnboardingWalletStep continue flow", () => {
     expect(continueButton).toHaveProperty("disabled", false);
   });
 
-  it("requires applying QR protection before continuing when protection is enabled", async () => {
-    renderWalletStep({ linkPasskey: false });
-    await completeWalletRequirements();
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      false,
-    );
-
-    fireEvent.click(screen.getByLabelText(/protect paper wallet with a password/i));
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      true,
-    );
-
-    fireEvent.change(screen.getByLabelText(/^password$/i), {
-      target: { value: "wallet passphrase" },
-    });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
-      target: { value: "wallet passphrase" },
-    });
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /^protect paper wallet$/i }));
-    });
-
-    expect(mockEncryptPaperWalletPrivateKey).toHaveBeenCalledWith(STABLE_PK, "wallet passphrase");
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      true,
-    );
-
-    await completeWalletRequirements();
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      false,
-    );
-  });
-
   it("shows a pending view and opens the wallet only after smart-wallet activation confirms", async () => {
     const { rerender } = renderWalletStep({ linkPasskey: false });
     await completeWalletRequirements();
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+      fireEvent.click(button(/continue to wallet/i));
     });
 
     expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
@@ -521,6 +509,8 @@ describe("OnboardingWalletStep continue flow", () => {
     });
     expect(mockDelegateMutateAsync).toHaveBeenCalledWith({ privateKey: STABLE_PK });
     expect(screen.getByRole("heading", { name: /setting up your wallet/i })).toBeTruthy();
+    const phases = screen.getAllByRole("listitem").map((item) => item.textContent);
+    expect(phases).toEqual(["AccountDone", "Paper walletPending", "Network", "Wallet"]);
     expect(screen.queryByRole("button", { name: /continue to wallet/i })).toBeNull();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
     expect(mockOnDone).not.toHaveBeenCalled();
@@ -528,9 +518,7 @@ describe("OnboardingWalletStep continue flow", () => {
     mockDelegateStep.current = "done";
     rerender(<WalletStepFixture />);
 
-    await waitFor(() => {
-      expect(mockOnDone).toHaveBeenCalledTimes(1);
-    });
+    await waitFor(() => expect(mockOnDone).toHaveBeenCalledTimes(1));
     expect(mockStorePrivateKey).toHaveBeenCalledWith(STABLE_PK);
     expect(mockConnect).toHaveBeenCalledWith(
       {},
@@ -538,13 +526,65 @@ describe("OnboardingWalletStep continue flow", () => {
     );
   });
 
-  it("returns to the wallet step when smart-wallet activation fails", async () => {
+  it("marks the network phase while activation confirms on chain", async () => {
+    const { rerender } = renderWalletStep({ linkPasskey: false });
+    await completeWalletRequirements();
+    await act(async () => {
+      fireEvent.click(button(/continue to wallet/i));
+    });
+    mockDelegateStep.current = "confirming";
+    rerender(<WalletStepFixture />);
+    const current = screen
+      .getAllByRole("listitem")
+      .find((item) => item.getAttribute("aria-current") === "step");
+    expect(current?.textContent).toBe("NetworkConfirming");
+    expect(screen.getByText("Activating on chain…")).toBeTruthy();
+  });
+
+  it("paper path: session failure after connect does not clear the key and retries session only", async () => {
+    mockGetSession.mockResolvedValueOnce(null).mockResolvedValue({
+      address: FAKE_ADDRESS,
+      chainId: 42220,
+    });
+    const { rerender } = renderWalletStep({ linkPasskey: false });
+    await completeWalletRequirements();
+
+    await act(async () => {
+      fireEvent.click(button(/continue to wallet/i));
+    });
+
+    expect(screen.getByRole("heading", { name: /setting up your wallet/i })).toBeTruthy();
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+
+    mockDelegateStep.current = "done";
+    rerender(<WalletStepFixture />);
+
+    await waitFor(() => expect(screen.getByText(/session could not be verified/i)).toBeTruthy());
+    expect(mockStorePrivateKey).toHaveBeenCalled();
+    // Key must not be cleared after a successful connector + failed session.
+    // Asserted as ordering rather than "never called", because this flow now
+    // clears any *previous* user's credentials immediately before storing this
+    // key — a device the app is shared on may hold someone else's. What must
+    // never happen is a clear landing after the store.
+    const lastStore = Math.max(...mockStorePrivateKey.mock.invocationCallOrder);
+    expect(mockClearPrivateKey.mock.invocationCallOrder.filter((at) => at > lastStore)).toEqual([]);
+    expect(mockOnDone).not.toHaveBeenCalled();
+
+    const connectCalls = mockConnect.mock.calls.length;
+    await act(async () => {
+      fireEvent.click(button(/continue to wallet/i));
+    });
+    await waitFor(() => expect(mockOnDone).toHaveBeenCalled());
+    expect(mockConnect.mock.calls.length).toBe(connectCalls);
+  });
+
+  it("returns to Save your card when smart-wallet activation fails", async () => {
     mockDelegateMutateAsync.mockRejectedValue(new Error("delegate failed"));
     const { rerender } = renderWalletStep({ linkPasskey: false });
     await completeWalletRequirements();
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+      fireEvent.click(button(/continue to wallet/i));
     });
 
     mockDelegateStep.current = "error";
@@ -552,13 +592,13 @@ describe("OnboardingWalletStep continue flow", () => {
     rerender(<WalletStepFixture />);
 
     expect(mockDelegateMutateAsync).toHaveBeenCalledWith({ privateKey: STABLE_PK });
-    expect(screen.getByText("delegate failed")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toBe("delegate failed");
     expect(
       screen
         .getByRole("checkbox", { name: "Accept Terms and Conditions" })
         .hasAttribute("data-checked"),
     ).toBe(true);
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toBeTruthy();
+    expect(button(/continue to wallet/i)).toBeTruthy();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
     expect(mockOnDone).not.toHaveBeenCalled();
   });
@@ -568,7 +608,7 @@ describe("OnboardingWalletStep continue flow", () => {
     renderWalletStep({ linkPasskey: false });
     await completeWalletRequirements();
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+      fireEvent.click(button(/continue to wallet/i));
     });
     expect(mockDelegateMutateAsync).not.toHaveBeenCalled();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
@@ -582,7 +622,7 @@ describe("OnboardingWalletStep continue flow", () => {
     await completeWalletRequirements();
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+      fireEvent.click(button(/continue to wallet/i));
     });
 
     mockBackendSignupError.current = signupError;
@@ -592,16 +632,13 @@ describe("OnboardingWalletStep continue flow", () => {
     expect(screen.getByRole("alert").textContent).toBe(
       "E04: Validation failed on one or more fields",
     );
-    expect(screen.getByLabelText(/i have saved this key/i)).toHaveProperty("checked", true);
+    expect(savedKey().hasAttribute("data-checked")).toBe(true);
     expect(
       screen
         .getByRole("checkbox", { name: "Accept Terms and Conditions" })
         .hasAttribute("data-checked"),
     ).toBe(true);
-    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
-      "disabled",
-      false,
-    );
+    expect(button(/continue to wallet/i)).toHaveProperty("disabled", false);
     expect(mockDelegateMutateAsync).not.toHaveBeenCalled();
     expect(mockConnect).not.toHaveBeenCalled();
     expect(mockClearPrivateKey).not.toHaveBeenCalled();
@@ -615,20 +652,12 @@ describe("OnboardingWalletStep link flow", () => {
     mockPickPasskeyProvider.mockReturnValue("google");
   });
 
-  it("disables passkey linking before acknowledging the saved key", () => {
-    renderWalletStep({ linkPasskey: true });
-
-    expect(screen.getByRole("button", { name: /link wallet to google/i })).toHaveProperty(
-      "disabled",
-      true,
-    );
-  });
-
   it("keeps passkey linking disabled until platform terms are accepted", async () => {
     renderWalletStep({ linkPasskey: true });
     await savePaperWallet();
+    fireEvent.click(button(/^continue$/i));
 
-    const linkButton = screen.getByRole("button", { name: /link wallet to google/i });
+    const linkButton = button(/link wallet to google/i);
     expect(linkButton).toHaveProperty("disabled", true);
 
     acceptPlatformTerms();
@@ -637,9 +666,9 @@ describe("OnboardingWalletStep link flow", () => {
 
   it("clicking Link wallet to Google after acknowledging calls upgradeAndLink.mutate", async () => {
     renderWalletStep({ linkPasskey: true });
-    await completeWalletRequirements();
+    await completeWalletRequirements({ linkPasskey: true });
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /link wallet to google/i }));
+      fireEvent.click(button(/link wallet to google/i));
     });
     expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
       profile: PROFILE,
@@ -648,23 +677,29 @@ describe("OnboardingWalletStep link flow", () => {
     });
     expect(mockUpgradeAndLinkMutate).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("heading", { name: /setting up your wallet/i })).toBeTruthy();
+    const phases = screen.getAllByRole("listitem").map((item) => item.textContent);
+    expect(phases).toEqual(["AccountDone", "PasskeyPending", "Network", "Wallet"]);
     expect(screen.queryByRole("button", { name: /link wallet to google/i })).toBeNull();
   });
 
   it("does NOT call upgradeAndLink when backendSignup throws", async () => {
     mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
     renderWalletStep({ linkPasskey: true });
-    await completeWalletRequirements();
+    await completeWalletRequirements({ linkPasskey: true });
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /link wallet to google/i }));
+      fireEvent.click(button(/link wallet to google/i));
     });
     expect(mockUpgradeAndLinkMutate).not.toHaveBeenCalled();
   });
 });
 
 describe("OnboardingWalletStep back navigation", () => {
-  it("renders a back control", () => {
-    renderWalletStep({ linkPasskey: false });
+  it("renders a back control on every page", async () => {
+    renderWalletStep({ linkPasskey: true });
+    expect(screen.getByRole("button", { name: /back/i })).toBeTruthy();
+    await savePaperWallet();
+    expect(screen.getByRole("button", { name: /back/i })).toBeTruthy();
+    fireEvent.click(button(/^continue$/i));
     expect(screen.getByRole("button", { name: /back/i })).toBeTruthy();
   });
 });

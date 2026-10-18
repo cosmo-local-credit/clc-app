@@ -124,7 +124,10 @@ export function AvatarPicker({
         ) : required || validationError ? (
           <p
             id={validationErrorId}
-            className="text-destructive text-xs"
+            // Muted until a submit finds the photo missing: a fresh form opens with no errors.
+            className={
+              validationError ? "text-destructive text-xs" : "text-muted-foreground text-xs"
+            }
             role={validationError ? "alert" : undefined}
           >
             {validationError ?? t`Required`}

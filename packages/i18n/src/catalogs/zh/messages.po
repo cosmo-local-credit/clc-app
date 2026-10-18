@@ -58,6 +58,16 @@ msgstr "{count, plural, other {# 篇帖子}}"
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "用户名必须由 3–24 个字母、数字或连字符组成"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "请重新选择语言以继续。"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "选择你的语言"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -75,7 +85,7 @@ msgstr "可用信用额度：{0}"
 #~ msgstr "{0} 可以持有、发送和兑付。"
 
 #. placeholder {0}: voucher.name
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:454
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:451
 msgid "{0} disappears from the market, search and everyone's wallet. Balances "
 "and past activity are kept, and an admin can bring it back."
 msgstr "{0} 从市场、搜索和每个人的钱包中消失。余额和过去的活动将被保留，管理员可以将其恢复。"
@@ -91,14 +101,14 @@ msgid "{0} fees sent to the fee recipient."
 msgstr "{0} 费用发送给费用接收方。"
 
 #. placeholder {0}: contract.name
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:336
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:333
 msgid "{0} is deployed"
 msgstr "{0} 已部署"
 
 #. placeholder {0}: contract.name
 #. placeholder {0}: contract.symbol
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:162
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:455
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:452
 msgid "{0} is live"
 msgstr "{0} 已上线"
 
@@ -161,7 +171,7 @@ msgid "{0} updated."
 msgstr "{0} 已更新。"
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/wallet-page.tsx:378
+#: apps/web/src/features/home/ui/wallet-page.tsx:350
 #: apps/web/src/features/pools/ui/pools-page.tsx:402
 msgid "{0} vouchers"
 msgstr "{0} 代金券"
@@ -230,13 +240,13 @@ msgstr "{summaryTotal} 条评价"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "已使用 {used} / {limit}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "已使用 {used} · 无限制"
 
@@ -274,7 +284,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 份报价"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:376
+#: apps/web/src/features/home/ui/wallet-page.tsx:348
 #: apps/web/src/features/pools/ui/pools-page.tsx:400
 msgid "1 voucher"
 msgstr "1 代金券"
@@ -311,6 +321,7 @@ msgstr "纸钱包链接已打开。用这个地址登录？"
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "扫描了纸钱包 QR。导入这个地址？"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -326,7 +337,7 @@ msgid "A voucher acts like a gift card for your offers. When someone redeems "
 msgstr "代金券类似于您为商品或服务发行的礼品卡。有人兑付您的代金券时，您承诺向其提供相应的商品或服务。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "凭证代表发行者提供商品或服务的承诺。请确认它可用于哪些用途，以及谁接受它。"
 
@@ -334,8 +345,8 @@ msgstr "凭证代表发行者提供商品或服务的承诺。请确认它可用
 msgid "About"
 msgstr "关于"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "关于 Cosmo-Local Credit"
 
@@ -354,6 +365,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "接受条款以发布您的代金券"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
 msgstr "账户"
 
@@ -365,11 +378,11 @@ msgstr "账户正在等待批准"
 msgid "Account not approved"
 msgstr "账户未获批准"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:490
+#: apps/web/src/components/auth/sign-in-panel.tsx:523
 msgid "Account not found"
 msgstr "未找到账户"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:454
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:451
 msgid "Account registration failed."
 msgstr "账户注册失败。"
 
@@ -377,7 +390,7 @@ msgstr "账户注册失败。"
 #~ msgid "Activating on chain..."
 #~ msgstr "正在链上激活…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:145
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:172
 msgid "Activating on chain…"
 msgstr "正在链上激活…"
 
@@ -385,7 +398,7 @@ msgstr "正在链上激活…"
 #~ msgid "Activating smart wallet..."
 #~ msgstr "正在激活智能钱包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:147
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:174
 msgid "Activating smart wallet…"
 msgstr "正在激活智能钱包…"
 
@@ -453,7 +466,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 msgstr "将 CLC 添加到您的 iPhone 主屏幕，打开已安装的应用程序，然后启用通知。"
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "将CLC添加到您的手机"
@@ -528,7 +540,7 @@ msgstr "地址簿"
 msgid "Address copied"
 msgstr "地址已复制"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:56
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:49
 msgid "Admin"
 msgstr "管理员"
 
@@ -542,11 +554,11 @@ msgstr "管理员将审核您的报告。在他们做出决定之前，审核始
 msgid "Advanced"
 msgstr "高级"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:525
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:522
 msgid "Advanced details"
 msgstr "高级详情"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:409
+#: apps/web/src/components/auth/sign-in-panel.tsx:404
 msgid "Advanced options"
 msgstr "高级选项"
 
@@ -559,7 +571,7 @@ msgstr "农业"
 #~ msgid "All"
 #~ msgstr "全部"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:312
+#: apps/web/src/features/home/ui/wallet-page.tsx:284
 msgid "All pools"
 msgstr "全部资金池"
 
@@ -572,11 +584,11 @@ msgstr "全部资金池"
 msgid "All selected"
 msgstr "全部选中"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:160
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:142
 msgid "All Vouchers"
 msgstr "全部代金券"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:270
 msgid "Already have an account?"
 msgstr "已有账户？"
 
@@ -620,7 +632,7 @@ msgid "Amount to collect"
 msgstr "收取金额"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "供给描述某人提供的商品或服务。请查看详情、价格以及接受哪种凭证。"
 
@@ -689,21 +701,22 @@ msgstr "可用标签"
 msgid "Awaiting approval"
 msgstr "等待批准"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:144
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
-#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:22
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:364
 msgid "Back"
 msgstr "返回"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:105
 msgid "Back to market"
 msgstr "返回市场"
 
@@ -734,7 +747,7 @@ msgid "Balance {tokenBalance}"
 msgstr "余额{tokenBalance}"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:327
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:444
 msgid "Bio"
 msgstr "简介"
 
@@ -807,12 +820,13 @@ msgstr "拨打电话"
 msgid "Camera access denied."
 msgstr "相机访问被拒绝。"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:468
+#: apps/web/src/components/auth/sign-in-panel.tsx:424
+#: apps/web/src/components/auth/sign-in-panel.tsx:539
 #: apps/web/src/components/nfc-card-prompt.tsx:117
 #: apps/web/src/components/reviews/review-editor.tsx:148
 #: apps/web/src/components/ui/photo-source-picker.tsx:128
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:404
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:476
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:523
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
 #: apps/web/src/features/home/ui/settings-page.tsx:145
@@ -855,7 +869,7 @@ msgstr "已贴卡："
 msgid "Card read — processing {amount}"
 msgstr "读卡 — 处理 {amount}"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:319
+#: apps/web/src/components/auth/sign-in-panel.tsx:356
 msgid "Card read — signing in"
 msgstr "已读取卡片 — 正在登录"
 
@@ -863,7 +877,7 @@ msgstr "已读取卡片 — 正在登录"
 msgid "Care"
 msgstr "照护"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:97
+#: apps/web/src/features/home/ui/wallet-page.tsx:76
 #: apps/web/src/features/wallet/ui/cash-page.tsx:33
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
 msgid "Cash"
@@ -895,7 +909,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "目录已保存，但无法添加项目。请重试。"
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -944,7 +958,7 @@ msgstr "向此卡充值 {amountText}"
 msgid "Check again"
 msgstr "再次检查"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:421
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:418
 msgid "Check creation status"
 msgstr "检查增发状态"
 
@@ -952,7 +966,7 @@ msgstr "检查增发状态"
 #~ msgid "Check mint status"
 #~ msgstr "检查薄荷状态"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:423
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:420
 msgid "Check supply again"
 msgstr "重新检查发行量"
 
@@ -974,7 +988,7 @@ msgstr "正在检查已批准的代金券…"
 msgid "Checking availability…"
 msgstr "正在检查可用性…"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:330
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:327
 msgid "Checking creation status"
 msgstr "正在检查增发状态"
 
@@ -1014,7 +1028,7 @@ msgstr "正在检查付款…"
 msgid "Checking review eligibility…"
 msgstr "正在检查评价资格…"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:427
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:424
 msgid "Checking supply…"
 msgstr "正在检查发行量…"
 
@@ -1042,11 +1056,6 @@ msgstr "选择文件或嵌入"
 #: apps/web/src/components/ui/image-upload-field.tsx:89
 msgid "Choose a JPEG, PNG or WebP image."
 msgstr "选择 JPEG、PNG 或 WebP 图像。"
-
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "请重新选择语言以继续。"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
@@ -1078,7 +1087,7 @@ msgid "Choose a profile photo"
 msgstr "选择个人资料照片"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "选择接收人、你持有的凭证和金额。确认前检查信息，然后等待转账结果。"
 
@@ -1148,11 +1157,6 @@ msgstr "当计价单位没有价格源时，请选择自定义汇率或等值定
 msgid "Choose username"
 msgstr "选择用户名"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "选择你的语言"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC 已安装。在主屏幕上找到它。"
@@ -1202,6 +1206,7 @@ msgstr "清除位置"
 msgid "Clear search"
 msgstr "清除搜索"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1226,7 +1231,7 @@ msgstr "关闭纸钱包扫描器"
 msgid "Close password-protected wallet import"
 msgstr "关闭受密码保护的钱包导入"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:439
+#: apps/web/src/components/auth/sign-in-panel.tsx:493
 msgid "Close private key form"
 msgstr "关闭私钥表格"
 
@@ -1294,8 +1299,8 @@ msgstr "完成浏览器权限提示以继续。"
 msgid "Complete the prompt on your phone."
 msgstr "完成手机上的提示。"
 
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:36
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:42
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:38
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:44
 msgid "Complete your profile"
 msgstr "完成您的个人资料"
 
@@ -1317,7 +1322,7 @@ msgstr "确认并发送"
 msgid "Confirm Install or Add when asked."
 msgstr "当询问时确认安装或添加。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:137
 msgid "Confirm password"
 msgstr "确认密码"
 
@@ -1340,6 +1345,7 @@ msgid "Confirmed"
 msgstr "已确认"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 msgid "Confirming"
 msgstr "正在确认"
 
@@ -1356,7 +1362,7 @@ msgstr "正在网络上确认您的通行密钥…"
 msgid "Connect your wallet before publishing."
 msgstr "发布前连接您的钱包。"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:116
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:113
 msgid "Connect your wallet to create vouchers."
 msgstr "请连接钱包以发行代金券。"
 
@@ -1376,7 +1382,7 @@ msgstr "连接地址"
 #~ msgid "Connecting wallet..."
 #~ msgstr "正在连接钱包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:141
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:168
 msgid "Connecting wallet…"
 msgstr "正在连接钱包…"
 
@@ -1385,14 +1391,14 @@ msgstr "正在连接钱包…"
 #~ msgid "Connecting..."
 #~ msgstr "正在连接…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:319
+#: apps/web/src/components/auth/sign-in-panel.tsx:356
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
 #: apps/web/src/routes/__root.tsx:322
 msgid "Connecting…"
 msgstr "正在连接…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:136
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
+#: apps/web/src/components/auth/sign-in-panel.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:320
 #: apps/web/src/routes/__root.tsx:229
 #: apps/web/src/routes/__root.tsx:260
 msgid "Connection failed."
@@ -1401,6 +1407,10 @@ msgstr "连接失败。"
 #: apps/web/src/lib/category-label.ts:8
 msgid "Construction"
 msgstr "建筑"
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:243
+msgid "Contact"
+msgstr "联系方式"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:357
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:747
@@ -1423,15 +1433,15 @@ msgstr "联系电话"
 msgid "Contact Website"
 msgstr "联系网站"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
 msgstr "继续"
 
-#: apps/web/src/components/install-app-dialog.tsx:53
+#: apps/web/src/components/install-app-dialog.tsx:37
 #: apps/web/src/features/install/ui/install-page.tsx:116
 msgid "Continue in browser"
 msgstr "在浏览器中继续"
@@ -1440,31 +1450,32 @@ msgstr "在浏览器中继续"
 msgid "Continue to CLC"
 msgstr "继续CLC"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
 msgid "Continue to wallet"
 msgstr "继续前往钱包"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:376
+#: apps/web/src/components/auth/sign-in-panel.tsx:365
 msgid "Continue with {providerLabel}"
 msgstr "继续{providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:490
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
 msgid "Continue with paper wallet"
 msgstr "使用纸钱包继续"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:370
+#: apps/web/src/components/auth/sign-in-panel.tsx:379
 msgid "Continue with Paper Wallet"
 msgstr "使用纸钱包继续"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:62
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:183
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:263
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:260
 msgid "Contract address"
 msgstr "合约地址"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:75
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:188
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:268
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:265
 msgid "Contract address copied"
 msgstr "合约地址已复制"
 
@@ -1479,11 +1490,11 @@ msgstr "复制地址"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:66
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:186
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:266
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:263
 msgid "Copy contract address"
 msgstr "复制合约地址"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:478
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:475
 msgid "Copy deployment transaction hash"
 msgstr "复制部署交易哈希"
 
@@ -1517,7 +1528,7 @@ msgstr "复制 Pretium ID"
 msgid "Copy receipt"
 msgstr "复制收据"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:493
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:490
 msgid "Copy supply creation transaction hash"
 msgstr "复制增发交易哈希"
 
@@ -1537,11 +1548,11 @@ msgstr "复制钱包地址"
 msgid "Copy wallet username"
 msgstr "复制钱包用户名"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit 帮助人们和组织支持、共享和交换商品和服务。"
@@ -1554,19 +1565,19 @@ msgstr "无法导入纸钱包。"
 msgid "Could not load vouchers."
 msgstr "无法加载代金券。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
 msgid "Could not protect this paper wallet."
 msgstr "无法保护纸钱包。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:180
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
 msgid "Could not save the paper wallet. Try again."
 msgstr "无法保存纸钱包。再试一次。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:218
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "无法保存可打印工作表。再试一次。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:238
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
 msgid "Could not share the paper wallet. Try downloading it instead."
 msgstr "无法共享纸钱包。尝试下载它。"
 
@@ -1617,11 +1628,11 @@ msgstr "无法复制地址"
 #: apps/web/src/components/vouchers/voucher-about.tsx:70
 #: apps/web/src/components/vouchers/voucher-about.tsx:76
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:188
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:268
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:265
 msgid "Couldn't copy contract address"
 msgstr "无法复制合约地址"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:483
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:480
 msgid "Couldn't copy deployment transaction hash"
 msgstr "无法复制部署交易哈希"
 
@@ -1656,7 +1667,7 @@ msgstr "无法复制 Pretium ID"
 msgid "Couldn't copy receipt"
 msgstr "无法复制收据"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:498
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:495
 msgid "Couldn't copy supply creation transaction hash"
 msgstr "无法复制增发交易哈希"
 
@@ -1677,11 +1688,11 @@ msgstr "无法复制交易哈希"
 msgid "Couldn't copy username"
 msgstr "无法复制用户名"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:139
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:136
 msgid "Couldn't create the first supply."
 msgstr "无法完成首次增发。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:218
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:216
 msgid "Couldn't create vouchers."
 msgstr "无法发行代金券。"
 
@@ -1690,7 +1701,7 @@ msgstr "无法发行代金券。"
 msgid "Couldn't estimate this swap."
 msgstr "无法估算此次兑换。"
 
-#: apps/web/src/components/ui/location-picker.tsx:115
+#: apps/web/src/components/ui/location-picker.tsx:123
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "无法识别此处的国家/地区。尝试一下附近的地方。"
 
@@ -1752,8 +1763,8 @@ msgstr "无法加载帖子。"
 msgid "Couldn't load Pretium history."
 msgstr "无法加载 Pretium 历史记录。"
 
-#: apps/web/src/components/resource-usage.tsx:101
-#: apps/web/src/features/home/ui/wallet-page.tsx:156
+#: apps/web/src/components/resource-usage.tsx:100
+#: apps/web/src/features/home/ui/wallet-page.tsx:128
 msgid "Couldn't load resource limits."
 msgstr "无法加载资源限制。"
 
@@ -1808,14 +1819,14 @@ msgstr "无法加载代金券标签。"
 msgid "Couldn't load vouchers"
 msgstr "无法加载代金券"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:210
-#: apps/web/src/features/home/ui/wallet-page.tsx:228
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:173
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:190
+#: apps/web/src/features/home/ui/wallet-page.tsx:182
+#: apps/web/src/features/home/ui/wallet-page.tsx:200
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:155
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:172
 msgid "Couldn't load vouchers."
 msgstr "无法加载代金券。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:322
+#: apps/web/src/features/home/ui/wallet-page.tsx:294
 msgid "Couldn't load your pools."
 msgstr "无法加载您的资金池。"
 
@@ -1827,11 +1838,11 @@ msgstr "无法加载您的帖子。"
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "无法铸造第一个发行量。"
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "无法打开安装。请按照以下步骤操作或稍后重试。"
 
-#: apps/web/src/components/install-app-dialog.tsx:47
+#: apps/web/src/components/install-app-dialog.tsx:45
 msgid "Couldn't open installation. Follow these instructions or try again "
 "later."
 msgstr "无法打开安装。请按照这些说明操作或稍后重试。"
@@ -1856,7 +1867,7 @@ msgstr "无法连接支付中继服务。请检查网络连接并重试。"
 msgid "Couldn’t reach the update. Check your connection and try again."
 msgstr "无法获取更新。请检查网络连接并重试。"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:106
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:103
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "无法读取此代金券使用了多少位小数。"
 
@@ -1878,7 +1889,7 @@ msgstr "无法删除商品或服务项目。"
 msgid "Couldn't resolve that recipient."
 msgstr "无法解析该接收方。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:435
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:432
 msgid "Couldn't retire the voucher."
 msgstr "无法停用代金券。"
 
@@ -1940,7 +1951,7 @@ msgstr "无法提交提款"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "无法建议用户名。请再试一次。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:330
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
 msgid "Couldn't transfer ownership."
 msgstr "无法转移所有权。"
 
@@ -1958,8 +1969,8 @@ msgstr "无法上传该照片。请重试。"
 msgid "Couldn't verify this swap. Try again."
 msgstr "无法验证此兑换。再试一次。"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:120
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:312
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:117
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:309
 msgid "Couldn't verify who owns this voucher."
 msgstr "无法验证谁拥有此代金券。"
 
@@ -1971,20 +1982,19 @@ msgstr "无法验证您的 MPESA 链接。"
 msgid "Cover photo"
 msgstr "封面照片"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:111
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:116
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:94
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:99
 msgid "Create"
 msgstr "创建"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
+#: apps/web/src/components/auth/authenticated-route.tsx:85
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:290
 msgid "Create account"
 msgstr "创建账户"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:480
-#: apps/web/src/components/auth/sign-in-panel.tsx:498
+#: apps/web/src/components/auth/sign-in-panel.tsx:436
+#: apps/web/src/components/auth/sign-in-panel.tsx:531
 msgid "Create an account"
 msgstr "创建一个帐户"
 
@@ -1999,37 +2009,37 @@ msgstr "创建目录"
 #~ msgid "Create new vouchers in your wallet."
 #~ msgstr "在钱包中增发代金券。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:350
-#: apps/web/src/features/home/ui/wallet-page.tsx:355
+#: apps/web/src/features/home/ui/wallet-page.tsx:322
+#: apps/web/src/features/home/ui/wallet-page.tsx:327
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:342
 msgid "Create pool"
 msgstr "创建资金池"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:433
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:430
 msgid "Create supply"
 msgstr "增发"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:344
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:341
 msgid "Create the first supply to finish publishing this voucher."
 msgstr "请先完成首次增发，以发布此代金券。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:282
-#: apps/web/src/features/home/ui/wallet-page.tsx:287
+#: apps/web/src/features/home/ui/wallet-page.tsx:254
+#: apps/web/src/features/home/ui/wallet-page.tsx:259
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:354
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:384
 msgid "Create voucher"
 msgstr "创建代金券"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:117
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:237
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:251
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:278
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:116
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:235
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:249
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:456
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:377
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
 msgstr "发行代金券"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
 msgid "Create your account"
 msgstr "创建您的账户"
 
@@ -2054,7 +2064,7 @@ msgstr "已增发代金券"
 #~ msgstr "正在创建 {0}…"
 
 #. placeholder {0}: contract.symbol
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:334
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:331
 msgid "Creating {0}…"
 msgstr "正在创建 {0}…"
 
@@ -2062,19 +2072,19 @@ msgstr "正在创建 {0}…"
 #~ msgid "Creating account..."
 #~ msgstr "正在创建帐户…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 msgid "Creating account…"
 msgstr "正在创建帐户…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:274
 msgid "Creating vouchers…"
 msgstr "正在发行代金券…"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:425
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:422
 msgid "Creating…"
 msgstr "正在增发…"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:328
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:325
 msgid "Creation failed"
 msgstr "增发失败"
 
@@ -2095,7 +2105,8 @@ msgstr "信用额度未知"
 msgid "Culture"
 msgstr "文化"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
 msgid "Customize"
 msgstr "定制"
 
@@ -2123,7 +2134,7 @@ msgid "Day"
 msgstr "天"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:62
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:259
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:256
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:42
 msgid "Decimals"
 msgstr "小数"
@@ -2151,15 +2162,15 @@ msgstr "默认"
 msgid "Delegated to Calibur"
 msgstr "委托给 Calibur"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:358
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:355
 msgid "Deployed"
 msgstr "已部署"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:475
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:472
 msgid "Deployment transaction"
 msgstr "部署交易"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:482
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:479
 msgid "Deployment transaction hash copied"
 msgstr "部署交易哈希已复制"
 
@@ -2183,7 +2194,7 @@ msgstr "介绍您的资金池"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:297
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
 msgid "Description"
@@ -2198,7 +2209,7 @@ msgid "Discard changes"
 msgstr "放弃更改"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:128
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:54
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:50
 msgid "Dismiss"
 msgstr "关闭"
 
@@ -2217,7 +2228,9 @@ msgstr "显示名称为必填项"
 msgid "Display name must be 120 characters or fewer"
 msgstr "显示名称不得超过 120 个字符"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2230,12 +2243,12 @@ msgstr "完成"
 msgid "Done with this customer"
 msgstr "完成这位客户的操作"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:292
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
 msgid "Download card"
 msgstr "下载卡"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:436
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
 msgid "Download your paper wallet before continuing."
 msgstr "请先下载纸钱包，再继续。"
 
@@ -2304,7 +2317,7 @@ msgstr "编辑"
 msgid "Edit catalog"
 msgstr "编辑目录"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:109
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:108
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:83
 msgid "Edit details"
 msgstr "编辑详细信息"
@@ -2329,7 +2342,6 @@ msgstr "编辑帖子"
 #: apps/web/src/components/nearby-catalog.tsx:210
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "编辑个人资料"
 
@@ -2358,8 +2370,8 @@ msgstr "长者"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:267
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:299
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:253
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:366
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:378
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:523
@@ -2417,7 +2429,7 @@ msgstr "输入用户名、资金池名称、电话号码或地址。"
 msgid "Enter a valid date and time"
 msgstr "输入有效的日期和时间"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:282
+#: apps/web/src/components/auth/sign-in-panel.tsx:283
 msgid "Enter a valid private key or paper wallet."
 msgstr "输入有效的私钥或纸钱包。"
 
@@ -2448,7 +2460,7 @@ msgstr "输入此代金券支持的金额。"
 msgid "Enter an exchange rate greater than zero"
 msgstr "输入大于零的汇率"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
 msgid "Enter and apply a password before downloading this card."
 msgstr "下载此卡之前输入并应用密码。"
 
@@ -2494,7 +2506,7 @@ msgstr "等值"
 msgid "Event details"
 msgstr "事件详情"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 "way to sign in."
 msgstr "每个账户都会获得一个纸钱包。关联 {providerLabel} 可添加另一种登录方式。"
@@ -2520,7 +2532,7 @@ msgstr "到期日"
 msgid "Expiration date must be in the future"
 msgstr "到期日期必须是将来的日期"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:255
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:252
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:37
 msgid "Expiring"
 msgstr "即将到期"
@@ -2529,8 +2541,8 @@ msgstr "即将到期"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:210
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
 msgid "Failed"
 msgstr "失败"
@@ -2621,7 +2633,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "文件名不得超过 255 个字符"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "文件太大 ({0} KB)。最大为 512 KB。"
 
@@ -2720,7 +2732,7 @@ msgstr "获取"
 msgid "Global"
 msgstr "全球"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:437
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 msgid "Go back to sign in"
 msgstr "返回登录"
 
@@ -2765,8 +2777,8 @@ msgstr "健康"
 msgid "Hold the card flat against the back of your phone."
 msgstr "将卡平放在手机背面。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:242
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:205
+#: apps/web/src/features/home/ui/wallet-page.tsx:214
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:187
 msgid "Holdings"
 msgstr "持有的代金券"
 
@@ -2816,7 +2828,10 @@ msgid "How should vouchers match?"
 msgstr "代金券应该如何匹配？"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:118
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "如何使用 CLC"
 
@@ -2824,10 +2839,8 @@ msgstr "如何使用 CLC"
 msgid "How was your experience?"
 msgstr "您的体验如何？"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:95
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "我已经有一个帐户"
 
@@ -2836,10 +2849,10 @@ msgid "I created {amountLabel}."
 msgstr "我增发了 {amountLabel}。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:424
-msgid "I have saved this key"
-msgstr "我已经保存了这个密钥"
+#~ msgid "I have saved this key"
+#~ msgstr "我已经保存了这个密钥"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:431
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "我已经保存了这个密钥。如果丢失，我的钱包将无法恢复。"
 
@@ -2872,7 +2885,7 @@ msgstr "我在 {poolName} 中用 {sentLabel} 兑换了 {amountLabel}。"
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "我用 {sentLabel} 兑换了 {amountLabel}。"
 
-#: apps/web/src/components/ui/location-picker.tsx:294
+#: apps/web/src/components/ui/location-picker.tsx:307
 msgid "Identifying location…"
 msgstr "正在识别位置…"
 
@@ -2889,7 +2902,7 @@ msgid "Import wallet"
 msgstr "导入钱包"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:52
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:562
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:559
 msgid "In network"
 msgstr "网络内"
 
@@ -2914,15 +2927,15 @@ msgstr "增加{0}数量"
 msgid "Info"
 msgstr "信息"
 
-#: apps/web/src/components/install-app-button.tsx:61
-#: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-button.tsx:65
+#: apps/web/src/components/install-app-dialog.tsx:19
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "安装 CLC"
 
-#: apps/web/src/components/install-app-dialog.tsx:39
+#: apps/web/src/components/install-app-dialog.tsx:32
 msgid "Install now"
 msgstr "立即安装"
 
@@ -2940,7 +2953,7 @@ msgstr "首先安装应用程序"
 msgid "Installation link"
 msgstr "安装链接"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "已请求安装。请按照浏览器中的说明完成操作。"
@@ -3023,8 +3036,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "已达到 {CATALOG_MAX_VOUCHERS} 代金券的限制。删除一个以添加另一个。"
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3051,10 +3064,10 @@ msgid "Link {0} file name"
 msgstr "链接{0}文件名"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
-msgid "Link {providerLabel}"
-msgstr "链接{providerLabel}"
+#~ msgid "Link {providerLabel}"
+#~ msgstr "链接{providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
 msgid "Link {providerLabel}?"
 msgstr "链接{providerLabel}？"
 
@@ -3095,7 +3108,7 @@ msgstr "链接已复制"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "适用于此代金券的条款的链接"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:480
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
 msgid "Link wallet to {providerLabel}"
 msgstr "将钱包链接到 {providerLabel}"
 
@@ -3122,7 +3135,7 @@ msgstr "可在 iPhone 的 Safari 或 Chrome，以及 Android 的 Chrome 中关�
 #~ msgstr "正在关联通行密钥…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:166
 msgid "Linking passkey…"
 msgstr "正在关联通行密钥…"
 
@@ -3145,6 +3158,7 @@ msgstr "升"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 msgid "Load more"
 msgstr "加载更多"
 
@@ -3179,8 +3193,8 @@ msgstr "正在加载信用额度…"
 msgid "Loading holdings…"
 msgstr "正在加载持有的代金券…"
 
-#: apps/web/src/components/ui/location-picker.tsx:271
-#: apps/web/src/components/ui/location-picker.tsx:287
+#: apps/web/src/components/ui/location-picker.tsx:283
+#: apps/web/src/components/ui/location-picker.tsx:300
 msgid "Loading location map"
 msgstr "加载位置图"
 
@@ -3205,7 +3219,7 @@ msgstr "正在加载商品或服务项目…"
 msgid "Loading pool…"
 msgstr "正在加载资金池…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:317
+#: apps/web/src/features/home/ui/wallet-page.tsx:289
 #: apps/web/src/features/pools/ui/pools-page.tsx:289
 msgid "Loading pools…"
 msgstr "正在加载资金池…"
@@ -3247,9 +3261,9 @@ msgstr "正在加载代币…"
 msgid "Loading voucher…"
 msgstr "正在加载代金券…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:188
+#: apps/web/src/features/home/ui/wallet-page.tsx:160
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:935
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:167
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:149
 #: apps/web/src/features/wallet/ui/collect-page.tsx:167
 msgid "Loading vouchers…"
 msgstr "正在加载代金券…"
@@ -3272,14 +3286,13 @@ msgstr "正在加载您的个人资料…"
 #~ msgstr "正在加载..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3290,9 +3303,8 @@ msgstr "正在加载您的个人资料…"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:193
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
-#: apps/web/src/features/home/ui/wallet-page.tsx:56
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:69
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
 msgstr "加载中…"
@@ -3301,9 +3313,10 @@ msgstr "加载中…"
 msgid "Local money and M-Pesa"
 msgstr "本地货币和 M-Pesa"
 
-#: apps/web/src/components/ui/location-picker.tsx:200
+#: apps/web/src/components/ui/location-picker.tsx:212
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/features/home/ui/report-page.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:547
@@ -3320,13 +3333,13 @@ msgid "Location map"
 msgstr "位置图"
 
 #: apps/web/src/components/nearby-catalog.tsx:246
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 #: apps/web/src/features/home/ui/market-page.tsx:169
 msgid "Location unavailable"
 msgstr "位置不可用"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:268
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:668
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:232
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:662
@@ -3378,7 +3391,7 @@ msgstr "地图标记"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3543,7 +3556,7 @@ msgstr "我的目录"
 msgid "My Catalogs"
 msgstr "我的目录"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:309
+#: apps/web/src/features/home/ui/wallet-page.tsx:281
 msgid "My Pools"
 msgstr "我的资金池"
 
@@ -3554,10 +3567,10 @@ msgstr "我的资金池"
 msgid "My posts"
 msgstr "我的帖子"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:179
-#: apps/web/src/features/home/ui/wallet-page.tsx:201
-#: apps/web/src/features/home/ui/wallet-page.tsx:257
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:219
+#: apps/web/src/features/home/ui/wallet-page.tsx:151
+#: apps/web/src/features/home/ui/wallet-page.tsx:173
+#: apps/web/src/features/home/ui/wallet-page.tsx:229
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:201
 msgid "My Vouchers"
 msgstr "我的代金券"
 
@@ -3572,9 +3585,9 @@ msgstr "我的钱包地址"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:191
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:202
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:101
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:192
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:203
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:251
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:335
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:248
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:28
 msgid "Name"
 msgstr "名称"
@@ -3589,7 +3602,7 @@ msgstr "姓名为必填项"
 msgid "Name must be 80 characters or fewer"
 msgstr "名称不得超过 80 个字符"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:84
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
 msgid "Name on wallet"
 msgstr "钱包上的姓名"
 
@@ -3601,14 +3614,16 @@ msgstr "名称、符号或地址"
 msgid "Natural building"
 msgstr "自然建筑"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
 msgid "Network"
 msgstr "网络"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:366
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:378
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:363
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:375
 msgid "New owner address"
 msgstr "新所有者地址"
 
@@ -3626,11 +3641,12 @@ msgstr "新帖子"
 msgid "New supply"
 msgstr "新增发行量"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:473
+#: apps/web/src/components/auth/sign-in-panel.tsx:429
 msgid "New to CLC?"
 msgstr "CLC 新手？"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -3694,9 +3710,13 @@ msgstr "当前结果没有可用的类别。"
 msgid "No category filters are available."
 msgstr "没有可用的类别筛选条件。"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:493
+#: apps/web/src/components/auth/sign-in-panel.tsx:526
 msgid "No CLC account was found for this sign-in."
 msgstr "未找到与此次登录对应的 CLC 账户。"
+
+#: apps/web/src/components/ui/country-sheet.tsx:89
+msgid "No countries found"
+msgstr "未找到国家/地区"
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:91
 msgid "No credit limit"
@@ -3724,7 +3744,7 @@ msgid "No creditable pools with this voucher match these filters."
 msgstr "没有同时符合此代金券和这些筛选条件的可存入资金池。"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:307
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:512
 msgid "No currencies found"
 msgstr "未找到货币"
 
@@ -3872,8 +3892,8 @@ msgstr "没有可领取的代金券"
 msgid "No vouchers to show yet."
 msgstr "暂无代金券可显示。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:269
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
+#: apps/web/src/features/home/ui/wallet-page.tsx:241
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:207
 msgid "No vouchers yet."
 msgstr "还没有代金券。"
 
@@ -4014,7 +4034,7 @@ msgid "Offerings"
 msgstr "商品或服务项目"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "商品或服务项目"
@@ -4060,7 +4080,7 @@ msgid "Open menu"
 msgstr "打开菜单"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "打开“接收”，将收款二维码或钱包地址分享给发送人。请勿分享钱包私钥。"
 
@@ -4096,18 +4116,18 @@ msgstr "打开代金券页面"
 #~ msgid "Opening paper wallet..."
 #~ msgstr "正在打开纸钱包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:149
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
 msgid "Opening paper wallet…"
 msgstr "正在打开纸钱包…"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:370
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:269
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:222
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:329
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:360
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:446
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:669
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:233
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:663
@@ -4164,7 +4184,7 @@ msgstr "社区服务"
 msgid "Owner reply"
 msgstr "发行方回复"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:324
 msgid "Ownership transfer submitted."
 msgstr "已提交所有权转让。"
 
@@ -4173,25 +4193,27 @@ msgstr "已提交所有权转让。"
 msgid "Paid out"
 msgstr "已支付"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
 msgid "Paper wallet"
 msgstr "纸钱包"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 msgid "Paper Wallet"
 msgstr "纸钱包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:329
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
 msgid "Paper wallet card"
 msgstr "纸钱包卡片"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "纸钱包受到保护。将密码与卡分开保存。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
-msgid "Paper wallet only"
-msgstr "仅使用纸钱包"
+#~ msgid "Paper wallet only"
+#~ msgstr "仅使用纸钱包"
 
 #: apps/web/src/features/home/ui/report-page.tsx:418
 msgid "Participants"
@@ -4204,6 +4226,7 @@ msgstr "参与者不得超过 100 个字符"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 msgid "Passkey"
 msgstr "通行密钥"
 
@@ -4211,7 +4234,7 @@ msgstr "通行密钥"
 msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "通行密钥创建已取消。您的纸钱包未更改。"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:143
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
 msgstr "通行密钥已关联"
 
@@ -4219,11 +4242,11 @@ msgstr "通行密钥已关联"
 #~ msgid "Passkey linked ... confirming on-chain..."
 #~ msgstr "已链接通行密钥…确认链上…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:164
 msgid "Passkey linked … confirming on-chain…"
 msgstr "已链接通行密钥…确认链上…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:236
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:263
 msgid "Passkey linked, but wallet connection failed."
 msgstr "已链接通行密钥，但钱包连接失败。"
 
@@ -4232,20 +4255,21 @@ msgid "Passkey status could not be checked."
 msgstr "无法检查通行密钥状态。"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "密码"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "密码不能为空。"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:462
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
 #: apps/web/src/routes/__root.tsx:285
 msgid "Password-protected paper wallet"
 msgstr "受密码保护的纸钱包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "密码不匹配。"
 
@@ -4278,11 +4302,11 @@ msgstr "付款收据"
 msgid "Payment status unknown"
 msgstr "付款状态未知"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:525
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:221
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:355
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:352
 #: apps/web/src/features/wallet/ui/collect-page.tsx:444
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:158
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:497
@@ -4316,7 +4340,7 @@ msgstr "朴门永续设计"
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:271
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:392
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:535
@@ -4324,7 +4348,7 @@ msgid "Phone"
 msgstr "电话"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:279
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:400
 msgid "Phone number"
 msgstr "电话号码"
 
@@ -4338,7 +4362,7 @@ msgid "Photo {0}"
 msgstr "照片 {0}"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:74
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:182
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:314
 msgid "Photo uploads are unavailable right now."
 msgstr "目前无法上传照片。"
 
@@ -4540,7 +4564,7 @@ msgid "Pool tracking details are missing."
 msgstr "资金池跟踪详细信息丢失。"
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4608,14 +4632,15 @@ msgstr "偏好设置"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:381
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:389
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:297
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:308
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:492
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:513
 msgid "Preferred currency"
 msgstr "首选货币"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:274
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:389
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:429
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:272
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:386
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "正在准备钱包…"
 
@@ -4629,8 +4654,8 @@ msgstr "正在准备提现…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Preparing…"
 msgstr "正在准备……"
 
@@ -4638,7 +4663,7 @@ msgstr "正在准备……"
 msgid "Present card to pay {armedAmount}"
 msgstr "出示卡支付 {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "按住下面的图像，然后选择“保存图像”。"
 
@@ -4725,7 +4750,7 @@ msgstr "定价"
 msgid "Primary navigation"
 msgstr "主要导航"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:307
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
 msgid "Print"
 msgstr "打印"
 
@@ -4733,9 +4758,10 @@ msgstr "打印"
 msgid "Private attachment"
 msgstr "私密附件"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:423
-#: apps/web/src/components/auth/sign-in-panel.tsx:433
-#: apps/web/src/components/auth/sign-in-panel.tsx:457
+#: apps/web/src/components/auth/sign-in-panel.tsx:411
+#: apps/web/src/components/auth/sign-in-panel.tsx:482
+#: apps/web/src/components/auth/sign-in-panel.tsx:487
+#: apps/web/src/components/auth/sign-in-panel.tsx:507
 msgid "Private key"
 msgstr "私钥"
 
@@ -4747,11 +4773,11 @@ msgstr "个人资料照片"
 msgid "Profile updated"
 msgstr "个人资料已更新"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:151
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
 msgstr "保护纸钱包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
 msgid "Protect paper wallet with a password"
 msgstr "使用密码保护纸钱包"
 
@@ -4759,7 +4785,7 @@ msgstr "使用密码保护纸钱包"
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "正在保护纸钱包…"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:148
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protecting paper wallet…"
 msgstr "正在保护纸钱包…"
 
@@ -4786,7 +4812,7 @@ msgid "Publish offering"
 msgstr "发布商品或服务项目"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:165
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:458
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:455
 msgid "Published"
 msgstr "已发布"
 
@@ -4796,12 +4822,12 @@ msgid "Publishes {0} contracts"
 msgstr "发布 {0} 个合约"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:107
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:205
 msgid "Publishing failed"
 msgstr "发布失败"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:84
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:191
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:188
 msgid "Publishing unavailable"
 msgstr "无法发布"
 
@@ -4817,7 +4843,7 @@ msgstr "正在发布您的资金池…"
 #~ msgid "Publishing your voucher..."
 #~ msgstr "正在发布您的代金券…"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:216
 msgid "Publishing your voucher…"
 msgstr "正在发布您的代金券…"
 
@@ -4830,7 +4856,7 @@ msgstr "正在发布…"
 msgid "Purple"
 msgstr "紫色"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:104
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
 msgid "QR currently contains the raw private key."
 msgstr "QR 当前包含原始私钥。"
 
@@ -4885,7 +4911,7 @@ msgstr "举报原因"
 msgid "Receipt copied"
 msgstr "收据已复制"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:90
+#: apps/web/src/features/home/ui/wallet-page.tsx:69
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:175
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
@@ -4893,7 +4919,7 @@ msgid "Receive"
 msgstr "接收"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "接收凭证"
 
@@ -4955,11 +4981,11 @@ msgid "Recipient username, pool name, phone or address"
 msgstr "接收方用户名、资金池名称、电话或地址"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:92
-msgid "Recommended"
-msgstr "推荐"
+#~ msgid "Recommended"
+#~ msgstr "推荐"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:124
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:310
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:121
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:307
 msgid "Reconnect the wallet that published this voucher to create its supply."
 msgstr "请重新连接发布此代金券的钱包以增发。"
 
@@ -5106,10 +5132,10 @@ msgstr "报告出处"
 msgid "Reported"
 msgstr "已举报"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:130
-#: apps/web/src/components/ui/location-picker.tsx:203
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:164
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:208
+#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/location-picker.tsx:215
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:220
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:235
 msgid "Required"
 msgstr "必填"
 
@@ -5117,7 +5143,7 @@ msgstr "必填"
 msgid "Reset"
 msgstr "重置"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:156
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "重置徽标"
 
@@ -5126,21 +5152,21 @@ msgstr "重置徽标"
 #~ msgstr "解决接收方…"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:451
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
 msgid "Retire {0}?"
 msgstr "停用{0}？"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:137
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:469
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:136
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:466
 msgid "Retire voucher"
 msgstr "停用代金券"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:44
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:52
-msgid "Retired"
-msgstr "已停用"
+#~ msgid "Retired"
+#~ msgstr "已停用"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:469
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:466
 msgid "Retiring…"
 msgstr "正在停用…"
 
@@ -5151,7 +5177,7 @@ msgstr "静修"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5164,7 +5190,7 @@ msgstr "静修"
 #: apps/web/src/features/home/ui/market-page.tsx:201
 #: apps/web/src/features/home/ui/market-page.tsx:209
 #: apps/web/src/features/home/ui/report-page.tsx:57
-#: apps/web/src/features/home/ui/wallet-page.tsx:164
+#: apps/web/src/features/home/ui/wallet-page.tsx:136
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:718
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:336
@@ -5185,7 +5211,7 @@ msgstr "静修"
 msgid "Retry"
 msgstr "重试"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:479
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
 msgid "Retry {providerLabel} connection"
 msgstr "重试 {providerLabel} 连接"
 
@@ -5231,11 +5257,11 @@ msgstr "保存更改"
 msgid "Save fee settings"
 msgstr "保存费用设置"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:304
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
 msgid "Save printable A4 sheet"
 msgstr "保存可打印的 A4 纸"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:406
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
 msgid "Save this card securely. If you use a password, keep it separately. "
 "Anyone with an unprotected QR code can access the wallet."
 msgstr "妥善保存此卡。如果您使用密码，请将其单独保存。任何拥有不受保护的 QR 代码的人都可以访问钱包。"
@@ -5243,6 +5269,10 @@ msgstr "妥善保存此卡。如果您使用密码，请将其单独保存。任
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
 msgstr "保存用户名"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
+msgid "Save your card"
+msgstr "保存您的卡片"
 
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
@@ -5259,7 +5289,6 @@ msgstr "已保存。您的帖子再次等待批准。"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:196
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:457
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:635
 msgid "Saving…"
@@ -5293,16 +5322,20 @@ msgstr "按名称或符号搜索"
 msgid "Search catalogs"
 msgstr "搜索目录"
 
+#: apps/web/src/components/ui/country-sheet.tsx:82
+msgid "Search countries"
+msgstr "搜索国家/地区"
+
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:256
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:387
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:306
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:511
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:417
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:221
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:608
 msgid "Search currencies"
 msgstr "搜索货币"
 
-#: apps/web/src/components/ui/location-picker.tsx:213
+#: apps/web/src/components/ui/location-picker.tsx:225
 msgid "Search for a town or place"
 msgstr "搜索城镇或地点"
 
@@ -5371,7 +5404,11 @@ msgstr "搜索代金券"
 msgid "Search your vouchers"
 msgstr "搜索您的代金券"
 
-#: apps/web/src/components/ui/location-picker.tsx:262
+#: apps/web/src/components/ui/country-sheet.tsx:79
+msgid "Search…"
+msgstr "搜索…"
+
+#: apps/web/src/components/ui/location-picker.tsx:274
 msgid "Searching places…"
 msgstr "搜索地点…"
 
@@ -5392,6 +5429,10 @@ msgstr "正在搜索…"
 #~ msgid "See all"
 #~ msgstr "查看全部"
 
+#: apps/web/src/components/ui/country-sheet.tsx:102
+msgid "Select {name}"
+msgstr "选择{name}"
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:224
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:46
 msgid "Select a token"
@@ -5400,6 +5441,14 @@ msgstr "选择代币"
 #: apps/web/src/features/install/ui/install-page.tsx:148
 msgid "Select and copy the link above to share it."
 msgstr "选择并复制上面的链接进行分享。"
+
+#: apps/web/src/components/ui/country-sheet.tsx:73
+msgid "Select country"
+msgstr "选择国家/地区"
+
+#: apps/web/src/components/ui/country-sheet.tsx:73
+msgid "Select country code"
+msgstr "选择国家/地区代码"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:728
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
@@ -5436,7 +5485,7 @@ msgid "Sell to a bank account"
 msgstr "卖出至银行账户"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:372
-#: apps/web/src/features/home/ui/wallet-page.tsx:87
+#: apps/web/src/features/home/ui/wallet-page.tsx:66
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:165
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:337
 msgid "Send"
@@ -5448,7 +5497,7 @@ msgid "Send {0}"
 msgstr "发送{0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "发送凭证"
 
@@ -5509,11 +5558,11 @@ msgstr "份"
 msgid "Session"
 msgstr "会话"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:45
 msgid "Session check failed"
 msgstr "会话检查失败"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:196
 msgid "Session could not be verified. Try again."
 msgstr "无法验证会话。请重试。"
 
@@ -5529,7 +5578,7 @@ msgstr "提取费用前请先设置费用接收方，否则资金池无法支付
 #~ msgid "Setting up your wallet..."
 #~ msgstr "正在设置您的钱包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:519
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
 msgid "Setting up your wallet…"
 msgstr "正在设置您的钱包…"
 
@@ -5547,11 +5596,11 @@ msgstr "设置"
 msgid "Share"
 msgstr "分享"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Share card"
 msgstr "分享卡片"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5646,7 +5695,7 @@ msgstr "兑付此代金券后登录，即可留下评价。"
 msgid "Sign in to browse results available through your Credit pools."
 msgstr "登录以浏览您的信用资金池中可用的结果。"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:112
 msgid "Sign in to continue"
 msgstr "登录以继续"
 
@@ -5658,7 +5707,7 @@ msgstr "登录查看活动。"
 msgid "Sign in to view posts."
 msgstr "登录查看帖子。"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:461
+#: apps/web/src/components/auth/sign-in-panel.tsx:512
 msgid "Sign in with private key"
 msgstr "使用私钥登录"
 
@@ -5681,8 +5730,8 @@ msgid "Sign-in"
 msgstr "登录"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
-msgid "Sign-in method"
-msgstr "登录方式"
+#~ msgid "Sign-in method"
+#~ msgstr "登录方式"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 #~ msgid "Sign-in methods"
@@ -5697,8 +5746,8 @@ msgid "Signing out…"
 msgstr "正在退出…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "跳过"
+#~ msgid "Skip"
+#~ msgstr "跳过"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -5737,7 +5786,7 @@ msgstr "无法检查某些资金池。显示经过验证的结果。"
 msgid "Stable sent"
 msgstr "稳定币已发送"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:255
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:252
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:37
 msgid "Standard"
 msgstr "标准"
@@ -5799,25 +5848,25 @@ msgstr "建议用户名"
 msgid "Summary must be 10,000 characters or fewer"
 msgstr "摘要不得超过 10,000 个字符"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:369
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:464
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:366
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:461
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:33
 msgid "Supply"
 msgstr "发行量"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:332
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:329
 msgid "Supply check unavailable"
 msgstr "无法检查发行量"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:283
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:280
 msgid "Supply creation status is temporarily unavailable."
 msgstr "暂时无法获取增发状态。"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:490
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:487
 msgid "Supply creation transaction"
 msgstr "增发交易"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:497
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:494
 msgid "Supply creation transaction hash copied"
 msgstr "增发交易哈希已复制"
 
@@ -5831,7 +5880,7 @@ msgstr "发行量的小数位数超过此代金券支持的位数"
 msgid "Supply must be greater than zero"
 msgstr "发行量必须大于零"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "不支持 SVG 文件。使用 PNG、JPEG 或 WebP。"
 
@@ -5917,7 +5966,7 @@ msgstr "正在切换到您的通行密钥…"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:180
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:31
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:252
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:249
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:29
 msgid "Symbol"
 msgstr "符号"
@@ -5965,7 +6014,7 @@ msgstr "单独收取费用"
 msgid "Take photo"
 msgstr "拍照"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:395
+#: apps/web/src/components/auth/sign-in-panel.tsx:386
 msgid "Tap NFC card"
 msgstr "感应 NFC 卡"
 
@@ -5977,12 +6026,13 @@ msgstr "在出示卡片之前点击准备领取。"
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "点击三点菜单，然后点击添加到主屏幕或安装应用程序。"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:340
+#: apps/web/src/components/auth/sign-in-panel.tsx:447
+#: apps/web/src/components/auth/sign-in-panel.tsx:453
 msgid "Tap your NFC card"
 msgstr "感应您的 NFC 卡"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:229
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:336
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:453
 msgid "Tell people a little about yourself"
 msgstr "向大家简单介绍一下您自己"
 
@@ -6110,7 +6160,7 @@ msgstr "此设备不支持该地图。"
 msgid "The message and order must be 500 characters or fewer."
 msgstr "消息和订单不得超过 500 个字符。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:352
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:349
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "新所有者可以发行代金券并转让所有权。"
 
@@ -6177,7 +6227,7 @@ msgstr "所选计价单位未配置价格源。"
 msgid "The transaction failed."
 msgstr "交易失败。"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:204
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:201
 msgid "The voucher could not be published."
 msgstr "代金券无法发布。"
 
@@ -6364,7 +6414,7 @@ msgstr "此资金池的存入额度已更改。请检查更新后的金额并重
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "这篇文章太大，无法保存。缩短文本或删除一些媒体。"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:297
+#: apps/web/src/components/auth/sign-in-panel.tsx:298
 msgid "This QR code does not contain a valid private key."
 msgstr "此二维码不包含有效的私钥。"
 
@@ -6463,13 +6513,13 @@ msgstr "交易哈希已复制"
 msgid "Transfer history"
 msgstr "转账记录"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:122
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:349
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:393
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:121
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:346
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:390
 msgid "Transfer ownership"
 msgstr "转让所有权"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:391
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:388
 msgid "Transferring ownership…"
 msgstr "转让所有权…"
 
@@ -6481,7 +6531,7 @@ msgstr "植树"
 msgid "Trip"
 msgstr "旅行"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:40
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6495,9 +6545,9 @@ msgstr "旅行"
 #: apps/web/src/features/home/ui/activity-page.tsx:63
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:89
-#: apps/web/src/features/home/ui/wallet-page.tsx:218
-#: apps/web/src/features/home/ui/wallet-page.tsx:236
-#: apps/web/src/features/home/ui/wallet-page.tsx:330
+#: apps/web/src/features/home/ui/wallet-page.tsx:190
+#: apps/web/src/features/home/ui/wallet-page.tsx:208
+#: apps/web/src/features/home/ui/wallet-page.tsx:302
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:222
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
@@ -6506,16 +6556,16 @@ msgstr "旅行"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:418
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:444
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:274
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:431
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:181
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:198
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:428
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:180
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:457
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
 msgid "Try again"
 msgstr "再试一次"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:254
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:251
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:36
 msgid "Type"
 msgstr "类型"
@@ -6538,7 +6588,6 @@ msgstr "无法加载语言。恢复为英语。"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:147
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:233
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:242
-#: apps/web/src/features/home/ui/wallet-page.tsx:58
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:305
@@ -6551,9 +6600,8 @@ msgstr "无法加载语言。恢复为英语。"
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:98
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:101
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:193
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:357
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:71
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:190
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:354
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:134
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:121
 msgid "Unavailable"
@@ -6607,8 +6655,8 @@ msgid "Update photo"
 msgstr "更新照片"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:150
-msgid "Update protected paper wallet"
-msgstr "更新受保护的纸钱包"
+#~ msgid "Update protected paper wallet"
+#~ msgstr "更新受保护的纸钱包"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
 msgid "Update required"
@@ -6639,7 +6687,7 @@ msgstr "上传图片"
 msgid "Upload Image Instead"
 msgstr "改为上传图片"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:135
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "上传徽标"
 
@@ -6693,7 +6741,7 @@ msgid "Use max · {0}"
 msgstr "使用最大值 · {0}"
 
 #: apps/web/src/components/nearby-catalog.tsx:252
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 msgid "Use my location"
 msgstr "使用我的位置"
 
@@ -6742,7 +6790,7 @@ msgstr "以 {unitSymbol} 计价的价值"
 
 #. placeholder {0}: supplyValue.value
 #. placeholder {1}: supplyValue.unit
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:402
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:399
 msgid "Value: {0} {1}"
 msgstr "价值：{0} {1}"
 
@@ -6756,9 +6804,9 @@ msgstr "商品或服务项目价值：{0} {1}"
 msgid "View"
 msgstr "查看"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:182
-#: apps/web/src/features/home/ui/wallet-page.tsx:204
-#: apps/web/src/features/home/ui/wallet-page.tsx:260
+#: apps/web/src/features/home/ui/wallet-page.tsx:154
+#: apps/web/src/features/home/ui/wallet-page.tsx:176
+#: apps/web/src/features/home/ui/wallet-page.tsx:232
 msgid "View all"
 msgstr "查看全部"
 
@@ -6783,8 +6831,8 @@ msgid "View pool"
 msgstr "查看资金池"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:135
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:508
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:94
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:505
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:77
 msgid "View voucher"
 msgstr "查看代金券"
 
@@ -6815,11 +6863,11 @@ msgstr "代金券"
 msgid "Voucher actions"
 msgstr "代金券操作"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:559
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:556
 msgid "Voucher contract"
 msgstr "代金券合同"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:105
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:104
 msgid "Voucher controls"
 msgstr "代金券管理"
 
@@ -6827,7 +6875,7 @@ msgstr "代金券管理"
 msgid "Voucher creation receipt"
 msgstr "代金券创建收据"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:215
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:213
 msgid "Voucher creation submitted."
 msgstr "代金券创建已提交。"
 
@@ -6880,7 +6928,7 @@ msgstr "代金券名称不得超过 80 个字符"
 msgid "Voucher registry"
 msgstr "代金券注册表"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:431
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:428
 msgid "Voucher retired."
 msgstr "代金券已停用。"
 
@@ -6911,13 +6959,13 @@ msgstr "代金券符号不得超过 6 个字符"
 msgid "Voucher tags"
 msgstr "代金券标签"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:192
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:189
 msgid "Voucher tracking details are missing."
 msgstr "缺少代金券跟踪详情。"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -6950,14 +6998,14 @@ msgstr "您发行的代金券"
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "正在等待区块链确认…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:220
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:217
 msgid "Waiting for blockchain confirmation…"
 msgstr "正在等待区块链确认…"
 
-#: apps/web/src/components/install-app-button.tsx:59
-#: apps/web/src/components/install-app-dialog.tsx:37
+#: apps/web/src/components/install-app-button.tsx:63
+#: apps/web/src/components/install-app-dialog.tsx:30
 msgid "Waiting for confirmation…"
 msgstr "正在等待确认…"
 
@@ -6976,8 +7024,10 @@ msgstr "正在等待链上确认…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:36
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
-#: apps/web/src/features/home/ui/wallet-page.tsx:132
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:156
+#: apps/web/src/features/home/ui/wallet-page.tsx:104
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
@@ -6986,7 +7036,7 @@ msgstr "正在等待链上确认…"
 msgid "Wallet"
 msgstr "钱包"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:137
+#: apps/web/src/features/home/ui/wallet-page.tsx:109
 msgid "Wallet actions"
 msgstr "钱包操作"
 
@@ -7003,7 +7053,7 @@ msgstr "钱包会话"
 msgid "Water Catchment"
 msgstr "集水"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:48
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "无法验证您的会话。请检查网络连接并重试。"
 
@@ -7021,7 +7071,7 @@ msgid "We couldn't tell how this pool prices vouchers, so it can't be changed "
 "here."
 msgstr "我们无法得知资金池如何为代金券定价，因此无法在此处更改。"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:343
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:340
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "无法验证此代金券是否已有发行量。"
 
@@ -7029,9 +7079,9 @@ msgstr "无法验证此代金券是否已有发行量。"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:409
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:358
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:374
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
 msgid "Website"
@@ -7041,7 +7091,7 @@ msgstr "网站"
 msgid "Weekly"
 msgstr "每周"
 
-#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:31
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:29
 msgid "Welcome back"
 msgstr "欢迎回来"
 
@@ -7050,12 +7100,12 @@ msgid "What are you offering?"
 msgstr "您提供什么商品或服务？"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "什么是凭证？"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "什么是供给？"
 
@@ -7063,6 +7113,7 @@ msgstr "什么是供给？"
 msgid "What they offer"
 msgstr "提供的商品或服务"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "什么是资金池？"
@@ -7191,7 +7242,7 @@ msgstr "兑付后七天内，您可以撰写或编辑评价。"
 msgid "You haven't created a catalog yet."
 msgstr "您尚未创建目录。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:337
+#: apps/web/src/features/home/ui/wallet-page.tsx:309
 msgid "You haven't created a pool yet."
 msgstr "您尚未创建资金池。"
 
@@ -7256,7 +7307,7 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "您的 MPESA 付款很快就会到账。"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:197
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:198
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:330
 msgid "Your name"
 msgstr "您的姓名"
 
@@ -7265,7 +7316,7 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 "details in your comment."
 msgstr "您的姓名和钱包地址不会显示。请勿在评语中包含个人信息。"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:403
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
 msgid "Your paper wallet"
 msgstr "您的纸钱包"
 
@@ -7336,7 +7387,7 @@ msgid "Your wallet"
 msgstr "您的钱包"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "你的钱包"
 
@@ -7346,7 +7397,7 @@ msgid "Your wallet by default. Enter another address to send the swap fees "
 msgstr "默认使用您的钱包。输入其他地址，可将兑换费发送到该地址。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "你的钱包用于存放凭证。创建账户并妥善保存钱包的访问资料，即可开始使用。"
 

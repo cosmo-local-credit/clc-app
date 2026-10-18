@@ -29,7 +29,6 @@ import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherOwnershipTransfer } from "#/features/vouchers/hooks/use-voucher-ownership-transfer";
 import { useRetireVoucher } from "#/features/wallet/hooks/use-retire-voucher";
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
-import { ownedVoucherKeys } from "@clc/api/features/vouchers/owned-queries";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 
 import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
@@ -210,7 +209,6 @@ function VoucherMintSheet({
           includeAuthorization: delegationStatus === "not-delegated",
         });
         void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-        void queryClient.invalidateQueries({ queryKey: ownedVoucherKeys.all });
         void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
         toast.success(t`Voucher creation submitted.`);
         onClose();
@@ -322,7 +320,6 @@ function VoucherOwnershipTransferSheet({
           includeAuthorization: delegationStatus === "not-delegated",
         });
         void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-        void queryClient.invalidateQueries({ queryKey: ownedVoucherKeys.all });
         void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
         toast.success(t`Ownership transfer submitted.`);
         onClose();

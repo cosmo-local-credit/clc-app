@@ -5,8 +5,18 @@ const { profile } = vi.hoisted(() => ({ profile: { data: undefined as unknown } 
 
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => profile }));
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <a href={to}>{children}</a>
+  Link: ({
+    to,
+    children,
+    className,
+  }: {
+    to: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <a href={to} className={className}>
+      {children}
+    </a>
   ),
 }));
 
@@ -28,8 +38,8 @@ describe("CompleteProfileBanner", () => {
     };
     render(<CompleteProfileBanner address={ADDRESS} />);
 
-    expect(screen.getByText("Complete your profile")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Edit profile" }).getAttribute("href")).toBe(
+    // The whole row is the way to Edit profile.
+    expect(screen.getByRole("link", { name: "Complete your profile" }).getAttribute("href")).toBe(
       "/settings/profile",
     );
   });

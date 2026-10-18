@@ -11,6 +11,7 @@ import type { GeocodeSuggestion } from "#/lib/geo-client";
 import { reverseLocation, searchLocations } from "#/lib/geo-client";
 import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
 
+import { cn } from "#/lib/utils";
 import { LocationMap } from "./location-map.lazy";
 
 type LocationPickerProps = {
@@ -21,6 +22,12 @@ type LocationPickerProps = {
   label?: string;
   markerStyle?: MarkerStyle;
   required?: boolean;
+  /**
+   * The screen is about the location alone and already says so: the label is
+   * kept for screen readers, and the map grows into the height the screen
+   * gives it instead of its fixed 208px.
+   */
+  fill?: boolean;
 };
 
 type PlacePinOptions = {
@@ -36,6 +43,7 @@ export function LocationPicker({
   label,
   markerStyle,
   required,
+  fill = false,
 }: LocationPickerProps) {
   const { t } = useLingui();
   const [query, setQuery] = useState({ text: value?.locationName ?? "", shouldSearch: false });
@@ -192,11 +200,15 @@ export function LocationPicker({
     geolocation.state.status === "denied" || geolocation.state.status === "unavailable";
   const geoRequesting = geolocation.state.status === "requesting";
   const shownError = reverseError ?? (reversePending ? undefined : error);
+  const mapHeight = fill ? "h-auto min-h-36 flex-1" : "h-52";
 
   return (
-    <div className="space-y-3">
+    <div className={fill ? "flex min-h-0 flex-1 flex-col gap-3" : "space-y-3"}>
       <div className="relative">
-        <label htmlFor="location-search" className="flex items-baseline gap-2 font-medium text-sm">
+        <label
+          htmlFor="location-search"
+          className={fill ? "sr-only" : "flex items-baseline gap-2 font-medium text-sm"}
+        >
           <span>{label ?? <Trans>Location</Trans>}</span>
           {required ? (
             <span aria-hidden="true" className="font-normal text-destructive text-xs">
@@ -204,7 +216,7 @@ export function LocationPicker({
             </span>
           ) : null}
         </label>
-        <div className="relative mt-1.5">
+        <div className={fill ? "relative" : "relative mt-1.5"}>
           <Input
             id="location-search"
             type="text"
@@ -266,7 +278,7 @@ export function LocationPicker({
       {canRenderMap ? (
         <Suspense
           fallback={
-            <output className="block h-52 w-full border border-border bg-card">
+            <output className={cn("block w-full border border-border bg-card", mapHeight)}>
               <span className="sr-only">
                 <Trans>Loading location map</Trans>
               </span>
@@ -279,10 +291,11 @@ export function LocationPicker({
             interactive
             onLocationChange={placePin}
             markerStyle={markerStyle}
+            className={fill ? mapHeight : undefined}
           />
         </Suspense>
       ) : (
-        <output className="block h-52 w-full border border-border bg-card">
+        <output className={cn("block w-full border border-border bg-card", mapHeight)}>
           <span className="sr-only">
             <Trans>Loading location map</Trans>
           </span>

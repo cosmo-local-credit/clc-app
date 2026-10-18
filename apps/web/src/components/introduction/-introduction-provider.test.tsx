@@ -39,13 +39,10 @@ vi.mock("#/features/onboarding/ui/landing-page", () => ({
   ),
 }));
 vi.mock("./introduction", () => ({
-  Introduction: ({ replay, onExit }: { replay: boolean; onExit: (value: string) => void }) => (
+  Introduction: ({ onDone }: { onDone: () => void }) => (
     <div data-testid="intro">
-      {replay ? "Replay" : "First visit"}
-      <button onClick={() => onExit("skip")}>Skip intro</button>
-      <button onClick={() => onExit("create")}>Finish intro</button>
-      <button onClick={() => onExit("signin")}>Sign in directly</button>
-      <button onClick={() => onExit("done")}>Close replay</button>
+      Replay
+      <button onClick={onDone}>Close replay</button>
     </div>
   ),
 }));

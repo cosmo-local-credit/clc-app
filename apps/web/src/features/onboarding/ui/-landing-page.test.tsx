@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 
 vi.mock("#/providers/i18n", () => ({ useLocale: () => ({ loading: false, error: null }) }));
-vi.mock("#/components/install-app-link", () => ({
-  InstallAppLink: () => <a href="/install">Install CLC</a>,
+vi.mock("#/components/install-app-button", () => ({
+  InstallAppButton: () => <button type="button">Install CLC</button>,
 }));
+// jsdom lays nothing out, so Embla has nothing to measure; the guide starts on slide one.
+vi.mock("embla-carousel-react", () => ({ default: () => [vi.fn(), undefined] }));
 
 const { mockNavigate } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
@@ -45,16 +47,20 @@ describe("LandingPage", () => {
     );
   });
 
-  it("shows branding, onboarding menu, and the two identity buttons", () => {
+  it("pins the two identity buttons under the guide, with Market and Install beside each other", () => {
     render(<LandingPage />);
     expect(screen.getByRole("heading", { name: /cosmo-local credit/i })).toBeTruthy();
     expect(screen.getByTestId("onboarding-menu")).toBeTruthy();
-    expect(screen.getByTestId("clc-logo").getAttribute("data-sharp")).toBe("true");
+    // The top bar's logo comes first; the guide's pictures draw it again.
+    expect(screen.getAllByTestId("clc-logo")[0]?.getAttribute("data-sharp")).toBe("true");
     expect(screen.getByRole("button", { name: /create account/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /i already have an account/i })).toBeTruthy();
     expect(screen.queryByTestId("sign-in-panel")).toBeNull();
     expect(screen.getByRole("heading", { name: "Your wallet" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "How to use CLC" })).toBeNull();
+    const footer = screen.getByRole("button", { name: /create account/i }).closest("footer");
+    expect(footer?.textContent).toContain("Market");
+    expect(footer?.textContent).toContain("Install CLC");
   });
 
   it("navigates to the profile step when Create account is clicked", () => {

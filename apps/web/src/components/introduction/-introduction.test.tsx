@@ -1,95 +1,110 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vite-plus/test";
-import { Introduction } from "./introduction";
-const locale = vi.hoisted(() => ({
-  loading: false,
-  error: null as string | null,
-  locale: "en",
-  setLocale: vi.fn(),
-}));
-vi.mock("#/providers/i18n", () => ({ useLocale: () => locale }));
-vi.mock("#/components/language-selector", () => ({
-  LanguageSelector: () => <button>Language</button>,
-}));
-beforeEach(() => {
-  locale.loading = false;
-  locale.error = null;
-});
 
-it("shows language before five slides and creates an account only at the end", () => {
-  const exit = vi.fn();
-  render(<Introduction onExit={exit} />);
-  expect(screen.queryByText("Your wallet")).toBeNull();
-  fireEvent.click(screen.getByText("Continue"));
-  for (const title of [
-    "Your wallet",
-    "What is a voucher?",
-    "What is an offer?",
-    "Send a voucher",
-  ]) {
-    expect(screen.getByRole("heading", { name: title })).toBe(document.activeElement);
-    fireEvent.click(screen.getByText("Next"));
-    expect(exit).not.toHaveBeenCalled();
+import { PLATFORM_ABOUT_URL } from "#/lib/legal";
+
+// Embla measures the DOM, which jsdom does not lay out. The fake keeps one
+// selected slide and fires "select" the way Embla does after every move.
+const embla = vi.hoisted(() => {
+  const listeners = new Map<string, Set<(api: unknown) => void>>();
+  const state = { index: 0, count: 7 };
+  const api = {
+    canScrollPrev: () => state.index > 0,
+    canScrollNext: () => state.index < state.count - 1,
+    selectedScrollSnap: () => state.index,
+    scrollPrev: vi.fn(() => move(state.index - 1)),
+    scrollNext: vi.fn(() => move(state.index + 1)),
+    scrollTo: vi.fn((index: number) => move(index)),
+    on: vi.fn((event: string, listener: (api: unknown) => void) => {
+      if (!listeners.has(event)) listeners.set(event, new Set());
+      listeners.get(event)?.add(listener);
+    }),
+    off: vi.fn((event: string, listener: (api: unknown) => void) => {
+      listeners.get(event)?.delete(listener);
+    }),
+  };
+  function move(index: number) {
+    state.index = Math.max(0, Math.min(state.count - 1, index));
+    listeners.get("select")?.forEach((listener) => listener(api));
   }
-  expect(screen.getByRole("heading", { name: "Receive a voucher" })).toBeTruthy();
-  fireEvent.click(screen.getByText("Create account"));
-  expect(exit).toHaveBeenCalledWith("create");
+  return { api, state, listeners, useEmbla: vi.fn(() => [vi.fn(), api]) };
+});
+vi.mock("embla-carousel-react", () => ({ default: embla.useEmbla }));
+vi.mock("#/components/language-selector", () => ({ OnboardingMenu: () => null }));
+
+import { GuideCarousel, Introduction } from "./introduction";
+
+const TITLES = [
+  "Cosmo-Local Credit",
+  "What is a voucher?",
+  "What is an offer?",
+  "What's a pool?",
+  "Send a voucher",
+  "Receive a voucher",
+  "Your wallet",
+];
+
+/** The slide Embla shows: every other one is inert. */
+function currentSlide() {
+  return screen.getAllByRole("group").find((slide) => !slide.hasAttribute("inert"));
+}
+
+beforeEach(() => {
+  embla.state.index = 0;
+  embla.listeners.clear();
+  vi.clearAllMocks();
 });
 
-it("preserves the slide while language loads and blocks progression after a load error", () => {
-  const view = render(<Introduction replay onExit={vi.fn()} />);
-  fireEvent.click(screen.getByText("Next"));
-  locale.loading = true;
-  view.rerender(<Introduction replay onExit={vi.fn()} />);
-  expect((screen.getByText("Next").closest("button") as HTMLButtonElement).disabled).toBe(true);
-  locale.loading = false;
-  view.rerender(<Introduction replay onExit={vi.fn()} />);
-  expect(screen.getByRole("heading", { name: "What is a voucher?" })).toBeTruthy();
-  locale.error = "Load failed";
-  view.rerender(<Introduction replay onExit={vi.fn()} />);
-  expect(screen.queryByRole("heading")).toBeNull();
-  expect((screen.getByText("Next").closest("button") as HTMLButtonElement).disabled).toBe(true);
+it("walks the seven slides with the arrows and stops at the last", () => {
+  render(<GuideCarousel />);
+  const back = screen.getByRole("button", { name: "Back" }) as HTMLButtonElement;
+  const next = screen.getByRole("button", { name: "Next" }) as HTMLButtonElement;
+  expect(back.disabled).toBe(true);
+  for (const title of TITLES.slice(0, -1)) {
+    expect(currentSlide()?.getAttribute("aria-label")).toBe(title);
+    fireEvent.click(next);
+  }
+  expect(currentSlide()?.getAttribute("aria-label")).toBe("Your wallet");
+  expect(next.disabled).toBe(true);
+  fireEvent.click(back);
+  expect(currentSlide()?.getAttribute("aria-label")).toBe("Receive a voucher");
 });
 
-it("supports Back and ends replay without account actions", () => {
-  const exit = vi.fn();
-  render(<Introduction replay onExit={exit} />);
-  fireEvent.click(screen.getByText("Next"));
-  fireEvent.click(screen.getByText("Back"));
-  expect(screen.getByRole("heading", { name: "Your wallet" })).toBeTruthy();
-  for (let n = 0; n < 4; n++) fireEvent.click(screen.getByText("Next"));
-  expect(screen.queryByText("Create account")).toBeNull();
-  fireEvent.click(screen.getByText("Done"));
-  expect(exit).toHaveBeenCalledWith("done");
+it("jumps to a slide from its segment and marks it current", () => {
+  render(<GuideCarousel />);
+  const segment = screen.getByRole("button", { name: "What's a pool?" });
+  fireEvent.click(segment);
+  expect(embla.api.scrollTo).toHaveBeenCalledWith(3);
+  expect(segment.getAttribute("aria-current")).toBe("true");
+  expect(currentSlide()?.getAttribute("aria-label")).toBe("What's a pool?");
 });
 
-it("keeps inline guidance in the welcome page when the last slide advances", () => {
-  render(<Introduction inline />);
-  expect(screen.getByRole("heading", { name: "Your wallet", level: 2 })).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Skip" })).toBeNull();
-  for (let n = 0; n < 4; n++) fireEvent.click(screen.getByRole("button", { name: "Next" }));
-  expect(screen.getByRole("heading", { name: "Receive a voucher", level: 2 })).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Next" }));
-  expect(screen.getByRole("heading", { name: "Your wallet", level: 2 })).toBeTruthy();
+it("gives Welcome its page title on the first slide only", () => {
+  render(<GuideCarousel welcome />);
+  expect(screen.getByRole("heading", { level: 1, name: "Cosmo-Local Credit" })).toBeTruthy();
+  expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+  expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(6);
 });
 
-it("lays every slide's text in one cell so the guide never shifts between slides", () => {
-  render(<Introduction inline />);
-  // All five slides' text is present to size the cell; only the current one is exposed.
-  const cell = screen.getByRole("heading", { name: "Your wallet", level: 2 }).closest(".grid");
-  expect(cell?.children).toHaveLength(5);
-  expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
-  fireEvent.click(screen.getByRole("button", { name: "Next" }));
-  expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
-  expect(screen.getByRole("heading", { name: "What is a voucher?", level: 2 })).toBeTruthy();
+it("ends the first slide with the About link", () => {
+  render(<GuideCarousel />);
+  const about = screen.getByRole("link", { name: "About Cosmo-Local Credit" });
+  expect(about.getAttribute("href")).toBe(PLATFORM_ABOUT_URL);
+  expect(about.getAttribute("target")).toBe("_blank");
+  expect(about.closest("p")?.textContent).toBe(
+    "Cosmo-Local Credit helps people and organizations support, share, and exchange goods and services. About Cosmo-Local Credit",
+  );
 });
 
-it("keeps the second button's place so Next stays put until Create account", () => {
-  render(<Introduction replay={false} onExit={vi.fn()} />);
-  fireEvent.click(screen.getByText("Continue"));
-  const footer = screen.getByText("Next").closest("footer") as HTMLElement;
-  const before = footer.children.length;
-  for (let n = 0; n < 4; n++) fireEvent.click(screen.getByText("Next"));
-  expect(screen.getByText("Create account")).toBeTruthy();
-  expect(footer.children.length).toBe(before);
+it("replays from Settings with Next until Done, and closes at any point", () => {
+  const done = vi.fn();
+  render(<Introduction onDone={done} />);
+  const footerNext = () => screen.getAllByRole("button", { name: "Next" }).at(-1) as HTMLElement;
+  for (let step = 0; step < TITLES.length - 1; step++) fireEvent.click(footerNext());
+  expect(currentSlide()?.getAttribute("aria-label")).toBe("Your wallet");
+  expect(done).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Done" }));
+  expect(done).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
+  expect(done).toHaveBeenCalledTimes(2);
 });

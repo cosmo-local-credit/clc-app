@@ -3,10 +3,11 @@ import { FiLock, FiUnlock } from "react-icons/fi";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
-import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { Switch } from "#/components/ui/switch";
 import { encryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
 import { buildPaperWalletUrl } from "#/lib/paper-wallet";
+import { cn } from "#/lib/utils";
 
 type UsePaperWalletProtectionProps = {
   privateKey: `0x${string}`;
@@ -17,6 +18,9 @@ type PaperWalletProtectionSlots = {
   controls: ReactNode;
   isReady: boolean;
   isEncrypting: boolean;
+  needsPassword: boolean;
+  /** Applies the password; the screen's own button calls it. */
+  protect: () => Promise<void>;
 };
 
 export function usePaperWalletProtection({
@@ -81,19 +85,23 @@ export function usePaperWalletProtection({
   }
 
   const controls = (
-    <section className="border-border bg-card mt-4 border p-4">
-      <label className="flex cursor-pointer items-start gap-3">
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(event) => handleEnabledChange(event.target.checked)}
-          className="accent-primary mt-0.5 size-4 cursor-pointer"
-        />
+    <section className="border border-border bg-card">
+      <label className="flex cursor-pointer items-start gap-3 p-3">
+        {enabled ? (
+          <FiLock className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+        ) : (
+          <FiUnlock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        )}
         <span className="min-w-0 flex-1">
-          <span className="text-foreground block text-sm font-medium">
+          <span className="block font-medium text-foreground text-sm">
             <Trans>Protect paper wallet with a password</Trans>
           </span>
-          <span className="text-muted-foreground mt-1 block text-xs">
+          <span
+            className={cn(
+              "mt-1 block text-xs",
+              enabled ? "text-muted-foreground" : "text-destructive",
+            )}
+          >
             {enabled ? (
               encryptedPayload ? (
                 <Trans>Paper wallet is protected. Keep the password separate from the card.</Trans>
@@ -105,17 +113,13 @@ export function usePaperWalletProtection({
             )}
           </span>
         </span>
-        {enabled ? (
-          <FiLock className="text-primary mt-0.5 size-4 shrink-0" />
-        ) : (
-          <FiUnlock className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-        )}
+        <Switch checked={enabled} onCheckedChange={handleEnabledChange} />
       </label>
 
       {enabled ? (
-        <div className="mt-4 space-y-3">
-          <div className="space-y-2">
-            <label htmlFor="pw-passphrase" className="text-foreground text-sm font-medium">
+        <div className="space-y-3 border-border border-t p-3">
+          <div className="space-y-1.5">
+            <label htmlFor="pw-passphrase" className="font-medium text-foreground text-sm">
               <Trans>Password</Trans>
             </label>
             <Input
@@ -128,8 +132,8 @@ export function usePaperWalletProtection({
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="pw-passphrase-confirm" className="text-foreground text-sm font-medium">
+          <div className="space-y-1.5">
+            <label htmlFor="pw-passphrase-confirm" className="font-medium text-foreground text-sm">
               <Trans>Confirm password</Trans>
             </label>
             <Input
@@ -142,15 +146,6 @@ export function usePaperWalletProtection({
             />
           </div>
 
-          <Button tap className="w-full" pending={encrypting} onClick={() => void handleProtect()}>
-            <FiLock className="size-4" />
-            {encrypting
-              ? t`Protecting paper wallet…`
-              : encryptedPayload
-                ? t`Update protected paper wallet`
-                : t`Protect paper wallet`}
-          </Button>
-
           {error ? (
             <p role="alert" className="text-destructive text-xs">
               {error}
@@ -161,5 +156,13 @@ export function usePaperWalletProtection({
     </section>
   );
 
-  return { qrUrl, controls, isReady, isEncrypting: encrypting };
+  return {
+    qrUrl,
+    controls,
+    isReady,
+    isEncrypting: encrypting,
+    /** Protection is on and its password has not been applied yet. */
+    needsPassword: enabled && encryptedPayload === null,
+    protect: handleProtect,
+  };
 }

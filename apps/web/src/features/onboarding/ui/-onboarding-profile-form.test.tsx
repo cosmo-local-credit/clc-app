@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mockNavigate, mockResolveProfileCountry } = vi.hoisted(() => ({
@@ -123,25 +124,100 @@ vi.mock("#/components/ui/location-picker", () => ({
 }));
 
 import type { ProfileInput } from "@clc/core/features/signup/logic";
+import type { ProfilePage } from "#/lib/onboarding-search";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
 const PHOTO = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
+
+/** Plays the flow's part: Continue moves the page, as pushing a step would. */
+function Harness({
+  onNext,
+  onRestart,
+  initialValues,
+  initialAvatarFile,
+  startPage,
+}: {
+  onNext: (data: ProfileInput, avatarFile: File) => void;
+  onRestart: () => void;
+  initialValues?: ProfileInput;
+  initialAvatarFile?: File;
+  startPage: ProfilePage;
+}) {
+  const [page, setPage] = useState<ProfilePage>(startPage);
+  return (
+    <>
+      <span data-testid="page">{page}</span>
+      <button type="button" onClick={() => setPage("contact")}>
+        to-contact
+      </button>
+      <OnboardingProfileForm
+        page={page}
+        onPage={setPage}
+        onRestart={onRestart}
+        onNext={onNext}
+        progressTotal={5}
+        initialValues={initialValues}
+        initialAvatarFile={initialAvatarFile}
+      />
+    </>
+  );
+}
 
 function renderForm(
   onNext: (data: ProfileInput, avatarFile: File) => void = vi.fn(),
   initialValues?: ProfileInput,
   initialAvatarFile?: File,
+  {
+    startPage = "profile",
+    onRestart = vi.fn(),
+  }: { startPage?: ProfilePage; onRestart?: () => void } = {},
 ) {
   return render(
-    <OnboardingProfileForm
+    <Harness
       onNext={onNext}
-      progressStep={1}
-      progressTotal={3}
+      onRestart={onRestart}
       initialValues={initialValues}
       initialAvatarFile={initialAvatarFile}
+      startPage={startPage}
     />,
   );
 }
+
+const page = () => screen.getByTestId("page").textContent;
+
+async function pressContinue() {
+  await act(async () => {
+    fireEvent.submit(screen.getByRole("form"));
+  });
+}
+
+const textbox = (name: RegExp | string) => screen.getByRole("textbox", { name });
+
+/** Fills each page with the least it needs and continues past it. */
+async function completeProfilePage(name = "Alice") {
+  fireEvent.change(textbox(/^name$/i), { target: { value: name } });
+  await pressContinue();
+}
+async function completeContactPage(email = "alice@example.com") {
+  fireEvent.change(textbox(/email/i), { target: { value: email } });
+  await pressContinue();
+}
+
+const PROFILE: ProfileInput = {
+  name: "Alice",
+  email: "alice@example.com",
+  phone: "",
+  preferredCurrency: "KES",
+  bio: "Neighbourhood organiser",
+  // The URL stub in beforeEach replaces the constructor zod's URL check uses.
+  website: "",
+  location: {
+    lat: -1.2921,
+    lng: 36.8219,
+    locationName: "Nairobi, Kenya",
+    country: "KE",
+  },
+};
 
 beforeEach(() => {
   vi.stubGlobal("URL", {
@@ -154,222 +230,163 @@ beforeEach(() => {
   mockResolveProfileCountry.mockResolvedValue("US");
 });
 
-describe("OnboardingProfileForm rendering", () => {
-  it("renders contact, profile, currency, and location fields", () => {
+describe("OnboardingProfileForm pages", () => {
+  it("asks for the photo, name and username first, with sign-in one link away", () => {
     renderForm();
-    expect(screen.getByRole("textbox", { name: /^name$/i })).toBeTruthy();
-    expect(screen.getByRole("textbox", { name: /email/i })).toBeTruthy();
-    expect(screen.getByTestId("phone-input")).toBeTruthy();
-    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
-    expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
-    expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
-    expect(screen.getByTestId("location-picker")).toBeTruthy();
-    expect(screen.getByRole("textbox", { name: "Location" }).getAttribute("aria-required")).toBe(
-      "true",
-    );
-    expect(screen.queryByTestId("country-select")).toBeNull();
-  });
-
-  it("renders the Continue submit button", () => {
-    renderForm();
+    expect(screen.getByRole("button", { name: /add a photo/i })).toBeTruthy();
+    expect(textbox(/^name$/i)).toBeTruthy();
+    expect(textbox(/^username$/i)).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: /email/i })).toBeNull();
+    expect(screen.queryByTestId("location-picker")).toBeNull();
+    const signIn = screen.getByRole("link", { name: /go back to sign in/i });
+    expect(signIn.getAttribute("href")).toContain("step=signin");
+    expect(screen.getByRole("link", { name: "Back" })).toBeTruthy();
+    expect(screen.getByTestId("step-progress")).toBeTruthy();
     expect(screen.getByRole("button", { name: /continue/i })).toBeTruthy();
   });
 
-  it("has a sign in link pointing to the signin step", () => {
-    renderForm();
-    const link = screen
-      .getAllByRole("link")
-      .find((el) => (el.getAttribute("href") ?? "").includes("step=signin"));
-    expect(link).toBeTruthy();
+  it("asks for email, phone, website and bio on Contact", () => {
+    renderForm(vi.fn(), PROFILE, PHOTO, { startPage: "contact" });
+    expect(textbox(/email/i)).toBeTruthy();
+    expect(screen.getByTestId("phone-input")).toBeTruthy();
+    expect(textbox(/website/i)).toBeTruthy();
+    expect(textbox(/bio/i)).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: /^name$/i })).toBeNull();
+    expect(screen.queryByRole("link", { name: /go back to sign in/i })).toBeNull();
   });
 
-  it("shows the back control", () => {
-    renderForm();
-    // BackChevron without onClick renders a link (history.back on click).
-    expect(screen.getByRole("link", { name: "Back" })).toBeTruthy();
+  it("asks for the place on Location, with the currency as a row", () => {
+    renderForm(vi.fn(), PROFILE, PHOTO, { startPage: "location" });
+    expect(screen.getByTestId("location-picker")).toBeTruthy();
+    expect(textbox("Location").getAttribute("aria-required")).toBe("true");
+    const currency = screen.getByRole("button", { name: /preferred currency/i });
+    expect(currency.textContent).toContain("KES");
+    expect(screen.queryByRole("combobox", { name: /preferred currency/i })).toBeNull();
   });
 
-  it("uses replace on the sign-in link so profile does not stack under sign-in", () => {
-    renderForm();
-    const link = screen.getByRole("link", { name: /go back to sign in/i });
-    // Mocked Link only serializes `to`+`search`; replace is asserted via prop through href step.
-    expect(link.getAttribute("href")).toContain("step=signin");
+  it("opens the currency picker in a sheet from its row", async () => {
+    renderForm(vi.fn(), PROFILE, PHOTO, { startPage: "location" });
+    fireEvent.click(screen.getByRole("button", { name: /preferred currency/i }));
+    expect(await screen.findByRole("dialog", { name: "Preferred currency" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
   });
 
-  it("shows the progress indicator", () => {
-    renderForm();
-    expect(screen.getByTestId("step-progress")).toBeTruthy();
+  it("sends a later page opened with an empty form back to the start", () => {
+    const onRestart = vi.fn();
+    renderForm(vi.fn(), undefined, undefined, { startPage: "location", onRestart });
+    expect(onRestart).toHaveBeenCalledOnce();
+  });
+
+  it("keeps a later page whose earlier pages are filled in", () => {
+    const onRestart = vi.fn();
+    renderForm(vi.fn(), PROFILE, PHOTO, { startPage: "location", onRestart });
+    expect(onRestart).not.toHaveBeenCalled();
   });
 });
 
-describe("OnboardingProfileForm submission", () => {
-  it("focuses and centers the missing photo after an empty submission", async () => {
+describe("OnboardingProfileForm Continue", () => {
+  it("focuses and centers the missing photo after an empty Continue", async () => {
     const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
     renderForm();
 
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await pressContinue();
 
     const photo = screen.getByRole("button", { name: /add a photo/i });
     await waitFor(() => expect(document.activeElement).toBe(photo));
     expect(photo.getAttribute("aria-invalid")).toBe("true");
-    expect(photo.className).toContain("aria-invalid:ring-destructive/20");
     expect(scrollIntoView).toHaveBeenCalledWith(
       expect.objectContaining({ block: "center", inline: "nearest" }),
     );
+    expect(page()).toBe("profile");
   });
 
-  it("focuses the first schema-invalid field when a photo is present", async () => {
+  it("focuses the name when a photo is present, with a short Required", async () => {
     renderForm(vi.fn(), undefined, PHOTO);
 
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await pressContinue();
 
-    const name = screen.getByRole("textbox", { name: /^name$/i });
+    const name = textbox(/^name$/i);
     await waitFor(() => expect(document.activeElement).toBe(name));
-    expect(name.className).toContain("aria-invalid:focus-visible:border-destructive");
     expect(name.parentElement?.textContent).toContain("Required");
     expect(screen.queryByText("Name is required")).toBeNull();
+    expect(page()).toBe("profile");
   });
 
   it("keeps the specific validation message for a name that is too long", async () => {
     renderForm(vi.fn(), undefined, PHOTO);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "A".repeat(81) },
-    });
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
+    fireEvent.change(textbox(/^name$/i), { target: { value: "A".repeat(81) } });
+    await pressContinue();
     expect(screen.getByText("Name must be 80 characters or fewer")).toBeTruthy();
+    expect(page()).toBe("profile");
   });
 
-  it("advances focus to the next reported invalid field after the first is corrected", async () => {
-    renderForm(vi.fn(), undefined, PHOTO);
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-    await waitFor(() =>
-      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: /^name$/i })),
-    );
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    await waitFor(() =>
-      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Location" })),
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    await waitFor(() =>
-      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: /email/i })),
-    );
-  });
-
-  it("focuses the location when all preceding fields are valid", async () => {
-    renderForm(vi.fn(), undefined, PHOTO);
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    await waitFor(() =>
-      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Location" })),
-    );
-  });
-
-  it("blocks a consecutive-dot email and continues after it is corrected", async () => {
-    const mockOnNext = vi.fn();
-    renderForm(mockOnNext, undefined, PHOTO);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    const email = screen.getByRole("textbox", { name: /email/i });
-    fireEvent.change(email, {
-      target: { value: "w..illruddick@gmail.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    expect(mockOnNext).not.toHaveBeenCalled();
-    expect(screen.getByText("Invalid email address")).toBeTruthy();
-
-    fireEvent.change(email, {
-      target: { value: "w.illruddick@gmail.com" },
-    });
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    expect(mockOnNext).toHaveBeenCalledWith(
-      expect.objectContaining<Partial<ProfileInput>>({
-        email: "w.illruddick@gmail.com",
-      }),
-      PHOTO,
-    );
-  });
-
-  it("does not advance without a photo and explains what is required", async () => {
-    const mockOnNext = vi.fn();
-    renderForm(mockOnNext);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    expect(mockOnNext).not.toHaveBeenCalled();
+  it("does not advance without a photo and says so once", async () => {
+    renderForm();
+    fireEvent.change(textbox(/^name$/i), { target: { value: "Alice" } });
+    await pressContinue();
+    expect(page()).toBe("profile");
     expect(screen.getByRole("alert").textContent).toBe("Required");
-    expect(screen.getAllByText("Required")).toHaveLength(2);
     expect(screen.getByRole("button", { name: /add a photo/i }).getAttribute("aria-invalid")).toBe(
       "true",
     );
   });
 
-  it("calls onNext with validated data on valid submission", async () => {
+  it("moves on to Contact once the photo and name are in", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+    await completeProfilePage();
+    expect(page()).toBe("contact");
+  });
+
+  it("opens Contact without errors from the page before it", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+    await completeProfilePage();
+    expect(screen.queryByText("Provide an email or phone number")).toBeNull();
+    expect(textbox(/email/i).getAttribute("aria-invalid")).toBe("false");
+  });
+
+  it("keeps Contact until there is an email or a phone", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+    await completeProfilePage();
+    await pressContinue();
+    expect(page()).toBe("contact");
+    expect(screen.getByText("Provide an email or phone number")).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(textbox(/email/i)));
+  });
+
+  it("blocks a consecutive-dot email and continues after it is corrected", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+    await completeProfilePage();
+    fireEvent.change(textbox(/email/i), { target: { value: "w..illruddick@gmail.com" } });
+    await pressContinue();
+    expect(page()).toBe("contact");
+    expect(screen.getByText("Invalid email address")).toBeTruthy();
+
+    fireEvent.change(textbox(/email/i), { target: { value: "w.illruddick@gmail.com" } });
+    await pressContinue();
+    expect(page()).toBe("location");
+  });
+
+  it("does not call onNext until a valid location is set", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
+    await completeProfilePage();
+    await completeContactPage();
+    expect(screen.queryByText(/choose a location/i)).toBeNull();
 
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
+    await pressContinue();
+
+    expect(mockOnNext).not.toHaveBeenCalled();
+    expect(screen.getByText(/choose a location/i)).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(textbox("Location")));
+  });
+
+  it("calls onNext with the whole validated profile from the last page", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+    await completeProfilePage();
+    await completeContactPage();
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await pressContinue();
 
     expect(mockOnNext).toHaveBeenCalledWith(
       expect.objectContaining<Partial<ProfileInput>>({
@@ -394,21 +411,11 @@ describe("OnboardingProfileForm submission", () => {
   it("submits a chosen username", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /^username$/i }), {
-      target: { value: "alice-2" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
+    fireEvent.change(textbox(/^username$/i), { target: { value: "alice-2" } });
+    await completeProfilePage();
+    await completeContactPage();
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await pressContinue();
 
     expect(mockOnNext).toHaveBeenCalledWith(
       expect.objectContaining<Partial<ProfileInput>>({ username: "alice-2" }),
@@ -419,23 +426,17 @@ describe("OnboardingProfileForm submission", () => {
   it("omits a blank username so signup can assign one automatically", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
+    await completeProfilePage();
+    await completeContactPage();
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await pressContinue();
 
     const submitted = mockOnNext.mock.calls[0]?.[0] as ProfileInput;
     expect(submitted).not.toHaveProperty("username");
   });
+});
 
+describe("OnboardingProfileForm suggestions", () => {
   it("keeps a location currency when the network suggestion arrives later", async () => {
     let resolveNetworkCountry: (country: string) => void = () => undefined;
     mockResolveProfileCountry.mockImplementation(
@@ -446,21 +447,14 @@ describe("OnboardingProfileForm submission", () => {
     );
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
+    await completeProfilePage();
+    await completeContactPage();
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
 
     await act(async () => {
       resolveNetworkCountry("US");
     });
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await pressContinue();
 
     expect(mockOnNext).toHaveBeenCalledWith(
       expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "KES" }),
@@ -469,14 +463,17 @@ describe("OnboardingProfileForm submission", () => {
   });
 
   it("seeds the phone dialling code from the same country as the currency", async () => {
-    renderForm();
+    renderForm(vi.fn(), undefined, PHOTO);
+    await completeProfilePage();
 
     await waitFor(() =>
       expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("US"),
     );
 
     // A chosen location beats the network hint for both fields.
+    await completeContactPage();
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    fireEvent.click(screen.getByRole("button", { name: "to-contact" }));
     expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("KE");
   });
 
@@ -495,6 +492,7 @@ describe("OnboardingProfileForm submission", () => {
       } as unknown as ProfileInput,
       PHOTO,
     );
+    await completeProfilePage();
 
     // A saved currency preference says nothing about which dialling code to
     // start on, so the network hint still reaches the phone field.
@@ -502,16 +500,9 @@ describe("OnboardingProfileForm submission", () => {
       expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("US"),
     );
 
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
+    await completeContactPage();
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await pressContinue();
 
     // A location picked afterwards does not override the chosen currency either.
     expect(mockOnNext).toHaveBeenCalledWith(
@@ -519,126 +510,36 @@ describe("OnboardingProfileForm submission", () => {
       PHOTO,
     );
   });
-
-  it("does not call onNext when name is empty", async () => {
-    const mockOnNext = vi.fn();
-    renderForm(mockOnNext);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    expect(mockOnNext).not.toHaveBeenCalled();
-  });
-
-  it("does not call onNext when both email and phone are empty", async () => {
-    const mockOnNext = vi.fn();
-    renderForm(mockOnNext);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    expect(mockOnNext).not.toHaveBeenCalled();
-  });
-
-  it("does not show the location error when unrelated fields change", async () => {
-    renderForm();
-
-    await act(async () => {
-      fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-        target: { value: "Alice" },
-      });
-    });
-
-    expect(screen.queryByText(/choose a location/i)).toBeNull();
-  });
-
-  it("does not call onNext until a valid location is set", async () => {
-    const mockOnNext = vi.fn();
-    renderForm(mockOnNext);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
-
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
-
-    expect(mockOnNext).not.toHaveBeenCalled();
-    expect(screen.getByText(/choose a location/i)).toBeTruthy();
-  });
 });
 
 describe("OnboardingProfileForm value restoration", () => {
-  it("populates name, email, and location from initialValues", () => {
-    renderForm(vi.fn(), {
-      name: "Alice",
-      email: "alice@example.com",
-      phone: "",
-      preferredCurrency: "KES",
-      bio: "Neighbourhood organiser",
-      website: "https://alice.example",
-      location: {
-        lat: -1.2921,
-        lng: 36.8219,
-        locationName: "Nairobi, Kenya",
-        country: "KE",
-      },
-    });
-
-    expect((screen.getByRole("textbox", { name: /^name$/i }) as HTMLInputElement).value).toBe(
-      "Alice",
-    );
-    expect((screen.getByRole("textbox", { name: /email/i }) as HTMLInputElement).value).toBe(
-      "alice@example.com",
-    );
+  it("puts saved values back on each page", async () => {
+    renderForm(vi.fn(), PROFILE, PHOTO);
+    expect((textbox(/^name$/i) as HTMLInputElement).value).toBe("Alice");
+    await pressContinue();
+    expect((textbox(/email/i) as HTMLInputElement).value).toBe("alice@example.com");
+    await pressContinue();
     expect(screen.getByText("Nairobi, Kenya")).toBeTruthy();
   });
 
   it("falls back to empty defaults when no initialValues are given", () => {
     renderForm();
-    expect((screen.getByRole("textbox", { name: /^name$/i }) as HTMLInputElement).value).toBe("");
-    expect(screen.getByText("No location")).toBeTruthy();
+    expect((textbox(/^name$/i) as HTMLInputElement).value).toBe("");
   });
 });
 
 describe("OnboardingProfileForm photo", () => {
-  it("offers a photo alongside the identity fields", () => {
+  it("marks the photo Required in muted text until Continue is pressed", () => {
     renderForm();
-
     const photoButton = screen.getByRole("button", { name: /add a photo/i });
-    expect(photoButton).toBeTruthy();
-    expect(photoButton.parentElement?.querySelector("p")?.textContent).toBe("Required");
+    const note = photoButton.parentElement?.querySelector("p");
+    expect(note?.textContent).toBe("Required");
+    expect(note?.className).toContain("text-muted-foreground");
   });
 
   it("carries the chosen photo out with the validated profile", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext);
-
-    // The identity fields first: the frame is modal, so nothing behind it is
-    // reachable while a photo is being positioned.
-    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
-      target: { value: "Alice" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
-      target: { value: "alice@example.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
 
     const photo = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
     fireEvent.change(screen.getByLabelText("Choose a profile photo"), {
@@ -650,9 +551,10 @@ describe("OnboardingProfileForm photo", () => {
       fireEvent.click(screen.getByRole("button", { name: "Use photo" }));
     });
 
-    await act(async () => {
-      fireEvent.submit(screen.getByRole("form"));
-    });
+    await completeProfilePage();
+    await completeContactPage();
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    await pressContinue();
 
     // Beside the profile, not inside it: the schema is shared with @clc/core and
     // cannot name a File. jsdom has no createImageBitmap, so the encode falls

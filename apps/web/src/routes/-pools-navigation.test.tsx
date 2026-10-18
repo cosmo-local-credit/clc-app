@@ -35,21 +35,17 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
-  useAllAccountTokens: () => ({
-    tokens: [],
+  useLatestAccountTokens: () => ({
+    data: { tokens: [] },
     isPending: false,
     isError: false,
     isSuccess: true,
     refetch: vi.fn(),
   }),
-}));
-
-vi.mock("#/features/wallet/hooks/use-owned-vouchers", () => ({
-  useAllOwnedVouchers: () => ({
-    vouchers: [],
+  useAllAccountIssuedTokens: () => ({
+    tokens: [],
     isPending: false,
     isError: false,
-    isSuccess: true,
     refetch: vi.fn(),
   }),
 }));
