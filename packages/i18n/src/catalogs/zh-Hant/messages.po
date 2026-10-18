@@ -365,6 +365,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "接受條款以發佈您的代金券"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
 msgstr "帳戶"
 
@@ -380,7 +382,7 @@ msgstr "帳戶未獲批准"
 msgid "Account not found"
 msgstr "未找到帳戶"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:454
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:451
 msgid "Account registration failed."
 msgstr "帳戶註冊失敗。"
 
@@ -388,7 +390,7 @@ msgstr "帳戶註冊失敗。"
 #~ msgid "Activating on chain..."
 #~ msgstr "正在鏈上啟用…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:145
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:172
 msgid "Activating on chain…"
 msgstr "正在鏈上啟用…"
 
@@ -396,7 +398,7 @@ msgstr "正在鏈上啟用…"
 #~ msgid "Activating smart wallet..."
 #~ msgstr "正在啟用智能錢包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:147
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:174
 msgid "Activating smart wallet…"
 msgstr "正在啟用智能錢包…"
 
@@ -708,9 +710,10 @@ msgstr "等待批准"
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:364
@@ -1322,7 +1325,7 @@ msgstr "確認併傳送"
 msgid "Confirm Install or Add when asked."
 msgstr "當詢問時確認安裝或新增。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:141
 msgid "Confirm password"
 msgstr "確認密碼"
 
@@ -1345,6 +1348,7 @@ msgid "Confirmed"
 msgstr "已確認"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 msgid "Confirming"
 msgstr "正在確認"
 
@@ -1381,7 +1385,7 @@ msgstr "連線地址"
 #~ msgid "Connecting wallet..."
 #~ msgstr "正在連線錢包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:141
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:168
 msgid "Connecting wallet…"
 msgstr "正在連線錢包…"
 
@@ -1397,7 +1401,7 @@ msgid "Connecting…"
 msgstr "正在連線…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:136
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:320
 #: apps/web/src/routes/__root.tsx:229
 #: apps/web/src/routes/__root.tsx:260
 msgid "Connection failed."
@@ -1432,8 +1436,9 @@ msgstr "聯絡電話"
 msgid "Contact Website"
 msgstr "聯絡網站"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1448,7 +1453,7 @@ msgstr "在瀏覽器中繼續"
 msgid "Continue to CLC"
 msgstr "繼續CLC"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
 msgid "Continue to wallet"
 msgstr "繼續前往錢包"
 
@@ -1456,7 +1461,7 @@ msgstr "繼續前往錢包"
 msgid "Continue with {providerLabel}"
 msgstr "繼續{providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:490
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
 msgid "Continue with paper wallet"
 msgstr "使用紙錢包繼續"
 
@@ -1562,19 +1567,19 @@ msgstr "無法匯入紙錢包。"
 msgid "Could not load vouchers."
 msgstr "無法載入代金券。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
 msgid "Could not protect this paper wallet."
 msgstr "無法保護紙錢包。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:180
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
 msgid "Could not save the paper wallet. Try again."
 msgstr "無法儲存紙錢包。再試一次。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:218
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "無法儲存可列印工作表。再試一次。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:238
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
 msgid "Could not share the paper wallet. Try downloading it instead."
 msgstr "無法分享紙錢包。請改為下載。"
 
@@ -2069,7 +2074,7 @@ msgstr "正在建立 {0}…"
 #~ msgid "Creating account..."
 #~ msgstr "正在建立帳戶…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 msgid "Creating account…"
 msgstr "正在建立帳戶…"
 
@@ -2102,7 +2107,8 @@ msgstr "信用額度未知"
 msgid "Culture"
 msgstr "文化"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
 msgid "Customize"
 msgstr "定製"
 
@@ -2190,7 +2196,7 @@ msgstr "介紹您的資金池"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:297
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
 msgid "Description"
@@ -2225,6 +2231,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "顯示名稱不得超過 120 個字元"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2237,12 +2245,12 @@ msgstr "完成"
 msgid "Done with this customer"
 msgstr "完成這位客戶的操作"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:292
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
 msgid "Download card"
 msgstr "下載卡"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:436
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
 msgid "Download your paper wallet before continuing."
 msgstr "請先下載紙錢包，再繼續。"
 
@@ -2455,7 +2463,7 @@ msgstr "輸入此代金券支援的金額。"
 msgid "Enter an exchange rate greater than zero"
 msgstr "輸入大於零的匯率"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:113
 msgid "Enter and apply a password before downloading this card."
 msgstr "下載此卡之前輸入並應用密碼。"
 
@@ -2501,7 +2509,7 @@ msgstr "等值"
 msgid "Event details"
 msgstr "事件詳情"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 "way to sign in."
 msgstr "每個帳戶都會獲得一個紙錢包。關聯 {providerLabel} 可新增另一種登入方式。"
@@ -2628,7 +2636,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "檔名不得超過 255 個字元"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "檔案太大 ({0} KB)。最大為 512 KB。"
 
@@ -2844,10 +2852,10 @@ msgid "I created {amountLabel}."
 msgstr "我增發了 {amountLabel}。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:424
-msgid "I have saved this key"
-msgstr "我已經儲存了這個金鑰"
+#~ msgid "I have saved this key"
+#~ msgstr "我已經儲存了這個金鑰"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:431
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "我已經儲存了這個金鑰。如果丟失，我的錢包將無法恢復。"
 
@@ -3059,10 +3067,10 @@ msgid "Link {0} file name"
 msgstr "連結{0}檔名"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
-msgid "Link {providerLabel}"
-msgstr "連結{providerLabel}"
+#~ msgid "Link {providerLabel}"
+#~ msgstr "連結{providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
 msgid "Link {providerLabel}?"
 msgstr "連結{providerLabel}？"
 
@@ -3103,7 +3111,7 @@ msgstr "連結已複製"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "適用於此代金券的條款的連結"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:480
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
 msgid "Link wallet to {providerLabel}"
 msgstr "將錢包連結到 {providerLabel}"
 
@@ -3130,7 +3138,7 @@ msgstr "可在 iPhone 的 Safari 或 Chrome，以及 Android 的 Chrome 中關�
 #~ msgstr "正在關聯通行金鑰…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:166
 msgid "Linking passkey…"
 msgstr "正在關聯通行金鑰…"
 
@@ -3334,7 +3342,7 @@ msgid "Location unavailable"
 msgstr "位置不可用"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:268
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:668
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:232
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:662
@@ -3597,7 +3605,7 @@ msgstr "姓名為必填項"
 msgid "Name must be 80 characters or fewer"
 msgstr "名稱不得超過 80 個字元"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:84
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
 msgid "Name on wallet"
 msgstr "錢包上的姓名"
 
@@ -3609,6 +3617,8 @@ msgstr "名稱、符號或地址"
 msgid "Natural building"
 msgstr "自然建築"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
@@ -4109,7 +4119,7 @@ msgstr "開啟代金券頁面"
 #~ msgid "Opening paper wallet..."
 #~ msgstr "正在開啟紙錢包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:149
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
 msgid "Opening paper wallet…"
 msgstr "正在開啟紙錢包…"
 
@@ -4186,7 +4196,8 @@ msgstr "已提交所有權轉讓。"
 msgid "Paid out"
 msgstr "已支付"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
 msgid "Paper wallet"
 msgstr "紙錢包"
 
@@ -4194,17 +4205,17 @@ msgstr "紙錢包"
 msgid "Paper Wallet"
 msgstr "紙錢包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:329
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
 msgid "Paper wallet card"
 msgstr "紙錢包卡片"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:111
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "紙錢包受到保護。將密碼與卡分開儲存。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
-msgid "Paper wallet only"
-msgstr "僅使用紙錢包"
+#~ msgid "Paper wallet only"
+#~ msgstr "僅使用紙錢包"
 
 #: apps/web/src/features/home/ui/report-page.tsx:418
 msgid "Participants"
@@ -4217,6 +4228,7 @@ msgstr "參與者不得超過 100 個字元"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 msgid "Passkey"
 msgstr "通行金鑰"
 
@@ -4224,7 +4236,7 @@ msgstr "通行金鑰"
 msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "通行金鑰建立已取消。您的紙錢包未更改。"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:143
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
 msgstr "通行金鑰已關聯"
 
@@ -4232,11 +4244,11 @@ msgstr "通行金鑰已關聯"
 #~ msgid "Passkey linked ... confirming on-chain..."
 #~ msgstr "已連結通行金鑰…確認鏈上…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:164
 msgid "Passkey linked … confirming on-chain…"
 msgstr "已連結通行金鑰…確認鏈上…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:236
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:263
 msgid "Passkey linked, but wallet connection failed."
 msgstr "已連結通行金鑰，但錢包連線失敗。"
 
@@ -4245,11 +4257,11 @@ msgid "Passkey status could not be checked."
 msgstr "無法檢查通行金鑰狀態。"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:127
 msgid "Password"
 msgstr "密碼"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "密碼不能為空。"
 
@@ -4258,7 +4270,7 @@ msgstr "密碼不能為空。"
 msgid "Password-protected paper wallet"
 msgstr "受密碼保護的紙錢包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "密碼不匹配。"
 
@@ -4291,7 +4303,7 @@ msgstr "付款收據"
 msgid "Payment status unknown"
 msgstr "付款狀態未知"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:525
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:221
@@ -4643,8 +4655,8 @@ msgstr "正在準備提領…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Preparing…"
 msgstr "正在準備……"
 
@@ -4652,7 +4664,7 @@ msgstr "正在準備……"
 msgid "Present card to pay {armedAmount}"
 msgstr "出示卡支付 {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "按住下面的圖片，然後選擇「儲存圖片」。"
 
@@ -4739,7 +4751,7 @@ msgstr "定價"
 msgid "Primary navigation"
 msgstr "主要導航"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:307
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
 msgid "Print"
 msgstr "列印"
 
@@ -4761,11 +4773,11 @@ msgstr "個人資料照片"
 msgid "Profile updated"
 msgstr "個人資料已更新"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:151
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
 msgstr "保護紙錢包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
 msgid "Protect paper wallet with a password"
 msgstr "使用密碼保護紙錢包"
 
@@ -4773,7 +4785,7 @@ msgstr "使用密碼保護紙錢包"
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "正在保護紙錢包…"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:148
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protecting paper wallet…"
 msgstr "正在保護紙錢包…"
 
@@ -4844,7 +4856,7 @@ msgstr "正在發佈…"
 msgid "Purple"
 msgstr "紫色"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:104
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:116
 msgid "QR currently contains the raw private key."
 msgstr "QR 當前包含原始私鑰。"
 
@@ -4969,8 +4981,8 @@ msgid "Recipient username, pool name, phone or address"
 msgstr "接收方使用者名稱、資金池名稱、電話或地址"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:92
-msgid "Recommended"
-msgstr "推薦"
+#~ msgid "Recommended"
+#~ msgstr "推薦"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:124
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:310
@@ -5136,7 +5148,7 @@ msgstr "必填"
 msgid "Reset"
 msgstr "重置"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:156
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "重置徽標"
 
@@ -5204,7 +5216,7 @@ msgstr "靜修"
 msgid "Retry"
 msgstr "重試"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:479
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
 msgid "Retry {providerLabel} connection"
 msgstr "重試 {providerLabel} 連線"
 
@@ -5250,11 +5262,11 @@ msgstr "儲存更改"
 msgid "Save fee settings"
 msgstr "儲存費用設定"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:304
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
 msgid "Save printable A4 sheet"
 msgstr "儲存可列印的 A4 紙"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:406
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
 msgid "Save this card securely. If you use a password, keep it separately. "
 "Anyone with an unprotected QR code can access the wallet."
 msgstr "妥善儲存此卡。如果您使用密碼，請將其單獨儲存。任何擁有不受保護的 QR 碼的人都可以存取錢包。"
@@ -5262,6 +5274,10 @@ msgstr "妥善儲存此卡。如果您使用密碼，請將其單獨儲存。任
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
 msgstr "儲存使用者名稱"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
+msgid "Save your card"
+msgstr "儲存您的卡片"
 
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
@@ -5531,7 +5547,7 @@ msgstr "登入狀態"
 msgid "Session check failed"
 msgstr "登入狀態檢查失敗"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:196
 msgid "Session could not be verified. Try again."
 msgstr "無法驗證登入狀態。請重試。"
 
@@ -5547,7 +5563,7 @@ msgstr "提取費用前請先設定費用接收方，否則資金池無法支付
 #~ msgid "Setting up your wallet..."
 #~ msgstr "正在設定您的錢包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:519
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
 msgid "Setting up your wallet…"
 msgstr "正在設定您的錢包…"
 
@@ -5565,7 +5581,7 @@ msgstr "設定"
 msgid "Share"
 msgstr "分享"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Share card"
 msgstr "分享卡片"
 
@@ -5699,8 +5715,8 @@ msgid "Sign-in"
 msgstr "登入"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
-msgid "Sign-in method"
-msgstr "登入方式"
+#~ msgid "Sign-in method"
+#~ msgstr "登入方式"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 #~ msgid "Sign-in methods"
@@ -5849,7 +5865,7 @@ msgstr "發行量的小數位數超過此代金券支援的位數"
 msgid "Supply must be greater than zero"
 msgstr "發行量必須大於零"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "不支援 SVG 檔案。使用 PNG、JPEG 或 WebP。"
 
@@ -6630,8 +6646,8 @@ msgid "Update photo"
 msgstr "更新照片"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:150
-msgid "Update protected paper wallet"
-msgstr "更新受保護的紙錢包"
+#~ msgid "Update protected paper wallet"
+#~ msgstr "更新受保護的紙錢包"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
 msgid "Update required"
@@ -6662,7 +6678,7 @@ msgstr "上傳圖片"
 msgid "Upload Image Instead"
 msgstr "改為上傳圖片"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:135
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "上傳徽標"
 
@@ -6977,7 +6993,7 @@ msgstr "您發行的代金券"
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "正在等待區塊鏈確認…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:220
 msgid "Waiting for blockchain confirmation…"
@@ -7004,6 +7020,8 @@ msgstr "正在等待鏈上確認…"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:132
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:156
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -7058,7 +7076,7 @@ msgstr "無法驗證此代金券是否已有發行量。"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
 msgid "Website"
@@ -7293,7 +7311,7 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 "details in your comment."
 msgstr "您的姓名和錢包地址不會顯示。請勿在評語中包含個人資訊。"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:403
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
 msgid "Your paper wallet"
 msgstr "您的紙錢包"
 

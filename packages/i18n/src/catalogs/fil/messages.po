@@ -361,6 +361,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "Tanggapin ang mga tuntunin upang i-publish ang inyong voucher"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
 msgstr "Account"
 
@@ -376,7 +378,7 @@ msgstr "Hindi naaprubahan ang account"
 msgid "Account not found"
 msgstr "Hindi natagpuan ang account"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:454
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:451
 msgid "Account registration failed."
 msgstr "Nabigo ang pagpaparehistro ng account."
 
@@ -384,7 +386,7 @@ msgstr "Nabigo ang pagpaparehistro ng account."
 #~ msgid "Activating on chain..."
 #~ msgstr "Pag-activate sa chain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:145
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:172
 msgid "Activating on chain…"
 msgstr "Pag-activate sa chain…"
 
@@ -392,7 +394,7 @@ msgstr "Pag-activate sa chain…"
 #~ msgid "Activating smart wallet..."
 #~ msgstr "Pag-activate ng smart wallet..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:147
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:174
 msgid "Activating smart wallet…"
 msgstr "Pag-activate ng smart wallet…"
 
@@ -705,9 +707,10 @@ msgstr "Naghihintay ng pag-apruba"
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:364
@@ -1327,7 +1330,7 @@ msgstr "Kumpirma at magpadala"
 msgid "Confirm Install or Add when asked."
 msgstr "Kumpirmahin ang I-install o I-add kapag hinihiling."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:141
 msgid "Confirm password"
 msgstr "Kumpirmahin ang password"
 
@@ -1350,6 +1353,7 @@ msgid "Confirmed"
 msgstr "Kumpirmado"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 msgid "Confirming"
 msgstr "Kinukumpirma"
 
@@ -1386,7 +1390,7 @@ msgstr "Nakakonektang address"
 #~ msgid "Connecting wallet..."
 #~ msgstr "Pagkonekta ng wallet..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:141
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:168
 msgid "Connecting wallet…"
 msgstr "Pagkonekta ng wallet…"
 
@@ -1402,7 +1406,7 @@ msgid "Connecting…"
 msgstr "Pagkakonekta..."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:136
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:320
 #: apps/web/src/routes/__root.tsx:229
 #: apps/web/src/routes/__root.tsx:260
 msgid "Connection failed."
@@ -1437,8 +1441,9 @@ msgstr "Telepono ng Kontak"
 msgid "Contact Website"
 msgstr "Website ng pakikipag-ugnayan"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1453,7 +1458,7 @@ msgstr "Magpatuloy sa browser"
 msgid "Continue to CLC"
 msgstr "Magpatuloy sa CLC"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
 msgid "Continue to wallet"
 msgstr "Magpatuloy sa wallet"
 
@@ -1461,7 +1466,7 @@ msgstr "Magpatuloy sa wallet"
 msgid "Continue with {providerLabel}"
 msgstr "Magpatuloy sa {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:490
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
 msgid "Continue with paper wallet"
 msgstr "Magpatuloy gamit ang papel na wallet"
 
@@ -1567,19 +1572,19 @@ msgstr "Hindi ma-import ang papel na wallet na ito."
 msgid "Could not load vouchers."
 msgstr "Hindi ma-load ang mga voucher."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
 msgid "Could not protect this paper wallet."
 msgstr "Hindi maprotektahan ang papel na wallet na ito."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:180
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
 msgid "Could not save the paper wallet. Try again."
 msgstr "Hindi ma-save ang papel na wallet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:218
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "Hindi ma-save ang napi-print na sheet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:238
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
 msgid "Could not share the paper wallet. Try downloading it instead."
 msgstr "Hindi maibahagi ang papel na wallet. Subukan na lang itong i-download."
 
@@ -2078,7 +2083,7 @@ msgstr "Ginagawa ang {0}…"
 #~ msgid "Creating account..."
 #~ msgstr "Ginagawa ang account..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 msgid "Creating account…"
 msgstr "Ginagawa ang account…"
 
@@ -2111,7 +2116,8 @@ msgstr "Hindi matukoy ang credit limit"
 msgid "Culture"
 msgstr "Kultura"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
 msgid "Customize"
 msgstr "I-customize"
 
@@ -2198,7 +2204,7 @@ msgstr "Ilarawan ang inyong pool"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:297
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
 msgid "Description"
@@ -2233,6 +2239,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "Ang pangalan ng display ay dapat na 120 character o mas mababa"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2245,12 +2253,12 @@ msgstr "Tapos na"
 msgid "Done with this customer"
 msgstr "Natapos na sa customer na ito"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:292
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
 msgid "Download card"
 msgstr "I-download ang card"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:436
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
 msgid "Download your paper wallet before continuing."
 msgstr "I-download ang inyong papel na wallet bago magpatuloy."
 
@@ -2462,7 +2470,7 @@ msgstr "Isulat ang halaga na suportado ng voucher na ito."
 msgid "Enter an exchange rate greater than zero"
 msgstr "Isulat ang rate ng palitan na higit sa zero"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:113
 msgid "Enter and apply a password before downloading this card."
 msgstr "I-enter at i-apply ang isang password bago i-download ang card na ito."
 
@@ -2507,7 +2515,7 @@ msgstr "Katumbas na halaga"
 msgid "Event details"
 msgstr "Mga detalye ng kaganapan"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 "way to sign in."
 msgstr "Ang bawat account ay nakukuha ng isang papel na wallet. Ang pag-link ng "
@@ -2632,7 +2640,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Ang pangalan ng file ay dapat 255 character o mas kaunti"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Ang file ay masyadong malaki ({0} KB). Ang maximum ay 512 KB."
 
@@ -2847,10 +2855,10 @@ msgid "I created {amountLabel}."
 msgstr "Ako ang lumikha ng {amountLabel}."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:424
-msgid "I have saved this key"
-msgstr "Na-save ko na ang key na ito"
+#~ msgid "I have saved this key"
+#~ msgstr "Na-save ko na ang key na ito"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:431
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "Na-save ko na ang key na ito. Kapag nawala ito, hindi na mare-recover "
 "ang aking wallet."
@@ -3064,10 +3072,10 @@ msgid "Link {0} file name"
 msgstr "Link {0} pangalan ng file"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
-msgid "Link {providerLabel}"
-msgstr "Link na {providerLabel}"
+#~ msgid "Link {providerLabel}"
+#~ msgstr "Link na {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
 msgid "Link {providerLabel}?"
 msgstr "I-link ang {providerLabel}?"
 
@@ -3108,7 +3116,7 @@ msgstr "Nakopya ang link"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "Link sa mga tuntunin na naaangkop sa voucher na ito"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:480
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
 msgid "Link wallet to {providerLabel}"
 msgstr "I-link ang wallet sa {providerLabel}"
 
@@ -3136,7 +3144,7 @@ msgstr "Gumagana ang pag-link ng passkey sa Safari o Chrome sa iPhone at sa "
 #~ msgstr "Pag-link ng passkey..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:166
 msgid "Linking passkey…"
 msgstr "Pag-link ng passkey..."
 
@@ -3341,7 +3349,7 @@ msgid "Location unavailable"
 msgstr "Hindi available ang lokasyon"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:268
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:668
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:232
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:662
@@ -3593,7 +3601,7 @@ msgstr "Kinakailangan ang pangalan"
 msgid "Name must be 80 characters or fewer"
 msgstr "Ang pangalan ay dapat 80 character o mas kaunti"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:84
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
 msgid "Name on wallet"
 msgstr "Pangalan sa wallet"
 
@@ -3605,6 +3613,8 @@ msgstr "Pangalan, simbolo o address"
 msgid "Natural building"
 msgstr "Likas na pagtatayo"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
@@ -4111,7 +4121,7 @@ msgstr "Buksan ang pahina ng voucher"
 #~ msgid "Opening paper wallet..."
 #~ msgstr "Binubuksan ang papel na wallet..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:149
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
 msgid "Opening paper wallet…"
 msgstr "Binubuksan ang papel na wallet…"
 
@@ -4187,7 +4197,8 @@ msgstr "Naisumite ang paglipat ng pagmamay-ari."
 msgid "Paid out"
 msgstr "Naibayad"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
 msgid "Paper wallet"
 msgstr "Papel na wallet"
 
@@ -4195,18 +4206,18 @@ msgstr "Papel na wallet"
 msgid "Paper Wallet"
 msgstr "Papel na Wallet"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:329
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
 msgid "Paper wallet card"
 msgstr "Card ng papel na wallet"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:111
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "Ang papel na wallet ay protektado. Panatilihin ang password na hiwalay "
 "sa card."
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
-msgid "Paper wallet only"
-msgstr "Papel na wallet lamang"
+#~ msgid "Paper wallet only"
+#~ msgstr "Papel na wallet lamang"
 
 #: apps/web/src/features/home/ui/report-page.tsx:418
 msgid "Participants"
@@ -4219,6 +4230,7 @@ msgstr "Ang mga kalahok ay dapat 100 character o mas kaunti"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 msgid "Passkey"
 msgstr "Passkey"
 
@@ -4227,7 +4239,7 @@ msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "Kinansela ang paggawa ng passkey. Hindi nabago ang inyong papel na "
 "wallet."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:143
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
 msgstr "Naka-link ang passkey"
 
@@ -4235,11 +4247,11 @@ msgstr "Naka-link ang passkey"
 #~ msgid "Passkey linked ... confirming on-chain..."
 #~ msgstr "Naka-link ang passkey... kinukumpirma on-chain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:164
 msgid "Passkey linked … confirming on-chain…"
 msgstr "Naka-link ang passkey… kinukumpirma on-chain…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:236
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:263
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Naka-link ang passkey, ngunit nabigo ang koneksyon ng wallet."
 
@@ -4248,11 +4260,11 @@ msgid "Passkey status could not be checked."
 msgstr "Hindi maaaring suriin ang kalagayan ng passkey."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:127
 msgid "Password"
 msgstr "Password"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Ang password ay hindi maaaring walang laman."
 
@@ -4261,7 +4273,7 @@ msgstr "Ang password ay hindi maaaring walang laman."
 msgid "Password-protected paper wallet"
 msgstr "Papel na wallet na protektado ng password"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Ang mga password ay hindi katugma."
 
@@ -4294,7 +4306,7 @@ msgstr "Resibo ng pagbabayad"
 msgid "Payment status unknown"
 msgstr "Hindi kilalang status ng pagbabayad"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:525
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:221
@@ -4649,8 +4661,8 @@ msgstr "Paghahanda ng inyong pag-alis..."
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Preparing…"
 msgstr "Naghahanda..."
 
@@ -4658,7 +4670,7 @@ msgstr "Naghahanda..."
 msgid "Present card to pay {armedAmount}"
 msgstr "Ilapit ang card upang magbayad ng {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "I-press at i-hold ang imahe sa ibaba, pagkatapos ay piliin ang Save "
 "Image."
@@ -4740,7 +4752,7 @@ msgstr "Pagpepresyo"
 msgid "Primary navigation"
 msgstr "Pangunahing pag-navigate"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:307
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
 msgid "Print"
 msgstr "I-print"
 
@@ -4762,11 +4774,11 @@ msgstr "Larawan sa profile"
 msgid "Profile updated"
 msgstr "Na-update ang profile"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:151
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
 msgstr "Protektahan ang papel na wallet"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
 msgid "Protect paper wallet with a password"
 msgstr "Protektahan ng password ang papel na wallet"
 
@@ -4774,7 +4786,7 @@ msgstr "Protektahan ng password ang papel na wallet"
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "Pinoprotektahan ang papel na wallet..."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:148
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protecting paper wallet…"
 msgstr "Pinoprotektahan ang papel na wallet…"
 
@@ -4845,7 +4857,7 @@ msgstr "Pag-publish..."
 msgid "Purple"
 msgstr "Purple"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:104
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:116
 msgid "QR currently contains the raw private key."
 msgstr "Ang QR ay kasalukuyang naglalaman ng raw private key."
 
@@ -4969,8 +4981,8 @@ msgid "Recipient username, pool name, phone or address"
 msgstr "Username, pangalan ng pool, telepono, o address ng tatanggap"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:92
-msgid "Recommended"
-msgstr "Inirerekomenda"
+#~ msgid "Recommended"
+#~ msgstr "Inirerekomenda"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:124
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:310
@@ -5134,7 +5146,7 @@ msgstr "Kinakailangan"
 msgid "Reset"
 msgstr "I-reset"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:156
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "I-reset ang logo"
 
@@ -5201,7 +5213,7 @@ msgstr "Retiro"
 msgid "Retry"
 msgstr "Subukang muli"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:479
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
 msgid "Retry {providerLabel} connection"
 msgstr "Subukan muli ang koneksyon ng {providerLabel}"
 
@@ -5245,11 +5257,11 @@ msgstr "I-save ang mga pagbabago"
 msgid "Save fee settings"
 msgstr "I-save ang mga setting ng bayarin"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:304
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
 msgid "Save printable A4 sheet"
 msgstr "I-save ang napi-print na A4 sheet"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:406
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
 msgid "Save this card securely. If you use a password, keep it separately. "
 "Anyone with an unprotected QR code can access the wallet."
 msgstr "Itago nang ligtas ang card na ito. Kung gumagamit kayo ng password, "
@@ -5259,6 +5271,10 @@ msgstr "Itago nang ligtas ang card na ito. Kung gumagamit kayo ng password, "
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
 msgstr "I-save ang username"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
+msgid "Save your card"
+msgstr "I-save ang inyong card"
 
 #~ msgid "Saved location unavailable"
 #~ msgstr "Hindi available ang naka-save na lokasyon"
@@ -5528,7 +5544,7 @@ msgstr "Sesyon"
 msgid "Session check failed"
 msgstr "Nabigo ang pagsusuri sa session"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:196
 msgid "Session could not be verified. Try again."
 msgstr "Hindi ma-verify ang session. Subukang muli."
 
@@ -5544,7 +5560,7 @@ msgstr "Magtakda ng tatanggap ng bayarin bago mangolekta; kung hindi, walang "
 #~ msgid "Setting up your wallet..."
 #~ msgstr "Pag-set up ng inyong wallet..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:519
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
 msgid "Setting up your wallet…"
 msgstr "Pag-set up ng inyong wallet…"
 
@@ -5562,7 +5578,7 @@ msgstr "Mga setting"
 msgid "Share"
 msgstr "Ibahagi"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Share card"
 msgstr "Ibahagi ang card"
 
@@ -5699,8 +5715,8 @@ msgid "Sign-in"
 msgstr "Pag-sign in"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
-msgid "Sign-in method"
-msgstr "Ang pamamaraan ng pag-sign-in"
+#~ msgid "Sign-in method"
+#~ msgstr "Ang pamamaraan ng pag-sign-in"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 #~ msgid "Sign-in methods"
@@ -5851,7 +5867,7 @@ msgstr "Mas maraming decimal place ang supply kaysa sa sinusuportahan ng "
 msgid "Supply must be greater than zero"
 msgstr "Dapat higit sa zero ang supply"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Hindi suportado ang mga file ng SVG. Gamitin ang PNG, JPEG, o WebP."
 
@@ -6649,8 +6665,8 @@ msgid "Update photo"
 msgstr "I-update ang larawan"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:150
-msgid "Update protected paper wallet"
-msgstr "I-update ang papel na wallet na protektado"
+#~ msgid "Update protected paper wallet"
+#~ msgstr "I-update ang papel na wallet na protektado"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
 msgid "Update required"
@@ -6681,7 +6697,7 @@ msgstr "I-upload ang Imahe"
 msgid "Upload Image Instead"
 msgstr "Mag-upload ng larawan sa halip"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:135
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "I-upload ang logo"
 
@@ -6993,7 +7009,7 @@ msgstr "Mga voucher na inisyu ninyo"
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "Naghihintay ng kumpirmasyon ng blockchain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:220
 msgid "Waiting for blockchain confirmation…"
@@ -7020,6 +7036,8 @@ msgstr "Naghihintay sa blockchain…"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:132
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:156
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -7077,7 +7095,7 @@ msgstr "Hindi namin ma-verify kung ang voucher na ito ay may supply na."
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
 msgid "Website"
@@ -7323,7 +7341,7 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 msgstr "Hindi ipapakita ang inyong pangalan at wallet address. Iwasang maglagay "
 "ng personal na detalye sa inyong komento."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:403
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
 msgid "Your paper wallet"
 msgstr "Ang inyong papel na wallet"
 

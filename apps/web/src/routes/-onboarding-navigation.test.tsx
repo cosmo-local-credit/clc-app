@@ -158,7 +158,7 @@ async function renderApp(initialEntries: string[]) {
               onClick={() =>
                 void navigate({
                   to: "/onboarding",
-                  search: onboardingSearch("method", redirect),
+                  search: onboardingSearch("contact", redirect),
                 })
               }
             >
@@ -176,9 +176,9 @@ async function renderApp(initialEntries: string[]) {
         );
       }
 
-      if (step === "method") {
+      if (step === "contact") {
         return (
-          <div data-testid="flow-method">
+          <div data-testid="flow-contact">
             <BackChevron
               label="Back"
               to="/onboarding"
@@ -193,7 +193,7 @@ async function renderApp(initialEntries: string[]) {
                 })
               }
             >
-              method-next
+              contact-next
             </button>
           </div>
         );
@@ -204,7 +204,7 @@ async function renderApp(initialEntries: string[]) {
           <BackChevron
             label="Back"
             to="/onboarding"
-            search={onboardingSearch("method", redirect)}
+            search={onboardingSearch("contact", redirect)}
           />
           <button
             type="button"
@@ -255,16 +255,16 @@ describe("onboarding history", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Create account" }));
     await screen.findByTestId("flow-profile");
     fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
-    await screen.findByTestId("flow-method");
-    fireEvent.click(screen.getByRole("button", { name: "method-next" }));
+    await screen.findByTestId("flow-contact");
+    fireEvent.click(screen.getByRole("button", { name: "contact-next" }));
     await screen.findByTestId("flow-card");
 
-    // Browser Back → method
+    // Browser Back → contact
     await act(async () => {
       history.back();
     });
-    await waitFor(() => expect(screen.getByTestId("flow-method")).toBeTruthy());
-    expect(history.location.href).toContain("step=method");
+    await waitFor(() => expect(screen.getByTestId("flow-contact")).toBeTruthy());
+    expect(history.location.href).toContain("step=contact");
 
     // Screen Back (BackChevron → history.back) → profile
     fireEvent.click(screen.getByRole("link", { name: "Back" }));
@@ -278,8 +278,8 @@ describe("onboarding history", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Create account" }));
     await screen.findByTestId("flow-profile");
     fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
-    await screen.findByTestId("flow-method");
-    fireEvent.click(screen.getByRole("button", { name: "method-next" }));
+    await screen.findByTestId("flow-contact");
+    fireEvent.click(screen.getByRole("button", { name: "contact-next" }));
     await screen.findByTestId("flow-card");
 
     fireEvent.click(screen.getByRole("button", { name: "finish" }));
@@ -303,7 +303,7 @@ describe("onboarding history", () => {
     expect(history.length).toBe(lengthBefore);
 
     fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
-    fireEvent.click(await screen.findByRole("button", { name: "method-next" }));
+    fireEvent.click(await screen.findByRole("button", { name: "contact-next" }));
     fireEvent.click(await screen.findByRole("button", { name: "finish" }));
 
     await waitFor(() => {

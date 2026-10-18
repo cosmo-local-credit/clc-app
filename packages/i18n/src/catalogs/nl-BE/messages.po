@@ -376,6 +376,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "Accepteer de voorwaarden om uw waardebon te publiceren"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
 msgstr "Account"
 
@@ -391,7 +393,7 @@ msgstr "Account niet goedgekeurd"
 msgid "Account not found"
 msgstr "Account niet gevonden"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:454
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:451
 msgid "Account registration failed."
 msgstr "De accountregistratie is mislukt."
 
@@ -399,7 +401,7 @@ msgstr "De accountregistratie is mislukt."
 #~ msgid "Activating on chain..."
 #~ msgstr "Activeren op de blockchain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:145
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:172
 msgid "Activating on chain…"
 msgstr "Activeren op de blockchain…"
 
@@ -407,7 +409,7 @@ msgstr "Activeren op de blockchain…"
 #~ msgid "Activating smart wallet..."
 #~ msgstr "Slimme portefeuille activeren..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:147
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:174
 msgid "Activating smart wallet…"
 msgstr "Slimme portefeuille activeren…"
 
@@ -721,9 +723,10 @@ msgstr "Wacht op goedkeuring"
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:364
@@ -1344,7 +1347,7 @@ msgstr "Bevestigen en verzenden"
 msgid "Confirm Install or Add when asked."
 msgstr "Bevestig 'Installeren' of 'Toevoegen' wanneer daarom wordt gevraagd."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:141
 msgid "Confirm password"
 msgstr "Wachtwoord bevestigen"
 
@@ -1367,6 +1370,7 @@ msgid "Confirmed"
 msgstr "Bevestigd"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 msgid "Confirming"
 msgstr "Bevestigen"
 
@@ -1403,7 +1407,7 @@ msgstr "Verbonden adres"
 #~ msgid "Connecting wallet..."
 #~ msgstr "Portefeuille verbinden..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:141
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:168
 msgid "Connecting wallet…"
 msgstr "Portefeuille verbinden…"
 
@@ -1419,7 +1423,7 @@ msgid "Connecting…"
 msgstr "Verbinden…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:136
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:320
 #: apps/web/src/routes/__root.tsx:229
 #: apps/web/src/routes/__root.tsx:260
 msgid "Connection failed."
@@ -1454,8 +1458,9 @@ msgstr "Telefoonnummer voor contact"
 msgid "Contact Website"
 msgstr "Website voor contact"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1470,7 +1475,7 @@ msgstr "Doorgaan in browser"
 msgid "Continue to CLC"
 msgstr "Doorgaan naar CLC"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
 msgid "Continue to wallet"
 msgstr "Doorgaan naar portefeuille"
 
@@ -1478,7 +1483,7 @@ msgstr "Doorgaan naar portefeuille"
 msgid "Continue with {providerLabel}"
 msgstr "Doorgaan met {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:490
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
 msgid "Continue with paper wallet"
 msgstr "Doorgaan met papieren portefeuille"
 
@@ -1585,20 +1590,20 @@ msgstr "Deze papieren portefeuille kon niet worden geïmporteerd."
 msgid "Could not load vouchers."
 msgstr "De waardebonnen konden niet worden geladen."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
 msgid "Could not protect this paper wallet."
 msgstr "Deze papieren portefeuille kon niet worden beveiligd."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:180
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
 msgid "Could not save the paper wallet. Try again."
 msgstr "De papieren portefeuille kon niet worden opgeslagen. Probeer het "
 "opnieuw."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:218
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "Het afdrukbare blad kon niet worden opgeslagen. Probeer het opnieuw."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:238
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
 msgid "Could not share the paper wallet. Try downloading it instead."
 msgstr "De papieren portefeuille kon niet worden gedeeld. Download deze in "
 "plaats daarvan."
@@ -2105,7 +2110,7 @@ msgstr "{0} aanmaken…"
 #~ msgid "Creating account..."
 #~ msgstr "Account aanmaken..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 msgid "Creating account…"
 msgstr "Account aanmaken…"
 
@@ -2138,7 +2143,8 @@ msgstr "Kredietlimiet onbekend"
 msgid "Culture"
 msgstr "Cultuur"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
 msgid "Customize"
 msgstr "Aanpassen"
 
@@ -2226,7 +2232,7 @@ msgstr "Beschrijf uw fonds"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:297
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
 msgid "Description"
@@ -2261,6 +2267,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "De weergavenaam mag maximaal 120 tekens bevatten"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2273,12 +2281,12 @@ msgstr "Gereed"
 msgid "Done with this customer"
 msgstr "Klaar met deze klant"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:292
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
 msgid "Download card"
 msgstr "Kaart downloaden"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:436
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
 msgid "Download your paper wallet before continuing."
 msgstr "Download uw papieren portefeuille voordat u doorgaat."
 
@@ -2492,7 +2500,7 @@ msgstr "Voer een bedrag in dat deze waardebon ondersteunt."
 msgid "Enter an exchange rate greater than zero"
 msgstr "Voer een wisselkoers groter dan nul in"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:113
 msgid "Enter and apply a password before downloading this card."
 msgstr "Voer een wachtwoord in en pas het toe voordat u deze kaart downloadt."
 
@@ -2538,7 +2546,7 @@ msgstr "Gelijke waarde"
 msgid "Event details"
 msgstr "Gebeurtenisgegevens"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 "way to sign in."
 msgstr "Elk account krijgt een papieren portefeuille. Door {providerLabel} te "
@@ -2666,7 +2674,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "De bestandsnaam mag maximaal 255 tekens bevatten"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Het bestand is te groot ({0} KB). Het maximum is 512 KB."
 
@@ -2884,10 +2892,10 @@ msgid "I created {amountLabel}."
 msgstr "Ik heb {amountLabel} uitgegeven."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:424
-msgid "I have saved this key"
-msgstr "Ik heb deze sleutel opgeslagen"
+#~ msgid "I have saved this key"
+#~ msgstr "Ik heb deze sleutel opgeslagen"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:431
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "Ik heb deze sleutel opgeslagen. Als ik deze verlies, kan mijn "
 "portefeuille niet worden hersteld."
@@ -3104,10 +3112,10 @@ msgid "Link {0} file name"
 msgstr "Bestandsnaam van link {0}"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
-msgid "Link {providerLabel}"
-msgstr "{providerLabel} koppelen"
+#~ msgid "Link {providerLabel}"
+#~ msgstr "{providerLabel} koppelen"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
 msgid "Link {providerLabel}?"
 msgstr "{providerLabel} koppelen?"
 
@@ -3148,7 +3156,7 @@ msgstr "Link gekopieerd"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "Link naar de voorwaarden die op deze waardebon van toepassing zijn"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:480
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
 msgid "Link wallet to {providerLabel}"
 msgstr "Portefeuille aan {providerLabel} koppelen"
 
@@ -3176,7 +3184,7 @@ msgstr "Het koppelen van een passkey werkt op een iPhone in Safari of Chrome en 
 #~ msgstr "Passkey koppelen..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:166
 msgid "Linking passkey…"
 msgstr "Passkey koppelen…"
 
@@ -3381,7 +3389,7 @@ msgid "Location unavailable"
 msgstr "Locatie niet beschikbaar"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:268
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:668
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:232
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:662
@@ -3646,7 +3654,7 @@ msgstr "Naam is verplicht"
 msgid "Name must be 80 characters or fewer"
 msgstr "De naam mag maximaal 80 tekens bevatten"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:84
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
 msgid "Name on wallet"
 msgstr "Naam op portefeuille"
 
@@ -3658,6 +3666,8 @@ msgstr "Naam, symbool of adres"
 msgid "Natural building"
 msgstr "Natuurlijk bouwen"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
@@ -4167,7 +4177,7 @@ msgstr "Waardebonpagina openen"
 #~ msgid "Opening paper wallet..."
 #~ msgstr "Papieren portefeuille openen..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:149
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
 msgid "Opening paper wallet…"
 msgstr "Papieren portefeuille openen…"
 
@@ -4244,7 +4254,8 @@ msgstr "Eigendomsoverdracht ingediend."
 msgid "Paid out"
 msgstr "Uitbetaald"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
 msgid "Paper wallet"
 msgstr "Papieren portefeuille"
 
@@ -4252,18 +4263,18 @@ msgstr "Papieren portefeuille"
 msgid "Paper Wallet"
 msgstr "Papieren portefeuille"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:329
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
 msgid "Paper wallet card"
 msgstr "Kaart voor papieren portefeuille"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:111
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "De papieren portefeuille is beveiligd. Bewaar het wachtwoord apart van "
 "de kaart."
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
-msgid "Paper wallet only"
-msgstr "Alleen papieren portefeuille"
+#~ msgid "Paper wallet only"
+#~ msgstr "Alleen papieren portefeuille"
 
 #: apps/web/src/features/home/ui/report-page.tsx:418
 msgid "Participants"
@@ -4276,6 +4287,7 @@ msgstr "Deelnemers mogen maximaal 100 tekens bevatten"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 msgid "Passkey"
 msgstr "Passkey"
 
@@ -4284,7 +4296,7 @@ msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "Het aanmaken van de passkey is geannuleerd. Uw papieren portefeuille is "
 "niet gewijzigd."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:143
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
 msgstr "Passkey gekoppeld"
 
@@ -4292,11 +4304,11 @@ msgstr "Passkey gekoppeld"
 #~ msgid "Passkey linked ... confirming on-chain..."
 #~ msgstr "Passkey gekoppeld ... bevestigen op de blockchain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:164
 msgid "Passkey linked … confirming on-chain…"
 msgstr "Passkey gekoppeld … bevestigen op de blockchain…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:236
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:263
 msgid "Passkey linked, but wallet connection failed."
 msgstr "De passkey is gekoppeld, maar de verbinding met de portefeuille is "
 "mislukt."
@@ -4306,11 +4318,11 @@ msgid "Passkey status could not be checked."
 msgstr "De passkeystatus kon niet worden gecontroleerd."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:127
 msgid "Password"
 msgstr "Wachtwoord"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Het wachtwoord mag niet leeg zijn."
 
@@ -4319,7 +4331,7 @@ msgstr "Het wachtwoord mag niet leeg zijn."
 msgid "Password-protected paper wallet"
 msgstr "Met wachtwoord beveiligde papieren portefeuille"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "De wachtwoorden komen niet overeen."
 
@@ -4352,7 +4364,7 @@ msgstr "Betalingsbewijs"
 msgid "Payment status unknown"
 msgstr "Betalingsstatus onbekend"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:525
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:221
@@ -4707,8 +4719,8 @@ msgstr "Uw opname voorbereiden…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Preparing…"
 msgstr "Voorbereiden…"
 
@@ -4716,7 +4728,7 @@ msgstr "Voorbereiden…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Houd de kaart voor om {armedAmount} te betalen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Houd de onderstaande afbeelding ingedrukt en kies vervolgens "
 "'Afbeelding opslaan'."
@@ -4804,7 +4816,7 @@ msgstr "Prijsstelling"
 msgid "Primary navigation"
 msgstr "Primaire navigatie"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:307
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
 msgid "Print"
 msgstr "Afdrukken"
 
@@ -4826,11 +4838,11 @@ msgstr "Profielfoto"
 msgid "Profile updated"
 msgstr "Profiel bijgewerkt"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:151
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
 msgstr "Papieren portefeuille beveiligen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
 msgid "Protect paper wallet with a password"
 msgstr "Papieren portefeuille met een wachtwoord beveiligen"
 
@@ -4838,7 +4850,7 @@ msgstr "Papieren portefeuille met een wachtwoord beveiligen"
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "Papieren portefeuille beveiligen..."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:148
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protecting paper wallet…"
 msgstr "Papieren portefeuille beveiligen…"
 
@@ -4909,7 +4921,7 @@ msgstr "Publiceren…"
 msgid "Purple"
 msgstr "Paars"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:104
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:116
 msgid "QR currently contains the raw private key."
 msgstr "De QR-code bevat momenteel de onbewerkte privésleutel."
 
@@ -5035,8 +5047,8 @@ msgid "Recipient username, pool name, phone or address"
 msgstr "Gebruikersnaam van ontvanger, fondsnaam, telefoonnummer of adres"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:92
-msgid "Recommended"
-msgstr "Aanbevolen"
+#~ msgid "Recommended"
+#~ msgstr "Aanbevolen"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:124
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:310
@@ -5201,7 +5213,7 @@ msgstr "Verplicht"
 msgid "Reset"
 msgstr "Opnieuw instellen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:156
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "Logo opnieuw instellen"
 
@@ -5269,7 +5281,7 @@ msgstr "Retraite"
 msgid "Retry"
 msgstr "Opnieuw proberen"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:479
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
 msgid "Retry {providerLabel} connection"
 msgstr "Verbinding met {providerLabel} opnieuw proberen"
 
@@ -5315,11 +5327,11 @@ msgstr "Wijzigingen bewaren"
 msgid "Save fee settings"
 msgstr "Kosteninstellingen bewaren"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:304
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
 msgid "Save printable A4 sheet"
 msgstr "Afdrukbaar A4-blad opslaan"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:406
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
 msgid "Save this card securely. If you use a password, keep it separately. "
 "Anyone with an unprotected QR code can access the wallet."
 msgstr "Bewaar deze kaart veilig. Als u een wachtwoord gebruikt, bewaar dit dan "
@@ -5329,6 +5341,10 @@ msgstr "Bewaar deze kaart veilig. Als u een wachtwoord gebruikt, bewaar dit dan 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
 msgstr "Gebruikersnaam bewaren"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
+msgid "Save your card"
+msgstr "Uw kaart opslaan"
 
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
@@ -5600,7 +5616,7 @@ msgstr "Sessie"
 msgid "Session check failed"
 msgstr "Sessiecontrole mislukt"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:196
 msgid "Session could not be verified. Try again."
 msgstr "De sessie kon niet worden geverifieerd. Probeer het opnieuw."
 
@@ -5617,7 +5633,7 @@ msgstr "Stel een ontvanger van kosten in voordat u kosten int, anders kan het "
 #~ msgid "Setting up your wallet..."
 #~ msgstr "Uw portefeuille instellen..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:519
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
 msgid "Setting up your wallet…"
 msgstr "Uw portefeuille instellen…"
 
@@ -5635,7 +5651,7 @@ msgstr "Instellingen"
 msgid "Share"
 msgstr "Delen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Share card"
 msgstr "Kaart delen"
 
@@ -5773,8 +5789,8 @@ msgid "Sign-in"
 msgstr "Aanmelden"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
-msgid "Sign-in method"
-msgstr "Aanmeldmethode"
+#~ msgid "Sign-in method"
+#~ msgstr "Aanmeldmethode"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 #~ msgid "Sign-in methods"
@@ -5926,7 +5942,7 @@ msgstr "De voorraad heeft meer decimalen dan deze waardebon ondersteunt"
 msgid "Supply must be greater than zero"
 msgstr "De voorraad moet groter zijn dan nul"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG-bestanden worden niet ondersteund. Gebruik PNG, JPEG of WebP."
 
@@ -6728,8 +6744,8 @@ msgid "Update photo"
 msgstr "Foto bijwerken"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:150
-msgid "Update protected paper wallet"
-msgstr "Beveiligde papieren portefeuille bijwerken"
+#~ msgid "Update protected paper wallet"
+#~ msgstr "Beveiligde papieren portefeuille bijwerken"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
 msgid "Update required"
@@ -6760,7 +6776,7 @@ msgstr "Afbeelding uploaden"
 msgid "Upload Image Instead"
 msgstr "In plaats daarvan een afbeelding uploaden"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:135
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "Logo uploaden"
 
@@ -7072,7 +7088,7 @@ msgstr "Door u uitgegeven waardebonnen"
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "Wachten op bevestiging door de blockchain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:220
 msgid "Waiting for blockchain confirmation…"
@@ -7099,6 +7115,8 @@ msgstr "Wachten op de blockchain…"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:132
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:156
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -7156,7 +7174,7 @@ msgstr "We konden niet verifiëren of deze waardebon al een voorraad heeft."
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
 msgid "Website"
@@ -7398,7 +7416,7 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 msgstr "Uw naam en portefeuilleadres worden niet weergegeven. Vermeld geen "
 "persoonlijke gegevens in uw opmerking."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:403
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
 msgid "Your paper wallet"
 msgstr "Uw papieren portefeuille"
 

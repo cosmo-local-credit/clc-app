@@ -4,12 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { generatePrivateKey } from "viem/accounts";
 
 import { isPasskeyPlatformAvailable } from "#/features/webauthn/hooks/use-platform-passkey-label";
-import {
-  onboardingSearch,
-  type OnboardingStep,
-  type WalletMethodChoice,
-} from "#/lib/onboarding-search";
-import { OnboardingMethodStep } from "./onboarding-method-step";
+import { onboardingSearch, type OnboardingStep } from "#/lib/onboarding-search";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
 const OnboardingWalletStep = lazy(() =>
@@ -19,7 +14,7 @@ const OnboardingWalletStep = lazy(() =>
 );
 
 type Props = {
-  step: Extract<OnboardingStep, "profile" | "contact" | "location" | "method" | "card">;
+  step: Extract<OnboardingStep, "profile" | "contact" | "location" | "card" | "save" | "link">;
   redirectTo?: string;
 };
 
@@ -37,8 +32,8 @@ function profileFingerprint(profile: ProfileInput): string {
 }
 
 /**
- * Signup half of onboarding: the profile's three pages, then the method and
- * card screens.
+ * Signup half of onboarding: the profile's three pages, then the paper
+ * wallet's three (protect, save, link).
  *
  * Steps are **pushed** into history so screen Back and native/browser Back
  * both use `history.back()`. Successful exit drains intermediate onboarding
@@ -59,7 +54,6 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
    * shared with @clc/core, which cannot name a File.
    */
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [walletMethod, setWalletMethod] = useState<WalletMethodChoice | null>(null);
   /** Fingerprint of the profile last successfully registered for this key. */
   const [registeredProfileFp, setRegisteredProfileFp] = useState<string | null>(null);
   const [passkeyAvailable] = useState(() => isPasskeyPlatformAvailable());
@@ -101,55 +95,39 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
     // no-op: route exitOnboarding runs when isAuthenticated flips
   }
 
-  // Method / card require a completed profile and photo. Deep links land on profile.
+  const walletPage = step === "card" || step === "save" || step === "link" ? step : null;
+
+  // The wallet pages require a completed profile and photo. Deep links land on profile.
   useEffect(() => {
-    if ((step === "method" || step === "card") && (!profileData || !avatarFile)) {
-      goReplace("profile");
-    }
-  }, [step, profileData, avatarFile, goReplace]);
+    if (walletPage && (!profileData || !avatarFile)) goReplace("profile");
+  }, [walletPage, profileData, avatarFile, goReplace]);
 
-  // Skip method when the platform cannot store passkeys.
+  // Link offers a passkey, which this platform cannot store.
   useEffect(() => {
-    if (step === "method" && profileData && avatarFile && !passkeyAvailable) {
-      setWalletMethod("paper");
-      goReplace("card");
-    }
-  }, [step, profileData, avatarFile, passkeyAvailable, goReplace]);
+    if (step === "link" && !passkeyAvailable) goReplace("save");
+  }, [step, passkeyAvailable, goReplace]);
 
-  if (step === "method" && profileData && avatarFile && passkeyAvailable) {
-    return (
-      <OnboardingMethodStep
-        redirectTo={redirectTo}
-        initialChoice={walletMethod ?? "link"}
-        onContinue={(choice) => {
-          setWalletMethod(choice);
-          ensurePrivateKey();
-          go("card");
-        }}
-      />
-    );
-  }
-
-  if (step === "card" && profileData && avatarFile) {
-    const totalSteps = passkeyAvailable ? 5 : 4;
-    const progressStep = passkeyAvailable ? 5 : 4;
-    const linkPasskey = passkeyAvailable && walletMethod !== "paper";
+  if (walletPage && profileData && avatarFile) {
     const privateKey = ensurePrivateKey();
     const currentFp = profileFingerprint(profileData);
     const backendRegistered = registeredProfileFp === currentFp;
 
+    // One element for the three pages, so the password, the saved card and
+    // any signup in progress survive moving between them.
     return (
       <Suspense fallback={<OnboardingStepFallback />}>
         <OnboardingWalletStep
+          page={walletPage}
+          onPage={go}
+          onReplace={goReplace}
           profileData={profileData}
           avatarFile={avatarFile}
           privateKey={privateKey}
           backendRegistered={backendRegistered}
           onBackendRegistered={() => setRegisteredProfileFp(currentFp)}
           redirectTo={redirectTo}
-          progressStep={progressStep}
-          progressTotal={totalSteps}
-          linkPasskey={linkPasskey}
+          progressTotal={passkeyAvailable ? 6 : 5}
+          linkPasskey={passkeyAvailable}
           onDone={finish}
         />
       </Suspense>
@@ -161,7 +139,7 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
     <OnboardingProfileForm
       page={step === "contact" || step === "location" ? step : "profile"}
       redirectTo={redirectTo}
-      progressTotal={passkeyAvailable ? 5 : 4}
+      progressTotal={passkeyAvailable ? 6 : 5}
       initialValues={profileData ?? undefined}
       initialAvatarFile={avatarFile}
       onPage={go}
@@ -176,13 +154,8 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
         }
         setProfileData(data);
         setAvatarFile(nextAvatarFile);
-        if (passkeyAvailable) {
-          go("method");
-        } else {
-          setWalletMethod("paper");
-          ensurePrivateKey();
-          go("card");
-        }
+        ensurePrivateKey();
+        go("card");
       }}
     />
   );

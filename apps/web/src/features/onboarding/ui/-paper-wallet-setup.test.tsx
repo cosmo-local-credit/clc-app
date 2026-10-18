@@ -184,7 +184,6 @@ describe("usePaperWalletSetup", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Customize"));
     fireEvent.change(screen.getByLabelText("Name on wallet"), {
       target: { value: "   " },
     });
@@ -377,7 +376,7 @@ describe("usePaperWalletSetup", () => {
     expect(onDownloaded).not.toHaveBeenCalled();
   });
 
-  it("includes the Customize disclosure in controls slot", () => {
+  it("includes the customization fields in controls slot", () => {
     render(
       <HookRenderer
         address={FAKE_ADDRESS}
@@ -386,6 +385,6 @@ describe("usePaperWalletSetup", () => {
         render={(s) => s.controls}
       />,
     );
-    expect(screen.getByText("Customize")).toBeTruthy();
+    expect(screen.getByLabelText("Name on wallet")).toBeTruthy();
   });
 });
