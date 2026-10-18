@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { FiLoader, FiLock, FiX } from "react-icons/fi";
+import { FiLock, FiX } from "react-icons/fi";
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -64,7 +64,8 @@ export function EncryptedPaperWalletImportForm({
         </div>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
+          tap
           aria-label={t`Close password-protected wallet import`}
           onClick={onCancel}
           disabled={decrypting}
@@ -96,13 +97,15 @@ export function EncryptedPaperWalletImportForm({
         </p>
       ) : null}
 
-      <Button type="submit" disabled={!passphrase.trim() || decrypting} className="h-11 w-full">
-        {decrypting ? (
-          <FiLoader className="me-2 size-4 animate-spin" />
-        ) : (
-          <FiLock className="me-2 size-4" />
-        )}
-        {decrypting ? t`Unlocking...` : t`Unlock and import`}
+      <Button
+        type="submit"
+        tap
+        disabled={!passphrase.trim()}
+        pending={decrypting}
+        className="w-full"
+      >
+        <FiLock className="size-4" />
+        {decrypting ? t`Unlocking…` : t`Unlock and import`}
       </Button>
     </form>
   );

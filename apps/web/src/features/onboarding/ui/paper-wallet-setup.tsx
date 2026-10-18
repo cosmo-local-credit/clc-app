@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FiDownload, FiLoader, FiPrinter, FiShare2 } from "react-icons/fi";
+import { FiDownload, FiPrinter, FiShare2 } from "react-icons/fi";
 
 import { Button } from "#/components/ui/button";
 import { PaperWalletCard } from "./paper-wallet-card";
@@ -69,6 +69,7 @@ export function usePaperWalletSetup({
   const [previewScale, setPreviewScale] = useState(PAPER_WALLET_PREVIEW_SCALE);
   const [downloading, setDownloading] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [shareSupported, setShareSupported] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   /** The rendered PNG, shown for long-press saving in an installed iOS PWA. */
@@ -223,7 +224,7 @@ export function usePaperWalletSetup({
 
   async function handleShare() {
     if (!cardRef.current) return;
-    setDownloading(true);
+    setSharing(true);
     setDownloadError(null);
     try {
       const { file } = await prepareCard();
@@ -237,10 +238,11 @@ export function usePaperWalletSetup({
         setDownloadError(t`Could not share the paper wallet. Try downloading it instead.`);
       }
     } finally {
-      setDownloading(false);
+      setSharing(false);
     }
   }
 
+  const busy = downloading || printing || sharing || downloadDisabled;
   const previewWidth = PAPER_WALLET_WIDTH * previewScale;
   const previewHeight = PAPER_WALLET_HEIGHT * previewScale;
 
@@ -278,46 +280,46 @@ export function usePaperWalletSetup({
 
   const downloadButton = (
     <div>
-      <div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
+      {/* Stacked: "Download card" beside Print outgrows a 360px row in French,
+          Dutch, Portuguese, Serbian and Ukrainian. */}
+      <div className="mt-4 flex flex-col gap-3">
         <Button
-          className="h-11 w-full"
+          tap
+          className="w-full"
           onClick={handleDownload}
-          disabled={downloading || printing || downloadDisabled}
+          disabled={busy}
+          pending={downloading}
           aria-label={t`Download card`}
         >
-          {downloading ? (
-            <FiLoader className="me-2 size-4 animate-spin" />
-          ) : (
-            <FiDownload className="me-2 size-4" />
-          )}
-          {downloading ? t`Preparing...` : t`Download card`}
+          <FiDownload className="size-4" />
+          {downloading ? t`Preparing…` : t`Download card`}
         </Button>
         <Button
           variant="outline"
-          className="h-11 px-4"
+          tap
+          className="w-full"
           onClick={() => void handlePrintSheet()}
-          disabled={downloading || printing || downloadDisabled}
+          disabled={busy}
+          pending={printing}
           aria-label={t`Save printable A4 sheet`}
         >
-          {printing ? (
-            <FiLoader className="me-2 size-4 animate-spin" />
-          ) : (
-            <FiPrinter className="me-2 size-4" />
-          )}
+          <FiPrinter className="size-4" />
           {t`Print`}
         </Button>
+        {shareSupported ? (
+          <Button
+            variant="outline"
+            tap
+            className="w-full"
+            onClick={() => void handleShare()}
+            disabled={busy}
+            pending={sharing}
+          >
+            <FiShare2 className="size-4" />
+            {sharing ? t`Preparing…` : t`Share card`}
+          </Button>
+        ) : null}
       </div>
-      {shareSupported ? (
-        <Button
-          variant="outline"
-          className="mt-3 h-11 w-full"
-          onClick={() => void handleShare()}
-          disabled={downloading || printing || downloadDisabled}
-        >
-          <FiShare2 className="me-2 size-4" />
-          {t`Share card`}
-        </Button>
-      ) : null}
       {downloadError ? <p className="text-destructive mt-2 text-xs">{downloadError}</p> : null}
       {savedCardUrl ? (
         <div className="mt-3 space-y-2 border border-border bg-card p-3">

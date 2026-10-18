@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ComponentProps,
   type ReactNode,
 } from "react";
 
@@ -41,7 +42,12 @@ type Layout = {
 
 const PeekContext = createContext<((element: HTMLElement | null) => void) | null>(null);
 
-export const MapSheetTitle = Drawer.Title;
+/** The sheet's title, styled as every other sheet title. */
+export function MapSheetTitle({ className, ...props }: ComponentProps<typeof Drawer.Title>) {
+  return (
+    <Drawer.Title className={cn("font-heading text-base font-semibold", className)} {...props} />
+  );
+}
 
 /**
  * The essentials at the top of the sheet. The smallest snap point is measured

@@ -5,9 +5,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { ReportSummary } from "@clc/api/features/reports/client";
 vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
-  AddToCatalogButton: ({ className, size }: { className?: string; size?: string }) =>
+  AddToCatalogButton: ({
+    className,
+    size,
+    tap,
+  }: {
+    className?: string;
+    size?: string;
+    tap?: boolean;
+  }) =>
     mocks.auth.isAuthenticated ? (
-      <button type="button" className={className} data-size={size}>
+      <button type="button" className={className} data-size={size} data-tap={tap}>
         Add to catalog
       </button>
     ) : null,
@@ -674,8 +682,9 @@ describe("VoucherDetailPage", () => {
     const actions = screen.getByLabelText("Voucher actions");
     expect(actions.textContent).toBe("GetSendRedeemDirectionsCallWebsiteAdd to catalog");
     const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
-    expect(addToCatalog.getAttribute("data-size")).toBe("sm");
-    expect(addToCatalog.className).toContain("h-9");
+    // Compact like the pills beside it, with the same padded 44px target.
+    expect(addToCatalog.getAttribute("data-size")).toBeNull();
+    expect(addToCatalog.getAttribute("data-tap")).toBe("true");
     expect(within(actions).getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
       `/market?scope=pools&out_voucher=${ADDRESS.toLowerCase()}`,
     );

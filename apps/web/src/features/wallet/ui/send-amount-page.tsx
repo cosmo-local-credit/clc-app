@@ -185,15 +185,16 @@ export function SendAmountPage({
           {/* Changing the recipient leaves the deposit: `returnPool` is not
               carried, because a send to someone else should end on the wallet
               rather than on a pool it never reached. */}
-          <button
-            type="button"
-            className="font-semibold text-primary text-xs hover:underline"
+          <Button
+            variant="link"
+            tap
+            className="-me-3"
             onClick={() => {
               void navigate({ to: "/wallet/send", search: { token: tokenParam } });
             }}
           >
             <Trans>Edit</Trans>
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -208,7 +209,7 @@ export function SendAmountPage({
           <>
             <TokenLogo token={selectedToken} size={30} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold">{selectedToken.symbol}</p>
+              <p className="text-sm font-semibold">{selectedToken.symbol}</p>
               <p className="text-muted-foreground text-xs">
                 <Trans>Balance {selectedToken.amount}</Trans>
               </p>
@@ -285,11 +286,11 @@ export function SendAmountPage({
             {!amount && !amountFocused ? (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-1/2 h-9 w-px -translate-x-1/2 -translate-y-1/2 animate-pulse bg-primary"
+                className="pointer-events-none absolute top-1/2 left-1/2 h-7 w-px -translate-x-1/2 -translate-y-1/2 animate-pulse bg-primary"
               />
             ) : null}
           </div>
-          <span className="text-[1.25rem] text-muted-foreground">{selectedToken?.symbol}</span>
+          <span className="text-xl text-muted-foreground">{selectedToken?.symbol}</span>
         </div>
         {unitValueLabel ? (
           <p
@@ -303,8 +304,8 @@ export function SendAmountPage({
         {selectedToken ? (
           <Button
             variant="secondary"
-            size="sm"
-            className="relative mt-3 h-8"
+            tap
+            className="mt-3"
             onClick={() => {
               if (selectedToken.balance) {
                 setAmount(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
@@ -328,7 +329,8 @@ export function SendAmountPage({
       <div className="flex-1" />
 
       <Button
-        className="h-11 w-full"
+        tap
+        className="w-full"
         disabled={!canSend || sendVoucher.isPending}
         onClick={() => setConfirmOpen(true)}
       >
@@ -430,9 +432,9 @@ function SendConfirmationSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Confirm send</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -470,12 +472,13 @@ function SendConfirmationSheet({
           ) : null}
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button className="h-11 w-full" disabled={isPending} onClick={() => void onConfirm()}>
+            <Button tap className="w-full" pending={isPending} onClick={() => void onConfirm()}>
               {isPending ? <Trans>Sending…</Trans> : <Trans>Confirm and send</Trans>}
             </Button>
             <Button
               variant="ghost"
-              className="h-11 w-full"
+              tap
+              className="w-full"
               disabled={isPending}
               onClick={() => onOpenChange(false)}
             >

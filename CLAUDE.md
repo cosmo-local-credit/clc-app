@@ -173,17 +173,67 @@ elevated against the background.
 | Element    | Size             | Weight | Letter-spacing |
 | ---------- | ---------------- | ------ | -------------- |
 | `h1`       | 1.75rem          | 700    | −0.025em       |
-| `h2`       | 1.375rem         | 600    | −0.02em        |
-| `h3`       | 1.125rem         | 600    | −0.015em       |
+| `h2`       | 1rem             | 600    | −0.01em        |
+| `h3`       | 0.875rem         | 600    | −0.01em        |
 | `body / p` | 0.9375rem (15px) | —      | —              |
+| `text-2xs` | 0.6875rem (11px) | —      | —              |
 
 Page titles use one locked mobile style everywhere: `h1` at 1.75rem, weight
 700, tight line height (`font-heading text-[1.75rem] font-bold leading-tight`).
 Do not mix page-title sizes such as `text-2xl` on one screen and base `h1` on
 another.
 
+Below the title there are two heading levels, both through `SectionHeading`
+(`#/components/ui/section-heading`); `as` sets the document level, never the
+look:
+
+| Level                   | Classes                                        | Example                     |
+| ----------------------- | ---------------------------------------------- | --------------------------- |
+| `variant="section"`     | `font-heading text-base font-semibold`         | Holdings, Reviews, Location |
+| `variant="group"`       | `font-heading text-sm font-semibold`           | Settings group labels       |
+| Sheet and dialog titles | 16px, the `SheetTitle` / `DialogTitle` default | Confirm send                |
+
+Do not restyle a sheet or dialog title at the call site; add layout classes
+only.
+
 No desktop heading sizes (`text-4xl`, `text-5xl`, `text-6xl`). On 360–430px
 the largest heading is the base `h1` (1.75rem).
+
+**One style per text role:**
+
+| Role                | Style                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| List-row title      | Inter `text-sm font-semibold`. No `font-bold`, `tracking-tight`, `font-heading`    |
+| List-row subtitle   | `text-xs text-muted-foreground`                                                    |
+| Field label         | `Field` (`#/components/ui/field`), or its classes `text-sm font-medium`            |
+| Helper text         | `text-xs text-muted-foreground`                                                    |
+| Field error         | `text-xs text-destructive`                                                         |
+| Boxed notice, alert | `text-sm`                                                                          |
+| Chip or badge       | `Badge` (`text-2xs font-semibold`); `size="sm"` in rows, `caps` for status         |
+| Numbers             | Locked to master's fonts; see below. Never Inter `tabular-nums` in their place     |
+| Mono                | Addresses, keys, hashes, code, version/SHA, confirmation codes, tickers, usernames |
+| Heading font        | Headings, avatar initials, and the balances and amounts listed below               |
+
+**Numbers keep the fonts master gave them** (locked: do not move a figure to
+Inter):
+
+- **Heading font, `font-semibold tracking-tight`:** a balance in a voucher or
+  token row (Wallet holdings and My Vouchers, All vouchers, the token picker)
+  and the amount being entered (`WalletAmountInput` at 1.375rem, Send's amount
+  at 2.5rem). The review average is `font-heading text-4xl font-bold`.
+- **Mono, `font-semibold` where it is the value of a row:** every other figure —
+  amounts in activity, transfer and receipt rows, rates (`1 X = n Y`), fees,
+  prices and order totals, quantities, liquidity and credit, KES and USD
+  amounts, dates and times, calling codes, image counters, and the inputs for
+  amounts, prices and fees. Keep `tabular-nums` only where master has it.
+- Plain Inter stays only on counts master draws that way: result counts,
+  step progress, "n of m" limits, tag counts, star tallies, file sizes.
+
+No arbitrary `text-[…]` size except the 1.75rem title and the two amount
+entries above, nothing from `text-3xl` up except decorative initials and the
+review average, and no `tracking-tight` on Inter. Positive tracking lives only
+in `Badge caps`. `apps/web/src/lib/-ui-contract.test.ts` enforces the sizes and
+the number fonts; an exception goes in its allowlist with a reason.
 
 The type sizes above are **`apps/web` only**. `apps/admin` uses the same font
 trio but an ops-console scale (`h1` 1.5rem / `h2` 1.25rem / `h3` 1.125rem,
@@ -241,8 +291,27 @@ background.
 stays only for genuinely circular shapes — status dots, radio marks, avatars,
 the 56 px receipt status badges, and the progress bar.
 
-**Touch targets:** Primary CTA buttons `h-11` (44 px — iOS HIG minimum).
-Inputs use default `h-9`; don't override with `h-11`.
+**Buttons:** one height for text buttons, never set by className.
+
+- `default` is 36px with a 12px label, for every text button, full-width ones
+  included: form submits and save bars, sheet and dialog confirm/cancel pairs,
+  Send, Swap, Install, the Create account / I already have an account fork,
+  Retry, Edit, Load more, Max, and the Wallet's Create pool/voucher/catalog.
+  Pass `tap` to pad the hit area to 44px without taking the space.
+- `size="lg"` is 44px with a 14px label, kept only where a button stands
+  beside a 44px control and must match it: Credit and Sign in in the market
+  search row, and the pool's three quick actions. The contract test holds it
+  to those files.
+- `size="tile"` is the 56px icon-over-label tile, for the Wallet's Send,
+  Receive and Cash only: the screen's main doors earn the extra height.
+- `icon` / `icon-lg` are the 36 and 44px squares. Toggle has the same sizes.
+- No `h-*`, `size-*` or `min-h-*` class on a `Button` or `Toggle`; the
+  contract test fails on one. Inputs keep the default `h-9`.
+- A button that awaits the network, the chain, an upload or a signature passes
+  `pending`: the shared `Spinner` (`#/components/ui/spinner`) leads, the button
+  is disabled and `aria-busy`, and the caller keeps its "Saving…" label. Other
+  waits use the same `Spinner`. `FiLoader`, `ImSpinner2`, `LoaderCircle` and
+  `Loader2` are lint-banned.
 
 **Surface colors — always distinguish from background:**
 
@@ -256,6 +325,11 @@ Inputs use default `h-9`; don't override with `h-11`.
 
 Never use `bg-background` or `bg-transparent` for interactive elements (inputs,
 buttons) placed on the gray page background — they become invisible.
+
+A white control — outline `Button`, outline `Toggle`, unselected tag chip —
+draws its edge in `border-foreground/25`, so it still reads on a white sheet.
+`styles.css` sets `border-color` only inside `@layer base`: an unlayered one
+outranks every border utility, and the contract test fails on it.
 
 **Wallet amount inputs:** New or migrated transactional amount controls use
 `WalletAmountInput` from `#/components/wallet`. The component owns the square

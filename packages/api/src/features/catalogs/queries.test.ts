@@ -41,6 +41,7 @@ describe("catalog cache", () => {
     const pools = [{ chainId: 100, address: `0x${"A".repeat(40)}` }];
     const options = catalogsInfiniteQueryOptions(client, {
       scope: "nearby:account:100:1:2:500",
+      nearby: true,
       q: " maize ",
       tags: ["Food"],
       tagMatch: "all",
@@ -50,6 +51,7 @@ describe("catalog cache", () => {
     expect(options.queryKey).toEqual(
       catalogKeys.list({
         scope: "nearby:account:100:1:2:500",
+        nearby: true,
         q: " maize ",
         tags: ["Food"],
         tagMatch: "all",
@@ -99,4 +101,13 @@ describe("catalog cache", () => {
     expect(queryClient.getQueryData(catalogKeys.detail("1"))).toEqual(catalog);
     expect(invalidate).toHaveBeenCalled();
   });
+});
+
+it("does not infer request credentials from cache identity", async () => {
+  const list = vi.fn().mockResolvedValue({ catalogs: [], nextCursor: null });
+  const client = { list } as unknown as CatalogsClient;
+  const options = catalogsInfiniteQueryOptions(client, { scope: "nearby:arbitrary-label" });
+  const signal = new AbortController().signal;
+  await options.queryFn?.({ pageParam: undefined, signal } as never);
+  expect(list).toHaveBeenCalledWith(expect.objectContaining({ nearby: false }), signal);
 });

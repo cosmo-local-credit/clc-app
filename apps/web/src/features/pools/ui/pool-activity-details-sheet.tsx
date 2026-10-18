@@ -91,9 +91,9 @@ export function PoolActivityDetailsSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="max-h-[85svh] overflow-y-auto rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="max-h-[85svh] overflow-y-auto [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">{kind}</Badge>
+            <Badge caps>{kind}</Badge>
             <SheetTitle className="sr-only">
               <Trans>Pool activity details</Trans>
             </SheetTitle>
@@ -103,10 +103,7 @@ export function PoolActivityDetailsSheet({
             <div className="space-y-3 px-6 pb-2">
               <div className="border border-border bg-card">
                 <DetailRow label={t`Status`}>
-                  <Badge
-                    variant={entry.success ? "primary" : "muted"}
-                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
-                  >
+                  <Badge variant={entry.success ? "primary" : "muted"} size="sm" caps>
                     {entry.success ? t`Confirmed` : t`Failed`}
                   </Badge>
                 </DetailRow>
@@ -218,9 +215,9 @@ export function PoolActivityDetailsSheet({
                   {settlement.canLoad ? (
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="h-9 bg-card"
-                      onClick={() => settlement.refetch()}
+                      tap
+                      pending={settlement.isFetching}
+                      onClick={() => void settlement.refetch()}
                     >
                       <Trans>Try again</Trans>
                     </Button>
@@ -231,7 +228,7 @@ export function PoolActivityDetailsSheet({
           ) : null}
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button asChild className="h-11 w-full">
+            <Button asChild tap className="w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
                 <Trans>View on block explorer</Trans>
               </a>

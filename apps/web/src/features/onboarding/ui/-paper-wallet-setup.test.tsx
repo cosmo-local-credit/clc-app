@@ -264,6 +264,34 @@ describe("usePaperWalletSetup", () => {
     expect(mockAnchorClick).not.toHaveBeenCalled();
   });
 
+  it("shows the card's progress on Share card, not on Download card", async () => {
+    let finishExport: ((blob: Blob) => void) | undefined;
+    mockExport.mockImplementationOnce(
+      () =>
+        new Promise<Blob>((resolve) => {
+          finishExport = resolve;
+        }),
+    );
+    setShareSupport(vi.fn().mockResolvedValue(undefined));
+    renderDownload();
+
+    const shareButton = screen.getByRole("button", { name: /share card/i });
+    const downloadButton = screen.getByRole("button", { name: /download card/i });
+    fireEvent.click(shareButton);
+
+    expect(shareButton.textContent).toContain("Preparing");
+    expect(downloadButton.textContent).toContain("Download card");
+    expect(downloadButton.textContent).not.toContain("Preparing");
+    expect((downloadButton as HTMLButtonElement).disabled).toBe(true);
+
+    await act(async () => {
+      finishExport?.(new Blob(["png"], { type: "image/png" }));
+    });
+
+    expect(shareButton.textContent).toContain("Share card");
+    expect((downloadButton as HTMLButtonElement).disabled).toBe(false);
+  });
+
   it("shows the rendered card for long-press saving in an installed iOS app", async () => {
     setInstalledApp(true);
 

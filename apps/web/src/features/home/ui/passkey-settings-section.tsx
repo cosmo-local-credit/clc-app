@@ -1,12 +1,15 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useState } from "react";
 import { RiFingerprintLine } from "react-icons/ri";
 
-import { Badge } from "#/components/ui/badge";
+import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
+import { SettingsSheet, SettingsSheetAlert } from "#/components/ui/settings-sheet";
 import { useLinkPasskey } from "#/features/webauthn/hooks/use-link-passkey";
 
 /**
- * Settings' "Sign-in methods": the account's passkey as clc-core records it.
+ * Settings' Passkey row: the account's passkey as clc-core records it, its
+ * status as the row's value, and the explanation, error and action in a sheet.
  *
  * "Google" / "Apple ID" is only the label of the platform prompt the device
  * will show; what gets linked is a platform passkey, not an OAuth account.
@@ -19,9 +22,9 @@ export function PasskeySettingsSection({
   isSigningOut: boolean;
 }) {
   const { t } = useLingui();
+  const [open, setOpen] = useState(false);
   const passkey = useLinkPasskey(address);
   const { state } = passkey;
-  const disabled = passkey.busy || isSigningOut;
   const { platformLabel } = passkey;
 
   let description: string | null = null;
@@ -106,59 +109,76 @@ export function PasskeySettingsSection({
 
   const canLink = state.kind === "available" && passkey.isPaperSession && passkey.supported;
   const canSwitch = state.kind === "linked-here" && passkey.isPaperSession;
+  const canRetryStatus = state.kind === "unavailable";
+  const shownDescription = passkey.busy ? busyLabel : description;
+  // "Checking…" is all loading can say, and a passkey linked here in a passkey
+  // session has nothing to add, so neither opens a sheet.
+  const hasDetail =
+    state.kind !== "loading" &&
+    Boolean(shownDescription || errorText || canRetryStatus || canLink || canSwitch);
+  // Adjusted during render rather than in an effect, so a sheet left open
+  // when its detail runs out starts closing in the same commit.
+  if (open && !hasDetail) setOpen(false);
 
   return (
-    <section aria-labelledby="sign-in-methods-title" className="space-y-3">
-      <h2 id="sign-in-methods-title">
-        <Trans>Sign-in methods</Trans>
-      </h2>
-      <div className="border border-border bg-card p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center bg-muted text-foreground">
-              <RiFingerprintLine className="size-5" aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-medium text-sm">
-                <Trans>Passkey</Trans>
-              </p>
-              <p className="mt-1 text-muted-foreground text-xs empty:hidden" aria-live="polite">
-                {passkey.busy ? busyLabel : description}
-              </p>
-            </div>
-          </div>
-          {badge ? (
-            <Badge variant={badge.linked ? "primary" : "muted"} className="self-center">
-              {badge.label}
-            </Badge>
-          ) : null}
-        </div>
-      </div>
-
-      {errorText ? (
-        <p role="alert" className="text-destructive text-xs">
-          {errorText}
+    <>
+      <ActionRow
+        icon={<RiFingerprintLine className="size-4" aria-hidden="true" />}
+        label={t`Passkey`}
+        value={badge?.label}
+        valueTone={badge?.linked ? "primary" : "default"}
+        onClick={hasDetail ? () => setOpen(true) : undefined}
+      />
+      <SettingsSheet
+        open={open}
+        onOpenChange={setOpen}
+        title={t`Passkey`}
+        footer={
+          canRetryStatus || canLink || canSwitch ? (
+            <>
+              {canRetryStatus ? (
+                <Button
+                  variant="outline"
+                  tap
+                  className="w-full"
+                  pending={passkey.retryingStatus}
+                  onClick={passkey.retryStatus}
+                >
+                  <Trans>Try again</Trans>
+                </Button>
+              ) : null}
+              {canLink ? (
+                <Button
+                  tap
+                  className="w-full"
+                  onClick={passkey.link}
+                  disabled={isSigningOut}
+                  pending={passkey.busy}
+                >
+                  <RiFingerprintLine aria-hidden="true" />
+                  {passkey.busy ? <Trans>Linking passkey…</Trans> : <Trans>Link a passkey</Trans>}
+                </Button>
+              ) : null}
+              {canSwitch ? (
+                <Button
+                  tap
+                  className="w-full"
+                  onClick={passkey.retryConnection}
+                  disabled={isSigningOut}
+                  pending={passkey.busy}
+                >
+                  {passkey.busy ? <Trans>Connecting…</Trans> : <Trans>Retry connection</Trans>}
+                </Button>
+              ) : null}
+            </>
+          ) : null
+        }
+      >
+        <p className="text-muted-foreground text-sm empty:hidden" aria-live="polite">
+          {shownDescription}
         </p>
-      ) : null}
-
-      {state.kind === "unavailable" ? (
-        <Button variant="outline" className="h-11 w-full" onClick={passkey.retryStatus}>
-          <Trans>Try again</Trans>
-        </Button>
-      ) : null}
-
-      {canLink ? (
-        <Button className="h-11 w-full" onClick={passkey.link} disabled={disabled}>
-          <RiFingerprintLine className="me-2 size-4" aria-hidden="true" />
-          {passkey.busy ? <Trans>Linking passkey…</Trans> : <Trans>Link a passkey</Trans>}
-        </Button>
-      ) : null}
-
-      {canSwitch ? (
-        <Button className="h-11 w-full" onClick={passkey.retryConnection} disabled={disabled}>
-          {passkey.busy ? <Trans>Connecting…</Trans> : <Trans>Retry connection</Trans>}
-        </Button>
-      ) : null}
-    </section>
+        {errorText ? <SettingsSheetAlert>{errorText}</SettingsSheetAlert> : null}
+      </SettingsSheet>
+    </>
   );
 }

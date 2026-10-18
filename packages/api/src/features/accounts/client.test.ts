@@ -99,26 +99,6 @@ describe("account token balances", () => {
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
-
-  it("fetches issued vouchers with the same cursor pagination", async () => {
-    const fetcher = mockFetch({ ok: true, result: { tokens: null, first: 0, last: 0 } });
-    vi.stubGlobal("fetch", fetcher);
-
-    const result = await api.getAccountIssuedTokens({
-      address: LOWERCASE_ACCOUNT,
-      perPage: 100,
-      cursor: 7,
-      next: true,
-    });
-
-    expect(result.tokens).toEqual([]);
-    expect(fetcher).toHaveBeenCalledWith(
-      expect.stringContaining(
-        `/api/v2/accounts/${ACCOUNT}/tokens/issued?perPage=100&cursor=7&next=true`,
-      ),
-      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
-    );
-  });
 });
 
 describe("account status", () => {

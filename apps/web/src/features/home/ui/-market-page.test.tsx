@@ -35,6 +35,9 @@ type MapProps = {
 };
 
 const {
+  missingLocation,
+  authState,
+  creditFeedback,
   cameraResult,
   vouchersResult,
   detailResult,
@@ -51,6 +54,9 @@ const {
   selection,
   poolsResult,
 } = vi.hoisted(() => ({
+  missingLocation: { current: false },
+  authState: { current: { isAuthenticated: false, isLoading: false, session: null } },
+  creditFeedback: { current: false },
   poolsResult: {
     current: [] as MarketPoolLocation[],
     error: null as Error | null,
@@ -127,7 +133,7 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: false, session: null }),
+  useAuthStatus: () => authState.current,
 }));
 
 vi.mock("wagmi", () => ({
@@ -146,6 +152,7 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
 }));
 
 vi.mock("#/components/creditable-browse-control", () => ({
+  hasCreditFeedback: () => creditFeedback.current,
   CreditableBrowseControl: ({
     part,
     onChange,
@@ -164,6 +171,12 @@ vi.mock("#/components/creditable-browse-control", () => ({
       </button>
     </div>
   ),
+}));
+
+vi.mock("#/components/nearby-catalog", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("#/components/nearby-catalog")>()),
+  useNearbyCatalogMissingLocation: () => missingLocation.current,
+  MissingLocationNotice: () => <div role="status">Choose a location</div>,
 }));
 
 vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
@@ -378,6 +391,9 @@ function renderPage(node: ReactNode = <MarketPage />) {
 }
 
 beforeEach(() => {
+  missingLocation.current = false;
+  authState.current = { isAuthenticated: false, isLoading: false, session: null };
+  creditFeedback.current = false;
   window.localStorage.clear();
   mockRequestLocation.mockReset();
   mockRetry.mockReset();
@@ -423,6 +439,8 @@ beforeEach(() => {
 
 describe("MarketPage location button", () => {
   it("writes and clears Credit without leaving the canonical map route", () => {
+    authState.current = { ...authState.current, isAuthenticated: true };
+    creditFeedback.current = true;
     renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "control Credit on" }));
@@ -473,16 +491,21 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("places the shared app menu inside the search shell and sign-in below it", () => {
-    renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
+  it("puts the menu, the search field with its joined filters, and Sign in on one row", () => {
+    renderPage();
 
-    expect(screen.getByTestId("app-menu")).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("inset-x-4");
-    expect(
-      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("top-[calc(env(safe-area-inset-top)+9rem)]");
+    const menu = screen.getByRole("button", { name: "Open menu" });
+    const search = screen.getByRole("button", { name: "Search the marketplace" });
+    const filters = screen.getByRole("button", { name: "Filters" });
+    const signIn = screen.getByRole("link", { name: "Sign in" });
+
+    expect(menu.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(search.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(filters.compareDocumentPosition(signIn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The field and the filter button share one outlined box.
+    expect(search.closest(".border")?.contains(filters)).toBe(true);
+    expect(signIn.getAttribute("href")).toBe("/onboarding?step=welcome");
+    expect(screen.queryByText("Sign in or sign up")).toBeNull();
   });
 
   it("does not request a private profile for guests, or hand the menu a location action", () => {
@@ -1097,8 +1120,8 @@ describe("MarketPage filtering", () => {
     expect(lastMapProps.current?.fitBounds).toBeNull();
   });
 
-  it("shows the filter summary with a way to clear and a way to edit", () => {
-    routeSearch.current = { q: "art" };
+  it("shows the query in the search field and the tag count on the filter button", () => {
+    routeSearch.current = { q: "art", tags: "Art,Food" };
     filteredResult.current = {
       ...filteredResult.current,
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
@@ -1106,32 +1129,11 @@ describe("MarketPage filtering", () => {
 
     render(<MarketPage />);
 
-    expect(screen.getByText("\u201cart\u201d")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
-    const edit = screen.getByRole("link", { name: "Edit filters" });
-    expect(edit.getAttribute("href")).toContain("/market");
-    expect(edit.getAttribute("href")).toContain("q=art");
-  });
-
-  it("hides the summary when nothing is filtered", () => {
-    render(<MarketPage />);
-
-    expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
-  });
-
-  it("keeps the filter summary after removing Browse all", () => {
-    routeSearch.current = { q: "art", tags: "Art" };
-    filteredResult.current = {
-      ...filteredResult.current,
-      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
-    };
-
-    render(<MarketPage />);
-
-    const summary = screen.getByRole("link", { name: "Edit filters" });
-    expect(summary.textContent).toContain("“art”");
-    expect(summary.textContent).toContain("1 tag");
-    expect(screen.queryByRole("link", { name: "Browse all" })).toBeNull();
+    expect(screen.getByRole("button", { name: /^Search the marketplace/ }).textContent).toBe(
+      "Search the marketplace art",
+    );
+    expect(screen.getByRole("button", { name: "Filters" }).textContent).toContain("2");
+    expect(screen.queryByRole("link", { name: "Edit filters" })).toBeNull();
   });
 
   it("distinguishes a filtered-empty map from an empty catalog", () => {
@@ -1156,6 +1158,38 @@ describe("MarketPage filtering", () => {
 
     expect(screen.queryByText("No marketplace results match this search.")).toBeNull();
     expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
+  });
+});
+
+describe("MarketPage notices", () => {
+  it("shows one notice at a time, the Credit feedback first", () => {
+    authState.current = { ...authState.current, isAuthenticated: true };
+    creditFeedback.current = true;
+    vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
+
+    render(<MarketPage />);
+
+    expect(screen.getByTestId("credit-feedback")).toBeTruthy();
+    expect(screen.queryByText("Could not load vouchers.")).toBeNull();
+  });
+
+  it("asks for a profile location in the notice slot and keeps the map", () => {
+    missingLocation.current = true;
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+
+    render(<MarketPage />);
+
+    expect(screen.getByRole("status").textContent).toBe("Choose a location");
+    expect(screen.getByTestId("marker-1")).toBeTruthy();
+  });
+
+  it("puts the list badges under the bar and no Map button over the map", () => {
+    render(<MarketPage />);
+
+    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
+      "/market?scope=pools",
+    );
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 });
 

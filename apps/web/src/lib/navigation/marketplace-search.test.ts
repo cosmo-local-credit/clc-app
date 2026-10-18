@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   canonicalMarketplaceSearch,
-  isAtMarketplaceRoot,
+  mapSearchFrom,
   marketplaceSearchForScope,
   parseMarketplaceScope,
   pickMarketplaceSearch,
@@ -65,10 +65,16 @@ describe("marketplace route search", () => {
     });
   });
 
-  it("treats only the unfiltered All list as the bottom-navigation root", () => {
-    expect(isAtMarketplaceRoot({})).toBe(true);
-    expect(isAtMarketplaceRoot({ scope: "offers" })).toBe(false);
-    expect(isAtMarketplaceRoot({ q: "bike" })).toBe(false);
-    expect(isAtMarketplaceRoot({ creditable: false })).toBe(false);
+  it("carries only the query, tags and Credit back to the map", () => {
+    expect(
+      mapSearchFrom({
+        scope: "pools",
+        q: "bike",
+        tags: "Repair",
+        tagMatch: "all",
+        creditable: true,
+        out_voucher: `0x${"a".repeat(40)}`,
+      }),
+    ).toEqual({ q: "bike", tags: "Repair", tagMatch: "all", creditable: true });
   });
 });

@@ -7,6 +7,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CatalogRow } from "#/components/catalogs/catalog-row";
 import {
+  MissingLocationNotice,
   NearbyCatalog,
   isWithinNearbyCatalog,
   nearbyQueryPolicy,
@@ -16,14 +17,15 @@ import {
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
-import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
+import { MarketBar } from "#/components/market-bar";
+import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { useCatalogFilter } from "#/lib/navigation/use-catalog-filter";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogsPage({
   creditableSearch,
@@ -31,8 +33,8 @@ export function CatalogsPage({
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 }) {
   return (
-    <NearbyCatalog>
-      <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-bottom-nav">
+    <NearbyCatalog allowMissingLocation>
+      <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-market-list">
         <h1 className="sr-only">
           <Trans>Catalogs</Trans>
         </h1>
@@ -59,7 +61,8 @@ function CatalogList({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const query = useInfiniteQuery({
     ...catalogsInfiniteQueryOptions(catalogsClient, {
-      scope,
+      scope: scope?.nearby ? scope.scope : undefined,
+      nearby: scope?.nearby === true,
       q: search.result.ok ? search.result.filter.term : "",
       tags: search.result.ok ? search.result.filter.tags : [],
       tagMatch: search.result.ok ? search.result.filter.tagMatch : "any",
@@ -71,13 +74,14 @@ function CatalogList({
   const catalogs = query.data?.pages.flatMap((page) => page.catalogs) ?? [];
   // The backend's nearby endpoint is itself the complete 1,000 km result.
   // Narrower device preferences refine that nearest-first stream locally.
-  const narrowingFilter = filter?.radiusKm === 1_000 ? undefined : filter;
+  const narrowingFilter = scope?.nearby === true && filter?.radiusKm === 1_000 ? undefined : filter;
   const visibleCatalogs = narrowingFilter
     ? catalogs.filter((catalog) =>
         isWithinNearbyCatalog(narrowingFilter, { lat: catalog.geoLat, lng: catalog.geoLng }),
       )
     : catalogs;
   const crossedDistanceBoundary =
+    scope?.nearby === true &&
     narrowingFilter !== undefined &&
     catalogs.some(
       (catalog) =>
@@ -88,10 +92,11 @@ function CatalogList({
     : null;
   return (
     <div className="space-y-3">
-      <MarketplaceSearchShell
+      <MarketBar
         current="catalogs"
         className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-        search={<CatalogSearchField filter={search} label={t`Search catalogs`} />}
+        filter={search}
+        searchLabel={t`Search catalogs`}
         credit={
           <CreditableBrowseControl
             part="control"
@@ -118,13 +123,14 @@ function CatalogList({
             title={<Trans>Filter catalogs</Trans>}
             facetTitle={<Trans>Tags</Trans>}
             showHeader={false}
-            trigger="marketplace-icon"
+            trigger="bar"
             open={filtersOpen}
             onOpenChange={setFiltersOpen}
             onApply={search.setFacets}
           />
         }
       />
+      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}
@@ -184,16 +190,19 @@ function CatalogList({
           <Trans>No catalogs are available through your Credit pools.</Trans>
         </p>
       ) : credit.blocksResults ? null : query.isPending ? (
-        <p role="status">
-          <Trans>Loading…</Trans>
-        </p>
+        <ListSkeleton shape="cards" label={<Trans>Loading…</Trans>} />
       ) : null}
       {!credit.blocksResults && query.isError ? (
         <div className="space-y-2">
           <p role="alert">
             <Trans>Couldn't load catalogs.</Trans>
           </p>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -211,11 +220,12 @@ function CatalogList({
       {!credit.blocksResults && query.hasNextPage && !crossedDistanceBoundary ? (
         <Button
           variant="outline"
-          className="h-11 w-full bg-card"
-          disabled={query.isFetchingNextPage}
+          tap
+          className="w-full"
+          pending={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >
-          <Trans>Load more</Trans>
+          {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>
       ) : null}
     </div>

@@ -130,13 +130,15 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
           onRetry={() => {
             void transfersQuery.refetch();
           }}
+          retrying={transfersQuery.isFetching}
           onSelect={handleSelectRecipient}
         />
       ) : null}
 
       <Button
         variant="outline"
-        className="mb-3 h-11 w-full justify-between"
+        tap
+        className="mb-3 w-full justify-between"
         onClick={() => setAddressBookOpen(true)}
       >
         <span className="inline-flex items-center gap-2">
@@ -153,8 +155,10 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
       <div className="flex-1" />
 
       <Button
-        className="mt-2.5 h-11 w-full"
-        disabled={!recipient || upsertRecipient.isPending}
+        tap
+        className="mt-2.5 w-full"
+        disabled={!recipient}
+        pending={upsertRecipient.isPending}
         onClick={() => {
           void handleContinue();
         }}
@@ -177,12 +181,14 @@ function RecentRecipients({
   pending,
   failed,
   onRetry,
+  retrying,
   onSelect,
 }: {
   recipients: readonly Recipient[];
   pending: boolean;
   failed: boolean;
   onRetry: () => void;
+  retrying: boolean;
   onSelect: (recipient: Recipient) => void;
 }) {
   if (!pending && !failed && recipients.length === 0) return null;
@@ -202,13 +208,7 @@ function RecentRecipients({
           <p role="alert" className="text-destructive text-sm">
             <Trans>Couldn't load activity.</Trans>
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={onRetry}
-          >
+          <Button type="button" variant="outline" tap pending={retrying} onClick={onRetry}>
             <Trans>Try again</Trans>
           </Button>
         </div>

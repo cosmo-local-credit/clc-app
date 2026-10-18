@@ -84,7 +84,7 @@ export function ReceivePage() {
               onClick={() => copy(username, true)}
             >
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-muted-foreground text-[0.625rem]">
+                <span className="text-muted-foreground text-xs">
                   <Trans>Username</Trans>
                 </span>
                 <span dir="auto" className="truncate font-mono text-muted-foreground text-xs">
@@ -104,13 +104,13 @@ export function ReceivePage() {
             onClick={() => copy(address)}
           >
             <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[0.625rem]">
+              <span className="text-muted-foreground text-xs">
                 <Trans>{chainName} address</Trans>
               </span>
               <HighlightAddress
                 address={address}
                 tailLength={6}
-                className="min-w-0 break-all text-[0.625rem] leading-tight"
+                className="min-w-0 break-all text-xs"
               />
             </span>
             <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -132,7 +132,7 @@ export function ReceivePage() {
       {/* Collecting from a card is its own operation — the payer's card signs a
           transfer to this wallet — not this address QR delivered over NFC. */}
       {nfcSupported && address ? (
-        <Button asChild variant="outline" className="mb-2 h-11 w-full">
+        <Button asChild variant="outline" tap className="mb-2 w-full">
           <Link to="/wallet/collect">
             <TbNfc className="size-4" aria-hidden="true" />
             <Trans>Collect by card</Trans>
@@ -143,14 +143,15 @@ export function ReceivePage() {
       <div className="flex gap-2">
         <Button
           variant="outline"
-          className="h-11 flex-1"
+          tap
+          className="flex-1"
           disabled={!address}
           onClick={() => address && copy(address)}
         >
           <RiFileCopyLine className="size-4" aria-hidden="true" />
           <Trans>Copy</Trans>
         </Button>
-        <Button className="h-11 flex-1" disabled={!address} onClick={() => void share()}>
+        <Button tap className="flex-1" disabled={!address} onClick={() => void share()}>
           <RiShareLine className="size-4" aria-hidden="true" />
           <Trans>Share</Trans>
         </Button>

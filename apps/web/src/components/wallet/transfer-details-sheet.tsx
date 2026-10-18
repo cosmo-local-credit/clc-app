@@ -102,9 +102,9 @@ export function TransferDetailsSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="max-h-[85svh] overflow-y-auto rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="max-h-[85svh] overflow-y-auto [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">{badge}</Badge>
+            <Badge caps>{badge}</Badge>
             <SheetTitle className="sr-only">
               <Trans>Transaction details</Trans>
             </SheetTitle>
@@ -117,10 +117,7 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Status</Trans>
                   </span>
-                  <Badge
-                    variant={transfer.success ? "primary" : "muted"}
-                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
-                  >
+                  <Badge variant={transfer.success ? "primary" : "muted"} size="sm" caps>
                     {status}
                   </Badge>
                 </div>
@@ -190,7 +187,7 @@ export function TransferDetailsSheet({
             {transfer?.success && transfer.txHash ? (
               <ShareReceiptButton
                 key={transfer.txHash}
-                className="h-11 w-full"
+                className="w-full"
                 title={created ? t`Voucher creation receipt` : t`Payment receipt`}
                 lines={[
                   created
@@ -211,7 +208,7 @@ export function TransferDetailsSheet({
                 url={explorerUrl}
               />
             ) : null}
-            <Button asChild className="h-11 w-full">
+            <Button asChild tap className="w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
                 <Trans>View on block explorer</Trans>
               </a>

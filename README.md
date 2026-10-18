@@ -21,7 +21,6 @@ vp test
 
 The web app runs on `http://localhost:3000` during development.
 
-
 ## Common commands
 
 | Command             | Description                         |

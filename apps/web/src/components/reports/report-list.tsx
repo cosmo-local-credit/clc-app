@@ -73,7 +73,7 @@ export function ReportList({
             )}
 
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="line-clamp-1 font-heading text-sm font-semibold leading-snug [overflow-wrap:anywhere]">
+              <span className="line-clamp-1 text-sm font-semibold leading-snug [overflow-wrap:anywhere]">
                 {report.title}
               </span>
 
@@ -84,13 +84,12 @@ export function ReportList({
                       key={tag}
                       tag={tag}
                       labelClassName="block min-w-0 truncate"
-                      className="h-5 min-w-0 max-w-20 shrink overflow-hidden px-1.5 text-[0.625rem]"
+                      size="sm"
+                      className="min-w-0 max-w-20 shrink overflow-hidden"
                     />
                   ))}
                   {extraTags > 0 ? (
-                    <span className="shrink-0 text-muted-foreground text-[0.625rem]">
-                      +{extraTags}
-                    </span>
+                    <span className="shrink-0 text-muted-foreground text-2xs">+{extraTags}</span>
                   ) : null}
                 </span>
               ) : null}
@@ -110,7 +109,8 @@ export function ReportList({
                       <Badge
                         key={voucher.address}
                         variant="outline"
-                        className="h-full min-w-0 max-w-20 truncate px-1.5 font-mono text-[0.625rem] text-info"
+                        size="sm"
+                        className="min-w-0 max-w-20 truncate font-mono text-info"
                       >
                         {voucher.symbol}
                       </Badge>
@@ -118,7 +118,8 @@ export function ReportList({
                     {extraVouchers > 0 ? (
                       <Badge
                         variant="outline"
-                        className="h-full px-1.5 font-mono text-[0.625rem] text-muted-foreground"
+                        size="sm"
+                        className="font-mono text-muted-foreground"
                       >
                         {extraVouchers}+
                       </Badge>

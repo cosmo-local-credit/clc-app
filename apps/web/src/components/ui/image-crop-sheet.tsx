@@ -137,9 +137,9 @@ export function ImageCropSheet({
     <SheetRoot open={file !== null} onOpenChange={(next) => !next && onCancel()}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="border-border bg-background rounded-none border-t shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Frame your photo</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -253,8 +253,10 @@ export function ImageCropSheet({
             <div className="mt-5 flex flex-col gap-2">
               <Button
                 type="button"
-                className="h-11 w-full"
-                disabled={!source || working}
+                tap
+                className="w-full"
+                disabled={!source}
+                pending={working}
                 onClick={() => void useThisPhoto()}
               >
                 {working ? t`Preparing…` : t`Use photo`}
@@ -262,7 +264,8 @@ export function ImageCropSheet({
               <Button
                 type="button"
                 variant="outline"
-                className="bg-card h-11 w-full"
+                tap
+                className="w-full"
                 disabled={working}
                 onClick={onCancel}
               >

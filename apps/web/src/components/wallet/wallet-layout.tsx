@@ -2,6 +2,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { RiArrowLeftLine } from "react-icons/ri";
 
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { cn } from "#/lib/utils";
 
 export function BackChevron({
@@ -88,9 +89,7 @@ export function SectionHeader({
 }) {
   return (
     <div className={cn("mb-2 flex items-center justify-between gap-3", className)}>
-      <h2 id={id} className="font-heading font-semibold text-base">
-        {title}
-      </h2>
+      <SectionHeading id={id}>{title}</SectionHeading>
       {action ? (
         actionTo ? (
           <Link

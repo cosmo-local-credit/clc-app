@@ -64,7 +64,7 @@ export function ReviewEditor({
     >
       {kind === "review" ? (
         <fieldset disabled={pending}>
-          <legend className="mb-1 text-sm font-semibold">
+          <legend className="mb-1.5 font-medium text-sm">
             <Trans>Your rating</Trans>
           </legend>
           <div className="flex gap-1">
@@ -94,7 +94,7 @@ export function ReviewEditor({
         </fieldset>
       ) : null}
       <div>
-        <label htmlFor={id} className="mb-1 block text-sm font-semibold">
+        <label htmlFor={id} className="mb-1.5 block font-medium text-sm">
           {kind === "review"
             ? t`Comment (optional)`
             : kind === "reply"
@@ -134,14 +134,17 @@ export function ReviewEditor({
           {error}
         </p>
       ) : null}
-      <div className="flex gap-2">
+      {/* Stacked: German's "Send report" and "Cancel" outgrow one 360px row. */}
+      <div className="flex flex-col gap-2">
         <Button
           type="submit"
-          disabled={pending || (kind === "review" ? stars === 0 : !text.trim())}
+          tap
+          disabled={kind === "review" ? stars === 0 : !text.trim()}
+          pending={pending}
         >
           {pending ? t`Saving…` : kind === "flag" ? t`Send report` : t`Save`}
         </Button>
-        <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
+        <Button type="button" variant="outline" tap disabled={pending} onClick={onCancel}>
           <Trans>Cancel</Trans>
         </Button>
       </div>

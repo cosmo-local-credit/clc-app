@@ -56,7 +56,7 @@ export function CountrySheet({ open, onClose, mode, value, onChange }: CountrySh
         <SheetBackdrop />
         <SheetContent className="h-[50dvh] max-h-[50dvh]" initialFocus={false}>
           <SheetHeader>
-            <SheetTitle className="font-semibold text-base">
+            <SheetTitle>
               {mode === "phone-country" ? "Select country code" : "Select country"}
             </SheetTitle>
           </SheetHeader>

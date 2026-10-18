@@ -1,3 +1,4 @@
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -83,7 +84,9 @@ export function VoucherDetailPage({
   const detailAddress = baseToken?.contractAddress ?? voucherAddress;
   const detailQuery = useMarketVoucherDetail(detailAddress);
   const detail = detailQuery.data;
-  const distanceOrigin = useDiscoveryDistanceOrigin(holdingsAddress ?? "voucher-detail");
+  const distanceOrigin = useDiscoveryDistanceOrigin(
+    holdingsAddress?.toLowerCase() ?? GUEST_STORAGE_OWNER,
+  );
   const distanceTarget =
     typeof (detail?.lat ?? baseToken?.lat) === "number" &&
     typeof (detail?.lng ?? baseToken?.lng) === "number"
@@ -129,9 +132,9 @@ export function VoucherDetailPage({
       <VoucherShell back={back} message={t`Couldn't load this voucher.`}>
         <Button
           variant="outline"
-          size="sm"
-          className="bg-card"
-          onClick={() => detailQuery.refetch()}
+          tap
+          pending={detailQuery.isFetching}
+          onClick={() => void detailQuery.refetch()}
         >
           {t`Retry`}
         </Button>

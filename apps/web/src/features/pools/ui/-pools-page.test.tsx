@@ -290,7 +290,7 @@ describe("pools list", () => {
 
     const trigger = screen.getByRole("button", { name: "Filters" });
     expect(trigger.className).toContain("size-11");
-    expect(trigger.className).toContain("bg-destructive");
+    expect(trigger.getAttribute("data-variant")).toBe("ghost");
     expect(trigger.textContent).toBe("");
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });
@@ -309,7 +309,16 @@ describe("pools list", () => {
     fireEvent.click(await within(sheet).findByRole("button", { name: /Food/ }));
     expect(navigate).not.toHaveBeenCalled();
 
-    fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
+    // Apply and Reset stand as tall as the Wallet's create buttons, and Reset
+    // carries the brand's outline rather than a plain white one.
+    const apply = within(sheet).getByRole("button", { name: "Apply filters" });
+    const reset = within(sheet).getByRole("button", { name: "Reset" });
+    expect(apply.getAttribute("data-size")).toBe("default");
+    expect(reset.getAttribute("data-size")).toBe("default");
+    expect(reset.className).toContain("border-primary!");
+    expect(reset.className).toContain("text-primary");
+
+    fireEvent.click(apply);
     expect(navigate).toHaveBeenCalledTimes(1);
     expect(JSON.parse(window.localStorage.getItem(POOLS_FILTER_KEY) ?? "null")).toEqual({
       tags: ["Food"],
@@ -337,14 +346,6 @@ describe("pools list", () => {
     expect(screen.queryByRole("link", { name: "Create" })).toBeNull();
   });
 
-  it("sizes the search field with the default input height", async () => {
-    mockPoolsList();
-    renderWithQueryClient(<PoolsPage />);
-
-    const search = await screen.findByLabelText("Search pools");
-    expect(search.className).not.toContain("h-11");
-  });
-
   it("shows each pool's own curated tags on the row", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
@@ -355,12 +356,20 @@ describe("pools list", () => {
     expect(within(row as HTMLElement).getByText("Growing")).toBeTruthy();
   });
 
-  it("has a search field that is no longer read-only", async () => {
+  it("searches pools from the search screen the field opens", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
+    await screen.findByText("Trade Pool");
 
-    const search = (await screen.findByLabelText("Search pools")) as HTMLInputElement;
-    expect(search.readOnly).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "Search pools" }));
+    const dialog = screen.getByRole("dialog", { name: "Search pools" });
+    fireEvent.change(within(dialog).getByRole("searchbox", { name: "Search pools" }), {
+      target: { value: "trade" },
+    });
+    fireEvent.submit(within(dialog).getByRole("search"));
+
+    expect(screen.queryByRole("dialog", { name: "Search pools" })).toBeNull();
+    expect(screen.getByRole("button", { name: /Search pools/ }).textContent).toContain("trade");
   });
 });
 
@@ -411,7 +420,8 @@ describe("creditable pools", () => {
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
     expect(screen.getByText("Empty Pool")).toBeTruthy();
     expect(screen.getByText("Solo Pool")).toBeTruthy();
-    expect(screen.getByText("3 pools")).toBeTruthy();
+    // Nothing narrows the list, so it carries no count.
+    expect(screen.queryByText("3 pools")).toBeNull();
   });
 
   it("writes Credit on to the URL when the unchecked control is selected", async () => {

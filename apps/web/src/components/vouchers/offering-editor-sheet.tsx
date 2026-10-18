@@ -118,9 +118,9 @@ export function OfferingEditorSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+        <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               {offering ? <Trans>Edit offering</Trans> : <Trans>Add offering</Trans>}
             </SheetTitle>
           </SheetHeader>
@@ -382,7 +382,7 @@ function OfferingForm({
       <SheetFooter>
         {/* Disabled while the photo uploads, or submit would persist the URL the
             form held before the new file finished. */}
-        <Button type="submit" className="h-11 w-full" disabled={saving || photoBusy}>
+        <Button type="submit" tap className="w-full" pending={saving || photoBusy}>
           {photoBusy ? (
             <Trans>Uploading photo…</Trans>
           ) : saving ? (
@@ -396,7 +396,8 @@ function OfferingForm({
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          tap
+          className="w-full"
           disabled={saving}
           onClick={onClose}
         >
@@ -451,7 +452,7 @@ function Field({
       </label>
       {children}
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-xs">
           {error}
         </p>
       ) : null}

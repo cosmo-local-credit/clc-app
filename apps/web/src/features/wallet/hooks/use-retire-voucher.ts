@@ -4,6 +4,7 @@ import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { catalogKeys } from "@clc/api/features/catalogs/queries";
 import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { ownedVoucherKeys } from "@clc/api/features/vouchers/owned-queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
@@ -42,6 +43,7 @@ export function useRetireVoucher(address: string) {
           predicate: (query) => query.queryKey[2] !== "detail",
         }),
         queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: ownedVoucherKeys.all }),
       ]);
     },
   });

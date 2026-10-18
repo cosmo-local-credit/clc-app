@@ -121,10 +121,10 @@ export const MARKDOWN_TRANSFORMERS: Transformer[] = TRANSFORMERS;
  * the screen title is the page's only real `h1`.
  */
 const editorTheme: EditorThemeClasses = {
-  code: "my-3 block overflow-x-auto whitespace-pre-wrap border border-border bg-muted p-3 font-mono text-[0.8125rem] leading-5",
+  code: "my-3 block overflow-x-auto whitespace-pre-wrap border border-border bg-muted p-3 font-mono text-sm leading-5",
   heading: {
-    h1: "mt-4 font-heading text-[1.125rem] font-semibold leading-snug",
-    h2: "mt-4 font-heading text-[1.125rem] font-semibold leading-snug",
+    h1: "mt-4 font-heading text-lg font-semibold leading-snug",
+    h2: "mt-4 font-heading text-lg font-semibold leading-snug",
     h3: "mt-3 font-heading text-base font-semibold leading-snug",
     h4: "mt-3 font-heading text-sm font-semibold leading-snug",
     h5: "mt-3 font-heading text-sm font-semibold leading-snug",
@@ -141,7 +141,7 @@ const editorTheme: EditorThemeClasses = {
   quote: "my-2 border-s-2 border-border ps-3 text-muted-foreground",
   text: {
     bold: "font-semibold",
-    code: "bg-muted px-1 py-0.5 font-mono text-[0.8125rem]",
+    code: "bg-muted px-1 py-0.5 font-mono text-sm",
     italic: "italic",
     strikethrough: "line-through",
   },
@@ -583,14 +583,14 @@ function MarkdownToolbar({ disabled }: { disabled: boolean }) {
               applyLink();
             }}
           />
-          <Button type="button" size="lg" onClick={applyLink} disabled={!isLinkableUrl(linkUrl)}>
+          <Button type="button" tap onClick={applyLink} disabled={!isLinkableUrl(linkUrl)}>
             <Trans>Apply</Trans>
           </Button>
           {state.link ? (
             <Button
               type="button"
-              size="lg"
               variant="outline"
+              tap
               onClick={() => {
                 editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
                 setLinkOpen(false);
@@ -632,7 +632,7 @@ function ToolbarButton({
       // Pressed has to read as more than hovered — the shared `Toggle` gives
       // both the same muted fill — because on a toolbar it is state, not
       // feedback.
-      className="size-11 shrink-0 data-[pressed]:bg-primary/10 data-[pressed]:text-primary"
+      className="data-[pressed]:bg-primary/10 data-[pressed]:text-primary"
       onMouseDown={(event) => event.preventDefault()}
       onPressedChange={onPress}
     >

@@ -11,24 +11,20 @@ import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
-import { MarketListPage } from "./market-list-page";
 import { MarketPage } from "./market-page";
-import { OnboardingBanner } from "./onboarding-banner";
 import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
-import { isPrivateHomeTab, type HomeTab, type MarketView } from "#/lib/navigation/home-tabs";
+import { isPrivateHomeTab, type HomeTab } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
 
 export type HomePageProps = {
   activeTab?: HomeTab;
-  marketView?: MarketView;
   isAuthenticated?: boolean;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
 };
 
 export function HomePage({
   activeTab = "market",
-  marketView = "map",
   isAuthenticated = true,
   creditableSearch,
 }: HomePageProps) {
@@ -83,20 +79,12 @@ export function HomePage({
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        <NearbyCatalog>
-          {marketView === "map" ? (
-            <MarketPage
-              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-              isAuthenticated={isAuthenticated}
-              locationOwner={locationOwner}
-              creditableSearch={creditableSearch}
-            />
-          ) : (
-            <MarketListPage
-              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-              locationOwner={locationOwner}
-            />
-          )}
+        <NearbyCatalog allowMissingLocation>
+          <MarketPage
+            isAuthenticated={isAuthenticated}
+            locationOwner={locationOwner}
+            creditableSearch={creditableSearch}
+          />
         </NearbyCatalog>
       ) : (
         <div className="min-h-[100svh] pb-bottom-nav">

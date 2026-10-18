@@ -45,10 +45,12 @@ export function ReportFilterFeedback({
   filter,
   error,
   onRetry,
+  retrying,
 }: {
   filter: PersistedCatalogFilterControls;
   error: Error | null;
   onRetry: () => void;
+  retrying: boolean;
 }) {
   const { t } = useLingui();
 
@@ -82,7 +84,12 @@ export function ReportFilterFeedback({
         onAction: filter.clear,
       };
     }
-    return { message: t`Couldn't load posts.`, actionLabel: t`Try again`, onAction: onRetry };
+    return {
+      message: t`Couldn't load posts.`,
+      actionLabel: t`Try again`,
+      onAction: onRetry,
+      actionPending: retrying,
+    };
   })();
 
   if (!notice) return null;
@@ -91,7 +98,12 @@ export function ReportFilterFeedback({
     <div className="space-y-3 border border-border bg-card p-4" role="alert">
       <p className="text-muted-foreground text-sm">{notice.message}</p>
       {notice.actionLabel && notice.onAction ? (
-        <Button variant="outline" size="sm" className="h-9 bg-card" onClick={notice.onAction}>
+        <Button
+          variant="outline"
+          tap
+          pending={"actionPending" in notice && notice.actionPending}
+          onClick={notice.onAction}
+        >
           {notice.actionLabel}
         </Button>
       ) : null}

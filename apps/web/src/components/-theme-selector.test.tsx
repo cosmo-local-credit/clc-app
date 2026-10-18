@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("#/components/ui/select", () => ({
@@ -23,7 +23,7 @@ vi.mock("#/components/ui/select", () => ({
   ),
 }));
 
-const { ThemeSelector, ThemeToggle } = await import("./theme-selector");
+const { ThemeSelector, ThemeSettingsRow, ThemeSettingsButton } = await import("./theme-selector");
 const { useThemeStore, THEME_STORAGE_KEY } = await import("#/providers/theme");
 
 function mockPrefersColorScheme(dark: boolean) {
@@ -67,7 +67,10 @@ describe("ThemeSelector", () => {
   });
 });
 
-describe("ThemeToggle", () => {
+describe.each([
+  ["row", ThemeSettingsRow],
+  ["icon button", ThemeSettingsButton],
+] as const)("Theme settings %s", (variant, Control) => {
   beforeEach(() => {
     window.localStorage.clear();
     document.documentElement.classList.remove("dark");
@@ -75,24 +78,19 @@ describe("ThemeToggle", () => {
     mockPrefersColorScheme(false);
   });
 
-  it("renders unpressed in light mode", () => {
-    render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: /toggle theme/i });
-    expect(button.getAttribute("aria-pressed")).toBe("false");
-  });
+  it("shows the current theme, applies a choice from its sheet and closes", async () => {
+    render(<Control />);
+    const row = screen.getByRole("button", { name: /theme/i });
+    if (variant === "row") expect(row.textContent).toContain("Light");
 
-  it("switches to dark and persists when pressed", () => {
-    render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole("button", { name: /toggle theme/i }));
+    fireEvent.click(row);
+    const sheet = within(await screen.findByRole("dialog", { name: "Theme" }));
+    expect(sheet.getByRole("radio", { name: "Light" }).getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(sheet.getByRole("radio", { name: "Dark" }));
+
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
-  });
-
-  it("reflects a stored dark preference as pressed", () => {
-    window.localStorage.setItem(THEME_STORAGE_KEY, "dark");
-    render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: /toggle theme/i });
-    expect(button.getAttribute("aria-pressed")).toBe("true");
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    if (variant === "row") expect(row.textContent).toContain("Dark");
   });
 });

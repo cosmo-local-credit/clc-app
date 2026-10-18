@@ -15,18 +15,11 @@ describe("accountKeys", () => {
       accountKeys.latestTokens(ADDRESS),
       accountKeys.tokens(ADDRESS, 20),
       accountKeys.tokensInfinite(ADDRESS, 20),
-      accountKeys.issuedTokensInfinite(ADDRESS, 20),
       accountKeys.transfers(ADDRESS, 20),
       accountKeys.transfersInfinite(ADDRESS, 20),
     ]) {
       expect(key.slice(0, accountKeys.all.length)).toEqual([...accountKeys.all]);
     }
-  });
-
-  it("keeps an account's issued vouchers apart from its balances", () => {
-    expect(accountKeys.issuedTokensInfinite(ADDRESS, 20)).not.toEqual(
-      accountKeys.tokensInfinite(ADDRESS, 20),
-    );
   });
 
   it("gives finite and infinite reads distinct keys", () => {

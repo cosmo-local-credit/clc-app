@@ -4,10 +4,16 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { useState, type ReactNode } from "react";
+import { fireEvent, act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
-import { NearbyCatalog, isWithinNearbyCatalog, useNearbyCatalog } from "./nearby-catalog";
+import {
+  MissingLocationNotice,
+  NearbyCatalog,
+  isWithinNearbyCatalog,
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+} from "./nearby-catalog";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
@@ -35,6 +41,12 @@ const state = vi.hoisted(() => ({
     retry: vi.fn(),
   },
   profile: { data: { geoLat: 0, geoLng: 0 }, isPending: false, isError: false, refetch: vi.fn() },
+  camera: {
+    realFix: null as { lat: number; lng: number } | null,
+    locationStatus: "idle",
+    requestLocation: vi.fn(),
+  },
+  ip: { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false },
   market: vi.fn(),
   pools: vi.fn(),
   reports: vi.fn(),
@@ -42,6 +54,14 @@ const state = vi.hoisted(() => ({
   filteredPools: vi.fn(),
   filteredReports: vi.fn(),
 }));
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: () => ({
+    ...state.camera,
+    origin: state.camera.realFix ?? (state.ip.data.source === "ip-city" ? state.ip.data : null),
+    ipPending: state.ip.isPending,
+  }),
+}));
+vi.mock("#/features/home/hooks/use-ip-camera", () => ({ useIPCamera: () => state.ip }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => state.auth }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => state.profile }));
 vi.mock("#/lib/api/market", () => ({
@@ -61,6 +81,10 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 beforeEach(() => {
+  state.camera.realFix = null;
+  state.camera.locationStatus = "idle";
+  state.camera.requestLocation.mockReset();
+  state.ip = { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false };
   state.auth.isAuthenticated = true;
   state.auth.isLoading = false;
   state.auth.address = "0xaaa";
@@ -68,7 +92,7 @@ beforeEach(() => {
   state.profile.isPending = false;
   state.profile.isError = false;
   window.localStorage.clear();
-  useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY });
+  useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY, hydrated: false });
   state.market.mockReset().mockResolvedValue({ vouchers: [], receivedCount: 0, first: 0, last: 0 });
   state.pools.mockReset().mockResolvedValue({ pools: [], receivedCount: 0 });
   state.reports.mockReset().mockResolvedValue({ reports: [] });
@@ -81,6 +105,32 @@ beforeEach(() => {
   state.filteredReports
     .mockReset()
     .mockResolvedValue({ reports: [], tagFacets: [], voucherFacets: [] });
+});
+
+it("paints its content at once on every mount after the first", () => {
+  // The stored distance is read after the first paint of the page. A later
+  // mount, as a badge or tab switch makes, must not blink "Loading…" first.
+  render(
+    <NearbyCatalog>
+      <p>Results</p>
+    </NearbyCatalog>,
+  ).unmount();
+  const painted: string[] = [];
+  function FirstPaint({ children }: { children: ReactNode }) {
+    const ref = useRef<HTMLDivElement>(null);
+    useLayoutEffect(() => {
+      painted.push(ref.current?.textContent ?? "");
+    }, []);
+    return <div ref={ref}>{children}</div>;
+  }
+  render(
+    <FirstPaint>
+      <NearbyCatalog>
+        <p>Results</p>
+      </NearbyCatalog>
+    </FirstPaint>,
+  );
+  expect(painted).toEqual(["Results"]);
 });
 
 it("uses exact saved-location radii and lets Global include every coordinate", () => {
@@ -127,13 +177,19 @@ afterEach(() => {
 });
 
 function Lists() {
-  const scope = useNearbyCatalog();
+  const scope = (useNearbyCatalog() as { scope?: string } | undefined)?.scope;
+  const filter = useNearbyCatalogFilter();
   const [initialScope] = useState(scope);
   const market = useMarketMapVouchers(null);
   useUserPoolsInfinite();
   useReportsInfinite();
   return (
-    <div data-testid="lists" data-scope={scope} data-initial-scope={initialScope}>
+    <div
+      data-testid="lists"
+      data-scope={scope}
+      data-initial-scope={initialScope}
+      data-origin={filter ? `${filter.lat}:${filter.lng}` : undefined}
+    >
       {market.vouchers.map((v) => (
         <span key={v.id}>{v.name}</span>
       ))}
@@ -247,6 +303,7 @@ it("refreshes stale searches and facet counts on reconnect for all three catalog
     isPending: false,
     error: null,
     retry: vi.fn(),
+    retrying: false,
     hasNextPage: false,
     fetchNextPage: vi.fn(),
     isFetchingNextPage: false,
@@ -345,4 +402,151 @@ it("does not load catalogs while authentication is loading", () => {
   expect(state.market).not.toHaveBeenCalled();
   expect(state.pools).not.toHaveBeenCalled();
   expect(state.reports).not.toHaveBeenCalled();
+});
+
+function ScopeProbe() {
+  return (
+    <>
+      <MissingLocationNotice />
+      <p data-testid="scope">
+        {(useNearbyCatalog() as { scope?: string } | undefined)?.scope ?? "global"}
+      </p>
+    </>
+  );
+}
+
+it("blocks a screen behind Choose a location when a distance has no profile location", () => {
+  state.profile.data = {} as never;
+  render(
+    <NearbyCatalog>
+      <ScopeProbe />
+    </NearbyCatalog>,
+  );
+
+  expect(screen.getByText("Choose a location")).toBeTruthy();
+  expect(screen.queryByTestId("scope")).toBeNull();
+});
+
+it("keeps the market browsable everywhere with a notice when it allows a missing location", () => {
+  state.profile.data = {} as never;
+  render(
+    <NearbyCatalog allowMissingLocation>
+      <ScopeProbe />
+    </NearbyCatalog>,
+  );
+
+  expect(screen.getByTestId("scope").textContent).toBe("global");
+  expect(screen.getByRole("status").textContent).toContain("Choose a location");
+  expect(screen.getByText("Edit profile")).toBeTruthy();
+});
+
+it("shows no notice once the profile has a location", () => {
+  render(
+    <NearbyCatalog allowMissingLocation>
+      <ScopeProbe />
+    </NearbyCatalog>,
+  );
+
+  expect(screen.getByTestId("scope").textContent).toContain("nearby:");
+  expect(screen.queryByText("Choose a location")).toBeNull();
+});
+
+it("defaults guests to 500 km and changes visible rows when choosing 50 km or Global", async () => {
+  state.auth.isAuthenticated = false;
+  state.market.mockResolvedValue({
+    vouchers: [
+      { id: "near", name: "Near", lat: 0.1, lng: 0 },
+      { id: "middle", name: "Middle", lat: 2, lng: 0 },
+      { id: "far", name: "Far", lat: 8, lng: 0 },
+    ],
+    receivedCount: 3,
+    first: 3,
+    last: 0,
+  });
+  mount();
+  await screen.findByText("Middle");
+  expect(screen.queryByText("Far")).toBeNull();
+  act(() => useCatalogVisibilityStore.getState().setVisibility("50"));
+  await screen.findByText("Near");
+  expect(screen.queryByText("Middle")).toBeNull();
+  act(() => useCatalogVisibilityStore.getState().setVisibility("global"));
+  await screen.findByText("Far");
+  expect(state.market).toHaveBeenCalledTimes(1);
+  for (const request of [state.market, state.pools, state.reports]) {
+    expect(request.mock.calls.every(([params]) => params.nearby !== true)).toBe(true);
+  }
+});
+
+it("uses device coordinates ahead of IP and drops old rows when the device moves", async () => {
+  state.auth.isAuthenticated = false;
+  state.camera.realFix = { lat: 20, lng: 30 };
+  const view = mount();
+  expect(screen.getByTestId("lists").getAttribute("data-origin")).toBe("20:30");
+  state.camera.realFix = { lat: 40, lng: 50 };
+  view.rerender(view.tree());
+  expect(screen.getByTestId("lists").getAttribute("data-origin")).toBe("40:50");
+});
+
+it("asks guests for location instead of filtering around a fallback country", async () => {
+  state.auth.isAuthenticated = false;
+  state.ip.data.source = "country-default";
+  const view = mount();
+  expect(screen.getByText("Choose a location")).toBeTruthy();
+  expect(state.market).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
+  expect(state.camera.requestLocation).toHaveBeenCalledOnce();
+  state.camera.locationStatus = "denied";
+  view.rerender(view.tree());
+  expect(screen.getByText("Location denied")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Global" }));
+  await waitFor(() => expect(state.market).toHaveBeenCalled());
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
+});
+
+it("keeps Global available while IP lookup is pending", async () => {
+  state.auth.isAuthenticated = false;
+  state.ip.data.source = "country-default";
+  state.ip.isPending = true;
+  mount();
+  expect(state.market).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Global" }));
+  await waitFor(() => expect(state.market).toHaveBeenCalled());
+});
+
+it("widens a guest search from raw cache without losing rows or repeating downloads", async () => {
+  state.auth.isAuthenticated = false;
+  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "50");
+  state.filteredMarket.mockResolvedValue({
+    vouchers: [
+      { id: "near", name: "Near", lat: 0.1, lng: 0 },
+      { id: "middle", name: "Middle", lat: 2, lng: 0 },
+    ],
+    receivedCount: 2,
+    tagFacets: [],
+  });
+  function Search() {
+    const query = useFilteredMarketVouchers({
+      term: "local",
+      tags: [],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+    });
+    return (
+      <>
+        {query.data?.vouchers.map((v) => (
+          <span key={v.id}>{v.name}</span>
+        ))}
+      </>
+    );
+  }
+  const view = mount(<Search />);
+  await screen.findByText("Near");
+  expect(screen.queryByText("Middle")).toBeNull();
+  act(() => useCatalogVisibilityStore.getState().setVisibility("500"));
+  await screen.findByText("Middle");
+  expect(state.filteredMarket).toHaveBeenCalledTimes(1);
+  expect(view.client.getQueryCache().getAll()[0]?.state.data).toMatchObject({
+    vouchers: [{ id: "near" }, { id: "middle" }],
+  });
 });

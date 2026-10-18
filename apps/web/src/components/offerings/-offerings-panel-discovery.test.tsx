@@ -72,6 +72,7 @@ function queryFor(row: Offering) {
     isError: false,
     isSuccess: true,
     hasNextPage: false,
+    isFetching: false,
     isFetchingNextPage: false,
     fetchNextPage: vi.fn(),
     refetch: vi.fn(),

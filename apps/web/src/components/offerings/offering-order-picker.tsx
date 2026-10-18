@@ -138,7 +138,7 @@ export function OfferingOrderPicker({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="size-11 bg-card"
+                      tap
                       disabled={line.quantity === "1"}
                       aria-label={t`Decrease ${offering.name} quantity`}
                       onClick={() => changeQuantity(offering.id, -1n)}
@@ -155,7 +155,7 @@ export function OfferingOrderPicker({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="size-11 bg-card"
+                      tap
                       aria-label={t`Increase ${offering.name} quantity`}
                       onClick={() => changeQuantity(offering.id, 1n)}
                     >

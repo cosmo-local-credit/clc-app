@@ -24,6 +24,8 @@ export type AuthStatus = {
   session: SessionResult | null | undefined;
   error: Error | null;
   retry: () => void;
+  /** The session check is running again after `retry`. */
+  retrying: boolean;
 };
 
 export const authSessionQueryKey = ["auth", "session"] as const;
@@ -80,5 +82,6 @@ export function useAuthStatus(): AuthStatus {
     retry: () => {
       void sessionQuery.refetch();
     },
+    retrying: sessionQuery.isFetching,
   };
 }

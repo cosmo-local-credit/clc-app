@@ -11,6 +11,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { Button } from "#/components/ui/button";
 import { TokenLogo } from "#/components/wallet";
 import type { WalletToken } from "#/components/wallet/wallet-data";
 import { cn } from "#/lib/utils";
@@ -39,12 +40,9 @@ export function TokenPickerSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent
-          finalFocus={finalFocus}
-          className="rounded-none border-t border-border shadow-none [&>div:first-child]:hidden"
-        >
+        <SheetContent finalFocus={finalFocus} className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Select a token</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -64,14 +62,14 @@ export function TokenPickerSheet({
                 >
                   <TokenLogo token={token} size={36} />
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm tracking-tight">{token.symbol}</p>
+                    <p className="font-semibold text-sm">{token.symbol}</p>
                     <p className="truncate text-muted-foreground text-xs">{token.name}</p>
                   </div>
                   <div className="text-end">
                     <p className="font-heading font-semibold text-sm tracking-tight">
                       {token.amount}
                     </p>
-                    <p className="font-mono text-muted-foreground text-[0.6875rem]">{token.fiat}</p>
+                    <p className="font-mono text-muted-foreground text-2xs">{token.fiat}</p>
                   </div>
                   {active ? (
                     <RiCheckLine className="size-4 shrink-0 text-primary" aria-hidden="true" />
@@ -81,13 +79,14 @@ export function TokenPickerSheet({
             })}
           </div>
           <SheetFooter>
-            <button
-              type="button"
+            <Button
+              variant="link"
+              tap
+              className="w-full text-foreground"
               onClick={() => onOpenChange(false)}
-              className="h-11 w-full font-medium text-foreground text-sm hover:underline"
             >
               {t`Cancel`}
-            </button>
+            </Button>
           </SheetFooter>
         </SheetContent>
       </SheetPortal>

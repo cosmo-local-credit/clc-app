@@ -38,6 +38,18 @@ vi.mock("#/features/auth/hooks/use-auth-session", () => ({
   useBackendLogout: () => ({ mutateAsync: mockBackendLogout }),
 }));
 
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: () => ({
+    realFix: { lat: 0, lng: 0 },
+    origin: { lat: 0, lng: 0 },
+    locationStatus: "granted",
+    requestLocation: vi.fn(),
+  }),
+}));
+vi.mock("#/features/home/hooks/use-ip-camera", () => ({
+  useIPCamera: () => ({ data: undefined, isPending: false }),
+}));
+
 vi.mock("#/features/home/api/last-location-storage", () => ({
   clearPersistedLocation: mockClearPersistedLocation,
 }));
@@ -60,11 +72,9 @@ vi.mock("./activity-page", () => ({
 
 vi.mock("./market-page", () => ({
   MarketPage: ({
-    onboardingBanner,
     isAuthenticated,
     locationOwner,
   }: {
-    onboardingBanner?: ReactNode;
     isAuthenticated?: boolean;
     locationOwner?: string;
   }) => (
@@ -72,28 +82,8 @@ vi.mock("./market-page", () => ({
       data-testid="market-page"
       data-authenticated={isAuthenticated ? "true" : "false"}
       data-location-owner={locationOwner}
-    >
-      {onboardingBanner}
-    </div>
+    />
   ),
-}));
-
-vi.mock("./market-list-page", () => ({
-  MarketListPage: ({
-    onboardingBanner,
-    locationOwner,
-  }: {
-    onboardingBanner?: ReactNode;
-    locationOwner?: string;
-  }) => (
-    <div data-testid="market-list-page" data-location-owner={locationOwner}>
-      {onboardingBanner}
-    </div>
-  ),
-}));
-
-vi.mock("./onboarding-banner", () => ({
-  OnboardingBanner: () => <div data-testid="onboarding-banner" />,
 }));
 
 vi.mock("./posts-page", () => ({
@@ -132,14 +122,7 @@ describe("HomePage tabs", () => {
   it("shows the market map by default", () => {
     renderHome(<HomePage />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-list-page")).toBeNull();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
-  });
-
-  it("shows the Browse-all list for the explicit market list view", () => {
-    renderHome(<HomePage marketView="list" />);
-    expect(screen.getByTestId("market-list-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-page")).toBeNull();
   });
 
   it("renders the requested wallet tab", () => {
@@ -174,7 +157,6 @@ describe("HomePage guest mode", () => {
     nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage isAuthenticated={false} />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByText("Sign in or sign up")).toBeNull();
   });
 
   it("does not render private content for a requested private tab", () => {
@@ -290,6 +272,6 @@ describe("HomePage location scope", () => {
     renderHome(<HomePage isAuthenticated={false} />);
 
     expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.queryByText("Sign in or sign up")).toBeNull();
+    expect(screen.getByTestId("market-page").getAttribute("data-authenticated")).toBe("false");
   });
 });

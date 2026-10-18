@@ -1,8 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ChangeEvent, ReactNode } from "react";
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
-import { RiCameraLine, RiCloseLine, RiLoader4Line, RiUploadLine } from "react-icons/ri";
+import { RiCameraLine, RiCloseLine, RiUploadLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import { QrCameraError, startQrCamera } from "#/lib/qr-camera";
 import { decodeQrImageFile } from "#/lib/qr-decode";
 
@@ -120,7 +121,8 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
         <p className="font-medium text-sm">{title ?? <Trans>Paper Wallet</Trans>}</p>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
+          tap
           aria-label={t`Close paper wallet scanner`}
           onClick={onCancel}
         >
@@ -130,13 +132,14 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
 
       {mode === "choose" ? (
         <div className="space-y-2">
-          <Button className="h-11 w-full" onClick={handleCameraScan} disabled={cameraStarting}>
+          <Button tap className="w-full" onClick={handleCameraScan} disabled={cameraStarting}>
             <RiCameraLine className="me-2 size-4" />
             <Trans>Scan QR Code</Trans>
           </Button>
           <Button
             variant="outline"
-            className="h-11 w-full"
+            tap
+            className="w-full"
             onClick={() => {
               setMode("upload");
               setError(null);
@@ -163,7 +166,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               aria-hidden
             />
             {cameraStarting ? (
-              <RiLoader4Line className="relative size-6 animate-spin text-white/80" />
+              <Spinner className="relative size-6 text-white/80" />
             ) : (
               // An aiming guide only: the whole frame is read.
               <div className="relative aspect-square w-3/5 border-2 border-white/90 shadow-[0_0_0_9999px_rgb(0_0_0/0.4)]" />
@@ -175,7 +178,8 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               {error.type === "camera-denied" ? (
                 <Button
                   variant="outline"
-                  className="h-11 w-full"
+                  tap
+                  className="w-full"
                   onClick={() => {
                     setMode("upload");
                     setError(null);
@@ -187,7 +191,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               ) : null}
             </div>
           ) : null}
-          <Button variant="ghost" className="h-9 w-full" onClick={handleCancel}>
+          <Button variant="ghost" tap className="w-full" onClick={handleCancel}>
             <Trans>Back</Trans>
           </Button>
         </div>
@@ -203,14 +207,15 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
           />
           <Button
             variant="outline"
-            className="h-11 w-full"
+            tap
+            className="w-full"
             onClick={() => fileInputRef.current?.click()}
           >
             <RiUploadLine className="me-2 size-4" />
             <Trans>Choose Image</Trans>
           </Button>
           {error ? <p className="text-destructive text-xs">{error.message}</p> : null}
-          <Button variant="ghost" className="h-9 w-full" onClick={handleCancel}>
+          <Button variant="ghost" tap className="w-full" onClick={handleCancel}>
             <Trans>Back</Trans>
           </Button>
         </div>

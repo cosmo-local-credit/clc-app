@@ -4,7 +4,6 @@ import { profileSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { OnboardingMenu } from "#/components/language-selector";
@@ -416,10 +415,11 @@ export function OnboardingProfileForm({
             {(isSubmitting) => (
               <Button
                 type="submit"
-                disabled={isSubmitting || !isStorageConfigured}
-                className="h-11 w-full"
+                disabled={!isStorageConfigured}
+                pending={isSubmitting}
+                tap
+                className="w-full"
               >
-                {isSubmitting ? <LoaderCircle className="me-2 size-4 animate-spin" /> : null}
                 {isSubmitting ? t`Saving…` : t`Continue`}
               </Button>
             )}

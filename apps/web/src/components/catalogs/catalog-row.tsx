@@ -1,6 +1,7 @@
 import type { Catalog } from "@clc/core/features/catalogs/logic";
 import { Link } from "@tanstack/react-router";
 import { RiBookOpenLine } from "react-icons/ri";
+import { Badge } from "#/components/ui/badge";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 
 export function CatalogPicture({ url }: { url: string | null }) {
@@ -30,10 +31,10 @@ export function CatalogRow({
     >
       <CatalogPicture url={catalog.imageUrl} />
       <span className="min-w-0 flex-1">
-        <span dir="auto" className="block break-words font-heading font-semibold">
+        <span dir="auto" className="block break-words text-sm font-semibold">
           {catalog.name}
         </span>
-        <span dir="auto" className="mt-1 block text-sm text-muted-foreground">
+        <span dir="auto" className="mt-1 block text-xs text-muted-foreground">
           {catalog.locationName}
         </span>
         {catalog.description ? (
@@ -47,9 +48,9 @@ export function CatalogRow({
         {catalog.tags.length > 0 ? (
           <span className="mt-2 flex flex-wrap gap-1">
             {catalog.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="border border-border px-1.5 py-0.5 text-[0.6875rem]">
+              <Badge key={tag} variant="outline" size="sm">
                 {tag}
-              </span>
+              </Badge>
             ))}
           </span>
         ) : null}

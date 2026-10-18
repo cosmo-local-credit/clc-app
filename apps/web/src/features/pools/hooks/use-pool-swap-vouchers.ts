@@ -58,6 +58,7 @@ export function usePoolSwapVouchers(pool: UserPool | null | undefined) {
           }),
     isPending: catalog.isPending || registryPending || metadataPending,
     isError: catalogError || registryError || metadataError,
+    isFetching: catalog.isFetching || registry.isFetching || metadata.isFetching,
     refetch: () => {
       void catalog.refetch();
       void registry.refetch();

@@ -21,7 +21,10 @@ import {
  */
 export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const { t } = useLingui();
-  const { holdings, unit, isPending, isError, refetch } = usePoolHoldings(pool, vouchers);
+  const { holdings, unit, isPending, isError, isFetching, refetch } = usePoolHoldings(
+    pool,
+    vouchers,
+  );
 
   return (
     <PoolHoldingListPanel
@@ -31,6 +34,7 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
       isError={isError}
       isEmpty={holdings.length === 0}
       onRetry={refetch}
+      retrying={isFetching}
       messages={{
         loading: <Trans>Loading holdings…</Trans>,
         error: <Trans>Couldn't load holdings.</Trans>,
@@ -80,9 +84,7 @@ function HoldingAmount({ holding, unit }: { holding: PoolHolding; unit: string }
           <p className="font-mono text-sm font-semibold tabular-nums">
             {formatTokenAmountFixed(holding.unitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2)} {unit}
           </p>
-          <p className="font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
-            {liquidity}
-          </p>
+          <p className="font-mono text-muted-foreground text-2xs tabular-nums">{liquidity}</p>
         </>
       )}
     </div>

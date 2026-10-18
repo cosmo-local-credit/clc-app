@@ -5,8 +5,14 @@ import { cn } from "#/lib/utils.ts";
 
 export const DialogRoot = Dialog.Root;
 export const DialogPortal = Dialog.Portal;
-export const DialogTitle = Dialog.Title;
 export const DialogClose = Dialog.Close;
+
+/** Every dialog title is the 16px section heading, as sheet titles are. */
+function DialogTitle({ className, ...props }: React.ComponentProps<typeof Dialog.Title>) {
+  return (
+    <Dialog.Title className={cn("font-heading text-base font-semibold", className)} {...props} />
+  );
+}
 
 function DialogBackdrop({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -42,4 +48,4 @@ function DialogContent({ className, children, ...props }: React.ComponentProps<"
   );
 }
 
-export { DialogBackdrop, DialogContent };
+export { DialogBackdrop, DialogContent, DialogTitle };

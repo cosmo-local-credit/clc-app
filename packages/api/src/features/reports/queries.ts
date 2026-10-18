@@ -1,3 +1,4 @@
+import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -79,13 +80,15 @@ export const reportKeys = {
 export function reportFeedInfiniteQueryOptions(
   reports: ReportsClient,
   perPage: number,
-  nearby?: string,
+  nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby ? ([...reportKeys.feed(perPage), nearby] as const) : reportKeys.feed(perPage),
+    queryKey: nearby?.nearby
+      ? ([...reportKeys.feed(perPage), nearby.scope] as const)
+      : reportKeys.feed(perPage),
     queryFn: ({ pageParam, signal }) =>
       reports.getReports(
-        { perPage, cursor: pageParam, ...(nearby ? { nearby: true } : {}) },
+        { perPage, cursor: pageParam, ...(nearby?.nearby === true ? { nearby: true } : {}) },
         signal,
       ),
     initialPageParam: undefined as ReportCursor | undefined,

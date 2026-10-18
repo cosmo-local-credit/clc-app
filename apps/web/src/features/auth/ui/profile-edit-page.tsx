@@ -5,7 +5,6 @@ import { isIsoCurrency } from "@clc/core/lib/currencies";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
-import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -37,7 +36,9 @@ export function ProfileEditPage() {
   const profileQuery = useAuthProfile();
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    // No bottom padding: the form's save bar sits flush with the screen edge
+    // and carries the safe-area inset itself.
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
       <BackChevron label={t`Settings`} to="/" search={{ tab: "settings" }} />
 
       <h1 className="mb-6 font-heading text-[1.75rem] font-bold leading-tight">
@@ -53,8 +54,8 @@ export function ProfileEditPage() {
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
+            tap
+            pending={profileQuery.isFetching}
             onClick={() => void profileQuery.refetch()}
           >
             <Trans>Try again</Trans>
@@ -153,7 +154,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   return (
     // The username section sits outside the <form>: its sheet portals out of
     // the DOM, but a React submit event would still bubble to this form.
-    <div className="space-y-4">
+    <>
       <ProfileUsernameSection profile={profile} />
 
       <form
@@ -163,274 +164,309 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
           e.stopPropagation();
           void form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-1 flex-col"
       >
-        <div className="space-y-4 border border-border bg-card p-4">
-          {/* Hidden rather than disabled when the upload service is not configured:
-            a control that cannot work is worse than no control. */}
-          {isStorageConfigured ? (
-            <ImageUploadField
-              label={t`Profile photo`}
-              hint={t`Optional`}
-              purpose="profile.avatar"
-              value={avatarUrl}
-              onChange={setAvatarUrl}
-              onBusyChange={setAvatarBusy}
-              disabled={updateProfile.isPending}
-            />
-          ) : null}
+        <div className="space-y-6 pb-6">
+          <div className="space-y-4 border border-border bg-card p-4">
+            {/* Hidden rather than disabled when the upload service is not configured:
+              a control that cannot work is worse than no control. */}
+            {isStorageConfigured ? (
+              <ImageUploadField
+                label={t`Profile photo`}
+                hint={t`Optional`}
+                purpose="profile.avatar"
+                value={avatarUrl}
+                onChange={setAvatarUrl}
+                onBusyChange={setAvatarBusy}
+                disabled={updateProfile.isPending}
+              />
+            ) : null}
 
-          <form.Field name="name">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="profile-name" className="font-medium text-sm">
-                    <Trans>Name</Trans>
-                  </label>
-                  <Input
-                    id="profile-name"
-                    type="text"
-                    autoComplete="name"
-                    placeholder={t`Your name`}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    aria-invalid={!!err}
-                    aria-label={t`Name`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
-
-          <form.Field name="email">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="profile-email" className="font-medium text-sm">
-                    <Trans>Email</Trans>
-                  </label>
-                  <Input
-                    id="profile-email"
-                    dir="ltr"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    aria-invalid={!!err}
-                    aria-label={t`Email`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
-
-          <form.Field name="phone">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="profile-phone" className="font-medium text-sm">
-                    <Trans>Phone</Trans>
-                  </label>
-                  <PhoneInputField
-                    id="profile-phone"
-                    defaultCountry={profile.country}
-                    value={field.state.value}
-                    onChange={(val) => field.handleChange(val)}
-                    aria-invalid={!!err}
-                    aria-label={t`Phone number`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
-
-          <form.Field name="preferredCurrency">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="profile-preferred-currency" className="font-medium text-sm">
-                    <Trans>Preferred currency</Trans>
-                  </label>
-                  <CurrencySelect
-                    id="profile-preferred-currency"
-                    value={field.state.value}
-                    onValueChange={field.handleChange}
-                    placeholder={t`Search currencies`}
-                    emptyMessage={t`No currencies found`}
-                    ariaLabel={t`Preferred currency`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
-
-          <form.Field name="bio">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="profile-bio" className="font-medium text-sm">
-                    <Trans>Bio</Trans>
-                    <span className="ms-1 font-normal text-muted-foreground">
-                      <Trans>Optional</Trans>
-                    </span>
-                  </label>
-                  <Textarea
-                    id="profile-bio"
-                    rows={3}
-                    maxLength={500}
-                    placeholder={t`Tell people a little about yourself`}
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    aria-invalid={!!err}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
-
-          <form.Field name="website">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="profile-website" className="font-medium text-sm">
-                    <Trans>Website</Trans>
-                    <span className="ms-1 font-normal text-muted-foreground">
-                      <Trans>Optional</Trans>
-                    </span>
-                  </label>
-                  <Input
-                    id="profile-website"
-                    dir="ltr"
-                    type="url"
-                    autoComplete="url"
-                    inputMode="url"
-                    placeholder="https://example.com"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    aria-invalid={!!err}
-                    aria-label={t`Website`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
-        </div>
-
-        <form.Field name="location">
-          {(field) => {
-            const err = getFieldError(field.state.meta.errors);
-            return (
-              <form.Subscribe selector={(s) => s.submissionAttempts}>
-                {(submissionAttempts) => (
-                  <div className="space-y-3">
-                    <LocationPicker
+            <form.Field name="name">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="profile-name" className="font-medium text-sm">
+                      <Trans>Name</Trans>
+                    </label>
+                    <Input
+                      id="profile-name"
+                      type="text"
+                      autoComplete="name"
+                      placeholder={t`Your name`}
                       value={field.state.value}
-                      onChange={(next) => field.handleChange(next)}
-                      error={
-                        field.state.meta.isTouched || submissionAttempts > 0
-                          ? err
-                            ? translateValidationError(err, i18n)
-                            : undefined
-                          : undefined
-                      }
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={!!err}
+                      aria-label={t`Name`}
                     />
-                    {field.state.value ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-11 w-full bg-card"
-                        onClick={() => field.handleChange(undefined)}
-                      >
-                        <Trans>Clear location</Trans>
-                      </Button>
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
                     ) : null}
                   </div>
-                )}
-              </form.Subscribe>
-            );
-          }}
-        </form.Field>
+                );
+              }}
+            </form.Field>
 
-        {submitError ? <p className="text-destructive text-xs">{submitError}</p> : null}
+            <form.Field name="bio">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="profile-bio" className="font-medium text-sm">
+                      <Trans>Bio</Trans>
+                      <span className="ms-1 font-normal text-muted-foreground">
+                        <Trans>Optional</Trans>
+                      </span>
+                    </label>
+                    <Textarea
+                      id="profile-bio"
+                      rows={3}
+                      maxLength={500}
+                      placeholder={t`Tell people a little about yourself`}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={!!err}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
 
-        <form.Subscribe
-          selector={(s) => ({ isSubmitting: s.isSubmitting, canSubmit: s.canSubmit })}
-        >
-          {({ isSubmitting, canSubmit }) => (
-            // Disabled while the photo uploads, or a submit would save the URL the
-            // page held before the new file finished.
-            <Button
-              type="submit"
-              disabled={!canSubmit || isSubmitting || avatarBusy}
-              className="h-11 w-full"
-            >
-              {isSubmitting ? <LoaderCircle className="me-2 size-4 animate-spin" /> : null}
-              {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
-            </Button>
-          )}
-        </form.Subscribe>
+            <form.Field name="website">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="profile-website" className="font-medium text-sm">
+                      <Trans>Website</Trans>
+                      <span className="ms-1 font-normal text-muted-foreground">
+                        <Trans>Optional</Trans>
+                      </span>
+                    </label>
+                    <Input
+                      id="profile-website"
+                      dir="ltr"
+                      type="url"
+                      autoComplete="url"
+                      inputMode="url"
+                      placeholder="https://example.com"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={!!err}
+                      aria-label={t`Website`}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+          </div>
+
+          <div className="space-y-4 border border-border bg-card p-4">
+            <form.Field name="email">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="profile-email" className="font-medium text-sm">
+                      <Trans>Email</Trans>
+                    </label>
+                    <Input
+                      id="profile-email"
+                      dir="ltr"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={!!err}
+                      aria-label={t`Email`}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+
+            <form.Field name="phone">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="profile-phone" className="font-medium text-sm">
+                      <Trans>Phone</Trans>
+                    </label>
+                    <PhoneInputField
+                      id="profile-phone"
+                      defaultCountry={profile.country}
+                      value={field.state.value}
+                      onChange={(val) => field.handleChange(val)}
+                      aria-invalid={!!err}
+                      aria-label={t`Phone number`}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+          </div>
+
+          <div className="space-y-4 border border-border bg-card p-4">
+            <form.Field name="location">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <form.Subscribe selector={(s) => s.submissionAttempts}>
+                    {(submissionAttempts) => (
+                      <div className="space-y-3">
+                        <LocationPicker
+                          value={field.state.value}
+                          onChange={(next) => field.handleChange(next)}
+                          error={
+                            field.state.meta.isTouched || submissionAttempts > 0
+                              ? err
+                                ? translateValidationError(err, i18n)
+                                : undefined
+                              : undefined
+                          }
+                        />
+                        {field.state.value ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            tap
+                            className="w-full"
+                            onClick={() => field.handleChange(undefined)}
+                          >
+                            <Trans>Clear location</Trans>
+                          </Button>
+                        ) : null}
+                      </div>
+                    )}
+                  </form.Subscribe>
+                );
+              }}
+            </form.Field>
+
+            <form.Field name="preferredCurrency">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="profile-preferred-currency" className="font-medium text-sm">
+                      <Trans>Preferred currency</Trans>
+                    </label>
+                    <CurrencySelect
+                      id="profile-preferred-currency"
+                      value={field.state.value}
+                      onValueChange={field.handleChange}
+                      placeholder={t`Search currencies`}
+                      emptyMessage={t`No currencies found`}
+                      ariaLabel={t`Preferred currency`}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+          </div>
+        </div>
+
+        {/* Pinned to the bottom of the screen so Save is reachable from any
+            field, and pushed there by mt-auto when the form is short. */}
+        <div className="sticky bottom-0 z-20 -mx-6 mt-auto border-border border-t bg-card px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {submitError ? (
+            <p role="alert" className="mb-2 text-destructive text-xs">
+              {submitError}
+            </p>
+          ) : null}
+          <form.Subscribe
+            selector={(s) => ({
+              isSubmitting: s.isSubmitting,
+              canSubmit: s.canSubmit,
+              isDirty: s.isDirty,
+            })}
+          >
+            {({ isSubmitting, canSubmit, isDirty }) => (
+              // Disabled until something changed, and while the photo uploads,
+              // or a submit would save the URL the page held before the new
+              // file finished.
+              <Button
+                type="submit"
+                disabled={!(isDirty || avatarUrl !== storedAvatarUrl) || !canSubmit}
+                pending={isSubmitting || avatarBusy}
+                tap
+                className="w-full"
+              >
+                {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
+              </Button>
+            )}
+          </form.Subscribe>
+        </div>
       </form>
-    </div>
+    </>
   );
 }
 
 function ProfileEditSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="space-y-3 border border-border bg-card p-4">
-        <div className="h-4 w-20 bg-muted" />
-        <div className="h-11 w-full bg-muted" />
-      </div>
+    <div className="space-y-6 pb-6">
+      <div className="h-11 w-full border border-border bg-card" />
       <div className="space-y-4 border border-border bg-card p-4">
-        {["name", "email", "phone", "currency", "bio", "website"].map((key) => (
+        <div className="flex flex-col gap-1.5">
+          <div className="h-4 w-24 bg-muted" />
+          <div className="size-20 rounded-full bg-muted" />
+        </div>
+        {["name", "bio", "website"].map((key) => (
           <div key={key} className="flex flex-col gap-1.5">
             <div className="h-4 w-16 bg-muted" />
             <div className="h-9 w-full bg-muted" />
           </div>
         ))}
       </div>
-      <div className="h-52 w-full rounded-xl border border-border bg-card" />
+      <div className="space-y-4 border border-border bg-card p-4">
+        {["email", "phone"].map((key) => (
+          <div key={key} className="flex flex-col gap-1.5">
+            <div className="h-4 w-16 bg-muted" />
+            <div className="h-9 w-full bg-muted" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-4 border border-border bg-card p-4">
+        <div className="h-52 w-full bg-muted" />
+        <div className="flex flex-col gap-1.5">
+          <div className="h-4 w-28 bg-muted" />
+          <div className="h-9 w-full bg-muted" />
+        </div>
+      </div>
     </div>
   );
 }

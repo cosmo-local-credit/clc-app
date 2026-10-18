@@ -275,6 +275,9 @@ importers:
       '@tanstack/react-devtools':
         specifier: ^0.10.5
         version: 0.10.5(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(csstype@3.2.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(solid-js@1.9.13)
+      '@tanstack/react-form':
+        specifier: ^1.32.0
+        version: 1.32.0(@tanstack/react-start@1.168.16(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(crossws@0.4.10(srvx@0.12.5))(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-query':
         specifier: ^5.101.0
         version: 5.101.0(react@19.2.6)
@@ -480,7 +483,7 @@ importers:
         version: 1.2.6
       '@tanstack/react-form':
         specifier: ^1.32.0
-        version: 1.32.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 1.32.0(@tanstack/react-start@1.168.16(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(crossws@0.4.10(srvx@0.12.5))(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-query':
         specifier: ^5.101.0
         version: 5.101.0(react@19.2.6)
@@ -10353,11 +10356,13 @@ snapshots:
       - solid-js
       - utf-8-validate
 
-  '@tanstack/react-form@1.32.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
+  '@tanstack/react-form@1.32.0(@tanstack/react-start@1.168.16(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(crossws@0.4.10(srvx@0.12.5))(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@tanstack/form-core': 1.32.0
       '@tanstack/react-store': 0.9.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react: 19.2.6
+    optionalDependencies:
+      '@tanstack/react-start': 1.168.16(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(crossws@0.4.10(srvx@0.12.5))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
     transitivePeerDependencies:
       - react-dom
 
@@ -10894,7 +10899,7 @@ snapshots:
       '@testing-library/dom': 10.4.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
       '@vitest/browser': 4.1.10(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.10)
-      vitest: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))
+      vitest: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -10949,7 +10954,7 @@ snapshots:
       tinyrainbow: 3.1.0
       vitest: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))
     optionalDependencies:
-      '@vitest/browser': 4.1.10(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(vitest@4.1.10)
+      '@vitest/browser': 4.1.10(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.10)
 
   '@vitest/expect@4.1.10':
     dependencies:

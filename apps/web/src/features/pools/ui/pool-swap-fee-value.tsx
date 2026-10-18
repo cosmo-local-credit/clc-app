@@ -56,7 +56,7 @@ export function PoolSwapFeeValue({
       <span className="break-words text-end text-xs font-semibold">
         {amount} {symbol}
       </span>
-      <span className="text-muted-foreground text-[0.625rem]">{percentage ?? "—"}</span>
+      <span className="text-muted-foreground text-2xs">{percentage ?? "—"}</span>
     </span>
   );
 }

@@ -1,3 +1,5 @@
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { DiscoveryLocationProvider } from "#/lib/discovery-location";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,6 +50,7 @@ import { RouteError } from "#/components/route-error";
 import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
 import { useInstallPromptListener } from "#/features/install/install-store";
 import { installBootstrapScript } from "#/features/install/install-bootstrap";
+import { IntroductionProvider } from "#/components/introduction/introduction-provider";
 import appCss from "../styles.css?url";
 
 const AppDevtools = import.meta.env.DEV
@@ -263,7 +266,11 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
-      <Outlet />
+      <IntroductionProvider suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}>
+        <RootDiscoveryLocation>
+          <Outlet />
+        </RootDiscoveryLocation>
+      </IntroductionProvider>
       {pendingEncryptedKey ? (
         <DialogRoot
           open={true}
@@ -299,7 +306,7 @@ function AppInner() {
           <DialogPortal>
             <DialogBackdrop />
             <DialogContent>
-              <DialogTitle className="text-base font-semibold">
+              <DialogTitle>
                 {address ? <Trans>Switch wallet?</Trans> : <Trans>Import paper wallet?</Trans>}
               </DialogTitle>
               <p className="text-muted-foreground mt-1 text-sm">
@@ -311,12 +318,13 @@ function AppInner() {
               </p>
               <p className="text-foreground mt-2 truncate font-mono text-xs">{pendingAddress}</p>
               <div className="mt-5 flex flex-col gap-2">
-                <Button className="h-11 w-full" disabled={switching} onClick={handleConfirmSwitch}>
+                <Button tap className="w-full" pending={switching} onClick={handleConfirmSwitch}>
                   {switching ? t`Connecting…` : address ? t`Switch wallet` : t`Import wallet`}
                 </Button>
                 <Button
                   variant="ghost"
-                  className="h-11 w-full"
+                  tap
+                  className="w-full"
                   onClick={clearPendingKey}
                   disabled={switching}
                 >
@@ -421,5 +429,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function RootDiscoveryLocation({ children }: { children: React.ReactNode }) {
+  const owner = useStorageOwner();
+  return (
+    <DiscoveryLocationProvider owner={owner ?? "pending"}>{children}</DiscoveryLocationProvider>
   );
 }

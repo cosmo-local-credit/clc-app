@@ -17,10 +17,7 @@ export function NetworkBadge({ className }: { className?: string }) {
   const chainName = CHAIN_INFO.name;
 
   return (
-    <Badge
-      variant="muted"
-      className={cn("h-auto gap-1.5 bg-card px-2 py-0.5 text-xs normal-case", className)}
-    >
+    <Badge variant="muted" size="sm" className={cn("gap-1.5 bg-card", className)}>
       <span className="size-2 rounded-full bg-primary" />
       <Trans>{chainName} network</Trans>
     </Badge>

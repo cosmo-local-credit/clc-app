@@ -10,12 +10,12 @@ import { Link } from "@tanstack/react-router";
 import type { ComponentProps } from "react";
 import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
+import { Field } from "#/components/ui/field";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 import { catalogsClient } from "#/lib/api/catalogs";
-import { cn } from "#/lib/utils";
 
 type AddToCatalogButtonProps = CatalogCreateIntent &
-  Pick<ComponentProps<typeof Button>, "className" | "size">;
+  Pick<ComponentProps<typeof Button>, "className" | "size" | "tap">;
 
 export function AddToCatalogButton({
   kind,
@@ -23,6 +23,7 @@ export function AddToCatalogButton({
   address,
   className,
   size,
+  tap,
 }: AddToCatalogButtonProps) {
   const { t } = useLingui();
   const mine = useMyCatalog();
@@ -48,18 +49,20 @@ export function AddToCatalogButton({
       <Button
         variant="outline"
         size={size}
-        className={cn("h-11 bg-card", className)}
+        tap={tap}
+        className={className}
         onClick={() => {
           void mine.refetch();
           if (catalog) void membership.refetch();
         }}
+        pending={mine.isFetching || membership.isFetching}
       >
         <Trans>Retry</Trans>
       </Button>
     );
   if (mine.isSuccess && !catalog)
     return (
-      <Button asChild variant="outline" size={size} className={cn("h-11 bg-card", className)}>
+      <Button asChild variant="outline" size={size} tap={tap} className={className}>
         <Link to="/catalogs/create" search={{ kind, resourceId, address }}>
           <Trans>Add to catalog</Trans>
         </Link>
@@ -68,10 +71,7 @@ export function AddToCatalogButton({
   return (
     <div className="space-y-2">
       {mine.catalogs.length > 1 && (
-        <div className="space-y-1">
-          <label htmlFor={selectId} className="text-sm">
-            <Trans>Choose catalog</Trans>
-          </label>
+        <Field label={t`Choose catalog`} htmlFor={selectId}>
           <select
             id={selectId}
             className="h-11 w-full border border-border bg-card px-3"
@@ -85,15 +85,15 @@ export function AddToCatalogButton({
               </option>
             ))}
           </select>
-        </div>
+        </Field>
       )}
       <Button
         variant="outline"
         size={size}
-        className={cn("h-11 bg-card", className)}
-        disabled={
-          mine.isPending || membership.isPending || mutation.isPending || membership.data?.added
-        }
+        tap={tap}
+        className={className}
+        disabled={mine.isPending || membership.isPending || membership.data?.added}
+        pending={mutation.isPending}
         onClick={async () => {
           if (!catalog) return;
           try {

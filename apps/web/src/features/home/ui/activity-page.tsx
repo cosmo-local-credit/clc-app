@@ -12,6 +12,7 @@ import {
 import { Button } from "#/components/ui/button";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 import {
   formatTransferDate,
   formatTransferUnitValue,
@@ -46,9 +47,7 @@ export function ActivityPage({ address }: { address?: string }) {
 
       <section className="border border-border bg-card" aria-label={t`Transfer history`}>
         {transfersQuery.isPending ? (
-          <div className="p-3 text-muted-foreground text-sm">
-            <Trans>Loading activity…</Trans>
-          </div>
+          <ListSkeleton framed={false} label={<Trans>Loading activity…</Trans>} />
         ) : null}
         {transfersQuery.isError ? (
           <div className="space-y-2 p-3">
@@ -57,9 +56,9 @@ export function ActivityPage({ address }: { address?: string }) {
             </p>
             <Button
               variant="outline"
-              size="sm"
-              className="h-9 bg-card"
-              onClick={() => transfersQuery.refetch()}
+              tap
+              pending={transfersQuery.isFetching}
+              onClick={() => void transfersQuery.refetch()}
             >
               <Trans>Try again</Trans>
             </Button>
@@ -125,7 +124,7 @@ export function ActivityPage({ address }: { address?: string }) {
                 </p>
                 {/* Only the counterparty truncates: a long name and username
                     must not push the date off the row. */}
-                <p className="flex min-w-0 text-muted-foreground text-[0.6875rem]">
+                <p className="flex min-w-0 text-muted-foreground text-xs">
                   <span className="min-w-0 truncate">
                     {created ? (
                       <Trans>New supply</Trans>
