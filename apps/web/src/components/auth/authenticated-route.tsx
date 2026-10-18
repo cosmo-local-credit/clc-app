@@ -30,21 +30,24 @@ function AuthRouteFallback() {
   return <div className="min-h-[100svh] bg-background" />;
 }
 
+/** A plain page, not a card: the check failed, and retrying is the one thing to do. */
 function SessionCheckError({ onRetry, retrying }: { onRetry: () => void; retrying: boolean }) {
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-20 pb-12">
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Session check failed</Trans>
-        </h1>
-        <p className="mt-2 text-muted-foreground text-sm">
-          <Trans>We could not verify your session. Check your connection and try again.</Trans>
-        </p>
-        <Button tap className="mt-4 w-full" pending={retrying} onClick={onRetry}>
+    <OnboardingScreen
+      start={<CLCLogo className="size-9" sharp />}
+      footer={
+        <Button tap className="w-full" pending={retrying} onClick={onRetry}>
           <Trans>Try again</Trans>
         </Button>
-      </div>
-    </div>
+      }
+    >
+      <OnboardingTitle>
+        <Trans>Session check failed</Trans>
+      </OnboardingTitle>
+      <p className="text-muted-foreground text-sm">
+        <Trans>We could not verify your session. Check your connection and try again.</Trans>
+      </p>
+    </OnboardingScreen>
   );
 }
 
