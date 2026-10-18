@@ -137,11 +137,12 @@ afterEach(() => {
 });
 
 describe("AllVouchersPage", () => {
-  it("keeps the title-row create action and shows the inline voucher quota", async () => {
+  it("keeps the title-row create action and leaves the allowance to the create flow", async () => {
     mockReads();
     renderPage();
 
-    expect(await screen.findByRole("heading", { name: /My Vouchers.*0 of 1 used/ })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "My Vouchers" })).toBeTruthy();
+    expect(screen.queryByText(/used/)).toBeNull();
     const create = screen.getByRole("link", { name: /create/i });
     expect(create.getAttribute("href")).toBe("/vouchers/create/voucher");
     expect(create.getAttribute("data-size")).toBe("default");

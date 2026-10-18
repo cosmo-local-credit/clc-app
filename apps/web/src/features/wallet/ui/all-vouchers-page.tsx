@@ -8,7 +8,6 @@ import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { TokenLogo, type WalletToken } from "#/components/wallet";
-import { ResourceQuotaTitle } from "#/components/resource-usage";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
@@ -193,13 +192,7 @@ export function AllVouchersPage() {
           ) : null}
           <section aria-labelledby="my-vouchers-title">
             <SectionHeading id="my-vouchers-title" className="mb-2">
-              <ResourceQuotaTitle
-                quota={usage.data?.vouchers}
-                pending={usage.isPending}
-                error={usage.isError}
-              >
-                <Trans>My Vouchers</Trans>
-              </ResourceQuotaTitle>
+              <Trans>My Vouchers</Trans>
             </SectionHeading>
             <div className="border-border bg-card border">
               {voucherGroups.issued.length === 0 ? (

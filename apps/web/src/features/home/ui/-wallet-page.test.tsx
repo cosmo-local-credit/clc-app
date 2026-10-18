@@ -360,6 +360,16 @@ describe("WalletPage", () => {
     await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
 
+  it("keeps allowance counts out of My Vouchers and My Pools", async () => {
+    mockEndpoints({ pools: [OWNED_POOL] });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+    await screen.findByText("Kilifi Mkulima");
+
+    expect(screen.getByRole("heading", { name: "My Vouchers" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "My Pools" })).toBeTruthy();
+    expect(screen.queryByText(/0 of 1 used/)).toBeNull();
+  });
+
   it("offers voucher creation when the wallet is empty", async () => {
     mockNoTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
