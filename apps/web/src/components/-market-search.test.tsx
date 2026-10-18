@@ -198,6 +198,29 @@ describe("MarketSearchScreen", () => {
     expect(filter.setTerm).not.toHaveBeenCalled();
   });
 
+  it("clears the draft, restores focus, and runs the visible search suggestion", () => {
+    const { dialog, filter, onClose } = renderScreen();
+    const input = within(dialog).getByRole("searchbox") as HTMLInputElement;
+
+    type("bike");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Clear search" }));
+    expect(input.value).toBe("");
+    expect(document.activeElement).toBe(input);
+
+    type("bike");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Search “bike”" }));
+    expect(filter.setTerm).toHaveBeenCalledWith("bike");
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes when the dialog is dismissed with Escape", () => {
+    const { dialog, onClose } = renderScreen();
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it("does not add a tag that is already applied", () => {
     mocks.suggestions = { ...mocks.suggestions, tags: ["Food"] };
     const { dialog, onApplyTags, onClose } = renderScreen(makeFilter({ tags: ["Food"] } as never));
