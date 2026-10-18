@@ -111,7 +111,7 @@ export function VoucherOfferingsPanel({
     >
       {isOwner ? (
         <>
-          <ResourceUsage resource="offers" />
+          <ResourceUsage resource="offers" count={false} />
           <Button
             tap
             className="mb-3 w-full"

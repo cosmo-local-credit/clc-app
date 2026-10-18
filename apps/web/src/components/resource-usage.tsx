@@ -1,7 +1,76 @@
-import type { ResourceKind } from "@clc/api/features/resource-limits/client";
+import type {
+  ResourceKind,
+  ResourceUsage as ResourceUsageData,
+} from "@clc/api/features/resource-limits/client";
+import { Trans as RuntimeTrans } from "@lingui/react";
 import { Trans, useLingui } from "@lingui/react/macro";
+import type { ReactNode } from "react";
 import { Button } from "#/components/ui/button";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
+import { cn } from "#/lib/utils";
+
+type ResourceQuota = ResourceUsageData[ResourceKind];
+
+/** Compact quota copy for a section heading whose title already names the resource. */
+function ResourceQuotaSummary({
+  quota,
+  pending,
+  error,
+  className,
+}: {
+  quota: ResourceQuota | undefined;
+  pending: boolean;
+  error: boolean;
+  className?: string;
+}) {
+  const used = quota?.used ?? 0;
+  const limit = quota?.limit ?? 0;
+  return (
+    <span
+      className={cn(
+        "font-sans text-muted-foreground text-sm font-normal tracking-normal",
+        className,
+      )}
+      aria-live="polite"
+    >
+      {error ? (
+        <Trans>Unavailable</Trans>
+      ) : pending || !quota ? (
+        <Trans>Loading…</Trans>
+      ) : quota.unlimited ? (
+        <RuntimeTrans id="{used} used · Unlimited" values={{ used }} />
+      ) : (
+        <RuntimeTrans id="{used} of {limit} used" values={{ used, limit }} />
+      )}
+    </span>
+  );
+}
+
+export function ResourceQuotaTitle({
+  children,
+  quota,
+  pending,
+  error,
+}: {
+  children: ReactNode;
+  quota: ResourceQuota | undefined;
+  pending: boolean;
+  error: boolean;
+}) {
+  return (
+    <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      <span>{children}</span> <ResourceQuotaSummary quota={quota} pending={pending} error={error} />
+    </span>
+  );
+}
+
+export function ResourceLimitMessage({ quota }: { quota: ResourceQuota | undefined }) {
+  return quota && !quota.canCreate ? (
+    <p className="text-muted-foreground text-sm">
+      <Trans>Limit reached. Ask an administrator to increase your allowance.</Trans>
+    </p>
+  ) : null;
+}
 
 /**
  * The creator's allowance for one kind of resource. `count={false}` drops the
