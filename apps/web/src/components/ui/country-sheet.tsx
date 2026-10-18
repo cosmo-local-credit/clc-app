@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLingui } from "@lingui/react/macro";
+import { useMemo, useState } from "react";
 import { getCountries, getCountryCallingCode } from "react-phone-number-input";
 import labels from "react-phone-number-input/locale/en.json";
 import { getFlagEmoji } from "#/components/ui/country-utils";
@@ -26,15 +27,27 @@ type CountrySheetProps = {
 };
 
 export function CountrySheet({ open, onClose, mode, value, onChange }: CountrySheetProps) {
+  const { i18n, t } = useLingui();
   const [search, setSearch] = useState("");
 
   const allCountries = getCountries();
+  // Names in the active language where the runtime knows them, English otherwise.
+  const regionNames = useMemo(() => {
+    try {
+      return new Intl.DisplayNames([i18n.locale], { type: "region" });
+    } catch {
+      return null;
+    }
+  }, [i18n.locale]);
+  const nameOf = (code: string) => regionNames?.of(code) ?? countryLabels[code] ?? code;
 
   const filtered = allCountries.filter((code) => {
-    const name = countryLabels[code] ?? code;
+    const name = nameOf(code);
     const q = search.toLowerCase();
     if (!q) return true;
+    // The English name still matches, for a search typed in another language.
     if (name.toLowerCase().includes(q)) return true;
+    if ((countryLabels[code] ?? "").toLowerCase().includes(q)) return true;
     if (mode === "phone-country") {
       const dial = getCountryCallingCode(code);
       if (`+${dial}`.includes(q) || dial.includes(q)) return true;
@@ -57,28 +70,28 @@ export function CountrySheet({ open, onClose, mode, value, onChange }: CountrySh
         <SheetContent className="h-[50dvh] max-h-[50dvh]" initialFocus={false}>
           <SheetHeader>
             <SheetTitle>
-              {mode === "phone-country" ? "Select country code" : "Select country"}
+              {mode === "phone-country" ? t`Select country code` : t`Select country`}
             </SheetTitle>
           </SheetHeader>
 
           <div className="px-4 pb-3">
             <Input
-              placeholder="Search…"
+              placeholder={t`Search…`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search countries"
+              aria-label={t`Search countries`}
             />
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto pb-safe">
             {filtered.length === 0 ? (
               <p className="px-4 py-6 text-center text-muted-foreground text-sm">
-                No countries found
+                {t`No countries found`}
               </p>
             ) : (
               <div>
                 {filtered.map((code) => {
-                  const name = countryLabels[code] ?? code;
+                  const name = nameOf(code);
                   const isSelected = code === value;
                   return (
                     <div key={code}>
@@ -86,7 +99,7 @@ export function CountrySheet({ open, onClose, mode, value, onChange }: CountrySh
                         render={
                           <button
                             type="button"
-                            aria-label={`Select ${name}`}
+                            aria-label={t`Select ${name}`}
                             className={cn(
                               "flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors",
                               "hover:bg-muted active:bg-muted",
