@@ -59,6 +59,9 @@ const notificationActionSchema = z.object({
 export type NotificationAction = z.infer<typeof notificationActionSchema>;
 
 export type NotificationPayload = {
+  revision?: number;
+  registrationId?: string;
+  deliveryExpiresAt?: string;
   actions?: NotificationAction[];
   body: string;
   createdAt: string;
@@ -135,6 +138,9 @@ export function parseNotificationPayload(
 function createRequiredNotificationPayloadSchema(appOrigin?: string) {
   return z
     .object({
+      revision: z.number().int().nonnegative().optional(),
+      registrationId: z.string().optional(),
+      deliveryExpiresAt: isoTimestampSchema.optional(),
       body: trimmedString().min(1).max(240),
       createdAt: isoTimestampSchema,
       kind: notificationKindSchema,
