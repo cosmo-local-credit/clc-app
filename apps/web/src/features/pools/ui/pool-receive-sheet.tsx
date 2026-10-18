@@ -51,11 +51,11 @@ export function PoolReceiveSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+        <SheetContent>
           {open ? (
             <>
               <SheetHeader>
-                <SheetTitle className="font-heading text-base font-semibold">
+                <SheetTitle>
                   <Trans>Receive vouchers</Trans>
                 </SheetTitle>
               </SheetHeader>
@@ -79,7 +79,7 @@ export function PoolReceiveSheet({
                     <HighlightAddress
                       address={pool.address}
                       tailLength={6}
-                      className="min-w-0 break-all text-[0.625rem] leading-tight"
+                      className="min-w-0 break-all text-xs"
                     />
                   )}
                   <RiFileCopyLine
@@ -90,7 +90,7 @@ export function PoolReceiveSheet({
               </div>
 
               <SheetFooter>
-                <Button className="h-11 w-full" onClick={onClose}>
+                <Button tap className="w-full" onClick={onClose}>
                   <Trans>Done</Trans>
                 </Button>
               </SheetFooter>

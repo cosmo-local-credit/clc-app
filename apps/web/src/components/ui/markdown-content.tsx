@@ -23,7 +23,7 @@ export function MarkdownContent({
   className?: string;
 }) {
   return (
-    <div dir="auto" className={cn("space-y-3 text-[0.9375rem] leading-6", className)}>
+    <div dir="auto" className={cn("space-y-3 leading-6", className)}>
       <Markdown components={components}>{children}</Markdown>
     </div>
   );
@@ -74,9 +74,7 @@ function Code({ className, children, ...props }: ComponentPropsWithoutRef<"code"
       dir="ltr"
       className={cn(
         "font-mono",
-        block
-          ? "block text-[0.8125rem] leading-5 whitespace-pre-wrap"
-          : "bg-muted px-1 py-0.5 text-[0.8125rem]",
+        block ? "block text-sm leading-5 whitespace-pre-wrap" : "bg-muted px-1 py-0.5 text-sm",
         WRAP,
         className,
       )}
@@ -90,10 +88,10 @@ const components: MarkdownComponents = {
   // The largest heading inside a body is h3: the screen title is the h1, and a
   // post that outranked it would break the page hierarchy.
   h1: ({ children }) => (
-    <h3 className="mt-5 font-heading text-[1.125rem] font-semibold leading-snug">{children}</h3>
+    <h3 className="mt-5 font-heading text-lg font-semibold leading-snug">{children}</h3>
   ),
   h2: ({ children }) => (
-    <h3 className="mt-5 font-heading text-[1.125rem] font-semibold leading-snug">{children}</h3>
+    <h3 className="mt-5 font-heading text-lg font-semibold leading-snug">{children}</h3>
   ),
   h3: ({ children }) => (
     <h4 className="mt-4 font-heading text-base font-semibold leading-snug">{children}</h4>

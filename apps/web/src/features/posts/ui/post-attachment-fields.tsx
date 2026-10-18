@@ -78,7 +78,7 @@ export function PostAttachmentFields({
               </p>
 
               <Input
-                className="bg-card font-mono text-xs"
+                className="bg-card text-xs"
                 aria-label={t`Link ${index + 1}`}
                 value={attachment.url}
                 disabled={disabled}
@@ -104,8 +104,8 @@ export function PostAttachmentFields({
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                className="h-9 bg-card text-destructive"
+                tap
+                className="text-destructive"
                 disabled={disabled}
                 aria-label={t`Remove link ${index + 1}`}
                 onClick={() => onChange(attachments.filter((_, position) => position !== index))}
@@ -133,7 +133,7 @@ export function PostAttachmentFields({
           <Button
             type="button"
             variant="outline"
-            className="h-11 bg-card"
+            tap
             disabled={disabled || draft.trim() === ""}
             onClick={add}
           >
@@ -143,7 +143,7 @@ export function PostAttachmentFields({
       ) : null}
 
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-xs">
           {error}
         </p>
       ) : null}

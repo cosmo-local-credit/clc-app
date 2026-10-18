@@ -3,6 +3,8 @@ import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { Button } from "#/components/ui/button";
+import { useFirstVisitIntroduction } from "#/components/introduction/introduction-provider";
+import { Introduction } from "#/components/introduction/introduction";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { sanitizeInternalRedirect } from "./redirect";
@@ -12,7 +14,9 @@ export function AuthenticatedRoute({ children }: { children: ReactNode }) {
 
   if (auth.isLoading) return <AuthRouteFallback />;
   if (auth.isAuthenticated) return <>{children}</>;
-  if (auth.state === "sessionCheckError") return <SessionCheckError onRetry={auth.retry} />;
+  if (auth.state === "sessionCheckError") {
+    return <SessionCheckError onRetry={auth.retry} retrying={auth.retrying} />;
+  }
   return <AuthRequiredScreen />;
 }
 
@@ -20,7 +24,7 @@ function AuthRouteFallback() {
   return <div className="min-h-[100svh] bg-background" />;
 }
 
-function SessionCheckError({ onRetry }: { onRetry: () => void }) {
+function SessionCheckError({ onRetry, retrying }: { onRetry: () => void; retrying: boolean }) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-20 pb-12">
       <div className="rounded-xl border border-border bg-card p-4">
@@ -30,7 +34,7 @@ function SessionCheckError({ onRetry }: { onRetry: () => void }) {
         <p className="mt-2 text-muted-foreground text-sm">
           <Trans>We could not verify your session. Check your connection and try again.</Trans>
         </p>
-        <Button className="mt-4 h-11 w-full" onClick={onRetry}>
+        <Button tap className="mt-4 w-full" pending={retrying} onClick={onRetry}>
           <Trans>Try again</Trans>
         </Button>
       </div>
@@ -44,6 +48,7 @@ function SessionCheckError({ onRetry }: { onRetry: () => void }) {
  */
 function AuthRequiredScreen() {
   const location = useLocation();
+  const introduction = useFirstVisitIntroduction();
   const redirectTo = sanitizeInternalRedirect(
     `${location.pathname}${location.searchStr}${location.hash}`,
   );
@@ -55,30 +60,45 @@ function AuthRequiredScreen() {
           <Trans>Sign in to continue</Trans>
         </h1>
 
+        {introduction.show ? <Introduction inline /> : null}
+
         <div className="space-y-2">
           {/*
             Replace the protected URL so onboarding does not stack above it.
             Finish then replaces the single onboarding slot with the destination.
           */}
-          <Button asChild className="h-11 w-full">
-            <Link to="/onboarding" search={onboardingSearch("profile", redirectTo)} replace>
+          <Button asChild tap className="w-full">
+            <Link
+              to="/onboarding"
+              search={onboardingSearch("profile", redirectTo)}
+              replace
+              onClick={introduction.complete}
+            >
               <Trans>Create account</Trans>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-11 w-full">
-            <Link to="/onboarding" search={onboardingSearch("signin", redirectTo)} replace>
+          <Button asChild variant="outline" tap className="w-full">
+            <Link
+              to="/onboarding"
+              search={onboardingSearch("signin", redirectTo)}
+              replace
+              onClick={introduction.complete}
+            >
               <Trans>I already have an account</Trans>
             </Link>
           </Button>
         </div>
 
-        <Link
-          to="/"
-          replace
-          className="block text-center text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
+        <Button
+          asChild
+          variant="link"
+          tap
+          className="w-full text-muted-foreground hover:text-foreground"
         >
-          <Trans>Back to market</Trans>
-        </Link>
+          <Link to="/" replace>
+            <Trans>Back to market</Trans>
+          </Link>
+        </Button>
       </div>
     </div>
   );

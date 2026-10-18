@@ -188,9 +188,9 @@ export function WithdrawSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="[&>div:first-child]:hidden">
           <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+            <SheetTitle>
               <Trans>Withdraw</Trans>
             </SheetTitle>
             <p className="text-muted-foreground text-xs">
@@ -210,7 +210,7 @@ export function WithdrawSheet({
                   <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                   <Trans>Couldn't verify your MPESA link.</Trans>
                 </p>
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onRetryLink}>
+                <Button variant="outline" tap onClick={onRetryLink} pending={linkQuery.isFetching}>
                   <Trans>Try again</Trans>
                 </Button>
               </div>
@@ -291,14 +291,15 @@ export function WithdrawSheet({
                           amount !== "" && !hasValidAmount && "text-destructive",
                         )}
                       />
-                      <button
-                        type="button"
+                      <Button
+                        variant="link"
+                        tap
                         disabled={!hasRate || maxKes <= 0}
                         onClick={() => setAmount(maxKes.toString())}
-                        className="ms-1 font-semibold text-primary text-xs hover:underline disabled:opacity-50"
+                        className="-my-2 -me-3"
                       >
                         <Trans>Max</Trans>
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -328,8 +329,10 @@ export function WithdrawSheet({
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button
-              className="h-11 w-full"
-              disabled={!canWithdraw || sendTransfer.isPending}
+              tap
+              className="w-full"
+              disabled={!canWithdraw}
+              pending={sendTransfer.isPending}
               onClick={() => void onWithdraw()}
             >
               {sendTransfer.isPending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}

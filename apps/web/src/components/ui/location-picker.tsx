@@ -3,10 +3,10 @@ import { locationSchema } from "@clc/core/features/location/logic";
 import type { MarkerStyle } from "@clc/core/features/markers/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { ImSpinner2 } from "react-icons/im";
 import { TbCurrentLocation } from "react-icons/tb";
 
 import { Input } from "#/components/ui/input";
+import { Spinner } from "#/components/ui/spinner";
 import type { GeocodeSuggestion } from "#/lib/geo-client";
 import { reverseLocation, searchLocations } from "#/lib/geo-client";
 import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
@@ -221,16 +221,13 @@ export function LocationPicker({
           />
           <button
             type="button"
-            className="absolute top-1/2 end-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
+            className="absolute top-1/2 end-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-none bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
             onClick={geolocation.request}
             disabled={geoUnavailable || geoRequesting}
+            aria-busy={geoRequesting || undefined}
             aria-label={geoUnavailable ? t`Location unavailable` : t`Use my location`}
           >
-            {geoRequesting ? (
-              <ImSpinner2 className="size-4 animate-spin" />
-            ) : (
-              <TbCurrentLocation className="size-4" />
-            )}
+            {geoRequesting ? <Spinner /> : <TbCurrentLocation className="size-4" />}
           </button>
         </div>
 

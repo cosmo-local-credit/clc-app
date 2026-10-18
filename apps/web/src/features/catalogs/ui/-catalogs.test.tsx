@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendApiError } from "@clc/api/client/errors";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
+import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
 import { useCatalogVisibilityStore } from "#/features/home/state/catalog-visibility";
 import { CatalogCreatePage } from "./catalog-create-page";
 import { CatalogDetailPage } from "./catalog-detail-page";
@@ -99,6 +100,16 @@ vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
       ? { lat: geoLat, lng: geoLng }
       : null;
   },
+}));
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: () => ({
+    origin: { lat: 43, lng: 18 },
+    locationStatus: "idle",
+    requestLocation: vi.fn(),
+  }),
+}));
+vi.mock("#/features/home/hooks/use-ip-camera", () => ({
+  useIPCamera: () => ({ data: { source: "ip-city", lat: 43, lng: 18 }, isPending: false }),
 }));
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }));
 vi.mock("#/components/wallet", () => ({ BackChevron: () => <a href="/">Back</a> }));
@@ -537,6 +548,7 @@ describe("catalog discovery", () => {
   });
 
   it("uses nearby session discovery at the established radius", async () => {
+    useCatalogVisibilityStore.getState().setVisibility("1000");
     mocks.api.list.mockResolvedValue({
       catalogs: [{ ...catalog, geoLat: -10, geoLng: -10 }],
       nextCursor: null,
@@ -641,11 +653,13 @@ describe("catalog discovery", () => {
     expect(screen.queryByText("Outside radius")).toBeNull();
     expect(screen.queryByRole("button", { name: "Load more" })).toBeNull();
   });
-  it("does not silently fall back to a global list when the profile lacks a location", () => {
+  it("lists catalogs everywhere, saying so, when the profile lacks a location", async () => {
     mocks.profile.data.geoLat = null;
     mount(<CatalogsPage />);
+    expect(screen.getByText("Choose a location")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Edit profile" })).toBeTruthy();
-    expect(mocks.api.list).not.toHaveBeenCalled();
+    await waitFor(() => expect(mocks.api.list).toHaveBeenCalled());
+    expect(mocks.api.list.mock.calls[0]?.[0]).not.toHaveProperty("nearby", true);
   });
 
   it("keeps discovery hidden and retries a failed profile request", () => {
@@ -727,11 +741,22 @@ describe("catalog sharing", () => {
 });
 
 describe("adjustable catalog allowance", () => {
+  it("shows a member without catalogs the same empty card as vouchers and pools", async () => {
+    mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
+    quotaMock.data.catalogs = { used: 0, limit: 2, canCreate: true, unlimited: false };
+    mount(<MyCatalogSection />);
+    const empty = await screen.findByText("You haven't created a catalog yet.");
+    const card = empty.closest("div.border");
+    expect(card).toBeTruthy();
+    const create = within(card as HTMLElement).getByRole("link", { name: "Create catalog" });
+    expect(create.getAttribute("href")).toBe("/catalogs/create");
+    expect(screen.getByRole("heading", { name: /My Catalogs.*0 of 2 used/ })).toBeTruthy();
+  });
   it("allows a second catalog when an admin raises the allowance", async () => {
     quotaMock.data.catalogs = { used: 1, limit: 2, canCreate: true, unlimited: false };
     mount(<CatalogCreatePage />);
     expect(await screen.findByRole("textbox", { name: "Name" })).toBeTruthy();
-    expect(screen.getByText(/1 of 2 used/)).toBeTruthy();
+    expect(screen.queryByText(/1 of 2 used/)).toBeNull();
   });
   it("explains a full allowance and keeps existing catalogs accessible", async () => {
     quotaMock.data.catalogs = { used: 1, limit: 1, canCreate: false, unlimited: false };

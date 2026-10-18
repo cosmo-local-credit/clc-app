@@ -8,16 +8,25 @@ import {
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
+import { Badge } from "#/components/ui/badge";
+import { PoolLogo, SectionHeader, TokenLogo } from "#/components/wallet";
+import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
-import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
-import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
-import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
+import { useAllOwnedVouchers } from "#/features/wallet/hooks/use-owned-vouchers";
+import {
+  groupWalletVouchers,
+  type WalletVoucherListItem,
+} from "#/features/wallet/logic/owned-voucher-groups";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
+import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/resource-tone";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
+import { cn } from "#/lib/utils";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
-function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
+function WalletVoucherRows({ tokens }: { tokens: readonly WalletVoucherListItem[] }) {
   return tokens.map((token, index, list) => {
     const address = parseVoucherAddress(token.contractAddress ?? token.id);
     const className = [
@@ -28,15 +37,32 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
       <>
         <TokenLogo token={token} size={34} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="text-sm font-semibold">{token.symbol}</p>
+            {token.catalogActive === false ? (
+              <Badge size="sm" variant="outline">
+                <Trans>Retired</Trans>
+              </Badge>
+            ) : null}
+          </div>
           <p className="text-muted-foreground truncate text-xs">{token.name}</p>
         </div>
         <div className="shrink-0 text-end">
-          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
+          {token.balanceState === "ready" ? (
+            <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
+          ) : (
+            <p className="font-heading text-sm font-semibold tracking-tight">
+              {token.balanceState === "loading" ? (
+                <Trans>Loading…</Trans>
+              ) : (
+                <Trans>Unavailable</Trans>
+              )}
+            </p>
+          )}
         </div>
       </>
     );
-    return address ? (
+    return address && token.catalogActive !== false ? (
       <Link
         key={token.id}
         to="/vouchers/$voucherAddress"
@@ -74,13 +100,19 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/cash",
     },
   ] as const;
-  const vouchersQuery = useLatestAccountTokens(address);
-  const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
-  const voucherGroups = usePartitionedVouchers(vouchers, address);
-  const vouchersPending = vouchersQuery.isPending || voucherGroups.isPending;
-  const vouchersFailed = vouchersQuery.isError || voucherGroups.isError;
-  const vouchersEmpty = voucherGroups.holdings.length + voucherGroups.issued.length === 0;
-  const vouchersReady = !vouchersPending && !vouchersFailed && !vouchersEmpty;
+  const balancesQuery = useAllAccountTokens(address, { poll: true });
+  const ownedVouchersQuery = useAllOwnedVouchers(address, { poll: true });
+  const balanceState = balancesQuery.isError
+    ? "unavailable"
+    : balancesQuery.isPending
+      ? "loading"
+      : "complete";
+  const voucherGroups = groupWalletVouchers(
+    ownedVouchersQuery.vouchers,
+    balancesQuery.tokens,
+    balanceState,
+  );
+  const usage = useResourceUsage();
   // Only the first page: this is a shortcut into pools a steward manages, not a
   // list to page through. "All pools" carries the rest.
   //
@@ -107,12 +139,7 @@ export function WalletPage({ address }: { address?: string }) {
           {actions.map((action) => {
             const Icon = action.icon;
             return (
-              <Button
-                key={action.id}
-                asChild
-                variant={action.variant}
-                className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
-              >
+              <Button key={action.id} asChild variant={action.variant} size="tile">
                 <Link to={action.to}>
                   <Icon className="size-4" aria-hidden="true" />
                   {action.label}
@@ -123,56 +150,93 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       </section>
 
-      {!vouchersReady ? (
+      {usage.isError ? (
+        <div role="alert" className="border-border bg-card space-y-2 border p-3 text-sm">
+          <p>
+            <Trans>Couldn't load resource limits.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            tap
+            pending={usage.isFetching}
+            onClick={() => void usage.refetch()}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {ownedVouchersQuery.isPending ? (
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
-            title={<Trans>My Vouchers</Trans>}
+            title={
+              <ResourceQuotaTitle
+                quota={usage.data?.vouchers}
+                pending={usage.isPending}
+                error={usage.isError}
+              >
+                <Trans>My Vouchers</Trans>
+              </ResourceQuotaTitle>
+            }
             action={<Trans>View all</Trans>}
             onAction={() => {
               void navigate({ to: "/wallet/vouchers" });
             }}
           />
           <div className="border-border bg-card border">
-            {vouchersPending && !vouchersFailed ? (
-              <div className="text-muted-foreground p-3 text-sm">
-                <Trans>Loading vouchers…</Trans>
-              </div>
-            ) : null}
-            {vouchersFailed ? (
-              <div className="space-y-2 p-3">
-                <p className="text-muted-foreground text-sm">
-                  <Trans>Couldn't load vouchers.</Trans>
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-card h-9"
-                  onClick={() => {
-                    void vouchersQuery.refetch();
-                    void voucherGroups.refetch();
-                  }}
-                >
-                  <Trans>Try again</Trans>
-                </Button>
-              </div>
-            ) : null}
-            {!vouchersPending && !vouchersFailed ? (
-              <div className="space-y-3 p-3">
-                <p className="text-muted-foreground text-sm">
-                  <Trans>No vouchers yet.</Trans>
-                </p>
-                <Button asChild variant="outline" className="bg-card h-9 w-full">
-                  <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
-                    <Trans>Create voucher</Trans>
-                  </Link>
-                </Button>
-              </div>
-            ) : null}
+            <ListSkeleton framed={false} count={3} label={<Trans>Loading vouchers…</Trans>} />
+          </div>
+        </section>
+      ) : ownedVouchersQuery.isError ? (
+        <section aria-labelledby="my-vouchers-title">
+          <SectionHeader
+            id="my-vouchers-title"
+            title={
+              <ResourceQuotaTitle
+                quota={usage.data?.vouchers}
+                pending={usage.isPending}
+                error={usage.isError}
+              >
+                <Trans>My Vouchers</Trans>
+              </ResourceQuotaTitle>
+            }
+            action={<Trans>View all</Trans>}
+            onAction={() => void navigate({ to: "/wallet/vouchers" })}
+          />
+          <div className="border-border bg-card border">
+            <div className="space-y-2 p-3">
+              <p className="text-muted-foreground text-sm">
+                <Trans>Couldn't load vouchers.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                tap
+                pending={ownedVouchersQuery.isFetching}
+                onClick={() => void ownedVouchersQuery.refetch()}
+              >
+                <Trans>Try again</Trans>
+              </Button>
+            </div>
           </div>
         </section>
       ) : (
         <>
+          {balancesQuery.isError ? (
+            <div role="alert" className="border-border bg-card space-y-2 border p-3">
+              <p className="text-muted-foreground text-sm">
+                <Trans>Couldn't load vouchers.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                tap
+                pending={balancesQuery.isFetching}
+                onClick={() => void balancesQuery.refetch()}
+              >
+                <Trans>Try again</Trans>
+              </Button>
+            </div>
+          ) : null}
           {voucherGroups.holdings.length > 0 ? (
             <section aria-labelledby="holdings-title">
               <SectionHeader id="holdings-title" title={<Trans>Holdings</Trans>} />
@@ -184,26 +248,49 @@ export function WalletPage({ address }: { address?: string }) {
           <section aria-labelledby="my-vouchers-title">
             <SectionHeader
               id="my-vouchers-title"
-              title={<Trans>My Vouchers</Trans>}
+              title={
+                <ResourceQuotaTitle
+                  quota={usage.data?.vouchers}
+                  pending={usage.isPending}
+                  error={usage.isError}
+                >
+                  <Trans>My Vouchers</Trans>
+                </ResourceQuotaTitle>
+              }
               action={<Trans>View all</Trans>}
               onAction={() => {
                 void navigate({ to: "/wallet/vouchers" });
               }}
             />
             <div className="border-border bg-card border">
-              {voucherGroups.issued.length === 0 ? (
+              {voucherGroups.owned.length === 0 ? (
                 <div className="space-y-3 p-3">
                   <p className="text-muted-foreground text-sm">
-                    <Trans>You haven't issued a voucher yet.</Trans>
+                    <Trans>No vouchers yet.</Trans>
                   </p>
-                  <Button asChild variant="outline" className="bg-card h-9 w-full">
-                    <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
-                      <Trans>Create voucher</Trans>
-                    </Link>
+                  <ResourceLimitMessage quota={usage.data?.vouchers} />
+                  <Button
+                    asChild={usage.data?.vouchers.canCreate === true && !usage.isError}
+                    disabled={usage.data?.vouchers.canCreate !== true || usage.isError}
+                    variant="outline"
+                    tap
+                    className={cn("w-full", RESOURCE_HUE.vouchers, RESOURCE_OUTLINE)}
+                  >
+                    {usage.data?.vouchers.canCreate === true && !usage.isError ? (
+                      <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
+                        <RESOURCE_ICON.vouchers aria-hidden="true" />
+                        <Trans>Create voucher</Trans>
+                      </Link>
+                    ) : (
+                      <span>
+                        <RESOURCE_ICON.vouchers aria-hidden="true" />
+                        <Trans>Create voucher</Trans>
+                      </span>
+                    )}
                   </Button>
                 </div>
               ) : (
-                <WalletVoucherRows tokens={voucherGroups.issued} />
+                <WalletVoucherRows tokens={voucherGroups.owned} />
               )}
             </div>
           </section>
@@ -213,15 +300,21 @@ export function WalletPage({ address }: { address?: string }) {
       <section aria-labelledby="my-pools-title">
         <SectionHeader
           id="my-pools-title"
-          title={<Trans>My Pools</Trans>}
+          title={
+            <ResourceQuotaTitle
+              quota={usage.data?.pools}
+              pending={usage.isPending}
+              error={usage.isError}
+            >
+              <Trans>My Pools</Trans>
+            </ResourceQuotaTitle>
+          }
           action={<Trans>All pools</Trans>}
           actionTo="/pools"
         />
         <div className="border-border bg-card border">
           {ownedPoolsQuery.isPending ? (
-            <div className="text-muted-foreground p-3 text-sm">
-              <Trans>Loading pools…</Trans>
-            </div>
+            <ListSkeleton framed={false} count={2} label={<Trans>Loading pools…</Trans>} />
           ) : null}
           {ownedPoolsQuery.isError ? (
             <div className="space-y-2 p-3">
@@ -230,9 +323,9 @@ export function WalletPage({ address }: { address?: string }) {
               </p>
               <Button
                 variant="outline"
-                size="sm"
-                className="bg-card h-9"
-                onClick={() => ownedPoolsQuery.refetch()}
+                tap
+                pending={ownedPoolsQuery.isFetching}
+                onClick={() => void ownedPoolsQuery.refetch()}
               >
                 <Trans>Try again</Trans>
               </Button>
@@ -243,10 +336,25 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>You haven't created a pool yet.</Trans>
               </p>
-              <Button asChild variant="outline" className="bg-card h-9 w-full">
-                <Link to="/pools/create/$step" params={{ step: "pool" }}>
-                  <Trans>Create pool</Trans>
-                </Link>
+              <ResourceLimitMessage quota={usage.data?.pools} />
+              <Button
+                asChild={usage.data?.pools.canCreate === true && !usage.isError}
+                disabled={usage.data?.pools.canCreate !== true || usage.isError}
+                variant="outline"
+                tap
+                className={cn("w-full", RESOURCE_HUE.pools, RESOURCE_OUTLINE)}
+              >
+                {usage.data?.pools.canCreate === true && !usage.isError ? (
+                  <Link to="/pools/create/$step" params={{ step: "pool" }}>
+                    <RESOURCE_ICON.pools aria-hidden="true" />
+                    <Trans>Create pool</Trans>
+                  </Link>
+                ) : (
+                  <span>
+                    <RESOURCE_ICON.pools aria-hidden="true" />
+                    <Trans>Create pool</Trans>
+                  </span>
+                )}
               </Button>
             </div>
           ) : null}
@@ -262,7 +370,7 @@ export function WalletPage({ address }: { address?: string }) {
             >
               <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={34} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold tracking-tight">{pool.name}</p>
+                <p className="truncate text-sm font-semibold">{pool.name}</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">
                   {pool.voucherCount === 1 ? (
                     <Trans>1 voucher</Trans>
@@ -280,7 +388,7 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       </section>
 
-      <MyCatalogSection />
+      <MyCatalogSection usage={usage} />
     </div>
   );
 }

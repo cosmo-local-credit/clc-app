@@ -1,3 +1,5 @@
+import { EXPLICIT_CAMERA_RANK, type MarketCamera } from "#/features/home/logic/market-camera";
+export type { MarketCamera } from "#/features/home/logic/market-camera";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Trans } from "@lingui/react/macro";
 import MapLibreGL, {
@@ -94,15 +96,6 @@ const USER_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height=
 type UserLocation = { lat: number; lng: number };
 
 type SymbolLayer = Extract<LayerSpecification, { type: "symbol" }>;
-
-export type MarketCamera = {
-  lat: number;
-  lng: number;
-  zoom: number;
-  rank: number;
-};
-
-export const EXPLICIT_CAMERA_RANK = 0;
 
 export type MarketViewport = {
   west: number;
@@ -496,6 +489,10 @@ export function MarketMap({
   onUserPanRef.current = onUserPan;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
+  // Seed each map instance from the current camera without rebuilding it when
+  // the camera changes. Starting at Nairobi would flash before the load handler.
+  const cameraRef = useRef(camera);
+  cameraRef.current = camera;
 
   const reportViewport = useCallback((map: MapLibreGL.Map) => {
     const report = onViewportSettledRef.current;
@@ -519,11 +516,12 @@ export function MarketMap({
 
     let map: MapLibreGL.Map;
     try {
+      const initialCamera = cameraRef.current;
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: maptilerStyle,
-        center: [NAIROBI.lng, NAIROBI.lat],
-        zoom: DEFAULT_ZOOM,
+        center: initialCamera ? [initialCamera.lng, initialCamera.lat] : [NAIROBI.lng, NAIROBI.lat],
+        zoom: initialCamera?.zoom ?? DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
         bearing: 0,
         pitch: 0,
@@ -850,12 +848,7 @@ export function MarketMap({
             )}
           </p>
           {failure === "error" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-card"
-              onClick={() => setFailure(null)}
-            >
+            <Button variant="outline" tap onClick={() => setFailure(null)}>
               <Trans>Retry</Trans>
             </Button>
           ) : null}

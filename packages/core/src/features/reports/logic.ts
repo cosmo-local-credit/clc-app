@@ -442,7 +442,7 @@ function roundToOneDecimal(value: number): string {
  */
 export function safeMarkdownHref(href: string | undefined): string | undefined {
   if (!href) return undefined;
-  const cleaned = href.trim().replace(/[\u0000-\u001F\u007F\s]+/g, "");
+  const cleaned = href.trim().replace(/[\p{Cc}\s]+/gu, "");
   if (cleaned === "") return undefined;
   if (/^(#|\/|\.\/|\.\.\/)/.test(cleaned)) return cleaned;
   return /^(https?:|mailto:)/i.test(cleaned) ? cleaned : undefined;

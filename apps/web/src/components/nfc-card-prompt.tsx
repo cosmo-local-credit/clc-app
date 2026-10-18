@@ -1,10 +1,10 @@
 import type { NfcCardContent, NfcErrorKind, NfcSessionPhase } from "@clc/core/features/nfc/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
-import { FiLoader } from "react-icons/fi";
 import { TbNfc } from "react-icons/tb";
 
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import { cn } from "#/lib/utils";
 
 /** What a tap produced that is not a usable card, for the prompt to explain. */
@@ -88,11 +88,7 @@ export function NfcCardPrompt({
           )}
           aria-hidden="true"
         >
-          {phase === "starting" ? (
-            <FiLoader className="size-6 animate-spin" />
-          ) : (
-            <TbNfc className="size-7" />
-          )}
+          {phase === "starting" ? <Spinner className="size-6" /> : <TbNfc className="size-7" />}
         </span>
         <p className="font-medium text-sm">{title}</p>
         <p className="text-muted-foreground text-xs" aria-live="polite">
@@ -111,13 +107,13 @@ export function NfcCardPrompt({
         ) : null}
       </div>
       {failed || stopped ? (
-        <Button className="h-11 w-full" onClick={onRetry}>
+        <Button tap className="w-full" onClick={onRetry}>
           <TbNfc className="me-2 size-4" />
           <Trans>Try again</Trans>
         </Button>
       ) : null}
       {onCancel ? (
-        <Button variant="ghost" className="h-11 w-full" onClick={onCancel}>
+        <Button variant="ghost" tap className="w-full" onClick={onCancel}>
           <Trans>Cancel</Trans>
         </Button>
       ) : null}

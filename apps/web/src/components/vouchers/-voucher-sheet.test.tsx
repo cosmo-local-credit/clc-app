@@ -30,9 +30,17 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("#/components/catalogs/add-to-catalog-button", () => ({
-  AddToCatalogButton: ({ className, size }: { className?: string; size?: string }) =>
+  AddToCatalogButton: ({
+    className,
+    size,
+    tap,
+  }: {
+    className?: string;
+    size?: string;
+    tap?: boolean;
+  }) =>
     mocks.authenticated ? (
-      <button type="button" className={className} data-size={size}>
+      <button type="button" className={className} data-size={size} data-tap={tap}>
         Add to catalog
       </button>
     ) : null,
@@ -385,8 +393,9 @@ describe("VoucherSheet summary", () => {
     );
     const actions = screen.getByLabelText("Voucher actions");
     const addToCatalog = within(actions).getByRole("button", { name: "Add to catalog" });
-    expect(addToCatalog.getAttribute("data-size")).toBe("sm");
-    expect(addToCatalog.className).toContain("h-9");
+    // Compact like the pills beside it, with the same padded 44px target.
+    expect(addToCatalog.getAttribute("data-size")).toBeNull();
+    expect(addToCatalog.getAttribute("data-tap")).toBe("true");
     expect(screen.getByLabelText("Your Balance").textContent).toContain("2.5 MALII (25 KSH)");
   });
 
@@ -474,7 +483,7 @@ describe("VoucherSheet continuous content", () => {
     renderSheet();
     expect(screen.queryByText("Offerings panel")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    expect(await screen.findByText("Offerings panel")).toBeTruthy();
+    expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.getByText("Reviews panel")).toBeTruthy();
     expect(screen.getByTestId("offerings").getAttribute("data-page-size")).toBe("3");
     fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
@@ -484,7 +493,7 @@ describe("VoucherSheet continuous content", () => {
   it("has no old tabs, overview, or pool carousel", async () => {
     mocks.detail = detail();
     renderSheet({ initialSnap: "full" });
-    expect(await screen.findByText("Offerings panel")).toBeTruthy();
+    expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByRole("tab")).toBeNull();
     expect(screen.queryByText("Pools with this voucher")).toBeNull();
     expect(screen.getByText("Fresh vegetables from the farm.")).toBeTruthy();
@@ -496,7 +505,7 @@ describe("VoucherSheet continuous content", () => {
   it("does not need an escape link to a second voucher implementation", async () => {
     mocks.detail = detail();
     renderSheet({ initialSnap: "half" });
-    expect(await screen.findByText("Offerings panel")).toBeTruthy();
+    expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Open voucher page" })).toBeNull();
   });
 

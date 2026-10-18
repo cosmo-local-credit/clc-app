@@ -3,6 +3,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useState } from "react";
 import { FaUser } from "react-icons/fa";
 
+import { Button } from "#/components/ui/button";
 import { ImageCropSheet } from "#/components/ui/image-crop-sheet";
 import { PhotoSourcePicker } from "#/components/ui/photo-source-picker";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -108,17 +109,18 @@ export function AvatarPicker({
         />
 
         {value ? (
-          <button
-            type="button"
+          <Button
+            variant="link"
+            tap
             disabled={disabled}
             onClick={() => {
               setError(null);
               onChange(null);
             }}
-            className="text-muted-foreground text-xs underline-offset-4 hover:underline"
+            className="text-muted-foreground"
           >
             {t`Remove`}
-          </button>
+          </Button>
         ) : required || validationError ? (
           <p
             id={validationErrorId}

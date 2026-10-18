@@ -70,17 +70,16 @@ export function marketplaceSearchForScope(
   };
 }
 
-/** The unfiltered All view is the destination owned by the round Market navigation action. */
-export function isAtMarketplaceRoot(search: unknown): boolean {
+/**
+ * The map's share of a list's search: the query, the tags and Credit carry
+ * between the map and every list, and nothing that belongs to one list does.
+ */
+export function mapSearchFrom(search: unknown): MarketplaceRouteSearch {
   const state = pickMarketplaceSearch(search);
-  return (
-    state.scope === undefined &&
-    state.q === undefined &&
-    state.tags === undefined &&
-    state.tagMatch === undefined &&
-    state.vouchers === undefined &&
-    state.voucherMatch === undefined &&
-    state.out_voucher === undefined &&
-    state.creditable === undefined
-  );
+  return {
+    q: state.q,
+    tags: state.tags,
+    tagMatch: state.tagMatch,
+    creditable: state.creditable,
+  };
 }

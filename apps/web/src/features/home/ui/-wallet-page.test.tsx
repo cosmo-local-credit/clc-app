@@ -1,9 +1,25 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+
+const mocks = vi.hoisted(() => ({
+  navigate: vi.fn(),
+  usage: {
+    data: {
+      vouchers: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      pools: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      catalogs: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      offers: { used: 0, limit: 0, unlimited: true, canCreate: true },
+    },
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  },
+}));
 
 vi.mock("@tanstack/react-router", () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => mocks.navigate,
   Link: ({
     to,
     params,
@@ -34,7 +50,10 @@ vi.mock("@tanstack/react-router", () => ({
 // The profile nudge reads the connected wallet; it has its own test.
 vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
 vi.mock("#/components/catalogs/my-catalog-section", () => ({
-  MyCatalogSection: () => <section aria-label="My catalog">My catalog</section>,
+  MyCatalogSection: () => <section aria-label="My Catalogs">My Catalogs</section>,
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({
+  useResourceUsage: () => mocks.usage,
 }));
 
 import { WalletPage } from "./wallet-page";
@@ -78,42 +97,68 @@ function jsonResponse(result: unknown, status = 200) {
 }
 
 /**
- * Account balances, plus the account's issued list. The issued list is what
- * says which balances the account issued; without this branch it is answered
- * with the balance payload and every balance reads as issued.
+ * Account balances plus the authoritative current-owner endpoint.
  */
 function mockLatestTokens({
   tokens = [USDT],
-  issued = [],
-  issuedStatus = 200,
+  owners = {},
+  detailStatus = 200,
+  balanceStatus = 200,
 }: {
   tokens?: readonly unknown[];
-  issued?: readonly unknown[];
-  issuedStatus?: number;
+  owners?: Readonly<Record<string, string | null>>;
+  detailStatus?: number;
+  balanceStatus?: number;
 } = {}) {
-  const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
-    if (String(url).includes("/tokens/issued")) {
-      return Promise.resolve(
-        issuedStatus === 200
-          ? jsonResponse({ tokens: issued, first: 0, last: 0 })
-          : jsonResponse(null, issuedStatus),
-      );
-    }
-    return Promise.resolve(jsonResponse({ tokens }));
-  });
-  vi.stubGlobal("fetch", fetchMock);
-  return fetchMock;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockImplementation((url: string | URL) => {
+      const href = String(url);
+      if (href.includes("/api/v2/users/me/vouchers")) {
+        if (detailStatus !== 200) return Promise.resolve(jsonResponse(null, detailStatus));
+        const owned = tokens.flatMap((value) => {
+          const token = value as typeof USDT & { catalogActive?: boolean };
+          const ownerAddress = owners[token.tokenAddress.toLowerCase()];
+          if (ownerAddress?.toLowerCase() !== ADDRESS.toLowerCase()) return [];
+          return [
+            {
+              id: token.id,
+              chainId: 100,
+              address: token.tokenAddress,
+              name: token.tokenName,
+              symbol: token.tokenSymbol,
+              decimals: token.tokenDecimals,
+              iconUrl: token.iconUrl,
+              ownerAddress,
+              active: token.catalogActive !== false,
+            },
+          ];
+        });
+        return Promise.resolve(
+          jsonResponse({
+            vouchers: owned,
+          }),
+        );
+      }
+      if (href.includes("/api/v2/accounts/") && href.includes("/tokens") && balanceStatus !== 200)
+        return Promise.resolve(jsonResponse(null, balanceStatus));
+      return Promise.resolve(jsonResponse({ tokens }));
+    }),
+  );
 }
 
 function mockNoTokens() {
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "",
-      text: () => Promise.resolve(JSON.stringify({ ok: true, result: { tokens: [] } })),
-    }),
+    vi
+      .fn()
+      .mockImplementation((url: string | URL) =>
+        Promise.resolve(
+          jsonResponse(
+            String(url).includes("/api/v2/users/me/vouchers") ? { vouchers: [] } : { tokens: [] },
+          ),
+        ),
+      ),
   );
 }
 
@@ -136,12 +181,22 @@ const OWNED_POOL = {
  * cannot serve the pool list — the two responses have different shapes, and a
  * pool page read as a token page is silently empty rather than failing.
  */
-function mockEndpoints({ pools }: { pools: readonly unknown[] }) {
+function mockEndpoints({
+  pools,
+  poolStatus = 200,
+}: {
+  pools: readonly unknown[];
+  poolStatus?: number;
+}) {
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
     const href = String(url);
+    if (href.includes("/api/v2/pools") && poolStatus !== 200)
+      return Promise.resolve(jsonResponse(null, poolStatus));
     const result = href.includes("/api/v2/pools")
       ? { pools, first: 0, last: 0 }
-      : { tokens: [] as unknown[] };
+      : href.includes("/api/v2/users/me/vouchers")
+        ? { vouchers: [] as unknown[] }
+        : { tokens: [] as unknown[] };
     return Promise.resolve({
       ok: true,
       status: 200,
@@ -155,6 +210,13 @@ function mockEndpoints({ pools }: { pools: readonly unknown[] }) {
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+beforeEach(() => {
+  mocks.navigate.mockReset();
+  mocks.usage.isError = false;
+  mocks.usage.isFetching = false;
+  mocks.usage.refetch.mockReset();
 });
 
 describe("WalletPage", () => {
@@ -204,11 +266,14 @@ describe("WalletPage", () => {
   });
 
   it("lists vouchers the account issued separately from the ones it holds", async () => {
-    mockLatestTokens({ tokens: [USDT, ISSUED], issued: [ISSUED] });
+    mockLatestTokens({
+      tokens: [USDT, ISSUED],
+      owners: { [ISSUED.tokenAddress]: ADDRESS, [USDT.tokenAddress.toLowerCase()]: OTHER },
+    });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
-    const issued = within(screen.getByRole("region", { name: "My Vouchers" }));
+    const issued = within(screen.getByRole("region", { name: /My Vouchers/ }));
     expect(holdings.getByText("USD₮")).toBeTruthy();
     expect(holdings.queryByText("WLLR")).toBeNull();
     expect(issued.getByText("WLLR")).toBeTruthy();
@@ -218,66 +283,67 @@ describe("WalletPage", () => {
     const text = document.body.textContent ?? "";
     expect(text.indexOf("Holdings")).toBeLessThan(text.indexOf("My Vouchers"));
     expect(text.indexOf("My Vouchers")).toBeLessThan(text.indexOf("My Pools"));
-    expect(text.indexOf("My Pools")).toBeLessThan(text.indexOf("My catalog"));
+    expect(text.indexOf("My Pools")).toBeLessThan(text.indexOf("My Catalogs"));
   });
 
-  it("treats a balance the account did not issue as a holding", async () => {
+  it("treats a token the catalog does not list as a holding", async () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
     expect(holdings.getByText("USD₮")).toBeTruthy();
-    expect(screen.getByText("You haven't issued a voucher yet.")).toBeTruthy();
+    expect(screen.getByText("No vouchers yet.")).toBeTruthy();
   });
 
-  it("lists an issued voucher whose supply was never created", async () => {
-    // The opening mint failed, so the voucher has no balance anywhere and the
-    // balance list never mentions it.
+  it("shows a retired currently owned voucher without a public-detail link", async () => {
     mockLatestTokens({
-      tokens: [],
-      issued: [{ ...ISSUED, balance: "0", lastDateBlock: "0001-01-01T00:00:00Z" }],
+      tokens: [{ ...ISSUED, catalogActive: false }],
+      owners: { [ISSUED.tokenAddress]: ADDRESS },
     });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    await screen.findByText("WLLR");
-    const issued = within(screen.getByRole("region", { name: "My Vouchers" }));
-    expect(issued.getByText("WLLR")).toBeTruthy();
-    expect(issued.getByText("0")).toBeTruthy();
-    expect(issued.getByRole("link", { name: /WLLR/ }).getAttribute("href")).toBe(
-      `/vouchers/${ISSUED.tokenAddress}?from=wallet`,
-    );
-    expect(screen.queryByText("No vouchers yet.")).toBeNull();
+    expect(await screen.findByText("Retired")).toBeTruthy();
+    expect(screen.getByText("WLLR")).toBeTruthy();
+    expect(screen.getByText("WLLR").closest("a")).toBeNull();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });
 
-  it("files balances with one issued read rather than a catalog read per balance", async () => {
-    const fetchMock = mockLatestTokens({ tokens: [USDT, ISSUED], issued: [ISSUED] });
-    renderWithQueryClient(<WalletPage address={ADDRESS} />);
-    await screen.findByRole("region", { name: "Holdings" });
-
-    const urls = fetchMock.mock.calls.map(([url]) => String(url));
-    expect(urls.filter((url) => url.includes("/api/v2/vouchers/"))).toEqual([]);
-    expect(urls).toContainEqual(
-      expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens/issued?perPage=100`),
-    );
-  });
-
-  it("hides a retired indexed balance and shows the empty wallet state", async () => {
-    mockLatestTokens({ tokens: [{ ...ISSUED, catalogActive: false }] });
-    renderWithQueryClient(<WalletPage address={ADDRESS} />);
-
-    expect(await screen.findByText("No vouchers yet.")).toBeTruthy();
-    expect(screen.queryByText("WLLR")).toBeNull();
-    expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
-  });
-
-  it("does not file balances while the issued list is down", async () => {
-    mockLatestTokens({ issuedStatus: 500 });
+  it("does not file balances while the catalog read is down", async () => {
+    mockLatestTokens({ detailStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     expect(await screen.findByText("Couldn't load vouchers.")).toBeTruthy();
     expect(screen.queryByText("USD₮")).toBeNull();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
+  });
+
+  it("retries resource limits and failed owned-voucher discovery", async () => {
+    mocks.usage.isError = true;
+    mockLatestTokens({ detailStatus: 500 });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(mocks.usage.refetch).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "View all" }));
+    expect(mocks.navigate).toHaveBeenCalledWith({ to: "/wallet/vouchers" });
+
+    const vouchers = within(screen.getByRole("region", { name: /My Vouchers/ }));
+    fireEvent.click(await vouchers.findByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+  });
+
+  it("retries balances without hiding an owned voucher", async () => {
+    mockLatestTokens({
+      tokens: [ISSUED],
+      owners: { [ISSUED.tokenAddress]: ADDRESS },
+      balanceStatus: 500,
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("WLLR")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
 
   it("offers voucher creation when the wallet is empty", async () => {
@@ -337,5 +403,13 @@ describe("WalletPage", () => {
     expect(screen.getByRole("link", { name: "Create pool" }).getAttribute("href")).toBe(
       "/pools/create/pool",
     );
+  });
+
+  it("retries a failed owned-pools request", async () => {
+    mockEndpoints({ pools: [], poolStatus: 500 });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
 });

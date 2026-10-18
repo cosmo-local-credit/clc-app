@@ -83,9 +83,9 @@ export function VoucherProfileEditorSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+        <SheetContent>
           <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+            <SheetTitle>
               <Trans>Edit voucher details</Trans>
             </SheetTitle>
           </SheetHeader>
@@ -326,10 +326,10 @@ function VoucherProfileForm({
                   </p>
                   <Button
                     type="button"
-                    size="sm"
                     variant="outline"
-                    className="bg-card"
-                    onClick={() => tagsQuery.refetch()}
+                    tap
+                    pending={tagsQuery.isFetching}
+                    onClick={() => void tagsQuery.refetch()}
                   >
                     <Trans>Retry</Trans>
                   </Button>
@@ -503,7 +503,7 @@ function VoucherProfileForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit" className="h-11 w-full" disabled={update.isPending || iconBusy}>
+        <Button type="submit" tap className="w-full" pending={update.isPending || iconBusy}>
           {iconBusy ? (
             <Trans>Uploading…</Trans>
           ) : update.isPending ? (
@@ -515,7 +515,8 @@ function VoucherProfileForm({
         <Button
           type="button"
           variant="outline"
-          className="h-11 w-full bg-card"
+          tap
+          className="w-full"
           disabled={update.isPending}
           onClick={onClose}
         >

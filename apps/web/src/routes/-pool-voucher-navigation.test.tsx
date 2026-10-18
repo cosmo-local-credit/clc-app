@@ -227,3 +227,5 @@ function response(result: unknown) {
     text: () => Promise.resolve(JSON.stringify({ ok: true, result })),
   };
 }
+
+vi.mock("#/lib/discovery-location", () => ({ useDiscoveryLocation: () => ({ realFix: null }) }));

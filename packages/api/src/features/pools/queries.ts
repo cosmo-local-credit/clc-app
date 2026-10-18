@@ -1,3 +1,4 @@
+import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import { type CatalogFilter, EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { PoolsClient, UserPoolPage } from "./client";
@@ -107,10 +108,14 @@ function nextPoolCursor(page: UserPoolPage, perPage: number): number | undefined
   return page.receivedCount < perPage || page.last === undefined ? undefined : page.last;
 }
 
-export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number, nearby?: string) {
+export function poolListInfiniteQueryOptions(
+  pools: PoolsClient,
+  perPage: number,
+  nearby?: NearbyRequest,
+) {
   return infiniteQueryOptions({
-    queryKey: nearby
-      ? ([...poolKeys.listInfinite(perPage), nearby] as const)
+    queryKey: nearby?.nearby
+      ? ([...poolKeys.listInfinite(perPage), nearby.scope] as const)
       : poolKeys.listInfinite(perPage),
     queryFn: ({ pageParam, signal }) =>
       pools.getPools(
@@ -118,7 +123,7 @@ export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number
           perPage,
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
-          ...(nearby ? { nearby: true } : {}),
+          ...(nearby?.nearby === true ? { nearby: true } : {}),
         },
         signal,
       ),

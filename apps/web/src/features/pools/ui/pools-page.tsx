@@ -3,7 +3,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
-import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { PoolLogo } from "#/components/wallet";
@@ -17,13 +16,15 @@ import { CHAIN_ID } from "#/lib/chain";
 import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
-import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { MarketBar } from "#/components/market-bar";
+import { MissingLocationNotice } from "#/components/nearby-catalog";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 const POOL_ROW_TAG_LIMIT = 3;
 
@@ -68,6 +69,7 @@ export function PoolsPage({
       isPending: poolsQuery.isPending,
       error: poolsQuery.error ?? null,
       retry: () => void poolsQuery.refetch(),
+      retrying: poolsQuery.isFetching,
       hasNextPage: poolsQuery.hasNextPage,
       fetchNextPage: () => void poolsQuery.fetchNextPage(),
       isFetchingNextPage: poolsQuery.isFetchingNextPage,
@@ -158,14 +160,15 @@ export function PoolsPage({
   }, [catalog.isLoadingMore, catalog.loadMore, hasMore]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h1 className="sr-only">
         <Trans>Pools</Trans>
       </h1>
-      <MarketplaceSearchShell
+      <MarketBar
         current="pools"
         className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
-        search={<CatalogSearchField filter={filter} label={t`Search pools`} />}
+        filter={filter}
+        searchLabel={t`Search pools`}
         credit={
           <CreditableBrowseControl
             part="control"
@@ -197,6 +200,7 @@ export function PoolsPage({
           />
         }
       />
+      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}
@@ -214,7 +218,12 @@ export function PoolsPage({
           })
         }
       />
-      <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
+      <PoolFilterFeedback
+        filter={filter}
+        error={catalog.error}
+        onRetry={catalog.retry}
+        retrying={catalog.retrying}
+      />
 
       {credit.enabled && credit.poolRefs?.length === 0 ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
@@ -232,8 +241,7 @@ export function PoolsPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
+            tap
             onClick={() =>
               void navigate({
                 to: ".",
@@ -257,8 +265,8 @@ export function PoolsPage({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
+            tap
+            pending={outputAvailability.retrying}
             onClick={outputAvailability.retry}
           >
             <Trans>Retry</Trans>
@@ -278,11 +286,7 @@ export function PoolsPage({
         </div>
       ) : null}
 
-      {catalog.status === "loading" ? (
-        <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
-          <Trans>Loading pools…</Trans>
-        </div>
-      ) : null}
+      {catalog.status === "loading" ? <ListSkeleton label={<Trans>Loading pools…</Trans>} /> : null}
 
       {outputFilterActive && outputAvailability.status === "loading" ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
@@ -292,7 +296,12 @@ export function PoolsPage({
 
       {catalog.status === "ready" && filter.result.ok ? (
         <>
-          <p className="min-h-11 py-3 font-medium text-sm tabular-nums">{resultCountLabel}</p>
+          {/* The count answers a search, a filter or Credit; at rest it says nothing. */}
+          {filter.isFiltered || credit.enabled || outputFilterActive ? (
+            <p className="text-muted-foreground text-xs tabular-nums" aria-live="polite">
+              {resultCountLabel}
+            </p>
+          ) : null}
           {canShowResults && pools.length === 0 ? (
             <div className="space-y-3 border border-border bg-card p-3">
               <p className="text-muted-foreground text-sm">
@@ -315,7 +324,7 @@ export function PoolsPage({
                 )}
               </p>
               {filter.isFiltered ? (
-                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                <Button variant="outline" tap onClick={filter.clear}>
                   <Trans>Clear filters</Trans>
                 </Button>
               ) : null}
@@ -385,8 +394,8 @@ function PoolRow({
     >
       <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
       <div className="min-w-0 flex-1 overflow-hidden">
-        <p className="truncate font-bold text-sm tracking-tight">{pool.name}</p>
-        <p className="mt-1 text-primary text-[0.6875rem] font-semibold">
+        <p className="truncate font-semibold text-sm">{pool.name}</p>
+        <p className="mt-1 text-primary text-xs font-semibold">
           {pool.voucherCount === 1 ? (
             <Trans>1 voucher</Trans>
           ) : (
@@ -394,17 +403,17 @@ function PoolRow({
           )}
         </p>
         {pool.locationName || distanceLabel ? (
-          <p className="mt-1 truncate text-[0.6875rem] text-muted-foreground">
+          <p className="mt-1 truncate text-xs text-muted-foreground">
             {[pool.locationName, distanceLabel].filter(Boolean).join(" · ")}
           </p>
         ) : null}
         {pool.tags.length > 0 ? (
           <span className="mt-1.5 flex gap-1 overflow-hidden">
             {pool.tags.slice(0, POOL_ROW_TAG_LIMIT).map((tag) => (
-              <TagBadge key={tag} tag={tag} className="h-5 shrink-0 px-1.5 text-[10px]" />
+              <TagBadge key={tag} tag={tag} size="sm" />
             ))}
             {pool.tags.length > POOL_ROW_TAG_LIMIT ? (
-              <span className="shrink-0 self-center text-muted-foreground text-[10px]">
+              <span className="shrink-0 self-center text-muted-foreground text-2xs">
                 +{pool.tags.length - POOL_ROW_TAG_LIMIT}
               </span>
             ) : null}

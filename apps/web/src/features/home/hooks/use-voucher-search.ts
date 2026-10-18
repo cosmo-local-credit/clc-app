@@ -28,6 +28,8 @@ export type VoucherSearchControls = {
   results: readonly MarketVoucher[];
   status: VoucherSearchStatus;
   retry: () => void;
+  /** A search that failed is running again after `retry`. */
+  retrying: boolean;
 };
 
 /**
@@ -103,6 +105,7 @@ export function useVoucherSearch(
       results: status === "ready" ? (search.data ?? []) : [],
       status,
       retry: () => void search.refetch(),
+      retrying: search.isFetching,
     };
   }, [isCurrent, isEligible, query, search, setQuery]);
 }

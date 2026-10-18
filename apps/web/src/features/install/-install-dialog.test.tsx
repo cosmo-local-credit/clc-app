@@ -3,7 +3,8 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import Cookies from "js-cookie";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { InstallAppButton } from "#/components/install-app-button";
-import { AppI18nProvider } from "#/providers/i18n";
+import type { SupportedLocale } from "@clc/i18n/locales";
+import { AppI18nProvider, useLocale } from "#/providers/i18n";
 import { useInstallStore } from "./install-store";
 
 // These regressions must exercise real catalog loading and React subscription,
@@ -30,32 +31,34 @@ afterEach(async () => {
   await activateLocale("en");
 });
 
-async function chooseLanguage(name: string) {
-  const option = (await screen.findByText(name)).closest('[role="option"]');
-  if (!option) throw new Error(`${name} is not offered as a language option`);
-  // Base UI distinguishes touch from a mouse click on an unhighlighted item.
-  const pointer = new Event("pointerdown", { bubbles: true });
-  Object.defineProperty(pointer, "pointerType", { value: "touch" });
-  fireEvent(option, pointer);
-  fireEvent.click(option);
+// The dialog has no language control of its own; the screen behind it does.
+let switchLocale!: (locale: SupportedLocale) => void;
+function LocaleHandle() {
+  switchLocale = useLocale().setLocale;
+  return null;
+}
+
+async function chooseLanguage(locale: SupportedLocale) {
+  await act(async () => {
+    switchLocale(locale);
+  });
 }
 
 it("changes every iPhone install step when the open dialog's language changes", async () => {
   render(
     <AppI18nProvider>
+      <LocaleHandle />
       <InstallAppButton />
     </AppI18nProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
   const dialog = await screen.findByRole("dialog");
   expect(within(dialog).getByText("Choose Add to Home Screen.")).toBeTruthy();
-  fireEvent.click(within(dialog).getByRole("combobox"));
-  await chooseLanguage("Српски");
+  await chooseLanguage("sr");
   expect(await within(dialog).findByRole("heading", { name: "Инсталирај CLC" })).toBeTruthy();
   expect(within(dialog).getByText(/Изаберите.*Додај на почетни екран/)).toBeTruthy();
   expect(within(dialog).queryByText("Choose Add to Home Screen.")).toBeNull();
-  fireEvent.click(within(dialog).getByRole("combobox"));
-  await chooseLanguage("Kiswahili");
+  await chooseLanguage("sw");
   expect(await within(dialog).findByRole("heading", { name: "Sakinisha CLC" })).toBeTruthy();
   expect(within(dialog).getByText(/Chagua.*Ongeza kwenye/)).toBeTruthy();
   expect(within(dialog).getByRole("button", { name: "Endelea kwenye kivinjari" })).toBeTruthy();
@@ -77,14 +80,14 @@ it("keeps the native event available through a language change", async () => {
   localStorage.setItem("clc.locale", "sw");
   render(
     <AppI18nProvider>
+      <LocaleHandle />
       <InstallAppButton />
     </AppI18nProvider>,
   );
   fireEvent.click(await screen.findByRole("button", { name: "Sakinisha CLC" }));
   const dialog = await screen.findByRole("dialog");
   expect(within(dialog).getByRole("button", { name: "Sakinisha sasa" })).toBeTruthy();
-  fireEvent.click(within(dialog).getByRole("combobox"));
-  await chooseLanguage("Српски");
+  await chooseLanguage("sr");
   const install = await within(dialog).findByRole("button", { name: "Инсталирај сада" });
   expect(useInstallStore.getState().promptEvent).toBe(event);
   fireEvent.click(install);

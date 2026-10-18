@@ -187,8 +187,10 @@ export function CatalogForm({
         {([submitting]) => (
           <Button
             type="submit"
-            className="h-11 w-full"
-            disabled={submitting || imageBusy || save.isPending}
+            tap
+            className="w-full"
+            disabled={imageBusy}
+            pending={submitting || save.isPending}
           >
             {submitting ? (
               <Trans>Saving…</Trans>

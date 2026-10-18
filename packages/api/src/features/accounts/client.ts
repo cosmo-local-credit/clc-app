@@ -99,20 +99,6 @@ export function createAccountsClient(http: HttpClient) {
       return { ...result, tokens: result.tokens ?? [] };
     },
 
-    /**
-     * The catalog vouchers an account owns, with its balance of each. Same rows
-     * and cursors as `getAccountTokens`, but a zero balance is kept: a voucher
-     * whose opening supply was never created is still the owner's.
-     */
-    async getAccountIssuedTokens(params: CursorPageParams): Promise<AccountTokensResult> {
-      const accountAddress = getAddress(params.address);
-      const result = await http.request<AccountTokensResult>(
-        `/api/v2/accounts/${accountAddress}/tokens/issued${formatCursorQuery(params)}`,
-        ACCOUNT_READ_REQUEST,
-      );
-      return { ...result, tokens: result.tokens ?? [] };
-    },
-
     async getAccountTransfers(params: CursorPageParams): Promise<AccountTransfersResult> {
       const accountAddress = getAddress(params.address);
       const result = await http.request<AccountTransfersResult>(

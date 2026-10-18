@@ -23,6 +23,7 @@ import { createRecipientsClient } from "../features/recipients/client";
 import { createReportsClient } from "../features/reports/client";
 import { createSymbolsClient } from "../features/symbols/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
+import { createOwnedVouchersClient } from "../features/vouchers/owned-client";
 import { createVocabularyClient } from "../features/vocabulary/client";
 import { type CreateHttpClientOptions, createHttpClient } from "./http-client";
 
@@ -65,6 +66,7 @@ export function createClcApi({
     recipients: createRecipientsClient(http),
     symbols: createSymbolsClient(http),
     voucherDeploy: createVoucherDeployClient(http),
+    ownedVouchers: createOwnedVouchersClient(http),
     vocabulary: createVocabularyClient(http),
   };
 }

@@ -135,7 +135,7 @@ export function VoucherAbout({
 
       {terms && !isHttpUrl(terms) ? (
         <div className="border border-border bg-card p-4">
-          <p className="font-heading text-sm font-semibold leading-snug">
+          <p className="text-sm font-semibold leading-snug">
             <Trans>Terms</Trans>
           </p>
           <MarkdownContent className="mt-2">{terms}</MarkdownContent>

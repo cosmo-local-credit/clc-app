@@ -1,14 +1,10 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState, type ReactNode } from "react";
-import type { IconType } from "react-icons";
-import {
-  RiCheckboxCircleLine,
-  RiErrorWarningLine,
-  RiNotification3Line,
-  RiSmartphoneLine,
-} from "react-icons/ri";
+import { RiNotification3Line } from "react-icons/ri";
 
+import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
+import { SettingsSheet, SettingsSheetAlert } from "#/components/ui/settings-sheet";
 import {
   enableNotificationSubscription,
   type EnableNotificationSubscriptionResult,
@@ -26,8 +22,17 @@ type NotificationSettingsState =
       status: "result";
     };
 
+/**
+ * Settings row for push notifications: On, Off, Blocked or Unavailable at a
+ * glance, and a sheet with the reason and, where it can help, Enable.
+ *
+ * Checking and On have nothing more to say, so the row is static for both and
+ * a sheet left open when notifications come on closes with it.
+ */
 export function NotificationSettingsSection({ walletAddress }: { walletAddress?: `0x${string}` }) {
+  const { t } = useLingui();
   const [state, setState] = useState<NotificationSettingsState>({ status: "loading" });
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -71,62 +76,76 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
   }
 
   const presentation = notificationSettingsPresentation(state);
+  const hasDetail = presentation.title !== undefined && !presentation.on;
+  // Adjusted during render rather than in an effect, so the sheet starts
+  // closing in the same commit that turns notifications on.
+  if (open && !hasDetail) setOpen(false);
 
   return (
-    <section aria-labelledby="notification-settings-title" className="space-y-3">
-      <h2 id="notification-settings-title">
-        <Trans>Notifications</Trans>
-      </h2>
-      <div className="border border-border bg-card p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center bg-muted text-foreground">
-            <presentation.Icon className="size-5" aria-hidden="true" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-sm">{presentation.title}</p>
-            {presentation.description ? (
-              <p className="mt-1 text-muted-foreground text-xs">{presentation.description}</p>
-            ) : null}
-          </div>
-        </div>
-
-        {presentation.canEnable ? (
-          <Button
-            className="mt-4 h-11 w-full"
-            disabled={state.status === "enabling"}
-            onClick={() => {
-              void handleEnable();
-            }}
-          >
-            {state.status === "enabling" ? (
-              <Trans>Enabling notifications...</Trans>
-            ) : (
-              <Trans>Enable notifications</Trans>
-            )}
-          </Button>
+    <>
+      <ActionRow
+        icon={<RiNotification3Line className="size-4" aria-hidden="true" />}
+        label={t`Notifications`}
+        value={presentation.status}
+        valueTone={presentation.on ? "primary" : "default"}
+        onClick={hasDetail ? () => setOpen(true) : undefined}
+      />
+      <SettingsSheet
+        open={open}
+        onOpenChange={setOpen}
+        title={presentation.title}
+        footer={
+          presentation.canEnable ? (
+            <Button
+              variant="outline"
+              tap
+              className="w-full"
+              pending={state.status === "enabling"}
+              onClick={() => {
+                void handleEnable();
+              }}
+            >
+              <RiNotification3Line aria-hidden="true" />
+              {state.status === "enabling" ? (
+                <Trans>Enabling notifications…</Trans>
+              ) : (
+                <Trans>Enable notifications</Trans>
+              )}
+            </Button>
+          ) : null
+        }
+      >
+        {presentation.description ? (
+          <p className="text-muted-foreground text-sm">{presentation.description}</p>
         ) : null}
-      </div>
-    </section>
+        {presentation.alert ? <SettingsSheetAlert>{presentation.alert}</SettingsSheetAlert> : null}
+      </SettingsSheet>
+    </>
   );
 }
 
-function notificationSettingsPresentation(state: NotificationSettingsState): {
-  Icon: IconType;
-  canEnable: boolean;
+type NotificationPresentation = {
+  /** The row's value. */
+  status: ReactNode;
+  /** On has nothing to add, so its row is static; its title only covers the sheet's exit. */
+  on?: boolean;
+  /** The sheet's title; a state without one has nothing to open. */
+  title?: ReactNode;
   description?: ReactNode;
-  title: ReactNode;
-} {
+  alert?: ReactNode;
+  canEnable: boolean;
+};
+
+function notificationSettingsPresentation(
+  state: NotificationSettingsState,
+): NotificationPresentation {
   if (state.status === "loading") {
-    return {
-      Icon: RiNotification3Line,
-      canEnable: false,
-      title: <Trans>Checking availability...</Trans>,
-    };
+    return { status: <Trans>Checking…</Trans>, canEnable: false };
   }
 
   if (state.status === "enabling") {
     return {
-      Icon: RiNotification3Line,
+      status: <Trans>Off</Trans>,
       canEnable: true,
       description: <Trans>Complete the browser permission prompt to continue.</Trans>,
       title: <Trans>Enabling notifications</Trans>,
@@ -151,9 +170,9 @@ function notificationSettingsPresentation(state: NotificationSettingsState): {
     }
 
     return {
-      Icon: RiErrorWarningLine,
+      status: <Trans>Off</Trans>,
       canEnable: true,
-      description: state.message || (
+      alert: state.message || (
         <Trans>Registration failed. Check your connection and try again.</Trans>
       ),
       title: <Trans>Notifications could not be enabled</Trans>,
@@ -177,20 +196,21 @@ function notificationSettingsPresentation(state: NotificationSettingsState): {
   }
 
   return {
-    Icon: RiNotification3Line,
+    status: <Trans>Off</Trans>,
     canEnable: true,
     title: <Trans>Notifications are off</Trans>,
   };
 }
 
-const enabledPresentation = {
-  Icon: RiCheckboxCircleLine,
+const enabledPresentation: NotificationPresentation = {
+  status: <Trans>On</Trans>,
+  on: true,
   canEnable: false,
   title: <Trans>Notifications are enabled</Trans>,
 };
 
-const installRequiredPresentation = {
-  Icon: RiSmartphoneLine,
+const installRequiredPresentation: NotificationPresentation = {
+  status: <Trans>Off</Trans>,
   canEnable: false,
   description: (
     <Trans>
@@ -200,8 +220,8 @@ const installRequiredPresentation = {
   title: <Trans>Install the app first</Trans>,
 };
 
-const permissionDeniedPresentation = {
-  Icon: RiErrorWarningLine,
+const permissionDeniedPresentation: NotificationPresentation = {
+  status: <Trans>Blocked</Trans>,
   canEnable: false,
   description: (
     <Trans>Notifications are blocked. Allow them in your browser or device settings.</Trans>
@@ -209,8 +229,8 @@ const permissionDeniedPresentation = {
   title: <Trans>Notification permission denied</Trans>,
 };
 
-const unsupportedPresentation = {
-  Icon: RiErrorWarningLine,
+const unsupportedPresentation: NotificationPresentation = {
+  status: <Trans>Unavailable</Trans>,
   canEnable: false,
   description: (
     <Trans>Notifications currently require Chrome on Android or the installed iPhone app.</Trans>
@@ -218,8 +238,8 @@ const unsupportedPresentation = {
   title: <Trans>Notifications are unavailable</Trans>,
 };
 
-const storageUnavailablePresentation = {
-  Icon: RiErrorWarningLine,
+const storageUnavailablePresentation: NotificationPresentation = {
+  status: <Trans>Unavailable</Trans>,
   canEnable: false,
   description: <Trans>This browser cannot store notification registration safely.</Trans>,
   title: <Trans>Notification storage is unavailable</Trans>,

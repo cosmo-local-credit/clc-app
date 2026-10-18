@@ -245,7 +245,8 @@ function renderAt(initialPath: string) {
         <VoucherDetailPage
           voucherAddress={voucherAddress}
           activeTab={activeTab}
-          origin={from ?? "market"}
+          // Non-strict search spans every route, Install's "settings" included.
+          origin={from === "wallet" || from === "vouchers" ? from : "market"}
         />
       ) : null;
     },
@@ -353,3 +354,5 @@ describe("voucher navigation", () => {
     expect(getMarketVoucher).toHaveBeenCalledTimes(1);
   });
 });
+
+vi.mock("#/lib/discovery-location", () => ({ useDiscoveryLocation: () => ({ realFix: null }) }));

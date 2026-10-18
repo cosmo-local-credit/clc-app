@@ -196,14 +196,102 @@ describe("ProfileEditPage", () => {
     expect(within(form).queryByLabelText(/^username$/i)).toBeNull();
   });
 
-  it("says when the account has no username yet", async () => {
+  it("splits the username row: the row opens the sheet, the cell beside it copies", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    mockBackend({ username: "alice" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    const section = await screen.findByRole("region", { name: /^username$/i });
+    const [row, copy] = within(section).getAllByRole("button");
+    expect(row?.getAttribute("aria-label")).toBe("Change username");
+    expect(row?.className).toContain("h-11");
+    expect(copy?.getAttribute("aria-label")).toBe("Copy wallet username");
+    expect(copy?.className).toContain("w-11");
+
+    fireEvent.click(copy as HTMLElement);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("alice"));
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    fireEvent.click(row as HTMLElement);
+    expect(await screen.findByRole("form", { name: /change username/i })).toBeTruthy();
+  });
+
+  it("says when the account has no username yet, with nothing to copy", async () => {
     mockBackend({ username: null });
 
     renderWithQueryClient(<ProfileEditPage />);
 
     const section = await screen.findByRole("region", { name: /^username$/i });
-    expect(within(section).getByText(/you don't have a username yet/i)).toBeTruthy();
+    expect(within(section).getByText("Not set")).toBeTruthy();
     expect(within(section).getByRole("button", { name: /choose username/i })).toBeTruthy();
+    expect(within(section).queryByRole("button", { name: /copy wallet username/i })).toBeNull();
+  });
+
+  it("groups the fields into three panels: about you, contact, then location and currency", async () => {
+    mockBackend();
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    const name = await screen.findByLabelText(/^name$/i);
+    const panels = [
+      ...screen.getByRole("form", { name: /edit profile/i }).querySelectorAll(".p-4"),
+    ];
+    expect(panels).toHaveLength(3);
+    const [about, contact, place] = panels.map((panel) => within(panel as HTMLElement));
+    expect(about?.getByRole("button", { name: /set photo/i })).toBeTruthy();
+    expect(about?.getByLabelText(/^name$/i)).toBe(name);
+    expect(about?.getByRole("textbox", { name: /bio/i })).toBeTruthy();
+    expect(about?.getByRole("textbox", { name: /website/i })).toBeTruthy();
+    expect(contact?.getByLabelText(/^email$/i)).toBeTruthy();
+    expect(contact?.getByLabelText(/phone number/i)).toBeTruthy();
+    expect(place?.getByTestId("location-value")).toBeTruthy();
+    expect(place?.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+  });
+
+  it("keeps Save changes disabled until something changes", async () => {
+    mockBackend();
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    const name = await screen.findByLabelText(/^name$/i);
+    const save = screen.getByRole("button", { name: /save changes/i });
+    expect(save.hasAttribute("disabled")).toBe(true);
+    // Pinned to the bottom of the screen, on white, over a rule.
+    expect(save.parentElement?.className).toContain("sticky");
+    expect(save.parentElement?.className).toContain("bg-card");
+
+    fireEvent.change(name, { target: { value: "Alice Cooper" } });
+    expect(save.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("enables Save changes for a new photo alone", async () => {
+    mockBackend();
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /set photo/i }));
+    expect(screen.getByRole("button", { name: /save changes/i }).hasAttribute("disabled")).toBe(
+      false,
+    );
+  });
+
+  it("shows a failed save above the button in the save bar", async () => {
+    mockBackend({}, { rejectSave: "profile could not be saved" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.change(await screen.findByLabelText(/^name$/i), {
+      target: { value: "Alice Cooper" },
+    });
+    const save = screen.getByRole("button", { name: /save changes/i });
+    fireEvent.click(save);
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.parentElement).toBe(save.parentElement);
+    expect(alert.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(toastSuccess).not.toHaveBeenCalled();
   });
 
   it("saves a new username alone, keeping the contact form's unsaved edits out", async () => {
@@ -273,7 +361,9 @@ describe("ProfileEditPage", () => {
 
     renderWithQueryClient(<ProfileEditPage />);
 
-    await screen.findByDisplayValue("Alice");
+    fireEvent.change(await screen.findByDisplayValue("Alice"), {
+      target: { value: "Alice Cooper" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
@@ -392,6 +482,7 @@ describe("ProfileEditPage", () => {
     expect(await screen.findByDisplayValue("Tanzanian grower")).toBeTruthy();
     expect(screen.getByDisplayValue("https://grow.example")).toBeTruthy();
 
+    fireEvent.change(screen.getByLabelText(/^name$/i), { target: { value: "Alice Cooper" } });
     fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
 
@@ -399,6 +490,33 @@ describe("ProfileEditPage", () => {
       preferredCurrency: "TZS",
       bio: "Tanzanian grower",
       website: "https://grow.example",
+    });
+  });
+
+  it("saves edited bio, website, email, and phone fields", async () => {
+    const fetchMock = mockBackend();
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: /bio/i }), {
+      target: { value: "Repairs bicycles" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /website/i }), {
+      target: { value: "https://repairs.example" },
+    });
+    fireEvent.change(screen.getByLabelText(/^email$/i), {
+      target: { value: "repairs@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/phone number/i), {
+      target: { value: "733333333" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(JSON.parse(postBody(fetchMock))).toMatchObject({
+      bio: "Repairs bicycles",
+      website: "https://repairs.example",
+      email: "repairs@example.com",
+      phone: "+254733333333",
     });
   });
 

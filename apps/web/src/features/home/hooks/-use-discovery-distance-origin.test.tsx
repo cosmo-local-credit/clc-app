@@ -18,8 +18,8 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
     return mocks.profile;
   },
 }));
-vi.mock("#/features/home/hooks/use-market-camera", () => ({
-  useMarketCamera: (owner: string) => {
+vi.mock("#/lib/discovery-location", () => ({
+  useDiscoveryLocation: (owner: string) => {
     mocks.cameraOwner = owner;
     return { realFix: mocks.realFix };
   },

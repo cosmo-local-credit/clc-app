@@ -1,11 +1,22 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiLoader4Line } from "react-icons/ri";
+import { RiCheckLine, RiHandCoinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
+import { cn } from "#/lib/utils";
 
 type State = ReturnType<typeof useCreditableBrowse>;
+
+/** Whether the feedback part has anything to say, so a screen can give it the one notice slot. */
+export function hasCreditFeedback(state: State): boolean {
+  if (!state.parsed.ok) return true;
+  if (!state.enabled) return false;
+  return (
+    state.auth.isLoading || !state.auth.isAuthenticated || state.verification.status === "error"
+  );
+}
 
 export function CreditableBrowseControl({
   state,
@@ -20,6 +31,7 @@ export function CreditableBrowseControl({
 }) {
   const showControl = part !== "feedback";
   const showFeedback = part !== "control";
+  const checking = state.enabled && state.verification.status === "loading";
 
   if (!state.parsed.ok) {
     if (!showFeedback) return null;
@@ -31,7 +43,7 @@ export function CreditableBrowseControl({
         <p className="text-sm">
           <Trans>This link contains an invalid Credit filter.</Trans>
         </p>
-        <Button variant="outline" size="sm" className="h-9 bg-card" onClick={onClear}>
+        <Button variant="outline" tap onClick={onClear}>
           <Trans>Clear filter</Trans>
         </Button>
       </div>
@@ -45,7 +57,7 @@ export function CreditableBrowseControl({
         <p className="text-sm">
           <Trans>Sign in to browse results available through your Credit pools.</Trans>
         </p>
-        <Button asChild className="h-11 w-full">
+        <Button asChild tap className="w-full">
           <Link to="/onboarding" search={{ step: "welcome" }}>
             <Trans>Sign in</Trans>
           </Link>
@@ -66,22 +78,28 @@ export function CreditableBrowseControl({
   return (
     <>
       {showControl && state.auth.isAuthenticated ? (
+        // A filter rather than a list, so it sits beside the search field at its
+        // height, solid green either way. On, a check leads and a ring sets it in.
         <Button
-          variant="outline"
-          className={
-            state.enabled
-              ? "h-11 border-destructive bg-destructive px-2.5 text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground"
-              : "h-11 bg-card px-2.5"
-          }
+          variant="success"
+          size="lg"
+          className={cn(
+            "font-semibold hover:bg-success/90",
+            state.enabled && "shadow-[inset_0_0_0_2px_var(--color-success-foreground)]",
+          )}
           aria-pressed={state.enabled}
-          aria-busy={state.enabled && state.verification.status === "loading"}
+          aria-busy={checking}
           disabled={state.auth.isLoading}
           onClick={() => onChange(!state.enabled)}
         >
+          {checking ? (
+            <Spinner />
+          ) : state.enabled ? (
+            <RiCheckLine aria-hidden="true" />
+          ) : (
+            <RiHandCoinLine aria-hidden="true" />
+          )}
           <Trans>Credit</Trans>
-          {state.enabled && state.verification.status === "loading" ? (
-            <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
-          ) : null}
         </Button>
       ) : null}
       {showFeedback && state.enabled && state.verification.status === "error" ? (
@@ -94,8 +112,8 @@ export function CreditableBrowseControl({
           </p>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 bg-card"
+            tap
+            pending={state.verification.retrying}
             onClick={state.verification.retry}
           >
             <Trans>Retry</Trans>

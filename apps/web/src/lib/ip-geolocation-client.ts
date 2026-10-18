@@ -1,13 +1,13 @@
 /**
- * Coarse camera bootstrap for visitors with no GPS fix.
+ * Coarse location and camera bootstrap for visitors with no GPS fix.
  *
  * MapTiler's geolocation endpoint is designed for client-side consumption with
  * a publicly usable key, so it is called directly rather than through our
  * backend. `@maptiler/sdk` is deliberately not installed for one JSON fetch.
  *
- * The result is only ever a camera hint. A country-derived result is a rank-4
- * default, never a rank-3 city fix, and neither is ever persisted — only real
- * `getCurrentPosition` successes are.
+ * An IP city can center a guest discovery radius. Country-derived results are
+ * display-only map defaults and must never center a radius. Neither is persisted
+ * as a device fix — only real `getCurrentPosition` successes are.
  */
 type IPCameraSource = "ip-city" | "country-default";
 

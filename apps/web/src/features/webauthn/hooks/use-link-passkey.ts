@@ -400,6 +400,8 @@ export function useLinkPasskey(address: `0x${string}` | undefined) {
     platformLabel: platform.label,
     error: error instanceof LinkPasskeyError ? error : null,
     retryStatus: () => void credentialsQuery.refetch(),
+    /** The status check is running again after `retryStatus`. */
+    retryingStatus: credentialsQuery.isFetching,
     link: () => link.mutate(),
     retryConnection: () => retryConnection.mutate(),
   };

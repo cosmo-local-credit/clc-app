@@ -84,6 +84,7 @@ function unfilteredStub(overrides: Partial<Parameters<typeof usePoolCatalog>[1]>
     isPending: false,
     error: null as Error | null,
     retry: vi.fn(),
+    retrying: false,
     hasNextPage: false,
     fetchNextPage: vi.fn(),
     isFetchingNextPage: false,

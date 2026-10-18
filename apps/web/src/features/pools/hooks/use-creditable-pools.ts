@@ -1,5 +1,5 @@
 import {
-  type NearbyCatalogFilter,
+  isWithinNearbyCatalog,
   useNearbyCatalog,
   useNearbyCatalogFilter,
   nearbyQueryKey,
@@ -66,6 +66,8 @@ export type CreditablePoolsResult = {
   isRefreshing: boolean;
   hasVerificationGaps: boolean;
   retry: () => void;
+  /** Any of the reads is running, including again after `retry`. */
+  retrying: boolean;
 };
 
 type PoolCreditCapacityResult = {
@@ -112,10 +114,14 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
   const candidates = useQuery({
     queryKey: nearbyQueryKey(poolCreditQueryKeys.candidates(heldVoucherRefs), nearby),
     queryFn: ({ signal }) =>
-      fetchPoolCreditCandidates(heldVoucherRefs, signal, !!nearby, visibilityFilter),
+      fetchPoolCreditCandidates(heldVoucherRefs, signal, nearby?.nearby === true),
     enabled: sourceReady,
     staleTime: CANDIDATE_STALE_TIME_MS,
     ...nearbyQueryPolicy(nearby),
+    select: (candidates) =>
+      candidates.filter(({ pool }) =>
+        isWithinNearbyCatalog(visibilityFilter, { lat: pool.geoLat, lng: pool.geoLng }),
+      ),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 
@@ -165,16 +171,13 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
     : loading
       ? "loading"
       : "ready";
+  const fetching =
+    holdings.isFetching || vocabulary.isFetching || candidates.isFetching || capacity.isFetching;
 
   return {
     pools,
     status,
-    isRefreshing:
-      status === "ready" &&
-      (holdings.isFetching ||
-        vocabulary.isFetching ||
-        candidates.isFetching ||
-        capacity.isFetching),
+    isRefreshing: status === "ready" && fetching,
     hasVerificationGaps:
       (capacity.data?.hasVerificationGaps ?? false) || (status === "ready" && backgroundError),
     retry: () => {
@@ -183,6 +186,7 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
       void candidates.refetch();
       if (candidatePools.length > 0) void capacity.refetch();
     },
+    retrying: fetching,
   };
 }
 
@@ -190,7 +194,6 @@ async function fetchPoolCreditCandidates(
   vouchers: readonly VoucherRef[],
   signal: AbortSignal,
   nearby = false,
-  visibilityFilter?: NearbyCatalogFilter,
 ): Promise<PoolCreditCandidate[]> {
   const chunks = chunkPoolCreditVouchers(vouchers);
   if (chunks.length === 0) return [];
@@ -206,7 +209,6 @@ async function fetchPoolCreditCandidates(
       },
       signal,
       nearby,
-      visibilityFilter,
     });
     return {
       pools: catalog.pools,

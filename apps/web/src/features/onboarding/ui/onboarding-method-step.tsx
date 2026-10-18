@@ -85,7 +85,10 @@ export function OnboardingMethodStep({ redirectTo, initialChoice = "link", onCon
                       <strong className="text-sm font-semibold leading-snug">
                         {t`Link ${providerLabel}`}
                       </strong>
-                      <Badge className="h-5 border-transparent bg-primary px-1.5 text-[10px] text-primary-foreground">
+                      <Badge
+                        size="sm"
+                        className="border-transparent bg-primary text-primary-foreground"
+                      >
                         <Trans>Recommended</Trans>
                       </Badge>
                     </span>
@@ -105,7 +108,7 @@ export function OnboardingMethodStep({ redirectTo, initialChoice = "link", onCon
           </form.Field>
 
           <div className="mt-auto pt-8">
-            <Button type="submit" className="h-11 w-full">
+            <Button type="submit" tap className="w-full">
               <Trans>Continue</Trans>
             </Button>
           </div>

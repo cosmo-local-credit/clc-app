@@ -6,7 +6,7 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
 }));
 
-import { CreditableBrowseControl } from "./creditable-browse-control";
+import { CreditableBrowseControl, hasCreditFeedback } from "./creditable-browse-control";
 
 function state(overrides: Record<string, unknown> = {}) {
   return {
@@ -117,5 +117,64 @@ describe("CreditableBrowseControl", () => {
     expect(credit.getAttribute("aria-pressed")).toBe("true");
     expect(credit.getAttribute("aria-busy")).toBe("true");
     expect(credit.textContent).toBe("Credit");
+  });
+
+  it("stands 44px and solid green, rings itself when on, and spins while checking", () => {
+    const view = render(
+      <CreditableBrowseControl
+        state={state()}
+        onChange={vi.fn()}
+        onClear={vi.fn()}
+        part="control"
+      />,
+    );
+    const off = screen.getByRole("button", { name: "Credit" });
+    expect(off.getAttribute("data-size")).toBe("lg");
+    expect(off.className).toContain("bg-success");
+    expect(off.className).not.toContain("shadow-[inset");
+    expect(off.querySelector("[data-slot=spinner]")).toBeNull();
+
+    view.rerender(
+      <CreditableBrowseControl
+        state={state({ enabled: true })}
+        onChange={vi.fn()}
+        onClear={vi.fn()}
+        part="control"
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Credit" }).className).toContain(
+      "shadow-[inset_0_0_0_2px_var(--color-success-foreground)]",
+    );
+
+    view.rerender(
+      <CreditableBrowseControl
+        state={state({
+          enabled: true,
+          verification: { status: "loading", pools: [], retry: vi.fn() },
+        })}
+        onChange={vi.fn()}
+        onClear={vi.fn()}
+        part="control"
+      />,
+    );
+    const on = screen.getByRole("button", { name: "Credit" });
+    expect(on.className).toContain("bg-success text-success-foreground");
+    expect(on.querySelector("[data-slot=spinner]")).toBeTruthy();
+  });
+
+  it("says when the feedback part has something to show", () => {
+    expect(hasCreditFeedback(state())).toBe(false);
+    expect(hasCreditFeedback(state({ parsed: { ok: false } }))).toBe(true);
+    expect(hasCreditFeedback(state({ enabled: true }))).toBe(false);
+    expect(
+      hasCreditFeedback(
+        state({ enabled: true, auth: { isAuthenticated: false, isLoading: false } }),
+      ),
+    ).toBe(true);
+    expect(
+      hasCreditFeedback(
+        state({ enabled: true, verification: { status: "error", pools: [], retry: vi.fn() } }),
+      ),
+    ).toBe(true);
   });
 });

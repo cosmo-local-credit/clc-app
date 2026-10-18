@@ -37,7 +37,7 @@ export function AppMenu({ className }: { className?: string }) {
             <Button
               variant="outline"
               size="icon-lg"
-              className="size-11 bg-card text-foreground"
+              className="text-foreground"
               aria-label={t`Open menu`}
             />
           }

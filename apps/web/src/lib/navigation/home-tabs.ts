@@ -39,13 +39,16 @@ export function parseHomeSearch(
   };
 }
 
+/**
+ * The tab's own destination, where its bottom-navigation button does nothing.
+ * Market's is the unfiltered map: a selected pin, a search, tags or Credit
+ * all count as somewhere beneath it.
+ */
 export function isAtHomeTabRoot(search: unknown): boolean {
   const record = (search ?? {}) as Record<string, unknown>;
   const { tab, view, voucher } = parseHomeSearch(record);
-  // Only the map owns the voucher card. A stale legacy voucher parameter on
-  // another home tab cannot turn that tab into a nested sheet destination.
-  if (tab === "market" && view === "map" && voucher) return false;
   if (tab !== "market") return true;
-  if (view !== "map") return false;
+  if (view !== "map" || voucher) return false;
+  if (record.creditable !== undefined) return false;
   return !isFilterSearchActive(catalogSearchForScope(search, false));
 }

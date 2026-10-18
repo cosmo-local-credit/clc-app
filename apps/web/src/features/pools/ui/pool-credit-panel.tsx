@@ -18,7 +18,7 @@ import {
  */
 export function PoolCreditPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const { t } = useLingui();
-  const { holdings, unit, isPending, capsPending, isError, refetch } = usePoolHoldings(
+  const { holdings, unit, isPending, capsPending, isError, isFetching, refetch } = usePoolHoldings(
     pool,
     vouchers,
   );
@@ -31,6 +31,7 @@ export function PoolCreditPanel({ pool, vouchers }: { pool: UserPool; vouchers: 
       isError={isError}
       isEmpty={holdings.length === 0}
       onRetry={refetch}
+      retrying={isFetching}
       messages={{
         loading: <Trans>Loading credit limits…</Trans>,
         error: <Trans>Couldn't load credit limits.</Trans>,
@@ -77,7 +78,7 @@ function CreditLine({ holding, unit }: { holding: PoolHolding; unit: string }) {
     // A steward's setting, not a fault: a voucher admitted before its limit is
     // decided carries zero. Muted like the other no-figure states.
     return (
-      <p className="mt-2 text-muted-foreground text-[0.6875rem]">
+      <p className="mt-2 text-muted-foreground text-xs">
         <Trans>No credit offered</Trans>
       </p>
     );
@@ -85,7 +86,7 @@ function CreditLine({ holding, unit }: { holding: PoolHolding; unit: string }) {
 
   if (cap.kind !== "capped" || decimals === null || fillPercent === null || headroomRaw === null) {
     return (
-      <p className="mt-2 text-muted-foreground text-[0.6875rem]">
+      <p className="mt-2 text-muted-foreground text-xs">
         {cap.kind === "uncapped" ? (
           <Trans>No credit limit</Trans>
         ) : (
@@ -117,7 +118,7 @@ function CreditLine({ holding, unit }: { holding: PoolHolding; unit: string }) {
         track="bg-muted"
         label={t`${holding.name} available credit`}
       />
-      <p className="mt-1 font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
+      <p className="mt-1 font-mono text-muted-foreground text-2xs tabular-nums">
         <Trans>
           {available} of {limit} {denomination} available credit
         </Trans>

@@ -81,7 +81,13 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
 
       for (let index = 0; index < MAX_FILTERED_REPORT_PAGES; index++) {
         const page = await reportsClient.getFilteredReports(
-          { perPage, cursor, filter, facets: index === 0, ...(nearby ? { nearby: true } : {}) },
+          {
+            perPage,
+            cursor,
+            filter,
+            facets: index === 0,
+            ...(nearby?.nearby === true ? { nearby: true } : {}),
+          },
           signal,
         );
         pages.push(page);
@@ -105,11 +111,15 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
       }
 
       return {
-        reports: filterNearbyCatalog([...byId.values()], visibilityFilter),
+        reports: [...byId.values()],
         tagFacets: pages[0]?.tagFacets ?? null,
         voucherFacets: pages[0]?.voucherFacets ?? null,
       };
     },
+    select: (data: FilteredReportFeed) => ({
+      ...data,
+      reports: filterNearbyCatalog(data.reports, visibilityFilter),
+    }),
     enabled: filter !== null,
     placeholderData: keepPreviousData,
     staleTime: REPORTS_STALE_TIME,
@@ -133,7 +143,7 @@ function useReportFacetVocabulary(enabled: boolean) {
           perPage: 1,
           filter: EMPTY_CATALOG_FILTER,
           facets: true,
-          ...(nearby ? { nearby: true } : {}),
+          ...(nearby?.nearby === true ? { nearby: true } : {}),
         },
         signal,
       );
@@ -186,6 +196,8 @@ export type ReportFeed = {
   status: "loading" | "refining" | "ready" | "error";
   error: Error | null;
   retry: () => void;
+  /** The list is loading again after `retry`. */
+  retrying: boolean;
   tagFacets: ReportTagFacet[];
   voucherFacets: ReportVoucherFacet[];
   hasMore: boolean;
@@ -200,6 +212,7 @@ export function useReportFeed(
     isPending: boolean;
     error: Error | null;
     retry: () => void;
+    retrying: boolean;
     hasNextPage: boolean;
     fetchNextPage: () => void;
     isFetchingNextPage: boolean;
@@ -254,6 +267,7 @@ export function useReportFeed(
         status: unfiltered.error ? "error" : unfiltered.isPending ? "loading" : "ready",
         error: unfiltered.error,
         retry: unfiltered.retry,
+        retrying: unfiltered.retrying,
         tagFacets: chipFacets,
         voucherFacets,
         hasMore: unfiltered.hasNextPage,
@@ -269,6 +283,7 @@ export function useReportFeed(
       status: state.status === "disabled" ? "ready" : state.status,
       error: state.status === "error" ? state.error : null,
       retry: () => void filtered.refetch(),
+      retrying: filtered.isFetching,
       tagFacets: chipFacets,
       voucherFacets,
       hasMore: false,

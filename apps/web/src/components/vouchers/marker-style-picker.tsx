@@ -91,8 +91,8 @@ export function MarkerStylePicker({
           <Button
             type="button"
             variant="destructive"
-            size="sm"
-            className="h-11 bg-destructive px-4 text-white hover:bg-destructive/90"
+            tap
+            className="bg-destructive text-white hover:bg-destructive/90"
             disabled={disabled}
             onClick={() => onChange({ icon: null, color: null })}
           >
@@ -123,9 +123,7 @@ export function MarkerStylePicker({
             )}
           >
             <MarkerPin style={{ icon, color: resolved.color }} size={24} />
-            <span className="w-full truncate text-center text-[11px] leading-tight">
-              {labels.icon(icon)}
-            </span>
+            <span className="w-full truncate text-center text-2xs">{labels.icon(icon)}</span>
           </Radio.Root>
         ))}
       </RadioGroup>

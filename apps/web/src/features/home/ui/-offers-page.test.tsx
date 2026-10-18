@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
-  nearbyScope: undefined as string | undefined,
+  nearbyScope: undefined as { nearby: boolean; scope?: string } | undefined,
   nearbyFilter: undefined as { lat: number; lng: number; radiusKm: number } | undefined,
   filter: {
     result: {
@@ -69,6 +69,10 @@ vi.mock("#/components/nearby-catalog", async (importOriginal) => {
 vi.mock("#/lib/navigation/use-persisted-catalog-filter", () => ({
   usePersistedCatalogFilter: () => mocks.filter,
 }));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
+}));
+
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   useCreditableBrowse: () => mocks.credit,
 }));
@@ -212,7 +216,7 @@ describe("OffersPage", () => {
   });
 
   it("filters a nearest-first result locally and stops pagination at the boundary", () => {
-    mocks.nearbyScope = "nearby:account:100:0:0:100";
+    mocks.nearbyScope = { nearby: true, scope: "nearby:account:100:0:0:100" };
     mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 100 };
     mocks.query.data = {
       pages: [{ offerings: [offering("1", 0.5), offering("2", 2)], tagFacets: [] }],
@@ -224,6 +228,19 @@ describe("OffersPage", () => {
     expect(screen.getByText("Offer 1")).toBeTruthy();
     expect(screen.queryByText("Offer 2")).toBeNull();
     expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("false");
+  });
+
+  it("keeps guest pagination available after a distant row", () => {
+    mocks.nearbyScope = { nearby: false };
+    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 500 };
+    mocks.query.data = {
+      pages: [{ offerings: [offering("1", 0.5), offering("2", 8)], tagFacets: [] }],
+    };
+    mocks.query.hasNextPage = true;
+    render(<OffersPage />);
+    expect(screen.getByText("Offer 1")).toBeTruthy();
+    expect(screen.queryByText("Offer 2")).toBeNull();
+    expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("true");
   });
 
   it("never renders an unfiltered list while Credit verification blocks it", () => {

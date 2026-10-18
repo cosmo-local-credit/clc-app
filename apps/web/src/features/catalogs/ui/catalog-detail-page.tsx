@@ -19,6 +19,7 @@ import { catalogsClient } from "#/lib/api/catalogs";
 import { CatalogForm } from "./catalog-form";
 import { CatalogMembers } from "./catalog-members";
 import { CatalogShareButton } from "./catalog-share-button";
+import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogDetailPage({ id }: { id: string }) {
   const { t } = useLingui();
@@ -33,9 +34,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
     <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-bottom-nav">
       <BackChevron label={t`Catalogs`} to="/market" search={{ scope: "catalogs" }} />
       {query.isPending ? (
-        <p role="status">
-          <Trans>Loading…</Trans>
-        </p>
+        <ListSkeleton shape="cards" count={1} label={<Trans>Loading…</Trans>} />
       ) : query.isError ? (
         <div className="space-y-3">
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
@@ -45,7 +44,12 @@ export function CatalogDetailPage({ id }: { id: string }) {
               <Trans>Couldn't load catalogs.</Trans>
             )}
           </h1>
-          <Button variant="outline" className="h-11 bg-card" onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            tap
+            pending={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             <Trans>Retry</Trans>
           </Button>
         </div>
@@ -82,7 +86,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
           <div className="flex flex-wrap gap-2">
             <CatalogShareButton id={catalog.id} name={catalog.name} />
             {owner ? (
-              <Button variant="outline" className="h-11 bg-card" onClick={() => setEditing(true)}>
+              <Button variant="outline" tap onClick={() => setEditing(true)}>
                 <Trans>Edit catalog</Trans>
               </Button>
             ) : null}
@@ -93,7 +97,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
             <SheetRoot open={editing} onOpenChange={setEditing}>
               <SheetPortal>
                 <SheetBackdrop />
-                <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
+                <SheetContent>
                   <SheetHeader>
                     <SheetTitle>
                       <Trans>Edit catalog</Trans>

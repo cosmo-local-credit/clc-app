@@ -44,20 +44,13 @@ export function PostConfirmDialog({
       <DialogPortal>
         <DialogBackdrop />
         <DialogContent className="w-[min(22rem,calc(100vw-2rem))] rounded-none border border-border bg-card p-5 shadow-none">
-          <DialogTitle className="font-heading text-base font-semibold leading-snug">
-            {title}
-          </DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <div className="mt-2 text-muted-foreground text-sm leading-6">{children}</div>
           <div className="mt-5 space-y-2">
-            <Button type="button" className="h-11 w-full" onClick={onConfirm}>
+            <Button type="button" tap className="w-full" onClick={onConfirm}>
               {confirmLabel}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 w-full bg-card"
-              onClick={onCancel}
-            >
+            <Button type="button" variant="outline" tap className="w-full" onClick={onCancel}>
               {t`Cancel`}
             </Button>
           </div>
