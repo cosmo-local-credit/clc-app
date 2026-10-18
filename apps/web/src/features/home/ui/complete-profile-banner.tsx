@@ -1,10 +1,10 @@
 import { hasProfileGaps, profileGaps } from "@clc/core/features/signup/completeness";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiCloseLine, RiUserSettingsLine } from "react-icons/ri";
 
-import { Button } from "#/components/ui/button";
+import { ActionRow } from "#/components/ui/action-row";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { readOwnerScoped, writeOwnerScoped } from "#/lib/storage/owner-scoped-storage";
 
@@ -31,34 +31,31 @@ export function CompleteProfileBanner({ address }: { address?: string }) {
   const gaps = profileGaps(profile.data);
   if (!hasProfileGaps(gaps)) return null;
 
+  // One row, like a settings row, with its dismiss cell beside it: the nudge
+  // is a door to Edit profile, not a block of its own.
   return (
     <section
       aria-label={t`Complete your profile`}
-      className="flex items-start gap-3 border border-border bg-card p-4"
+      className="flex items-stretch border border-border bg-card"
     >
-      <RiUserSettingsLine className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-sm">
-          <Trans>Complete your profile</Trans>
-        </p>
-        <Button asChild variant="outline" tap className="mt-2">
-          <Link to="/settings/profile">
-            <Trans>Edit profile</Trans>
-          </Link>
-        </Button>
+        <ActionRow
+          icon={<RiUserSettingsLine className="size-4 text-primary" aria-hidden="true" />}
+          label={t`Complete your profile`}
+          render={<Link to="/settings/profile" />}
+        />
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        tap
+      <button
+        type="button"
         aria-label={t`Dismiss`}
         onClick={() => {
           writeOwnerScoped(owner, DISMISSED_KEY, "1");
           setDismissed(true);
         }}
+        className="flex w-11 shrink-0 items-center justify-center border-border border-s text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground"
       >
-        <RiCloseLine className="size-4" />
-      </Button>
+        <RiCloseLine className="size-4" aria-hidden="true" />
+      </button>
     </section>
   );
 }

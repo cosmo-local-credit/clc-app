@@ -1,0 +1,60 @@
+import type { ReactNode } from "react";
+
+import { OnboardingMenu } from "#/components/language-selector";
+import { cn } from "#/lib/utils";
+
+/**
+ * The frame every onboarding screen shares: one top bar (Back or the logo at
+ * the start, theme and language at the end), a body that holds the screen's
+ * one job, and the actions pinned under it.
+ *
+ * The frame is exactly one dynamic viewport tall (less the bottom navigation
+ * where a gate sits under it), so the primary action stays on screen with the
+ * browser's toolbars showing. Only the body scrolls, and only when a phone is
+ * too short for it.
+ */
+export function OnboardingScreen({
+  start,
+  menu = true,
+  footer,
+  className,
+  children,
+}: {
+  start?: ReactNode;
+  /** Theme and language. Off where the screen is not part of signing in. */
+  menu?: boolean;
+  footer?: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex h-[calc(100dvh-var(--bottom-nav-offset))] flex-col bg-background">
+      <header className="flex min-h-11 shrink-0 items-center justify-between gap-3 px-6 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
+        <div className="flex min-w-0 items-center">{start}</div>
+        {menu ? <OnboardingMenu /> : null}
+      </header>
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-6 pt-3 pb-4",
+          className,
+        )}
+      >
+        {children}
+      </div>
+      {footer ? (
+        <footer className="flex shrink-0 flex-col gap-3 px-6 pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          {footer}
+        </footer>
+      ) : null}
+    </div>
+  );
+}
+
+/** The locked page title, shared by every onboarding screen. */
+export function OnboardingTitle({ children }: { children: ReactNode }) {
+  return (
+    <h1 className="min-w-0 break-words font-heading text-[1.75rem] font-bold leading-tight">
+      {children}
+    </h1>
+  );
+}

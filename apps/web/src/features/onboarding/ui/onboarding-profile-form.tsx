@@ -1,24 +1,27 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { profileSchema } from "@clc/core/features/signup/logic";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { useForm, useStore } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
-import { OnboardingMenu } from "#/components/language-selector";
+import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
+import { UsernameInput } from "#/components/profile/username-input";
+import { ActionRow } from "#/components/ui/action-row";
 import { AvatarPicker } from "#/components/ui/avatar-picker";
 import { Button } from "#/components/ui/button";
 import { CurrencySelect } from "#/components/ui/currency-select";
 import { Input } from "#/components/ui/input";
-import { UsernameInput } from "#/components/profile/username-input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
+import { SettingsSheet } from "#/components/ui/settings-sheet";
 import { StepProgress } from "#/components/ui/step-progress";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-layout";
 import { isStorageConfigured } from "#/lib/api/storage";
-import { onboardingSearch } from "#/lib/onboarding-search";
+import { onboardingSearch, type ProfilePage } from "#/lib/onboarding-search";
 import {
   DEFAULT_PREFERRED_CURRENCY,
   preferredCurrencyForCountry,
@@ -28,12 +31,17 @@ import { translateValidationError } from "#/lib/validation-i18n";
 import { useFirstInvalidFieldFocus } from "#/lib/use-first-invalid-field-focus";
 
 type Props = {
+  /** Which third of the profile is on screen; the form and its values span all three. */
+  page: ProfilePage;
   initialValues?: ProfileInput;
   /** Carried back in when the user returns to this step. */
   initialAvatarFile?: File | null;
   redirectTo?: string;
-  progressStep: number;
   progressTotal: number;
+  /** Moves to the next page of the profile. */
+  onPage: (page: Exclude<ProfilePage, "profile">) => void;
+  /** A later page was opened before the earlier ones were filled in. */
+  onRestart: () => void;
   onNext: (data: ProfileInput, avatarFile: File) => void;
 };
 
@@ -60,12 +68,66 @@ const DEFAULT_VALUES: ProfileFormValues = {
   website: "",
 };
 
+const PAGES: readonly ProfilePage[] = ["profile", "contact", "location"];
+
+/** The fields each page asks for. The schema's email-or-phone rule reports on email. */
+const PAGE_FIELDS: Record<ProfilePage, readonly (keyof ProfileFormValues)[]> = {
+  profile: ["name", "username"],
+  contact: ["email", "phone", "website", "bio"],
+  location: ["location", "preferredCurrency"],
+};
+
+/**
+ * Valid values for every field, standing in for the pages not being checked.
+ * zod runs the email-or-phone rule only once every field parses, so checking
+ * Contact against an empty Location would never report a missing email.
+ */
+const STAND_IN: ProfileFormValues = {
+  name: "-",
+  username: "",
+  email: "member@example.com",
+  phone: "",
+  location: { lat: 0, lng: 0, locationName: "-", country: "KE" },
+  preferredCurrency: DEFAULT_PREFERRED_CURRENCY,
+  bio: "",
+  website: "",
+};
+
+/** The shared profile schema's first message for each of one page's fields. */
+function pageErrors(
+  page: ProfilePage,
+  values: ProfileFormValues,
+): Partial<Record<keyof ProfileFormValues, string>> {
+  const probe: ProfileFormValues = { ...STAND_IN };
+  for (const field of PAGE_FIELDS[page]) Object.assign(probe, { [field]: values[field] });
+  const result = profileSchema.safeParse(probe);
+  const errors: Partial<Record<keyof ProfileFormValues, string>> = {};
+  if (result.success) return errors;
+  for (const issue of result.error.issues) {
+    const field = PAGE_FIELDS[page].find((name) => name === issue.path[0]);
+    if (field && !errors[field]) errors[field] = issue.message;
+  }
+  return errors;
+}
+
+const pageIsValid = (page: ProfilePage, values: ProfileFormValues) =>
+  Object.keys(pageErrors(page, values)).length === 0;
+
+/**
+ * Create account, in three short pages that each fit a phone: who you are
+ * (photo, name, username), how to reach you (email, phone, website, bio), and
+ * where you are (place and currency). One form holds all three, validated by
+ * the same profileSchema; Continue checks only the page on screen, and the
+ * last page submits the whole profile as one did before.
+ */
 export function OnboardingProfileForm({
+  page,
   initialValues,
   initialAvatarFile,
   redirectTo,
-  progressStep,
   progressTotal,
+  onPage,
+  onRestart,
   onNext,
 }: Props) {
   const { i18n, t } = useLingui();
@@ -74,6 +136,10 @@ export function OnboardingProfileForm({
   // this step also requires one before advancing.
   const [avatarFile, setAvatarFile] = useState<File | null>(initialAvatarFile ?? null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  // A page shows its errors once its Continue has been pressed, or a field once
+  // it has been touched, so a page never opens on errors from another one.
+  const [attempted, setAttempted] = useState<ReadonlySet<ProfilePage>>(() => new Set());
+  const [currencyOpen, setCurrencyOpen] = useState(false);
   const { formRef, focusFirstInvalidField } = useFirstInvalidFieldFocus();
   const currencyWasChosenRef = useRef(Boolean(initialValues?.preferredCurrency));
   const currencyWasSuggestedByLocationRef = useRef(
@@ -126,6 +192,15 @@ export function OnboardingProfileForm({
     return () => controller.abort();
   }, [form, initialValues?.preferredCurrency]);
 
+  // A deep link or a reload can land on a later page with an empty form.
+  useEffect(() => {
+    const earlier = PAGES.slice(0, PAGES.indexOf(page));
+    if (earlier.length === 0) return;
+    const values = form.state.values;
+    if (!avatarFile || earlier.some((previous) => !pageIsValid(previous, values))) onRestart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-check only when the page changes
+  }, [page]);
+
   /** A chosen location is a better hint than the network, for both fields. */
   function suggestForCountry(country: string) {
     setSuggestedCountry(country);
@@ -136,37 +211,94 @@ export function OnboardingProfileForm({
     });
   }
 
+  const values = useStore(form.store, (state) => state.values);
+  const errors = useMemo(() => pageErrors(page, values), [page, values]);
+
+  async function handleContinue() {
+    setAttempted((current) => new Set(current).add(page));
+    const missingPhoto = page === "profile" && !avatarFile;
+    if (missingPhoto) setPhotoError(t`Required`);
+    if (missingPhoto || !pageIsValid(page, form.state.values)) {
+      focusFirstInvalidField();
+      return;
+    }
+    if (page === "profile") onPage("contact");
+    else if (page === "contact") onPage("location");
+    else await form.handleSubmit().finally(focusFirstInvalidField);
+  }
+
+  /** The translated error a field shows, once its page has been tried or it has been touched. */
+  function shownError(name: keyof ProfileFormValues, touched: boolean) {
+    if (!touched && !attempted.has(page)) return null;
+    const err = errors[name];
+    if (!err) return null;
+    return err === "Name is required" ? t`Required` : translateValidationError(err, i18n);
+  }
+
+  const previous = page === "location" ? "contact" : page === "contact" ? "profile" : "welcome";
+  const title =
+    page === "profile" ? (
+      <Trans>Create your account</Trans>
+    ) : page === "contact" ? (
+      <Trans>Contact</Trans>
+    ) : (
+      <Trans>Location</Trans>
+    );
+
   return (
-    <div className="relative flex min-h-[100svh] flex-col bg-background">
-      <OnboardingMenu />
-      <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <OnboardingScreen
+      start={
         <BackChevron
           label={t`Back`}
           to="/onboarding"
-          search={onboardingSearch("welcome", redirectTo)}
-          className="mb-4 self-start"
+          search={onboardingSearch(previous, redirectTo)}
         />
+      }
+      footer={
+        <>
+          <Button
+            type="submit"
+            form="onboarding-profile"
+            disabled={!isStorageConfigured}
+            tap
+            className="w-full"
+          >
+            <Trans>Continue</Trans>
+          </Button>
+          {page === "profile" ? (
+            <p className="text-center text-muted-foreground text-xs">
+              <Trans>Already have an account?</Trans>{" "}
+              <Link
+                to="/onboarding"
+                search={onboardingSearch("signin", redirectTo)}
+                replace
+                className="font-medium text-foreground underline underline-offset-4"
+              >
+                <Trans>Go back to sign in</Trans>
+              </Link>
+            </p>
+          ) : null}
+        </>
+      }
+    >
+      <StepProgress step={PAGES.indexOf(page) + 1} total={progressTotal} className="" />
+      <OnboardingTitle>{title}</OnboardingTitle>
 
-        <StepProgress step={progressStep} total={progressTotal} />
-
-        <div className="mb-4">
-          <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-            <Trans>Create your account</Trans>
-          </h1>
-        </div>
-
-        <form
-          ref={formRef}
-          aria-label={t`Create account`}
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!avatarFile) setPhotoError(t`Required`);
-            void form.handleSubmit().finally(focusFirstInvalidField);
-          }}
-          className="space-y-4"
-        >
-          <div className="space-y-4 border border-border bg-card p-4">
+      <form
+        id="onboarding-profile"
+        ref={formRef}
+        aria-label={t`Create account`}
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          void handleContinue();
+        }}
+        className={
+          page === "location" ? "flex min-h-0 flex-1 flex-col gap-4" : "flex flex-col gap-4"
+        }
+      >
+        {page === "profile" ? (
+          <>
             <AvatarPicker
               value={avatarFile}
               onChange={(file) => {
@@ -185,7 +317,7 @@ export function OnboardingProfileForm({
 
             <form.Field name="name">
               {(field) => {
-                const err = getFieldError(field.state.meta.errors);
+                const err = shownError("name", field.state.meta.isTouched);
                 return (
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="onb-name" className="font-medium text-sm">
@@ -202,39 +334,32 @@ export function OnboardingProfileForm({
                       aria-invalid={!!err}
                       aria-label={t`Name`}
                     />
-                    {err ? (
-                      <p className="text-destructive text-xs">
-                        {err === "Name is required"
-                          ? t`Required`
-                          : translateValidationError(err, i18n)}
-                      </p>
-                    ) : null}
+                    {err ? <p className="text-destructive text-xs">{err}</p> : null}
                   </div>
                 );
               }}
             </form.Field>
 
             <form.Field name="username">
-              {(field) => {
-                const err = getFieldError(field.state.meta.errors);
-                return (
-                  <div>
-                    <UsernameInput
-                      id="onb-username"
-                      value={field.state.value ?? ""}
-                      hint={() => form.getFieldValue("name")}
-                      onChange={field.handleChange}
-                      onBlur={field.handleBlur}
-                      error={err ? translateValidationError(err, i18n) : null}
-                    />
-                  </div>
-                );
-              }}
+              {(field) => (
+                <UsernameInput
+                  id="onb-username"
+                  value={field.state.value ?? ""}
+                  hint={() => form.getFieldValue("name")}
+                  onChange={field.handleChange}
+                  onBlur={field.handleBlur}
+                  error={shownError("username", field.state.meta.isTouched)}
+                />
+              )}
             </form.Field>
+          </>
+        ) : null}
 
+        {page === "contact" ? (
+          <>
             <form.Field name="email">
               {(field) => {
-                const err = getFieldError(field.state.meta.errors);
+                const err = shownError("email", field.state.meta.isTouched);
                 return (
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="onb-email" className="font-medium text-sm">
@@ -252,11 +377,7 @@ export function OnboardingProfileForm({
                       aria-invalid={!!err}
                       aria-label={t`Email`}
                     />
-                    {err ? (
-                      <p className="text-destructive text-xs">
-                        {translateValidationError(err, i18n)}
-                      </p>
-                    ) : null}
+                    {err ? <p className="text-destructive text-xs">{err}</p> : null}
                   </div>
                 );
               }}
@@ -264,7 +385,7 @@ export function OnboardingProfileForm({
 
             <form.Field name="phone">
               {(field) => {
-                const err = getFieldError(field.state.meta.errors);
+                const err = shownError("phone", field.state.meta.isTouched);
                 return (
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="onb-phone" className="font-medium text-sm">
@@ -278,72 +399,7 @@ export function OnboardingProfileForm({
                       aria-invalid={!!err}
                       aria-label={t`Phone number`}
                     />
-                    {err ? (
-                      <p className="text-destructive text-xs">
-                        {translateValidationError(err, i18n)}
-                      </p>
-                    ) : null}
-                  </div>
-                );
-              }}
-            </form.Field>
-
-            <form.Field name="preferredCurrency">
-              {(field) => {
-                const err = getFieldError(field.state.meta.errors);
-                return (
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="onb-preferred-currency" className="font-medium text-sm">
-                      <Trans>Preferred currency</Trans>
-                    </label>
-                    <CurrencySelect
-                      id="onb-preferred-currency"
-                      value={field.state.value}
-                      onValueChange={(currency) => {
-                        currencyWasChosenRef.current = true;
-                        field.handleChange(currency);
-                      }}
-                      placeholder={t`Search currencies`}
-                      emptyMessage={t`No currencies found`}
-                      ariaLabel={t`Preferred currency`}
-                      ariaInvalid={!!err}
-                    />
-                    {err ? (
-                      <p className="text-destructive text-xs">
-                        {translateValidationError(err, i18n)}
-                      </p>
-                    ) : null}
-                  </div>
-                );
-              }}
-            </form.Field>
-
-            <form.Field name="bio">
-              {(field) => {
-                const err = getFieldError(field.state.meta.errors);
-                return (
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="onb-bio" className="font-medium text-sm">
-                      <Trans>Bio</Trans>
-                      <span className="ms-1 font-normal text-muted-foreground">
-                        <Trans>Optional</Trans>
-                      </span>
-                    </label>
-                    <Textarea
-                      id="onb-bio"
-                      rows={3}
-                      maxLength={500}
-                      placeholder={t`Tell people a little about yourself`}
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
-                      aria-invalid={!!err}
-                    />
-                    {err ? (
-                      <p className="text-destructive text-xs">
-                        {translateValidationError(err, i18n)}
-                      </p>
-                    ) : null}
+                    {err ? <p className="text-destructive text-xs">{err}</p> : null}
                   </div>
                 );
               }}
@@ -351,7 +407,7 @@ export function OnboardingProfileForm({
 
             <form.Field name="website">
               {(field) => {
-                const err = getFieldError(field.state.meta.errors);
+                const err = shownError("website", field.state.meta.isTouched);
                 return (
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="onb-website" className="font-medium text-sm">
@@ -373,71 +429,98 @@ export function OnboardingProfileForm({
                       aria-invalid={!!err}
                       aria-label={t`Website`}
                     />
-                    {err ? (
-                      <p className="text-destructive text-xs">
-                        {translateValidationError(err, i18n)}
-                      </p>
-                    ) : null}
+                    {err ? <p className="text-destructive text-xs">{err}</p> : null}
                   </div>
                 );
               }}
             </form.Field>
-          </div>
 
-          <form.Field name="location">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <form.Subscribe selector={(s) => s.submissionAttempts}>
-                  {(submissionAttempts) => (
-                    <LocationPicker
-                      required
+            <form.Field name="bio">
+              {(field) => {
+                const err = shownError("bio", field.state.meta.isTouched);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="onb-bio" className="font-medium text-sm">
+                      <Trans>Bio</Trans>
+                      <span className="ms-1 font-normal text-muted-foreground">
+                        <Trans>Optional</Trans>
+                      </span>
+                    </label>
+                    <Textarea
+                      id="onb-bio"
+                      rows={3}
+                      maxLength={500}
+                      placeholder={t`Tell people a little about yourself`}
                       value={field.state.value}
-                      onChange={(next) => {
-                        field.handleChange(next);
-                        if (next) suggestForCountry(next.country);
-                      }}
-                      error={
-                        field.state.meta.isTouched || submissionAttempts > 0
-                          ? err
-                            ? translateValidationError(err, i18n)
-                            : undefined
-                          : undefined
-                      }
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={!!err}
                     />
-                  )}
-                </form.Subscribe>
-              );
-            }}
-          </form.Field>
+                    {err ? <p className="text-destructive text-xs">{err}</p> : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+          </>
+        ) : null}
 
-          <form.Subscribe selector={(s) => s.isSubmitting}>
-            {(isSubmitting) => (
-              <Button
-                type="submit"
-                disabled={!isStorageConfigured}
-                pending={isSubmitting}
-                tap
-                className="w-full"
-              >
-                {isSubmitting ? t`Saving…` : t`Continue`}
-              </Button>
-            )}
-          </form.Subscribe>
-        </form>
+        {page === "location" ? (
+          <>
+            <form.Field name="location">
+              {(field) => (
+                <LocationPicker
+                  required
+                  fill
+                  value={field.state.value}
+                  onChange={(next) => {
+                    field.handleChange(next);
+                    if (next) suggestForCountry(next.country);
+                  }}
+                  error={shownError("location", field.state.meta.isTouched) ?? undefined}
+                />
+              )}
+            </form.Field>
 
-        <p className="mt-8 text-center text-muted-foreground text-sm">
-          <Trans>Already have an account?</Trans>{" "}
-          <Link
-            to="/onboarding"
-            search={onboardingSearch("signin", redirectTo)}
-            replace
-            className="font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            <Trans>Go back to sign in</Trans>
-          </Link>
-        </p>
-      </div>
-    </div>
+            <form.Field name="preferredCurrency">
+              {(field) => {
+                const err = shownError("preferredCurrency", field.state.meta.isTouched);
+                return (
+                  <div className="shrink-0">
+                    <div className="border border-border bg-card">
+                      <ActionRow
+                        icon={<RiMoneyDollarCircleLine className="size-4" aria-hidden="true" />}
+                        label={t`Preferred currency`}
+                        value={<span className="font-mono">{field.state.value}</span>}
+                        onClick={() => setCurrencyOpen(true)}
+                      />
+                    </div>
+                    {err ? <p className="mt-1 text-destructive text-xs">{err}</p> : null}
+                    <SettingsSheet
+                      open={currencyOpen}
+                      onOpenChange={setCurrencyOpen}
+                      title={t`Preferred currency`}
+                    >
+                      <CurrencySelect
+                        id="onb-preferred-currency"
+                        value={field.state.value}
+                        onValueChange={(currency) => {
+                          currencyWasChosenRef.current = true;
+                          field.handleChange(currency);
+                          setCurrencyOpen(false);
+                        }}
+                        placeholder={t`Search currencies`}
+                        emptyMessage={t`No currencies found`}
+                        ariaLabel={t`Preferred currency`}
+                        ariaInvalid={!!err}
+                      />
+                    </SettingsSheet>
+                  </div>
+                );
+              }}
+            </form.Field>
+          </>
+        ) : null}
+      </form>
+    </OnboardingScreen>
   );
 }

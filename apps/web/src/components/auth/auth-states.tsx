@@ -6,7 +6,7 @@ import { SectionHeading } from "#/components/ui/section-heading";
 
 export function ApprovalPending({ onRetry, busy }: { onRetry?: () => void; busy?: boolean }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="border border-border bg-card p-4">
       <SectionHeading>
         <Trans>Account awaiting approval</Trans>
       </SectionHeading>
@@ -26,7 +26,7 @@ export function ApprovalPending({ onRetry, busy }: { onRetry?: () => void; busy?
 
 export function ApprovalRejected({ children }: { children?: ReactNode }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="border border-border bg-card p-4">
       <SectionHeading>
         <Trans>Account not approved</Trans>
       </SectionHeading>

@@ -58,6 +58,16 @@ msgstr "{count, plural, one {# допис} few {# дописи} many {# допи
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "Ім’я користувача має містити 3–24 літери, цифри або дефіси"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "Виберіть мову ще раз, щоб продовжити."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "Виберіть мову"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -311,6 +321,7 @@ msgstr "Відкрито посилання на паперовий гамане
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Відскановано QR-код паперового гаманця. Імпортувати цю адресу?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -328,7 +339,7 @@ msgstr "Ваучер працює як подарункова картка дл�
 "погашає ваш ваучер, ви зобов’язуєтеся надати йому свої пропозиції."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "Ваучер представляє обіцянку його емітента надати товари або послуги. "
 "Перевірте, для чого його можна використати та хто його приймає."
@@ -337,8 +348,8 @@ msgstr "Ваучер представляє обіцянку його еміте
 msgid "About"
 msgstr "Про застосунок"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "Про Cosmo-Local Credit"
 
@@ -357,6 +368,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "Прийміть умови, щоб опублікувати ваучер"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
 msgstr "Обліковий запис"
 
@@ -368,11 +381,11 @@ msgstr "Обліковий запис очікує схвалення"
 msgid "Account not approved"
 msgstr "Обліковий запис не схвалено"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:490
+#: apps/web/src/components/auth/sign-in-panel.tsx:523
 msgid "Account not found"
 msgstr "Обліковий запис не знайдено"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:454
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:451
 msgid "Account registration failed."
 msgstr "Не вдалося зареєструвати обліковий запис."
 
@@ -380,7 +393,7 @@ msgstr "Не вдалося зареєструвати обліковий зап
 #~ msgid "Activating on chain..."
 #~ msgstr "Активація в блокчейні…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:145
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:172
 msgid "Activating on chain…"
 msgstr "Активація в блокчейні…"
 
@@ -388,7 +401,7 @@ msgstr "Активація в блокчейні…"
 #~ msgid "Activating smart wallet..."
 #~ msgstr "Активація смартгаманця…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:147
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:174
 msgid "Activating smart wallet…"
 msgstr "Активація смартгаманця…"
 
@@ -457,7 +470,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Додайте CLC на початковий екран iPhone, відкрийте встановлений "
 "застосунок, а потім увімкніть сповіщення."
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "Додати CLC на телефон"
@@ -552,7 +564,7 @@ msgstr "Розширені"
 msgid "Advanced details"
 msgstr "Розширені відомості"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:409
+#: apps/web/src/components/auth/sign-in-panel.tsx:404
 msgid "Advanced options"
 msgstr "Розширені параметри"
 
@@ -582,7 +594,7 @@ msgstr "Усі вибрані"
 msgid "All Vouchers"
 msgstr "Усі ваучери"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:270
 msgid "Already have an account?"
 msgstr "Уже маєте обліковий запис?"
 
@@ -626,7 +638,7 @@ msgid "Amount to collect"
 msgstr "Сума до отримання"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "Пропозиція описує товари або послуги, які хтось надає. Перевірте "
 "деталі, ціну та який ваучер приймається."
@@ -696,21 +708,22 @@ msgstr "Доступні теги"
 msgid "Awaiting approval"
 msgstr "Очікує схвалення"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:144
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
-#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:22
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:364
 msgid "Back"
 msgstr "Назад"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:105
 msgid "Back to market"
 msgstr "Назад до ринку"
 
@@ -741,7 +754,7 @@ msgid "Balance {tokenBalance}"
 msgstr "Баланс {tokenBalance}"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:327
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:444
 msgid "Bio"
 msgstr "Про себе"
 
@@ -815,7 +828,8 @@ msgstr "Зателефонувати"
 msgid "Camera access denied."
 msgstr "Доступ до камери заборонено."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:468
+#: apps/web/src/components/auth/sign-in-panel.tsx:424
+#: apps/web/src/components/auth/sign-in-panel.tsx:539
 #: apps/web/src/components/nfc-card-prompt.tsx:117
 #: apps/web/src/components/reviews/review-editor.tsx:148
 #: apps/web/src/components/ui/photo-source-picker.tsx:128
@@ -863,7 +877,7 @@ msgstr "Поточна картка:"
 msgid "Card read — processing {amount}"
 msgstr "Картку зчитано — обробка {amount}"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:319
+#: apps/web/src/components/auth/sign-in-panel.tsx:356
 msgid "Card read — signing in"
 msgstr "Картку зчитано — виконується вхід"
 
@@ -1054,11 +1068,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Оберіть зображення у форматі JPEG, PNG або WebP."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "Виберіть мову ще раз, щоб продовжити."
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "Оберіть місце"
@@ -1088,7 +1097,7 @@ msgid "Choose a profile photo"
 msgstr "Оберіть фото профілю"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "Виберіть одержувача, ваучер, який у вас є, та суму. Перевірте дані "
 "перед підтвердженням, а потім дочекайтеся результату переказу."
@@ -1161,11 +1170,6 @@ msgstr "Оберіть установлені вами курси або одн�
 msgid "Choose username"
 msgstr "Вибрати ім’я користувача"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "Виберіть мову"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC установлено. Знайдіть застосунок на початковому екрані."
@@ -1215,6 +1219,7 @@ msgstr "Очистити місце"
 msgid "Clear search"
 msgstr "Очистити пошук"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1239,7 +1244,7 @@ msgstr "Закрити сканер паперового гаманця"
 msgid "Close password-protected wallet import"
 msgstr "Закрити імпорт захищеного паролем гаманця"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:439
+#: apps/web/src/components/auth/sign-in-panel.tsx:493
 msgid "Close private key form"
 msgstr "Закрити форму приватного ключа"
 
@@ -1307,8 +1312,8 @@ msgstr "Щоб продовжити, виконайте запит дозвол�
 msgid "Complete the prompt on your phone."
 msgstr "Виконайте запит на телефоні."
 
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:36
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:42
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:38
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:44
 msgid "Complete your profile"
 msgstr "Заповніть профіль"
 
@@ -1330,7 +1335,7 @@ msgstr "Підтвердити й надіслати"
 msgid "Confirm Install or Add when asked."
 msgstr "Коли з’явиться запит, підтвердьте встановлення або додавання."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:137
 msgid "Confirm password"
 msgstr "Підтвердьте пароль"
 
@@ -1353,6 +1358,7 @@ msgid "Confirmed"
 msgstr "Підтверджено"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 msgid "Confirming"
 msgstr "Підтвердження"
 
@@ -1389,7 +1395,7 @@ msgstr "Під’єднана адреса"
 #~ msgid "Connecting wallet..."
 #~ msgstr "Під’єднання гаманця..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:141
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:168
 msgid "Connecting wallet…"
 msgstr "Під’єднання гаманця…"
 
@@ -1398,14 +1404,14 @@ msgstr "Під’єднання гаманця…"
 #~ msgid "Connecting..."
 #~ msgstr "Під’єднання..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:319
+#: apps/web/src/components/auth/sign-in-panel.tsx:356
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
 #: apps/web/src/routes/__root.tsx:322
 msgid "Connecting…"
 msgstr "Під’єднання…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:136
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
+#: apps/web/src/components/auth/sign-in-panel.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:320
 #: apps/web/src/routes/__root.tsx:229
 #: apps/web/src/routes/__root.tsx:260
 msgid "Connection failed."
@@ -1414,6 +1420,10 @@ msgstr "Не вдалося під’єднатися."
 #: apps/web/src/lib/category-label.ts:8
 msgid "Construction"
 msgstr "Будівництво"
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:243
+msgid "Contact"
+msgstr "Контакти"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:357
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:747
@@ -1436,15 +1446,15 @@ msgstr "Контактний телефон"
 msgid "Contact Website"
 msgstr "Контактний вебсайт"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
 msgstr "Продовжити"
 
-#: apps/web/src/components/install-app-dialog.tsx:53
+#: apps/web/src/components/install-app-dialog.tsx:37
 #: apps/web/src/features/install/ui/install-page.tsx:116
 msgid "Continue in browser"
 msgstr "Продовжити в браузері"
@@ -1453,19 +1463,20 @@ msgstr "Продовжити в браузері"
 msgid "Continue to CLC"
 msgstr "Перейти до CLC"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
 msgid "Continue to wallet"
 msgstr "Перейти до гаманця"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:376
+#: apps/web/src/components/auth/sign-in-panel.tsx:365
 msgid "Continue with {providerLabel}"
 msgstr "Продовжити через {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:490
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
 msgid "Continue with paper wallet"
 msgstr "Продовжити з паперовим гаманцем"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:370
+#: apps/web/src/components/auth/sign-in-panel.tsx:379
 msgid "Continue with Paper Wallet"
 msgstr "Продовжити з паперовим гаманцем"
 
@@ -1550,11 +1561,11 @@ msgstr "Копіювати адресу гаманця"
 msgid "Copy wallet username"
 msgstr "Копіювати ім’я користувача гаманця"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit допомагає людям і організаціям підтримувати, "
@@ -1568,19 +1579,19 @@ msgstr "Не вдалося імпортувати цей паперовий г�
 msgid "Could not load vouchers."
 msgstr "Не вдалося завантажити ваучери."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
 msgid "Could not protect this paper wallet."
 msgstr "Не вдалося захистити цей паперовий гаманець."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:180
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
 msgid "Could not save the paper wallet. Try again."
 msgstr "Не вдалося зберегти паперовий гаманець. Спробуйте ще раз."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:218
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "Не вдалося зберегти аркуш для друку. Спробуйте ще раз."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:238
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
 msgid "Could not share the paper wallet. Try downloading it instead."
 msgstr "Не вдалося поділитися паперовим гаманцем. Спробуйте завантажити його."
 
@@ -1704,7 +1715,7 @@ msgstr "Не вдалося створити ваучери."
 msgid "Couldn't estimate this swap."
 msgstr "Не вдалося розрахувати цей обмін."
 
-#: apps/web/src/components/ui/location-picker.tsx:115
+#: apps/web/src/components/ui/location-picker.tsx:123
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Не вдалося визначити країну в цьому місці. Спробуйте вибрати місце "
 "поруч."
@@ -1842,12 +1853,12 @@ msgstr "Не вдалося завантажити ваші дописи."
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "Не вдалося випустити початкову кількість ваучерів."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "Не вдалося відкрити встановлення. Виконайте наведені нижче дії або "
 "спробуйте пізніше."
 
-#: apps/web/src/components/install-app-dialog.tsx:47
+#: apps/web/src/components/install-app-dialog.tsx:45
 msgid "Couldn't open installation. Follow these instructions or try again "
 "later."
 msgstr "Не вдалося відкрити встановлення. Дотримуйтеся цих інструкцій або "
@@ -1997,15 +2008,14 @@ msgstr "Фото обкладинки"
 msgid "Create"
 msgstr "Створити"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
+#: apps/web/src/components/auth/authenticated-route.tsx:85
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:290
 msgid "Create account"
 msgstr "Створити обліковий запис"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:480
-#: apps/web/src/components/auth/sign-in-panel.tsx:498
+#: apps/web/src/components/auth/sign-in-panel.tsx:436
+#: apps/web/src/components/auth/sign-in-panel.tsx:531
 msgid "Create an account"
 msgstr "Створити обліковий запис"
 
@@ -2050,7 +2060,7 @@ msgstr "Створити ваучер"
 msgid "Create vouchers"
 msgstr "Створити ваучери"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
 msgid "Create your account"
 msgstr "Створіть обліковий запис"
 
@@ -2083,7 +2093,7 @@ msgstr "Випуск {0}…"
 #~ msgid "Creating account..."
 #~ msgstr "Створення облікового запису..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 msgid "Creating account…"
 msgstr "Створення облікового запису…"
 
@@ -2116,7 +2126,8 @@ msgstr "Кредитний ліміт невідомий"
 msgid "Culture"
 msgstr "Культура"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
 msgid "Customize"
 msgstr "Налаштувати"
 
@@ -2204,7 +2215,7 @@ msgstr "Опишіть свій пул"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:297
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
 msgid "Description"
@@ -2219,7 +2230,7 @@ msgid "Discard changes"
 msgstr "Відхилити зміни"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:128
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:54
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:50
 msgid "Dismiss"
 msgstr "Закрити"
 
@@ -2238,7 +2249,9 @@ msgstr "Відображувана назва обов’язкова"
 msgid "Display name must be 120 characters or fewer"
 msgstr "Відображувана назва має містити не більше 120 символів"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2251,12 +2264,12 @@ msgstr "Готово"
 msgid "Done with this customer"
 msgstr "Завершити обслуговування клієнта"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:292
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
 msgid "Download card"
 msgstr "Завантажити картку"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:436
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
 msgid "Download your paper wallet before continuing."
 msgstr "Завантажте свій паперовий гаманець, перш ніж продовжити."
 
@@ -2351,7 +2364,6 @@ msgstr "Редагувати допис"
 #: apps/web/src/components/nearby-catalog.tsx:210
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Редагувати профіль"
 
@@ -2380,8 +2392,8 @@ msgstr "Літні люди"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:267
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:299
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:253
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:366
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:378
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:523
@@ -2439,7 +2451,7 @@ msgstr "Введіть ім’я користувача, назву пулу, н
 msgid "Enter a valid date and time"
 msgstr "Введіть дійсні дату й час"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:282
+#: apps/web/src/components/auth/sign-in-panel.tsx:283
 msgid "Enter a valid private key or paper wallet."
 msgstr "Введіть дійсний приватний ключ або паперовий гаманець."
 
@@ -2469,7 +2481,7 @@ msgstr "Введіть суму, яку підтримує цей ваучер."
 msgid "Enter an exchange rate greater than zero"
 msgstr "Введіть курс обміну, більший за нуль"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
 msgid "Enter and apply a password before downloading this card."
 msgstr "Введіть і застосуйте пароль перед завантаженням цієї картки."
 
@@ -2514,7 +2526,7 @@ msgstr "Однакова вартість"
 msgid "Event details"
 msgstr "Відомості про подію"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 "way to sign in."
 msgstr "Кожний обліковий запис отримує паперовий гаманець. Прив’язка "
@@ -2641,7 +2653,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Назва файлу має містити не більше 255 символів"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Файл завеликий ({0} КБ). Максимальний розмір — 512 КБ."
 
@@ -2739,7 +2751,7 @@ msgstr "Отримати"
 msgid "Global"
 msgstr "Глобально"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:437
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 msgid "Go back to sign in"
 msgstr "Повернутися до входу"
 
@@ -2834,7 +2846,10 @@ msgid "How should vouchers match?"
 msgstr "Як мають збігатися ваучери?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:118
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "Як користуватися CLC"
 
@@ -2842,10 +2857,8 @@ msgstr "Як користуватися CLC"
 msgid "How was your experience?"
 msgstr "Як вам сподобалося?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:95
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "У мене вже є обліковий запис"
 
@@ -2854,10 +2867,10 @@ msgid "I created {amountLabel}."
 msgstr "Я випустив(-ла) {amountLabel}."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:424
-msgid "I have saved this key"
-msgstr "Я зберіг цей ключ"
+#~ msgid "I have saved this key"
+#~ msgstr "Я зберіг цей ключ"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:431
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "Я зберіг цей ключ. Якщо його втратити, мій гаманець неможливо буде "
 "відновити."
@@ -2891,7 +2904,7 @@ msgstr "Я обміняв(-ла) {sentLabel} на {amountLabel} у пулі {poo
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "Я обміняв(-ла) {sentLabel} на {amountLabel}."
 
-#: apps/web/src/components/ui/location-picker.tsx:294
+#: apps/web/src/components/ui/location-picker.tsx:307
 msgid "Identifying location…"
 msgstr "Визначення місця…"
 
@@ -2934,15 +2947,15 @@ msgstr "Збільште кількість для {0}"
 msgid "Info"
 msgstr "Інформація"
 
-#: apps/web/src/components/install-app-button.tsx:61
-#: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-button.tsx:65
+#: apps/web/src/components/install-app-dialog.tsx:19
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "Установити CLC"
 
-#: apps/web/src/components/install-app-dialog.tsx:39
+#: apps/web/src/components/install-app-dialog.tsx:32
 msgid "Install now"
 msgstr "Установити зараз"
 
@@ -2961,7 +2974,7 @@ msgstr "Спочатку встановіть застосунок"
 msgid "Installation link"
 msgstr "Посилання для встановлення"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Запит на встановлення надіслано. Щоб завершити, виконайте вказівки "
@@ -3073,10 +3086,10 @@ msgid "Link {0} file name"
 msgstr "Назва файлу за посиланням {0}"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
-msgid "Link {providerLabel}"
-msgstr "Прив’язати {providerLabel}"
+#~ msgid "Link {providerLabel}"
+#~ msgstr "Прив’язати {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
 msgid "Link {providerLabel}?"
 msgstr "Прив’язати {providerLabel}?"
 
@@ -3117,7 +3130,7 @@ msgstr "Посилання скопійовано"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "Посилання на умови, що застосовуються до цього ваучера"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:480
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
 msgid "Link wallet to {providerLabel}"
 msgstr "Прив’язати гаманець до {providerLabel}"
 
@@ -3145,7 +3158,7 @@ msgstr "Прив’язка ключа доступу працює в Safari а�
 #~ msgstr "Прив’язка ключа доступу..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:166
 msgid "Linking passkey…"
 msgstr "Прив’язка ключа доступу…"
 
@@ -3203,8 +3216,8 @@ msgstr "Завантаження кредитних лімітів…"
 msgid "Loading holdings…"
 msgstr "Завантаження активів…"
 
-#: apps/web/src/components/ui/location-picker.tsx:271
-#: apps/web/src/components/ui/location-picker.tsx:287
+#: apps/web/src/components/ui/location-picker.tsx:283
+#: apps/web/src/components/ui/location-picker.tsx:300
 msgid "Loading location map"
 msgstr "Завантаження мапи місця"
 
@@ -3296,7 +3309,6 @@ msgstr "Завантаження вашого профілю…"
 #~ msgstr "Завантаження..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
@@ -3324,9 +3336,10 @@ msgstr "Завантаження…"
 msgid "Local money and M-Pesa"
 msgstr "Місцеві гроші та M-Pesa"
 
-#: apps/web/src/components/ui/location-picker.tsx:200
+#: apps/web/src/components/ui/location-picker.tsx:212
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/features/home/ui/report-page.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:547
@@ -3343,13 +3356,13 @@ msgid "Location map"
 msgstr "Мапа місця"
 
 #: apps/web/src/components/nearby-catalog.tsx:246
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 #: apps/web/src/features/home/ui/market-page.tsx:169
 msgid "Location unavailable"
 msgstr "Геодані недоступні"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:268
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:668
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:232
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:662
@@ -3402,7 +3415,7 @@ msgstr "Мітка на мапі"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3595,8 +3608,8 @@ msgstr "Адреса мого гаманця"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:191
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:202
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:101
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:192
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:203
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:335
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:248
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:28
 msgid "Name"
@@ -3612,7 +3625,7 @@ msgstr "Назва обов’язкова"
 msgid "Name must be 80 characters or fewer"
 msgstr "Назва має містити не більше 80 символів"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:84
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
 msgid "Name on wallet"
 msgstr "Ім’я на гаманці"
 
@@ -3624,6 +3637,8 @@ msgstr "Назва, символ або адреса"
 msgid "Natural building"
 msgstr "Природне будівництво"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
@@ -3649,11 +3664,12 @@ msgstr "Новий допис"
 msgid "New supply"
 msgstr "Нова кількість"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:473
+#: apps/web/src/components/auth/sign-in-panel.tsx:429
 msgid "New to CLC?"
 msgstr "Уперше в CLC?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -3719,9 +3735,13 @@ msgstr "Для поточних результатів немає доступн
 msgid "No category filters are available."
 msgstr "Фільтри категорій недоступні."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:493
+#: apps/web/src/components/auth/sign-in-panel.tsx:526
 msgid "No CLC account was found for this sign-in."
 msgstr "Для цього способу входу не знайдено облікового запису CLC."
+
+#: apps/web/src/components/ui/country-sheet.tsx:89
+msgid "No countries found"
+msgstr "Країн не знайдено"
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:91
 msgid "No credit limit"
@@ -3750,7 +3770,7 @@ msgstr "Жоден пул із кредитом, у якому доступни�
 "фільтрам."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:307
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:512
 msgid "No currencies found"
 msgstr "Валют не знайдено"
 
@@ -4089,7 +4109,7 @@ msgid "Open menu"
 msgstr "Відкрити меню"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "Відкрийте Отримати та поділіться QR-кодом для отримання або адресою "
 "гаманця з відправником. Нікому не передавайте приватний ключ гаманця."
@@ -4127,18 +4147,18 @@ msgstr "Відкрити сторінку ваучера"
 #~ msgid "Opening paper wallet..."
 #~ msgstr "Відкриття паперового гаманця..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:149
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
 msgid "Opening paper wallet…"
 msgstr "Відкриття паперового гаманця…"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:370
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:269
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:222
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:329
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:360
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:446
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:669
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:233
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:663
@@ -4204,25 +4224,27 @@ msgstr "Запит на передачу права власності наді�
 msgid "Paid out"
 msgstr "Виплачено"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
 msgid "Paper wallet"
 msgstr "Паперовий гаманець"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 msgid "Paper Wallet"
 msgstr "Паперовий гаманець"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:329
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
 msgid "Paper wallet card"
 msgstr "Картка паперового гаманця"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "Паперовий гаманець захищено. Зберігайте пароль окремо від картки."
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
-msgid "Paper wallet only"
-msgstr "Лише паперовий гаманець"
+#~ msgid "Paper wallet only"
+#~ msgstr "Лише паперовий гаманець"
 
 #: apps/web/src/features/home/ui/report-page.tsx:418
 msgid "Participants"
@@ -4235,6 +4257,7 @@ msgstr "Поле учасників має містити не більше 100 
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 msgid "Passkey"
 msgstr "Ключ доступу"
 
@@ -4242,7 +4265,7 @@ msgstr "Ключ доступу"
 msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "Створення ключа доступу скасовано. Ваш паперовий гаманець не змінено."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:143
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
 msgstr "Ключ доступу прив’язано"
 
@@ -4250,11 +4273,11 @@ msgstr "Ключ доступу прив’язано"
 #~ msgid "Passkey linked ... confirming on-chain..."
 #~ msgstr "Ключ доступу прив’язано... підтвердження в блокчейні..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:164
 msgid "Passkey linked … confirming on-chain…"
 msgstr "Ключ доступу прив’язано… підтвердження в блокчейні…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:236
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:263
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Ключ доступу прив’язано, але під’єднати гаманець не вдалося."
 
@@ -4263,20 +4286,21 @@ msgid "Passkey status could not be checked."
 msgstr "Не вдалося перевірити стан ключа доступу."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Пароль"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Пароль не може бути порожнім."
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:462
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
 #: apps/web/src/routes/__root.tsx:285
 msgid "Password-protected paper wallet"
 msgstr "Захищений паролем паперовий гаманець"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Паролі не збігаються."
 
@@ -4309,7 +4333,7 @@ msgstr "Квитанція про оплату"
 msgid "Payment status unknown"
 msgstr "Стан платежу невідомий"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:525
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
@@ -4349,7 +4373,7 @@ msgstr "Пермакультура"
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:271
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:392
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:535
@@ -4357,7 +4381,7 @@ msgid "Phone"
 msgstr "Телефон"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:279
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:400
 msgid "Phone number"
 msgstr "Номер телефону"
 
@@ -4371,7 +4395,7 @@ msgid "Photo {0}"
 msgstr "Фото {0}"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:74
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:182
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:314
 msgid "Photo uploads are unavailable right now."
 msgstr "Завантаження фото зараз недоступне."
 
@@ -4641,8 +4665,9 @@ msgstr "Налаштування"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:381
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:389
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:297
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:308
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:492
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:513
 msgid "Preferred currency"
 msgstr "Бажана валюта"
 
@@ -4662,8 +4687,8 @@ msgstr "Підготовка виведення коштів…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Preparing…"
 msgstr "Підготовка…"
 
@@ -4671,7 +4696,7 @@ msgstr "Підготовка…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Прикладіть картку, щоб сплатити {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Натисніть і утримуйте зображення нижче, а потім виберіть «Зберегти "
 "зображення»."
@@ -4759,7 +4784,7 @@ msgstr "Ціноутворення"
 msgid "Primary navigation"
 msgstr "Основна навігація"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:307
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
 msgid "Print"
 msgstr "Друкувати"
 
@@ -4767,9 +4792,10 @@ msgstr "Друкувати"
 msgid "Private attachment"
 msgstr "Приватне вкладення"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:423
-#: apps/web/src/components/auth/sign-in-panel.tsx:433
-#: apps/web/src/components/auth/sign-in-panel.tsx:457
+#: apps/web/src/components/auth/sign-in-panel.tsx:411
+#: apps/web/src/components/auth/sign-in-panel.tsx:482
+#: apps/web/src/components/auth/sign-in-panel.tsx:487
+#: apps/web/src/components/auth/sign-in-panel.tsx:507
 msgid "Private key"
 msgstr "Приватний ключ"
 
@@ -4781,11 +4807,11 @@ msgstr "Фото профілю"
 msgid "Profile updated"
 msgstr "Профіль оновлено"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:151
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
 msgstr "Захистити паперовий гаманець"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
 msgid "Protect paper wallet with a password"
 msgstr "Захистити паперовий гаманець паролем"
 
@@ -4793,7 +4819,7 @@ msgstr "Захистити паперовий гаманець паролем"
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "Захист паперового гаманця..."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:148
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protecting paper wallet…"
 msgstr "Захист паперового гаманця…"
 
@@ -4864,7 +4890,7 @@ msgstr "Публікація…"
 msgid "Purple"
 msgstr "Фіолетовий"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:104
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
 msgid "QR currently contains the raw private key."
 msgstr "Зараз QR-код містить незахищений приватний ключ."
 
@@ -4927,7 +4953,7 @@ msgid "Receive"
 msgstr "Отримати"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "Отримати ваучер"
 
@@ -4989,8 +5015,8 @@ msgid "Recipient username, pool name, phone or address"
 msgstr "Ім’я користувача, назва пулу, телефон або адреса отримувача"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:92
-msgid "Recommended"
-msgstr "Рекомендовано"
+#~ msgid "Recommended"
+#~ msgstr "Рекомендовано"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:121
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:307
@@ -5143,10 +5169,10 @@ msgstr "Походження звіту"
 msgid "Reported"
 msgstr "Подано скаргу"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:130
-#: apps/web/src/components/ui/location-picker.tsx:203
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:164
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:208
+#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/location-picker.tsx:215
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:220
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:235
 msgid "Required"
 msgstr "Обов’язково"
 
@@ -5154,7 +5180,7 @@ msgstr "Обов’язково"
 msgid "Reset"
 msgstr "Скинути"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:156
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "Скинути логотип"
 
@@ -5221,7 +5247,7 @@ msgstr "Ретрит"
 msgid "Retry"
 msgstr "Повторити"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:479
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
 msgid "Retry {providerLabel} connection"
 msgstr "Повторити під’єднання до {providerLabel}"
 
@@ -5265,11 +5291,11 @@ msgstr "Зберегти зміни"
 msgid "Save fee settings"
 msgstr "Зберегти налаштування комісії"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:304
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
 msgid "Save printable A4 sheet"
 msgstr "Зберегти аркуш A4 для друку"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:406
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
 msgid "Save this card securely. If you use a password, keep it separately. "
 "Anyone with an unprotected QR code can access the wallet."
 msgstr "Надійно збережіть цю картку. Якщо використовуєте пароль, зберігайте "
@@ -5279,6 +5305,10 @@ msgstr "Надійно збережіть цю картку. Якщо викор
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
 msgstr "Зберегти ім’я користувача"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
+msgid "Save your card"
+msgstr "Збережіть картку"
 
 #~ msgid "Saved location unavailable"
 #~ msgstr "Збережене місце недоступне"
@@ -5294,7 +5324,6 @@ msgstr "Збережено. Ваш допис знову очікує схвал
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:196
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:457
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:635
 msgid "Saving…"
@@ -5328,16 +5357,20 @@ msgstr "Пошук за назвою або символом"
 msgid "Search catalogs"
 msgstr "Пошук каталогів"
 
+#: apps/web/src/components/ui/country-sheet.tsx:82
+msgid "Search countries"
+msgstr "Пошук країн"
+
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:256
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:387
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:306
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:511
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:417
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:221
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:608
 msgid "Search currencies"
 msgstr "Пошук валют"
 
-#: apps/web/src/components/ui/location-picker.tsx:213
+#: apps/web/src/components/ui/location-picker.tsx:225
 msgid "Search for a town or place"
 msgstr "Знайдіть місто або місце"
 
@@ -5406,7 +5439,11 @@ msgstr "Пошук ваучерів"
 msgid "Search your vouchers"
 msgstr "Пошук у ваших ваучерах"
 
-#: apps/web/src/components/ui/location-picker.tsx:262
+#: apps/web/src/components/ui/country-sheet.tsx:79
+msgid "Search…"
+msgstr "Пошук…"
+
+#: apps/web/src/components/ui/location-picker.tsx:274
 msgid "Searching places…"
 msgstr "Пошук місць…"
 
@@ -5427,6 +5464,10 @@ msgstr "Пошук…"
 #~ msgid "See all"
 #~ msgstr "Переглянути все"
 
+#: apps/web/src/components/ui/country-sheet.tsx:102
+msgid "Select {name}"
+msgstr "Вибрати {name}"
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:224
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:46
 msgid "Select a token"
@@ -5435,6 +5476,14 @@ msgstr "Оберіть токен"
 #: apps/web/src/features/install/ui/install-page.tsx:148
 msgid "Select and copy the link above to share it."
 msgstr "Виділіть і скопіюйте посилання вище, щоб поділитися ним."
+
+#: apps/web/src/components/ui/country-sheet.tsx:73
+msgid "Select country"
+msgstr "Виберіть країну"
+
+#: apps/web/src/components/ui/country-sheet.tsx:73
+msgid "Select country code"
+msgstr "Виберіть код країни"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:728
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
@@ -5483,7 +5532,7 @@ msgid "Send {0}"
 msgstr "Надіслати {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "Надіслати ваучер"
 
@@ -5545,11 +5594,11 @@ msgstr "Обслуговує"
 msgid "Session"
 msgstr "Сеанс"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:45
 msgid "Session check failed"
 msgstr "Не вдалося перевірити сеанс"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:196
 msgid "Session could not be verified. Try again."
 msgstr "Не вдалося підтвердити сеанс. Спробуйте ще раз."
 
@@ -5565,7 +5614,7 @@ msgstr "Перш ніж отримувати комісії, укажіть їх
 #~ msgid "Setting up your wallet..."
 #~ msgstr "Налаштування гаманця..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:519
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
 msgid "Setting up your wallet…"
 msgstr "Налаштування гаманця…"
 
@@ -5583,11 +5632,11 @@ msgstr "Налаштування"
 msgid "Share"
 msgstr "Поділитися"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Share card"
 msgstr "Поділитися карткою"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5683,7 +5732,7 @@ msgid "Sign in to browse results available through your Credit pools."
 msgstr "Увійдіть, щоб переглядати результати, доступні через ваші Кредитні "
 "пули."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:112
 msgid "Sign in to continue"
 msgstr "Увійдіть, щоб продовжити"
 
@@ -5695,7 +5744,7 @@ msgstr "Увійдіть, щоб переглянути активність."
 msgid "Sign in to view posts."
 msgstr "Увійдіть, щоб переглянути дописи."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:461
+#: apps/web/src/components/auth/sign-in-panel.tsx:512
 msgid "Sign in with private key"
 msgstr "Увійти за допомогою приватного ключа"
 
@@ -5718,8 +5767,8 @@ msgid "Sign-in"
 msgstr "Вхід"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
-msgid "Sign-in method"
-msgstr "Спосіб входу"
+#~ msgid "Sign-in method"
+#~ msgstr "Спосіб входу"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 #~ msgid "Sign-in methods"
@@ -5734,8 +5783,8 @@ msgid "Signing out…"
 msgstr "Вихід…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "Пропустити"
+#~ msgid "Skip"
+#~ msgstr "Пропустити"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -5869,7 +5918,7 @@ msgstr "Кількість має більше десяткових знаків
 msgid "Supply must be greater than zero"
 msgstr "Кількість має бути більшою за нуль"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Файли SVG не підтримуються. Використовуйте PNG, JPEG або WebP."
 
@@ -6003,7 +6052,7 @@ msgstr "Зберігати комісії окремо"
 msgid "Take photo"
 msgstr "Зробити фото"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:395
+#: apps/web/src/components/auth/sign-in-panel.tsx:386
 msgid "Tap NFC card"
 msgstr "Прикласти NFC-картку"
 
@@ -6016,12 +6065,13 @@ msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Торкніться меню з трьома крапками, а потім виберіть «Додати на "
 "початковий екран» або «Установити застосунок»."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:340
+#: apps/web/src/components/auth/sign-in-panel.tsx:447
+#: apps/web/src/components/auth/sign-in-panel.tsx:453
 msgid "Tap your NFC card"
 msgstr "Прикладіть свою NFC-картку"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:229
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:336
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:453
 msgid "Tell people a little about yourself"
 msgstr "Розкажіть людям трохи про себе"
 
@@ -6419,7 +6469,7 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Цей допис завеликий для збереження. Скоротіть текст або видаліть "
 "частину медіафайлів."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:297
+#: apps/web/src/components/auth/sign-in-panel.tsx:298
 msgid "This QR code does not contain a valid private key."
 msgstr "Цей QR-код не містить дійсного приватного ключа."
 
@@ -6537,7 +6587,7 @@ msgstr "Висаджування дерев"
 msgid "Trip"
 msgstr "Поїздка"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:40
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6662,8 +6712,8 @@ msgid "Update photo"
 msgstr "Оновити фото"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:150
-msgid "Update protected paper wallet"
-msgstr "Оновити захищений паперовий гаманець"
+#~ msgid "Update protected paper wallet"
+#~ msgstr "Оновити захищений паперовий гаманець"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
 msgid "Update required"
@@ -6694,7 +6744,7 @@ msgstr "Завантажити зображення"
 msgid "Upload Image Instead"
 msgstr "Натомість завантажити зображення"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:135
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "Завантажити логотип"
 
@@ -6749,7 +6799,7 @@ msgid "Use max · {0}"
 msgstr "Використати максимум · {0}"
 
 #: apps/web/src/components/nearby-catalog.tsx:252
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 msgid "Use my location"
 msgstr "Використати моє місце"
 
@@ -7006,14 +7056,14 @@ msgstr "Випущені вами ваучери"
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "Очікування підтвердження в блокчейні..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:217
 msgid "Waiting for blockchain confirmation…"
 msgstr "Очікування підтвердження в блокчейні…"
 
-#: apps/web/src/components/install-app-button.tsx:59
-#: apps/web/src/components/install-app-dialog.tsx:37
+#: apps/web/src/components/install-app-button.tsx:63
+#: apps/web/src/components/install-app-dialog.tsx:30
 msgid "Waiting for confirmation…"
 msgstr "Очікування підтвердження…"
 
@@ -7033,6 +7083,8 @@ msgstr "Очікування блокчейну…"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:104
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -7059,7 +7111,7 @@ msgstr "Сеанс гаманця"
 msgid "Water Catchment"
 msgstr "Збір води"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:48
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "Не вдалося перевірити ваш сеанс. Перевірте з’єднання та спробуйте ще "
 "раз."
@@ -7087,9 +7139,9 @@ msgstr "Не вдалося перевірити, чи вже випускали
 #: apps/web/src/components/vouchers/voucher-summary.tsx:409
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:358
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:374
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
 msgid "Website"
@@ -7099,7 +7151,7 @@ msgstr "Вебсайт"
 msgid "Weekly"
 msgstr "Щотижня"
 
-#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:31
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:29
 msgid "Welcome back"
 msgstr "З поверненням"
 
@@ -7108,12 +7160,12 @@ msgid "What are you offering?"
 msgstr "Що ви пропонуєте?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "Що таке ваучер?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "Що таке пропозиція?"
 
@@ -7121,6 +7173,7 @@ msgstr "Що таке пропозиція?"
 msgid "What they offer"
 msgstr "Що вони пропонують"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "Що таке пул?"
@@ -7319,7 +7372,7 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "Виплата через MPESA незабаром надійде."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:197
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:198
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:330
 msgid "Your name"
 msgstr "Ваше ім’я"
 
@@ -7329,7 +7382,7 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 msgstr "Ваше ім’я та адресу гаманця не буде показано. Не вказуйте в коментарі "
 "особисті дані."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:403
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
 msgid "Your paper wallet"
 msgstr "Ваш паперовий гаманець"
 
@@ -7403,7 +7456,7 @@ msgid "Your wallet"
 msgstr "Ваш гаманець"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "Ваш гаманець"
 
@@ -7414,7 +7467,7 @@ msgstr "За замовчуванням — ваш гаманець. Введі�
 "туди комісії за обмін."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "Ваш гаманець зберігає ваші ваучери. Створіть обліковий запис і "
 "збережіть дані доступу до гаманця, щоб почати."

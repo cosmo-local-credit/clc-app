@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 
 import { SignInPanel } from "#/components/auth/sign-in-panel";
-import { OnboardingMenu } from "#/components/language-selector";
+import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
 import { BackChevron } from "#/components/wallet/wallet-layout";
 import { onboardingSearch } from "#/lib/onboarding-search";
 
@@ -16,29 +16,24 @@ export function SignInPage({ redirectTo }: { redirectTo?: string }) {
   const { t } = useLingui();
 
   return (
-    <div className="relative flex min-h-[100svh] flex-col bg-background">
-      <OnboardingMenu />
-      <div className="flex flex-1 flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <OnboardingScreen
+      start={
         <BackChevron
           label={t`Back`}
           to="/onboarding"
           search={onboardingSearch("welcome", redirectTo)}
-          className="mb-4 self-start"
         />
-
-        <div className="mb-6">
-          <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-            <Trans>Welcome back</Trans>
-          </h1>
-        </div>
-
-        <SignInPanel
-          redirectTo={redirectTo}
-          // Session already invalidated in the panel; route-level exit drains history.
-          onAuthenticated={() => {}}
-          createAccountStep="profile"
-        />
-      </div>
-    </div>
+      }
+    >
+      <OnboardingTitle>
+        <Trans>Welcome back</Trans>
+      </OnboardingTitle>
+      <SignInPanel
+        redirectTo={redirectTo}
+        // Session already invalidated in the panel; route-level exit drains history.
+        onAuthenticated={() => {}}
+        createAccountStep="profile"
+      />
+    </OnboardingScreen>
   );
 }

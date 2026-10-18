@@ -2,13 +2,11 @@ import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { RiDownloadLine, RiShareLine } from "react-icons/ri";
 
-import { InstallAppButton } from "#/components/install-app-button";
 import { Button } from "#/components/ui/button";
 import { useInstallStore } from "#/features/install/install-store";
 
-export function InstallAppLink({ openDialog = false }: { openDialog?: boolean }) {
+export function InstallAppLink() {
   const installed = useInstallStore((state) => state.installed);
-  if (openDialog && !installed) return <InstallAppButton showHelpLink />;
   const Icon = installed ? RiShareLine : RiDownloadLine;
   return (
     <Button asChild variant="outline" tap className="w-full">

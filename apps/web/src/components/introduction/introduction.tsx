@@ -1,187 +1,173 @@
+import { getLocaleDirection, type SupportedLocale } from "@clc/i18n/locales";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useRef, useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { introductionSlides as slides } from "./introduction-content";
-import { LanguageSelector } from "#/components/language-selector";
+import { useEffect, useState } from "react";
+import { RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine } from "react-icons/ri";
+
+import { OnboardingScreen } from "#/components/onboarding-screen";
 import { Button } from "#/components/ui/button";
-import { CLCLogo } from "#/components/ui/clc-logo";
-import { SectionHeading } from "#/components/ui/section-heading";
-import { StepProgress } from "#/components/ui/step-progress";
-import { useLocale } from "#/providers/i18n";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "#/components/ui/carousel";
+import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 import { cn } from "#/lib/utils";
+import { GuideArt } from "./guide-art";
+import { introductionSlides as slides } from "./introduction-content";
 
-type Props = { replay?: boolean } & (
-  | { inline: true; onExit?: never }
-  | { inline?: false; onExit: (action: "skip" | "create" | "signin" | "done") => void }
-);
+/**
+ * How to use CLC: one swipeable slide per idea, a picture over a title and a
+ * sentence or two. Swipe, the arrows, a segment, or the arrow keys move it;
+ * it stops at the last slide rather than wrapping.
+ *
+ * On Welcome it fills the space between the top bar and the account buttons,
+ * and its first slide carries the page title. Elsewhere it is a section.
+ */
+export function GuideCarousel({
+  welcome = false,
+  onIndexChange,
+  onApi,
+}: {
+  welcome?: boolean;
+  onIndexChange?: (index: number) => void;
+  onApi?: (api: CarouselApi) => void;
+}) {
+  const { i18n, t } = useLingui();
+  const [api, setApi] = useState<CarouselApi>();
+  const [index, setIndex] = useState(0);
+  const direction = getLocaleDirection(i18n.locale as SupportedLocale);
 
-export function Introduction({ inline = false, replay = false, onExit }: Props) {
-  const { i18n } = useLingui();
-  const { loading, error } = useLocale();
-  const [step, setStep] = useState(replay || inline ? 0 : -1);
-  const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (!inline) heading.current?.focus();
-  }, [step, loading, inline]);
-  const slide = slides[step];
-  const last = step === slides.length - 1;
-
-  const Container = inline ? "section" : "main";
-  const Heading = inline ? SectionHeading : "h1";
+    if (!api) return;
+    onApi?.(api);
+    const sync = () => {
+      const selected = api.selectedScrollSnap();
+      setIndex(selected);
+      onIndexChange?.(selected);
+    };
+    sync();
+    api.on("select", sync);
+    api.on("reInit", sync);
+    return () => {
+      api.off("select", sync);
+      api.off("reInit", sync);
+    };
+  }, [api, onApi, onIndexChange]);
 
   return (
-    <Container
-      className={
-        inline
-          ? "flex w-full flex-col py-4"
-          : "flex min-h-[100svh] w-full flex-col bg-background px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+    <Carousel
+      setApi={setApi}
+      direction={direction}
+      aria-label={t({ id: "intro.replay", message: "How to use CLC" })}
+      className="flex flex-[1_0_auto] flex-col"
+    >
+      <CarouselContent viewportClassName="flex flex-[1_0_auto]" className="ms-0 w-full">
+        {slides.map((slide, slideIndex) => {
+          const Heading = welcome && slideIndex === 0 ? "h1" : "h2";
+          const current = slideIndex === index;
+          return (
+            <CarouselItem
+              key={slide.art}
+              inert={!current}
+              aria-label={i18n._(slide.title)}
+              className="flex flex-col ps-0"
+            >
+              <GuideArt name={slide.art} className="min-h-26 max-h-68 flex-1" />
+              <div className="shrink-0 pt-5">
+                <Heading className="break-words font-heading text-[1.75rem] font-bold leading-tight">
+                  {i18n._(slide.title)}
+                </Heading>
+                <p className="mt-2 break-words text-muted-foreground leading-relaxed">
+                  {i18n._(slide.body)}
+                  {slide.about ? (
+                    <>
+                      {" "}
+                      <a
+                        href={PLATFORM_ABOUT_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-foreground underline underline-offset-4 hover:text-primary"
+                      >
+                        <Trans>About Cosmo-Local Credit</Trans>
+                      </a>
+                    </>
+                  ) : null}
+                </p>
+              </div>
+            </CarouselItem>
+          );
+        })}
+      </CarouselContent>
+
+      <div className="mt-3 flex shrink-0 items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          tap
+          aria-label={t`Back`}
+          disabled={index === 0}
+          onClick={() => api?.scrollPrev()}
+        >
+          <RiArrowLeftSLine className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+        </Button>
+        <div className="flex flex-1 gap-1">
+          {slides.map((slide, slideIndex) => (
+            <button
+              key={slide.art}
+              type="button"
+              aria-label={i18n._(slide.title)}
+              aria-current={slideIndex === index ? "true" : undefined}
+              onClick={() => api?.scrollTo(slideIndex)}
+              className={cn(
+                "relative h-[3px] flex-1 outline-none before:absolute before:-inset-y-5 before:inset-x-0 before:content-[''] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground",
+                slideIndex === index
+                  ? "bg-foreground"
+                  : slideIndex < index
+                    ? "bg-muted-foreground"
+                    : "bg-border",
+              )}
+            />
+          ))}
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          tap
+          aria-label={t`Next`}
+          disabled={index === slides.length - 1}
+          onClick={() => api?.scrollNext()}
+        >
+          <RiArrowRightSLine className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+        </Button>
+      </div>
+    </Carousel>
+  );
+}
+
+/** The guide on its own screen, replayed from Settings → How to use CLC. */
+export function Introduction({ onDone }: { onDone: () => void }) {
+  const { t } = useLingui();
+  const [api, setApi] = useState<CarouselApi>();
+  const [index, setIndex] = useState(0);
+  const last = index === slides.length - 1;
+
+  return (
+    <OnboardingScreen
+      menu={false}
+      start={
+        <Button variant="ghost" size="icon" tap aria-label={t`Close`} onClick={onDone}>
+          <RiCloseLine className="size-4" aria-hidden="true" />
+        </Button>
+      }
+      footer={
+        <Button tap className="w-full" onClick={() => (last ? onDone() : api?.scrollNext())}>
+          {last ? <Trans>Done</Trans> : <Trans>Next</Trans>}
+        </Button>
       }
     >
-      {!inline ? (
-        <header className="flex items-start justify-between gap-4">
-          <CLCLogo className="size-10" sharp />
-          {step >= 0 ? <LanguageSelector /> : null}
-        </header>
-      ) : null}
-      {step < 0 ? (
-        <section className="flex flex-1 flex-col gap-6 py-4">
-          <Heading
-            ref={heading}
-            tabIndex={-1}
-            className="break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
-          >
-            <Trans id="intro.language">Choose your language</Trans>
-          </Heading>
-          <LanguageSelector triggerClassName="h-12 w-full text-base" />
-        </section>
-      ) : loading || error ? (
-        <div className="flex flex-1 items-center justify-center" role="status">
-          {loading ? <Trans>Loading…</Trans> : null}
-        </div>
-      ) : (
-        <section aria-live={inline ? "polite" : undefined} className="flex flex-1 flex-col py-4">
-          <StepProgress step={step + 1} total={slides.length} />
-          <div
-            key={step}
-            aria-hidden="true"
-            className={cn(
-              "mb-6 flex items-center justify-center gap-3 border border-border bg-card px-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300",
-              inline ? "min-h-24" : "min-h-48",
-            )}
-          >
-            {slide.icons.map((Icon, index) => (
-              <div key={index} className="flex items-center gap-3">
-                {index === 1 ? (
-                  <ArrowRight className="size-4 text-muted-foreground rtl:-scale-x-100" />
-                ) : null}
-                <Icon
-                  className={index === 1 ? "size-12 text-primary" : "size-9 text-foreground"}
-                  strokeWidth={1.5}
-                />
-                {index === 1 ? (
-                  <ArrowRight className="size-4 text-muted-foreground rtl:-scale-x-100" />
-                ) : null}
-              </div>
-            ))}
-          </div>
-          {/* Every slide's text shares one grid cell, so the tallest one sets
-              the height in every language and nothing around it moves as the
-              slides change. Only the current slide is visible or announced. */}
-          <div className="grid">
-            {slides.map((item, index) => {
-              const current = index === step;
-              return (
-                <div
-                  key={index}
-                  aria-hidden={current ? undefined : true}
-                  className={cn(
-                    "col-start-1 row-start-1",
-                    current
-                      ? "motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
-                      : "invisible",
-                  )}
-                >
-                  <Heading
-                    ref={current ? heading : undefined}
-                    tabIndex={current ? -1 : undefined}
-                    className={
-                      inline
-                        ? "mb-4 break-words outline-none"
-                        : "mb-4 break-words font-heading text-[1.75rem] font-bold leading-tight outline-none"
-                    }
-                  >
-                    {i18n._(item.title)}
-                  </Heading>
-                  <p className="break-words text-base leading-relaxed text-muted-foreground">
-                    {i18n._(item.body)}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-      <footer className="space-y-3">
-        {error ? (
-          <p role="alert" className="text-sm text-destructive">
-            <Trans id="intro.languageError">Choose a language again to continue.</Trans>
-          </p>
-        ) : null}
-        <Button
-          tap
-          className="w-full"
-          disabled={loading || !!error}
-          onClick={() =>
-            inline
-              ? setStep((step + 1) % slides.length)
-              : last
-                ? onExit?.(replay ? "done" : "create")
-                : setStep(step + 1)
-          }
-        >
-          {last && !inline ? (
-            replay ? (
-              <Trans>Done</Trans>
-            ) : (
-              <Trans>Create account</Trans>
-            )
-          ) : step < 0 ? (
-            <Trans>Continue</Trans>
-          ) : (
-            <Trans>Next</Trans>
-          )}
-        </Button>
-        {/* The second button's place is kept on every screen of the
-            full-screen guide, so Next stays where Create account appears. */}
-        {!replay && !inline ? (
-          last ? (
-            <Button variant="outline" tap className="w-full" onClick={() => onExit?.("signin")}>
-              <Trans>I already have an account</Trans>
-            </Button>
-          ) : step < 0 ? (
-            <Button variant="link" tap className="w-full" onClick={() => onExit?.("signin")}>
-              <Trans>I already have an account</Trans>
-            </Button>
-          ) : (
-            <div aria-hidden="true" className="h-9" />
-          )
-        ) : null}
-        <div className="flex items-center justify-between gap-3">
-          <Button
-            variant="ghost"
-            tap
-            disabled={step <= (replay || inline ? 0 : -1)}
-            onClick={() => setStep(step - 1)}
-          >
-            <Trans>Back</Trans>
-          </Button>
-          {!inline ? (
-            <Button variant="ghost" tap onClick={() => onExit?.(replay ? "done" : "skip")}>
-              <Trans>Skip</Trans>
-            </Button>
-          ) : null}
-        </div>
-      </footer>
-    </Container>
+      <h1 className="sr-only">{t({ id: "intro.replay", message: "How to use CLC" })}</h1>
+      <GuideCarousel onApi={setApi} onIndexChange={setIndex} />
+    </OnboardingScreen>
   );
 }

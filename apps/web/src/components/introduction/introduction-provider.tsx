@@ -89,7 +89,7 @@ export function IntroductionProvider({
         ) : show ? (
           <Suspense fallback={<div className="min-h-[100svh] bg-background" />}>
             {replay ? (
-              <Introduction replay onExit={complete} />
+              <Introduction onDone={complete} />
             ) : (
               <LandingPage
                 onComplete={complete}
@@ -112,6 +112,11 @@ export function IntroductionProvider({
 /** Locked pages share welcome's completion state and action. */
 export function useFirstVisitIntroduction() {
   return useContext(FirstVisitContext);
+}
+
+/** Replays the guide over the current screen, or null outside the provider. */
+export function useIntroductionReplay() {
+  return useContext(ReplayContext);
 }
 
 export function IntroductionReplayButton() {

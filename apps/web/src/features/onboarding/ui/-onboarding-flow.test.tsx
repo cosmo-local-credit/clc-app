@@ -49,9 +49,20 @@ vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
 }));
 
 vi.mock("./onboarding-profile-form", () => ({
-  OnboardingProfileForm: ({ onNext }: { onNext: (data: ProfileInput, photo: File) => void }) => {
+  OnboardingProfileForm: ({
+    page,
+    onNext,
+    onPage,
+  }: {
+    page: string;
+    onNext: (data: ProfileInput, photo: File) => void;
+    onPage: (page: "contact" | "location") => void;
+  }) => {
     return (
-      <div data-testid="profile-form">
+      <div data-testid="profile-form" data-page={page}>
+        <button type="button" onClick={() => onPage("contact")}>
+          page-next
+        </button>
         <button
           type="button"
           onClick={() => {
@@ -82,28 +93,20 @@ vi.mock("./onboarding-profile-form", () => ({
   },
 }));
 
-vi.mock("./onboarding-method-step", () => ({
-  OnboardingMethodStep: ({ onContinue }: { onContinue: (choice: "link" | "paper") => void }) => (
-    <div data-testid="method-step">
-      <button type="button" onClick={() => onContinue("link")}>
-        method-continue
-      </button>
-    </div>
-  ),
-}));
-
 vi.mock("./onboarding-wallet-step", () => ({
   OnboardingWalletStep: ({
+    page,
     profileData,
     onDone,
     linkPasskey,
   }: {
+    page: string;
     profileData: ProfileInput;
     onDone: () => void;
     linkPasskey: boolean;
   }) => {
     return (
-      <div data-testid="wallet-step">
+      <div data-testid="wallet-step" data-page={page}>
         <span data-testid="profile-name">{profileData.name}</span>
         <span data-testid="link-passkey">{linkPasskey ? "yes" : "no"}</span>
         <button
@@ -136,6 +139,26 @@ describe("OnboardingFlow step transitions", () => {
     expect(screen.queryByTestId("wallet-step")).toBeNull();
   });
 
+  it("shows the same profile form on each of its three pages", () => {
+    const { rerender } = render(<OnboardingFlow step="profile" />);
+    const form = screen.getByTestId("profile-form");
+    expect(form.getAttribute("data-page")).toBe("profile");
+    rerender(<OnboardingFlow step="contact" />);
+    expect(screen.getByTestId("profile-form")).toBe(form);
+    expect(form.getAttribute("data-page")).toBe("contact");
+    rerender(<OnboardingFlow step="location" />);
+    expect(form.getAttribute("data-page")).toBe("location");
+  });
+
+  it("pushes the profile's next page so Back returns to the one before", () => {
+    render(<OnboardingFlow step="profile" />);
+    fireEvent.click(screen.getByRole("button", { name: "page-next" }));
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "contact" },
+    });
+  });
+
   it("navigates to card after profile when passkeys are unavailable", () => {
     render(<OnboardingFlow step="profile" />);
     fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
@@ -145,13 +168,40 @@ describe("OnboardingFlow step transitions", () => {
     });
   });
 
-  it("navigates to method after profile when passkeys are available", () => {
+  it("goes straight to the paper wallet when passkeys are available too", () => {
     mockIsPasskeyPlatformAvailable.mockReturnValue(true);
     render(<OnboardingFlow step="profile" />);
     fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
     expect(mockNavigate).toHaveBeenCalledWith({
       to: "/onboarding",
-      search: { step: "method" },
+      search: { step: "card" },
+    });
+  });
+
+  it("keeps one wallet step across protect, save and link", async () => {
+    mockIsPasskeyPlatformAvailable.mockReturnValue(true);
+    const { rerender } = render(<OnboardingFlow step="profile" />);
+    fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
+    rerender(<OnboardingFlow step="card" />);
+    const wallet = await screen.findByTestId("wallet-step");
+    expect(wallet.getAttribute("data-page")).toBe("card");
+    expect(screen.getByTestId("link-passkey").textContent).toBe("yes");
+    rerender(<OnboardingFlow step="save" />);
+    expect(screen.getByTestId("wallet-step")).toBe(wallet);
+    expect(wallet.getAttribute("data-page")).toBe("save");
+    rerender(<OnboardingFlow step="link" />);
+    expect(wallet.getAttribute("data-page")).toBe("link");
+  });
+
+  it("sends Link back to Save where the platform cannot store a passkey", async () => {
+    const { rerender } = render(<OnboardingFlow step="profile" />);
+    fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
+    mockNavigate.mockClear();
+    rerender(<OnboardingFlow step="link" />);
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "save" },
+      replace: true,
     });
   });
 

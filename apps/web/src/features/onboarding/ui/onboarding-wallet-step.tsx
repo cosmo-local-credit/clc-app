@@ -4,15 +4,21 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
+import { FiLock } from "react-icons/fi";
+import { RiCheckLine, RiEdit2Line, RiErrorWarningLine } from "react-icons/ri";
 import { privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
-import { OnboardingMenu } from "#/components/language-selector";
+import { GuideArt } from "#/components/introduction/guide-art";
+import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
 import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
+import { AgreementField } from "#/components/ui/agreement-field";
 import { Button } from "#/components/ui/button";
+import { CLCLogo } from "#/components/ui/clc-logo";
+import { SettingsSheet } from "#/components/ui/settings-sheet";
+import { Spinner } from "#/components/ui/spinner";
 import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
-import { PendingClock, StatusPill } from "#/components/wallet/wallet-status";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 
@@ -24,7 +30,8 @@ import { useCaliburDelegateFromPk } from "#/features/webauthn/hooks/use-calibur-
 import { useCaliburFromPk } from "#/features/webauthn/hooks/use-calibur-from-pk";
 import { pickPasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { RELAYER_URL } from "#/lib/relayer-config";
-import { onboardingSearch } from "#/lib/onboarding-search";
+import { onboardingSearch, type WalletPage } from "#/lib/onboarding-search";
+import { cn } from "#/lib/utils";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { usePaperWalletProtection } from "./paper-wallet-protection";
 import { usePaperWalletSetup } from "./paper-wallet-setup";
@@ -32,7 +39,16 @@ import { authClient } from "#/lib/api/auth";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
+/** Where each wallet page sits in the whole signup, after the profile's three. */
+const PAGE_STEP: Record<WalletPage, number> = { card: 4, save: 5, link: 6 };
+
 type Props = {
+  /** Which job is on screen; one instance spans all three so nothing is lost between them. */
+  page: WalletPage;
+  /** Moves to the next page. */
+  onPage: (page: Exclude<WalletPage, "card">) => void;
+  /** A page was reached without the one before it done, after a reload or Forward. */
+  onReplace: (page: Exclude<WalletPage, "link">) => void;
   profileData: ProfileInput;
   /** Chosen on the profile step; uploaded here, once a session exists. */
   avatarFile: File;
@@ -41,22 +57,29 @@ type Props = {
   backendRegistered: boolean;
   onBackendRegistered: () => void;
   redirectTo?: string;
-  progressStep: number;
   progressTotal: number;
-  /** When true, primary CTA links a platform passkey; paper continue stays available. */
+  /** The device can store a passkey: the last page offers it beside the paper wallet. */
   linkPasskey: boolean;
   /** Session verified — parent/route owns history exit. */
   onDone: () => void;
 };
 
+/**
+ * The paper wallet, as three jobs in the order the code enforces them: protect
+ * the card with a password, save it, then finish. Finishing offers a passkey
+ * beside the paper wallet where the device can store one; otherwise the terms
+ * and Continue to wallet sit on the save page.
+ */
 export function OnboardingWalletStep({
+  page,
+  onPage,
+  onReplace,
   profileData,
   avatarFile,
   privateKey: pk,
   backendRegistered,
   onBackendRegistered,
   redirectTo,
-  progressStep,
   progressTotal,
   linkPasskey,
   onDone,
@@ -71,14 +94,18 @@ export function OnboardingWalletStep({
     controls: protectionControls,
     isReady: paperWalletReady,
     isEncrypting: paperWalletEncrypting,
+    needsPassword,
+    protect,
   } = usePaperWalletProtection({ privateKey: pk });
 
   const [paperWalletDownloaded, setPaperWalletDownloaded] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const { card, controls, downloadButton } = usePaperWalletSetup({
     address,
     qrUrl,
     defaultName: profileData.name,
     downloadDisabled: !paperWalletReady || paperWalletEncrypting,
+    downloaded: paperWalletDownloaded,
     onDownloaded: () => setPaperWalletDownloaded(true),
   });
 
@@ -381,150 +408,326 @@ export function OnboardingWalletStep({
       : delegateError || connectError);
   const showPendingView = pendingMethod !== null && !pendingError;
 
+  // Each page needs the one before it. A fresh instance (after a reload or
+  // Forward) has neither the password applied nor the card saved.
+  useEffect(() => {
+    if (page !== "card" && !paperWalletReady) onReplace("card");
+    else if (page === "link" && !(paperWalletDownloaded && acked)) onReplace("save");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-check only when the page changes
+  }, [page]);
+
   if (showPendingView) {
-    return <OnboardingWalletPending status={statusText} />;
+    return (
+      <OnboardingWalletPending
+        path={pendingMethod === "passkey" ? "passkey" : "paper"}
+        phase={
+          isRegistering
+            ? 0
+            : pendingMethod === "passkey"
+              ? upgradeStep === "confirming"
+                ? 2
+                : caliburPending || upgradeStep === "done"
+                  ? 3
+                  : 1
+              : delegateStep === "confirming"
+                ? 2
+                : delegateStep === "done"
+                  ? 3
+                  : 1
+        }
+        status={statusText}
+      />
+    );
   }
 
-  return (
-    <div className="relative flex min-h-[100svh] flex-col bg-background">
-      <OnboardingMenu />
-      <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <BackChevron
-          label={t`Back`}
-          to="/onboarding"
-          search={onboardingSearch(linkPasskey ? "method" : "profile", redirectTo)}
-          className="mb-4 self-start"
-        />
+  // One message at a time, beside the buttons it is about: the failures are
+  // situational and each names its own recovery.
+  const errorMessage = backendSignup.error
+    ? (translateRecipientError(backendSignup.error, i18n) ??
+      (backendSignup.error instanceof BackendApiError
+        ? formatBackendApiError(backendSignup.error)
+        : backendSignup.error instanceof Error
+          ? backendSignup.error.message
+          : t`Account registration failed.`))
+    : (upgradeError ?? delegateError ?? linkConnectError ?? sessionError ?? connectError);
+  const finishing = (
+    <>
+      {errorMessage ? (
+        <p role="alert" className="text-destructive text-xs">
+          {errorMessage}
+        </p>
+      ) : null}
+      {statusText ? <p className="text-muted-foreground text-xs">{statusText}</p> : null}
+    </>
+  );
 
-        <StepProgress step={progressStep} total={progressTotal} />
+  const back = page === "link" ? "save" : page === "save" ? "card" : "location";
 
-        <div className="mb-5 space-y-1">
-          <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-            <Trans>Your paper wallet</Trans>
-          </h1>
-          <p className="text-muted-foreground text-sm">
+  if (page === "card") {
+    return (
+      <OnboardingScreen
+        start={
+          <BackChevron
+            label={t`Back`}
+            to="/onboarding"
+            search={onboardingSearch(back, redirectTo)}
+          />
+        }
+        footer={
+          needsPassword ? (
+            <Button
+              tap
+              className="w-full"
+              pending={paperWalletEncrypting}
+              onClick={() => void protect()}
+            >
+              <FiLock className="size-4" />
+              {paperWalletEncrypting ? t`Protecting paper wallet…` : t`Protect paper wallet`}
+            </Button>
+          ) : (
+            <Button tap className="w-full" onClick={() => onPage("save")}>
+              <Trans>Continue</Trans>
+            </Button>
+          )
+        }
+      >
+        <StepProgress step={PAGE_STEP.card} total={progressTotal} className="" />
+        <OnboardingTitle>
+          <Trans>Your paper wallet</Trans>
+        </OnboardingTitle>
+        <div className="flex items-start gap-2.5 border border-border bg-card p-3 text-sm">
+          <RiErrorWarningLine
+            className="mt-0.5 size-4 shrink-0 text-warning-foreground"
+            aria-hidden="true"
+          />
+          <p>
             <Trans>
               Save this card securely. If you use a password, keep it separately. Anyone with an
               unprotected QR code can access the wallet.
             </Trans>
           </p>
         </div>
-
-        {card}
-
         {protectionControls}
+      </OnboardingScreen>
+    );
+  }
 
-        {downloadButton}
-
-        {controls}
-
-        <label className="mt-6 flex cursor-pointer items-start gap-3">
-          <input
-            type="checkbox"
-            aria-label={t`I have saved this key`}
-            checked={acked}
-            disabled={!paperWalletReady || paperWalletEncrypting}
-            onChange={(e) => setAcked(e.target.checked)}
-            className="mt-0.5 size-4 cursor-pointer accent-primary"
+  if (page === "save") {
+    const canContinue =
+      paperWalletDownloaded && acked && paperWalletReady && !paperWalletEncrypting;
+    return (
+      <OnboardingScreen
+        start={
+          <BackChevron
+            label={t`Back`}
+            to="/onboarding"
+            search={onboardingSearch(back, redirectTo)}
           />
-          <span className="text-muted-foreground text-sm">
-            <Trans>I have saved this key. If lost, my wallet cannot be recovered.</Trans>
-          </span>
-        </label>
-        {!paperWalletDownloaded ? (
-          <p className="mt-2 text-muted-foreground text-xs">
-            <Trans>Download your paper wallet before continuing.</Trans>
-          </p>
-        ) : null}
-
-        <div className="mt-4 space-y-3">
+        }
+        footer={
+          <>
+            {!paperWalletDownloaded ? (
+              <p className="text-muted-foreground text-xs">
+                <Trans>Download your paper wallet before continuing.</Trans>
+              </p>
+            ) : null}
+            {linkPasskey ? (
+              <Button tap className="w-full" disabled={!canContinue} onClick={() => onPage("link")}>
+                <Trans>Continue</Trans>
+              </Button>
+            ) : (
+              <>
+                {finishing}
+                <Button
+                  tap
+                  className="w-full"
+                  onClick={() => void handleContinue()}
+                  disabled={paperBusy}
+                  pending={paperPending}
+                >
+                  <Trans>Continue to wallet</Trans>
+                </Button>
+              </>
+            )}
+          </>
+        }
+      >
+        <StepProgress step={PAGE_STEP.save} total={progressTotal} className="" />
+        <div className="flex items-start justify-between gap-3">
+          <OnboardingTitle>
+            <Trans>Save your card</Trans>
+          </OnboardingTitle>
+          <Button
+            variant="outline"
+            tap
+            className="mt-0.5 shrink-0"
+            aria-haspopup="dialog"
+            onClick={() => setCustomizeOpen(true)}
+          >
+            <RiEdit2Line className="size-4" aria-hidden="true" />
+            <Trans>Customize</Trans>
+          </Button>
+        </div>
+        {card}
+        {downloadButton}
+        <AgreementField
+          id="signup-saved-key"
+          checked={acked}
+          onCheckedChange={setAcked}
+          disabled={!paperWalletReady || paperWalletEncrypting}
+        >
+          <Trans>I have saved this key. If lost, my wallet cannot be recovered.</Trans>
+        </AgreementField>
+        {linkPasskey ? null : (
           <TermsAcceptanceField
             id="signup-terms"
             checked={acceptedTerms}
             onCheckedChange={setAcceptedTerms}
           />
-
-          {backendSignup.error ? (
-            <p role="alert" className="text-destructive text-xs">
-              {translateRecipientError(backendSignup.error, i18n) ??
-                (backendSignup.error instanceof BackendApiError
-                  ? formatBackendApiError(backendSignup.error)
-                  : backendSignup.error instanceof Error
-                    ? backendSignup.error.message
-                    : t`Account registration failed.`)}
-            </p>
-          ) : null}
-          {upgradeError ? <p className="text-destructive text-xs">{upgradeError}</p> : null}
-          {delegateError ? <p className="text-destructive text-xs">{delegateError}</p> : null}
-          {linkConnectError ? <p className="text-destructive text-xs">{linkConnectError}</p> : null}
-          {sessionError ? (
-            <p role="alert" className="text-destructive text-xs">
-              {sessionError}
-            </p>
-          ) : null}
-          {connectError ? <p className="text-destructive text-xs">{connectError}</p> : null}
-          {statusText ? <p className="text-muted-foreground text-xs">{statusText}</p> : null}
-
-          {linkPasskey ? (
-            <>
-              <Button
-                tap
-                className="w-full"
-                onClick={() => void handleLinkPasskey()}
-                disabled={linkBusy}
-                pending={linkPending}
-              >
-                <ProviderIcon className="size-4" />
-                {passkeyRegistered && (linkConnectError || sessionError)
-                  ? t`Retry ${providerLabel} connection`
-                  : t`Link wallet to ${providerLabel}`}
-              </Button>
-              <Button
-                variant={linkFailed ? "default" : "outline"}
-                tap
-                className="w-full"
-                onClick={() => void handleContinue()}
-                disabled={paperBusy}
-                pending={paperPending}
-              >
-                <Trans>Continue with paper wallet</Trans>
-              </Button>
-            </>
-          ) : (
-            <Button
-              tap
-              className="w-full"
-              onClick={() => void handleContinue()}
-              disabled={paperBusy}
-              pending={paperPending}
-            >
-              <Trans>Continue to wallet</Trans>
+        )}
+        <SettingsSheet
+          open={customizeOpen}
+          onOpenChange={setCustomizeOpen}
+          title={t`Customize`}
+          footer={
+            <Button tap className="w-full" onClick={() => setCustomizeOpen(false)}>
+              <Trans>Done</Trans>
             </Button>
-          )}
-        </div>
-      </div>
-    </div>
+          }
+        >
+          {controls}
+        </SettingsSheet>
+      </OnboardingScreen>
+    );
+  }
+
+  return (
+    <OnboardingScreen
+      start={
+        <BackChevron label={t`Back`} to="/onboarding" search={onboardingSearch(back, redirectTo)} />
+      }
+      footer={
+        <>
+          {finishing}
+          <Button
+            variant={linkFailed ? "outline" : "default"}
+            tap
+            className="w-full"
+            onClick={() => void handleLinkPasskey()}
+            disabled={linkBusy}
+            pending={linkPending}
+          >
+            <ProviderIcon className="size-4" />
+            {passkeyRegistered && (linkConnectError || sessionError)
+              ? t`Retry ${providerLabel} connection`
+              : t`Link wallet to ${providerLabel}`}
+          </Button>
+          <Button
+            variant={linkFailed ? "default" : "outline"}
+            tap
+            className="w-full"
+            onClick={() => void handleContinue()}
+            disabled={paperBusy}
+            pending={paperPending}
+          >
+            <Trans>Continue with paper wallet</Trans>
+          </Button>
+        </>
+      }
+    >
+      <StepProgress step={PAGE_STEP.link} total={progressTotal} className="" />
+      <OnboardingTitle>{t`Link ${providerLabel}?`}</OnboardingTitle>
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        {t`Every account gets a paper wallet. Linking ${providerLabel} adds another way to sign in.`}
+      </p>
+      <GuideArt name="link" className="min-h-26 max-h-48 flex-1" />
+      <TermsAcceptanceField
+        id="signup-terms"
+        checked={acceptedTerms}
+        onCheckedChange={setAcceptedTerms}
+      />
+    </OnboardingScreen>
   );
 }
 
-function OnboardingWalletPending({ status }: { status: string | null }) {
+type PendingPath = "passkey" | "paper";
+
+/**
+ * Setting up, as the four things it waits for: the account, the passkey or
+ * the smart wallet, the network's confirmation, and the wallet connection.
+ * The line under them is the step's own status, as before.
+ */
+function OnboardingWalletPending({
+  path,
+  phase,
+  status,
+}: {
+  path: PendingPath;
+  phase: number;
+  status: string | null;
+}) {
+  const { t } = useLingui();
+  const labels =
+    path === "passkey"
+      ? [t`Account`, t`Passkey`, t`Network`, t`Wallet`]
+      : [t`Account`, t`Paper wallet`, t`Network`, t`Wallet`];
+
   return (
-    <div
-      className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
-      aria-live="polite"
-    >
-      <div className="flex flex-col items-center text-center">
-        <PendingClock />
-        <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Setting up your wallet…</Trans>
-        </h1>
-        <p className="mt-2 text-muted-foreground text-sm">
-          {status ?? <Trans>Waiting for blockchain confirmation…</Trans>}
-        </p>
-        <div className="mt-3">
-          <StatusPill tone="pending" label={<Trans>Pending</Trans>} />
-        </div>
-      </div>
-    </div>
+    <OnboardingScreen start={<CLCLogo className="size-9" sharp />}>
+      <OnboardingTitle>
+        <Trans>Setting up your wallet…</Trans>
+      </OnboardingTitle>
+      <ol className="border border-border bg-card" aria-live="polite">
+        {labels.map((label, index) => {
+          const done = index < phase;
+          const active = index === phase;
+          return (
+            <li
+              key={label}
+              aria-current={active ? "step" : undefined}
+              className="flex h-11 items-center gap-3 border-border border-b px-3 last:border-b-0"
+            >
+              <span
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded-full",
+                  done
+                    ? "bg-primary text-primary-foreground"
+                    : active
+                      ? "text-warning-foreground"
+                      : "border-[1.5px] border-border",
+                )}
+                aria-hidden="true"
+              >
+                {done ? (
+                  <RiCheckLine className="size-3" />
+                ) : active ? (
+                  <Spinner className="size-5" />
+                ) : null}
+              </span>
+              <span
+                className={cn(
+                  "min-w-0 flex-1 truncate font-medium text-sm",
+                  !done && !active && "text-muted-foreground",
+                )}
+              >
+                {label}
+              </span>
+              {done ? (
+                <span className="font-medium text-primary text-xs">
+                  <Trans>Done</Trans>
+                </span>
+              ) : active ? (
+                <span className="font-medium text-warning-foreground text-xs">
+                  {index === 2 ? <Trans>Confirming</Trans> : <Trans>Pending</Trans>}
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-muted-foreground text-xs">
+        {status ?? <Trans>Waiting for blockchain confirmation…</Trans>}
+      </p>
+    </OnboardingScreen>
   );
 }

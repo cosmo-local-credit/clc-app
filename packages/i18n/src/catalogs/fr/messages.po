@@ -61,6 +61,16 @@ msgstr "{count, plural, one {# publication} other {# publications}}"
 #~ msgstr "Le nom d’utilisateur doit contenir de 3 à 24 lettres, chiffres ou "
 #~ "traits d’union"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "Choisissez à nouveau une langue pour continuer."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "Choisissez votre langue"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -319,6 +329,7 @@ msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Le code QR d’un portefeuille papier a été scanné. Voulez-vous importer "
 "cette adresse ?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -337,7 +348,7 @@ msgstr "Un bon d’échange fonctionne comme une carte-cadeau pour vos offres. "
 "offres correspondantes."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "Un bon représente la promesse de son émetteur de fournir des biens ou "
 "des services. Vérifiez à quoi il peut servir et qui l’accepte."
@@ -346,8 +357,8 @@ msgstr "Un bon représente la promesse de son émetteur de fournir des biens ou 
 msgid "About"
 msgstr "À propos"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "À propos de Cosmo-Local Credit"
 
@@ -366,6 +377,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "Acceptez les conditions pour publier votre bon d’échange"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
 msgstr "Compte"
 
@@ -377,11 +390,11 @@ msgstr "Compte en attente d’approbation"
 msgid "Account not approved"
 msgstr "Compte non approuvé"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:490
+#: apps/web/src/components/auth/sign-in-panel.tsx:523
 msgid "Account not found"
 msgstr "Compte non trouvé"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:454
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:451
 msgid "Account registration failed."
 msgstr "L’enregistrement du compte a échoué."
 
@@ -389,7 +402,7 @@ msgstr "L’enregistrement du compte a échoué."
 #~ msgid "Activating on chain..."
 #~ msgstr "Activation sur la chaîne…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:145
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:172
 msgid "Activating on chain…"
 msgstr "Activation sur la chaîne…"
 
@@ -397,7 +410,7 @@ msgstr "Activation sur la chaîne…"
 #~ msgid "Activating smart wallet..."
 #~ msgstr "Activation du portefeuille intelligent…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:147
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:174
 msgid "Activating smart wallet…"
 msgstr "Activation du portefeuille intelligent…"
 
@@ -466,7 +479,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Ajoutez CLC à l’écran d’accueil de votre iPhone, ouvrez l’application "
 "installée, puis activez les notifications."
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "Ajoutez CLC à votre téléphone"
@@ -561,7 +573,7 @@ msgstr "Avancé"
 msgid "Advanced details"
 msgstr "Détails avancés"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:409
+#: apps/web/src/components/auth/sign-in-panel.tsx:404
 msgid "Advanced options"
 msgstr "Options avancées"
 
@@ -591,7 +603,7 @@ msgstr "Tous sélectionnés"
 msgid "All Vouchers"
 msgstr "Tous les bons d’échange"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:270
 msgid "Already have an account?"
 msgstr "Vous avez déjà un compte ?"
 
@@ -637,7 +649,7 @@ msgid "Amount to collect"
 msgstr "Montant à encaisser"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "Une offre décrit des biens ou des services proposés par une personne. "
 "Vérifiez les détails, le prix et le bon accepté."
@@ -707,21 +719,22 @@ msgstr "Étiquettes disponibles"
 msgid "Awaiting approval"
 msgstr "En attente d’approbation"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:144
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
-#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:22
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:364
 msgid "Back"
 msgstr "Précédent"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:105
 msgid "Back to market"
 msgstr "Retour au marché"
 
@@ -752,7 +765,7 @@ msgid "Balance {tokenBalance}"
 msgstr "Solde {tokenBalance}"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:327
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:444
 msgid "Bio"
 msgstr "Bio"
 
@@ -826,7 +839,8 @@ msgstr "Appeler"
 msgid "Camera access denied."
 msgstr "Accès à la caméra refusé."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:468
+#: apps/web/src/components/auth/sign-in-panel.tsx:424
+#: apps/web/src/components/auth/sign-in-panel.tsx:539
 #: apps/web/src/components/nfc-card-prompt.tsx:117
 #: apps/web/src/components/reviews/review-editor.tsx:148
 #: apps/web/src/components/ui/photo-source-picker.tsx:128
@@ -874,7 +888,7 @@ msgstr "Carte actuelle :"
 msgid "Card read — processing {amount}"
 msgstr "Carte lue — traitement de {amount}"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:319
+#: apps/web/src/components/auth/sign-in-panel.tsx:356
 msgid "Card read — signing in"
 msgstr "Carte lue — connexion en cours"
 
@@ -1065,11 +1079,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Choisissez une image JPEG, PNG ou WebP."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "Choisissez à nouveau une langue pour continuer."
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "Choisissez un emplacement"
@@ -1099,7 +1108,7 @@ msgid "Choose a profile photo"
 msgstr "Choisissez une photo de profil"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "Choisissez un destinataire, un bon que vous détenez et le montant. "
 "Vérifiez les informations avant de confirmer, puis attendez le résultat "
@@ -1173,11 +1182,6 @@ msgstr "Choisissez les taux que vous définissez ou la valeur égale lorsque "
 msgid "Choose username"
 msgstr "Choisir un nom d’utilisateur"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "Choisissez votre langue"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC est installé. Trouvez-le sur votre écran d’accueil."
@@ -1227,6 +1231,7 @@ msgstr "Effacer l’emplacement"
 msgid "Clear search"
 msgstr "Effacer la recherche"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1251,7 +1256,7 @@ msgstr "Fermer le scanner de portefeuille papier"
 msgid "Close password-protected wallet import"
 msgstr "Fermer l’importation de portefeuille protégé par mot de passe"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:439
+#: apps/web/src/components/auth/sign-in-panel.tsx:493
 msgid "Close private key form"
 msgstr "Fermer le formulaire de clé privée"
 
@@ -1321,8 +1326,8 @@ msgstr "Répondez à la demande d’autorisation du navigateur pour continuer."
 msgid "Complete the prompt on your phone."
 msgstr "Répondez à la demande affichée sur votre téléphone."
 
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:36
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:42
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:38
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:44
 msgid "Complete your profile"
 msgstr "Compléter votre profil"
 
@@ -1344,7 +1349,7 @@ msgstr "Confirmer et envoyer"
 msgid "Confirm Install or Add when asked."
 msgstr "Confirmez Installer ou Ajouter lorsque vous y êtes invité."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:137
 msgid "Confirm password"
 msgstr "Confirmer le mot de passe"
 
@@ -1367,6 +1372,7 @@ msgid "Confirmed"
 msgstr "Confirmé"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 msgid "Confirming"
 msgstr "Confirmation en cours"
 
@@ -1404,7 +1410,7 @@ msgstr "Adresse connectée"
 #~ msgid "Connecting wallet..."
 #~ msgstr "Connexion du portefeuille…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:141
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:168
 msgid "Connecting wallet…"
 msgstr "Connexion du portefeuille…"
 
@@ -1413,14 +1419,14 @@ msgstr "Connexion du portefeuille…"
 #~ msgid "Connecting..."
 #~ msgstr "Connexion…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:319
+#: apps/web/src/components/auth/sign-in-panel.tsx:356
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
 #: apps/web/src/routes/__root.tsx:322
 msgid "Connecting…"
 msgstr "Connexion…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:136
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
+#: apps/web/src/components/auth/sign-in-panel.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:320
 #: apps/web/src/routes/__root.tsx:229
 #: apps/web/src/routes/__root.tsx:260
 msgid "Connection failed."
@@ -1429,6 +1435,10 @@ msgstr "La connexion a échoué."
 #: apps/web/src/lib/category-label.ts:8
 msgid "Construction"
 msgstr "Construction"
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:243
+msgid "Contact"
+msgstr "Coordonnées"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:357
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:747
@@ -1451,15 +1461,15 @@ msgstr "Téléphone de contact"
 msgid "Contact Website"
 msgstr "Site web de contact"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
 msgstr "Continuer"
 
-#: apps/web/src/components/install-app-dialog.tsx:53
+#: apps/web/src/components/install-app-dialog.tsx:37
 #: apps/web/src/features/install/ui/install-page.tsx:116
 msgid "Continue in browser"
 msgstr "Continuer dans le navigateur"
@@ -1468,19 +1478,20 @@ msgstr "Continuer dans le navigateur"
 msgid "Continue to CLC"
 msgstr "Continuer vers CLC"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
 msgid "Continue to wallet"
 msgstr "Continuer vers le portefeuille"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:376
+#: apps/web/src/components/auth/sign-in-panel.tsx:365
 msgid "Continue with {providerLabel}"
 msgstr "Continuer avec {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:490
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
 msgid "Continue with paper wallet"
 msgstr "Continuer avec le portefeuille papier"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:370
+#: apps/web/src/components/auth/sign-in-panel.tsx:379
 msgid "Continue with Paper Wallet"
 msgstr "Continuer avec un portefeuille papier"
 
@@ -1565,11 +1576,11 @@ msgstr "Copier l’adresse du portefeuille"
 msgid "Copy wallet username"
 msgstr "Copier le nom d’utilisateur du portefeuille"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit aide les personnes et les organisations à soutenir, "
@@ -1583,19 +1594,19 @@ msgstr "Impossible d’importer ce portefeuille papier."
 msgid "Could not load vouchers."
 msgstr "Impossible de charger les bons d’échange."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
 msgid "Could not protect this paper wallet."
 msgstr "Impossible de protéger ce portefeuille papier."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:180
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
 msgid "Could not save the paper wallet. Try again."
 msgstr "Impossible d’enregistrer le portefeuille papier. Réessayez."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:218
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "Impossible d’enregistrer la feuille imprimable. Réessayez."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:238
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
 msgid "Could not share the paper wallet. Try downloading it instead."
 msgstr "Impossible de partager le portefeuille papier. Essayez de le "
 "télécharger à la place."
@@ -1720,7 +1731,7 @@ msgstr "Impossible de créer des bons d’échange."
 msgid "Couldn't estimate this swap."
 msgstr "Impossible d’estimer cet échange."
 
-#: apps/web/src/components/ui/location-picker.tsx:115
+#: apps/web/src/components/ui/location-picker.tsx:123
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Impossible d’identifier un pays à cet endroit. Essayez un lieu à "
 "proximité."
@@ -1859,12 +1870,12 @@ msgstr "Impossible de charger vos publications."
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "Impossible d’émettre la quantité initiale."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "Impossible d’ouvrir l’installation. Suivez les étapes ci-dessous ou "
 "réessayez plus tard."
 
-#: apps/web/src/components/install-app-dialog.tsx:47
+#: apps/web/src/components/install-app-dialog.tsx:45
 msgid "Couldn't open installation. Follow these instructions or try again "
 "later."
 msgstr "Impossible d’ouvrir l’installation. Suivez ces instructions ou "
@@ -2015,15 +2026,14 @@ msgstr "Photo de couverture"
 msgid "Create"
 msgstr "Créer"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
+#: apps/web/src/components/auth/authenticated-route.tsx:85
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:290
 msgid "Create account"
 msgstr "Créer un compte"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:480
-#: apps/web/src/components/auth/sign-in-panel.tsx:498
+#: apps/web/src/components/auth/sign-in-panel.tsx:436
+#: apps/web/src/components/auth/sign-in-panel.tsx:531
 msgid "Create an account"
 msgstr "Créer un compte"
 
@@ -2069,7 +2079,7 @@ msgstr "Créer un bon d’échange"
 msgid "Create vouchers"
 msgstr "Créer des bons d’échange"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
 msgid "Create your account"
 msgstr "Créer votre compte"
 
@@ -2102,7 +2112,7 @@ msgstr "Émission de {0}…"
 #~ msgid "Creating account..."
 #~ msgstr "Création de compte…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 msgid "Creating account…"
 msgstr "Création de compte…"
 
@@ -2135,7 +2145,8 @@ msgstr "Limite de crédit inconnue"
 msgid "Culture"
 msgstr "Culture"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
 msgid "Customize"
 msgstr "Personnaliser"
 
@@ -2223,7 +2234,7 @@ msgstr "Décrivez votre bassin"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:297
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:120
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
 msgid "Description"
@@ -2238,7 +2249,7 @@ msgid "Discard changes"
 msgstr "Abandonner les modifications"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:128
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:54
+#: apps/web/src/features/home/ui/complete-profile-banner.tsx:50
 msgid "Dismiss"
 msgstr "Fermer"
 
@@ -2257,7 +2268,9 @@ msgstr "Le nom affiché est requis"
 msgid "Display name must be 120 characters or fewer"
 msgstr "Le nom affiché doit contenir au maximum 120 caractères"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2270,12 +2283,12 @@ msgstr "Terminé"
 msgid "Done with this customer"
 msgstr "Terminer avec ce client"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:292
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
 msgid "Download card"
 msgstr "Télécharger la carte"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:436
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
 msgid "Download your paper wallet before continuing."
 msgstr "Téléchargez votre portefeuille papier avant de continuer."
 
@@ -2370,7 +2383,6 @@ msgstr "Modifier la publication"
 #: apps/web/src/components/nearby-catalog.tsx:210
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
-#: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Modifier le profil"
 
@@ -2399,8 +2411,8 @@ msgstr "Aînés"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:267
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:299
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:253
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:366
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:378
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:523
@@ -2459,7 +2471,7 @@ msgstr "Saisissez un nom d’utilisateur, un nom de bassin, un numéro de "
 msgid "Enter a valid date and time"
 msgstr "Entrez une date et une heure valides"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:282
+#: apps/web/src/components/auth/sign-in-panel.tsx:283
 msgid "Enter a valid private key or paper wallet."
 msgstr "Saisissez une clé privée ou un portefeuille papier valide."
 
@@ -2490,7 +2502,7 @@ msgstr "Saisissez un montant pris en charge par ce bon d’échange."
 msgid "Enter an exchange rate greater than zero"
 msgstr "Saisissez un taux de change supérieur à zéro"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
 msgid "Enter and apply a password before downloading this card."
 msgstr "Saisissez et appliquez un mot de passe avant de télécharger cette "
 "carte."
@@ -2537,7 +2549,7 @@ msgstr "Valeur égale"
 msgid "Event details"
 msgstr "Détails de l’événement"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 "way to sign in."
 msgstr "Chaque compte reçoit un portefeuille papier. Lier {providerLabel} "
@@ -2665,7 +2677,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Le nom du fichier doit contenir au maximum 255 caractères"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Fichier trop volumineux ({0} Ko). La taille maximale est de 512 Ko."
 
@@ -2764,7 +2776,7 @@ msgstr "Obtenir"
 msgid "Global"
 msgstr "Mondial"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:437
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 msgid "Go back to sign in"
 msgstr "Retour à la connexion"
 
@@ -2861,7 +2873,10 @@ msgid "How should vouchers match?"
 msgstr "Comment les bons d’échange doivent-ils correspondre ?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:118
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "Comment utiliser CLC"
 
@@ -2869,10 +2884,8 @@ msgstr "Comment utiliser CLC"
 msgid "How was your experience?"
 msgstr "Comment s’est passée votre expérience ?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:95
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "J’ai déjà un compte"
 
@@ -2881,10 +2894,10 @@ msgid "I created {amountLabel}."
 msgstr "J’ai émis {amountLabel}."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:424
-msgid "I have saved this key"
-msgstr "J’ai enregistré cette clé"
+#~ msgid "I have saved this key"
+#~ msgstr "J’ai enregistré cette clé"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:431
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "J’ai enregistré cette clé. Si je la perds, mon portefeuille ne pourra "
 "pas être récupéré."
@@ -2918,7 +2931,7 @@ msgstr "J’ai échangé {sentLabel} contre {amountLabel} dans {poolName}."
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "J’ai échangé {sentLabel} contre {amountLabel}."
 
-#: apps/web/src/components/ui/location-picker.tsx:294
+#: apps/web/src/components/ui/location-picker.tsx:307
 msgid "Identifying location…"
 msgstr "Identification de l’emplacement…"
 
@@ -2961,15 +2974,15 @@ msgstr "Augmenter la quantité de {0}"
 msgid "Info"
 msgstr "Informations"
 
-#: apps/web/src/components/install-app-button.tsx:61
-#: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-button.tsx:65
+#: apps/web/src/components/install-app-dialog.tsx:19
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "Installer CLC"
 
-#: apps/web/src/components/install-app-dialog.tsx:39
+#: apps/web/src/components/install-app-dialog.tsx:32
 msgid "Install now"
 msgstr "Installer maintenant"
 
@@ -2988,7 +3001,7 @@ msgstr "Installez d’abord l’application"
 msgid "Installation link"
 msgstr "Lien d’installation"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Installation demandée. Suivez les instructions de votre navigateur pour "
@@ -3101,10 +3114,10 @@ msgid "Link {0} file name"
 msgstr "Nom du fichier du lien {0}"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
-msgid "Link {providerLabel}"
-msgstr "Lier {providerLabel}"
+#~ msgid "Link {providerLabel}"
+#~ msgstr "Lier {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
 msgid "Link {providerLabel}?"
 msgstr "Lier {providerLabel} ?"
 
@@ -3145,7 +3158,7 @@ msgstr "Lien copié"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "Lien vers les conditions applicables à ce bon d’échange"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:480
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
 msgid "Link wallet to {providerLabel}"
 msgstr "Lier le portefeuille à {providerLabel}"
 
@@ -3174,7 +3187,7 @@ msgstr "La liaison d’une clé d’accès fonctionne dans Safari ou Chrome sur 
 #~ msgstr "Liaison de la clé d’accès…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:166
 msgid "Linking passkey…"
 msgstr "Liaison de la clé d’accès…"
 
@@ -3233,8 +3246,8 @@ msgstr "Chargement des limites de crédit…"
 msgid "Loading holdings…"
 msgstr "Chargement des avoirs…"
 
-#: apps/web/src/components/ui/location-picker.tsx:271
-#: apps/web/src/components/ui/location-picker.tsx:287
+#: apps/web/src/components/ui/location-picker.tsx:283
+#: apps/web/src/components/ui/location-picker.tsx:300
 msgid "Loading location map"
 msgstr "Chargement de la carte de localisation"
 
@@ -3326,7 +3339,6 @@ msgstr "Chargement de votre profil…"
 #~ msgstr "Chargement..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
@@ -3354,9 +3366,10 @@ msgstr "Chargement…"
 msgid "Local money and M-Pesa"
 msgstr "Monnaie locale et M-Pesa"
 
-#: apps/web/src/components/ui/location-picker.tsx:200
+#: apps/web/src/components/ui/location-picker.tsx:212
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/features/home/ui/report-page.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:547
@@ -3373,13 +3386,13 @@ msgid "Location map"
 msgstr "Carte de localisation"
 
 #: apps/web/src/components/nearby-catalog.tsx:246
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 #: apps/web/src/features/home/ui/market-page.tsx:169
 msgid "Location unavailable"
 msgstr "Emplacement non disponible"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:268
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:668
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:232
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:662
@@ -3432,7 +3445,7 @@ msgstr "Repère sur la carte"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3628,8 +3641,8 @@ msgstr "Adresse de mon portefeuille"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:191
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:202
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:101
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:192
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:203
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:335
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:248
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:28
 msgid "Name"
@@ -3645,7 +3658,7 @@ msgstr "Le nom est requis"
 msgid "Name must be 80 characters or fewer"
 msgstr "Le nom doit contenir au maximum 80 caractères"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:84
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
 msgid "Name on wallet"
 msgstr "Nom sur le portefeuille"
 
@@ -3657,6 +3670,8 @@ msgstr "Nom, symbole ou adresse"
 msgid "Natural building"
 msgstr "Construction naturelle"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
@@ -3682,11 +3697,12 @@ msgstr "Nouvelle publication"
 msgid "New supply"
 msgstr "Nouvelle quantité émise"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:473
+#: apps/web/src/components/auth/sign-in-panel.tsx:429
 msgid "New to CLC?"
 msgstr "Vous découvrez CLC ?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -3752,9 +3768,13 @@ msgstr "Aucune catégorie n’est disponible pour les résultats actuels."
 msgid "No category filters are available."
 msgstr "Aucun filtre de catégorie n’est disponible."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:493
+#: apps/web/src/components/auth/sign-in-panel.tsx:526
 msgid "No CLC account was found for this sign-in."
 msgstr "Aucun compte CLC n’a été trouvé pour cette connexion."
+
+#: apps/web/src/components/ui/country-sheet.tsx:89
+msgid "No countries found"
+msgstr "Aucun pays trouvé"
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:91
 msgid "No credit limit"
@@ -3784,7 +3804,7 @@ msgstr "Aucun bassin acceptant vos bons d’échange et proposant ce bon d’éc
 "ne correspond à ces filtres."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:307
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:512
 msgid "No currencies found"
 msgstr "Aucune devise trouvée"
 
@@ -4128,7 +4148,7 @@ msgid "Open menu"
 msgstr "Ouvrir le menu"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "Ouvrez Recevoir et partagez votre code QR de réception ou l’adresse de "
 "votre portefeuille avec l’expéditeur. Gardez votre clé privée pour "
@@ -4168,18 +4188,18 @@ msgstr "Ouvrir la page du bon d’échange"
 #~ msgid "Opening paper wallet..."
 #~ msgstr "Ouverture du portefeuille papier…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:149
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
 msgid "Opening paper wallet…"
 msgstr "Ouverture du portefeuille papier…"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:370
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:269
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:222
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:329
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:360
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:446
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:669
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:233
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:663
@@ -4245,26 +4265,28 @@ msgstr "Transfert de propriété envoyé."
 msgid "Paid out"
 msgstr "Versé"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:77
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
 msgid "Paper wallet"
 msgstr "Portefeuille papier"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 msgid "Paper Wallet"
 msgstr "Portefeuille papier"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:329
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
 msgid "Paper wallet card"
 msgstr "Carte du portefeuille papier"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "Le portefeuille papier est protégé. Conservez le mot de passe "
 "séparément de la carte."
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
-msgid "Paper wallet only"
-msgstr "Portefeuille papier uniquement"
+#~ msgid "Paper wallet only"
+#~ msgstr "Portefeuille papier uniquement"
 
 #: apps/web/src/features/home/ui/report-page.tsx:418
 msgid "Participants"
@@ -4277,6 +4299,7 @@ msgstr "La liste des participants doit contenir au maximum 100 caractères"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 msgid "Passkey"
 msgstr "Clé d’accès"
 
@@ -4285,7 +4308,7 @@ msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "La création de la clé d’accès a été annulée. Votre portefeuille papier "
 "reste inchangé."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:143
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
 msgstr "Clé d’accès liée"
 
@@ -4293,11 +4316,11 @@ msgstr "Clé d’accès liée"
 #~ msgid "Passkey linked ... confirming on-chain..."
 #~ msgstr "Clé d’accès liée… Confirmation sur la chaîne…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:164
 msgid "Passkey linked … confirming on-chain…"
 msgstr "Clé d’accès liée… Confirmation sur la chaîne…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:236
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:263
 msgid "Passkey linked, but wallet connection failed."
 msgstr "La clé d’accès est liée, mais la connexion au portefeuille a échoué."
 
@@ -4306,20 +4329,21 @@ msgid "Passkey status could not be checked."
 msgstr "Impossible de vérifier l’état de la clé d’accès."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Mot de passe"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Le mot de passe ne peut pas être vide."
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:462
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
 #: apps/web/src/routes/__root.tsx:285
 msgid "Password-protected paper wallet"
 msgstr "Portefeuille papier protégé par mot de passe"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Les mots de passe ne correspondent pas."
 
@@ -4352,7 +4376,7 @@ msgstr "Reçu de paiement"
 msgid "Payment status unknown"
 msgstr "État du paiement inconnu"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:525
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
@@ -4394,7 +4418,7 @@ msgstr "Permaculture"
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:271
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:392
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:535
@@ -4402,7 +4426,7 @@ msgid "Phone"
 msgstr "Téléphone"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:279
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:400
 msgid "Phone number"
 msgstr "Numéro de téléphone"
 
@@ -4416,7 +4440,7 @@ msgid "Photo {0}"
 msgstr "Photo {0}"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:74
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:182
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:314
 msgid "Photo uploads are unavailable right now."
 msgstr "L’importation de photos est actuellement indisponible."
 
@@ -4688,8 +4712,9 @@ msgstr "Préférences"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:381
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:389
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:297
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:308
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:492
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:513
 msgid "Preferred currency"
 msgstr "Monnaie préférée"
 
@@ -4709,8 +4734,8 @@ msgstr "Préparation de votre retrait…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:295
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Preparing…"
 msgstr "Préparation…"
 
@@ -4718,7 +4743,7 @@ msgstr "Préparation…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Présentez la carte pour payer {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Appuyez et maintenez l’image ci-dessous, puis choisissez Enregistrer "
 "l’image."
@@ -4806,7 +4831,7 @@ msgstr "Tarification"
 msgid "Primary navigation"
 msgstr "Navigation principale"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:307
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
 msgid "Print"
 msgstr "Imprimer"
 
@@ -4814,9 +4839,10 @@ msgstr "Imprimer"
 msgid "Private attachment"
 msgstr "Pièce jointe privée"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:423
-#: apps/web/src/components/auth/sign-in-panel.tsx:433
-#: apps/web/src/components/auth/sign-in-panel.tsx:457
+#: apps/web/src/components/auth/sign-in-panel.tsx:411
+#: apps/web/src/components/auth/sign-in-panel.tsx:482
+#: apps/web/src/components/auth/sign-in-panel.tsx:487
+#: apps/web/src/components/auth/sign-in-panel.tsx:507
 msgid "Private key"
 msgstr "Clé privée"
 
@@ -4828,11 +4854,11 @@ msgstr "Photo de profil"
 msgid "Profile updated"
 msgstr "Profil mis à jour"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:151
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
 msgstr "Protéger le portefeuille papier"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
 msgid "Protect paper wallet with a password"
 msgstr "Protéger le portefeuille papier avec un mot de passe"
 
@@ -4840,7 +4866,7 @@ msgstr "Protéger le portefeuille papier avec un mot de passe"
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "Protection du portefeuille papier…"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:148
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protecting paper wallet…"
 msgstr "Protection du portefeuille papier…"
 
@@ -4911,7 +4937,7 @@ msgstr "Publication…"
 msgid "Purple"
 msgstr "Violet"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:104
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
 msgid "QR currently contains the raw private key."
 msgstr "Le code QR contient actuellement la clé privée brute."
 
@@ -4974,7 +5000,7 @@ msgid "Receive"
 msgstr "Recevoir"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "Recevoir un bon"
 
@@ -5037,8 +5063,8 @@ msgid "Recipient username, pool name, phone or address"
 msgstr "Nom d’utilisateur, nom de bassin, téléphone ou adresse du destinataire"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:92
-msgid "Recommended"
-msgstr "Recommandé"
+#~ msgid "Recommended"
+#~ msgstr "Recommandé"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:121
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:307
@@ -5191,10 +5217,10 @@ msgstr "Provenance du rapport"
 msgid "Reported"
 msgstr "Signalé"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:130
-#: apps/web/src/components/ui/location-picker.tsx:203
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:164
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:208
+#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/location-picker.tsx:215
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:220
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:235
 msgid "Required"
 msgstr "Requis"
 
@@ -5202,7 +5228,7 @@ msgstr "Requis"
 msgid "Reset"
 msgstr "Réinitialiser"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:156
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "Réinitialiser le logo"
 
@@ -5270,7 +5296,7 @@ msgstr "Retraite"
 msgid "Retry"
 msgstr "Réessayer"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:479
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
 msgid "Retry {providerLabel} connection"
 msgstr "Réessayer la connexion à {providerLabel}"
 
@@ -5316,11 +5342,11 @@ msgstr "Enregistrer les modifications"
 msgid "Save fee settings"
 msgstr "Enregistrer les paramètres de frais"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:304
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
 msgid "Save printable A4 sheet"
 msgstr "Enregistrer la feuille A4 imprimable"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:406
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
 msgid "Save this card securely. If you use a password, keep it separately. "
 "Anyone with an unprotected QR code can access the wallet."
 msgstr "Conservez cette carte en lieu sûr. Si vous utilisez un mot de passe, "
@@ -5330,6 +5356,10 @@ msgstr "Conservez cette carte en lieu sûr. Si vous utilisez un mot de passe, "
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
 msgstr "Enregistrer le nom d’utilisateur"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
+msgid "Save your card"
+msgstr "Enregistrez votre carte"
 
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
@@ -5346,7 +5376,6 @@ msgstr "Enregistré. Votre publication est de nouveau en attente d’approbation
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:196
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:457
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:635
 msgid "Saving…"
@@ -5380,16 +5409,20 @@ msgstr "Rechercher par nom ou symbole"
 msgid "Search catalogs"
 msgstr "Rechercher des catalogues"
 
+#: apps/web/src/components/ui/country-sheet.tsx:82
+msgid "Search countries"
+msgstr "Rechercher un pays"
+
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:256
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:387
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:306
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:511
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:417
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:221
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:608
 msgid "Search currencies"
 msgstr "Rechercher les devises"
 
-#: apps/web/src/components/ui/location-picker.tsx:213
+#: apps/web/src/components/ui/location-picker.tsx:225
 msgid "Search for a town or place"
 msgstr "Rechercher une ville ou un lieu"
 
@@ -5459,7 +5492,11 @@ msgstr "Rechercher des bons d’échange"
 msgid "Search your vouchers"
 msgstr "Rechercher vos bons d’échange"
 
-#: apps/web/src/components/ui/location-picker.tsx:262
+#: apps/web/src/components/ui/country-sheet.tsx:79
+msgid "Search…"
+msgstr "Rechercher…"
+
+#: apps/web/src/components/ui/location-picker.tsx:274
 msgid "Searching places…"
 msgstr "Recherche de lieux…"
 
@@ -5480,6 +5517,10 @@ msgstr "Recherche…"
 #~ msgid "See all"
 #~ msgstr "Tout voir"
 
+#: apps/web/src/components/ui/country-sheet.tsx:102
+msgid "Select {name}"
+msgstr "Choisir {name}"
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:224
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:46
 msgid "Select a token"
@@ -5488,6 +5529,14 @@ msgstr "Sélectionner un jeton"
 #: apps/web/src/features/install/ui/install-page.tsx:148
 msgid "Select and copy the link above to share it."
 msgstr "Sélectionnez et copiez le lien ci-dessus pour le partager."
+
+#: apps/web/src/components/ui/country-sheet.tsx:73
+msgid "Select country"
+msgstr "Choisissez le pays"
+
+#: apps/web/src/components/ui/country-sheet.tsx:73
+msgid "Select country code"
+msgstr "Choisissez l’indicatif du pays"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:728
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
@@ -5536,7 +5585,7 @@ msgid "Send {0}"
 msgstr "Envoyer {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "Envoyer un bon"
 
@@ -5598,11 +5647,11 @@ msgstr "Portion"
 msgid "Session"
 msgstr "Séance"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:45
 msgid "Session check failed"
 msgstr "La vérification de session a échoué"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:196
 msgid "Session could not be verified. Try again."
 msgstr "Impossible de vérifier la session. Réessayez."
 
@@ -5619,7 +5668,7 @@ msgstr "Définissez un bénéficiaire avant de collecter les frais ; sinon, le
 #~ msgid "Setting up your wallet..."
 #~ msgstr "Configuration de votre portefeuille…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:519
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
 msgid "Setting up your wallet…"
 msgstr "Configuration de votre portefeuille…"
 
@@ -5637,11 +5686,11 @@ msgstr "Paramètres"
 msgid "Share"
 msgstr "Partager"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:319
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Share card"
 msgstr "Partager la carte"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5739,7 +5788,7 @@ msgid "Sign in to browse results available through your Credit pools."
 msgstr "Connectez-vous pour parcourir les résultats disponibles via vos fonds "
 "de Crédit."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:112
 msgid "Sign in to continue"
 msgstr "Connectez-vous pour continuer"
 
@@ -5751,7 +5800,7 @@ msgstr "Connectez-vous pour voir l’activité."
 msgid "Sign in to view posts."
 msgstr "Connectez-vous pour voir les publications."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:461
+#: apps/web/src/components/auth/sign-in-panel.tsx:512
 msgid "Sign in with private key"
 msgstr "Connectez-vous avec une clé privée"
 
@@ -5776,8 +5825,8 @@ msgid "Sign-in"
 msgstr "Connexion"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
-msgid "Sign-in method"
-msgstr "Méthode de connexion"
+#~ msgid "Sign-in method"
+#~ msgstr "Méthode de connexion"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 #~ msgid "Sign-in methods"
@@ -5792,8 +5841,8 @@ msgid "Signing out…"
 msgstr "Déconnexion…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "Passer"
+#~ msgid "Skip"
+#~ msgstr "Passer"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -5930,7 +5979,7 @@ msgstr "La quantité comporte plus de décimales que ce bon d’échange ne le "
 msgid "Supply must be greater than zero"
 msgstr "La quantité doit être supérieure à zéro"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Les fichiers SVG ne sont pas pris en charge. Utilisez le format PNG, "
 "JPEG ou WebP."
@@ -6065,7 +6114,7 @@ msgstr "Prélever les frais séparément"
 msgid "Take photo"
 msgstr "Prendre une photo"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:395
+#: apps/web/src/components/auth/sign-in-panel.tsx:386
 msgid "Tap NFC card"
 msgstr "Approcher une carte NFC"
 
@@ -6078,12 +6127,13 @@ msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Appuyez sur le menu à trois points, puis Ajouter à l’écran d’accueil ou "
 "Installer l’application."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:340
+#: apps/web/src/components/auth/sign-in-panel.tsx:447
+#: apps/web/src/components/auth/sign-in-panel.tsx:453
 msgid "Tap your NFC card"
 msgstr "Approchez votre carte NFC"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:229
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:336
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:453
 msgid "Tell people a little about yourself"
 msgstr "Parlez un peu de vous"
 
@@ -6490,7 +6540,7 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Cette publication est trop volumineuse pour être enregistrée. "
 "Raccourcissez le texte ou supprimez certains médias."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:297
+#: apps/web/src/components/auth/sign-in-panel.tsx:298
 msgid "This QR code does not contain a valid private key."
 msgstr "Ce code QR ne contient pas de clé privée valide."
 
@@ -6608,7 +6658,7 @@ msgstr "Plantation d’arbres"
 msgid "Trip"
 msgstr "Voyage"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:40
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6733,8 +6783,8 @@ msgid "Update photo"
 msgstr "Mettre à jour la photo"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:150
-msgid "Update protected paper wallet"
-msgstr "Mettre à jour le portefeuille papier protégé"
+#~ msgid "Update protected paper wallet"
+#~ msgstr "Mettre à jour le portefeuille papier protégé"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
 msgid "Update required"
@@ -6765,7 +6815,7 @@ msgstr "Importer une image"
 msgid "Upload Image Instead"
 msgstr "Importer une image à la place"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:135
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "Importer un logo"
 
@@ -6820,7 +6870,7 @@ msgid "Use max · {0}"
 msgstr "Utiliser max · {0}"
 
 #: apps/web/src/components/nearby-catalog.tsx:252
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 msgid "Use my location"
 msgstr "Utiliser ma position"
 
@@ -7079,14 +7129,14 @@ msgstr "Bons d’échange que vous avez émis"
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "En attente de la confirmation de la blockchain…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:217
 msgid "Waiting for blockchain confirmation…"
 msgstr "En attente de la confirmation de la blockchain…"
 
-#: apps/web/src/components/install-app-button.tsx:59
-#: apps/web/src/components/install-app-dialog.tsx:37
+#: apps/web/src/components/install-app-button.tsx:63
+#: apps/web/src/components/install-app-dialog.tsx:30
 msgid "Waiting for confirmation…"
 msgstr "En attente de confirmation…"
 
@@ -7106,6 +7156,8 @@ msgstr "En attente de la chaîne…"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:104
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -7133,7 +7185,7 @@ msgstr "Session du portefeuille"
 msgid "Water Catchment"
 msgstr "Collecte d’eau"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:48
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "Nous n’avons pas pu vérifier votre session. Vérifiez votre connexion, "
 "puis réessayez."
@@ -7161,9 +7213,9 @@ msgstr "Nous n’avons pas pu vérifier si ce bon d’échange avait déjà ét�
 #: apps/web/src/components/vouchers/voucher-summary.tsx:409
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:358
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:374
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
 msgid "Website"
@@ -7173,7 +7225,7 @@ msgstr "Site web"
 msgid "Weekly"
 msgstr "Hebdomadaire"
 
-#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:31
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:29
 msgid "Welcome back"
 msgstr "Bon retour parmi nous"
 
@@ -7182,12 +7234,12 @@ msgid "What are you offering?"
 msgstr "Que proposez-vous ?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "Qu’est-ce qu’un bon ?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "Qu’est-ce qu’une offre ?"
 
@@ -7195,6 +7247,7 @@ msgstr "Qu’est-ce qu’une offre ?"
 msgid "What they offer"
 msgstr "Ce qu’ils offrent"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "Qu’est-ce qu’un bassin ?"
@@ -7397,7 +7450,7 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "Votre paiement MPESA arrivera sous peu."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:197
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:198
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:330
 msgid "Your name"
 msgstr "Votre nom"
 
@@ -7407,7 +7460,7 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 msgstr "Votre nom et l’adresse de votre portefeuille ne seront pas affichés. "
 "Évitez d’inclure des informations personnelles dans votre commentaire."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:403
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
 msgid "Your paper wallet"
 msgstr "Votre portefeuille papier"
 
@@ -7481,7 +7534,7 @@ msgid "Your wallet"
 msgstr "Votre portefeuille"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "Votre portefeuille"
 
@@ -7492,7 +7545,7 @@ msgstr "Votre portefeuille est utilisé par défaut. Saisissez une autre adresse
 "pour y envoyer les frais d’échange."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "Votre portefeuille contient vos bons. Créez un compte et conservez vos "
 "informations d’accès au portefeuille pour commencer."

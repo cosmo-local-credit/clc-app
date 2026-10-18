@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -57,7 +57,7 @@ vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
 }));
 
 vi.mock("#/components/paper-wallet-scanner", () => ({
-  PaperWalletScanner: () => null,
+  PaperWalletScanner: () => <p>Scanner</p>,
 }));
 
 import { SignInPanel } from "./sign-in-panel";
@@ -74,8 +74,10 @@ function renderPanel() {
 async function submitPrivateKey(key: string) {
   fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));
   fireEvent.click(screen.getByRole("button", { name: /^private key$/i }));
-  // Exact, so it does not also match the form's "Close private key form" button.
-  fireEvent.change(screen.getByLabelText("Private key"), { target: { value: key } });
+  // The form opens in a sheet titled Private key; exact, so the field does not
+  // also match the form's "Close private key form" button.
+  const sheet = screen.getByRole("dialog", { name: "Private key" });
+  fireEvent.change(within(sheet).getByLabelText("Private key"), { target: { value: key } });
   fireEvent.click(screen.getByRole("button", { name: /sign in with private key/i }));
 }
 
@@ -202,5 +204,35 @@ describe("passkey sign-in credential teardown", () => {
       expect(mocks.signin).toHaveBeenCalled();
     });
     expect(getStoredKey()).toBe(ALICE_KEY);
+  });
+});
+
+describe("sign-in method layout", () => {
+  it("leads with the passkey and lists the paper wallet as a row beneath it", () => {
+    renderPanel();
+    const buttons = screen.getAllByRole("button").map((button) => button.textContent);
+    expect(buttons[0]).toContain("Continue with Google");
+    expect(buttons[1]).toContain("Continue with Paper Wallet");
+    expect(screen.queryByRole("button", { name: /^private key$/i })).toBeNull();
+  });
+
+  it("opens the paper wallet scanner in a sheet over the methods", async () => {
+    renderPanel();
+    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
+    const sheet = await screen.findByRole("dialog", { name: "Paper Wallet" });
+    expect(within(sheet).getByText("Scanner")).toBeTruthy();
+    // Still on the page behind the sheet, hidden from the accessibility tree while it is open.
+    expect(
+      screen.getByRole("button", { name: /continue with google/i, hidden: true }),
+    ).toBeTruthy();
+  });
+
+  it("keeps the private key behind Advanced options", () => {
+    renderPanel();
+    const advanced = screen.getByRole("button", { name: /advanced options/i });
+    expect(advanced.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(advanced);
+    expect(advanced.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: /^private key$/i })).toBeTruthy();
   });
 });

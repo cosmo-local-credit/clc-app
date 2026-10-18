@@ -29,7 +29,10 @@ vi.mock("./introduction-state", async (original) => ({
 }));
 vi.mock("#/components/install-app-link", () => ({ InstallAppLink: () => null }));
 vi.mock("#/components/language-selector", () => ({ OnboardingMenu: () => null }));
-vi.mock("./introduction", () => ({ Introduction: () => <p>Inline introduction</p> }));
+vi.mock("./introduction", () => ({
+  GuideCarousel: () => <p>Inline introduction</p>,
+  Introduction: () => <p>Replayed guide</p>,
+}));
 
 it.each(["/", "/onboarding?redirect=%2Fwallet%2Fsend"])(
   "shows inline introduction at %s and enters setup on Create account",
@@ -74,7 +77,7 @@ it.each(["/", "/onboarding?redirect=%2Fwallet%2Fsend"])(
 );
 
 it.each([false, true])(
-  "shows locked-page guidance only before completion (seen=%s)",
+  "keeps a locked page's fork in front and the guide one row away (seen=%s)",
   async (seen) => {
     completion.seen = seen;
     const root = createRootRoute({
@@ -105,14 +108,9 @@ it.each([false, true])(
     });
     render(<RouterProvider router={router} />);
     await screen.findByRole("heading", { name: "Sign in to continue" });
-    const create = screen.getByRole("link", { name: "Create account" });
-    if (seen) {
-      expect(screen.queryByText("Inline introduction")).toBeNull();
-    } else {
-      const intro = await screen.findByText("Inline introduction");
-      expect(intro.compareDocumentPosition(create) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    }
+    expect(screen.queryByText("Inline introduction")).toBeNull();
     expect(screen.queryByText("Private wallet")).toBeNull();
+    const create = screen.getByRole("link", { name: "Create account" });
     fireEvent.click(create);
     await screen.findByText("Account setup");
     expect(router.state.location.search).toMatchObject({
@@ -122,3 +120,29 @@ it.each([false, true])(
     expect(completion.seen).toBe(true);
   },
 );
+
+it("replays the guide from a locked page's How to use CLC row", async () => {
+  const root = createRootRoute({
+    component: () => (
+      <IntroductionProvider>
+        <Outlet />
+      </IntroductionProvider>
+    ),
+  });
+  const locked = createRoute({
+    getParentRoute: () => root,
+    path: "/wallet/send",
+    component: () => (
+      <AuthenticatedRoute>
+        <p>Private wallet</p>
+      </AuthenticatedRoute>
+    ),
+  });
+  const router = createRouter({
+    routeTree: root.addChildren([locked]),
+    history: createMemoryHistory({ initialEntries: ["/wallet/send"] }),
+  });
+  render(<RouterProvider router={router} />);
+  fireEvent.click(await screen.findByRole("button", { name: "How to use CLC" }));
+  expect(await screen.findByText("Replayed guide")).toBeTruthy();
+});

@@ -1,15 +1,28 @@
 import { sanitizeInternalRedirect } from "#/components/auth/redirect";
 
-const ONBOARDING_STEPS = ["welcome", "signin", "profile", "method", "card"] as const;
+const ONBOARDING_STEPS = [
+  "welcome",
+  "signin",
+  "profile",
+  "contact",
+  "location",
+  "card",
+  "save",
+  "link",
+] as const;
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
+
+/** The three pages of Create account, one form across them. */
+export type ProfilePage = Extract<OnboardingStep, "profile" | "contact" | "location">;
+
+/** The paper wallet's pages: protect it, save it, then link a passkey or finish. */
+export type WalletPage = Extract<OnboardingStep, "card" | "save" | "link">;
 
 export type OnboardingSearch = {
   redirect?: string;
   step: OnboardingStep;
 };
-
-export type WalletMethodChoice = "link" | "paper";
 
 function parseOnboardingStep(value: unknown): OnboardingStep {
   if (typeof value === "string" && (ONBOARDING_STEPS as readonly string[]).includes(value)) {
