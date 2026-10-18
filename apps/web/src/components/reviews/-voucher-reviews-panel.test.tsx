@@ -93,6 +93,19 @@ describe("voucher reviews", () => {
     expect(screen.queryByText("No reviews yet.")).toBeNull();
   });
 
+  it("retries failed reviews and review-access requests", async () => {
+    mocks.getReviews.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(page);
+    mocks.getReviewAccess.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(access);
+    mount();
+
+    const retries = await screen.findAllByRole("button", { name: "Try again" });
+    for (const retry of retries) fireEvent.click(retry);
+
+    await waitFor(() => expect(mocks.getReviews).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mocks.getReviewAccess).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText("Lovely produce")).toBeTruthy();
+  });
+
   it("shows anonymous public cards and filters by histogram without hiding the summary", async () => {
     mocks.auth.isAuthenticated = false;
     mocks.getReviews.mockImplementation((_address, stars) =>

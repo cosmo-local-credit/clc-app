@@ -1,125 +1,45 @@
-import { BackendApiError } from "@clc/api/client/errors";
 import { describe, expect, it } from "vite-plus/test";
 
-import {
-  type CatalogOwner,
-  catalogOwnerFromDetail,
-  partitionTokensByIssuer,
-} from "./partition-tokens-by-issuer";
+import { partitionTokensByIssuer } from "./partition-tokens-by-issuer";
 
-const VIEWER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
-const OTHER = "0x9999999999999999999999999999999999999999";
-
-function token(id: string) {
-  return { id, symbol: id.slice(2, 6) };
+function token(id: string, catalogActive?: boolean) {
+  return { id, symbol: id.slice(2, 6), catalogActive };
 }
-
-function owners(entries: Array<[string, CatalogOwner]>): Map<string, CatalogOwner> {
-  return new Map(entries);
-}
-
-describe("catalogOwnerFromDetail", () => {
-  it("treats a catalog miss as not issued, and any other error as unresolved", () => {
-    expect(
-      catalogOwnerFromDetail({
-        isPending: false,
-        isError: true,
-        error: new BackendApiError(404, "missing"),
-      }),
-    ).toEqual({ state: "missing" });
-    expect(
-      catalogOwnerFromDetail({
-        isPending: false,
-        isError: true,
-        error: new BackendApiError(500, "down"),
-      }),
-    ).toEqual({ state: "failed" });
-    expect(
-      catalogOwnerFromDetail({
-        isPending: true,
-        isError: false,
-        error: null,
-      }),
-    ).toEqual({ state: "pending" });
-  });
-});
 
 describe("partitionTokensByIssuer", () => {
   const issued = token("0xaaa0000000000000000000000000000000000001");
   const held = token("0xbbb0000000000000000000000000000000000002");
   const unknown = token("0xccc0000000000000000000000000000000000003");
 
-  it("puts the viewer's vouchers after everyone else's and keeps each group's order", () => {
-    const split = partitionTokensByIssuer(
-      [held, issued, unknown],
-      owners([
-        [held.id, { state: "known", ownerAddress: OTHER }],
-        [issued.id, { state: "known", ownerAddress: VIEWER.toUpperCase() }],
-        [unknown.id, { state: "missing" }],
-      ]),
-      VIEWER,
-    );
+  it("files every balance the account did not issue under Holdings, in balance order", () => {
+    const split = partitionTokensByIssuer([held, issued, unknown], [issued]);
 
     expect(split.holdings.map((row) => row.id)).toEqual([held.id, unknown.id]);
     expect(split.issued.map((row) => row.id)).toEqual([issued.id]);
-    expect(split.pending).toBe(false);
-    expect(split.failed).toBe(false);
   });
 
-  it("holds a row out of both lists while its owner is unknown or the read failed", () => {
-    const waiting = partitionTokensByIssuer(
-      [issued, held],
-      owners([
-        [issued.id, { state: "pending" }],
-        [held.id, { state: "known", ownerAddress: OTHER }],
-      ]),
-      VIEWER,
-    );
-    expect(waiting.holdings.map((row) => row.id)).toEqual([held.id]);
-    expect(waiting.issued).toEqual([]);
-    expect(waiting.pending).toBe(true);
+  it("keeps an issued voucher the account holds none of", () => {
+    // A failed opening mint leaves the voucher with no balance anywhere; My
+    // Vouchers is the only way back to it.
+    const unminted = token("0xddd0000000000000000000000000000000000004");
+    const split = partitionTokensByIssuer([held], [unminted]);
 
-    const broken = partitionTokensByIssuer(
-      [issued],
-      owners([[issued.id, { state: "failed" }]]),
-      VIEWER,
-    );
-    expect(broken.holdings).toEqual([]);
-    expect(broken.issued).toEqual([]);
-    expect(broken.failed).toBe(true);
+    expect(split.issued).toEqual([unminted]);
+    expect(split.holdings).toEqual([held]);
   });
 
-  it("does not call a voucher issued when the viewer is unknown or the catalog has no owner", () => {
-    const known = owners([[issued.id, { state: "known", ownerAddress: VIEWER }]]);
-    expect(partitionTokensByIssuer([issued], known, undefined).issued).toEqual([]);
-    expect(partitionTokensByIssuer([issued], known, undefined).holdings).toEqual([issued]);
+  it("matches a balance to its issued row regardless of address casing", () => {
+    const split = partitionTokensByIssuer([issued], [{ ...issued, id: issued.id.toUpperCase() }]);
 
-    const unowned = owners([[issued.id, { state: "known", ownerAddress: null }]]);
-    expect(partitionTokensByIssuer([issued], unowned, VIEWER).holdings).toEqual([issued]);
+    expect(split.holdings).toEqual([]);
   });
-});
 
-it("hides retired vouchers even when their old owner lookup is cached or returns 404", () => {
-  const retired = { id: "0xretired", catalogActive: false };
-  const unknown = { id: "0xunknown" };
-  const active = { id: "0xactive", catalogActive: true };
-  for (const retiredOwner of [
-    { state: "known", ownerAddress: VIEWER },
-    { state: "missing" },
-    { state: "pending" },
-  ] satisfies CatalogOwner[]) {
-    const split = partitionTokensByIssuer(
-      [retired, unknown, active],
-      owners([
-        [retired.id, retiredOwner],
-        [unknown.id, { state: "missing" }],
-        [active.id, { state: "known", ownerAddress: VIEWER }],
-      ]),
-      VIEWER,
-    );
+  it("hides retired vouchers from both lists", () => {
+    const retired = token("0xeee0000000000000000000000000000000000005", false);
+    const active = token("0xfff0000000000000000000000000000000000006", true);
+    const split = partitionTokensByIssuer([retired, unknown, active], [retired, active]);
+
     expect(split.holdings).toEqual([unknown]);
     expect(split.issued).toEqual([active]);
-    expect(split.pending).toBe(false);
-    expect(split.failed).toBe(false);
-  }
+  });
 });

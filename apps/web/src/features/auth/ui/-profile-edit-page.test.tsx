@@ -493,6 +493,33 @@ describe("ProfileEditPage", () => {
     });
   });
 
+  it("saves edited bio, website, email, and phone fields", async () => {
+    const fetchMock = mockBackend();
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: /bio/i }), {
+      target: { value: "Repairs bicycles" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /website/i }), {
+      target: { value: "https://repairs.example" },
+    });
+    fireEvent.change(screen.getByLabelText(/^email$/i), {
+      target: { value: "repairs@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/phone number/i), {
+      target: { value: "733333333" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(JSON.parse(postBody(fetchMock))).toMatchObject({
+      bio: "Repairs bicycles",
+      website: "https://repairs.example",
+      email: "repairs@example.com",
+      phone: "+254733333333",
+    });
+  });
+
   it("saves a newly chosen profile photo", async () => {
     const fetchMock = mockBackend();
 

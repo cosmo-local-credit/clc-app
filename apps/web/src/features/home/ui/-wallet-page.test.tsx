@@ -1,9 +1,25 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+
+const mocks = vi.hoisted(() => ({
+  navigate: vi.fn(),
+  usage: {
+    data: {
+      vouchers: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      pools: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      catalogs: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      offers: { used: 0, limit: 0, unlimited: true, canCreate: true },
+    },
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  },
+}));
 
 vi.mock("@tanstack/react-router", () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => mocks.navigate,
   Link: ({
     to,
     params,
@@ -37,18 +53,7 @@ vi.mock("#/components/catalogs/my-catalog-section", () => ({
   MyCatalogSection: () => <section aria-label="My Catalogs">My Catalogs</section>,
 }));
 vi.mock("#/hooks/use-resource-usage", () => ({
-  useResourceUsage: () => ({
-    data: {
-      vouchers: { used: 0, limit: 1, unlimited: false, canCreate: true },
-      pools: { used: 0, limit: 1, unlimited: false, canCreate: true },
-      catalogs: { used: 0, limit: 1, unlimited: false, canCreate: true },
-      offers: { used: 0, limit: 0, unlimited: true, canCreate: true },
-    },
-    isPending: false,
-    isError: false,
-    isFetching: false,
-    refetch: vi.fn(),
-  }),
+  useResourceUsage: () => mocks.usage,
 }));
 
 import { WalletPage } from "./wallet-page";
@@ -92,64 +97,48 @@ function jsonResponse(result: unknown, status = 200) {
 }
 
 /**
- * Account balances plus the authoritative current-owner endpoint.
+ * Account balances plus the account's issued list. The issued list answers
+ * with the balance rows `owners` names as the account's, retired ones left out
+ * as clc-core does, followed by `unminted`: issued vouchers it holds none of.
  */
 function mockLatestTokens({
   tokens = [USDT],
   owners = {},
-  detailStatus = 200,
+  unminted = [],
+  issuedStatus = 200,
+  balanceStatus = 200,
 }: {
   tokens?: readonly unknown[];
   owners?: Readonly<Record<string, string | null>>;
-  detailStatus?: number;
+  unminted?: readonly unknown[];
+  issuedStatus?: number;
+  balanceStatus?: number;
 } = {}) {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn().mockImplementation((url: string | URL) => {
-      const href = String(url);
-      if (href.includes("/api/v2/users/me/vouchers")) {
-        if (detailStatus !== 200) return Promise.resolve(jsonResponse(null, detailStatus));
-        const owned = tokens.flatMap((value) => {
-          const token = value as typeof USDT & { catalogActive?: boolean };
-          const ownerAddress = owners[token.tokenAddress.toLowerCase()];
-          if (ownerAddress?.toLowerCase() !== ADDRESS.toLowerCase()) return [];
-          return [
-            {
-              id: token.id,
-              chainId: 100,
-              address: token.tokenAddress,
-              name: token.tokenName,
-              symbol: token.tokenSymbol,
-              decimals: token.tokenDecimals,
-              iconUrl: token.iconUrl,
-              ownerAddress,
-              active: token.catalogActive !== false,
-            },
-          ];
-        });
-        return Promise.resolve(
-          jsonResponse({
-            vouchers: owned,
-          }),
+  const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
+    const href = String(url);
+    if (href.includes("/tokens/issued")) {
+      if (issuedStatus !== 200) return Promise.resolve(jsonResponse(null, issuedStatus));
+      const issued = tokens.filter((value) => {
+        const token = value as typeof USDT & { catalogActive?: boolean };
+        const ownerAddress = owners[token.tokenAddress.toLowerCase()];
+        return (
+          token.catalogActive !== false && ownerAddress?.toLowerCase() === ADDRESS.toLowerCase()
         );
-      }
-      return Promise.resolve(jsonResponse({ tokens }));
-    }),
-  );
+      });
+      return Promise.resolve(jsonResponse({ tokens: [...issued, ...unminted], first: 0, last: 0 }));
+    }
+    if (href.includes("/api/v2/accounts/") && href.includes("/tokens") && balanceStatus !== 200)
+      return Promise.resolve(jsonResponse(null, balanceStatus));
+    return Promise.resolve(jsonResponse({ tokens }));
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
 }
 
 function mockNoTokens() {
   vi.stubGlobal(
     "fetch",
-    vi
-      .fn()
-      .mockImplementation((url: string | URL) =>
-        Promise.resolve(
-          jsonResponse(
-            String(url).includes("/api/v2/users/me/vouchers") ? { vouchers: [] } : { tokens: [] },
-          ),
-        ),
-      ),
+    vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({ tokens: [] }))),
   );
 }
 
@@ -172,14 +161,20 @@ const OWNED_POOL = {
  * cannot serve the pool list — the two responses have different shapes, and a
  * pool page read as a token page is silently empty rather than failing.
  */
-function mockEndpoints({ pools }: { pools: readonly unknown[] }) {
+function mockEndpoints({
+  pools,
+  poolStatus = 200,
+}: {
+  pools: readonly unknown[];
+  poolStatus?: number;
+}) {
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
     const href = String(url);
+    if (href.includes("/api/v2/pools") && poolStatus !== 200)
+      return Promise.resolve(jsonResponse(null, poolStatus));
     const result = href.includes("/api/v2/pools")
       ? { pools, first: 0, last: 0 }
-      : href.includes("/api/v2/users/me/vouchers")
-        ? { vouchers: [] as unknown[] }
-        : { tokens: [] as unknown[] };
+      : { tokens: [] as unknown[] };
     return Promise.resolve({
       ok: true,
       status: 200,
@@ -193,6 +188,13 @@ function mockEndpoints({ pools }: { pools: readonly unknown[] }) {
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+beforeEach(() => {
+  mocks.navigate.mockReset();
+  mocks.usage.isError = false;
+  mocks.usage.isFetching = false;
+  mocks.usage.refetch.mockReset();
 });
 
 describe("WalletPage", () => {
@@ -271,26 +273,91 @@ describe("WalletPage", () => {
     expect(screen.getByText("No vouchers yet.")).toBeTruthy();
   });
 
-  it("shows a retired currently owned voucher without a public-detail link", async () => {
+  it("lists an issued voucher whose supply was never created", async () => {
+    // The opening mint failed, so the voucher has no balance anywhere and the
+    // balance list never mentions it.
+    mockLatestTokens({
+      tokens: [],
+      unminted: [{ ...ISSUED, balance: "0", lastDateBlock: "0001-01-01T00:00:00Z" }],
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    await screen.findByText("WLLR");
+    const issued = within(screen.getByRole("region", { name: /My Vouchers/ }));
+    expect(issued.getByText("0")).toBeTruthy();
+    expect(issued.getByRole("link", { name: /WLLR/ }).getAttribute("href")).toBe(
+      `/vouchers/${ISSUED.tokenAddress}?from=wallet`,
+    );
+    expect(screen.queryByText("No vouchers yet.")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
+  });
+
+  it("files balances with one issued read rather than a catalog read per balance", async () => {
+    const fetchMock = mockLatestTokens({
+      tokens: [USDT, ISSUED],
+      owners: { [ISSUED.tokenAddress]: ADDRESS },
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+    await screen.findByRole("region", { name: "Holdings" });
+
+    const urls = fetchMock.mock.calls.map(([url]) => String(url));
+    expect(urls.filter((url) => url.includes("/api/v2/vouchers/"))).toEqual([]);
+    expect(urls).toContainEqual(
+      expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens/latest`),
+    );
+    expect(urls).toContainEqual(
+      expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens/issued?perPage=100`),
+    );
+  });
+
+  it("hides a retired voucher the account owns", async () => {
     mockLatestTokens({
       tokens: [{ ...ISSUED, catalogActive: false }],
       owners: { [ISSUED.tokenAddress]: ADDRESS },
     });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    expect(await screen.findByText("Retired")).toBeTruthy();
-    expect(screen.getByText("WLLR")).toBeTruthy();
-    expect(screen.getByText("WLLR").closest("a")).toBeNull();
+    expect(await screen.findByText("No vouchers yet.")).toBeTruthy();
+    expect(screen.queryByText("WLLR")).toBeNull();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });
 
-  it("does not file balances while the catalog read is down", async () => {
-    mockLatestTokens({ detailStatus: 500 });
+  it("does not file balances while the issued list is down", async () => {
+    mockLatestTokens({ issuedStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     expect(await screen.findByText("Couldn't load vouchers.")).toBeTruthy();
     expect(screen.queryByText("USD₮")).toBeNull();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
+  });
+
+  it("retries resource limits and failed owned-voucher discovery", async () => {
+    mocks.usage.isError = true;
+    mockLatestTokens({ issuedStatus: 500 });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(mocks.usage.refetch).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "View all" }));
+    expect(mocks.navigate).toHaveBeenCalledWith({ to: "/wallet/vouchers" });
+
+    const vouchers = within(screen.getByRole("region", { name: /My Vouchers/ }));
+    fireEvent.click(await vouchers.findByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+  });
+
+  it("retries balances without hiding an owned voucher", async () => {
+    mockLatestTokens({
+      tokens: [ISSUED],
+      owners: { [ISSUED.tokenAddress]: ADDRESS },
+      balanceStatus: 500,
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("WLLR")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
 
   it("offers voucher creation when the wallet is empty", async () => {
@@ -350,5 +417,13 @@ describe("WalletPage", () => {
     expect(screen.getByRole("link", { name: "Create pool" }).getAttribute("href")).toBe(
       "/pools/create/pool",
     );
+  });
+
+  it("retries a failed owned-pools request", async () => {
+    mockEndpoints({ pools: [], poolStatus: 500 });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
 });

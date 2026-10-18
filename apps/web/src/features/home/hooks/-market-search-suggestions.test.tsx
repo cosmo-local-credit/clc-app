@@ -14,7 +14,15 @@ vi.mock("#/components/nearby-catalog", async (original) => ({
 
 it("nearby suggestions on page two must not disappear behind distant page one", async () => {
   list.mockImplementation(async (params) => {
-    if (params.facets) return { results: [], tagFacets: [], nextCursor: null };
+    if (params.facets)
+      return {
+        results: [],
+        tagFacets: [
+          { tag: "Repair", count: 2 },
+          { tag: "Unused", count: 0 },
+        ],
+        nextCursor: null,
+      };
     return params.cursor
       ? {
           results: [{ kind: "voucher", id: "near", name: "Near", geoLat: 0, geoLng: 0 }],
@@ -44,6 +52,7 @@ it("nearby suggestions on page two must not disappear behind distant page one", 
     ),
   );
   await waitFor(() => expect(result.current.vouchers.map((row) => row.id)).toContain("near"));
+  expect(result.current.tags).toEqual(["Repair"]);
 });
 
 function mountSuggestions() {
