@@ -13,6 +13,7 @@ import {
   enqueueNotificationAck,
   getOrCreateNotificationDeviceId,
   getOrCreateNotificationInstallation,
+  incrementUnseenCount,
   isNotificationIdentityCurrent,
   markNotificationInboxMessageActioned,
   markNotificationInboxMessageRead,
@@ -128,6 +129,21 @@ function createDependencies(
     sendClickAck: sendNotificationClickAck,
     sendDeliveryAck: sendNotificationDeliveryAck,
     showNotification: (title, options) => scope.registration.showNotification(title, options),
+    matchWindowClients: async () => {
+      const clients = (await scope.clients.matchAll({
+        includeUncontrolled: true,
+        type: "window",
+      })) as WindowClient[];
+      return clients.map((client) => ({ visibilityState: client.visibilityState }));
+    },
+    incrementUnseenCount,
+    setAppBadge: (count) => {
+      const badge = (
+        scope.navigator as Navigator & { setAppBadge?: (count: number) => Promise<void> }
+      ).setAppBadge;
+      if (typeof badge !== "function") return Promise.resolve();
+      return badge.call(scope.navigator, count);
+    },
   };
 }
 

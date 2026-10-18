@@ -63,8 +63,8 @@ describe("handleNotificationPush", () => {
           walletAddressTarget: WALLET_ADDRESS,
         },
         icon: `${BRAND_ICON_BASE}/icon-192.png`,
-        renotify: true,
-        tag: `clc:voucher.received:${WALLET_ADDRESS}`,
+        renotify: false,
+        tag: "clc:notification-1",
       }),
     );
     expect(spies.broadcast).toHaveBeenCalledWith({
@@ -196,6 +196,49 @@ describe("handleNotificationPush", () => {
     expect(await handleNotificationPush(validPayload, dependencies)).toEqual({ status: "ignored" });
     expect(spies.dismiss).toHaveBeenCalledWith("notification-1", "registration-1");
     expect(spies.sendDeliveryAck).not.toHaveBeenCalled();
+    expect(spies.incrementUnseenCount).not.toHaveBeenCalled();
+    expect(spies.setAppBadge).not.toHaveBeenCalled();
+  });
+
+  it("skips the badge when a window is visible", async () => {
+    const { dependencies, spies } = createDependencies();
+    spies.matchWindowClients.mockResolvedValue([{ visibilityState: "visible" }]);
+
+    await expect(handleNotificationPush(validPayload, dependencies)).resolves.toMatchObject({
+      status: "displayed",
+    });
+
+    expect(spies.incrementUnseenCount).not.toHaveBeenCalled();
+    expect(spies.setAppBadge).not.toHaveBeenCalled();
+  });
+
+  it("badges a background push and ignores a missing badge API", async () => {
+    const { dependencies, spies } = createDependencies();
+    spies.matchWindowClients.mockResolvedValue([{ visibilityState: "hidden" }]);
+    spies.incrementUnseenCount.mockResolvedValue(2);
+    spies.setAppBadge.mockRejectedValue(new Error("missing"));
+
+    await expect(handleNotificationPush(validPayload, dependencies)).resolves.toMatchObject({
+      status: "displayed",
+    });
+
+    expect(spies.setAppBadge).toHaveBeenCalledWith(2);
+    expect(spies.broadcast).toHaveBeenCalledWith({
+      count: 2,
+      protocolVersion: 1,
+      type: "notification:badge",
+    });
+  });
+
+  it("sets no badge when the increment loses the epoch", async () => {
+    const { dependencies, spies } = createDependencies();
+    spies.incrementUnseenCount.mockResolvedValue(null);
+
+    await expect(handleNotificationPush(validPayload, dependencies)).resolves.toMatchObject({
+      status: "displayed",
+    });
+
+    expect(spies.setAppBadge).not.toHaveBeenCalled();
   });
 
   it("ignores payloads with invalid required fields", async () => {
@@ -369,6 +412,9 @@ function createDependencies(): {
       sendClickAck: spies.sendClickAck,
       sendDeliveryAck: spies.sendDeliveryAck,
       showNotification: spies.showNotification,
+      matchWindowClients: spies.matchWindowClients,
+      incrementUnseenCount: spies.incrementUnseenCount,
+      setAppBadge: spies.setAppBadge,
     },
     spies,
   };
@@ -408,5 +454,12 @@ function createSpies() {
     showNotification: vi
       .fn<(title: string, options: NotificationOptions) => Promise<void>>()
       .mockResolvedValue(),
+    matchWindowClients: vi
+      .fn<() => Promise<Array<{ visibilityState: string }>>>()
+      .mockResolvedValue([]),
+    incrementUnseenCount: vi
+      .fn<(identityEpoch: string) => Promise<number | null>>()
+      .mockResolvedValue(1),
+    setAppBadge: vi.fn<(count: number) => Promise<void>>().mockResolvedValue(),
   };
 }

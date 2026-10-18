@@ -7,6 +7,7 @@ import {
 } from "../api/notification-client";
 import { type NotificationPayload, parseNotificationPayload } from "../logic/payload-schema";
 import { flushQueuedNotificationAcks } from "../recovery/recovery";
+import { playNotificationCue } from "./alert-cue";
 import {
   enqueueNotificationAck,
   isNotificationIdentityCurrent,
@@ -76,6 +77,8 @@ export async function showForegroundNotification(
     )
       return;
     shown = true;
+    // The cue follows the toast, not the push. A foreground toast does not change the badge.
+    playNotificationCue();
     const shownAt = new Date().toISOString();
     await saveNotificationInboxMessage({ ...payload, receivedAt, shownAt }, identityEpoch);
     await markNotificationInboxMessageShown(payload.notificationId, shownAt, identityEpoch);

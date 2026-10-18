@@ -132,7 +132,6 @@ type BackendNotificationPayload = {
   notificationId: string;
   offRampReference?: string;
   priority: NotificationPriority;
-  swapId?: string;
   targetUrl: string;
   title: string;
   voucherId?: string;
@@ -258,7 +257,6 @@ const backendNotificationPayloadBaseSchema = z.object({
   notificationId: z.string(),
   offRampReference: z.string().optional(),
   priority: notificationPrioritySchema.optional(),
-  swapId: z.string().optional(),
   targetUrl: z.string(),
   title: z.string(),
   voucherId: z.string().optional(),

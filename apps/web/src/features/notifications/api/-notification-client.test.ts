@@ -313,17 +313,17 @@ describe("notification API wrappers", () => {
       deletedIds: ["notification-deleted"],
       messages: [
         {
-          body: "Swap completed",
+          body: "Voucher received",
           createdAt: "2026-06-05T12:00:00.000Z",
           deviceId: "device-1",
-          kind: "swap.completed",
+          kind: "voucher.received",
           notificationId: "notification-1",
           pushStatus: "sent",
           recordId: "record-1",
           revision: 1,
           sentAt: "2026-06-05T12:00:01.000Z",
           targetUrl: "/wallet",
-          title: "Swap completed",
+          title: "Voucher received",
         },
       ],
       nextSyncCursor: "cursor-2",
@@ -345,9 +345,9 @@ describe("notification API wrappers", () => {
       deletedIds: ["notification-deleted"],
       messages: [
         {
-          kind: "swap.completed",
+          kind: "voucher.received",
           notificationId: "notification-1",
-          priority: "normal",
+          priority: "high",
         },
       ],
       nextSyncCursor: "cursor-2",

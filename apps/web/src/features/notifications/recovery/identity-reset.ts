@@ -4,6 +4,7 @@ import {
   type NotificationClientOptions,
   unlinkNotificationWallet,
 } from "../api/notification-client";
+import { clearNavigatorAppBadge } from "../realtime/app-badge";
 import {
   clearNotificationIdentityStores,
   isNotificationStorageAvailable,
@@ -35,13 +36,16 @@ export function resetNotificationIdentityBarrierForTests(): void {
 }
 
 async function runReset(options: ResetNotificationIdentityOptions): Promise<void> {
-  if (!isNotificationStorageAvailable()) return;
   if (options.onlyIfSessionEnded) {
     try {
       if (await authClient.getSession()) return;
     } catch (error) {
       if (!(error instanceof BackendApiError) || error.kind !== "unauthenticated") return;
     }
+  }
+  if (!isNotificationStorageAvailable()) {
+    clearNavigatorAppBadge();
+    return;
   }
   const [deviceId, config] = await Promise.all([
     readNotificationDeviceId().catch(() => null),
@@ -53,6 +57,7 @@ async function runReset(options: ResetNotificationIdentityOptions): Promise<void
     config.identityWallet !== options.previousWalletAddress.toLowerCase()
   )
     return;
+  clearNavigatorAppBadge();
   await clearNotificationIdentityStores(options.previousWalletAddress).catch(() => undefined);
   if (config?.registrationId && typeof navigator !== "undefined" && "serviceWorker" in navigator) {
     const registrationId = config.registrationId;
