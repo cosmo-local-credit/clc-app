@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
+  accountIssuedTokensInfiniteQueryOptions,
   accountKeys,
   accountTokensInfiniteQueryOptions,
   accountTransfersInfiniteQueryOptions,
@@ -82,6 +83,33 @@ export function useAccountTokensInfinite(
  */
 export function useAllAccountTokens(address: string | undefined) {
   const query = useAccountTokensInfinite(address, { perPage: 100 });
+  const { fetchNextPage, hasNextPage, isError, isFetchingNextPage } = query;
+
+  useEffect(() => {
+    if (isError || !hasNextPage || isFetchingNextPage) return;
+    void fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isError, isFetchingNextPage]);
+
+  return {
+    ...query,
+    tokens: query.data?.pages.flatMap((page) => page.tokens) ?? [],
+    isPending: query.isPending || hasNextPage || isFetchingNextPage,
+  };
+}
+
+/**
+ * Every catalog voucher an account owns, with its balance of each, zero
+ * included. Drained like `useAllAccountTokens`: the wallet files a balance
+ * under Holdings by its absence from this list, so a partial list would call
+ * the viewer's own voucher someone else's. It polls with the balance list it
+ * splits, so an issued voucher's amount moves with everything else.
+ */
+export function useAllAccountIssuedTokens(address: string | undefined) {
+  const query = useInfiniteQuery({
+    ...accountIssuedTokensInfiniteQueryOptions(accountsClient, address, 100),
+    ...walletAccountQueryFreshness,
+    ...pollOptions(true),
+  });
   const { fetchNextPage, hasNextPage, isError, isFetchingNextPage } = query;
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
+  getAccountIssuedTokens: vi.fn(),
   getAccountTokens: vi.fn(),
   getAccountTransfers: vi.fn(),
   getLatestAccountTokens: vi.fn(),
@@ -20,6 +21,7 @@ vi.mock("#/lib/api/accounts", async () => ({
 import {
   useAccountTokensInfinite,
   useAccountTransfersInfinite,
+  useAllAccountIssuedTokens,
   useAllAccountTokens,
 } from "./use-account-balances";
 
@@ -104,5 +106,36 @@ describe("complete account holdings", () => {
     expect(mocks.getAccountTokens.mock.calls[1]?.[0]).toMatchObject({ cursor: 100, next: true });
     expect(result.current.tokens).toHaveLength(101);
     expect(result.current.isPending).toBe(false);
+  });
+});
+
+describe("issued vouchers", () => {
+  it("drains every page and keeps polling with the balance list it splits", async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => ({ id: 200 - index }));
+    mocks.getAccountIssuedTokens
+      .mockReset()
+      .mockImplementation(({ cursor }: { cursor?: number }) =>
+        cursor === undefined
+          ? Promise.resolve({ tokens: firstPage, last: 101 })
+          : Promise.resolve({ tokens: [{ id: 100 }], last: 100 }),
+      );
+
+    const { result } = renderHook(() => useAllAccountIssuedTokens(ADDRESS), {
+      wrapper: wrapper(),
+    });
+
+    await tick(0);
+    await tick(0);
+    await tick(1);
+    expect(mocks.getAccountIssuedTokens.mock.calls[1]?.[0]).toMatchObject({
+      cursor: 101,
+      next: true,
+    });
+    expect(result.current.tokens).toHaveLength(101);
+    expect(result.current.isPending).toBe(false);
+
+    const drained = mocks.getAccountIssuedTokens.mock.calls.length;
+    await tick(16_000);
+    expect(mocks.getAccountIssuedTokens.mock.calls.length).toBeGreaterThan(drained);
   });
 });

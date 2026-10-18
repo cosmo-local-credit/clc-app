@@ -42,6 +42,12 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
     isSuccess: true,
     refetch: vi.fn(),
   }),
+  useAllAccountIssuedTokens: () => ({
+    tokens: [],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
 }));
 
 vi.mock("#/features/pools/hooks/use-user-pools", () => ({

@@ -161,7 +161,7 @@ msgid "{0} updated."
 msgstr "{0} 已更新。"
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/wallet-page.tsx:321
+#: apps/web/src/features/home/ui/wallet-page.tsx:270
 #: apps/web/src/features/pools/ui/pools-page.tsx:393
 msgid "{0} vouchers"
 msgstr "{0} 代金券"
@@ -272,7 +272,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 份報價"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:319
+#: apps/web/src/features/home/ui/wallet-page.tsx:268
 #: apps/web/src/features/pools/ui/pools-page.tsx:391
 msgid "1 voucher"
 msgstr "1 代金券"
@@ -547,7 +547,7 @@ msgstr "農業"
 msgid "All"
 msgstr "全部"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:268
+#: apps/web/src/features/home/ui/wallet-page.tsx:217
 msgid "All pools"
 msgstr "全部資金池"
 
@@ -560,7 +560,7 @@ msgstr "全部資金池"
 msgid "All selected"
 msgstr "全部選中"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:133
 msgid "All Vouchers"
 msgstr "全部代金券"
 
@@ -835,7 +835,7 @@ msgstr "已讀取卡片 — 正在登入"
 msgid "Care"
 msgstr "照護"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:105
+#: apps/web/src/features/home/ui/wallet-page.tsx:71
 #: apps/web/src/features/wallet/ui/cash-page.tsx:32
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:109
 msgid "Cash"
@@ -1752,12 +1752,12 @@ msgstr "無法載入代金券標籤。"
 msgid "Couldn't load vouchers"
 msgstr "無法載入代金券"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:183
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:153
+#: apps/web/src/features/home/ui/wallet-page.tsx:145
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:148
 msgid "Couldn't load vouchers."
 msgstr "無法載入代金券。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:280
+#: apps/web/src/features/home/ui/wallet-page.tsx:229
 msgid "Couldn't load your pools."
 msgstr "無法載入您的資金池。"
 
@@ -1939,7 +1939,7 @@ msgstr "建立目錄"
 #~ msgid "Create new vouchers in your wallet."
 #~ msgstr "在錢包中增發代金券。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:299
+#: apps/web/src/features/home/ui/wallet-page.tsx:248
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:335
 msgid "Create pool"
 msgstr "建立資金池"
@@ -1952,8 +1952,8 @@ msgstr "增發"
 msgid "Create the first supply to finish publishing this voucher."
 msgstr "請先完成首次增發，以發佈此代金券。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:208
-#: apps/web/src/features/home/ui/wallet-page.tsx:244
+#: apps/web/src/features/home/ui/wallet-page.tsx:167
+#: apps/web/src/features/home/ui/wallet-page.tsx:201
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:347
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:377
 msgid "Create voucher"
@@ -2690,8 +2690,8 @@ msgstr "健康"
 msgid "Hold the card flat against the back of your phone."
 msgstr "將卡平放在手機背面。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:219
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:185
+#: apps/web/src/features/home/ui/wallet-page.tsx:178
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:177
 msgid "Holdings"
 msgstr "持有的代金券"
 
@@ -3056,7 +3056,7 @@ msgstr "升"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:218
 #: apps/web/src/features/home/ui/marketplace-page.tsx:185
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
 msgid "Load more"
 msgstr "載入更多"
 
@@ -3118,7 +3118,7 @@ msgstr "正在載入商品或服務項目…"
 msgid "Loading pool…"
 msgstr "正在載入資金池…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:274
+#: apps/web/src/features/home/ui/wallet-page.tsx:223
 #: apps/web/src/features/pools/ui/pools-page.tsx:283
 msgid "Loading pools…"
 msgstr "正在載入資金池…"
@@ -3160,11 +3160,9 @@ msgstr "正在載入代幣…"
 msgid "Loading voucher…"
 msgstr "正在載入代金券…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:74
-#: apps/web/src/features/home/ui/wallet-page.tsx:177
+#: apps/web/src/features/home/ui/wallet-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:934
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:147
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:212
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:142
 #: apps/web/src/features/wallet/ui/collect-page.tsx:166
 msgid "Loading vouchers…"
 msgstr "正在載入代金券…"
@@ -3196,7 +3194,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:188
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1011
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
 msgstr "載入中…"
@@ -3440,7 +3438,7 @@ msgstr "我的目錄"
 msgid "My catalogs"
 msgstr "我的目錄"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:267
+#: apps/web/src/features/home/ui/wallet-page.tsx:216
 msgid "My Pools"
 msgstr "我的資金池"
 
@@ -3451,9 +3449,9 @@ msgstr "我的資金池"
 msgid "My posts"
 msgstr "我的貼文"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:168
-#: apps/web/src/features/home/ui/wallet-page.tsx:228
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:195
+#: apps/web/src/features/home/ui/wallet-page.tsx:130
+#: apps/web/src/features/home/ui/wallet-page.tsx:187
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:186
 msgid "My Vouchers"
 msgstr "我的代金券"
 
@@ -3768,8 +3766,8 @@ msgstr "沒有可領取的代金券"
 msgid "No vouchers to show yet."
 msgstr "暫無代金券可顯示。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:204
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:174
+#: apps/web/src/features/home/ui/wallet-page.tsx:163
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:166
 msgid "No vouchers yet."
 msgstr "還沒有代金券。"
 
@@ -4745,7 +4743,7 @@ msgstr "舉報原因"
 msgid "Receipt copied"
 msgstr "收據已複製"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:98
+#: apps/web/src/features/home/ui/wallet-page.tsx:64
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:170
 #: apps/web/src/features/wallet/ui/collect-page.tsx:110
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
@@ -5284,7 +5282,7 @@ msgid "Sell to a bank account"
 msgstr "賣出至銀行帳戶"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:374
-#: apps/web/src/features/home/ui/wallet-page.tsx:95
+#: apps/web/src/features/home/ui/wallet-page.tsx:61
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:165
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:335
 msgid "Send"
@@ -5548,8 +5546,8 @@ msgstr "無法檢查某些資金池。顯示經過驗證的結果。"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:80
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:218
-msgid "Some vouchers couldn't load."
-msgstr "某些代金券無法載入。"
+#~ msgid "Some vouchers couldn't load."
+#~ msgstr "某些代金券無法載入。"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:687
 msgid "Stable sent"
@@ -6314,9 +6312,8 @@ msgstr "旅行"
 #: apps/web/src/features/home/ui/activity-page.tsx:64
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/home/ui/wallet-page.tsx:83
-#: apps/web/src/features/home/ui/wallet-page.tsx:194
-#: apps/web/src/features/home/ui/wallet-page.tsx:288
+#: apps/web/src/features/home/ui/wallet-page.tsx:156
+#: apps/web/src/features/home/ui/wallet-page.tsx:237
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:225
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
@@ -6326,8 +6323,7 @@ msgstr "旅行"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:443
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:284
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:164
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:228
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:159
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:451
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
@@ -6567,8 +6563,8 @@ msgstr "商品或服務項目價值：{0} {1}"
 msgid "View"
 msgstr "查看"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:169
-#: apps/web/src/features/home/ui/wallet-page.tsx:229
+#: apps/web/src/features/home/ui/wallet-page.tsx:131
+#: apps/web/src/features/home/ui/wallet-page.tsx:188
 msgid "View all"
 msgstr "查看全部"
 
@@ -6779,8 +6775,8 @@ msgstr "正在等待鏈上確認…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:187
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
-#: apps/web/src/features/home/ui/wallet-page.tsx:138
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:134
+#: apps/web/src/features/home/ui/wallet-page.tsx:100
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:129
 #: apps/web/src/features/wallet/ui/cash-page.tsx:28
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
@@ -6789,7 +6785,7 @@ msgstr "正在等待鏈上確認…"
 msgid "Wallet"
 msgstr "錢包"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:143
+#: apps/web/src/features/home/ui/wallet-page.tsx:105
 msgid "Wallet actions"
 msgstr "錢包操作"
 
@@ -6964,8 +6960,8 @@ msgid "You can write or edit your review until {0}."
 msgstr "您可以在 {0} 之前撰寫或編輯您的評價。"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:240
-msgid "You didn't issue any of these."
-msgstr "這些都不是您發行的。"
+#~ msgid "You didn't issue any of these."
+#~ msgstr "這些都不是您發行的。"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:65
 msgid "You don't have a username yet."
@@ -6979,11 +6975,12 @@ msgstr "您沒有持有此資金池接受的代金券。"
 msgid "You have seven days after redemption to write or edit your review."
 msgstr "兌付後七天內，您可以撰寫或編輯評價。"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:295
+#: apps/web/src/features/home/ui/wallet-page.tsx:244
 msgid "You haven't created a pool yet."
 msgstr "您尚未建立資金池。"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:200
+#: apps/web/src/features/home/ui/wallet-page.tsx:197
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:191
 msgid "You haven't issued a voucher yet."
 msgstr "您尚未發行代金券。"
 
