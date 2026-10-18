@@ -9,6 +9,8 @@ import {
 const oldSubscription = subscription("https://push.example/old");
 const newSubscription = subscription("https://push.example/new");
 const baseConfig: NotificationConfigRecord = {
+  identityEpoch: "epoch-1",
+  registrationId: "registration-1",
   appVersion: "web-test",
   key: "current",
   permissionState: "granted",
@@ -47,17 +49,22 @@ describe("handlePushSubscriptionChange", () => {
 
     expect(spies.getCurrentSubscription).not.toHaveBeenCalled();
     expect(spies.resubscribe).not.toHaveBeenCalled();
-    expect(spies.registerDevice).toHaveBeenCalledWith({
-      deviceId: "device-1",
-      pushSubscription: newSubscription,
-      vapidKeyVersion: "vapid-v1",
-    });
+    expect(spies.registerDevice).toHaveBeenCalledWith(
+      {
+        registrationId: "registration-1",
+        deviceId: "device-1",
+        pushSubscription: newSubscription,
+        vapidKeyVersion: "vapid-v1",
+      },
+      "epoch-1",
+    );
     expect(spies.updateConfig).toHaveBeenCalledWith(
       expect.objectContaining({
         subscriptionHash: expect.any(String),
         vapidKeyVersion: "vapid-v1",
         vapidPublicKey: "public-key",
       }),
+      "epoch-1",
     );
   });
 
@@ -72,6 +79,7 @@ describe("handlePushSubscriptionChange", () => {
     expect(spies.resubscribe).not.toHaveBeenCalled();
     expect(spies.registerDevice).toHaveBeenCalledWith(
       expect.objectContaining({ pushSubscription: oldSubscription }),
+      "epoch-1",
     );
   });
 
@@ -99,6 +107,7 @@ describe("handlePushSubscriptionChange", () => {
     expect(spies.fetchVapid).toHaveBeenCalledOnce();
     expect(spies.registerDevice).toHaveBeenCalledWith(
       expect.objectContaining({ vapidKeyVersion: "vapid-v2" }),
+      "epoch-1",
     );
   });
 

@@ -14,6 +14,9 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { NotificationPayload } from "../logic/payload-schema";
 import {
+  applyNotificationInboxPage,
+  beginNotificationIdentity,
+  getOrCreateNotificationInstallation,
   clearNotificationIdentityStores,
   clearQueuedNotificationAcks,
   consumePendingNotificationClickEvents,
@@ -330,7 +333,7 @@ describe("notification storage availability", () => {
   });
 
   it("retries opening the database after a cached open rejects", async () => {
-    const newerDatabase = await openRawDatabase("clc-notifications", 3);
+    const newerDatabase = await openRawDatabase("clc-notifications", 4);
     newerDatabase.close();
 
     await expect(openNotificationDatabase()).rejects.toMatchObject({
@@ -340,7 +343,7 @@ describe("notification storage availability", () => {
     await deleteRawDatabase("clc-notifications");
 
     const database = await openNotificationDatabase();
-    expect(database.version).toBe(2);
+    expect(database.version).toBe(3);
   });
 });
 
@@ -377,3 +380,61 @@ function deleteRawDatabase(name: string): Promise<void> {
     request.onsuccess = () => resolve();
   });
 }
+
+describe("notification ownership and feed consistency", () => {
+  it("creates one cryptographic installation secret even under concurrent callers", async () => {
+    const installations = await Promise.all(
+      Array.from({ length: 10 }, () => getOrCreateNotificationInstallation()),
+    );
+    expect(new Set(installations.map((item) => item.deviceId)).size).toBe(1);
+    expect(new Set(installations.map((item) => item.installationToken)).size).toBe(1);
+    expect(installations[0]?.installationToken).toMatch(/^[a-f0-9]{64}$/);
+  });
+  it("rejects writes and pages from the outgoing owner", async () => {
+    const first = await beginNotificationIdentity("0xaaa");
+    await updateNotificationConfig({
+      registrationId: "registration-a",
+      userId: "a",
+      generation: 1,
+    });
+    const second = await beginNotificationIdentity("0xbbb");
+    expect(second.identityEpoch).not.toBe(first.identityEpoch);
+    await saveNotificationInboxMessage(inboxMessage(), first.identityEpoch);
+    expect(
+      await applyNotificationInboxPage(first.identityEpoch, undefined, {
+        messages: [inboxMessage()],
+        deletions: [],
+        nextSyncCursor: "stale",
+      }),
+    ).toBe(false);
+    expect(await getNotificationInboxMessage("notification-1")).toBeNull();
+    expect((await readNotificationConfig())?.syncCursor).toBeUndefined();
+  });
+  it("commits each page and cursor atomically and keeps revisioned deletions", async () => {
+    const identity = await beginNotificationIdentity("0xaaa");
+    expect(
+      await applyNotificationInboxPage(identity.identityEpoch, undefined, {
+        messages: [inboxMessage({ revision: 4 })],
+        deletions: [],
+        nextSyncCursor: "page-1",
+      }),
+    ).toBe(true);
+    expect(
+      await applyNotificationInboxPage(identity.identityEpoch, undefined, {
+        messages: [inboxMessage({ revision: 5 })],
+        deletions: [],
+        nextSyncCursor: "old-concurrent-page",
+      }),
+    ).toBe(false);
+    expect(
+      await applyNotificationInboxPage(identity.identityEpoch, "page-1", {
+        messages: [],
+        deletions: [{ notificationId: "notification-1", revision: 6 }],
+        nextSyncCursor: "page-2",
+      }),
+    ).toBe(true);
+    await saveNotificationInboxMessage(inboxMessage({ revision: 4 }), identity.identityEpoch);
+    expect(await getNotificationInboxMessage("notification-1")).toBeNull();
+    expect((await readNotificationConfig())?.syncCursor).toBe("page-2");
+  });
+});

@@ -1,13 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
+  session: vi.fn().mockResolvedValue(null),
   isStorageAvailable: vi.fn(() => true),
   readDeviceId: vi.fn(async () => "device-1" as string | null),
   clearStores: vi.fn(async () => {}),
   unlinkWallet: vi.fn(async () => ({ linkedWalletAddresses: [] })),
 }));
 
+vi.mock("#/lib/api/auth", () => ({ authClient: { getSession: mocks.session } }));
+
 vi.mock("../storage/notification-db", () => ({
+  readNotificationConfig: vi.fn().mockResolvedValue({ registrationId: "registration-1" }),
   clearNotificationIdentityStores: mocks.clearStores,
   isNotificationStorageAvailable: mocks.isStorageAvailable,
   readNotificationDeviceId: mocks.readDeviceId,
@@ -27,6 +31,7 @@ const ALICE = "0xa316408425cf17f1827483dee621c6c3a9b5fad4";
 
 beforeEach(() => {
   resetNotificationIdentityBarrierForTests();
+  mocks.session.mockResolvedValue(null);
   mocks.isStorageAvailable.mockReturnValue(true);
   mocks.readDeviceId.mockResolvedValue("device-1");
   mocks.clearStores.mockClear();
@@ -41,7 +46,7 @@ describe("resetNotificationIdentity", () => {
 
     expect(mocks.clearStores).toHaveBeenCalledTimes(1);
     expect(mocks.unlinkWallet).toHaveBeenCalledWith(
-      { deviceId: "device-1", walletAddress: ALICE },
+      { deviceId: "device-1", registrationId: "registration-1", walletAddress: ALICE },
       undefined,
     );
   });
@@ -69,6 +74,18 @@ describe("resetNotificationIdentity", () => {
     await expect(
       resetNotificationIdentity({ previousWalletAddress: ALICE }),
     ).resolves.toBeUndefined();
+  });
+
+  it("preserves another tab's inbox when a guest tab still has a live cookie session", async () => {
+    mocks.session.mockResolvedValue({ address: "0xbbb" });
+    await resetNotificationIdentity({ onlyIfSessionEnded: true });
+    expect(mocks.clearStores).not.toHaveBeenCalled();
+    expect(mocks.unlinkWallet).not.toHaveBeenCalled();
+  });
+
+  it("clears persisted residue on a confirmed signed-out page load", async () => {
+    await resetNotificationIdentity({ onlyIfSessionEnded: true });
+    expect(mocks.clearStores).toHaveBeenCalledOnce();
   });
 
   it("skips everything when the store is unavailable", async () => {
@@ -109,7 +126,7 @@ describe("whenNotificationIdentitySettled", () => {
     });
     // Several turns, so this is not just observing a promise that had no chance
     // to settle: the reset is genuinely parked on the clear.
-    for (let turn = 0; turn < 5; turn += 1) await Promise.resolve();
+    for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();
     expect(settled).toBe(false);
     expect(mocks.clearStores).toHaveBeenCalledTimes(1);
 

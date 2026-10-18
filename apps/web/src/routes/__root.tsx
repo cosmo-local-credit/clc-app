@@ -24,8 +24,7 @@ import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-au
 import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
 import { AppUpdateBanner } from "#/features/app-updates/ui/app-update-banner";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { whenNotificationIdentitySettled } from "#/features/notifications/recovery/identity-reset";
-import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
+import { useNotificationSession } from "#/features/notifications/realtime/use-notification-session";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
 import { initializeServiceWorkerUpdatePolicy } from "#/features/notifications/sw/update-policy";
 import { beginWalletSwitch } from "#/lib/wallet-session";
@@ -141,22 +140,7 @@ function AppInner() {
   // the teardown assigns it synchronously.
   useIdentityTransitionTeardown();
 
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      return;
-    }
-
-    // Awaited, not merely declared second: the teardown empties the notification
-    // stores and clears `syncCursor` asynchronously, and a concurrent recovery
-    // pass would read that cursor before it is cleared, write it back, and
-    // re-sync the outgoing user's messages into the store just emptied.
-    void whenNotificationIdentitySettled().then(() =>
-      runNotificationRecovery({
-        currentWalletAddress: auth.isAuthenticated ? address : undefined,
-        linkedWalletAddresses: auth.isAuthenticated && address ? [address] : undefined,
-      }),
-    );
-  }, [address, auth.isAuthenticated]);
+  useNotificationSession(auth.isAuthenticated ? address : undefined);
 
   async function handleConfirmSwitch() {
     if (!pendingKey) return;
