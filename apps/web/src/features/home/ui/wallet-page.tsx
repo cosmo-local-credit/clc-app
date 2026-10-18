@@ -54,40 +54,6 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
   });
 }
 
-/** Balances whose issuer has not resolved yet, below the rows that have. */
-function UnresolvedVouchersRow({
-  pending,
-  failed,
-  bordered,
-  onRetry,
-}: {
-  pending: boolean;
-  failed: boolean;
-  bordered: boolean;
-  onRetry: () => void;
-}) {
-  if (!pending && !failed) return null;
-  return (
-    <div className={["space-y-2 p-3", bordered ? "border-border border-t" : ""].join(" ")}>
-      {pending ? (
-        <p className="text-muted-foreground text-sm">
-          <Trans>Loading vouchers…</Trans>
-        </p>
-      ) : null}
-      {failed ? (
-        <>
-          <p className="text-muted-foreground text-sm">
-            <Trans>Some vouchers couldn't load.</Trans>
-          </p>
-          <Button variant="outline" size="sm" className="bg-card h-9" onClick={onRetry}>
-            <Trans>Try again</Trans>
-          </Button>
-        </>
-      ) : null}
-    </div>
-  );
-}
-
 export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -111,14 +77,10 @@ export function WalletPage({ address }: { address?: string }) {
   const vouchersQuery = useLatestAccountTokens(address);
   const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
   const voucherGroups = usePartitionedVouchers(vouchers, address);
-  // Rows are grouped as their owners arrive. The list waits, or fails, as a
-  // whole only until the first one lands; after that an unresolved row is a
-  // status line under the groups, so a new balance does not blank the screen.
-  const resolved = voucherGroups.holdings.length + voucherGroups.issued.length > 0;
-  const ownersPending = vouchers.length > 0 && !resolved && voucherGroups.pending;
-  const ownersFailed =
-    vouchers.length > 0 && !resolved && !voucherGroups.pending && voucherGroups.failed;
-  const vouchersReady = vouchersQuery.isSuccess && vouchers.length > 0 && resolved;
+  const vouchersPending = vouchersQuery.isPending || voucherGroups.isPending;
+  const vouchersFailed = vouchersQuery.isError || voucherGroups.isError;
+  const vouchersEmpty = voucherGroups.holdings.length + voucherGroups.issued.length === 0;
+  const vouchersReady = !vouchersPending && !vouchersFailed && !vouchersEmpty;
   // Only the first page: this is a shortcut into pools a steward manages, not a
   // list to page through. "All pools" carries the rest.
   //
@@ -172,12 +134,12 @@ export function WalletPage({ address }: { address?: string }) {
             }}
           />
           <div className="border-border bg-card border">
-            {vouchersQuery.isPending || ownersPending ? (
+            {vouchersPending && !vouchersFailed ? (
               <div className="text-muted-foreground p-3 text-sm">
                 <Trans>Loading vouchers…</Trans>
               </div>
             ) : null}
-            {vouchersQuery.isError || ownersFailed ? (
+            {vouchersFailed ? (
               <div className="space-y-2 p-3">
                 <p className="text-muted-foreground text-sm">
                   <Trans>Couldn't load vouchers.</Trans>
@@ -195,10 +157,7 @@ export function WalletPage({ address }: { address?: string }) {
                 </Button>
               </div>
             ) : null}
-            {vouchersQuery.isSuccess &&
-            !resolved &&
-            !voucherGroups.pending &&
-            !voucherGroups.failed ? (
+            {!vouchersPending && !vouchersFailed ? (
               <div className="space-y-3 p-3">
                 <p className="text-muted-foreground text-sm">
                   <Trans>No vouchers yet.</Trans>
@@ -232,12 +191,10 @@ export function WalletPage({ address }: { address?: string }) {
               }}
             />
             <div className="border-border bg-card border">
-              {voucherGroups.issued.length === 0 &&
-              !voucherGroups.pending &&
-              !voucherGroups.failed ? (
+              {voucherGroups.issued.length === 0 ? (
                 <div className="space-y-3 p-3">
                   <p className="text-muted-foreground text-sm">
-                    <Trans>You didn't issue any of these.</Trans>
+                    <Trans>You haven't issued a voucher yet.</Trans>
                   </p>
                   <Button asChild variant="outline" className="bg-card h-9 w-full">
                     <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
@@ -248,14 +205,6 @@ export function WalletPage({ address }: { address?: string }) {
               ) : (
                 <WalletVoucherRows tokens={voucherGroups.issued} />
               )}
-              <UnresolvedVouchersRow
-                pending={voucherGroups.pending}
-                failed={voucherGroups.failed}
-                bordered={voucherGroups.issued.length > 0}
-                onRetry={() => {
-                  void voucherGroups.refetch();
-                }}
-              />
             </div>
           </section>
         </>

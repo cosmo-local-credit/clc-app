@@ -164,7 +164,7 @@ msgid "{0} updated."
 msgstr "{0} actualizado."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/wallet-page.tsx:321
+#: apps/web/src/features/home/ui/wallet-page.tsx:270
 #: apps/web/src/features/pools/ui/pools-page.tsx:393
 msgid "{0} vouchers"
 msgstr "{0} vales"
@@ -276,7 +276,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 oferta"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:319
+#: apps/web/src/features/home/ui/wallet-page.tsx:268
 #: apps/web/src/features/pools/ui/pools-page.tsx:391
 msgid "1 voucher"
 msgstr "1 vale"
@@ -555,7 +555,7 @@ msgstr "Agricultura"
 msgid "All"
 msgstr "Todo"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:268
+#: apps/web/src/features/home/ui/wallet-page.tsx:217
 msgid "All pools"
 msgstr "Todos los fondos"
 
@@ -568,7 +568,7 @@ msgstr "Todos los fondos"
 msgid "All selected"
 msgstr "Todos los seleccionados"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:133
 msgid "All Vouchers"
 msgstr "Todos los vales"
 
@@ -844,7 +844,7 @@ msgstr "Tarjeta leída — iniciando sesión"
 msgid "Care"
 msgstr "Cuidados"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:105
+#: apps/web/src/features/home/ui/wallet-page.tsx:71
 #: apps/web/src/features/wallet/ui/cash-page.tsx:32
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:109
 msgid "Cash"
@@ -1771,12 +1771,12 @@ msgstr "No se pudieron cargar las etiquetas del vale."
 msgid "Couldn't load vouchers"
 msgstr "No se pudieron cargar los vales"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:183
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:153
+#: apps/web/src/features/home/ui/wallet-page.tsx:145
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:148
 msgid "Couldn't load vouchers."
 msgstr "No se pudieron cargar los vales."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:280
+#: apps/web/src/features/home/ui/wallet-page.tsx:229
 msgid "Couldn't load your pools."
 msgstr "No se pudieron cargar sus fondos."
 
@@ -1964,7 +1964,7 @@ msgstr "Crear catálogo"
 #~ msgid "Create new vouchers in your wallet."
 #~ msgstr "Emita nuevos vales en su billetera."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:299
+#: apps/web/src/features/home/ui/wallet-page.tsx:248
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:335
 msgid "Create pool"
 msgstr "Crear fondo"
@@ -1977,8 +1977,8 @@ msgstr "Emitir vales"
 msgid "Create the first supply to finish publishing this voucher."
 msgstr "Emita la cantidad inicial para terminar de publicar este vale."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:208
-#: apps/web/src/features/home/ui/wallet-page.tsx:244
+#: apps/web/src/features/home/ui/wallet-page.tsx:167
+#: apps/web/src/features/home/ui/wallet-page.tsx:201
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:347
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:377
 msgid "Create voucher"
@@ -2718,8 +2718,8 @@ msgstr "Salud"
 msgid "Hold the card flat against the back of your phone."
 msgstr "Mantenga la tarjeta plana contra la parte trasera de su teléfono."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:219
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:185
+#: apps/web/src/features/home/ui/wallet-page.tsx:178
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:177
 msgid "Holdings"
 msgstr "Activos"
 
@@ -3093,7 +3093,7 @@ msgstr "Litro"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:218
 #: apps/web/src/features/home/ui/marketplace-page.tsx:185
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
 msgid "Load more"
 msgstr "Cargar más"
 
@@ -3155,7 +3155,7 @@ msgstr "Cargando ofertas…"
 msgid "Loading pool…"
 msgstr "Cargando fondo…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:274
+#: apps/web/src/features/home/ui/wallet-page.tsx:223
 #: apps/web/src/features/pools/ui/pools-page.tsx:283
 msgid "Loading pools…"
 msgstr "Cargando fondos…"
@@ -3197,11 +3197,9 @@ msgstr "Cargando tokens…"
 msgid "Loading voucher…"
 msgstr "Cargando vale…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:74
-#: apps/web/src/features/home/ui/wallet-page.tsx:177
+#: apps/web/src/features/home/ui/wallet-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:934
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:147
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:212
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:142
 #: apps/web/src/features/wallet/ui/collect-page.tsx:166
 msgid "Loading vouchers…"
 msgstr "Cargando vales…"
@@ -3233,7 +3231,7 @@ msgstr "Cargando su perfil…"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:188
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1011
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:244
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
 msgstr "Cargando…"
@@ -3480,7 +3478,7 @@ msgstr "Mi catálogo"
 msgid "My catalogs"
 msgstr "Mis catálogos"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:267
+#: apps/web/src/features/home/ui/wallet-page.tsx:216
 msgid "My Pools"
 msgstr "Mis fondos"
 
@@ -3491,9 +3489,9 @@ msgstr "Mis fondos"
 msgid "My posts"
 msgstr "Mis publicaciones"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:168
-#: apps/web/src/features/home/ui/wallet-page.tsx:228
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:195
+#: apps/web/src/features/home/ui/wallet-page.tsx:130
+#: apps/web/src/features/home/ui/wallet-page.tsx:187
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:186
 msgid "My Vouchers"
 msgstr "Mis vales"
 
@@ -3815,8 +3813,8 @@ msgstr "No hay vales para cobrar"
 msgid "No vouchers to show yet."
 msgstr "No hay vales que mostrar."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:204
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:174
+#: apps/web/src/features/home/ui/wallet-page.tsx:163
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:166
 msgid "No vouchers yet."
 msgstr "Todavía no hay vales."
 
@@ -4803,7 +4801,7 @@ msgstr "Motivo del reporte"
 msgid "Receipt copied"
 msgstr "Recibo copiado"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:98
+#: apps/web/src/features/home/ui/wallet-page.tsx:64
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:170
 #: apps/web/src/features/wallet/ui/collect-page.tsx:110
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
@@ -5343,7 +5341,7 @@ msgid "Sell to a bank account"
 msgstr "Vender a una cuenta bancaria"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:374
-#: apps/web/src/features/home/ui/wallet-page.tsx:95
+#: apps/web/src/features/home/ui/wallet-page.tsx:61
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:165
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:335
 msgid "Send"
@@ -5617,8 +5615,8 @@ msgstr "No se pudieron comprobar algunos fondos. Se muestran los resultados "
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:80
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:218
-msgid "Some vouchers couldn't load."
-msgstr "No se pudieron cargar algunos vales."
+#~ msgid "Some vouchers couldn't load."
+#~ msgstr "No se pudieron cargar algunos vales."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:687
 msgid "Stable sent"
@@ -6402,9 +6400,8 @@ msgstr "Viaje"
 #: apps/web/src/features/home/ui/activity-page.tsx:64
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/home/ui/wallet-page.tsx:83
-#: apps/web/src/features/home/ui/wallet-page.tsx:194
-#: apps/web/src/features/home/ui/wallet-page.tsx:288
+#: apps/web/src/features/home/ui/wallet-page.tsx:156
+#: apps/web/src/features/home/ui/wallet-page.tsx:237
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:225
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
@@ -6414,8 +6411,7 @@ msgstr "Viaje"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:443
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:284
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:164
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:228
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:159
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:451
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
@@ -6653,8 +6649,8 @@ msgstr "Valor: {0} {1} en ofertas"
 msgid "View"
 msgstr "Ver"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:169
-#: apps/web/src/features/home/ui/wallet-page.tsx:229
+#: apps/web/src/features/home/ui/wallet-page.tsx:131
+#: apps/web/src/features/home/ui/wallet-page.tsx:188
 msgid "View all"
 msgstr "Ver todo"
 
@@ -6865,8 +6861,8 @@ msgstr "Esperando la cadena…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:187
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
-#: apps/web/src/features/home/ui/wallet-page.tsx:138
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:134
+#: apps/web/src/features/home/ui/wallet-page.tsx:100
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:129
 #: apps/web/src/features/wallet/ui/cash-page.tsx:28
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
@@ -6875,7 +6871,7 @@ msgstr "Esperando la cadena…"
 msgid "Wallet"
 msgstr "Billetera"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:143
+#: apps/web/src/features/home/ui/wallet-page.tsx:105
 msgid "Wallet actions"
 msgstr "Acciones de la billetera"
 
@@ -7055,8 +7051,8 @@ msgid "You can write or edit your review until {0}."
 msgstr "Puedes escribir o editar tu reseña hasta {0}."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:240
-msgid "You didn't issue any of these."
-msgstr "No ha emitido ninguno de estos vales."
+#~ msgid "You didn't issue any of these."
+#~ msgstr "No ha emitido ninguno de estos vales."
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:65
 msgid "You don't have a username yet."
@@ -7070,11 +7066,12 @@ msgstr "No posee ningún vale que acepte este fondo."
 msgid "You have seven days after redemption to write or edit your review."
 msgstr "Tienes siete días después del canje para escribir o editar tu reseña."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:295
+#: apps/web/src/features/home/ui/wallet-page.tsx:244
 msgid "You haven't created a pool yet."
 msgstr "Todavía no ha creado ningún fondo."
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:200
+#: apps/web/src/features/home/ui/wallet-page.tsx:197
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:191
 msgid "You haven't issued a voucher yet."
 msgstr "Todavía no ha emitido ningún vale."
 

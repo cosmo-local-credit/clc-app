@@ -23,6 +23,8 @@ export const accountKeys = {
     ["clc", "accounts", "tokens", address.toLowerCase(), perPage] as const,
   tokensInfinite: (address: string, perPage: number) =>
     ["clc", "accounts", "tokens", "infinite", address.toLowerCase(), perPage] as const,
+  issuedTokensInfinite: (address: string, perPage: number) =>
+    ["clc", "accounts", "tokens", "issued", "infinite", address.toLowerCase(), perPage] as const,
 
   transfers: (address: string, perPage: number) =>
     ["clc", "accounts", "transfers", address.toLowerCase(), perPage] as const,
@@ -72,6 +74,27 @@ export function accountTokensInfiniteQueryOptions(
     queryKey: accountKeys.tokensInfinite(address ?? "none", perPage),
     queryFn: ({ pageParam }) =>
       accounts.getAccountTokens({
+        address: requireAddress(address),
+        perPage,
+        cursor: pageParam,
+        next: pageParam === undefined ? undefined : true,
+      }),
+    enabled: Boolean(address),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.tokens.length < perPage || lastPage.last === undefined ? undefined : lastPage.last,
+  });
+}
+
+export function accountIssuedTokensInfiniteQueryOptions(
+  accounts: AccountsClient,
+  address: string | undefined,
+  perPage: number,
+) {
+  return infiniteQueryOptions({
+    queryKey: accountKeys.issuedTokensInfinite(address ?? "none", perPage),
+    queryFn: ({ pageParam }) =>
+      accounts.getAccountIssuedTokens({
         address: requireAddress(address),
         perPage,
         cursor: pageParam,
