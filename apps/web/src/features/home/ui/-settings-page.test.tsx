@@ -187,6 +187,44 @@ describe("SettingsPage", () => {
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Address copied"));
   });
 
+  it("reports when address copying is unavailable or rejected", async () => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+    const first = render(
+      <SettingsPage
+        address={ADDRESS}
+        delegationStatus="delegated"
+        isSigningOut={false}
+        onSignOut={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /wallet session/i }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog", { name: "Wallet session" })).getByRole("button", {
+        name: "Copy address",
+      }),
+    );
+    expect(toast.error).toHaveBeenCalledWith("Couldn't copy address");
+    first.unmount();
+
+    const writeText = vi.fn().mockRejectedValue(new Error("permission denied"));
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    render(
+      <SettingsPage
+        address={ADDRESS}
+        delegationStatus="delegated"
+        isSigningOut={false}
+        onSignOut={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /wallet session/i }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog", { name: "Wallet session" })).getByRole("button", {
+        name: "Copy address",
+      }),
+    );
+    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(2));
+  });
+
   it("shows an inactive delegation and no copy button without an address", async () => {
     render(
       <SettingsPage delegationStatus="not-delegated" isSigningOut={false} onSignOut={vi.fn()} />,
