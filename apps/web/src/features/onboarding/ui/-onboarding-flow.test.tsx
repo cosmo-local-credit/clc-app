@@ -49,9 +49,20 @@ vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
 }));
 
 vi.mock("./onboarding-profile-form", () => ({
-  OnboardingProfileForm: ({ onNext }: { onNext: (data: ProfileInput, photo: File) => void }) => {
+  OnboardingProfileForm: ({
+    page,
+    onNext,
+    onPage,
+  }: {
+    page: string;
+    onNext: (data: ProfileInput, photo: File) => void;
+    onPage: (page: "contact" | "location") => void;
+  }) => {
     return (
-      <div data-testid="profile-form">
+      <div data-testid="profile-form" data-page={page}>
+        <button type="button" onClick={() => onPage("contact")}>
+          page-next
+        </button>
         <button
           type="button"
           onClick={() => {
@@ -134,6 +145,26 @@ describe("OnboardingFlow step transitions", () => {
     render(<OnboardingFlow step="profile" />);
     expect(screen.getByTestId("profile-form")).toBeTruthy();
     expect(screen.queryByTestId("wallet-step")).toBeNull();
+  });
+
+  it("shows the same profile form on each of its three pages", () => {
+    const { rerender } = render(<OnboardingFlow step="profile" />);
+    const form = screen.getByTestId("profile-form");
+    expect(form.getAttribute("data-page")).toBe("profile");
+    rerender(<OnboardingFlow step="contact" />);
+    expect(screen.getByTestId("profile-form")).toBe(form);
+    expect(form.getAttribute("data-page")).toBe("contact");
+    rerender(<OnboardingFlow step="location" />);
+    expect(form.getAttribute("data-page")).toBe("location");
+  });
+
+  it("pushes the profile's next page so Back returns to the one before", () => {
+    render(<OnboardingFlow step="profile" />);
+    fireEvent.click(screen.getByRole("button", { name: "page-next" }));
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "contact" },
+    });
   });
 
   it("navigates to card after profile when passkeys are unavailable", () => {

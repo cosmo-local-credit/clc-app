@@ -597,7 +597,7 @@ msgstr "Tutti quelli selezionati"
 msgid "All Vouchers"
 msgstr "Tutti i buoni"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:270
 msgid "Already have an account?"
 msgstr "Ha già un account?"
 
@@ -718,7 +718,7 @@ msgstr "In attesa di approvazione"
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:144
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
@@ -757,7 +757,7 @@ msgid "Balance {tokenBalance}"
 msgstr "Saldo {tokenBalance}"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:327
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:444
 msgid "Bio"
 msgstr "Biografia"
 
@@ -1425,6 +1425,10 @@ msgstr "Collegamento non riuscito."
 msgid "Construction"
 msgstr "Edilizia"
 
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:243
+msgid "Contact"
+msgstr "Contatti"
+
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:357
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:747
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:304
@@ -1447,7 +1451,7 @@ msgid "Contact Website"
 msgstr "Sito web di contatto"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1714,7 +1718,7 @@ msgstr "Non è stato possibile creare i buoni."
 msgid "Couldn't estimate this swap."
 msgstr "Non è stato possibile stimare questo scambio."
 
-#: apps/web/src/components/ui/location-picker.tsx:115
+#: apps/web/src/components/ui/location-picker.tsx:123
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Non è stato possibile identificare un Paese in questo punto. Provi in "
 "un luogo vicino."
@@ -2011,7 +2015,7 @@ msgstr "Crei"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:82
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:45
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:290
 msgid "Create account"
 msgstr "Crei un account"
 
@@ -2062,7 +2066,7 @@ msgstr "Crei un buono"
 msgid "Create vouchers"
 msgstr "Crei buoni"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
 msgid "Create your account"
 msgstr "Crei il suo account"
 
@@ -2391,8 +2395,8 @@ msgstr "Anziani"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:267
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:299
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:253
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:366
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:378
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:523
@@ -2754,7 +2758,7 @@ msgstr "Ottenga"
 msgid "Global"
 msgstr "Globale"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:437
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 msgid "Go back to sign in"
 msgstr "Torni all’accesso"
 
@@ -2909,7 +2913,7 @@ msgstr "Ho scambiato {sentLabel} con {amountLabel} in {poolName}."
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "Ho scambiato {sentLabel} con {amountLabel}."
 
-#: apps/web/src/components/ui/location-picker.tsx:294
+#: apps/web/src/components/ui/location-picker.tsx:307
 msgid "Identifying location…"
 msgstr "Identificazione della posizione…"
 
@@ -3224,8 +3228,8 @@ msgstr "Caricamento dei limiti di credito…"
 msgid "Loading holdings…"
 msgstr "Caricamento delle disponibilità…"
 
-#: apps/web/src/components/ui/location-picker.tsx:271
-#: apps/web/src/components/ui/location-picker.tsx:287
+#: apps/web/src/components/ui/location-picker.tsx:283
+#: apps/web/src/components/ui/location-picker.tsx:300
 msgid "Loading location map"
 msgstr "Caricamento della mappa della posizione"
 
@@ -3345,9 +3349,10 @@ msgstr "Caricamento…"
 msgid "Local money and M-Pesa"
 msgstr "Valuta locale e M-Pesa"
 
-#: apps/web/src/components/ui/location-picker.tsx:200
+#: apps/web/src/components/ui/location-picker.tsx:212
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/features/home/ui/report-page.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:547
@@ -3364,7 +3369,7 @@ msgid "Location map"
 msgstr "Mappa della posizione"
 
 #: apps/web/src/components/nearby-catalog.tsx:246
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 #: apps/web/src/features/home/ui/market-page.tsx:169
 msgid "Location unavailable"
 msgstr "Posizione non disponibile"
@@ -3618,8 +3623,8 @@ msgstr "Indirizzo del mio portafoglio"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:191
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:202
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:101
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:192
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:203
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:335
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:251
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:28
 msgid "Name"
@@ -3774,7 +3779,7 @@ msgstr "Nessun fondo che accetta i suoi buoni e ha questo buono disponibile "
 "corrisponde a questi filtri."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:307
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:512
 msgid "No currencies found"
 msgstr "Nessuna valuta trovata"
 
@@ -4160,14 +4165,14 @@ msgstr "Apra la pagina del buono"
 msgid "Opening paper wallet…"
 msgstr "Apertura del portafoglio cartaceo…"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:370
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:269
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:222
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:329
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:360
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:446
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:669
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:233
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:663
@@ -4381,7 +4386,7 @@ msgstr "Permacultura"
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:271
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:392
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:535
@@ -4389,7 +4394,7 @@ msgid "Phone"
 msgstr "Telefono"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:279
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:400
 msgid "Phone number"
 msgstr "Numero di telefono"
 
@@ -4403,7 +4408,7 @@ msgid "Photo {0}"
 msgstr "Foto {0}"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:74
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:182
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:314
 msgid "Photo uploads are unavailable right now."
 msgstr "Al momento il caricamento delle foto non è disponibile."
 
@@ -4675,8 +4680,9 @@ msgstr "Preferenze"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:381
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:389
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:297
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:308
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:492
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:513
 msgid "Preferred currency"
 msgstr "Valuta preferita"
 
@@ -5177,10 +5183,10 @@ msgstr "Provenienza del rapporto"
 msgid "Reported"
 msgstr "Segnalato"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:130
-#: apps/web/src/components/ui/location-picker.tsx:203
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:164
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:208
+#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/location-picker.tsx:215
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:220
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:235
 msgid "Required"
 msgstr "Obbligatorio"
 
@@ -5331,7 +5337,6 @@ msgstr "Salvato. La pubblicazione è nuovamente in attesa di approvazione."
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:196
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:457
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:635
 msgid "Saving…"
@@ -5367,14 +5372,14 @@ msgstr "Cerchi nei cataloghi"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:256
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:387
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:306
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:511
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:417
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:221
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:608
 msgid "Search currencies"
 msgstr "Cerchi valute"
 
-#: apps/web/src/components/ui/location-picker.tsx:213
+#: apps/web/src/components/ui/location-picker.tsx:225
 msgid "Search for a town or place"
 msgstr "Cerchi una città o un luogo"
 
@@ -5443,7 +5448,7 @@ msgstr "Cerchi buoni"
 msgid "Search your vouchers"
 msgstr "Cerchi tra i suoi buoni"
 
-#: apps/web/src/components/ui/location-picker.tsx:262
+#: apps/web/src/components/ui/location-picker.tsx:274
 msgid "Searching places…"
 msgstr "Ricerca di luoghi…"
 
@@ -6064,7 +6069,7 @@ msgid "Tap your NFC card"
 msgstr "Avvicini la sua carta NFC"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:229
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:336
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:453
 msgid "Tell people a little about yourself"
 msgstr "Dica qualcosa di sé"
 
@@ -6806,7 +6811,7 @@ msgid "Use max · {0}"
 msgstr "Usi il massimo · {0}"
 
 #: apps/web/src/components/nearby-catalog.tsx:252
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 msgid "Use my location"
 msgstr "Usi la mia posizione"
 
@@ -7146,8 +7151,8 @@ msgstr "Non è stato possibile verificare se questo buono dispone già di una "
 #: apps/web/src/components/vouchers/voucher-summary.tsx:409
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:358
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:374
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
@@ -7380,7 +7385,7 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "Il pagamento MPESA arriverà a breve."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:197
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:198
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:330
 msgid "Your name"
 msgstr "Il suo nome"
 

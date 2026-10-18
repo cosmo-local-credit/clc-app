@@ -53,11 +53,11 @@ describe("AvatarPicker", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("shows one red required line before and after validation", () => {
+  it("shows one required line, muted until validation turns it red", () => {
     const { rerender } = render(<AvatarPicker value={null} onChange={vi.fn()} required />);
 
     const initialRequired = screen.getByText("Required");
-    expect(initialRequired.className).toContain("text-destructive");
+    expect(initialRequired.className).toContain("text-muted-foreground");
     expect(screen.queryByRole("alert")).toBeNull();
 
     rerender(<AvatarPicker value={null} onChange={vi.fn()} required validationError="Required" />);

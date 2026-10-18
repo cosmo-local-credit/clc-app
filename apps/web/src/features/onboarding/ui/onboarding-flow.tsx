@@ -19,7 +19,7 @@ const OnboardingWalletStep = lazy(() =>
 );
 
 type Props = {
-  step: Extract<OnboardingStep, "profile" | "method" | "card">;
+  step: Extract<OnboardingStep, "profile" | "contact" | "location" | "method" | "card">;
   redirectTo?: string;
 };
 
@@ -37,7 +37,8 @@ function profileFingerprint(profile: ProfileInput): string {
 }
 
 /**
- * Signup half of onboarding (screens C → D → E).
+ * Signup half of onboarding: the profile's three pages, then the method and
+ * card screens.
  *
  * Steps are **pushed** into history so screen Back and native/browser Back
  * both use `history.back()`. Successful exit drains intermediate onboarding
@@ -130,8 +131,8 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
   }
 
   if (step === "card" && profileData && avatarFile) {
-    const totalSteps = passkeyAvailable ? 3 : 2;
-    const progressStep = passkeyAvailable ? 3 : 2;
+    const totalSteps = passkeyAvailable ? 5 : 4;
+    const progressStep = passkeyAvailable ? 5 : 4;
     const linkPasskey = passkeyAvailable && walletMethod !== "paper";
     const privateKey = ensurePrivateKey();
     const currentFp = profileFingerprint(profileData);
@@ -155,13 +156,16 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
     );
   }
 
+  // One element for all three pages, so the form keeps its values as they change.
   return (
     <OnboardingProfileForm
+      page={step === "contact" || step === "location" ? step : "profile"}
       redirectTo={redirectTo}
-      progressStep={1}
-      progressTotal={passkeyAvailable ? 3 : 2}
+      progressTotal={passkeyAvailable ? 5 : 4}
       initialValues={profileData ?? undefined}
       initialAvatarFile={avatarFile}
+      onPage={go}
+      onRestart={() => goReplace("profile")}
       onNext={(data, nextAvatarFile) => {
         // Edited profile after a prior signup must be re-persisted. A newly
         // chosen photo is an edit too: signup is what uploads it.

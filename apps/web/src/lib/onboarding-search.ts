@@ -1,8 +1,19 @@
 import { sanitizeInternalRedirect } from "#/components/auth/redirect";
 
-const ONBOARDING_STEPS = ["welcome", "signin", "profile", "method", "card"] as const;
+const ONBOARDING_STEPS = [
+  "welcome",
+  "signin",
+  "profile",
+  "contact",
+  "location",
+  "method",
+  "card",
+] as const;
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
+
+/** The three pages of Create account, one form across them. */
+export type ProfilePage = Extract<OnboardingStep, "profile" | "contact" | "location">;
 
 export type OnboardingSearch = {
   redirect?: string;

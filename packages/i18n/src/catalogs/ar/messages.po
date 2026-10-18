@@ -596,7 +596,7 @@ msgstr "الكل محدد"
 msgid "All Vouchers"
 msgstr "كل القسائم"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:270
 msgid "Already have an account?"
 msgstr "هل لديك حساب بالفعل؟"
 
@@ -716,7 +716,7 @@ msgstr "بانتظار الموافقة"
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:144
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:252
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:393
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
@@ -755,7 +755,7 @@ msgid "Balance {tokenBalance}"
 msgstr "الرصيد {tokenBalance}"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:327
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:444
 msgid "Bio"
 msgstr "نبذة"
 
@@ -1416,6 +1416,10 @@ msgstr "فشل الاتصال."
 msgid "Construction"
 msgstr "البناء"
 
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:243
+msgid "Contact"
+msgstr "بيانات الاتصال"
+
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:357
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:747
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:304
@@ -1438,7 +1442,7 @@ msgid "Contact Website"
 msgstr "موقع الويب للتواصل"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:266
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1704,7 +1708,7 @@ msgstr "تعذّر إنشاء القسائم."
 msgid "Couldn't estimate this swap."
 msgstr "تعذّر تقدير هذه المبادلة."
 
-#: apps/web/src/components/ui/location-picker.tsx:115
+#: apps/web/src/components/ui/location-picker.tsx:123
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "تعذّر تحديد بلد في هذا الموقع. جرّب نقطة قريبة."
 
@@ -1992,7 +1996,7 @@ msgstr "إنشاء"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:82
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:45
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:290
 msgid "Create account"
 msgstr "إنشاء حساب"
 
@@ -2042,7 +2046,7 @@ msgstr "إنشاء قسيمة"
 msgid "Create vouchers"
 msgstr "إنشاء قسائم"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
 msgid "Create your account"
 msgstr "أنشئ حسابك"
 
@@ -2371,8 +2375,8 @@ msgstr "كبار السن"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:267
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:299
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:241
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:253
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:366
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:378
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:523
@@ -2734,7 +2738,7 @@ msgstr "احصل عليها"
 msgid "Global"
 msgstr "عالمي"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:437
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 msgid "Go back to sign in"
 msgstr "العودة إلى تسجيل الدخول"
 
@@ -2888,7 +2892,7 @@ msgstr "بادلتُ {sentLabel} مقابل {amountLabel} في {poolName}."
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "بادلتُ {sentLabel} مقابل {amountLabel}."
 
-#: apps/web/src/components/ui/location-picker.tsx:294
+#: apps/web/src/components/ui/location-picker.tsx:307
 msgid "Identifying location…"
 msgstr "جارٍ تحديد الموقع…"
 
@@ -3197,8 +3201,8 @@ msgstr "جارٍ تحميل حدود الائتمان…"
 msgid "Loading holdings…"
 msgstr "جارٍ تحميل الأرصدة…"
 
-#: apps/web/src/components/ui/location-picker.tsx:271
-#: apps/web/src/components/ui/location-picker.tsx:287
+#: apps/web/src/components/ui/location-picker.tsx:283
+#: apps/web/src/components/ui/location-picker.tsx:300
 msgid "Loading location map"
 msgstr "جارٍ تحميل خريطة الموقع"
 
@@ -3318,9 +3322,10 @@ msgstr "جارٍ التحميل…"
 msgid "Local money and M-Pesa"
 msgstr "الأموال المحلية وM-Pesa"
 
-#: apps/web/src/components/ui/location-picker.tsx:200
+#: apps/web/src/components/ui/location-picker.tsx:212
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/features/home/ui/report-page.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:547
@@ -3337,7 +3342,7 @@ msgid "Location map"
 msgstr "خريطة الموقع"
 
 #: apps/web/src/components/nearby-catalog.tsx:246
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 #: apps/web/src/features/home/ui/market-page.tsx:169
 msgid "Location unavailable"
 msgstr "الموقع غير متاح"
@@ -3590,8 +3595,8 @@ msgstr "عنوان محفظتي"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:191
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:202
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:101
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:192
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:203
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:335
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:251
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:28
 msgid "Name"
@@ -3745,7 +3750,7 @@ msgstr "لا توجد صناديق تقبل قسائمك وتتوفر فيها �
 "هذه."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:307
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:512
 msgid "No currencies found"
 msgstr "لم يُعثر على عملات"
 
@@ -4124,14 +4129,14 @@ msgstr "فتح صفحة القسيمة"
 msgid "Opening paper wallet…"
 msgstr "جارٍ فتح المحفظة الورقية…"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:370
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:269
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:222
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:329
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:360
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:446
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:669
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:233
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:663
@@ -4342,7 +4347,7 @@ msgstr "الزراعة المستدامة"
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:271
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:392
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:535
@@ -4350,7 +4355,7 @@ msgid "Phone"
 msgstr "الهاتف"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:279
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:400
 msgid "Phone number"
 msgstr "رقم الهاتف"
 
@@ -4364,7 +4369,7 @@ msgid "Photo {0}"
 msgstr "الصورة {0}"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:74
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:182
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:314
 msgid "Photo uploads are unavailable right now."
 msgstr "تحميل الصور غير متاح الآن."
 
@@ -4634,8 +4639,9 @@ msgstr "التفضيلات"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:381
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:389
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:297
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:308
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:492
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:501
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:513
 msgid "Preferred currency"
 msgstr "العملة المفضلة"
 
@@ -5133,10 +5139,10 @@ msgstr "مصدر التقرير"
 msgid "Reported"
 msgstr "تم الإبلاغ"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:130
-#: apps/web/src/components/ui/location-picker.tsx:203
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:164
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:208
+#: apps/web/src/components/ui/avatar-picker.tsx:133
+#: apps/web/src/components/ui/location-picker.tsx:215
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:220
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:235
 msgid "Required"
 msgstr "مطلوب"
 
@@ -5287,7 +5293,6 @@ msgstr "تم الحفظ. منشورك ينتظر الموافقة مرة أخر�
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:196
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:457
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:635
 msgid "Saving…"
@@ -5323,14 +5328,14 @@ msgstr "البحث في الكتالوجات"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:256
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:387
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:306
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:511
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:417
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:221
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:608
 msgid "Search currencies"
 msgstr "البحث عن العملات"
 
-#: apps/web/src/components/ui/location-picker.tsx:213
+#: apps/web/src/components/ui/location-picker.tsx:225
 msgid "Search for a town or place"
 msgstr "البحث عن بلدة أو مكان"
 
@@ -5399,7 +5404,7 @@ msgstr "البحث في القسائم"
 msgid "Search your vouchers"
 msgstr "البحث في قسائمك"
 
-#: apps/web/src/components/ui/location-picker.tsx:262
+#: apps/web/src/components/ui/location-picker.tsx:274
 msgid "Searching places…"
 msgstr "جارٍ البحث عن الأماكن…"
 
@@ -6015,7 +6020,7 @@ msgid "Tap your NFC card"
 msgstr "قرّب بطاقة NFC الخاصة بك"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:229
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:336
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:453
 msgid "Tell people a little about yourself"
 msgstr "أخبر الناس قليلاً عن نفسك"
 
@@ -6739,7 +6744,7 @@ msgid "Use max · {0}"
 msgstr "استخدام الحد الأقصى · {0}"
 
 #: apps/web/src/components/nearby-catalog.tsx:252
-#: apps/web/src/components/ui/location-picker.tsx:228
+#: apps/web/src/components/ui/location-picker.tsx:240
 msgid "Use my location"
 msgstr "استخدام موقعي"
 
@@ -7076,8 +7081,8 @@ msgstr "تعذّر التحقق مما إذا كانت لهذه القسيمة �
 #: apps/web/src/components/vouchers/voucher-summary.tsx:409
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:358
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:374
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:414
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
@@ -7307,7 +7312,7 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "ستصل دفعة MPESA الخاصة بك قريبًا."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:197
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:198
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:330
 msgid "Your name"
 msgstr "اسمك"
 

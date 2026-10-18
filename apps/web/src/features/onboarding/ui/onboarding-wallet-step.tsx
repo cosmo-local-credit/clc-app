@@ -392,7 +392,7 @@ export function OnboardingWalletStep({
         <BackChevron
           label={t`Back`}
           to="/onboarding"
-          search={onboardingSearch(linkPasskey ? "method" : "profile", redirectTo)}
+          search={onboardingSearch(linkPasskey ? "method" : "location", redirectTo)}
           className="mb-4 self-start"
         />
 

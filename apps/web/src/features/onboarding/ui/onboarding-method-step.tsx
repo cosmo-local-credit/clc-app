@@ -45,11 +45,11 @@ export function OnboardingMethodStep({ redirectTo, initialChoice = "link", onCon
         <BackChevron
           label={t`Back`}
           to="/onboarding"
-          search={onboardingSearch("profile", redirectTo)}
+          search={onboardingSearch("location", redirectTo)}
           className="mb-4 self-start"
         />
 
-        <StepProgress step={2} total={3} />
+        <StepProgress step={4} total={5} />
 
         <div className="mb-6 space-y-2">
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
