@@ -1,3 +1,4 @@
+import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import type { PoolDeployPayload } from "@clc/core/features/pools/logic";
 import { createPoolDeployClient } from "@clc/api/features/pools/deploy-client";
 import { nameKeys } from "@clc/api/features/names/queries";
@@ -12,6 +13,7 @@ const poolDeployClient = createPoolDeployClient(clcHttp);
 export function useDeployPool() {
   const queryClient = useQueryClient();
   return useMutation({
+    onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (payload: PoolDeployPayload) => poolDeployClient.deployPool(payload),
     // The symbol and name just claimed are now occupied for the next form.
     onSuccess: () =>

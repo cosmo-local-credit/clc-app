@@ -46,6 +46,19 @@ vi.mock("wagmi", () => ({
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() } }));
 
+const quotaMock = vi.hoisted(() => ({
+  data: {
+    vouchers: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    catalogs: { used: 0, limit: 1, canCreate: true, unlimited: false },
+    offers: { used: 0, limit: 3, canCreate: true, unlimited: false },
+    pools: { used: 2, limit: 10, canCreate: true, unlimited: false },
+  },
+  isPending: false,
+  isError: false,
+  refetch: vi.fn(),
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
+
 vi.mock("#/lib/api/symbols", () => ({ symbolsClient: { getTakenSymbols } }));
 vi.mock("#/lib/api/names", () => ({ namesClient: { getNameAvailability } }));
 
@@ -181,6 +194,8 @@ async function writeTerms(label: string, markdown: string) {
 }
 
 beforeEach(() => {
+  quotaMock.data.pools.canCreate = true;
+  quotaMock.isError = false;
   getTakenSymbols.mockImplementation(async (kind: string, prefix: string) => ({
     kind,
     prefix,
@@ -582,6 +597,64 @@ describe("CreatePoolFlow", () => {
     );
     expect(toast.error).toHaveBeenCalledWith(
       "That pool name was taken while you were filling this in.",
+    );
+    expect(exitPoolCreateHistoryMock).not.toHaveBeenCalled();
+  });
+
+  it("shows the steward's pool allowance from the usage read", () => {
+    renderFlow(<CreatePoolFlow step="pool" />);
+
+    expect(screen.getByText("Pools: 2 of 10 used")).toBeTruthy();
+    expect(screen.queryByText(/Vouchers:/)).toBeNull();
+  });
+
+  it("does not publish once the pool allowance is used up", () => {
+    quotaMock.data.pools.canCreate = false;
+    renderFlow(<CreatePoolFlow step="review" />);
+
+    expect(
+      screen.getByText("Limit reached. Ask an administrator to increase your allowance."),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+    expect(
+      (screen.getByRole("button", { name: "Confirm & Publish" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+  });
+
+  it("says the limit was reached when the backend refuses the pool", async () => {
+    deployMutateAsync.mockRejectedValue(
+      new BackendApiError(429, "pools limit of 10 reached", "E11"),
+    );
+    const view = renderFlow(<CreatePoolFlow step="pool" />);
+
+    fireEvent.change(screen.getByLabelText("Pool Name"), {
+      target: { value: "Kilifi Growers" },
+    });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool Description"), {
+      target: { value: "A pool for Kilifi growers." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "place" } }),
+      ),
+    );
+    view.rerender(<CreatePoolFlow step="place" />);
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "review" } }),
+      ),
+    );
+    view.rerender(<CreatePoolFlow step="review" />);
+    for (const checkbox of screen.getAllByRole("checkbox")) fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "Limit reached. Ask an administrator to increase your allowance.",
+      ),
     );
     expect(exitPoolCreateHistoryMock).not.toHaveBeenCalled();
   });

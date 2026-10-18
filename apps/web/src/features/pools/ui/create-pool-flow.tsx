@@ -55,6 +55,8 @@ import { RecipientAddressInput } from "#/components/wallet/recipient-address-inp
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
+import { ResourceUsage } from "#/components/resource-usage";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
@@ -123,6 +125,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const defaultPricing: PoolPricing = "relative";
   const poolCreateSchema = poolCreateSchemaForChain(activeChainId);
   const deployPool = useDeployPool();
+  const usage = useResourceUsage();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
   const draft = usePoolCreateDraft((state) => state.draft);
@@ -159,6 +162,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
       },
     },
     onSubmit: async ({ value }) => {
+      if (usage.isError || !usage.data?.pools.canCreate) return;
       if (!address || chainId === undefined) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
@@ -183,6 +187,10 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
           destination: `/pools/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}`,
         });
       } catch (error) {
+        if (error instanceof BackendApiError && error.code === "E11") {
+          toast.error(t`Limit reached. Ask an administrator to increase your allowance.`);
+          return;
+        }
         // See create-voucher-flow: the availability check is advisory, so the
         // name can be taken between step 1 and publish.
         if (error instanceof BackendApiError && error.kind === "conflict") {
@@ -327,6 +335,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
       />
 
       <StepProgress step={progressStep} total={3} />
+      <ResourceUsage resource="pools" />
 
       <form
         className="flex flex-1 flex-col"
@@ -964,7 +973,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       type="submit"
                       tap
                       className="w-full"
-                      disabled={!acceptedTerms}
+                      disabled={!acceptedTerms || usage.isError || !usage.data?.pools.canCreate}
                       pending={isSubmitting || deployPool.isPending}
                     >
                       {isSubmitting || deployPool.isPending ? (
