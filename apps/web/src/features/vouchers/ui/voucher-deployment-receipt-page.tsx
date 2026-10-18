@@ -3,7 +3,6 @@ import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
-import { ownedVoucherKeys } from "@clc/api/features/vouchers/owned-queries";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -85,14 +84,12 @@ export function VoucherDeploymentReceiptPage({
   useEffect(() => {
     if (!confirmed) return;
     void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-    void queryClient.invalidateQueries({ queryKey: ownedVoucherKeys.all });
     void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
   }, [confirmed, queryClient]);
 
   useEffect(() => {
     if (!minted) return;
     void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-    void queryClient.invalidateQueries({ queryKey: ownedVoucherKeys.all });
     void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
   }, [minted, queryClient]);
 

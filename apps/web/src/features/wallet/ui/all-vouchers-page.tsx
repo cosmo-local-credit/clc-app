@@ -7,14 +7,11 @@ import { useConnection } from "wagmi";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
-import { TokenLogo } from "#/components/wallet";
+import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { ResourceQuotaTitle } from "#/components/resource-usage";
-import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
-import { useAllOwnedVouchers } from "#/features/wallet/hooks/use-owned-vouchers";
-import {
-  groupWalletVouchers,
-  type WalletVoucherListItem,
-} from "#/features/wallet/logic/owned-voucher-groups";
+import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
+import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { resetVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
@@ -29,7 +26,7 @@ function VoucherRow({
   voucherAddress,
   showBorder,
 }: {
-  voucher: WalletVoucherListItem;
+  voucher: WalletToken;
   open: boolean;
   onToggle: () => void;
   voucherAddress?: `0x${string}`;
@@ -47,11 +44,7 @@ function VoucherRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-semibold">{voucher.symbol}</p>
-            {voucher.catalogActive === false ? (
-              <Badge size="sm" variant="outline">
-                <Trans>Retired</Trans>
-              </Badge>
-            ) : voucher.admin ? (
+            {voucher.admin ? (
               <Badge size="sm" caps>
                 <Trans>Admin</Trans>
               </Badge>
@@ -59,19 +52,9 @@ function VoucherRow({
           </div>
           <p className="text-muted-foreground text-xs">{voucher.name}</p>
         </div>
-        {voucher.balanceState === "ready" ? (
-          <p className="font-heading shrink-0 text-sm font-semibold tracking-tight">
-            {voucher.amount}
-          </p>
-        ) : (
-          <p className="font-heading shrink-0 text-sm font-semibold tracking-tight">
-            {voucher.balanceState === "loading" ? (
-              <Trans>Loading…</Trans>
-            ) : (
-              <Trans>Unavailable</Trans>
-            )}
-          </p>
-        )}
+        <p className="font-heading shrink-0 text-sm font-semibold tracking-tight">
+          {voucher.amount}
+        </p>
         <RiArrowDownSLine
           className={[
             "size-4 shrink-0 text-muted-foreground transition-transform",
@@ -84,7 +67,7 @@ function VoucherRow({
       {open ? (
         <div className="px-3 pt-1 pb-3">
           <VoucherContactDetails voucher={voucher} />
-          {voucherAddress && voucher.catalogActive !== false ? (
+          {voucherAddress ? (
             <Button asChild tap className="mt-3 w-full">
               <Link
                 to="/vouchers/$voucherAddress"
@@ -123,16 +106,15 @@ function CreateVoucherButton({ enabled = true }: { enabled?: boolean }) {
 export function AllVouchersPage() {
   const { t } = useLingui();
   const { address } = useConnection();
-  const balancesQuery = useAllAccountTokens(address, { poll: true });
-  const ownedVouchersQuery = useAllOwnedVouchers(address, { poll: true });
+  // The voucher list is this screen's whole purpose, so it keeps a live poll.
+  const balancesQuery = useAccountTokensInfinite(address, { poll: true });
   const usage = useResourceUsage();
-  const voucherGroups = groupWalletVouchers(
-    ownedVouchersQuery.vouchers,
-    balancesQuery.tokens,
-    balancesQuery.isError ? "unavailable" : balancesQuery.isPending ? "loading" : "complete",
+  const voucherGroups = usePartitionedVouchers(
+    balancesQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [],
+    address,
   );
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const renderGroup = (list: readonly WalletVoucherListItem[]) =>
+  const renderGroup = (list: readonly WalletToken[]) =>
     list.map((voucher, index) => {
       const voucherAddress = parseVoucherAddress(voucher.contractAddress ?? voucher.id);
       return (
@@ -162,11 +144,11 @@ export function AllVouchersPage() {
         <CreateVoucherButton enabled={usage.data?.vouchers.canCreate === true && !usage.isError} />
       </div>
 
-      {ownedVouchersQuery.isPending ? (
+      {voucherGroups.isPending || balancesQuery.isPending ? (
         <div className="border-border bg-card border">
           <ListSkeleton framed={false} count={4} label={<Trans>Loading vouchers…</Trans>} />
         </div>
-      ) : ownedVouchersQuery.isError ? (
+      ) : voucherGroups.isError ? (
         <div className="border-border bg-card border">
           <div className="space-y-2 p-3">
             <p className="text-muted-foreground text-sm">
@@ -175,8 +157,8 @@ export function AllVouchersPage() {
             <Button
               variant="outline"
               tap
-              pending={ownedVouchersQuery.isFetching}
-              onClick={() => void ownedVouchersQuery.refetch()}
+              pending={voucherGroups.isFetching}
+              onClick={() => void voucherGroups.refetch()}
             >
               <Trans>Try again</Trans>
             </Button>
@@ -220,17 +202,29 @@ export function AllVouchersPage() {
               </ResourceQuotaTitle>
             </SectionHeading>
             <div className="border-border bg-card border">
-              {voucherGroups.owned.length === 0 ? (
+              {voucherGroups.issued.length === 0 ? (
                 <p className="text-muted-foreground p-3 text-sm">
                   <Trans>No vouchers yet.</Trans>
                 </p>
               ) : (
-                renderGroup(voucherGroups.owned)
+                renderGroup(voucherGroups.issued)
               )}
             </div>
           </section>
         </div>
       )}
+
+      {balancesQuery.hasNextPage ? (
+        <Button
+          variant="outline"
+          tap
+          className="mt-3 w-full"
+          pending={balancesQuery.isFetchingNextPage}
+          onClick={() => balancesQuery.fetchNextPage()}
+        >
+          {balancesQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}
+        </Button>
+      ) : null}
     </div>
   );
 }
