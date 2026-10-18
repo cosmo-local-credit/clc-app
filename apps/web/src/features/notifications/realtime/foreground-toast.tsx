@@ -1,4 +1,5 @@
 import { type MouseEvent, useEffect, useRef } from "react";
+import { RiArrowRightSLine, RiNotification3Fill } from "react-icons/ri";
 import { toast } from "sonner";
 import {
   type NotificationClientOptions,
@@ -141,6 +142,11 @@ export async function showForegroundNotification(
     />,
     {
       id,
+      // A filled info surface sets an incoming notification apart from feedback the
+      // user triggered. Sonner joins class names unmerged, so the overrides are important.
+      className: "border-info! bg-info! pe-3.5!",
+      // Longer than feedback toasts: the user did not ask for this one and may act on it.
+      duration: 6000,
       onDismiss: () => {
         dismissed = true;
       },
@@ -204,14 +210,25 @@ export function ForegroundNotificationContent({
       ref={ref}
       href={payload.targetUrl}
       onClick={onClick}
-      className="block min-h-11 min-w-0 text-start"
+      className="flex min-h-11 min-w-0 flex-1 items-start gap-3 text-start text-info-foreground outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info-foreground"
     >
-      <span dir="auto" className="block font-heading font-semibold">
-        {payload.title}
+      <RiNotification3Fill className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 flex-1">
+        <span
+          dir="auto"
+          className="block font-heading font-semibold leading-tight tracking-[-0.01em]"
+        >
+          {payload.title}
+        </span>
+        {/* Full opacity: a faded body fails 4.5:1 on the dark-mode info fill. */}
+        <span dir="auto" className="mt-1 block font-body text-xs font-normal leading-snug">
+          {payload.body}
+        </span>
       </span>
-      <span dir="auto" className="mt-1 block text-xs text-muted-foreground">
-        {payload.body}
-      </span>
+      <RiArrowRightSLine
+        className="size-4 shrink-0 self-center rtl:-scale-x-100"
+        aria-hidden="true"
+      />
     </a>
   );
 }
