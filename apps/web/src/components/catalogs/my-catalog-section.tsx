@@ -1,4 +1,4 @@
-import { ResourceUsage } from "#/components/resource-usage";
+import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
@@ -10,9 +10,14 @@ import { cn } from "#/lib/utils";
 import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 
-export function MyCatalogSection() {
+export function MyCatalogSection({
+  usage: providedUsage,
+}: {
+  usage?: ReturnType<typeof useResourceUsage>;
+} = {}) {
   const query = useMyCatalog();
-  const usage = useResourceUsage();
+  const localUsage = useResourceUsage(providedUsage === undefined);
+  const usage = providedUsage ?? localUsage;
   const create = (
     <Button
       asChild={!!usage.data?.catalogs.canCreate && !usage.isError}
@@ -37,7 +42,13 @@ export function MyCatalogSection() {
   return (
     <section aria-labelledby="my-catalog-title" className="space-y-2">
       <SectionHeading id="my-catalog-title">
-        <Trans>My catalogs</Trans>
+        <ResourceQuotaTitle
+          quota={usage.data?.catalogs}
+          pending={usage.isPending}
+          error={usage.isError}
+        >
+          <Trans>My Catalogs</Trans>
+        </ResourceQuotaTitle>
       </SectionHeading>
       {query.isPending ? (
         <ListSkeleton shape="cards" count={1} label={<Trans>Loading…</Trans>} />
@@ -63,7 +74,7 @@ export function MyCatalogSection() {
             <p className="text-muted-foreground text-sm">
               <Trans>You haven't created a catalog yet.</Trans>
             </p>
-            <ResourceUsage resource="catalogs" count={false} />
+            <ResourceLimitMessage quota={usage.data?.catalogs} />
             {create}
           </div>
         </div>
@@ -72,7 +83,7 @@ export function MyCatalogSection() {
           {query.catalogs.map((catalog) => (
             <CatalogRow key={catalog.id} catalog={catalog} />
           ))}
-          <ResourceUsage resource="catalogs" count={false} />
+          <ResourceLimitMessage quota={usage.data?.catalogs} />
           {create}
         </>
       )}

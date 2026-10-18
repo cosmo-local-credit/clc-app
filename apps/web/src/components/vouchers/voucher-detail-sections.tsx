@@ -16,12 +16,14 @@ import { useConnection } from "wagmi";
 import { ReportList } from "#/components/reports/report-list";
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { Button } from "#/components/ui/button";
+import { ResourceQuotaTitle } from "#/components/resource-usage";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 import {
@@ -100,6 +102,7 @@ export function VoucherDetailSections({
   idPrefix?: string;
   className?: string;
 }) {
+  const { t } = useLingui();
   const auth = useAuthStatus();
   const { address: walletAddress } = useConnection();
   const canEditDetails =
@@ -112,12 +115,26 @@ export function VoucherDetailSections({
   const reportVoucher: VoucherRef | undefined =
     chainId && address ? { chainId, address: address as VoucherRef["address"] } : undefined;
   const rate = formatVoucherRate(voucherValue, voucherUoa);
+  const usage = useResourceUsage(canEditDetails);
 
   return (
     <div className={cn("space-y-8 pb-6", className)}>
       <VoucherSection
         id="offerings"
-        title={<Trans>Offerings</Trans>}
+        accessibleTitle={t`Offerings`}
+        title={
+          canEditDetails ? (
+            <ResourceQuotaTitle
+              quota={usage.data?.offers}
+              pending={usage.isPending}
+              error={usage.isError}
+            >
+              <Trans>Offerings</Trans>
+            </ResourceQuotaTitle>
+          ) : (
+            <Trans>Offerings</Trans>
+          )
+        }
         {...{ idPrefix, headingLevel }}
       >
         <VoucherOfferingsPanel
@@ -186,18 +203,20 @@ function VoucherSection({
   idPrefix,
   headingLevel,
   title,
+  accessibleTitle,
   children,
 }: {
   id: VoucherDetailSection;
   idPrefix: string;
   headingLevel: 2 | 3;
   title: ReactNode;
+  accessibleTitle?: string;
   children: ReactNode;
 }) {
   const headingID = `${idPrefix}-${id}`;
 
   return (
-    <section aria-labelledby={headingID}>
+    <section aria-label={accessibleTitle} aria-labelledby={accessibleTitle ? undefined : headingID}>
       <SectionHeading
         as={headingLevel === 2 ? "h2" : "h3"}
         id={headingID}

@@ -11,7 +11,7 @@ export function accountTokenToWalletToken(token: AccountToken): WalletToken {
     name: token.tokenName,
     amount: formatTokenAmount(token.balance, token.tokenDecimals),
     fiat: "",
-    color: colorFromSeed(token.tokenAddress),
+    color: tokenColorFromSeed(token.tokenAddress),
     kind: "voucher",
     contractAddress: token.tokenAddress,
     iconUrl: token.iconUrl,
@@ -21,7 +21,7 @@ export function accountTokenToWalletToken(token: AccountToken): WalletToken {
   };
 }
 
-function colorFromSeed(seed: string): string {
+export function tokenColorFromSeed(seed: string): string {
   let hue = 0;
   for (let i = 0; i < seed.length; i++) {
     hue = (hue * 31 + seed.charCodeAt(i)) % 360;

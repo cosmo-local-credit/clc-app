@@ -34,7 +34,21 @@ vi.mock("@tanstack/react-router", () => ({
 // The profile nudge reads the connected wallet; it has its own test.
 vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
 vi.mock("#/components/catalogs/my-catalog-section", () => ({
-  MyCatalogSection: () => <section aria-label="My catalog">My catalog</section>,
+  MyCatalogSection: () => <section aria-label="My Catalogs">My Catalogs</section>,
+}));
+vi.mock("#/hooks/use-resource-usage", () => ({
+  useResourceUsage: () => ({
+    data: {
+      vouchers: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      pools: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      catalogs: { used: 0, limit: 1, unlimited: false, canCreate: true },
+      offers: { used: 0, limit: 0, unlimited: true, canCreate: true },
+    },
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
 }));
 
 import { WalletPage } from "./wallet-page";
@@ -78,9 +92,7 @@ function jsonResponse(result: unknown, status = 200) {
 }
 
 /**
- * Account balances, plus one catalog detail per token. The detail is what says
- * who issued it; without this branch every voucher read is answered with the
- * balance payload and the list never settles.
+ * Account balances plus the authoritative current-owner endpoint.
  */
 function mockLatestTokens({
   tokens = [USDT],
@@ -95,15 +107,29 @@ function mockLatestTokens({
     "fetch",
     vi.fn().mockImplementation((url: string | URL) => {
       const href = String(url);
-      if (href.includes("/api/v2/vouchers/")) {
+      if (href.includes("/api/v2/users/me/vouchers")) {
         if (detailStatus !== 200) return Promise.resolve(jsonResponse(null, detailStatus));
-        const address = decodeURIComponent(
-          href.split("/api/v2/vouchers/")[1]?.split("?")[0] ?? "",
-        ).toLowerCase();
-        const ownerAddress = address in owners ? owners[address] : OTHER;
+        const owned = tokens.flatMap((value) => {
+          const token = value as typeof USDT & { catalogActive?: boolean };
+          const ownerAddress = owners[token.tokenAddress.toLowerCase()];
+          if (ownerAddress?.toLowerCase() !== ADDRESS.toLowerCase()) return [];
+          return [
+            {
+              id: token.id,
+              chainId: 100,
+              address: token.tokenAddress,
+              name: token.tokenName,
+              symbol: token.tokenSymbol,
+              decimals: token.tokenDecimals,
+              iconUrl: token.iconUrl,
+              ownerAddress,
+              active: token.catalogActive !== false,
+            },
+          ];
+        });
         return Promise.resolve(
           jsonResponse({
-            voucher: { id: address, address, chainId: 100, ownerAddress, kind: "voucher" },
+            vouchers: owned,
           }),
         );
       }
@@ -115,12 +141,15 @@ function mockLatestTokens({
 function mockNoTokens() {
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "",
-      text: () => Promise.resolve(JSON.stringify({ ok: true, result: { tokens: [] } })),
-    }),
+    vi
+      .fn()
+      .mockImplementation((url: string | URL) =>
+        Promise.resolve(
+          jsonResponse(
+            String(url).includes("/api/v2/users/me/vouchers") ? { vouchers: [] } : { tokens: [] },
+          ),
+        ),
+      ),
   );
 }
 
@@ -148,7 +177,9 @@ function mockEndpoints({ pools }: { pools: readonly unknown[] }) {
     const href = String(url);
     const result = href.includes("/api/v2/pools")
       ? { pools, first: 0, last: 0 }
-      : { tokens: [] as unknown[] };
+      : href.includes("/api/v2/users/me/vouchers")
+        ? { vouchers: [] as unknown[] }
+        : { tokens: [] as unknown[] };
     return Promise.resolve({
       ok: true,
       status: 200,
@@ -218,7 +249,7 @@ describe("WalletPage", () => {
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
-    const issued = within(screen.getByRole("region", { name: "My Vouchers" }));
+    const issued = within(screen.getByRole("region", { name: /My Vouchers/ }));
     expect(holdings.getByText("USD₮")).toBeTruthy();
     expect(holdings.queryByText("WLLR")).toBeNull();
     expect(issued.getByText("WLLR")).toBeTruthy();
@@ -228,24 +259,28 @@ describe("WalletPage", () => {
     const text = document.body.textContent ?? "";
     expect(text.indexOf("Holdings")).toBeLessThan(text.indexOf("My Vouchers"));
     expect(text.indexOf("My Vouchers")).toBeLessThan(text.indexOf("My Pools"));
-    expect(text.indexOf("My Pools")).toBeLessThan(text.indexOf("My catalog"));
+    expect(text.indexOf("My Pools")).toBeLessThan(text.indexOf("My Catalogs"));
   });
 
   it("treats a token the catalog does not list as a holding", async () => {
-    mockLatestTokens({ detailStatus: 404 });
+    mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
     expect(holdings.getByText("USD₮")).toBeTruthy();
-    expect(screen.getByText("You didn't issue any of these.")).toBeTruthy();
+    expect(screen.getByText("No vouchers yet.")).toBeTruthy();
   });
 
-  it("hides a retired indexed balance and shows the empty wallet state", async () => {
-    mockLatestTokens({ tokens: [{ ...ISSUED, catalogActive: false }], detailStatus: 404 });
+  it("shows a retired currently owned voucher without a public-detail link", async () => {
+    mockLatestTokens({
+      tokens: [{ ...ISSUED, catalogActive: false }],
+      owners: { [ISSUED.tokenAddress]: ADDRESS },
+    });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    expect(await screen.findByText("No vouchers yet.")).toBeTruthy();
-    expect(screen.queryByText("WLLR")).toBeNull();
+    expect(await screen.findByText("Retired")).toBeTruthy();
+    expect(screen.getByText("WLLR")).toBeTruthy();
+    expect(screen.getByText("WLLR").closest("a")).toBeNull();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });
 

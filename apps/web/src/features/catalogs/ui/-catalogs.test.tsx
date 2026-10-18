@@ -750,7 +750,7 @@ describe("adjustable catalog allowance", () => {
     expect(card).toBeTruthy();
     const create = within(card as HTMLElement).getByRole("link", { name: "Create catalog" });
     expect(create.getAttribute("href")).toBe("/catalogs/create");
-    expect(screen.queryByText(/0 of 2 used/)).toBeNull();
+    expect(screen.getByRole("heading", { name: /My Catalogs.*0 of 2 used/ })).toBeTruthy();
   });
   it("allows a second catalog when an admin raises the allowance", async () => {
     quotaMock.data.catalogs = { used: 1, limit: 2, canCreate: true, unlimited: false };
