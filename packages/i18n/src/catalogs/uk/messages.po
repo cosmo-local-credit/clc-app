@@ -58,6 +58,16 @@ msgstr "{count, plural, one {# допис} few {# дописи} many {# допи
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "Ім’я користувача має містити 3–24 літери, цифри або дефіси"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "Виберіть мову ще раз, щоб продовжити."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "Виберіть мову"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -230,13 +240,13 @@ msgstr "Відгуки: {summaryTotal}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "Використано {used} із {limit}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "Використано {used} · Без обмежень"
 
@@ -311,6 +321,7 @@ msgstr "Відкрито посилання на паперовий гамане
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Відскановано QR-код паперового гаманця. Імпортувати цю адресу?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -328,7 +339,7 @@ msgstr "Ваучер працює як подарункова картка дл�
 "погашає ваш ваучер, ви зобов’язуєтеся надати йому свої пропозиції."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "Ваучер представляє обіцянку його емітента надати товари або послуги. "
 "Перевірте, для чого його можна використати та хто його приймає."
@@ -337,8 +348,8 @@ msgstr "Ваучер представляє обіцянку його еміте
 msgid "About"
 msgstr "Про застосунок"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "Про Cosmo-Local Credit"
 
@@ -457,7 +468,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Додайте CLC на початковий екран iPhone, відкрийте встановлений "
 "застосунок, а потім увімкніть сповіщення."
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "Додати CLC на телефон"
@@ -626,7 +636,7 @@ msgid "Amount to collect"
 msgstr "Сума до отримання"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "Пропозиція описує товари або послуги, які хтось надає. Перевірте "
 "деталі, ціну та який ваучер приймається."
@@ -696,7 +706,7 @@ msgstr "Доступні теги"
 msgid "Awaiting approval"
 msgstr "Очікує схвалення"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -710,7 +720,7 @@ msgstr "Очікує схвалення"
 msgid "Back"
 msgstr "Назад"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "Назад до ринку"
 
@@ -904,7 +914,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Каталог збережено. Не вдалося додати елемент. Спробуйте ще раз."
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1054,11 +1064,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Оберіть зображення у форматі JPEG, PNG або WebP."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "Виберіть мову ще раз, щоб продовжити."
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "Оберіть місце"
@@ -1088,7 +1093,7 @@ msgid "Choose a profile photo"
 msgstr "Оберіть фото профілю"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "Виберіть одержувача, ваучер, який у вас є, та суму. Перевірте дані "
 "перед підтвердженням, а потім дочекайтеся результату переказу."
@@ -1161,11 +1166,6 @@ msgstr "Оберіть установлені вами курси або одн�
 msgid "Choose username"
 msgstr "Вибрати ім’я користувача"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "Виберіть мову"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC установлено. Знайдіть застосунок на початковому екрані."
@@ -1215,6 +1215,7 @@ msgstr "Очистити місце"
 msgid "Clear search"
 msgstr "Очистити пошук"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1436,7 +1437,6 @@ msgstr "Контактний телефон"
 msgid "Contact Website"
 msgstr "Контактний вебсайт"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1550,11 +1550,11 @@ msgstr "Копіювати адресу гаманця"
 msgid "Copy wallet username"
 msgstr "Копіювати ім’я користувача гаманця"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit допомагає людям і організаціям підтримувати, "
@@ -1767,7 +1767,7 @@ msgstr "Не вдалося завантажити дописи."
 msgid "Couldn't load Pretium history."
 msgstr "Не вдалося завантажити історію Pretium."
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "Не вдалося завантажити ліміти ресурсів."
@@ -1842,7 +1842,7 @@ msgstr "Не вдалося завантажити ваші дописи."
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "Не вдалося випустити початкову кількість ваучерів."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "Не вдалося відкрити встановлення. Виконайте наведені нижче дії або "
 "спробуйте пізніше."
@@ -1997,9 +1997,8 @@ msgstr "Фото обкладинки"
 msgid "Create"
 msgstr "Створити"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "Створити обліковий запис"
@@ -2238,7 +2237,7 @@ msgstr "Відображувана назва обов’язкова"
 msgid "Display name must be 120 characters or fewer"
 msgstr "Відображувана назва має містити не більше 120 символів"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2834,7 +2833,10 @@ msgid "How should vouchers match?"
 msgstr "Як мають збігатися ваучери?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "Як користуватися CLC"
 
@@ -2842,10 +2844,8 @@ msgstr "Як користуватися CLC"
 msgid "How was your experience?"
 msgstr "Як вам сподобалося?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "У мене вже є обліковий запис"
 
@@ -2934,9 +2934,9 @@ msgstr "Збільште кількість для {0}"
 msgid "Info"
 msgstr "Інформація"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2961,7 +2961,7 @@ msgstr "Спочатку встановіть застосунок"
 msgid "Installation link"
 msgstr "Посилання для встановлення"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Запит на встановлення надіслано. Щоб завершити, виконайте вказівки "
@@ -3045,8 +3045,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "Досягнуто ліміту в {CATALOG_MAX_VOUCHERS} ваучерів. Видаліть один, щоб "
 "додати інший."
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3295,14 +3295,13 @@ msgstr "Завантаження вашого профілю…"
 #~ msgstr "Завантаження..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3402,7 +3401,7 @@ msgstr "Мітка на мапі"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3653,7 +3652,8 @@ msgstr "Нова кількість"
 msgid "New to CLC?"
 msgstr "Уперше в CLC?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4042,7 +4042,7 @@ msgid "Offerings"
 msgstr "Пропозиції"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "Пропозиції"
@@ -4089,7 +4089,7 @@ msgid "Open menu"
 msgstr "Відкрити меню"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "Відкрийте Отримати та поділіться QR-кодом для отримання або адресою "
 "гаманця з відправником. Нікому не передавайте приватний ключ гаманця."
@@ -4573,7 +4573,7 @@ msgid "Pool tracking details are missing."
 msgstr "Відомості для відстеження пулу відсутні."
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4927,7 +4927,7 @@ msgid "Receive"
 msgstr "Отримати"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "Отримати ваучер"
 
@@ -5187,7 +5187,7 @@ msgstr "Ретрит"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5483,7 +5483,7 @@ msgid "Send {0}"
 msgstr "Надіслати {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "Надіслати ваучер"
 
@@ -5545,7 +5545,7 @@ msgstr "Обслуговує"
 msgid "Session"
 msgstr "Сеанс"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "Не вдалося перевірити сеанс"
 
@@ -5587,7 +5587,7 @@ msgstr "Поділитися"
 msgid "Share card"
 msgstr "Поділитися карткою"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5683,7 +5683,7 @@ msgid "Sign in to browse results available through your Credit pools."
 msgstr "Увійдіть, щоб переглядати результати, доступні через ваші Кредитні "
 "пули."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "Увійдіть, щоб продовжити"
 
@@ -5734,8 +5734,8 @@ msgid "Signing out…"
 msgstr "Вихід…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "Пропустити"
+#~ msgid "Skip"
+#~ msgstr "Пропустити"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6537,7 +6537,7 @@ msgstr "Висаджування дерев"
 msgid "Trip"
 msgstr "Поїздка"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6975,7 +6975,7 @@ msgstr "Відомості для відстеження ваучера відс
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -7014,7 +7014,7 @@ msgstr "Випущені вами ваучери"
 msgid "Waiting for blockchain confirmation…"
 msgstr "Очікування підтвердження в блокчейні…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "Очікування підтвердження…"
@@ -7061,7 +7061,7 @@ msgstr "Сеанс гаманця"
 msgid "Water Catchment"
 msgstr "Збір води"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "Не вдалося перевірити ваш сеанс. Перевірте з’єднання та спробуйте ще "
 "раз."
@@ -7110,12 +7110,12 @@ msgid "What are you offering?"
 msgstr "Що ви пропонуєте?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "Що таке ваучер?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "Що таке пропозиція?"
 
@@ -7123,6 +7123,7 @@ msgstr "Що таке пропозиція?"
 msgid "What they offer"
 msgstr "Що вони пропонують"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "Що таке пул?"
@@ -7405,7 +7406,7 @@ msgid "Your wallet"
 msgstr "Ваш гаманець"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "Ваш гаманець"
 
@@ -7416,7 +7417,7 @@ msgstr "За замовчуванням — ваш гаманець. Введі�
 "туди комісії за обмін."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "Ваш гаманець зберігає ваші ваучери. Створіть обліковий запис і "
 "збережіть дані доступу до гаманця, щоб почати."

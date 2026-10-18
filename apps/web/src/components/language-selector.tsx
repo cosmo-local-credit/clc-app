@@ -210,10 +210,10 @@ function languageNamesIn(locale: SupportedLocale): Map<SupportedLocale, string> 
   );
 }
 
-/** Top-right onboarding menu: change language and theme before signing in. */
+/** The end of the onboarding top bar: change theme and language before signing in. */
 export function OnboardingMenu() {
   return (
-    <div className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] end-4 z-10 flex items-center gap-2">
+    <div className="flex shrink-0 items-center gap-2">
       <ThemeSettingsButton />
       <LanguageSettingsButton />
     </div>

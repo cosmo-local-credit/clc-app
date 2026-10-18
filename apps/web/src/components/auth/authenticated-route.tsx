@@ -1,10 +1,16 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { RiBookOpenLine } from "react-icons/ri";
 
+import {
+  useFirstVisitIntroduction,
+  useIntroductionReplay,
+} from "#/components/introduction/introduction-provider";
+import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
+import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
-import { useFirstVisitIntroduction } from "#/components/introduction/introduction-provider";
-import { Introduction } from "#/components/introduction/introduction";
+import { CLCLogo } from "#/components/ui/clc-logo";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { sanitizeInternalRedirect } from "./redirect";
@@ -44,25 +50,24 @@ function SessionCheckError({ onRetry, retrying }: { onRetry: () => void; retryin
 
 /**
  * Gated deep-link gate. Same two-button fork as the onboarding welcome screen
- * so every entry point uses the same labels and destinations.
+ * so every entry point uses the same labels and destinations. The guide is one
+ * row away rather than in front of the fork: whoever opened a shared link came
+ * for that page.
  */
 function AuthRequiredScreen() {
+  const { t } = useLingui();
   const location = useLocation();
   const introduction = useFirstVisitIntroduction();
+  const replay = useIntroductionReplay();
   const redirectTo = sanitizeInternalRedirect(
     `${location.pathname}${location.searchStr}${location.hash}`,
   );
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-20 pb-12">
-      <div className="space-y-4">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Sign in to continue</Trans>
-        </h1>
-
-        {introduction.show ? <Introduction inline /> : null}
-
-        <div className="space-y-2">
+    <OnboardingScreen
+      start={<CLCLogo className="size-9" sharp />}
+      footer={
+        <>
           {/*
             Replace the protected URL so onboarding does not stack above it.
             Finish then replaces the single onboarding slot with the destination.
@@ -87,19 +92,31 @@ function AuthRequiredScreen() {
               <Trans>I already have an account</Trans>
             </Link>
           </Button>
+          <Button
+            asChild
+            variant="link"
+            tap
+            className="w-full text-muted-foreground hover:text-foreground"
+          >
+            <Link to="/" replace>
+              <Trans>Back to market</Trans>
+            </Link>
+          </Button>
+        </>
+      }
+    >
+      <OnboardingTitle>
+        <Trans>Sign in to continue</Trans>
+      </OnboardingTitle>
+      {replay ? (
+        <div className="border border-border bg-card">
+          <ActionRow
+            icon={<RiBookOpenLine className="size-4" aria-hidden="true" />}
+            label={t({ id: "intro.replay", message: "How to use CLC" })}
+            onClick={replay}
+          />
         </div>
-
-        <Button
-          asChild
-          variant="link"
-          tap
-          className="w-full text-muted-foreground hover:text-foreground"
-        >
-          <Link to="/" replace>
-            <Trans>Back to market</Trans>
-          </Link>
-        </Button>
-      </div>
-    </div>
+      ) : null}
+    </OnboardingScreen>
   );
 }

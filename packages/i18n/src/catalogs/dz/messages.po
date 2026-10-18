@@ -58,6 +58,16 @@ msgstr "{count, plural, other {# གསལ་བསྒྲགས}}"
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "ལག་ལེན་པའི་མིང་ལུ་ཡི་གུ་ ཨང་གྲངས་ ཡང་ན་སྦྲེལ་རྟགས་ 3–24 དགོ"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "འཕྲོ་མཐུད་ནིའི་དོན་ལུ་སྐད་ཡིག་ལོག་གདམ་ཁ་རྐྱབ།"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "ཁྱོད་ཀྱི་སྐད་ཡིག་གདམ་ཁ་རྐྱབ།"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -233,13 +243,13 @@ msgstr "བསྐྱར་ཞིབ་ {summaryTotal}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "{limit} ལས་ {used} ལག་ལེན་འཐབ་ཡོད།"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "{used} ལག་ལེན་འཐབ་ཡོད། · ཚད་མེད།"
 
@@ -316,6 +326,7 @@ msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་འབྲ
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་ QR བཤེར་ཡོད། ཁ་བྱང་འདི་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -334,7 +345,7 @@ msgstr "འཛིན་ཤོག་འདི་ཁྱོད་ཀྱི་གོ
 "ཁྱོད་ཀྱིས་ཁོང་ལུ་ཁྱོད་ཀྱི་གོ་སྐབས་ཚུ་བྱིན་ནིའི་ཁས་ལེན་འབདཝ་ཨིན།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "བའུ་ཆར་གྱིས་ "
 "དེ་སྤྲོད་མི་གིས་ཅ་ཆས་ཡང་ན་ཞབས་ཏོག་སྤྲོད་ནིའི་ཁས་བླངས་མཚོནམ་ཨིན། "
@@ -344,8 +355,8 @@ msgstr "བའུ་ཆར་གྱིས་ "
 msgid "About"
 msgstr "སྐོར་ལས།"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit གི་སྐོར་ལས།"
 
@@ -464,7 +475,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "CLC འདི་ཁྱོད་ཀྱི་ iPhone ཁྱིམ་ཤོག་གུ་ཁ་སྐོང་རྐྱབ། "
 "གཞི་བཙུགས་འབད་ཡོད་པའི་ལས་རིམ་ཁ་ཕྱེ་ དེ་ལས་བརྡ་བསྐུལ་ལྕོགས་ཅན་བཟོ།"
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "CLC ཁྱོད་ཀྱི་ཁ་པར་ནང་ཁ་སྐོང་རྐྱབ།"
@@ -633,7 +643,7 @@ msgid "Amount to collect"
 msgstr "བསྡུ་ལེན་འབད་ནིའི་དངུལ་བསྡོམས།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "མཁོ་སྤྲོད་ཀྱིས་མི་ཅིག་གིས་སྤྲོད་མི་ཅ་ཆས་ཡང་ན་ཞབས་ཏོག་གི་སྐོར་ལས་བཤདཔ་ཨི"
 "ན། ཁ་གསལ་དང་གོང་ཚད་ དང་ལེན་འབད་མི་བའུ་ཆར་ཚུ་ཞིབ་དཔྱད་འབད།"
@@ -703,7 +713,7 @@ msgstr "ཐོབ་ཚུགས་པའི་ངོ་རྟགས་ཚུ།
 msgid "Awaiting approval"
 msgstr "ཆ་འཇོག་བསྒུག་པའི་སྒང་།"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -717,7 +727,7 @@ msgstr "ཆ་འཇོག་བསྒུག་པའི་སྒང་།"
 msgid "Back"
 msgstr "རྒྱབ་ལོག"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "ཚོང་ར་ལུ་ལོག"
 
@@ -910,7 +920,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "ཐོ་གཞུང་བསྲུངས་ཡོད། ཅ་ཆས་ཁ་སྐོང་རྐྱབ་མ་ཚུགས། ལོག་འབད་རྩོལ་བསྐྱེད།"
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1061,11 +1071,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "JPEG, PNG ཡང་ན་ WebP པར་ཅིག་གདམ་ཁ་རྐྱབ།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "འཕྲོ་མཐུད་ནིའི་དོན་ལུ་སྐད་ཡིག་ལོག་གདམ་ཁ་རྐྱབ།"
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "ས་གནས་ཅིག་གདམ་ཁ་རྐྱབ།"
@@ -1095,7 +1100,7 @@ msgid "Choose a profile photo"
 msgstr "གསལ་སྡུད་པར་ཅིག་གདམ་ཁ་རྐྱབ།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "ལེན་མི་དང་ ཁྱོད་ལུ་ཡོད་མི་བའུ་ཆར་ དངུལ་བསྡོམས་གདམ་ཁ་རྐྱབ། "
 "ངེས་གཏན་མ་འབད་བའི་ཧེ་མ་ཁ་གསལ་ཞིབ་དཔྱད་འབད་དེ་ "
@@ -1170,11 +1175,6 @@ msgstr "ཆ་ཕྲན་ལུ་གནས་གོང་གི་གནས་
 msgid "Choose username"
 msgstr "ལག་ལེན་པའི་མིང་གདམ།"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "ཁྱོད་ཀྱི་སྐད་ཡིག་གདམ་ཁ་རྐྱབ།"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC གཞི་བཙུགས་གྲུབ་ཡོད། ཁྱོད་ཀྱི་ཁྱིམ་ཤོག་གུ་འཚོལ།"
@@ -1224,6 +1224,7 @@ msgstr "ས་གནས་བསལ།"
 msgid "Clear search"
 msgstr "འཚོལ་ཞིབ་བསལ།"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1447,7 +1448,6 @@ msgstr "འབྲེལ་བའི་ཁ་པར།"
 msgid "Contact Website"
 msgstr "འབྲེལ་བའི་ཡོངས་འབྲེལ་ས་ཚིགས།"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1561,11 +1561,11 @@ msgstr "དངུལ་ཁུག་ཁ་བྱང་འདྲ་བཤུས།
 msgid "Copy wallet username"
 msgstr "དངུལ་ཁུག་གི་ལག་ལེན་པའི་མིང་འདྲ་བཤུས།"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit གིས་ མི་ངོམ་དང་ལས་སྡེ་ཚུ་ལུ་ "
@@ -1778,7 +1778,7 @@ msgstr "གསལ་བསྒྲགས་ཚུ་མངོན་གསལ་འ
 msgid "Couldn't load Pretium history."
 msgstr "Pretium ལོ་རྒྱུས་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "ཐོན་ཁུངས་ཀྱི་ཚད་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
@@ -1854,7 +1854,7 @@ msgstr "ཁྱོད་ཀྱི་གསལ་བསྒྲགས་ཚུ་མ
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "བཀྲམ་སྤེལ་དང་པ་གསར་བཏོན་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "གཞི་བཙུགས་ཁ་ཕྱེ་མ་ཚུགས། འོག་གི་གོ་རིམ་ཚུ་ལག་ལེན་འཐབ་ "
 "ཡང་ན་ཤུལ་ལས་ལོག་འབད།"
@@ -2007,9 +2007,8 @@ msgstr "ཁ་ཤོག་པར།"
 msgid "Create"
 msgstr "གསར་བཟོ།"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "རྩིས་ཐོ་གསར་བཟོ།"
@@ -2249,7 +2248,7 @@ msgstr "སྟོན་མིང་དགོ"
 msgid "Display name must be 120 characters or fewer"
 msgstr "སྟོན་མིང་ཡིག་འབྲུ་ ༡༢༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2849,7 +2848,10 @@ msgid "How should vouchers match?"
 msgstr "འཛིན་ཤོག་ཚུ་ག་དེ་སྦེ་མཐུན་དགོ་ག?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "CLC་ལག་ལེན་འཐབ་ཐངས།"
 
@@ -2857,10 +2859,8 @@ msgstr "CLC་ལག་ལེན་འཐབ་ཐངས།"
 msgid "How was your experience?"
 msgstr "ཁྱོད་ཀྱི་ཉམས་མྱོང་ག་དེ་སྦེ་སྡོད་ཡི?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "ང་ལུ་ཧེ་མ་ལས་རྩིས་ཐོ་ཡོད།"
 
@@ -2950,9 +2950,9 @@ msgstr "{0} གི་གྲངས་ཚད་ཡར་སེང་འབད།"
 msgid "Info"
 msgstr "བརྡ་དོན།"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2977,7 +2977,7 @@ msgstr "དང་པ་ལས་རིམ་གཞི་བཙུགས།"
 msgid "Installation link"
 msgstr "གཞི་བཙུགས་འབྲེལ་ལམ།"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "གཞི་བཙུགས་ཞུ་བ་འབད་ཡོད། "
@@ -3062,8 +3062,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "འཛིན་ཤོག་ {CATALOG_MAX_VOUCHERS} གི་ཚད་ལུ་ལྷོད་ཡོད། "
 "གཞན་ཅིག་ཁ་སྐོང་རྐྱབ་ནིའི་དོན་ལུ་གཅིག་བཏོན།"
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3314,14 +3314,13 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 #~ msgstr "ཕབ་ལེན་འབད་དོ..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3422,7 +3421,7 @@ msgstr "ས་ཁྲའི་རྟགས།"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3674,7 +3673,8 @@ msgstr "བཀྲམ་སྤེལ་གསརཔ།"
 msgid "New to CLC?"
 msgstr "CLC ལུ་གསརཔ་ཨིན་ན?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4066,7 +4066,7 @@ msgid "Offerings"
 msgstr "གོ་སྐབས་ཚུ།"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "འབུལ་བ་ཚུ།"
@@ -4114,7 +4114,7 @@ msgid "Open menu"
 msgstr "དཀར་ཆག་ཁ་ཕྱེ།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "ལེན་ནི་ཁ་ཕྱེ་སྟེ་ "
 "ཁྱོད་ཀྱི་ལེན་ནིའི་QR་ཨང་རྟགས་ཡང་ན་དངུལ་ཁུག་གི་ཁ་བྱང་གཏང་མི་ལུ་བརྗེ་སོར་"
@@ -4602,7 +4602,7 @@ msgid "Pool tracking details are missing."
 msgstr "དངུལ་ཁུངས་རྗེས་འདེད་ཁ་གསལ་མེད།"
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4955,7 +4955,7 @@ msgid "Receive"
 msgstr "ལེན།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "བའུ་ཆར་ལེན།"
 
@@ -5220,7 +5220,7 @@ msgstr "མཚམས་སྡོད།"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5516,7 +5516,7 @@ msgid "Send {0}"
 msgstr "{0} གཏང་།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "བའུ་ཆར་གཏང་།"
 
@@ -5579,7 +5579,7 @@ msgstr "ཞབས་ཏོག་བྱིན་དོ།"
 msgid "Session"
 msgstr "ལཱ་ཡུན།"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "ལཱ་ཡུན་ཞིབ་དཔྱད་མ་འགྲུབ།"
 
@@ -5621,7 +5621,7 @@ msgstr "རུབ་སྤྱོད།"
 msgid "Share card"
 msgstr "ཤོག་བྱང་རུབ་སྤྱོད།"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5720,7 +5720,7 @@ msgid "Sign in to browse results available through your Credit pools."
 msgstr "ཁྱོད་ཀྱི་ཡིད་རྟོན་མ་དངུལ་ཚུ་བརྒྱུད་དེ་ཐོབ་ཚུགས་པའི་གྲུབ་འབྲས་ཚུ་བལྟ་ནིའ"
 "ི་དོན་ལུ་ནང་འཛུལ།"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "འཕྲོ་མཐུད་ནིའི་དོན་ལུ་ནང་འཛུལ།"
 
@@ -5771,8 +5771,8 @@ msgid "Signing out…"
 msgstr "ཕྱིར་འཐོན་འབད་དོ…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "གོམ་འགྱོ།"
+#~ msgid "Skip"
+#~ msgstr "གོམ་འགྱོ།"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6580,7 +6580,7 @@ msgstr "ཤིང་བཙུགས་ནི།"
 msgid "Trip"
 msgstr "འགྲུལ་བཞུད།"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -7018,7 +7018,7 @@ msgstr "འཛིན་ཤོག་རྗེས་འདེད་ཁ་གསལ
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -7057,7 +7057,7 @@ msgstr "ཁྱོད་ཀྱིས་གསར་བཏོན་འབད་མ
 msgid "Waiting for blockchain confirmation…"
 msgstr "བཀག་ཐག་ངེས་གཏན་བསྒུག་དོ…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "ངེས་གཏན་བསྒུག་དོ…"
@@ -7104,7 +7104,7 @@ msgstr "དངུལ་ཁུག་ལཱ་ཡུན།"
 msgid "Water Catchment"
 msgstr "ཆུ་བསྡུ་ནི།"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "ང་བཅས་ཀྱིས་ཁྱོད་ཀྱི་ལཱ་ཡུན་བདེན་དཔྱད་འབད་མ་ཚུགས། "
 "མཐུད་ལམ་ཞིབ་དཔྱད་འབད་དེ་ལོག་འབད།"
@@ -7154,12 +7154,12 @@ msgid "What are you offering?"
 msgstr "ཁྱོད་ཀྱིས་ག་ཅི་བྱིན་དོ་ག?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "བའུ་ཆར་ཟེར་མི་ག་ཅི་སྨོ?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "མཁོ་སྤྲོད་ཟེར་མི་ག་ཅི་སྨོ?"
 
@@ -7167,6 +7167,7 @@ msgstr "མཁོ་སྤྲོད་ཟེར་མི་ག་ཅི་སྨ
 msgid "What they offer"
 msgstr "ཁོང་གིས་བྱིན་མི།"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "དངུལ་ཁུངས་ཟེར་མི་ག་ཅི་སྨོ?"
@@ -7452,7 +7453,7 @@ msgid "Your wallet"
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག"
 
@@ -7463,7 +7464,7 @@ msgstr "སྔོན་སྒྲིག་སྦེ་ཁྱོད་ཀྱི་
 "བརྗེ་ལེན་གླ་ཡོན་གཞན་སར་གཏང་ནིའི་དོན་ལུ་ཁ་བྱང་གཞན་ཅིག་བཙུགས།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་ནང་བའུ་ཆར་ཚུ་བཞགཔ་ཨིན། འགོ་བཙུགས་ནིའི་དོན་ལུ་ "
 "རྩིས་ཁྲ་བཟོ་སྟེ་དངུལ་ཁུག་ནང་འཛུལ་ནིའི་བརྡ་དོན་ཚུ་ཉེན་སྲུང་འབད་བཞག།"

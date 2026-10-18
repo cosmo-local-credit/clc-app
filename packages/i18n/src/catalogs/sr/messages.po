@@ -58,6 +58,16 @@ msgstr "{count, plural, one {# објава} few {# објаве} other {# об�
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "Корисничко име мора имати 3–24 слова, цифре или цртице"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "Поново изаберите језик да бисте наставили."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "Изаберите језик"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -231,13 +241,13 @@ msgstr "Рецензије: {summaryTotal}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "Iskorišćeno {used} od {limit}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "Iskorišćeno {used} · Neograničeno"
 
@@ -313,6 +323,7 @@ msgstr "Отворена је веза папирног новчаника. Пр
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Скениран је QR код папирног новчаника. Увести ову адресу?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -330,7 +341,7 @@ msgstr "Ваучер служи као поклон-картица за вашу
 "ваучер, обавезујете се да му пружите понуђену робу или услуге."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "Ваучер представља обећање издаваоца да ће обезбедити робу или услуге. "
 "Проверите за шта се може користити и ко га прихвата."
@@ -339,8 +350,8 @@ msgstr "Ваучер представља обећање издаваоца да
 msgid "About"
 msgstr "О апликацији"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "О Cosmo-Local Credit-у"
 
@@ -459,7 +470,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Додајте CLC на почетни екран iPhone уређаја, отворите инсталирану "
 "апликацију, а затим омогућите обавјештења."
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "Додајте CLC на телефон"
@@ -628,7 +638,7 @@ msgid "Amount to collect"
 msgstr "Износ за наплату"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "Понуда описује робу или услуге које неко пружа. Проверите детаље, цену "
 "и који ваучер се прихвата."
@@ -698,7 +708,7 @@ msgstr "Доступне ознаке"
 msgid "Awaiting approval"
 msgstr "Чека одобрење"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -712,7 +722,7 @@ msgstr "Чека одобрење"
 msgid "Back"
 msgstr "Назад"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "Назад на тржиште"
 
@@ -905,7 +915,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Каталог је сачуван. Ставка није могла бити додата. Покушајте поново."
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1054,11 +1064,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Изаберите JPEG, PNG или WebP слику."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "Поново изаберите језик да бисте наставили."
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "Изаберите локацију"
@@ -1088,7 +1093,7 @@ msgid "Choose a profile photo"
 msgstr "Изаберите фотографију профила"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "Изаберите примаоца, ваучер који имате и износ. Проверите податке пре "
 "потврде, а затим сачекајте резултат преноса."
@@ -1161,11 +1166,6 @@ msgstr "Изаберите стопе које сами постављате и�
 msgid "Choose username"
 msgstr "Изабери корисничко име"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "Изаберите језик"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC је инсталиран. Пронађите га на почетном екрану."
@@ -1215,6 +1215,7 @@ msgstr "Обриши локацију"
 msgid "Clear search"
 msgstr "Обриши претрагу"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1436,7 +1437,6 @@ msgstr "Телефон за контакт"
 msgid "Contact Website"
 msgstr "Веб-сајт за контакт"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1550,11 +1550,11 @@ msgstr "Копирај адресу новчаника"
 msgid "Copy wallet username"
 msgstr "Копирај корисничко име новчаника"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit помаже људима и организацијама да подржавају, дијеле "
@@ -1767,7 +1767,7 @@ msgstr "Није могуће учитати објаве."
 msgid "Couldn't load Pretium history."
 msgstr "Pretium историју није могуће учитати."
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "Nije moguće učitati ograničenja resursa."
@@ -1843,7 +1843,7 @@ msgstr "Није могуће учитати ваше објаве."
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "Није било могуће исковати прву количину."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "Није могуће покренути инсталацију. Пратите кораке испод или покушајте "
 "касније."
@@ -1998,9 +1998,8 @@ msgstr "Насловна фотографија"
 msgid "Create"
 msgstr "Направи"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "Направите налог"
@@ -2239,7 +2238,7 @@ msgstr "Име за приказ је обавезно"
 msgid "Display name must be 120 characters or fewer"
 msgstr "Име за приказ мора имати највише 120 знакова"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2840,7 +2839,10 @@ msgid "How should vouchers match?"
 msgstr "Како ваучери треба да се подударају?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "Како се користи CLC"
 
@@ -2848,10 +2850,8 @@ msgstr "Како се користи CLC"
 msgid "How was your experience?"
 msgstr "Какво је било ваше искуство?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "Već imam nalog"
 
@@ -2940,9 +2940,9 @@ msgstr "Повећајте количину за {0}"
 msgid "Info"
 msgstr "Информације"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2967,7 +2967,7 @@ msgstr "Прво инсталирајте апликацију"
 msgid "Installation link"
 msgstr "Линк за инсталацију"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Инсталација је затражена. Пратите упутства прегледача да је завршите."
@@ -3051,8 +3051,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "Достигнут је лимит од {CATALOG_MAX_VOUCHERS} ваучера. Уклоните један да "
 "бисте додали други."
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3303,14 +3303,13 @@ msgstr "Учитавање вашег профила…"
 #~ msgstr "Учитавање..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3410,7 +3409,7 @@ msgstr "Ознака на мапи"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3662,7 +3661,8 @@ msgstr "Нова емисија"
 msgid "New to CLC?"
 msgstr "Нови сте у CLC-у?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4055,7 +4055,7 @@ msgid "Offerings"
 msgstr "Понуде"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "Понуде"
@@ -4102,7 +4102,7 @@ msgid "Open menu"
 msgstr "Отвори мени"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "Отворите Пријем и поделите свој QR код за пријем или адресу новчаника "
 "са пошиљаоцем. Приватни кључ новчаника задржите за себе."
@@ -4589,7 +4589,7 @@ msgid "Pool tracking details are missing."
 msgstr "Недостају подаци за праћење тржнице."
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4942,7 +4942,7 @@ msgid "Receive"
 msgstr "Прими"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "Примите ваучер"
 
@@ -5205,7 +5205,7 @@ msgstr "Повлачење и одмор"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5503,7 +5503,7 @@ msgid "Send {0}"
 msgstr "Пошаљи {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "Пошаљите ваучер"
 
@@ -5565,7 +5565,7 @@ msgstr "Порција"
 msgid "Session"
 msgstr "Сеанса"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "Провјера сесије није успјела"
 
@@ -5608,7 +5608,7 @@ msgstr "Подијели"
 msgid "Share card"
 msgstr "Podeli karticu"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5707,7 +5707,7 @@ msgid "Sign in to browse results available through your Credit pools."
 msgstr "Пријавите се да бисте прегледали резултате доступне преко ваших "
 "Кредитних фондова."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "Пријавите се да бисте наставили"
 
@@ -5759,8 +5759,8 @@ msgid "Signing out…"
 msgstr "Одјављивање…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "Прескочи"
+#~ msgid "Skip"
+#~ msgstr "Прескочи"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6562,7 +6562,7 @@ msgstr "Садња дрвећа"
 msgid "Trip"
 msgstr "Вожња"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6999,7 +6999,7 @@ msgstr "Недостају подаци за праћење ваучера."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -7038,7 +7038,7 @@ msgstr "Ваучери које сте издали"
 msgid "Waiting for blockchain confirmation…"
 msgstr "Чека се потврда на блокчејну…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "Чека се потврда…"
@@ -7085,7 +7085,7 @@ msgstr "Сесија новчаника"
 msgid "Water Catchment"
 msgstr "Прикупљање воде"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "Нисмо могли да потврдимо вашу сесију. Провјерите везу и покушајте "
 "поново."
@@ -7134,12 +7134,12 @@ msgid "What are you offering?"
 msgstr "Шта нудите?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "Шта је ваучер?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "Шта је понуда?"
 
@@ -7147,6 +7147,7 @@ msgstr "Шта је понуда?"
 msgid "What they offer"
 msgstr "Шта нуде"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "Шта је тржница?"
@@ -7429,7 +7430,7 @@ msgid "Your wallet"
 msgstr "Ваш новчаник"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "Ваш новчаник"
 
@@ -7440,7 +7441,7 @@ msgstr "Подразумевано ваш новчаник. Унесите др�
 "замену ишле тамо."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "Ваш новчаник чува ваше ваучере. Направите налог и сачувајте податке за "
 "приступ новчанику да бисте почели."

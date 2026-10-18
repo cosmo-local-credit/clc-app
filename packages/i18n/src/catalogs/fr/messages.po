@@ -61,6 +61,16 @@ msgstr "{count, plural, one {# publication} other {# publications}}"
 #~ msgstr "Le nom d’utilisateur doit contenir de 3 à 24 lettres, chiffres ou "
 #~ "traits d’union"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "Choisissez à nouveau une langue pour continuer."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "Choisissez votre langue"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -235,13 +245,13 @@ msgstr "{summaryTotal} avis"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "{used} sur {limit} utilisés"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "{used} utilisés · Illimité"
 
@@ -319,6 +329,7 @@ msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Le code QR d’un portefeuille papier a été scanné. Voulez-vous importer "
 "cette adresse ?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -337,7 +348,7 @@ msgstr "Un bon d’échange fonctionne comme une carte-cadeau pour vos offres. "
 "offres correspondantes."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "Un bon représente la promesse de son émetteur de fournir des biens ou "
 "des services. Vérifiez à quoi il peut servir et qui l’accepte."
@@ -346,8 +357,8 @@ msgstr "Un bon représente la promesse de son émetteur de fournir des biens ou 
 msgid "About"
 msgstr "À propos"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "À propos de Cosmo-Local Credit"
 
@@ -466,7 +477,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Ajoutez CLC à l’écran d’accueil de votre iPhone, ouvrez l’application "
 "installée, puis activez les notifications."
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "Ajoutez CLC à votre téléphone"
@@ -637,7 +647,7 @@ msgid "Amount to collect"
 msgstr "Montant à encaisser"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "Une offre décrit des biens ou des services proposés par une personne. "
 "Vérifiez les détails, le prix et le bon accepté."
@@ -707,7 +717,7 @@ msgstr "Étiquettes disponibles"
 msgid "Awaiting approval"
 msgstr "En attente d’approbation"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -721,7 +731,7 @@ msgstr "En attente d’approbation"
 msgid "Back"
 msgstr "Précédent"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "Retour au marché"
 
@@ -915,7 +925,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Catalogue enregistré. L’élément n’a pas pu être ajouté. Réessayez."
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1065,11 +1075,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Choisissez une image JPEG, PNG ou WebP."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "Choisissez à nouveau une langue pour continuer."
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "Choisissez un emplacement"
@@ -1099,7 +1104,7 @@ msgid "Choose a profile photo"
 msgstr "Choisissez une photo de profil"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "Choisissez un destinataire, un bon que vous détenez et le montant. "
 "Vérifiez les informations avant de confirmer, puis attendez le résultat "
@@ -1173,11 +1178,6 @@ msgstr "Choisissez les taux que vous définissez ou la valeur égale lorsque "
 msgid "Choose username"
 msgstr "Choisir un nom d’utilisateur"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "Choisissez votre langue"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC est installé. Trouvez-le sur votre écran d’accueil."
@@ -1227,6 +1227,7 @@ msgstr "Effacer l’emplacement"
 msgid "Clear search"
 msgstr "Effacer la recherche"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1451,7 +1452,6 @@ msgstr "Téléphone de contact"
 msgid "Contact Website"
 msgstr "Site web de contact"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1565,11 +1565,11 @@ msgstr "Copier l’adresse du portefeuille"
 msgid "Copy wallet username"
 msgstr "Copier le nom d’utilisateur du portefeuille"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit aide les personnes et les organisations à soutenir, "
@@ -1783,7 +1783,7 @@ msgstr "Impossible de charger les publications."
 msgid "Couldn't load Pretium history."
 msgstr "Impossible de charger l’historique Pretium."
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "Impossible de charger les limites de ressources."
@@ -1859,7 +1859,7 @@ msgstr "Impossible de charger vos publications."
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "Impossible d’émettre la quantité initiale."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "Impossible d’ouvrir l’installation. Suivez les étapes ci-dessous ou "
 "réessayez plus tard."
@@ -2015,9 +2015,8 @@ msgstr "Photo de couverture"
 msgid "Create"
 msgstr "Créer"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "Créer un compte"
@@ -2257,7 +2256,7 @@ msgstr "Le nom affiché est requis"
 msgid "Display name must be 120 characters or fewer"
 msgstr "Le nom affiché doit contenir au maximum 120 caractères"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2861,7 +2860,10 @@ msgid "How should vouchers match?"
 msgstr "Comment les bons d’échange doivent-ils correspondre ?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "Comment utiliser CLC"
 
@@ -2869,10 +2871,8 @@ msgstr "Comment utiliser CLC"
 msgid "How was your experience?"
 msgstr "Comment s’est passée votre expérience ?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "J’ai déjà un compte"
 
@@ -2961,9 +2961,9 @@ msgstr "Augmenter la quantité de {0}"
 msgid "Info"
 msgstr "Informations"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2988,7 +2988,7 @@ msgstr "Installez d’abord l’application"
 msgid "Installation link"
 msgstr "Lien d’installation"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Installation demandée. Suivez les instructions de votre navigateur pour "
@@ -3073,8 +3073,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "La limite de {CATALOG_MAX_VOUCHERS} bons d’échange est atteinte. "
 "Supprimez-en un pour en ajouter un autre."
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3325,14 +3325,13 @@ msgstr "Chargement de votre profil…"
 #~ msgstr "Chargement..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3432,7 +3431,7 @@ msgstr "Repère sur la carte"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3686,7 +3685,8 @@ msgstr "Nouvelle quantité émise"
 msgid "New to CLC?"
 msgstr "Vous découvrez CLC ?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4080,7 +4080,7 @@ msgid "Offerings"
 msgstr "Offres"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "Offres"
@@ -4128,7 +4128,7 @@ msgid "Open menu"
 msgstr "Ouvrir le menu"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "Ouvrez Recevoir et partagez votre code QR de réception ou l’adresse de "
 "votre portefeuille avec l’expéditeur. Gardez votre clé privée pour "
@@ -4620,7 +4620,7 @@ msgid "Pool tracking details are missing."
 msgstr "Les informations de suivi du bassin sont manquantes."
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4974,7 +4974,7 @@ msgid "Receive"
 msgstr "Recevoir"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "Recevoir un bon"
 
@@ -5236,7 +5236,7 @@ msgstr "Retraite"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5536,7 +5536,7 @@ msgid "Send {0}"
 msgstr "Envoyer {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "Envoyer un bon"
 
@@ -5598,7 +5598,7 @@ msgstr "Portion"
 msgid "Session"
 msgstr "Séance"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "La vérification de session a échoué"
 
@@ -5641,7 +5641,7 @@ msgstr "Partager"
 msgid "Share card"
 msgstr "Partager la carte"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5739,7 +5739,7 @@ msgid "Sign in to browse results available through your Credit pools."
 msgstr "Connectez-vous pour parcourir les résultats disponibles via vos fonds "
 "de Crédit."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "Connectez-vous pour continuer"
 
@@ -5792,8 +5792,8 @@ msgid "Signing out…"
 msgstr "Déconnexion…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "Passer"
+#~ msgid "Skip"
+#~ msgstr "Passer"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6608,7 +6608,7 @@ msgstr "Plantation d’arbres"
 msgid "Trip"
 msgstr "Voyage"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -7048,7 +7048,7 @@ msgstr "Les informations de suivi du bon d’échange sont manquantes."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -7087,7 +7087,7 @@ msgstr "Bons d’échange que vous avez émis"
 msgid "Waiting for blockchain confirmation…"
 msgstr "En attente de la confirmation de la blockchain…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "En attente de confirmation…"
@@ -7135,7 +7135,7 @@ msgstr "Session du portefeuille"
 msgid "Water Catchment"
 msgstr "Collecte d’eau"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "Nous n’avons pas pu vérifier votre session. Vérifiez votre connexion, "
 "puis réessayez."
@@ -7184,12 +7184,12 @@ msgid "What are you offering?"
 msgstr "Que proposez-vous ?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "Qu’est-ce qu’un bon ?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "Qu’est-ce qu’une offre ?"
 
@@ -7197,6 +7197,7 @@ msgstr "Qu’est-ce qu’une offre ?"
 msgid "What they offer"
 msgstr "Ce qu’ils offrent"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "Qu’est-ce qu’un bassin ?"
@@ -7483,7 +7484,7 @@ msgid "Your wallet"
 msgstr "Votre portefeuille"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "Votre portefeuille"
 
@@ -7494,7 +7495,7 @@ msgstr "Votre portefeuille est utilisé par défaut. Saisissez une autre adresse
 "pour y envoyer les frais d’échange."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "Votre portefeuille contient vos bons. Créez un compte et conservez vos "
 "informations d’accès au portefeuille pour commencer."

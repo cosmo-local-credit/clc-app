@@ -58,6 +58,16 @@ msgstr "{count, plural, one {# पोस्ट} other {# पोस्ट}}"
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "उपयोगकर्ता नाम में 3-24 अक्षर, अंक या हाइफ़न होना चाहिए"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "जारी रखने के लिए फिर से भाषा चुनें।"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "अपनी भाषा चुनें"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -231,13 +241,13 @@ msgstr "{summaryTotal} समीक्षाएँ"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "{limit} में से {used} उपयोग किए गए"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "{used} उपयोग किए गए · असीमित"
 
@@ -313,6 +323,7 @@ msgstr "एक पेपर वॉलेट लिंक खोला गया.
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "एक पेपर वॉलेट QR स्कैन किया गया था। यह पता आयात करें?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -331,7 +342,7 @@ msgstr "वाउचर आपके ऑफ़र के लिए उपहा�
 "होते हैं।"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "वाउचर जारीकर्ता के सामान या सेवाएँ देने के वादे को दर्शाता है। जाँचें "
 "कि इसका उपयोग किस लिए किया जा सकता है और इसे कौन स्वीकार करता है।"
@@ -340,8 +351,8 @@ msgstr "वाउचर जारीकर्ता के सामान य�
 msgid "About"
 msgstr "के बारे में"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit के बारे में"
 
@@ -460,7 +471,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "अपने iPhone होम स्क्रीन पर CLC जोड़ें, इंस्टॉल किया गया ऐप खोलें, फिर "
 "नोटिफिकेशन सक्षम करें।"
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "अपने फ़ोन में CLC जोड़ें"
@@ -630,7 +640,7 @@ msgid "Amount to collect"
 msgstr "एकत्रित करने हेतु राशि"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "ऑफ़र किसी व्यक्ति के दिए जाने वाले सामान या सेवाओं का विवरण है। विवरण, "
 "कीमत और स्वीकार किए जाने वाले वाउचर की जाँच करें।"
@@ -700,7 +710,7 @@ msgstr "उपलब्ध टैग"
 msgid "Awaiting approval"
 msgstr "अनुमोदन की प्रतीक्षा है"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -714,7 +724,7 @@ msgstr "अनुमोदन की प्रतीक्षा है"
 msgid "Back"
 msgstr "वापस"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "बाजार में वापस"
 
@@ -907,7 +917,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "कैटलॉग सहेजा गया। आइटम जोड़ा नहीं जा सका। फिर से प्रयास करें।"
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1056,11 +1066,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "एक JPEG, PNG या WebP छवि चुनें।"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "जारी रखने के लिए फिर से भाषा चुनें।"
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "एक स्थान चुनें"
@@ -1090,7 +1095,7 @@ msgid "Choose a profile photo"
 msgstr "एक प्रोफ़ाइल फ़ोटो चुनें"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "प्राप्तकर्ता, अपने पास मौजूद वाउचर और राशि चुनें। पुष्टि करने से पहले "
 "विवरण जाँचें, फिर हस्तांतरण के परिणाम की प्रतीक्षा करें।"
@@ -1163,11 +1168,6 @@ msgstr "जब इकाई में कोई मूल्य फ़ीड न
 msgid "Choose username"
 msgstr "उपयोक्तानाम चुनें"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "अपनी भाषा चुनें"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC स्थापित है. इसे अपनी होम स्क्रीन पर ढूंढें."
@@ -1217,6 +1217,7 @@ msgstr "स्थान साफ़ करें"
 msgid "Clear search"
 msgstr "स्पष्ट खोज"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1439,7 +1440,6 @@ msgstr "फ़ोन से संपर्क करें"
 msgid "Contact Website"
 msgstr "वेबसाइट से संपर्क करें"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1553,11 +1553,11 @@ msgstr "वॉलेट पता कॉपी करें"
 msgid "Copy wallet username"
 msgstr "वॉलेट उपयोगकर्ता नाम कॉपी करें"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit लोगों और संगठनों को वस्तुओं और सेवाओं का समर्थन, "
@@ -1770,7 +1770,7 @@ msgstr "पोस्ट लोड नहीं हो सकीं."
 msgid "Couldn't load Pretium history."
 msgstr "Pretium इतिहास लोड नहीं किया जा सका।"
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "संसाधनों की सीमाएँ लोड नहीं हो सकीं।"
@@ -1846,7 +1846,7 @@ msgstr "आपकी पोस्ट लोड नहीं हो सकीं.
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "पहली आपूर्ति नहीं हो सकी."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "इंस्टालेशन नहीं खुल सका. नीचे दिए गए चरणों का पालन करें या बाद में पुनः "
 "प्रयास करें।"
@@ -2000,9 +2000,8 @@ msgstr "कवर फ़ोटो"
 msgid "Create"
 msgstr "बनाएँ"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "खाता बनाएँ"
@@ -2241,7 +2240,7 @@ msgstr "प्रदर्शन नाम आवश्यक है"
 msgid "Display name must be 120 characters or fewer"
 msgstr "प्रदर्शन नाम 120 अक्षर या उससे कम होना चाहिए"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2844,7 +2843,10 @@ msgid "How should vouchers match?"
 msgstr "वाउचर का मिलान कैसे होना चाहिए?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "CLC का उपयोग कैसे करें"
 
@@ -2852,10 +2854,8 @@ msgstr "CLC का उपयोग कैसे करें"
 msgid "How was your experience?"
 msgstr "आपका अनुभव कैसा था?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "मेरे पास पहले से ही एक खाता है"
 
@@ -2944,9 +2944,9 @@ msgstr "{0} मात्रा बढ़ाएँ"
 msgid "Info"
 msgstr "जानकारी"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2971,7 +2971,7 @@ msgstr "सबसे पहले ऐप इंस्टॉल करें"
 msgid "Installation link"
 msgstr "इंस्टालेशन लिंक"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "स्थापना का अनुरोध किया गया. समाप्त करने के लिए अपने ब्राउज़र के "
@@ -3056,8 +3056,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "{CATALOG_MAX_VOUCHERS} वाउचर की सीमा पूरी हो गई। एक को हटाकर दूसरा "
 "जोड़ें."
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3306,14 +3306,13 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 #~ msgstr "लोड हो रहा है..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3413,7 +3412,7 @@ msgstr "मानचित्र पिन"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3665,7 +3664,8 @@ msgstr "नई आपूर्ति"
 msgid "New to CLC?"
 msgstr "CLC में नये हैं?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4053,7 +4053,7 @@ msgid "Offerings"
 msgstr "ऑफ़र"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "ऑफ़र"
@@ -4100,7 +4100,7 @@ msgid "Open menu"
 msgstr "मेनू खोलें"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "प्राप्त करें खोलें और अपना प्राप्ति QR कोड या वॉलेट पता भेजने वाले के "
 "साथ साझा करें। अपने वॉलेट की निजी कुंजी किसी को न दें।"
@@ -4585,7 +4585,7 @@ msgid "Pool tracking details are missing."
 msgstr "पूल ट्रैकिंग विवरण गायब हैं।"
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4938,7 +4938,7 @@ msgid "Receive"
 msgstr "प्राप्त करें"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "वाउचर प्राप्त करें"
 
@@ -5198,7 +5198,7 @@ msgstr "एकांत विश्राम"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5497,7 +5497,7 @@ msgid "Send {0}"
 msgstr "{0} भेजें"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "वाउचर भेजें"
 
@@ -5559,7 +5559,7 @@ msgstr "सेवा करना"
 msgid "Session"
 msgstr "सत्र"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "सत्र जांच विफल रही"
 
@@ -5602,7 +5602,7 @@ msgstr "साझा करें"
 msgid "Share card"
 msgstr "कार्ड साझा करें"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5699,7 +5699,7 @@ msgstr "समीक्षा छोड़ने के लिए इस वा�
 msgid "Sign in to browse results available through your Credit pools."
 msgstr "अपने क्रेडिट पूल के माध्यम से उपलब्ध परिणाम देखने के लिए साइन इन करें।"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "जारी रखने के लिए साइन इन करें"
 
@@ -5751,8 +5751,8 @@ msgid "Signing out…"
 msgstr "साइन आउट हो रहा है…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "छोड़ें"
+#~ msgid "Skip"
+#~ msgstr "छोड़ें"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6554,7 +6554,7 @@ msgstr "वृक्षारोपण"
 msgid "Trip"
 msgstr "यात्रा"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6991,7 +6991,7 @@ msgstr "वाउचर ट्रैकिंग विवरण गायब �
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -7030,7 +7030,7 @@ msgstr "आपके द्वारा जारी किए गए वाउ�
 msgid "Waiting for blockchain confirmation…"
 msgstr "ब्लॉकचेन पुष्टिकरण की प्रतीक्षा में…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "पुष्टि की प्रतीक्षा में..."
@@ -7077,7 +7077,7 @@ msgstr "वॉलेट सत्र"
 msgid "Water Catchment"
 msgstr "जल संग्रहण"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "हम आपके सत्र को सत्यापित नहीं कर सके. अपना कनेक्शन जांचें और पुनः "
 "प्रयास करें।"
@@ -7126,12 +7126,12 @@ msgid "What are you offering?"
 msgstr "आप क्या ऑफ़र कर रहे हैं?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "वाउचर क्या है?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "ऑफ़र क्या है?"
 
@@ -7139,6 +7139,7 @@ msgstr "ऑफ़र क्या है?"
 msgid "What they offer"
 msgstr "वे क्या पेशकश करते हैं"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "पूल क्या है?"
@@ -7422,7 +7423,7 @@ msgid "Your wallet"
 msgstr "आपका वॉलेट"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "आपका वॉलेट"
 
@@ -7433,7 +7434,7 @@ msgstr "डिफ़ॉल्ट रूप से आपका वॉलेट. 
 "दर्ज करें।"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "आपके वाउचर आपके वॉलेट में रहते हैं। शुरू करने के लिए खाता बनाएँ और अपने "
 "वॉलेट की पहुँच संबंधी जानकारी सुरक्षित रखें।"

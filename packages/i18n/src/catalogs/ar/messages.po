@@ -64,6 +64,16 @@ msgstr "{count, plural, zero {لا منشورات} one {منشور واحد} two
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "يجب أن يتكون اسم المستخدم من 3 إلى 24 حرفًا أو رقمًا أو شرطة"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "اختر لغة مرة أخرى للمتابعة."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "اختر لغتك"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -237,13 +247,13 @@ msgstr "المراجعات: {summaryTotal}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "تم استخدام {used} من {limit}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "تم استخدام {used} · غير محدود"
 
@@ -318,6 +328,7 @@ msgstr "تم فتح رابط محفظة ورقية. هل تريد تسجيل ا�
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "تم مسح رمز QR لمحفظة ورقية. هل تريد استيراد هذا العنوان؟"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -334,7 +345,7 @@ msgstr "تعمل القسيمة مثل بطاقة هدية لعروضك. عند�
 "بتقديم عروضك له."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "تمثل القسيمة وعدًا من مُصدرها بتقديم سلع أو خدمات. تحقق مما يمكن "
 "استخدامها له ومن يقبلها."
@@ -343,8 +354,8 @@ msgstr "تمثل القسيمة وعدًا من مُصدرها بتقديم سل
 msgid "About"
 msgstr "حول"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "حول Cosmo-Local Credit"
 
@@ -463,7 +474,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "أضف CLC إلى الشاشة الرئيسية في iPhone، وافتح التطبيق المثبّت، ثم فعّل "
 "الإشعارات."
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "إضافة CLC إلى هاتفك"
@@ -630,7 +640,7 @@ msgid "Amount to collect"
 msgstr "المبلغ المطلوب تحصيله"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "يصف العرض سلعًا أو خدمات يقدمها شخص ما. تحقق من التفاصيل والسعر "
 "والقسيمة المقبولة."
@@ -700,7 +710,7 @@ msgstr "الوسوم المتاحة"
 msgid "Awaiting approval"
 msgstr "بانتظار الموافقة"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -714,7 +724,7 @@ msgstr "بانتظار الموافقة"
 msgid "Back"
 msgstr "رجوع"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "العودة إلى السوق"
 
@@ -906,7 +916,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "تم حفظ الكتالوج. تعذرت إضافة العنصر. حاول مجددًا."
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1055,11 +1065,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "اختر صورة بصيغة JPEG أو PNG أو WebP."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "اختر لغة مرة أخرى للمتابعة."
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "اختر موقعًا"
@@ -1089,7 +1094,7 @@ msgid "Choose a profile photo"
 msgstr "اختر صورة للملف الشخصي"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "اختر المستلم وقسيمة تملكها والمبلغ. راجع التفاصيل قبل التأكيد، ثم انتظر "
 "نتيجة التحويل."
@@ -1161,11 +1166,6 @@ msgstr "اختر الأسعار التي تحددها أو القيمة المت
 msgid "Choose username"
 msgstr "اختيار اسم مستخدم"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "اختر لغتك"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "تم تثبيت CLC. ستجده على شاشتك الرئيسية."
@@ -1215,6 +1215,7 @@ msgstr "مسح الموقع"
 msgid "Clear search"
 msgstr "مسح البحث"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1436,7 +1437,6 @@ msgstr "هاتف التواصل"
 msgid "Contact Website"
 msgstr "موقع الويب للتواصل"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1550,11 +1550,11 @@ msgstr "نسخ عنوان المحفظة"
 msgid "Copy wallet username"
 msgstr "نسخ اسم مستخدم المحفظة"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "تساعد Cosmo-Local Credit الأشخاص والمؤسسات على دعم السلع والخدمات "
@@ -1766,7 +1766,7 @@ msgstr "تعذّر تحميل المنشورات."
 msgid "Couldn't load Pretium history."
 msgstr "تعذّر تحميل سجل Pretium."
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "تعذر تحميل حدود الموارد."
@@ -1841,7 +1841,7 @@ msgstr "تعذّر تحميل منشوراتك."
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "تعذّر إصدار الكمية الأولية."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "تعذّر فتح التثبيت. اتبع الخطوات أدناه أو حاول مرة أخرى لاحقًا."
 
@@ -1990,9 +1990,8 @@ msgstr "صورة الغلاف"
 msgid "Create"
 msgstr "إنشاء"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "إنشاء حساب"
@@ -2231,7 +2230,7 @@ msgstr "اسم العرض مطلوب"
 msgid "Display name must be 120 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم العرض 120 حرفًا"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2832,7 +2831,10 @@ msgid "How should vouchers match?"
 msgstr "كيف يجب أن تتطابق القسائم؟"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "كيفية استخدام CLC"
 
@@ -2840,10 +2842,8 @@ msgstr "كيفية استخدام CLC"
 msgid "How was your experience?"
 msgstr "كيف كانت تجربتك؟"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "لديّ حساب بالفعل"
 
@@ -2930,9 +2930,9 @@ msgstr "زيادة كمية {0}"
 msgid "Info"
 msgstr "معلومات"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2956,7 +2956,7 @@ msgstr "ثبّت التطبيق أولاً"
 msgid "Installation link"
 msgstr "رابط التثبيت"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "طُلب التثبيت. اتبع تعليمات متصفحك لإكماله."
@@ -3040,8 +3040,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "تم بلوغ الحد الأقصى البالغ {CATALOG_MAX_VOUCHERS} قسيمة. أزل واحدة "
 "لإضافة أخرى."
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3290,14 +3290,13 @@ msgstr "جارٍ تحميل ملفك الشخصي…"
 #~ msgstr "جارٍ التحميل..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3397,7 +3396,7 @@ msgstr "دبوس الخريطة"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3649,7 +3648,8 @@ msgstr "إصدار جديد"
 msgid "New to CLC?"
 msgstr "هل أنت جديد في CLC؟"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4035,7 +4035,7 @@ msgid "Offerings"
 msgstr "العروض"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "العروض"
@@ -4082,7 +4082,7 @@ msgid "Open menu"
 msgstr "فتح القائمة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "افتح الاستلام وشارك رمز QR الخاص بالاستلام أو عنوان محفظتك مع المُرسل. "
 "احتفظ بالمفتاح الخاص لمحفظتك لنفسك."
@@ -4566,7 +4566,7 @@ msgid "Pool tracking details are missing."
 msgstr "تفاصيل تتبّع الصندوق مفقودة."
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4919,7 +4919,7 @@ msgid "Receive"
 msgstr "استلام"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "استلام قسيمة"
 
@@ -5178,7 +5178,7 @@ msgstr "الخلوة"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5476,7 +5476,7 @@ msgid "Send {0}"
 msgstr "إرسال {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "إرسال قسيمة"
 
@@ -5538,7 +5538,7 @@ msgstr "حصة"
 msgid "Session"
 msgstr "الجلسة"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "فشل التحقق من الجلسة"
 
@@ -5580,7 +5580,7 @@ msgstr "مشاركة"
 msgid "Share card"
 msgstr "مشاركة البطاقة"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5676,7 +5676,7 @@ msgstr "سجّل الدخول بعد استرداد هذه القسيمة لكت
 msgid "Sign in to browse results available through your Credit pools."
 msgstr "سجّل الدخول لتصفح النتائج المتاحة عبر مجمعات الائتمان الخاصة بك."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "سجّل الدخول للمتابعة"
 
@@ -5728,8 +5728,8 @@ msgid "Signing out…"
 msgstr "جارٍ تسجيل الخروج…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "تخطي"
+#~ msgid "Skip"
+#~ msgstr "تخطي"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6526,7 +6526,7 @@ msgstr "زراعة الأشجار"
 msgid "Trip"
 msgstr "رحلة"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6963,7 +6963,7 @@ msgstr "تفاصيل تتبّع القسيمة مفقودة."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -7002,7 +7002,7 @@ msgstr "القسائم التي أصدرتها"
 msgid "Waiting for blockchain confirmation…"
 msgstr "في انتظار تأكيد سلسلة الكتل…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "في انتظار التأكيد…"
@@ -7049,7 +7049,7 @@ msgstr "جلسة المحفظة"
 msgid "Water Catchment"
 msgstr "تجميع المياه"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "تعذّر التحقق من جلستك. تحقق من اتصالك وحاول مرة أخرى."
 
@@ -7097,12 +7097,12 @@ msgid "What are you offering?"
 msgstr "ماذا تعرض؟"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "ما هي القسيمة؟"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "ما هو العرض؟"
 
@@ -7110,6 +7110,7 @@ msgstr "ما هو العرض؟"
 msgid "What they offer"
 msgstr "ما يعرضونه"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "ما هو الصندوق؟"
@@ -7389,7 +7390,7 @@ msgid "Your wallet"
 msgstr "محفظتك"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "محفظتك"
 
@@ -7399,7 +7400,7 @@ msgid "Your wallet by default. Enter another address to send the swap fees "
 msgstr "تُستخدم محفظتك افتراضيًا. أدخل عنوانًا آخر لإرسال رسوم المبادلة إليه."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "تحتفظ محفظتك بقسائمك. أنشئ حسابًا واحفظ بيانات الوصول إلى محفظتك للبدء."
 

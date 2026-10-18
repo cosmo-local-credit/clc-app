@@ -56,6 +56,16 @@ msgstr "{count, plural, one {# post} other {# post}}"
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "Ang username ay dapat may 3–24 titik, numero, o gitling"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "Pumili muli ng wika upang magpatuloy."
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "Piliin ang iyong wika"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -225,13 +235,13 @@ msgstr "{summaryTotal} review"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "{used} sa {limit} ang nagamit"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "{used} ang nagamit · Walang limitasyon"
 
@@ -303,6 +313,7 @@ msgstr "May binuksang link ng papel na wallet. Mag-sign in gamit ang address na 
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "May na-scan na QR ng papel na wallet. I-import ang address na ito?"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -320,7 +331,7 @@ msgstr "Ang voucher ay parang gift card para sa inyong mga alok. Kapag may "
 "tumubos nito, nangangako kayong ibigay ang inyong mga alok."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "Ang voucher ay kumakatawan sa pangako ng nag-isyu nito na magbigay ng "
 "mga produkto o serbisyo. Tingnan kung saan ito magagamit at kung sino "
@@ -330,8 +341,8 @@ msgstr "Ang voucher ay kumakatawan sa pangako ng nag-isyu nito na magbigay ng "
 msgid "About"
 msgstr "Tungkol dito"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "Tungkol sa Cosmo-Local Credit"
 
@@ -451,7 +462,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Magdagdag ng CLC sa inyong iPhone Home Screen, buksan ang naka-install "
 "na app, pagkatapos ay i-enable ang mga notification."
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "Magdagdag ng CLC sa inyong telepono"
@@ -619,7 +629,7 @@ msgid "Amount to collect"
 msgstr "Halagang kokolektahin"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "Inilalarawan ng alok ang mga produkto o serbisyong ibinibigay ng isang "
 "tao. Tingnan ang mga detalye, presyo, at kung aling voucher ang "
@@ -690,7 +700,7 @@ msgstr "Mga available na tag"
 msgid "Awaiting approval"
 msgstr "Naghihintay ng pag-apruba"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -704,7 +714,7 @@ msgstr "Naghihintay ng pag-apruba"
 msgid "Back"
 msgstr "Bumalik"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "Magbalik sa merkado"
 
@@ -898,7 +908,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Na-save ang katalogo. Hindi maidagdag ang item. Subukan muli."
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1047,11 +1057,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Piliin ang isang larawan ng JPEG, PNG o WebP."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "Pumili muli ng wika upang magpatuloy."
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "Piliin ang lokasyon"
@@ -1081,7 +1086,7 @@ msgid "Choose a profile photo"
 msgstr "Pumili ng isang larawan ng profile"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "Pumili ng tatanggap, voucher na hawak mo, at halaga. Suriin ang mga "
 "detalye bago kumpirmahin, saka hintayin ang resulta ng paglilipat."
@@ -1155,11 +1160,6 @@ msgstr "Piliin ang mga rate na itinakda ninyo o ang pantay na halaga kapag "
 msgid "Choose username"
 msgstr "Pumili ng username"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "Piliin ang iyong wika"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "Ang CLC ay naka-install. Hanapin ito sa inyong home screen."
@@ -1209,6 +1209,7 @@ msgstr "I-clear ang lokasyon"
 msgid "Clear search"
 msgstr "I-clear ang paghahanap"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1432,7 +1433,6 @@ msgstr "Telepono ng Kontak"
 msgid "Contact Website"
 msgstr "Website ng pakikipag-ugnayan"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1545,11 +1545,11 @@ msgstr "I-copy ang wallet address"
 msgid "Copy wallet username"
 msgstr "I-copy ang wallet username"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Tinutulungan ng Cosmo-Local Credit ang mga tao at organisasyon na "
@@ -1760,7 +1760,7 @@ msgstr "Hindi ma-load ang mga post."
 msgid "Couldn't load Pretium history."
 msgstr "Hindi ma-load ang kasaysayan ng Pretium."
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "Hindi ma-load ang mga limitasyon ng resource."
@@ -1835,7 +1835,7 @@ msgstr "Hindi ma-load ang inyong mga post."
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "Hindi ma-isyu ang unang supply."
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "Hindi mabuksan ang pag-install. Sundin ang mga hakbang sa ibaba o "
 "subukang muli sa ibang pagkakataon."
@@ -1989,9 +1989,8 @@ msgstr "Foto ng cover"
 msgid "Create"
 msgstr "Gumawa"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "Gumawa ng account"
@@ -2229,7 +2228,7 @@ msgstr "Kinakailangan ang pangalan ng display"
 msgid "Display name must be 120 characters or fewer"
 msgstr "Ang pangalan ng display ay dapat na 120 character o mas mababa"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2823,7 +2822,10 @@ msgid "How should vouchers match?"
 msgstr "Paano magkatugma ang mga voucher?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "Paano gamitin ang CLC"
 
@@ -2831,10 +2833,8 @@ msgstr "Paano gamitin ang CLC"
 msgid "How was your experience?"
 msgstr "Kumusta ang inyong karanasan?"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "Mayroon na akong account."
 
@@ -2920,9 +2920,9 @@ msgstr "Dagdagan ang dami ng {0}"
 msgid "Info"
 msgstr "Impormasyon"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2947,7 +2947,7 @@ msgstr "I-install muna ang app"
 msgid "Installation link"
 msgstr "Link ng pag-install"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Hiniling ang pag-install. Sundin ang mga tagubilin ng inyong browser "
@@ -3031,8 +3031,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 msgstr "Naabot na ang limitasyong {CATALOG_MAX_VOUCHERS} voucher. Mag-alis ng "
 "isa upang magdagdag ng iba."
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3283,14 +3283,13 @@ msgstr "Pag-load ng inyong profile..."
 #~ msgstr "Naglo-load..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3388,7 +3387,7 @@ msgstr "Pin sa mapa"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3630,7 +3629,8 @@ msgstr "Bagong supply"
 msgid "New to CLC?"
 msgstr "Bago sa CLC?"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4019,7 +4019,7 @@ msgid "Offerings"
 msgstr "Mga alok"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "Mga alok"
@@ -4066,7 +4066,7 @@ msgid "Open menu"
 msgstr "Buksan ang menu"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "Buksan ang Tumanggap at ibahagi ang iyong QR code sa pagtanggap o "
 "wallet address sa nagpadala. Huwag ibahagi ang pribadong susi ng iyong "
@@ -4555,7 +4555,7 @@ msgid "Pool tracking details are missing."
 msgstr "Ang mga detalye ng pagsubaybay ng pool ay nawawala."
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4901,7 +4901,7 @@ msgid "Receive"
 msgstr "Tumanggap"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "Tumanggap ng voucher"
 
@@ -5161,7 +5161,7 @@ msgstr "Retiro"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5456,7 +5456,7 @@ msgid "Send {0}"
 msgstr "Ipadala ang {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "Magpadala ng voucher"
 
@@ -5519,7 +5519,7 @@ msgstr "Paglilingkod"
 msgid "Session"
 msgstr "Sesyon"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "Nabigo ang pagsusuri sa session"
 
@@ -5561,7 +5561,7 @@ msgstr "Ibahagi"
 msgid "Share card"
 msgstr "Ibahagi ang card"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5658,7 +5658,7 @@ msgid "Sign in to browse results available through your Credit pools."
 msgstr "Mag-sign in para makita ang mga resultang available sa pamamagitan ng "
 "iyong mga Credit pool."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "Mag-sign in upang magpatuloy"
 
@@ -5710,8 +5710,8 @@ msgid "Signing out…"
 msgstr "Nagsa-sign out…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "Laktawan"
+#~ msgid "Skip"
+#~ msgstr "Laktawan"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6517,7 +6517,7 @@ msgstr "Pagtatanim ng puno"
 msgid "Trip"
 msgstr "Paglakbay"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6955,7 +6955,7 @@ msgstr "Ang mga detalye ng pagsubaybay ng voucher ay nawawala."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -6994,7 +6994,7 @@ msgstr "Mga voucher na inisyu ninyo"
 msgid "Waiting for blockchain confirmation…"
 msgstr "Naghihintay ng kumpirmasyon ng blockchain…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "Naghihintay para sa kumpirmasyon..."
@@ -7042,7 +7042,7 @@ msgstr "Sesyon ng wallet"
 msgid "Water Catchment"
 msgstr "Pag-ipon ng tubig"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "Hindi namin ma-verify ang inyong sesyon. Suriin ang inyong koneksyon at "
 "subukan muli."
@@ -7091,12 +7091,12 @@ msgid "What are you offering?"
 msgstr "Ano ang inyong alok?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "Ano ang voucher?"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "Ano ang alok?"
 
@@ -7104,6 +7104,7 @@ msgstr "Ano ang alok?"
 msgid "What they offer"
 msgstr "Ano ang inaalok nila"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "Ano ang pool?"
@@ -7392,7 +7393,7 @@ msgid "Your wallet"
 msgstr "Inyong wallet"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "Ang iyong wallet"
 
@@ -7403,7 +7404,7 @@ msgstr "Ang inyong wallet ang default. Maglagay ng ibang address upang doon "
 "ipadala ang mga bayarin sa pagpapalit."
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "Nasa iyong wallet ang iyong mga voucher. Gumawa ng account at itabi ang "
 "mga detalye ng pag-access sa wallet para makapagsimula."

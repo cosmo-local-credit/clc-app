@@ -58,6 +58,16 @@ msgstr "{count, plural, other {# 篇帖子}}"
 #~ msgid "Username must be 3–24 letters, digits or hyphens"
 #~ msgstr "用户名必须由 3–24 个字母、数字或连字符组成"
 
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:127
+#~ msgid "intro.languageError"
+#~ msgstr "请重新选择语言以继续。"
+
+#. js-lingui-explicit-id
+#: apps/web/src/components/introduction/introduction.tsx:53
+#~ msgid "intro.language"
+#~ msgstr "选择你的语言"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -230,13 +240,13 @@ msgstr "{summaryTotal} 条评价"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:43
-#: apps/web/src/components/resource-usage.tsx:128
+#: apps/web/src/components/resource-usage.tsx:127
 msgid "{used} of {limit} used"
 msgstr "已使用 {used} / {limit}"
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:41
-#: apps/web/src/components/resource-usage.tsx:126
+#: apps/web/src/components/resource-usage.tsx:125
 msgid "{used} used · Unlimited"
 msgstr "已使用 {used} · 无限制"
 
@@ -311,6 +321,7 @@ msgstr "纸钱包链接已打开。用这个地址登录？"
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "扫描了纸钱包 QR。导入这个地址？"
 
+#: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:356
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
@@ -326,7 +337,7 @@ msgid "A voucher acts like a gift card for your offers. When someone redeems "
 msgstr "代金券类似于您为商品或服务发行的礼品卡。有人兑付您的代金券时，您承诺向其提供相应的商品或服务。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:25
+#: apps/web/src/components/introduction/introduction-content.ts:28
 msgid "intro.voucher.body"
 msgstr "凭证代表发行者提供商品或服务的承诺。请确认它可用于哪些用途，以及谁接受它。"
 
@@ -334,8 +345,8 @@ msgstr "凭证代表发行者提供商品或服务的承诺。请确认它可用
 msgid "About"
 msgstr "关于"
 
+#: apps/web/src/components/introduction/introduction.tsx:92
 #: apps/web/src/features/home/ui/settings-page.tsx:85
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "About Cosmo-Local Credit"
 msgstr "关于 Cosmo-Local Credit"
 
@@ -453,7 +464,6 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 msgstr "将 CLC 添加到您的 iPhone 主屏幕，打开已安装的应用程序，然后启用通知。"
 
-#: apps/web/src/components/install-app-button.tsx:77
 #: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Add CLC to your phone"
 msgstr "将CLC添加到您的手机"
@@ -620,7 +630,7 @@ msgid "Amount to collect"
 msgstr "收取金额"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:34
+#: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "供给描述某人提供的商品或服务。请查看详情、价格以及接受哪种凭证。"
 
@@ -689,7 +699,7 @@ msgstr "可用标签"
 msgid "Awaiting approval"
 msgstr "等待批准"
 
-#: apps/web/src/components/introduction/introduction.tsx:176
+#: apps/web/src/components/introduction/introduction.tsx:108
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
@@ -703,7 +713,7 @@ msgstr "等待批准"
 msgid "Back"
 msgstr "返回"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:99
+#: apps/web/src/components/auth/authenticated-route.tsx:102
 msgid "Back to market"
 msgstr "返回市场"
 
@@ -895,7 +905,7 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "目录已保存，但无法添加项目。请重试。"
 
 #: apps/web/src/components/market-bar.tsx:122
-#: apps/web/src/components/resource-usage.tsx:92
+#: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
 msgid "Catalogs"
@@ -1044,11 +1054,6 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "选择 JPEG、PNG 或 WebP 图像。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:127
-msgid "intro.languageError"
-msgstr "请重新选择语言以继续。"
-
-#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "请选择位置"
@@ -1078,7 +1083,7 @@ msgid "Choose a profile photo"
 msgstr "选择个人资料照片"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:43
+#: apps/web/src/components/introduction/introduction-content.ts:51
 msgid "intro.send.body"
 msgstr "选择接收人、你持有的凭证和金额。确认前检查信息，然后等待转账结果。"
 
@@ -1148,11 +1153,6 @@ msgstr "当计价单位没有价格源时，请选择自定义汇率或等值定
 msgid "Choose username"
 msgstr "选择用户名"
 
-#. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction.tsx:53
-msgid "intro.language"
-msgstr "选择你的语言"
-
 #: apps/web/src/features/install/ui/install-page.tsx:96
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC 已安装。在主屏幕上找到它。"
@@ -1202,6 +1202,7 @@ msgstr "清除位置"
 msgid "Clear search"
 msgstr "清除搜索"
 
+#: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:248
@@ -1423,7 +1424,6 @@ msgstr "联系电话"
 msgid "Contact Website"
 msgstr "联系网站"
 
-#: apps/web/src/components/introduction/introduction.tsx:149
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:112
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:423
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1537,11 +1537,11 @@ msgstr "复制钱包地址"
 msgid "Copy wallet username"
 msgstr "复制钱包用户名"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/components/introduction/introduction-content.ts:21
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
+#: apps/web/src/components/introduction/introduction-content.ts:22
 msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 "exchange goods and services."
 msgstr "Cosmo-Local Credit 帮助人们和组织支持、共享和交换商品和服务。"
@@ -1752,7 +1752,7 @@ msgstr "无法加载帖子。"
 msgid "Couldn't load Pretium history."
 msgstr "无法加载 Pretium 历史记录。"
 
-#: apps/web/src/components/resource-usage.tsx:101
+#: apps/web/src/components/resource-usage.tsx:100
 #: apps/web/src/features/home/ui/wallet-page.tsx:156
 msgid "Couldn't load resource limits."
 msgstr "无法加载资源限制。"
@@ -1827,7 +1827,7 @@ msgstr "无法加载您的帖子。"
 #~ msgid "Couldn't mint the first supply."
 #~ msgstr "无法铸造第一个发行量。"
 
-#: apps/web/src/components/install-app-button.tsx:66
+#: apps/web/src/components/install-app-button.tsx:70
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "无法打开安装。请按照以下步骤操作或稍后重试。"
 
@@ -1976,9 +1976,8 @@ msgstr "封面照片"
 msgid "Create"
 msgstr "创建"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:77
-#: apps/web/src/components/introduction/introduction.tsx:146
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:67
+#: apps/web/src/components/auth/authenticated-route.tsx:82
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:160
 msgid "Create account"
 msgstr "创建账户"
@@ -2217,7 +2216,7 @@ msgstr "显示名称为必填项"
 msgid "Display name must be 120 characters or fewer"
 msgstr "显示名称不得超过 120 个字符"
 
-#: apps/web/src/components/introduction/introduction.tsx:144
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2816,7 +2815,10 @@ msgid "How should vouchers match?"
 msgstr "代金券应该如何匹配？"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-provider.tsx:124
+#: apps/web/src/components/auth/authenticated-route.tsx:115
+#: apps/web/src/components/introduction/introduction-provider.tsx:129
+#: apps/web/src/components/introduction/introduction.tsx:62
+#: apps/web/src/components/introduction/introduction.tsx:169
 msgid "intro.replay"
 msgstr "如何使用 CLC"
 
@@ -2824,10 +2826,8 @@ msgstr "如何使用 CLC"
 msgid "How was your experience?"
 msgstr "您的体验如何？"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:87
-#: apps/web/src/components/introduction/introduction.tsx:159
-#: apps/web/src/components/introduction/introduction.tsx:163
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:70
+#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "我已经有一个帐户"
 
@@ -2914,9 +2914,9 @@ msgstr "增加{0}数量"
 msgid "Info"
 msgstr "信息"
 
-#: apps/web/src/components/install-app-button.tsx:61
+#: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:27
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
@@ -2940,7 +2940,7 @@ msgstr "首先安装应用程序"
 msgid "Installation link"
 msgstr "安装链接"
 
-#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/components/install-app-button.tsx:49
 #: apps/web/src/features/install/ui/install-page.tsx:100
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "已请求安装。请按照浏览器中的说明完成操作。"
@@ -3023,8 +3023,8 @@ msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "已达到 {CATALOG_MAX_VOUCHERS} 代金券的限制。删除一个以添加另一个。"
 
-#: apps/web/src/components/resource-usage.tsx:71
-#: apps/web/src/components/resource-usage.tsx:136
+#: apps/web/src/components/resource-usage.tsx:70
+#: apps/web/src/components/resource-usage.tsx:135
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:208
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:214
 msgid "Limit reached. Ask an administrator to increase your allowance."
@@ -3272,14 +3272,13 @@ msgstr "正在加载您的个人资料…"
 #~ msgstr "正在加载..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/introduction/introduction.tsx:59
 #: apps/web/src/components/market-search.tsx:302
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:39
-#: apps/web/src/components/resource-usage.tsx:116
+#: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3378,7 +3377,7 @@ msgstr "地图标记"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:81
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
@@ -3630,7 +3629,8 @@ msgstr "新增发行量"
 msgid "New to CLC?"
 msgstr "CLC 新手？"
 
-#: apps/web/src/components/introduction/introduction.tsx:151
+#: apps/web/src/components/introduction/introduction.tsx:137
+#: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:912
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
@@ -4014,7 +4014,7 @@ msgid "Offerings"
 msgstr "商品或服务项目"
 
 #: apps/web/src/components/market-bar.tsx:121
-#: apps/web/src/components/resource-usage.tsx:93
+#: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
 msgstr "商品或服务项目"
@@ -4060,7 +4060,7 @@ msgid "Open menu"
 msgstr "打开菜单"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:52
+#: apps/web/src/components/introduction/introduction-content.ts:60
 msgid "intro.receive.body"
 msgstr "打开“接收”，将收款二维码或钱包地址分享给发送人。请勿分享钱包私钥。"
 
@@ -4540,7 +4540,7 @@ msgid "Pool tracking details are missing."
 msgstr "资金池跟踪详细信息丢失。"
 
 #: apps/web/src/components/market-bar.tsx:119
-#: apps/web/src/components/resource-usage.tsx:94
+#: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:323
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
@@ -4893,7 +4893,7 @@ msgid "Receive"
 msgstr "接收"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:51
+#: apps/web/src/components/introduction/introduction-content.ts:59
 msgid "intro.receive.title"
 msgstr "接收凭证"
 
@@ -5151,7 +5151,7 @@ msgstr "静修"
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
-#: apps/web/src/components/resource-usage.tsx:109
+#: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
@@ -5448,7 +5448,7 @@ msgid "Send {0}"
 msgstr "发送{0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:42
+#: apps/web/src/components/introduction/introduction-content.ts:50
 msgid "intro.send.title"
 msgstr "发送凭证"
 
@@ -5509,7 +5509,7 @@ msgstr "份"
 msgid "Session"
 msgstr "会话"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:32
+#: apps/web/src/components/auth/authenticated-route.tsx:38
 msgid "Session check failed"
 msgstr "会话检查失败"
 
@@ -5551,7 +5551,7 @@ msgstr "分享"
 msgid "Share card"
 msgstr "分享卡片"
 
-#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/components/install-app-link.tsx:15
 #: apps/web/src/features/home/ui/settings-page.tsx:80
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
@@ -5646,7 +5646,7 @@ msgstr "兑付此代金券后登录，即可留下评价。"
 msgid "Sign in to browse results available through your Credit pools."
 msgstr "登录以浏览您的信用资金池中可用的结果。"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:60
+#: apps/web/src/components/auth/authenticated-route.tsx:109
 msgid "Sign in to continue"
 msgstr "登录以继续"
 
@@ -5697,8 +5697,8 @@ msgid "Signing out…"
 msgstr "正在退出…"
 
 #: apps/web/src/components/introduction/introduction.tsx:180
-msgid "Skip"
-msgstr "跳过"
+#~ msgid "Skip"
+#~ msgstr "跳过"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -6481,7 +6481,7 @@ msgstr "植树"
 msgid "Trip"
 msgstr "旅行"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:38
+#: apps/web/src/components/auth/authenticated-route.tsx:44
 #: apps/web/src/components/catalog-filter-controls.tsx:394
 #: apps/web/src/components/market-search.tsx:306
 #: apps/web/src/components/nearby-catalog.tsx:176
@@ -6917,7 +6917,7 @@ msgstr "缺少代金券跟踪详情。"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:120
-#: apps/web/src/components/resource-usage.tsx:91
+#: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
@@ -6956,7 +6956,7 @@ msgstr "您发行的代金券"
 msgid "Waiting for blockchain confirmation…"
 msgstr "正在等待区块链确认…"
 
-#: apps/web/src/components/install-app-button.tsx:59
+#: apps/web/src/components/install-app-button.tsx:63
 #: apps/web/src/components/install-app-dialog.tsx:37
 msgid "Waiting for confirmation…"
 msgstr "正在等待确认…"
@@ -7003,7 +7003,7 @@ msgstr "钱包会话"
 msgid "Water Catchment"
 msgstr "集水"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:35
+#: apps/web/src/components/auth/authenticated-route.tsx:41
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "无法验证您的会话。请检查网络连接并重试。"
 
@@ -7050,12 +7050,12 @@ msgid "What are you offering?"
 msgstr "您提供什么商品或服务？"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:24
+#: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
 msgstr "什么是凭证？"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:33
+#: apps/web/src/components/introduction/introduction-content.ts:36
 msgid "intro.offer.title"
 msgstr "什么是供给？"
 
@@ -7063,6 +7063,7 @@ msgstr "什么是供给？"
 msgid "What they offer"
 msgstr "提供的商品或服务"
 
+#: apps/web/src/components/introduction/introduction-content.ts:45
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:353
 msgid "What's a pool?"
 msgstr "什么是资金池？"
@@ -7336,7 +7337,7 @@ msgid "Your wallet"
 msgstr "您的钱包"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:15
+#: apps/web/src/components/introduction/introduction-content.ts:68
 msgid "intro.wallet.title"
 msgstr "你的钱包"
 
@@ -7346,7 +7347,7 @@ msgid "Your wallet by default. Enter another address to send the swap fees "
 msgstr "默认使用您的钱包。输入其他地址，可将兑换费发送到该地址。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/components/introduction/introduction-content.ts:16
+#: apps/web/src/components/introduction/introduction-content.ts:69
 msgid "intro.wallet.body"
 msgstr "你的钱包用于存放凭证。创建账户并妥善保存钱包的访问资料，即可开始使用。"
 

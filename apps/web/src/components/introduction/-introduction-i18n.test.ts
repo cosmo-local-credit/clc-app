@@ -8,14 +8,16 @@ const keys = [
     `intro.${slide}.title`,
     `intro.${slide}.body`,
   ]),
-  "intro.language",
-  "intro.languageError",
   "intro.replay",
 ];
 afterEach(async () => activateLocale("en"));
 it.each(LOCALE_OPTIONS)("loads complete introduction text in $code", async ({ code }) => {
   await activateLocale("en");
-  const messages = [...keys.map((id) => ({ id })), msg`Skip`, msg`Loading...`];
+  const messages = [
+    ...keys.map((id) => ({ id })),
+    msg`What's a pool?`,
+    msg`A pool holds vouchers together so members can swap between them at a published value.`,
+  ];
   const english = messages.map((message) => i18n._(message));
   await activateLocale(code);
   messages.forEach((message, index) => {
