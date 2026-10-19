@@ -8,6 +8,7 @@ import {
   sendNotificationDeliveryAck,
 } from "../api/notification-client";
 import { flushQueuedNotificationAcks } from "../recovery/recovery";
+import { syncNavigatorAppBadge } from "../realtime/app-badge";
 import {
   consumePendingNotificationClickEvents,
   enqueueNotificationAck,
@@ -137,13 +138,7 @@ function createDependencies(
       return clients.map((client) => ({ visibilityState: client.visibilityState }));
     },
     incrementUnseenCount,
-    setAppBadge: (count) => {
-      const badge = (
-        scope.navigator as Navigator & { setAppBadge?: (count: number) => Promise<void> }
-      ).setAppBadge;
-      if (typeof badge !== "function") return Promise.resolve();
-      return badge.call(scope.navigator, count);
-    },
+    syncAppBadge: syncNavigatorAppBadge,
   };
 }
 

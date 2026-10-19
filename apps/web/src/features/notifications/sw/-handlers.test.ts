@@ -197,7 +197,7 @@ describe("handleNotificationPush", () => {
     expect(spies.dismiss).toHaveBeenCalledWith("notification-1", "registration-1");
     expect(spies.sendDeliveryAck).not.toHaveBeenCalled();
     expect(spies.incrementUnseenCount).not.toHaveBeenCalled();
-    expect(spies.setAppBadge).not.toHaveBeenCalled();
+    expect(spies.syncAppBadge).not.toHaveBeenCalled();
   });
 
   it("skips the badge when a window is visible", async () => {
@@ -209,20 +209,20 @@ describe("handleNotificationPush", () => {
     });
 
     expect(spies.incrementUnseenCount).not.toHaveBeenCalled();
-    expect(spies.setAppBadge).not.toHaveBeenCalled();
+    expect(spies.syncAppBadge).not.toHaveBeenCalled();
   });
 
   it("badges a background push and ignores a missing badge API", async () => {
     const { dependencies, spies } = createDependencies();
     spies.matchWindowClients.mockResolvedValue([{ visibilityState: "hidden" }]);
     spies.incrementUnseenCount.mockResolvedValue(2);
-    spies.setAppBadge.mockRejectedValue(new Error("missing"));
+    spies.syncAppBadge.mockRejectedValue(new Error("missing"));
 
     await expect(handleNotificationPush(validPayload, dependencies)).resolves.toMatchObject({
       status: "displayed",
     });
 
-    expect(spies.setAppBadge).toHaveBeenCalledWith(2);
+    expect(spies.syncAppBadge).toHaveBeenCalledOnce();
     expect(spies.broadcast).toHaveBeenCalledWith({
       count: 2,
       protocolVersion: 1,
@@ -238,7 +238,7 @@ describe("handleNotificationPush", () => {
       status: "displayed",
     });
 
-    expect(spies.setAppBadge).not.toHaveBeenCalled();
+    expect(spies.syncAppBadge).not.toHaveBeenCalled();
   });
 
   it("ignores payloads with invalid required fields", async () => {
@@ -414,7 +414,7 @@ function createDependencies(): {
       showNotification: spies.showNotification,
       matchWindowClients: spies.matchWindowClients,
       incrementUnseenCount: spies.incrementUnseenCount,
-      setAppBadge: spies.setAppBadge,
+      syncAppBadge: spies.syncAppBadge,
     },
     spies,
   };
@@ -460,6 +460,6 @@ function createSpies() {
     incrementUnseenCount: vi
       .fn<(identityEpoch: string) => Promise<number | null>>()
       .mockResolvedValue(1),
-    setAppBadge: vi.fn<(count: number) => Promise<void>>().mockResolvedValue(),
+    syncAppBadge: vi.fn<() => Promise<void>>().mockResolvedValue(),
   };
 }

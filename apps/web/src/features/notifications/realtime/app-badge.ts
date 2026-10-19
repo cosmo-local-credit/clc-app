@@ -2,16 +2,37 @@ import { readNotificationConfig, resetUnseenCount } from "../storage/notificatio
 
 type BadgeNavigator = Navigator & {
   clearAppBadge?: () => Promise<void>;
+  setAppBadge?: (count: number) => Promise<void>;
 };
 
 /** Drops the icon badge. Missing APIs and rejected calls are ignored. */
-export function clearNavigatorAppBadge(): void {
+export async function clearNavigatorAppBadge(): Promise<void> {
   try {
     const clear = (navigator as BadgeNavigator).clearAppBadge;
     if (typeof clear !== "function") return;
-    void Promise.resolve(clear.call(navigator)).catch(() => undefined);
+    await clear.call(navigator);
   } catch {
     // The badge API is missing outside the installed iOS app.
+  }
+}
+
+/** Reconciles a native badge write with concurrent pushes and identity resets. */
+export async function syncNavigatorAppBadge(): Promise<void> {
+  try {
+    const nav = navigator as BadgeNavigator;
+    if (typeof nav.setAppBadge !== "function" && typeof nav.clearAppBadge !== "function") return;
+    let config = await readNotificationConfig();
+    for (;;) {
+      const count = config?.unseenCount ?? 0;
+      if (count > 0) await nav.setAppBadge?.(count);
+      else await nav.clearAppBadge?.();
+      // Another context can reset or increment while the browser updates the icon.
+      const latest = await readNotificationConfig();
+      if ((latest?.unseenCount ?? 0) === count) return;
+      config = latest;
+    }
+  } catch {
+    // Badge failures must not block notification delivery or sign-out.
   }
 }
 
@@ -20,9 +41,10 @@ async function clearStoredBadge(): Promise<void> {
     const config = await readNotificationConfig();
     if (config?.identityEpoch) await resetUnseenCount(config.identityEpoch);
   } catch {
-    // Storage can be missing. The icon clear still runs.
+    await clearNavigatorAppBadge();
+    return;
   }
-  clearNavigatorAppBadge();
+  await syncNavigatorAppBadge();
 }
 
 function isBadgeMessage(data: unknown): boolean {

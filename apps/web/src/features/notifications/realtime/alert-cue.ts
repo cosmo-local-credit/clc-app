@@ -105,7 +105,11 @@ export function playNotificationCue(): void {
     const now = Date.now();
     if (now - lastPlayedAt < BURST_MS) return;
     lastPlayedAt = now;
-    vibrate?.([30, 60, 30]);
+    try {
+      vibrate?.call(nav, [30, 60, 30]);
+    } catch {
+      // A vibration failure must not suppress sound.
+    }
     if (context) {
       const start = context.currentTime;
       chime(context, 784, start, 0.09);

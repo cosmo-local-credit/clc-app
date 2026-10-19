@@ -77,7 +77,7 @@ export type NotificationServiceWorkerDependencies = {
   showNotification: (title: string, options: NotificationOptions) => Promise<unknown>;
   matchWindowClients: () => Promise<Array<{ visibilityState: string }>>;
   incrementUnseenCount: (identityEpoch: string) => Promise<number | null>;
-  setAppBadge: (count: number) => Promise<unknown>;
+  syncAppBadge: () => Promise<unknown>;
 };
 
 export type NotificationPushResult =
@@ -344,7 +344,7 @@ async function syncBackgroundBadge(
   const count = await dependencies.incrementUnseenCount(identityEpoch);
   if (count === null) return;
   try {
-    await dependencies.setAppBadge(count);
+    await dependencies.syncAppBadge();
   } catch {
     // Most browsers have no app-badge API. The push still stands.
   }

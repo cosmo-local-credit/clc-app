@@ -91,7 +91,10 @@ beforeEach(() => {
     configurable: true,
     value: { hasBeenActive: true },
   });
-  vibrate = vi.fn();
+  vibrate = vi.fn(function (this: Navigator) {
+    if (this !== navigator) throw new TypeError("Illegal invocation");
+    return true;
+  });
   Object.defineProperty(navigator, "vibrate", { configurable: true, value: vibrate });
   Object.defineProperty(navigator, "audioSession", {
     configurable: true,
@@ -145,6 +148,18 @@ describe("primeNotificationCue", () => {
 });
 
 describe("playNotificationCue", () => {
+  it("still plays sound when vibration throws", async () => {
+    vibrate.mockImplementation(() => {
+      throw new Error("Vibration unavailable");
+    });
+    primeNotificationCue();
+    gesture("pointerup");
+    await vi.waitFor(() => expect(context().state).toBe("running"));
+
+    expect(() => playNotificationCue()).not.toThrow();
+    expect(context().oscillators.map((row) => row.frequency)).toEqual([784, 1046.5]);
+  });
+
   it("vibrates only after activation, stays quiet when hidden or muted, and collapses a burst", async () => {
     Object.defineProperty(navigator, "userActivation", {
       configurable: true,
