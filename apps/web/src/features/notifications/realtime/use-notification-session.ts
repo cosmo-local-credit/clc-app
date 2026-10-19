@@ -1,11 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { primeNotificationCue } from "./alert-cue";
+import { installAppBadgeSync } from "./app-badge";
 import { startNotificationSession } from "./session";
 
 export function useNotificationSession(walletAddress: string | undefined): void {
   const queryClient = useQueryClient();
   useEffect(() => {
     if (!walletAddress) return;
+    primeNotificationCue();
+    const stopBadge = installAppBadgeSync();
     const controller = new AbortController();
     let stop: (() => void) | undefined;
     let retry: number | undefined;
@@ -31,6 +35,7 @@ export function useNotificationSession(walletAddress: string | undefined): void 
     };
     connect();
     return () => {
+      stopBadge();
       controller.abort();
       window.clearTimeout(retry);
       stop?.();

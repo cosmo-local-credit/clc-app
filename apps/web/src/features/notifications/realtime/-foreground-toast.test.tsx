@@ -8,8 +8,10 @@ const mocks = vi.hoisted(() => ({
   current: vi.fn(),
   delivery: vi.fn(),
   enqueue: vi.fn(),
+  cue: vi.fn(),
 }));
 vi.mock("sonner", () => ({ toast: mocks.toast }));
+vi.mock("./alert-cue", () => ({ playNotificationCue: mocks.cue }));
 vi.mock("../api/notification-client", () => ({ sendNotificationDeliveryAck: mocks.delivery }));
 vi.mock("../recovery/recovery", () => ({ flushQueuedNotificationAcks: vi.fn() }));
 vi.mock("../storage/notification-db", () => ({
@@ -64,6 +66,10 @@ describe("foreground notification display receipts", () => {
     const container = view.container.firstElementChild as HTMLElement;
     container.dataset.visible = "true";
     await waitFor(() => expect(mocks.delivery).toHaveBeenCalledOnce());
+    expect(mocks.cue).toHaveBeenCalledOnce();
+    expect(mocks.cue.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.delivery.mock.invocationCallOrder[0] ?? 0,
+    );
     expect(mocks.delivery).toHaveBeenCalledWith(
       expect.objectContaining({
         registrationId: "registration-1",
@@ -87,6 +93,7 @@ describe("foreground notification display receipts", () => {
     await showForegroundNotification(payload, "epoch-1", "user-1");
     expect(mocks.toast).not.toHaveBeenCalled();
     expect(mocks.delivery).not.toHaveBeenCalled();
+    expect(mocks.cue).not.toHaveBeenCalled();
   });
   it("does not acknowledge a toast whose owner changed before rendering", async () => {
     await showForegroundNotification(payload, "epoch-1", "user-1");
@@ -99,6 +106,7 @@ describe("foreground notification display receipts", () => {
     );
     await new Promise((resolve) => setTimeout(resolve, 40));
     expect(mocks.delivery).not.toHaveBeenCalled();
+    expect(mocks.cue).not.toHaveBeenCalled();
   });
   it("does not acknowledge an unmounted toast", () => {
     const onShown = vi.fn();

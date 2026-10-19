@@ -78,6 +78,8 @@ export type NotificationConfigRecord = {
   serviceWorkerVersion?: string;
   subscriptionHash?: string;
   syncCursor?: string;
+  /** Notifications that arrived while no window was visible. */
+  unseenCount?: number;
   updatedAt: string;
   vapidKeyVersion?: string;
   vapidPublicKey?: string;
@@ -220,6 +222,7 @@ export async function beginNotificationIdentity(
     userId: undefined,
     generation: undefined,
     syncCursor: undefined,
+    unseenCount: 0,
     updatedAt: nowISO(),
   };
   await Promise.all([
@@ -251,6 +254,37 @@ export async function readNotificationDeviceId(): Promise<string | null> {
 export async function readNotificationConfig(): Promise<NotificationConfigRecord | null> {
   const db = await openNotificationDatabase();
   return (await db.get("config", SINGLETON_KEY)) ?? null;
+}
+
+/**
+ * Adds one unseen notification. The read and the write share one transaction,
+ * so two pushes cannot both store the same count. An old epoch writes nothing.
+ */
+export async function incrementUnseenCount(identityEpoch: string): Promise<number | null> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction("config", "readwrite");
+  const current = await transaction.store.get(SINGLETON_KEY);
+  if (current?.identityEpoch !== identityEpoch) {
+    await transaction.done;
+    return null;
+  }
+  const unseenCount = (current.unseenCount ?? 0) + 1;
+  await transaction.store.put({ ...current, unseenCount });
+  await transaction.done;
+  return unseenCount;
+}
+
+/** Clears the unseen count for the current epoch. An old epoch writes nothing. */
+export async function resetUnseenCount(identityEpoch: string): Promise<void> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction("config", "readwrite");
+  const current = await transaction.store.get(SINGLETON_KEY);
+  if (current?.identityEpoch !== identityEpoch) {
+    await transaction.done;
+    return;
+  }
+  await transaction.store.put({ ...current, unseenCount: 0 });
+  await transaction.done;
 }
 
 export async function updateNotificationConfig(
@@ -403,6 +437,7 @@ export async function clearNotificationIdentityStores(expectedWallet?: string): 
             userId: undefined,
             generation: undefined,
             syncCursor: undefined,
+            unseenCount: 0,
             updatedAt: nowISO(),
           }),
         ]

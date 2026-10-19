@@ -21,15 +21,13 @@ const basePayload = {
 };
 
 describe("notificationKindSchema", () => {
-  it.each<NotificationKind>(["voucher.received", "swap.completed", "offramp.completed"])(
-    "accepts %s",
-    (kind) => {
-      expect(notificationKindSchema.safeParse(kind).success).toBe(true);
-    },
-  );
+  it.each<NotificationKind>(["voucher.received", "offramp.completed"])("accepts %s", (kind) => {
+    expect(notificationKindSchema.safeParse(kind).success).toBe(true);
+  });
 
   it("rejects unsupported notification kinds", () => {
     expect(notificationKindSchema.safeParse("voucher.expired").success).toBe(false);
+    expect(notificationKindSchema.safeParse("swap.completed").success).toBe(false);
   });
 });
 
@@ -44,31 +42,19 @@ describe("notificationPrioritySchema", () => {
 });
 
 describe("getNotificationKindPolicy", () => {
-  it("uses high priority and renotify for voucher received", () => {
+  it("uses high priority for voucher received", () => {
     expect(getNotificationKindPolicy("voucher.received")).toMatchObject({
       interactionMode: "click-only",
       priority: "high",
-      renotify: true,
       settingsScope: "device",
       signOutPolicy: "retain-until-explicit-disable",
     });
   });
 
-  it("uses normal priority with renotify for swap completed", () => {
-    expect(getNotificationKindPolicy("swap.completed")).toMatchObject({
-      interactionMode: "click-only",
-      priority: "normal",
-      renotify: true,
-      settingsScope: "device",
-      signOutPolicy: "retain-until-explicit-disable",
-    });
-  });
-
-  it("uses high priority and renotify for offramp completed", () => {
+  it("uses high priority for offramp completed", () => {
     expect(getNotificationKindPolicy("offramp.completed")).toMatchObject({
       interactionMode: "click-only",
       priority: "high",
-      renotify: true,
       settingsScope: "device",
       signOutPolicy: "retain-until-explicit-disable",
     });
@@ -82,7 +68,6 @@ describe("parseNotificationPayload", () => {
       actions: [{ action: " view ", title: " View " }],
       expiresAt: "2026-06-05T12:00:00Z",
       offRampReference: " offramp-1 ",
-      swapId: " swap-1 ",
       voucherId: " voucher-1 ",
     };
     const result = parseNotificationPayload(rawPayload, {
@@ -97,7 +82,6 @@ describe("parseNotificationPayload", () => {
       expiresAt: "2026-06-05T12:00:00Z",
       kind: "voucher.received",
       offRampReference: "offramp-1",
-      swapId: "swap-1",
       targetUrl: "/wallet",
       voucherId: "voucher-1",
     });
@@ -121,22 +105,26 @@ describe("parseNotificationPayload", () => {
   });
 
   it("parses all v1 notification kinds", () => {
-    for (const kind of [
-      "voucher.received",
-      "swap.completed",
-      "offramp.completed",
-    ] satisfies NotificationKind[]) {
+    for (const kind of ["voucher.received", "offramp.completed"] satisfies NotificationKind[]) {
       const result = parseNotificationPayload({ ...basePayload, kind }, { appOrigin: APP_ORIGIN });
 
       expect(result.success).toBe(true);
     }
   });
 
+  it("rejects a swap payload", () => {
+    const result = parseNotificationPayload(
+      { ...basePayload, kind: "swap.completed", swapId: "swap-1" },
+      { appOrigin: APP_ORIGIN },
+    );
+
+    expect(result.success).toBe(false);
+  });
+
   it("defaults missing priority from the kind policy", () => {
     const result = parseNotificationPayload(
       {
         ...basePayload,
-        kind: "swap.completed",
         priority: undefined,
       },
       { appOrigin: APP_ORIGIN },
@@ -145,7 +133,7 @@ describe("parseNotificationPayload", () => {
     expect(result.success).toBe(true);
     if (!result.success) return;
 
-    expect(result.payload.priority).toBe("normal");
+    expect(result.payload.priority).toBe("high");
   });
 
   it("normalizes same-origin absolute target URLs", () => {
@@ -223,7 +211,7 @@ describe("parseNotificationPayload", () => {
     expect(result.payload.actions).toBeUndefined();
     expect(result.payload.expiresAt).toBeUndefined();
     expect(result.payload.offRampReference).toBeUndefined();
-    expect(result.payload.swapId).toBeUndefined();
+    expect(result.payload).not.toHaveProperty("swapId");
     expect(result.payload.voucherId).toBeUndefined();
     expect(result.payload).not.toHaveProperty("metadataStatus");
     expect(result.rawPayload).toBe(rawPayload);

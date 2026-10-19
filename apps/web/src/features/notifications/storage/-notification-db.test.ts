@@ -19,6 +19,8 @@ import {
   getOrCreateNotificationInstallation,
   clearNotificationIdentityStores,
   clearQueuedNotificationAcks,
+  incrementUnseenCount,
+  resetUnseenCount,
   consumePendingNotificationClickEvents,
   deleteNotificationInboxMessages,
   enqueueNotificationAck,
@@ -436,5 +438,53 @@ describe("notification ownership and feed consistency", () => {
     await saveNotificationInboxMessage(inboxMessage({ revision: 4 }), identity.identityEpoch);
     expect(await getNotificationInboxMessage("notification-1")).toBeNull();
     expect((await readNotificationConfig())?.syncCursor).toBe("page-2");
+  });
+});
+
+describe("notification badge count", () => {
+  it("counts two concurrent increments as two", async () => {
+    const identity = await beginNotificationIdentity("0xaaa", "user-1");
+
+    const counts = await Promise.all([
+      incrementUnseenCount(identity.identityEpoch),
+      incrementUnseenCount(identity.identityEpoch),
+    ]);
+
+    expect([...counts].sort((left, right) => (left ?? 0) - (right ?? 0))).toEqual([1, 2]);
+    expect((await readNotificationConfig())?.unseenCount).toBe(2);
+  });
+
+  it("ignores an increment for an old epoch", async () => {
+    const first = await beginNotificationIdentity("0xaaa", "user-1");
+    expect(await incrementUnseenCount(first.identityEpoch)).toBe(1);
+    const second = await beginNotificationIdentity("0xbbb", "user-2");
+
+    expect(await incrementUnseenCount(first.identityEpoch)).toBeNull();
+    expect((await readNotificationConfig())?.identityEpoch).toBe(second.identityEpoch);
+    expect((await readNotificationConfig())?.unseenCount).toBe(0);
+  });
+
+  it("returns the unseen count to zero", async () => {
+    const identity = await beginNotificationIdentity("0xaaa", "user-1");
+    await incrementUnseenCount(identity.identityEpoch);
+    await incrementUnseenCount(identity.identityEpoch);
+
+    await resetUnseenCount(identity.identityEpoch);
+
+    expect((await readNotificationConfig())?.unseenCount).toBe(0);
+    expect(await resetUnseenCount("old-epoch")).toBeUndefined();
+    expect((await readNotificationConfig())?.unseenCount).toBe(0);
+  });
+
+  it("leaves no badge when a sign-out lands during an increment", async () => {
+    const identity = await beginNotificationIdentity("0xaaa", "user-1");
+
+    await Promise.all([
+      incrementUnseenCount(identity.identityEpoch),
+      clearNotificationIdentityStores("0xaaa"),
+    ]);
+
+    expect((await readNotificationConfig())?.unseenCount ?? 0).toBe(0);
+    expect((await readNotificationConfig())?.identityEpoch).not.toBe(identity.identityEpoch);
   });
 });

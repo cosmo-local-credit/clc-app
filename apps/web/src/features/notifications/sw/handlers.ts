@@ -5,7 +5,6 @@ import type {
   SendNotificationDeliveryAckRequest,
 } from "../api/notification-client";
 import {
-  getNotificationKindPolicy,
   type NotificationPayload,
   notificationKindSchema,
   parseNotificationPayload,
@@ -17,7 +16,11 @@ import type {
   NotificationConfigRecord,
   NotificationPendingClickEvent,
 } from "../storage/notification-db";
-import { createNotificationEventMessage, type NotificationWorkerMessage } from "./protocol";
+import {
+  createNotificationBadgeMessage,
+  createNotificationEventMessage,
+  type NotificationWorkerMessage,
+} from "./protocol";
 
 export type NotificationClickInput = {
   action: string;
@@ -72,6 +75,9 @@ export type NotificationServiceWorkerDependencies = {
     options?: { identityEpoch?: string },
   ) => Promise<unknown>;
   showNotification: (title: string, options: NotificationOptions) => Promise<unknown>;
+  matchWindowClients: () => Promise<Array<{ visibilityState: string }>>;
+  incrementUnseenCount: (identityEpoch: string) => Promise<number | null>;
+  syncAppBadge: () => Promise<unknown>;
 };
 
 export type NotificationPushResult =
@@ -178,6 +184,7 @@ export async function handleNotificationPush(
     await persistence;
     return { status: "ignored" };
   }
+  await settle(syncBackgroundBadge(dependencies, identity.identityEpoch));
   const shownAt = dependencies.now();
   await settle(
     dependencies.markInboxMessageShown(
@@ -308,8 +315,6 @@ function createNotificationOptions(
   payload: NotificationPayload,
   identity: NotificationConfigRecord,
 ): NotificationOptionsWithRenotify {
-  const policy = getNotificationKindPolicy(payload.kind);
-
   return {
     body: payload.body,
     data: {
@@ -322,10 +327,28 @@ function createNotificationOptions(
     },
     badge: "/notification-badge.png",
     icon: `${BRAND_ICON_BASE}/icon-192.png`,
-    renotify: policy.renotify,
+    // A retry of this notification replaces the tray entry without a second alert.
+    renotify: false,
     silent: false,
-    tag: `clc:${payload.kind}:${payload.walletAddressTarget ?? "device"}`,
+    tag: `clc:${payload.notificationId}`,
   };
+}
+
+async function syncBackgroundBadge(
+  dependencies: NotificationServiceWorkerDependencies,
+  identityEpoch: string,
+): Promise<void> {
+  if (!(await dependencies.isIdentityCurrent(identityEpoch))) return;
+  const clients = await dependencies.matchWindowClients();
+  if (clients.some((client) => client.visibilityState === "visible")) return;
+  const count = await dependencies.incrementUnseenCount(identityEpoch);
+  if (count === null) return;
+  try {
+    await dependencies.syncAppBadge();
+  } catch {
+    // Most browsers have no app-badge API. The push still stands.
+  }
+  await dependencies.broadcast(createNotificationBadgeMessage(count));
 }
 
 async function sendDeliveryAckOrQueue(

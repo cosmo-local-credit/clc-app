@@ -8,11 +8,13 @@ import {
   sendNotificationDeliveryAck,
 } from "../api/notification-client";
 import { flushQueuedNotificationAcks } from "../recovery/recovery";
+import { syncNavigatorAppBadge } from "../realtime/app-badge";
 import {
   consumePendingNotificationClickEvents,
   enqueueNotificationAck,
   getOrCreateNotificationDeviceId,
   getOrCreateNotificationInstallation,
+  incrementUnseenCount,
   isNotificationIdentityCurrent,
   markNotificationInboxMessageActioned,
   markNotificationInboxMessageRead,
@@ -128,6 +130,15 @@ function createDependencies(
     sendClickAck: sendNotificationClickAck,
     sendDeliveryAck: sendNotificationDeliveryAck,
     showNotification: (title, options) => scope.registration.showNotification(title, options),
+    matchWindowClients: async () => {
+      const clients = (await scope.clients.matchAll({
+        includeUncontrolled: true,
+        type: "window",
+      })) as WindowClient[];
+      return clients.map((client) => ({ visibilityState: client.visibilityState }));
+    },
+    incrementUnseenCount,
+    syncAppBadge: syncNavigatorAppBadge,
   };
 }
 
