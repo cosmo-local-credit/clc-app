@@ -19,12 +19,17 @@ msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, other {# 個資金池}}"
 
 #. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/activity-page.tsx:97
+msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
+msgstr "{count, plural, other {已顯示 # 筆轉帳。}}"
+
+#. js-lingui-explicit-id
 #: apps/web/src/features/home/ui/market-list-page.tsx:112
 msgid "{count, plural, one {# voucher} other {# vouchers}}"
 msgstr "{count, plural, other {# 張代金券}}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/posts-page.tsx:48
+#: apps/web/src/features/home/ui/posts-page.tsx:49
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, other {# 篇貼文}}"
 
@@ -406,9 +411,10 @@ msgstr "正在啟用智能錢包…"
 msgid "Active"
 msgstr "啟用"
 
+#: apps/web/src/components/market-bar.tsx:178
 #: apps/web/src/components/navigation/bottom-navigation.tsx:44
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:194
-#: apps/web/src/features/home/ui/activity-page.tsx:46
+#: apps/web/src/features/home/ui/activity-page.tsx:68
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:45
 msgid "Activity"
 msgstr "活動"
@@ -1188,7 +1194,7 @@ msgstr "清除篩選條件"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:125
 #: apps/web/src/features/home/ui/market-page.tsx:282
 #: apps/web/src/features/home/ui/offers-page.tsx:166
-#: apps/web/src/features/home/ui/posts-page.tsx:129
+#: apps/web/src/features/home/ui/posts-page.tsx:133
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:64
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:73
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:83
@@ -1710,7 +1716,7 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "無法識別此處的國家/地區。嘗試一下附近的地方。"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:364
-#: apps/web/src/features/home/ui/activity-page.tsx:55
+#: apps/web/src/features/home/ui/activity-page.tsx:122
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:80
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:209
 msgid "Couldn't load activity."
@@ -2048,7 +2054,7 @@ msgid "Create your account"
 msgstr "建立您的帳戶"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:418
-#: apps/web/src/features/home/ui/activity-page.tsx:107
+#: apps/web/src/features/home/ui/activity-page.tsx:169
 #: apps/web/src/features/home/ui/report-page.tsx:532
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:75
 msgid "Created"
@@ -2618,7 +2624,7 @@ msgstr "聯誼"
 msgid "Festivals"
 msgstr "節慶"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:138
+#: apps/web/src/features/home/ui/posts-page.tsx:142
 msgid "Field reports"
 msgstr "現場報告"
 
@@ -2717,7 +2723,7 @@ msgstr "調整照片畫面"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:430
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:156
-#: apps/web/src/features/home/ui/activity-page.tsx:133
+#: apps/web/src/features/home/ui/activity-page.tsx:195
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:178
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
 msgid "From"
@@ -2761,7 +2767,7 @@ msgstr "手工藝"
 msgid "Handmade"
 msgstr "手工製作"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:120
+#: apps/web/src/features/home/ui/activity-page.tsx:182
 msgid "Has a message"
 msgstr "有留言"
 
@@ -3172,7 +3178,8 @@ msgid "Load more reviews"
 msgstr "載入更多評價"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:358
-#: apps/web/src/features/home/ui/activity-page.tsx:50
+#: apps/web/src/features/home/ui/activity-page.tsx:117
+#: apps/web/src/features/home/ui/activity-page.tsx:228
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:74
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:203
 msgid "Loading activity…"
@@ -3208,8 +3215,8 @@ msgid "Loading marketplace…"
 msgstr "正在載入市場…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:216
-#: apps/web/src/features/home/ui/activity-page.tsx:161
-#: apps/web/src/features/home/ui/posts-page.tsx:144
+#: apps/web/src/features/home/ui/activity-page.tsx:223
+#: apps/web/src/features/home/ui/posts-page.tsx:148
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:108
 #: apps/web/src/features/pools/ui/pools-page.tsx:356
 msgid "Loading more…"
@@ -3235,7 +3242,7 @@ msgstr "正在載入貼文…"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:253
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:271
-#: apps/web/src/features/home/ui/posts-page.tsx:112
+#: apps/web/src/features/home/ui/posts-page.tsx:116
 msgid "Loading posts…"
 msgstr "正在載入貼文…"
 
@@ -3378,8 +3385,8 @@ msgstr "管理代金券"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "管理您的錢包登入狀態和應用程式首選項。"
 
-#: apps/web/src/components/market-bar.tsx:175
-#: apps/web/src/components/market-bar.tsx:176
+#: apps/web/src/components/market-bar.tsx:193
+#: apps/web/src/components/market-bar.tsx:194
 msgid "Map"
 msgstr "地圖"
 
@@ -3565,7 +3572,7 @@ msgstr "我的目錄"
 msgid "My Pools"
 msgstr "我的資金池"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:97
+#: apps/web/src/features/home/ui/posts-page.tsx:103
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:31
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:77
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:689
@@ -3632,7 +3639,7 @@ msgstr "網路"
 msgid "New owner address"
 msgstr "新所有者地址"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:92
+#: apps/web/src/features/home/ui/posts-page.tsx:98
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:342
 msgid "New post"
@@ -3640,7 +3647,7 @@ msgstr "新貼文"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:427
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:160
-#: apps/web/src/features/home/ui/activity-page.tsx:130
+#: apps/web/src/features/home/ui/activity-page.tsx:192
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:181
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
 msgid "New supply"
@@ -3682,8 +3689,13 @@ msgstr "否"
 msgid "No {0} fees have accrued yet."
 msgstr "尚未產生 {0} 費用。"
 
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/activity-page.tsx:105
+msgid "No activity matches this search."
+msgstr "沒有符合搜尋條件的活動。"
+
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:381
-#: apps/web/src/features/home/ui/activity-page.tsx:69
+#: apps/web/src/features/home/ui/activity-page.tsx:109
 msgid "No activity yet."
 msgstr "還沒有活動。"
 
@@ -3824,12 +3836,12 @@ msgstr "沒有同時符合此代金券和這些篩選條件的資金池。"
 msgid "No pools yet."
 msgstr "還沒有資金池。"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:122
+#: apps/web/src/features/home/ui/posts-page.tsx:126
 msgid "No posts match this search."
 msgstr "沒有貼文與此搜尋匹配。"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:293
-#: apps/web/src/features/home/ui/posts-page.tsx:124
+#: apps/web/src/features/home/ui/posts-page.tsx:128
 msgid "No posts yet."
 msgstr "還沒有貼文。"
 
@@ -4619,6 +4631,7 @@ msgstr "貼文文字太長"
 msgid "Post updated."
 msgstr "貼文已更新。"
 
+#: apps/web/src/components/market-bar.tsx:178
 #: apps/web/src/components/navigation/bottom-navigation.tsx:52
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:159
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:297
@@ -4949,7 +4962,7 @@ msgid "Receive vouchers"
 msgstr "接收代金券"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:420
-#: apps/web/src/features/home/ui/activity-page.tsx:109
+#: apps/web/src/features/home/ui/activity-page.tsx:171
 msgid "Received"
 msgstr "已收到"
 
@@ -5328,9 +5341,20 @@ msgstr "掃描接收方地址"
 msgid "Search “{query}”"
 msgstr "搜尋「{query}」"
 
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/activity-page.tsx:76
+#: apps/web/src/features/home/ui/activity-page.tsx:77
+msgid "Search activity"
+msgstr "搜尋活動"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:126
 msgid "Search by name or symbol"
 msgstr "按名稱或符號搜尋"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/activity-page.tsx:84
+msgid "Search by voucher name, symbol, address or transaction hash."
+msgstr "依代金券名稱、符號、地址或交易雜湊搜尋。"
 
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:99
 msgid "Search catalogs"
@@ -5382,7 +5406,7 @@ msgstr "搜尋資金池"
 msgid "Search post tags"
 msgstr "搜尋貼文標籤"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:102
+#: apps/web/src/features/home/ui/posts-page.tsx:77
 msgid "Search posts by title or description"
 msgstr "按標題或描述搜尋貼文"
 
@@ -5549,7 +5573,7 @@ msgid "Sending…"
 msgstr "正在傳送…"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:422
-#: apps/web/src/features/home/ui/activity-page.tsx:111
+#: apps/web/src/features/home/ui/activity-page.tsx:173
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:192
 msgid "Sent"
 msgstr "已傳送"
@@ -6466,7 +6490,7 @@ msgstr "標題不得超過 200 個字元"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:430
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:172
-#: apps/web/src/features/home/ui/activity-page.tsx:133
+#: apps/web/src/features/home/ui/activity-page.tsx:195
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:187
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
 #: apps/web/src/features/wallet/ui/collect-page.tsx:138
@@ -6533,7 +6557,7 @@ msgstr "交易雜湊"
 msgid "Transaction hash copied"
 msgstr "交易雜湊已複製"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:48
+#: apps/web/src/features/home/ui/activity-page.tsx:91
 msgid "Transfer history"
 msgstr "轉帳記錄"
 
@@ -6566,7 +6590,7 @@ msgstr "旅行"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:286
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:372
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:61
-#: apps/web/src/features/home/ui/activity-page.tsx:63
+#: apps/web/src/features/home/ui/activity-page.tsx:130
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:89
 #: apps/web/src/features/home/ui/wallet-page.tsx:174
@@ -6598,6 +6622,7 @@ msgstr "類型"
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "至少輸入 {VOUCHER_SEARCH_MIN_CHARS} 個字元來搜尋代金券。"
 
+#: apps/web/src/features/home/ui/activity-page.tsx:82
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:897
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:191
 msgid "Type at least two characters."
@@ -7446,15 +7471,3 @@ msgstr "青年"
 #: apps/web/src/components/ui/image-crop-sheet.tsx:243
 msgid "Zoom"
 msgstr "縮放"
-
-msgid "Search activity"
-msgstr "搜尋活動"
-
-msgid "Search by voucher name, symbol, address or transaction hash."
-msgstr "依代金券名稱、符號、地址或交易雜湊搜尋。"
-
-msgid "No activity matches this search."
-msgstr "沒有符合搜尋條件的活動。"
-
-msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
-msgstr "{count, plural, other {已顯示 # 筆轉帳。}}"
