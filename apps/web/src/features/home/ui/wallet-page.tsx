@@ -9,7 +9,7 @@ import {
 
 import { Button } from "#/components/ui/button";
 import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
-import { ResourceLimitMessage } from "#/components/resource-usage";
+import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
@@ -97,6 +97,15 @@ export function WalletPage({ address }: { address?: string }) {
   const ownedPools = (ownedPoolsQuery.data?.pages[0]?.pools ?? []).filter(
     (pool) => pool.ownerAddress?.toLowerCase() === address?.toLowerCase(),
   );
+  const myVouchersTitle = (
+    <ResourceQuotaTitle
+      quota={usage.data?.vouchers}
+      pending={usage.isPending}
+      error={usage.isError}
+    >
+      <Trans>My Vouchers</Trans>
+    </ResourceQuotaTitle>
+  );
 
   return (
     <div className="space-y-6">
@@ -142,7 +151,7 @@ export function WalletPage({ address }: { address?: string }) {
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
-            title={<Trans>My Vouchers</Trans>}
+            title={myVouchersTitle}
             action={<Trans>View all</Trans>}
             onAction={() => {
               void navigate({ to: "/wallet/vouchers" });
@@ -156,7 +165,7 @@ export function WalletPage({ address }: { address?: string }) {
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
-            title={<Trans>My Vouchers</Trans>}
+            title={myVouchersTitle}
             action={<Trans>View all</Trans>}
             onAction={() => void navigate({ to: "/wallet/vouchers" })}
           />
@@ -204,7 +213,7 @@ export function WalletPage({ address }: { address?: string }) {
           <section aria-labelledby="my-vouchers-title">
             <SectionHeader
               id="my-vouchers-title"
-              title={<Trans>My Vouchers</Trans>}
+              title={myVouchersTitle}
               action={<Trans>View all</Trans>}
               onAction={() => {
                 void navigate({ to: "/wallet/vouchers" });
@@ -248,7 +257,15 @@ export function WalletPage({ address }: { address?: string }) {
       <section aria-labelledby="my-pools-title">
         <SectionHeader
           id="my-pools-title"
-          title={<Trans>My Pools</Trans>}
+          title={
+            <ResourceQuotaTitle
+              quota={usage.data?.pools}
+              pending={usage.isPending}
+              error={usage.isError}
+            >
+              <Trans>My Pools</Trans>
+            </ResourceQuotaTitle>
+          }
           action={<Trans>All pools</Trans>}
           actionTo="/pools"
         />

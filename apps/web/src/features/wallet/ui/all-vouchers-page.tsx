@@ -11,6 +11,7 @@ import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { ResourceQuotaTitle } from "#/components/resource-usage";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { resetVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
@@ -192,7 +193,13 @@ export function AllVouchersPage() {
           ) : null}
           <section aria-labelledby="my-vouchers-title">
             <SectionHeading id="my-vouchers-title" className="mb-2">
-              <Trans>My Vouchers</Trans>
+              <ResourceQuotaTitle
+                quota={usage.data?.vouchers}
+                pending={usage.isPending}
+                error={usage.isError}
+              >
+                <Trans>My Vouchers</Trans>
+              </ResourceQuotaTitle>
             </SectionHeading>
             <div className="border-border bg-card border">
               {voucherGroups.issued.length === 0 ? (
