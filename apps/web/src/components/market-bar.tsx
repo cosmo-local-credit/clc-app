@@ -113,7 +113,7 @@ export function MarketBar({
   );
 }
 
-export function MarketBadges({ current }: { current: MarketSurface }) {
+function MarketBadges({ current }: { current: MarketSurface }) {
   const { t } = useLingui();
   const labels: Record<MarketplaceScope, string> = {
     pools: t`Pools`,
