@@ -113,11 +113,14 @@ export function createAccountsClient(http: HttpClient) {
       return { ...result, tokens: result.tokens ?? [] };
     },
 
-    async getAccountTransfers(params: CursorPageParams): Promise<AccountTransfersResult> {
+    async getAccountTransfers(
+      params: CursorPageParams & { q?: string },
+      signal?: AbortSignal,
+    ): Promise<AccountTransfersResult> {
       const accountAddress = getAddress(params.address);
       const result = await http.request<AccountTransfersResult>(
-        `/api/v2/accounts/${accountAddress}/transfers${formatCursorQuery(params)}`,
-        ACCOUNT_READ_REQUEST,
+        `/api/v2/accounts/${accountAddress}/transfers${formatCursorQuery(params)}${params.q ? `&q=${encodeURIComponent(params.q)}` : ""}`,
+        { ...ACCOUNT_READ_REQUEST, signal },
       );
       return { ...result, transfers: result.transfers ?? [] };
     },

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
@@ -23,14 +23,18 @@ vi.mock("@tanstack/react-router", () => ({
     ...props
   }: {
     children: React.ReactNode;
-    params: { voucherAddress: string };
+    params?: { voucherAddress: string };
     search: { from: string };
     to: string;
     "aria-label"?: string;
     className?: string;
   }) => (
     <a
-      href={`/vouchers/${params.voucherAddress}?${new URLSearchParams(search).toString()}`}
+      href={
+        params
+          ? `/vouchers/${params.voucherAddress}?${new URLSearchParams(search).toString()}`
+          : "/"
+      }
       {...props}
     >
       {children}
@@ -92,6 +96,79 @@ describe("ActivityPage", () => {
     expect(screen.getByText("(3.09 KES)")).toBeTruthy();
     expect(document.body.textContent).toContain("0x27c1…6c8E4");
     expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
+  });
+
+  it("searches Core after a debounce and renders server matches without a local filter", async () => {
+    const fetcher = vi.fn().mockImplementation(async (input: string) => {
+      const q = new URL(input, "https://api.test").searchParams.get("q");
+      const transfers =
+        q === "historic"
+          ? [
+              {
+                id: 4,
+                txHash: `0x${"44".repeat(32)}`,
+                dateBlock: "2020-01-01T12:00:00Z",
+                direction: "IN",
+                counterpartyAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+                senderAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+                recipientAddress: ADDRESS,
+                tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+                tokenName: "Server voucher",
+                tokenSymbol: "SV",
+                tokenDecimals: 0,
+                amount: "5",
+                success: true,
+                hasNote: false,
+              },
+            ]
+          : [];
+      return {
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () => JSON.stringify({ ok: true, result: { transfers } }),
+      };
+    });
+    vi.stubGlobal("fetch", fetcher);
+    renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+    expect(await screen.findByText("No activity yet.")).toBeTruthy();
+    const announcements = screen.getByRole("status");
+    expect(announcements.getAttribute("aria-live")).toBe("polite");
+    expect(announcements.getAttribute("aria-atomic")).toBe("true");
+    const search = screen.getByRole("searchbox", { name: "Search activity" });
+    fireEvent.change(search, { target: { value: "h" } });
+    expect(screen.getByText("Type at least two characters.")).toBeTruthy();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(fetcher.mock.calls.some(([url]) => String(url).includes("q=h"))).toBe(false);
+    fireEvent.change(search, { target: { value: "historic" } });
+    expect(await screen.findByText("5 SV")).toBeTruthy();
+    expect(screen.getByRole("status")).toBe(announcements);
+    expect(announcements.textContent).toBe("1 transfer shown.");
+    expect(fetcher.mock.calls.some(([url]) => String(url).includes("q=historic"))).toBe(true);
+    fireEvent.change(search, { target: { value: "absent" } });
+    await waitFor(() => expect(screen.queryByText("5 SV")).toBeNull());
+    expect(await screen.findByText("No activity matches this search.")).toBeTruthy();
+    expect(screen.getByRole("status")).toBe(announcements);
+    expect(announcements.textContent).toContain("No activity matches this search.");
+    expect(screen.getByRole("searchbox", { name: "Search activity" })).toBe(search);
+    fireEvent.change(search, { target: { value: "" } });
+    expect(await screen.findByText("No activity yet.")).toBeTruthy();
+  });
+
+  it("announces a failed activity request", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: "Server error",
+        text: async () => JSON.stringify({ ok: false, description: "Search failed" }),
+      }),
+    );
+    renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toBe("Couldn't load activity.");
+    expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
   });
 
   it("shows zero-address receipts as created supply", async () => {

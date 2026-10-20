@@ -2,7 +2,7 @@ import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useState } from "react";
-import { RiMap2Line } from "react-icons/ri";
+import { RiArticleLine, RiNotification3Line, RiMap2Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
@@ -20,7 +20,7 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
 
 /** Where the bar stands: the map, or one of the lists its badges open. */
-export type MarketSurface = "map" | MarketplaceScope;
+export type MarketSurface = "map" | MarketplaceScope | "posts" | "activity";
 
 /**
  * The market's top bar, the same over the map and above every list: the app
@@ -113,7 +113,7 @@ export function MarketBar({
   );
 }
 
-function MarketBadges({ current }: { current: MarketSurface }) {
+export function MarketBadges({ current }: { current: MarketSurface }) {
   const { t } = useLingui();
   const labels: Record<MarketplaceScope, string> = {
     pools: t`Pools`,
@@ -162,21 +162,56 @@ function MarketBadges({ current }: { current: MarketSurface }) {
           </Button>
         );
       })}
+      {(["activity", "posts"] as const).map((tab) => {
+        const active = current === tab;
+        const Icon = tab === "posts" ? RiArticleLine : RiNotification3Line;
+        return (
+          <Button
+            key={tab}
+            asChild
+            variant="outline"
+            tap
+            className={cn("font-semibold", active && "border-foreground bg-muted")}
+          >
+            <Link to="/" search={active ? {} : { tab }} aria-current={active ? "page" : undefined}>
+              <Icon aria-hidden="true" />
+              {tab === "posts" ? t`Posts` : t`Activity`}
+            </Link>
+          </Button>
+        );
+      })}
     </nav>
   );
 }
 
-function MarketMapButton() {
+function MarketMapButton({ resetSearch = false }: { resetSearch?: boolean }) {
   const { t } = useLingui();
   return (
     <Link
       to="/"
-      search={(previous) => mapSearchFrom(previous)}
+      search={(previous) => (resetSearch ? {} : mapSearchFrom(previous))}
       aria-label={t`Map`}
       title={t`Map`}
       className="fixed end-4 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1rem)] z-20 flex size-14 items-center justify-center bg-primary text-primary-foreground outline-none transition-colors hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2"
     >
       <RiMap2Line className="size-6" aria-hidden="true" />
     </Link>
+  );
+}
+
+/** Section navigation for feeds with their own search controls. */
+export function MarketFeedBar({
+  current,
+  children,
+}: {
+  current: "activity" | "posts";
+  children: ReactNode;
+}) {
+  return (
+    <div className="sticky top-0 z-20 space-y-2 bg-background pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
+      {children}
+      <MarketBadges current={current} />
+      <MarketMapButton resetSearch />
+    </div>
   );
 }
