@@ -23,14 +23,18 @@ vi.mock("@tanstack/react-router", () => ({
     ...props
   }: {
     children: React.ReactNode;
-    params: { voucherAddress: string };
+    params?: { voucherAddress: string };
     search: { from: string };
     to: string;
     "aria-label"?: string;
     className?: string;
   }) => (
     <a
-      href={`/vouchers/${params.voucherAddress}?${new URLSearchParams(search).toString()}`}
+      href={
+        params
+          ? `/vouchers/${params.voucherAddress}?${new URLSearchParams(search).toString()}`
+          : "/"
+      }
       {...props}
     >
       {children}
@@ -88,6 +92,14 @@ describe("ActivityPage", () => {
     renderWithQueryClient(<ActivityPage address={ADDRESS} />);
 
     expect(await screen.findByText("Received")).toBeTruthy();
+    const search = screen.getByRole("searchbox", { name: "Search loaded activity" });
+    fireEvent.change(search, { target: { value: "unmatched" } });
+    expect(screen.queryByText("Received")).toBeNull();
+    expect(screen.getByRole("status").textContent).toContain("No loaded transfers match");
+    fireEvent.change(search, { target: { value: "tether" } });
+    expect(screen.getByText("Received")).toBeTruthy();
+    fireEvent.change(search, { target: { value: "" } });
+
     expect(screen.getByText("1.23 USD₮")).toBeTruthy();
     expect(screen.getByText("(3.09 KES)")).toBeTruthy();
     expect(document.body.textContent).toContain("0x27c1…6c8E4");

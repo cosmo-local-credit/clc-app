@@ -1,3 +1,4 @@
+import { MarketFeedBar } from "#/components/market-bar";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -67,21 +68,26 @@ export function PostsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Posts</Trans>
-        </h1>
-        <ReportFilterSheet
-          filter={filter}
-          facets={feed.tagFacets}
-          voucherFacets={feed.voucherFacets}
-          open={filtersOpen}
-          onOpenChange={(next) => {
-            if (next) setFiltersEverOpened(true);
-            setFiltersOpen(next);
-          }}
-        />
-      </div>
+      <h1 className="sr-only">
+        <Trans>Posts</Trans>
+      </h1>
+      <MarketFeedBar current="posts">
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
+          </div>
+          <ReportFilterSheet
+            filter={filter}
+            facets={feed.tagFacets}
+            voucherFacets={feed.voucherFacets}
+            open={filtersOpen}
+            onOpenChange={(next) => {
+              if (next) setFiltersEverOpened(true);
+              setFiltersOpen(next);
+            }}
+          />
+        </div>
+      </MarketFeedBar>
 
       {/* Two compact actions rather than a floating button: the feed is
           approved-only, so an author needs somewhere to write and somewhere to
@@ -98,8 +104,6 @@ export function PostsPage() {
           </Link>
         </Button>
       </div>
-
-      <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
 
       <ReportFilterFeedback
         filter={filter}

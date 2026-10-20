@@ -1,3 +1,5 @@
+import { MarketFeedBar } from "#/components/market-bar";
+import { Input } from "#/components/ui/input";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -23,11 +25,35 @@ export function ActivityPage({ address }: { address?: string }) {
   const transfersQuery = useAccountTransfersInfinite(address, { poll: true });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
+  const [query, setQuery] = useState("");
   const transfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
+
+  const term = query.trim().toLocaleLowerCase();
+  const matchingTransfers = transfers.filter((transfer) =>
+    [
+      transfer.tokenName,
+      transfer.tokenSymbol,
+      transfer.tokenAddress,
+      transfer.counterpartyAddress,
+      transfer.txHash,
+      transfer.dateBlock,
+      formatTokenAmount(transfer.amount, transfer.tokenDecimals),
+      isVoucherCreationTransfer(transfer)
+        ? t`Created`
+        : transfer.direction === "IN"
+          ? t`Received`
+          : t`Sent`,
+    ].some((value) => value.toLocaleLowerCase().includes(term)),
+  );
 
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || !transfersQuery.hasNextPage || typeof IntersectionObserver === "undefined") {
+    if (
+      term ||
+      !target ||
+      !transfersQuery.hasNextPage ||
+      typeof IntersectionObserver === "undefined"
+    ) {
       return;
     }
 
@@ -39,11 +65,32 @@ export function ActivityPage({ address }: { address?: string }) {
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [transfersQuery.fetchNextPage, transfersQuery.hasNextPage, transfersQuery.isFetchingNextPage]);
+  }, [
+    term,
+    transfersQuery.fetchNextPage,
+    transfersQuery.hasNextPage,
+    transfersQuery.isFetchingNextPage,
+  ]);
 
   return (
     <div className="space-y-6">
-      <h1>{t`Activity`}</h1>
+      <h1 className="sr-only">{t`Activity`}</h1>
+      <MarketFeedBar current="activity">
+        <Input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          aria-label={t({ id: "Search loaded activity", message: "Search loaded activity" })}
+          placeholder={t({ id: "Search loaded activity", message: "Search loaded activity" })}
+        />
+      </MarketFeedBar>
+      {term && transfersQuery.hasNextPage ? (
+        <p className="text-sm text-muted-foreground">
+          <Trans id="Search covers loaded transfers. Load more to search older activity.">
+            Search covers loaded transfers. Load more to search older activity.
+          </Trans>
+        </p>
+      ) : null}
 
       <section className="border border-border bg-card" aria-label={t`Transfer history`}>
         {transfersQuery.isPending ? (
@@ -69,7 +116,7 @@ export function ActivityPage({ address }: { address?: string }) {
             <Trans>No activity yet.</Trans>
           </div>
         ) : null}
-        {transfers.map((transfer, index, list) => {
+        {matchingTransfers.map((transfer, index, list) => {
           const incoming = transfer.direction === "IN";
           const created = isVoucherCreationTransfer(transfer);
           const Icon = created
@@ -155,6 +202,26 @@ export function ActivityPage({ address }: { address?: string }) {
             </button>
           );
         })}
+        {term &&
+        transfersQuery.isSuccess &&
+        matchingTransfers.length === 0 &&
+        transfers.length > 0 ? (
+          <p className="p-3 text-sm text-muted-foreground" role="status">
+            <Trans id="No loaded transfers match this search.">
+              No loaded transfers match this search.
+            </Trans>
+          </p>
+        ) : null}
+        {term && transfersQuery.hasNextPage ? (
+          <Button
+            variant="outline"
+            tap
+            pending={transfersQuery.isFetchingNextPage}
+            onClick={() => void transfersQuery.fetchNextPage()}
+          >
+            <Trans>Load more</Trans>
+          </Button>
+        ) : null}
         <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
         {transfersQuery.isFetchingNextPage ? (
           <div className="p-3 text-center text-muted-foreground text-xs">
