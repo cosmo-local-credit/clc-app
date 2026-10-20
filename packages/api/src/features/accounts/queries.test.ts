@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { AccountsClient, AccountTokensResult, AccountTransfersResult } from "./client";
 import {
   accountKeys,
@@ -90,5 +90,33 @@ describe("infinite account options", () => {
       false,
     );
     expect(latestAccountTokensQueryOptions({} as AccountsClient, undefined).enabled).toBe(false);
+  });
+});
+
+describe("transfer search pagination", () => {
+  it("isolates history and each search term in the cache", () => {
+    expect(accountKeys.transfersInfinite(ADDRESS, 20, "old")).not.toEqual(
+      accountKeys.transfersInfinite(ADDRESS, 20),
+    );
+    expect(accountKeys.transfersInfinite(ADDRESS, 20, "old")).not.toEqual(
+      accountKeys.transfersInfinite(ADDRESS, 20, "new"),
+    );
+  });
+  it("keeps the term when fetching the next page", async () => {
+    const getAccountTransfers = vi.fn().mockResolvedValue({ transfers: [], last: 0 });
+    const options = accountTransfersInfiniteQueryOptions(
+      { getAccountTransfers } as unknown as AccountsClient,
+      ADDRESS,
+      20,
+      "old",
+    );
+    const signal = new AbortController().signal;
+    await options.queryFn!({ pageParam: 7, signal } as Parameters<
+      NonNullable<typeof options.queryFn>
+    >[0]);
+    expect(getAccountTransfers).toHaveBeenCalledWith(
+      { address: ADDRESS, perPage: 20, q: "old", cursor: 7, next: true },
+      signal,
+    );
   });
 });
