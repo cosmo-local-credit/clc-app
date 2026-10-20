@@ -1,3 +1,6 @@
+vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
+  useAssetOwner: (_address: string, owner: string | null) => owner,
+}));
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
 import type { ReactNode } from "react";

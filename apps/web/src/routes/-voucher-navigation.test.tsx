@@ -20,6 +20,7 @@ vi.mock("@clc/api/features/market/client", async (importOriginal) => {
 });
 
 vi.mock("wagmi", () => ({
+  useClient: () => undefined,
   useConnection: () => ({ address: undefined }),
 }));
 

@@ -9,7 +9,13 @@ import { buildCollectPoolFeesCalls } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { type ReactNode, useState } from "react";
-import { RiHandCoinLine, RiPencilLine, RiSafe2Line, RiWalletLine } from "react-icons/ri";
+import {
+  RiHandCoinLine,
+  RiPencilLine,
+  RiSafe2Line,
+  RiUserSharedLine,
+  RiWalletLine,
+} from "react-icons/ri";
 import { toast } from "sonner";
 import { isAddress, zeroAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -35,9 +41,12 @@ import {
 } from "#/features/pools/hooks/use-pool-fee-settings";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 
+import { POOL_OWNERSHIP_TRANSFER_ENABLED } from "#/lib/ownership-transfer-config";
+
+import { PoolOwnershipTransferForm } from "./pool-ownership-transfer-form";
 import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
 
-type ControlSheet = "details" | "liquidity" | "fees" | "feeSettings";
+type ControlSheet = "details" | "liquidity" | "fees" | "feeSettings" | "ownership";
 
 /**
  * Everything a steward can change about one pool, in a single group.
@@ -109,6 +118,13 @@ export function PoolControlsPanel({
               }
               onClick={() => setSheet("feeSettings")}
             />
+            {POOL_OWNERSHIP_TRANSFER_ENABLED ? (
+              <ActionRow
+                icon={<RiUserSharedLine className="size-4" aria-hidden="true" />}
+                label={t`Transfer ownership`}
+                onClick={() => setSheet("ownership")}
+              />
+            ) : null}
           </>
         ) : null}
       </section>
@@ -144,6 +160,14 @@ export function PoolControlsPanel({
           feeAddress={fee?.feeAddress ?? null}
           onDone={() => setSheet(null)}
         />
+      </ControlSheetShell>
+
+      <ControlSheetShell
+        open={sheet === "ownership"}
+        title={t`Transfer ownership`}
+        onClose={() => setSheet(null)}
+      >
+        <PoolOwnershipTransferForm pool={pool} settings={fee} onDone={() => setSheet(null)} />
       </ControlSheetShell>
 
       <ControlSheetShell

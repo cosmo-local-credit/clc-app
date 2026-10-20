@@ -580,3 +580,102 @@ export function seedPoolVoucherRateInput(input: {
     creditLimit: formatTokenAmount(unitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2),
   };
 }
+
+export const oracleQuoterBaseCurrencyAbi = parseAbi([
+  "function baseCurrency() view returns (address)",
+]);
+
+export const ownableAbi = parseAbi([
+  "function owner() view returns (address)",
+  "function transferOwnership(address newOwner)",
+]);
+
+export const poolOwnershipWiringAbi = parseAbi([
+  "function tokenRegistry() view returns (address)",
+  "function tokenLimiter() view returns (address)",
+  "function feePolicy() view returns (address)",
+  "function quoter() view returns (address)",
+  "function protocolFeeController() view returns (address)",
+]);
+
+export type PoolOwnershipContracts = {
+  poolAddress: `0x${string}`;
+  registryAddress: `0x${string}` | null;
+  limiterAddress: `0x${string}` | null;
+  feePolicyAddress: `0x${string}` | null;
+  quoterAddress: `0x${string}` | null;
+  protocolFeeControllerAddress: `0x${string}` | null;
+  quoterType: "decimal" | "relative" | "oracle" | null;
+};
+
+/** Dependencies first, SwapPool last; shared contracts are never handed over. */
+export function poolOwnershipTargets(input: PoolOwnershipContracts): `0x${string}`[] {
+  assertContractAddress(input.poolAddress, "pool");
+  if (!["decimal", "relative", "oracle"].includes(input.quoterType ?? "")) {
+    throw new Error(
+      "This pool's pricing implementation is unknown. Ask support to reconcile its catalog record.",
+    );
+  }
+  const targets = [
+    requireDependency(input.registryAddress, "token registry"),
+    requireDependency(input.limiterAddress, "limiter"),
+    requireDependency(input.feePolicyAddress, "fee policy"),
+  ];
+  const quoter = requireDependency(input.quoterAddress, "quoter");
+  if (input.quoterType !== "decimal") targets.push(quoter);
+  targets.push(input.poolAddress);
+  const allContracts = input.quoterType === "decimal" ? [...targets, quoter] : targets;
+  if (
+    new Set(allContracts.map((address) => address.toLowerCase())).size !== allContracts.length ||
+    allContracts.some(
+      (address) => address.toLowerCase() === input.protocolFeeControllerAddress?.toLowerCase(),
+    )
+  ) {
+    throw new Error(
+      "This pool has overlapping contract addresses. Ask support to reconcile its wiring.",
+    );
+  }
+  return targets;
+}
+
+export function ownershipRecipientSchema(
+  ownerAddress: string,
+  contracts: readonly (string | null)[],
+) {
+  return z
+    .string()
+    .trim()
+    .refine((value) => isAddress(value) && value.toLowerCase() !== zeroAddress, {
+      message: "Enter a valid wallet address",
+    })
+    .refine((value) => value.toLowerCase() !== ownerAddress.toLowerCase(), {
+      message: "New owner must be a different wallet",
+    })
+    .refine(
+      (value) => !contracts.some((address) => address?.toLowerCase() === value.toLowerCase()),
+      { message: "New owner must not be one of this asset's contracts" },
+    );
+}
+
+export function buildTransferPoolOwnershipCalls(
+  input: PoolOwnershipContracts & {
+    ownerAddress: `0x${string}`;
+    newOwnerAddress: `0x${string}`;
+  },
+): CaliburCall[] {
+  const targets = poolOwnershipTargets(input);
+  const recipient = ownershipRecipientSchema(input.ownerAddress, [
+    ...targets,
+    input.quoterAddress,
+    input.protocolFeeControllerAddress,
+  ]).parse(input.newOwnerAddress) as `0x${string}`;
+  return targets.map((to) => ({
+    to,
+    value: "0",
+    data: encodeFunctionData({
+      abi: ownableAbi,
+      functionName: "transferOwnership",
+      args: [recipient],
+    }),
+  }));
+}
