@@ -1,11 +1,10 @@
 # Ownership transfer rollout
 
-Pool handover is implemented but disabled by default. Set
-`VITE_POOL_OWNERSHIP_TRANSFER_ENABLED=true` only after the matching backend has
-been deployed and its catalog reconciled. The variable is not in either Wrangler
-file yet, so every Pages build has it off. Its value differs per environment, so
-it goes in the "Per environment" blocks of `wrangler.toml`, committed on both
-`develop` and `master` with each branch's own value.
+Pool handover is behind `VITE_POOL_OWNERSHIP_TRANSFER_ENABLED`. Its value differs
+per environment, so it sits in the "Per environment" blocks of `wrangler.toml`
+on both branches: `"true"` on `develop` (staging) and `"false"` on `master`
+(prod). Merge the develop change only after staging's backend is deployed and
+reconciled, and flip master only after prod's.
 
 ## Backend first
 
@@ -32,9 +31,9 @@ In the sibling `clc-core` repository:
 3. Check several voucher/pool detail responses against `owner()` at that block.
    A reconciliation snapshot is ordered after every log in its block; later
    events still win. Repeating it cannot overwrite a newer projection.
-4. Enable the frontend flag for staging (`true` in develop's per-environment
-   block, `false` in master's), then deploy that frontend. Keep prod disabled
-   until its own backend deployment and reconciliation are complete.
+4. Deploy the frontend. Staging's build has the flag on; prod's stays off until
+   its own backend deployment and reconciliation are complete, then master's
+   value changes to `"true"`.
 
 ## Staging smoke test
 
