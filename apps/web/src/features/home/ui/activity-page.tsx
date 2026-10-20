@@ -91,6 +91,26 @@ export function ActivityPage({ address }: { address?: string }) {
         aria-label={t`Transfer history`}
         aria-busy={isDebouncing || transfersQuery.isFetching}
       >
+        <div role="status" aria-live="polite" aria-atomic="true">
+          {searchReady && transfersQuery.isSuccess && transfers.length > 0 ? (
+            <span className="sr-only">
+              {i18n._("{count, plural, one {# transfer shown.} other {# transfers shown.}}", {
+                count: transfers.length,
+              })}
+            </span>
+          ) : null}
+          {searchReady && transfersQuery.isSuccess && transfers.length === 0 ? (
+            <p className="p-3 text-muted-foreground text-sm">
+              {term ? (
+                <Trans id="No activity matches this search.">
+                  No activity matches this search.
+                </Trans>
+              ) : (
+                <Trans>No activity yet.</Trans>
+              )}
+            </p>
+          ) : null}
+        </div>
         {searchReady ? (
           <>
             {transfersQuery.isPending ? (
@@ -98,7 +118,7 @@ export function ActivityPage({ address }: { address?: string }) {
             ) : null}
             {transfersQuery.isError ? (
               <div className="space-y-2 p-3">
-                <p className="text-muted-foreground text-sm">
+                <p role="alert" className="text-muted-foreground text-sm">
                   <Trans>Couldn't load activity.</Trans>
                 </p>
                 <Button
@@ -109,17 +129,6 @@ export function ActivityPage({ address }: { address?: string }) {
                 >
                   <Trans>Try again</Trans>
                 </Button>
-              </div>
-            ) : null}
-            {transfersQuery.isSuccess && transfers.length === 0 ? (
-              <div className="p-3 text-muted-foreground text-sm">
-                {term ? (
-                  <Trans id="No activity matches this search.">
-                    No activity matches this search.
-                  </Trans>
-                ) : (
-                  <Trans>No activity yet.</Trans>
-                )}
               </div>
             ) : null}
             {transfers.map((transfer, index, list) => {

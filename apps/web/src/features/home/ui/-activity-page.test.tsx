@@ -132,6 +132,9 @@ describe("ActivityPage", () => {
     vi.stubGlobal("fetch", fetcher);
     renderWithQueryClient(<ActivityPage address={ADDRESS} />);
     expect(await screen.findByText("No activity yet.")).toBeTruthy();
+    const announcements = screen.getByRole("status");
+    expect(announcements.getAttribute("aria-live")).toBe("polite");
+    expect(announcements.getAttribute("aria-atomic")).toBe("true");
     const search = screen.getByRole("searchbox", { name: "Search activity" });
     fireEvent.change(search, { target: { value: "h" } });
     expect(screen.getByText("Type at least two characters.")).toBeTruthy();
@@ -139,12 +142,33 @@ describe("ActivityPage", () => {
     expect(fetcher.mock.calls.some(([url]) => String(url).includes("q=h"))).toBe(false);
     fireEvent.change(search, { target: { value: "historic" } });
     expect(await screen.findByText("5 SV")).toBeTruthy();
+    expect(screen.getByRole("status")).toBe(announcements);
+    expect(announcements.textContent).toBe("1 transfer shown.");
     expect(fetcher.mock.calls.some(([url]) => String(url).includes("q=historic"))).toBe(true);
     fireEvent.change(search, { target: { value: "absent" } });
     await waitFor(() => expect(screen.queryByText("5 SV")).toBeNull());
     expect(await screen.findByText("No activity matches this search.")).toBeTruthy();
+    expect(screen.getByRole("status")).toBe(announcements);
+    expect(announcements.textContent).toContain("No activity matches this search.");
+    expect(screen.getByRole("searchbox", { name: "Search activity" })).toBe(search);
     fireEvent.change(search, { target: { value: "" } });
     expect(await screen.findByText("No activity yet.")).toBeTruthy();
+  });
+
+  it("announces a failed activity request", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: "Server error",
+        text: async () => JSON.stringify({ ok: false, description: "Search failed" }),
+      }),
+    );
+    renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toBe("Couldn't load activity.");
+    expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
   });
 
   it("shows zero-address receipts as created supply", async () => {
