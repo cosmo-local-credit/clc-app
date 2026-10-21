@@ -118,7 +118,8 @@ export function OfferingEditorSheet({
     >
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent>
+        {/* The inline unit list must not resize the sheet under the tapped input. */}
+        <SheetContent className="h-[85dvh]">
           <SheetHeader>
             <SheetTitle>
               {offering ? <Trans>Edit offering</Trans> : <Trans>Add offering</Trans>}
