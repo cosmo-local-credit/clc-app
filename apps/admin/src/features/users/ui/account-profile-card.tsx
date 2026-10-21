@@ -57,7 +57,7 @@ export function AccountProfileCard({ account }: { account: AdminUser }) {
               <RecordAbsent>None</RecordAbsent>
             )}
           </RecordRow>
-          <RecordRow label="Preferred currency">
+          <RecordRow label="Preferred unit of account">
             {account.preferredCurrency ? (
               <span className="font-data text-xs">{account.preferredCurrency}</span>
             ) : (

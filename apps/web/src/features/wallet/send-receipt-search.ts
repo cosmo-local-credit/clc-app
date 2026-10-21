@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeUnitOfAccount } from "@clc/core/lib/currencies";
 
 export const receiptUoaValueSchema = z
   .string()
@@ -9,10 +10,8 @@ export const receiptUoaValueSchema = z
 
 export const receiptUoaSchema = z
   .string()
-  .trim()
-  .min(1)
-  .max(16)
-  .regex(/^[A-Za-z0-9]+$/)
+  .transform(normalizeUnitOfAccount)
+  .pipe(z.string().min(1).max(32))
   .optional()
   .catch(undefined);
 

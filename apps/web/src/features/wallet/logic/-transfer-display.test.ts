@@ -25,7 +25,7 @@ describe("formatTransferUnitValue", () => {
     [undefined, "KES"],
     ["10", undefined],
     ["1e2", "KES"],
-    ["10", "KES/USD"],
+    ["10", "x".repeat(33)],
   ])("hides incomplete or malformed snapshots", (value, unit) => {
     expect(formatTransferUnitValue(value, unit, "en")).toBeNull();
   });

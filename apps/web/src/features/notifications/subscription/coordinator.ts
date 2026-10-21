@@ -1,6 +1,7 @@
+import { fetchNotificationRealtimeToken } from "@clc/api/features/notifications/client";
 import {
+  getNotificationBackendBaseUrl,
   fetchVapidPublicKey,
-  linkNotificationWallet,
   type NotificationClientOptions,
   type NotificationPushSubscriptionJSON,
   type RegisterNotificationDeviceResponse,
@@ -9,6 +10,7 @@ import {
 } from "../api/notification-client";
 import { detectNotificationCapability, type NotificationCapability } from "../platform/capability";
 import {
+  beginNotificationIdentity,
   getOrCreateNotificationDeviceId,
   isNotificationStorageAvailable,
   type NotificationConfigRecord,
@@ -119,10 +121,22 @@ export async function enableNotificationSubscription(
   }
 
   try {
+    const token = await fetchNotificationRealtimeToken({
+      baseUrl: options.client?.baseUrl ?? getNotificationBackendBaseUrl(),
+      fetcher: options.client?.fetcher,
+      signal: options.client?.signal,
+    });
+    if (
+      options.currentWalletAddress &&
+      token.walletAddress.toLowerCase() !== options.currentWalletAddress.toLowerCase()
+    )
+      throw new Error("Notification session changed.");
+    const identity = await beginNotificationIdentity(token.walletAddress, token.userId);
+    const client = { ...options.client, identityEpoch: identity.identityEpoch };
     const registration = await waitForServiceWorkerReady(
       options.serviceWorkerReadyTimeoutMs ?? DEFAULT_SERVICE_WORKER_READY_TIMEOUT_MS,
     );
-    const vapid = await fetchVapidPublicKey(options.client);
+    const vapid = await fetchVapidPublicKey(client);
     const config = await readNotificationConfig();
     const subscriptionResult = await getOrCreatePushSubscription({
       registration,
@@ -148,28 +162,24 @@ export async function enableNotificationSubscription(
         serviceWorkerVersion,
         vapidKeyVersion: vapid.keyVersion,
       },
-      options.client,
+      client,
     );
-    const linkResponse = options.currentWalletAddress
-      ? await linkNotificationWallet(
-          {
-            deviceId,
-            walletAddress: options.currentWalletAddress,
-          },
-          options.client,
-        )
-      : null;
-
-    const nextConfig = await updateNotificationConfig({
-      appVersion,
-      permissionState: capability.permission,
-      platform: capability.platform,
-      serviceWorkerVersion,
-      subscriptionHash,
-      syncCursor: registerResponse.inboxSyncCursor,
-      vapidKeyVersion: vapid.keyVersion,
-      vapidPublicKey: vapid.publicKey,
-    });
+    const nextConfig = await updateNotificationConfig(
+      {
+        appVersion,
+        permissionState: capability.permission,
+        platform: capability.platform,
+        serviceWorkerVersion,
+        subscriptionHash,
+        registrationId: registerResponse.registrationId,
+        userId: registerResponse.userId,
+        generation: registerResponse.generation,
+        syncCursor: config?.syncCursor ?? registerResponse.inboxSyncCursor,
+        vapidKeyVersion: vapid.keyVersion,
+        vapidPublicKey: vapid.publicKey,
+      },
+      identity.identityEpoch,
+    );
 
     await recordSubscriptionDiagnostic({
       endpoint: subscriptionResult.subscription.endpoint,
@@ -181,7 +191,7 @@ export async function enableNotificationSubscription(
       capability,
       config: nextConfig,
       deviceId,
-      linkedWalletAddresses: linkResponse?.linkedWalletAddresses,
+      linkedWalletAddresses: registerResponse.canonicalLinkedWalletAddresses,
       registerResponse,
       status: "enabled",
       subscription: subscriptionResult.subscription,

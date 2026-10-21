@@ -1,9 +1,13 @@
 import { buildVoucherOwnershipTransferCall } from "@clc/core/features/vouchers/logic";
-import { useMutation } from "@tanstack/react-query";
-import { useConnection } from "wagmi";
-
-import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
+import { ownableAbi, ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
+import { readContract } from "viem/actions";
+import { useClient, useConnection } from "wagmi";
+import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
+import { waitForOwnershipRelay } from "#/features/ownership/api/wait-for-ownership-relay";
+import { useOwnershipTransfer } from "#/features/ownership/hooks/use-ownership-transfer";
+import { CHAIN_ID } from "#/lib/chain";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
@@ -15,19 +19,57 @@ export type VoucherOwnershipTransferInput = {
   includeAuthorization?: boolean;
 };
 
-/** Signs the current owner's ownership handoff and has Calibur relay it. */
+/** Existing transport, with settlement and ordered catalog refresh. */
 export function useVoucherOwnershipTransfer() {
-  const { connector } = useConnection();
-  return useMutation({
-    mutationFn: (input: VoucherOwnershipTransferInput) =>
-      relayCaliburBatch(
-        {
-          senderAddress: input.ownerAddress,
-          connectorId: connector?.id,
-          calls: [buildVoucherOwnershipTransferCall(input)],
-          includeAuthorization: input.includeAuthorization,
-        },
-        relayerClient,
-      ),
-  });
+  const { address, connector } = useConnection();
+  const client = useClient({ chainId: CHAIN_ID });
+  const delegation = useCaliburDelegation(address);
+  const mutation = useOwnershipTransfer(
+    "voucher",
+    async (input) => {
+      let trackingId = input.trackingId;
+      if (!trackingId) {
+        if (!address || delegation === "checking")
+          throw new Error("Still checking your wallet. Try again in a moment.");
+        const submitted = await relayCaliburBatch(
+          {
+            senderAddress: address,
+            connectorId: connector?.id,
+            calls: input.calls,
+            includeAuthorization: delegation === "not-delegated",
+          },
+          relayerClient,
+        );
+        trackingId = submitted.trackingId;
+        input.onSubmitted(trackingId);
+      }
+      const settled = await waitForOwnershipRelay(relayerClient, trackingId);
+      input.onConfirmed(trackingId, settled.txHash);
+      return settled;
+    },
+    async (input) => {
+      ownershipRecipientSchema(input.ownerAddress, [input.assetAddress]).parse(
+        input.newOwnerAddress,
+      );
+      if (!client) throw new Error("The configured chain is unavailable.");
+      const owner = await readContract(client, {
+        address: input.assetAddress,
+        abi: ownableAbi,
+        functionName: "owner",
+      });
+      if (owner.toLowerCase() !== input.ownerAddress.toLowerCase())
+        throw new Error("The voucher's on-chain owner has changed. Refresh before transferring.");
+      return [
+        buildVoucherOwnershipTransferCall({
+          tokenAddress: input.assetAddress,
+          newOwnerAddress: input.newOwnerAddress,
+        }),
+      ];
+    },
+  );
+  return {
+    ...mutation,
+    mutateAsync: (input: VoucherOwnershipTransferInput) =>
+      mutation.mutateAsync({ ...input, assetAddress: input.tokenAddress }),
+  };
 }

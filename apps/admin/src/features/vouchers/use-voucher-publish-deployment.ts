@@ -6,6 +6,7 @@ import {
   deploymentKeys,
 } from "@clc/api/features/deployments/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { getVoucherTrackingOutcome } from "@clc/api/features/vouchers/deploy-client";
 import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,7 +44,11 @@ export function useVoucherPublishDeployment() {
 
   const deploy = useMutation({
     mutationFn: (payload: VoucherDeployPayload) => clcApi.voucherDeploy.deployVoucher(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
+        queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
+      ]),
   });
 
   const tracking = useQuery({

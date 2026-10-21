@@ -1,6 +1,7 @@
 import type { EIP7702Auth, SignedBatch } from "@clc/core/features/webauthn/index";
 import { getAddress, isAddress } from "viem";
 import { z } from "zod";
+import { normalizeUnitOfAccount } from "@clc/core/lib/currencies";
 import type { OtxTrackResult } from "../auth/client";
 
 type OKResponse<T> = { ok: true; description?: string; result: T };
@@ -141,11 +142,7 @@ const relayValuationSnapshotSchema = z.object({
     .trim()
     .regex(/^(?:0|[1-9]\d*)(?:\.\d+)?$/)
     .refine((value) => !/^0(?:\.0+)?$/.test(value)),
-  voucherUoa: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z0-9]{2,16}$/),
+  voucherUoa: z.string().transform(normalizeUnitOfAccount).pipe(z.string().min(1).max(32)),
 });
 
 function parseRelayResult(value: unknown): RelayResult {

@@ -12,7 +12,7 @@ import { UsernameInput } from "#/components/profile/username-input";
 import { ActionRow } from "#/components/ui/action-row";
 import { AvatarPicker } from "#/components/ui/avatar-picker";
 import { Button } from "#/components/ui/button";
-import { CurrencySelect } from "#/components/ui/currency-select";
+import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -489,7 +489,7 @@ export function OnboardingProfileForm({
                     <div className="border border-border bg-card">
                       <ActionRow
                         icon={<RiMoneyDollarCircleLine className="size-4" aria-hidden="true" />}
-                        label={t`Preferred currency`}
+                        label={t`Preferred unit of account`}
                         value={<span className="font-mono">{field.state.value}</span>}
                         onClick={() => setCurrencyOpen(true)}
                       />
@@ -498,9 +498,9 @@ export function OnboardingProfileForm({
                     <SettingsSheet
                       open={currencyOpen}
                       onOpenChange={setCurrencyOpen}
-                      title={t`Preferred currency`}
+                      title={t`Preferred unit of account`}
                     >
-                      <CurrencySelect
+                      <UnitOfAccountCombobox
                         id="onb-preferred-currency"
                         value={field.state.value}
                         onValueChange={(currency) => {
@@ -508,9 +508,9 @@ export function OnboardingProfileForm({
                           field.handleChange(currency);
                           setCurrencyOpen(false);
                         }}
-                        placeholder={t`Search currencies`}
-                        emptyMessage={t`No currencies found`}
-                        ariaLabel={t`Preferred currency`}
+                        placeholder={t`Search units of account`}
+                        emptyMessage={t`No units of account found`}
+                        ariaLabel={t`Preferred unit of account`}
                         ariaInvalid={!!err}
                       />
                     </SettingsSheet>

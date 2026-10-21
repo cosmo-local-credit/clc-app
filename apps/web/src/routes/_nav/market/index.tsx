@@ -4,6 +4,7 @@ import { NearbyCatalog } from "#/components/nearby-catalog";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { CatalogsPage } from "#/features/catalogs/ui/catalogs-page";
 import { MarketListPage } from "#/features/home/ui/market-list-page";
+import { MarketplacePage } from "#/features/home/ui/marketplace-page";
 import { OffersPage } from "#/features/home/ui/offers-page";
 import { PoolsPage } from "#/features/pools/ui";
 import {
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/_nav/market/")({
         replace: true,
       });
     }
-    // There is no list of everything: without a list to show, the market is the map.
+    // Without a list it knows, the market is the map; All is asked for by name.
     if (parseMarketplaceScope(search.scope) === null) {
       throw redirect({ to: "/", search: mapSearchFrom(search), replace: true });
     }
@@ -76,6 +77,8 @@ function MarketListRoute() {
         <OffersPage creditableSearch={search.creditable} locationOwner={owner} />
       ) : scope === "vouchers" ? (
         <MarketListPage creditableSearch={search.creditable} locationOwner={owner} />
+      ) : scope === "all" ? (
+        <MarketplacePage creditableSearch={search.creditable} locationOwner={owner} />
       ) : (
         <div className="min-h-[100svh] bg-background px-4 pb-market-list text-foreground">
           <PoolsPage

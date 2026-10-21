@@ -1,18 +1,25 @@
 /// <reference lib="webworker" />
 
+import { refreshNotificationPushSubscription } from "@clc/api/features/notifications/client";
 import {
   fetchVapidPublicKey,
-  registerNotificationDevice,
+  getNotificationBackendBaseUrl,
   sendNotificationClickAck,
   sendNotificationDeliveryAck,
 } from "../api/notification-client";
 import { flushQueuedNotificationAcks } from "../recovery/recovery";
+import { syncNavigatorAppBadge } from "../realtime/app-badge";
 import {
   consumePendingNotificationClickEvents,
   enqueueNotificationAck,
   getOrCreateNotificationDeviceId,
+  getOrCreateNotificationInstallation,
+  incrementUnseenCount,
+  isNotificationIdentityCurrent,
   markNotificationInboxMessageActioned,
   markNotificationInboxMessageRead,
+  markNotificationInboxMessageShown,
+  readNotificationDisplayState,
   readNotificationConfig,
   readNotificationDeviceId,
   recordSubscriptionDiagnostic,
@@ -98,8 +105,23 @@ function createDependencies(
     broadcast: (message) => broadcastToWindowClients(scope, message),
     enqueueAck: enqueueNotificationAck,
     flushQueuedAcks: flushQueuedNotificationAcks,
-    focusOrOpen: (targetUrl, beforeOpen) => focusOrOpenWindow(scope, targetUrl, beforeOpen),
+    focusOrOpen: (targetUrl, beforeOpen, identityEpoch) =>
+      focusOrOpenWindow(scope, targetUrl, beforeOpen, identityEpoch),
     getDeviceId: getOrCreateNotificationDeviceId,
+    readConfig: readNotificationConfig,
+    readDisplayState: readNotificationDisplayState,
+    markInboxMessageShown: markNotificationInboxMessageShown,
+    dismissNotification: async (notificationId, registrationId) => {
+      const notifications = await scope.registration.getNotifications();
+      for (const notification of notifications) {
+        const data = notification.data as
+          | { notificationId?: string; registrationId?: string }
+          | undefined;
+        if (data?.notificationId === notificationId && data.registrationId === registrationId)
+          notification.close();
+      }
+    },
+    isIdentityCurrent: isNotificationIdentityCurrent,
     markInboxMessageActioned: markNotificationInboxMessageActioned,
     markInboxMessageRead: markNotificationInboxMessageRead,
     now: () => new Date().toISOString(),
@@ -108,6 +130,15 @@ function createDependencies(
     sendClickAck: sendNotificationClickAck,
     sendDeliveryAck: sendNotificationDeliveryAck,
     showNotification: (title, options) => scope.registration.showNotification(title, options),
+    matchWindowClients: async () => {
+      const clients = (await scope.clients.matchAll({
+        includeUncontrolled: true,
+        type: "window",
+      })) as WindowClient[];
+      return clients.map((client) => ({ visibilityState: client.visibilityState }));
+    },
+    incrementUnseenCount,
+    syncAppBadge: syncNavigatorAppBadge,
   };
 }
 
@@ -178,7 +209,28 @@ function createSubscriptionChangeDependencies(
         status: "refreshed",
         vapidKeyVersion,
       }),
-    registerDevice: registerNotificationDevice,
+    registerDevice: async (request, identityEpoch) => {
+      const config = await readNotificationConfig();
+      if (
+        !config?.registrationId ||
+        !config.identityEpoch ||
+        config.identityEpoch !== identityEpoch ||
+        config.registrationId !== request.registrationId
+      )
+        throw new Error("Notification registration is missing.");
+      const installation = await getOrCreateNotificationInstallation();
+      if (!(await isNotificationIdentityCurrent(config.identityEpoch))) return;
+      if (!request.pushSubscription) return;
+      await refreshNotificationPushSubscription(
+        {
+          deviceId: request.deviceId,
+          registrationId: config.registrationId,
+          pushSubscription: request.pushSubscription,
+          vapidKeyVersion: request.vapidKeyVersion,
+        },
+        { baseUrl: getNotificationBackendBaseUrl(), deviceToken: installation.installationToken },
+      );
+    },
     resubscribe: (publicKey) => subscribeWithVapidPublicKey(scope.registration, publicKey),
     updateConfig: updateNotificationConfig,
   };
@@ -214,6 +266,7 @@ async function focusOrOpenWindow(
   scope: ServiceWorkerGlobalScope,
   targetUrl: string,
   beforeOpen: () => Promise<unknown>,
+  identityEpoch?: string,
 ): Promise<void> {
   const absoluteTargetUrl = new URL(targetUrl, scope.location.origin).href;
   const windowClients = (await scope.clients.matchAll({
@@ -224,6 +277,7 @@ async function focusOrOpenWindow(
     (client) => new URL(client.url).origin === scope.location.origin,
   );
 
+  if (!(await isNotificationIdentityCurrent(identityEpoch))) return;
   if (appClient) {
     try {
       await appClient.navigate(absoluteTargetUrl);
@@ -234,5 +288,6 @@ async function focusOrOpenWindow(
   }
 
   await beforeOpen().catch(() => undefined);
-  await scope.clients.openWindow(absoluteTargetUrl);
+  if (await isNotificationIdentityCurrent(identityEpoch))
+    await scope.clients.openWindow(absoluteTargetUrl);
 }

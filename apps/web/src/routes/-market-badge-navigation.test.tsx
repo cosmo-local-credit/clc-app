@@ -1,4 +1,3 @@
-import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -21,7 +20,11 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 
 import { MarketBar } from "#/components/market-bar";
-import { parseMarketplaceScope, pickMarketplaceSearch } from "#/lib/navigation/marketplace-search";
+import {
+  type MarketListScope,
+  parseMarketplaceScope,
+  pickMarketplaceSearch,
+} from "#/lib/navigation/marketplace-search";
 
 const filter = {
   term: "",
@@ -29,7 +32,7 @@ const filter = {
   clearTerm: vi.fn(),
 } as unknown as CatalogFilterControls;
 
-function Bar({ current }: { current: "map" | MarketplaceScope }) {
+function Bar({ current }: { current: "map" | MarketListScope }) {
   return (
     <>
       <h1>{current}</h1>
@@ -120,6 +123,24 @@ describe("market badge navigation", () => {
 
     expect(await screen.findByRole("heading", { name: "map" })).toBeTruthy();
     expect(history.location.pathname).toBe("/");
+  });
+
+  it("opens All from the map, its badge returns to the map, and Back reopens All", async () => {
+    const history = renderMarket("/?q=bike");
+    await screen.findByRole("heading", { name: "map" });
+
+    fireEvent.click(screen.getByRole("link", { name: "All" }));
+    expect(await screen.findByRole("heading", { name: "all" })).toBeTruthy();
+    expect(history.location.pathname).toBe("/market");
+    expect(query(history, "scope")).toBe("all");
+    expect(query(history, "q")).toBe("bike");
+
+    fireEvent.click(screen.getByRole("link", { name: "All" }));
+    expect(await screen.findByRole("heading", { name: "map" })).toBeTruthy();
+    expect(query(history, "q")).toBe("bike");
+
+    await back(history);
+    expect(await screen.findByRole("heading", { name: "all" })).toBeTruthy();
   });
 
   it("moves between lists through their badges, one entry each", async () => {

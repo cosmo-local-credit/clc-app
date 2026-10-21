@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vite-plus/test";
 import type { CatalogsClient } from "./client";
 import {
+  catalogCompleteMembersQueryOptions,
   catalogKeys,
   catalogMembershipQueryOptions,
   catalogMemberMutationOptions,
@@ -34,6 +35,30 @@ describe("catalog cache", () => {
     expect(
       options.getNextPageParam({ catalogs: [], nextCursor: null }, [], undefined, []),
     ).toBeUndefined();
+  });
+  it("drains catalog membership without sharing the visible infinite-list cache", async () => {
+    const members = vi
+      .fn()
+      .mockResolvedValueOnce({
+        items: [{ id: "2", address: `0x${"a".repeat(40)}` }],
+        nextCursor: "opaque",
+      })
+      .mockResolvedValueOnce({
+        items: [{ id: "3", address: `0x${"b".repeat(40)}` }],
+        nextCursor: null,
+      });
+    const client = { members } as unknown as CatalogsClient;
+    const options = catalogCompleteMembersQueryOptions(client, "1", "voucher");
+    const signal = new AbortController().signal;
+
+    expect(options.queryKey).toEqual(catalogKeys.completeMembers("1", "voucher"));
+    expect(options.queryKey).not.toEqual(catalogKeys.members("1", "voucher"));
+    await expect(options.queryFn?.({ signal } as never)).resolves.toEqual([
+      { id: "2", address: `0x${"a".repeat(40)}` },
+      { id: "3", address: `0x${"b".repeat(40)}` },
+    ]);
+    expect(members).toHaveBeenNthCalledWith(1, "1", "voucher", undefined, signal);
+    expect(members).toHaveBeenNthCalledWith(2, "1", "voucher", "opaque", signal);
   });
   it("isolates verified pools and forwards scoped discovery parameters", async () => {
     const list = vi.fn().mockResolvedValue({ catalogs: [], nextCursor: null });

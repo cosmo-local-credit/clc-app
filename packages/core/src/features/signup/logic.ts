@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isIsoCurrency } from "../../lib/currencies";
+import { isUnitOfAccount } from "../../lib/currencies";
 import { optionalEmailSchema, optionalPhoneSchema, optionalWebsiteSchema } from "../../lib/contact";
 import { locationSchema } from "../location/logic";
 
@@ -20,7 +20,9 @@ const preferredCurrencySchema = z
   // Keep the form value's TypeScript shape as `string`; the runtime catalog
   // check still rejects unsupported values, while TanStack Form needs the
   // input and output shapes of its Standard Schema to match.
-  .refine((value): boolean => isIsoCurrency(value), { message: "Choose a preferred currency" });
+  .refine((value): boolean => isUnitOfAccount(value), {
+    message: "Choose a preferred unit of account",
+  });
 
 const bioSchema = z.string().trim().max(500, { message: "Bio must be 500 characters or fewer" });
 

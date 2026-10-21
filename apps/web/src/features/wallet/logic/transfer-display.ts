@@ -28,7 +28,7 @@ export function formatTransferUnitValue(
   locale?: string,
 ): string | null {
   const normalizedUnit = unit?.trim();
-  if (!normalizedUnit || !/^[A-Za-z0-9]{2,16}$/.test(normalizedUnit) || value === undefined) {
+  if (!normalizedUnit || Array.from(normalizedUnit).length > 32 || value === undefined) {
     return null;
   }
   const localizedValue = formatUnitOfAccountDisplayValue(value, locale);

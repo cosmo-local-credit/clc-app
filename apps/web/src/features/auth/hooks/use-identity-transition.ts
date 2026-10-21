@@ -70,15 +70,18 @@ export function useIdentityTransitionTeardown(): void {
     touchOwnerTier(owner);
 
     const transition = noteResolvedIdentity(owner);
-    if (!transition) return;
+    if (!transition) {
+      if (owner === GUEST_STORAGE_OWNER)
+        void resetNotificationIdentity({ onlyIfSessionEnded: true });
+      return;
+    }
 
     clearScopedQueries(queryClient);
     clearInMemoryDrafts();
-    // Fire-and-forget, exactly like the `runNotificationRecovery` call this sits
-    // beside: it involves a network unlink and IndexedDB writes, and it must not
-    // be able to delay or fail the identity change it is reacting to.
+    // Clear the outgoing registration without blocking the established session.
+    if (transition.from === GUEST_STORAGE_OWNER) return;
     void resetNotificationIdentity({
-      previousWalletAddress: transition.from === GUEST_STORAGE_OWNER ? undefined : transition.from,
+      previousWalletAddress: transition.from,
     });
   }, [owner, queryClient]);
 }

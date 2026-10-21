@@ -11,15 +11,24 @@ type TagVocabularyUsage = {
 };
 
 type UnitVocabularyUsage = { offerings: number };
+type UnitOfAccountVocabularyUsage = {
+  profiles: number;
+  vouchers: number;
+  pools: number;
+  voucherDeployments: number;
+  poolDeployments: number;
+};
 
 /** `isCustom` is false for the values a deployment ships with. */
 type VocabularyValue = { value: string; isCustom: boolean; total: number };
 
 export type TagVocabulary = TagVocabularyUsage & VocabularyValue;
 export type UnitVocabulary = UnitVocabularyUsage & VocabularyValue;
+export type UnitOfAccountVocabulary = UnitOfAccountVocabularyUsage & VocabularyValue;
 export type Vocabulary = {
   tags: TagVocabulary[];
   units: UnitVocabulary[];
+  unitsOfAccount: UnitOfAccountVocabulary[];
 };
 
 type BackendVocabularyRow = Record<string, unknown> & { value?: unknown };
@@ -37,15 +46,38 @@ export function createVocabularyClient(http: HttpClient) {
       return normalizeValues(result.units);
     },
 
+    async getUnitsOfAccount(signal?: AbortSignal): Promise<UnitOfAccountVocabulary[]> {
+      const result = await http.request<{ unitsOfAccount?: unknown }>("/api/v2/units-of-account", {
+        method: "GET",
+        cache: "no-store",
+        signal,
+      });
+      return normalizeRows(result.unitsOfAccount).map(normalizeUnitOfAccount);
+    },
+
     async getVocabulary(signal?: AbortSignal): Promise<Vocabulary> {
-      const result = await http.request<{ tags?: unknown; units?: unknown }>(
-        "/api/v2/admin/vocabulary",
-        { method: "GET", cache: "no-store", signal },
-      );
+      const result = await http.request<{
+        tags?: unknown;
+        units?: unknown;
+        unitsOfAccount?: unknown;
+      }>("/api/v2/admin/vocabulary", { method: "GET", cache: "no-store", signal });
       return {
         tags: normalizeRows(result.tags).map(normalizeTag),
         units: normalizeRows(result.units).map(normalizeUnit),
+        unitsOfAccount: normalizeRows(result.unitsOfAccount).map(normalizeUnitOfAccount),
       };
+    },
+
+    async createUnitOfAccount(value: string): Promise<string> {
+      const result = await http.request<{ value?: unknown }>(
+        "/api/v2/admin/vocabulary/units-of-account",
+        {
+          method: "POST",
+          cache: "no-store",
+          body: JSON.stringify({ value }),
+        },
+      );
+      return normalizeText(result.value) ?? value;
     },
 
     async renameValue(kind: "tag" | "unit", value: string, replacement: string): Promise<void> {
@@ -82,6 +114,31 @@ export function createVocabularyClient(http: HttpClient) {
         body: JSON.stringify({ value }),
       });
       return normalizeUnit({ value: result.value, ...result.usage, total: result.total });
+    },
+
+    async renameUnitOfAccount(value: string, replacement: string): Promise<void> {
+      await http.request("/api/v2/admin/vocabulary/units-of-account", {
+        method: "PUT",
+        cache: "no-store",
+        body: JSON.stringify({ value, replacement }),
+      });
+    },
+
+    async deleteUnitOfAccount(
+      value: string,
+      signal?: AbortSignal,
+    ): Promise<UnitOfAccountVocabulary> {
+      const result = await http.request<{
+        value?: unknown;
+        usage?: BackendVocabularyRow;
+        total?: unknown;
+      }>("/api/v2/admin/vocabulary/units-of-account", {
+        method: "DELETE",
+        cache: "no-store",
+        signal,
+        body: JSON.stringify({ value }),
+      });
+      return normalizeUnitOfAccount({ value: result.value, ...result.usage, total: result.total });
     },
   };
 }
@@ -132,5 +189,21 @@ function normalizeUnit(row: BackendVocabularyRow): UnitVocabulary {
     isCustom: isCustom(row),
     offerings,
     total: count(row.total) || offerings,
+  };
+}
+
+function normalizeUnitOfAccount(row: BackendVocabularyRow): UnitOfAccountVocabulary {
+  const usage = {
+    profiles: count(row.profiles),
+    vouchers: count(row.vouchers),
+    pools: count(row.pools),
+    voucherDeployments: count(row.voucherDeployments),
+    poolDeployments: count(row.poolDeployments),
+  };
+  return {
+    value: normalizeText(row.value) ?? "Unknown unit of account",
+    isCustom: isCustom(row),
+    ...usage,
+    total: count(row.total) || Object.values(usage).reduce((sum, value) => sum + value, 0),
   };
 }

@@ -407,7 +407,8 @@ describe("UserDetailPage", () => {
     renderDetailRoute();
     await openProfileSheet();
 
-    fireEvent.change(screen.getByLabelText("Preferred currency"), { target: { value: "USD" } });
+    fireEvent.focus(screen.getByLabelText("Preferred unit of account"));
+    fireEvent.click(await screen.findByRole("option", { name: "USD - US Dollar" }));
     fireEvent.change(screen.getByLabelText("Bio"), { target: { value: "Mutual aid organiser" } });
     fireEvent.change(screen.getByLabelText("Website"), {
       target: { value: "https://new.example" },

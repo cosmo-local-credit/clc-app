@@ -28,7 +28,6 @@ function offering(overrides: Record<string, unknown> = {}) {
     priceInUnitOfAccount: "21.0000",
     sellerAddress: SELLER_ADDRESS,
     commodityName: "Vegetables",
-    commodityType: "GOOD",
     description: "Fresh produce",
     quantity: "5.0000",
     frequency: "week",
@@ -272,7 +271,6 @@ describe("the app-facing model", () => {
     expect(row).toMatchObject({
       name: "Vegetables",
       pricePerUnit: "10.5000",
-      commodityType: "GOOD",
     });
     // The old names are gone from the app model. Anything still reading them is
     // reading the wire directly, which is the thing this layer exists to prevent.
@@ -308,26 +306,6 @@ describe("the app-facing model", () => {
       [null, null],
       [null, null],
     ]);
-  });
-
-  // An imported row with no usable classification is readable and not writable,
-  // the same way an unknown unit is.
-  it("nulls a commodity type outside the two the database allows", async () => {
-    fetchMock.mockResolvedValue(
-      response({
-        offerings: [
-          offering({ id: 1, commodityType: "SERVICE" }),
-          offering({ id: 2, commodityType: "UNCLASSIFIED" }),
-          offering({ id: 3, commodityType: "good" }),
-          offering({ id: 4, commodityType: null }),
-        ],
-        first: 1,
-        last: 4,
-      }),
-    );
-
-    const rows = (await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 })).offerings;
-    expect(rows.map((row) => row.commodityType)).toEqual(["SERVICE", null, null, null]);
   });
 
   // The reason the price is a string end to end. Each of these is a value that
@@ -376,7 +354,6 @@ describe("the managed read override", () => {
 describe("the write methods", () => {
   const input = {
     name: "Fresh maize flour",
-    commodityType: "GOOD" as const,
     description: "Stone-ground flour packed on collection day.",
     unit: "kg" as const,
     pricePerUnit: "120.50",
@@ -394,7 +371,6 @@ describe("the write methods", () => {
     // The rename happens here and nowhere else.
     expect(JSON.parse(init.body as string)).toEqual({
       commodityName: "Fresh maize flour",
-      commodityType: "GOOD",
       description: "Stone-ground flour packed on collection day.",
       unit: "kg",
       price: "120.50",

@@ -1,35 +1,63 @@
-import { Trans, useLingui } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
+import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
+import { cn } from "#/lib/utils";
 
-export function CatalogShareButton({ id, name }: { id: string; name: string }) {
+export function CatalogShareButton({
+  id,
+  name,
+  className,
+}: {
+  id: string;
+  name: string;
+  className?: string;
+}) {
   const { t } = useLingui();
   const [copyOnly, setCopyOnly] = useState(false);
-  async function copy(url: string) {
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t`Link copied`);
-    } catch {
-      toast.error(t`Couldn't copy link`);
-    }
+  const label = copyOnly ? t`Copy link` : t`Share`;
+  const Icon = copyOnly ? RiFileCopyLine : RiShareLine;
+
+  function link() {
+    return `${window.location.origin}/catalogs/${encodeURIComponent(id)}`;
   }
+
+  function copy() {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy link`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(link())
+      .then(() => toast.success(t`Link copied`))
+      .catch(() => toast.error(t`Couldn't copy link`));
+  }
+
   async function share() {
-    const url = `${window.location.origin}/catalogs/${encodeURIComponent(id)}`;
-    if (copyOnly || !navigator.share) {
-      await copy(url);
+    if (!navigator.share) {
+      copy();
       return;
     }
     try {
-      await navigator.share({ title: name, url });
+      await navigator.share({ title: name, url: link() });
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setCopyOnly(true);
     }
   }
   return (
-    <Button variant="outline" tap onClick={() => void share()}>
-      {copyOnly ? <Trans>Copy link</Trans> : <Trans>Share</Trans>}
+    <Button
+      variant="ghost"
+      size="icon-lg"
+      className={cn("border-0 text-muted-foreground", className)}
+      aria-label={label}
+      onClick={() => {
+        if (copyOnly) copy();
+        else void share();
+      }}
+    >
+      <Icon className="size-5" aria-hidden="true" />
     </Button>
   );
 }

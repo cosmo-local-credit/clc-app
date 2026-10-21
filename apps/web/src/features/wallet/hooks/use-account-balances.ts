@@ -126,12 +126,18 @@ export function useAllAccountIssuedTokens(address: string | undefined) {
 
 export function useAccountTransfersInfinite(
   address: string | undefined,
-  { perPage = DEFAULT_PAGE_SIZE, poll = false }: AccountPageQueryOptions = {},
+  {
+    perPage = DEFAULT_PAGE_SIZE,
+    poll = false,
+    q = "",
+    enabled = true,
+  }: AccountPageQueryOptions & { q?: string; enabled?: boolean } = {},
 ) {
   return useInfiniteQuery({
-    ...accountTransfersInfiniteQueryOptions(accountsClient, address, perPage),
+    ...accountTransfersInfiniteQueryOptions(accountsClient, address, perPage, q),
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
+    enabled: Boolean(address) && enabled,
   });
 }
 

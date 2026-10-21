@@ -1,9 +1,9 @@
-import { pollTrackingCompletion } from "@clc/api/features/auth/client";
 import { poolKeys } from "@clc/api/features/pools/queries";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
+import { waitForOwnershipRelay } from "#/features/ownership/api/wait-for-ownership-relay";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
@@ -45,13 +45,28 @@ const relayerClient = createRelayerClient(RELAYER_URL);
  * user owns, and a Calibur batch is submitted by the relayer's own signer, so it
  * has no row there and the endpoint answers 404 "Record(s) not found" forever.
  */
+export type PoolAdminSubmission = {
+  calls: CaliburCall[];
+  deferCatalogRefresh?: boolean;
+  trackingId?: string;
+  onSubmitted?: (trackingId: string) => void;
+  onConfirmed?: (trackingId: string, txHash: string) => void;
+};
+
 export function usePoolAdminRelay() {
   const queryClient = useQueryClient();
   const { address, connector } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
 
   return useMutation({
-    mutationFn: async (calls: CaliburCall[]) => {
+    mutationFn: async (input: CaliburCall[] | PoolAdminSubmission) => {
+      const submission: PoolAdminSubmission = Array.isArray(input) ? { calls: input } : input;
+      if (submission.trackingId) {
+        const result = await waitForOwnershipRelay(relayerClient, submission.trackingId);
+        submission.onConfirmed?.(result.trackingId, result.txHash);
+        return result;
+      }
+      const calls = submission.calls;
       if (!address) throw new Error("Connect your wallet to manage this pool.");
       if (delegationStatus === "checking") {
         throw new Error("Still checking your wallet. Try again in a moment.");
@@ -65,18 +80,16 @@ export function usePoolAdminRelay() {
         },
         relayerClient,
       );
-      const otx = await pollTrackingCompletion(
-        async () => (await relayerClient.trackRelay(trackingId)).result,
-        // The relayer hands back a tracking id as soon as it accepts the batch
-        // and writes the row from a worker moments later, so the first poll or
-        // two legitimately find nothing.
-        { pendingWhileNotFound: true },
-      );
-      return { trackingId, txHash: otx.txHash };
+      submission.onSubmitted?.(trackingId);
+      const result = await waitForOwnershipRelay(relayerClient, trackingId);
+      submission.onConfirmed?.(trackingId, result.txHash);
+      return result;
     },
-    onSuccess: async () => {
+    onSuccess: async (_result, input) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: poolKeys.all }),
+        ...(!Array.isArray(input) && input.deferCatalogRefresh
+          ? []
+          : [queryClient.invalidateQueries({ queryKey: poolKeys.all })]),
         queryClient.invalidateQueries({ queryKey: poolQuoterQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: poolTreasuryQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: poolRegistryQueryKeys.all }),

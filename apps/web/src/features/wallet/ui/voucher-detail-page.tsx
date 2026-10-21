@@ -17,6 +17,7 @@ import {
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
+import { useAssetOwner } from "#/features/ownership/hooks/use-asset-owner";
 import { usePoolVouchersInfinite } from "#/features/pools/hooks/use-pool-vouchers";
 import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
@@ -83,7 +84,13 @@ export function VoucherDetailPage({
   const baseToken = fetchedToken ?? catalogToken ?? staticToken;
   const detailAddress = baseToken?.contractAddress ?? voucherAddress;
   const detailQuery = useMarketVoucherDetail(detailAddress);
-  const detail = detailQuery.data;
+  const currentOwner = useAssetOwner(
+    detailAddress,
+    detailQuery.data?.ownerAddress ?? baseToken?.owner,
+  );
+  const detail = detailQuery.data
+    ? { ...detailQuery.data, ownerAddress: currentOwner as `0x${string}` | null }
+    : undefined;
   const distanceOrigin = useDiscoveryDistanceOrigin(
     holdingsAddress?.toLowerCase() ?? GUEST_STORAGE_OWNER,
   );
@@ -154,7 +161,7 @@ export function VoucherDetailPage({
     location: detail?.locationName ?? baseToken?.location,
     phone: detail?.phone ?? baseToken?.phone,
     email: detail?.email ?? baseToken?.email,
-    owner: detail?.ownerAddress ?? baseToken?.owner,
+    owner: currentOwner ?? baseToken?.owner,
     contractAddress: detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
     iconUrl: detail?.iconUrl ?? baseToken?.iconUrl,
     tokenDecimals: baseToken?.tokenDecimals ?? detail?.decimals ?? undefined,

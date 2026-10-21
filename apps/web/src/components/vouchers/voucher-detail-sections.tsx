@@ -144,7 +144,6 @@ export function VoucherDetailSections({
           voucherValue={voucherValue}
           voucherUoa={voucherUoa}
           ownerAddress={ownerAddress}
-          isKnownEmpty={detail?.kind === "voucher"}
           openVoucherPageAction="close"
           presentation="section"
           manualPageSize={3}

@@ -27,7 +27,6 @@ function row(id: string, overrides: Partial<Offering> = {}): Offering {
     voucherDecimals: 6,
     sellerAddress: "0x6666666666666666666666666666666666666666" as Offering["sellerAddress"],
     name: `Offering ${id}`,
-    commodityType: "GOOD",
     description: "",
     quantity: "1",
     unit: "kg",

@@ -138,7 +138,6 @@ function offering(id: string, lat: number): Offering {
     voucherDecimals: 6,
     sellerAddress: "0x2222222222222222222222222222222222222222",
     name: `Offer ${id}`,
-    commodityType: "GOOD",
     description: "",
     quantity: "1",
     unit: null,

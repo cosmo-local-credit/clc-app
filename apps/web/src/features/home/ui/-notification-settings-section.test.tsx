@@ -71,6 +71,8 @@ async function openRow(value: string) {
   return screen.findByRole("dialog");
 }
 
+const WALLET = "0x1234567890abcdef1234567890abcdef12345678" as const;
+
 describe("NotificationSettingsSection", () => {
   it("shows Checking… on a static row while the status loads", () => {
     coordinator.readSnapshot.mockReturnValue(new Promise(() => {}));
@@ -92,9 +94,7 @@ describe("NotificationSettingsSection", () => {
   it("enables notifications only from the outline button, passes the wallet address and closes on success", async () => {
     coordinator.enable.mockResolvedValue(enabledResult);
 
-    render(
-      <NotificationSettingsSection walletAddress="0x1234567890abcdef1234567890abcdef12345678" />,
-    );
+    render(<NotificationSettingsSection walletAddress={WALLET} />);
 
     const sheet = within(await openRow("off"));
     const enable = sheet.getByRole("button", { name: /enable notifications/i });
@@ -202,5 +202,18 @@ describe("NotificationSettingsSection", () => {
 
     expect((await sheet.findByRole("alert")).textContent).toBe("Backend unavailable");
     expect(sheet.getByRole("button", { name: /enable notifications/i })).toBeTruthy();
+  });
+
+  it("shows Sound while push is off, and Vibration only when the device can vibrate", async () => {
+    render(<NotificationSettingsSection walletAddress={WALLET} />);
+
+    expect(await screen.findByRole("switch", { name: "Sound" })).toBeTruthy();
+    expect(screen.getByText("Off")).toBeTruthy();
+    expect(screen.queryByRole("switch", { name: "Vibration" })).toBeNull();
+
+    Object.defineProperty(navigator, "vibrate", { configurable: true, value: () => true });
+    render(<NotificationSettingsSection walletAddress={WALLET} />);
+    expect(await screen.findByRole("switch", { name: "Vibration" })).toBeTruthy();
+    Reflect.deleteProperty(navigator, "vibrate");
   });
 });

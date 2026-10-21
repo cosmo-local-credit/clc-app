@@ -6,12 +6,14 @@ import type {
 } from "../platform/capability";
 
 const DB_NAME = "clc-notifications";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const SINGLETON_KEY = "current";
+export const NOTIFICATION_IDENTITY_EVENT = "clc-notification-identity";
 const DEFAULT_ACK_LIMIT = 100;
 const DEFAULT_DIAGNOSTIC_LIMIT = 50;
 
 type NotificationDatabase = DBSchema & {
+  inboxRevisions: { key: string; value: { notificationId: string; revision: number } };
   ackQueue: {
     indexes: {
       "by-kind": NotificationAckKind;
@@ -58,11 +60,17 @@ type NotificationDatabase = DBSchema & {
 type NotificationDeviceRecord = {
   createdAt: string;
   deviceId: string;
+  installationToken: string;
   key: typeof SINGLETON_KEY;
   updatedAt: string;
 };
 
 export type NotificationConfigRecord = {
+  identityEpoch?: string;
+  identityWallet?: string;
+  registrationId?: string;
+  userId?: string;
+  generation?: number;
   appVersion?: string;
   key: typeof SINGLETON_KEY;
   permissionState?: NotificationPermissionSnapshot;
@@ -70,6 +78,8 @@ export type NotificationConfigRecord = {
   serviceWorkerVersion?: string;
   subscriptionHash?: string;
   syncCursor?: string;
+  /** Notifications that arrived while no window was visible. */
+  unseenCount?: number;
   updatedAt: string;
   vapidKeyVersion?: string;
   vapidPublicKey?: string;
@@ -79,6 +89,7 @@ export type NotificationConfigRecord = {
 export type NotificationConfigPatch = Omit<Partial<NotificationConfigRecord>, "key" | "updatedAt">;
 
 export type NotificationInboxMessage = NotificationPayload & {
+  shownAt?: string;
   actionedAt?: string;
   readAt?: string;
   receivedAt: string;
@@ -96,6 +107,9 @@ export type NotificationPendingClickEvent = {
 type NotificationAckKind = "action" | "click" | "delivery";
 
 export type NotificationAckQueueEntry = {
+  identityEpoch?: string;
+  registrationId?: string;
+  userId?: string;
   ackId: string;
   actionId?: string;
   attemptCount: number;
@@ -153,24 +167,82 @@ export function isNotificationStorageAvailable(): boolean {
   return typeof indexedDB !== "undefined";
 }
 
-export async function getOrCreateNotificationDeviceId(): Promise<string> {
+export async function getOrCreateNotificationInstallation(): Promise<NotificationDeviceRecord> {
   const db = await openNotificationDatabase();
-  const existing = await db.get("device", SINGLETON_KEY);
-
-  if (existing) {
-    return existing.deviceId;
-  }
-
+  const transaction = db.transaction("device", "readwrite");
+  const existing = await transaction.store.get(SINGLETON_KEY);
   const now = nowISO();
   const record: NotificationDeviceRecord = {
     createdAt: now,
     deviceId: createId("device"),
+    ...existing,
+    installationToken:
+      existing?.installationToken ??
+      Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
+        byte.toString(16).padStart(2, "0"),
+      ).join(""),
     key: SINGLETON_KEY,
     updatedAt: now,
   };
+  await transaction.store.put(record);
+  await transaction.done;
+  return record;
+}
 
-  await db.put("device", record);
-  return record.deviceId;
+export async function getOrCreateNotificationDeviceId(): Promise<string> {
+  return (await getOrCreateNotificationInstallation()).deviceId;
+}
+
+export async function beginNotificationIdentity(
+  walletAddress?: string,
+  userId?: string,
+): Promise<NotificationConfigRecord & { identityEpoch: string }> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction(
+    ["config", "inbox", "inboxRevisions", "ackQueue", "pendingClickEvents"],
+    "readwrite",
+  );
+  const store = transaction.objectStore("config");
+  const current = await store.get(SINGLETON_KEY);
+  const identityWallet = walletAddress?.toLowerCase();
+  if (
+    current?.identityEpoch &&
+    current.identityWallet === identityWallet &&
+    (userId === undefined || current.userId === undefined || current.userId === userId)
+  ) {
+    await transaction.done;
+    return { ...current, identityEpoch: current.identityEpoch };
+  }
+  const next: NotificationConfigRecord & { identityEpoch: string } = {
+    ...current,
+    key: SINGLETON_KEY,
+    identityWallet,
+    identityEpoch: createId("epoch"),
+    registrationId: undefined,
+    userId: undefined,
+    generation: undefined,
+    syncCursor: undefined,
+    unseenCount: 0,
+    updatedAt: nowISO(),
+  };
+  await Promise.all([
+    store.put(next),
+    transaction.objectStore("inbox").clear(),
+    transaction.objectStore("inboxRevisions").clear(),
+    transaction.objectStore("ackQueue").clear(),
+    transaction.objectStore("pendingClickEvents").clear(),
+  ]);
+  await transaction.done;
+  broadcastNotificationIdentityChange();
+  return next;
+}
+
+export async function isNotificationIdentityCurrent(
+  identityEpoch: string | undefined,
+): Promise<boolean> {
+  return (
+    identityEpoch !== undefined && (await readNotificationConfig())?.identityEpoch === identityEpoch
+  );
 }
 
 export async function readNotificationDeviceId(): Promise<string | null> {
@@ -184,11 +256,57 @@ export async function readNotificationConfig(): Promise<NotificationConfigRecord
   return (await db.get("config", SINGLETON_KEY)) ?? null;
 }
 
+/**
+ * Adds one unseen notification. The read and the write share one transaction,
+ * so two pushes cannot both store the same count. An old epoch writes nothing.
+ */
+export async function incrementUnseenCount(identityEpoch: string): Promise<number | null> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction("config", "readwrite");
+  const current = await transaction.store.get(SINGLETON_KEY);
+  if (current?.identityEpoch !== identityEpoch) {
+    await transaction.done;
+    return null;
+  }
+  const unseenCount = (current.unseenCount ?? 0) + 1;
+  await transaction.store.put({ ...current, unseenCount });
+  await transaction.done;
+  return unseenCount;
+}
+
+/** Clears the unseen count for the current epoch. An old epoch writes nothing. */
+export async function resetUnseenCount(identityEpoch: string): Promise<void> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction("config", "readwrite");
+  const current = await transaction.store.get(SINGLETON_KEY);
+  if (current?.identityEpoch !== identityEpoch) {
+    await transaction.done;
+    return;
+  }
+  await transaction.store.put({ ...current, unseenCount: 0 });
+  await transaction.done;
+}
+
 export async function updateNotificationConfig(
   patch: NotificationConfigPatch,
+  expectedEpoch?: string,
 ): Promise<NotificationConfigRecord> {
   const db = await openNotificationDatabase();
-  const current = await db.get("config", SINGLETON_KEY);
+  const transaction = db.transaction("config", "readwrite");
+  const current = await transaction.store.get(SINGLETON_KEY);
+  if (expectedEpoch !== undefined && current?.identityEpoch !== expectedEpoch) {
+    await transaction.done;
+    if (!current) throw new Error("Notification identity changed.");
+    return current;
+  }
+  if (
+    patch.generation !== undefined &&
+    current?.generation !== undefined &&
+    patch.generation < current.generation
+  ) {
+    await transaction.done;
+    return current;
+  }
   const next: NotificationConfigRecord = {
     ...current,
     ...patch,
@@ -196,15 +314,28 @@ export async function updateNotificationConfig(
     updatedAt: nowISO(),
   };
 
-  await db.put("config", next);
+  await transaction.store.put(next);
+  await transaction.done;
   return next;
 }
 
 export async function saveNotificationInboxMessage(
   message: NotificationInboxMessage,
+  expectedEpoch?: string,
 ): Promise<NotificationInboxMessage> {
   const db = await openNotificationDatabase();
-  const current = await db.get("inbox", message.notificationId);
+  const transaction = db.transaction(["inbox", "inboxRevisions", "config"], "readwrite");
+  const config = await transaction.objectStore("config").get(SINGLETON_KEY);
+  const store = transaction.objectStore("inbox");
+  const current = await store.get(message.notificationId);
+  const revision = await transaction.objectStore("inboxRevisions").get(message.notificationId);
+  if (
+    (expectedEpoch !== undefined && config?.identityEpoch !== expectedEpoch) ||
+    (revision && (message.revision ?? -1) <= revision.revision)
+  ) {
+    await transaction.done;
+    return current ?? message;
+  }
   const next: NotificationInboxMessage = {
     ...current,
     ...message,
@@ -219,7 +350,12 @@ export async function saveNotificationInboxMessage(
       : {}),
   };
 
-  await db.put("inbox", next);
+  await store.put(next);
+  if (message.revision !== undefined)
+    await transaction
+      .objectStore("inboxRevisions")
+      .put({ notificationId: message.notificationId, revision: message.revision });
+  await transaction.done;
   return next;
 }
 
@@ -268,23 +404,47 @@ export async function listNotificationInboxMessages(
  * inbox has been synced; keeping it while emptying the inbox would make the
  * backend treat the incoming user's backlog as already delivered.
  */
-export async function clearNotificationIdentityStores(): Promise<void> {
+export async function clearNotificationIdentityStores(expectedWallet?: string): Promise<void> {
   const db = await openNotificationDatabase();
   const transaction = db.transaction(
-    ["inbox", "ackQueue", "pendingClickEvents", "config"],
+    ["inbox", "inboxRevisions", "ackQueue", "pendingClickEvents", "config"],
     "readwrite",
   );
 
   const configStore = transaction.objectStore("config");
   const config = await configStore.get(SINGLETON_KEY);
+  if (
+    expectedWallet !== undefined &&
+    config?.identityWallet !== undefined &&
+    config.identityWallet !== expectedWallet.toLowerCase()
+  ) {
+    await transaction.done;
+    return;
+  }
 
   await Promise.all([
     transaction.objectStore("inbox").clear(),
+    transaction.objectStore("inboxRevisions").clear(),
     transaction.objectStore("ackQueue").clear(),
     transaction.objectStore("pendingClickEvents").clear(),
-    ...(config ? [configStore.put({ ...config, syncCursor: undefined, updatedAt: nowISO() })] : []),
+    ...(config
+      ? [
+          configStore.put({
+            ...config,
+            identityEpoch: createId("epoch"),
+            identityWallet: undefined,
+            registrationId: undefined,
+            userId: undefined,
+            generation: undefined,
+            syncCursor: undefined,
+            unseenCount: 0,
+            updatedAt: nowISO(),
+          }),
+        ]
+      : []),
     transaction.done,
   ]);
+  broadcastNotificationIdentityChange();
 }
 
 export async function getNotificationInboxMessage(
@@ -311,35 +471,42 @@ export async function deleteNotificationInboxMessages(notificationIds: string[])
 export async function markNotificationInboxMessageRead(
   notificationId: string,
   readAt = nowISO(),
+  identityEpoch?: string,
 ): Promise<NotificationInboxMessage | null> {
-  const db = await openNotificationDatabase();
-  const current = await db.get("inbox", notificationId);
-  if (!current) {
-    return null;
-  }
-
-  const next: NotificationInboxMessage = { ...current, readAt };
-  await db.put("inbox", next);
-  return next;
+  return updateInboxInteraction(notificationId, { readAt }, identityEpoch);
 }
 
 export async function markNotificationInboxMessageActioned(
   notificationId: string,
   actionedAt = nowISO(),
+  identityEpoch?: string,
+): Promise<NotificationInboxMessage | null> {
+  return updateInboxInteraction(notificationId, { actionedAt }, identityEpoch);
+}
+
+async function updateInboxInteraction(
+  notificationId: string,
+  patch: { readAt?: string; actionedAt?: string; shownAt?: string },
+  identityEpoch?: string,
 ): Promise<NotificationInboxMessage | null> {
   const db = await openNotificationDatabase();
-  const current = await db.get("inbox", notificationId);
-  if (!current) {
+  const transaction = db.transaction(["config", "inbox"], "readwrite");
+  const config = await transaction.objectStore("config").get(SINGLETON_KEY);
+  const store = transaction.objectStore("inbox");
+  const current = await store.get(notificationId);
+  if (!current || (identityEpoch !== undefined && config?.identityEpoch !== identityEpoch)) {
+    await transaction.done;
     return null;
   }
-
-  const next: NotificationInboxMessage = { ...current, actionedAt };
-  await db.put("inbox", next);
+  const next = { ...current, ...patch };
+  await store.put(next);
+  await transaction.done;
   return next;
 }
 
 export async function savePendingNotificationClickEvent(
   event: Omit<NotificationPendingClickEvent, "createdAt" | "eventId">,
+  identityEpoch?: string,
 ): Promise<NotificationPendingClickEvent> {
   const db = await openNotificationDatabase();
   const pendingEvent: NotificationPendingClickEvent = {
@@ -348,7 +515,11 @@ export async function savePendingNotificationClickEvent(
     eventId: createId("notification-click"),
   };
 
-  await db.put("pendingClickEvents", pendingEvent);
+  const transaction = db.transaction(["config", "pendingClickEvents"], "readwrite");
+  const config = await transaction.objectStore("config").get(SINGLETON_KEY);
+  if (identityEpoch === undefined || config?.identityEpoch === identityEpoch)
+    await transaction.objectStore("pendingClickEvents").put(pendingEvent);
+  await transaction.done;
   return pendingEvent;
 }
 
@@ -368,6 +539,8 @@ export async function enqueueNotificationAck(
   input: EnqueueNotificationAckInput,
 ): Promise<NotificationAckQueueEntry> {
   const db = await openNotificationDatabase();
+  const transaction = db.transaction(["config", "ackQueue"], "readwrite");
+  const config = await transaction.objectStore("config").get(SINGLETON_KEY);
   const now = nextAckTimestamp();
   const entry: NotificationAckQueueEntry = {
     ...input,
@@ -377,7 +550,13 @@ export async function enqueueNotificationAck(
     updatedAt: now,
   };
 
-  await db.put("ackQueue", entry);
+  if (
+    !input.identityEpoch ||
+    (config?.identityEpoch === input.identityEpoch &&
+      config.registrationId === input.registrationId)
+  )
+    await transaction.objectStore("ackQueue").put(entry);
+  await transaction.done;
   return entry;
 }
 
@@ -453,6 +632,8 @@ export async function openNotificationDatabase(): Promise<IDBPDatabase<Notificat
 
   databasePromise ??= openDB<NotificationDatabase>(DB_NAME, DB_VERSION, {
     upgrade(db) {
+      if (!db.objectStoreNames.contains("inboxRevisions"))
+        db.createObjectStore("inboxRevisions", { keyPath: "notificationId" });
       if (!db.objectStoreNames.contains("device")) {
         db.createObjectStore("device", { keyPath: "key" });
       }
@@ -527,4 +708,87 @@ function nextDiagnosticTimestamp(): string {
   const timestamp = Math.max(Date.now(), lastDiagnosticCreatedAtMs + 1);
   lastDiagnosticCreatedAtMs = timestamp;
   return new Date(timestamp).toISOString();
+}
+
+export async function applyNotificationInboxPage(
+  identityEpoch: string,
+  expectedCursor: string | undefined,
+  page: {
+    messages: NotificationInboxMessage[];
+    deletions: Array<{ notificationId: string; revision: number }>;
+    nextSyncCursor: string;
+    resetRequired?: boolean;
+  },
+): Promise<boolean> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction(["config", "inbox", "inboxRevisions"], "readwrite");
+  const configStore = transaction.objectStore("config");
+  const config = await configStore.get(SINGLETON_KEY);
+  if (config?.identityEpoch !== identityEpoch || config.syncCursor !== expectedCursor) {
+    await transaction.done;
+    return false;
+  }
+  const inbox = transaction.objectStore("inbox");
+  const revisions = transaction.objectStore("inboxRevisions");
+  if (page.resetRequired) {
+    await inbox.clear();
+    await revisions.clear();
+  }
+  for (const message of page.messages) {
+    const revision = message.revision ?? 0;
+    const previousRevision = await revisions.get(message.notificationId);
+    if (previousRevision && previousRevision.revision >= revision) continue;
+    const current = await inbox.get(message.notificationId);
+    await inbox.put({
+      ...current,
+      ...message,
+      readAt: message.readAt ?? current?.readAt,
+      shownAt: message.shownAt ?? current?.shownAt,
+      actionedAt: message.actionedAt ?? current?.actionedAt,
+      walletAddressTarget: message.walletAddressTarget?.toLowerCase(),
+    });
+    await revisions.put({ notificationId: message.notificationId, revision });
+  }
+  for (const deletion of page.deletions) {
+    const current = await revisions.get(deletion.notificationId);
+    if (current && current.revision > deletion.revision) continue;
+    await inbox.delete(deletion.notificationId);
+    await revisions.put(deletion);
+  }
+  await configStore.put({ ...config, syncCursor: page.nextSyncCursor, updatedAt: nowISO() });
+  await transaction.done;
+  return true;
+}
+
+function broadcastNotificationIdentityChange(): void {
+  try {
+    if (typeof BroadcastChannel !== "undefined") {
+      const channel = new BroadcastChannel(NOTIFICATION_IDENTITY_EVENT);
+      channel.postMessage({ type: "identity-changed" });
+      channel.close();
+    }
+    if (typeof window !== "undefined")
+      window.localStorage.setItem(NOTIFICATION_IDENTITY_EVENT, createId("identity-change"));
+  } catch {
+    /* IndexedDB remains the authority when broadcast is unavailable. */
+  }
+}
+
+export async function markNotificationInboxMessageShown(
+  notificationId: string,
+  shownAt = nowISO(),
+  identityEpoch?: string,
+): Promise<NotificationInboxMessage | null> {
+  return updateInboxInteraction(notificationId, { shownAt }, identityEpoch);
+}
+
+export async function readNotificationDisplayState(
+  notificationId: string,
+): Promise<{ message: NotificationInboxMessage | null; deleted: boolean }> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction(["inbox", "inboxRevisions"], "readonly");
+  const message = await transaction.objectStore("inbox").get(notificationId);
+  const revision = await transaction.objectStore("inboxRevisions").get(notificationId);
+  await transaction.done;
+  return { message: message ?? null, deleted: !message && revision !== undefined };
 }

@@ -4,6 +4,7 @@ import {
   PoolOracleUnavailableError,
   type PoolPricing,
   chainHasPoolOracle,
+  hasPoolOracleBaseCurrency,
   poolCreateSchemaForChain,
   poolDeploymentContractCount,
   poolDescriptionSchema,
@@ -26,6 +27,7 @@ import {
 } from "@clc/core/lib/contact";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { findUnitOfAccountOption } from "@clc/core/lib/currencies";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -55,6 +57,8 @@ import { RecipientAddressInput } from "#/components/wallet/recipient-address-inp
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
+import { ResourceUsage } from "#/components/resource-usage";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
@@ -123,6 +127,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const defaultPricing: PoolPricing = "relative";
   const poolCreateSchema = poolCreateSchemaForChain(activeChainId);
   const deployPool = useDeployPool();
+  const usage = useResourceUsage();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
   const draft = usePoolCreateDraft((state) => state.draft);
@@ -159,6 +164,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
       },
     },
     onSubmit: async ({ value }) => {
+      if (usage.isError || !usage.data?.pools.canCreate) return;
       if (!address || chainId === undefined) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
@@ -183,6 +189,10 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
           destination: `/pools/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}`,
         });
       } catch (error) {
+        if (error instanceof BackendApiError && error.code === "E11") {
+          toast.error(t`Limit reached. Ask an administrator to increase your allowance.`);
+          return;
+        }
         // See create-voucher-flow: the availability check is advisory, so the
         // name can be taken between step 1 and publish.
         if (error instanceof BackendApiError && error.kind === "conflict") {
@@ -327,6 +337,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
       />
 
       <StepProgress step={progressStep} total={3} />
+      <ResourceUsage resource="pools" />
 
       <form
         className="flex flex-1 flex-col"
@@ -413,9 +424,17 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         <UnitOfAccountCombobox
                           id="pool-unit"
                           value={field.state.value}
-                          onValueChange={field.handleChange}
-                          placeholder={t`Search currencies`}
-                          emptyMessage={t`No currencies found.`}
+                          onValueChange={(unit) => {
+                            field.handleChange(unit);
+                            if (
+                              form.getFieldValue("pricing") === "oracle" &&
+                              !hasPoolOracleBaseCurrency(unit, activeChainId)
+                            ) {
+                              form.setFieldValue("pricing", "relative");
+                            }
+                          }}
+                          placeholder={t`Search units of account`}
+                          emptyMessage={t`No units of account found`}
                         />
                       </Field>
                     )}
@@ -522,7 +541,20 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                               value="oracle"
                               title={t`Oracle pricing`}
                               description={t`Follows live price feeds for the selected currency`}
+                              disabled={
+                                !hasPoolOracleBaseCurrency(
+                                  form.getFieldValue("unitOfAccount"),
+                                  activeChainId,
+                                )
+                              }
                             />
+                          ) : null}
+                          {!findUnitOfAccountOption(form.getFieldValue("unitOfAccount")) ? (
+                            <p className="text-muted-foreground text-xs">
+                              <Trans>
+                                Custom units have no price feed. Relative pricing is used instead.
+                              </Trans>
+                            </p>
                           ) : null}
                         </RadioGroup>
                       </div>
@@ -964,7 +996,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       type="submit"
                       tap
                       className="w-full"
-                      disabled={!acceptedTerms}
+                      disabled={!acceptedTerms || usage.isError || !usage.data?.pools.canCreate}
                       pending={isSubmitting || deployPool.isPending}
                     >
                       {isSubmitting || deployPool.isPending ? (
@@ -992,15 +1024,17 @@ function PricingOption({
   title,
   description,
   isDefault = false,
+  disabled = false,
 }: {
   value: PoolPricing;
   title: string;
   description: string;
   isDefault?: boolean;
+  disabled?: boolean;
 }) {
   return (
-    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05]">
-      <RadioGroupItem value={value} className="mt-0.5" />
+    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05] has-[[data-disabled]]:cursor-default has-[[data-disabled]]:opacity-50">
+      <RadioGroupItem value={value} className="mt-0.5" disabled={disabled} />
       <span>
         <span className="flex flex-wrap items-center gap-2">
           <strong className="text-sm font-semibold">{title}</strong>
