@@ -1,9 +1,4 @@
-import {
-  type OfferingCommodityType,
-  type OfferingWrite,
-  isOfferingCommodityType,
-  offeringWriteSchema,
-} from "@clc/core/features/offerings/logic";
+import { type OfferingWrite, offeringWriteSchema } from "@clc/core/features/offerings/logic";
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
@@ -56,13 +51,6 @@ export type Offering = {
   sellerAddress: HexAddress;
   /** Backend `commodityName`. */
   name: string;
-  /**
-   * `GOOD` or `SERVICE`, or `null` for an imported row carrying neither.
-   *
-   * `null` is displayable but not resubmittable: an edit has to state one, the
-   * same way an unknown unit has to be replaced.
-   */
-  commodityType: OfferingCommodityType | null;
   description: string;
   /**
    * The imported stock figure. Still read, never written: rows this app creates
@@ -144,7 +132,6 @@ type BackendOffering = Partial<{
   voucherGeoLng: string | number | null;
   sellerAddress: string;
   commodityName: string;
-  commodityType: string;
   description: string;
   quantity: string | number;
   unit: string | null;
@@ -409,7 +396,6 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
     voucherGeoLng: normalizeNumber(offering.voucherGeoLng),
     sellerAddress,
     name: normalizeText(offering.commodityName) ?? "Offering",
-    commodityType: isOfferingCommodityType(offering.commodityType) ? offering.commodityType : null,
     description: normalizeText(offering.description) ?? "",
     quantity: normalizeNumericText(offering.quantity) ?? "0",
     unit: unitLabel,
@@ -485,7 +471,6 @@ function toOfferingWriteBody(input: OfferingWrite) {
   const normalized = offeringWriteSchema.parse(input);
   return {
     commodityName: normalized.name,
-    commodityType: normalized.commodityType,
     description: normalized.description,
     unit: normalized.unit,
     price: normalized.pricePerUnit,

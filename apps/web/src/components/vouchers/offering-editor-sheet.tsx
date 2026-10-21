@@ -1,10 +1,6 @@
 import { BackendApiError } from "@clc/api/client/errors";
 import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client";
-import {
-  OFFERING_UNITS,
-  type OfferingCommodityType,
-  offeringWriteSchema,
-} from "@clc/core/features/offerings/logic";
+import { OFFERING_UNITS, offeringWriteSchema } from "@clc/core/features/offerings/logic";
 import { toVocabularyTitleCase, validateCustomUnit } from "@clc/core/features/vocabulary/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -89,7 +85,7 @@ function useUnitLabel(): (unit: string) => string {
  * A voucher owner's create and edit surface for their own offerings.
  *
  * A bottom sheet, not a page: the offerings tab behind it is where the result
- * lands, and a full screen would lose that context for a six-field form. Nothing
+ * lands, and a full screen would lose that context for a five-field form. Nothing
  * here is a card floating in the middle of the screen — the sheet is the surface.
  */
 export function OfferingEditorSheet({
@@ -179,7 +175,6 @@ function OfferingForm({
   const form = useForm({
     defaultValues: {
       name: offering?.name ?? "",
-      commodityType: (offering?.commodityType ?? "") as OfferingCommodityType | "",
       description: offering?.description ?? "",
       unit: offering?.unit ?? "",
       pricePerUnit: offering?.pricePerUnit ?? "",
@@ -260,33 +255,6 @@ function OfferingForm({
                 onChange={(event) => field.handleChange(event.target.value)}
                 maxLength={120}
               />
-            </Field>
-          )}
-        </form.Field>
-
-        <form.Field name="commodityType">
-          {(field) => (
-            <Field
-              htmlFor={field.name}
-              label={t`Is this a good or a service?`}
-              error={getFieldError(field.state.meta.errors)}
-            >
-              {/* Two options, so two buttons rather than a picker: on a phone a
-                  binary choice made in one tap beats one made in three. */}
-              <div className="flex gap-2" id={field.name}>
-                <ChoiceButton
-                  selected={field.state.value === "GOOD"}
-                  onClick={() => field.handleChange("GOOD")}
-                >
-                  <Trans>A good</Trans>
-                </ChoiceButton>
-                <ChoiceButton
-                  selected={field.state.value === "SERVICE"}
-                  onClick={() => field.handleChange("SERVICE")}
-                >
-                  <Trans>A service</Trans>
-                </ChoiceButton>
-              </div>
             </Field>
           )}
         </form.Field>
@@ -406,32 +374,6 @@ function OfferingForm({
         </Button>
       </SheetFooter>
     </form>
-  );
-}
-
-/** A selected-or-not chip. `aria-pressed` is what makes the state audible. */
-function ChoiceButton({
-  selected,
-  onClick,
-  children,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={
-        selected
-          ? "h-9 border border-primary bg-primary px-3 text-sm text-primary-foreground"
-          : "h-9 border border-border bg-card px-3 text-sm"
-      }
-    >
-      {children}
-    </button>
   );
 }
 

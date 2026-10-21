@@ -2,7 +2,6 @@ import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client";
 import {
   OFFERING_UNITS,
-  type OfferingCommodityType,
   type OfferingUnit,
   isOfferingUnit,
   offeringWriteSchema,
@@ -27,13 +26,6 @@ import {
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import { SearchableSelect } from "#/components/ui/searchable-select";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "#/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -84,11 +76,6 @@ const UNIT_LABELS: Record<OfferingUnit, string> = {
   metre: "Metre",
 };
 
-const COMMODITY_TYPE_LABELS: Record<OfferingCommodityType, string> = {
-  GOOD: "Good",
-  SERVICE: "Service",
-};
-
 /**
  * The create and edit surface for one voucher's offerings.
  *
@@ -99,7 +86,7 @@ const COMMODITY_TYPE_LABELS: Record<OfferingCommodityType, string> = {
  *
  * Create and edit share every field. The only differences are the title, whether
  * a delete action is offered, and where the initial values come from — which is
- * the point: an operator editing an offering should be looking at the same six
+ * the point: an operator editing an offering should be looking at the same five
  * questions they answered to publish it.
  */
 export function OfferingEditorSheet({
@@ -147,19 +134,10 @@ export function OfferingEditorSheet({
   );
 }
 
-/**
- * Turns a stored row into form values.
- *
- * `unit` and `commodityType` fall back to the empty string when the imported row
- * carries something outside the canonical sets. That is deliberate and is what
- * forces the operator to choose: the value is still shown on the card, but it
- * cannot be saved back, and a select silently pre-filled with an invalid option
- * would make the save fail with nothing on screen to explain why.
- */
+/** Keep stored custom and imported units editable. */
 function initialValues(offering: Offering | null) {
   return {
     name: offering?.name ?? "",
-    commodityType: (offering?.commodityType ?? "") as OfferingCommodityType | "",
     description: offering?.description ?? "",
     unit: offering?.unit ?? offering?.unitLabel ?? "",
     pricePerUnit: offering?.pricePerUnit ?? "",
@@ -243,8 +221,6 @@ function OfferingForm({
     }
   }
 
-  const legacyType = offering && !offering.commodityType;
-
   return (
     <form
       className="flex min-h-0 flex-1 flex-col"
@@ -254,13 +230,6 @@ function OfferingForm({
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-        {legacyType ? (
-          <p className="border-border bg-muted/40 text-muted-foreground border p-3 text-xs leading-snug">
-            This offering was imported with no goods or services classification. Choose one below
-            before saving.
-          </p>
-        ) : null}
-
         <form.Field name="name">
           {(field) => (
             <Field htmlFor={field.name} label="Name" error={getFieldError(field.state.meta.errors)}>
@@ -271,33 +240,6 @@ function OfferingForm({
                 onChange={(event) => field.handleChange(event.target.value)}
                 maxLength={120}
               />
-            </Field>
-          )}
-        </form.Field>
-
-        <form.Field name="commodityType">
-          {(field) => (
-            <Field
-              htmlFor={field.name}
-              label="Good or service"
-              error={getFieldError(field.state.meta.errors)}
-            >
-              <Select
-                items={COMMODITY_TYPE_LABELS}
-                value={field.state.value}
-                onValueChange={(next) => field.handleChange(next as OfferingCommodityType)}
-              >
-                <SelectTrigger id={field.name}>
-                  <SelectValue placeholder="Choose one" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(COMMODITY_TYPE_LABELS) as OfferingCommodityType[]).map((kind) => (
-                    <SelectItem key={kind} value={kind}>
-                      {COMMODITY_TYPE_LABELS[kind]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </Field>
           )}
         </form.Field>

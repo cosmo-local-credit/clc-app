@@ -106,7 +106,6 @@ function offering(overrides: Partial<Offering> = {}): Offering {
     voucherDecimals: 6,
     sellerAddress: ADDRESS as Offering["sellerAddress"],
     name: "Maize flour",
-    commodityType: "GOOD",
     description: "Stone-ground, 2kg.",
     quantity: "40",
     unit: "kg",
@@ -202,22 +201,19 @@ describe("creating", () => {
     expect((screen.getByLabelText("Name") as HTMLInputElement).value).toBe("");
     expect((screen.getByLabelText("Description") as HTMLTextAreaElement).value).toBe("");
     expect((screen.getByLabelText("Price per unit") as HTMLInputElement).value).toBe("");
-    // Neither select is defaulted: publishing a classification nobody chose is
-    // the failure this avoids.
-    expect(screen.getByText("Choose one")).toBeTruthy();
+    expect(screen.queryByLabelText("Good or service")).toBeNull();
     expect((screen.getByLabelText("Unit") as HTMLInputElement).value).toBe("");
     // Nothing to unlist yet.
     expect(screen.queryByRole("button", { name: "Unlist" })).toBeNull();
   });
 
-  it("sends all six fields in the app's vocabulary", async () => {
+  it("sends all five fields in the app's vocabulary", async () => {
     const { onClose } = renderSheet({ kind: "create" });
 
     await waitFor(() => screen.getByLabelText("Name"));
     type("Name", "Fresh maize flour");
     type("Description", "Stone-ground flour packed on collection day.");
     type("Price per unit", "120.50");
-    await choose("Good or service", "Service");
     await choose("Unit", "Litre");
 
     fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
@@ -227,7 +223,6 @@ describe("creating", () => {
     // inside the client — past this mock — and is covered there.
     expect(createVoucherOffering.mock.calls[0]?.[1]).toEqual({
       name: "Fresh maize flour",
-      commodityType: "SERVICE",
       description: "Stone-ground flour packed on collection day.",
       unit: "litre",
       pricePerUnit: "120.50",
@@ -246,7 +241,6 @@ describe("creating", () => {
     type("Name", "Seedling tray");
     type("Description", "Twenty cells, ready to plant.");
     type("Price per unit", "350");
-    await choose("Good or service", "Good");
 
     const unit = screen.getByLabelText("Unit") as HTMLInputElement;
     fireEvent.focus(unit);
@@ -269,7 +263,6 @@ describe("creating", () => {
     type("Name", "Bulk grain");
     type("Description", "By the tonne.");
     type("Price per unit", "12345678901234567890.12345");
-    await choose("Good or service", "Good");
     await choose("Unit", "Kilogram");
 
     fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
@@ -306,7 +299,6 @@ describe("validation", () => {
     type("Name", values.name);
     type("Description", "Something.");
     type("Price per unit", values.price);
-    await choose("Good or service", "Good");
     await choose("Unit", "Kilogram");
 
     fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
@@ -315,7 +307,7 @@ describe("validation", () => {
     expect(createVoucherOffering).not.toHaveBeenCalled();
   });
 
-  it("refuses to submit with no classification or unit chosen", async () => {
+  it("refuses to submit with no unit chosen", async () => {
     renderSheet({ kind: "create" });
 
     await waitFor(() => screen.getByLabelText("Name"));
@@ -343,7 +335,7 @@ describe("editing", () => {
     );
     expect((screen.getByLabelText("Price per unit") as HTMLInputElement).value).toBe("120");
     expect((screen.getByLabelText("Unit") as HTMLInputElement).value).toBe("Kilogram");
-    expect(screen.getByText("Good")).toBeTruthy();
+    expect(screen.queryByLabelText("Good or service")).toBeNull();
   });
 
   it("puts the edited row and closes", async () => {
@@ -371,17 +363,6 @@ describe("editing", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
     await waitFor(() => expect(updateVoucherOffering).toHaveBeenCalled());
     expect(updateVoucherOffering.mock.calls[0]?.[2].unit).toBe("50kg sack");
-  });
-
-  it("forces a classification on a row imported without one", async () => {
-    renderSheet({ kind: "edit", offering: offering({ commodityType: null }) });
-
-    await waitFor(() => screen.getByLabelText("Name"));
-    expect(screen.getByText(/no goods or services classification/)).toBeTruthy();
-
-    fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
-    await waitFor(() => expect(screen.getAllByRole("alert").length).toBeGreaterThan(0));
-    expect(updateVoucherOffering).not.toHaveBeenCalled();
   });
 
   // A failed write keeps every value, including the uploaded photo URL, so Retry
@@ -469,7 +450,6 @@ describe("the photo", () => {
     type("Name", "Flour");
     type("Description", "Something.");
     type("Price per unit", "10");
-    await choose("Good or service", "Good");
     await choose("Unit", "Kilogram");
     fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
 

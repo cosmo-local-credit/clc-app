@@ -102,7 +102,6 @@ vi.mock("@clc/api/features/offerings/queries", () => ({
           voucherDecimals: 6,
           sellerAddress: "0x33a573149db22e759fB9A38Bcc461C12855c2645",
           name: "Maize flour",
-          commodityType: "GOOD",
           description: "2kg bag",
           quantity: "10",
           unit: "bag",

@@ -46,7 +46,6 @@ const offering: Offering = {
   voucherGeoLng: 39.85,
   sellerAddress: "0x2222222222222222222222222222222222222222",
   name: "Fresh maize",
-  commodityType: "GOOD",
   description: "One bag",
   quantity: "1",
   unit: "bag",

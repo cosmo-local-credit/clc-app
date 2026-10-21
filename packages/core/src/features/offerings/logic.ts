@@ -34,30 +34,8 @@ export const OFFERING_UNITS = [
 
 export type OfferingUnit = (typeof OFFERING_UNITS)[number];
 
-/**
- * Goods or services, and nothing else.
- *
- * The values are the database's own, so the write sends them unchanged. Keeping
- * the set at two is what lets the eight market kind derivations in clc-core stay
- * as they are: their `ELSE` branch still means "no available offerings", which a
- * third classification would have quietly turned into "some other type".
- *
- * The issuer is asked, never inferred. A trip is usually a service and a bag is
- * usually a good, but rentals and bundles make any mapping from unit to
- * classification an unrecorded business rule.
- */
-export const OFFERING_COMMODITY_TYPES = ["GOOD", "SERVICE"] as const;
-
-export type OfferingCommodityType = (typeof OFFERING_COMMODITY_TYPES)[number];
-
 export function isOfferingUnit(value: unknown): value is OfferingUnit {
   return typeof value === "string" && (OFFERING_UNITS as readonly string[]).includes(value);
-}
-
-export function isOfferingCommodityType(value: unknown): value is OfferingCommodityType {
-  return (
-    typeof value === "string" && (OFFERING_COMMODITY_TYPES as readonly string[]).includes(value)
-  );
 }
 
 /**
@@ -118,12 +96,8 @@ const offeringUnitSchema = z
   .min(1, { message: "Choose a unit" })
   .max(CUSTOM_UNIT_MAX_LENGTH, { message: "Unit must be 32 characters or fewer" });
 
-const offeringCommodityTypeSchema = z.enum(OFFERING_COMMODITY_TYPES, {
-  error: "Choose whether this is a good or a service",
-});
-
 /**
- * The six fields an issuer owns.
+ * The five fields an issuer owns.
  *
  * Absent on purpose: the voucher (immutable, and part of the URL), the seller
  * (server-selected from the locked voucher owner), and every legacy import column
@@ -132,7 +106,6 @@ const offeringCommodityTypeSchema = z.enum(OFFERING_COMMODITY_TYPES, {
  */
 export const offeringWriteSchema = z.object({
   name: offeringNameSchema,
-  commodityType: offeringCommodityTypeSchema,
   description: offeringDescriptionSchema,
   unit: offeringUnitSchema,
   pricePerUnit: offeringPricePerUnitSchema,
@@ -141,24 +114,15 @@ export const offeringWriteSchema = z.object({
 
 export type OfferingWrite = z.infer<typeof offeringWriteSchema>;
 
-/**
- * Blank form values.
- *
- * `unit` and `commodityType` start empty rather than defaulted: an issuer has to
- * state both, and pre-selecting "kg" or "GOOD" would let a distracted operator
- * publish a classification nobody chose. The type is loosened for exactly that
- * reason — the schema is what turns the empty string into a validation error.
- */
+/** Blank form values. The issuer must choose a unit. */
 export const emptyOfferingWrite: {
   name: string;
-  commodityType: OfferingCommodityType | "";
   description: string;
   unit: string;
   pricePerUnit: string;
   imageUrl: string | null;
 } = {
   name: "",
-  commodityType: "",
   description: "",
   unit: "",
   pricePerUnit: "",
