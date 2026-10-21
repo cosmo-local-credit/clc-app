@@ -604,7 +604,8 @@ describe("CreatePoolFlow", () => {
   it("shows the steward's pool allowance from the usage read", () => {
     renderFlow(<CreatePoolFlow step="pool" />);
 
-    expect(screen.getByText("Pools: 2 of 10 used")).toBeTruthy();
+    expect(screen.getByText("2/10")).toBeTruthy();
+    expect(screen.getByText("2 of 10 used").className).toBe("sr-only");
     expect(screen.queryByText(/Vouchers:/)).toBeNull();
   });
 

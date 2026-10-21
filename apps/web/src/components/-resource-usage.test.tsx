@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { activateLocale } from "@clc/i18n/index";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const query = vi.hoisted(() => ({
   data: undefined as undefined | Record<string, unknown>,
@@ -19,8 +20,10 @@ beforeEach(() => {
   query.refetch.mockReset();
 });
 
+afterEach(async () => activateLocale("en"));
+
 describe("ResourceQuotaTitle", () => {
-  it("renders finite and unlimited quotas inline without a duplicated resource prefix", () => {
+  it("renders finite and unlimited quotas as used/limit without a duplicated resource prefix", () => {
     const { rerender } = render(
       <h2>
         <ResourceQuotaTitle
@@ -32,7 +35,8 @@ describe("ResourceQuotaTitle", () => {
         </ResourceQuotaTitle>
       </h2>,
     );
-    expect(screen.getByRole("heading").textContent).toBe("Offerings 1 of 3 used");
+    expect(screen.getByText("1/3").getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByRole("heading", { name: "Offerings 1 of 3 used" })).toBeTruthy();
     expect(screen.queryByText(/Offers:/)).toBeNull();
 
     rerender(
@@ -46,7 +50,24 @@ describe("ResourceQuotaTitle", () => {
         </ResourceQuotaTitle>
       </h2>,
     );
-    expect(screen.getByRole("heading").textContent).toBe("Offerings 4 used · Unlimited");
+    expect(screen.getByText("4/∞")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Offerings 4 used · Unlimited" })).toBeTruthy();
+  });
+
+  it("writes the counts in the locale's digits", async () => {
+    await act(async () => activateLocale("ar"));
+    render(
+      <h2>
+        <ResourceQuotaTitle
+          quota={{ used: 1, limit: 3, unlimited: false, canCreate: true }}
+          pending={false}
+          error={false}
+        >
+          Offerings
+        </ResourceQuotaTitle>
+      </h2>,
+    );
+    expect(screen.getByText("١/٣")).toBeTruthy();
   });
 
   it("renders loading and unavailable states inline", () => {

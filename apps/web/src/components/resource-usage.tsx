@@ -2,7 +2,6 @@ import type {
   ResourceKind,
   ResourceUsage as ResourceUsageData,
 } from "@clc/api/features/resource-limits/client";
-import { Trans as RuntimeTrans } from "@lingui/react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import { Button } from "#/components/ui/button";
@@ -10,6 +9,33 @@ import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { cn } from "#/lib/utils";
 
 type ResourceQuota = ResourceUsageData[ResourceKind];
+
+/**
+ * "1/3", or "1/∞" for an account without a limit, in the reader's digits. A
+ * screen reader gets the sentence instead, since "1/3" can be read as a fraction.
+ */
+function QuotaFraction({ quota }: { quota: ResourceQuota }) {
+  const { i18n } = useLingui();
+  const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
+  const used = digits.format(quota.used);
+  const limit = digits.format(quota.limit);
+  return (
+    <>
+      <span aria-hidden="true">
+        {used}/{quota.unlimited ? "∞" : limit}
+      </span>
+      <span className="sr-only">
+        {quota.unlimited ? (
+          <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
+        ) : (
+          <Trans id="{used} of {limit} used">
+            {used} of {limit} used
+          </Trans>
+        )}
+      </span>
+    </>
+  );
+}
 
 /** Compact quota copy for a section heading whose title already names the resource. */
 function ResourceQuotaSummary({
@@ -23,12 +49,11 @@ function ResourceQuotaSummary({
   error: boolean;
   className?: string;
 }) {
-  const used = quota?.used ?? 0;
-  const limit = quota?.limit ?? 0;
   return (
     <span
       className={cn(
-        "font-sans text-muted-foreground text-sm font-normal tracking-normal",
+        "font-sans text-sm font-normal tracking-normal",
+        quota && !quota.canCreate ? "text-destructive" : "text-foreground",
         className,
       )}
       aria-live="polite"
@@ -37,10 +62,8 @@ function ResourceQuotaSummary({
         <Trans>Unavailable</Trans>
       ) : pending || !quota ? (
         <Trans>Loading…</Trans>
-      ) : quota.unlimited ? (
-        <RuntimeTrans id="{used} used · Unlimited" values={{ used }} />
       ) : (
-        <RuntimeTrans id="{used} of {limit} used" values={{ used, limit }} />
+        <QuotaFraction quota={quota} />
       )}
     </span>
   );
@@ -74,7 +97,7 @@ export function ResourceLimitMessage({ quota }: { quota: ResourceQuota | undefin
 
 /**
  * The creator's allowance for one kind of resource. `count={false}` drops the
- * "n of m used" line and speaks only when something blocks creation: a failed
+ * "n/m" line and speaks only when something blocks creation: a failed
  * load, or the limit reached.
  */
 export function ResourceUsage({
@@ -115,19 +138,11 @@ export function ResourceUsage({
         <Trans>Loading…</Trans>
       </p>
     ) : null;
-  const { used, limit } = quota;
   return (
     <div className="space-y-1 text-sm text-muted-foreground empty:hidden" aria-live="polite">
       {count ? (
         <p>
-          {label}:{" "}
-          {quota.unlimited ? (
-            <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-          ) : (
-            <Trans id="{used} of {limit} used">
-              {used} of {limit} used
-            </Trans>
-          )}
+          {label}: <QuotaFraction quota={quota} />
         </p>
       ) : null}
       {!quota.canCreate && (
