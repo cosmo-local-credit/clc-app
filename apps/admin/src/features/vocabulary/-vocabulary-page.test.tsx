@@ -75,6 +75,22 @@ function renderPage() {
   );
 }
 
+function sectionToggle(title: string) {
+  return screen.getByRole("button", { name: title });
+}
+
+function sectionContent(title: string) {
+  const toggle = sectionToggle(title);
+  const contentId = toggle.getAttribute("aria-controls");
+  expect(contentId).toBeTruthy();
+  return document.getElementById(contentId!) as HTMLDivElement;
+}
+
+function expandSection(title: string) {
+  const toggle = sectionToggle(title);
+  if (toggle.getAttribute("aria-expanded") === "false") fireEvent.click(toggle);
+}
+
 beforeEach(() => {
   mocks.getVocabulary.mockReset().mockResolvedValue({
     tags: [tag()],
@@ -91,6 +107,68 @@ beforeEach(() => {
 });
 
 describe("the vocabulary tables", () => {
+  it("orders the collapsible sections and gives wide tables the full grid width", async () => {
+    renderPage();
+    await screen.findByText("Hours");
+
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual([
+      "Custom Units of Account",
+      "Custom offering units",
+      "Custom tags",
+      "Default tags",
+      "Default offering units",
+      "Default Units of Account",
+    ]);
+    expect(sectionToggle("Custom Units of Account").closest("section")?.className).toContain(
+      "xl:col-span-2",
+    );
+    expect(sectionToggle("Custom offering units").closest("section")?.className).not.toContain(
+      "xl:col-span-2",
+    );
+    expect(sectionToggle("Default Units of Account").closest("section")?.className).toContain(
+      "xl:col-span-2",
+    );
+  });
+
+  it("opens custom sections, collapses defaults, and exposes native keyboard buttons", async () => {
+    renderPage();
+    await screen.findByText("Hours");
+
+    for (const title of ["Custom Units of Account", "Custom offering units", "Custom tags"]) {
+      const toggle = sectionToggle(title);
+      expect(toggle.tagName).toBe("BUTTON");
+      expect(toggle.getAttribute("type")).toBe("button");
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+      expect(sectionContent(title).hidden).toBe(false);
+    }
+    for (const title of ["Default tags", "Default offering units", "Default Units of Account"]) {
+      expect(sectionToggle(title).getAttribute("aria-expanded")).toBe("false");
+      expect(sectionContent(title).hidden).toBe(true);
+    }
+
+    fireEvent.click(sectionToggle("Default tags"));
+    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("true");
+    expect(sectionContent("Default tags").hidden).toBe(false);
+    fireEvent.click(sectionToggle("Default tags"));
+    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("false");
+    expect(sectionContent("Default tags").hidden).toBe(true);
+  });
+
+  it("preserves section choices when vocabulary data refreshes", async () => {
+    renderPage();
+    await screen.findByText("Hours");
+
+    fireEvent.click(sectionToggle("Custom tags"));
+    fireEvent.click(sectionToggle("Default tags"));
+    await queryClient.invalidateQueries({ queryKey: ["clc"] });
+    await waitFor(() => expect(mocks.getVocabulary).toHaveBeenCalledTimes(2));
+
+    expect(sectionToggle("Custom tags").getAttribute("aria-expanded")).toBe("false");
+    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("true");
+  });
+
   it("lists custom tags and units in their own sections", async () => {
     renderPage();
 
@@ -168,6 +246,10 @@ describe("the default vocabulary", () => {
 
   it("lists the shipped values apart from the custom ones", async () => {
     renderPage();
+    await screen.findByText("Hours");
+    expandSection("Default tags");
+    expandSection("Default offering units");
+    expandSection("Default Units of Account");
     const defaults = within((await screen.findByText("Default tags")).closest("section")!);
     expect(defaults.getByText("Agriculture")).toBeTruthy();
     expect(defaults.queryByText("Urban Farming")).toBeNull();
@@ -186,6 +268,9 @@ describe("the default vocabulary", () => {
   // unit is an app translation key and is neither.
   it("offers a rename, and no delete, on a default tag only", async () => {
     renderPage();
+    await screen.findByText("Hours");
+    expandSection("Default tags");
+    expandSection("Default offering units");
     expect(await screen.findByRole("button", { name: "Edit Agriculture" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Delete Agriculture" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Edit kg" })).toBeNull();
@@ -194,6 +279,8 @@ describe("the default vocabulary", () => {
 
   it("renames a default tag through the tag endpoint", async () => {
     renderPage();
+    await screen.findByText("Hours");
+    expandSection("Default tags");
     fireEvent.click(await screen.findByRole("button", { name: "Edit Agriculture" }));
     fireEvent.change(screen.getByRole("textbox", { name: "New tag" }), {
       target: { value: "Farming" },
