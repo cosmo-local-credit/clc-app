@@ -52,7 +52,8 @@ function ResourceQuotaSummary({
   return (
     <span
       className={cn(
-        "font-sans text-muted-foreground text-sm font-normal tracking-normal",
+        "font-sans text-sm font-normal tracking-normal",
+        quota && !quota.canCreate ? "text-destructive" : "text-foreground",
         className,
       )}
       aria-live="polite"
