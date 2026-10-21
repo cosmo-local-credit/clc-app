@@ -22,6 +22,12 @@ describe("bottom-navigation layout contract", () => {
     expect(styles).not.toContain("@utility pb-market-list");
   });
 
+  it("reserves the desktop scrollbar gutter so fixed navigation does not shift", () => {
+    const styles = source("styles.css");
+
+    expect(styles).toMatch(/html\s*\{\s*scrollbar-gutter:\s*stable;/);
+  });
+
   it("stacks navigation below shared backdrops and popup content", () => {
     const navigation = source("components/navigation/bottom-navigation.tsx");
     const sheet = source("components/ui/sheet.tsx");

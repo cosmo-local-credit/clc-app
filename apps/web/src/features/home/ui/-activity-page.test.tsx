@@ -181,7 +181,16 @@ describe("ActivityPage", () => {
       <ActivityPage address={ADDRESS} types={["sent"]} onTypesChange={onTypesChange} />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    const filters = screen.getByRole("button", { name: "Filters" });
+    const search = screen.getByRole("searchbox", { name: "Search activity" });
+    const searchControl = search.closest('[data-slot="market-search-control"]');
+    expect(filters.className).toContain("size-11");
+    expect(filters.textContent).toBe("1");
+    expect(filters.textContent).not.toContain("Filters");
+    expect(searchControl?.contains(filters)).toBe(true);
+    expect(searchControl?.className).toContain("h-11");
+
+    fireEvent.click(filters);
     expect(
       screen.getByRole("checkbox", { name: "Sent" }).getAttribute("data-checked"),
     ).not.toBeNull();

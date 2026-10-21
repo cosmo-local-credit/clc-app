@@ -37,6 +37,7 @@ export function ReportFilterSheet({
       open={open}
       onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}
+      trigger="bar"
     />
   );
 }

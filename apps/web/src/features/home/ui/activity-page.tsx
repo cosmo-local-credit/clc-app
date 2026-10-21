@@ -93,11 +93,12 @@ export function ActivityPage({
   const isFiltered = settled !== "" || types.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <h1 className="sr-only">{t`Activity`}</h1>
-      <MarketFeedBar current="activity">
-        <div className="flex items-center gap-2">
-          <div className="relative min-w-0 flex-1">
+      <MarketFeedBar
+        current="activity"
+        search={
+          <div className="relative h-full min-w-0 flex-1">
             <RiSearchLine
               className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
@@ -110,24 +111,23 @@ export function ActivityPage({
               onChange={(event) => setDraftQuery(event.target.value)}
               aria-label={t`Search activity`}
               placeholder={t`Search activity`}
-              className="appearance-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+              className="h-full appearance-none border-0 bg-card ps-9 pe-11 focus-visible:border-transparent [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             />
             {draftQuery ? (
               <Button
                 variant="ghost"
-                size="icon"
-                tap
+                size="icon-lg"
                 onClick={() => setDraftQuery("")}
                 aria-label={t`Clear search`}
-                className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
+                className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-card text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:border-transparent"
               >
                 <RiCloseLine className="size-4" aria-hidden="true" />
               </Button>
             ) : null}
           </div>
-          <ActivityFilterSheet types={types} onApply={(next) => onTypesChange?.(next)} />
-        </div>
-      </MarketFeedBar>
+        }
+        filters={<ActivityFilterSheet types={types} onApply={(next) => onTypesChange?.(next)} />}
+      />
       <p id="activity-search-help" className="text-sm text-muted-foreground">
         {tooShort ? (
           <Trans>Type at least two characters.</Trans>
