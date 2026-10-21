@@ -1,5 +1,5 @@
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
-import type { AccountsClient } from "./client";
+import type { AccountsClient, ActivityKind } from "./client";
 
 /**
  * Canonical query identity and base options for account reads.
@@ -37,6 +37,22 @@ export const accountKeys = {
       address.toLowerCase(),
       perPage,
       ...(q ? [q] : []),
+    ] as const,
+  activityInfinite: (
+    address: string,
+    perPage: number,
+    q = "",
+    types: readonly ActivityKind[] = [],
+  ) =>
+    [
+      "clc",
+      "accounts",
+      "activity",
+      "infinite",
+      address.toLowerCase(),
+      perPage,
+      q,
+      ...types,
     ] as const,
 
   /**
@@ -169,6 +185,34 @@ export function accountTransfersInfiniteQueryOptions(
       lastPage.transfers.length < perPage || lastPage.last === undefined
         ? undefined
         : lastPage.last,
+  });
+}
+
+export function accountActivityInfiniteQueryOptions(
+  accounts: AccountsClient,
+  address: string | undefined,
+  perPage: number,
+  q = "",
+  types: readonly ActivityKind[] = [],
+) {
+  return infiniteQueryOptions({
+    queryKey: accountKeys.activityInfinite(address ?? "none", perPage, q, types),
+    queryFn: ({ pageParam, signal }) =>
+      accounts.getAccountActivity(
+        {
+          address: requireAddress(address),
+          perPage,
+          ...(q ? { q } : {}),
+          ...(types.length ? { types } : {}),
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+        },
+        signal,
+      ),
+    enabled: Boolean(address),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.activity.length < perPage || lastPage.last === undefined ? undefined : lastPage.last,
   });
 }
 

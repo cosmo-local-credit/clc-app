@@ -114,7 +114,7 @@ export function MarketListPage({
   });
 
   return (
-    <main className="relative min-h-[100svh] bg-background px-4 pb-market-list">
+    <main className="relative min-h-[100svh] bg-background px-4 pb-bottom-nav">
       <div>
         <h1 className="sr-only">
           <Trans>Vouchers</Trans>

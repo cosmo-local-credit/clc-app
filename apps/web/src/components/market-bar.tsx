@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useState } from "react";
 import type { IconType } from "react-icons";
-import { RiApps2Line, RiArticleLine, RiNotification3Line, RiMap2Line } from "react-icons/ri";
+import { RiApps2Line, RiArticleLine, RiNotification3Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
@@ -36,8 +36,8 @@ const LIST_ICON: Record<MarketListScope, IconType> = { all: RiApps2Line, ...RESO
  * The market's top bar, the same over the map and above every list: the app
  * menu on its own square, the search field with the filter button joined to
  * its end, and beside them Credit for a member or Sign in for a guest. The
- * badges below open the lists; in a list, a Map button floats above the
- * navigation.
+ * badges below open the lists. The bottom Market control owns map/list
+ * switching, so this shell does not add another floating Map action.
  */
 export function MarketBar({
   current,
@@ -118,7 +118,6 @@ export function MarketBar({
           }
         />
       ) : null}
-      {current === "map" ? null : <MarketMapButton />}
     </div>
   );
 }
@@ -195,21 +194,6 @@ function MarketBadges({ current }: { current: MarketSurface }) {
   );
 }
 
-function MarketMapButton({ resetSearch = false }: { resetSearch?: boolean }) {
-  const { t } = useLingui();
-  return (
-    <Link
-      to="/"
-      search={(previous) => (resetSearch ? {} : mapSearchFrom(previous))}
-      aria-label={t`Map`}
-      title={t`Map`}
-      className="fixed end-4 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1rem)] z-20 flex size-14 items-center justify-center bg-primary text-primary-foreground outline-none transition-colors hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2"
-    >
-      <RiMap2Line className="size-6" aria-hidden="true" />
-    </Link>
-  );
-}
-
 /** Section navigation for feeds with their own search controls. */
 export function MarketFeedBar({
   current,
@@ -220,9 +204,11 @@ export function MarketFeedBar({
 }) {
   return (
     <div className="sticky top-0 z-20 space-y-2 bg-background pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
-      {children}
+      <div className="flex items-center gap-2">
+        <AppMenu />
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
       <MarketBadges current={current} />
-      <MarketMapButton resetSearch />
     </div>
   );
 }

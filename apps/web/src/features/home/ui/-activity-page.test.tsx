@@ -10,6 +10,51 @@ import { ActivityPage } from "./activity-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
 
+type TransferFixture = {
+  id: number;
+  txHash: string;
+  dateBlock: string;
+  direction: string;
+  counterpartyAddress: string;
+  senderAddress: string;
+  recipientAddress: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+  tokenName: string;
+  tokenDecimals: number;
+  amount: string;
+  success: boolean;
+  uoaValue?: string;
+  uoa?: string;
+  hasNote?: boolean;
+};
+
+function logicalActivity(transfers: readonly TransferFixture[]) {
+  return transfers.map(
+    ({
+      direction,
+      tokenAddress,
+      tokenSymbol,
+      tokenName,
+      tokenDecimals,
+      amount,
+      uoaValue,
+      uoa,
+      ...transfer
+    }) => ({
+      ...transfer,
+      kind:
+        transfer.senderAddress === "0x0000000000000000000000000000000000000000"
+          ? "creation"
+          : direction === "IN"
+            ? "received"
+            : "sent",
+      hasNote: transfer.hasNote ?? false,
+      transfer: { tokenAddress, tokenSymbol, tokenName, tokenDecimals, amount, uoaValue, uoa },
+    }),
+  );
+}
+
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => ADDRESS.toLowerCase(),
 }));
@@ -52,6 +97,100 @@ afterEach(() => {
 });
 
 describe("ActivityPage", () => {
+  it("renders one two-sided swap row and opens its indexed details", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () =>
+          JSON.stringify({
+            ok: true,
+            result: {
+              activity: [
+                {
+                  kind: "swapped",
+                  id: 4000010,
+                  txHash: `0x${"55".repeat(32)}`,
+                  dateBlock: "2026-10-20T08:00:00Z",
+                  success: true,
+                  sent: {
+                    tokenAddress: "0x1111111111111111111111111111111111111111",
+                    tokenName: "My voucher",
+                    tokenSymbol: "MY3R",
+                    tokenDecimals: 6,
+                    amount: "1000000",
+                    uoaValue: "1",
+                    uoa: "KES",
+                  },
+                  received: {
+                    tokenAddress: "0x2222222222222222222222222222222222222222",
+                    tokenName: "Kilifi voucher",
+                    tokenSymbol: "KNSM2",
+                    tokenDecimals: 6,
+                    amount: "2000000",
+                    uoaValue: "2",
+                    uoa: "BAM",
+                  },
+                  protocolFee: {
+                    tokenAddress: "0x2222222222222222222222222222222222222222",
+                    tokenName: "Kilifi voucher",
+                    tokenSymbol: "KNSM2",
+                    tokenDecimals: 6,
+                    amount: "10000",
+                  },
+                  poolAddresses: [
+                    "0x3333333333333333333333333333333333333333",
+                    "0x4444444444444444444444444444444444444444",
+                  ],
+                },
+              ],
+            },
+          }),
+      }),
+    );
+
+    renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+    const row = await screen.findByRole("button", { name: /swapped knsm2 for my3r/i });
+    const rowText = row.textContent ?? "";
+    expect(rowText).toContain("1 MY3R (1.00 KES)");
+    expect(rowText).toContain("2 KNSM2 (2.00 BAM)");
+    expect(rowText.indexOf("+2 KNSM2")).toBeLessThan(rowText.indexOf("−1 MY3R"));
+    fireEvent.click(row);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Pools")).toBeTruthy();
+    expect(within(dialog).getByText("Sent").parentElement?.textContent).toContain("1 MY3R");
+    expect(within(dialog).getByText("Received").parentElement?.textContent).toContain("2 KNSM2");
+    expect(within(dialog).getByText("Protocol fee")).toBeTruthy();
+  });
+
+  it("stages type filters and applies their canonical order", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () => JSON.stringify({ ok: true, result: { activity: [] } }),
+      }),
+    );
+    const onTypesChange = vi.fn();
+    renderWithQueryClient(
+      <ActivityPage address={ADDRESS} types={["sent"]} onTypesChange={onTypesChange} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    expect(
+      screen.getByRole("checkbox", { name: "Sent" }).getAttribute("data-checked"),
+    ).not.toBeNull();
+    fireEvent.click(screen.getByRole("checkbox", { name: "Creation" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Swapped" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+    expect(onTypesChange).toHaveBeenCalledWith(["creation", "sent", "swapped"]);
+  });
+
   it("shows fetched account transfer history", async () => {
     vi.stubGlobal(
       "fetch",
@@ -64,7 +203,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743839,
                     txHash: "0xf6c12f66ae53435466ec44f33c7b981476f26779e93c725eb7b2afdf52577fcc",
@@ -82,7 +221,7 @@ describe("ActivityPage", () => {
                     uoaValue: "3.0864175",
                     uoa: "KES",
                   },
-                ],
+                ]),
               },
             }),
           ),
@@ -126,7 +265,8 @@ describe("ActivityPage", () => {
         ok: true,
         status: 200,
         statusText: "",
-        text: async () => JSON.stringify({ ok: true, result: { transfers } }),
+        text: async () =>
+          JSON.stringify({ ok: true, result: { activity: logicalActivity(transfers) } }),
       };
     });
     vi.stubGlobal("fetch", fetcher);
@@ -143,13 +283,13 @@ describe("ActivityPage", () => {
     fireEvent.change(search, { target: { value: "historic" } });
     expect(await screen.findByText("5 SV")).toBeTruthy();
     expect(screen.getByRole("status")).toBe(announcements);
-    expect(announcements.textContent).toBe("1 transfer shown.");
+    expect(announcements.textContent).toBe("1 activity item shown.");
     expect(fetcher.mock.calls.some(([url]) => String(url).includes("q=historic"))).toBe(true);
     fireEvent.change(search, { target: { value: "absent" } });
     await waitFor(() => expect(screen.queryByText("5 SV")).toBeNull());
-    expect(await screen.findByText("No activity matches this search.")).toBeTruthy();
+    expect(await screen.findByText("No activity matches these filters.")).toBeTruthy();
     expect(screen.getByRole("status")).toBe(announcements);
-    expect(announcements.textContent).toContain("No activity matches this search.");
+    expect(announcements.textContent).toContain("No activity matches these filters.");
     expect(screen.getByRole("searchbox", { name: "Search activity" })).toBe(search);
     fireEvent.change(search, { target: { value: "" } });
     expect(await screen.findByText("No activity yet.")).toBeTruthy();
@@ -184,7 +324,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743840,
                     txHash: "0xec0810051bdd353f0d3ad60bdf6c78eef8579d8d4b19d1bd7bc4f6a73cc16783",
@@ -200,7 +340,7 @@ describe("ActivityPage", () => {
                     amount: "1000000000",
                     success: true,
                   },
-                ],
+                ]),
               },
             }),
           ),
@@ -227,7 +367,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743839,
                     txHash: "0xf6c12f66ae53435466ec44f33c7b981476f26779e93c725eb7b2afdf52577fcc",
@@ -245,7 +385,7 @@ describe("ActivityPage", () => {
                     uoaValue: "3.0864175",
                     uoa: "KES",
                   },
-                ],
+                ]),
               },
             }),
           ),
@@ -292,7 +432,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743839,
                     txHash: "0xf6c12f66ae53435466ec44f33c7b981476f26779e93c725eb7b2afdf52577fcc",
@@ -325,7 +465,7 @@ describe("ActivityPage", () => {
                     success: true,
                     hasNote: false,
                   },
-                ],
+                ]),
               },
             }),
           ),

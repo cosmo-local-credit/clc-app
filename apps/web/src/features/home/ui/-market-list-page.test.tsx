@@ -333,11 +333,11 @@ describe("MarketListPage", () => {
     expect(within(list).getAllByRole("link")).toHaveLength(25);
   });
 
-  it("keeps location controls out of the list view and links to the canonical map", () => {
+  it("keeps location controls and the redundant floating Map button out of the list view", () => {
     render(<MarketListPage />);
 
     expect(screen.queryByRole("button", { name: "Use location" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/");
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
     expect(within(sheet).queryByRole("button", { name: "Use location" })).toBeNull();
@@ -345,7 +345,7 @@ describe("MarketListPage", () => {
     expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
-  it("puts Filters in the search row, Credit and the list badges below, and Map at the end", () => {
+  it("puts Filters in the search row and Credit before the list badges", () => {
     render(<MarketListPage />);
 
     const filters = screen.getByRole("button", { name: "Filters" });
@@ -354,7 +354,6 @@ describe("MarketListPage", () => {
     const vouchers = screen.getByRole("link", { name: "Vouchers" });
     const offers = screen.getByRole("link", { name: "Offers" });
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
-    const map = screen.getByRole("link", { name: "Map" });
 
     expect(screen.getByRole("button", { name: FIELD }).closest(".border")?.contains(filters)).toBe(
       true,
@@ -371,7 +370,6 @@ describe("MarketListPage", () => {
       [pools, vouchers],
       [vouchers, offers],
       [offers, catalogs],
-      [catalogs, map],
     ] as const) {
       expect(before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
@@ -454,12 +452,12 @@ describe("MarketListPage", () => {
     );
   });
 
-  it("preserves the filter when linking to the map", () => {
+  it("preserves the filter when the active voucher badge links to the map", () => {
     mocks.search = { tab: "market", view: "list", q: "art" };
 
     render(<MarketListPage />);
 
-    const href = screen.getByRole("link", { name: "Map" }).getAttribute("href");
+    const href = screen.getByRole("link", { name: "Vouchers" }).getAttribute("href");
     expect(href).toContain("q=art");
     expect(href).not.toContain("view=map");
   });

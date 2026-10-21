@@ -42,7 +42,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
 }));
 
-import { MarketBar, type MarketSurface } from "./market-bar";
+import { MarketBar, MarketFeedBar, type MarketSurface } from "./market-bar";
 
 const filter = {
   term: "",
@@ -95,14 +95,14 @@ describe("MarketBar", () => {
     expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 
-  it("returns to the map from the open list's badge and from the Map button", () => {
+  it("returns to the map from the open list's badge without a redundant Map button", () => {
     mocks.search = { scope: "pools", q: "bike", out_voucher: `0x${"a".repeat(40)}` };
     renderBar("pools");
 
     const pools = screen.getByRole("link", { name: "Pools" });
     expect(pools.getAttribute("aria-current")).toBe("page");
     expect(pools.getAttribute("href")).toBe("/?q=bike");
-    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/?q=bike");
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 
   it("marks All open and returns to the map from it", () => {
@@ -115,9 +115,7 @@ describe("MarketBar", () => {
     expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
       "/market?q=bike&tags=Repair&scope=pools",
     );
-    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe(
-      "/?q=bike&tags=Repair",
-    );
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 
   it.each(["posts", "activity"] as const)("returns from %s to an unfiltered map", (current) => {
@@ -126,6 +124,7 @@ describe("MarketBar", () => {
     const label = current === "posts" ? "Posts" : "Activity";
     expect(screen.getByRole("link", { name: label }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe("/");
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 
   it("puts Credit at the end of the search row for a member, and offers no Sign in", () => {
@@ -154,4 +153,22 @@ describe("MarketBar", () => {
 
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
   });
+});
+
+describe("MarketFeedBar", () => {
+  it.each(["activity", "posts"] as const)(
+    "places the menu immediately before the %s search controls",
+    (current) => {
+      render(
+        <MarketFeedBar current={current}>
+          <input aria-label={`Search ${current}`} />
+        </MarketFeedBar>,
+      );
+
+      const menu = screen.getByRole("button", { name: "Open menu" });
+      const search = screen.getByRole("textbox", { name: `Search ${current}` });
+      expect(menu.parentElement?.firstElementChild).toBe(menu);
+      expect(menu.nextElementSibling?.contains(search)).toBe(true);
+    },
+  );
 });

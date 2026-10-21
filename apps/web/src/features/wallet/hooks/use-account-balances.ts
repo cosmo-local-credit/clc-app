@@ -1,12 +1,14 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
+  accountActivityInfiniteQueryOptions,
   accountIssuedTokensInfiniteQueryOptions,
   accountKeys,
   accountTokensInfiniteQueryOptions,
   accountTransfersInfiniteQueryOptions,
   latestAccountTokensQueryOptions,
 } from "@clc/api/features/accounts/queries";
+import type { ActivityKind } from "@clc/api/features/accounts/client";
 import { accountsClient } from "#/lib/api/accounts";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -135,6 +137,28 @@ export function useAccountTransfersInfinite(
 ) {
   return useInfiniteQuery({
     ...accountTransfersInfiniteQueryOptions(accountsClient, address, perPage, q),
+    ...walletAccountQueryFreshness,
+    ...pollOptions(poll),
+    enabled: Boolean(address) && enabled,
+  });
+}
+
+export function useAccountActivityInfinite(
+  address: string | undefined,
+  {
+    perPage = DEFAULT_PAGE_SIZE,
+    poll = false,
+    q = "",
+    types = [],
+    enabled = true,
+  }: AccountPageQueryOptions & {
+    q?: string;
+    types?: readonly ActivityKind[];
+    enabled?: boolean;
+  } = {},
+) {
+  return useInfiniteQuery({
+    ...accountActivityInfiniteQueryOptions(accountsClient, address, perPage, q, types),
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
     enabled: Boolean(address) && enabled,
