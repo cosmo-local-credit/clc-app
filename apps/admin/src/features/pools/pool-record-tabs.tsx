@@ -496,9 +496,6 @@ function OfferingRow({ offering, voucher }: { offering: Offering; voucher?: Pool
     <TableRow>
       <TableCell>
         <span className="block min-w-32 truncate font-medium">{offering.name}</span>
-        <span className="text-muted-foreground font-mono text-xs uppercase">
-          {offering.commodityType}
-        </span>
       </TableCell>
       <TableCell>
         <VoucherCell

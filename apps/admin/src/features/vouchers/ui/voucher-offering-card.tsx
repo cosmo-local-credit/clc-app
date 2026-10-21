@@ -51,7 +51,6 @@ export function VoucherOfferingCard({
   // it: the editor is one click away and the global offerings list is the audit
   // surface.
   const detail = [
-    offering.commodityType ?? "unclassified",
     quantity ? `qty ${[quantity.value, quantity.unit].filter(Boolean).join(" ")}` : null,
     `seller ${formatVoucherAddress(offering.sellerAddress)}`,
   ]

@@ -1,17 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import {
-  OFFERING_COMMODITY_TYPES,
-  OFFERING_UNITS,
-  emptyOfferingWrite,
-  isOfferingCommodityType,
-  isOfferingUnit,
-  offeringWriteSchema,
-} from "./logic";
+import { OFFERING_UNITS, emptyOfferingWrite, isOfferingUnit, offeringWriteSchema } from "./logic";
 
 const valid = {
   name: "Fresh maize flour",
-  commodityType: "GOOD" as const,
   description: "Stone-ground flour packed on collection day.",
   unit: "kg" as const,
   pricePerUnit: "120.50",
@@ -42,20 +34,11 @@ describe("the closed sets", () => {
     ]);
   });
 
-  // Two, and only two. A third would silently change what the market's kind
-  // derivation means in clc-core.
-  it("holds exactly two commodity types", () => {
-    expect(OFFERING_COMMODITY_TYPES).toEqual(["GOOD", "SERVICE"]);
-  });
-
   it("recognises members and rejects everything else", () => {
     expect(isOfferingUnit("kg")).toBe(true);
     expect(isOfferingUnit("KG")).toBe(false);
     expect(isOfferingUnit("50kg sack")).toBe(false);
     expect(isOfferingUnit(undefined)).toBe(false);
-    expect(isOfferingCommodityType("SERVICE")).toBe(true);
-    expect(isOfferingCommodityType("service")).toBe(false);
-    expect(isOfferingCommodityType("UNCLASSIFIED")).toBe(false);
   });
 });
 
@@ -82,9 +65,6 @@ describe("offeringWriteSchema", () => {
     ["a description over 2000 characters", { description: "a".repeat(2001) }],
     ["an empty unit", { unit: "" }],
     ["a unit over 32 characters", { unit: "a".repeat(33) }],
-    ["an empty commodity type", { commodityType: "" }],
-    ["a third commodity type", { commodityType: "UNCLASSIFIED" }],
-    ["a lower-case commodity type", { commodityType: "good" }],
     ["a data URI photo", { imageUrl: "data:image/png;base64,AAAA" }],
     ["a scheme-relative photo", { imageUrl: "//content.example/a.webp" }],
     ["a bare path photo", { imageUrl: "/offering/a.webp" }],
@@ -137,11 +117,9 @@ describe("offeringWriteSchema", () => {
 });
 
 describe("emptyOfferingWrite", () => {
-  // Nothing is pre-selected, so an issuer cannot publish a classification or a
-  // unit by not touching the field.
-  it("starts with no unit and no classification chosen", () => {
+  // The issuer must choose a unit.
+  it("starts with no unit chosen", () => {
     expect(emptyOfferingWrite.unit).toBe("");
-    expect(emptyOfferingWrite.commodityType).toBe("");
     expect(emptyOfferingWrite.imageUrl).toBeNull();
   });
 

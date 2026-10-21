@@ -156,6 +156,11 @@ export function SearchableSelect({
           onFocus={openList}
           onClick={openList}
           onKeyDown={(event) => {
+            if (event.key === "Escape" && open) {
+              event.preventDefault();
+              event.stopPropagation();
+              setOpen(false);
+            }
             if (event.key === "Enter" && canCreate) {
               event.preventDefault();
               commitCustomValue();

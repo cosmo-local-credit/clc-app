@@ -377,7 +377,6 @@ describe("PoolDetailPage", () => {
           voucherDecimals: 6,
           sellerAddress: OWNER,
           name: "Maize flour",
-          commodityType: "GOOD",
           description: "",
           quantity: "20",
           unit: "kg",

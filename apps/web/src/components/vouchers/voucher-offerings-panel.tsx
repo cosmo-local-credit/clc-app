@@ -23,17 +23,12 @@ import { OfferingEditorSheet, type OfferingEditor } from "./offering-editor-shee
  * belongs to the voucher in the page header.
  *
  * The issuer of the voucher sees the same list plus the controls to change it,
- * and reads it through a different query. Two things separate the owner's view
- * from a visitor's:
+ * and bypasses the public response cache for their own changes:
  *
  *   * the request bypasses the browser's HTTP cache. The public endpoint answers
  *     `public, max-age=60, stale-while-revalidate=300`, which is right for
  *     browsing and wrong for the person who just unlisted a row — they would
  *     watch it come back;
- *   * the `kind === "voucher"` shortcut does not apply. It is a sound inference
- *     for a visitor (that marker means no available offerings), but an owner
- *     needs somewhere to add the first one, and the empty state has to come from
- *     a real answer rather than from a guess that a create then invalidates.
  */
 export function VoucherOfferingsPanel({
   voucherAddress,
@@ -41,7 +36,6 @@ export function VoucherOfferingsPanel({
   voucherValue,
   voucherUoa,
   ownerAddress,
-  isKnownEmpty,
   maxItems,
   manualPageSize,
   autoLoadMore,
@@ -55,8 +49,6 @@ export function VoucherOfferingsPanel({
   voucherUoa: string | null;
   /** The catalog's owner for this voucher, or null when it records none. */
   ownerAddress: string | null;
-  /** `kind === "voucher"` already proves the result is empty — skip the request. */
-  isKnownEmpty: boolean;
   maxItems?: number;
   manualPageSize?: number;
   autoLoadMore?: boolean;
@@ -84,9 +76,7 @@ export function VoucherOfferingsPanel({
   const [deletingID, setDeletingID] = useState<string | null>(null);
   const remove = useDeleteVoucherOffering(voucherAddress ?? "");
 
-  const visitorQuery = useVoucherOfferingsInfinite(
-    isOwner || isKnownEmpty ? undefined : voucherAddress,
-  );
+  const visitorQuery = useVoucherOfferingsInfinite(isOwner ? undefined : voucherAddress);
   const ownerQuery = useManagedVoucherOfferingsInfinite(isOwner ? voucherAddress : undefined);
   const query = isOwner ? ownerQuery : visitorQuery;
 
@@ -125,7 +115,6 @@ export function VoucherOfferingsPanel({
 
       <OfferingsPanel
         query={query}
-        suppressed={!isOwner && isKnownEmpty}
         fallbackSymbol={voucherSymbol}
         resolveVoucherRate={() => ({ value: voucherValue, unit: voucherUoa })}
         maxItems={maxItems}
