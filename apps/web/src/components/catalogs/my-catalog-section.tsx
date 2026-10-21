@@ -12,10 +12,17 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function MyCatalogSection({
   usage: providedUsage,
+  search = "",
 }: {
   usage?: ReturnType<typeof useResourceUsage>;
+  /** The Wallet's search, lowercased: only catalogs it names show, with nothing to create. */
+  search?: string;
 } = {}) {
   const query = useMyCatalog();
+  const catalogs =
+    search === ""
+      ? query.catalogs
+      : query.catalogs.filter((catalog) => catalog.name.toLocaleLowerCase().includes(search));
   const localUsage = useResourceUsage(providedUsage === undefined);
   const usage = providedUsage ?? localUsage;
   const create = (
@@ -39,6 +46,7 @@ export function MyCatalogSection({
       )}
     </Button>
   );
+  if (search !== "" && query.isSuccess && catalogs.length === 0) return null;
   return (
     <section aria-labelledby="my-catalog-title" className="space-y-2">
       <SectionHeading id="my-catalog-title">
@@ -80,11 +88,15 @@ export function MyCatalogSection({
         </div>
       ) : (
         <>
-          {query.catalogs.map((catalog) => (
+          {catalogs.map((catalog) => (
             <CatalogRow key={catalog.id} catalog={catalog} />
           ))}
-          <ResourceLimitMessage quota={usage.data?.catalogs} />
-          {create}
+          {search === "" ? (
+            <>
+              <ResourceLimitMessage quota={usage.data?.catalogs} />
+              {create}
+            </>
+          ) : null}
         </>
       )}
     </section>

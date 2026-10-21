@@ -81,6 +81,55 @@ export function MarketSearchField({
 }
 
 /**
+ * The bar's search field on a screen that searches itself: it edits the text
+ * in place, laid out like the market's field so the box reads the same.
+ */
+export function ScreenSearchField({
+  value,
+  onChange,
+  label,
+  maxLength,
+  describedBy,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  label: string;
+  maxLength?: number;
+  describedBy?: string;
+}) {
+  const { t } = useLingui();
+  return (
+    <>
+      <RiSearchLine className="ms-3 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <input
+        dir="auto"
+        type="search"
+        enterKeyHint="search"
+        autoComplete="off"
+        value={value}
+        maxLength={maxLength}
+        aria-describedby={describedBy}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label={label}
+        placeholder={label}
+        className="h-full min-w-0 flex-1 appearance-none text-ellipsis bg-transparent ps-2.5 pe-2 text-base outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+      />
+      {value !== "" ? (
+        <Button
+          variant="ghost"
+          size="icon-lg"
+          onClick={() => onChange("")}
+          aria-label={t`Clear search`}
+          className="border-0 text-muted-foreground"
+        >
+          <RiCloseLine className="size-4" aria-hidden="true" />
+        </Button>
+      ) : null}
+    </>
+  );
+}
+
+/**
  * Full-screen search: recent searches and tags at rest, then matching
  * vouchers, pools and tags as you type. Enter searches; a voucher or a pool
  * opens its page; a tag joins the applied tags.

@@ -20,7 +20,7 @@ msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, one {# pool} other {# pool}}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/activity-page.tsx:97
+#: apps/web/src/features/home/ui/activity-page.tsx:96
 msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
 msgstr "{count, plural, one {# paglilipat ang ipinapakita.} other {# paglilipat "
 "ang ipinapakita.}}"
@@ -136,12 +136,12 @@ msgid "{0} m"
 msgstr "{0} m"
 
 #. placeholder {0}: draftTags.length
-#: apps/web/src/components/catalog-filter-controls.tsx:485
+#: apps/web/src/components/catalog-filter-controls.tsx:445
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} ng {CATALOG_MAX_TAGS}"
 
 #. placeholder {0}: draftVouchers.length
-#: apps/web/src/components/catalog-filter-controls.tsx:308
+#: apps/web/src/components/catalog-filter-controls.tsx:268
 msgid "{0} of {CATALOG_MAX_VOUCHERS}"
 msgstr "{0} ng {CATALOG_MAX_VOUCHERS}"
 
@@ -173,7 +173,7 @@ msgid "{0} updated."
 msgstr "Na-update ang {0}."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/wallet-page.tsx:318
+#: apps/web/src/features/home/ui/wallet-page.tsx:366
 #: apps/web/src/features/pools/ui/pools-page.tsx:402
 msgid "{0} vouchers"
 msgstr "{0} mga voucher"
@@ -283,7 +283,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 alok"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:316
+#: apps/web/src/features/home/ui/wallet-page.tsx:364
 #: apps/web/src/features/pools/ui/pools-page.tsx:400
 msgid "1 voucher"
 msgstr "1 voucher"
@@ -350,7 +350,8 @@ msgid "About"
 msgstr "Tungkol dito"
 
 #: apps/web/src/components/introduction/introduction.tsx:92
-#: apps/web/src/features/home/ui/settings-page.tsx:85
+#: apps/web/src/features/home/ui/settings-page.tsx:120
+#: apps/web/src/features/home/ui/settings-page.tsx:125
 msgid "About Cosmo-Local Credit"
 msgstr "Tungkol sa Cosmo-Local Credit"
 
@@ -368,7 +369,7 @@ msgstr "Tanggapin ang mga tuntunin upang i-publish ang inyong pool"
 msgid "Accept the terms to publish your voucher"
 msgstr "Tanggapin ang mga tuntunin upang i-publish ang inyong voucher"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/home/ui/settings-page.tsx:60
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
@@ -406,11 +407,11 @@ msgstr "Pag-activate sa chain…"
 msgid "Activating smart wallet…"
 msgstr "Pag-activate ng smart wallet…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:250
+#: apps/web/src/features/home/ui/settings-page.tsx:337
 msgid "Active"
 msgstr "Aktibo"
 
-#: apps/web/src/components/market-bar.tsx:189
+#: apps/web/src/components/market-bar.tsx:243
 #: apps/web/src/components/navigation/bottom-navigation.tsx:44
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:194
 #: apps/web/src/features/home/ui/activity-page.tsx:68
@@ -540,7 +541,7 @@ msgstr "Address"
 msgid "Address book"
 msgstr "Address book"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:191
+#: apps/web/src/features/home/ui/settings-page.tsx:278
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -574,11 +575,11 @@ msgstr "Mga advanced na opsyon"
 msgid "Agriculture"
 msgstr "Agrikultura"
 
-#: apps/web/src/components/market-bar.tsx:129
+#: apps/web/src/components/market-bar.tsx:183
 msgid "All"
 msgstr "Lahat"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:252
+#: apps/web/src/features/home/ui/wallet-page.tsx:295
 msgid "All pools"
 msgstr "Lahat ng pool"
 
@@ -586,8 +587,8 @@ msgstr "Lahat ng pool"
 #~ msgid "All reviews · newest first"
 #~ msgstr "Lahat ng review · pinakabago muna"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:466
-#: apps/web/src/components/catalog-filter-controls.tsx:550
+#: apps/web/src/components/catalog-filter-controls.tsx:426
+#: apps/web/src/components/catalog-filter-controls.tsx:510
 msgid "All selected"
 msgstr "Napili lahat"
 
@@ -649,12 +650,12 @@ msgstr "Inilalarawan ng alok ang mga produkto o serbisyong ibinibigay ng isang "
 msgid "Another card scan is already running. Try again."
 msgstr "Ang isa pang pag-scan ng card ay tumatakbo na. Subukan muli."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:461
-#: apps/web/src/components/catalog-filter-controls.tsx:545
+#: apps/web/src/components/catalog-filter-controls.tsx:421
+#: apps/web/src/components/catalog-filter-controls.tsx:505
 msgid "Any selected"
 msgstr "Alinman sa napili"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:70
+#: apps/web/src/features/home/ui/settings-page.tsx:97
 msgid "App"
 msgstr "App"
 
@@ -667,7 +668,8 @@ msgstr "Pag-install ng app"
 msgid "App menu"
 msgstr "Menu ng app"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:92
+#: apps/web/src/features/home/ui/settings-page.tsx:132
+#: apps/web/src/features/home/ui/settings-page.tsx:138
 msgid "App version"
 msgstr "Bersyon ng app"
 
@@ -675,7 +677,7 @@ msgstr "Bersyon ng app"
 msgid "Apply"
 msgstr "Ilapat"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:570
+#: apps/web/src/components/catalog-filter-controls.tsx:530
 msgid "Apply filters"
 msgstr "Ilapat ang mga filter"
 
@@ -711,7 +713,7 @@ msgid "Awaiting approval"
 msgstr "Naghihintay ng pag-apruba"
 
 #: apps/web/src/components/introduction/introduction.tsx:108
-#: apps/web/src/components/market-search.tsx:159
+#: apps/web/src/components/market-search.tsx:208
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
@@ -839,7 +841,7 @@ msgstr "Ang pag-access ng camera ay tinanggihan."
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:485
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:523
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
-#: apps/web/src/features/home/ui/settings-page.tsx:145
+#: apps/web/src/features/home/ui/settings-page.tsx:232
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:470
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:747
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
@@ -887,7 +889,7 @@ msgstr "Nabasa ang card — nagsa-sign in"
 msgid "Care"
 msgstr "Pangangalaga"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:76
+#: apps/web/src/features/home/ui/wallet-page.tsx:80
 #: apps/web/src/features/wallet/ui/cash-page.tsx:33
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
 msgid "Cash"
@@ -919,7 +921,7 @@ msgstr "Larawan ng katalogo"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Na-save ang katalogo. Hindi maidagdag ang item. Subukan muli."
 
-#: apps/web/src/components/market-bar.tsx:133
+#: apps/web/src/components/market-bar.tsx:187
 #: apps/web/src/components/resource-usage.tsx:91
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
@@ -983,12 +985,12 @@ msgid "Check supply again"
 msgstr "Suriin muli ang suplay"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:363
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:85
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:88
 msgid "Check the existing submission before another transfer:"
 msgstr "Suriin ang kasalukuyang pagsusumite bago ang isa pang paglilipat:"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:397
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:123
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:126
 msgid "Check transfer status"
 msgstr "Suriin ang status ng paglilipat"
 
@@ -1064,7 +1066,7 @@ msgstr "Sinusuri kung aling mga voucher ang tinatanggap ng pool na ito…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
-#: apps/web/src/features/home/ui/settings-page.tsx:250
+#: apps/web/src/features/home/ui/settings-page.tsx:337
 msgid "Checking…"
 msgstr "Sinusuri…"
 
@@ -1212,9 +1214,9 @@ msgstr "I-clear ang filter"
 #: apps/web/src/features/home/ui/marketplace-page.tsx:228
 #: apps/web/src/features/home/ui/offers-page.tsx:166
 #: apps/web/src/features/home/ui/posts-page.tsx:133
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:64
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:73
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:83
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:65
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:74
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:84
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:56
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:65
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:76
@@ -1226,10 +1228,10 @@ msgstr "I-clear ang mga filter"
 msgid "Clear location"
 msgstr "I-clear ang lokasyon"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:76
-#: apps/web/src/components/catalog-filter-controls.tsx:526
+#: apps/web/src/components/catalog-filter-controls.tsx:486
 #: apps/web/src/components/market-search.tsx:73
-#: apps/web/src/components/market-search.tsx:180
+#: apps/web/src/components/market-search.tsx:122
+#: apps/web/src/components/market-search.tsx:229
 msgid "Clear search"
 msgstr "I-clear ang paghahanap"
 
@@ -1241,8 +1243,8 @@ msgstr "I-clear ang paghahanap"
 msgid "Close"
 msgstr "Isara"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:283
-#: apps/web/src/components/catalog-filter-controls.tsx:589
+#: apps/web/src/components/catalog-filter-controls.tsx:243
+#: apps/web/src/components/catalog-filter-controls.tsx:549
 msgid "Close filters"
 msgstr "Isara ang mga filter"
 
@@ -1403,7 +1405,7 @@ msgstr "Ikonekta ang inyong wallet upang mag-isyu ng mga voucher."
 msgid "Connect your wallet to use MPESA."
 msgstr "Ikonekta ang inyong wallet upang gamitin ang MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:208
+#: apps/web/src/features/home/ui/settings-page.tsx:295
 msgid "Connected address"
 msgstr "Nakakonektang address"
 
@@ -1512,7 +1514,7 @@ msgstr "Address ng kontrata na naka-copy"
 msgid "Copy"
 msgstr "Kopyahin"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:227
+#: apps/web/src/features/home/ui/settings-page.tsx:314
 #: apps/web/src/features/wallet/ui/cash-page.tsx:51
 msgid "Copy address"
 msgstr "Kopyahin ang address"
@@ -1643,8 +1645,8 @@ msgstr "Hindi masuri kung aling mga voucher ang tinatanggap ng pool na ito."
 msgid "Couldn't check your review access."
 msgstr "Hindi masuri ang inyong access sa review."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:186
-#: apps/web/src/features/home/ui/settings-page.tsx:192
+#: apps/web/src/features/home/ui/settings-page.tsx:273
+#: apps/web/src/features/home/ui/settings-page.tsx:279
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
@@ -1734,7 +1736,7 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Hindi matukoy ang bansa rito. Subukan ang kalapit na lugar."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:364
-#: apps/web/src/features/home/ui/activity-page.tsx:122
+#: apps/web/src/features/home/ui/activity-page.tsx:121
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:80
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:209
 msgid "Couldn't load activity."
@@ -1744,7 +1746,7 @@ msgstr "Hindi ma-load ang aktibidad."
 msgid "Couldn't load catalog items."
 msgstr "Hindi ma-load ang mga item sa katalogo."
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:58
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:44
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:198
@@ -1784,7 +1786,7 @@ msgid "Couldn't load pools."
 msgstr "Hindi ma-load ang mga pool."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:278
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:88
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:89
 msgid "Couldn't load posts."
 msgstr "Hindi ma-load ang mga post."
 
@@ -1793,7 +1795,7 @@ msgid "Couldn't load Pretium history."
 msgstr "Hindi ma-load ang kasaysayan ng Pretium."
 
 #: apps/web/src/components/resource-usage.tsx:100
-#: apps/web/src/features/home/ui/wallet-page.tsx:128
+#: apps/web/src/features/home/ui/wallet-page.tsx:168
 msgid "Couldn't load resource limits."
 msgstr "Hindi ma-load ang mga limitasyon ng resource."
 
@@ -1849,14 +1851,14 @@ msgstr "Hindi ma-load ang mga tag ng voucher."
 msgid "Couldn't load vouchers"
 msgstr "Hindi ma-load ang mga voucher"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:166
-#: apps/web/src/features/home/ui/wallet-page.tsx:184
+#: apps/web/src/features/home/ui/wallet-page.tsx:206
+#: apps/web/src/features/home/ui/wallet-page.tsx:224
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:154
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:171
 msgid "Couldn't load vouchers."
 msgstr "Hindi ma-load ang mga voucher."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:262
+#: apps/web/src/features/home/ui/wallet-page.tsx:305
 msgid "Couldn't load your pools."
 msgstr "Hindi ma-load ang inyong mga pool."
 
@@ -1963,7 +1965,7 @@ msgstr "Hindi ma-save ang inyong username."
 msgid "Couldn't save. Please try again."
 msgstr "Hindi ma-save. Subukang muli."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:386
+#: apps/web/src/components/catalog-filter-controls.tsx:346
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
@@ -1981,12 +1983,12 @@ msgstr "Hindi masimulan ang MPESA top up"
 msgid "Couldn't submit withdrawal"
 msgstr "Hindi maisumite ang withdrawal"
 
-#: apps/web/src/components/profile/username-input.tsx:66
+#: apps/web/src/components/profile/username-input.tsx:69
 msgid "Couldn't suggest a username. Please try again."
 msgstr "Hindi makapagmungkahi ng username. Subukang muli."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:328
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:59
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:62
 msgid "Couldn't transfer ownership."
 msgstr "Hindi mailipat ang pagmamay-ari."
 
@@ -2033,8 +2035,8 @@ msgstr "Gumawa ng account"
 msgid "Create an account"
 msgstr "Gumawa ng isang account"
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:32
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:37
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:39
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:44
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:84
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:200
 msgid "Create catalog"
@@ -2044,8 +2046,8 @@ msgstr "Gumawa ng katalogo"
 #~ msgid "Create new vouchers in your wallet."
 #~ msgstr "Mag-isyu ng mga bagong voucher sa inyong wallet."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:290
-#: apps/web/src/features/home/ui/wallet-page.tsx:295
+#: apps/web/src/features/home/ui/wallet-page.tsx:333
+#: apps/web/src/features/home/ui/wallet-page.tsx:338
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:351
 msgid "Create pool"
 msgstr "Gumawa ng pool"
@@ -2058,8 +2060,8 @@ msgstr "Mag-isyu ng bagong supply"
 msgid "Create the first supply to finish publishing this voucher."
 msgstr "Gumawa ng unang suplay upang tapusin ang pag-publish ng voucher."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:230
-#: apps/web/src/features/home/ui/wallet-page.tsx:235
+#: apps/web/src/features/home/ui/wallet-page.tsx:271
+#: apps/web/src/features/home/ui/wallet-page.tsx:276
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:354
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:384
 msgid "Create voucher"
@@ -2079,7 +2081,7 @@ msgid "Create your account"
 msgstr "Gumawa ng inyong account"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:418
-#: apps/web/src/features/home/ui/activity-page.tsx:169
+#: apps/web/src/features/home/ui/activity-page.tsx:172
 #: apps/web/src/features/home/ui/report-page.tsx:532
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:75
 msgid "Created"
@@ -2192,7 +2194,7 @@ msgstr "Pababain ang dami ng {0}"
 msgid "Default"
 msgstr "Default"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:236
+#: apps/web/src/features/home/ui/settings-page.tsx:323
 msgid "Delegated to Calibur"
 msgstr "Ipinadala sa Calibur"
 
@@ -2557,7 +2559,7 @@ msgstr "Rate ng palitan"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Rate ng palitan kaugnay ng default na voucher ({unitSymbol})"
 
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:78
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:81
 msgid "Existing fee recipient"
 msgstr "Kasalukuyang tatanggap ng bayarin"
 
@@ -2676,7 +2678,7 @@ msgstr "Ang pangalan ng file ay dapat 255 character o mas kaunti"
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Ang file ay masyadong malaki ({0} KB). Ang maximum ay 512 KB."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:499
+#: apps/web/src/components/catalog-filter-controls.tsx:459
 msgid "Filter by tag"
 msgstr "I-filter ayon sa tag"
 
@@ -2704,16 +2706,16 @@ msgstr "I-filter ang mga post"
 msgid "Filter vouchers"
 msgstr "I-filter ang mga voucher"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:249
-#: apps/web/src/components/catalog-filter-controls.tsx:250
-#: apps/web/src/components/catalog-filter-controls.tsx:257
+#: apps/web/src/components/catalog-filter-controls.tsx:209
+#: apps/web/src/components/catalog-filter-controls.tsx:210
+#: apps/web/src/components/catalog-filter-controls.tsx:217
 msgid "Filters"
 msgstr "Mga filter"
 
 #~ msgid "Find this voucher in a pool"
 #~ msgstr "Hanapin ang voucher na ito sa isang pool"
 
-#: apps/web/src/components/profile/username-input.tsx:72
+#: apps/web/src/components/profile/username-input.tsx:75
 msgid "Finding a name…"
 msgstr "Paghahanap ng isang pangalan..."
 
@@ -2751,7 +2753,7 @@ msgstr "I-frame ang inyong larawan"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:430
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:156
-#: apps/web/src/features/home/ui/activity-page.tsx:195
+#: apps/web/src/features/home/ui/activity-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:178
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
 msgid "From"
@@ -2793,7 +2795,7 @@ msgstr "Gawaing-kamay"
 msgid "Handmade"
 msgstr "Gawang-kamay"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:182
+#: apps/web/src/features/home/ui/activity-page.tsx:185
 msgid "Has a message"
 msgstr "May mensahe"
 
@@ -2813,7 +2815,7 @@ msgstr "Pangkalusugan"
 msgid "Hold the card flat against the back of your phone."
 msgstr "I-hold ang card flat sa likod ng inyong telepono."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:198
+#: apps/web/src/features/home/ui/wallet-page.tsx:238
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:186
 msgid "Holdings"
 msgstr "Mga hawak"
@@ -2857,11 +2859,11 @@ msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
 msgstr "Gaano karaming halaga sa {unitSymbol} ang maaaring palitan mula sa pool "
 "gamit ang {0} mga voucher?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:539
+#: apps/web/src/components/catalog-filter-controls.tsx:499
 msgid "How should categories match?"
 msgstr "Paano magkatugma ang mga kategorya?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:451
+#: apps/web/src/components/catalog-filter-controls.tsx:411
 msgid "How should vouchers match?"
 msgstr "Paano magkatugma ang mga voucher?"
 
@@ -2870,6 +2872,7 @@ msgstr "Paano magkatugma ang mga voucher?"
 #: apps/web/src/components/introduction/introduction-provider.tsx:129
 #: apps/web/src/components/introduction/introduction.tsx:62
 #: apps/web/src/components/introduction/introduction.tsx:169
+#: apps/web/src/features/home/ui/settings-page.tsx:55
 msgid "intro.replay"
 msgstr "Paano gamitin ang CLC"
 
@@ -2948,7 +2951,7 @@ msgstr "Sa network"
 #~ msgid "In this pool"
 #~ msgstr "Sa pool na ito"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:250
+#: apps/web/src/features/home/ui/settings-page.tsx:337
 msgid "Inactive"
 msgstr "Hindi aktibo"
 
@@ -2967,7 +2970,8 @@ msgstr "Impormasyon"
 #: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:19
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:80
+#: apps/web/src/features/home/ui/settings-page.tsx:103
+#: apps/web/src/features/home/ui/settings-page.tsx:114
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "I-install ang CLC"
@@ -3042,6 +3046,7 @@ msgstr "Kilogram"
 #: apps/web/src/components/language-selector.tsx:120
 #: apps/web/src/components/language-selector.tsx:131
 #: apps/web/src/components/language-selector.tsx:163
+#: apps/web/src/features/home/ui/settings-page.tsx:67
 msgid "Language"
 msgstr "Wika"
 
@@ -3069,7 +3074,7 @@ msgstr "Maliwanag"
 #~ msgid "Limit not set"
 #~ msgstr "Hindi nakatakda ang limitasyon"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:368
+#: apps/web/src/components/catalog-filter-controls.tsx:328
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "Naabot na ang limitasyong {CATALOG_MAX_VOUCHERS} voucher. Mag-alis ng "
@@ -3195,7 +3200,7 @@ msgstr "Mga link"
 msgid "Litre"
 msgstr "Litro"
 
-#: apps/web/src/components/market-search.tsx:310
+#: apps/web/src/components/market-search.tsx:359
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:321
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:472
@@ -3210,8 +3215,8 @@ msgid "Load more reviews"
 msgstr "I-load ang higit pang mga review"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:358
-#: apps/web/src/features/home/ui/activity-page.tsx:117
-#: apps/web/src/features/home/ui/activity-page.tsx:228
+#: apps/web/src/features/home/ui/activity-page.tsx:116
+#: apps/web/src/features/home/ui/activity-page.tsx:231
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:74
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:203
 msgid "Loading activity…"
@@ -3248,7 +3253,7 @@ msgid "Loading marketplace…"
 msgstr "Pag-load ng pamilihan..."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:216
-#: apps/web/src/features/home/ui/activity-page.tsx:223
+#: apps/web/src/features/home/ui/activity-page.tsx:226
 #: apps/web/src/features/home/ui/marketplace-page.tsx:236
 #: apps/web/src/features/home/ui/posts-page.tsx:148
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:108
@@ -3265,7 +3270,7 @@ msgstr "Pag-load ng mga alok..."
 msgid "Loading pool…"
 msgstr "Pag-load ng pool..."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:257
+#: apps/web/src/features/home/ui/wallet-page.tsx:300
 #: apps/web/src/features/pools/ui/pools-page.tsx:289
 msgid "Loading pools…"
 msgstr "Pag-load ng mga pool..."
@@ -3307,7 +3312,7 @@ msgstr "Pag-load ng mga token..."
 msgid "Loading voucher…"
 msgstr "Pag-load ng voucher..."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:152
+#: apps/web/src/features/home/ui/wallet-page.tsx:192
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:935
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:148
 #: apps/web/src/features/wallet/ui/collect-page.tsx:167
@@ -3331,8 +3336,8 @@ msgstr "Pag-load ng inyong profile..."
 #~ msgid "Loading..."
 #~ msgstr "Naglo-load..."
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:54
-#: apps/web/src/components/market-search.tsx:302
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:62
+#: apps/web/src/components/market-search.tsx:351
 #: apps/web/src/components/nearby-catalog.tsx:137
 #: apps/web/src/components/nearby-catalog.tsx:155
 #: apps/web/src/components/nearby-catalog.tsx:242
@@ -3420,8 +3425,8 @@ msgstr "Pamahalaan ang voucher"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "Pamahalaan ang session ng inyong wallet at mga kagustuhan sa app."
 
-#: apps/web/src/components/market-bar.tsx:204
-#: apps/web/src/components/market-bar.tsx:205
+#: apps/web/src/components/market-bar.tsx:258
+#: apps/web/src/components/market-bar.tsx:259
 msgid "Map"
 msgstr "Mapa"
 
@@ -3446,7 +3451,7 @@ msgstr "Pamilihan"
 msgid "Marketplace"
 msgstr "Pamilihan"
 
-#: apps/web/src/components/market-bar.tsx:137
+#: apps/web/src/components/market-bar.tsx:191
 msgid "Marketplace sections"
 msgstr "Mga seksyon ng pamilihan"
 
@@ -3454,7 +3459,7 @@ msgstr "Mga seksyon ng pamilihan"
 #~ msgid "Marketplace vouchers"
 #~ msgstr "Mga voucher sa pamilihan"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:541
+#: apps/web/src/components/catalog-filter-controls.tsx:501
 msgid "Match"
 msgstr "Katugma"
 
@@ -3588,11 +3593,11 @@ msgstr "Aking katalogo"
 #~ msgid "My catalogs"
 #~ msgstr "Mga katalogo ko"
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:50
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:58
 msgid "My Catalogs"
 msgstr "Mga katalogo ko"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:251
+#: apps/web/src/features/home/ui/wallet-page.tsx:294
 msgid "My Pools"
 msgstr "Mga pool ko"
 
@@ -3603,9 +3608,9 @@ msgstr "Mga pool ko"
 msgid "My posts"
 msgstr "Ang aking mga post"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:145
-#: apps/web/src/features/home/ui/wallet-page.tsx:159
-#: apps/web/src/features/home/ui/wallet-page.tsx:207
+#: apps/web/src/features/home/ui/wallet-page.tsx:185
+#: apps/web/src/features/home/ui/wallet-page.tsx:199
+#: apps/web/src/features/home/ui/wallet-page.tsx:248
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:195
 msgid "My Vouchers"
 msgstr "Mga voucher ko"
@@ -3659,8 +3664,8 @@ msgstr "Network"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:370
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:382
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:92
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:104
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:95
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:107
 msgid "New owner address"
 msgstr "Bagong address ng may-ari"
 
@@ -3682,7 +3687,7 @@ msgstr "Bagong post"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:427
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:160
-#: apps/web/src/features/home/ui/activity-page.tsx:192
+#: apps/web/src/features/home/ui/activity-page.tsx:195
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:181
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
 msgid "New supply"
@@ -3727,16 +3732,16 @@ msgid "No {0} fees have accrued yet."
 msgstr "Wala pang naipong bayarin na {0}."
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/activity-page.tsx:105
+#: apps/web/src/features/home/ui/activity-page.tsx:104
 msgid "No activity matches this search."
 msgstr "Walang aktibidad na tumutugma sa paghahanap na ito."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:381
-#: apps/web/src/features/home/ui/activity-page.tsx:109
+#: apps/web/src/features/home/ui/activity-page.tsx:108
 msgid "No activity yet."
 msgstr "Walang aktibidad pa."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:218
+#: apps/web/src/features/home/ui/settings-page.tsx:305
 msgid "No address available"
 msgstr "Walang available na address"
 
@@ -3757,11 +3762,11 @@ msgstr "Walang mga katalogong available sa pamamagitan ng iyong mga credit "
 msgid "No catalogs found."
 msgstr "Walang nakitang katalogo."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:521
+#: apps/web/src/components/catalog-filter-controls.tsx:481
 msgid "No categories are available for the current results."
 msgstr "Walang available na kategorya para sa kasalukuyang mga resulta."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:493
+#: apps/web/src/components/catalog-filter-controls.tsx:453
 msgid "No category filters are available."
 msgstr "Walang available na filter ng kategorya."
 
@@ -3903,6 +3908,10 @@ msgstr "Wala pang mga review."
 msgid "No saved recipients yet."
 msgstr "Walang nai-save na mga tumatanggap pa."
 
+#: apps/web/src/features/home/ui/settings-page.tsx:183
+msgid "No settings match this search."
+msgstr "Walang setting na tumutugma sa paghahanap na ito."
+
 #: apps/web/src/components/ui/tag-combobox.tsx:181
 msgid "No tags found."
 msgstr "Walang mga tag na natagpuan."
@@ -3938,7 +3947,7 @@ msgstr "Wala pang voucher sa pool na ito."
 msgid "No vouchers match that search."
 msgstr "Walang mga voucher na tumutugma sa paghahanap."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:407
+#: apps/web/src/components/catalog-filter-controls.tsx:367
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:122
 msgid "No vouchers match this search."
 msgstr "Walang mga voucher na tumutugma sa paghahanap na ito."
@@ -3951,7 +3960,7 @@ msgstr "Walang voucher na kokolektahin"
 msgid "No vouchers to show yet."
 msgstr "Walang mga voucher upang ipakita pa."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:217
+#: apps/web/src/features/home/ui/wallet-page.tsx:258
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:200
 msgid "No vouchers yet."
 msgstr "Walang mga voucher pa."
@@ -3999,7 +4008,7 @@ msgstr "Hindi naipadala"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:67
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:113
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:80
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:83
 msgid "Not set"
 msgstr "Hindi nakatakda"
 
@@ -4011,7 +4020,11 @@ msgstr "Walang nagbago."
 msgid "Nothing has moved through this pool yet."
 msgstr "Walang lumipat sa pool na ito hanggang ngayon."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:519
+#: apps/web/src/features/home/ui/wallet-page.tsx:143
+msgid "Nothing in your wallet matches this search."
+msgstr "Walang nasa inyong wallet na tumutugma sa paghahanap na ito."
+
+#: apps/web/src/components/catalog-filter-controls.tsx:479
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Walang tumutugma sa “{searchTerm}” na may kategorya."
 
@@ -4027,6 +4040,7 @@ msgid "Notification storage is unavailable"
 msgstr "Hindi available ang storage ng notification"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:70
 msgid "Notifications"
 msgstr "Mga notification"
 
@@ -4092,7 +4106,7 @@ msgstr "Na-update ang alok."
 msgid "Offerings"
 msgstr "Mga alok"
 
-#: apps/web/src/components/market-bar.tsx:132
+#: apps/web/src/components/market-bar.tsx:186
 #: apps/web/src/components/resource-usage.tsx:92
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
@@ -4252,7 +4266,7 @@ msgstr "Sagot ng may-ari"
 #~ msgstr "Naisumite ang paglipat ng pagmamay-ari."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:323
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:55
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:58
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "Nailipat na ang pagmamay-ari sa blockchain. Naantala ang pag-sync ng "
@@ -4301,6 +4315,7 @@ msgstr "Ang mga kalahok ay dapat 100 character o mas kaunti"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
+#: apps/web/src/features/home/ui/settings-page.tsx:79
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 msgid "Passkey"
 msgstr "Passkey"
@@ -4484,7 +4499,7 @@ msgstr "Lugar"
 msgid "Plant Nursery"
 msgstr "Punlaan"
 
-#: apps/web/src/components/market-search.tsx:334
+#: apps/web/src/components/market-search.tsx:383
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/home/ui/marketplace-page.tsx:393
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
@@ -4601,7 +4616,7 @@ msgstr "Ang pangalan ng pool ay dapat 80 character o mas kaunti"
 msgid "Pool not found."
 msgstr "Hindi natagpuan ang pool."
 
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:52
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:55
 msgid "Pool ownership transferred."
 msgstr "Nailipat na ang pagmamay-ari ng pool."
 
@@ -4648,7 +4663,7 @@ msgstr "Mga Tag ng Pool"
 msgid "Pool tracking details are missing."
 msgstr "Ang mga detalye ng pagsubaybay ng pool ay nawawala."
 
-#: apps/web/src/components/market-bar.tsx:130
+#: apps/web/src/components/market-bar.tsx:184
 #: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:331
@@ -4694,7 +4709,7 @@ msgstr "Masyadong mahaba ang teksto ng post"
 msgid "Post updated."
 msgstr "Na-update ang post."
 
-#: apps/web/src/components/market-bar.tsx:189
+#: apps/web/src/components/market-bar.tsx:243
 #: apps/web/src/components/navigation/bottom-navigation.tsx:52
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:159
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:297
@@ -4711,7 +4726,7 @@ msgstr "Mga post"
 msgid "Posts aren't available for this voucher."
 msgstr "Hindi available ang mga post para sa voucher na ito."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:58
+#: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Preferences"
 msgstr "Mga kagustuhan"
 
@@ -4969,7 +4984,7 @@ msgid "Reading this pool's fee…"
 msgstr "Binabasa ang bayarin ng pool na ito…"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:116
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:80
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:83
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:795
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:809
 msgid "Reading…"
@@ -4991,7 +5006,7 @@ msgstr "Dahilan ng pag-report"
 msgid "Receipt copied"
 msgstr "Nakopya ang resibo"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:69
+#: apps/web/src/features/home/ui/wallet-page.tsx:73
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:177
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
@@ -5021,7 +5036,7 @@ msgid "Receive vouchers"
 msgstr "Tumanggap ng mga voucher"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:420
-#: apps/web/src/features/home/ui/activity-page.tsx:171
+#: apps/web/src/features/home/ui/activity-page.tsx:174
 msgid "Received"
 msgstr "Natanggap"
 
@@ -5030,7 +5045,7 @@ msgstr "Natanggap"
 msgid "Received voucher"
 msgstr "Nakatanggap na voucher"
 
-#: apps/web/src/components/market-search.tsx:198
+#: apps/web/src/components/market-search.tsx:247
 msgid "Recent"
 msgstr "Kamakailan"
 
@@ -5146,7 +5161,7 @@ msgstr "Alisin ang “{0}” sa pamilihan?"
 
 #. placeholder {0}: item.name
 #. placeholder {0}: voucherLabel(voucher)
-#: apps/web/src/components/catalog-filter-controls.tsx:348
+#: apps/web/src/components/catalog-filter-controls.tsx:308
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:92
 msgid "Remove {0}"
 msgstr "Alisin ang {0}"
@@ -5222,7 +5237,7 @@ msgstr "Nai-report"
 msgid "Required"
 msgstr "Kinakailangan"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:584
+#: apps/web/src/components/catalog-filter-controls.tsx:544
 msgid "Reset"
 msgstr "I-reset"
 
@@ -5257,7 +5272,7 @@ msgid "Retreat"
 msgstr "Retiro"
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:66
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:74
 #: apps/web/src/components/creditable-browse-control.tsx:119
 #: apps/web/src/components/resource-usage.tsx:108
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:334
@@ -5274,7 +5289,7 @@ msgstr "Retiro"
 #: apps/web/src/features/home/ui/marketplace-page.tsx:199
 #: apps/web/src/features/home/ui/marketplace-page.tsx:250
 #: apps/web/src/features/home/ui/report-page.tsx:57
-#: apps/web/src/features/home/ui/wallet-page.tsx:136
+#: apps/web/src/features/home/ui/wallet-page.tsx:176
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:727
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:336
@@ -5393,13 +5408,12 @@ msgstr "I-scan ang address ng tatanggap"
 #~ msgid "Scroll for more"
 #~ msgstr "Mag- scroll para sa higit pa"
 
-#: apps/web/src/components/market-search.tsx:253
+#: apps/web/src/components/market-search.tsx:302
 msgid "Search “{query}”"
 msgstr "Hanapin ang “{query}”"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/activity-page.tsx:76
-#: apps/web/src/features/home/ui/activity-page.tsx:77
+#: apps/web/src/features/home/ui/activity-page.tsx:75
 msgid "Search activity"
 msgstr "Maghanap ng aktibidad"
 
@@ -5408,7 +5422,7 @@ msgid "Search by name or symbol"
 msgstr "Maghanap ayon sa pangalan o simbolo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/activity-page.tsx:84
+#: apps/web/src/features/home/ui/activity-page.tsx:83
 msgid "Search by voucher name, symbol, address or transaction hash."
 msgstr "Maghanap ayon sa pangalan ng voucher, simbolo, address o hash ng "
 "transaksyon."
@@ -5463,9 +5477,13 @@ msgstr "Maghanap ng mga pool"
 msgid "Search post tags"
 msgstr "Maghanap ng mga tag ng post"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:77
+#: apps/web/src/features/home/ui/posts-page.tsx:78
 msgid "Search posts by title or description"
 msgstr "Maghanap ng mga post sa pamamagitan ng pamagat o paglalarawan"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:175
+msgid "Search settings"
+msgstr "Maghanap sa mga setting"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:346
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:739
@@ -5480,7 +5498,7 @@ msgstr "Maghanap ng mga tag"
 msgid "Search the marketplace"
 msgstr "Maghanap sa pamilihan"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:360
+#: apps/web/src/components/catalog-filter-controls.tsx:320
 msgid "Search voucher filters"
 msgstr "Maghanap ng mga filter ng voucher"
 
@@ -5489,7 +5507,7 @@ msgstr "Maghanap ng mga filter ng voucher"
 msgid "Search voucher tags"
 msgstr "Maghanap ng mga tag ng voucher"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:359
+#: apps/web/src/components/catalog-filter-controls.tsx:319
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
@@ -5499,6 +5517,10 @@ msgstr "Maghanap ng mga voucher"
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
 msgid "Search your vouchers"
 msgstr "Maghanap sa inyong mga voucher"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:133
+msgid "Search your wallet"
+msgstr "Maghanap sa inyong wallet"
 
 #: apps/web/src/components/ui/country-sheet.tsx:79
 msgid "Search…"
@@ -5512,7 +5534,7 @@ msgstr "Paghahanap ng mga lugar..."
 msgid "Searching recipients…"
 msgstr "Naghahanap ng mga tumatanggap..."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:381
+#: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Searching vouchers…"
 msgstr "Naghahanap ng mga voucher..."
 
@@ -5563,7 +5585,7 @@ msgstr "Mga napiling tag"
 msgid "Selected voucher tags"
 msgstr "Mga napiling tag ng voucher"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:344
+#: apps/web/src/components/catalog-filter-controls.tsx:304
 msgid "Selected vouchers"
 msgstr "Piniling mga voucher"
 
@@ -5580,7 +5602,7 @@ msgid "Sell to a bank account"
 msgstr "Magbenta papunta sa bank account"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:372
-#: apps/web/src/features/home/ui/wallet-page.tsx:66
+#: apps/web/src/features/home/ui/wallet-page.tsx:70
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:165
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:337
 msgid "Send"
@@ -5632,7 +5654,7 @@ msgid "Sending…"
 msgstr "Ipinapadala…"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:422
-#: apps/web/src/features/home/ui/activity-page.tsx:173
+#: apps/web/src/features/home/ui/activity-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:192
 msgid "Sent"
 msgstr "Naipadala"
@@ -5651,7 +5673,7 @@ msgid "Serving"
 msgstr "Paglilingkod"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:79
-#: apps/web/src/features/home/ui/settings-page.tsx:102
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Session"
 msgstr "Sesyon"
 
@@ -5681,7 +5703,7 @@ msgstr "Pag-set up ng inyong wallet…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:60
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/home/ui/settings-page.tsx:51
+#: apps/web/src/features/home/ui/settings-page.tsx:172
 #: apps/web/src/features/install/ui/install-page.tsx:64
 msgid "Settings"
 msgstr "Mga setting"
@@ -5698,7 +5720,8 @@ msgid "Share card"
 msgstr "Ibahagi ang card"
 
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:80
+#: apps/web/src/features/home/ui/settings-page.tsx:103
+#: apps/web/src/features/home/ui/settings-page.tsx:114
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
 msgstr "Ibahagi ang CLC"
@@ -5776,7 +5799,7 @@ msgid "Shown to anyone using this pool"
 msgstr "Ipinakita sa sinumang gumagamit ng pool"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:98
+#: apps/web/src/components/market-bar.tsx:169
 msgid "Sign in"
 msgstr "Mag-sign in"
 
@@ -5816,16 +5839,17 @@ msgstr "Mag-sign in gamit ang private key"
 #~ "papel na card. Hihingi ng pahintulot ang inyong device sa pamamagitan "
 #~ "ng {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:123
-#: apps/web/src/features/home/ui/settings-page.tsx:142
+#: apps/web/src/features/home/ui/settings-page.tsx:154
+#: apps/web/src/features/home/ui/settings-page.tsx:210
+#: apps/web/src/features/home/ui/settings-page.tsx:229
 msgid "Sign out"
 msgstr "Mag-sign out"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:129
+#: apps/web/src/features/home/ui/settings-page.tsx:216
 msgid "Sign out?"
 msgstr "Mag-sign out?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:65
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Sign-in"
 msgstr "Pag-sign in"
 
@@ -5841,7 +5865,7 @@ msgstr "Pag-sign in"
 #~ msgid "Signing out..."
 #~ msgstr "Pag-sign out..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:123
+#: apps/web/src/features/home/ui/settings-page.tsx:210
 msgid "Signing out…"
 msgstr "Nagsa-sign out…"
 
@@ -5940,7 +5964,7 @@ msgstr "Naisumite"
 msgid "Submitting…"
 msgstr "Isinusumite…"
 
-#: apps/web/src/components/profile/username-input.tsx:72
+#: apps/web/src/components/profile/username-input.tsx:75
 msgid "Suggest username"
 msgstr "Magmungkahi ng username"
 
@@ -6084,7 +6108,7 @@ msgstr "Simbolo"
 msgid "Symbol was taken, using {0} instead."
 msgstr "May gumagamit na ng simbolo, kaya {0} ang gagamitin."
 
-#: apps/web/src/components/market-search.tsx:224
+#: apps/web/src/components/market-search.tsx:273
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:78
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
@@ -6322,7 +6346,7 @@ msgstr "Hindi ganoon karami ang {0} na hawak ng pool."
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Nagbago ang quote. Suriin ang mga na-update na halaga bago kumpirmahin."
 
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:73
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:76
 msgid "The recipient gains pool management and liquidity withdrawal authority. "
 "You lose ownership immediately when the transaction confirms."
 msgstr "Makukuha ng tatanggap ang pamamahala ng pool at ang awtoridad na "
@@ -6357,6 +6381,7 @@ msgstr "Hindi mai-publish ang voucher."
 #: apps/web/src/components/theme-selector.tsx:93
 #: apps/web/src/components/theme-selector.tsx:98
 #: apps/web/src/components/theme-selector.tsx:100
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Theme"
 msgstr "Tema"
 
@@ -6367,7 +6392,7 @@ msgstr "Wala pang available na maipapalit sa voucher na ito."
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:52
 #: apps/web/src/features/home/ui/marketplace-page.tsx:175
 #: apps/web/src/features/home/ui/offers-page.tsx:163
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:82
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:83
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:75
 msgid "These filters aren't valid."
 msgstr "Hindi wasto ang mga filter na ito."
@@ -6443,7 +6468,7 @@ msgstr "May hindi wastong Credit filter ang link na ito."
 msgid "This link contains an invalid output voucher."
 msgstr "May hindi wastong output voucher ang link na ito."
 
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:62
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:63
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:54
 msgid "This link contains an invalid voucher filter."
 msgstr "May hindi wastong voucher filter ang link na ito."
@@ -6451,7 +6476,7 @@ msgstr "May hindi wastong voucher filter ang link na ito."
 #. placeholder {0}: filter.result.requested
 #. placeholder {1}: filter.result.max
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:30
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:63
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:64
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:55
 msgid "This link has too many filters ({0}, maximum {1})."
 msgstr "Ang link na ito ay may masyadong maraming mga filter ({0}, maximum "
@@ -6579,7 +6604,7 @@ msgstr "Ang pamagat ay dapat 200 character o mas kaunti"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:430
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:172
-#: apps/web/src/features/home/ui/activity-page.tsx:195
+#: apps/web/src/features/home/ui/activity-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:187
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
 #: apps/web/src/features/wallet/ui/collect-page.tsx:138
@@ -6592,14 +6617,14 @@ msgstr "Para kay"
 #~ msgstr "I-switch ang tema"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:40
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:72
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:73
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:64
 msgid "Too many matches to show. Try a more specific search."
 msgstr "Masyadong maraming resulta upang ipakita. Subukan ang mas tiyak na "
 "paghahanap."
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:47
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:78
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:79
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:70
 msgid "Too many searches. Try again in a moment."
 msgstr "Napakaraming paghahanap. Subukan muli sa isang sandali."
@@ -6646,7 +6671,7 @@ msgstr "Hash ng transaksyon"
 msgid "Transaction hash copied"
 msgstr "Nakopya ang hash ng transaksyon"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:91
+#: apps/web/src/features/home/ui/activity-page.tsx:90
 msgid "Transfer history"
 msgstr "Kasaysayan ng paglilipat"
 
@@ -6655,7 +6680,7 @@ msgstr "Kasaysayan ng paglilipat"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:399
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:167
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:125
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:128
 msgid "Transfer ownership"
 msgstr "Paglipat ng pagmamay-ari"
 
@@ -6672,8 +6697,8 @@ msgid "Trip"
 msgstr "Paglakbay"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:40
-#: apps/web/src/components/catalog-filter-controls.tsx:394
-#: apps/web/src/components/market-search.tsx:306
+#: apps/web/src/components/catalog-filter-controls.tsx:354
+#: apps/web/src/components/market-search.tsx:355
 #: apps/web/src/components/nearby-catalog.tsx:176
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:181
@@ -6682,12 +6707,12 @@ msgstr "Paglakbay"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:286
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:372
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:61
-#: apps/web/src/features/home/ui/activity-page.tsx:130
+#: apps/web/src/features/home/ui/activity-page.tsx:129
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
-#: apps/web/src/features/home/ui/report-filter-ui.tsx:89
-#: apps/web/src/features/home/ui/wallet-page.tsx:174
-#: apps/web/src/features/home/ui/wallet-page.tsx:192
-#: apps/web/src/features/home/ui/wallet-page.tsx:270
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:90
+#: apps/web/src/features/home/ui/wallet-page.tsx:214
+#: apps/web/src/features/home/ui/wallet-page.tsx:232
+#: apps/web/src/features/home/ui/wallet-page.tsx:313
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:222
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
@@ -6710,12 +6735,12 @@ msgstr "Subukang muli"
 msgid "Type"
 msgstr "Ang uri"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:375
+#: apps/web/src/components/catalog-filter-controls.tsx:335
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Mag-type ng hindi bababa sa {VOUCHER_SEARCH_MIN_CHARS} character upang "
 "maghanap ng mga voucher."
 
-#: apps/web/src/features/home/ui/activity-page.tsx:82
+#: apps/web/src/features/home/ui/activity-page.tsx:81
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:897
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:191
 msgid "Type at least two characters."
@@ -6952,9 +6977,9 @@ msgstr "Pagyanig"
 msgid "View"
 msgstr "Tingnan"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:146
-#: apps/web/src/features/home/ui/wallet-page.tsx:160
-#: apps/web/src/features/home/ui/wallet-page.tsx:208
+#: apps/web/src/features/home/ui/wallet-page.tsx:186
+#: apps/web/src/features/home/ui/wallet-page.tsx:200
+#: apps/web/src/features/home/ui/wallet-page.tsx:249
 msgid "View all"
 msgstr "Tingnan lahat"
 
@@ -6989,6 +7014,7 @@ msgstr "Tingnan ang voucher"
 #: apps/web/src/components/visibility-selector.tsx:86
 #: apps/web/src/components/visibility-selector.tsx:90
 #: apps/web/src/components/visibility-selector.tsx:92
+#: apps/web/src/features/home/ui/settings-page.tsx:68
 msgid "Visibility"
 msgstr "Saklaw ng visibility"
 
@@ -7055,7 +7081,7 @@ msgstr "Hindi available ang mga detalye ng voucher"
 msgid "Voucher details updated."
 msgstr "Na-update ang mga detalye ng voucher."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:456
+#: apps/web/src/components/catalog-filter-controls.tsx:416
 msgid "Voucher match"
 msgstr "Pagkakasundo ng voucher"
 
@@ -7085,7 +7111,7 @@ msgstr "Na-retire ang voucher."
 msgid "Voucher review"
 msgstr "Review ng voucher"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:418
+#: apps/web/src/components/catalog-filter-controls.tsx:378
 msgid "Voucher search results"
 msgstr "Mga resulta ng paghahanap sa voucher"
 
@@ -7112,8 +7138,8 @@ msgstr "Mga tag ng voucher"
 msgid "Voucher tracking details are missing."
 msgstr "Ang mga detalye ng pagsubaybay ng voucher ay nawawala."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:305
-#: apps/web/src/components/market-bar.tsx:131
+#: apps/web/src/components/catalog-filter-controls.tsx:265
+#: apps/web/src/components/market-bar.tsx:185
 #: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
@@ -7166,7 +7192,7 @@ msgstr "Naghihintay ng on-chain na kumpirmasyon"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:565
-#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:121
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:124
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:595
 msgid "Waiting for the chain…"
 msgstr "Naghihintay sa blockchain…"
@@ -7174,7 +7200,7 @@ msgstr "Naghihintay sa blockchain…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:36
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
-#: apps/web/src/features/home/ui/wallet-page.tsx:104
+#: apps/web/src/features/home/ui/wallet-page.tsx:130
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:137
@@ -7186,7 +7212,7 @@ msgstr "Naghihintay sa blockchain…"
 msgid "Wallet"
 msgstr "Wallet"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:109
+#: apps/web/src/features/home/ui/wallet-page.tsx:148
 msgid "Wallet actions"
 msgstr "Mga aksyon sa wallet"
 
@@ -7195,8 +7221,9 @@ msgstr "Mga aksyon sa wallet"
 #~ msgstr "Available ang mga aksyon sa wallet pagkatapos ninyong mag-sign up o "
 #~ "mag-sign in."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:199
-#: apps/web/src/features/home/ui/settings-page.tsx:203
+#: apps/web/src/features/home/ui/settings-page.tsx:85
+#: apps/web/src/features/home/ui/settings-page.tsx:286
+#: apps/web/src/features/home/ui/settings-page.tsx:290
 msgid "Wallet session"
 msgstr "Sesyon ng wallet"
 
@@ -7396,11 +7423,11 @@ msgid "You have seven days after redemption to write or edit your review."
 msgstr "Mayroon kayong pitong araw pagkatapos ng pagtubos upang isulat o i-edit "
 "ang inyong review."
 
-#: apps/web/src/components/catalogs/my-catalog-section.tsx:75
+#: apps/web/src/components/catalogs/my-catalog-section.tsx:83
 msgid "You haven't created a catalog yet."
 msgstr "Hindi pa kayo gumagawa ng katalogo."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:277
+#: apps/web/src/features/home/ui/wallet-page.tsx:320
 msgid "You haven't created a pool yet."
 msgstr "Hindi pa kayo gumagawa ng pool."
 
@@ -7428,7 +7455,7 @@ msgstr "Ipapadala ninyo"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "Kukumpirmahin ninyo gamit ang Face ID, fingerprint, o PIN"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:151
+#: apps/web/src/features/home/ui/settings-page.tsx:238
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "Kakailanganin ninyo ang inyong papel na card o passkey para "
 "makapag-sign in muli."
@@ -7505,6 +7532,7 @@ msgstr "Kinukumpirma pa ang inyong passkey. Maaari ninyong gamitin muna ang "
 #~ msgstr "Ang inyong mga pool"
 
 #: apps/web/src/features/home/ui/account-settings-section.tsx:56
+#: apps/web/src/features/home/ui/settings-page.tsx:61
 msgid "Your profile"
 msgstr "Inyong profile"
 

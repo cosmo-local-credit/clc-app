@@ -210,7 +210,11 @@ describe("pools navigation", () => {
     render(withQueryClient(<RouterProvider router={router} />));
 
     expect(await screen.findByRole("heading", { name: "Wallet" })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: "Pools" })).toBeNull();
+    // The bar's Pools badge opens the market's list; the Wallet has no shortcut of its own.
+    const sections = screen.getByRole("navigation", { name: "Marketplace sections" });
+    expect(
+      screen.queryAllByRole("link", { name: "Pools" }).filter((link) => !sections.contains(link)),
+    ).toEqual([]);
   });
 
   it("deposits into a pool through the send flow and Back returns to the pool", async () => {

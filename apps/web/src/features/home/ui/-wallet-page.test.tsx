@@ -18,6 +18,15 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("#/components/app-menu", () => ({
+  AppMenu: () => <button type="button">Open menu</button>,
+}));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
+}));
+vi.mock("#/features/catalogs/hooks/use-my-catalog", () => ({
+  useMyCatalog: () => ({ isPending: false, isSuccess: true, isError: false, catalogs: [] }),
+}));
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mocks.navigate,
   Link: ({
@@ -50,7 +59,11 @@ vi.mock("@tanstack/react-router", () => ({
 // The profile nudge reads the connected wallet; it has its own test.
 vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
 vi.mock("#/components/catalogs/my-catalog-section", () => ({
-  MyCatalogSection: () => <section aria-label="My Catalogs">My Catalogs</section>,
+  MyCatalogSection: ({ search }: { search?: string }) => (
+    <section aria-label="My Catalogs" data-search={search}>
+      My Catalogs
+    </section>
+  ),
 }));
 vi.mock("#/hooks/use-resource-usage", () => ({
   useResourceUsage: () => mocks.usage,
@@ -186,6 +199,30 @@ function mockEndpoints({
   return fetchMock;
 }
 
+/** Balances, the issued list and owned pools, each answered in its own shape. */
+function mockWallet({
+  tokens,
+  issued,
+  pools,
+}: {
+  tokens: readonly unknown[];
+  issued: readonly unknown[];
+  pools: readonly unknown[];
+}) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockImplementation((url: string | URL) => {
+      const href = String(url);
+      const result = href.includes("/api/v2/pools")
+        ? { pools, first: 0, last: 0 }
+        : href.includes("/tokens/issued")
+          ? { tokens: issued, first: 0, last: 0 }
+          : { tokens };
+      return Promise.resolve(jsonResponse(result));
+    }),
+  );
+}
+
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -203,6 +240,34 @@ describe("WalletPage", () => {
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
     expect(screen.getByRole("heading", { name: /wallet/i })).toBeTruthy();
     expect(screen.queryByText(/total balance/i)).toBeNull();
+  });
+
+  it("narrows its lists to the bar's search, by name or symbol", async () => {
+    mockWallet({ tokens: [USDT, ISSUED], issued: [ISSUED], pools: [OWNED_POOL] });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+    await screen.findByText("WLLR");
+    await screen.findByText("Kilifi Mkulima");
+    const search = screen.getByRole("searchbox", { name: "Search your wallet" });
+
+    fireEvent.change(search, { target: { value: "tether" } });
+    expect(screen.getByText("USD₮")).toBeTruthy();
+    expect(screen.queryByText("WLLR")).toBeNull();
+    expect(screen.queryByText("Kilifi Mkulima")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "My Vouchers" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "My Pools" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "Wallet actions" })).toBeNull();
+    expect(screen.getByRole("region", { name: "My Catalogs" }).dataset.search).toBe("tether");
+
+    fireEvent.change(search, { target: { value: "KILIFI" } });
+    expect(screen.getByText("Kilifi Mkulima")).toBeTruthy();
+    expect(screen.queryByText("USD₮")).toBeNull();
+
+    fireEvent.change(search, { target: { value: "nothing like it" } });
+    expect(screen.getByText("Nothing in your wallet matches this search.")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
+    expect(screen.getByRole("region", { name: "Wallet actions" })).toBeTruthy();
+    expect(screen.getByText("WLLR")).toBeTruthy();
   });
 
   it("shows only Send, Receive, and Cash shortcuts", () => {

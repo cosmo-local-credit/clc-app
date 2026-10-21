@@ -83,7 +83,6 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "guest",
 }));
 vi.mock("#/components/catalog-filter-controls", () => ({
-  CatalogSearchField: () => <div data-testid="search" />,
   CatalogFilterSheet: () => <div data-testid="filters" />,
 }));
 vi.mock("#/components/creditable-browse-control", () => ({

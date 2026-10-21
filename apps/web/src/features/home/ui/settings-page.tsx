@@ -1,4 +1,7 @@
-import { IntroductionReplayButton } from "#/components/introduction/introduction-provider";
+import {
+  IntroductionReplayButton,
+  useIntroductionReplay,
+} from "#/components/introduction/introduction-provider";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
@@ -15,6 +18,8 @@ import {
 import { toast } from "sonner";
 
 import { LanguageSettingsRow } from "#/components/language-selector";
+import { ScreenBar } from "#/components/market-bar";
+import { ScreenSearchField } from "#/components/market-search";
 import { ThemeSettingsRow } from "#/components/theme-selector";
 import { ActionRow } from "#/components/ui/action-row";
 import { Badge } from "#/components/ui/badge";
@@ -44,64 +49,146 @@ export function SettingsPage({
 }) {
   const { t } = useLingui();
   const installed = useInstallStore((state) => state.installed);
+  const introduction = useIntroductionReplay();
+  const [search, setSearch] = useState("");
+  const term = search.trim().toLocaleLowerCase();
+  const introductionLabel = t({ id: "intro.replay", message: "How to use CLC" });
+
+  // Each row is found by its own label; a group's label finds all its rows.
+  const groups: { label: string; rows: { label: string; node: ReactNode }[] }[] = [
+    {
+      label: t`Account`,
+      rows: [{ label: t`Your profile`, node: <AccountSettingsSection key="account" /> }],
+    },
+    {
+      label: t`Preferences`,
+      rows: [
+        { label: t`Theme`, node: <ThemeSettingsRow key="theme" /> },
+        { label: t`Language`, node: <LanguageSettingsRow key="language" /> },
+        { label: t`Visibility`, node: <VisibilitySettingsRow key="visibility" /> },
+        {
+          label: t`Notifications`,
+          node: <NotificationSettingsSection key="notifications" walletAddress={address} />,
+        },
+      ],
+    },
+    {
+      label: t`Sign-in`,
+      rows: [
+        {
+          label: t`Passkey`,
+          node: (
+            <PasskeySettingsSection key="passkey" address={address} isSigningOut={isSigningOut} />
+          ),
+        },
+        {
+          label: t`Wallet session`,
+          node: (
+            <WalletSessionRow
+              key="wallet-session"
+              address={address}
+              delegationStatus={delegationStatus}
+            />
+          ),
+        },
+      ],
+    },
+    {
+      label: t`App`,
+      rows: [
+        ...(introduction
+          ? [{ label: introductionLabel, node: <IntroductionReplayButton key="introduction" /> }]
+          : []),
+        {
+          label: installed ? t`Share CLC` : t`Install CLC`,
+          node: (
+            <ActionRow
+              key="install"
+              icon={
+                installed ? (
+                  <RiShareLine className="size-4" aria-hidden="true" />
+                ) : (
+                  <RiDownloadLine className="size-4" aria-hidden="true" />
+                )
+              }
+              label={installed ? t`Share CLC` : t`Install CLC`}
+              render={<Link to="/install" search={{ from: "settings" }} />}
+            />
+          ),
+        },
+        {
+          label: t`About Cosmo-Local Credit`,
+          node: (
+            <ActionRow
+              key="about"
+              icon={<RiInformationLine className="size-4" aria-hidden="true" />}
+              label={t`About Cosmo-Local Credit`}
+              trailingIcon={<RiExternalLinkLine className="rtl:-scale-x-100 size-4" />}
+              render={<a href={PLATFORM_ABOUT_URL} target="_blank" rel="noopener noreferrer" />}
+            />
+          ),
+        },
+        {
+          label: t`App version`,
+          node: (
+            // Support asks for this; QA matches it against /build-info.json.
+            <ActionRow
+              key="version"
+              icon={<RiCodeSSlashLine className="size-4" aria-hidden="true" />}
+              label={t`App version`}
+              value={
+                <span dir="ltr" className="font-mono">
+                  {BUILD_INFO.version} ({BUILD_INFO.buildNumber}) · {BUILD_INFO.gitSha.slice(0, 7)}
+                  {BUILD_INFO.dirty ? "*" : ""}
+                </span>
+              }
+            />
+          ),
+        },
+      ],
+    },
+    {
+      label: t`Session`,
+      rows: [
+        {
+          label: t`Sign out`,
+          node: <SignOutRow key="sign-out" isSigningOut={isSigningOut} onSignOut={onSignOut} />,
+        },
+      ],
+    },
+  ];
+  const found = (label: string) => label.toLocaleLowerCase().includes(term);
+  const shown = groups
+    .map((group) =>
+      term === "" || found(group.label)
+        ? group
+        : { ...group, rows: group.rows.filter((row) => found(row.label)) },
+    )
+    .filter((group) => group.rows.length > 0);
 
   return (
-    <div className="space-y-6">
-      <h1>
+    <div>
+      <h1 className="sr-only">
         <Trans>Settings</Trans>
       </h1>
-
-      <SettingsGroup label={t`Account`}>
-        <AccountSettingsSection />
-      </SettingsGroup>
-
-      <SettingsGroup label={t`Preferences`}>
-        <ThemeSettingsRow />
-        <LanguageSettingsRow />
-        <VisibilitySettingsRow />
-        <NotificationSettingsSection walletAddress={address} />
-      </SettingsGroup>
-
-      <SettingsGroup label={t`Sign-in`}>
-        <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />
-        <WalletSessionRow address={address} delegationStatus={delegationStatus} />
-      </SettingsGroup>
-
-      <SettingsGroup label={t`App`}>
-        <IntroductionReplayButton />
-        <ActionRow
-          icon={
-            installed ? (
-              <RiShareLine className="size-4" aria-hidden="true" />
-            ) : (
-              <RiDownloadLine className="size-4" aria-hidden="true" />
-            )
-          }
-          label={installed ? t`Share CLC` : t`Install CLC`}
-          render={<Link to="/install" search={{ from: "settings" }} />}
-        />
-        <ActionRow
-          icon={<RiInformationLine className="size-4" aria-hidden="true" />}
-          label={t`About Cosmo-Local Credit`}
-          trailingIcon={<RiExternalLinkLine className="rtl:-scale-x-100 size-4" />}
-          render={<a href={PLATFORM_ABOUT_URL} target="_blank" rel="noopener noreferrer" />}
-        />
-        {/* Support asks for this; QA matches it against /build-info.json. */}
-        <ActionRow
-          icon={<RiCodeSSlashLine className="size-4" aria-hidden="true" />}
-          label={t`App version`}
-          value={
-            <span dir="ltr" className="font-mono">
-              {BUILD_INFO.version} ({BUILD_INFO.buildNumber}) · {BUILD_INFO.gitSha.slice(0, 7)}
-              {BUILD_INFO.dirty ? "*" : ""}
-            </span>
-          }
-        />
-      </SettingsGroup>
-
-      <SettingsGroup label={t`Session`}>
-        <SignOutRow isSigningOut={isSigningOut} onSignOut={onSignOut} />
-      </SettingsGroup>
+      <ScreenBar current="settings">
+        <ScreenSearchField value={search} onChange={setSearch} label={t`Search settings`} />
+      </ScreenBar>
+      <div className="mt-3 space-y-6">
+        {shown.length === 0 ? (
+          <p
+            role="status"
+            className="border border-border bg-card p-4 text-sm text-muted-foreground"
+          >
+            <Trans>No settings match this search.</Trans>
+          </p>
+        ) : null}
+        {shown.map((group) => (
+          <SettingsGroup key={group.label} label={group.label}>
+            {group.rows.map((row) => row.node)}
+          </SettingsGroup>
+        ))}
+      </div>
     </div>
   );
 }

@@ -88,7 +88,8 @@ export function HomePage({
         </NearbyCatalog>
       ) : (
         <div className="min-h-[100svh] pb-bottom-nav">
-          <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
+          {/* Each tab opens with the market's bar, which sets its own top inset. */}
+          <main className="px-4">
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
             {currentTab === "activity" ? <ActivityPage address={address} /> : null}
             {currentTab === "posts" ? (

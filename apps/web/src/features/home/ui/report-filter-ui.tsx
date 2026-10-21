@@ -34,6 +34,7 @@ export function ReportFilterSheet({
       voucherFacets={voucherFacets}
       voucherSearch={voucherSearch}
       showHeader={false}
+      trigger="bar"
       open={open}
       onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}

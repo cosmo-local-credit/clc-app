@@ -9,6 +9,12 @@ import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter"
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
 
+vi.mock("#/components/app-menu", () => ({
+  AppMenu: () => <button type="button">Open menu</button>,
+}));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
+}));
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
@@ -243,7 +249,11 @@ describe("PostsPage", () => {
     expect(
       screen.queryByText("Field reports from pools, service providers, and stewards."),
     ).toBeNull();
-    expect(screen.getByRole("button", { name: "Filters" }).className).toContain("h-9");
+    // The filter joins the end of the bar's search box, as on the market.
+    const search = screen.getByRole("searchbox", { name: "Search posts by title or description" });
+    expect(search.parentElement?.contains(screen.getByRole("button", { name: "Filters" }))).toBe(
+      true,
+    );
     const row = within(feed()).getByRole("link");
     expect(row.getAttribute("href")).toBe("/posts/3182");
     expect(within(row).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();

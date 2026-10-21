@@ -42,7 +42,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
 }));
 
-import { MarketBar, type MarketSurface } from "./market-bar";
+import { MarketBar, type MarketSurface, ScreenBar } from "./market-bar";
 
 const filter = {
   term: "",
@@ -153,5 +153,50 @@ describe("MarketBar", () => {
     renderBar("map");
 
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
+  });
+});
+
+describe("ScreenBar", () => {
+  it.each(["wallet", "settings"] as const)(
+    "gives %s the menu, its own search and every badge, with none open",
+    (current) => {
+      mocks.auth = { isAuthenticated: true, isLoading: false };
+      render(
+        <ScreenBar current={current}>
+          <input type="search" aria-label="Search here" />
+        </ScreenBar>,
+      );
+
+      expect(screen.getByRole("button", { name: "Open menu" })).toBeTruthy();
+      expect(screen.getByRole("searchbox", { name: "Search here" })).toBeTruthy();
+      const sections = screen.getByRole("navigation", { name: "Marketplace sections" });
+      const links = within(sections).getAllByRole("link");
+      expect(links.map((link) => link.textContent)).toEqual([
+        "All",
+        "Pools",
+        "Vouchers",
+        "Offers",
+        "Catalogs",
+        "Posts",
+        "Activity",
+      ]);
+      for (const link of links) expect(link.getAttribute("aria-current")).toBeNull();
+      expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+      expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
+    },
+  );
+
+  it("keeps the Map button on Posts, and gives a guest Sign in", () => {
+    render(
+      <ScreenBar current="posts">
+        <input type="search" aria-label="Search posts" />
+      </ScreenBar>,
+    );
+
+    expect(screen.getByRole("link", { name: "Posts" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe(
+      "/onboarding?step=welcome",
+    );
   });
 });

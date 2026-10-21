@@ -1,9 +1,9 @@
-import { MarketFeedBar } from "#/components/market-bar";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
-import { CatalogSearchField } from "#/components/catalog-filter-controls";
+import { ScreenBar } from "#/components/market-bar";
+import { ScreenSearchField } from "#/components/market-search";
 import { ReportList } from "#/components/reports/report-list";
 import { Button } from "#/components/ui/button";
 import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
@@ -67,87 +67,88 @@ export function PostsPage() {
   }, [feed.hasMore, feed.isLoadingMore, feed.loadMore]);
 
   return (
-    <div className="space-y-4">
+    <div>
       <h1 className="sr-only">
         <Trans>Posts</Trans>
       </h1>
-      <MarketFeedBar current="posts">
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
-          </div>
-          <ReportFilterSheet
-            filter={filter}
-            facets={feed.tagFacets}
-            voucherFacets={feed.voucherFacets}
-            open={filtersOpen}
-            onOpenChange={(next) => {
-              if (next) setFiltersEverOpened(true);
-              setFiltersOpen(next);
-            }}
-          />
-        </div>
-      </MarketFeedBar>
-
-      {/* Two compact actions rather than a floating button: the feed is
+      <ScreenBar current="posts">
+        <ScreenSearchField
+          value={filter.term}
+          onChange={(next) => (next === "" ? filter.clearTerm() : filter.setTerm(next))}
+          label={t`Search posts by title or description`}
+        />
+        <ReportFilterSheet
+          filter={filter}
+          facets={feed.tagFacets}
+          voucherFacets={feed.voucherFacets}
+          open={filtersOpen}
+          onOpenChange={(next) => {
+            if (next) setFiltersEverOpened(true);
+            setFiltersOpen(next);
+          }}
+        />
+      </ScreenBar>
+      <div className="mt-3 space-y-4">
+        {/* Two compact actions rather than a floating button: the feed is
           approved-only, so an author needs somewhere to write and somewhere to
           find what they have already submitted. */}
-      <div className="flex gap-2">
-        <Button asChild tap className="flex-1">
-          <Link to="/posts/new">
-            <Trans>New post</Trans>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" tap className="flex-1">
-          <Link to="/posts/mine">
-            <Trans>My posts</Trans>
-          </Link>
-        </Button>
-      </div>
+        <div className="flex gap-2">
+          <Button asChild tap className="flex-1">
+            <Link to="/posts/new">
+              <Trans>New post</Trans>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" tap className="flex-1">
+            <Link to="/posts/mine">
+              <Trans>My posts</Trans>
+            </Link>
+          </Button>
+        </div>
 
-      <ReportFilterFeedback
-        filter={filter}
-        error={feed.error}
-        onRetry={feed.retry}
-        retrying={feed.retrying}
-      />
+        <ReportFilterFeedback
+          filter={filter}
+          error={feed.error}
+          onRetry={feed.retry}
+          retrying={feed.retrying}
+        />
 
-      {feed.status === "loading" ? (
-        <ListSkeleton avatar="square" label={<Trans>Loading posts…</Trans>} />
-      ) : null}
+        {feed.status === "loading" ? (
+          <ListSkeleton avatar="square" label={<Trans>Loading posts…</Trans>} />
+        ) : null}
 
-      {feed.status === "ready" && filter.result.ok ? (
-        <>
-          <p className="font-medium text-sm tabular-nums">{resultCountLabel}</p>
-          {reports.length === 0 ? (
-            <div className="space-y-3 border border-border bg-card p-4">
-              <p className="text-muted-foreground text-sm">
+        {feed.status === "ready" && filter.result.ok ? (
+          <>
+            <p className="font-medium text-sm tabular-nums">{resultCountLabel}</p>
+            {reports.length === 0 ? (
+              <div className="space-y-3 border border-border bg-card p-4">
+                <p className="text-muted-foreground text-sm">
+                  {filter.isFiltered ? (
+                    <Trans>No posts match this search.</Trans>
+                  ) : (
+                    <Trans>No posts yet.</Trans>
+                  )}
+                </p>
                 {filter.isFiltered ? (
-                  <Trans>No posts match this search.</Trans>
-                ) : (
-                  <Trans>No posts yet.</Trans>
-                )}
-              </p>
-              {filter.isFiltered ? (
-                <Button variant="outline" tap onClick={filter.clear}>
-                  <Trans>Clear filters</Trans>
-                </Button>
-              ) : null}
-            </div>
-          ) : null}
-        </>
-      ) : null}
+                  <Button variant="outline" tap onClick={filter.clear}>
+                    <Trans>Clear filters</Trans>
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : null}
 
-      {reports.length > 0 ? (
-        <ReportList reports={reports} ariaLabel={t`Field reports`} busy={isRefining} />
-      ) : null}
+        {reports.length > 0 ? (
+          <ReportList reports={reports} ariaLabel={t`Field reports`} busy={isRefining} />
+        ) : null}
 
-      <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-      {feed.isLoadingMore ? (
-        <p className="text-center text-muted-foreground text-xs">
-          <Trans>Loading more…</Trans>
-        </p>
-      ) : null}
+        <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
+        {feed.isLoadingMore ? (
+          <p className="text-center text-muted-foreground text-xs">
+            <Trans>Loading more…</Trans>
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }

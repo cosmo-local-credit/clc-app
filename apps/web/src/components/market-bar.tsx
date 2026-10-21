@@ -23,6 +23,9 @@ import { cn } from "#/lib/utils";
 /** Where the bar stands: the map, or one of the lists its badges open. */
 export type MarketSurface = "map" | MarketListScope | "posts" | "activity";
 
+/** A tab outside the market that carries the same bar, searching its own screen. */
+export type ScreenSurface = "posts" | "activity" | "wallet" | "settings";
+
 // All is every resource at once, so it takes no resource's hue: it reads in
 // the foreground, like the feeds beside it.
 const LIST_HUE: Record<MarketListScope, string> = {
@@ -59,48 +62,25 @@ export function MarketBar({
   surface?: "map" | "page";
   className?: string;
 }) {
-  const auth = useAuthStatus();
   const [searchOpen, setSearchOpen] = useState(false);
-  // Above a list the bar draws its edge only once rows scroll beneath it; at
-  // rest the list starts straight under the badges with no line between.
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    if (surface === "map") return;
-    const update = () => setScrolled(window.scrollY > 0);
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
-  }, [surface]);
-  const surfaceClassName =
-    surface === "map"
-      ? "bg-transparent"
-      : cn(
-          "border-b bg-background pb-2 transition-colors",
-          scrolled ? "border-border" : "border-transparent",
-        );
 
   return (
-    <div className={cn("space-y-2", surfaceClassName, className)}>
-      <div className="flex items-center gap-2">
-        <AppMenu />
-        <div className="flex h-11 min-w-0 flex-1 items-center border border-input bg-card focus-within:border-foreground">
+    <TopBar
+      current={current}
+      surface={surface}
+      className={className}
+      search={
+        <>
           <MarketSearchField
             filter={filter}
             label={searchLabel}
             onOpen={() => setSearchOpen(true)}
           />
           {filters}
-        </div>
-        {auth.isAuthenticated ? credit : null}
-        {!auth.isLoading && !auth.isAuthenticated ? (
-          <Button asChild size="lg">
-            <Link to="/onboarding" search={onboardingSearch("welcome")}>
-              <Trans>Sign in</Trans>
-            </Link>
-          </Button>
-        ) : null}
-      </div>
-      <MarketBadges current={current} />
+        </>
+      }
+      credit={credit}
+    >
       {searchOpen ? (
         <MarketSearchScreen
           onClose={() => setSearchOpen(false)}
@@ -119,11 +99,89 @@ export function MarketBar({
         />
       ) : null}
       {current === "map" ? null : <MarketMapButton />}
+    </TopBar>
+  );
+}
+
+/**
+ * The same bar on Posts, Activity, Wallet and Settings, in the same place: the
+ * menu, a search box holding the screen's own search, Sign in for a guest, and
+ * the badges. Posts and Activity sit among the badges, so they keep the Map
+ * button back to the market.
+ */
+export function ScreenBar({ current, children }: { current: ScreenSurface; children: ReactNode }) {
+  return (
+    <TopBar
+      current={current}
+      className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
+      search={children}
+    >
+      {current === "posts" || current === "activity" ? <MarketMapButton resetSearch /> : null}
+    </TopBar>
+  );
+}
+
+function TopBar({
+  current,
+  search,
+  credit,
+  surface = "page",
+  className,
+  children,
+}: {
+  current: MarketSurface | ScreenSurface;
+  search: ReactNode;
+  credit?: ReactNode;
+  surface?: "map" | "page";
+  className?: string;
+  children?: ReactNode;
+}) {
+  const auth = useAuthStatus();
+  // Above a page the bar draws its edge only once content scrolls beneath it;
+  // at rest the page starts straight under the badges with no line between.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    if (surface === "map") return;
+    const update = () => setScrolled(window.scrollY > 0);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [surface]);
+  const surfaceClassName =
+    surface === "map"
+      ? "bg-transparent"
+      : cn(
+          "border-b bg-background pb-4 transition-colors",
+          scrolled ? "border-border" : "border-transparent",
+        );
+
+  // The floating Map button and the search screen sit outside the row and
+  // the badges, so whether a screen has them never moves the content below.
+  return (
+    <div className={cn(surfaceClassName, className)}>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <AppMenu />
+          <div className="flex h-11 min-w-0 flex-1 items-center border border-input bg-card focus-within:border-foreground">
+            {search}
+          </div>
+          {auth.isAuthenticated ? credit : null}
+          {!auth.isLoading && !auth.isAuthenticated ? (
+            <Button asChild size="lg">
+              <Link to="/onboarding" search={onboardingSearch("welcome")}>
+                <Trans>Sign in</Trans>
+              </Link>
+            </Button>
+          ) : null}
+        </div>
+        <MarketBadges current={current} />
+      </div>
+      {children}
     </div>
   );
 }
 
-function MarketBadges({ current }: { current: MarketSurface }) {
+function MarketBadges({ current }: { current: MarketSurface | ScreenSurface }) {
   const { t } = useLingui();
   const labels: Record<MarketListScope, string> = {
     all: t`All`,
@@ -207,22 +265,5 @@ function MarketMapButton({ resetSearch = false }: { resetSearch?: boolean }) {
     >
       <RiMap2Line className="size-6" aria-hidden="true" />
     </Link>
-  );
-}
-
-/** Section navigation for feeds with their own search controls. */
-export function MarketFeedBar({
-  current,
-  children,
-}: {
-  current: "activity" | "posts";
-  children: ReactNode;
-}) {
-  return (
-    <div className="sticky top-0 z-20 space-y-2 bg-background pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
-      {children}
-      <MarketBadges current={current} />
-      <MarketMapButton resetSearch />
-    </div>
   );
 }

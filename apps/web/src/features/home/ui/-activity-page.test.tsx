@@ -10,6 +10,12 @@ import { ActivityPage } from "./activity-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
 
+vi.mock("#/components/app-menu", () => ({
+  AppMenu: () => <button type="button">Open menu</button>,
+}));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
+}));
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => ADDRESS.toLowerCase(),
 }));

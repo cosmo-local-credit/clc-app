@@ -6,6 +6,12 @@ import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 
 const { toast } = vi.hoisted(() => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
+vi.mock("#/components/app-menu", () => ({
+  AppMenu: () => <button type="button">Open menu</button>,
+}));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
+}));
 vi.mock("sonner", () => ({ toast }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -98,6 +104,29 @@ describe("SettingsPage", () => {
     ).toEqual(["theme-row", "language-row", "visibility-row", "notification-row"]);
     expect(within(group("Sign-in")).getByTestId("passkey-row")).toBeTruthy();
     expect(within(group("Sign-in")).getByRole("button", { name: /wallet session/i })).toBeTruthy();
+  });
+
+  it("narrows the groups to the bar's search, by row label or group label", () => {
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+    const search = screen.getByRole("searchbox", { name: "Search settings" });
+
+    fireEvent.change(search, { target: { value: "THEME" } });
+    expect(within(group("Preferences")).getByTestId("theme-row")).toBeTruthy();
+    expect(screen.queryByTestId("language-row")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Account" })).toBeNull();
+
+    fireEvent.change(search, { target: { value: "sign" } });
+    expect(within(group("Sign-in")).getByTestId("passkey-row")).toBeTruthy();
+    expect(within(group("Sign-in")).getByRole("button", { name: /wallet session/i })).toBeTruthy();
+    expect(within(group("Session")).getByRole("button", { name: "Sign out" })).toBeTruthy();
+    expect(screen.queryByRole("region", { name: "Preferences" })).toBeNull();
+
+    fireEvent.change(search, { target: { value: "nothing like it" } });
+    expect(screen.getByText("No settings match this search.")).toBeTruthy();
+    expect(screen.queryAllByRole("heading", { level: 2 })).toEqual([]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(5);
   });
 
   it("links to About Cosmo-Local Credit from the App group, in a new tab", () => {

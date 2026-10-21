@@ -23,7 +23,6 @@ import {
   ComboboxItemIndicator,
   ComboboxList,
 } from "#/components/ui/combobox";
-import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
   SheetClose,
@@ -43,45 +42,6 @@ import {
   type VoucherSearchControls,
 } from "#/features/home/hooks/use-voucher-search";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
-
-export function CatalogSearchField({
-  filter,
-  label,
-}: {
-  filter: CatalogFilterControls;
-  label: string;
-}) {
-  const { t } = useLingui();
-
-  return (
-    <div className="relative">
-      <RiSearchLine
-        className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
-        aria-hidden="true"
-      />
-      <Input
-        type="search"
-        value={filter.term}
-        onChange={(event) => filter.setTerm(event.target.value)}
-        aria-label={label}
-        placeholder={label}
-        className="appearance-none rounded-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-      />
-      {filter.term !== "" ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          tap
-          onClick={filter.clearTerm}
-          aria-label={t`Clear search`}
-          className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
-        >
-          <RiCloseLine className="size-4" aria-hidden="true" />
-        </Button>
-      ) : null}
-    </div>
-  );
-}
 
 type CatalogFacet = {
   tag: string;
