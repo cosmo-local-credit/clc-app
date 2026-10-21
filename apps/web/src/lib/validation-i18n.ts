@@ -2,6 +2,21 @@ import type { I18n } from "@lingui/core";
 
 export function translateValidationError(error: string, i18n: I18n) {
   switch (error) {
+    case "Enter a valid wallet address":
+      return i18n._({
+        id: "Enter a valid wallet address",
+        message: "Enter a valid wallet address",
+      });
+    case "New owner must be a different wallet":
+      return i18n._({
+        id: "New owner must be a different wallet",
+        message: "New owner must be a different wallet",
+      });
+    case "New owner must not be one of this asset's contracts":
+      return i18n._({
+        id: "New owner must not be one of this asset's contracts",
+        message: "New owner must not be one of this asset's contracts",
+      });
     case "Username must contain 1–80 characters":
       return i18n._({
         id: "Username must contain 1–80 characters",

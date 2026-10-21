@@ -93,7 +93,7 @@ msgstr "{0} crédito disponível"
 #~ msgstr "É possível guardar, enviar e resgatar {0}."
 
 #. placeholder {0}: voucher.name
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:451
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:460
 msgid "{0} disappears from the market, search and everyone's wallet. Balances "
 "and past activity are kept, and an admin can bring it back."
 msgstr "{0} deixa de aparecer no mercado, na pesquisa e nas carteiras de todos. "
@@ -106,7 +106,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} falhou na blockchain. O fundo não foi criado."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:366
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:390
 msgid "{0} fees sent to the fee recipient."
 msgstr "Taxas de {0} enviadas ao destinatário das taxas."
 
@@ -192,7 +192,7 @@ msgid "{0} wallet address"
 msgstr "Endereço da carteira {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:252
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:276
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} retirado."
 
@@ -275,7 +275,7 @@ msgid "{value} stars"
 msgstr "{value} estrelas"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:282
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:306
 msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
 msgstr "{withdrawable} {0} disponíveis. As taxas reservadas para cobrança "
 "permanecem no fundo."
@@ -374,12 +374,12 @@ msgid "Accept"
 msgstr "Aceitar"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:188
+#: apps/web/src/lib/validation-i18n.ts:203
 msgid "Accept the terms to publish your pool"
 msgstr "Aceite os termos para publicar o seu fundo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:133
+#: apps/web/src/lib/validation-i18n.ts:148
 msgid "Accept the terms to publish your voucher"
 msgstr "Aceite os termos para publicar o seu vale"
 
@@ -429,7 +429,7 @@ msgstr "Ativo"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:44
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:194
 #: apps/web/src/features/home/ui/activity-page.tsx:68
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:45
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:46
 msgid "Activity"
 msgstr "Atividade"
 
@@ -447,7 +447,7 @@ msgid "Add a link"
 msgstr "Adicionar uma ligação"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:213
+#: apps/web/src/lib/validation-i18n.ts:228
 msgid "Add a message or choose profile details"
 msgstr "Adicionar uma mensagem ou escolher os detalhes do perfil"
 
@@ -472,12 +472,12 @@ msgid "Add a profile photo to continue."
 msgstr "Adicione uma foto de perfil para continuar."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:325
+#: apps/web/src/lib/validation-i18n.ts:340
 msgid "Add at most 20 attachments"
 msgstr "Adicione no máximo 20 anexos"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:320
+#: apps/web/src/lib/validation-i18n.ts:335
 msgid "Add at most 50 images"
 msgstr "Adicione no máximo 50 imagens"
 
@@ -629,7 +629,7 @@ msgstr "Confirme sempre se o token e a rede correspondem antes de enviar."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:278
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -694,7 +694,7 @@ msgstr "Aplicar"
 msgid "Apply filters"
 msgstr "Aplicar os filtros"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:261
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:263
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
@@ -776,7 +776,7 @@ msgid "Bio"
 msgstr "Biografia"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:43
+#: apps/web/src/lib/validation-i18n.ts:58
 msgid "Bio must be 500 characters or fewer"
 msgstr "A biografia deve ter 500 caracteres ou menos"
 
@@ -850,7 +850,7 @@ msgstr "Acesso à câmara recusada."
 #: apps/web/src/components/reviews/review-editor.tsx:148
 #: apps/web/src/components/ui/photo-source-picker.tsx:128
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:404
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:476
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:485
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:523
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
 #: apps/web/src/features/home/ui/settings-page.tsx:145
@@ -877,7 +877,7 @@ msgid "Caption for photo {0}"
 msgstr "Legenda da foto {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:265
+#: apps/web/src/lib/validation-i18n.ts:280
 msgid "Caption must be 500 characters or fewer"
 msgstr "A legenda deve ter 500 caracteres ou menos"
 
@@ -997,6 +997,16 @@ msgstr "Verificar o estado da emissão"
 msgid "Check supply again"
 msgstr "Voltar a verificar a quantidade emitida"
 
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:363
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:85
+msgid "Check the existing submission before another transfer:"
+msgstr "Verifique o envio existente antes de outra transferência:"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:397
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:123
+msgid "Check transfer status"
+msgstr "Verificar o estado da transferência"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:444
 msgid "Checking"
 msgstr "A verificar"
@@ -1075,7 +1085,7 @@ msgid "Checking…"
 msgstr "A verificar…"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:270
+#: apps/web/src/lib/validation-i18n.ts:285
 msgid "Choose a file or an embed"
 msgstr "Escolha um ficheiro ou conteúdo incorporado"
 
@@ -1085,7 +1095,7 @@ msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Escolha uma imagem JPEG, PNG ou WebP."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:33
+#: apps/web/src/lib/validation-i18n.ts:48
 msgid "Choose a location"
 msgstr "Escolha uma localização"
 
@@ -1100,12 +1110,12 @@ msgid "Choose a photo"
 msgstr "Escolha uma foto"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:330
+#: apps/web/src/lib/validation-i18n.ts:345
 msgid "Choose a place on the map or clear it"
 msgstr "Escolha um local no mapa ou elimine-o"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:38
+#: apps/web/src/lib/validation-i18n.ts:53
 msgid "Choose a preferred currency"
 msgstr "Escolha uma moeda preferida"
 
@@ -1120,7 +1130,7 @@ msgstr "Escolha um destinatário, um vale que você possui e o valor. Confira os
 "dados antes de confirmar e aguarde o resultado da transferência."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:260
+#: apps/web/src/lib/validation-i18n.ts:275
 msgid "Choose a voucher"
 msgstr "Escolha um vale"
 
@@ -1129,7 +1139,7 @@ msgid "Choose Add to Home Screen."
 msgstr "Selecione Adicionar ao ecrã inicial."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:123
+#: apps/web/src/lib/validation-i18n.ts:138
 msgid "Choose an expiration date"
 msgstr "Escolha um prazo de validade"
 
@@ -1138,7 +1148,7 @@ msgid "Choose another"
 msgstr "Escolha outro"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:310
+#: apps/web/src/lib/validation-i18n.ts:325
 msgid "Choose at most 12 tags"
 msgstr "Escolha no máximo 12 etiquetas"
 
@@ -1172,7 +1182,7 @@ msgstr "Escolher imagem"
 #~ "endereço da sua carteira."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:193
+#: apps/web/src/lib/validation-i18n.ts:208
 msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Escolha as taxas de câmbio definidas por si ou um valor equivalente "
 "quando a unidade não tiver uma fonte de preços"
@@ -1289,7 +1299,7 @@ msgstr "Cobrar novamente com este cartão"
 msgid "Collect by card"
 msgstr "Cobrar com cartão"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:407
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
 msgid "Collect fees"
 msgstr "Cobrar taxas"
 
@@ -1298,7 +1308,7 @@ msgstr "Cobrar taxas"
 #~ msgstr "As taxas de troca cobradas são pagas aqui."
 
 #. placeholder {0}: formatVoucherAddress(address as `0x${string}`)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:513
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:537
 msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "As taxas de troca cobradas são pagas aqui. A sua própria carteira é "
 "{0}."
@@ -1726,7 +1736,7 @@ msgstr "Não foi possível copiar o nome de utilizador"
 msgid "Couldn't create the first supply."
 msgstr "Não foi possível emitir a quantidade inicial."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:216
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:213
 msgid "Couldn't create vouchers."
 msgstr "Não foi possível criar os vales."
 
@@ -1815,7 +1825,7 @@ msgstr "Não foi possível carregar as etiquetas."
 msgid "Couldn't load the private attachment."
 msgstr "Não foi possível carregar o anexo privado."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:99
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:101
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:284
 msgid "Couldn't load this pool."
 msgstr "Não foi possível carregar este fundo."
@@ -1834,7 +1844,7 @@ msgstr "Não foi possível carregar esta publicação. Só poderá editar as "
 "publicações que tiver escrito."
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:115
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:132
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:139
 msgid "Couldn't load this voucher."
 msgstr "Não foi possível carregar este vale."
 
@@ -1931,7 +1941,7 @@ msgstr "Não foi possível remover a oferta."
 msgid "Couldn't resolve that recipient."
 msgstr "Não foi possível identificar esse destinatário."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:432
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:441
 msgid "Couldn't retire the voucher."
 msgstr "Não foi possível retirar o vale."
 
@@ -1993,7 +2003,8 @@ msgstr "Não foi possível enviar o pedido de levantamento"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "Não foi possível sugerir um nome de utilizador. Tente novamente."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:328
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:59
 msgid "Couldn't transfer ownership."
 msgstr "Não foi possível transferir a titularidade."
 
@@ -2072,10 +2083,10 @@ msgstr "Emita a quantidade inicial para concluir a publicação deste vale."
 msgid "Create voucher"
 msgstr "Criar um vale"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:116
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:235
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:249
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:113
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:232
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:246
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:456
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2118,7 +2129,7 @@ msgstr "A emitir {0}…"
 msgid "Creating account…"
 msgstr "A criar a conta…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:274
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:271
 msgid "Creating vouchers…"
 msgstr "A criar vales…"
 
@@ -2131,7 +2142,7 @@ msgid "Creation failed"
 msgstr "Falha na emissão"
 
 #: apps/web/src/components/creditable-browse-control.tsx:102
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:44
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:45
 msgid "Credit"
 msgstr "Crédito"
 
@@ -2182,7 +2193,7 @@ msgid "Decimals"
 msgstr "Decimais"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:118
+#: apps/web/src/lib/validation-i18n.ts:133
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "As casas decimais devem ser um número inteiro de 0 a 18"
 
@@ -2218,7 +2229,7 @@ msgstr "Hash da transação de implementação copiado"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:163
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:165
 msgid "Deposit"
 msgstr "Depósito"
 
@@ -2261,12 +2272,12 @@ msgid "Display name"
 msgstr "Nome de exibição"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:58
+#: apps/web/src/lib/validation-i18n.ts:73
 msgid "Display name is required"
 msgstr "O nome para mostrar é obrigatório"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:63
+#: apps/web/src/lib/validation-i18n.ts:78
 msgid "Display name must be 120 characters or fewer"
 msgstr "O nome para mostrar deve ter 120 caracteres ou menos"
 
@@ -2312,7 +2323,7 @@ msgid "Duration"
 msgstr "Duração"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:295
+#: apps/web/src/lib/validation-i18n.ts:310
 msgid "Duration must be 100 characters or fewer"
 msgstr "A duração deve ter 100 caracteres ou menos"
 
@@ -2325,22 +2336,22 @@ msgid "e.g. MARKET"
 msgstr "p. ex., MERCADO"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:355
+#: apps/web/src/lib/validation-i18n.ts:370
 msgid "Each attachment can only be added once"
 msgstr "Cada ficheiro anexo só pode ser adicionado uma vez"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:350
+#: apps/web/src/lib/validation-i18n.ts:365
 msgid "Each image can only be added once"
 msgstr "Cada imagem só pode ser adicionada uma vez"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:340
+#: apps/web/src/lib/validation-i18n.ts:355
 msgid "Each tag can only be added once"
 msgstr "Cada etiqueta só pode ser adicionada uma vez"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:345
+#: apps/web/src/lib/validation-i18n.ts:360
 msgid "Each voucher can only be linked once"
 msgstr "Cada vale só pode ser ligado uma vez"
 
@@ -2360,8 +2371,8 @@ msgstr "Editar"
 msgid "Edit catalog"
 msgstr "Editar catálogo"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:108
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:83
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:105
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:92
 msgid "Edit details"
 msgstr "Editar detalhes"
 
@@ -2446,11 +2457,11 @@ msgid "Ends"
 msgstr "Termina"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:365
+#: apps/web/src/lib/validation-i18n.ts:380
 msgid "Enter a credit limit greater than zero"
 msgstr "Indique um limite de crédito superior a zero"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:494
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:518
 msgid "Enter a fee from 0 to 100"
 msgstr "Indique uma taxa entre 0 e 100"
 
@@ -2459,7 +2470,7 @@ msgid "Enter a link starting with http:// or https://"
 msgstr "Indique uma ligação que comece por http:// ou https://"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:220
+#: apps/web/src/lib/validation-i18n.ts:235
 msgid "Enter a title for your post"
 msgstr "Introduza um título para a sua publicação"
 
@@ -2469,7 +2480,7 @@ msgstr "Introduza um nome de utilizador, nome do fundo, número de telefone ou "
 "endereço."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:255
+#: apps/web/src/lib/validation-i18n.ts:270
 msgid "Enter a valid date and time"
 msgstr "Indique uma data e uma hora válidas"
 
@@ -2477,21 +2488,26 @@ msgstr "Indique uma data e uma hora válidas"
 msgid "Enter a valid private key or paper wallet."
 msgstr "Indique uma chave privada válida ou uma carteira de papel válida."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:516
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:6
+msgid "Enter a valid wallet address"
+msgstr "Introduza um endereço de carteira válido"
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:540
 msgid "Enter a valid wallet address"
 msgstr "Indique um endereço de carteira válido"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:48
+#: apps/web/src/lib/validation-i18n.ts:63
 msgid "Enter a valid website URL including https://"
 msgstr "Indique uma URL válida do site, incluindo https://"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:235
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:259
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:478
 msgid "Enter an amount greater than zero."
 msgstr "Indique um montante maior do que zero."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:231
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:255
 msgid "Enter an amount this voucher supports."
 msgstr "Introduza um montante compatível com este vale."
 
@@ -2500,7 +2516,7 @@ msgstr "Introduza um montante compatível com este vale."
 #~ msgstr "Indique um ENS, número de telefone ou endereço."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:360
+#: apps/web/src/lib/validation-i18n.ts:375
 msgid "Enter an exchange rate greater than zero"
 msgstr "Indique uma taxa de câmbio superior a zero"
 
@@ -2529,7 +2545,7 @@ msgid "Enter the amount."
 msgstr "Introduza o montante."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:290
+#: apps/web/src/lib/validation-i18n.ts:305
 msgid "Enter the number of participants as a whole number"
 msgstr "Indique o número de participantes como número inteiro"
 
@@ -2564,6 +2580,10 @@ msgstr "Taxa de câmbio"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Taxa de câmbio relativa ao vale predefinido ({unitSymbol})"
 
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:78
+msgid "Existing fee recipient"
+msgstr "Destinatário atual das taxas"
+
 #: apps/web/src/components/ui/map-sheet.tsx:306
 msgid "Expand"
 msgstr "Expandir"
@@ -2573,7 +2593,7 @@ msgid "Expiration"
 msgstr "Expiração"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:128
+#: apps/web/src/lib/validation-i18n.ts:143
 msgid "Expiration date must be in the future"
 msgstr "A data de expiração deve estar no futuro"
 
@@ -2604,8 +2624,8 @@ msgstr "Agricultura"
 #~ msgid "fee"
 #~ msgstr "taxa"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:100
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:151
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:109
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
 msgid "Fee % and recipient"
 msgstr "Taxa (%) e destinatário"
 
@@ -2624,8 +2644,8 @@ msgstr "Política de taxas"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:625
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:638
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:509
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:525
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:533
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:549
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:48
 msgid "Fee recipient"
 msgstr "Destinatário das taxas"
@@ -2643,7 +2663,7 @@ msgstr "Destinatário das taxas copiado"
 #~ msgstr "As taxas são mantidas separadas da liquidez do fundo"
 
 #. placeholder {0}: formatVoucherAddress(feeAddress)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:378
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:402
 msgid "Fees are paid to {0}."
 msgstr "As taxas são pagas a {0}."
 
@@ -2673,7 +2693,7 @@ msgid "File name (optional)"
 msgstr "Nome do ficheiro (opcional)"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:275
+#: apps/web/src/lib/validation-i18n.ts:290
 msgid "File name must be 255 characters or fewer"
 msgstr "O nome do ficheiro deve ter 255 caracteres ou menos"
 
@@ -2827,7 +2847,7 @@ msgstr "Encoste bem o cartão à parte de trás do telefone."
 msgid "Holdings"
 msgstr "Ativos"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:44
 msgctxt "Pool tab"
 msgid "Holdings"
 msgstr "Ativos"
@@ -2838,7 +2858,7 @@ msgid "Host"
 msgstr "Organizador"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:280
+#: apps/web/src/lib/validation-i18n.ts:295
 msgid "Host must be 200 characters or fewer"
 msgstr "O organizador deve ter 200 caracteres ou menos"
 
@@ -3008,17 +3028,17 @@ msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Instalação pedida. Siga as instruções do seu navegador para terminar."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:18
+#: apps/web/src/lib/validation-i18n.ts:33
 msgid "Invalid email address"
 msgstr "Endereço de e-mail inválido"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:53
+#: apps/web/src/lib/validation-i18n.ts:68
 msgid "Invalid location"
 msgstr "Localização inválida"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:23
+#: apps/web/src/lib/validation-i18n.ts:38
 msgid "Invalid phone number"
 msgstr "O número de telefone não é válido"
 
@@ -3060,7 +3080,7 @@ msgid "Later"
 msgstr "Mais tarde"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:245
+#: apps/web/src/lib/validation-i18n.ts:260
 msgid "Latitude must be between -90 and 90"
 msgstr "A latitude deve estar entre -90 e 90"
 
@@ -3135,7 +3155,7 @@ msgid "Link address"
 msgstr "Endereço da Ligação"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:315
+#: apps/web/src/lib/validation-i18n.ts:330
 msgid "Link at most 12 vouchers"
 msgstr "Associe no máximo 12 vales"
 
@@ -3271,7 +3291,7 @@ msgstr "A carregar mais…"
 msgid "Loading offerings…"
 msgstr "A carregar as ofertas…"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:96
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:98
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:281
 msgid "Loading pool…"
 msgstr "A carregar o fundo…"
@@ -3314,7 +3334,7 @@ msgstr "A carregar o editor…"
 msgid "Loading tokens…"
 msgstr "A carregar tokens…"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:128
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:135
 msgid "Loading voucher…"
 msgstr "A carregar vale…"
 
@@ -3404,7 +3424,7 @@ msgid "Logo"
 msgstr "Logotipo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:250
+#: apps/web/src/lib/validation-i18n.ts:265
 msgid "Longitude must be between -180 and 180"
 msgstr "A longitude deve estar entre -180 e 180"
 
@@ -3415,7 +3435,7 @@ msgstr "Procure Instalar aplicação no menu do navegador. Num Mac com Safari, "
 "escolha Ficheiro e depois Adicionar ao Dock."
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:386
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:388
 msgid "Manage {0}"
 msgstr "Gerir {0}"
 
@@ -3450,7 +3470,7 @@ msgstr "Marcador no mapa"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:49
 #: apps/web/src/features/home/ui/market-page.tsx:294
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:61
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
 msgstr "Mercado"
@@ -3475,7 +3495,7 @@ msgstr "Corresponder"
 msgid "Matching recipients"
 msgstr "Destinatários correspondentes"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:303
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:327
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:301
 msgid "Max"
 msgstr "Máx."
@@ -3489,7 +3509,7 @@ msgid "Max {max} {symbol}"
 msgstr "Máx. {max} {symbol}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:240
+#: apps/web/src/lib/validation-i18n.ts:255
 msgid "Media must be an uploaded http(s) URL"
 msgstr "O conteúdo multimédia deve ser um URL http(s) de um ficheiro carregado"
 
@@ -3499,7 +3519,7 @@ msgid "Message"
 msgstr "Mensagem"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:208
+#: apps/web/src/lib/validation-i18n.ts:223
 msgid "Message must be 500 characters or fewer"
 msgstr "A mensagem deve ter 500 caracteres ou menos"
 
@@ -3653,12 +3673,12 @@ msgid "Name"
 msgstr "Nome"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:11
+#: apps/web/src/lib/validation-i18n.ts:26
 msgid "Name is required"
 msgstr "O nome é obrigatório"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:13
+#: apps/web/src/lib/validation-i18n.ts:28
 msgid "Name must be 80 characters or fewer"
 msgstr "O nome deve ter 80 caracteres ou menos"
 
@@ -3682,10 +3702,22 @@ msgstr "Construção natural"
 msgid "Network"
 msgstr "Rede"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:363
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:375
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:370
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:382
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:92
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:104
 msgid "New owner address"
 msgstr "Endereço do novo proprietário"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:11
+msgid "New owner must be a different wallet"
+msgstr "O novo proprietário tem de ser outra carteira"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:16
+msgid "New owner must not be one of this asset's contracts"
+msgstr "O novo proprietário não pode ser um dos contratos deste ativo"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:98
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
@@ -3735,7 +3767,7 @@ msgid "No"
 msgstr "Não"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:356
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:380
 msgid "No {0} fees have accrued yet."
 msgstr "Ainda não foram acumuladas taxas de {0}."
 
@@ -3942,7 +3974,7 @@ msgid "No vouchers are available through your Credit pools."
 msgstr "Não há vales disponíveis através dos seus fundos de Crédito."
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:38
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:267
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:269
 msgid "No vouchers in this pool yet."
 msgstr "Ainda não há vales neste fundo."
 
@@ -4011,7 +4043,8 @@ msgid "Not sent"
 msgstr "Não enviado"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:67
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:104
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:113
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:80
 msgid "Not set"
 msgstr "Não definido"
 
@@ -4103,7 +4136,7 @@ msgstr "Oferta atualizada."
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:124
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:132
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:135
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:38
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
 msgid "Offerings"
 msgstr "Ofertas"
 
@@ -4265,8 +4298,19 @@ msgid "Owner reply"
 msgstr "Resposta do proprietário"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:324
-msgid "Ownership transfer submitted."
-msgstr "Pedido de transferência de propriedade enviado."
+#~ msgid "Ownership transfer submitted."
+#~ msgstr "Pedido de transferência de propriedade enviado."
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:323
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:55
+msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
+"management controls have been removed."
+msgstr "Titularidade transferida na cadeia. A sincronização do catálogo está "
+"atrasada; os seus controlos de gestão foram removidos."
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:325
+msgid "Ownership transferred."
+msgstr "Titularidade transferida."
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:78
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
@@ -4301,7 +4345,7 @@ msgid "Participants"
 msgstr "Participantes"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:285
+#: apps/web/src/lib/validation-i18n.ts:300
 msgid "Participants must be 100 characters or fewer"
 msgstr "A lista de participantes deve ter 100 caracteres ou menos"
 
@@ -4497,11 +4541,11 @@ msgstr "Viveiro"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:1063
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:234
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:379
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:53
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:54
 msgid "Pool"
 msgstr "Fundo"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:136
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:138
 msgid "Pool actions"
 msgstr "Ações do fundo"
 
@@ -4521,11 +4565,11 @@ msgstr "Endereço do fundo"
 msgid "Pool balances"
 msgstr "Saldos do Fundo"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:197
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:199
 msgid "Pool contents"
 msgstr "Conteúdo do Fundo"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:80
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:89
 msgid "Pool controls"
 msgstr "Controlos do Fundo"
 
@@ -4539,12 +4583,12 @@ msgid "Pool Description"
 msgstr "Descrição do Fundo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:173
+#: apps/web/src/lib/validation-i18n.ts:188
 msgid "Pool description is required"
 msgstr "A descrição do fundo é obrigatória"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:178
+#: apps/web/src/lib/validation-i18n.ts:193
 msgid "Pool description must be 500 characters or fewer"
 msgstr "A descrição do fundo deve ter 500 caracteres ou menos"
 
@@ -4565,7 +4609,7 @@ msgstr "Taxa do fundo"
 #~ msgid "Pool fee ({poolFeePercent})"
 #~ msgstr "Taxa do fundo ({poolFeePercent})"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:471
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:495
 msgid "Pool fee updated."
 msgstr "Taxa do fundo atualizada."
 
@@ -4592,19 +4636,23 @@ msgid "Pool name copied"
 msgstr "Nome do fundo copiado"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:138
+#: apps/web/src/lib/validation-i18n.ts:153
 msgid "Pool name is required"
 msgstr "O nome do fundo é obrigatório"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:143
+#: apps/web/src/lib/validation-i18n.ts:158
 msgid "Pool name must be 80 characters or fewer"
 msgstr "O nome do fundo deve ter 80 caracteres ou menos"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:102
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:104
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:287
 msgid "Pool not found."
 msgstr "Não foi encontrado o fundo."
+
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:52
+msgid "Pool ownership transferred."
+msgstr "Titularidade do fundo transferida."
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:116
 msgid "Pool paid out"
@@ -4623,17 +4671,17 @@ msgid "Pool symbol"
 msgstr "Símbolo do fundo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:153
+#: apps/web/src/lib/validation-i18n.ts:168
 msgid "Pool symbol is required"
 msgstr "O símbolo do fundo é obrigatório"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:163
+#: apps/web/src/lib/validation-i18n.ts:178
 msgid "Pool symbol must be 6 characters or fewer"
 msgstr "O símbolo do fundo deve ter no máximo 6 caracteres"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:158
+#: apps/web/src/lib/validation-i18n.ts:173
 msgid "Pool symbol must be at least 3 characters"
 msgstr "O símbolo do fundo deve ter pelo menos 3 caracteres"
 
@@ -4654,8 +4702,8 @@ msgstr "Faltam os dados de acompanhamento do fundo."
 #: apps/web/src/components/resource-usage.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:331
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:321
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:109
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:323
 #: apps/web/src/features/pools/ui/pools-page.tsx:165
 msgid "Pools"
 msgstr "Fundos"
@@ -4689,7 +4737,7 @@ msgid "Post text"
 msgstr "Texto da publicação"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:230
+#: apps/web/src/lib/validation-i18n.ts:245
 msgid "Post text is too long"
 msgstr "O texto da publicação é demasiado longo"
 
@@ -4706,7 +4754,7 @@ msgstr "Publicação atualizada."
 #: apps/web/src/features/home/ui/report-page.tsx:582
 #: apps/web/src/features/home/ui/report-page.tsx:601
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:27
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:55
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:56
 msgid "Posts"
 msgstr "Publicações"
 
@@ -4726,8 +4774,8 @@ msgstr "Preferências"
 msgid "Preferred currency"
 msgstr "Moeda preferida"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:272
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:386
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:269
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:393
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "A preparar a carteira…"
@@ -4794,7 +4842,7 @@ msgid "Price"
 msgstr "Preço"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:103
+#: apps/web/src/lib/validation-i18n.ts:118
 msgid "Price must be greater than zero"
 msgstr "O preço deve ser maior que zero"
 
@@ -4887,7 +4935,7 @@ msgid "Protocol fee"
 msgstr "Taxa do protocolo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:28
+#: apps/web/src/lib/validation-i18n.ts:43
 msgid "Provide an email or phone number"
 msgstr "Indique um e-mail ou número de telefone"
 
@@ -4968,16 +5016,17 @@ msgstr "Distribuição das notas"
 msgid "Reading the current rate…"
 msgstr "A consultar a taxa de câmbio atual…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:283
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:307
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:320
 msgid "Reading the pool's balance…"
 msgstr "A consultar o saldo do fundo…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:483
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:507
 msgid "Reading this pool's fee…"
 msgstr "A consultar a taxa deste fundo…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:107
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:116
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:80
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:795
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:809
 msgid "Reading…"
@@ -5000,7 +5049,7 @@ msgid "Receipt copied"
 msgstr "Recibo copiado"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:69
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:175
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:177
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
@@ -5243,12 +5292,12 @@ msgstr "Repor logótipo"
 #~ msgstr "A identificar o destinatário…"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:457
 msgid "Retire {0}?"
 msgstr "Quer retirar {0}?"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:136
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:466
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:133
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
 msgid "Retire voucher"
 msgstr "Remover o vale"
 
@@ -5257,7 +5306,7 @@ msgstr "Remover o vale"
 #~ msgid "Retired"
 #~ msgstr "Retirado"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:466
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
 msgid "Retiring…"
 msgstr "A remover…"
 
@@ -5300,7 +5349,7 @@ msgstr "Retiro"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:742
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:416
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:470
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:139
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:146
 msgid "Retry"
 msgstr "Tentar novamente"
 
@@ -5346,7 +5395,7 @@ msgstr "Salvar"
 msgid "Save changes"
 msgstr "Guardar alterações"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:543
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:567
 msgid "Save fee settings"
 msgstr "Guardar definições de taxas"
 
@@ -5675,7 +5724,7 @@ msgstr "A verificação da sessão falhou"
 msgid "Session could not be verified. Try again."
 msgstr "Não foi possível verificar a sessão. Tente de novo."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:382
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:406
 msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
 msgstr "Defina um destinatário das taxas antes de as cobrar; caso contrário, o "
 "fundo não terá a quem pagar."
@@ -5964,7 +6013,7 @@ msgstr "Sugerir nome de utilizador"
 #~ msgstr "Sugerido a partir do nome. Pode alterá-lo."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:235
+#: apps/web/src/lib/validation-i18n.ts:250
 msgid "Summary must be 10,000 characters or fewer"
 msgstr "O resumo deve ter 10.000 caracteres ou menos"
 
@@ -5991,12 +6040,12 @@ msgid "Supply creation transaction hash copied"
 msgstr "Hash da transação de emissão copiado"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:203
+#: apps/web/src/lib/validation-i18n.ts:218
 msgid "Supply has more decimal places than this voucher supports"
 msgstr "A quantidade emitida tem mais casas decimais do que suporta este vale"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:198
+#: apps/web/src/lib/validation-i18n.ts:213
 msgid "Supply must be greater than zero"
 msgstr "A quantidade emitida deve ser maior que zero"
 
@@ -6005,8 +6054,8 @@ msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Os ficheiros SVG não são suportados. Use PNG, JPEG ou WebP."
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:140
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:380
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:142
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:382
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:494
 msgid "Swap"
@@ -6016,7 +6065,7 @@ msgstr "Trocar"
 msgid "Swap fee"
 msgstr "Taxa de troca"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:492
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:516
 msgid "Swap fee (%)"
 msgstr "Taxa de troca (%)"
 
@@ -6025,12 +6074,12 @@ msgid "Swap Fee (%)"
 msgstr "Taxa de troca (%)"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:183
+#: apps/web/src/lib/validation-i18n.ts:198
 msgid "Swap fee must be a number from 0 to 100"
 msgstr "A taxa de troca deve ser um número entre 0 e 100"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:377
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:379
 msgid "Swap for {0}"
 msgstr "Trocar por {0}"
 
@@ -6117,12 +6166,12 @@ msgid "Tags and vouchers"
 msgstr "Etiquetas e vales"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:305
+#: apps/web/src/lib/validation-i18n.ts:320
 msgid "Tags must be 100 characters or fewer"
 msgstr "As etiquetas devem ter 100 caracteres ou menos"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:300
+#: apps/web/src/lib/validation-i18n.ts:315
 msgid "Tags must not be blank"
 msgstr "As etiquetas não podem estar vazias"
 
@@ -6209,7 +6258,7 @@ msgid "That name or symbol is already taken"
 msgstr "Esse nome ou símbolo já está em uso"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:148
+#: apps/web/src/lib/validation-i18n.ts:163
 msgid "That pool name is already taken"
 msgstr "Esse nome de fundo já está em uso"
 
@@ -6228,7 +6277,7 @@ msgid "That username or pool name is already taken"
 msgstr "Esse nome de utilizador ou nome do fundo já está em uso"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:83
+#: apps/web/src/lib/validation-i18n.ts:98
 msgid "That voucher name is already taken"
 msgstr "Esse nome de vale já está em uso"
 
@@ -6268,7 +6317,7 @@ msgstr "O limite de crédito foi atingido. Não é possível adicionar mais a es
 #~ msgstr "A moeda utilizada para expressar o valor neste fundo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:335
+#: apps/web/src/lib/validation-i18n.ts:350
 msgid "The end of the period must not be before its start"
 msgstr "O período não pode terminar antes de começar"
 
@@ -6284,7 +6333,7 @@ msgstr "O mapa não é compatível com este dispositivo."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "A mensagem e o pedido devem ter, em conjunto, 500 caracteres ou menos."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:349
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "O novo proprietário pode criar vales e transferir a propriedade."
 
@@ -6328,13 +6377,19 @@ msgid "The pool could not be published."
 msgstr "Não foi possível publicar o fundo."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:239
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:263
 msgid "The pool doesn't hold that much {0}."
 msgstr "O fundo não dispõe dessa quantidade de {0}."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:566
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "A cotação mudou. Verifique os montantes atualizados antes de confirmar."
+
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:73
+msgid "The recipient gains pool management and liquidity withdrawal authority. "
+"You lose ownership immediately when the transaction confirms."
+msgstr "O destinatário passa a gerir o fundo e a poder retirar a liquidez. "
+"Perde a titularidade assim que a transação for confirmada."
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:362
 msgid "The request expired without an answer from the relay. Check the "
@@ -6346,9 +6401,9 @@ msgstr "O pedido expirou sem resposta do serviço de retransmissão. Verifique o
 msgid "The selected unit does not have a configured price feed."
 msgstr "A unidade selecionada não tem uma fonte de preços configurada."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:255
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:369
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:474
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:279
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:393
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:498
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:446
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:464
 msgid "The transaction failed."
@@ -6517,7 +6572,7 @@ msgid "This pool has no limiter, so deposits are uncapped and no credit limit "
 msgstr "Este fundo não tem um limitador, por isso os depósitos não têm limite e "
 "não é possível definir um limite de crédito."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:566
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:590
 msgid "This pool holds no vouchers yet."
 msgstr "Este fundo ainda não contém vales."
 
@@ -6581,7 +6636,7 @@ msgid "Title"
 msgstr "Título"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:225
+#: apps/web/src/lib/validation-i18n.ts:240
 msgid "Title must be 200 characters or fewer"
 msgstr "O título deve ter 200 caracteres ou menos"
 
@@ -6659,13 +6714,16 @@ msgstr "Hash da transação copiado"
 msgid "Transfer history"
 msgstr "Histórico de transferências"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:121
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:346
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:390
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:118
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:347
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:399
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:167
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:125
 msgid "Transfer ownership"
 msgstr "Transferir a titularidade"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:388
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:395
 msgid "Transferring ownership…"
 msgstr "A transferir a propriedade…"
 
@@ -6736,7 +6794,7 @@ msgstr "Não foi possível carregar o idioma. Voltámos ao inglês."
 #: apps/web/src/components/vouchers/voucher-summary.tsx:147
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:272
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:281
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:115
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:305
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:329
@@ -6880,7 +6938,7 @@ msgid "Use default"
 msgstr "Usar o predefinido"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:68
+#: apps/web/src/lib/validation-i18n.ts:83
 msgid "Use letters and numbers, for example KES"
 msgstr "Use letras e números, por exemplo KES"
 
@@ -6895,12 +6953,12 @@ msgid "Use my location"
 msgstr "Usar a minha localização"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:168
+#: apps/web/src/lib/validation-i18n.ts:183
 msgid "Use only letters and numbers for the pool symbol"
 msgstr "Use apenas letras e números para o símbolo do fundo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:98
+#: apps/web/src/lib/validation-i18n.ts:113
 msgid "Use only letters and numbers for the voucher symbol"
 msgstr "Use apenas letras e números para o símbolo do vale"
 
@@ -6921,7 +6979,7 @@ msgid "Username copied"
 msgstr "Nome de utilizador copiado"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:6
+#: apps/web/src/lib/validation-i18n.ts:21
 msgid "Username must contain 1–80 characters"
 msgstr "O nome de utilizador deve conter entre 1 e 80 caracteres"
 
@@ -7022,7 +7080,7 @@ msgstr "Ações do vale"
 msgid "Voucher contract"
 msgstr "Contrato do vale"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:104
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:101
 msgid "Voucher controls"
 msgstr "Controlos do vale"
 
@@ -7030,7 +7088,7 @@ msgstr "Controlos do vale"
 msgid "Voucher creation receipt"
 msgstr "Recibo de emissão do vale"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:213
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:210
 msgid "Voucher creation submitted."
 msgstr "Pedido de criação do vale enviado."
 
@@ -7040,12 +7098,12 @@ msgid "Voucher Description"
 msgstr "Descrição do vale"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:108
+#: apps/web/src/lib/validation-i18n.ts:123
 msgid "Voucher description is required"
 msgstr "A descrição do vale é obrigatória"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:113
+#: apps/web/src/lib/validation-i18n.ts:128
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "A descrição do vale deve ter 500 caracteres ou menos"
 
@@ -7070,12 +7128,12 @@ msgid "Voucher Name"
 msgstr "Nome do vale"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:73
+#: apps/web/src/lib/validation-i18n.ts:88
 msgid "Voucher name is required"
 msgstr "O nome do vale é obrigatório"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:78
+#: apps/web/src/lib/validation-i18n.ts:93
 msgid "Voucher name must be 80 characters or fewer"
 msgstr "O nome do vale deve ter 80 caracteres ou menos"
 
@@ -7083,7 +7141,7 @@ msgstr "O nome do vale deve ter 80 caracteres ou menos"
 msgid "Voucher registry"
 msgstr "Registo de vales"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:428
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
 msgid "Voucher retired."
 msgstr "Vale retirado."
 
@@ -7100,12 +7158,12 @@ msgid "Voucher Symbol"
 msgstr "Símbolo do vale"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:88
+#: apps/web/src/lib/validation-i18n.ts:103
 msgid "Voucher symbol is required"
 msgstr "O símbolo do vale é obrigatório"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:93
+#: apps/web/src/lib/validation-i18n.ts:108
 msgid "Voucher symbol must be 6 characters or fewer"
 msgstr "O símbolo do vale deve ter 6 caracteres ou menos"
 
@@ -7123,11 +7181,11 @@ msgstr "Faltam os dados de acompanhamento do vale."
 #: apps/web/src/components/resource-usage.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:40
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:352
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:364
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:59
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:60
 msgid "Vouchers"
 msgstr "Vales"
 
@@ -7169,9 +7227,10 @@ msgstr "A aguardar a confirmação…"
 msgid "Waiting for on-chain confirmation"
 msgstr "A aguardar a confirmação em cadeia"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:319
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:407
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:541
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:565
+#: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:121
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:595
 msgid "Waiting for the chain…"
 msgstr "À espera da cadeia…"
@@ -7187,7 +7246,7 @@ msgstr "À espera da cadeia…"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:107
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:57
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:58
 msgid "Wallet"
 msgstr "Carteira"
 
@@ -7289,20 +7348,20 @@ msgstr "Onde e para quê"
 msgid "Where did this happen?"
 msgstr "Onde aconteceu isto?"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:319
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:145
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:194
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:338
 msgid "Withdraw"
 msgstr "Retirar"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:95
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:137
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:104
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:153
 msgid "Withdraw fees"
 msgstr "Retirar as taxas"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:90
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:99
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:140
 msgid "Withdraw liquidity"
 msgstr "Retirar a liquidez"
 
