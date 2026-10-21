@@ -7,8 +7,8 @@ import { adminVocabularyQueryOptions } from "@clc/api/features/vocabulary/querie
 import { validateCustomTag, validateCustomUnit } from "@clc/core/features/vocabulary/logic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useState } from "react";
-import { HiOutlinePencil, HiOutlineTag, HiOutlineTrash } from "react-icons/hi";
+import { useId, useState } from "react";
+import { HiChevronDown, HiOutlinePencil, HiOutlineTag, HiOutlineTrash } from "react-icons/hi";
 import { toast } from "sonner";
 
 import { DataTable } from "#/components/admin/data-table";
@@ -27,6 +27,7 @@ import {
 } from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { clcApi } from "#/lib/api";
+import { cn } from "#/lib/utils";
 
 type VocabularyTarget =
   | { kind: "tag"; row: TagVocabulary }
@@ -205,28 +206,8 @@ export function VocabularyPage() {
       ) : vocabulary.isError ? (
         <PageState title="Could not load vocabulary" message={vocabulary.error.message} />
       ) : (
-        <div className="grid gap-6 xl:grid-cols-2">
-          <VocabularySection title="Custom tags">
-            <DataTable
-              columns={tagColumns}
-              data={vocabulary.data.tags.filter((row) => row.isCustom)}
-              emptyState={
-                <EmptyState title="No custom tags" icon={<HiOutlineTag className="size-5" />} />
-              }
-            />
-          </VocabularySection>
-
-          <VocabularySection title="Custom offering units">
-            <DataTable
-              columns={customUnitColumns}
-              data={vocabulary.data.units.filter((row) => row.isCustom)}
-              emptyState={
-                <EmptyState title="No custom units" icon={<HiOutlineTag className="size-5" />} />
-              }
-            />
-          </VocabularySection>
-
-          <VocabularySection title="Custom Units of Account">
+        <div className="grid items-start gap-6 xl:grid-cols-2">
+          <VocabularySection title="Custom Units of Account" defaultOpen wide>
             <AddUnitOfAccountForm
               pending={createUnitOfAccount.isPending}
               error={createUnitOfAccount.error}
@@ -240,6 +221,26 @@ export function VocabularyPage() {
                   title="No custom units of account"
                   icon={<HiOutlineTag className="size-5" />}
                 />
+              }
+            />
+          </VocabularySection>
+
+          <VocabularySection title="Custom offering units" defaultOpen>
+            <DataTable
+              columns={customUnitColumns}
+              data={vocabulary.data.units.filter((row) => row.isCustom)}
+              emptyState={
+                <EmptyState title="No custom units" icon={<HiOutlineTag className="size-5" />} />
+              }
+            />
+          </VocabularySection>
+
+          <VocabularySection title="Custom tags" defaultOpen>
+            <DataTable
+              columns={tagColumns}
+              data={vocabulary.data.tags.filter((row) => row.isCustom)}
+              emptyState={
+                <EmptyState title="No custom tags" icon={<HiOutlineTag className="size-5" />} />
               }
             />
           </VocabularySection>
@@ -264,7 +265,7 @@ export function VocabularyPage() {
             />
           </VocabularySection>
 
-          <VocabularySection title="Default Units of Account">
+          <VocabularySection title="Default Units of Account" wide>
             <DataTable
               columns={unitOfAccountColumns}
               data={vocabulary.data.unitsOfAccount.filter((row) => !row.isCustom)}
@@ -343,13 +344,40 @@ function AddUnitOfAccountForm({
   );
 }
 
-function VocabularySection({ title, children }: { title: string; children: React.ReactNode }) {
+function VocabularySection({
+  title,
+  children,
+  defaultOpen = false,
+  wide = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  wide?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const contentId = useId();
+
   return (
-    <section className="space-y-3">
+    <section className={cn("min-w-0", wide && "xl:col-span-2")}>
       <h2 className="font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground">
-        {title}
+        <button
+          type="button"
+          className="border-border bg-card focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-10 w-full items-center justify-between gap-3 border px-3 py-2 text-left outline-none transition-colors hover:bg-muted focus-visible:ring-1"
+          aria-expanded={open}
+          aria-controls={contentId}
+          onClick={() => setOpen((current) => !current)}
+        >
+          <span>{title}</span>
+          <HiChevronDown
+            aria-hidden="true"
+            className={cn("size-4 shrink-0 transition-transform", open && "rotate-180")}
+          />
+        </button>
       </h2>
-      {children}
+      <div id={contentId} hidden={!open} className="mt-3 space-y-3">
+        {children}
+      </div>
     </section>
   );
 }
