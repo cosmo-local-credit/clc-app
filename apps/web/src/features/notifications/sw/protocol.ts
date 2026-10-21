@@ -60,6 +60,11 @@ export const notificationWorkerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("notification:event"),
   }),
   z.object({
+    count: z.number().int().nonnegative(),
+    protocolVersion: protocolVersionSchema,
+    type: z.literal("notification:badge"),
+  }),
+  z.object({
     protocolVersion: protocolVersionSchema,
     requestId: requestIdSchema,
     type: z.literal("notification:ack-queue-flushed"),
@@ -86,5 +91,13 @@ export function createNotificationEventMessage(
     protocolVersion: NOTIFICATION_WORKER_PROTOCOL_VERSION,
     targetUrl,
     type: "notification:event",
+  };
+}
+
+export function createNotificationBadgeMessage(count: number): NotificationWorkerMessage {
+  return {
+    count,
+    protocolVersion: NOTIFICATION_WORKER_PROTOCOL_VERSION,
+    type: "notification:badge",
   };
 }

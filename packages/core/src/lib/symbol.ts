@@ -10,6 +10,8 @@
 const SYMBOL_PREFIX_PATTERN = /^[A-Z0-9]{1,6}$/;
 const SYMBOL_MAX_LENGTH = 6;
 const STEM_LENGTH = 4;
+const STEM_MIN_LENGTH = 3;
+const STEM_PAD = "X";
 const SUFFIX_BUDGET = 99;
 
 /** Words that every voucher or pool name tends to carry and that add nothing to a ticker. */
@@ -68,9 +70,10 @@ function packWord(word: string, length: number): string {
 }
 
 /**
- * The up-to-four-character stem a name derives: the first word packed to three
- * plus the initials of the following words, or the first word packed to four
- * when it stands alone. Empty when the name has no usable characters.
+ * The three-to-four-character stem a name derives: the first word packed to
+ * three plus the initials of the following words, or the first word packed to
+ * four when it stands alone, padded with `X` when the name is too short to
+ * reach three. Empty when the name has no usable characters.
  */
 export function symbolStemFromName(name: string): string {
   const tokens = tokenize(name);
@@ -82,20 +85,18 @@ export function symbolStemFromName(name: string): string {
     stem += token.slice(0, 1);
   }
   if (stem.length < STEM_LENGTH) stem = packWord(first, STEM_LENGTH);
-  return stem.slice(0, STEM_LENGTH);
+  return stem.slice(0, STEM_LENGTH).padEnd(STEM_MIN_LENGTH, STEM_PAD);
 }
 
 /**
- * The bare stem is issuance one, so a legal stem is followed by `stem2` …
- * `stem99`. A stem shorter than three characters fails the symbol schema on its
- * own and therefore starts at `stem1`. Empty when the name yields no stem.
+ * The bare stem is issuance one, followed by `stem2` … `stem99`. Empty when
+ * the name yields no stem.
  */
 export function candidatesFromName(name: string): string[] {
   const stem = symbolStemFromName(name);
   if (!stem) return [];
-  const candidates = stem.length >= 3 ? [stem] : [];
-  const firstSuffix = candidates.length > 0 ? 2 : 1;
-  for (let suffix = firstSuffix; suffix <= SUFFIX_BUDGET; suffix += 1) {
+  const candidates = [stem];
+  for (let suffix = 2; suffix <= SUFFIX_BUDGET; suffix += 1) {
     const candidate = `${stem}${suffix}`;
     if (candidate.length <= SYMBOL_MAX_LENGTH) candidates.push(candidate);
   }

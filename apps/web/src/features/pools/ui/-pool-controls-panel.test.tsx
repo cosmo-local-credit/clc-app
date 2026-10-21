@@ -1,3 +1,10 @@
+vi.mock("#/lib/ownership-transfer-config", () => ({ POOL_OWNERSHIP_TRANSFER_ENABLED: true }));
+vi.mock("#/features/pools/hooks/use-pool-ownership-transfer", () => ({
+  usePoolOwnershipTransfer: () => ({
+    mutateAsync: mocks.transferOwnership,
+    isPending: mocks.ownershipPending,
+  }),
+}));
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { decodeFunctionData } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -19,6 +26,8 @@ const FEE_POLICY = "0x70c1000000000000000000000000000000003b55";
 
 const mocks = vi.hoisted(() => ({
   relay: vi.fn(),
+  transferOwnership: vi.fn(),
+  ownershipPending: false,
   treasury: new Map<string, { balanceRaw: string; feesRaw: string; withdrawableRaw: string }>(),
   // The fee and the recipient come from the chain, never from the catalog row.
   feeSettings: { data: undefined } as {
@@ -128,6 +137,8 @@ function relayedCalls(): CaliburCall[] {
 }
 
 beforeEach(() => {
+  mocks.transferOwnership.mockReset().mockResolvedValue({ catalogSynced: true });
+  mocks.ownershipPending = false;
   mocks.relay.mockReset();
   mocks.relay.mockResolvedValue({ trackingId: "t1", txHash: `0x${"ab".repeat(32)}` });
   mocks.treasury = new Map([
@@ -293,6 +304,71 @@ describe("PoolControlsPanel fee settings", () => {
     const dialog = await screen.findByRole("dialog");
     expect(
       (within(dialog).getByRole("button", { name: "Save fee settings" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+  });
+});
+
+describe("PoolControlsPanel ownership", () => {
+  it("places transfer last for owners and withholds it from catalog-only admins", () => {
+    const view = render(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
+    const rows = within(screen.getByRole("region", { name: "Pool controls" })).getAllByRole(
+      "button",
+    );
+    expect(rows.at(-1)?.textContent).toContain("Transfer ownership");
+    view.rerender(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain={false} />);
+    expect(screen.queryByRole("button", { name: "Transfer ownership" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
+  });
+  it("shows the unchanged fee recipient and rejects invalid, self and dependency recipients", async () => {
+    render(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
+    fireEvent.click(screen.getByRole("button", { name: "Transfer ownership" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(RECIPIENT)).toBeTruthy();
+    expect(within(dialog).getByText("Existing fee recipient")).toBeTruthy();
+    for (const value of [
+      "invalid",
+      "0x0000000000000000000000000000000000000000",
+      OWNER,
+      POOL,
+      FEE_POLICY,
+    ]) {
+      fireEvent.change(within(dialog).getByRole("textbox", { name: "New owner address" }), {
+        target: { value },
+      });
+      fireEvent.click(within(dialog).getByRole("button", { name: "Transfer ownership" }));
+      await waitFor(() =>
+        expect(
+          within(dialog)
+            .getByRole("textbox", { name: "New owner address" })
+            .getAttribute("aria-invalid"),
+        ).toBe("true"),
+      );
+      expect(mocks.transferOwnership).not.toHaveBeenCalled();
+    }
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "New owner address" }), {
+      target: { value: RECIPIENT },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Transfer ownership" }));
+    await waitFor(() =>
+      expect(mocks.transferOwnership).toHaveBeenCalledWith({
+        assetAddress: POOL,
+        ownerAddress: OWNER,
+        newOwnerAddress: RECIPIENT,
+      }),
+    );
+  });
+  it("disables the transfer button and recipient while waiting", async () => {
+    mocks.ownershipPending = true;
+    render(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
+    fireEvent.click(screen.getByRole("button", { name: "Transfer ownership" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      (within(dialog).getByRole("button", { name: /Waiting for the chain/ }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      (within(dialog).getByRole("textbox", { name: "New owner address" }) as HTMLInputElement)
         .disabled,
     ).toBe(true);
   });

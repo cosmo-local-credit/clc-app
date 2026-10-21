@@ -128,6 +128,28 @@ describe("SearchableSelect", () => {
     expect(input.value).toBe("TZS - Tanzanian Shilling");
   });
 
+  it("closes on Escape without clearing the selection or dismissing the parent sheet", () => {
+    render(<Harness initial="KES" />);
+    const input = screen.getByRole("combobox") as HTMLInputElement;
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "Tanz" } });
+    let escapedToParent = false;
+    const onKeyDown = () => {
+      escapedToParent = true;
+    };
+    document.addEventListener("keydown", onKeyDown);
+    try {
+      fireEvent.keyDown(input, { key: "Escape" });
+    } finally {
+      document.removeEventListener("keydown", onKeyDown);
+    }
+
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(input.value).toBe("KES - Kenyan Shilling");
+    expect(screen.getByTestId("stored").textContent).toBe("KES");
+    expect(escapedToParent).toBe(false);
+  });
+
   // Without the create callbacks the control is a closed list, and an unmatched
   // query must not offer to invent a currency.
   it("offers nothing to create when the create callbacks are absent", () => {

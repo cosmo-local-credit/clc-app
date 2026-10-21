@@ -13,6 +13,11 @@ const subscription: NotificationPushSubscriptionJSON = {
 };
 
 const config: NotificationConfigRecord = {
+  identityEpoch: "epoch-1",
+  identityWallet: "0x1234567890abcdef1234567890abcdef12345678",
+  registrationId: "registration-1",
+  userId: "user-1",
+  generation: 1,
   appVersion: "web-production",
   key: "current",
   permissionState: "granted",
@@ -65,21 +70,15 @@ describe("runNotificationSubscriptionHealthCheck", () => {
         deviceId: "device-1",
         pushSubscription: subscription,
       }),
-      undefined,
-    );
-    expect(dependencies.linkWallet).toHaveBeenCalledWith(
-      {
-        deviceId: "device-1",
-        walletAddress: "0x1234567890abcdef1234567890abcdef12345678",
-      },
-      undefined,
+      { identityEpoch: "epoch-1" },
     );
     expect(dependencies.updateConfig).toHaveBeenCalledWith(
       expect.objectContaining({
         permissionState: "granted",
         subscriptionHash: expect.any(String),
-        syncCursor: "cursor-2",
+        syncCursor: "cursor-1",
       }),
+      "epoch-1",
     );
   });
 
@@ -93,7 +92,12 @@ describe("runNotificationSubscriptionHealthCheck", () => {
       endpoint: "https://push.example/replaced",
     });
 
-    await expect(runNotificationSubscriptionHealthCheck({}, dependencies)).resolves.toMatchObject({
+    await expect(
+      runNotificationSubscriptionHealthCheck(
+        { currentWalletAddress: config.identityWallet },
+        dependencies,
+      ),
+    ).resolves.toMatchObject({
       status: "refreshed",
       subscription: { endpoint: "https://push.example/replaced" },
     });
@@ -109,7 +113,12 @@ describe("runNotificationSubscriptionHealthCheck", () => {
       permission: "default",
     });
 
-    await expect(runNotificationSubscriptionHealthCheck({}, dependencies)).resolves.toEqual({
+    await expect(
+      runNotificationSubscriptionHealthCheck(
+        { currentWalletAddress: config.identityWallet },
+        dependencies,
+      ),
+    ).resolves.toEqual({
       status: "skipped",
     });
 
@@ -124,7 +133,12 @@ describe("runNotificationSubscriptionHealthCheck", () => {
   it("records backend failure and leaves the stored subscription hash retryable", async () => {
     dependencies.registerDevice.mockRejectedValueOnce(new Error("backend unavailable"));
 
-    await expect(runNotificationSubscriptionHealthCheck({}, dependencies)).resolves.toEqual({
+    await expect(
+      runNotificationSubscriptionHealthCheck(
+        { currentWalletAddress: config.identityWallet },
+        dependencies,
+      ),
+    ).resolves.toEqual({
       status: "failed",
     });
 
@@ -150,6 +164,9 @@ function createDependencies() {
     readDeviceId: vi.fn().mockResolvedValue("device-1"),
     recordDiagnostic: vi.fn().mockResolvedValue({}),
     registerDevice: vi.fn().mockResolvedValue({
+      registrationId: "registration-1",
+      userId: "user-1",
+      generation: 1,
       canonicalLinkedWalletAddresses: [],
       deviceId: "device-1",
       inboxSyncCursor: "cursor-2",

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 vi.mock("#/components/nearby-catalog", () => ({ NearbyCatalog: () => null }));
 vi.mock("#/features/catalogs/ui/catalogs-page", () => ({ CatalogsPage: () => null }));
 vi.mock("#/features/home/ui/market-list-page", () => ({ MarketListPage: () => null }));
+vi.mock("#/features/home/ui/marketplace-page", () => ({ MarketplacePage: () => null }));
 vi.mock("#/features/home/ui/offers-page", () => ({ OffersPage: () => null }));
 vi.mock("#/features/pools/ui", () => ({ PoolDetailPage: () => null, PoolsPage: () => null }));
 
@@ -194,8 +195,8 @@ describe("legacy non-map voucher sheet links", () => {
   });
 });
 
-describe("the retired All list", () => {
-  it.each([{}, { scope: "all" }, { scope: "everything" }])(
+describe("a market without a list", () => {
+  it.each([{}, { scope: "everything" }])(
     "sends /market without a list to the map, keeping the search: %o",
     (extra) => {
       const beforeLoad = MarketRoute.options.beforeLoad as unknown as BeforeLoad;
@@ -217,10 +218,10 @@ describe("the retired All list", () => {
     },
   );
 
-  it("keeps each list where it is", () => {
+  it.each(["offers", "all"])("keeps the %s list where it is", (scope) => {
     const beforeLoad = MarketRoute.options.beforeLoad as unknown as BeforeLoad;
     expect(() =>
-      beforeLoad({ params: {}, search: validateMarketSearch({ scope: "offers", q: "food" }) }),
+      beforeLoad({ params: {}, search: validateMarketSearch({ scope, q: "food" }) }),
     ).not.toThrow();
   });
 

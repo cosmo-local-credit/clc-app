@@ -45,8 +45,10 @@ describe("profilePrefill", () => {
     ).toBeUndefined();
   });
 
-  it("ignores a preferred currency this app does not offer as a unit", () => {
-    expect(profilePrefill({ preferredCurrency: "XYZ" }).unitOfAccount).toBeUndefined();
+  it("preserves a stored custom unit of account", () => {
+    expect(profilePrefill({ preferredCurrency: "Community Credits" }).unitOfAccount).toBe(
+      "Community Credits",
+    );
   });
 
   it("reads a profile from a backend that predates preferences as empty", () => {

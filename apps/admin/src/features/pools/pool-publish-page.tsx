@@ -410,7 +410,17 @@ export function PoolPublishPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {PRICING_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            disabled={
+                              option.value === "oracle" &&
+                              (!isOracleBase(form.getFieldValue("unitOfAccount")) ||
+                                !oracleBaseAddress(
+                                  form.getFieldValue("unitOfAccount") as OracleBase,
+                                ))
+                            }
+                          >
                             {option.label}
                           </SelectItem>
                         ))}
@@ -425,8 +435,21 @@ export function PoolPublishPage() {
                     <UnitOfAccountCombobox
                       id={field.name}
                       value={field.state.value}
-                      onValueChange={field.handleChange}
+                      onValueChange={(unit) => {
+                        field.handleChange(unit);
+                        if (
+                          form.getFieldValue("pricing") === "oracle" &&
+                          (!isOracleBase(unit) || !oracleBaseAddress(unit))
+                        ) {
+                          form.setFieldValue("pricing", "relative");
+                        }
+                      }}
                     />
+                    {!isOracleBase(field.state.value) ? (
+                      <p className="text-muted-foreground text-xs">
+                        Custom units have no price feed. Relative pricing is used instead.
+                      </p>
+                    ) : null}
                   </Field>
                 )}
               </form.Field>

@@ -11,6 +11,16 @@ import {
   unlinkNotificationWallet,
 } from "./notification-client";
 
+vi.mock("../storage/notification-db", () => ({
+  getOrCreateNotificationInstallation: vi
+    .fn()
+    .mockResolvedValue({ installationToken: "a".repeat(64) }),
+  isNotificationStorageAvailable: () => true,
+  readNotificationConfig: vi
+    .fn()
+    .mockResolvedValue({ identityEpoch: "epoch-1", registrationId: "registration-1" }),
+}));
+
 afterEach(() => {
   vi.unstubAllEnvs();
 });
@@ -97,6 +107,9 @@ describe("notification client options", () => {
 describe("notification API wrappers", () => {
   it("posts device registration request and parses response", async () => {
     const { calls, fetcher } = createJsonFetcher({
+      registrationId: "registration-1",
+      userId: "user-1",
+      generation: 1,
       canonicalLinkedWalletAddresses: ["0x1234567890abcdef1234567890abcdef12345678"],
       deviceId: "device-1",
       inboxSyncCursor: "cursor-1",
@@ -128,6 +141,9 @@ describe("notification API wrappers", () => {
         { baseUrl: "https://push.example", fetcher },
       ),
     ).resolves.toEqual({
+      registrationId: "registration-1",
+      userId: "user-1",
+      generation: 1,
       canonicalLinkedWalletAddresses: ["0x1234567890abcdef1234567890abcdef12345678"],
       deviceId: "device-1",
       inboxSyncCursor: "cursor-1",
@@ -137,7 +153,8 @@ describe("notification API wrappers", () => {
     });
 
     expect(calls[0]?.input).toBe("https://push.example/api/notifications/devices/register");
-    expect(calls[0]?.init).toMatchObject({ method: "POST" });
+    expect(calls[0]?.init).toMatchObject({ method: "POST", credentials: "include" });
+    expect(header(calls[0], "X-Notification-Device-Token")).toBe("a".repeat(64));
     expect(header(calls[0], "Content-Type")).toBe("application/json");
     expect(await requestJson(calls[0])).toEqual({
       appVersion: "web-test",
@@ -161,12 +178,16 @@ describe("notification API wrappers", () => {
 
   it("posts wallet link and unlink requests", async () => {
     const link = createJsonFetcher({
+      userId: "user-1",
+      registrationId: "registration-1",
+      generation: 1,
       linkedWalletAddresses: ["0x1234567890abcdef1234567890abcdef12345678"],
     });
     const unlink = createJsonFetcher({
       linkedWalletAddresses: [],
     });
     const request = {
+      registrationId: "registration-1",
       deviceId: "device-1",
       walletAddress: "0x1234567890abcdef1234567890abcdef12345678",
     };
@@ -177,6 +198,9 @@ describe("notification API wrappers", () => {
         fetcher: link.fetcher,
       }),
     ).resolves.toEqual({
+      userId: "user-1",
+      registrationId: "registration-1",
+      generation: 1,
       linkedWalletAddresses: ["0x1234567890abcdef1234567890abcdef12345678"],
     });
     await expect(
@@ -217,6 +241,7 @@ describe("notification API wrappers", () => {
 
     expect(calls[0]?.input).toBe("https://push.example/api/notifications/devices/disable");
     expect(await requestJson(calls[0])).toEqual({
+      registrationId: "registration-1",
       deviceId: "device-1",
       subscriptionEndpoint: "https://push.example/subscription",
     });
@@ -242,6 +267,7 @@ describe("notification API wrappers", () => {
 
     expect(calls[0]?.input).toBe("https://push.example/api/notifications/acks/delivery");
     expect(await requestJson(calls[0])).toEqual({
+      registrationId: "registration-1",
       deviceId: "device-1",
       notificationId: "notification-1",
       platform: "chrome-android",
@@ -270,6 +296,7 @@ describe("notification API wrappers", () => {
 
     expect(calls[0]?.input).toBe("https://push.example/api/notifications/acks/click");
     expect(await requestJson(calls[0])).toEqual({
+      registrationId: "registration-1",
       actionId: "view",
       deviceId: "device-1",
       notificationId: "notification-1",
@@ -280,20 +307,23 @@ describe("notification API wrappers", () => {
 
   it("posts inbox sync requests and defaults message priority by kind", async () => {
     const { calls, fetcher } = createJsonFetcher({
+      hasMore: false,
+      resetRequired: false,
+      deletions: [],
       deletedIds: ["notification-deleted"],
       messages: [
         {
-          body: "Swap completed",
+          body: "Voucher received",
           createdAt: "2026-06-05T12:00:00.000Z",
           deviceId: "device-1",
-          kind: "swap.completed",
+          kind: "voucher.received",
           notificationId: "notification-1",
           pushStatus: "sent",
           recordId: "record-1",
           revision: 1,
           sentAt: "2026-06-05T12:00:01.000Z",
           targetUrl: "/wallet",
-          title: "Swap completed",
+          title: "Voucher received",
         },
       ],
       nextSyncCursor: "cursor-2",
@@ -309,12 +339,15 @@ describe("notification API wrappers", () => {
         { baseUrl: "https://push.example", fetcher },
       ),
     ).resolves.toMatchObject({
+      hasMore: false,
+      resetRequired: false,
+      deletions: [],
       deletedIds: ["notification-deleted"],
       messages: [
         {
-          kind: "swap.completed",
+          kind: "voucher.received",
           notificationId: "notification-1",
-          priority: "normal",
+          priority: "high",
         },
       ],
       nextSyncCursor: "cursor-2",
@@ -324,6 +357,7 @@ describe("notification API wrappers", () => {
     expect(await requestJson(calls[0])).toEqual({
       deviceId: "device-1",
       lastSyncCursor: "cursor-1",
+      registrationId: "registration-1",
       linkedWalletAddresses: ["0x1234567890abcdef1234567890abcdef12345678"],
     });
   });

@@ -9,16 +9,20 @@ import {
 } from "./marketplace-search";
 
 describe("marketplace route search", () => {
-  it("uses absent scope for All and accepts the four resource scopes", () => {
+  it("names All and the four resource lists, and nothing else", () => {
     expect(parseMarketplaceScope(undefined)).toBeNull();
-    expect(parseMarketplaceScope("all")).toBeNull();
+    expect(parseMarketplaceScope("all")).toBe("all");
+    expect(parseMarketplaceScope(" ALL ")).toBe("all");
     expect(parseMarketplaceScope("offers")).toBe("offers");
     expect(parseMarketplaceScope("VOUCHERS")).toBe("vouchers");
+    expect(parseMarketplaceScope("everything")).toBeNull();
+    expect(parseMarketplaceScope(["all"])).toBeNull();
   });
 
-  it("replace-canonicalizes explicit All, invalid, and repeated scopes", () => {
-    expect(canonicalMarketplaceSearch({ scope: "all", q: "bike" })).toEqual({
-      scope: undefined,
+  it("keeps All and replace-canonicalizes its spelling, invalid, and repeated scopes", () => {
+    expect(canonicalMarketplaceSearch({ scope: "all", q: "bike" })).toBeNull();
+    expect(canonicalMarketplaceSearch({ scope: "All", q: "bike" })).toEqual({
+      scope: "all",
       q: "bike",
     });
     expect(canonicalMarketplaceSearch({ scope: "wrong", tags: "Repair" })).toEqual({
@@ -28,6 +32,23 @@ describe("marketplace route search", () => {
     expect(canonicalMarketplaceSearch({ scope: ["offers", "pools"], q: "bike" })).toEqual({
       scope: undefined,
       q: "bike",
+    });
+  });
+
+  it("opens All with the shared search and without the pool-only filter", () => {
+    const previous = pickMarketplaceSearch({
+      scope: "pools",
+      q: "bike",
+      tags: "Repair",
+      creditable: true,
+      out_voucher: `0x${"a".repeat(40)}`,
+    });
+    expect(marketplaceSearchForScope(previous, "all")).toMatchObject({
+      scope: "all",
+      q: "bike",
+      tags: "Repair",
+      creditable: true,
+      out_voucher: undefined,
     });
   });
 

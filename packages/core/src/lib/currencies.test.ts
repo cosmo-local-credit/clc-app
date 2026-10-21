@@ -4,6 +4,8 @@ import {
   findUnitOfAccountOption,
   formatUnitOfAccountOption,
   ISO_CURRENCIES,
+  isUnitOfAccount,
+  normalizeUnitOfAccount,
   isIsoCurrency,
   UNIT_OF_ACCOUNT_OPTIONS,
 } from "./currencies";
@@ -27,5 +29,13 @@ describe("unit-of-account currency catalog", () => {
   it("keeps a profile preference to ISO currencies, excluding the time unit", () => {
     expect(isIsoCurrency("KES")).toBe(true);
     expect(isIsoCurrency("HOUR")).toBe(false);
+  });
+
+  it("normalizes reusable custom units without forcing them into currency codes", () => {
+    expect(normalizeUnitOfAccount("  community   credits ")).toBe("Community Credits");
+    expect(normalizeUnitOfAccount(" hour ")).toBe("HOUR");
+    expect(isUnitOfAccount("Community Credits")).toBe(true);
+    expect(isUnitOfAccount(" ")).toBe(false);
+    expect(isUnitOfAccount("x".repeat(33))).toBe(false);
   });
 });

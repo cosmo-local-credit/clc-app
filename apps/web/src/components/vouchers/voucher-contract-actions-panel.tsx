@@ -1,4 +1,5 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
 import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { parseTokenAmount } from "@clc/core/features/wallet/logic";
@@ -7,7 +8,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { RiDeleteBin6Line, RiPencilLine, RiSparkling2Line, RiUserSharedLine } from "react-icons/ri";
 import { toast } from "sonner";
-import { isAddress, zeroAddress } from "viem";
 import { z } from "zod";
 
 import { ActionRow } from "#/components/ui/action-row";
@@ -25,6 +25,10 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
+import {
+  ownershipKey,
+  useOwnershipSubmissions,
+} from "#/features/ownership/state/ownership-submissions";
 import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherOwnershipTransfer } from "#/features/vouchers/hooks/use-voucher-ownership-transfer";
 import { useRetireVoucher } from "#/features/wallet/hooks/use-retire-voucher";
@@ -32,13 +36,6 @@ import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-bala
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 
 import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
-
-const addressSchema = z
-  .string()
-  .trim()
-  .refine((value) => isAddress(value) && value.toLowerCase() !== zeroAddress, {
-    message: "Enter a valid wallet address",
-  });
 
 type VoucherControlSheet = "details" | "mint" | "ownership" | "retire";
 
@@ -301,19 +298,19 @@ function VoucherOwnershipTransferSheet({
   const queryClient = useQueryClient();
   const delegationStatus = useCaliburDelegation(walletAddress);
   const transferOwnership = useVoucherOwnershipTransfer();
+  const submission = useOwnershipSubmissions(
+    (state) => state.submissions[ownershipKey(tokenAddress)],
+  );
   const form = useForm({
-    defaultValues: { newOwnerAddress: "" },
+    defaultValues: { newOwnerAddress: String(submission?.newOwnerAddress ?? "") },
     validators: {
-      onSubmit: z
-        .object({ newOwnerAddress: addressSchema })
-        .refine((value) => value.newOwnerAddress.toLowerCase() !== ownerAddress.toLowerCase(), {
-          path: ["newOwnerAddress"],
-          message: "New owner must be a different wallet",
-        }),
+      onSubmit: z.object({
+        newOwnerAddress: ownershipRecipientSchema(ownerAddress, [tokenAddress]),
+      }),
     },
     onSubmit: async ({ value }) => {
       try {
-        await transferOwnership.mutateAsync({
+        const result = await transferOwnership.mutateAsync({
           tokenAddress: tokenAddress as `0x${string}`,
           ownerAddress: walletAddress,
           newOwnerAddress: value.newOwnerAddress as `0x${string}`,
@@ -321,7 +318,11 @@ function VoucherOwnershipTransferSheet({
         });
         void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
         void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-        toast.success(t`Ownership transfer submitted.`);
+        if (result?.catalogSynced === false)
+          toast.info(
+            t`Ownership transferred on-chain. Catalog synchronization is delayed; your management controls have been removed.`,
+          );
+        else toast.success(t`Ownership transferred.`);
         onClose();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : t`Couldn't transfer ownership.`);
@@ -329,7 +330,7 @@ function VoucherOwnershipTransferSheet({
     },
   });
 
-  const pending = transferOwnership.isPending || delegationStatus === "checking";
+  const pending = transferOwnership.isPending || (!submission && delegationStatus === "checking");
 
   return (
     <SheetRoot
@@ -357,6 +358,12 @@ function VoucherOwnershipTransferSheet({
             }}
           >
             <div className="px-6 pb-3">
+              {submission ? (
+                <p role="status" className="mb-3 break-all text-xs">
+                  <Trans>Check the existing submission before another transfer:</Trans>{" "}
+                  <span className="font-mono">{submission.trackingId}</span>
+                </p>
+              ) : null}
               <form.Field name="newOwnerAddress">
                 {(field) => (
                   <Field
@@ -373,7 +380,7 @@ function VoucherOwnershipTransferSheet({
                       }}
                       onBlur={field.handleBlur}
                       ariaLabel={t`New owner address`}
-                      disabled={pending}
+                      disabled={pending || !!submission}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>
@@ -382,10 +389,12 @@ function VoucherOwnershipTransferSheet({
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <Button type="submit" tap className="w-full" pending={pending}>
-                {delegationStatus === "checking" ? (
+                {!submission && delegationStatus === "checking" ? (
                   <Trans>Preparing wallet…</Trans>
                 ) : pending ? (
                   <Trans>Transferring ownership…</Trans>
+                ) : submission ? (
+                  <Trans>Check transfer status</Trans>
                 ) : (
                   <Trans>Transfer ownership</Trans>
                 )}

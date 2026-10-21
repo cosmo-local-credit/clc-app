@@ -6,7 +6,7 @@ import {
   optionalTermsSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
-import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
+import { isUnitOfAccount, normalizeUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import {
   CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
@@ -50,9 +50,9 @@ export const poolProfileTextSchema = z.object({
   unitOfAccount: z
     .string()
     .trim()
-    .toUpperCase()
-    .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
-      message: "Use letters and numbers, for example KES",
+    .transform((value) => (value ? normalizeUnitOfAccount(value) : ""))
+    .refine((value) => value === "" || isUnitOfAccount(value), {
+      message: "Use 32 characters or fewer",
     }),
   email: optionalEmailSchema,
   website: optionalWebsiteSchema,
@@ -87,7 +87,7 @@ export const poolTermsSchema = z.literal(true, {
 });
 
 const poolUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
-  message: "Choose a currency",
+  message: "Choose a unit of account",
 });
 
 /**
@@ -138,7 +138,7 @@ export function chainHasPoolOracle(chainId: number): boolean {
   return Object.keys(POOL_ORACLE_BASE_CURRENCY[chainId] ?? {}).length > 0;
 }
 
-function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {
+export function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {
   return getPoolOracleBaseCurrency(unit, chainId) !== undefined;
 }
 

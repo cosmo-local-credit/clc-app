@@ -88,6 +88,20 @@ describe("account token balances", () => {
     });
   });
 
+  it("sends an encoded history search with the cursor and cancellation signal", async () => {
+    const fetcher = mockFetch({ ok: true, result: { transfers: [] } });
+    vi.stubGlobal("fetch", fetcher);
+    const controller = new AbortController();
+    await api.getAccountTransfers(
+      { address: ACCOUNT, perPage: 20, cursor: 7, next: true, q: "old & voucher" },
+      controller.signal,
+    );
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining("cursor=7&next=true&q=old%20%26%20voucher"),
+      expect.objectContaining({ signal: controller.signal }),
+    );
+  });
+
   it("checksums paginated token-balance account paths", async () => {
     const fetcher = mockFetch({ ok: true, result: { tokens: [], first: 10, last: 5 } });
     vi.stubGlobal("fetch", fetcher);

@@ -16,12 +16,16 @@ export type NotificationSubscriptionChangeDependencies = {
     subscription: NotificationPushSubscriptionJSON,
     vapidKeyVersion: string,
   ) => Promise<unknown>;
-  registerDevice: (request: RegisterNotificationDeviceRequest) => Promise<unknown>;
+  registerDevice: (
+    request: RegisterNotificationDeviceRequest,
+    identityEpoch?: string,
+  ) => Promise<unknown>;
   resubscribe: (publicKey: string) => Promise<NotificationPushSubscriptionJSON>;
   updateConfig: (
     patch: Partial<
       Pick<NotificationConfigRecord, "subscriptionHash" | "vapidKeyVersion" | "vapidPublicKey">
     >,
+    identityEpoch?: string,
   ) => Promise<unknown>;
 };
 
@@ -46,7 +50,7 @@ export async function handlePushSubscriptionChange(
       dependencies.getDeviceId(),
       dependencies.readConfig(),
     ]);
-    if (!deviceId) {
+    if (!deviceId || !config?.registrationId || !config.identityEpoch) {
       return { status: "ignored" };
     }
 
@@ -57,17 +61,24 @@ export async function handlePushSubscriptionChange(
       (await dependencies.resubscribe(vapid.publicKey));
     const subscriptionHash = await hashPushSubscription(subscription, vapid.keyVersion);
 
-    await dependencies.registerDevice({
-      deviceId,
-      pushSubscription: subscription,
-      vapidKeyVersion: vapid.keyVersion,
-    });
-    await Promise.all([
-      dependencies.updateConfig({
-        subscriptionHash,
+    await dependencies.registerDevice(
+      {
+        deviceId,
+        registrationId: config.registrationId,
+        pushSubscription: subscription,
         vapidKeyVersion: vapid.keyVersion,
-        vapidPublicKey: vapid.publicKey,
-      }),
+      },
+      config.identityEpoch,
+    );
+    await Promise.all([
+      dependencies.updateConfig(
+        {
+          subscriptionHash,
+          vapidKeyVersion: vapid.keyVersion,
+          vapidPublicKey: vapid.publicKey,
+        },
+        config.identityEpoch,
+      ),
       dependencies.recordRefresh(subscription, vapid.keyVersion),
     ]);
 

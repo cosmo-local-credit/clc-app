@@ -10,13 +10,13 @@ vi.mock("#/lib/api/recipients", () => ({
 
 import { UsernameInput } from "./username-input";
 
-function TestInput({ error }: { error?: string }) {
+function TestInput({ error, hint = "Alice Example" }: { error?: string; hint?: string }) {
   const [value, setValue] = useState("");
   return (
     <UsernameInput
       id="username"
       value={value}
-      hint={() => "Alice Example"}
+      hint={() => hint}
       onChange={setValue}
       onBlur={vi.fn()}
       error={error}
@@ -55,7 +55,16 @@ describe("UsernameInput", () => {
         "alice-example",
       ),
     );
-    expect(suggest).toHaveBeenCalledWith("Alice Example");
+    expect(suggest).toHaveBeenCalledWith("alice-example");
+  });
+
+  it("asks for a lowercase, dashed name whatever the spacing of the hint", async () => {
+    suggest.mockResolvedValue("mary-jane-o'neil");
+    render(<TestInput hint={"  Mary  Jane\tO'Neil "} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Suggest username" }));
+
+    await waitFor(() => expect(suggest).toHaveBeenCalledWith("mary-jane-o'neil"));
   });
 
   it("does not overwrite text entered while a suggestion is pending", async () => {

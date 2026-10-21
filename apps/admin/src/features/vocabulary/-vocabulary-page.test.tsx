@@ -6,6 +6,9 @@ const mocks = vi.hoisted(() => ({
   getVocabulary: vi.fn(),
   deleteTag: vi.fn(),
   deleteUnit: vi.fn(),
+  createUnitOfAccount: vi.fn(),
+  renameUnitOfAccount: vi.fn(),
+  deleteUnitOfAccount: vi.fn(),
   renameValue: vi.fn(),
   success: vi.fn(),
 }));
@@ -16,6 +19,9 @@ vi.mock("#/lib/api", () => ({
       getVocabulary: mocks.getVocabulary,
       deleteTag: mocks.deleteTag,
       deleteUnit: mocks.deleteUnit,
+      createUnitOfAccount: mocks.createUnitOfAccount,
+      renameUnitOfAccount: mocks.renameUnitOfAccount,
+      deleteUnitOfAccount: mocks.deleteUnitOfAccount,
       renameValue: mocks.renameValue,
     },
   },
@@ -44,6 +50,20 @@ function unit(overrides: Record<string, unknown> = {}) {
   return { value: "Produce Crate", isCustom: true, offerings: 4, total: 4, ...overrides };
 }
 
+function unitOfAccount(overrides: Record<string, unknown> = {}) {
+  return {
+    value: "Hours",
+    isCustom: true,
+    profiles: 2,
+    vouchers: 1,
+    pools: 0,
+    voucherDeployments: 0,
+    poolDeployments: 0,
+    total: 3,
+    ...overrides,
+  };
+}
+
 let queryClient: QueryClient;
 
 function renderPage() {
@@ -55,15 +75,100 @@ function renderPage() {
   );
 }
 
+function sectionToggle(title: string) {
+  return screen.getByRole("button", { name: title });
+}
+
+function sectionContent(title: string) {
+  const toggle = sectionToggle(title);
+  const contentId = toggle.getAttribute("aria-controls");
+  expect(contentId).toBeTruthy();
+  return document.getElementById(contentId!) as HTMLDivElement;
+}
+
+function expandSection(title: string) {
+  const toggle = sectionToggle(title);
+  if (toggle.getAttribute("aria-expanded") === "false") fireEvent.click(toggle);
+}
+
 beforeEach(() => {
-  mocks.getVocabulary.mockReset().mockResolvedValue({ tags: [tag()], units: [unit()] });
+  mocks.getVocabulary.mockReset().mockResolvedValue({
+    tags: [tag()],
+    units: [unit()],
+    unitsOfAccount: [unitOfAccount()],
+  });
   mocks.deleteTag.mockReset().mockResolvedValue(tag());
   mocks.deleteUnit.mockReset().mockResolvedValue(unit());
+  mocks.createUnitOfAccount.mockReset().mockResolvedValue("Community Credits");
+  mocks.renameUnitOfAccount.mockReset().mockResolvedValue(undefined);
+  mocks.deleteUnitOfAccount.mockReset().mockResolvedValue(unitOfAccount());
   mocks.renameValue.mockReset().mockResolvedValue(undefined);
   mocks.success.mockReset();
 });
 
 describe("the vocabulary tables", () => {
+  it("orders the collapsible sections and gives wide tables the full grid width", async () => {
+    renderPage();
+    await screen.findByText("Hours");
+
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual([
+      "Custom Units of Account",
+      "Custom offering units",
+      "Custom tags",
+      "Default tags",
+      "Default offering units",
+      "Default Units of Account",
+    ]);
+    expect(sectionToggle("Custom Units of Account").closest("section")?.className).toContain(
+      "xl:col-span-2",
+    );
+    expect(sectionToggle("Custom offering units").closest("section")?.className).not.toContain(
+      "xl:col-span-2",
+    );
+    expect(sectionToggle("Default Units of Account").closest("section")?.className).toContain(
+      "xl:col-span-2",
+    );
+  });
+
+  it("opens custom sections, collapses defaults, and exposes native keyboard buttons", async () => {
+    renderPage();
+    await screen.findByText("Hours");
+
+    for (const title of ["Custom Units of Account", "Custom offering units", "Custom tags"]) {
+      const toggle = sectionToggle(title);
+      expect(toggle.tagName).toBe("BUTTON");
+      expect(toggle.getAttribute("type")).toBe("button");
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+      expect(sectionContent(title).hidden).toBe(false);
+    }
+    for (const title of ["Default tags", "Default offering units", "Default Units of Account"]) {
+      expect(sectionToggle(title).getAttribute("aria-expanded")).toBe("false");
+      expect(sectionContent(title).hidden).toBe(true);
+    }
+
+    fireEvent.click(sectionToggle("Default tags"));
+    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("true");
+    expect(sectionContent("Default tags").hidden).toBe(false);
+    fireEvent.click(sectionToggle("Default tags"));
+    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("false");
+    expect(sectionContent("Default tags").hidden).toBe(true);
+  });
+
+  it("preserves section choices when vocabulary data refreshes", async () => {
+    renderPage();
+    await screen.findByText("Hours");
+
+    fireEvent.click(sectionToggle("Custom tags"));
+    fireEvent.click(sectionToggle("Default tags"));
+    await queryClient.invalidateQueries({ queryKey: ["clc"] });
+    await waitFor(() => expect(mocks.getVocabulary).toHaveBeenCalledTimes(2));
+
+    expect(sectionToggle("Custom tags").getAttribute("aria-expanded")).toBe("false");
+    expect(sectionToggle("Default tags").getAttribute("aria-expanded")).toBe("true");
+  });
+
   it("lists custom tags and units in their own sections", async () => {
     renderPage();
 
@@ -82,8 +187,36 @@ describe("the vocabulary tables", () => {
     expect(screen.getByText("4")).toBeTruthy();
   });
 
+  it("shows custom unit-of-account usage and blocks deletion while referenced", async () => {
+    renderPage();
+    const section = within(
+      (await screen.findByText("Custom Units of Account")).closest("section")!,
+    );
+
+    expect(section.getByText("Hours")).toBeTruthy();
+    expect(section.getByText("2")).toBeTruthy();
+    const remove = section.getByRole("button", { name: "Delete Hours" }) as HTMLButtonElement;
+    expect(remove.disabled).toBe(true);
+    expect(remove.title).toContain("Referenced 3 times");
+  });
+
+  it("adds a normalized custom unit of account and refreshes the vocabulary", async () => {
+    renderPage();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    fireEvent.change(await screen.findByRole("textbox", { name: "New unit of account" }), {
+      target: { value: "  Community   Credits  " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+
+    await waitFor(() =>
+      expect(mocks.createUnitOfAccount).toHaveBeenCalledWith("Community Credits"),
+    );
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc"] }));
+    expect(mocks.success).toHaveBeenCalledWith("Unit of account added.");
+  });
+
   it("says so when nothing has been added", async () => {
-    mocks.getVocabulary.mockResolvedValue({ tags: [], units: [] });
+    mocks.getVocabulary.mockResolvedValue({ tags: [], units: [], unitsOfAccount: [] });
     renderPage();
 
     expect(await screen.findByText("No custom tags")).toBeTruthy();
@@ -104,11 +237,19 @@ describe("the default vocabulary", () => {
     mocks.getVocabulary.mockResolvedValue({
       tags: [tag(), tag({ value: "Agriculture", isCustom: false, vouchers: 5, total: 5 })],
       units: [unit(), unit({ value: "kg", isCustom: false, offerings: 7, total: 7 })],
+      unitsOfAccount: [
+        unitOfAccount(),
+        unitOfAccount({ value: "KES", isCustom: false, profiles: 4, total: 4 }),
+      ],
     });
   });
 
   it("lists the shipped values apart from the custom ones", async () => {
     renderPage();
+    await screen.findByText("Hours");
+    expandSection("Default tags");
+    expandSection("Default offering units");
+    expandSection("Default Units of Account");
     const defaults = within((await screen.findByText("Default tags")).closest("section")!);
     expect(defaults.getByText("Agriculture")).toBeTruthy();
     expect(defaults.queryByText("Urban Farming")).toBeNull();
@@ -117,12 +258,19 @@ describe("the default vocabulary", () => {
     expect(
       within(screen.getByText("Default offering units").closest("section")!).getByText("kg"),
     ).toBeTruthy();
+    const uoaDefaults = within(screen.getByText("Default Units of Account").closest("section")!);
+    expect(uoaDefaults.getByText("KES")).toBeTruthy();
+    expect(uoaDefaults.queryByRole("button", { name: "Edit KES" })).toBeNull();
+    expect(uoaDefaults.queryByRole("button", { name: "Delete KES" })).toBeNull();
   });
 
   // A default tag is renamed to fit the deployment but never deleted; a default
   // unit is an app translation key and is neither.
   it("offers a rename, and no delete, on a default tag only", async () => {
     renderPage();
+    await screen.findByText("Hours");
+    expandSection("Default tags");
+    expandSection("Default offering units");
     expect(await screen.findByRole("button", { name: "Edit Agriculture" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Delete Agriculture" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Edit kg" })).toBeNull();
@@ -131,6 +279,8 @@ describe("the default vocabulary", () => {
 
   it("renames a default tag through the tag endpoint", async () => {
     renderPage();
+    await screen.findByText("Hours");
+    expandSection("Default tags");
     fireEvent.click(await screen.findByRole("button", { name: "Edit Agriculture" }));
     fireEvent.change(screen.getByRole("textbox", { name: "New tag" }), {
       target: { value: "Farming" },
@@ -160,13 +310,14 @@ describe("renaming a value", () => {
       mocks.getVocabulary.mockResolvedValue({
         tags: [tag({ value: kind === "tag" ? replacement : "Urban Farming" })],
         units: [unit({ value: kind === "unit" ? replacement : "Produce Crate" })],
+        unitsOfAccount: [unitOfAccount()],
       });
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
       await waitFor(() => expect(mocks.renameValue).toHaveBeenCalledWith(kind, value, replacement));
       await waitFor(() => expect(mocks.success).toHaveBeenCalledWith(message));
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc"] });
       expect(await screen.findByRole("button", { name: `Edit ${replacement}` })).toBeTruthy();
-      await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
       expect(mocks.deleteTag).not.toHaveBeenCalled();
       expect(mocks.deleteUnit).not.toHaveBeenCalled();
     },
@@ -177,10 +328,24 @@ describe("renaming a value", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "Discard this" } });
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(mocks.renameValue).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Edit Urban Farming" }));
     expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("Urban Farming");
+  });
+
+  it("renames a custom unit of account through its dedicated endpoint", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Hours" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "New unitOfAccount" }), {
+      target: { value: "Community Hours" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(mocks.renameUnitOfAccount).toHaveBeenCalledWith("Hours", "Community Hours"),
+    );
+    expect(mocks.success).toHaveBeenCalledWith("Unit of account renamed.");
   });
 
   // Regression: the editor used to live inside a table cell, which the table
@@ -189,6 +354,7 @@ describe("renaming a value", () => {
     mocks.getVocabulary.mockResolvedValue({
       tags: [tag({ value: "Apple" }), tag({ value: "Barbequeue" })],
       units: [],
+      unitsOfAccount: [unitOfAccount()],
     });
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Edit Barbequeue" }));
@@ -196,7 +362,11 @@ describe("renaming a value", () => {
       target: { value: "BBQ" },
     });
     // Another operator removed the row above it.
-    mocks.getVocabulary.mockResolvedValue({ tags: [tag({ value: "Barbequeue" })], units: [] });
+    mocks.getVocabulary.mockResolvedValue({
+      tags: [tag({ value: "Barbequeue" })],
+      units: [],
+      unitsOfAccount: [unitOfAccount()],
+    });
     await queryClient.invalidateQueries({ queryKey: ["clc"] });
     await waitFor(() => expect(screen.queryByText("Apple")).toBeNull());
 
@@ -255,7 +425,7 @@ describe("renaming a value", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await screen.findByRole("alert");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Edit Produce Crate" }));
     expect(screen.getByRole("textbox", { name: "New unit" })).toBeTruthy();
     expect(screen.queryByRole("alert")).toBeNull();
@@ -311,6 +481,7 @@ describe("deleting a value", () => {
     mocks.getVocabulary.mockResolvedValue({
       tags: [tag({ vouchers: 0, posts: 0, total: 0 })],
       units: [],
+      unitsOfAccount: [unitOfAccount()],
     });
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Urban Farming" }));
@@ -350,6 +521,29 @@ describe("deleting a value", () => {
     await waitFor(() => expect(mocks.deleteUnit).toHaveBeenCalledWith("Produce Crate"));
     await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("Unit deleted."));
     expect(mocks.deleteTag).not.toHaveBeenCalled();
+  });
+
+  it("deletes an unused custom unit of account through its dedicated endpoint", async () => {
+    mocks.getVocabulary.mockResolvedValue({
+      tags: [],
+      units: [],
+      unitsOfAccount: [
+        unitOfAccount({
+          profiles: 0,
+          vouchers: 0,
+          pools: 0,
+          voucherDeployments: 0,
+          poolDeployments: 0,
+          total: 0,
+        }),
+      ],
+    });
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Delete Hours" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete everywhere" }));
+
+    await waitFor(() => expect(mocks.deleteUnitOfAccount).toHaveBeenCalledWith("Hours"));
+    expect(mocks.success).toHaveBeenCalledWith("Unit of account deleted.");
   });
 
   // A built-in refusal arrives as a 409. The dialog stays open with the reason,

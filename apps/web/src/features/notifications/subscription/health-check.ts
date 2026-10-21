@@ -1,6 +1,5 @@
 import {
   fetchVapidPublicKey,
-  linkNotificationWallet,
   type NotificationClientOptions,
   type NotificationPushSubscriptionJSON,
   registerNotificationDevice,
@@ -45,7 +44,6 @@ type NotificationHealthCheckDependencies = {
   fetchVapid: typeof fetchVapidPublicKey;
   getCurrentSubscription: () => Promise<NotificationPushSubscriptionJSON | null>;
   isStorageAvailable: () => boolean;
-  linkWallet: typeof linkNotificationWallet;
   readConfig: () => Promise<NotificationConfigRecord | null>;
   readDeviceId: () => Promise<string | null>;
   recordDiagnostic: typeof recordSubscriptionDiagnostic;
@@ -59,6 +57,7 @@ export async function runNotificationSubscriptionHealthCheck(
   dependencies: NotificationHealthCheckDependencies = createDependencies(),
 ): Promise<NotificationHealthCheckResult> {
   const capability = dependencies.detectCapability();
+  if (!options.currentWalletAddress) return { status: "skipped" };
   if (!dependencies.isStorageAvailable()) {
     return { status: "skipped" };
   }
@@ -92,6 +91,8 @@ export async function runNotificationSubscriptionHealthCheck(
       : currentSubscription;
     const subscriptionHash = await hashPushSubscription(subscription, vapid.keyVersion);
     const registrationChanged =
+      !config.registrationId ||
+      config.identityWallet !== options.currentWalletAddress?.toLowerCase() ||
       shouldReplaceSubscription ||
       config.subscriptionHash !== subscriptionHash ||
       config.permissionState !== capability.permission ||
@@ -99,6 +100,12 @@ export async function runNotificationSubscriptionHealthCheck(
       (options.appVersion !== undefined && config.appVersion !== options.appVersion) ||
       config.serviceWorkerVersion !== serviceWorkerVersion;
 
+    const client = { ...options.client, identityEpoch: config.identityEpoch };
+    let registration = {
+      registrationId: config.registrationId,
+      userId: config.userId,
+      generation: config.generation,
+    };
     let syncCursor = config.syncCursor;
     if (registrationChanged) {
       const response = await dependencies.registerDevice(
@@ -112,31 +119,30 @@ export async function runNotificationSubscriptionHealthCheck(
           serviceWorkerVersion,
           vapidKeyVersion: vapid.keyVersion,
         },
-        options.client,
+        client,
       );
-      syncCursor = response.inboxSyncCursor;
-    }
-
-    if (options.currentWalletAddress) {
-      await dependencies.linkWallet(
-        {
-          deviceId,
-          walletAddress: options.currentWalletAddress,
-        },
-        options.client,
-      );
+      syncCursor ??= response.inboxSyncCursor;
+      registration = {
+        registrationId: response.registrationId,
+        userId: response.userId,
+        generation: response.generation,
+      };
     }
 
     await Promise.all([
-      dependencies.updateConfig({
-        ...baseConfigPatch,
-        appVersion: options.appVersion ?? config.appVersion,
-        serviceWorkerVersion,
-        subscriptionHash,
-        syncCursor,
-        vapidKeyVersion: vapid.keyVersion,
-        vapidPublicKey: vapid.publicKey,
-      }),
+      dependencies.updateConfig(
+        {
+          ...baseConfigPatch,
+          ...registration,
+          appVersion: options.appVersion ?? config.appVersion,
+          serviceWorkerVersion,
+          subscriptionHash,
+          syncCursor,
+          vapidKeyVersion: vapid.keyVersion,
+          vapidPublicKey: vapid.publicKey,
+        },
+        config.identityEpoch,
+      ),
       dependencies.recordDiagnostic({
         endpoint: subscription.endpoint,
         status: registrationChanged ? "refreshed" : "active",
@@ -165,7 +171,6 @@ function createDependencies(): NotificationHealthCheckDependencies {
     fetchVapid: fetchVapidPublicKey,
     getCurrentSubscription: readCurrentPushSubscription,
     isStorageAvailable: isNotificationStorageAvailable,
-    linkWallet: linkNotificationWallet,
     readConfig: readNotificationConfig,
     readDeviceId: readNotificationDeviceId,
     recordDiagnostic: recordSubscriptionDiagnostic,
@@ -176,15 +181,16 @@ function createDependencies(): NotificationHealthCheckDependencies {
 }
 
 async function readCurrentPushSubscription(): Promise<NotificationPushSubscriptionJSON | null> {
-  const registration = await navigator.serviceWorker.ready;
-  const subscription = await registration.pushManager.getSubscription();
+  const registration = await navigator.serviceWorker.getRegistration();
+  const subscription = await registration?.pushManager.getSubscription();
   return subscription ? serializePushSubscription(subscription) : null;
 }
 
 async function replaceCurrentPushSubscription(
   publicKey: string,
 ): Promise<NotificationPushSubscriptionJSON> {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration) throw new Error("Notification service worker is unavailable.");
   const currentSubscription = await registration.pushManager.getSubscription();
   await currentSubscription?.unsubscribe();
   return subscribeWithVapidPublicKey(registration, publicKey);

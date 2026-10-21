@@ -1,3 +1,6 @@
+vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
+  useAssetOwner: (_address: string, owner: string | null) => owner,
+}));
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
 import type { ReactNode } from "react";
@@ -73,6 +76,14 @@ vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({
     data: ["Agriculture", "Food"],
     isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}));
+
+vi.mock("#/hooks/use-vocabulary", () => ({
+  useUnitsOfAccount: () => ({
+    data: [],
     isError: false,
     refetch: vi.fn(),
   }),
@@ -399,6 +410,18 @@ describe("PoolDetailPage pool details editor", () => {
     await waitFor(() =>
       expect(mocks.updateProfile).toHaveBeenCalledWith({ ...savedProfile, unitOfAccount: "TZS" }),
     );
+  });
+
+  it("keeps an existing oracle pool's unit of account read-only", async () => {
+    mocks.poolResult.data = pool({ quoterType: "oracle", unitOfAccount: "KES" });
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    expect((within(dialog).getByLabelText("Priced in") as HTMLInputElement).disabled).toBe(true);
+    expect(
+      within(dialog).getByText("The unit of account is fixed by this pool's deployed oracle."),
+    ).toBeTruthy();
   });
 });
 

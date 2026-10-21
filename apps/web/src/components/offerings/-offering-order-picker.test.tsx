@@ -20,7 +20,6 @@ function offering(id: string, name: string, pricePerUnit: string | null): Offeri
     voucherDecimals: 6,
     sellerAddress: VOUCHER,
     name,
-    commodityType: "GOOD",
     description: "",
     quantity: "1",
     unit: "item",

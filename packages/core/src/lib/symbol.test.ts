@@ -15,7 +15,8 @@ describe("symbolStemFromName", () => {
     ["Kivukoni", "KVKN"],
     ["Kawangware Community Pool", "KWNG"],
     ["Ward 3 Voucher", "WRD3"],
-    ["Ko Voucher", "KO"],
+    ["Ko Voucher", "KOX"],
+    ["A", "AXX"],
     ["kilifi harvest", "KLFH"],
     ["Café Pool", "CFAE"],
     ["St. Mary's Shop Voucher", "STMS"],
@@ -36,8 +37,9 @@ describe("candidatesFromName", () => {
     expect(candidates).toHaveLength(99);
   });
 
-  it("skips a bare stem too short for the schema", () => {
-    expect(candidatesFromName("Ko Voucher").slice(0, 2)).toEqual(["KO1", "KO2"]);
+  it("pads a short name so the bare stem is at least three characters", () => {
+    expect(candidatesFromName("Ko Voucher").slice(0, 2)).toEqual(["KOX", "KOX2"]);
+    expect(candidatesFromName("A")[0]).toBe("AXX");
   });
 
   it("is empty when the name has no usable characters", () => {

@@ -7,7 +7,8 @@ import {
   syncNotificationInbox,
 } from "../api/notification-client";
 import {
-  deleteNotificationInboxMessages,
+  applyNotificationInboxPage,
+  isNotificationIdentityCurrent,
   isNotificationStorageAvailable,
   listQueuedNotificationAcks,
   type NotificationAckQueueEntry,
@@ -15,9 +16,7 @@ import {
   readNotificationConfig,
   readNotificationDeviceId,
   removeQueuedNotificationAck,
-  saveNotificationInboxMessage,
   updateNotificationAckAttempt,
-  updateNotificationConfig,
 } from "../storage/notification-db";
 import { runNotificationSubscriptionHealthCheck } from "../subscription/health-check";
 
@@ -25,6 +24,7 @@ const MAX_ACK_ATTEMPTS = 5;
 const MAX_ACK_AGE_MS = 7 * 24 * 60 * 60 * 1_000;
 
 const deliveryAckSchema = z.object({
+  registrationId: z.string().min(1),
   deviceId: z.string().min(1),
   notificationId: z.string().min(1),
   platform: z.string().optional(),
@@ -36,6 +36,7 @@ const deliveryAckSchema = z.object({
 
 const clickAckSchema = z.object({
   actionId: z.string().optional(),
+  registrationId: z.string().min(1),
   deviceId: z.string().min(1),
   notificationId: z.string().min(1),
   targetUrl: z.string().optional(),
@@ -77,11 +78,6 @@ export async function runNotificationRecovery(
     currentWalletAddress: options.currentWalletAddress,
   }).catch(() => undefined);
 
-  // Acks are device-scoped and always safe to drain. The inbox sync is not:
-  // with no wallet to scope it to it pulls whatever the device is still linked
-  // to and writes it into the store, which on a sign-out is the outgoing user's
-  // messages landing back in an inbox that was just emptied. It also advances
-  // `syncCursor`, so the next signed-in user's backlog would be skipped.
   await Promise.allSettled([
     flushQueuedNotificationAcks({ client: options.client }),
     ...(options.currentWalletAddress ? [syncNotificationInboxState(options)] : []),
@@ -103,14 +99,22 @@ export async function flushQueuedNotificationAcks({
   };
 
   for (const entry of entries) {
-    if (shouldPruneAck(entry, now)) {
+    const config = await readNotificationConfig();
+    if (
+      shouldPruneAck(entry, now) ||
+      !entry.identityEpoch ||
+      config?.identityEpoch !== entry.identityEpoch ||
+      !entry.registrationId ||
+      config.registrationId !== entry.registrationId ||
+      config.userId !== entry.userId
+    ) {
       await removeQueuedNotificationAck(entry.ackId);
       result.pruned += 1;
       continue;
     }
 
     try {
-      await sendQueuedAck(entry, client);
+      await sendQueuedAck(entry, { ...client, identityEpoch: entry.identityEpoch });
       await removeQueuedNotificationAck(entry.ackId);
       result.sent += 1;
     } catch (error) {
@@ -136,27 +140,33 @@ export async function syncNotificationInboxState(
   }
 
   const config = await readNotificationConfig();
-  const response = await syncNotificationInbox(
-    {
-      deviceId,
-      lastSyncCursor: config?.syncCursor,
-      linkedWalletAddresses: options.linkedWalletAddresses,
-    },
-    options.client,
-  );
-
-  for (const message of response.messages) {
-    await saveNotificationInboxMessage(toLocalInboxMessage(message));
+  if (!config?.identityEpoch || !config.registrationId || !config.userId)
+    return { status: "skipped" };
+  const client = { ...options.client, identityEpoch: config.identityEpoch };
+  let cursor = config.syncCursor;
+  let saved = 0;
+  let deleted = 0;
+  for (;;) {
+    if (!(await isNotificationIdentityCurrent(config.identityEpoch))) return { status: "skipped" };
+    const response = await syncNotificationInbox(
+      { deviceId, registrationId: config.registrationId, lastSyncCursor: cursor },
+      client,
+    );
+    const committed = await applyNotificationInboxPage(config.identityEpoch, cursor, {
+      messages: response.messages.map(toLocalInboxMessage),
+      deletions: response.deletions,
+      nextSyncCursor: response.nextSyncCursor,
+      resetRequired: response.resetRequired,
+    });
+    if (!committed) return { status: "skipped" };
+    saved += response.messages.length;
+    deleted += response.deletions.length;
+    if (!response.hasMore)
+      return { deleted, saved, status: "synced", syncCursor: response.nextSyncCursor };
+    if (response.nextSyncCursor === cursor)
+      throw new Error("Notification sync cursor did not advance.");
+    cursor = response.nextSyncCursor;
   }
-  await deleteNotificationInboxMessages(response.deletedIds);
-  await updateNotificationConfig({ syncCursor: response.nextSyncCursor });
-
-  return {
-    deleted: response.deletedIds.length,
-    saved: response.messages.length,
-    status: "synced",
-    syncCursor: response.nextSyncCursor,
-  };
 }
 
 async function sendQueuedAck(
@@ -165,11 +175,14 @@ async function sendQueuedAck(
 ): Promise<void> {
   if (entry.kind === "delivery") {
     const request = deliveryAckSchema.parse(
-      entry.payload ?? {
-        deviceId: entry.deviceId,
-        notificationId: entry.notificationId,
-        walletAddressTarget: entry.walletAddress,
-      },
+      entry.payload
+        ? { ...Object(entry.payload), registrationId: entry.registrationId }
+        : {
+            registrationId: entry.registrationId,
+            deviceId: entry.deviceId,
+            notificationId: entry.notificationId,
+            walletAddressTarget: entry.walletAddress,
+          },
     );
     const response = await sendNotificationDeliveryAck(request, client);
     if (!response.accepted) {
@@ -179,12 +192,15 @@ async function sendQueuedAck(
   }
 
   const request = clickAckSchema.parse(
-    entry.payload ?? {
-      actionId: entry.actionId,
-      deviceId: entry.deviceId,
-      notificationId: entry.notificationId,
-      targetUrl: entry.targetUrl,
-    },
+    entry.payload
+      ? { ...Object(entry.payload), registrationId: entry.registrationId }
+      : {
+          actionId: entry.actionId,
+          registrationId: entry.registrationId,
+          deviceId: entry.deviceId,
+          notificationId: entry.notificationId,
+          targetUrl: entry.targetUrl,
+        },
   );
   const response = await sendNotificationClickAck(request, client);
   if (!response.accepted) {
@@ -211,7 +227,8 @@ function toLocalInboxMessage(message: BackendInboxMessage): NotificationInboxMes
     pushStatusCode: _pushStatusCode,
     receivedAt,
     recordId: _recordId,
-    revision: _revision,
+    revision,
+    readAt,
     sentAt,
     shownAt,
     ...payload
@@ -221,7 +238,9 @@ function toLocalInboxMessage(message: BackendInboxMessage): NotificationInboxMes
     ...payload,
     actionedAt: actionId && clickedAt ? clickedAt : undefined,
     rawPayload: message,
-    readAt: clickedAt,
+    readAt: readAt ?? clickedAt,
+    shownAt,
+    revision,
     receivedAt: receivedAt ?? shownAt ?? sentAt,
   };
 }

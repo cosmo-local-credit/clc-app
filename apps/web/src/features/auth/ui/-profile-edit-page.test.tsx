@@ -177,7 +177,7 @@ describe("ProfileEditPage", () => {
 
     expect(await screen.findByDisplayValue("Alice")).toBeTruthy();
     expect(screen.getByDisplayValue("alice@example.com")).toBeTruthy();
-    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred unit of account/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
     const phone = screen.getByLabelText(/phone number/i) as HTMLInputElement;
@@ -229,7 +229,7 @@ describe("ProfileEditPage", () => {
     expect(within(section).queryByRole("button", { name: /copy wallet username/i })).toBeNull();
   });
 
-  it("groups the fields into three panels: about you, contact, then location and currency", async () => {
+  it("groups the fields into three panels: about you, contact, then location and unit", async () => {
     mockBackend();
 
     renderWithQueryClient(<ProfileEditPage />);
@@ -247,7 +247,7 @@ describe("ProfileEditPage", () => {
     expect(contact?.getByLabelText(/^email$/i)).toBeTruthy();
     expect(contact?.getByLabelText(/phone number/i)).toBeTruthy();
     expect(place?.getByTestId("location-value")).toBeTruthy();
-    expect(place?.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    expect(place?.getByRole("combobox", { name: /preferred unit of account/i })).toBeTruthy();
   });
 
   it("keeps Save changes disabled until something changes", async () => {
@@ -490,6 +490,24 @@ describe("ProfileEditPage", () => {
       preferredCurrency: "TZS",
       bio: "Tanzanian grower",
       website: "https://grow.example",
+    });
+  });
+
+  it("preserves a saved custom unit instead of replacing it with the country default", async () => {
+    const fetchMock = mockBackend({ preferredCurrency: "Community Credits", country: "KE" });
+    renderWithQueryClient(<ProfileEditPage />);
+
+    expect(
+      (await screen.findByRole("combobox", {
+        name: /preferred unit of account/i,
+      })) as HTMLInputElement,
+    ).toHaveProperty("value", "Community Credits");
+    fireEvent.change(screen.getByLabelText(/^name$/i), { target: { value: "Alice Cooper" } });
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
+    expect(JSON.parse(postBody(fetchMock))).toMatchObject({
+      preferredCurrency: "Community Credits",
     });
   });
 

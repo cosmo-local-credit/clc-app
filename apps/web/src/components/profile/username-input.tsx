@@ -60,7 +60,10 @@ export function UsernameInput({
           setBusy(true);
           setSuggestionError(null);
           try {
-            const suggestion = await recipientsClient.suggest(hint());
+            // A handle, not the display name: lowercase, words joined by dashes.
+            const suggestion = await recipientsClient.suggest(
+              hint().trim().toLowerCase().split(/\s+/).join("-"),
+            );
             if (currentValue.current === before) onChange(suggestion);
           } catch {
             setSuggestionError(t`Couldn't suggest a username. Please try again.`);

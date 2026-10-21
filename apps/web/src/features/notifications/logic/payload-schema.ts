@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { normalizeNotificationTargetUrl } from "./target-url";
 
-const notificationKinds = ["voucher.received", "swap.completed", "offramp.completed"] as const;
+const notificationKinds = ["voucher.received", "offramp.completed"] as const;
 
 export const notificationKindSchema = z.enum(notificationKinds);
 
@@ -18,7 +18,6 @@ type NotificationSignOutPolicy = "retain-until-explicit-disable";
 export type NotificationKindPolicy = {
   interactionMode: NotificationInteractionMode;
   priority: NotificationPriority;
-  renotify: boolean;
   settingsScope: NotificationSettingsScope;
   signOutPolicy: NotificationSignOutPolicy;
 };
@@ -33,17 +32,10 @@ const notificationKindPolicies = {
   "voucher.received": {
     ...sharedV1Policy,
     priority: "high",
-    renotify: true,
-  },
-  "swap.completed": {
-    ...sharedV1Policy,
-    priority: "normal",
-    renotify: true,
   },
   "offramp.completed": {
     ...sharedV1Policy,
     priority: "high",
-    renotify: true,
   },
 } satisfies Record<NotificationKind, NotificationKindPolicy>;
 
@@ -59,6 +51,9 @@ const notificationActionSchema = z.object({
 export type NotificationAction = z.infer<typeof notificationActionSchema>;
 
 export type NotificationPayload = {
+  revision?: number;
+  registrationId?: string;
+  deliveryExpiresAt?: string;
   actions?: NotificationAction[];
   body: string;
   createdAt: string;
@@ -67,7 +62,6 @@ export type NotificationPayload = {
   notificationId: string;
   offRampReference?: string;
   priority: NotificationPriority;
-  swapId?: string;
   targetUrl: string;
   title: string;
   voucherId?: string;
@@ -99,7 +93,6 @@ const notificationOptionalMetadataSchema = z.object({
   actions: z.array(notificationActionSchema).max(2).optional(),
   expiresAt: optionalTrimmedString().pipe(isoTimestampSchema.optional()),
   offRampReference: optionalIdSchema,
-  swapId: optionalIdSchema,
   voucherId: optionalIdSchema,
 });
 
@@ -135,6 +128,9 @@ export function parseNotificationPayload(
 function createRequiredNotificationPayloadSchema(appOrigin?: string) {
   return z
     .object({
+      revision: z.number().int().nonnegative().optional(),
+      registrationId: z.string().optional(),
+      deliveryExpiresAt: isoTimestampSchema.optional(),
       body: trimmedString().min(1).max(240),
       createdAt: isoTimestampSchema,
       kind: notificationKindSchema,

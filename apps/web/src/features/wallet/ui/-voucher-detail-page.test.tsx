@@ -1,3 +1,6 @@
+vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
+  useAssetOwner: (_address: string, owner: string | null) => owner,
+}));
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -86,7 +89,6 @@ const mocks = vi.hoisted(() => ({
               voucherSymbol: string | null;
               voucherDecimals: number | null;
               name: string;
-              commodityType: "GOOD" | "SERVICE" | null;
               description: string;
               quantity: string;
               unit: string | null;
@@ -181,6 +183,11 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
 }));
 
 vi.mock("#/hooks/use-vocabulary", () => ({
+  useUnitsOfAccount: () => ({
+    data: [],
+    isError: false,
+    refetch: vi.fn(),
+  }),
   useOfferingUnits: () => ({
     data: [
       "kg",
@@ -475,7 +482,6 @@ beforeEach(() => {
               voucherDecimals: 2,
               sellerAddress: "0x1111111111111111111111111111111111111111",
               name: "Vegetables",
-              commodityType: "GOOD",
               description: "Fresh produce",
               quantity: "5",
               unit: "kg",
@@ -499,7 +505,6 @@ beforeEach(() => {
               voucherDecimals: 2,
               sellerAddress: "0x1111111111111111111111111111111111111111",
               name: "Farm training",
-              commodityType: "SERVICE",
               description: "",
               quantity: "1000000000",
               unit: null,
@@ -893,13 +898,13 @@ describe("VoucherDetailPage", () => {
     expect(within(actions).queryByRole("button", { name: "Redeem" })).toBeNull();
   });
 
-  it("skips the offerings request when the voucher kind proves the tab is empty", () => {
+  it("loads offerings for a generic voucher instead of inferring an empty list", () => {
     mocks.detailResult.data = detail({ kind: "voucher" });
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
-    expect(screen.getByText("No offerings yet")).toBeTruthy();
-    expect(mocks.offeringAddress).toBeUndefined();
+    expect(screen.getByText("Vegetables")).toBeTruthy();
+    expect(mocks.offeringAddress).toBe(ADDRESS);
   });
 
   it("offers a working retry when offerings fail to load", () => {
@@ -1179,6 +1184,8 @@ describe("VoucherOfferingsPanel ownership", () => {
   beforeEach(() => {
     mocks.offeringAddress = undefined;
     mocks.managedOfferingAddress = undefined;
+    mocks.createOffering.mockReset();
+    mocks.updateOffering.mockReset();
     mocks.deleteOffering.mockReset();
     mocks.deleteOffering.mockResolvedValue("1");
   });
@@ -1248,7 +1255,7 @@ describe("VoucherOfferingsPanel ownership", () => {
 
   // The owner needs somewhere to add the first offering, so the shortcut that is
   // sound for a visitor must not suppress their query.
-  it("still queries for an owner when the market marker says the tab is empty", () => {
+  it("loads managed offerings for an owner of a generic voucher", () => {
     mocks.detailResult.data = detail({
       ownerAddress: OWNER as MarketVoucherDetail["ownerAddress"],
       kind: "voucher",
@@ -1291,8 +1298,8 @@ describe("VoucherOfferingsPanel ownership", () => {
     });
 
     expect(screen.getByRole("heading", { name: "Add offering" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "A good", pressed: false })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "A service", pressed: false })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "A good" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "A service" })).toBeNull();
     // Price and unit share a line under one label, so the unit control carries
     // its own name.
     expect(screen.getByLabelText("Price per unit in KSH")).toBeTruthy();
@@ -1313,6 +1320,61 @@ describe("VoucherOfferingsPanel ownership", () => {
     expect(
       document.body.querySelector('img[src="https://cdn.test/profile/avatar.webp"]'),
     ).toBeTruthy();
+  });
+
+  it("publishes without a classification field or default", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+
+    fireEvent.change(screen.getByLabelText("What are you offering?"), {
+      target: { value: "Fresh flour" },
+    });
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "Stone-ground flour" },
+    });
+    fireEvent.change(screen.getByLabelText("Price per unit in KSH"), {
+      target: { value: "120.50" },
+    });
+    fireEvent.focus(screen.getByRole("combobox", { name: "Unit" }));
+    fireEvent.click(screen.getByRole("option", { name: "Kilogram" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Publish offering" }));
+    });
+
+    expect(mocks.createOffering.mock.calls[0]?.[0]).not.toHaveProperty("commodityType");
+    expect(mocks.createOffering).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Fresh flour",
+        unit: "kg",
+        pricePerUnit: "120.50",
+      }),
+    );
+  });
+
+  it("saves edits without a classification field", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getAllByRole("button", { name: "Edit" })[1]!);
+
+    expect(screen.queryByRole("button", { name: "A service" })).toBeNull();
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "Hands-on farm training" },
+    });
+    fireEvent.change(screen.getByLabelText("Price per unit in KSH"), {
+      target: { value: "250" },
+    });
+    fireEvent.focus(screen.getByRole("combobox", { name: "Unit" }));
+    fireEvent.click(screen.getByRole("option", { name: "Hour" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    });
+
+    expect(mocks.updateOffering.mock.calls[0]?.[0].input).not.toHaveProperty("commodityType");
+    expect(mocks.updateOffering).toHaveBeenCalledWith({
+      id: "2",
+      input: expect.objectContaining({ unit: "hour" }),
+    });
   });
 
   it("searches the units instead of listing fifteen chips", async () => {

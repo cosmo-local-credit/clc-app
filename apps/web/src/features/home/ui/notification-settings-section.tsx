@@ -1,10 +1,12 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState, type ReactNode } from "react";
-import { RiNotification3Line } from "react-icons/ri";
+import { RiNotification3Line, RiPulseLine, RiVolumeUpLine } from "react-icons/ri";
 
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import { SettingsSheet, SettingsSheetAlert } from "#/components/ui/settings-sheet";
+import { Switch } from "#/components/ui/switch";
+import { useNotificationCues } from "#/features/notifications/state/cue-preferences";
 import {
   enableNotificationSubscription,
   type EnableNotificationSubscriptionResult,
@@ -120,6 +122,43 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
         ) : null}
         {presentation.alert ? <SettingsSheetAlert>{presentation.alert}</SettingsSheetAlert> : null}
       </SettingsSheet>
+      {walletAddress ? <NotificationCueRows /> : null}
+    </>
+  );
+}
+
+/**
+ * The realtime session, and so the cue, runs for every signed-in wallet, with
+ * or without push permission.
+ */
+function NotificationCueRows() {
+  const { t } = useLingui();
+  const sound = useNotificationCues((state) => state.sound);
+  const vibration = useNotificationCues((state) => state.vibration);
+  const setSound = useNotificationCues((state) => state.setSound);
+  const setVibration = useNotificationCues((state) => state.setVibration);
+  const canVibrate = typeof navigator.vibrate === "function";
+
+  useEffect(() => {
+    void useNotificationCues.persist.rehydrate();
+  }, []);
+
+  return (
+    <>
+      <ActionRow
+        icon={<RiVolumeUpLine className="size-4" aria-hidden="true" />}
+        label={t`Sound`}
+        value={<Switch checked={sound} onCheckedChange={setSound} aria-label={t`Sound`} />}
+      />
+      {canVibrate ? (
+        <ActionRow
+          icon={<RiPulseLine className="size-4" aria-hidden="true" />}
+          label={t`Vibration`}
+          value={
+            <Switch checked={vibration} onCheckedChange={setVibration} aria-label={t`Vibration`} />
+          }
+        />
+      ) : null}
     </>
   );
 }

@@ -1,5 +1,10 @@
 import { z } from "zod";
 import {
+  getOrCreateNotificationInstallation,
+  isNotificationStorageAvailable,
+  readNotificationConfig,
+} from "../storage/notification-db";
+import {
   getNotificationKindPolicy,
   type NotificationAction,
   type NotificationKind,
@@ -10,6 +15,8 @@ import {
 import type { NotificationPermissionSnapshot } from "../platform/capability";
 
 export type NotificationClientOptions = {
+  identityEpoch?: string;
+  deviceToken?: string;
   baseUrl?: string;
   fetcher?: typeof fetch;
   signal?: AbortSignal;
@@ -30,6 +37,7 @@ export type VapidPublicKeyResponse = {
 };
 
 export type RegisterNotificationDeviceRequest = {
+  registrationId?: string;
   appVersion?: string;
   currentWalletAddress?: string;
   deviceId: string;
@@ -42,6 +50,9 @@ export type RegisterNotificationDeviceRequest = {
 };
 
 export type RegisterNotificationDeviceResponse = {
+  registrationId: string;
+  userId: string;
+  generation: number;
   canonicalLinkedWalletAddresses: string[];
   deviceId: string;
   inboxSyncCursor: string;
@@ -53,15 +64,25 @@ export type RegisterNotificationDeviceResponse = {
 };
 
 export type LinkNotificationWalletRequest = {
+  registrationId?: string;
   deviceId: string;
   walletAddress: string;
 };
 
 export type LinkNotificationWalletResponse = {
+  userId: string;
+  registrationId: string;
+  generation: number;
   linkedWalletAddresses: string[];
 };
 
+export type UnlinkNotificationWalletResponse = Pick<
+  LinkNotificationWalletResponse,
+  "linkedWalletAddresses"
+>;
+
 export type DisableNotificationDeviceRequest = {
+  registrationId?: string;
   deviceId: string;
   subscriptionEndpoint?: string;
 };
@@ -72,6 +93,7 @@ export type DisableNotificationDeviceResponse = {
 };
 
 export type SendNotificationDeliveryAckRequest = {
+  registrationId?: string;
   deviceId: string;
   notificationId: string;
   platform?: string;
@@ -82,6 +104,7 @@ export type SendNotificationDeliveryAckRequest = {
 };
 
 export type SendNotificationClickAckRequest = {
+  registrationId?: string;
   actionId?: string;
   deviceId: string;
   notificationId: string;
@@ -94,6 +117,7 @@ export type NotificationAckResponse = {
 };
 
 export type SyncNotificationInboxRequest = {
+  registrationId?: string;
   deviceId: string;
   lastSyncCursor?: string;
   linkedWalletAddresses?: string[];
@@ -108,7 +132,6 @@ type BackendNotificationPayload = {
   notificationId: string;
   offRampReference?: string;
   priority: NotificationPriority;
-  swapId?: string;
   targetUrl: string;
   title: string;
   voucherId?: string;
@@ -118,6 +141,8 @@ type BackendNotificationPayload = {
 export type BackendInboxMessage = BackendNotificationPayload & {
   actionId?: string;
   clickedAt?: string;
+  readAt?: string;
+  registrationId?: string;
   deviceId: string;
   pushError?: string;
   pushStatus: string;
@@ -130,6 +155,9 @@ export type BackendInboxMessage = BackendNotificationPayload & {
 };
 
 export type SyncNotificationInboxResponse = {
+  hasMore: boolean;
+  resetRequired: boolean;
+  deletions: Array<{ notificationId: string; revision: number }>;
   deletedIds: string[];
   messages: BackendInboxMessage[];
   nextSyncCursor: string;
@@ -186,6 +214,9 @@ const notificationSettingsSchema = z.object({
 });
 
 const registerNotificationDeviceResponseSchema = z.object({
+  registrationId: z.string().min(1),
+  userId: z.string().min(1),
+  generation: z.number().int().positive(),
   canonicalLinkedWalletAddresses: z.array(z.string()),
   deviceId: z.string().min(1),
   inboxSyncCursor: z.string(),
@@ -195,8 +226,13 @@ const registerNotificationDeviceResponseSchema = z.object({
 });
 
 const linkedWalletsResponseSchema = z.object({
+  userId: z.string().min(1),
+  registrationId: z.string().min(1),
+  generation: z.number().int().positive(),
   linkedWalletAddresses: z.array(z.string()),
 });
+
+const unlinkedWalletsResponseSchema = z.object({ linkedWalletAddresses: z.array(z.string()) });
 
 const disableNotificationDeviceResponseSchema = z.object({
   deviceId: z.string().min(1),
@@ -221,7 +257,6 @@ const backendNotificationPayloadBaseSchema = z.object({
   notificationId: z.string(),
   offRampReference: z.string().optional(),
   priority: notificationPrioritySchema.optional(),
-  swapId: z.string().optional(),
   targetUrl: z.string(),
   title: z.string(),
   voucherId: z.string().optional(),
@@ -232,6 +267,8 @@ const backendInboxMessageSchema = backendNotificationPayloadBaseSchema
   .extend({
     actionId: z.string().optional(),
     clickedAt: z.string().optional(),
+    readAt: z.string().optional(),
+    registrationId: z.string().optional(),
     deviceId: z.string(),
     pushError: z.string().optional(),
     pushStatus: z.string(),
@@ -245,6 +282,11 @@ const backendInboxMessageSchema = backendNotificationPayloadBaseSchema
   .transform(withDefaultPriority);
 
 const syncNotificationInboxResponseSchema = z.object({
+  hasMore: z.boolean(),
+  resetRequired: z.boolean(),
+  deletions: z.array(
+    z.object({ notificationId: z.string(), revision: z.number().int().nonnegative() }),
+  ),
   deletedIds: z.array(z.string()),
   messages: z.array(backendInboxMessageSchema),
   nextSyncCursor: z.string(),
@@ -275,7 +317,7 @@ const devDebugStateResponseSchema = z.object({
   vapidPublicKey: z.string(),
 });
 
-function getNotificationBackendBaseUrl(): string {
+export function getNotificationBackendBaseUrl(): string {
   const webPushBaseUrl = import.meta.env.VITE_WEBPUSH_BASE_URL as string | undefined;
   const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
   const configured = webPushBaseUrl?.trim() || apiUrl?.trim();
@@ -327,10 +369,10 @@ export async function linkNotificationWallet(
 export async function unlinkNotificationWallet(
   request: LinkNotificationWalletRequest,
   options?: NotificationClientOptions,
-): Promise<LinkNotificationWalletResponse> {
+): Promise<UnlinkNotificationWalletResponse> {
   return notificationFetch(
     "/api/notifications/devices/unlink-wallet",
-    linkedWalletsResponseSchema,
+    unlinkedWalletsResponseSchema,
     jsonRequest("POST", request),
     options,
   );
@@ -420,8 +462,36 @@ async function notificationFetch<Schema extends z.ZodType>(
   options: NotificationClientOptions = {},
 ): Promise<z.infer<Schema>> {
   const fetcher = options.fetcher ?? fetch;
+  const protectedRoute = /\/(devices|acks|inbox)\//.test(path);
+  const config = isNotificationStorageAvailable() ? await readNotificationConfig() : null;
+  if (options.identityEpoch !== undefined && config?.identityEpoch !== options.identityEpoch)
+    throw new Error("Notification identity changed.");
+  const headers = new Headers(init.headers);
+  if (protectedRoute) {
+    const token =
+      options.deviceToken ?? (await getOrCreateNotificationInstallation()).installationToken;
+    headers.set("X-Notification-Device-Token", token);
+    if (
+      !path.endsWith("/register") &&
+      !path.endsWith("/link-wallet") &&
+      typeof init.body === "string"
+    ) {
+      const request = JSON.parse(init.body) as Record<string, unknown>;
+      request.registrationId ??= config?.registrationId;
+      if (!request.registrationId) throw new Error("Notification registration is missing.");
+      init = { ...init, body: JSON.stringify(request) };
+    }
+  }
+  // Recheck after the asynchronous installation read: another tab may have signed out.
+  if (
+    options.identityEpoch !== undefined &&
+    (await readNotificationConfig())?.identityEpoch !== options.identityEpoch
+  )
+    throw new Error("Notification identity changed.");
   const response = await fetcher(`${baseUrl(options)}${path}`, {
     ...init,
+    credentials: "include",
+    headers,
     signal: options.signal ?? init.signal,
   });
   const body = await readJsonBody(response);
@@ -434,6 +504,11 @@ async function notificationFetch<Schema extends z.ZodType>(
     );
   }
 
+  if (
+    options.identityEpoch !== undefined &&
+    (await readNotificationConfig())?.identityEpoch !== options.identityEpoch
+  )
+    throw new Error("Notification identity changed.");
   return schema.parse(body);
 }
 

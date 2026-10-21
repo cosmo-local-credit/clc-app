@@ -97,6 +97,15 @@ export function WalletPage({ address }: { address?: string }) {
   const ownedPools = (ownedPoolsQuery.data?.pages[0]?.pools ?? []).filter(
     (pool) => pool.ownerAddress?.toLowerCase() === address?.toLowerCase(),
   );
+  const myVouchersTitle = (
+    <ResourceQuotaTitle
+      quota={usage.data?.vouchers}
+      pending={usage.isPending}
+      error={usage.isError}
+    >
+      <Trans>My Vouchers</Trans>
+    </ResourceQuotaTitle>
+  );
 
   return (
     <div className="space-y-6">
@@ -142,15 +151,7 @@ export function WalletPage({ address }: { address?: string }) {
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
-            title={
-              <ResourceQuotaTitle
-                quota={usage.data?.vouchers}
-                pending={usage.isPending}
-                error={usage.isError}
-              >
-                <Trans>My Vouchers</Trans>
-              </ResourceQuotaTitle>
-            }
+            title={myVouchersTitle}
             action={<Trans>View all</Trans>}
             onAction={() => {
               void navigate({ to: "/wallet/vouchers" });
@@ -164,15 +165,7 @@ export function WalletPage({ address }: { address?: string }) {
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
-            title={
-              <ResourceQuotaTitle
-                quota={usage.data?.vouchers}
-                pending={usage.isPending}
-                error={usage.isError}
-              >
-                <Trans>My Vouchers</Trans>
-              </ResourceQuotaTitle>
-            }
+            title={myVouchersTitle}
             action={<Trans>View all</Trans>}
             onAction={() => void navigate({ to: "/wallet/vouchers" })}
           />
@@ -220,15 +213,7 @@ export function WalletPage({ address }: { address?: string }) {
           <section aria-labelledby="my-vouchers-title">
             <SectionHeader
               id="my-vouchers-title"
-              title={
-                <ResourceQuotaTitle
-                  quota={usage.data?.vouchers}
-                  pending={usage.isPending}
-                  error={usage.isError}
-                >
-                  <Trans>My Vouchers</Trans>
-                </ResourceQuotaTitle>
-              }
+              title={myVouchersTitle}
               action={<Trans>View all</Trans>}
               onAction={() => {
                 void navigate({ to: "/wallet/vouchers" });

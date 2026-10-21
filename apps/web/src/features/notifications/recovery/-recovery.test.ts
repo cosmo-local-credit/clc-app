@@ -8,6 +8,8 @@ const api = vi.hoisted(() => ({
 }));
 
 const storage = vi.hoisted(() => ({
+  applyPage: vi.fn().mockResolvedValue(true),
+  isCurrent: vi.fn().mockResolvedValue(true),
   deleteInboxMessages: vi.fn(),
   isAvailable: vi.fn(),
   listAcks: vi.fn(),
@@ -26,6 +28,8 @@ vi.mock("../api/notification-client", () => ({
 }));
 
 vi.mock("../storage/notification-db", () => ({
+  applyNotificationInboxPage: storage.applyPage,
+  isNotificationIdentityCurrent: storage.isCurrent,
   deleteNotificationInboxMessages: storage.deleteInboxMessages,
   isNotificationStorageAvailable: storage.isAvailable,
   listQueuedNotificationAcks: storage.listAcks,
@@ -47,7 +51,11 @@ beforeEach(() => {
   storage.deleteInboxMessages.mockResolvedValue(undefined);
   storage.isAvailable.mockReturnValue(true);
   storage.listAcks.mockResolvedValue([]);
-  storage.readConfig.mockResolvedValue(null);
+  storage.readConfig.mockResolvedValue({
+    identityEpoch: "epoch-1",
+    registrationId: "registration-1",
+    userId: "user-1",
+  });
   storage.readDeviceId.mockResolvedValue("device-1");
   storage.removeAck.mockResolvedValue(undefined);
   storage.saveInboxMessage.mockResolvedValue({});
@@ -59,6 +67,9 @@ describe("flushQueuedNotificationAcks", () => {
   it("sends delivery and click acknowledgments and removes accepted entries", async () => {
     storage.listAcks.mockResolvedValue([
       ackEntry({
+        identityEpoch: "epoch-1",
+        registrationId: "registration-1",
+        userId: "user-1",
         ackId: "ack-delivery",
         kind: "delivery",
         payload: {
@@ -68,6 +79,9 @@ describe("flushQueuedNotificationAcks", () => {
         },
       }),
       ackEntry({
+        identityEpoch: "epoch-1",
+        registrationId: "registration-1",
+        userId: "user-1",
         ackId: "ack-click",
         actionId: "view",
         kind: "action",
@@ -91,11 +105,11 @@ describe("flushQueuedNotificationAcks", () => {
 
     expect(api.sendDeliveryAck).toHaveBeenCalledWith(
       expect.objectContaining({ notificationId: "notification-1" }),
-      undefined,
+      { identityEpoch: "epoch-1" },
     );
     expect(api.sendClickAck).toHaveBeenCalledWith(
       expect.objectContaining({ actionId: "view", notificationId: "notification-2" }),
-      undefined,
+      { identityEpoch: "epoch-1" },
     );
     expect(storage.removeAck).toHaveBeenCalledWith("ack-delivery");
     expect(storage.removeAck).toHaveBeenCalledWith("ack-click");
@@ -150,25 +164,33 @@ describe("syncNotificationInboxState", () => {
   });
 
   it("merges backend messages, applies deletions, and stores the next cursor", async () => {
-    storage.readConfig.mockResolvedValue({ syncCursor: "cursor-1" });
+    storage.readConfig.mockResolvedValue({
+      identityEpoch: "epoch-1",
+      registrationId: "registration-1",
+      userId: "user-1",
+      syncCursor: "cursor-1",
+    });
     api.syncInbox.mockResolvedValue({
+      hasMore: false,
+      resetRequired: false,
+      deletions: [{ notificationId: "notification-deleted", revision: 3 }],
       deletedIds: ["notification-deleted"],
       messages: [
         {
           actionId: "view",
-          body: "Swap completed",
+          body: "Voucher received",
           clickedAt: "2026-06-11T12:02:00.000Z",
           createdAt: "2026-06-11T12:00:00.000Z",
           deviceId: "device-1",
-          kind: "swap.completed",
+          kind: "voucher.received",
           notificationId: "notification-1",
-          priority: "normal",
+          priority: "high",
           pushStatus: "sent",
           recordId: "record-1",
           revision: 2,
           sentAt: "2026-06-11T12:00:01.000Z",
           targetUrl: "/wallet",
-          title: "Swap completed",
+          title: "Voucher received",
         },
       ],
       nextSyncCursor: "cursor-2",
@@ -189,20 +211,81 @@ describe("syncNotificationInboxState", () => {
       {
         deviceId: "device-1",
         lastSyncCursor: "cursor-1",
-        linkedWalletAddresses: ["0x1234567890abcdef1234567890abcdef12345678"],
+        registrationId: "registration-1",
       },
-      undefined,
+      { identityEpoch: "epoch-1" },
     );
-    expect(storage.saveInboxMessage).toHaveBeenCalledWith(
+    expect(storage.applyPage).toHaveBeenCalledWith(
+      "epoch-1",
+      "cursor-1",
       expect.objectContaining({
-        actionedAt: "2026-06-11T12:02:00.000Z",
-        notificationId: "notification-1",
-        readAt: "2026-06-11T12:02:00.000Z",
-        receivedAt: "2026-06-11T12:00:01.000Z",
+        messages: [
+          expect.objectContaining({
+            notificationId: "notification-1",
+            revision: 2,
+            readAt: "2026-06-11T12:02:00.000Z",
+          }),
+        ],
+        deletions: [{ notificationId: "notification-deleted", revision: 3 }],
+        nextSyncCursor: "cursor-2",
       }),
     );
-    expect(storage.deleteInboxMessages).toHaveBeenCalledWith(["notification-deleted"]);
-    expect(storage.updateConfig).toHaveBeenCalledWith({ syncCursor: "cursor-2" });
+  });
+});
+
+describe("notification feed pagination", () => {
+  it("drains every page in order and applies a required snapshot reset atomically", async () => {
+    api.syncInbox
+      .mockResolvedValueOnce({
+        messages: [],
+        deletions: [],
+        deletedIds: [],
+        resetRequired: true,
+        hasMore: true,
+        nextSyncCursor: "page-1",
+      })
+      .mockResolvedValueOnce({
+        messages: [],
+        deletions: [],
+        deletedIds: [],
+        resetRequired: false,
+        hasMore: false,
+        nextSyncCursor: "page-2",
+      });
+    expect(await syncNotificationInboxState()).toMatchObject({
+      status: "synced",
+      syncCursor: "page-2",
+    });
+    expect(api.syncInbox).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ lastSyncCursor: "page-1", registrationId: "registration-1" }),
+      { identityEpoch: "epoch-1" },
+    );
+    expect(storage.applyPage).toHaveBeenNthCalledWith(
+      1,
+      "epoch-1",
+      undefined,
+      expect.objectContaining({ resetRequired: true, nextSyncCursor: "page-1" }),
+    );
+  });
+  it("stops when a concurrent identity or cursor change rejects a page", async () => {
+    api.syncInbox.mockResolvedValueOnce({
+      messages: [],
+      deletions: [],
+      deletedIds: [],
+      hasMore: true,
+      nextSyncCursor: "page-1",
+    });
+    storage.applyPage.mockResolvedValueOnce(false);
+    expect(await syncNotificationInboxState()).toEqual({ status: "skipped" });
+    expect(api.syncInbox).toHaveBeenCalledOnce();
+  });
+  it("prunes outgoing-account acknowledgments without sending them", async () => {
+    storage.listAcks.mockResolvedValue([
+      ackEntry({ identityEpoch: "old-epoch", registrationId: "old-registration" }),
+    ]);
+    expect(await flushQueuedNotificationAcks()).toMatchObject({ pruned: 1, sent: 0 });
+    expect(api.sendDeliveryAck).not.toHaveBeenCalled();
   });
 });
 
@@ -246,6 +329,9 @@ describe("runNotificationRecovery", () => {
 
 function ackEntry(overrides: Partial<NotificationAckQueueEntry> = {}): NotificationAckQueueEntry {
   return {
+    identityEpoch: "epoch-1",
+    registrationId: "registration-1",
+    userId: "user-1",
     ackId: "ack-delivery",
     attemptCount: 0,
     deviceId: "device-1",

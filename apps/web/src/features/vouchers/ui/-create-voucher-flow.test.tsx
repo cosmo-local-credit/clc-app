@@ -370,6 +370,19 @@ describe("CreateVoucherFlow", () => {
     );
   });
 
+  it("preserves a saved custom unit of account when prefilling a voucher", async () => {
+    profile.current = {
+      ...DEFAULT_PROFILE,
+      preferredCurrency: "Community Credits",
+    };
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+
+    fireEvent.click(screen.getByText("Advanced"));
+    expect((screen.getByLabelText("Priced in") as HTMLInputElement).value).toBe(
+      "Community Credits",
+    );
+  });
+
   it("starts a new voucher with the profile name", async () => {
     profile.current = { ...DEFAULT_PROFILE, name: "Amina's Bakery" };
     renderFlow(<CreateVoucherFlow step="voucher" />);

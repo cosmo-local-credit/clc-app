@@ -68,6 +68,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
                 {catalog.locationName}
               </p>
             </div>
+            <CatalogShareButton id={catalog.id} name={catalog.name} className="-me-3 -mt-2" />
           </header>
           {catalog.description ? (
             <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed">
@@ -83,14 +84,13 @@ export function CatalogDetailPage({ id }: { id: string }) {
               ))}
             </div>
           ) : null}
-          <div className="flex flex-wrap gap-2">
-            <CatalogShareButton id={catalog.id} name={catalog.name} />
-            {owner ? (
+          {owner ? (
+            <div className="flex flex-wrap gap-2">
               <Button variant="outline" tap onClick={() => setEditing(true)}>
                 <Trans>Edit catalog</Trans>
               </Button>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
           <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
           <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
           {owner ? (

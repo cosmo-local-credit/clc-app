@@ -19,6 +19,14 @@ vi.mock("#/lib/profile-currency", async (importOriginal) => {
   return { ...actual, resolveProfileCountry: mockResolveProfileCountry };
 });
 
+vi.mock("#/hooks/use-vocabulary", () => ({
+  useUnitsOfAccount: () => ({
+    data: [],
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
   useCanGoBack: () => false,
@@ -259,16 +267,16 @@ describe("OnboardingProfileForm pages", () => {
     renderForm(vi.fn(), PROFILE, PHOTO, { startPage: "location" });
     expect(screen.getByTestId("location-picker")).toBeTruthy();
     expect(textbox("Location").getAttribute("aria-required")).toBe("true");
-    const currency = screen.getByRole("button", { name: /preferred currency/i });
+    const currency = screen.getByRole("button", { name: /preferred unit of account/i });
     expect(currency.textContent).toContain("KES");
-    expect(screen.queryByRole("combobox", { name: /preferred currency/i })).toBeNull();
+    expect(screen.queryByRole("combobox", { name: /preferred unit of account/i })).toBeNull();
   });
 
-  it("opens the currency picker in a sheet from its row", async () => {
+  it("opens the unit-of-account picker in a sheet from its row", async () => {
     renderForm(vi.fn(), PROFILE, PHOTO, { startPage: "location" });
-    fireEvent.click(screen.getByRole("button", { name: /preferred currency/i }));
-    expect(await screen.findByRole("dialog", { name: "Preferred currency" })).toBeTruthy();
-    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /preferred unit of account/i }));
+    expect(await screen.findByRole("dialog", { name: "Preferred unit of account" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred unit of account/i })).toBeTruthy();
   });
 
   it("sends a later page opened with an empty form back to the start", () => {
@@ -404,6 +412,28 @@ describe("OnboardingProfileForm Continue", () => {
       }),
       // The photo travels beside the validated profile: it cannot be part of it,
       // because profileSchema lives in @clc/core and cannot name a File.
+      PHOTO,
+    );
+  });
+
+  it("submits a normalized custom preferred unit of account", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+    await completeProfilePage();
+    await completeContactPage();
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    fireEvent.click(screen.getByRole("button", { name: /preferred unit of account/i }));
+
+    const unit = await screen.findByRole("combobox", { name: /preferred unit of account/i });
+    fireEvent.focus(unit);
+    fireEvent.change(unit, { target: { value: "community   credits" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add “Community Credits”" }));
+    await pressContinue();
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({
+        preferredCurrency: "Community Credits",
+      }),
       PHOTO,
     );
   });

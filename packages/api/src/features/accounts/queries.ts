@@ -28,8 +28,16 @@ export const accountKeys = {
 
   transfers: (address: string, perPage: number) =>
     ["clc", "accounts", "transfers", address.toLowerCase(), perPage] as const,
-  transfersInfinite: (address: string, perPage: number) =>
-    ["clc", "accounts", "transfers", "infinite", address.toLowerCase(), perPage] as const,
+  transfersInfinite: (address: string, perPage: number, q = "") =>
+    [
+      "clc",
+      "accounts",
+      "transfers",
+      "infinite",
+      address.toLowerCase(),
+      perPage,
+      ...(q ? [q] : []),
+    ] as const,
 
   /**
    * One cursor page of transfers, for a table that pages rather than one that
@@ -140,16 +148,21 @@ export function accountTransfersInfiniteQueryOptions(
   accounts: AccountsClient,
   address: string | undefined,
   perPage: number,
+  q = "",
 ) {
   return infiniteQueryOptions({
-    queryKey: accountKeys.transfersInfinite(address ?? "none", perPage),
-    queryFn: ({ pageParam }) =>
-      accounts.getAccountTransfers({
-        address: requireAddress(address),
-        perPage,
-        cursor: pageParam,
-        next: pageParam === undefined ? undefined : true,
-      }),
+    queryKey: accountKeys.transfersInfinite(address ?? "none", perPage, q),
+    queryFn: ({ pageParam, signal }) =>
+      accounts.getAccountTransfers(
+        {
+          address: requireAddress(address),
+          perPage,
+          ...(q ? { q } : {}),
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+        },
+        signal,
+      ),
     enabled: Boolean(address),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>

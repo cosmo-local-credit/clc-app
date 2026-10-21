@@ -253,8 +253,8 @@ function VoucherProfileForm({
                   id="voucher-currency"
                   value={field.state.value}
                   onValueChange={field.handleChange}
-                  placeholder={t`Search currencies`}
-                  emptyMessage={t`No currencies found.`}
+                  placeholder={t`Search units of account`}
+                  emptyMessage={t`No units of account found`}
                 />
               </Field>
             )}

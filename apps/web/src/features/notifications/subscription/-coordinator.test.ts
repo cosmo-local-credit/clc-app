@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const api = vi.hoisted(() => ({
+  getNotificationBackendBaseUrl: () => "https://api.example",
   fetchVapidPublicKey: vi.fn(),
   linkNotificationWallet: vi.fn(),
   registerNotificationDevice: vi.fn(),
@@ -11,6 +12,7 @@ const capability = vi.hoisted(() => ({
 }));
 
 const storage = vi.hoisted(() => ({
+  beginNotificationIdentity: vi.fn().mockResolvedValue({ identityEpoch: "epoch-1" }),
   getOrCreateNotificationDeviceId: vi.fn(),
   isNotificationStorageAvailable: vi.fn(),
   readNotificationConfig: vi.fn(),
@@ -25,6 +27,11 @@ const subscriptionState = vi.hoisted(() => ({
 }));
 
 vi.mock("../api/notification-client", () => api);
+vi.mock("@clc/api/features/notifications/client", () => ({
+  fetchNotificationRealtimeToken: vi
+    .fn()
+    .mockResolvedValue({ walletAddress: "0x1234", userId: "user-1" }),
+}));
 vi.mock("../platform/capability", () => capability);
 vi.mock("../storage/notification-db", () => storage);
 vi.mock("./subscription-state", () => subscriptionState);
@@ -71,7 +78,10 @@ beforeEach(() => {
     publicKey: "public-key",
   });
   api.registerNotificationDevice.mockResolvedValue({
-    canonicalLinkedWalletAddresses: [],
+    registrationId: "registration-1",
+    userId: "user-1",
+    generation: 1,
+    canonicalLinkedWalletAddresses: ["0x1234"],
     deviceId: "device-1",
     inboxSyncCursor: "cursor-1",
     notificationSettings: { enabled: true },
@@ -169,15 +179,9 @@ describe("enableNotificationSubscription", () => {
         serviceWorkerVersion: "worker-v1",
         vapidKeyVersion: "v1",
       },
-      undefined,
+      { identityEpoch: "epoch-1" },
     );
-    expect(api.linkNotificationWallet).toHaveBeenCalledWith(
-      {
-        deviceId: "device-1",
-        walletAddress: "0x1234",
-      },
-      undefined,
-    );
+    expect(api.linkNotificationWallet).not.toHaveBeenCalled();
   });
 
   it("replaces the subscription when the VAPID key version changes", async () => {
