@@ -482,6 +482,11 @@ msgstr "Add a phone number to your profile to use MPESA."
 msgid "Add a photo"
 msgstr "Add a photo"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:68
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:45
+msgid "Add a pool"
+msgstr "Add a pool"
+
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:479
 msgid "Add a private message"
 msgstr "Add a private message"
@@ -489,6 +494,11 @@ msgstr "Add a private message"
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:73
 msgid "Add a profile photo to continue."
 msgstr "Add a profile photo to continue."
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:68
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:45
+msgid "Add a voucher"
+msgstr "Add a voucher"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:350
@@ -558,6 +568,7 @@ msgstr "Add your contact details"
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:101
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:108
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:73
 msgid "Added to catalog"
 msgstr "Added to catalog"
 
@@ -1563,7 +1574,7 @@ msgid "Copy fee recipient"
 msgstr "Copy fee recipient"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:439
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 msgid "Copy link"
 msgstr "Copy link"
 
@@ -1703,7 +1714,8 @@ msgstr "Couldn't copy fee recipient"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:450
 #: apps/web/src/components/vouchers/voucher-summary.tsx:456
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:14
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
 msgid "Couldn't copy link"
 msgstr "Couldn't copy link"
 
@@ -1773,7 +1785,8 @@ msgstr "Couldn't identify a country here. Try a nearby spot."
 msgid "Couldn't load activity."
 msgstr "Couldn't load activity."
 
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:41
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:98
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:53
 msgid "Couldn't load catalog items."
 msgstr "Couldn't load catalog items."
 
@@ -1998,7 +2011,12 @@ msgstr "Couldn't save your username."
 msgid "Couldn't save. Please try again."
 msgstr "Couldn't save. Please try again."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:353
+msgid "Couldn't search pools."
+msgstr "Couldn't search pools."
+
 #: apps/web/src/components/catalog-filter-controls.tsx:386
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:355
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
@@ -2026,7 +2044,8 @@ msgid "Couldn't transfer ownership."
 msgstr "Couldn't transfer ownership."
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:103
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:104
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:76
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:116
 msgid "Couldn't update the catalog. Try again."
 msgstr "Couldn't update the catalog. Try again."
 
@@ -3177,7 +3196,7 @@ msgid "Link at most 12 vouchers"
 msgstr "Link at most 12 vouchers"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:455
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:12
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
 msgid "Link copied"
 msgstr "Link copied"
@@ -3245,7 +3264,7 @@ msgstr "Litre"
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:320
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 msgid "Load more"
@@ -3391,8 +3410,10 @@ msgstr "Loading your profile…"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:142
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:88
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:92
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:416
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:193
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
@@ -3649,6 +3670,7 @@ msgstr "My catalog"
 msgid "My Catalogs"
 msgstr "My Catalogs"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:225
 #: apps/web/src/features/home/ui/wallet-page.tsx:266
 msgid "My Pools"
 msgstr "My Pools"
@@ -3660,6 +3682,7 @@ msgstr "My Pools"
 msgid "My posts"
 msgstr "My posts"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:178
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:201
 msgid "My Vouchers"
@@ -3697,6 +3720,7 @@ msgstr "Name must be 80 characters or fewer"
 msgid "Name on wallet"
 msgstr "Name on wallet"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:293
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:888
 msgid "Name, symbol or address"
 msgstr "Name, symbol or address"
@@ -3868,8 +3892,8 @@ msgstr "No creditable pools with this voucher match these filters."
 #~ msgstr "No deposit limit"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:55
-msgid "No items yet. Add pools or vouchers from their detail pages."
-msgstr "No items yet. Add pools or vouchers from their detail pages."
+#~ msgid "No items yet. Add pools or vouchers from their detail pages."
+#~ msgstr "No items yet. Add pools or vouchers from their detail pages."
 
 #: apps/web/src/features/home/ui/market-page.tsx:260
 #: apps/web/src/features/home/ui/marketplace-page.tsx:184
@@ -3916,6 +3940,7 @@ msgstr "No offers match this search."
 msgid "No pools have this voucher available."
 msgstr "No pools have this voucher available."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:374
 #: apps/web/src/features/pools/ui/pools-page.tsx:321
 msgid "No pools match this search."
 msgstr "No pools match this search."
@@ -3924,6 +3949,7 @@ msgstr "No pools match this search."
 msgid "No pools with this voucher match these filters."
 msgstr "No pools with this voucher match these filters."
 
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
 #: apps/web/src/features/pools/ui/pools-page.tsx:323
 msgid "No pools yet."
 msgstr "No pools yet."
@@ -3953,6 +3979,10 @@ msgstr "No reviews yet."
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:53
 msgid "No saved recipients yet."
 msgstr "No saved recipients yet."
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:323
+msgid "No suggestions available."
+msgstr "No suggestions available."
 
 #: apps/web/src/components/ui/tag-combobox.tsx:181
 msgid "No tags found."
@@ -3992,6 +4022,7 @@ msgstr "No vouchers are available through your Credit pools."
 msgid "No vouchers in this pool yet."
 msgstr "No vouchers in this pool yet."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:376
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:967
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:223
 msgid "No vouchers match that search."
@@ -4010,6 +4041,7 @@ msgstr "No vouchers to collect"
 msgid "No vouchers to show yet."
 msgstr "No vouchers to show yet."
 
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
 #: apps/web/src/features/home/ui/wallet-page.tsx:226
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:207
 msgid "No vouchers yet."
@@ -4707,13 +4739,17 @@ msgstr "Pool tracking details are missing."
 
 #: apps/web/src/components/market-bar.tsx:130
 #: apps/web/src/components/resource-usage.tsx:116
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:333
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:109
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:323
 #: apps/web/src/features/pools/ui/pools-page.tsx:165
 msgid "Pools"
 msgstr "Pools"
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:228
+msgid "Pools accepting your vouchers"
+msgstr "Pools accepting your vouchers"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:343
 msgid "Pools list"
@@ -5203,7 +5239,7 @@ msgstr "Relative pricing"
 #: apps/web/src/components/ui/avatar-picker.tsx:122
 #: apps/web/src/components/ui/image-upload-field.tsx:167
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:599
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:108
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
 msgid "Remove"
@@ -5217,7 +5253,7 @@ msgstr "Remove “{0}” from the marketplace?"
 #. placeholder {0}: item.name
 #. placeholder {0}: voucherLabel(voucher)
 #: apps/web/src/components/catalog-filter-controls.tsx:348
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:92
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:104
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
@@ -5337,7 +5373,11 @@ msgstr "Retreat"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:53
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:107
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:365
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:430
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:446
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:61
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:206
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:852
@@ -5526,6 +5566,7 @@ msgstr "Search or enter"
 msgid "Search pool tags"
 msgstr "Search pool tags"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:292
 #: apps/web/src/features/pools/ui/pools-page.tsx:171
 msgid "Search pools"
 msgstr "Search pools"
@@ -5570,6 +5611,7 @@ msgid "Search voucher tags"
 msgstr "Search voucher tags"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:359
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:292
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
@@ -5596,6 +5638,7 @@ msgstr "Searching recipients…"
 msgid "Searching vouchers…"
 msgstr "Searching vouchers…"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:344
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:944
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:197
 msgid "Searching…"
@@ -5767,7 +5810,7 @@ msgid "Settings"
 msgstr "Settings"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:439
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 #: apps/web/src/features/wallet/ui/receive-page.tsx:156
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
@@ -5821,6 +5864,7 @@ msgstr "Show all"
 msgid "Showing catalogs <0>globally</0>."
 msgstr "Showing catalogs <0>globally</0>."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:437
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1052
 msgid "Showing recent vouchers only."
 msgstr "Showing recent vouchers only."
@@ -6163,7 +6207,7 @@ msgstr "Symbol was taken, using {0} instead."
 
 #: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:78
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
 #: apps/web/src/features/home/ui/marketplace-page.tsx:145
@@ -6786,6 +6830,7 @@ msgstr "Type"
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:303
 #: apps/web/src/features/home/ui/activity-page.tsx:83
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:897
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:191
@@ -6799,6 +6844,7 @@ msgstr "Unable to load language. Reverted to English."
 
 #: apps/web/src/components/resource-usage.tsx:62
 #: apps/web/src/components/vouchers/voucher-summary.tsx:147
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:421
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:272
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:281
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:115
@@ -7191,7 +7237,7 @@ msgstr "Voucher tracking details are missing."
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:131
 #: apps/web/src/components/resource-usage.tsx:113
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:40
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
@@ -7209,6 +7255,7 @@ msgstr "Vouchers list"
 msgid "Vouchers swap one for one"
 msgstr "Vouchers swap one for one"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:174
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:996
 msgid "Vouchers you hold"
 msgstr "Vouchers you hold"

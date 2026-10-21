@@ -34,6 +34,8 @@ export const catalogKeys = {
   mine: (address: string) => ["clc", "catalogs", "mine", address.toLowerCase()] as const,
   detail: (id: string) => ["clc", "catalogs", "detail", id] as const,
   members: (id: string, kind: CatalogKind) => ["clc", "catalogs", "members", id, kind] as const,
+  completeMembers: (id: string, kind: CatalogKind) =>
+    ["clc", "catalogs", "members", "complete", id, kind] as const,
   membership: (address: string, id: string, kind: CatalogKind, resourceId: string) =>
     ["clc", "catalogs", "membership", address.toLowerCase(), id, kind, resourceId] as const,
 };
@@ -90,6 +92,39 @@ export function catalogMembersQueryOptions(client: CatalogsClient, id: string, k
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam, signal }) => client.members(id, kind, pageParam, signal),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
+  });
+}
+
+/**
+ * Every current member of one kind, used by an add picker before it offers a
+ * candidate. This deliberately has a different key and result shape from the
+ * visible infinite list: verifying later pages must not silently expand the
+ * Catalog detail section behind the open sheet.
+ */
+export function catalogCompleteMembersQueryOptions(
+  client: CatalogsClient,
+  id: string,
+  kind: CatalogKind,
+) {
+  return queryOptions({
+    queryKey: catalogKeys.completeMembers(id, kind),
+    queryFn: async ({ signal }) => {
+      const items: Awaited<ReturnType<CatalogsClient["members"]>>["items"] = [];
+      const cursors = new Set<string>();
+      let cursor: string | undefined;
+
+      do {
+        const page = await client.members(id, kind, cursor, signal);
+        items.push(...page.items);
+        cursor = page.nextCursor ?? undefined;
+        if (cursor && cursors.has(cursor)) {
+          throw new Error("Catalog membership pagination repeated a cursor.");
+        }
+        if (cursor) cursors.add(cursor);
+      } while (cursor);
+
+      return items;
+    },
   });
 }
 export function catalogMembershipQueryOptions(
