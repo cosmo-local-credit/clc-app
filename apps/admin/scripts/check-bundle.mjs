@@ -72,16 +72,33 @@ const chunks = files.map((name) => {
   };
 });
 
+function importsChunk(source, name) {
+  return source.includes(`./${name}`);
+}
+
+function isChartRouteOrDependency(chunk, visiting = new Set()) {
+  if (budget.chartChunks.some((allowed) => chunk.source.includes(allowed))) return true;
+  if (visiting.has(chunk.name)) return false;
+
+  const nextVisiting = new Set(visiting).add(chunk.name);
+  const importers = chunks.filter(
+    (candidate) => candidate.name !== chunk.name && importsChunk(candidate.source, chunk.name),
+  );
+  return (
+    importers.length > 0 &&
+    importers.every((importer) => isChartRouteOrDependency(importer, nextVisiting))
+  );
+}
+
 const failures = [];
 
 // 1. Chart isolation. Charts are optional on the dashboard; if Recharts is
 // present it must stay in a chart route and must not leak into the shell.
 const withCharts = chunks.filter((chunk) => chunk.source.includes("recharts"));
 for (const chunk of withCharts) {
-  const isChartRoute = budget.chartChunks.some((allowed) => chunk.source.includes(allowed));
-  if (!isChartRoute) {
+  if (!isChartRouteOrDependency(chunk)) {
     failures.push(
-      `${chunk.name} contains Recharts but is not a chart route. ` +
+      `${chunk.name} contains Recharts outside the permitted chart-route import graph. ` +
         "Chart code must not enter the layout or a list route.",
     );
   }
