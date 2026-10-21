@@ -173,7 +173,7 @@ function MarketBadges({ current }: { current: MarketSurface }) {
           </Button>
         );
       })}
-      {(["activity", "posts"] as const).map((tab) => {
+      {(["posts", "activity"] as const).map((tab) => {
         const active = current === tab;
         const Icon = tab === "posts" ? RiArticleLine : RiNotification3Line;
         return (

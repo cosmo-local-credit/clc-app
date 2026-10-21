@@ -80,8 +80,8 @@ describe("MarketBar", () => {
       "Vouchers",
       "Offers",
       "Catalogs",
-      "Activity",
       "Posts",
+      "Activity",
     ]);
     expect(links[0]?.getAttribute("href")).toBe(
       "/market?q=bike&tags=Repair&creditable=true&scope=all",
@@ -89,8 +89,8 @@ describe("MarketBar", () => {
     expect(links[1]?.getAttribute("href")).toBe(
       "/market?q=bike&tags=Repair&creditable=true&scope=pools",
     );
-    expect(links[5]?.getAttribute("href")).toBe("/?tab=activity");
-    expect(links[6]?.getAttribute("href")).toBe("/?tab=posts");
+    expect(links[5]?.getAttribute("href")).toBe("/?tab=posts");
+    expect(links[6]?.getAttribute("href")).toBe("/?tab=activity");
     for (const link of links) expect(link.getAttribute("aria-current")).toBeNull();
     expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
