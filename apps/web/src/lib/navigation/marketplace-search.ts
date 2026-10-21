@@ -12,6 +12,9 @@ export type MarketplaceRouteSearch = PoolRouteSearch & {
   scope?: string | readonly string[];
 };
 
+/** The lists the market's badges open: one per resource, and All of them mixed. */
+export type MarketListScope = MarketplaceScope | "all";
+
 export function pickMarketplaceSearch(search: unknown): MarketplaceRouteSearch {
   const base = pickPoolSearch(search);
   if (typeof search !== "object" || search === null) return base;
@@ -24,10 +27,11 @@ export function pickMarketplaceSearch(search: unknown): MarketplaceRouteSearch {
 
 export function parseMarketplaceScope(
   value: MarketplaceRouteSearch["scope"],
-): MarketplaceScope | null {
-  if (value === undefined || value === "all") return null;
+): MarketListScope | null {
   if (typeof value !== "string") return null;
-  const parsed = marketplaceScopeSchema.safeParse(value.trim().toLowerCase());
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "all") return "all";
+  const parsed = marketplaceScopeSchema.safeParse(normalized);
   return parsed.success ? parsed.data : null;
 }
 
@@ -35,14 +39,8 @@ export function canonicalMarketplaceSearch(
   search: MarketplaceRouteSearch,
 ): MarketplaceRouteSearch | null {
   const base = canonicalPoolRedirectSearch(search);
-  const parsed = parseMarketplaceScope(search.scope);
-  const canonicalScope = parsed ?? undefined;
-  const validScalar =
-    search.scope === undefined ||
-    search.scope === "all" ||
-    (typeof search.scope === "string" &&
-      marketplaceScopeSchema.safeParse(search.scope.trim().toLowerCase()).success);
-  const changedScope = !validScalar || search.scope !== canonicalScope;
+  const canonicalScope = parseMarketplaceScope(search.scope) ?? undefined;
+  const changedScope = search.scope !== canonicalScope;
   const hasPoolOnlyFilters =
     (canonicalScope !== "pools" && search.out_voucher !== undefined) ||
     search.vouchers !== undefined ||
@@ -59,7 +57,7 @@ export function canonicalMarketplaceSearch(
 
 export function marketplaceSearchForScope(
   search: MarketplaceRouteSearch,
-  scope: MarketplaceScope | null,
+  scope: MarketListScope | null,
 ): MarketplaceRouteSearch {
   return {
     ...search,

@@ -75,6 +75,7 @@ describe("MarketBar", () => {
     const sections = screen.getByRole("navigation", { name: "Marketplace sections" });
     const links = within(sections).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
+      "All",
       "Pools",
       "Vouchers",
       "Offers",
@@ -83,10 +84,13 @@ describe("MarketBar", () => {
       "Posts",
     ]);
     expect(links[0]?.getAttribute("href")).toBe(
+      "/market?q=bike&tags=Repair&creditable=true&scope=all",
+    );
+    expect(links[1]?.getAttribute("href")).toBe(
       "/market?q=bike&tags=Repair&creditable=true&scope=pools",
     );
-    expect(links[4]?.getAttribute("href")).toBe("/?tab=activity");
-    expect(links[5]?.getAttribute("href")).toBe("/?tab=posts");
+    expect(links[5]?.getAttribute("href")).toBe("/?tab=activity");
+    expect(links[6]?.getAttribute("href")).toBe("/?tab=posts");
     for (const link of links) expect(link.getAttribute("aria-current")).toBeNull();
     expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
@@ -99,6 +103,21 @@ describe("MarketBar", () => {
     expect(pools.getAttribute("aria-current")).toBe("page");
     expect(pools.getAttribute("href")).toBe("/?q=bike");
     expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/?q=bike");
+  });
+
+  it("marks All open and returns to the map from it", () => {
+    mocks.search = { scope: "all", q: "bike", tags: "Repair" };
+    renderBar("all");
+
+    const all = screen.getByRole("link", { name: "All" });
+    expect(all.getAttribute("aria-current")).toBe("page");
+    expect(all.getAttribute("href")).toBe("/?q=bike&tags=Repair");
+    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
+      "/market?q=bike&tags=Repair&scope=pools",
+    );
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe(
+      "/?q=bike&tags=Repair",
+    );
   });
 
   it.each(["posts", "activity"] as const)("returns from %s to an unfiltered map", (current) => {
@@ -116,7 +135,7 @@ describe("MarketBar", () => {
     const field = screen.getByRole("button", { name: "Filters" }).parentElement;
     expect(field?.nextElementSibling).toBe(screen.getByRole("button", { name: "Credit" }));
     const sections = screen.getByRole("navigation", { name: "Marketplace sections" });
-    expect(sections.firstElementChild?.textContent).toBe("Pools");
+    expect(sections.firstElementChild?.textContent).toBe("All");
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
   });
 

@@ -1,8 +1,8 @@
-import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useState } from "react";
-import { RiArticleLine, RiNotification3Line, RiMap2Line } from "react-icons/ri";
+import type { IconType } from "react-icons";
+import { RiApps2Line, RiArticleLine, RiNotification3Line, RiMap2Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
@@ -11,6 +11,7 @@ import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import {
   mapSearchFrom,
+  type MarketListScope,
   marketplaceSearchForScope,
   pickMarketplaceSearch,
 } from "#/lib/navigation/marketplace-search";
@@ -20,7 +21,16 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
 
 /** Where the bar stands: the map, or one of the lists its badges open. */
-export type MarketSurface = "map" | MarketplaceScope | "posts" | "activity";
+export type MarketSurface = "map" | MarketListScope | "posts" | "activity";
+
+// All is every resource at once, so it takes no resource's hue: it reads in
+// the foreground, like the feeds beside it.
+const LIST_HUE: Record<MarketListScope, string> = {
+  all: "[--hue:var(--color-foreground)] [--ink:var(--color-foreground)]",
+  ...RESOURCE_HUE,
+};
+
+const LIST_ICON: Record<MarketListScope, IconType> = { all: RiApps2Line, ...RESOURCE_ICON };
 
 /**
  * The market's top bar, the same over the map and above every list: the app
@@ -115,7 +125,8 @@ export function MarketBar({
 
 function MarketBadges({ current }: { current: MarketSurface }) {
   const { t } = useLingui();
-  const labels: Record<MarketplaceScope, string> = {
+  const labels: Record<MarketListScope, string> = {
+    all: t`All`,
     pools: t`Pools`,
     vouchers: t`Vouchers`,
     offers: t`Offers`,
@@ -126,9 +137,9 @@ function MarketBadges({ current }: { current: MarketSurface }) {
       aria-label={t`Marketplace sections`}
       className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {(Object.keys(labels) as MarketplaceScope[]).map((scope) => {
+      {(Object.keys(labels) as MarketListScope[]).map((scope) => {
         const active = scope === current;
-        const Icon = RESOURCE_ICON[scope];
+        const Icon = LIST_ICON[scope];
         return (
           <Button
             key={scope}
@@ -137,7 +148,7 @@ function MarketBadges({ current }: { current: MarketSurface }) {
             tap
             className={cn(
               "font-semibold text-(--ink) hover:text-(--ink)",
-              RESOURCE_HUE[scope],
+              LIST_HUE[scope],
               active &&
                 "border-(--hue)! bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))] text-(--ink) shadow-[inset_0_0_0_1px_var(--hue)] hover:bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))] hover:text-(--ink)",
             )}
