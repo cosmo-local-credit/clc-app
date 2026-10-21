@@ -412,6 +412,8 @@ describe("catalog curation", () => {
     mount(<CatalogDetailPage id="7" />);
     await screen.findByRole("heading", { name: "Local makers" });
     expect(screen.queryByRole("button", { name: "Edit catalog" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add a pool" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add a voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
   });
   it("lets the owner edit and remove one pool relationship", async () => {
@@ -427,6 +429,9 @@ describe("catalog curation", () => {
     );
     mount(<CatalogDetailPage id="7" />);
     expect(await screen.findByRole("button", { name: "Edit catalog" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Add a pool" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Add a voucher" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Share" }).closest("header")).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: "Remove Community pool" }));
     await waitFor(() =>
       expect(mocks.api.setMember).toHaveBeenCalledExactlyOnceWith("7", "pool", "12", false),
@@ -711,6 +716,10 @@ describe("catalog sharing", () => {
     mount(<CatalogShareButton id="7" name="Local makers" />);
     fireEvent.click(screen.getByRole("button", { name: "Share" }));
     await waitFor(() => expect(share).toHaveBeenCalled());
+    expect(share).toHaveBeenCalledWith({
+      title: "Local makers",
+      url: `${window.location.origin}/catalogs/7`,
+    });
     expect(mocks.error).not.toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: "Copy link" })).toBeNull();
   });
@@ -737,6 +746,15 @@ describe("catalog sharing", () => {
     expect(writeText).not.toHaveBeenCalled();
     fireEvent.click(copy);
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+  });
+  it("reports clipboard failure without losing the share action", async () => {
+    Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+    mount(<CatalogShareButton id="7" name="Local makers" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Share" }));
+    expect(mocks.error).toHaveBeenCalledWith("Couldn't copy link");
+    expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
   });
 });
 

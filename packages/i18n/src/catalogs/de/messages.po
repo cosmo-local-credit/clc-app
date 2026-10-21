@@ -481,6 +481,11 @@ msgstr "Fügen Sie Ihrem Profil eine Telefonnummer hinzu, um MPESA zu verwenden.
 msgid "Add a photo"
 msgstr "Hinzufügen eines Fotos"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:68
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:45
+msgid "Add a pool"
+msgstr "Einen Fonds hinzufügen"
+
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:479
 msgid "Add a private message"
 msgstr "Hinzufügen einer privaten Nachricht"
@@ -488,6 +493,11 @@ msgstr "Hinzufügen einer privaten Nachricht"
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:73
 msgid "Add a profile photo to continue."
 msgstr "Fügen Sie ein Profilfoto hinzu, um fortzufahren."
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:68
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:45
+msgid "Add a voucher"
+msgstr "Einen Gutschein hinzufügen"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:350
@@ -557,6 +567,7 @@ msgstr "Fügen Sie Ihre Kontaktdaten hinzu"
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:101
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:108
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:73
 msgid "Added to catalog"
 msgstr "Zum Katalog hinzugefügt"
 
@@ -1570,7 +1581,7 @@ msgid "Copy fee recipient"
 msgstr "Empfänger der Kopiergebühr"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:439
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 msgid "Copy link"
 msgstr "Link kopieren"
 
@@ -1713,7 +1724,8 @@ msgstr "Konnte Gebührenempfänger nicht kopieren"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:450
 #: apps/web/src/components/vouchers/voucher-summary.tsx:456
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:14
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
 msgid "Couldn't copy link"
 msgstr "Der Link konnte nicht kopiert werden"
 
@@ -1784,7 +1796,8 @@ msgstr "An diesem Ort konnte kein Land ermittelt werden. Versuchen Sie es an "
 msgid "Couldn't load activity."
 msgstr "Die Aktivität konnte nicht geladen werden."
 
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:41
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:98
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:53
 msgid "Couldn't load catalog items."
 msgstr "Katalogeinträge konnten nicht geladen werden."
 
@@ -2016,7 +2029,12 @@ msgid "Couldn't save. Please try again."
 msgstr "Die Änderungen konnten nicht gespeichert werden. Versuchen Sie es "
 "erneut."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:353
+msgid "Couldn't search pools."
+msgstr "Die Fonds konnten nicht durchsucht werden."
+
 #: apps/web/src/components/catalog-filter-controls.tsx:386
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:355
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
@@ -2045,7 +2063,8 @@ msgid "Couldn't transfer ownership."
 msgstr "Das Eigentum konnte nicht übertragen werden."
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:103
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:104
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:76
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:116
 msgid "Couldn't update the catalog. Try again."
 msgstr "Katalog konnte nicht aktualisiert werden. Versuche es erneut."
 
@@ -3198,7 +3217,7 @@ msgid "Link at most 12 vouchers"
 msgstr "Verlinken Sie höchstens 12 Gutscheine"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:455
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:12
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
 msgid "Link copied"
 msgstr "Link kopiert"
@@ -3268,7 +3287,7 @@ msgstr "Liter"
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:320
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 msgid "Load more"
@@ -3414,8 +3433,10 @@ msgstr "Ihr Profil wird geladen…"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:142
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:88
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:92
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:416
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:193
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
@@ -3658,6 +3679,7 @@ msgstr "Mein Katalog"
 msgid "My Catalogs"
 msgstr "Meine Kataloge"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:225
 #: apps/web/src/features/home/ui/wallet-page.tsx:266
 msgid "My Pools"
 msgstr "Meine Fonds"
@@ -3669,6 +3691,7 @@ msgstr "Meine Fonds"
 msgid "My posts"
 msgstr "Meine Beiträge"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:178
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:201
 msgid "My Vouchers"
@@ -3705,6 +3728,7 @@ msgstr "Name muss 80 Zeichen oder weniger sein"
 msgid "Name on wallet"
 msgstr "Name auf der Geldbörse"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:293
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:888
 msgid "Name, symbol or address"
 msgstr "Name, Symbol oder Anschrift"
@@ -3877,9 +3901,9 @@ msgstr "Kein Fonds mit Kreditmöglichkeit und diesem Gutschein entspricht diesen
 #~ msgstr "Kein Einzahlungslimit"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:55
-msgid "No items yet. Add pools or vouchers from their detail pages."
-msgstr "Noch keine Einträge. Füge Pools oder Gutscheine auf ihren Detailseiten "
-"hinzu."
+#~ msgid "No items yet. Add pools or vouchers from their detail pages."
+#~ msgstr "Noch keine Einträge. Füge Pools oder Gutscheine auf ihren Detailseiten "
+#~ "hinzu."
 
 #: apps/web/src/features/home/ui/market-page.tsx:260
 #: apps/web/src/features/home/ui/marketplace-page.tsx:184
@@ -3926,6 +3950,7 @@ msgstr "Keine Angebote entsprechen dieser Suche."
 msgid "No pools have this voucher available."
 msgstr "Dieser Gutschein ist in keinem Fonds verfügbar."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:374
 #: apps/web/src/features/pools/ui/pools-page.tsx:321
 msgid "No pools match this search."
 msgstr "Keine Fonds entsprechen dieser Suche."
@@ -3934,6 +3959,7 @@ msgstr "Keine Fonds entsprechen dieser Suche."
 msgid "No pools with this voucher match these filters."
 msgstr "Kein Fonds mit diesem Gutschein entspricht diesen Filtern."
 
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
 #: apps/web/src/features/pools/ui/pools-page.tsx:323
 msgid "No pools yet."
 msgstr "Noch keine Fonds."
@@ -3964,6 +3990,10 @@ msgstr "Noch keine Bewertungen."
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:53
 msgid "No saved recipients yet."
 msgstr "Noch keine gespeicherten Empfänger."
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:323
+msgid "No suggestions available."
+msgstr "Keine Vorschläge verfügbar."
 
 #: apps/web/src/components/ui/tag-combobox.tsx:181
 msgid "No tags found."
@@ -4003,6 +4033,7 @@ msgstr "Über Ihre Kreditfonds sind keine Gutscheine verfügbar."
 msgid "No vouchers in this pool yet."
 msgstr "Noch keine Gutscheine in diesem Fonds."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:376
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:967
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:223
 msgid "No vouchers match that search."
@@ -4021,6 +4052,7 @@ msgstr "Keine Gutscheine zum Kassieren"
 msgid "No vouchers to show yet."
 msgstr "Noch keine Gutscheine zu zeigen."
 
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
 #: apps/web/src/features/home/ui/wallet-page.tsx:226
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:207
 msgid "No vouchers yet."
@@ -4720,13 +4752,17 @@ msgstr "Details zum Fonds-Tracking fehlen."
 
 #: apps/web/src/components/market-bar.tsx:130
 #: apps/web/src/components/resource-usage.tsx:116
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:333
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:109
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:323
 #: apps/web/src/features/pools/ui/pools-page.tsx:165
 msgid "Pools"
 msgstr "Fonds"
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:228
+msgid "Pools accepting your vouchers"
+msgstr "Fonds, die Ihre Gutscheine akzeptieren"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:343
 msgid "Pools list"
@@ -5213,7 +5249,7 @@ msgstr "Relative Preisgestaltung"
 #: apps/web/src/components/ui/avatar-picker.tsx:122
 #: apps/web/src/components/ui/image-upload-field.tsx:167
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:599
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:108
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
 msgid "Remove"
@@ -5227,7 +5263,7 @@ msgstr "Entfernen Sie \"{0}\" vom Marktplatz?"
 #. placeholder {0}: item.name
 #. placeholder {0}: voucherLabel(voucher)
 #: apps/web/src/components/catalog-filter-controls.tsx:348
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:92
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:104
 msgid "Remove {0}"
 msgstr "{0} entfernen"
 
@@ -5346,7 +5382,11 @@ msgstr "Auszeit"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:53
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:107
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:365
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:430
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:446
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:61
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:206
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:852
@@ -5533,6 +5573,7 @@ msgstr "Durchsuchung oder Einreise"
 msgid "Search pool tags"
 msgstr "Schlagwörter von Fonds suchen"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:292
 #: apps/web/src/features/pools/ui/pools-page.tsx:171
 msgid "Search pools"
 msgstr "SuchFonds"
@@ -5577,6 +5618,7 @@ msgid "Search voucher tags"
 msgstr "Schlagwörter von Gutscheinen suchen"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:359
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:292
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
@@ -5603,6 +5645,7 @@ msgstr "Empfänger werden gesucht…"
 msgid "Searching vouchers…"
 msgstr "Gutscheine werden gesucht…"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:344
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:944
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:197
 msgid "Searching…"
@@ -5775,7 +5818,7 @@ msgid "Settings"
 msgstr "Einstellungen"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:439
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 #: apps/web/src/features/wallet/ui/receive-page.tsx:156
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
@@ -5827,6 +5870,7 @@ msgstr "Alle anzeigen"
 msgid "Showing catalogs <0>globally</0>."
 msgstr "Kataloge werden <0>weltweit</0> angezeigt."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:437
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1052
 msgid "Showing recent vouchers only."
 msgstr "Nur kürzlich verwendete Gutscheine werden angezeigt."
@@ -6174,7 +6218,7 @@ msgstr "Symbol wurde genommen, stattdessen {0} verwendend."
 
 #: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:78
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
 #: apps/web/src/features/home/ui/marketplace-page.tsx:145
@@ -6819,6 +6863,7 @@ msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Geben Sie mindestens {VOUCHER_SEARCH_MIN_CHARS} Zeichen ein, um "
 "Gutscheine zu suchen."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:303
 #: apps/web/src/features/home/ui/activity-page.tsx:83
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:897
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:191
@@ -6833,6 +6878,7 @@ msgstr "Die Sprache konnte nicht geladen werden. Es wird wieder Englisch "
 
 #: apps/web/src/components/resource-usage.tsx:62
 #: apps/web/src/components/vouchers/voucher-summary.tsx:147
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:421
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:272
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:281
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:115
@@ -7226,7 +7272,7 @@ msgstr "Angaben zur Gutscheinverfolgung fehlen."
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:131
 #: apps/web/src/components/resource-usage.tsx:113
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:40
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
@@ -7244,6 +7290,7 @@ msgstr "Gutscheinliste"
 msgid "Vouchers swap one for one"
 msgstr "Gutscheine werden im Verhältnis eins zu eins getauscht"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:174
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:996
 msgid "Vouchers you hold"
 msgstr "Gutscheine, die Sie halten"

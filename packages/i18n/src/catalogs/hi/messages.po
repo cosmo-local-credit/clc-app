@@ -486,6 +486,11 @@ msgstr "MPESA का उपयोग करने के लिए अपनी 
 msgid "Add a photo"
 msgstr "एक फोटो जोड़ें"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:68
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:45
+msgid "Add a pool"
+msgstr "पूल जोड़ें"
+
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:479
 msgid "Add a private message"
 msgstr "एक निजी संदेश जोड़ें"
@@ -493,6 +498,11 @@ msgstr "एक निजी संदेश जोड़ें"
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:73
 msgid "Add a profile photo to continue."
 msgstr "जारी रखने के लिए एक प्रोफ़ाइल फ़ोटो जोड़ें."
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:68
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:45
+msgid "Add a voucher"
+msgstr "वाउचर जोड़ें"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:350
@@ -562,6 +572,7 @@ msgstr "अपना संपर्क विवरण जोड़ें"
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:101
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:108
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:73
 msgid "Added to catalog"
 msgstr "कैटलॉग में जोड़ा गया"
 
@@ -1572,7 +1583,7 @@ msgid "Copy fee recipient"
 msgstr "प्रतिलिपि शुल्क प्राप्तकर्ता"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:439
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 msgid "Copy link"
 msgstr "लिंक कॉपी करें"
 
@@ -1713,7 +1724,8 @@ msgstr "शुल्क प्राप्तकर्ता की प्रत
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:450
 #: apps/web/src/components/vouchers/voucher-summary.tsx:456
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:14
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
 msgid "Couldn't copy link"
 msgstr "लिंक कॉपी नहीं किया जा सका"
 
@@ -1783,7 +1795,8 @@ msgstr "यहां किसी देश की पहचान नहीं 
 msgid "Couldn't load activity."
 msgstr "गतिविधि लोड नहीं हो सकी."
 
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:41
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:98
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:53
 msgid "Couldn't load catalog items."
 msgstr "कैटलॉग के आइटम लोड नहीं हो सके।"
 
@@ -2011,7 +2024,12 @@ msgstr "आपका उपयोगकर्ता नाम सहेजा �
 msgid "Couldn't save. Please try again."
 msgstr "सहेजा नहीं जा सका. कृपया पुन: प्रयास करें।"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:353
+msgid "Couldn't search pools."
+msgstr "पूल खोजे नहीं जा सके."
+
 #: apps/web/src/components/catalog-filter-controls.tsx:386
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:355
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
@@ -2039,7 +2057,8 @@ msgid "Couldn't transfer ownership."
 msgstr "स्वामित्व हस्तांतरित नहीं किया जा सका."
 
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:103
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:104
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:76
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:116
 msgid "Couldn't update the catalog. Try again."
 msgstr "कैटलॉग अद्यतन नहीं हो सका। फिर से प्रयास करें।"
 
@@ -3196,7 +3215,7 @@ msgid "Link at most 12 vouchers"
 msgstr "अधिकतम 12 वाउचर लिंक करें"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:455
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:12
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
 msgid "Link copied"
 msgstr "लिंक कॉपी किया गया"
@@ -3264,7 +3283,7 @@ msgstr "लीटर"
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:320
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 msgid "Load more"
@@ -3410,8 +3429,10 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 #: apps/web/src/components/vouchers/voucher-summary.tsx:142
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:88
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:122
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:92
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:416
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:193
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
@@ -3668,6 +3689,7 @@ msgstr "मेरा कैटलॉग"
 msgid "My Catalogs"
 msgstr "मेरे कैटलॉग"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:225
 #: apps/web/src/features/home/ui/wallet-page.tsx:266
 msgid "My Pools"
 msgstr "मेरे पूल"
@@ -3679,6 +3701,7 @@ msgstr "मेरे पूल"
 msgid "My posts"
 msgstr "मेरी पोस्ट"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:178
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:201
 msgid "My Vouchers"
@@ -3716,6 +3739,7 @@ msgstr "नाम 80 अक्षर या उससे कम होना च
 msgid "Name on wallet"
 msgstr "वॉलेट पर नाम"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:293
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:888
 msgid "Name, symbol or address"
 msgstr "नाम, चिन्ह या पता"
@@ -3888,8 +3912,8 @@ msgstr "इस वाउचर वाला कोई क्रेडिट य�
 #~ msgstr "कोई जमा सीमा नहीं"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:55
-msgid "No items yet. Add pools or vouchers from their detail pages."
-msgstr "अभी कोई आइटम नहीं है। पूल या वाउचर उनके विवरण पृष्ठों से जोड़ें।"
+#~ msgid "No items yet. Add pools or vouchers from their detail pages."
+#~ msgstr "अभी कोई आइटम नहीं है। पूल या वाउचर उनके विवरण पृष्ठों से जोड़ें।"
 
 #: apps/web/src/features/home/ui/market-page.tsx:260
 #: apps/web/src/features/home/ui/marketplace-page.tsx:184
@@ -3936,6 +3960,7 @@ msgstr "इस खोज से कोई ऑफ़र मेल नहीं �
 msgid "No pools have this voucher available."
 msgstr "किसी भी पूल के पास यह वाउचर उपलब्ध नहीं है।"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:374
 #: apps/web/src/features/pools/ui/pools-page.tsx:321
 msgid "No pools match this search."
 msgstr "कोई भी पूल इस खोज से मेल नहीं खाता."
@@ -3944,6 +3969,7 @@ msgstr "कोई भी पूल इस खोज से मेल नही�
 msgid "No pools with this voucher match these filters."
 msgstr "इस वाउचर वाला कोई भी पूल इन फ़िल्टर से मेल नहीं खाता।"
 
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
 #: apps/web/src/features/pools/ui/pools-page.tsx:323
 msgid "No pools yet."
 msgstr "अभी तक कोई पूल नहीं."
@@ -3973,6 +3999,10 @@ msgstr "अभी तक कोई समीक्षा नहीं।"
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:53
 msgid "No saved recipients yet."
 msgstr "अभी तक कोई सहेजा गया प्राप्तकर्ता नहीं."
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:323
+msgid "No suggestions available."
+msgstr "कोई सुझाव उपलब्ध नहीं है."
 
 #: apps/web/src/components/ui/tag-combobox.tsx:181
 msgid "No tags found."
@@ -4012,6 +4042,7 @@ msgstr "आपके क्रेडिट पूल के माध्यम �
 msgid "No vouchers in this pool yet."
 msgstr "इस पूल में अभी तक कोई वाउचर नहीं है।"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:376
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:967
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:223
 msgid "No vouchers match that search."
@@ -4030,6 +4061,7 @@ msgstr "इकट्ठा करने के लिए कोई वाउच�
 msgid "No vouchers to show yet."
 msgstr "दिखाने के लिए अभी तक कोई वाउचर नहीं है."
 
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
 #: apps/web/src/features/home/ui/wallet-page.tsx:226
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:207
 msgid "No vouchers yet."
@@ -4728,13 +4760,17 @@ msgstr "पूल ट्रैकिंग विवरण गायब है�
 
 #: apps/web/src/components/market-bar.tsx:130
 #: apps/web/src/components/resource-usage.tsx:116
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:333
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:109
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:323
 #: apps/web/src/features/pools/ui/pools-page.tsx:165
 msgid "Pools"
 msgstr "पूल"
+
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:228
+msgid "Pools accepting your vouchers"
+msgstr "आपके वाउचर स्वीकार करने वाले पूल"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:343
 msgid "Pools list"
@@ -5225,7 +5261,7 @@ msgstr "सापेक्ष मूल्य निर्धारण"
 #: apps/web/src/components/ui/avatar-picker.tsx:122
 #: apps/web/src/components/ui/image-upload-field.tsx:167
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:599
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:108
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
 msgid "Remove"
@@ -5239,7 +5275,7 @@ msgstr "बाज़ार से \"{0}\" हटाएँ?"
 #. placeholder {0}: item.name
 #. placeholder {0}: voucherLabel(voucher)
 #: apps/web/src/components/catalog-filter-controls.tsx:348
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:92
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:104
 msgid "Remove {0}"
 msgstr "{0} हटाएँ"
 
@@ -5359,7 +5395,11 @@ msgstr "एकांत विश्राम"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:53
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:107
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:365
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:430
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:446
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:61
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:206
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:852
@@ -5549,6 +5589,7 @@ msgstr "खोजें या दर्ज करें"
 msgid "Search pool tags"
 msgstr "पूल टैग खोजें"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:292
 #: apps/web/src/features/pools/ui/pools-page.tsx:171
 msgid "Search pools"
 msgstr "पूल खोजें"
@@ -5593,6 +5634,7 @@ msgid "Search voucher tags"
 msgstr "वाउचर टैग खोजें"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:359
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:292
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
@@ -5619,6 +5661,7 @@ msgstr "प्राप्तकर्ताओं को खोजा जा �
 msgid "Searching vouchers…"
 msgstr "वाउचर खोज रहे हैं..."
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:344
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:944
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:197
 msgid "Searching…"
@@ -5791,7 +5834,7 @@ msgid "Settings"
 msgstr "सेटिंग्स"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:439
-#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:32
+#: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 #: apps/web/src/features/wallet/ui/receive-page.tsx:156
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
@@ -5845,6 +5888,7 @@ msgstr "सब दिखाओ"
 msgid "Showing catalogs <0>globally</0>."
 msgstr "कैटलॉग <0>दुनिया भर के</0> दिखाए जा रहे हैं।"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:437
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1052
 msgid "Showing recent vouchers only."
 msgstr "केवल हाल के वाउचर दिखा रहा है।"
@@ -6189,7 +6233,7 @@ msgstr "इसके स्थान पर {0} का उपयोग करक
 
 #: apps/web/src/components/market-search.tsx:224
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:315
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:78
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:152
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
 #: apps/web/src/features/home/ui/marketplace-page.tsx:145
@@ -6817,6 +6861,7 @@ msgstr "प्रकार"
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "वाउचर खोजने के लिए कम से कम {VOUCHER_SEARCH_MIN_CHARS} अक्षर टाइप करें।"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:303
 #: apps/web/src/features/home/ui/activity-page.tsx:83
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:897
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:191
@@ -6830,6 +6875,7 @@ msgstr "भाषा लोड करने में असमर्थ. अं
 
 #: apps/web/src/components/resource-usage.tsx:62
 #: apps/web/src/components/vouchers/voucher-summary.tsx:147
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:421
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:272
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:281
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:115
@@ -7222,7 +7268,7 @@ msgstr "वाउचर ट्रैकिंग विवरण गायब �
 #: apps/web/src/components/catalog-filter-controls.tsx:305
 #: apps/web/src/components/market-bar.tsx:131
 #: apps/web/src/components/resource-usage.tsx:113
-#: apps/web/src/features/catalogs/ui/catalog-members.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:40
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
@@ -7240,6 +7286,7 @@ msgstr "वाउचर सूची"
 msgid "Vouchers swap one for one"
 msgstr "वाउचर एक के बदले एक बदले जाते हैं"
 
+#: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:174
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:996
 msgid "Vouchers you hold"
 msgstr "आपके पास जो वाउचर हैं"
