@@ -12,6 +12,14 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@clc/api/features/notifications/client", () => ({
   fetchNotificationRealtimeToken: mocks.token,
+  NotificationTransportError: class NotificationTransportError extends Error {
+    status: number;
+
+    constructor(status: number) {
+      super(`Notification transport failed with ${status}`);
+      this.status = status;
+    }
+  },
 }));
 vi.mock("../api/notification-client", () => ({
   getNotificationBackendBaseUrl: () => "https://api.example",
@@ -28,6 +36,7 @@ vi.mock("../storage/notification-db", () => ({
   updateNotificationConfig: mocks.update,
 }));
 vi.mock("./connection", () => ({ connectNotificationRealtime: mocks.connect }));
+import { NotificationTransportError } from "@clc/api/features/notifications/client";
 import { startNotificationSession } from "./session";
 
 const identity = {
@@ -49,6 +58,12 @@ beforeEach(() => {
   mocks.begin.mockResolvedValue(identity);
   mocks.current.mockResolvedValue(true);
   mocks.readConfig.mockResolvedValue(identity);
+  mocks.register.mockResolvedValue({
+    registrationId: "registration-2",
+    userId: "user-1",
+    generation: 2,
+    inboxSyncCursor: "registered-cursor",
+  });
   mocks.recover.mockResolvedValue(undefined);
   mocks.connect.mockResolvedValue(mocks.stop);
 });
@@ -62,6 +77,18 @@ function options(controller = new AbortController()) {
 }
 
 describe("notification session lifecycle", () => {
+  it("rechecks auth when the realtime token request is unauthorized", async () => {
+    mocks.token.mockRejectedValue(new NotificationTransportError(401));
+    const request = options();
+
+    await expect(startNotificationSession(request)).rejects.toThrow(
+      "Notification transport failed with 401",
+    );
+
+    expect(request.onIdentityChanged).toHaveBeenCalledOnce();
+    expect(mocks.begin).not.toHaveBeenCalled();
+  });
+
   it("does not change another tab's inbox when the cookie belongs to another wallet", async () => {
     mocks.token.mockResolvedValue({ ...token, walletAddress: "0xbbb", userId: "user-2" });
     const request = options();
@@ -96,6 +123,94 @@ describe("notification session lifecycle", () => {
     const stop = await startNotificationSession(options());
     expect(mocks.connect).toHaveBeenCalledOnce();
     stop();
+  });
+
+  it("registers a missing device before recovery and keeps the existing sync cursor", async () => {
+    mocks.begin.mockResolvedValue({
+      ...identity,
+      registrationId: null,
+      syncCursor: "saved-cursor",
+    });
+    const request = options();
+
+    const stop = await startNotificationSession(request);
+
+    expect(mocks.register).toHaveBeenCalledWith(
+      { deviceId: "device-1", currentWalletAddress: "0xaaa" },
+      expect.objectContaining({ identityEpoch: "epoch-1", signal: request.signal }),
+    );
+    expect(mocks.update).toHaveBeenCalledWith(
+      {
+        registrationId: "registration-2",
+        userId: "user-1",
+        generation: 2,
+        syncCursor: "saved-cursor",
+      },
+      "epoch-1",
+    );
+    expect(mocks.connect).toHaveBeenCalledOnce();
+    stop();
+  });
+
+  it("uses the registration cursor for a newly registered identity", async () => {
+    mocks.begin.mockResolvedValue({
+      ...identity,
+      registrationId: null,
+      userId: "previous-user",
+      syncCursor: null,
+    });
+
+    const stop = await startNotificationSession(options());
+
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({ syncCursor: "registered-cursor" }),
+      "epoch-1",
+    );
+    stop();
+  });
+
+  it("does not connect when registration resolves for another user", async () => {
+    mocks.begin.mockResolvedValue({ ...identity, registrationId: null });
+    mocks.register.mockResolvedValue({
+      registrationId: "registration-other",
+      userId: "user-2",
+      generation: 2,
+      inboxSyncCursor: null,
+    });
+
+    await startNotificationSession(options());
+
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.connect).not.toHaveBeenCalled();
+  });
+
+  it("stops before registration or connection when the identity epoch is stale", async () => {
+    mocks.current.mockResolvedValue(false);
+
+    await startNotificationSession(options());
+
+    expect(mocks.register).not.toHaveBeenCalled();
+    expect(mocks.recover).not.toHaveBeenCalled();
+    expect(mocks.connect).not.toHaveBeenCalled();
+  });
+
+  it("swallows recovery failures and still establishes realtime", async () => {
+    mocks.recover.mockRejectedValue(new Error("push unavailable"));
+
+    const stop = await startNotificationSession(options());
+
+    expect(mocks.connect).toHaveBeenCalledOnce();
+    await Promise.resolve();
+    stop();
+  });
+
+  it("does not connect if the identity changes while recovery starts", async () => {
+    mocks.current.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+
+    await startNotificationSession(options());
+
+    expect(mocks.recover).toHaveBeenCalledOnce();
+    expect(mocks.connect).not.toHaveBeenCalled();
   });
   it("disconnects and rechecks auth when another tab changes the registration epoch", async () => {
     const request = options();

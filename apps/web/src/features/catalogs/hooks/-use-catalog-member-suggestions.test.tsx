@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -11,6 +11,7 @@ import {
 } from "./use-catalog-member-suggestions";
 
 const mocks = vi.hoisted(() => ({
+  authenticated: true,
   address: `0x${"f".repeat(40)}`,
   getAccountTokens: vi.fn(),
   getLatestAccountTokens: vi.fn(),
@@ -36,8 +37,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({
-    isAuthenticated: true,
-    session: { address: mocks.address },
+    isAuthenticated: mocks.authenticated,
+    session: mocks.authenticated ? { address: mocks.address } : null,
   }),
 }));
 vi.mock("#/lib/api/accounts", () => ({
@@ -101,6 +102,7 @@ function wrapper() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.authenticated = true;
   mocks.getAccountTokens.mockResolvedValue({ tokens: [], last: undefined });
   mocks.getLatestAccountTokens.mockResolvedValue({ tokens: [] });
   mocks.issued.tokens = [];
@@ -121,6 +123,18 @@ beforeEach(() => {
 });
 
 describe("catalog member suggestions", () => {
+  it("keeps all suggestion sources idle for guests", () => {
+    mocks.authenticated = false;
+
+    const vouchers = renderHook(() => useCatalogVoucherSuggestions(), { wrapper: wrapper() });
+    const pools = renderHook(() => useCatalogPoolSuggestions(), { wrapper: wrapper() });
+
+    expect(vouchers.result.current.holdings.status).toBe("idle");
+    expect(vouchers.result.current.owned.status).toBe("idle");
+    expect(pools.result.current.owned.status).toBe("idle");
+    expect(pools.result.current.accepting.status).toBe("idle");
+  });
+
   it("drains complete wallet pagination before exposing a later-page voucher", async () => {
     const firstPage = Array.from({ length: 100 }, (_, index) =>
       token(index + 1, `0x${(index + 1).toString(16).padStart(40, "0")}`, "10", false),
@@ -180,6 +194,29 @@ describe("catalog member suggestions", () => {
 
     expect(result.current.holdings.rows).toEqual([]);
     expect(result.current.owned.status).toBe("ready");
+
+    const completeCalls = mocks.getAccountTokens.mock.calls.length;
+    const recentCalls = mocks.getLatestAccountTokens.mock.calls.length;
+    act(() => result.current.holdings.retry());
+    await waitFor(() =>
+      expect(mocks.getAccountTokens.mock.calls.length).toBeGreaterThan(completeCalls),
+    );
+    await waitFor(() =>
+      expect(mocks.getLatestAccountTokens.mock.calls.length).toBeGreaterThan(recentCalls),
+    );
+  });
+
+  it("exposes retries for complete holdings and owned-voucher discovery", async () => {
+    const { result } = renderHook(() => useCatalogVoucherSuggestions(), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.holdings.status).toBe("ready"));
+
+    act(() => {
+      result.current.holdings.retry();
+      result.current.owned.retry();
+    });
+
+    expect(mocks.issued.refetch).toHaveBeenCalledOnce();
+    await waitFor(() => expect(mocks.getAccountTokens).toHaveBeenCalledTimes(2));
   });
 
   it("suggests owned pools before globally matched pools that accept wallet vouchers", async () => {
@@ -222,5 +259,35 @@ describe("catalog member suggestions", () => {
     expect(result.current.owned.status).toBe("ready");
     expect(result.current.owned.rows.map((row) => row.id)).toEqual(["10"]);
     expect(result.current.accepting.rows).toEqual([]);
+  });
+
+  it("drains owned pool pages and exposes its retry action", async () => {
+    mocks.ownedPools.hasNextPage = true;
+
+    const { result } = renderHook(() => useCatalogPoolSuggestions(), { wrapper: wrapper() });
+
+    await waitFor(() => expect(mocks.ownedPools.fetchNextPage).toHaveBeenCalledOnce());
+    expect(result.current.owned.status).toBe("loading");
+    act(() => result.current.owned.retry());
+    expect(mocks.ownedPools.refetch).toHaveBeenCalledOnce();
+  });
+
+  it("batches many held vouchers and deduplicates accepting pools", async () => {
+    const held = Array.from({ length: 101 }, (_, index) =>
+      token(index + 1, `0x${(index + 1).toString(16).padStart(40, "0")}`, "1"),
+    );
+    mocks.getAccountTokens.mockResolvedValue({ tokens: held });
+    const matching = pool("12", ADDRESS_C);
+    mocks.fetchFilteredPoolCatalog.mockResolvedValue({
+      pools: [matching],
+      tagFacets: null,
+      voucherFacets: null,
+    });
+
+    const { result } = renderHook(() => useCatalogPoolSuggestions(), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.accepting.status).toBe("ready"));
+
+    expect(mocks.fetchFilteredPoolCatalog).toHaveBeenCalledTimes(11);
+    expect(result.current.accepting.rows.map((row) => row.id)).toEqual(["12"]);
   });
 });

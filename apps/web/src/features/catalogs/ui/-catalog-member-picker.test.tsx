@@ -16,6 +16,10 @@ const mocks = vi.hoisted(() => ({
   error: vi.fn(),
   voucherSearchResults: [] as CatalogMemberCandidate[],
   poolSearchResults: [] as CatalogMemberCandidate[],
+  voucherSearchStatus: "ready" as "searching" | "ready" | "error",
+  poolSearchStatus: "ready" as "searching" | "ready" | "error",
+  retryVoucherSearch: vi.fn(),
+  retryPoolSearch: vi.fn(),
   voucherSuggestions: {
     holdings: {
       rows: [] as CatalogMemberCandidate[],
@@ -78,8 +82,8 @@ vi.mock("#/features/home/hooks/use-voucher-search", () => ({
     query,
     setQuery,
     results: query.trim().length >= 2 ? mocks.voucherSearchResults : [],
-    status: query.trim().length >= 2 ? "ready" : "idle",
-    retry: vi.fn(),
+    status: query.trim().length >= 2 ? mocks.voucherSearchStatus : "idle",
+    retry: mocks.retryVoucherSearch,
     retrying: false,
   }),
 }));
@@ -89,8 +93,8 @@ vi.mock("#/features/catalogs/hooks/use-pool-search", () => ({
     query,
     setQuery,
     results: query.trim().length >= 2 ? mocks.poolSearchResults : [],
-    status: query.trim().length >= 2 ? "ready" : "idle",
-    retry: vi.fn(),
+    status: query.trim().length >= 2 ? mocks.poolSearchStatus : "idle",
+    retry: mocks.retryPoolSearch,
     retrying: false,
   }),
 }));
@@ -121,6 +125,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.voucherSearchResults = [];
   mocks.poolSearchResults = [];
+  mocks.voucherSearchStatus = "ready";
+  mocks.poolSearchStatus = "ready";
   mocks.voucherSuggestions.holdings = source();
   mocks.voucherSuggestions.owned = source();
   mocks.poolSuggestions.owned = source();
@@ -203,6 +209,50 @@ describe("catalog member picker", () => {
 
     expect(within(dialog).queryByRole("button", { name: /Existing/ })).toBeNull();
     expect(within(dialog).getByRole("button", { name: /Bicycle pool/ })).toBeTruthy();
+  });
+
+  it("normalizes voucher search results into direct candidates", async () => {
+    mocks.voucherSearchResults = [candidate("6", ADDRESS_B, "Bicycle voucher", "BIKE")];
+
+    mount(<CatalogMemberPicker catalogId="7" kind="voucher" open onOpenChange={vi.fn()} />);
+    const dialog = await screen.findByRole("dialog", { name: "Add a voucher" });
+    fireEvent.change(await within(dialog).findByRole("searchbox", { name: "Search vouchers" }), {
+      target: { value: "bike" },
+    });
+
+    expect(within(dialog).getByRole("button", { name: /Bicycle voucher/ })).toBeTruthy();
+  });
+
+  it("shows minimum-length, searching, error, retry, and empty search states", async () => {
+    let view = mount(<CatalogMemberPicker catalogId="7" kind="pool" open onOpenChange={vi.fn()} />);
+    let dialog = await screen.findByRole("dialog", { name: "Add a pool" });
+    const search = await within(dialog).findByRole("searchbox", { name: "Search pools" });
+    fireEvent.change(search, { target: { value: "b" } });
+    expect(within(dialog).getByText("Type at least two characters.")).toBeTruthy();
+
+    mocks.poolSearchStatus = "searching";
+    fireEvent.change(search, { target: { value: "bike" } });
+    expect(within(dialog).getByText("Searching…")).toBeTruthy();
+
+    view.unmount();
+    mocks.poolSearchStatus = "error";
+    view = mount(<CatalogMemberPicker catalogId="7" kind="pool" open onOpenChange={vi.fn()} />);
+    dialog = await screen.findByRole("dialog", { name: "Add a pool" });
+    fireEvent.change(await within(dialog).findByRole("searchbox", { name: "Search pools" }), {
+      target: { value: "bike" },
+    });
+    expect(within(dialog).getByRole("alert").textContent).toContain("Couldn't search pools.");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
+    expect(mocks.retryPoolSearch).toHaveBeenCalledOnce();
+
+    view.unmount();
+    mocks.poolSearchStatus = "ready";
+    mount(<CatalogMemberPicker catalogId="7" kind="pool" open onOpenChange={vi.fn()} />);
+    dialog = await screen.findByRole("dialog", { name: "Add a pool" });
+    fireEvent.change(await within(dialog).findByRole("searchbox", { name: "Search pools" }), {
+      target: { value: "none" },
+    });
+    expect(within(dialog).getByText("No pools match this search.")).toBeTruthy();
   });
 
   it("keeps the voucher picker open after an add failure", async () => {
