@@ -153,9 +153,11 @@ describe("ActivityPage", () => {
 
     renderWithQueryClient(<ActivityPage address={ADDRESS} />);
 
-    const row = await screen.findByRole("button", { name: /swapped my3r for knsm2/i });
-    expect(row.textContent).toContain("1 MY3R (1.00 KES)");
-    expect(row.textContent).toContain("2 KNSM2 (2.00 BAM)");
+    const row = await screen.findByRole("button", { name: /swapped knsm2 for my3r/i });
+    const rowText = row.textContent ?? "";
+    expect(rowText).toContain("1 MY3R (1.00 KES)");
+    expect(rowText).toContain("2 KNSM2 (2.00 BAM)");
+    expect(rowText.indexOf("+2 KNSM2")).toBeLessThan(rowText.indexOf("−1 MY3R"));
     fireEvent.click(row);
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("Pools")).toBeTruthy();

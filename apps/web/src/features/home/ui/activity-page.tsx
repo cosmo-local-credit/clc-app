@@ -261,7 +261,7 @@ function ActivityRow({
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">
-            <SwapActivityTitle symbols={[item.sent.tokenSymbol, item.received.tokenSymbol]} />
+            <SwapActivityTitle symbols={[item.received.tokenSymbol, item.sent.tokenSymbol]} />
           </p>
           <p className="truncate text-muted-foreground text-xs">
             <Trans>Pool</Trans> {item.poolAddresses[0] ?? "—"}
@@ -279,6 +279,7 @@ function ActivityRow({
             incoming={item.received}
             protocolFee={item.protocolFee}
             locale={locale}
+            incomingFirst
           />
         </span>
       </button>
