@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import type { AccountsClient, AccountTokensResult, AccountTransfersResult } from "./client";
+import type {
+  AccountActivityResult,
+  AccountsClient,
+  AccountTokensResult,
+  AccountTransfersResult,
+} from "./client";
 import {
+  accountActivityInfiniteQueryOptions,
   accountKeys,
   accountTokensInfiniteQueryOptions,
   accountTransfersInfiniteQueryOptions,
@@ -18,6 +24,7 @@ describe("accountKeys", () => {
       accountKeys.issuedTokensInfinite(ADDRESS, 20),
       accountKeys.transfers(ADDRESS, 20),
       accountKeys.transfersInfinite(ADDRESS, 20),
+      accountKeys.activityInfinite(ADDRESS, 20),
     ]) {
       expect(key.slice(0, accountKeys.all.length)).toEqual([...accountKeys.all]);
     }
@@ -53,6 +60,7 @@ describe("accountKeys", () => {
 describe("infinite account options", () => {
   const tokens = accountTokensInfiniteQueryOptions({} as AccountsClient, ADDRESS, 20);
   const transfers = accountTransfersInfiniteQueryOptions({} as AccountsClient, ADDRESS, 20);
+  const activity = accountActivityInfiniteQueryOptions({} as AccountsClient, ADDRESS, 20);
 
   it("stops on a short page of tokens", () => {
     const short = {
@@ -83,6 +91,22 @@ describe("infinite account options", () => {
       transfers: Array.from({ length: 20 }, () => ({})),
     } as unknown as AccountTransfersResult;
     expect(transfers.getNextPageParam(noCursor, [], undefined, [])).toBeUndefined();
+  });
+
+  it("continues logical activity only from a full page with a cursor", () => {
+    const full = {
+      activity: Array.from({ length: 20 }, () => ({})),
+      last: 44,
+    } as unknown as AccountActivityResult;
+    expect(activity.getNextPageParam(full, [], undefined, [])).toBe(44);
+    expect(
+      activity.getNextPageParam(
+        { activity: [], last: 44 } as unknown as AccountActivityResult,
+        [],
+        undefined,
+        [],
+      ),
+    ).toBeUndefined();
   });
 
   it("stays disabled without an address", () => {
@@ -116,6 +140,43 @@ describe("transfer search pagination", () => {
     >[0]);
     expect(getAccountTransfers).toHaveBeenCalledWith(
       { address: ADDRESS, perPage: 20, q: "old", cursor: 7, next: true },
+      signal,
+    );
+  });
+});
+
+describe("logical activity search pagination", () => {
+  it("isolates search and ordered type filters in the cache", () => {
+    expect(accountKeys.activityInfinite(ADDRESS, 20, "old", ["sent"])).not.toEqual(
+      accountKeys.activityInfinite(ADDRESS, 20, "old", ["swapped"]),
+    );
+    expect(accountKeys.activityInfinite(ADDRESS, 20, "old", ["sent"])).not.toEqual(
+      accountKeys.activityInfinite(ADDRESS, 20, "new", ["sent"]),
+    );
+  });
+
+  it("keeps search and types when fetching the next page", async () => {
+    const getAccountActivity = vi.fn().mockResolvedValue({ activity: [], last: 0 });
+    const options = accountActivityInfiniteQueryOptions(
+      { getAccountActivity } as unknown as AccountsClient,
+      ADDRESS,
+      20,
+      "old",
+      ["sent", "swapped"],
+    );
+    const signal = new AbortController().signal;
+    await options.queryFn!({ pageParam: 7, signal } as Parameters<
+      NonNullable<typeof options.queryFn>
+    >[0]);
+    expect(getAccountActivity).toHaveBeenCalledWith(
+      {
+        address: ADDRESS,
+        perPage: 20,
+        q: "old",
+        types: ["sent", "swapped"],
+        cursor: 7,
+        next: true,
+      },
       signal,
     );
   });

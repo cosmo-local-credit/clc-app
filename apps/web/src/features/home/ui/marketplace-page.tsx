@@ -109,7 +109,7 @@ export function MarketplacePage({
   }, [hasMore, query.fetchNextPage, query.isFetchingNextPage]);
 
   return (
-    <main className="min-h-[100svh] space-y-3 bg-background px-4 pb-market-list">
+    <main className="min-h-[100svh] space-y-3 bg-background px-4 pb-bottom-nav">
       <h1 id={headingId} className="sr-only">
         <Trans>Marketplace</Trans>
       </h1>

@@ -95,6 +95,13 @@ msgstr "{count, plural, one {# पोस्ट} other {# पोस्ट}}"
 #~ msgid "Search by voucher name, symbol, address or transaction hash."
 #~ msgstr "वाउचर के नाम, प्रतीक, पते या लेनदेन हैश से खोजें।"
 
+#. placeholder {0}: activity.length
+#: apps/web/src/features/home/ui/activity-page.tsx:146
+msgid "{0, plural, one {# activity item shown.} other {# activity items "
+"shown.}}"
+msgstr "{0, plural, one {# गतिविधि आइटम दिखाया गया।} other {# गतिविधि आइटम "
+"दिखाए गए।}}"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -241,9 +248,9 @@ msgid "{completedCount} of {0} confirmed"
 msgstr "{0} के {completedCount} की पुष्टि की गई"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
-msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
-msgstr "{count, plural, one {# ट्रांसफ़र दिखाया गया है।} other {# ट्रांसफ़र "
-"दिखाए गए हैं।}}"
+#~ msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
+#~ msgstr "{count, plural, one {# ट्रांसफ़र दिखाया गया है।} other {# ट्रांसफ़र "
+#~ "दिखाए गए हैं।}}"
 
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:210
@@ -444,10 +451,12 @@ msgstr "स्मार्ट वॉलेट सक्रिय किया �
 msgid "Active"
 msgstr "सक्रिय"
 
-#: apps/web/src/components/market-bar.tsx:189
-#: apps/web/src/components/navigation/bottom-navigation.tsx:44
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:100
+#: apps/web/src/components/market-bar.tsx:188
+#: apps/web/src/components/navigation/bottom-navigation.tsx:50
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:193
-#: apps/web/src/features/home/ui/activity-page.tsx:69
+#: apps/web/src/features/home/ui/activity-page.tsx:97
+#: apps/web/src/features/home/ui/activity-page.tsx:140
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:46
 msgid "Activity"
 msgstr "गतिविधि"
@@ -623,7 +632,7 @@ msgstr "उन्नत विकल्प"
 msgid "Agriculture"
 msgstr "कृषि"
 
-#: apps/web/src/components/market-bar.tsx:129
+#: apps/web/src/components/market-bar.tsx:128
 msgid "All"
 msgstr "सभी"
 
@@ -724,6 +733,7 @@ msgstr "ऐप संस्करण"
 msgid "Apply"
 msgstr "आवेदन करें"
 
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:116
 #: apps/web/src/components/catalog-filter-controls.tsx:570
 msgid "Apply filters"
 msgstr "फ़िल्टर लागू करें"
@@ -967,7 +977,7 @@ msgstr "कैटलॉग की तस्वीर"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "कैटलॉग सहेजा गया। आइटम जोड़ा नहीं जा सका। फिर से प्रयास करें।"
 
-#: apps/web/src/components/market-bar.tsx:133
+#: apps/web/src/components/market-bar.tsx:132
 #: apps/web/src/components/resource-usage.tsx:114
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
@@ -1255,6 +1265,8 @@ msgstr "सफ़ाई"
 msgid "Clear filter"
 msgstr "फ़िल्टर साफ़ करें"
 
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:113
+#: apps/web/src/features/home/ui/activity-page.tsx:172
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:31
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:41
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
@@ -1282,6 +1294,7 @@ msgstr "स्थान साफ़ करें"
 #: apps/web/src/components/catalog-filter-controls.tsx:526
 #: apps/web/src/components/market-search.tsx:73
 #: apps/web/src/components/market-search.tsx:180
+#: apps/web/src/features/home/ui/activity-page.tsx:121
 msgid "Clear search"
 msgstr "स्पष्ट खोज"
 
@@ -1293,6 +1306,7 @@ msgstr "स्पष्ट खोज"
 msgid "Close"
 msgstr "बंद करें"
 
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:93
 #: apps/web/src/components/catalog-filter-controls.tsx:283
 #: apps/web/src/components/catalog-filter-controls.tsx:589
 msgid "Close filters"
@@ -1415,6 +1429,7 @@ msgstr "भेजने की पुष्टि करें"
 msgid "Confirm swap"
 msgstr "अदला-बदली की पुष्टि करें"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
@@ -1612,6 +1627,7 @@ msgstr "रसीद की प्रतिलिपि बनाएँ"
 msgid "Copy supply creation transaction hash"
 msgstr "आपूर्ति निर्माण लेनदेन हैश की प्रतिलिपि बनाएँ"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:199
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:196
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:242
@@ -1754,6 +1770,8 @@ msgstr "रसीद की प्रतिलिपि नहीं बना�
 msgid "Couldn't copy supply creation transaction hash"
 msgstr "आपूर्ति निर्माण लेनदेन हैश की प्रतिलिपि नहीं बनाई जा सकी"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:39
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:45
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:81
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:87
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:198
@@ -1789,8 +1807,8 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "यहां किसी देश की पहचान नहीं हो सकी. किसी नजदीकी स्थान का प्रयास करें."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:363
-#: apps/web/src/features/home/ui/activity-page.tsx:117
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:80
+#: apps/web/src/features/home/ui/activity-page.tsx:186
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:77
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:209
 msgid "Couldn't load activity."
 msgstr "गतिविधि लोड नहीं हो सकी."
@@ -2146,13 +2164,13 @@ msgid "Create your account"
 msgstr "अपना खाता बनाएँ"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
-#: apps/web/src/features/home/ui/activity-page.tsx:164
+#: apps/web/src/features/home/ui/activity-page.tsx:309
 #: apps/web/src/features/home/ui/report-page.tsx:532
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:75
 msgid "Created"
 msgstr "बनाया गया"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:197
 msgid "Created in the pool"
 msgstr "पूल में बनाया गया"
 
@@ -2185,6 +2203,10 @@ msgstr "वाउचर जारी किए जा रहे हैं…"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:422
 msgid "Creating…"
 msgstr "बनाया जा रहा है..."
+
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:31
+msgid "Creation"
+msgstr "निर्माण"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:325
 msgid "Creation failed"
@@ -2229,6 +2251,7 @@ msgstr "दैनिक"
 msgid "Dark"
 msgstr "अंधेरा"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:97
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:148
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:191
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:579
@@ -2282,7 +2305,7 @@ msgid "Deployment transaction hash copied"
 msgstr "परिनियोजन लेनदेन हैश की प्रतिलिपि बनाई गई"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:165
 msgid "Deposit"
 msgstr "जमा"
@@ -2655,6 +2678,7 @@ msgstr "समाप्ति तिथि भविष्य में हो�
 msgid "Expiring"
 msgstr "समाप्त हो रहा है"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
@@ -2783,6 +2807,9 @@ msgstr "पोस्ट फ़िल्टर करें"
 msgid "Filter vouchers"
 msgstr "वाउचर फ़िल्टर करें"
 
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:63
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:64
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:88
 #: apps/web/src/components/catalog-filter-controls.tsx:249
 #: apps/web/src/components/catalog-filter-controls.tsx:250
 #: apps/web/src/components/catalog-filter-controls.tsx:257
@@ -2832,9 +2859,9 @@ msgstr "अपनी फोटो को फ़्रेम करें"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:429
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:156
-#: apps/web/src/features/home/ui/activity-page.tsx:190
+#: apps/web/src/features/home/ui/activity-page.tsx:330
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:178
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
 msgid "From"
 msgstr "से"
 
@@ -2876,7 +2903,7 @@ msgstr "हस्तशिल्प"
 msgid "Handmade"
 msgstr "हस्तनिर्मित"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:177
+#: apps/web/src/features/home/ui/activity-page.tsx:319
 msgid "Has a message"
 msgstr "एक संदेश है"
 
@@ -3294,9 +3321,9 @@ msgid "Load more reviews"
 msgstr "अधिक समीक्षाएँ लोड करें"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:357
-#: apps/web/src/features/home/ui/activity-page.tsx:112
-#: apps/web/src/features/home/ui/activity-page.tsx:223
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:74
+#: apps/web/src/features/home/ui/activity-page.tsx:181
+#: apps/web/src/features/home/ui/activity-page.tsx:218
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:203
 msgid "Loading activity…"
 msgstr "गतिविधि लोड हो रही है..."
@@ -3332,10 +3359,10 @@ msgid "Loading marketplace…"
 msgstr "बाज़ार लोड हो रहा है..."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:216
-#: apps/web/src/features/home/ui/activity-page.tsx:218
+#: apps/web/src/features/home/ui/activity-page.tsx:213
 #: apps/web/src/features/home/ui/marketplace-page.tsx:236
 #: apps/web/src/features/home/ui/posts-page.tsx:148
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:108
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
 #: apps/web/src/features/pools/ui/pools-page.tsx:356
 msgid "Loading more…"
 msgstr "और अधिक लोड हो रहा है..."
@@ -3508,8 +3535,8 @@ msgstr "वाउचर प्रबंधित करें"
 
 #: apps/web/src/components/market-bar.tsx:204
 #: apps/web/src/components/market-bar.tsx:205
-msgid "Map"
-msgstr "मानचित्र"
+#~ msgid "Map"
+#~ msgstr "मानचित्र"
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:87
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:47
@@ -3522,7 +3549,7 @@ msgstr "मानचित्र पिन"
 #~ msgid "Markdown: **bold**, # headings, - lists, [links](https://…)"
 #~ msgstr "Markdown: **बोल्ड**, # शीर्षक, - सूचियाँ, [लिंक](https://…)"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:49
+#: apps/web/src/components/navigation/bottom-navigation.tsx:55
 #: apps/web/src/features/home/ui/market-page.tsx:294
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:61
@@ -3534,7 +3561,7 @@ msgstr "बाज़ार"
 msgid "Marketplace"
 msgstr "बाज़ार"
 
-#: apps/web/src/components/market-bar.tsx:137
+#: apps/web/src/components/market-bar.tsx:136
 msgid "Marketplace sections"
 msgstr "बाज़ार के अनुभाग"
 
@@ -3781,9 +3808,9 @@ msgstr "नई पोस्ट"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:426
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:160
-#: apps/web/src/features/home/ui/activity-page.tsx:187
+#: apps/web/src/features/home/ui/activity-page.tsx:327
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:181
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:204
 msgid "New supply"
 msgstr "नई आपूर्ति"
 
@@ -3825,12 +3852,16 @@ msgstr "नहीं"
 msgid "No {0} fees have accrued yet."
 msgstr "अभी तक कोई {0} शुल्क जमा नहीं हुआ है।"
 
+#: apps/web/src/features/home/ui/activity-page.tsx:157
+msgid "No activity matches these filters."
+msgstr "कोई गतिविधि इन फ़िल्टर से मेल नहीं खाती।"
+
 #: apps/web/src/features/home/ui/activity-page.tsx:102
-msgid "No activity matches this search."
-msgstr "कोई गतिविधि इस खोज से मेल नहीं खाती।"
+#~ msgid "No activity matches this search."
+#~ msgstr "कोई गतिविधि इस खोज से मेल नहीं खाती।"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:380
-#: apps/web/src/features/home/ui/activity-page.tsx:104
+#: apps/web/src/features/home/ui/activity-page.tsx:159
 msgid "No activity yet."
 msgstr "अभी तक कोई गतिविधि नहीं."
 
@@ -4118,7 +4149,7 @@ msgstr "सेट नहीं"
 msgid "Nothing has changed."
 msgstr "कुछ भी नहीं बदला है."
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:94
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:91
 msgid "Nothing has moved through this pool yet."
 msgstr "इस पूल से अभी तक कुछ भी नहीं चला है।"
 
@@ -4206,7 +4237,7 @@ msgstr "ऑफ़र अपडेट किया गया।"
 msgid "Offerings"
 msgstr "ऑफ़र"
 
-#: apps/web/src/components/market-bar.tsx:132
+#: apps/web/src/components/market-bar.tsx:131
 #: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/features/home/ui/offers-page.tsx:102
 msgid "Offers"
@@ -4376,7 +4407,7 @@ msgid "Ownership transferred."
 msgstr "स्वामित्व हस्तांतरित हो गया।"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:78
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
 msgid "Paid out"
 msgstr "भुगतान कर दिया गया"
 
@@ -4592,8 +4623,10 @@ msgstr "जगह"
 msgid "Plant Nursery"
 msgstr "पौधशाला"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
+#: apps/web/src/features/home/ui/activity-page.tsx:269
 #: apps/web/src/features/home/ui/marketplace-page.tsx:393
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
@@ -4610,7 +4643,7 @@ msgstr "पूल"
 msgid "Pool actions"
 msgstr "पूल क्रियाएँ"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:68
 msgid "Pool activity"
 msgstr "पूल गतिविधि"
 
@@ -4758,7 +4791,8 @@ msgstr "पूल टैग"
 msgid "Pool tracking details are missing."
 msgstr "पूल ट्रैकिंग विवरण गायब हैं।"
 
-#: apps/web/src/components/market-bar.tsx:130
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
+#: apps/web/src/components/market-bar.tsx:129
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:333
@@ -4809,8 +4843,8 @@ msgstr "पोस्ट टेक्स्ट बहुत लंबा है"
 msgid "Post updated."
 msgstr "पोस्ट अपडेट किया गया."
 
-#: apps/web/src/components/market-bar.tsx:189
-#: apps/web/src/components/navigation/bottom-navigation.tsx:52
+#: apps/web/src/components/market-bar.tsx:188
+#: apps/web/src/components/navigation/bottom-navigation.tsx:58
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:158
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:296
 #: apps/web/src/features/home/ui/posts-page.tsx:72
@@ -4954,7 +4988,7 @@ msgstr "मूल्य उपकुल"
 msgid "Pricing"
 msgstr "मूल्य निर्धारण"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:29
+#: apps/web/src/components/navigation/bottom-navigation.tsx:35
 msgid "Primary navigation"
 msgstr "प्राथमिक नेविगेशन"
 
@@ -4997,8 +5031,9 @@ msgstr "पेपर वॉलेट को पासवर्ड से सु�
 msgid "Protecting paper wallet…"
 msgstr "पेपर वॉलेट सुरक्षित किया जा रहा है…"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
+#: apps/web/src/components/activity/swap-activity.tsx:55
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:134
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:256
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:374
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:708
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:213
@@ -5148,8 +5183,10 @@ msgstr "बैंक ट्रांसफ़र प्राप्त करे
 msgid "Receive vouchers"
 msgstr "वाउचर प्राप्त करें"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:75
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:33
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:419
-#: apps/web/src/features/home/ui/activity-page.tsx:166
+#: apps/web/src/features/home/ui/activity-page.tsx:311
 msgid "Received"
 msgstr "प्राप्त हुआ"
 
@@ -5534,8 +5571,8 @@ msgstr "प्राप्तकर्ता का पता स्कैन �
 msgid "Search “{query}”"
 msgstr "“{query}” खोजें"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:77
-#: apps/web/src/features/home/ui/activity-page.tsx:78
+#: apps/web/src/features/home/ui/activity-page.tsx:111
+#: apps/web/src/features/home/ui/activity-page.tsx:112
 msgid "Search activity"
 msgstr "गतिविधि खोजें"
 
@@ -5543,7 +5580,7 @@ msgstr "गतिविधि खोजें"
 msgid "Search by name or symbol"
 msgstr "नाम या प्रतीक से खोजें"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:85
+#: apps/web/src/features/home/ui/activity-page.tsx:135
 msgid "Search by voucher name, symbol, address or transaction hash."
 msgstr "वाउचर के नाम, प्रतीक, पते या लेनदेन हैश से खोजें।"
 
@@ -5777,8 +5814,10 @@ msgstr "भेजा जा रहा है"
 msgid "Sending…"
 msgstr "भेजा जा रहा है..."
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:69
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:32
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:421
-#: apps/web/src/features/home/ui/activity-page.tsx:168
+#: apps/web/src/features/home/ui/activity-page.tsx:313
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:192
 msgid "Sent"
 msgstr "भेजा गया"
@@ -5826,7 +5865,7 @@ msgstr "एकत्र करने से पहले शुल्क प्�
 msgid "Setting up your wallet…"
 msgstr "आपका वॉलेट सेट किया जा रहा है…"
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:60
+#: apps/web/src/components/navigation/bottom-navigation.tsx:66
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
 #: apps/web/src/features/home/ui/settings-page.tsx:51
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -6061,6 +6100,7 @@ msgstr "शुरू हो रहा है..."
 msgid "Starts"
 msgstr "शुरू होता है"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:64
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:118
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:105
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:434
@@ -6138,6 +6178,8 @@ msgstr "आपूर्ति शून्य से अधिक होनी �
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG फ़ाइलें समर्थित नहीं हैं. PNG, JPEG, या WebP का उपयोग करें।"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:142
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:382
@@ -6184,13 +6226,14 @@ msgstr "अदला-बदली की ट्रैकिंग जानक�
 msgid "Swap unavailable"
 msgstr "अदला-बदली उपलब्ध नहीं है"
 
+#: apps/web/src/components/activity/activity-filter-sheet.tsx:34
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:188
 msgid "Swapped"
 msgstr "अदला-बदली पूरी हुई"
 
-#. placeholder {0}: entry.received.tokenSymbol
-#. placeholder {1}: entry.sent.tokenSymbol
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:195
+#. placeholder {0}: symbols[0]
+#. placeholder {1}: symbols[1]
+#: apps/web/src/components/activity/swap-activity.tsx:16
 msgid "Swapped {0} for {1}"
 msgstr "{1} के लिए {0} की अदला-बदली की गई"
 
@@ -6726,9 +6769,9 @@ msgstr "शीर्षक 200 अक्षर या उससे कम हो
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:429
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:172
-#: apps/web/src/features/home/ui/activity-page.tsx:190
+#: apps/web/src/features/home/ui/activity-page.tsx:330
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:187
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
 #: apps/web/src/features/wallet/ui/collect-page.tsx:138
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:174
 msgid "To"
@@ -6770,6 +6813,7 @@ msgstr "कुल शुल्क"
 msgid "Training"
 msgstr "प्रशिक्षण"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:102
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:196
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:241
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:212
@@ -6786,6 +6830,7 @@ msgstr "लेन-देन विवरण"
 msgid "Transaction hash"
 msgstr "लेनदेन हैश"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:44
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:86
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:198
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:182
@@ -6794,8 +6839,8 @@ msgid "Transaction hash copied"
 msgstr "लेन-देन हैश कॉपी किया गया"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:90
-msgid "Transfer history"
-msgstr "स्थानांतरण इतिहास"
+#~ msgid "Transfer history"
+#~ msgstr "स्थानांतरण इतिहास"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:118
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:347
@@ -6829,14 +6874,14 @@ msgstr "यात्रा"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:285
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:371
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:60
-#: apps/web/src/features/home/ui/activity-page.tsx:125
+#: apps/web/src/features/home/ui/activity-page.tsx:194
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:89
 #: apps/web/src/features/home/ui/wallet-page.tsx:183
 #: apps/web/src/features/home/ui/wallet-page.tsx:201
 #: apps/web/src/features/home/ui/wallet-page.tsx:287
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:222
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:88
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:83
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:55
@@ -6862,7 +6907,7 @@ msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "वाउचर खोजने के लिए कम से कम {VOUCHER_SEARCH_MIN_CHARS} अक्षर टाइप करें।"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:303
-#: apps/web/src/features/home/ui/activity-page.tsx:83
+#: apps/web/src/features/home/ui/activity-page.tsx:133
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:897
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:191
 msgid "Type at least two characters."
@@ -7120,6 +7165,7 @@ msgstr "छवि को पूर्ण स्क्रीन पर देख�
 msgid "View offering details: {0}"
 msgstr "ऑफ़र का विवरण देखें: {0}"
 
+#: apps/web/src/components/activity/account-swap-details-sheet.tsx:119
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:213
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:233
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:615
@@ -7266,7 +7312,7 @@ msgid "Voucher tracking details are missing."
 msgstr "वाउचर ट्रैकिंग विवरण गायब हैं।"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:305
-#: apps/web/src/components/market-bar.tsx:131
+#: apps/web/src/components/market-bar.tsx:130
 #: apps/web/src/components/resource-usage.tsx:113
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/market-list-page.tsx:120
@@ -7325,7 +7371,7 @@ msgstr "ऑन-चेन पुष्टि की प्रतीक्षा �
 msgid "Waiting for the chain…"
 msgstr "श्रृंखला की प्रतीक्षा में..."
 
-#: apps/web/src/components/navigation/bottom-navigation.tsx:36
+#: apps/web/src/components/navigation/bottom-navigation.tsx:42
 #: apps/web/src/components/wallet/recipient-address-input.tsx:188
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:113

@@ -1,82 +1,132 @@
-import { useDebouncedValue } from "#/lib/use-debounced-value";
-import { MarketFeedBar } from "#/components/market-bar";
-import { Input } from "#/components/ui/input";
-import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
-import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
+import type { AccountActivityItem, ActivityKind } from "@clc/api/features/accounts/client";
+import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import {
   RiArrowLeftDownLine,
+  RiArrowLeftRightLine,
   RiArrowRightUpLine,
   RiChat1Line,
+  RiCloseLine,
+  RiSearchLine,
   RiSparkling2Line,
 } from "react-icons/ri";
 
+import { AccountSwapDetailsSheet } from "#/components/activity/account-swap-details-sheet";
+import { ActivityFilterSheet } from "#/components/activity/activity-filter-sheet";
+import { SwapActivityAmounts, SwapActivityTitle } from "#/components/activity/swap-activity";
+import { MarketFeedBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
-import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
-import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { Input } from "#/components/ui/input";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
+import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import {
   formatTransferDate,
   formatTransferUnitValue,
 } from "#/features/wallet/logic/transfer-display";
+import { useDebouncedValue } from "#/lib/use-debounced-value";
 
-export function ActivityPage({ address }: { address?: string }) {
+export function ActivityPage({
+  address,
+  query = "",
+  types = [],
+  onQueryChange,
+  onTypesChange,
+}: {
+  address?: string;
+  query?: string;
+  types?: readonly ActivityKind[];
+  onQueryChange?: (query: string) => void;
+  onTypesChange?: (types: readonly ActivityKind[]) => void;
+}) {
   const { i18n, t } = useLingui();
-  const [query, setQuery] = useState("");
-  const term = query.trim().replace(/\s+/gu, " ");
+  const [draftQuery, setDraftQuery] = useState(query);
+  const term = draftQuery.trim().replace(/\s+/gu, " ");
   const { settled, isPending: isDebouncing } = useDebouncedValue(term);
   const tooShort = term !== "" && Array.from(term).length < 2;
   const searchReady = !isDebouncing && !tooShort;
-  const transfersQuery = useAccountTransfersInfinite(address, {
-    poll: settled === "",
+  const activityQuery = useAccountActivityInfinite(address, {
+    poll: settled === "" && types.length === 0,
     q: settled,
+    types,
     enabled: searchReady,
   });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
-  const transfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
-  const count = transfers.length;
+  const [selectedSwap, setSelectedSwap] = useState<Extract<
+    AccountActivityItem,
+    { kind: "swapped" }
+  > | null>(null);
+  const activity = activityQuery.data?.pages.flatMap((page) => page.activity) ?? [];
+
+  useEffect(() => setDraftQuery(query), [query]);
+  useEffect(() => {
+    if (!isDebouncing && settled !== query) onQueryChange?.(settled);
+  }, [isDebouncing, onQueryChange, query, settled]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
     if (
       !searchReady ||
       !target ||
-      !transfersQuery.hasNextPage ||
+      !activityQuery.hasNextPage ||
       typeof IntersectionObserver === "undefined"
     ) {
       return;
     }
-
     const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry?.isIntersecting && !transfersQuery.isFetchingNextPage) {
-        void transfersQuery.fetchNextPage();
+      if (entries[0]?.isIntersecting && !activityQuery.isFetchingNextPage) {
+        void activityQuery.fetchNextPage();
       }
     });
     observer.observe(target);
     return () => observer.disconnect();
   }, [
     searchReady,
-    transfersQuery.fetchNextPage,
-    transfersQuery.hasNextPage,
-    transfersQuery.isFetchingNextPage,
+    activityQuery.fetchNextPage,
+    activityQuery.hasNextPage,
+    activityQuery.isFetchingNextPage,
   ]);
+
+  const isFiltered = settled !== "" || types.length > 0;
 
   return (
     <div className="space-y-6">
       <h1 className="sr-only">{t`Activity`}</h1>
       <MarketFeedBar current="activity">
-        <Input
-          type="search"
-          maxLength={66}
-          aria-describedby="activity-search-help"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          aria-label={t`Search activity`}
-          placeholder={t`Search activity`}
-        />
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <RiSearchLine
+              className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              type="search"
+              maxLength={66}
+              aria-describedby="activity-search-help"
+              value={draftQuery}
+              onChange={(event) => setDraftQuery(event.target.value)}
+              aria-label={t`Search activity`}
+              placeholder={t`Search activity`}
+              className="appearance-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+            />
+            {draftQuery ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                tap
+                onClick={() => setDraftQuery("")}
+                aria-label={t`Clear search`}
+                className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
+              >
+                <RiCloseLine className="size-4" aria-hidden="true" />
+              </Button>
+            ) : null}
+          </div>
+          <ActivityFilterSheet types={types} onApply={(next) => onTypesChange?.(next)} />
+        </div>
       </MarketFeedBar>
       <p id="activity-search-help" className="text-sm text-muted-foreground">
         {tooShort ? (
@@ -87,31 +137,50 @@ export function ActivityPage({ address }: { address?: string }) {
       </p>
       <section
         className="border border-border bg-card"
-        aria-label={t`Transfer history`}
-        aria-busy={isDebouncing || transfersQuery.isFetching}
+        aria-label={t`Activity`}
+        aria-busy={isDebouncing || activityQuery.isFetching}
       >
         <div role="status" aria-live="polite" aria-atomic="true">
-          {searchReady && transfersQuery.isSuccess && transfers.length > 0 ? (
+          {searchReady && activityQuery.isSuccess && activity.length > 0 ? (
             <span className="sr-only">
-              <Plural value={count} one="# transfer shown." other="# transfers shown." />
+              <Plural
+                value={activity.length}
+                one="# activity item shown."
+                other="# activity items shown."
+              />
             </span>
           ) : null}
-          {searchReady && transfersQuery.isSuccess && transfers.length === 0 ? (
-            <p className="p-3 text-muted-foreground text-sm">
-              {term ? (
-                <Trans>No activity matches this search.</Trans>
-              ) : (
-                <Trans>No activity yet.</Trans>
-              )}
-            </p>
+          {searchReady && activityQuery.isSuccess && activity.length === 0 ? (
+            <div className="space-y-2 p-3">
+              <p className="text-muted-foreground text-sm">
+                {isFiltered ? (
+                  <Trans>No activity matches these filters.</Trans>
+                ) : (
+                  <Trans>No activity yet.</Trans>
+                )}
+              </p>
+              {isFiltered ? (
+                <Button
+                  variant="outline"
+                  tap
+                  onClick={() => {
+                    setDraftQuery("");
+                    onQueryChange?.("");
+                    onTypesChange?.([]);
+                  }}
+                >
+                  <Trans>Clear filters</Trans>
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </div>
         {searchReady ? (
           <>
-            {transfersQuery.isPending ? (
+            {activityQuery.isPending ? (
               <ListSkeleton framed={false} label={<Trans>Loading activity…</Trans>} />
             ) : null}
-            {transfersQuery.isError ? (
+            {activityQuery.isError ? (
               <div className="space-y-2 p-3">
                 <p role="alert" className="text-muted-foreground text-sm">
                   <Trans>Couldn't load activity.</Trans>
@@ -119,101 +188,27 @@ export function ActivityPage({ address }: { address?: string }) {
                 <Button
                   variant="outline"
                   tap
-                  pending={transfersQuery.isFetching}
-                  onClick={() => void transfersQuery.refetch()}
+                  pending={activityQuery.isFetching}
+                  onClick={() => void activityQuery.refetch()}
                 >
                   <Trans>Try again</Trans>
                 </Button>
               </div>
             ) : null}
-            {transfers.map((transfer, index, list) => {
-              const incoming = transfer.direction === "IN";
-              const created = isVoucherCreationTransfer(transfer);
-              const Icon = created
-                ? RiSparkling2Line
-                : incoming
-                  ? RiArrowLeftDownLine
-                  : RiArrowRightUpLine;
-              const transferDate = formatTransferDate(transfer.dateBlock);
-              const uoaLabel = formatTransferUnitValue(
-                transfer.uoaValue,
-                transfer.uoa,
-                i18n.locales?.[0] ?? i18n.locale,
-              );
-              return (
-                <button
-                  key={`${transfer.txHash}-${transfer.id}`}
-                  type="button"
-                  className={[
-                    "flex w-full items-center gap-2.5 p-3 text-start",
-                    index < list.length - 1 ? "border-b border-border" : "",
-                  ].join(" ")}
-                  onClick={() => setSelectedTransfer(transfer)}
-                >
-                  <span
-                    className={[
-                      "flex size-7 shrink-0 items-center justify-center bg-muted",
-                      created ? "text-foreground" : incoming ? "text-primary" : "text-destructive",
-                    ].join(" ")}
-                  >
-                    <Icon className="size-3.5" aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-1.5 text-sm font-medium">
-                      {created ? (
-                        <Trans>Created</Trans>
-                      ) : incoming ? (
-                        <Trans>Received</Trans>
-                      ) : (
-                        <Trans>Sent</Trans>
-                      )}
-                      {transfer.hasNote ? (
-                        <>
-                          <RiChat1Line
-                            className="size-3.5 shrink-0 text-muted-foreground"
-                            aria-hidden="true"
-                          />
-                          <span className="sr-only">
-                            <Trans>Has a message</Trans>
-                          </span>
-                        </>
-                      ) : null}
-                    </p>
-                    {/* Only the counterparty truncates: a long name and username
-                    must not push the date off the row. */}
-                    <p className="flex min-w-0 text-muted-foreground text-xs">
-                      <span className="min-w-0 truncate">
-                        {created ? (
-                          <Trans>New supply</Trans>
-                        ) : (
-                          <>
-                            {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                            <RecipientIdentityLabel address={transfer.counterpartyAddress} />
-                          </>
-                        )}
-                      </span>
-                      {transferDate ? (
-                        <span className="shrink-0 whitespace-pre">
-                          <span aria-hidden="true"> · </span>
-                          <time dateTime={transfer.dateBlock}>{transferDate}</time>
-                        </span>
-                      ) : null}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-end font-mono text-xs font-semibold">
-                    <span className="block">
-                      {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
-                      {transfer.tokenSymbol}
-                    </span>
-                    {uoaLabel ? (
-                      <span className="block text-muted-foreground">({uoaLabel})</span>
-                    ) : null}
-                  </span>
-                </button>
-              );
-            })}
+            {activity.map((item, index) => (
+              <ActivityRow
+                key={`${item.txHash}-${item.id}`}
+                item={item}
+                isLast={index === activity.length - 1}
+                locale={i18n.locales?.[0] ?? i18n.locale}
+                onOpen={() => {
+                  if (item.kind === "swapped") setSelectedSwap(item);
+                  else setSelectedTransfer(toTransferDetails(item));
+                }}
+              />
+            ))}
             <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-            {transfersQuery.isFetchingNextPage ? (
+            {activityQuery.isFetchingNextPage ? (
               <div className="p-3 text-center text-muted-foreground text-xs">
                 <Trans>Loading more…</Trans>
               </div>
@@ -231,6 +226,139 @@ export function ActivityPage({ address }: { address?: string }) {
           if (!open) setSelectedTransfer(null);
         }}
       />
+      <AccountSwapDetailsSheet
+        activity={selectedSwap}
+        open={selectedSwap !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSwap(null);
+        }}
+      />
     </div>
   );
+}
+
+function ActivityRow({
+  item,
+  isLast,
+  locale,
+  onOpen,
+}: {
+  item: AccountActivityItem;
+  isLast: boolean;
+  locale: string;
+  onOpen: () => void;
+}) {
+  if (item.kind === "swapped") {
+    const date = formatTransferDate(item.dateBlock);
+    return (
+      <button
+        type="button"
+        className={`flex w-full items-center gap-2.5 p-3 text-start ${isLast ? "" : "border-b border-border"}`}
+        onClick={onOpen}
+      >
+        <span className="flex size-7 shrink-0 items-center justify-center bg-muted text-foreground">
+          <RiArrowLeftRightLine className="size-3.5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">
+            <SwapActivityTitle symbols={[item.sent.tokenSymbol, item.received.tokenSymbol]} />
+          </p>
+          <p className="truncate text-muted-foreground text-xs">
+            <Trans>Pool</Trans> {item.poolAddresses[0] ?? "—"}
+            {date ? (
+              <>
+                <span aria-hidden="true"> · </span>
+                <time dateTime={item.dateBlock}>{date}</time>
+              </>
+            ) : null}
+          </p>
+        </div>
+        <span className="shrink-0 text-end">
+          <SwapActivityAmounts
+            outgoing={item.sent}
+            incoming={item.received}
+            protocolFee={item.protocolFee}
+            locale={locale}
+          />
+        </span>
+      </button>
+    );
+  }
+
+  const incoming = item.kind !== "sent";
+  const created = item.kind === "creation";
+  const Icon = created ? RiSparkling2Line : incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
+  const transferDate = formatTransferDate(item.dateBlock);
+  const uoaLabel = formatTransferUnitValue(item.transfer.uoaValue, item.transfer.uoa, locale);
+  return (
+    <button
+      type="button"
+      className={`flex w-full items-center gap-2.5 p-3 text-start ${isLast ? "" : "border-b border-border"}`}
+      onClick={onOpen}
+    >
+      <span
+        className={`flex size-7 shrink-0 items-center justify-center bg-muted ${created ? "text-foreground" : incoming ? "text-primary" : "text-destructive"}`}
+      >
+        <Icon className="size-3.5" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-1.5 text-sm font-medium">
+          {created ? (
+            <Trans>Created</Trans>
+          ) : incoming ? (
+            <Trans>Received</Trans>
+          ) : (
+            <Trans>Sent</Trans>
+          )}
+          {item.hasNote ? (
+            <>
+              <RiChat1Line className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span className="sr-only">
+                <Trans>Has a message</Trans>
+              </span>
+            </>
+          ) : null}
+        </p>
+        <p className="flex min-w-0 text-muted-foreground text-xs">
+          <span className="min-w-0 truncate">
+            {created ? (
+              <Trans>New supply</Trans>
+            ) : (
+              <>
+                {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
+                <RecipientIdentityLabel address={item.counterpartyAddress} />
+              </>
+            )}
+          </span>
+          {transferDate ? (
+            <span className="shrink-0 whitespace-pre">
+              <span aria-hidden="true"> · </span>
+              <time dateTime={item.dateBlock}>{transferDate}</time>
+            </span>
+          ) : null}
+        </p>
+      </div>
+      <span className="shrink-0 text-end font-mono text-xs font-semibold">
+        <span className="block">
+          {formatTokenAmount(item.transfer.amount, item.transfer.tokenDecimals)}{" "}
+          {item.transfer.tokenSymbol}
+        </span>
+        {uoaLabel ? <span className="block text-muted-foreground">({uoaLabel})</span> : null}
+      </span>
+    </button>
+  );
+}
+
+function toTransferDetails(
+  item: Exclude<AccountActivityItem, { kind: "swapped" }>,
+): TransferDetails {
+  return {
+    txHash: item.txHash,
+    dateBlock: item.dateBlock,
+    direction: item.kind === "sent" ? "OUT" : "IN",
+    senderAddress: item.senderAddress,
+    recipientAddress: item.recipientAddress,
+    ...item.transfer,
+    success: item.success,
+  };
 }

@@ -134,26 +134,37 @@ beforeEach(() => {
 });
 
 describe("NavigationShell", () => {
-  it("owns the unfiltered map as the Market root and every list as beneath it", async () => {
+  it("keeps Market selected while its button toggles between the map and All", async () => {
     const map = await renderShell("/");
     const mapLink = await screen.findByRole("link", { name: "Market" });
-    expect(mapLink.getAttribute("href")).toBe("/");
-    expect(mapLink.getAttribute("aria-current")).toBe("page");
+    expect(mapLink.getAttribute("href")).toBe("/market?scope=all");
+    expect(mapLink.getAttribute("aria-current")).toBe("true");
 
     map.unmount();
     await renderShell("/market?scope=pools");
-    expect((await screen.findByRole("link", { name: "Market" })).getAttribute("aria-current")).toBe(
-      "true",
-    );
+    const listLink = await screen.findByRole("link", { name: "Market" });
+    expect(listLink.getAttribute("href")).toBe("/?tab=market&view=map");
+    expect(listLink.getAttribute("aria-current")).toBe("true");
   });
 
-  it("returns a list to the map", async () => {
+  it("returns a list to the map while preserving shared market filters", async () => {
     const { router } = await renderShell("/market?scope=pools&q=food");
 
     const market = await screen.findByRole("link", { name: "Market" });
     fireEvent.click(market);
 
-    await waitFor(() => expect(router.state.location.href).toBe("/"));
+    await waitFor(() => expect(router.state.location.href).toBe("/?q=food&tab=market&view=map"));
+  });
+
+  it("treats filtered and voucher-sheet home states as the map", async () => {
+    const address = `0x${"2".repeat(40)}`;
+    const { router } = await renderShell(`/?tab=market&view=map&q=food&voucher=${address}`);
+
+    const market = await screen.findByRole("link", { name: "Market" });
+    expect(market.getAttribute("href")).toBe("/market?q=food&scope=all");
+    fireEvent.click(market);
+
+    await waitFor(() => expect(router.state.location.href).toBe("/market?q=food&scope=all"));
   });
 
   it("keeps Posts selected on an authenticated report", async () => {

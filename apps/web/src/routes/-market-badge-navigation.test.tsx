@@ -100,19 +100,10 @@ describe("market badge navigation", () => {
     expect(query(history, "q")).toBe("bike");
   });
 
-  it("returns to the map from the Map button, and Back reopens the list", async () => {
-    const history = renderMarket("/market?scope=offers&q=bike");
+  it("does not render a redundant floating Map button on a list", async () => {
+    renderMarket("/market?scope=offers&q=bike");
     expect(await screen.findByRole("heading", { name: "offers" })).toBeTruthy();
-
-    fireEvent.click(screen.getByRole("link", { name: "Map" }));
-    expect(await screen.findByRole("heading", { name: "map" })).toBeTruthy();
-    expect(query(history, "q")).toBe("bike");
-    expect(query(history, "scope")).toBeNull();
-
-    await back(history);
-
-    expect(await screen.findByRole("heading", { name: "offers" })).toBeTruthy();
-    expect(query(history, "scope")).toBe("offers");
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 
   it("returns to the map from the open list's badge", async () => {
