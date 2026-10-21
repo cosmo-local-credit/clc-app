@@ -44,6 +44,7 @@ export function HomePage({
   const backendLogout = useBackendLogout();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const currentTab = !isAuthenticated && isPrivateHomeTab(activeTab) ? "market" : activeTab;
+  const isFeedTab = currentTab === "activity" || currentTab === "posts";
   // A connected wallet without a backend session is still a guest
   // (docs/AUTH.md), so an expired session must not keep that wallet's scope.
   const locationOwner = isAuthenticated && address ? address.toLowerCase() : GUEST_STORAGE_OWNER;
@@ -97,7 +98,7 @@ export function HomePage({
         </NearbyCatalog>
       ) : (
         <div className="min-h-[100svh] pb-bottom-nav">
-          <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
+          <main className={isFeedTab ? "px-4" : "px-6 pt-[calc(env(safe-area-inset-top)+1rem)]"}>
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
             {currentTab === "activity" ? (
               <ActivityPage

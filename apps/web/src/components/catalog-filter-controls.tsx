@@ -43,18 +43,21 @@ import {
   type VoucherSearchControls,
 } from "#/features/home/hooks/use-voucher-search";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { cn } from "#/lib/utils";
 
 export function CatalogSearchField({
   filter,
   label,
+  embedded = false,
 }: {
   filter: CatalogFilterControls;
   label: string;
+  embedded?: boolean;
 }) {
   const { t } = useLingui();
 
   return (
-    <div className="relative">
+    <div className={cn("relative", embedded && "h-full min-w-0 flex-1")}>
       <RiSearchLine
         className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
@@ -65,16 +68,24 @@ export function CatalogSearchField({
         onChange={(event) => filter.setTerm(event.target.value)}
         aria-label={label}
         placeholder={label}
-        className="appearance-none rounded-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+        className={cn(
+          "appearance-none rounded-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden",
+          embedded && "h-full border-0 pe-11 focus-visible:border-transparent",
+        )}
       />
       {filter.term !== "" ? (
         <Button
           variant="ghost"
-          size="icon"
-          tap
+          size={embedded ? "icon-lg" : "icon"}
+          tap={!embedded}
           onClick={filter.clearTerm}
           aria-label={t`Clear search`}
-          className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
+          className={cn(
+            "absolute top-1/2 end-0 -translate-y-1/2 border-0 text-muted-foreground focus-visible:border-transparent",
+            embedded
+              ? "bg-card hover:bg-muted hover:text-foreground"
+              : "bg-transparent hover:bg-transparent hover:text-foreground focus-visible:bg-transparent",
+          )}
         >
           <RiCloseLine className="size-4" aria-hidden="true" />
         </Button>

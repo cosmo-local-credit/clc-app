@@ -160,15 +160,22 @@ describe("MarketFeedBar", () => {
     "places the menu immediately before the %s search controls",
     (current) => {
       render(
-        <MarketFeedBar current={current}>
-          <input aria-label={`Search ${current}`} />
-        </MarketFeedBar>,
+        <MarketFeedBar
+          current={current}
+          search={<input aria-label={`Search ${current}`} />}
+          filters={<button type="button">Filters</button>}
+        />,
       );
 
       const menu = screen.getByRole("button", { name: "Open menu" });
       const search = screen.getByRole("textbox", { name: `Search ${current}` });
+      const filters = screen.getByRole("button", { name: "Filters" });
+      const control = search.closest('[data-slot="market-search-control"]');
       expect(menu.parentElement?.firstElementChild).toBe(menu);
-      expect(menu.nextElementSibling?.contains(search)).toBe(true);
+      expect(menu.nextElementSibling).toBe(control);
+      expect(control?.contains(search)).toBe(true);
+      expect(control?.contains(filters)).toBe(true);
+      expect(control?.className).toContain("h-11");
     },
   );
 });

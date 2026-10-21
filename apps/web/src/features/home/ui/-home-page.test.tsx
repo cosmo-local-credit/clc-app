@@ -127,17 +127,23 @@ describe("HomePage tabs", () => {
 
   it("renders the requested wallet tab", () => {
     renderHome(<HomePage activeTab="wallet" />);
-    expect(screen.getByTestId("wallet-page")).toBeTruthy();
+    const main = screen.getByTestId("wallet-page").closest("main");
+    expect(main?.className).toContain("px-6");
+    expect(main?.className).toContain("safe-area-inset-top");
   });
 
   it("renders the requested activity tab", () => {
     renderHome(<HomePage activeTab="activity" />);
-    expect(screen.getByTestId("activity-page")).toBeTruthy();
+    const main = screen.getByTestId("activity-page").closest("main");
+    expect(main?.className).toContain("px-4");
+    expect(main?.className).not.toContain("safe-area-inset-top");
   });
 
   it("renders the requested posts tab", () => {
     renderHome(<HomePage activeTab="posts" />);
-    expect(screen.getByTestId("posts-page")).toBeTruthy();
+    const main = screen.getByTestId("posts-page").closest("main");
+    expect(main?.className).toContain("px-4");
+    expect(main?.className).not.toContain("safe-area-inset-top");
   });
 
   it("renders the requested settings tab", () => {
