@@ -49,10 +49,10 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Choose a location",
         message: "Choose a location",
       });
-    case "Choose a preferred currency":
+    case "Choose a preferred unit of account":
       return i18n._({
-        id: "Choose a preferred currency",
-        message: "Choose a preferred currency",
+        id: "Choose a preferred unit of account",
+        message: "Choose a preferred unit of account",
       });
     case "Bio must be 500 characters or fewer":
       return i18n._({
@@ -83,6 +83,16 @@ export function translateValidationError(error: string, i18n: I18n) {
       return i18n._({
         id: "Use letters and numbers, for example KES",
         message: "Use letters and numbers, for example KES",
+      });
+    case "Choose a unit of account":
+      return i18n._({
+        id: "Choose a unit of account",
+        message: "Choose a unit of account",
+      });
+    case "Unit must be 32 characters or fewer":
+      return i18n._({
+        id: "Unit must be 32 characters or fewer",
+        message: "Unit must be 32 characters or fewer",
       });
     case "Voucher name is required":
       return i18n._({

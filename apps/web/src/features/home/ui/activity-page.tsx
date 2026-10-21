@@ -3,7 +3,7 @@ import { MarketFeedBar } from "#/components/market-bar";
 import { Input } from "#/components/ui/input";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import {
   RiArrowLeftDownLine,
@@ -36,6 +36,7 @@ export function ActivityPage({ address }: { address?: string }) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
   const transfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
+  const count = transfers.length;
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -73,17 +74,15 @@ export function ActivityPage({ address }: { address?: string }) {
           aria-describedby="activity-search-help"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          aria-label={t({ id: "Search activity", message: "Search activity" })}
-          placeholder={t({ id: "Search activity", message: "Search activity" })}
+          aria-label={t`Search activity`}
+          placeholder={t`Search activity`}
         />
       </MarketFeedBar>
       <p id="activity-search-help" className="text-sm text-muted-foreground">
         {tooShort ? (
           <Trans>Type at least two characters.</Trans>
         ) : (
-          <Trans id="Search by voucher name, symbol, address or transaction hash.">
-            Search by voucher name, symbol, address or transaction hash.
-          </Trans>
+          <Trans>Search by voucher name, symbol, address or transaction hash.</Trans>
         )}
       </p>
       <section
@@ -94,17 +93,13 @@ export function ActivityPage({ address }: { address?: string }) {
         <div role="status" aria-live="polite" aria-atomic="true">
           {searchReady && transfersQuery.isSuccess && transfers.length > 0 ? (
             <span className="sr-only">
-              {i18n._("{count, plural, one {# transfer shown.} other {# transfers shown.}}", {
-                count: transfers.length,
-              })}
+              <Plural value={count} one="# transfer shown." other="# transfers shown." />
             </span>
           ) : null}
           {searchReady && transfersQuery.isSuccess && transfers.length === 0 ? (
             <p className="p-3 text-muted-foreground text-sm">
               {term ? (
-                <Trans id="No activity matches this search.">
-                  No activity matches this search.
-                </Trans>
+                <Trans>No activity matches this search.</Trans>
               ) : (
                 <Trans>No activity yet.</Trans>
               )}

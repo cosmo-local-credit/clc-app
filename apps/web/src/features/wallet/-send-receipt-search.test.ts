@@ -24,7 +24,7 @@ describe("sendReceiptSearchSchema", () => {
   });
 
   it("ignores incomplete or malformed valuation parameters", () => {
-    expect(sendReceiptSearchSchema.parse({ uoaValue: "1.5", uoa: "KES and USD" })).toMatchObject({
+    expect(sendReceiptSearchSchema.parse({ uoaValue: "1.5", uoa: "x".repeat(33) })).toMatchObject({
       uoaValue: undefined,
       uoa: undefined,
       uoaUnavailable: undefined,

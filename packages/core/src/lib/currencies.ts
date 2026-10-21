@@ -168,25 +168,37 @@ export const UNIT_OF_ACCOUNT_OPTIONS = [...ISO_CURRENCIES, { code: "HOUR", name:
 
 /** A government-issued currency, excluding CLC's time-based unit of account. */
 export type IsoCurrency = (typeof ISO_CURRENCIES)[number]["code"];
-export type UnitOfAccount = (typeof UNIT_OF_ACCOUNT_OPTIONS)[number]["code"];
+/** A built-in code or a validated reusable custom human-readable label. */
+export type UnitOfAccount = string;
 export type UnitOfAccountOption = (typeof UNIT_OF_ACCOUNT_OPTIONS)[number];
 
 export function isIsoCurrency(value: unknown): value is IsoCurrency {
   return typeof value === "string" && ISO_CURRENCIES.some((option) => option.code === value);
 }
 
-export function findIsoCurrencyOption(code: string): (typeof ISO_CURRENCIES)[number] | null {
-  return ISO_CURRENCIES.find((option) => option.code === code) ?? null;
-}
-
 export function isUnitOfAccount(value: unknown): value is UnitOfAccount {
-  return (
-    typeof value === "string" && UNIT_OF_ACCOUNT_OPTIONS.some((option) => option.code === value)
-  );
+  if (typeof value !== "string") return false;
+  const normalized = value.trim().replace(/\s+/g, " ");
+  return normalized.length > 0 && Array.from(normalized).length <= 32;
 }
 
 export function findUnitOfAccountOption(code: string): UnitOfAccountOption | null {
-  return UNIT_OF_ACCOUNT_OPTIONS.find((option) => option.code === code) ?? null;
+  return (
+    UNIT_OF_ACCOUNT_OPTIONS.find((option) => option.code.toLowerCase() === code.toLowerCase()) ??
+    null
+  );
+}
+
+export function normalizeUnitOfAccount(value: string): string {
+  const collapsed = value.trim().replace(/\s+/g, " ");
+  const builtIn = findUnitOfAccountOption(collapsed);
+  if (builtIn) return builtIn.code;
+  return collapsed
+    .toLocaleLowerCase()
+    .replace(
+      /(^|\s)(\p{L})/gu,
+      (_match, space: string, letter: string) => `${space}${letter.toLocaleUpperCase()}`,
+    );
 }
 
 export function formatUnitOfAccountOption(option: { code: string; name: string }) {

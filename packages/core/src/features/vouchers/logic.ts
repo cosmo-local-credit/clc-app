@@ -6,7 +6,7 @@ import {
   optionalTermsSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
-import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
+import { isUnitOfAccount, normalizeUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
@@ -68,9 +68,9 @@ export const voucherProfileTextSchema = z.object({
   voucherUoa: z
     .string()
     .trim()
-    .toUpperCase()
-    .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
-      message: "Use letters and numbers, for example KES",
+    .transform((value) => (value ? normalizeUnitOfAccount(value) : ""))
+    .refine((value) => value === "" || isUnitOfAccount(value), {
+      message: "Use 32 characters or fewer",
     }),
   voucherValue: voucherPriceSchema.or(z.literal("")),
   email: optionalEmailSchema,
@@ -80,7 +80,7 @@ export const voucherProfileTextSchema = z.object({
 });
 
 export const voucherUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
-  message: "Choose a currency",
+  message: "Choose a unit of account",
 });
 const voucherTypeSchema = z.enum(["standard", "expiring"]);
 export type VoucherUnit = z.infer<typeof voucherUnitSchema>;

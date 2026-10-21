@@ -1,6 +1,7 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { poolDescriptionSchema } from "@clc/core/features/pools/logic";
+import { isUnitOfAccount, normalizeUnitOfAccount } from "@clc/core/lib/currencies";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
@@ -49,9 +50,9 @@ const profileSchema = z
     unitOfAccount: z
       .string()
       .trim()
-      .toUpperCase()
-      .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
-        message: "Use letters and numbers, for example KES",
+      .transform((value) => (value ? normalizeUnitOfAccount(value) : ""))
+      .refine((value) => value === "" || isUnitOfAccount(value), {
+        message: "Use 32 characters or fewer",
       }),
     email: optionalEmailSchema,
     website: optionalWebsiteSchema,
@@ -212,7 +213,13 @@ export function EditPoolProfileSheet({
                     id={field.name}
                     value={field.state.value}
                     onValueChange={field.handleChange}
+                    disabled={pool.quoterType === "oracle"}
                   />
+                  {pool.quoterType === "oracle" ? (
+                    <p className="text-muted-foreground text-xs">
+                      The unit of account is fixed by this pool's deployed oracle.
+                    </p>
+                  ) : null}
                 </Field>
               )}
             </form.Field>

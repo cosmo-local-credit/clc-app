@@ -1,6 +1,9 @@
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 
-import { usePoolQuoterKind, usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
+import {
+  usePoolQuoterKind,
+  usePoolVoucherRatesByAddress,
+} from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 import { buildPoolHoldings } from "#/features/pools/logic/pool-holdings";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
@@ -28,13 +31,19 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
     ],
     true,
   );
-  // `priceIndex` exists only on RelativeQuoter, and the rate read normalizes a
-  // reverted call to parity — so on an oracle- or decimal-quoted pool every
-  // voucher would come back at 1:1 and the screen would state a valuation
-  // nothing on chain supports. Ask only where the answer means something.
+  // RelativeQuoter supplies exact per-voucher rates. Decimal pools are defined
+  // as equal-value and need no read; oracle pools cannot price arbitrary custom
+  // units here and remain unavailable.
   const quoter = usePoolQuoterKind(pool);
   const isRelative = quoter.kind === "relative";
-  const rates = usePoolVoucherRates(pool, vouchers, isRelative);
+  const isDecimal = quoter.kind === "decimal";
+  const rateAddresses = [
+    ...vouchers.map((voucher) => voucher.tokenAddress),
+    ...(indexedTokens ?? []).map((token) => token.tokenAddress),
+  ];
+  const rates = usePoolVoucherRatesByAddress(pool, rateAddresses, isRelative, {
+    failOnReadError: true,
+  });
   // The indexer's view of the same address carries the vouchers the catalog
   // has not projected — a pool seeded at `initialize` holds tokens no catalog
   // row mentions, and a screen that dropped them would report a pool as emptier
@@ -45,13 +54,16 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
     treasury: treasury.data,
     indexedTokens,
     rates: isRelative ? rates.data : undefined,
-    priced: isRelative,
+    priced: isRelative || isDecimal,
+    requireRates: isRelative,
   });
 
   return {
     holdings,
     unit: pool.unitOfAccount ?? pool.symbol,
-    isPending: treasury.isPending && indexed.isPending && holdings.length === 0,
+    isPending:
+      (treasury.isPending && indexed.isPending && holdings.length === 0) ||
+      (isRelative && rateAddresses.length > 0 && rates.isPending),
     /**
      * True until the chain has answered for every token the pool lists. Before
      * then a cap is the catalog's and a headroom is measured against a zero
@@ -61,12 +73,16 @@ export function usePoolHoldings(pool: UserPool, vouchers: PoolVoucher[]) {
      * `isLoading`, not `isPending`, on the treasury: a read with no token to
      * cover never runs, and must not hold the screen forever.
      */
-    capsPending: indexed.isPending || treasury.isLoading,
-    isError: treasury.isError && indexed.isError,
-    isFetching: treasury.isFetching || indexed.isFetching,
+    capsPending:
+      indexed.isPending ||
+      treasury.isLoading ||
+      (isRelative && rateAddresses.length > 0 && rates.isPending),
+    isError: (treasury.isError && indexed.isError) || (isRelative && rates.isError),
+    isFetching: treasury.isFetching || indexed.isFetching || (isRelative && rates.isFetching),
     refetch: () => {
       void treasury.refetch();
       void indexed.refetch();
+      if (isRelative) void rates.refetch();
     },
   };
 }

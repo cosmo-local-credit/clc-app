@@ -4,6 +4,7 @@ import {
   PoolOracleUnavailableError,
   type PoolPricing,
   chainHasPoolOracle,
+  hasPoolOracleBaseCurrency,
   poolCreateSchemaForChain,
   poolDeploymentContractCount,
   poolDescriptionSchema,
@@ -26,6 +27,7 @@ import {
 } from "@clc/core/lib/contact";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { findUnitOfAccountOption } from "@clc/core/lib/currencies";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -422,9 +424,17 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         <UnitOfAccountCombobox
                           id="pool-unit"
                           value={field.state.value}
-                          onValueChange={field.handleChange}
-                          placeholder={t`Search currencies`}
-                          emptyMessage={t`No currencies found.`}
+                          onValueChange={(unit) => {
+                            field.handleChange(unit);
+                            if (
+                              form.getFieldValue("pricing") === "oracle" &&
+                              !hasPoolOracleBaseCurrency(unit, activeChainId)
+                            ) {
+                              form.setFieldValue("pricing", "relative");
+                            }
+                          }}
+                          placeholder={t`Search units of account`}
+                          emptyMessage={t`No units of account found`}
                         />
                       </Field>
                     )}
@@ -531,7 +541,20 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                               value="oracle"
                               title={t`Oracle pricing`}
                               description={t`Follows live price feeds for the selected currency`}
+                              disabled={
+                                !hasPoolOracleBaseCurrency(
+                                  form.getFieldValue("unitOfAccount"),
+                                  activeChainId,
+                                )
+                              }
                             />
+                          ) : null}
+                          {!findUnitOfAccountOption(form.getFieldValue("unitOfAccount")) ? (
+                            <p className="text-muted-foreground text-xs">
+                              <Trans>
+                                Custom units have no price feed. Relative pricing is used instead.
+                              </Trans>
+                            </p>
                           ) : null}
                         </RadioGroup>
                       </div>
@@ -1001,15 +1024,17 @@ function PricingOption({
   title,
   description,
   isDefault = false,
+  disabled = false,
 }: {
   value: PoolPricing;
   title: string;
   description: string;
   isDefault?: boolean;
+  disabled?: boolean;
 }) {
   return (
-    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05]">
-      <RadioGroupItem value={value} className="mt-0.5" />
+    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05] has-[[data-disabled]]:cursor-default has-[[data-disabled]]:opacity-50">
+      <RadioGroupItem value={value} className="mt-0.5" disabled={disabled} />
       <span>
         <span className="flex flex-wrap items-center gap-2">
           <strong className="text-sm font-semibold">{title}</strong>

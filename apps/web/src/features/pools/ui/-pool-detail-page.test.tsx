@@ -81,6 +81,14 @@ vi.mock("#/hooks/use-deployment", () => ({
   }),
 }));
 
+vi.mock("#/hooks/use-vocabulary", () => ({
+  useUnitsOfAccount: () => ({
+    data: [],
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}));
+
 // Cropping and uploading are covered by the shared field's tests.
 vi.mock("#/features/images/use-image-upload", () => ({
   useImageUpload: () => ({
@@ -402,6 +410,18 @@ describe("PoolDetailPage pool details editor", () => {
     await waitFor(() =>
       expect(mocks.updateProfile).toHaveBeenCalledWith({ ...savedProfile, unitOfAccount: "TZS" }),
     );
+  });
+
+  it("keeps an existing oracle pool's unit of account read-only", async () => {
+    mocks.poolResult.data = pool({ quoterType: "oracle", unitOfAccount: "KES" });
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    expect((within(dialog).getByLabelText("Priced in") as HTMLInputElement).disabled).toBe(true);
+    expect(
+      within(dialog).getByText("The unit of account is fixed by this pool's deployed oracle."),
+    ).toBeTruthy();
   });
 });
 

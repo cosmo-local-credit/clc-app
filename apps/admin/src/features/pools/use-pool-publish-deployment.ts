@@ -10,6 +10,7 @@ import {
   getPoolTrackingOutcome,
 } from "@clc/api/features/pools/deploy-client";
 import { poolKeys } from "@clc/api/features/pools/queries";
+import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import type { PoolDeployPayload, PoolPricing } from "@clc/core/features/pools/logic";
 import { getPoolDeploymentStages } from "@clc/core/features/pools/logic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -51,7 +52,11 @@ export function usePoolPublishDeployment() {
 
   const deploy = useMutation({
     mutationFn: (payload: PoolDeployPayload) => clcApi.poolDeploy.deployPool(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
+        queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
+      ]),
   });
 
   const tracking = useQuery({

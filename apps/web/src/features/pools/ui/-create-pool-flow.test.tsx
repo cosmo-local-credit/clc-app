@@ -420,6 +420,31 @@ describe("CreatePoolFlow", () => {
     );
   });
 
+  it("switches oracle pricing to relative when a custom unit is added", async () => {
+    renderFlow(<CreatePoolFlow step="pool" />);
+    fireEvent.click(screen.getByText("Advanced"));
+
+    fireEvent.click(screen.getByRole("radio", { name: /Oracle pricing/ }));
+    expect(screen.getByRole("radio", { name: /Oracle pricing/ }).hasAttribute("data-checked")).toBe(
+      true,
+    );
+
+    const unit = screen.getByRole("combobox", { name: "Unit of Account" });
+    fireEvent.click(unit);
+    fireEvent.change(unit, { target: { value: "community   credits" } });
+    fireEvent.click(await screen.findByRole("button", { name: "Add “Community Credits”" }));
+
+    expect(
+      screen.getByRole("radio", { name: /Relative pricing/ }).hasAttribute("data-checked"),
+    ).toBe(true);
+    expect(
+      screen.getByRole("radio", { name: /Oracle pricing/ }).hasAttribute("data-disabled"),
+    ).toBe(true);
+    expect(
+      screen.getByText("Custom units have no price feed. Relative pricing is used instead."),
+    ).toBeTruthy();
+  });
+
   it("requires the linked platform terms before publishing", () => {
     renderFlow(<CreatePoolFlow step="review" />);
 

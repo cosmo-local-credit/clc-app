@@ -1,20 +1,20 @@
+import { useLingui } from "@lingui/react/macro";
+import { validateCustomUnit } from "@clc/core/features/vocabulary/logic";
 import {
   findUnitOfAccountOption,
   formatUnitOfAccountOption,
+  normalizeUnitOfAccount,
   UNIT_OF_ACCOUNT_OPTIONS,
   type UnitOfAccount,
 } from "@clc/core/lib/currencies";
 import { useMemo } from "react";
 
+import { Button } from "#/components/ui/button";
 import { SearchableSelect, type SearchableOption } from "#/components/ui/searchable-select";
+import { useUnitsOfAccount } from "#/hooks/use-vocabulary";
 
 /**
- * Searchable single-select over the stable currency/UoA catalog.
- *
- * A draft may already hold a code the catalog does not list — an older draft, or
- * one restored from storage — so that code is offered as its own row rather than
- * silently blanked. Choosing it changes nothing: only a catalog code is a value
- * this picker will hand back.
+ * Reusable built-in and server-backed custom Unit-of-Account selector.
  */
 export function UnitOfAccountCombobox({
   id,
@@ -22,36 +22,67 @@ export function UnitOfAccountCombobox({
   onValueChange,
   placeholder,
   emptyMessage,
+  ariaLabel,
+  ariaInvalid,
+  disabled,
 }: {
   id: string;
   value: string;
   onValueChange: (value: UnitOfAccount) => void;
   placeholder: string;
   emptyMessage: string;
+  ariaLabel?: string;
+  ariaInvalid?: boolean;
+  disabled?: boolean;
 }) {
+  const { t } = useLingui();
+  const vocabulary = useUnitsOfAccount();
   const options = useMemo<SearchableOption[]>(() => {
-    const catalog = UNIT_OF_ACCOUNT_OPTIONS.map((option) => ({
-      value: option.code,
-      label: formatUnitOfAccountOption(option),
-    }));
-    if (!value || findUnitOfAccountOption(value)) return catalog;
-    return [
-      { value, label: formatUnitOfAccountOption({ code: value, name: "Custom" }) },
-      ...catalog,
-    ];
-  }, [value]);
+    const byKey = new Map<string, SearchableOption>();
+    for (const option of UNIT_OF_ACCOUNT_OPTIONS) {
+      byKey.set(option.code.toLowerCase(), {
+        value: option.code,
+        label: formatUnitOfAccountOption(option),
+      });
+    }
+    for (const entry of vocabulary.data ?? []) {
+      const builtIn = findUnitOfAccountOption(entry.value);
+      const canonical = builtIn?.code ?? entry.value;
+      byKey.set(canonical.toLowerCase(), {
+        value: canonical,
+        label: builtIn ? formatUnitOfAccountOption(builtIn) : canonical,
+      });
+    }
+    if (value && !byKey.has(value.toLowerCase())) {
+      byKey.set(value.toLowerCase(), { value, label: value });
+    }
+    return [...byKey.values()];
+  }, [value, vocabulary.data]);
 
   return (
-    <SearchableSelect
-      id={id}
-      options={options}
-      value={value}
-      onValueChange={(next) => {
-        if (!findUnitOfAccountOption(next)) return;
-        onValueChange(next as UnitOfAccount);
-      }}
-      placeholder={placeholder}
-      emptyMessage={emptyMessage}
-    />
+    <div className="space-y-2">
+      <SearchableSelect
+        id={id}
+        options={options}
+        value={value}
+        onValueChange={onValueChange}
+        placeholder={placeholder}
+        emptyMessage={emptyMessage}
+        createLabel={(next) => t`Add “${next}”`}
+        normalizeCustomValue={normalizeUnitOfAccount}
+        validateCustomValue={validateCustomUnit}
+        ariaLabel={ariaLabel}
+        ariaInvalid={ariaInvalid}
+        disabled={disabled}
+      />
+      {vocabulary.isError ? (
+        <div className="flex items-center justify-between gap-2 text-destructive text-xs">
+          <span>{t`Couldn't load units of account.`}</span>
+          <Button type="button" variant="outline" tap onClick={() => vocabulary.refetch()}>
+            {t`Retry`}
+          </Button>
+        </div>
+      ) : null}
+    </div>
   );
 }
