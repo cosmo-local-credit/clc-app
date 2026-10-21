@@ -1,4 +1,4 @@
-import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
+import { isUnitOfAccount, normalizeUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import { type LocationInput, locationSchema } from "../location/logic";
 
 /**
@@ -62,7 +62,7 @@ export function profilePrefill(profile: ProfileDefaults): ProfilePrefill {
     locationName: profile.locationName,
     country: profile.country,
   });
-  const preferredCurrency = profile.preferredCurrency?.trim().toUpperCase();
+  const preferredCurrency = profile.preferredCurrency?.trim().replace(/\s+/g, " ");
 
   return {
     name: profile.name?.trim() ?? "",
@@ -71,7 +71,9 @@ export function profilePrefill(profile: ProfileDefaults): ProfilePrefill {
     website: profile.website?.trim() ?? "",
     description: profile.bio?.trim() ?? "",
     location: location.success ? location.data : undefined,
-    unitOfAccount: isUnitOfAccount(preferredCurrency) ? preferredCurrency : undefined,
+    unitOfAccount: isUnitOfAccount(preferredCurrency)
+      ? normalizeUnitOfAccount(preferredCurrency)
+      : undefined,
     imageUrl: profile.avatarUrl?.trim() ?? "",
   };
 }

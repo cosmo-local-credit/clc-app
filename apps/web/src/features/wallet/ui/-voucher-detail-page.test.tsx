@@ -184,6 +184,11 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
 }));
 
 vi.mock("#/hooks/use-vocabulary", () => ({
+  useUnitsOfAccount: () => ({
+    data: [],
+    isError: false,
+    refetch: vi.fn(),
+  }),
   useOfferingUnits: () => ({
     data: [
       "kg",

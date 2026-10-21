@@ -84,4 +84,19 @@ describe("shared pool holdings", () => {
       unitValueRaw: null,
     });
   });
+
+  it("values decimal-pool holdings at exact parity without a rate read", () => {
+    const [holding] = buildPoolHoldings({
+      pool: { limiterAddress: "0xlimiter" },
+      vouchers: [voucher],
+      treasury,
+      priced: true,
+    });
+
+    expect(holding).toMatchObject({
+      liquidityRaw: "40000000",
+      unitValueRaw: "40000000",
+      headroomUnitValueRaw: "50000000",
+    });
+  });
 });

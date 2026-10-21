@@ -1,11 +1,17 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import type { VocabularyClient } from "./client";
-import { adminVocabularyQueryOptions, offeringUnitsQueryOptions, vocabularyKeys } from "./queries";
+import {
+  adminVocabularyQueryOptions,
+  offeringUnitsQueryOptions,
+  unitsOfAccountQueryOptions,
+  vocabularyKeys,
+} from "./queries";
 
 function stubClient(overrides: Partial<VocabularyClient> = {}) {
   return {
     getOfferingUnits: vi.fn().mockResolvedValue([]),
-    getVocabulary: vi.fn().mockResolvedValue({ tags: [], units: [] }),
+    getUnitsOfAccount: vi.fn().mockResolvedValue([]),
+    getVocabulary: vi.fn().mockResolvedValue({ tags: [], units: [], unitsOfAccount: [] }),
     deleteTag: vi.fn(),
     deleteUnit: vi.fn(),
     renameValue: vi.fn(),
@@ -17,10 +23,29 @@ describe("vocabularyKeys", () => {
   // The admin delete invalidates the whole vocabulary namespace, so both reads
   // have to hang off `all` or a deleted tag survives in the pickers.
   it("nests both reads under `all`", () => {
-    for (const key of [vocabularyKeys.offeringUnits(), vocabularyKeys.admin()]) {
+    for (const key of [
+      vocabularyKeys.offeringUnits(),
+      vocabularyKeys.unitsOfAccount(),
+      vocabularyKeys.admin(),
+    ]) {
       expect(key.slice(0, vocabularyKeys.all.length)).toEqual([...vocabularyKeys.all]);
     }
     expect(vocabularyKeys.offeringUnits()).not.toEqual(vocabularyKeys.admin());
+    expect(vocabularyKeys.unitsOfAccount()).not.toEqual(vocabularyKeys.admin());
+  });
+});
+
+describe("unitsOfAccountQueryOptions", () => {
+  it("passes the query signal and keeps the shared list fresh for five minutes", async () => {
+    const getUnitsOfAccount = vi.fn().mockResolvedValue([{ value: "Hours" }]);
+    const options = unitsOfAccountQueryOptions(stubClient({ getUnitsOfAccount }));
+    const signal = new AbortController().signal;
+
+    await expect(
+      options.queryFn?.({ signal } as Parameters<NonNullable<typeof options.queryFn>>[0]),
+    ).resolves.toEqual([{ value: "Hours" }]);
+    expect(getUnitsOfAccount).toHaveBeenCalledWith(signal);
+    expect(options.staleTime).toBe(5 * 60_000);
   });
 });
 
@@ -49,7 +74,7 @@ describe("adminVocabularyQueryOptions", () => {
   });
 
   it("passes the query's signal through", async () => {
-    const getVocabulary = vi.fn().mockResolvedValue({ tags: [], units: [] });
+    const getVocabulary = vi.fn().mockResolvedValue({ tags: [], units: [], unitsOfAccount: [] });
     const options = adminVocabularyQueryOptions(stubClient({ getVocabulary }));
     const signal = new AbortController().signal;
 

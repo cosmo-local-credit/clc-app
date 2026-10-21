@@ -4,6 +4,7 @@ import { useConnection } from "wagmi";
 import type { ProfilePayload, ProfileResult } from "@clc/api/features/auth/client";
 import { authKeys } from "@clc/api/features/auth/queries";
 import { recipientKeys } from "@clc/api/features/recipients/queries";
+import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { authClient } from "#/lib/api/auth";
 
 export function useUpdateProfile() {
@@ -25,6 +26,7 @@ export function useUpdateProfile() {
       return Promise.all([
         queryClient.invalidateQueries({ queryKey: authKeys.profile(address) }),
         queryClient.invalidateQueries({ queryKey: recipientKeys.all }),
+        queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
         queryClient.invalidateQueries({
           predicate: (query) =>
             query.queryKey.some((part) => typeof part === "string" && part.startsWith("nearby:")),

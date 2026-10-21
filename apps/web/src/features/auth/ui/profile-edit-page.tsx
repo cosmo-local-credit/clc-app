@@ -1,7 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
 import { type ProfileEditInput, profileEditSchema } from "@clc/core/features/signup/logic";
-import { isIsoCurrency } from "@clc/core/lib/currencies";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
@@ -9,7 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import { CurrencySelect } from "#/components/ui/currency-select";
+import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
@@ -98,9 +97,8 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
     location: initialLocation,
     // Accounts made before profile preferences existed still get a useful,
     // editable starting point the first time their profile is opened.
-    preferredCurrency: isIsoCurrency(profile.preferredCurrency)
-      ? profile.preferredCurrency
-      : preferredCurrencyForCountry(profile.country),
+    preferredCurrency:
+      profile.preferredCurrency?.trim() || preferredCurrencyForCountry(profile.country),
     bio: profile.bio ?? "",
     website: profile.website ?? "",
   };
@@ -378,15 +376,15 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 return (
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="profile-preferred-currency" className="font-medium text-sm">
-                      <Trans>Preferred currency</Trans>
+                      <Trans>Preferred unit of account</Trans>
                     </label>
-                    <CurrencySelect
+                    <UnitOfAccountCombobox
                       id="profile-preferred-currency"
                       value={field.state.value}
                       onValueChange={field.handleChange}
-                      placeholder={t`Search currencies`}
-                      emptyMessage={t`No currencies found`}
-                      ariaLabel={t`Preferred currency`}
+                      placeholder={t`Search units of account`}
+                      emptyMessage={t`No units of account found`}
+                      ariaLabel={t`Preferred unit of account`}
                     />
                     {err ? (
                       <p className="text-destructive text-xs">

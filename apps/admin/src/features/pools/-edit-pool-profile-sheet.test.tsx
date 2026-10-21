@@ -108,6 +108,16 @@ describe("EditPoolProfileSheet", () => {
     }
   });
 
+  it("keeps an existing oracle pool's unit of account read-only", async () => {
+    renderSheet({ quoterType: "oracle", unitOfAccount: "KES" });
+
+    const unit = (await screen.findByLabelText("Unit of account")) as HTMLInputElement;
+    expect(unit.disabled).toBe(true);
+    expect(
+      screen.getByText("The unit of account is fixed by this pool's deployed oracle."),
+    ).toBeTruthy();
+  });
+
   it("sends the whole record, since the endpoint assigns every column", async () => {
     renderSheet();
 

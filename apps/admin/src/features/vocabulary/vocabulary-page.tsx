@@ -1,4 +1,8 @@
-import type { TagVocabulary, UnitVocabulary } from "@clc/api/features/vocabulary/client";
+import type {
+  TagVocabulary,
+  UnitOfAccountVocabulary,
+  UnitVocabulary,
+} from "@clc/api/features/vocabulary/client";
 import { adminVocabularyQueryOptions } from "@clc/api/features/vocabulary/queries";
 import { validateCustomTag, validateCustomUnit } from "@clc/core/features/vocabulary/logic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,7 +28,10 @@ import {
 import { Input } from "#/components/ui/input";
 import { clcApi } from "#/lib/api";
 
-type VocabularyTarget = { kind: "tag"; row: TagVocabulary } | { kind: "unit"; row: UnitVocabulary };
+type VocabularyTarget =
+  | { kind: "tag"; row: TagVocabulary }
+  | { kind: "unit"; row: UnitVocabulary }
+  | { kind: "unitOfAccount"; row: UnitOfAccountVocabulary };
 
 /**
  * Every tag and unit, custom and default.
@@ -41,25 +48,40 @@ export function VocabularyPage() {
   const [pendingDelete, setPendingDelete] = useState<VocabularyTarget | null>(null);
   const [pendingRename, setPendingRename] = useState<VocabularyTarget | null>(null);
 
+  const createUnitOfAccount = useMutation({
+    mutationFn: (value: string) => clcApi.vocabulary.createUnitOfAccount(value),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["clc"] });
+      toast.success("Unit of account added.");
+    },
+  });
+
   const remove = useMutation({
-    mutationFn: (target: VocabularyTarget) =>
-      target.kind === "tag"
-        ? clcApi.vocabulary.deleteTag(target.row.value)
-        : clcApi.vocabulary.deleteUnit(target.row.value),
+    mutationFn: async (target: VocabularyTarget) => {
+      if (target.kind === "tag") await clcApi.vocabulary.deleteTag(target.row.value);
+      else if (target.kind === "unit") await clcApi.vocabulary.deleteUnit(target.row.value);
+      else await clcApi.vocabulary.deleteUnitOfAccount(target.row.value);
+    },
     onSuccess: async (_, target) => {
       await queryClient.invalidateQueries({ queryKey: ["clc"] });
-      toast.success(`${target.kind === "tag" ? "Tag" : "Unit"} deleted.`);
+      toast.success(
+        `${target.kind === "tag" ? "Tag" : target.kind === "unit" ? "Unit" : "Unit of account"} deleted.`,
+      );
       setPendingDelete(null);
     },
   });
 
   const rename = useMutation({
     mutationFn: ({ target, replacement }: { target: VocabularyTarget; replacement: string }) =>
-      clcApi.vocabulary.renameValue(target.kind, target.row.value, replacement),
+      target.kind === "unitOfAccount"
+        ? clcApi.vocabulary.renameUnitOfAccount(target.row.value, replacement)
+        : clcApi.vocabulary.renameValue(target.kind, target.row.value, replacement),
     onSuccess: async (_, { target }) => {
       // A renamed value appears in every catalog list that carried it.
       await queryClient.invalidateQueries({ queryKey: ["clc"] });
-      toast.success(`${target.kind === "tag" ? "Tag" : "Unit"} renamed.`);
+      toast.success(
+        `${target.kind === "tag" ? "Tag" : target.kind === "unit" ? "Unit" : "Unit of account"} renamed.`,
+      );
       setPendingRename(null);
     },
   });
@@ -130,6 +152,50 @@ export function VocabularyPage() {
     },
   ];
 
+  const unitOfAccountColumns: Array<ColumnDef<UnitOfAccountVocabulary>> = [
+    {
+      accessorKey: "value",
+      header: "Unit of account",
+      cell: ({ row }) => <span className="font-medium">{row.original.value}</span>,
+    },
+    ...(["profiles", "vouchers", "pools", "voucherDeployments", "poolDeployments"] as const).map(
+      (key) => ({
+        accessorKey: key,
+        header:
+          key === "voucherDeployments"
+            ? "Voucher deploys"
+            : key === "poolDeployments"
+              ? "Pool deploys"
+              : key[0]?.toUpperCase() + key.slice(1),
+        meta: { align: "right" as const },
+        cell: ({ row }: { row: { original: UnitOfAccountVocabulary } }) => (
+          <span className="font-data text-xs">{row.original[key]}</span>
+        ),
+      }),
+    ),
+  ];
+
+  const customUnitOfAccountColumns: Array<ColumnDef<UnitOfAccountVocabulary>> = [
+    ...unitOfAccountColumns,
+    {
+      id: "actions",
+      header: "",
+      meta: { align: "right" },
+      cell: ({ row }) => (
+        <VocabularyActions
+          value={row.original.value}
+          onRename={() => openRename({ kind: "unitOfAccount", row: row.original })}
+          onDelete={() => setPendingDelete({ kind: "unitOfAccount", row: row.original })}
+          deleteDisabledReason={
+            row.original.total > 0
+              ? `Referenced ${row.original.total} time${row.original.total === 1 ? "" : "s"}; remove those references before deleting.`
+              : undefined
+          }
+        />
+      ),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Vocabulary" />
@@ -160,6 +226,24 @@ export function VocabularyPage() {
             />
           </VocabularySection>
 
+          <VocabularySection title="Custom Units of Account">
+            <AddUnitOfAccountForm
+              pending={createUnitOfAccount.isPending}
+              error={createUnitOfAccount.error}
+              onAdd={(value) => createUnitOfAccount.mutateAsync(value)}
+            />
+            <DataTable
+              columns={customUnitOfAccountColumns}
+              data={vocabulary.data.unitsOfAccount.filter((row) => row.isCustom)}
+              emptyState={
+                <EmptyState
+                  title="No custom units of account"
+                  icon={<HiOutlineTag className="size-5" />}
+                />
+              }
+            />
+          </VocabularySection>
+
           <VocabularySection title="Default tags">
             <DataTable
               columns={tagColumns}
@@ -176,6 +260,19 @@ export function VocabularyPage() {
               data={vocabulary.data.units.filter((row) => !row.isCustom)}
               emptyState={
                 <EmptyState title="No default units" icon={<HiOutlineTag className="size-5" />} />
+              }
+            />
+          </VocabularySection>
+
+          <VocabularySection title="Default Units of Account">
+            <DataTable
+              columns={unitOfAccountColumns}
+              data={vocabulary.data.unitsOfAccount.filter((row) => !row.isCustom)}
+              emptyState={
+                <EmptyState
+                  title="No default units of account"
+                  icon={<HiOutlineTag className="size-5" />}
+                />
               }
             />
           </VocabularySection>
@@ -208,6 +305,44 @@ export function VocabularyPage() {
   );
 }
 
+function AddUnitOfAccountForm({
+  pending,
+  error,
+  onAdd,
+}: {
+  pending: boolean;
+  error: Error | null;
+  onAdd: (value: string) => Promise<string>;
+}) {
+  const [value, setValue] = useState("");
+  const normalized = value.trim().replace(/\s+/gu, " ");
+  const invalid = validateCustomUnit(normalized);
+  return (
+    <form
+      className="flex items-start gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (invalid || pending) return;
+        void onAdd(normalized).then(() => setValue(""));
+      }}
+    >
+      <div className="min-w-0 flex-1">
+        <Input
+          aria-label="New unit of account"
+          placeholder="Hours"
+          value={value}
+          disabled={pending}
+          onChange={(event) => setValue(event.target.value)}
+        />
+        {error ? <p className="mt-1 text-destructive text-sm">{error.message}</p> : null}
+      </div>
+      <Button type="submit" disabled={pending || Boolean(invalid)}>
+        {pending ? "Adding…" : "Add"}
+      </Button>
+    </form>
+  );
+}
+
 function VocabularySection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
@@ -223,10 +358,12 @@ function VocabularyActions({
   value,
   onRename,
   onDelete,
+  deleteDisabledReason,
 }: {
   value: string;
   onRename: () => void;
   onDelete?: () => void;
+  deleteDisabledReason?: string;
 }) {
   return (
     <div className="flex justify-end gap-1">
@@ -245,6 +382,8 @@ function VocabularyActions({
           variant="ghost"
           size="icon-sm"
           aria-label={`Delete ${value}`}
+          disabled={Boolean(deleteDisabledReason)}
+          title={deleteDisabledReason}
           onClick={onDelete}
         >
           <HiOutlineTrash />
@@ -323,7 +462,10 @@ function RenameVocabularyForm({
     >
       <DialogHeader>
         <DialogTitle>Rename “{target.row.value}”</DialogTitle>
-        <DialogDescription>Updates this {target.kind} everywhere it is used.</DialogDescription>
+        <DialogDescription>
+          Updates this {target.kind === "unitOfAccount" ? "unit of account" : target.kind}{" "}
+          everywhere it is used.
+        </DialogDescription>
       </DialogHeader>
 
       <Input
@@ -402,6 +544,19 @@ function deletionDetails(target: VocabularyTarget): string[] {
     return target.row.offerings > 0
       ? [`Clear the unit from ${plural(target.row.offerings, "offering")}.`]
       : [];
+  }
+
+  if (target.kind === "unitOfAccount") {
+    const counts: Array<[number, string]> = [
+      [target.row.profiles, "profile"],
+      [target.row.vouchers, "voucher"],
+      [target.row.pools, "pool"],
+      [target.row.voucherDeployments, "voucher deployment"],
+      [target.row.poolDeployments, "pool deployment"],
+    ];
+    return counts
+      .filter(([count]) => count > 0)
+      .map(([count, noun]) => `Referenced by ${plural(count, noun)}.`);
   }
 
   const counts: Array<[number, string]> = [

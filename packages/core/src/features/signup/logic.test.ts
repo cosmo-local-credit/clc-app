@@ -182,10 +182,16 @@ describe("profileEditSchema", () => {
     expect(profileSchema.safeParse({ ...VALID_BASE, bio: "", website: "" }).success).toBe(true);
   });
 
-  it("rejects a currency outside the ISO catalog", () => {
+  it("accepts built-in and custom units of account", () => {
     expect(profileSchema.safeParse({ ...VALID_BASE, preferredCurrency: "HOUR" }).success).toBe(
-      false,
+      true,
     );
+    expect(
+      profileSchema.safeParse({ ...VALID_BASE, preferredCurrency: "Community Credits" }).success,
+    ).toBe(true);
+    expect(
+      profileSchema.safeParse({ ...VALID_BASE, preferredCurrency: "x".repeat(33) }).success,
+    ).toBe(false);
   });
 
   it("rejects a malformed website and an overlong bio", () => {

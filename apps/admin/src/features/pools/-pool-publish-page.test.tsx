@@ -280,6 +280,20 @@ describe("PoolPublishPage", () => {
     );
   });
 
+  it("keeps relative pricing when a custom unit of account is added", async () => {
+    renderPage();
+    const unit = await screen.findByRole("combobox", { name: "Unit of account" });
+    fireEvent.click(unit);
+    fireEvent.change(unit, { target: { value: "community credits" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add “Community Credits”" }));
+
+    expect(
+      screen.getByText("Custom units have no price feed. Relative pricing is used instead."),
+    ).toBeTruthy();
+    const pricing = screen.getByRole("combobox", { name: "Pricing" });
+    expect(pricing.textContent).toContain("Relative pricing");
+  });
+
   it("accepts Markdown pool terms", async () => {
     renderPage();
     expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();

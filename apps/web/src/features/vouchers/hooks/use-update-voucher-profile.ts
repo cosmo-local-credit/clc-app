@@ -1,5 +1,6 @@
 import type { MarketVoucherDetail, VoucherProfileUpdate } from "@clc/api/features/market/client";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { marketClient } from "#/lib/api/market";
@@ -35,6 +36,7 @@ export function useUpdateVoucherProfile(address: string) {
           predicate: (query) => query.queryKey[2] !== "detail",
         }),
         queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
       ]);
     },
   });

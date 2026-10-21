@@ -79,11 +79,13 @@ export function usePoolVoucherRates(
   pool: UserPool | null | undefined,
   vouchers: PoolVoucher[],
   enabled: boolean,
+  options: { failOnReadError?: boolean } = {},
 ) {
   return usePoolVoucherRatesByAddress(
     pool,
     vouchers.map((voucher) => voucher.tokenAddress),
     enabled,
+    options,
   );
 }
 

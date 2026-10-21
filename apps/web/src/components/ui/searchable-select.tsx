@@ -44,6 +44,7 @@ export function SearchableSelect({
   validateCustomValue,
   ariaLabel,
   ariaInvalid,
+  disabled,
   className,
 }: {
   id: string;
@@ -59,6 +60,7 @@ export function SearchableSelect({
   /** Names the control when the visible label belongs to a wider row. */
   ariaLabel?: string;
   ariaInvalid?: boolean;
+  disabled?: boolean;
   className?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -149,6 +151,7 @@ export function SearchableSelect({
           id={id}
           aria-label={ariaLabel}
           aria-invalid={ariaInvalid}
+          disabled={disabled}
           placeholder={placeholder}
           onFocus={openList}
           onClick={openList}

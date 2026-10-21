@@ -21,6 +21,7 @@ import {
   adminUserQueryOptions,
   adminUsersQueryOptions,
 } from "@clc/api/features/admin/queries";
+import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { clcApi } from "#/lib/api";
 
 export function useAdminUsers(params: AdminUserParams) {
@@ -90,11 +91,15 @@ export function useRejectUser() {
 
 export function useUpdateUserProfile() {
   const writeUser = useWriteUserToCache();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ address, profile }: { address: string; profile: AdminUserProfile }) =>
       clcApi.admin.updateUserProfile(address, profile),
-    onSuccess: writeUser,
+    onSuccess: (user) => {
+      writeUser(user);
+      return queryClient.invalidateQueries({ queryKey: vocabularyKeys.all });
+    },
   });
 }
 

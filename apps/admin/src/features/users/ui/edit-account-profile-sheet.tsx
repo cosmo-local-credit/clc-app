@@ -4,7 +4,7 @@ import {
   optionalPhoneSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
-import { isIsoCurrency } from "@clc/core/lib/currencies";
+import { isUnitOfAccount, normalizeUnitOfAccount } from "@clc/core/lib/currencies";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { storedImageUrlSchema } from "@clc/core/lib/image-url";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { z } from "zod";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { SectionLabel } from "#/components/admin/section-heading";
+import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -65,9 +66,9 @@ const profileSchema = z
     preferredCurrency: z
       .string()
       .trim()
-      .toUpperCase()
-      .refine((value) => value === "" || isIsoCurrency(value), {
-        message: "Use a three-letter ISO currency code, for example KES",
+      .transform((value) => (value ? normalizeUnitOfAccount(value) : ""))
+      .refine((value) => value === "" || isUnitOfAccount(value), {
+        message: "Use 32 characters or fewer",
       }),
     bio: z.string().trim().max(500, { message: "Bio must be 500 characters or fewer" }),
     website: optionalWebsiteSchema,
@@ -370,14 +371,14 @@ export function EditAccountProfileSheet({
               <SectionLabel>Profile preferences</SectionLabel>
               <form.Field name="preferredCurrency">
                 {(field) => (
-                  <Field label="Preferred currency" error={getFieldError(field.state.meta.errors)}>
-                    <Input
+                  <Field
+                    label="Preferred unit of account"
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <UnitOfAccountCombobox
                       id={field.name}
                       value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
-                      className="w-28 font-mono uppercase"
-                      maxLength={3}
+                      onValueChange={field.handleChange}
                     />
                   </Field>
                 )}

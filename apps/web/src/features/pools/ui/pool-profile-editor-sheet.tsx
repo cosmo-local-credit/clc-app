@@ -218,9 +218,15 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                 id="pool-currency"
                 value={field.state.value}
                 onValueChange={field.handleChange}
-                placeholder={t`Search currencies`}
-                emptyMessage={t`No currencies found.`}
+                placeholder={t`Search units of account`}
+                emptyMessage={t`No units of account found`}
+                disabled={pool.quoterType === "oracle"}
               />
+              {pool.quoterType === "oracle" ? (
+                <p className="text-muted-foreground text-xs">
+                  <Trans>The unit of account is fixed by this pool's deployed oracle.</Trans>
+                </p>
+              ) : null}
             </Field>
           )}
         </form.Field>

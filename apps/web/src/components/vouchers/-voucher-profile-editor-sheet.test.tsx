@@ -26,6 +26,14 @@ vi.mock("#/hooks/use-deployment", () => ({
   }),
 }));
 
+vi.mock("#/hooks/use-vocabulary", () => ({
+  useUnitsOfAccount: () => ({
+    data: [],
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("#/features/images/use-image-upload", () => ({
   useImageUpload: () => ({
     mutateAsync: vi.fn(),

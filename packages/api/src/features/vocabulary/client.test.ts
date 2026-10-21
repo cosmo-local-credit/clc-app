@@ -59,6 +59,95 @@ describe("vocabulary client", () => {
     await expect(api.getOfferingUnits()).resolves.toEqual(["kg", "Produce Crate"]);
   });
 
+  it("loads reusable units of account and normalizes their usage", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      response({
+        unitsOfAccount: [
+          { value: " Hours ", isCustom: true },
+          { value: "KES", isCustom: false },
+        ],
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.getUnitsOfAccount()).resolves.toEqual([
+      {
+        value: "Hours",
+        isCustom: true,
+        profiles: 0,
+        vouchers: 0,
+        pools: 0,
+        voucherDeployments: 0,
+        poolDeployments: 0,
+        total: 0,
+      },
+      {
+        value: "KES",
+        isCustom: false,
+        profiles: 0,
+        vouchers: 0,
+        pools: 0,
+        voucherDeployments: 0,
+        poolDeployments: 0,
+        total: 0,
+      },
+    ]);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.test/api/v2/units-of-account",
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
+  });
+
+  it("creates, renames, and deletes custom units of account through their admin endpoint", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(response({ value: "Community Credits" }))
+      .mockResolvedValueOnce(response({ value: "Community Hours" }))
+      .mockResolvedValueOnce(
+        response({
+          value: "Community Hours",
+          usage: { profiles: 0, vouchers: 0, pools: 0 },
+          total: 0,
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.createUnitOfAccount("Community Credits")).resolves.toBe("Community Credits");
+    await expect(
+      api.renameUnitOfAccount("Community Credits", "Community Hours"),
+    ).resolves.toBeUndefined();
+    await expect(api.deleteUnitOfAccount("Community Hours")).resolves.toMatchObject({
+      value: "Community Hours",
+      isCustom: true,
+      total: 0,
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://api.test/api/v2/admin/vocabulary/units-of-account",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ value: "Community Credits" }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://api.test/api/v2/admin/vocabulary/units-of-account",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ value: "Community Credits", replacement: "Community Hours" }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "https://api.test/api/v2/admin/vocabulary/units-of-account",
+      expect.objectContaining({
+        method: "DELETE",
+        body: JSON.stringify({ value: "Community Hours" }),
+      }),
+    );
+  });
+
   it("normalizes vocabulary usage counts and keeps built-ins apart", async () => {
     vi.stubGlobal(
       "fetch",
@@ -71,6 +160,10 @@ describe("vocabulary client", () => {
           units: [
             { value: "Produce Crate", isCustom: true, offerings: 3 },
             { value: "kg", isCustom: false },
+          ],
+          unitsOfAccount: [
+            { value: "Hours", isCustom: true, profiles: 2, vouchers: 1 },
+            { value: "KES", isCustom: false, pools: 3 },
           ],
         }),
       ),
@@ -103,6 +196,28 @@ describe("vocabulary client", () => {
       units: [
         { value: "Produce Crate", isCustom: true, offerings: 3, total: 3 },
         { value: "kg", isCustom: false, offerings: 0, total: 0 },
+      ],
+      unitsOfAccount: [
+        {
+          value: "Hours",
+          isCustom: true,
+          profiles: 2,
+          vouchers: 1,
+          pools: 0,
+          voucherDeployments: 0,
+          poolDeployments: 0,
+          total: 3,
+        },
+        {
+          value: "KES",
+          isCustom: false,
+          profiles: 0,
+          vouchers: 0,
+          pools: 3,
+          voucherDeployments: 0,
+          poolDeployments: 0,
+          total: 3,
+        },
       ],
     });
   });
