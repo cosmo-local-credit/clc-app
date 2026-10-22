@@ -34,6 +34,7 @@ type MapProps = {
     north: number;
     zoom: number;
   }) => void;
+  onSatelliteUnavailable?: () => void;
 };
 
 const {
@@ -469,6 +470,19 @@ describe("MarketPage location button", () => {
       screen.getByRole("button", { name: "Satellite view" }).getAttribute("aria-pressed"),
     ).toBe("true");
     expect(lastMapProps.current?.mode).toBe("satellite");
+  });
+
+  it("returns to Standard and disables Satellite when its provider is unavailable", () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Satellite view" }));
+
+    act(() => lastMapProps.current?.onSatelliteUnavailable?.());
+
+    const satellite = screen.getByRole("button", { name: "Satellite view" });
+    expect(satellite.getAttribute("aria-pressed")).toBe("false");
+    expect((satellite as HTMLButtonElement).disabled).toBe(true);
+    expect(lastMapProps.current?.mode).toBe("standard");
+    expect(window.localStorage.getItem(MARKET_MAP_MODE_STORAGE_KEY)).toBe("standard");
   });
 
   it("writes and clears Credit without leaving the canonical map route", () => {

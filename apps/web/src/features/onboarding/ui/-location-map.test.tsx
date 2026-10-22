@@ -152,16 +152,17 @@ beforeEach(() => {
 });
 
 describe("LocationMap", () => {
-  it("creates a MapLibre map with the MapTiler style and navigation control", () => {
+  it("creates a MapLibre map with the keyless light style and navigation control", () => {
     render(<LocationMap />);
 
     expect(mapInstances).toHaveLength(1);
-    expect(mapInstances[0]?.options.style).toBe(
-      "https://api.maptiler.com/maps/base-v4-light/style.json?key=test%20key",
-    );
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
     expect(mapInstances[0]?.options.center).toEqual([36.8219, -1.2921]);
     expect(mapInstances[0]?.options.zoom).toBe(5);
-    expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual(["bottom-right"]);
+    expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual([
+      "bottom-right",
+      "bottom-left",
+    ]);
   });
 
   it("switches the existing map to the dark style when the app theme changes", () => {
@@ -172,9 +173,7 @@ describe("LocationMap", () => {
     act(() => useThemeStore.getState().setTheme("dark"));
 
     expect(mapInstances).toHaveLength(1);
-    expect(map?.setStyle).toHaveBeenCalledWith(
-      "https://api.maptiler.com/maps/base-v4-dark/style.json?key=test%20key",
-    );
+    expect(map?.setStyle).toHaveBeenCalledWith("https://tiles.openfreemap.org/styles/fiord");
     expect(map?.remove).not.toHaveBeenCalled();
     expect(markerInstances).toHaveLength(1);
   });
@@ -248,11 +247,11 @@ describe("LocationMap", () => {
     expect(mapInstances[0]?.remove).toHaveBeenCalled();
   });
 
-  it("renders nothing when VITE_MAPTILER_KEY is absent", () => {
+  it("renders the standard map when VITE_MAPTILER_KEY is absent", () => {
     vi.stubEnv("VITE_MAPTILER_KEY", "");
-    const { container } = render(<LocationMap />);
-    expect(container.firstChild).toBeNull();
-    expect(mapInstances).toHaveLength(0);
+    render(<LocationMap />);
+    expect(screen.getByLabelText("Location map")).toBeTruthy();
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
   });
 
   it("renders nothing when WebGL is not supported", () => {

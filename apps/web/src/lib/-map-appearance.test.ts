@@ -2,9 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
   MARKET_MAP_MODE_STORAGE_KEY,
-  mapTilerStyleUrl,
   readInitialMarketMapMode,
-  resolveMapTilerStyleId,
+  resolveMapStyleUrl,
+  satelliteMapStyleUrl,
+  standardMapStyleUrl,
   useMarketMapModeStore,
 } from "./map-appearance";
 
@@ -15,19 +16,21 @@ beforeEach(() => {
 
 describe("map appearance", () => {
   it.each([
-    ["light", "standard", "base-v4-light"],
-    ["dark", "standard", "base-v4-dark"],
-    ["light", "satellite", "hybrid-v4"],
-    ["dark", "satellite", "hybrid-v4-dark"],
-  ] as const)("resolves %s %s to %s", (theme, mode, expected) => {
-    expect(resolveMapTilerStyleId(theme, mode)).toBe(expected);
+    ["light", "https://tiles.openfreemap.org/styles/positron"],
+    ["dark", "https://tiles.openfreemap.org/styles/fiord"],
+  ] as const)("resolves the %s standard map without a provider key", (theme, expected) => {
+    expect(standardMapStyleUrl(theme)).toBe(expected);
+    expect(resolveMapStyleUrl(null, theme, "standard")).toBe(expected);
   });
 
-  it("builds an encoded MapTiler style URL and rejects a missing key", () => {
-    expect(mapTilerStyleUrl("test key", "dark", "satellite")).toBe(
+  it("builds an encoded MapTiler satellite URL and falls back without a key", () => {
+    expect(satelliteMapStyleUrl("test key", "dark")).toBe(
       "https://api.maptiler.com/maps/hybrid-v4-dark/style.json?key=test%20key",
     );
-    expect(mapTilerStyleUrl("", "light", "standard")).toBeNull();
+    expect(satelliteMapStyleUrl("", "light")).toBeNull();
+    expect(resolveMapStyleUrl("", "light", "satellite")).toBe(
+      "https://tiles.openfreemap.org/styles/positron",
+    );
   });
 
   it("defaults absent and malformed preferences to standard", () => {
