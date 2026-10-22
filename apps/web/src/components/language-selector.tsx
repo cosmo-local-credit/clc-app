@@ -43,6 +43,7 @@ export function LanguageSelector({ triggerClassName }: { triggerClassName?: stri
             triggerClassName,
           )}
         >
+          <RiTranslate2 className="size-4" aria-hidden="true" />
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -210,12 +211,12 @@ function languageNamesIn(locale: SupportedLocale): Map<SupportedLocale, string> 
   );
 }
 
-/** The end of the onboarding top bar: change theme and language before signing in. */
+/** The end of the onboarding top bar: change language and theme before signing in. */
 export function OnboardingMenu() {
   return (
     <div className="flex shrink-0 items-center gap-2">
-      <ThemeSettingsButton />
       <LanguageSettingsButton />
+      <ThemeSettingsButton />
     </div>
   );
 }

@@ -20,7 +20,7 @@ vi.mock("#/components/language-selector", () => ({
   LanguageSettingsButton: () => <button type="button">Language</button>,
 }));
 vi.mock("#/components/theme-selector", () => ({
-  ThemeSettingsButton: () => <button type="button">Theme</button>,
+  ThemeSettingsButton: () => <button type="button">Dark mode</button>,
 }));
 
 // A browser event can precede React. Run the actual inline bootstrap once for
@@ -109,8 +109,9 @@ describe("CLC installation", () => {
   it("gives a visitor the onboarding theme and language buttons", async () => {
     startBrowser();
     await renderPage();
-    expect(screen.getByRole("button", { name: "Theme" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Language" })).toBeTruthy();
+    const language = screen.getByRole("button", { name: "Language" });
+    const theme = screen.getByRole("button", { name: "Dark mode" });
+    expect(language.compareDocumentPosition(theme) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByRole("combobox")).toBeNull();
   });
 

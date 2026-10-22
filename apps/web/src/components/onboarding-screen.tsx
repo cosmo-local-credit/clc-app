@@ -5,7 +5,7 @@ import { cn } from "#/lib/utils";
 
 /**
  * The frame every onboarding screen shares: one top bar (Back or the logo at
- * the start, theme and language at the end), a body that holds the screen's
+ * the start, language and theme at the end), a body that holds the screen's
  * one job, and the actions pinned under it.
  *
  * The frame is exactly one dynamic viewport tall (less the bottom navigation
@@ -21,7 +21,7 @@ export function OnboardingScreen({
   children,
 }: {
   start?: ReactNode;
-  /** Theme and language. Off where the screen is not part of signing in. */
+  /** Language and theme. Off where the screen is not part of signing in. */
   menu?: boolean;
   footer?: ReactNode;
   className?: string;
