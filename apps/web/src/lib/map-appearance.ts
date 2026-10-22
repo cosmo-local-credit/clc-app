@@ -7,29 +7,42 @@ export type MarketMapMode = "standard" | "satellite";
 
 export const MARKET_MAP_MODE_STORAGE_KEY = "clc.market-map-mode";
 
-const STYLE_ID: Record<Theme, Record<MarketMapMode, string>> = {
-  light: {
-    standard: "base-v4-light",
-    satellite: "hybrid-v4",
-  },
-  dark: {
-    standard: "base-v4-dark",
-    satellite: "hybrid-v4-dark",
-  },
+const MAPTILER_STYLE_ID: Record<Theme, string> = {
+  light: "hybrid-v4",
+  dark: "hybrid-v4-dark",
 };
 
-export function resolveMapTilerStyleId(theme: Theme, mode: MarketMapMode): string {
-  return STYLE_ID[theme][mode];
+const STANDARD_STYLE_URL: Record<Theme, string> = {
+  light: "https://tiles.openfreemap.org/styles/positron",
+  dark: "https://tiles.openfreemap.org/styles/fiord",
+};
+
+export function standardMapStyleUrl(theme: Theme): string {
+  return STANDARD_STYLE_URL[theme];
 }
 
-export function mapTilerStyleUrl(
+export function satelliteMapStyleUrl(
+  apiKey: string | null | undefined,
+  theme: Theme,
+): string | null {
+  if (!apiKey) return null;
+  const style = MAPTILER_STYLE_ID[theme];
+  return `https://api.maptiler.com/maps/${style}/style.json?key=${encodeURIComponent(apiKey)}`;
+}
+
+/*
+ * Standard maps intentionally use a keyless provider. A revoked MapTiler key
+ * must not make the Marketplace, location pickers, and voucher maps unusable.
+ * Satellite remains a MapTiler enhancement and can fall back to Standard.
+ */
+export function resolveMapStyleUrl(
   apiKey: string | null | undefined,
   theme: Theme,
   mode: MarketMapMode,
-): string | null {
-  if (!apiKey) return null;
-  const style = resolveMapTilerStyleId(theme, mode);
-  return `https://api.maptiler.com/maps/${style}/style.json?key=${encodeURIComponent(apiKey)}`;
+): string {
+  return mode === "satellite"
+    ? (satelliteMapStyleUrl(apiKey, theme) ?? standardMapStyleUrl(theme))
+    : standardMapStyleUrl(theme);
 }
 
 export function readInitialMarketMapMode(): MarketMapMode {
