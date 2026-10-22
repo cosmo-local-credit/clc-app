@@ -179,6 +179,19 @@ describe("LocationMap", () => {
     expect(markerInstances).toHaveLength(1);
   });
 
+  it("removes the map when a theme style cannot be applied", () => {
+    render(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+    map?.setStyle.mockImplementationOnce(() => {
+      throw new Error("style unavailable");
+    });
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(screen.queryByLabelText("Location map")).toBeNull();
+  });
+
   it("places a pending marker after style load and flies to zoom 13", () => {
     render(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
 
