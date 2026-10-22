@@ -80,7 +80,10 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     setLayoutProperty = vi.fn();
     queryRenderedFeatures = vi.fn(() => [] as unknown[]);
     project = vi.fn((lngLat: [number, number]) => ({ x: lngLat[0] * 100, y: lngLat[1] * 100 }));
-    unproject = vi.fn((point: [number, number]) => ({ lng: point[0] / 100, lat: point[1] / 100 }));
+    unproject = vi.fn((point: [number, number]) => ({
+      lng: point[0] / 100,
+      lat: point[1] / 100,
+    }));
     addImage = vi.fn((id: string) => {
       this.images.add(id);
     });
@@ -91,11 +94,16 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     zoom = 12;
     maxZoom = 21;
     bounds = { west: 36.6, south: -1.5, east: 37.1, north: -1.1 };
+    controls: Array<{ control: unknown; position?: string }> = [];
 
     constructor(options: MockMapOptions) {
       this.options = options;
       this.maxZoom = options.maxZoom ?? 21;
       mapInstances.push(this);
+    }
+
+    addControl(control: unknown, position?: string) {
+      this.controls.push({ control, position });
     }
 
     on(event: string, layerOrHandler: string | MapHandler, maybeHandler?: MapHandler) {
@@ -209,6 +217,7 @@ vi.mock("maplibre-gl", () => ({
   default: {
     Map: MockMap,
     Marker: MockMarker,
+    AttributionControl: class MockAttributionControl {},
   },
 }));
 
@@ -328,9 +337,7 @@ describe("MarketMap lifecycle", () => {
       return (source.spec.data as { features: unknown[] }).features;
     };
 
-    expect(map.options.style).toBe(
-      "https://api.maptiler.com/maps/base-v4-light/style.json?key=test%20key",
-    );
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
     clickFeature(
       map,
       "market-stacks",
@@ -1759,7 +1766,8 @@ describe("MarketMap style failure", () => {
     expect(map.remove).not.toHaveBeenCalled();
   });
 
-  it("uses the Retry surface when a replacement style fails", () => {
+  it("falls back to the standard map when the satellite style fails", () => {
+    const onSatelliteUnavailable = vi.fn();
     const { rerender } = render(
       <MarketMap
         mode="standard"
@@ -1768,6 +1776,7 @@ describe("MarketMap style failure", () => {
         camera={null}
         userLocation={null}
         onSelectLocation={vi.fn()}
+        onSatelliteUnavailable={onSatelliteUnavailable}
       />,
     );
     const map = loadedMap();
@@ -1780,17 +1789,21 @@ describe("MarketMap style failure", () => {
         camera={null}
         userLocation={null}
         onSelectLocation={vi.fn()}
+        onSatelliteUnavailable={onSatelliteUnavailable}
       />,
     );
     act(() => {
       map.trigger("error", { error: { message: "style failed" } } as never);
     });
 
-    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
-    expect(map.remove).toHaveBeenCalledOnce();
+    expect(screen.queryByText(/could not be loaded/i)).toBeNull();
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
+    expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
+    expect(map.remove).not.toHaveBeenCalled();
   });
 
-  it("uses the Retry surface when applying a replacement style throws", () => {
+  it("falls back when applying the satellite style throws synchronously", () => {
+    const onSatelliteUnavailable = vi.fn();
     const { rerender } = render(
       <MarketMap
         mode="standard"
@@ -1799,6 +1812,7 @@ describe("MarketMap style failure", () => {
         camera={null}
         userLocation={null}
         onSelectLocation={vi.fn()}
+        onSatelliteUnavailable={onSatelliteUnavailable}
       />,
     );
     const map = loadedMap();
@@ -1814,11 +1828,67 @@ describe("MarketMap style failure", () => {
         camera={null}
         userLocation={null}
         onSelectLocation={vi.fn()}
+        onSatelliteUnavailable={onSatelliteUnavailable}
+      />,
+    );
+
+    expect(screen.queryByText(/could not be loaded/i)).toBeNull();
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
+    expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
+  });
+
+  it("uses the unavailable surface when Satellite and its Standard fallback both throw", () => {
+    const { rerender } = renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.setStyle.mockImplementation(() => {
+      throw new Error("all styles unavailable");
+    });
+
+    rerender(
+      <MarketMap
+        mode="satellite"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
       />,
     );
 
     expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /retry/i })).toBeTruthy();
+  });
+
+  it("keeps Standard and reports Satellite unavailable when the key is absent", () => {
+    vi.stubEnv("VITE_MAPTILER_KEY", "");
+    const onSatelliteUnavailable = vi.fn();
+    render(
+      <MarketMap
+        mode="satellite"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+        onSatelliteUnavailable={onSatelliteUnavailable}
+      />,
+    );
+    const map = loadedMap();
+
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.setStyle).not.toHaveBeenCalled();
+    expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
+  });
+
+  it("uses the unavailable surface when switching Standard themes throws", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.setStyle.mockImplementationOnce(() => {
+      throw new Error("standard style unavailable");
+    });
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
   });
 });
 

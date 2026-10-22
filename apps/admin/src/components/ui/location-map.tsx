@@ -21,15 +21,16 @@ import { cn } from "#/lib/utils";
  * chunk that `check:bundle` guards, on every screen including the ones with no
  * map.
  *
- * Renders nothing at all when `VITE_MAPTILER_KEY` is absent or WebGL is
- * unavailable: a map that cannot draw tiles is worse than a page without one, and
- * every screen using this keeps its own copy of the location as text.
+ * Uses the keyless OpenFreeMap style so an expired third-party credential cannot
+ * hide location data. It still renders nothing when WebGL is unavailable; every
+ * screen using this keeps its own copy of the location as text.
  */
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const PIN_ZOOM = 13;
 const EMPTY_ZOOM = 5;
 const MARKER_COLOR = BRAND_THEME_COLOR.light;
+const STANDARD_MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 type LocationMapProps = {
   lat?: number | null;
@@ -59,10 +60,6 @@ export function LocationMap({
   const interactiveRef = useRef(interactive);
   const pendingRef = useRef<{ lat: number; lng: number } | null>(null);
   const [failed, setFailed] = useState(false);
-  const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
-  const maptilerStyle = maptilerKey
-    ? `https://api.maptiler.com/maps/base-v4/style.json?key=${encodeURIComponent(maptilerKey)}`
-    : null;
 
   useEffect(() => {
     onLocationChangeRef.current = onLocationChange;
@@ -92,7 +89,7 @@ export function LocationMap({
   }, []);
 
   useEffect(() => {
-    if (!maptilerStyle || failed || !containerRef.current || mapRef.current) {
+    if (failed || !containerRef.current || mapRef.current) {
       return;
     }
     if (!hasWebGlSupport()) {
@@ -111,7 +108,7 @@ export function LocationMap({
     try {
       map = new MapLibreGL.Map({
         container: containerRef.current,
-        style: maptilerStyle,
+        style: STANDARD_MAP_STYLE_URL,
         center,
         zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
         interactive: isInteractive,
@@ -124,6 +121,7 @@ export function LocationMap({
 
     mapRef.current = map;
     map.addControl(new MapLibreGL.NavigationControl(), "bottom-right");
+    map.addControl(new MapLibreGL.AttributionControl({ compact: true }), "bottom-left");
 
     function removeMap() {
       markerRef.current?.remove();
@@ -170,7 +168,7 @@ export function LocationMap({
       map.off("load", handleLoad);
       removeMap();
     };
-  }, [failed, maptilerStyle, setMarker]);
+  }, [failed, setMarker]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -192,7 +190,7 @@ export function LocationMap({
     markerRef.current = null;
   }, [lat, lng, setMarker]);
 
-  if (!maptilerStyle || failed) return null;
+  if (failed) return null;
 
   return (
     <section

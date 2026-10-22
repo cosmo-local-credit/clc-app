@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 
 import { MarkerPin } from "#/components/vouchers/marker-style-picker";
 import { BRAND_THEME_COLOR } from "#/lib/brand";
-import { mapTilerStyleUrl } from "#/lib/map-appearance";
+import { standardMapStyleUrl } from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
 import { useHydratedTheme } from "#/providers/theme";
 
@@ -51,10 +51,9 @@ export function LocationMap({
   const [markerElement, setMarkerElement] = useState<HTMLDivElement | null>(null);
   const pendingRef = useRef<{ lat: number; lng: number } | null>(null);
   const [failed, setFailed] = useState(false);
-  const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
-  const maptilerStyle = mapTilerStyleUrl(maptilerKey, theme, "standard");
-  const maptilerStyleRef = useRef(maptilerStyle);
-  maptilerStyleRef.current = maptilerStyle;
+  const mapStyle = standardMapStyleUrl(theme);
+  const mapStyleRef = useRef(mapStyle);
+  mapStyleRef.current = mapStyle;
   const appliedStyleRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -93,7 +92,7 @@ export function LocationMap({
   }, []);
 
   useEffect(() => {
-    if (!maptilerKey || failed || !containerRef.current || mapRef.current) {
+    if (failed || !containerRef.current || mapRef.current) {
       return;
     }
     if (!hasWebGlSupport()) {
@@ -110,8 +109,7 @@ export function LocationMap({
       : [NAIROBI.lng, NAIROBI.lat];
     let map: MapLibreGL.Map;
     try {
-      const initialStyle = maptilerStyleRef.current;
-      if (!initialStyle) return;
+      const initialStyle = mapStyleRef.current;
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: initialStyle,
@@ -128,6 +126,7 @@ export function LocationMap({
 
     mapRef.current = map;
     map.addControl(new MapLibreGL.NavigationControl(), "bottom-right");
+    map.addControl(new MapLibreGL.AttributionControl({ compact: true }), "bottom-left");
 
     function removeMap() {
       hasLoadedRef.current = false;
@@ -177,18 +176,18 @@ export function LocationMap({
       map.off("load", handleLoad);
       removeMap();
     };
-  }, [failed, maptilerKey, setMarker]);
+  }, [failed, setMarker]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !maptilerStyle || appliedStyleRef.current === maptilerStyle) return;
+    if (!map || appliedStyleRef.current === mapStyle) return;
     try {
-      appliedStyleRef.current = maptilerStyle;
-      map.setStyle(maptilerStyle);
+      appliedStyleRef.current = mapStyle;
+      map.setStyle(mapStyle);
     } catch {
       setFailed(true);
     }
-  }, [maptilerStyle]);
+  }, [mapStyle]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -213,7 +212,7 @@ export function LocationMap({
     setMarkerElement(null);
   }, [lat, lng, setMarker]);
 
-  if (!maptilerStyle || failed) return null;
+  if (failed) return null;
 
   return (
     <>
