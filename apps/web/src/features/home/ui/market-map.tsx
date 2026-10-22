@@ -12,10 +12,20 @@ import MapLibreGL, {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
+import { type MarketMapMode, mapTilerStyleUrl } from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
+import { useHydratedTheme } from "#/providers/theme";
 import { MAP_MAX_ZOOM, MARKET_SOURCE_ID, type MarketLocation } from "./market-data";
 import { keepMarketLabelsInsideViewport } from "./market-label-edges";
-import { SELECTED_PIN_SUFFIX, addMarketMarkerImages, markerArt, markerPin } from "./market-markers";
+import {
+  MARKET_NETWORK_BADGE_COLOR,
+  MARKET_NETWORK_BADGE_IMAGE_ID,
+  SELECTED_PIN_SUFFIX,
+  addMarketMarkerImages,
+  addMarketNetworkBadgeImage,
+  markerArt,
+  markerPin,
+} from "./market-markers";
 import {
   type MarketStack,
   groupByProximity,
@@ -55,7 +65,6 @@ const INTERACTIVE_LAYER_IDS = [
 ];
 
 const VIEWPORT_SETTLE_MS = 400;
-const BADGE_COLOR = "#1f2430";
 
 /** Font stacks the basemap style already uses, so names need no extra glyphs. */
 const LABEL_FONT = ["Inter Medium", "Noto Sans Medium"];
@@ -122,6 +131,7 @@ const REVEAL_MARGIN = 24;
 
 type MarketMapProps = {
   locations: MarketLocation[];
+  mode?: MarketMapMode;
   selectedLocationId: string | null;
   camera: MarketCamera | null;
   fitBounds?: MarketFitBounds | null;
@@ -301,12 +311,15 @@ function countLabel(property: string): DataDrivenPropertyValueSpecification<stri
   ];
 }
 
-function badgeRadius(property: string): DataDrivenPropertyValueSpecification<number> {
-  return ["step", ["get", property], 14, 10, 16, 100, 18, 1000, 20];
-}
-
-function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stacks: MarketStack[]) {
+function addMarketLayers(
+  map: MapLibreGL.Map,
+  locations: MarketLocation[],
+  stacks: MarketStack[],
+  selectedLocationId: string | null,
+  theme: "light" | "dark",
+) {
   addMarketMarkerImages(map, locations);
+  addMarketNetworkBadgeImage(map, theme);
 
   map.addSource(MARKET_SOURCE_ID, {
     type: "geojson",
@@ -325,7 +338,7 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
     id: LABEL_LAYER_ID,
     type: "symbol",
     source: MARKET_SOURCE_ID,
-    filter: labelFilter(null),
+    filter: labelFilter(selectedLocationId),
     layout: labelLayout(markerPin.base, LABEL_FONT),
     paint: LABEL_PAINT,
   });
@@ -333,20 +346,21 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
     id: SELECTED_LABEL_LAYER_ID,
     type: "symbol",
     source: MARKET_SOURCE_ID,
-    filter: selectedFilter(null),
+    filter: selectedFilter(selectedLocationId),
     layout: labelLayout(markerPin.selected, SELECTED_LABEL_FONT),
     paint: LABEL_PAINT,
   });
 
   map.addLayer({
     id: CLUSTERS_LAYER_ID,
-    type: "circle",
+    type: "symbol",
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
-    paint: {
-      "circle-color": BADGE_COLOR,
-      "circle-radius": badgeRadius("markerCount"),
-      "circle-stroke-width": 0,
+    layout: {
+      "icon-image": MARKET_NETWORK_BADGE_IMAGE_ID[theme],
+      "icon-size": 1,
+      "icon-padding": 0,
+      "icon-allow-overlap": true,
     },
   });
   map.addLayer({
@@ -360,7 +374,7 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
       "text-allow-overlap": true,
       "text-padding": BADGE_COLLISION_PADDING,
     },
-    paint: { "text-color": "#ffffff" },
+    paint: { "text-color": MARKET_NETWORK_BADGE_COLOR[theme].ink },
   });
 
   map.addLayer({
@@ -380,14 +394,14 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
 
   map.addLayer({
     id: STACK_LAYER_ID,
-    type: "circle",
+    type: "symbol",
     source: MARKET_SOURCE_ID,
     filter: stackFilter,
-    paint: {
-      "circle-color": BADGE_COLOR,
-      "circle-radius": badgeRadius("count"),
-      "circle-stroke-width": 2,
-      "circle-stroke-color": "#ffffff",
+    layout: {
+      "icon-image": MARKET_NETWORK_BADGE_IMAGE_ID[theme],
+      "icon-size": 1,
+      "icon-padding": 0,
+      "icon-allow-overlap": true,
     },
   });
   map.addLayer({
@@ -401,14 +415,14 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
       "text-allow-overlap": true,
       "text-padding": BADGE_COLLISION_PADDING,
     },
-    paint: { "text-color": "#ffffff" },
+    paint: { "text-color": MARKET_NETWORK_BADGE_COLOR[theme].ink },
   });
 
   map.addLayer({
     id: SELECTED_LAYER_ID,
     type: "symbol",
     source: MARKET_SOURCE_ID,
-    filter: selectedFilter(null),
+    filter: selectedFilter(selectedLocationId),
     layout: {
       "icon-image": pinImage(true),
       "icon-size": 1,
@@ -424,7 +438,11 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
     type: "line",
     source: SPIDER_SOURCE_ID,
     filter: ["==", ["geometry-type"], "LineString"],
-    paint: { "line-color": BADGE_COLOR, "line-width": 1.25, "line-opacity": 0.6 },
+    paint: {
+      "line-color": MARKET_NETWORK_BADGE_COLOR[theme].ink,
+      "line-width": 1.25,
+      "line-opacity": 0.6,
+    },
   });
   map.addLayer({
     id: SPIDER_POINT_LAYER_ID,
@@ -439,10 +457,17 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
       "icon-allow-overlap": true,
     },
   });
+  map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
+    "case",
+    ["==", ["get", "id"], selectedLocationId ?? ""],
+    pinImage(true),
+    pinImage(false),
+  ]);
 }
 
 export function MarketMap({
   locations,
+  mode = "standard",
   selectedLocationId,
   camera,
   fitBounds,
@@ -455,6 +480,7 @@ export function MarketMap({
   onViewportSettled,
   className,
 }: MarketMapProps) {
+  const { theme } = useHydratedTheme();
   const containerRef = useRef<HTMLElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const userMarkerRef = useRef<MapLibreGL.Marker | null>(null);
@@ -465,12 +491,11 @@ export function MarketMap({
   const loadedRef = useRef(false);
   const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [styleRevision, setStyleRevision] = useState(0);
   const [spider, setSpider] = useState<{ key: string; page: number } | null>(null);
 
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
-  const maptilerStyle = maptilerKey
-    ? `https://api.maptiler.com/maps/base-v4/style.json?key=${encodeURIComponent(maptilerKey)}`
-    : null;
+  const maptilerStyle = mapTilerStyleUrl(maptilerKey, theme, mode);
 
   const stacks = useMemo(() => groupByProximity(locations), [locations]);
   const stacksByKey = useMemo(() => new Map(stacks.map((stack) => [stack.key, stack])), [stacks]);
@@ -479,6 +504,14 @@ export function MarketMap({
   stacksRef.current = stacks;
   const locationsRef = useRef(locations);
   locationsRef.current = locations;
+  const selectedLocationIdRef = useRef(selectedLocationId);
+  selectedLocationIdRef.current = selectedLocationId;
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+  const maptilerStyleRef = useRef(maptilerStyle);
+  maptilerStyleRef.current = maptilerStyle;
+  const appliedStyleRef = useRef<string | null>(null);
+  const pendingStyleRef = useRef<string | null>(null);
   const bottomInsetRef = useRef(bottomInset);
   bottomInsetRef.current = bottomInset;
   const onSelectRef = useRef(onSelectLocation);
@@ -508,7 +541,7 @@ export function MarketMap({
   }, []);
 
   useEffect(() => {
-    if (!maptilerStyle || failure || !containerRef.current || mapRef.current) return;
+    if (!maptilerKey || failure || !containerRef.current || mapRef.current) return;
     if (!hasWebGlSupport()) {
       setFailure("unsupported");
       return;
@@ -517,9 +550,11 @@ export function MarketMap({
     let map: MapLibreGL.Map;
     try {
       const initialCamera = cameraRef.current;
+      const initialStyle = maptilerStyleRef.current;
+      if (!initialStyle) return;
       map = new MapLibreGL.Map({
         container: containerRef.current,
-        style: maptilerStyle,
+        style: initialStyle,
         center: initialCamera ? [initialCamera.lng, initialCamera.lat] : [NAIROBI.lng, NAIROBI.lat],
         zoom: initialCamera?.zoom ?? DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
@@ -532,6 +567,7 @@ export function MarketMap({
         fadeDuration: 0,
         attributionControl: false,
       });
+      appliedStyleRef.current = initialStyle;
       lockMapUpright(map);
     } catch {
       setFailure("error");
@@ -613,19 +649,42 @@ export function MarketMap({
       settleTimer = setTimeout(() => reportViewport(map), VIEWPORT_SETTLE_MS);
     }
 
-    function handleLoad() {
-      addMarketLayers(map, locationsRef.current, stacksRef.current);
+    function restoreStyle() {
+      if (map.getSource(MARKET_SOURCE_ID)) return;
+      addMarketLayers(
+        map,
+        locationsRef.current,
+        stacksRef.current,
+        selectedLocationIdRef.current,
+        themeRef.current,
+      );
+      removeLabelEdgeListeners?.();
       removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map, () => bottomInsetRef.current);
       loadedRef.current = true;
       setLoaded(true);
+      setStyleRevision((current) => current + 1);
+    }
+
+    function handleLoad() {
+      restoreStyle();
+    }
+
+    function handleStyleLoad() {
+      pendingStyleRef.current = null;
+      restoreStyle();
     }
 
     function handleError() {
-      if (loadedRef.current) return;
+      // Tile errors after a healthy style are recoverable. An error while a
+      // replacement style is pending is not: the old style has already been
+      // discarded, so use the existing Retry surface instead of leaving an
+      // incomplete map behind.
+      if (loadedRef.current && !pendingStyleRef.current) return;
       setFailure("error");
     }
 
     map.on("load", handleLoad);
+    map.on("style.load", handleStyleLoad);
     map.on("error", handleError);
     map.on("click", handleMapClick);
     map.on("dragstart", handleDragStart);
@@ -637,6 +696,7 @@ export function MarketMap({
       clearTimeout(settleTimer);
       removeLabelEdgeListeners?.();
       map.off("load", handleLoad);
+      map.off("style.load", handleStyleLoad);
       map.off("error", handleError);
       map.off("click", handleMapClick);
       map.off("dragstart", handleDragStart);
@@ -652,9 +712,24 @@ export function MarketMap({
       appliedInsetRef.current = 0;
       userHasInteractedRef.current = false;
       loadedRef.current = false;
+      appliedStyleRef.current = null;
+      pendingStyleRef.current = null;
       setLoaded(false);
     };
-  }, [failure, maptilerStyle, reportViewport]);
+  }, [failure, maptilerKey, reportViewport]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !maptilerStyle || appliedStyleRef.current === maptilerStyle) return;
+    try {
+      pendingStyleRef.current = maptilerStyle;
+      appliedStyleRef.current = maptilerStyle;
+      map.setStyle(maptilerStyle);
+    } catch {
+      pendingStyleRef.current = null;
+      setFailure("error");
+    }
+  }, [maptilerStyle]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -664,7 +739,7 @@ export function MarketMap({
     // Every member, not only lone pins: a fanned stack draws its members' pins.
     addMarketMarkerImages(map, locationsRef.current);
     source.setData(createStackCollection(stacks));
-  }, [loaded, stacks]);
+  }, [loaded, stacks, styleRevision]);
 
   useEffect(() => {
     if (spider && !stacksByKey.has(spider.key)) setSpider(null);
@@ -706,7 +781,7 @@ export function MarketMap({
     });
 
     source.setData({ type: "FeatureCollection", features });
-  }, [loaded, spider, stacksByKey]);
+  }, [loaded, spider, stacksByKey, styleRevision]);
 
   const spiderKey = spider?.key ?? null;
   useEffect(() => {
@@ -729,7 +804,7 @@ export function MarketMap({
       pinImage(true),
       pinImage(false),
     ]);
-  }, [loaded, selectedLocationId]);
+  }, [loaded, selectedLocationId, styleRevision]);
 
   // Pads the camera by the sheet without moving the view: whatever sits at the
   // centre of the area left above the sheet becomes the camera's centre. Every
