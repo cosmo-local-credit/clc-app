@@ -56,8 +56,8 @@ export function SettingsPage({
       </SettingsGroup>
 
       <SettingsGroup label={t`Preferences`}>
-        <ThemeSettingsRow />
         <LanguageSettingsRow />
+        <ThemeSettingsRow />
         <VisibilitySettingsRow />
         <NotificationSettingsSection walletAddress={address} />
       </SettingsGroup>
