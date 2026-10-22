@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
   MARKET_MAP_MODE_STORAGE_KEY,
@@ -34,6 +34,15 @@ describe("map appearance", () => {
     expect(readInitialMarketMapMode()).toBe("standard");
     window.localStorage.setItem(MARKET_MAP_MODE_STORAGE_KEY, "terrain");
     expect(readInitialMarketMapMode()).toBe("standard");
+  });
+
+  it("defaults to standard when device storage cannot be read", () => {
+    const localStorage = vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new Error("storage unavailable");
+    });
+
+    expect(readInitialMarketMapMode()).toBe("standard");
+    localStorage.mockRestore();
   });
 
   it("reads and persists the satellite preference", () => {

@@ -1789,6 +1789,37 @@ describe("MarketMap style failure", () => {
     expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
     expect(map.remove).toHaveBeenCalledOnce();
   });
+
+  it("uses the Retry surface when applying a replacement style throws", () => {
+    const { rerender } = render(
+      <MarketMap
+        mode="standard"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    const map = loadedMap();
+    map.setStyle.mockImplementationOnce(() => {
+      throw new Error("style unavailable");
+    });
+
+    rerender(
+      <MarketMap
+        mode="satellite"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /retry/i })).toBeTruthy();
+  });
 });
 
 describe("MarketMap trailing fan page", () => {
