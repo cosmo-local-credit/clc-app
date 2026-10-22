@@ -7,7 +7,9 @@ import { createPortal } from "react-dom";
 
 import { MarkerPin } from "#/components/vouchers/marker-style-picker";
 import { BRAND_THEME_COLOR } from "#/lib/brand";
+import { mapTilerStyleUrl } from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
+import { useHydratedTheme } from "#/providers/theme";
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const PIN_ZOOM = 13;
@@ -37,6 +39,7 @@ export function LocationMap({
   className,
 }: LocationMapProps) {
   const { t } = useLingui();
+  const { theme } = useHydratedTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const hasLoadedRef = useRef(false);
@@ -49,9 +52,10 @@ export function LocationMap({
   const pendingRef = useRef<{ lat: number; lng: number } | null>(null);
   const [failed, setFailed] = useState(false);
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
-  const maptilerStyle = maptilerKey
-    ? `https://api.maptiler.com/maps/base-v4/style.json?key=${encodeURIComponent(maptilerKey)}`
-    : null;
+  const maptilerStyle = mapTilerStyleUrl(maptilerKey, theme, "standard");
+  const maptilerStyleRef = useRef(maptilerStyle);
+  maptilerStyleRef.current = maptilerStyle;
+  const appliedStyleRef = useRef<string | null>(null);
 
   useEffect(() => {
     onLocationChangeRef.current = onLocationChange;
@@ -89,7 +93,7 @@ export function LocationMap({
   }, []);
 
   useEffect(() => {
-    if (!maptilerStyle || failed || !containerRef.current || mapRef.current) {
+    if (!maptilerKey || failed || !containerRef.current || mapRef.current) {
       return;
     }
     if (!hasWebGlSupport()) {
@@ -106,14 +110,17 @@ export function LocationMap({
       : [NAIROBI.lng, NAIROBI.lat];
     let map: MapLibreGL.Map;
     try {
+      const initialStyle = maptilerStyleRef.current;
+      if (!initialStyle) return;
       map = new MapLibreGL.Map({
         container: containerRef.current,
-        style: maptilerStyle,
+        style: initialStyle,
         center,
         zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
         interactive: isInteractive,
         attributionControl: false,
       });
+      appliedStyleRef.current = initialStyle;
     } catch {
       setFailed(true);
       return;
@@ -129,6 +136,7 @@ export function LocationMap({
       if (mapRef.current === map) {
         map.remove();
         mapRef.current = null;
+        appliedStyleRef.current = null;
       }
     }
 
@@ -169,7 +177,18 @@ export function LocationMap({
       map.off("load", handleLoad);
       removeMap();
     };
-  }, [failed, maptilerStyle, setMarker]);
+  }, [failed, maptilerKey, setMarker]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !maptilerStyle || appliedStyleRef.current === maptilerStyle) return;
+    try {
+      appliedStyleRef.current = maptilerStyle;
+      map.setStyle(maptilerStyle);
+    } catch {
+      setFailed(true);
+    }
+  }, [maptilerStyle]);
 
   useEffect(() => {
     const map = mapRef.current;

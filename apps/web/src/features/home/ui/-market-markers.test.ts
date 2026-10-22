@@ -14,9 +14,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { installCanvasStub, installPath2DStub, type StubbedContext } from "./-market-canvas-stub";
 import type { MarketLocation, MarketLocationKind } from "./market-data";
 import {
+  MARKET_NETWORK_BADGE_COLOR,
+  MARKET_NETWORK_BADGE_IMAGE_ID,
   POOL_PIN_HEX,
   POOL_PIN_IMAGE_ID,
   SELECTED_PIN_SUFFIX,
+  addMarketNetworkBadgeImage,
   addMarketMarkerImages,
   markerImageId,
   markerPin,
@@ -269,6 +272,34 @@ describe("market marker colours", () => {
     expect(pixelOf(paintedImage(map, "basket", "blue")).slice(0, 3)).toEqual(EXPECTED.goods);
     const fills = [...contexts.values()].flatMap((record) => record.fills);
     expect(fills).not.toContain("oklch(0.72 0.13 178)");
+  });
+});
+
+describe("market network badge", () => {
+  it.each(["light", "dark"] as const)("draws a connected, opaque %s badge once", (theme) => {
+    const map = fakeMap();
+
+    addMarketNetworkBadgeImage(map as never, theme);
+    addMarketNetworkBadgeImage(map as never, theme);
+
+    expect([...map.images.keys()]).toEqual([MARKET_NETWORK_BADGE_IMAGE_ID[theme]]);
+    const [record] = contexts.values();
+    const [canvas] = contexts.keys();
+    expect(record).toBeDefined();
+    expect(canvas?.width).toBe(44);
+    expect(canvas?.height).toBe(44);
+    expect(record?.moves).toHaveLength(3);
+    expect(record?.lines).toHaveLength(3);
+    expect(record?.arcs).toHaveLength(8);
+    expect(record?.fills).toContain(MARKET_NETWORK_BADGE_COLOR[theme].surface);
+    expect(record?.fills).toContain(MARKET_NETWORK_BADGE_COLOR[theme].outline);
+  });
+
+  it("uses opposing surfaces in light and dark themes", () => {
+    expect(MARKET_NETWORK_BADGE_COLOR.light.surface).not.toBe(
+      MARKET_NETWORK_BADGE_COLOR.dark.surface,
+    );
+    expect(MARKET_NETWORK_BADGE_COLOR.light.ink).not.toBe(MARKET_NETWORK_BADGE_COLOR.dark.ink);
   });
 });
 
