@@ -12,7 +12,12 @@ import MapLibreGL, {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
-import { type MarketMapMode, mapTilerStyleUrl } from "#/lib/map-appearance";
+import {
+  type MarketMapMode,
+  resolveMapStyleUrl,
+  satelliteMapStyleUrl,
+  standardMapStyleUrl,
+} from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
 import { useHydratedTheme } from "#/providers/theme";
 import { MAP_MAX_ZOOM, MARKET_SOURCE_ID, type MarketLocation } from "./market-data";
@@ -66,9 +71,9 @@ const INTERACTIVE_LAYER_IDS = [
 
 const VIEWPORT_SETTLE_MS = 400;
 
-/** Font stacks the basemap style already uses, so names need no extra glyphs. */
-const LABEL_FONT = ["Inter Medium", "Noto Sans Medium"];
-const SELECTED_LABEL_FONT = ["Inter Semi Bold", "Noto Sans Semi Bold"];
+/** Font stacks available from both the standard and satellite style glyph endpoints. */
+const LABEL_FONT = ["Noto Sans Regular"];
+const SELECTED_LABEL_FONT = ["Noto Sans Bold"];
 const LABEL_SIZE = 12;
 const LABEL_GAP = 5;
 const LABEL_PADDING = 1;
@@ -148,6 +153,7 @@ type MarketMapProps = {
    */
   bottomInset?: number;
   onViewportSettled?: (viewport: MarketViewport) => void;
+  onSatelliteUnavailable?: () => void;
   className?: string;
 };
 
@@ -478,6 +484,7 @@ export function MarketMap({
   onUserPan,
   bottomInset = 0,
   onViewportSettled,
+  onSatelliteUnavailable,
   className,
 }: MarketMapProps) {
   const { theme } = useHydratedTheme();
@@ -495,7 +502,9 @@ export function MarketMap({
   const [spider, setSpider] = useState<{ key: string; page: number } | null>(null);
 
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
-  const maptilerStyle = mapTilerStyleUrl(maptilerKey, theme, mode);
+  const standardStyle = standardMapStyleUrl(theme);
+  const satelliteStyle = satelliteMapStyleUrl(maptilerKey, theme);
+  const mapStyle = resolveMapStyleUrl(maptilerKey, theme, mode);
 
   const stacks = useMemo(() => groupByProximity(locations), [locations]);
   const stacksByKey = useMemo(() => new Map(stacks.map((stack) => [stack.key, stack])), [stacks]);
@@ -508,8 +517,8 @@ export function MarketMap({
   selectedLocationIdRef.current = selectedLocationId;
   const themeRef = useRef(theme);
   themeRef.current = theme;
-  const maptilerStyleRef = useRef(maptilerStyle);
-  maptilerStyleRef.current = maptilerStyle;
+  const standardStyleRef = useRef(standardStyle);
+  standardStyleRef.current = standardStyle;
   const appliedStyleRef = useRef<string | null>(null);
   const pendingStyleRef = useRef<string | null>(null);
   const bottomInsetRef = useRef(bottomInset);
@@ -522,6 +531,8 @@ export function MarketMap({
   onUserPanRef.current = onUserPan;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
+  const onSatelliteUnavailableRef = useRef(onSatelliteUnavailable);
+  onSatelliteUnavailableRef.current = onSatelliteUnavailable;
   // Seed each map instance from the current camera without rebuilding it when
   // the camera changes. Starting at Nairobi would flash before the load handler.
   const cameraRef = useRef(camera);
@@ -540,8 +551,23 @@ export function MarketMap({
     });
   }, []);
 
+  const fallBackToStandard = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const fallback = standardStyleRef.current;
+    pendingStyleRef.current = fallback;
+    appliedStyleRef.current = fallback;
+    onSatelliteUnavailableRef.current?.();
+    try {
+      map.setStyle(fallback);
+    } catch {
+      pendingStyleRef.current = null;
+      setFailure("error");
+    }
+  }, []);
+
   useEffect(() => {
-    if (!maptilerKey || failure || !containerRef.current || mapRef.current) return;
+    if (failure || !containerRef.current || mapRef.current) return;
     if (!hasWebGlSupport()) {
       setFailure("unsupported");
       return;
@@ -550,8 +576,7 @@ export function MarketMap({
     let map: MapLibreGL.Map;
     try {
       const initialCamera = cameraRef.current;
-      const initialStyle = maptilerStyleRef.current;
-      if (!initialStyle) return;
+      const initialStyle = standardStyleRef.current;
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: initialStyle,
@@ -569,6 +594,7 @@ export function MarketMap({
       });
       appliedStyleRef.current = initialStyle;
       lockMapUpright(map);
+      map.addControl(new MapLibreGL.AttributionControl({ compact: true }), "bottom-left");
     } catch {
       setFailure("error");
       return;
@@ -675,10 +701,13 @@ export function MarketMap({
     }
 
     function handleError() {
-      // Tile errors after a healthy style are recoverable. An error while a
-      // replacement style is pending is not: the old style has already been
-      // discarded, so use the existing Retry surface instead of leaving an
-      // incomplete map behind.
+      // Tile errors after a healthy style are recoverable. If Satellite fails
+      // while replacing Standard, immediately restore the resilient Standard
+      // style. A failure loading Standard itself still uses the Retry surface.
+      if (pendingStyleRef.current && pendingStyleRef.current !== standardStyleRef.current) {
+        fallBackToStandard();
+        return;
+      }
       if (loadedRef.current && !pendingStyleRef.current) return;
       setFailure("error");
     }
@@ -716,20 +745,29 @@ export function MarketMap({
       pendingStyleRef.current = null;
       setLoaded(false);
     };
-  }, [failure, maptilerKey, reportViewport]);
+  }, [failure, fallBackToStandard, reportViewport]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !maptilerStyle || appliedStyleRef.current === maptilerStyle) return;
+    if (!map || !loaded) return;
+    if (mode === "satellite" && !satelliteStyle) {
+      onSatelliteUnavailableRef.current?.();
+      return;
+    }
+    if (appliedStyleRef.current === mapStyle) return;
     try {
-      pendingStyleRef.current = maptilerStyle;
-      appliedStyleRef.current = maptilerStyle;
-      map.setStyle(maptilerStyle);
+      pendingStyleRef.current = mapStyle;
+      appliedStyleRef.current = mapStyle;
+      map.setStyle(mapStyle);
     } catch {
       pendingStyleRef.current = null;
-      setFailure("error");
+      if (mode === "satellite") {
+        fallBackToStandard();
+      } else {
+        setFailure("error");
+      }
     }
-  }, [maptilerStyle]);
+  }, [fallBackToStandard, loaded, mapStyle, mode, satelliteStyle]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -905,7 +943,7 @@ export function MarketMap({
       .addTo(map);
   }, [loaded, userLocation]);
 
-  if (!maptilerStyle || failure) {
+  if (failure) {
     return (
       <section
         aria-label="Market map"

@@ -53,6 +53,7 @@ export function MarketPage({
     requestLocation,
   } = useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
+  const [satelliteUnavailable, setSatelliteUnavailable] = useState(false);
   const selection = useVoucherSheetSelection();
   const { mode: mapMode, setMode: setMapMode } = useHydratedMarketMapMode();
 
@@ -240,6 +241,7 @@ export function MarketPage({
         aria-label={satelliteLabel}
         aria-pressed={mapMode === "satellite"}
         title={satelliteLabel}
+        disabled={satelliteUnavailable}
         onClick={() => setMapMode(mapMode === "satellite" ? "standard" : "satellite")}
       >
         <RiEarthLine className="size-5" aria-hidden="true" />
@@ -329,6 +331,10 @@ export function MarketPage({
           onUserPan={handleUserPan}
           bottomInset={isCardOpen ? sheetInset : 0}
           onViewportSettled={handleViewportSettled}
+          onSatelliteUnavailable={() => {
+            setSatelliteUnavailable(true);
+            setMapMode("standard");
+          }}
           className="absolute inset-0 h-full w-full"
         />
       </Suspense>
