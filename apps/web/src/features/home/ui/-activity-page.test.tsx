@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
@@ -9,6 +9,51 @@ import { CHAIN_INFO } from "#/lib/chain";
 import { ActivityPage } from "./activity-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
+
+type TransferFixture = {
+  id: number;
+  txHash: string;
+  dateBlock: string;
+  direction: string;
+  counterpartyAddress: string;
+  senderAddress: string;
+  recipientAddress: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+  tokenName: string;
+  tokenDecimals: number;
+  amount: string;
+  success: boolean;
+  uoaValue?: string;
+  uoa?: string;
+  hasNote?: boolean;
+};
+
+function logicalActivity(transfers: readonly TransferFixture[]) {
+  return transfers.map(
+    ({
+      direction,
+      tokenAddress,
+      tokenSymbol,
+      tokenName,
+      tokenDecimals,
+      amount,
+      uoaValue,
+      uoa,
+      ...transfer
+    }) => ({
+      ...transfer,
+      kind:
+        transfer.senderAddress === "0x0000000000000000000000000000000000000000"
+          ? "creation"
+          : direction === "IN"
+            ? "received"
+            : "sent",
+      hasNote: transfer.hasNote ?? false,
+      transfer: { tokenAddress, tokenSymbol, tokenName, tokenDecimals, amount, uoaValue, uoa },
+    }),
+  );
+}
 
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => ADDRESS.toLowerCase(),
@@ -52,6 +97,178 @@ afterEach(() => {
 });
 
 describe("ActivityPage", () => {
+  it("renders one two-sided swap row and opens its indexed details", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () =>
+          JSON.stringify({
+            ok: true,
+            result: {
+              activity: [
+                {
+                  kind: "swapped",
+                  id: 4000010,
+                  txHash: `0x${"55".repeat(32)}`,
+                  dateBlock: "2026-10-20T08:00:00Z",
+                  success: true,
+                  sent: {
+                    tokenAddress: "0x1111111111111111111111111111111111111111",
+                    tokenName: "My voucher",
+                    tokenSymbol: "MY3R",
+                    tokenDecimals: 6,
+                    amount: "1000000",
+                    uoaValue: "1",
+                    uoa: "KES",
+                  },
+                  received: {
+                    tokenAddress: "0x2222222222222222222222222222222222222222",
+                    tokenName: "Kilifi voucher",
+                    tokenSymbol: "KNSM2",
+                    tokenDecimals: 6,
+                    amount: "2000000",
+                    uoaValue: "2",
+                    uoa: "BAM",
+                  },
+                  protocolFee: {
+                    tokenAddress: "0x2222222222222222222222222222222222222222",
+                    tokenName: "Kilifi voucher",
+                    tokenSymbol: "KNSM2",
+                    tokenDecimals: 6,
+                    amount: "10000",
+                  },
+                  poolAddresses: [
+                    "0x3333333333333333333333333333333333333333",
+                    "0x4444444444444444444444444444444444444444",
+                  ],
+                },
+              ],
+            },
+          }),
+      }),
+    );
+
+    renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+    const row = await screen.findByRole("button", { name: /swapped knsm2 for my3r/i });
+    const rowText = row.textContent ?? "";
+    expect(rowText).toContain("1 MY3R (1.00 KES)");
+    expect(rowText).toContain("2 KNSM2 (2.00 BAM)");
+    expect(rowText.indexOf("+2 KNSM2")).toBeLessThan(rowText.indexOf("−1 MY3R"));
+    fireEvent.click(row);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Pools")).toBeTruthy();
+    expect(within(dialog).getByText("Sent").parentElement?.textContent).toContain("1 MY3R");
+    expect(within(dialog).getByText("Received").parentElement?.textContent).toContain("2 KNSM2");
+    expect(within(dialog).getByText("Protocol fee")).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("stages type filters and applies their canonical order", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () => JSON.stringify({ ok: true, result: { activity: [] } }),
+      }),
+    );
+    const onTypesChange = vi.fn();
+    renderWithQueryClient(
+      <ActivityPage address={ADDRESS} types={["sent"]} onTypesChange={onTypesChange} />,
+    );
+
+    const filters = screen.getByRole("button", { name: "Filters" });
+    const search = screen.getByRole("searchbox", { name: "Search activity" });
+    const searchControl = search.closest('[data-slot="market-search-control"]');
+    expect(filters.className).toContain("size-11");
+    expect(filters.textContent).toBe("1");
+    expect(filters.textContent).not.toContain("Filters");
+    expect(searchControl?.contains(filters)).toBe(true);
+    expect(searchControl?.className).toContain("h-11");
+
+    fireEvent.click(filters);
+    expect(
+      screen.getByRole("checkbox", { name: "Sent" }).getAttribute("data-checked"),
+    ).not.toBeNull();
+    fireEvent.click(screen.getByRole("checkbox", { name: "Creation" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Swapped" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+    expect(onTypesChange).toHaveBeenCalledWith(["creation", "sent", "swapped"]);
+  });
+
+  it("restores staged filters on close and can clear all filters", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () => JSON.stringify({ ok: true, result: { activity: [] } }),
+      }),
+    );
+    const onTypesChange = vi.fn();
+    renderWithQueryClient(
+      <ActivityPage address={ADDRESS} types={["sent", "swapped"]} onTypesChange={onTypesChange} />,
+    );
+
+    const filters = screen.getByRole("button", { name: "Filters" });
+    fireEvent.click(filters);
+    let dialog = screen.getByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("checkbox", { name: "Sent" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close filters" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(onTypesChange).not.toHaveBeenCalled();
+
+    fireEvent.click(filters);
+    dialog = screen.getByRole("dialog");
+    expect(
+      within(dialog).getByRole("checkbox", { name: "Sent" }).getAttribute("data-checked"),
+    ).not.toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Clear filters" }));
+
+    expect(onTypesChange).toHaveBeenCalledWith([]);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("clears search and type filters from an empty filtered result", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () => JSON.stringify({ ok: true, result: { activity: [] } }),
+      }),
+    );
+    const onQueryChange = vi.fn();
+    const onTypesChange = vi.fn();
+    renderWithQueryClient(
+      <ActivityPage
+        address={ADDRESS}
+        query="absent"
+        types={["sent"]}
+        onQueryChange={onQueryChange}
+        onTypesChange={onTypesChange}
+      />,
+    );
+
+    const emptyState = await screen.findByText("No activity matches these filters.");
+    const panel = emptyState.closest("div");
+    if (!panel) throw new Error("expected filtered empty state");
+    fireEvent.click(within(panel).getByRole("button", { name: "Clear filters" }));
+
+    expect(screen.getByRole("searchbox", { name: "Search activity" })).toHaveProperty("value", "");
+    expect(onQueryChange).toHaveBeenCalledWith("");
+    expect(onTypesChange).toHaveBeenCalledWith([]);
+  });
+
   it("shows fetched account transfer history", async () => {
     vi.stubGlobal(
       "fetch",
@@ -64,7 +281,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743839,
                     txHash: "0xf6c12f66ae53435466ec44f33c7b981476f26779e93c725eb7b2afdf52577fcc",
@@ -82,7 +299,7 @@ describe("ActivityPage", () => {
                     uoaValue: "3.0864175",
                     uoa: "KES",
                   },
-                ],
+                ]),
               },
             }),
           ),
@@ -126,7 +343,8 @@ describe("ActivityPage", () => {
         ok: true,
         status: 200,
         statusText: "",
-        text: async () => JSON.stringify({ ok: true, result: { transfers } }),
+        text: async () =>
+          JSON.stringify({ ok: true, result: { activity: logicalActivity(transfers) } }),
       };
     });
     vi.stubGlobal("fetch", fetcher);
@@ -143,32 +361,106 @@ describe("ActivityPage", () => {
     fireEvent.change(search, { target: { value: "historic" } });
     expect(await screen.findByText("5 SV")).toBeTruthy();
     expect(screen.getByRole("status")).toBe(announcements);
-    expect(announcements.textContent).toBe("1 transfer shown.");
+    expect(announcements.textContent).toBe("1 activity item shown.");
     expect(fetcher.mock.calls.some(([url]) => String(url).includes("q=historic"))).toBe(true);
     fireEvent.change(search, { target: { value: "absent" } });
     await waitFor(() => expect(screen.queryByText("5 SV")).toBeNull());
-    expect(await screen.findByText("No activity matches this search.")).toBeTruthy();
+    expect(await screen.findByText("No activity matches these filters.")).toBeTruthy();
     expect(screen.getByRole("status")).toBe(announcements);
-    expect(announcements.textContent).toContain("No activity matches this search.");
+    expect(announcements.textContent).toContain("No activity matches these filters.");
     expect(screen.getByRole("searchbox", { name: "Search activity" })).toBe(search);
-    fireEvent.change(search, { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
     expect(await screen.findByText("No activity yet.")).toBeTruthy();
   });
 
   it("announces a failed activity request", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce({
         ok: false,
         status: 500,
         statusText: "Server error",
         text: async () => JSON.stringify({ ok: false, description: "Search failed" }),
-      }),
-    );
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () => JSON.stringify({ ok: true, result: { activity: [] } }),
+      });
+    vi.stubGlobal("fetch", fetcher);
     renderWithQueryClient(<ActivityPage address={ADDRESS} />);
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toBe("Couldn't load activity.");
-    expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("No activity yet.")).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it("loads the next logical activity page when the sentinel becomes visible", async () => {
+    let intersectionCallback: IntersectionObserverCallback | undefined;
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        readonly root = null;
+        readonly rootMargin = "0px";
+        readonly thresholds = [0];
+        constructor(callback: IntersectionObserverCallback) {
+          intersectionCallback = callback;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+        takeRecords() {
+          return [];
+        }
+      },
+    );
+    const firstPage = Array.from({ length: 20 }, (_, index) => ({
+      id: 100 - index,
+      txHash: `0x${String(index + 1).padStart(64, "0")}`,
+      dateBlock: "2026-10-20T08:00:00Z",
+      direction: "IN",
+      counterpartyAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+      senderAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+      recipientAddress: ADDRESS,
+      tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+      tokenName: `Voucher ${index + 1}`,
+      tokenSymbol: `V${index + 1}`,
+      tokenDecimals: 0,
+      amount: "1",
+      success: true,
+    }));
+    const fetcher = vi.fn().mockImplementation(async (input: string) => {
+      const isNextPage = new URL(input, "https://api.test").searchParams.has("cursor");
+      return {
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: async () =>
+          JSON.stringify({
+            ok: true,
+            result: isNextPage
+              ? { activity: [], last: 0 }
+              : { activity: logicalActivity(firstPage), last: 81 },
+          }),
+      };
+    });
+    vi.stubGlobal("fetch", fetcher);
+    renderWithQueryClient(<ActivityPage address={ADDRESS} types={["sent"]} />);
+
+    expect(await screen.findByText("20 activity items shown.")).toBeTruthy();
+    await waitFor(() => expect(intersectionCallback).toBeTypeOf("function"));
+    await act(async () => {
+      intersectionCallback?.(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        {} as IntersectionObserver,
+      );
+    });
+
+    await waitFor(() =>
+      expect(fetcher.mock.calls.some(([input]) => String(input).includes("cursor=81"))).toBe(true),
+    );
   });
 
   it("shows zero-address receipts as created supply", async () => {
@@ -184,7 +476,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743840,
                     txHash: "0xec0810051bdd353f0d3ad60bdf6c78eef8579d8d4b19d1bd7bc4f6a73cc16783",
@@ -200,7 +492,7 @@ describe("ActivityPage", () => {
                     amount: "1000000000",
                     success: true,
                   },
-                ],
+                ]),
               },
             }),
           ),
@@ -227,7 +519,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743839,
                     txHash: "0xf6c12f66ae53435466ec44f33c7b981476f26779e93c725eb7b2afdf52577fcc",
@@ -245,7 +537,7 @@ describe("ActivityPage", () => {
                     uoaValue: "3.0864175",
                     uoa: "KES",
                   },
-                ],
+                ]),
               },
             }),
           ),
@@ -292,7 +584,7 @@ describe("ActivityPage", () => {
             JSON.stringify({
               ok: true,
               result: {
-                transfers: [
+                activity: logicalActivity([
                   {
                     id: 743839,
                     txHash: "0xf6c12f66ae53435466ec44f33c7b981476f26779e93c725eb7b2afdf52577fcc",
@@ -325,7 +617,7 @@ describe("ActivityPage", () => {
                     success: true,
                     hasNote: false,
                   },
-                ],
+                ]),
               },
             }),
           ),

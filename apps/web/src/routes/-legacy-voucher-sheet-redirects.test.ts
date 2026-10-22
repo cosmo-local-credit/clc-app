@@ -234,3 +234,59 @@ describe("a market without a list", () => {
     ).toMatchObject({ to: "/", search: { tab: "market", view: undefined, q: "food" } });
   });
 });
+
+describe("Activity search canonicalization", () => {
+  it("replaces malformed Activity state with its canonical values", () => {
+    const beforeLoad = HomeRoute.options.beforeLoad as unknown as BeforeLoad;
+
+    expect(
+      redirectOptions(() =>
+        beforeLoad({
+          params: {},
+          search: {
+            tab: "activity",
+            view: "map",
+            activityQ: "  market   voucher  ",
+            activityTypes: ["SWAPPED,sent", "sent"],
+          },
+        }),
+      ),
+    ).toMatchObject({
+      to: "/",
+      search: {
+        tab: "activity",
+        view: "map",
+        activityQ: "market voucher",
+        activityTypes: "sent,swapped",
+      },
+      replace: true,
+    });
+  });
+
+  it("removes Activity-only filters after navigating to another home tab", () => {
+    const beforeLoad = HomeRoute.options.beforeLoad as unknown as BeforeLoad;
+
+    expect(
+      redirectOptions(() =>
+        beforeLoad({
+          params: {},
+          search: {
+            tab: "posts",
+            view: "map",
+            activityQ: "market voucher",
+            activityTypes: "sent",
+          },
+        }),
+      ),
+    ).toMatchObject({
+      to: "/",
+      search: {
+        tab: "posts",
+        view: "map",
+        activityQ: undefined,
+        activityTypes: undefined,
+      },
+      replace: true,
+    });
+  });
+});

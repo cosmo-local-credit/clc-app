@@ -59,6 +59,12 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     easeTo = vi.fn();
     fitBounds = vi.fn();
     jumpTo = vi.fn();
+    setStyle = vi.fn((style: string) => {
+      this.options.style = style;
+      this.sources.clear();
+      this.layers = [];
+      this.images.clear();
+    });
     setMaxPitch = vi.fn();
     setPitch = vi.fn();
     setBearing = vi.fn();
@@ -209,8 +215,11 @@ vi.mock("maplibre-gl", () => ({
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
 import { EXPLICIT_CAMERA_RANK } from "#/features/home/logic/market-camera";
+import { useThemeStore } from "#/providers/theme";
 import { type MarketCamera, MarketMap } from "./market-map";
 import {
+  MARKET_NETWORK_BADGE_COLOR,
+  MARKET_NETWORK_BADGE_IMAGE_ID,
   POOL_PIN_HEX,
   POOL_PIN_IMAGE_ID,
   markerPin,
@@ -267,6 +276,8 @@ function loadedMap() {
 
 beforeEach(() => {
   vi.stubEnv("VITE_MAPTILER_KEY", "test key");
+  window.localStorage.clear();
+  useThemeStore.setState({ theme: "light" });
   mapInstances.length = 0;
   markerInstances.length = 0;
   resetMarketMarkerCache();
@@ -298,6 +309,71 @@ function clickEmptyMap(map: ReturnType<typeof loadedMap>) {
 }
 
 describe("MarketMap lifecycle", () => {
+  it("switches styles in place and restores every app-owned overlay", () => {
+    const { rerender } = render(
+      <MarketMap
+        mode="standard"
+        locations={KILIFI_STACK}
+        selectedLocationId="s2"
+        camera={null}
+        userLocation={{ lat: -1.29, lng: 36.82 }}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    const map = loadedMap();
+    const originalMarker = markerInstances[0];
+    const spiderFeatures = () => {
+      const source = map.getSource("market-spider");
+      if (!source) throw new Error("expected spider source");
+      return (source.spec.data as { features: unknown[] }).features;
+    };
+
+    expect(map.options.style).toBe(
+      "https://api.maptiler.com/maps/base-v4-light/style.json?key=test%20key",
+    );
+    clickFeature(
+      map,
+      "market-stacks",
+      { key: "-3.632178,39.854538", count: 3 },
+      { type: "Point", coordinates: [39.854538, -3.632178] },
+    );
+    const cameraMoves = map.easeTo.mock.calls.length;
+    expect(spiderFeatures()).toHaveLength(6);
+
+    rerender(
+      <MarketMap
+        mode="satellite"
+        locations={KILIFI_STACK}
+        selectedLocationId="s2"
+        camera={null}
+        userLocation={{ lat: -1.29, lng: 36.82 }}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.setStyle).toHaveBeenCalledWith(
+      "https://api.maptiler.com/maps/hybrid-v4/style.json?key=test%20key",
+    );
+    expect(mapInstances).toHaveLength(1);
+    expect(map.getSource(MARKET_SOURCE_ID)).toBeUndefined();
+
+    act(() => map.trigger("style.load"));
+
+    expect(map.getSource(MARKET_SOURCE_ID)).toBeDefined();
+    expect(map.getSource("market-spider")).toBeDefined();
+    expect(map.getSource("market-label-edges")).toBeDefined();
+    expect(map.getLayer("market-point-selected")).toBeDefined();
+    expect(map.getLayer("market-clusters")).toBeDefined();
+    expect(markerInstances).toEqual([originalMarker]);
+    expect(spiderFeatures()).toHaveLength(6);
+    expect(map.easeTo).toHaveBeenCalledTimes(cameraMoves);
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+    expect(map.setStyle).toHaveBeenLastCalledWith(
+      "https://api.maptiler.com/maps/hybrid-v4-dark/style.json?key=test%20key",
+    );
+  });
+
   it("constructs the map once and updates the source when data is appended", () => {
     const onSelect = vi.fn();
     const { rerender } = render(
@@ -1353,6 +1429,25 @@ describe("MarketMap badge counts", () => {
     expect(spec.clusterProperties?.markerCount).toEqual(["+", ["get", "count"]]);
   });
 
+  it("draws clusters and coincident stacks as theme-aware network badges", () => {
+    renderMap(CBD_STACK);
+    const map = loadedMap();
+
+    for (const id of ["market-clusters", "market-stacks"]) {
+      const layer = map.getLayer(id) as {
+        type?: string;
+        layout?: Record<string, unknown>;
+      };
+      expect(layer.type).toBe("symbol");
+      expect(layer.layout?.["icon-image"]).toBe(MARKET_NETWORK_BADGE_IMAGE_ID.light);
+      expect(layer.layout?.["icon-allow-overlap"]).toBe(true);
+    }
+    for (const id of ["market-cluster-count", "market-stack-count"]) {
+      const layer = map.getLayer(id) as { paint?: Record<string, unknown> };
+      expect(layer.paint?.["text-color"]).toBe(MARKET_NETWORK_BADGE_COLOR.light.ink);
+    }
+  });
+
   it("labels clusters from the summed marker count", () => {
     renderMap(CBD_STACK);
     const map = loadedMap();
@@ -1662,6 +1757,68 @@ describe("MarketMap style failure", () => {
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
     expect(map.remove).not.toHaveBeenCalled();
+  });
+
+  it("uses the Retry surface when a replacement style fails", () => {
+    const { rerender } = render(
+      <MarketMap
+        mode="standard"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    const map = loadedMap();
+
+    rerender(
+      <MarketMap
+        mode="satellite"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    act(() => {
+      map.trigger("error", { error: { message: "style failed" } } as never);
+    });
+
+    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
+    expect(map.remove).toHaveBeenCalledOnce();
+  });
+
+  it("uses the Retry surface when applying a replacement style throws", () => {
+    const { rerender } = render(
+      <MarketMap
+        mode="standard"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    const map = loadedMap();
+    map.setStyle.mockImplementationOnce(() => {
+      throw new Error("style unavailable");
+    });
+
+    rerender(
+      <MarketMap
+        mode="satellite"
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /retry/i })).toBeTruthy();
   });
 });
 

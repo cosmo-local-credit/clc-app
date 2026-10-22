@@ -78,8 +78,8 @@ export function InstallPage({ from }: { from?: "settings" }) {
         {/* Install is open to visitors who have not signed in, so it carries
             the onboarding screens' theme and language buttons. */}
         <div className="flex items-center gap-2">
-          <ThemeSettingsButton />
           <LanguageSettingsButton />
+          <ThemeSettingsButton />
         </div>
       </div>
 

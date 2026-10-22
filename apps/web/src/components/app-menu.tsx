@@ -3,7 +3,7 @@ import { useState } from "react";
 import { RiExternalLinkLine, RiFileTextLine, RiInformationLine, RiMenuLine } from "react-icons/ri";
 
 import { LanguageSelector } from "#/components/language-selector";
-import { ThemeSelector } from "#/components/theme-selector";
+import { ThemeToggle } from "#/components/theme-selector";
 import { VisibilitySelector } from "#/components/visibility-selector";
 import { Button } from "#/components/ui/button";
 import {
@@ -69,17 +69,17 @@ export function AppMenu({ className }: { className?: string }) {
 
           <div className="my-1 h-px bg-border" />
 
-          <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2">
-            <span className="text-sm">
-              <Trans>Theme</Trans>
-            </span>
-            <ThemeSelector triggerClassName={SELECTOR_TRIGGER_CLASS_NAME} />
-          </div>
           <div className="flex min-h-11 items-start justify-between gap-3 px-3 py-2">
             <span className="pt-2 text-sm">
               <Trans>Language</Trans>
             </span>
             <LanguageSelector triggerClassName={SELECTOR_TRIGGER_CLASS_NAME} />
+          </div>
+          <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2">
+            <span className="text-sm">
+              <Trans>Theme</Trans>
+            </span>
+            <ThemeToggle className={SELECTOR_TRIGGER_CLASS_NAME} />
           </div>
 
           <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2">

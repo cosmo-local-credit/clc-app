@@ -48,6 +48,52 @@ type AccountTransfer = {
   hasNote: boolean;
 };
 
+export type ActivityKind = "creation" | "sent" | "received" | "swapped";
+
+export type ActivityLeg = {
+  tokenAddress: string;
+  tokenName: string;
+  tokenSymbol: string;
+  tokenDecimals: number;
+  amount: string;
+  /** Immutable informational valuation captured when the transfer was submitted. */
+  uoaValue?: string;
+  uoa?: string;
+};
+
+type DirectAccountActivityItem = {
+  kind: Exclude<ActivityKind, "swapped">;
+  id: number;
+  txHash: string;
+  dateBlock: string;
+  success: boolean;
+  transfer: ActivityLeg;
+  senderAddress: string;
+  recipientAddress: string;
+  counterpartyAddress: string;
+  hasNote: boolean;
+};
+
+type SwapAccountActivityItem = {
+  kind: "swapped";
+  id: number;
+  txHash: string;
+  dateBlock: string;
+  success: boolean;
+  sent: ActivityLeg;
+  received: ActivityLeg;
+  protocolFee?: ActivityLeg;
+  poolAddresses: string[];
+};
+
+export type AccountActivityItem = DirectAccountActivityItem | SwapAccountActivityItem;
+
+export type AccountActivityResult = {
+  activity: AccountActivityItem[];
+  first?: number;
+  last?: number;
+};
+
 export type AccountTransfersResult = {
   transfers: AccountTransfer[];
   first?: number;
@@ -125,6 +171,21 @@ export function createAccountsClient(http: HttpClient) {
       return { ...result, transfers: result.transfers ?? [] };
     },
 
+    async getAccountActivity(
+      params: CursorPageParams & { q?: string; types?: readonly ActivityKind[] },
+      signal?: AbortSignal,
+    ): Promise<AccountActivityResult> {
+      const accountAddress = getAddress(params.address);
+      const search = formatCursorSearch(params);
+      if (params.q) search.set("q", params.q);
+      if (params.types?.length) search.set("types", params.types.join(","));
+      const result = await http.request<AccountActivityResult>(
+        `/api/v2/accounts/${accountAddress}/activity?${search.toString()}`,
+        { ...ACCOUNT_READ_REQUEST, signal },
+      );
+      return { ...result, activity: result.activity ?? [] };
+    },
+
     /**
      * Native gas, nonces, and keystore active flag for a signer the backend
      * already holds. The address is a path parameter, so it is encoded even
@@ -144,8 +205,12 @@ export function createAccountsClient(http: HttpClient) {
 }
 
 function formatCursorQuery(params: CursorPageParams): string {
+  return `?${formatCursorSearch(params).toString()}`;
+}
+
+function formatCursorSearch(params: CursorPageParams): URLSearchParams {
   const search = new URLSearchParams({ perPage: params.perPage.toString() });
   if (params.cursor !== undefined) search.set("cursor", params.cursor.toString());
   if (params.next !== undefined) search.set("next", params.next ? "true" : "false");
-  return `?${search.toString()}`;
+  return search;
 }

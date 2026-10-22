@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useState } from "react";
 import type { IconType } from "react-icons";
-import { RiApps2Line, RiArticleLine, RiNotification3Line, RiMap2Line } from "react-icons/ri";
+import { RiApps2Line, RiArticleLine, RiNotification3Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
@@ -32,12 +32,56 @@ const LIST_HUE: Record<MarketListScope, string> = {
 
 const LIST_ICON: Record<MarketListScope, IconType> = { all: RiApps2Line, ...RESOURCE_ICON };
 
+function useMarketSurfaceClassName(surface: "map" | "page") {
+  // Above a list the bar draws its edge only once rows scroll beneath it; at
+  // rest the list starts straight under the badges with no line between.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    if (surface === "map") return;
+    const update = () => setScrolled(window.scrollY > 0);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [surface]);
+
+  return surface === "map"
+    ? "bg-transparent"
+    : cn(
+        "border-b bg-background pb-2 transition-colors",
+        scrolled ? "border-border" : "border-transparent",
+      );
+}
+
+function MarketControlsRow({
+  search,
+  filters,
+  trailing,
+}: {
+  search: ReactNode;
+  filters: ReactNode;
+  trailing?: ReactNode;
+}) {
+  return (
+    <div data-slot="market-controls" className="flex items-center gap-2">
+      <AppMenu />
+      <div
+        data-slot="market-search-control"
+        className="flex h-11 min-w-0 flex-1 items-center border border-input bg-card focus-within:border-foreground"
+      >
+        {search}
+        {filters}
+      </div>
+      {trailing}
+    </div>
+  );
+}
+
 /**
  * The market's top bar, the same over the map and above every list: the app
  * menu on its own square, the search field with the filter button joined to
  * its end, and beside them Credit for a member or Sign in for a guest. The
- * badges below open the lists; in a list, a Map button floats above the
- * navigation.
+ * badges below open the lists. The bottom Market control owns map/list
+ * switching, so this shell does not add another floating Map action.
  */
 export function MarketBar({
   current,
@@ -61,45 +105,32 @@ export function MarketBar({
 }) {
   const auth = useAuthStatus();
   const [searchOpen, setSearchOpen] = useState(false);
-  // Above a list the bar draws its edge only once rows scroll beneath it; at
-  // rest the list starts straight under the badges with no line between.
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    if (surface === "map") return;
-    const update = () => setScrolled(window.scrollY > 0);
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
-  }, [surface]);
-  const surfaceClassName =
-    surface === "map"
-      ? "bg-transparent"
-      : cn(
-          "border-b bg-background pb-2 transition-colors",
-          scrolled ? "border-border" : "border-transparent",
-        );
+  const surfaceClassName = useMarketSurfaceClassName(surface);
 
   return (
     <div className={cn("space-y-2", surfaceClassName, className)}>
-      <div className="flex items-center gap-2">
-        <AppMenu />
-        <div className="flex h-11 min-w-0 flex-1 items-center border border-input bg-card focus-within:border-foreground">
+      <MarketControlsRow
+        search={
           <MarketSearchField
             filter={filter}
             label={searchLabel}
             onOpen={() => setSearchOpen(true)}
           />
-          {filters}
-        </div>
-        {auth.isAuthenticated ? credit : null}
-        {!auth.isLoading && !auth.isAuthenticated ? (
-          <Button asChild size="lg">
-            <Link to="/onboarding" search={onboardingSearch("welcome")}>
-              <Trans>Sign in</Trans>
-            </Link>
-          </Button>
-        ) : null}
-      </div>
+        }
+        filters={filters}
+        trailing={
+          <>
+            {auth.isAuthenticated ? credit : null}
+            {!auth.isLoading && !auth.isAuthenticated ? (
+              <Button asChild size="lg">
+                <Link to="/onboarding" search={onboardingSearch("welcome")}>
+                  <Trans>Sign in</Trans>
+                </Link>
+              </Button>
+            ) : null}
+          </>
+        }
+      />
       <MarketBadges current={current} />
       {searchOpen ? (
         <MarketSearchScreen
@@ -118,7 +149,6 @@ export function MarketBar({
           }
         />
       ) : null}
-      {current === "map" ? null : <MarketMapButton />}
     </div>
   );
 }
@@ -195,34 +225,27 @@ function MarketBadges({ current }: { current: MarketSurface }) {
   );
 }
 
-function MarketMapButton({ resetSearch = false }: { resetSearch?: boolean }) {
-  const { t } = useLingui();
-  return (
-    <Link
-      to="/"
-      search={(previous) => (resetSearch ? {} : mapSearchFrom(previous))}
-      aria-label={t`Map`}
-      title={t`Map`}
-      className="fixed end-4 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1rem)] z-20 flex size-14 items-center justify-center bg-primary text-primary-foreground outline-none transition-colors hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2"
-    >
-      <RiMap2Line className="size-6" aria-hidden="true" />
-    </Link>
-  );
-}
-
 /** Section navigation for feeds with their own search controls. */
 export function MarketFeedBar({
   current,
-  children,
+  search,
+  filters,
 }: {
   current: "activity" | "posts";
-  children: ReactNode;
+  search: ReactNode;
+  filters: ReactNode;
 }) {
+  const surfaceClassName = useMarketSurfaceClassName("page");
+
   return (
-    <div className="sticky top-0 z-20 space-y-2 bg-background pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
-      {children}
+    <div
+      className={cn(
+        "sticky top-0 z-20 space-y-2 pt-[calc(env(safe-area-inset-top)+0.5rem)]",
+        surfaceClassName,
+      )}
+    >
+      <MarketControlsRow search={search} filters={filters} />
       <MarketBadges current={current} />
-      <MarketMapButton resetSearch />
     </div>
   );
 }

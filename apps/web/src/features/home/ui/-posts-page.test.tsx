@@ -243,7 +243,15 @@ describe("PostsPage", () => {
     expect(
       screen.queryByText("Field reports from pools, service providers, and stewards."),
     ).toBeNull();
-    expect(screen.getByRole("button", { name: "Filters" }).className).toContain("h-9");
+    const filters = screen.getByRole("button", { name: "Filters" });
+    const search = screen.getByRole("searchbox", {
+      name: "Search posts by title or description",
+    });
+    const searchControl = search.closest('[data-slot="market-search-control"]');
+    expect(filters.className).toContain("size-11");
+    expect(filters.textContent).toBe("");
+    expect(searchControl?.contains(filters)).toBe(true);
+    expect(searchControl?.className).toContain("h-11");
     const row = within(feed()).getByRole("link");
     expect(row.getAttribute("href")).toBe("/posts/3182");
     expect(within(row).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();

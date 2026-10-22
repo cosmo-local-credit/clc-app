@@ -2,7 +2,12 @@ import { Outlet, useMatches, useSearch } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { type HomeTab, isAtHomeTabRoot, parseHomeTab } from "#/lib/navigation/home-tabs";
+import {
+  type HomeTab,
+  isAtHomeTabRoot,
+  parseHomeTab,
+  parseMarketView,
+} from "#/lib/navigation/home-tabs";
 import type { NavOwner } from "#/lib/navigation/navigation-owner";
 import {
   resolveVoucherNavigationOwner,
@@ -25,6 +30,10 @@ export function NavigationShell() {
 
   let activeTab: HomeTab;
   let atActiveTabRoot = false;
+  const isMarketMap =
+    navOwner === "home" &&
+    parseHomeTab(search.tab) === "market" &&
+    parseMarketView(search.view) === "map";
 
   if (navOwner === "home") {
     activeTab = parseHomeTab(search.tab);
@@ -71,6 +80,7 @@ export function NavigationShell() {
       <BottomNavigation
         activeTab={activeTab}
         atActiveTabRoot={atActiveTabRoot}
+        isMarketMap={isMarketMap}
         locked={!auth.isLoading && !signedIn}
       />
     </>

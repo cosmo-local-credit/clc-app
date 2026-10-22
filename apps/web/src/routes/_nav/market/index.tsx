@@ -80,7 +80,7 @@ function MarketListRoute() {
       ) : scope === "all" ? (
         <MarketplacePage creditableSearch={search.creditable} locationOwner={owner} />
       ) : (
-        <div className="min-h-[100svh] bg-background px-4 pb-market-list text-foreground">
+        <div className="min-h-[100svh] bg-background px-4 pb-bottom-nav text-foreground">
           <PoolsPage
             creditableSearch={search.creditable}
             outputVoucherSearch={search.out_voucher}

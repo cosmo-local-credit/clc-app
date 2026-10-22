@@ -34,7 +34,7 @@ export function CatalogsPage({
 }) {
   return (
     <NearbyCatalog allowMissingLocation>
-      <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-market-list">
+      <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-bottom-nav">
         <h1 className="sr-only">
           <Trans>Catalogs</Trans>
         </h1>

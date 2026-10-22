@@ -8,6 +8,7 @@ import type { IconType } from "react-icons";
 import { RiGroupFill } from "react-icons/ri";
 
 import { MARKER_GLYPHS } from "#/components/vouchers/marker-glyphs";
+import type { Theme } from "#/providers/theme";
 import type { MarketLocation } from "./market-data";
 
 /** Appended to a pin's image id for the larger variant a selected voucher gets. */
@@ -22,6 +23,20 @@ export function markerImageId({ icon, color }: MarkerStyle): string {
 }
 
 export const POOL_PIN_IMAGE_ID = "market-pin-pool";
+
+export const MARKET_NETWORK_BADGE_IMAGE_ID: Record<Theme, string> = {
+  light: "market-network-badge-light",
+  dark: "market-network-badge-dark",
+};
+
+/** Fixed sRGB because these surfaces are painted into a Canvas image. */
+export const MARKET_NETWORK_BADGE_COLOR: Record<
+  Theme,
+  { surface: string; ink: string; outline: string }
+> = {
+  light: { surface: "#ffffff", ink: "#18181b", outline: "#18181b" },
+  dark: { surface: "#27272a", ink: "#fafafa", outline: "#ffffff" },
+};
 
 /**
  * The Pools button's `--info` blue, `oklch(0.46 0.12 250)`, in sRGB, and a
@@ -112,6 +127,77 @@ export function addMarketMarkerImages(
     addImage(map, art.image, art, markerPin.base);
     addImage(map, art.image + SELECTED_PIN_SUFFIX, art, markerPin.selected);
   }
+}
+
+/**
+ * A neutral group marker: three connected nodes around an opaque count area.
+ * Its opposing outline keeps the shape legible over streets and photography.
+ */
+export function addMarketNetworkBadgeImage(map: MapLibreGL.Map, theme: Theme): void {
+  const imageId = MARKET_NETWORK_BADGE_IMAGE_ID[theme];
+  if (map.hasImage(imageId)) return;
+
+  const image = createNetworkBadgeImage(theme);
+  if (image) map.addImage(imageId, image.data, { pixelRatio: image.pixelRatio });
+}
+
+function createNetworkBadgeImage(theme: Theme): { data: ImageData; pixelRatio: number } | null {
+  const size = 44;
+  const pixelRatio = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(size * pixelRatio);
+  canvas.height = Math.round(size * pixelRatio);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.scale(pixelRatio, pixelRatio);
+  ctx.clearRect(0, 0, size, size);
+
+  const { surface, ink, outline } = MARKET_NETWORK_BADGE_COLOR[theme];
+  const center = { x: size / 2, y: size / 2 };
+  const nodes = [
+    { x: center.x, y: 4.5 },
+    { x: 5.5, y: 34.5 },
+    { x: 38.5, y: 34.5 },
+  ];
+
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  for (const node of nodes) {
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y);
+    ctx.lineTo(node.x, node.y);
+    ctx.stroke();
+  }
+
+  // The contrasting outer disc doubles as a halo over unpredictable imagery.
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 17, 0, Math.PI * 2);
+  ctx.fillStyle = outline;
+  ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+  ctx.shadowBlur = 3 * pixelRatio;
+  ctx.shadowOffsetY = pixelRatio;
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 14.5, 0, Math.PI * 2);
+  ctx.fillStyle = surface;
+  ctx.fill();
+
+  for (const node of nodes) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = outline;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = surface;
+    ctx.fill();
+  }
+
+  return { data: ctx.getImageData(0, 0, canvas.width, canvas.height), pixelRatio };
 }
 
 function addImage(map: MapLibreGL.Map, imageId: string, art: MarkerArt, shape: PinShape): void {

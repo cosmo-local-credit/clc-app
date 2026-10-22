@@ -1,5 +1,4 @@
 import type { UserPool } from "@clc/api/features/pools/client";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import { getAddress, isAddress } from "viem";
@@ -11,17 +10,15 @@ import {
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
+import {
+  formatActivityLegAmount,
+  SwapActivityAmounts,
+  SwapActivityTitle,
+} from "#/components/activity/swap-activity";
 import { EllipsizedAddress, SignedAmount } from "#/components/wallet";
-import {
-  type PoolActivityEntry,
-  type PoolActivityLeg,
-  buildPoolActivity,
-} from "#/features/pools/logic/pool-activity";
+import { type PoolActivityEntry, buildPoolActivity } from "#/features/pools/logic/pool-activity";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
-import {
-  formatTransferDate,
-  formatTransferUnitValue,
-} from "#/features/wallet/logic/transfer-display";
+import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { PoolActivityDetailsSheet } from "./pool-activity-details-sheet";
 
 /**
@@ -191,11 +188,7 @@ function iconTone(entry: PoolActivityEntry): string {
 
 function EntryTitle({ entry }: { entry: PoolActivityEntry }) {
   if (entry.kind === "swap") {
-    return (
-      <Trans>
-        Swapped {entry.received.tokenSymbol} for {entry.sent.tokenSymbol}
-      </Trans>
-    );
+    return <SwapActivityTitle symbols={[entry.received.tokenSymbol, entry.sent.tokenSymbol]} />;
   }
   if (entry.kind === "mint") return <Trans>Created in the pool</Trans>;
   // A deposit is the only inbound transfer a pool takes; outbound covers a fee
@@ -229,39 +222,18 @@ function EntryAmount({ entry }: { entry: PoolActivityEntry }) {
     return (
       <SignedAmount
         direction={entry.kind === "mint" || entry.direction === "IN" ? "in" : "out"}
-        amount={legAmount(entry.leg, locale)}
+        amount={formatActivityLegAmount(entry.leg, locale)}
       />
     );
   }
 
   return (
-    <>
-      {/* `flex justify-end` rather than `block`: SignedAmount is an inline-flex
-          row of icon and figure, so stacking the two sides has to keep the flex
-          box and change only how it fills the line. */}
-      <SignedAmount
-        direction="in"
-        amount={legAmount(entry.received, locale)}
-        className="flex justify-end"
-      />
-      <SignedAmount
-        direction="out"
-        amount={legAmount(entry.sent, locale)}
-        className="flex justify-end"
-      />
-      {entry.protocolFee ? (
-        // Shown apart from the trader's side: it left the pool in the same
-        // transaction but went to the protocol, not to whoever swapped.
-        <span className="block font-mono text-muted-foreground text-2xs tabular-nums">
-          <Trans>Protocol fee</Trans> {legAmount(entry.protocolFee, locale)}
-        </span>
-      ) : null}
-    </>
+    <SwapActivityAmounts
+      incoming={entry.received}
+      outgoing={entry.sent}
+      protocolFee={entry.protocolFee ?? undefined}
+      locale={locale}
+      incomingFirst
+    />
   );
-}
-
-function legAmount(leg: PoolActivityLeg, locale: string): string {
-  const tokenAmount = `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
-  const unitValue = formatTransferUnitValue(leg.uoaValue, leg.uoa, locale);
-  return `${tokenAmount}${unitValue ? ` (${unitValue})` : ""}`;
 }

@@ -77,11 +77,12 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
 export function useHydratedTheme() {
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   useEffect(() => {
     const initial = readInitialTheme();
     // Skip the write when the store already matches — avoids a redundant DOM /
     // localStorage write on every mount (the bootstrap script already applied it).
     if (initial !== useThemeStore.getState().theme) setTheme(initial);
   }, [setTheme]);
-  return { theme, setTheme };
+  return { theme, setTheme, toggleTheme };
 }

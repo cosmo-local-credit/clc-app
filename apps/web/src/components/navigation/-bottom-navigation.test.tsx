@@ -16,7 +16,13 @@ vi.mock("#/components/ui/clc-logo", () => ({
 }));
 
 import { BottomNavigation } from "./bottom-navigation";
-import { type HomeTab, isAtHomeTabRoot, parseHomeTab } from "#/lib/navigation/home-tabs";
+import {
+  type HomeTab,
+  isAtHomeTabRoot,
+  parseHomeTab,
+  parseMarketView,
+} from "#/lib/navigation/home-tabs";
+import { pickMarketplaceSearch } from "#/lib/navigation/marketplace-search";
 
 const LABELS: Record<HomeTab, string> = {
   wallet: "Wallet",
@@ -44,8 +50,17 @@ async function renderNavigation({
       activeTab ?? (location.pathname === "/market" ? "market" : parseHomeTab(search.tab));
     const selectedAtRoot =
       atActiveTabRoot ?? (location.pathname === "/market" ? false : isAtHomeTabRoot(search));
+    const isMarketMap =
+      location.pathname === "/" &&
+      parseHomeTab(search.tab) === "market" &&
+      parseMarketView(search.view) === "map";
     return (
-      <BottomNavigation activeTab={selectedTab} atActiveTabRoot={selectedAtRoot} locked={locked} />
+      <BottomNavigation
+        activeTab={selectedTab}
+        atActiveTabRoot={selectedAtRoot}
+        isMarketMap={isMarketMap}
+        locked={locked}
+      />
     );
   }
 
@@ -53,15 +68,18 @@ async function renderNavigation({
   const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/",
-    validateSearch: (search): { tab: HomeTab; q?: string } => ({
+    validateSearch: (search) => ({
       tab: parseHomeTab(search.tab),
-      q: typeof search.q === "string" ? search.q : undefined,
+      view: search.view === "map" || search.view === "list" ? search.view : undefined,
+      voucher: typeof search.voucher === "string" ? search.voucher : undefined,
+      ...pickMarketplaceSearch(search),
     }),
     component: NavigationFixture,
   });
   const marketRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/market",
+    validateSearch: pickMarketplaceSearch,
     component: NavigationFixture,
   });
   const history = createMemoryHistory({ initialEntries: [initialEntry] });
@@ -83,7 +101,7 @@ describe("BottomNavigation", () => {
 
     for (const [tab, label] of Object.entries(LABELS) as [HomeTab, string][]) {
       expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe(
-        tab === "market" ? "/" : `/?tab=${tab}`,
+        tab === "market" ? "/?tab=market&view=map" : `/?tab=${tab}`,
       );
     }
   });
@@ -114,25 +132,34 @@ describe("BottomNavigation", () => {
     }
   });
 
-  it("does nothing on the unfiltered map, the Market root", async () => {
+  it("opens All from the unfiltered map with a normal history entry", async () => {
     const { history } = await renderNavigation({ initialEntry: "/" });
     const market = screen.getByRole("link", { name: "Market" });
-    expect(market.getAttribute("aria-current")).toBe("page");
+    expect(market.getAttribute("href")).toBe("/market?scope=all");
+    expect(market.getAttribute("aria-current")).toBe("true");
 
     fireEvent.click(market);
 
-    expect(history.location.pathname).toBe("/");
-    expect(history.length).toBe(1);
+    await waitFor(() => expect(history.location.href).toBe("/market?scope=all"));
+    expect(history.length).toBe(2);
   });
 
-  it("returns a filtered map to the unfiltered map", async () => {
-    const { history } = await renderNavigation({ initialEntry: "/?q=bike" });
+  it("opens All from a filtered map while retaining only canonical shared filters", async () => {
+    const address = `0x${"a".repeat(40)}`;
+    const { history } = await renderNavigation({
+      initialEntry: `/?tab=market&view=map&q=bike&tags=Repair&creditable=true&out_voucher=${address}&voucher=${address}`,
+    });
     expect(screen.getByRole("link", { name: "Market" }).getAttribute("aria-current")).toBe("true");
 
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
 
-    await waitFor(() => expect(history.location.search).not.toContain("q="));
-    expect(history.location.pathname).toBe("/");
+    await waitFor(() => expect(history.location.pathname).toBe("/market"));
+    expect(Object.fromEntries(new URLSearchParams(history.location.search))).toEqual({
+      q: "bike",
+      tags: "Repair",
+      creditable: "true",
+      scope: "all",
+    });
     expect(history.length).toBe(2);
   });
 
@@ -150,9 +177,9 @@ describe("BottomNavigation", () => {
     await waitFor(() => expect(history.location.href).toBe("/?tab=wallet"));
   });
 
-  it("returns a list to the map, and Back reopens the list", async () => {
+  it("returns a list to the map with shared filters, and Back reopens the list", async () => {
     const { history } = await renderNavigation({
-      initialEntry: "/market?scope=pools",
+      initialEntry: `/market?scope=pools&q=food&tags=Repair&creditable=true&out_voucher=0x${"a".repeat(40)}`,
       activeTab: "market",
       atActiveTabRoot: false,
     });
@@ -161,12 +188,34 @@ describe("BottomNavigation", () => {
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
 
     await waitFor(() => expect(history.location.pathname).toBe("/"));
+    expect(Object.fromEntries(new URLSearchParams(history.location.search))).toEqual({
+      q: "food",
+      tags: "Repair",
+      creditable: "true",
+      tab: "market",
+      view: "map",
+    });
 
     await act(async () => {
       history.back();
     });
 
-    await waitFor(() => expect(history.location.href).toBe("/market?scope=pools"));
+    await waitFor(() => expect(history.location.pathname).toBe("/market"));
+    expect(Object.fromEntries(new URLSearchParams(history.location.search))).toEqual({
+      scope: "pools",
+      q: "food",
+      tags: "Repair",
+      creditable: "true",
+      out_voucher: `0x${"a".repeat(40)}`,
+    });
+  });
+
+  it("opens a clean map from another bottom tab", async () => {
+    const { history } = await renderNavigation({ initialEntry: "/?tab=posts" });
+
+    fireEvent.click(screen.getByRole("link", { name: "Market" }));
+
+    await waitFor(() => expect(history.location.href).toBe("/?tab=market&view=map"));
   });
 
   it("restores the previous tab when navigating back", async () => {
