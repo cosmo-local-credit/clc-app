@@ -33,7 +33,7 @@ vi.mock("#/components/ui/select", () => ({
       {children}
     </select>
   ),
-  SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SelectTrigger: () => null,
   SelectValue: () => null,
   SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SelectItem: ({
@@ -53,6 +53,7 @@ vi.mock("#/components/ui/select", () => ({
 
 const { LanguageSelector, LanguageSettingsRow, LanguageSettingsButton, OnboardingMenu } =
   await import("./language-selector");
+const { THEME_STORAGE_KEY, useThemeStore } = await import("#/providers/theme");
 
 function renderSelector() {
   return render(<LanguageSelector />);
@@ -313,18 +314,27 @@ describe.each([
   });
 });
 
-it("opens the settings sheets from both onboarding icon buttons", async () => {
+it("puts Language before Theme and toggles the theme without opening a sheet", async () => {
   currentLocale = "en";
   catalog.loading = false;
   catalog.error = null;
+  window.localStorage.clear();
+  useThemeStore.setState({ theme: "light" });
   render(<OnboardingMenu />);
   expect(screen.queryByRole("combobox")).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Theme" }));
-  const theme = await screen.findByRole("dialog", { name: "Theme" });
-  expect(within(theme).getByRole("radio", { name: "Dark" })).toBeTruthy();
-  fireEvent.click(within(theme).getByRole("radio", { name: "Dark" }));
-  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-  fireEvent.click(screen.getByRole("button", { name: "Language" }));
+  const buttons = screen.getAllByRole("button");
+  expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
+    "Language",
+    "Dark mode",
+  ]);
+
+  const theme = screen.getByRole("button", { name: "Dark mode" });
+  fireEvent.click(theme);
+  expect(theme.getAttribute("aria-pressed")).toBe("true");
+  expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+  expect(screen.queryByRole("dialog")).toBeNull();
+
+  fireEvent.click(buttons[0]!);
   const language = await screen.findByRole("dialog", { name: "Language" });
   expect(within(language).getAllByRole("radio")).toHaveLength(17);
 });

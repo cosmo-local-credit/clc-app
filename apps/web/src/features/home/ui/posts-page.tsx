@@ -67,15 +67,20 @@ export function PostsPage() {
   }, [feed.hasMore, feed.isLoadingMore, feed.loadMore]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h1 className="sr-only">
         <Trans>Posts</Trans>
       </h1>
-      <MarketFeedBar current="posts">
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
-          </div>
+      <MarketFeedBar
+        current="posts"
+        search={
+          <CatalogSearchField
+            filter={filter}
+            label={t`Search posts by title or description`}
+            embedded
+          />
+        }
+        filters={
           <ReportFilterSheet
             filter={filter}
             facets={feed.tagFacets}
@@ -86,8 +91,8 @@ export function PostsPage() {
               setFiltersOpen(next);
             }}
           />
-        </div>
-      </MarketFeedBar>
+        }
+      />
 
       {/* Two compact actions rather than a floating button: the feed is
           approved-only, so an author needs somewhere to write and somewhere to

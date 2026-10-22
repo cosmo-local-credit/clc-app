@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   canonicalMarketplaceSearch,
   mapSearchFrom,
+  marketplaceSharedSearch,
   marketplaceSearchForScope,
   parseMarketplaceScope,
   pickMarketplaceSearch,
@@ -97,5 +98,48 @@ describe("marketplace route search", () => {
         out_voucher: `0x${"a".repeat(40)}`,
       }),
     ).toEqual({ q: "bike", tags: "Repair", tagMatch: "all", creditable: true });
+  });
+
+  it("canonicalizes the shared state used when toggling between map and list", () => {
+    expect(
+      marketplaceSharedSearch({
+        scope: "pools",
+        q: "  bike   repair  ",
+        tags: ["Repair, Food", "Repair"],
+        tagMatch: "all",
+        creditable: "TRUE",
+        out_voucher: `0x${"a".repeat(40)}`,
+        vouchers: `100:0x${"b".repeat(40)}`,
+        voucherMatch: "all",
+        voucher: `0x${"c".repeat(40)}`,
+      }),
+    ).toEqual({
+      q: "bike repair",
+      tags: "Food,Repair",
+      tagMatch: "all",
+      creditable: true,
+    });
+  });
+
+  it("drops malformed shared state instead of carrying it to another market surface", () => {
+    expect(
+      marketplaceSharedSearch({
+        q: "x",
+        tags: Array.from({ length: 13 }, (_, index) => `Tag ${index}`),
+        tagMatch: "wrong",
+        creditable: ["true", "false"],
+        scope: ["all", "pools"],
+      }),
+    ).toEqual({});
+  });
+
+  it("retains valid shared filters when another shared filter is malformed", () => {
+    expect(
+      marketplaceSharedSearch({
+        q: "bike",
+        tags: Array.from({ length: 13 }, (_, index) => `Tag ${index}`),
+        creditable: "true",
+      }),
+    ).toEqual({ q: "bike", creditable: true });
   });
 });

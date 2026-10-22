@@ -35,6 +35,8 @@ export function ActionRow({
   trailingIcon,
   busy = false,
   id,
+  ariaLabel,
+  pressed,
   className,
   onClick,
   render,
@@ -56,6 +58,8 @@ export function ActionRow({
   trailingIcon?: ReactNode;
   busy?: boolean;
   id?: string;
+  ariaLabel?: string;
+  pressed?: boolean;
   className?: string;
   onClick?: () => void;
   /** Navigates instead of acting: the `<a>` or router `<Link>` the row renders as. */
@@ -92,7 +96,7 @@ export function ActionRow({
           {value}
         </span>
       ) : null}
-      {interactive ? (
+      {interactive && trailingIcon !== false ? (
         <span className="shrink-0 text-muted-foreground" aria-hidden="true">
           {trailingIcon ?? <RiArrowRightSLine className="rtl:-scale-x-100 size-4" />}
         </span>
@@ -114,6 +118,8 @@ export function ActionRow({
       <button
         type="button"
         id={id}
+        aria-label={ariaLabel}
+        aria-pressed={pressed}
         onClick={onClick}
         disabled={busy}
         className={classes}

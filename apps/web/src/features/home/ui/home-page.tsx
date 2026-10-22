@@ -16,17 +16,26 @@ import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
 import { isPrivateHomeTab, type HomeTab } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
+import type { ActivityKind } from "@clc/api/features/accounts/client";
 
 export type HomePageProps = {
   activeTab?: HomeTab;
   isAuthenticated?: boolean;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
+  activityQ?: string;
+  activityTypes?: readonly ActivityKind[];
+  onActivityQueryChange?: (query: string) => void;
+  onActivityTypesChange?: (types: readonly ActivityKind[]) => void;
 };
 
 export function HomePage({
   activeTab = "market",
   isAuthenticated = true,
   creditableSearch,
+  activityQ,
+  activityTypes,
+  onActivityQueryChange,
+  onActivityTypesChange,
 }: HomePageProps) {
   const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address);
@@ -35,6 +44,7 @@ export function HomePage({
   const backendLogout = useBackendLogout();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const currentTab = !isAuthenticated && isPrivateHomeTab(activeTab) ? "market" : activeTab;
+  const isFeedTab = currentTab === "activity" || currentTab === "posts";
   // A connected wallet without a backend session is still a guest
   // (docs/AUTH.md), so an expired session must not keep that wallet's scope.
   const locationOwner = isAuthenticated && address ? address.toLowerCase() : GUEST_STORAGE_OWNER;
@@ -88,9 +98,17 @@ export function HomePage({
         </NearbyCatalog>
       ) : (
         <div className="min-h-[100svh] pb-bottom-nav">
-          <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
+          <main className={isFeedTab ? "px-4" : "px-6 pt-[calc(env(safe-area-inset-top)+1rem)]"}>
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
-            {currentTab === "activity" ? <ActivityPage address={address} /> : null}
+            {currentTab === "activity" ? (
+              <ActivityPage
+                address={address}
+                query={activityQ}
+                types={activityTypes}
+                onQueryChange={onActivityQueryChange}
+                onTypesChange={onActivityTypesChange}
+              />
+            ) : null}
             {currentTab === "posts" ? (
               <NearbyCatalog>
                 <PostsPage />
