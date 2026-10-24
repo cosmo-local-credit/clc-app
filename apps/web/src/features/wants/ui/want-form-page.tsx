@@ -278,6 +278,11 @@ function WantForm({
         required
         markerStyle={{ icon: markerIcon, color: markerColor }}
       />
+      <p className="border border-warning bg-card p-3 text-xs text-warning-foreground">
+        <Trans>
+          The exact pin will be public. Choose a safe public meeting place, not a private home.
+        </Trans>
+      </p>
       <MarkerStylePicker
         mode="want"
         value={{ icon: markerIcon, color: markerColor }}
@@ -289,17 +294,29 @@ function WantForm({
       />
       <ImageUploadField
         label={t`Want picture`}
-        hint={t`Leave empty to use your profile picture.`}
+        hint={t`Leave empty to show the Want marker.`}
         purpose="want.image"
         value={imageUrl}
         onChange={setImageUrl}
         onBusyChange={setImageBusy}
         disabled={!isStorageConfigured || save.isPending}
       />
-      {profile.avatarUrl && imageUrl ? (
-        <Button type="button" variant="outline" tap onClick={() => setImageUrl(null)}>
+      {profile.avatarUrl && imageUrl !== profile.avatarUrl ? (
+        <Button
+          type="button"
+          variant="outline"
+          tap
+          onClick={() => setImageUrl(profile.avatarUrl ?? null)}
+        >
           <Trans>Use profile image</Trans>
         </Button>
+      ) : null}
+      {profile.avatarUrl ? (
+        <p className="text-xs text-muted-foreground">
+          <Trans>
+            This copies your current profile image. Later profile changes won't update this Want.
+          </Trans>
+        </p>
       ) : null}
       <section className="space-y-3 border border-border bg-card p-4">
         <h2>

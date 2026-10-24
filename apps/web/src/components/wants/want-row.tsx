@@ -1,38 +1,31 @@
 import type { Want } from "@clc/core/features/wants/logic";
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiArrowRightSLine, RiMessage2Line, RiQuestionLine, RiSpeakLine } from "react-icons/ri";
-import type { IconType } from "react-icons";
+import { RiArrowRightSLine } from "react-icons/ri";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
+import { MarkerPin } from "#/components/vouchers/marker-style-picker";
 import { cn } from "#/lib/utils";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
-
-const WANT_ICON: Record<Want["markerIcon"], IconType> = {
-  question: RiQuestionLine,
-  message: RiMessage2Line,
-  request: RiSpeakLine,
-};
 
 export function WantPicture({
   want,
   size = "size-11",
 }: {
-  want: Pick<Want, "effectiveImageUrl" | "markerIcon">;
+  want: Pick<Want, "imageUrl" | "markerIcon" | "markerColor">;
   size?: string;
 }) {
-  const Icon = WANT_ICON[want.markerIcon];
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden border border-warning bg-[color-mix(in_oklab,var(--color-warning)_16%,var(--color-card))] text-warning-foreground",
+        "flex shrink-0 items-center justify-center overflow-hidden border border-border bg-card",
         size,
       )}
     >
-      {want.effectiveImageUrl ? (
-        <ProgressiveImage src={want.effectiveImageUrl} alt="" className="size-full object-cover" />
+      {want.imageUrl ? (
+        <ProgressiveImage src={want.imageUrl} alt="" className="size-full object-cover" />
       ) : (
-        <Icon className="size-5" aria-hidden="true" />
+        <MarkerPin style={{ icon: want.markerIcon, color: want.markerColor }} size={26} />
       )}
     </span>
   );
@@ -64,7 +57,7 @@ export function WantRow({
           {want.name}
         </span>
         <span dir="auto" className="mt-0.5 block truncate text-xs text-muted-foreground">
-          {want.ownerName} · {want.locationName}
+          {want.locationName}
           {distance ? ` · ${distance}` : null}
         </span>
         <span className="mt-1.5 flex gap-1 overflow-hidden">

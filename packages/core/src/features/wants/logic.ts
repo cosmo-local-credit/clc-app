@@ -19,7 +19,6 @@ const idSchema = z.union([z.string().min(1), z.number().int().positive()]).trans
 
 export const wantSchema = z.object({
   id: idSchema,
-  ownerUserId: idSchema,
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().min(1).max(2000),
   locationName: z.string().trim().min(1),
@@ -31,11 +30,8 @@ export const wantSchema = z.object({
   state: wantStateSchema,
   tags: z.array(z.string()),
   imageUrl: z.string().url().nullable(),
-  effectiveImageUrl: z.string().url().nullable(),
   markerIcon: wantMarkerIconSchema,
   markerColor: markerColorSchema,
-  ownerName: z.string(),
-  ownerUsername: z.string().nullable(),
   distanceMeters: z.number().nonnegative().nullable().optional(),
   contactPermission: z.number().int().min(0).max(3).optional(),
   contactText: z.string().trim().min(1).max(500).nullable().optional(),
