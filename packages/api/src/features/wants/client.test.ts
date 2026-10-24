@@ -6,6 +6,8 @@ import { createWantsClient } from "./client";
 const api = createWantsClient(createHttpClient({ baseUrl: "https://api.test" }));
 const row = {
   id: 7,
+  // Old backends may return these during the app-first rollout. The schema
+  // accepts the response but strips identity and automatic image fields.
   ownerUserId: 3,
   name: "Bicycle repair",
   description: "Looking for help repairing a wheel",
@@ -58,6 +60,10 @@ describe("Wants HTTP contract", () => {
       pools: [{ chainId: 100, address: `0x${"a".repeat(40)}` }],
     });
     expect(page.wants[0]).toMatchObject({ id: "7", contact: { email: "amina@example.test" } });
+    expect(page.wants[0]).not.toHaveProperty("ownerUserId");
+    expect(page.wants[0]).not.toHaveProperty("ownerName");
+    expect(page.wants[0]).not.toHaveProperty("ownerUsername");
+    expect(page.wants[0]).not.toHaveProperty("effectiveImageUrl");
     const url = new URL(fetcher.mock.calls[0]?.[0]);
     expect(url.searchParams.get("cursor")).toBe("9");
     expect(url.searchParams.get("next")).toBe("true");
@@ -91,7 +97,6 @@ describe("Wants HTTP contract", () => {
   it("loads paginated creator vouchers and pools from the public Want routes", async () => {
     const voucherAddress = `0x${"c".repeat(40)}`;
     const poolAddress = `0x${"d".repeat(40)}`;
-    const ownerAddress = `0x${"e".repeat(40)}`;
     const fetcher = respond({
       vouchers: [
         {
@@ -102,7 +107,6 @@ describe("Wants HTTP contract", () => {
           symbol: "AH",
           decimals: 6,
           iconUrl: null,
-          ownerAddress,
           active: true,
         },
       ],

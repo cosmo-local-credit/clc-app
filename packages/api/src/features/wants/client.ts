@@ -30,7 +30,6 @@ const creatorVoucherSchema = z.object({
   symbol: z.string(),
   decimals: z.coerce.number().int().nonnegative().nullable(),
   iconUrl: z.string().url().nullable(),
-  ownerAddress: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
   active: z.literal(true),
 });
 

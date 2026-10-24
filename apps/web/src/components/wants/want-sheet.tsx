@@ -92,7 +92,8 @@ export function WantSheet({
                   {want.name}
                 </MapSheetTitle>
                 <span dir="auto" className="mt-1 block truncate text-xs text-muted-foreground">
-                  {want.ownerName} · {distance ?? want.locationName}
+                  {want.locationName}
+                  {distance ? ` · ${distance}` : null}
                 </span>
               </span>
             </button>

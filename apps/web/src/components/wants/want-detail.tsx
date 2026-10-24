@@ -52,9 +52,6 @@ export function WantDetail({
               <h1 dir="auto" className="font-heading text-[1.75rem] font-bold leading-tight">
                 {want.name}
               </h1>
-              <p dir="auto" className="mt-1 text-xs text-muted-foreground">
-                <Trans>Wanted by {want.ownerName}</Trans>
-              </p>
             </div>
             <WantShareButton want={want} />
           </div>
@@ -169,7 +166,7 @@ function WantCreatorResources({ want }: { want: Want }) {
   return (
     <>
       <RelatedSection
-        title={<Trans>Vouchers by {want.ownerName}</Trans>}
+        title={<Trans>Vouchers</Trans>}
         pending={vouchers.isPending}
         error={vouchers.isError}
         fetching={vouchers.isFetchingNextPage}

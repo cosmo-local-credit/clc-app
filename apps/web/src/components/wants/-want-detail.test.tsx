@@ -38,7 +38,6 @@ vi.mock("@tanstack/react-router", () => ({
 
 const WANT: Want = {
   id: "7",
-  ownerUserId: "3",
   name: "Bicycle repair",
   description: "Looking for help repairing a wheel",
   locationName: "Nairobi",
@@ -50,11 +49,8 @@ const WANT: Want = {
   state: "active",
   tags: ["Repair", "Bicycle"],
   imageUrl: null,
-  effectiveImageUrl: null,
   markerIcon: "question",
   markerColor: "orange",
-  ownerName: "Amina",
-  ownerUsername: "amina",
   contact: {
     text: "Meet near the market",
     email: "amina@example.test",
@@ -81,7 +77,8 @@ describe("Want detail", () => {
     render(<WantDetail want={WANT} distanceOrigin={{ lat: -1.28, lng: 36.82 }} />);
 
     expect(screen.getByRole("heading", { name: "Bicycle repair" })).toBeTruthy();
-    expect(screen.getByText("Wanted by Amina")).toBeTruthy();
+    expect(screen.queryByText(/Wanted by/)).toBeNull();
+    expect(screen.queryByText("Amina")).toBeNull();
     expect(screen.getByText("Repair")).toBeTruthy();
     expect(screen.getByText("Bicycle")).toBeTruthy();
     expect(screen.getByText("Looking for help repairing a wheel")).toBeTruthy();
@@ -122,7 +119,6 @@ describe("Want detail", () => {
                 symbol: "V4",
                 decimals: 6,
                 iconUrl: null,
-                ownerAddress: address("a"),
                 active: true,
               },
             ],
@@ -138,7 +134,6 @@ describe("Want detail", () => {
               symbol: `V${digit}`,
               decimals: 6,
               iconUrl: null,
-              ownerAddress: address("a"),
               active: true,
             })),
             first: 3,
@@ -169,7 +164,7 @@ describe("Want detail", () => {
       </QueryClientProvider>,
     );
 
-    expect(await screen.findByRole("heading", { name: "Vouchers by Amina" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Vouchers" })).toBeTruthy();
     expect((await screen.findByRole("link", { name: /Community Pool/ })).getAttribute("href")).toBe(
       `/pools/${address("9")}`,
     );

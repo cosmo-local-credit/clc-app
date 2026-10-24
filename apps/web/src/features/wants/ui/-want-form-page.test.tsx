@@ -28,7 +28,6 @@ const mocks = vi.hoisted(() => ({
 
 const WANT: Want = {
   id: "7",
-  ownerUserId: "3",
   name: "Bicycle repair",
   description: "Help repair a wheel",
   locationName: "Kisumu Market",
@@ -40,11 +39,8 @@ const WANT: Want = {
   state: "active",
   tags: ["Repair"],
   imageUrl: null,
-  effectiveImageUrl: null,
   markerIcon: "question",
   markerColor: "orange",
-  ownerName: "Amina",
-  ownerUsername: "amina",
   contactPermission: 1,
   contactText: null,
 };
@@ -80,7 +76,26 @@ vi.mock("#/components/resource-usage", () => ({
 }));
 vi.mock("#/components/wallet", () => ({ BackChevron: () => null }));
 vi.mock("#/components/ui/image-upload-field", () => ({
-  ImageUploadField: ({ label }: { label: string }) => <div>{label}</div>,
+  ImageUploadField: ({
+    label,
+    hint,
+    value,
+    onChange,
+  }: {
+    label: string;
+    hint?: string;
+    value: string | null;
+    onChange: (value: string | null) => void;
+  }) => (
+    <div>
+      <span>{label}</span>
+      <span>{hint}</span>
+      <output data-testid="want-image">{value ?? "marker"}</output>
+      <button type="button" onClick={() => onChange(null)}>
+        Clear picture
+      </button>
+    </div>
+  ),
 }));
 vi.mock("#/components/ui/tag-combobox", () => ({
   TagCombobox: () => <div>Tag picker</div>,
@@ -134,6 +149,11 @@ describe("Want form", () => {
     renderForm();
 
     expect(screen.getByTestId("location").textContent).toBe("Nairobi Market");
+    expect(
+      screen.getByText(
+        "The exact pin will be public. Choose a safe public meeting place, not a private home.",
+      ),
+    ).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Repair help" } });
     fireEvent.change(screen.getByLabelText("Description"), {
       target: { value: "I need help fixing a wheel" },
@@ -187,6 +207,38 @@ describe("Want form", () => {
     fireEvent.click(screen.getByRole("radio", { name: "Message" }));
     fireEvent.click(screen.getByRole("radio", { name: "Blue" }));
     expect(map.textContent).toBe('{"icon":"message","color":"blue"}');
+  });
+
+  it("uses the marker by default and snapshots the current profile image only when selected", async () => {
+    renderForm();
+
+    expect(screen.getByText("Leave empty to show the Want marker.")).toBeTruthy();
+    expect(screen.getByTestId("want-image").textContent).toBe("marker");
+    expect(
+      screen.getByText(
+        "This copies your current profile image. Later profile changes won't update this Want.",
+      ),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Use profile image" }));
+    expect(screen.getByTestId("want-image").textContent).toBe(
+      "https://storage.example/avatar.webp",
+    );
+
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Repair help" } });
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "I need help fixing a wheel" },
+    });
+    fireEvent.change(screen.getByLabelText("Contact instructions"), {
+      target: { value: "Meet at the market" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
+
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+    expect(mocks.create.mock.calls[0]?.[0].imageUrl).toBe("https://storage.example/avatar.webp");
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear picture" }));
+    expect(screen.getByTestId("want-image").textContent).toBe("marker");
   });
 
   it("retains the Want location while editing instead of replacing it with the profile location", async () => {

@@ -18,7 +18,6 @@ const baseWrite = {
 
 const want = {
   id: "7",
-  ownerUserId: "3",
   name: baseWrite.name,
   description: baseWrite.description,
   locationName: baseWrite.location.locationName,
@@ -30,11 +29,8 @@ const want = {
   state: "active" as const,
   tags: baseWrite.tags,
   imageUrl: null,
-  effectiveImageUrl: null,
   markerIcon: "question" as const,
   markerColor: "orange" as const,
-  ownerName: "Amina",
-  ownerUsername: "amina",
 };
 
 describe("Want contracts", () => {
@@ -73,12 +69,18 @@ describe("Want contracts", () => {
       ...want,
       id: 7,
       ownerUserId: 3,
+      ownerName: "Amina",
+      ownerUsername: "amina",
+      effectiveImageUrl: "https://storage.example/avatar.webp",
       contactText: "Meet near the market",
       email: "amina@example.test",
       phone: null,
     });
     expect(parsed.id).toBe("7");
-    expect(parsed.ownerUserId).toBe("3");
+    expect(parsed).not.toHaveProperty("ownerUserId");
+    expect(parsed).not.toHaveProperty("ownerName");
+    expect(parsed).not.toHaveProperty("ownerUsername");
+    expect(parsed).not.toHaveProperty("effectiveImageUrl");
     expect(wantContactFrom(parsed)).toEqual({
       text: "Meet near the market",
       email: "amina@example.test",

@@ -392,7 +392,7 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
   if (row.kind === "want") {
     return (
       <WantPicture
-        want={{ effectiveImageUrl: row.imageUrl, markerIcon: row.markerIcon }}
+        want={{ imageUrl: row.imageUrl, markerIcon: row.markerIcon, markerColor: row.markerColor }}
         size="size-11"
       />
     );
