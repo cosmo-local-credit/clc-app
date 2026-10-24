@@ -280,4 +280,32 @@ describe("LocationMap", () => {
     expect(markerInstances).toHaveLength(1);
     expect(mapInstances[0]?.flyTo).not.toHaveBeenCalled();
   });
+
+  it("updates a Want icon and colour live on the existing marker", () => {
+    const { rerender } = render(
+      <LocationMap
+        interactive
+        lat={-1.2921}
+        lng={36.8219}
+        markerStyle={{ icon: "question", color: "orange" }}
+      />,
+    );
+    act(() => mapInstances[0]?.triggerLoad());
+    const element = markerInstances[0]?.options.element;
+    const glyph = element?.querySelector("svg svg")?.innerHTML;
+
+    rerender(
+      <LocationMap
+        interactive
+        lat={-1.2921}
+        lng={36.8219}
+        markerStyle={{ icon: "message", color: "cyan" }}
+      />,
+    );
+
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#0891b2");
+    expect(element?.querySelector("svg svg")?.innerHTML).not.toBe(glyph);
+    expect(mapInstances).toHaveLength(1);
+    expect(markerInstances).toHaveLength(1);
+  });
 });

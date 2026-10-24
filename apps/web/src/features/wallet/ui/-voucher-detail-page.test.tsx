@@ -34,7 +34,13 @@ const quotaMock = vi.hoisted(() => ({
   isError: false,
   refetch: vi.fn(),
 }));
-vi.mock("#/hooks/use-resource-usage", () => ({ useResourceUsage: () => quotaMock }));
+const resourceUsageCalls = vi.hoisted(() => vi.fn());
+vi.mock("#/hooks/use-resource-usage", () => ({
+  useResourceUsage: (...args: unknown[]) => {
+    resourceUsageCalls(...args);
+    return quotaMock;
+  },
+}));
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
@@ -1188,6 +1194,7 @@ describe("VoucherOfferingsPanel ownership", () => {
     mocks.updateOffering.mockReset();
     mocks.deleteOffering.mockReset();
     mocks.deleteOffering.mockResolvedValue("1");
+    resourceUsageCalls.mockClear();
   });
 
   it("gives the voucher's owner add, edit and remove controls", () => {
@@ -1198,6 +1205,8 @@ describe("VoucherOfferingsPanel ownership", () => {
     expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
     expect(within(offerings).getAllByRole("button", { name: "Edit" }).length).toBeGreaterThan(0);
     expect(within(offerings).getAllByRole("button", { name: "Remove" }).length).toBeGreaterThan(0);
+    expect(resourceUsageCalls.mock.calls.length).toBeGreaterThan(0);
+    expect(resourceUsageCalls.mock.calls.every((call) => call[1] === ADDRESS)).toBe(true);
   });
 
   it("reads through the uncached query for an owner and the cached one for a visitor", () => {

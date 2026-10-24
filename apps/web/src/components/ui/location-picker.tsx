@@ -1,6 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
-import type { MarkerStyle } from "@clc/core/features/markers/logic";
+import type { MapMarkerStyle } from "@clc/core/features/markers/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { TbCurrentLocation } from "react-icons/tb";
@@ -20,7 +20,7 @@ type LocationPickerProps = {
   onChange: (value: LocationInput | undefined) => void;
   error?: string;
   label?: string;
-  markerStyle?: MarkerStyle;
+  markerStyle?: MapMarkerStyle;
   required?: boolean;
   /**
    * The screen is about the location alone and already says so: the label is

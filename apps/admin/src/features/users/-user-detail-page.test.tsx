@@ -528,7 +528,7 @@ describe("UserDetailPage", () => {
     expect(fieldValue("Max pools")).toBe("10");
     expect(fieldValue("Max vouchers")).toBe("20");
     expect(fieldValue("Max catalogs")).toBe("1");
-    expect(fieldValue("Max offers")).toBe("3");
+    expect(fieldValue("Offers per voucher")).toBe("3");
     // Status and role are decisions with their own actions, not form fields.
     expect(screen.queryByRole("textbox", { name: /status/i })).toBeNull();
     expect(screen.queryByRole("textbox", { name: /role/i })).toBeNull();
@@ -616,7 +616,9 @@ it("saves the per-user catalog and offer allowances without changing the profile
   fireEvent.change(screen.getByRole("textbox", { name: "Max catalogs" }), {
     target: { value: "2" },
   });
-  fireEvent.change(screen.getByRole("textbox", { name: "Max offers" }), { target: { value: "8" } });
+  fireEvent.change(screen.getByRole("textbox", { name: "Offers per voucher" }), {
+    target: { value: "8" },
+  });
   fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
   await waitFor(() =>
     expect(updateUserLimits).toHaveBeenCalledWith(ADDRESS, {

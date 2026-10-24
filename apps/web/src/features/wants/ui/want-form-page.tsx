@@ -8,22 +8,16 @@ import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import {
-  WANT_MARKER_ICONS,
   defaultWantStartsAt,
   type Want,
   type WantMarkerIcon,
   wantWriteSchema,
 } from "@clc/core/features/wants/logic";
-import {
-  MARKER_COLORS,
-  MARKER_COLOR_HEX,
-  type MarkerColor,
-} from "@clc/core/features/markers/logic";
+import type { MarkerColor } from "@clc/core/features/markers/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { RiMessage2Line, RiQuestionLine, RiSpeakLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
 import { Field } from "#/components/ui/field";
@@ -41,13 +35,7 @@ import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { wantsClient } from "#/lib/api/wants";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { cn } from "#/lib/utils";
-import { useMarkerLabels } from "#/components/vouchers/voucher-labels";
-
-const ICONS = {
-  question: RiQuestionLine,
-  message: RiMessage2Line,
-  request: RiSpeakLine,
-} as const;
+import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
 
 function localDateTime(value: string | Date) {
   const date = typeof value === "string" ? new Date(value) : value;
@@ -113,7 +101,6 @@ function WantForm({
   const { t } = useLingui();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const markerLabels = useMarkerLabels();
   const tagsQuery = useTokenTags();
   const [name, setName] = useState(want?.name ?? "");
   const [description, setDescription] = useState(want?.description ?? "");
@@ -285,7 +272,21 @@ function WantForm({
           />
         </Field>
       ) : null}
-      <LocationPicker value={location} onChange={setLocation} required />
+      <LocationPicker
+        value={location}
+        onChange={setLocation}
+        required
+        markerStyle={{ icon: markerIcon, color: markerColor }}
+      />
+      <MarkerStylePicker
+        mode="want"
+        value={{ icon: markerIcon, color: markerColor }}
+        onChange={(next) => {
+          setMarkerIcon(next.icon);
+          setMarkerColor(next.color);
+        }}
+        disabled={save.isPending}
+      />
       <ImageUploadField
         label={t`Want picture`}
         hint={t`Leave empty to use your profile picture.`}
@@ -342,46 +343,6 @@ function WantForm({
           />
           {phoneAvailable ? <Trans>Share my phone number</Trans> : <Trans>Phone unavailable</Trans>}
         </label>
-      </section>
-      <section className="space-y-3 border border-border bg-card p-4">
-        <h2>
-          <Trans>Map marker</Trans>
-        </h2>
-        <div className="grid grid-cols-3 gap-2">
-          {WANT_MARKER_ICONS.map((icon) => {
-            const Icon = ICONS[icon];
-            return (
-              <Button
-                key={icon}
-                type="button"
-                variant="outline"
-                tap
-                aria-pressed={markerIcon === icon}
-                className={markerIcon === icon ? "border-warning! bg-warning/15" : undefined}
-                onClick={() => setMarkerIcon(icon)}
-              >
-                <Icon aria-hidden="true" />
-                {icon === "question" ? t`Question` : icon === "message" ? t`Message` : t`Request`}
-              </Button>
-            );
-          })}
-        </div>
-        <div className="flex flex-wrap gap-2" aria-label={t`Marker color`}>
-          {MARKER_COLORS.map((color) => (
-            <button
-              key={color}
-              type="button"
-              className={cn(
-                "size-11 rounded-full border-2 border-card outline outline-1 outline-border",
-                markerColor === color && "outline-2 outline-foreground",
-              )}
-              style={{ backgroundColor: MARKER_COLOR_HEX[color].pin }}
-              aria-label={markerLabels.color(color)}
-              aria-pressed={markerColor === color}
-              onClick={() => setMarkerColor(color)}
-            />
-          ))}
-        </div>
       </section>
       {error ? (
         <p role="alert" className="text-sm text-destructive">

@@ -1,4 +1,4 @@
-import type { MarkerIcon } from "@clc/core/features/markers/logic";
+import type { MarkerIcon, WantMarkerIcon } from "@clc/core/features/markers/logic";
 import type { IconType } from "react-icons";
 import {
   RiCouponFill,
@@ -6,8 +6,11 @@ import {
   RiHandCoinFill,
   RiHeartPulseFill,
   RiPlantFill,
+  RiMessage2Line,
+  RiQuestionLine,
   RiRestaurantFill,
   RiShoppingBasket2Fill,
+  RiSpeakLine,
   RiToolsFill,
 } from "react-icons/ri";
 
@@ -24,4 +27,10 @@ export const MARKER_GLYPHS: Record<MarkerIcon, IconType> = {
   tools: RiToolsFill,
   health: RiHeartPulseFill,
   education: RiGraduationCapFill,
+};
+
+export const WANT_MARKER_GLYPHS: Record<WantMarkerIcon, IconType> = {
+  question: RiQuestionLine,
+  message: RiMessage2Line,
+  request: RiSpeakLine,
 };

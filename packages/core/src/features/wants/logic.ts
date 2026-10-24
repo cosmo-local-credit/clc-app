@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { markerColorSchema } from "../markers/logic";
+import { markerColorSchema, wantMarkerIconSchema, type WantMarkerIcon } from "../markers/logic";
 
-export const WANT_MARKER_ICONS = ["question", "message", "request"] as const;
-export const wantMarkerIconSchema = z.enum(WANT_MARKER_ICONS);
-export type WantMarkerIcon = z.infer<typeof wantMarkerIconSchema>;
+export { wantMarkerIconSchema };
+export type { WantMarkerIcon };
 
 const wantStatusSchema = z.enum(["OPEN", "CLOSED"]);
 const wantStateSchema = z.enum(["scheduled", "active", "expired", "closed"]);

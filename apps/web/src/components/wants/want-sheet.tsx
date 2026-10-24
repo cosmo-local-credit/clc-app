@@ -110,7 +110,12 @@ export function WantSheet({
       </MapSheetPeek>
       {want && reachedHalf ? (
         <div className="border-t border-border px-4 pb-6 pt-4">
-          <WantDetail want={want} showHeader={false} distanceOrigin={realFix} />
+          <WantDetail
+            want={want}
+            showHeader={false}
+            distanceOrigin={realFix}
+            showRelated={snap === "full"}
+          />
         </div>
       ) : null}
     </MapSheet>

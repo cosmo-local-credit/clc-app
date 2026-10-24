@@ -22,7 +22,53 @@ const wantPageSchema = z.object({
 });
 const wantResultSchema = z.object({ want: wantSchema });
 
+const creatorVoucherSchema = z.object({
+  id: z.union([z.string(), z.number()]).transform(String),
+  chainId: z.coerce.number().int(),
+  address: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
+  name: z.string(),
+  symbol: z.string(),
+  decimals: z.coerce.number().int().nonnegative().nullable(),
+  iconUrl: z.string().url().nullable(),
+  ownerAddress: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
+  active: z.literal(true),
+});
+
+const creatorPoolSchema = z.object({
+  id: z.union([z.string(), z.number()]).transform(String),
+  chainId: z.coerce.number().int(),
+  address: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
+  name: z
+    .string()
+    .nullable()
+    .transform((value) => value ?? "Community Pool"),
+  symbol: z
+    .string()
+    .nullable()
+    .transform((value) => value ?? "POOL"),
+  locationName: z.string().nullable(),
+  imageUrl: z.string().url().nullable(),
+  voucherCount: z.coerce.number().int().nonnegative(),
+  tags: z.array(z.string()),
+});
+
+const creatorVoucherPageSchema = z.object({
+  vouchers: z.array(creatorVoucherSchema),
+  first: cursorSchema.default(0),
+  last: cursorSchema.default(0),
+});
+
+const creatorPoolPageSchema = z.object({
+  pools: z.array(creatorPoolSchema),
+  first: cursorSchema.default(0),
+  last: cursorSchema.default(0),
+});
+
 export type WantPage = z.infer<typeof wantPageSchema>;
+export type WantCreatorVoucher = z.infer<typeof creatorVoucherSchema>;
+export type WantCreatorPool = z.infer<typeof creatorPoolSchema>;
+export type WantCreatorVoucherPage = z.infer<typeof creatorVoucherPageSchema>;
+export type WantCreatorPoolPage = z.infer<typeof creatorPoolPageSchema>;
 export type WantsClient = ReturnType<typeof createWantsClient>;
 export type WantsParams = {
   cursor?: number;
@@ -104,6 +150,28 @@ export function createWantsClient(http: HttpClient) {
         signal,
       });
       return withContact(result.want);
+    },
+    async creatorVouchers(
+      id: string,
+      params: Pick<WantsParams, "cursor" | "next" | "perPage">,
+      signal?: AbortSignal,
+    ): Promise<WantCreatorVoucherPage> {
+      return read(
+        creatorVoucherPageSchema,
+        listPath(`/api/v2/wants/${encodeURIComponent(id)}/vouchers`, params),
+        { method: "GET", credentials: "omit", signal },
+      );
+    },
+    async creatorPools(
+      id: string,
+      params: Pick<WantsParams, "cursor" | "next" | "perPage">,
+      signal?: AbortSignal,
+    ): Promise<WantCreatorPoolPage> {
+      return read(
+        creatorPoolPageSchema,
+        listPath(`/api/v2/wants/${encodeURIComponent(id)}/pools`, params),
+        { method: "GET", credentials: "omit", signal },
+      );
     },
     async create(input: WantWrite, signal?: AbortSignal): Promise<Want> {
       return save("/api/v2/users/me/wants", "POST", input, signal);

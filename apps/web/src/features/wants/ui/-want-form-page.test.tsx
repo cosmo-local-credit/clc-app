@@ -89,12 +89,15 @@ vi.mock("#/components/ui/location-picker", () => ({
   LocationPicker: ({
     value,
     onChange,
+    markerStyle,
   }: {
     value?: { locationName: string };
     onChange: (value: { lat: number; lng: number; locationName: string; country: string }) => void;
+    markerStyle?: { icon: string; color: string };
   }) => (
     <div>
       <output data-testid="location">{value?.locationName ?? "none"}</output>
+      <output data-testid="map-marker">{JSON.stringify(markerStyle)}</output>
       <button
         type="button"
         onClick={() =>
@@ -169,6 +172,21 @@ describe("Want form", () => {
       search: { from: "wallet" },
       replace: true,
     });
+  });
+
+  it("places the shared marker picker after the map and updates its live pin style", () => {
+    renderForm();
+
+    const map = screen.getByTestId("map-marker");
+    const markerHeading = screen.getByText("Map pin");
+    expect(
+      map.compareDocumentPosition(markerHeading) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(map.textContent).toBe('{"icon":"question","color":"orange"}');
+
+    fireEvent.click(screen.getByRole("radio", { name: "Message" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Blue" }));
+    expect(map.textContent).toBe('{"icon":"message","color":"blue"}');
   });
 
   it("retains the Want location while editing instead of replacing it with the profile location", async () => {

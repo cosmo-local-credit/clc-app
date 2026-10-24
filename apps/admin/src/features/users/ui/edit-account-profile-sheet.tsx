@@ -497,7 +497,10 @@ export function EditAccountProfileSheet({
                 </form.Field>
                 <form.Field name="maxOffers">
                   {(field) => (
-                    <Field label="Max offers" error={getFieldError(field.state.meta.errors)}>
+                    <Field
+                      label="Offers per voucher"
+                      error={getFieldError(field.state.meta.errors)}
+                    >
                       <Input
                         id={field.name}
                         inputMode="numeric"

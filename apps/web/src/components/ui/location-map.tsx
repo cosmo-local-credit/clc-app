@@ -1,5 +1,5 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { MarkerStyle } from "@clc/core/features/markers/logic";
+import type { MapMarkerStyle } from "@clc/core/features/markers/logic";
 import { useLingui } from "@lingui/react/macro";
 import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -21,7 +21,7 @@ type LocationMapProps = {
   lng?: number | null;
   interactive?: boolean;
   onLocationChange?: (lat: number, lng: number) => void;
-  markerStyle?: MarkerStyle;
+  markerStyle?: MapMarkerStyle;
   className?: string;
 };
 
