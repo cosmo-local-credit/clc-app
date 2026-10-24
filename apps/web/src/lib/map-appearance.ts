@@ -13,8 +13,8 @@ const MAPTILER_STYLE_ID: Record<Theme, string> = {
 };
 
 const STANDARD_STYLE_URL: Record<Theme, string> = {
-  light: "https://tiles.openfreemap.org/styles/positron",
-  dark: "https://tiles.openfreemap.org/styles/fiord",
+  light: "https://tiles.openfreemap.org/styles/liberty",
+  dark: "https://tiles.openfreemap.org/styles/liberty",
 };
 
 export function standardMapStyleUrl(theme: Theme): string {

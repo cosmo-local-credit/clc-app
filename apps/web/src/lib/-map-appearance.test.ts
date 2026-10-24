@@ -16,8 +16,8 @@ beforeEach(() => {
 
 describe("map appearance", () => {
   it.each([
-    ["light", "https://tiles.openfreemap.org/styles/positron"],
-    ["dark", "https://tiles.openfreemap.org/styles/fiord"],
+    ["light", "https://tiles.openfreemap.org/styles/liberty"],
+    ["dark", "https://tiles.openfreemap.org/styles/liberty"],
   ] as const)("resolves the %s standard map without a provider key", (theme, expected) => {
     expect(standardMapStyleUrl(theme)).toBe(expected);
     expect(resolveMapStyleUrl(null, theme, "standard")).toBe(expected);
@@ -29,7 +29,7 @@ describe("map appearance", () => {
     );
     expect(satelliteMapStyleUrl("", "light")).toBeNull();
     expect(resolveMapStyleUrl("", "light", "satellite")).toBe(
-      "https://tiles.openfreemap.org/styles/positron",
+      "https://tiles.openfreemap.org/styles/liberty",
     );
   });
 
