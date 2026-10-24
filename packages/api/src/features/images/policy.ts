@@ -20,7 +20,8 @@ export type ImagePurpose =
   | "pool.image"
   | "pool.banner"
   | "report.image"
-  | "offering.photo";
+  | "offering.photo"
+  | "want.image";
 
 export type ImagePolicy = {
   /** Storage folder. Must be present in the service's `api.allowed_folders`. */
@@ -87,6 +88,7 @@ export const IMAGE_POLICIES: Readonly<Record<ImagePurpose, ImagePolicy>> = {
   // desktop card in the console, not a full-bleed header, and a 430px phone at 2x
   // is 860 device pixels, close enough that the extra bytes buy nothing.
   "offering.photo": { folder: "offering", width: 800, aspect: 1 },
+  "want.image": { folder: "offering", width: 800, aspect: 1 },
 };
 
 /** The only containers storage-server can decode. Notably not HEIC. */

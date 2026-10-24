@@ -21,6 +21,7 @@ import {
   SELECTED_PIN_SUFFIX,
   addMarketNetworkBadgeImage,
   addMarketMarkerImages,
+  markerArt,
   markerImageId,
   markerPin,
   resetMarketMarkerCache,
@@ -45,11 +46,38 @@ function fakeMap() {
   };
 }
 
-type VoucherKind = Exclude<MarketLocationKind, "pool">;
+type VoucherKind = Exclude<MarketLocationKind, "pool" | "want">;
 
 function automatic(kind: MarketLocationKind): MarkerSource {
   return { kind, markerIcon: null, markerColor: null };
 }
+
+describe("Want marker artwork", () => {
+  it.each(["question", "message", "request"] as const)(
+    "keeps the %s glyph distinct from voucher artwork",
+    (markerIcon) => {
+      const id = markerArt({ kind: "want", markerIcon, markerColor: "orange" }).image;
+      expect(id).toBe(`market-pin-want-${markerIcon}-orange`);
+      expect(id).not.toContain("voucher");
+    },
+  );
+
+  it("registers every Want icon and safe colour with selected artwork", () => {
+    const map = fakeMap();
+    const icons = ["question", "message", "request"] as const;
+    const wants = icons.flatMap((markerIcon) =>
+      MARKER_COLORS.map((markerColor) => ({ kind: "want" as const, markerIcon, markerColor })),
+    );
+
+    addMarketMarkerImages(map as never, wants);
+
+    for (const { markerIcon, markerColor } of wants) {
+      const id = `market-pin-want-${markerIcon}-${markerColor}`;
+      expect(map.images.has(id)).toBe(true);
+      expect(map.images.has(`${id}-selected`)).toBe(true);
+    }
+  });
+});
 
 const KINDS: VoucherKind[] = ["goods", "services", "voucher"];
 const AUTOMATIC = KINDS.map(automatic);

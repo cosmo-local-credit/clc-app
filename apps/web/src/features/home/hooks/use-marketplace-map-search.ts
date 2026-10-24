@@ -1,6 +1,8 @@
 import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { EMPTY_CATALOG_FILTER, type CatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
+import type { WantMarkerIcon } from "@clc/core/features/wants/logic";
+import type { MarkerColor } from "@clc/core/features/markers/logic";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
@@ -30,6 +32,13 @@ export type MarketVoucherSearchLocation = MarketLocation & {
   address: `0x${string}`;
 };
 
+export type MarketWantSearchLocation = MarketLocation & {
+  kind: "want";
+  wantId: string;
+  markerIcon: WantMarkerIcon;
+  markerColor: MarkerColor;
+};
+
 export function useMarketplaceMapSearch(
   filter: CatalogFilterControls,
   pools: readonly { chainId: number; address: string }[] | undefined,
@@ -43,7 +52,7 @@ export function useMarketplaceMapSearch(
     q: parsed.term,
     tags: parsed.tags,
     tagMatch: parsed.tagMatch,
-    kinds: ["voucher", "pool"] as const,
+    kinds: ["voucher", "pool", "want"] as const,
     nearby: nearby?.nearby === true,
     scope: nearby?.nearby ? nearby.scope : undefined,
     ...(pools ? { pools } : {}),
@@ -66,7 +75,10 @@ export function useMarketplaceMapSearch(
   });
 
   const locations = useMemo(() => {
-    const byIdentity = new Map<string, MarketPoolLocation | MarketVoucherSearchLocation>();
+    const byIdentity = new Map<
+      string,
+      MarketPoolLocation | MarketVoucherSearchLocation | MarketWantSearchLocation
+    >();
     for (const row of query.data ?? []) {
       if (row.kind === "voucher") {
         byIdentity.set(`voucher:${row.chainId}:${row.address.toLowerCase()}`, {
@@ -91,6 +103,18 @@ export function useMarketplaceMapSearch(
           lng: row.geoLng,
           locationName: row.locationName,
           address: row.address as `0x${string}`,
+        });
+      } else if (row.kind === "want") {
+        byIdentity.set(`want:${row.id}`, {
+          id: `market:want:${row.id}`,
+          wantId: row.id,
+          name: row.name,
+          kind: "want",
+          markerIcon: row.markerIcon,
+          markerColor: row.markerColor,
+          lat: row.geoLat,
+          lng: row.geoLng,
+          locationName: row.locationName,
         });
       }
     }

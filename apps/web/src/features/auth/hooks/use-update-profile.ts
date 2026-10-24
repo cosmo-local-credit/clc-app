@@ -5,6 +5,7 @@ import type { ProfilePayload, ProfileResult } from "@clc/api/features/auth/clien
 import { authKeys } from "@clc/api/features/auth/queries";
 import { recipientKeys } from "@clc/api/features/recipients/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
+import { wantKeys } from "@clc/api/features/wants/queries";
 import { authClient } from "#/lib/api/auth";
 
 export function useUpdateProfile() {
@@ -27,6 +28,7 @@ export function useUpdateProfile() {
         queryClient.invalidateQueries({ queryKey: authKeys.profile(address) }),
         queryClient.invalidateQueries({ queryKey: recipientKeys.all }),
         queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
+        queryClient.invalidateQueries({ queryKey: wantKeys.all }),
         queryClient.invalidateQueries({
           predicate: (query) =>
             query.queryKey.some((part) => typeof part === "string" && part.startsWith("nearby:")),

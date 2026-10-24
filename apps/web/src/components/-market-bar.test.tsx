@@ -76,33 +76,38 @@ describe("MarketBar", () => {
     const links = within(sections).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
       "All",
-      "Pools",
-      "Vouchers",
       "Offers",
+      "Wants",
+      "Vouchers",
+      "Pools",
       "Catalogs",
       "Activity",
       "Posts",
+      "Map",
     ]);
     expect(links[0]?.getAttribute("href")).toBe(
       "/market?q=bike&tags=Repair&creditable=true&scope=all",
     );
     expect(links[1]?.getAttribute("href")).toBe(
-      "/market?q=bike&tags=Repair&creditable=true&scope=pools",
+      "/market?q=bike&tags=Repair&creditable=true&scope=offers",
     );
-    expect(links[5]?.getAttribute("href")).toBe("/?tab=activity");
-    expect(links[6]?.getAttribute("href")).toBe("/?tab=posts");
-    for (const link of links) expect(link.getAttribute("aria-current")).toBeNull();
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(links[6]?.getAttribute("href")).toBe("/?tab=activity");
+    expect(links[7]?.getAttribute("href")).toBe("/?tab=posts");
+    expect(links[8]?.getAttribute("href")).toBe(
+      "/market?q=bike&tags=Repair&creditable=true&scope=all",
+    );
+    for (const link of links.slice(0, -1)) expect(link.getAttribute("aria-current")).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBe("page");
   });
 
-  it("returns to the map from the open list's badge without a redundant Map button", () => {
+  it("returns to the map from the open list's badge and the final Map control", () => {
     mocks.search = { scope: "pools", q: "bike", out_voucher: `0x${"a".repeat(40)}` };
     renderBar("pools");
 
     const pools = screen.getByRole("link", { name: "Pools" });
     expect(pools.getAttribute("aria-current")).toBe("page");
     expect(pools.getAttribute("href")).toBe("/?q=bike");
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/?q=bike");
   });
 
   it("marks All open and returns to the map from it", () => {
@@ -115,7 +120,9 @@ describe("MarketBar", () => {
     expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
       "/market?q=bike&tags=Repair&scope=pools",
     );
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe(
+      "/?q=bike&tags=Repair",
+    );
   });
 
   it.each(["posts", "activity"] as const)("returns from %s to an unfiltered map", (current) => {
@@ -124,7 +131,7 @@ describe("MarketBar", () => {
     const label = current === "posts" ? "Posts" : "Activity";
     expect(screen.getByRole("link", { name: label }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe("/");
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" })).toBeTruthy();
   });
 
   it("puts Credit at the end of the search row for a member, and offers no Sign in", () => {

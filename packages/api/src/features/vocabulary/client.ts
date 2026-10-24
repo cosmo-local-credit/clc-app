@@ -8,6 +8,8 @@ type TagVocabularyUsage = {
   pools: number;
   posts: number;
   offerings: number;
+  catalogs: number;
+  wants: number;
 };
 
 type UnitVocabularyUsage = { offerings: number };
@@ -173,6 +175,8 @@ function normalizeTag(row: BackendVocabularyRow): TagVocabulary {
     pools: count(row.pools),
     posts: count(row.posts),
     offerings: count(row.offerings),
+    catalogs: count(row.catalogs),
+    wants: count(row.wants),
   };
   return {
     value: normalizeText(row.value) ?? "Unknown tag",

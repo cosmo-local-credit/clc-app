@@ -28,6 +28,7 @@ import { Button } from "#/components/ui/button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
+import { WantPicture } from "#/components/wants/want-row";
 import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
@@ -41,6 +42,7 @@ const ROW_TAG_LIMIT = 3;
 
 const KIND_SCOPE: Record<MarketplaceKind, MarketplaceScope> = {
   offering: "offers",
+  want: "wants",
   voucher: "vouchers",
   pool: "pools",
   catalog: "catalogs",
@@ -347,6 +349,18 @@ function MarketplaceResultRow({
       </Link>
     );
   }
+  if (row.kind === "want") {
+    return (
+      <Link
+        to="/wants/$wantId"
+        params={{ wantId: row.id }}
+        search={{ from: "market" }}
+        className={className}
+      >
+        {content}
+      </Link>
+    );
+  }
   // An offer is bought through its voucher, so it opens the voucher's page.
   return (
     <Link
@@ -375,6 +389,14 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
   if (row.kind === "pool") {
     return <PoolLogo imageUrl={row.imageUrl} name={row.name} seed={row.address} size={44} />;
   }
+  if (row.kind === "want") {
+    return (
+      <WantPicture
+        want={{ effectiveImageUrl: row.imageUrl, markerIcon: row.markerIcon }}
+        size="size-11"
+      />
+    );
+  }
   const Icon = RESOURCE_ICON[KIND_SCOPE[row.kind]];
   return (
     <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
@@ -389,6 +411,7 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
 
 function ResultKind({ kind }: { kind: MarketplaceKind }) {
   if (kind === "offering") return <Trans>Offer</Trans>;
+  if (kind === "want") return <Trans>Want</Trans>;
   if (kind === "voucher") return <Trans>Voucher</Trans>;
   if (kind === "pool") return <Trans>Pool</Trans>;
   return <Trans>Catalog</Trans>;

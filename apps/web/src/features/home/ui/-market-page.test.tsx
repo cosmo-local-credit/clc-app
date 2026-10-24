@@ -271,6 +271,15 @@ vi.mock("#/features/home/hooks/use-market-pools", () => ({
   },
 }));
 
+vi.mock("#/features/home/hooks/use-market-wants", () => ({
+  useMarketMapWants: () => ({
+    wants: [],
+    error: null,
+    retry: vi.fn(),
+    retrying: false,
+  }),
+}));
+
 vi.mock("#/features/home/hooks/use-filtered-market-vouchers", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("#/features/home/hooks/use-filtered-market-vouchers")>();
@@ -309,6 +318,10 @@ vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
       },
     };
   },
+}));
+
+vi.mock("#/lib/navigation/use-want-sheet-selection", () => ({
+  useWantSheetSelection: () => ({ want: null, open: vi.fn(), close: vi.fn() }),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -1105,7 +1118,7 @@ describe("MarketPage filtering", () => {
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(lastMapProps.current?.locations.map((location) => location.id)).toEqual(["1"]);
   });
@@ -1120,7 +1133,7 @@ describe("MarketPage filtering", () => {
       },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     const fit = lastMapProps.current?.fitBounds;
     expect(fit).toMatchObject({ west: 36.82, east: 37.1, south: -1.5, north: -1.29 });
@@ -1134,7 +1147,7 @@ describe("MarketPage filtering", () => {
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(lastMapProps.current?.fitBounds).toMatchObject({
       west: 36.82,
@@ -1152,7 +1165,7 @@ describe("MarketPage filtering", () => {
       isPlaceholderData: true,
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(lastMapProps.current?.fitBounds).toBeNull();
   });
@@ -1164,7 +1177,7 @@ describe("MarketPage filtering", () => {
       isCatalogComplete: true,
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(lastMapProps.current?.fitBounds).toBeNull();
   });
@@ -1176,7 +1189,7 @@ describe("MarketPage filtering", () => {
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByRole("button", { name: /^Search the marketplace/ }).textContent).toBe(
       "Search the marketplace art",
@@ -1192,7 +1205,7 @@ describe("MarketPage filtering", () => {
       data: { vouchers: [], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByText("No marketplace results match this search.")).toBeTruthy();
     expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
@@ -1203,7 +1216,7 @@ describe("MarketPage filtering", () => {
     routeSearch.current = { q: "art" };
     filteredResult.current = { ...filteredResult.current, data: undefined };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.queryByText("No marketplace results match this search.")).toBeNull();
     expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
@@ -1216,7 +1229,7 @@ describe("MarketPage notices", () => {
     creditFeedback.current = true;
     vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByTestId("credit-feedback")).toBeTruthy();
     expect(screen.queryByText("Could not load vouchers.")).toBeNull();
@@ -1226,19 +1239,19 @@ describe("MarketPage notices", () => {
     missingLocation.current = true;
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByRole("status").textContent).toBe("Choose a location");
     expect(screen.getByTestId("marker-1")).toBeTruthy();
   });
 
   it("puts the list badges under the bar and no Map button over the map", () => {
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
       "/market?scope=pools",
     );
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBe("page");
   });
 });
 
@@ -1250,7 +1263,7 @@ describe("MarketPage filter failures", () => {
       error: new BackendApiError(400, "tags contains a value outside the tag vocabulary", "E04"),
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain("These filters aren't valid.");
@@ -1265,7 +1278,7 @@ describe("MarketPage filter failures", () => {
       error: new BackendApiError(429, "rate limit exceeded"),
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain("Too many searches");
@@ -1276,7 +1289,7 @@ describe("MarketPage filter failures", () => {
     filteredResult.current = { ...filteredResult.current, error: null };
     vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
 
-    render(<MarketPage />);
+    renderPage();
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain("Could not load vouchers.");

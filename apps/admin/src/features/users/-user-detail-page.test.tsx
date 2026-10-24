@@ -96,6 +96,7 @@ function account(overrides: Partial<AdminUser> = {}): AdminUser {
     maxTokens: 20,
     maxCatalogs: 1,
     maxOffers: 3,
+    maxWants: 3,
     createdAt: "2026-08-13T11:00:00Z",
     updatedAt: "2026-08-13T11:00:00Z",
     avatarUrl: null,
@@ -621,6 +622,7 @@ it("saves the per-user catalog and offer allowances without changing the profile
     expect(updateUserLimits).toHaveBeenCalledWith(ADDRESS, {
       maxPools: 10,
       maxTokens: 20,
+      maxWants: 3,
       maxCatalogs: 2,
       maxOffers: 8,
     }),

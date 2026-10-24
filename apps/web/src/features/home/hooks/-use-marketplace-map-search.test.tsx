@@ -99,7 +99,7 @@ describe("useMarketplaceMapSearch", () => {
     });
     expect(list).toHaveBeenCalledTimes(2);
     expect(list.mock.calls[0]?.[0]).toMatchObject({
-      kinds: ["voucher", "pool"],
+      kinds: ["voucher", "pool", "want"],
       perPage: 100,
       q: "repair",
     });

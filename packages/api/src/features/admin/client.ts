@@ -68,6 +68,7 @@ export type AdminUser = {
   maxTokens: number;
   maxCatalogs: number;
   maxOffers: number;
+  maxWants: number;
   createdAt: string;
   updatedAt: string;
   /** The account's chosen ISO 4217 currency. Null for profiles created before it existed. */
@@ -113,6 +114,7 @@ export type AdminUserLimits = {
   maxTokens?: number;
   maxCatalogs?: number;
   maxOffers?: number;
+  maxWants?: number;
 };
 
 /**

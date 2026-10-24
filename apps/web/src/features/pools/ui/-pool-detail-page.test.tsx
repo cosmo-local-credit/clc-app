@@ -229,6 +229,7 @@ describe("PoolDetailPage pool details editor", () => {
     expect(screen.getByTestId("offerings-panel")).toBeTruthy();
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
+      "Wants",
       "Vouchers",
     ]);
     expect(screen.queryByRole("link", { name: "Swap" })).toBeNull();

@@ -9,7 +9,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("resource allowances", () => {
   it("reads fresh server counts and preserves a zero allowance", async () => {
     const quota = { used: 0, limit: 0, canCreate: false, unlimited: false };
-    const usage = { vouchers: quota, pools: quota, catalogs: quota, offers: quota };
+    const usage = { vouchers: quota, pools: quota, catalogs: quota, offers: quota, wants: quota };
     const fetcher = vi
       .fn()
       .mockResolvedValue(
@@ -34,6 +34,7 @@ describe("resource allowances", () => {
       offers: quota,
       catalogs: quota,
       pools: quota,
+      wants: quota,
     });
     expect(cache.getQueryData(bob.queryKey)).toBeUndefined();
     expect(resourceUsageQueryOptions(client, "").enabled).toBe(false);

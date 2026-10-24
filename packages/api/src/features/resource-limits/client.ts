@@ -12,6 +12,7 @@ const usageSchema = z.object({
   pools: quotaSchema,
   catalogs: quotaSchema,
   offers: quotaSchema,
+  wants: quotaSchema,
 });
 export type ResourceUsage = z.infer<typeof usageSchema>;
 export type ResourceKind = keyof ResourceUsage;

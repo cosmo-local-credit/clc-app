@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { storedImageUrlSchema } from "../../lib/image-url";
 import { markerColorSchema, markerIconSchema } from "../markers/logic";
+import { wantMarkerIconSchema } from "../wants/logic";
 
-export const marketplaceScopeSchema = z.enum(["offers", "vouchers", "pools", "catalogs"]);
+export const marketplaceScopeSchema = z.enum(["offers", "wants", "vouchers", "pools", "catalogs"]);
 export type MarketplaceScope = z.infer<typeof marketplaceScopeSchema>;
 
-const marketplaceKindSchema = z.enum(["offering", "voucher", "pool", "catalog"]);
+const marketplaceKindSchema = z.enum(["offering", "want", "voucher", "pool", "catalog"]);
 export type MarketplaceKind = z.infer<typeof marketplaceKindSchema>;
 
 const addressSchema = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
@@ -88,8 +89,26 @@ const marketplaceCatalogResultSchema = baseResultSchema.extend({
   voucherCount: z.number().int().nonnegative(),
 });
 
+const marketplaceWantResultSchema = baseResultSchema.extend({
+  kind: z.literal("want"),
+  chainId: z.null(),
+  address: z.null(),
+  symbol: z.null(),
+  markerIcon: wantMarkerIconSchema,
+  markerColor: markerColorSchema,
+  voucherAddress: z.null(),
+  voucherName: z.null(),
+  voucherSymbol: z.null(),
+  voucherUoa: z.null(),
+  priceInUnitOfAccount: z.null(),
+  unit: z.null(),
+  poolCount: z.null(),
+  voucherCount: z.null(),
+});
+
 export const marketplaceResultSchema = z.discriminatedUnion("kind", [
   marketplaceOfferingResultSchema,
+  marketplaceWantResultSchema,
   marketplaceVoucherResultSchema,
   marketplacePoolResultSchema,
   marketplaceCatalogResultSchema,
