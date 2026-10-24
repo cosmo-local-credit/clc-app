@@ -21,6 +21,8 @@ const mocks = vi.hoisted(() => ({
   createPost: vi.fn(),
 }));
 
+const VOUCHER = "0x1111111111111111111111111111111111111111";
+
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({
     isAuthenticated: true,
@@ -55,6 +57,7 @@ vi.mock("#/features/posts/hooks/use-my-posts", () => ({
       updatedAt: null,
       tags: [],
       vouchers: [],
+      pools: [],
       images: [],
       attachments: [],
       hostName: null,
@@ -106,7 +109,7 @@ import { PostEditorPage } from "#/features/posts/ui/post-editor-page";
  * — otherwise "new" is read as a report id and the editor becomes a 404 detail
  * page.
  */
-function renderAt(initialPath: string) {
+function renderAt(initialPath: string, seedNewPost = false) {
   const rootRoute = createRootRoute({ component: Outlet });
   const postsFeedRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -116,7 +119,15 @@ function renderAt(initialPath: string) {
   const newRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/posts/new",
-    component: () => <PostEditorPage mode="create" />,
+    component: () =>
+      seedNewPost ? (
+        <PostEditorPage
+          mode="create"
+          voucher={{ chainId: 100, address: VOUCHER, name: "Community voucher" }}
+        />
+      ) : (
+        <PostEditorPage mode="create" />
+      ),
   });
   const mineRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -177,6 +188,7 @@ beforeEach(() => {
           createdAt: null,
           tags: [],
           vouchers: [],
+          pools: [],
         },
       ],
     },
@@ -224,7 +236,7 @@ describe("post authoring routes", () => {
   });
 
   it("lands on My posts after a create, and Back returns to the editor's origin", async () => {
-    const router = renderAt("/posts/mine");
+    const router = renderAt("/posts/mine", true);
     await screen.findByRole("heading", { name: "My posts" });
 
     await act(async () => {

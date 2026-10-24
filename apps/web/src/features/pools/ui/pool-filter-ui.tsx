@@ -50,8 +50,8 @@ export function PoolFilterFeedback({
     if (!filter.result.ok) {
       return {
         message:
-          filter.result.reason === "invalid-vouchers"
-            ? t`This link contains an invalid voucher filter.`
+          filter.result.reason === "invalid-vouchers" || filter.result.reason === "invalid-pools"
+            ? t`This link contains an invalid resource filter.`
             : t`This link has too many filters (${filter.result.requested}, maximum ${filter.result.max}).`,
         actionLabel: t`Clear filters`,
         onAction: filter.clear,

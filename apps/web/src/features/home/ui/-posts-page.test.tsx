@@ -28,6 +28,9 @@ const mocks = vi.hoisted(() => ({
   voucherSearchQuery: "",
   setVoucherQuery: vi.fn(),
   retryVoucherSearch: vi.fn(),
+  poolResults: [] as { chainId: number; address: string; name: string; symbol: string }[],
+  poolSearchStatus: "idle" as "idle" | "searching" | "ready" | "error",
+  retryPoolSearch: vi.fn(),
   filteredFilters: [] as (CatalogFilter | null)[],
   filtered: {
     data: undefined as { reports: ReportSummary[]; tagFacets: null } | undefined,
@@ -88,6 +91,7 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
           retry: unfiltered.retry,
           tagFacets,
           voucherFacets,
+          poolFacets: [],
           hasMore: unfiltered.hasNextPage,
           loadMore: unfiltered.fetchNextPage,
           isLoadingMore: unfiltered.isFetchingNextPage,
@@ -111,6 +115,7 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
         retry: mocks.filtered.refetch,
         tagFacets,
         voucherFacets,
+        poolFacets: [],
         hasMore: false,
         loadMore: () => {},
         isLoadingMore: false,
@@ -164,6 +169,18 @@ vi.mock("@tanstack/react-router", () => ({
   },
 }));
 
+vi.mock("#/features/catalogs/hooks/use-pool-search", () => ({
+  POOL_SEARCH_MIN_CHARS: 2,
+  usePoolSearch: (query: string, setQuery: (next: string) => void) => ({
+    query,
+    setQuery,
+    results: mocks.poolResults,
+    status: mocks.poolSearchStatus,
+    retry: mocks.retryPoolSearch,
+    retrying: false,
+  }),
+}));
+
 import { PostsPage } from "./posts-page";
 
 function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
@@ -177,7 +194,6 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     lng: 36.82,
     periodFrom: "2026-07-01T00:00:00Z",
     periodTo: "2026-07-02T00:00:00Z",
-    authorAddress: "0x1111111111111111111111111111111111111111",
     createdAt: "2026-07-03T08:00:00Z",
     updatedAt: "2026-07-19T08:14:02.311Z",
     tags: ["Food production"],
@@ -190,6 +206,7 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
         symbol: "KCH",
       },
     ],
+    pools: [],
     ...overrides,
   };
 }
@@ -216,6 +233,9 @@ beforeEach(() => {
   mocks.voucherSearchQuery = "";
   mocks.setVoucherQuery = vi.fn();
   mocks.retryVoucherSearch = vi.fn();
+  mocks.poolResults = [];
+  mocks.poolSearchStatus = "idle";
+  mocks.retryPoolSearch = vi.fn();
   mocks.filteredFilters = [];
   mocks.filtered = {
     data: undefined,
@@ -483,6 +503,8 @@ describe("PostsPage filtering", () => {
       tagMatch: "any",
       vouchers: [],
       voucherMatch: "any",
+      pools: [],
+      poolMatch: "any",
     });
   });
 
@@ -520,7 +542,73 @@ describe("PostsPage filtering", () => {
         "42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       ],
       voucherMatch: "all",
+      pools: [],
+      poolMatch: "any",
     });
+  });
+
+  it("applies pool relationships with all-match and keeps search result labels", () => {
+    mocks.poolResults = [
+      {
+        chainId: 100,
+        address: "0x1111111111111111111111111111111111111111",
+        name: "Kilifi Pool",
+        symbol: "KLF",
+      },
+      {
+        chainId: 100,
+        address: "0x2222222222222222222222222222222222222222",
+        name: "Coast Pool",
+        symbol: "CST",
+      },
+    ];
+    mocks.poolSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const pools = within(sheet).getByRole("listbox", { name: "Pool search results" });
+    fireEvent.click(within(pools).getByRole("option", { name: /Kilifi Pool/ }));
+    fireEvent.click(within(pools).getByRole("option", { name: /Coast Pool/ }));
+    expect(within(sheet).getByRole("button", { name: "Remove Kilifi Pool" })).toBeTruthy();
+    expect(within(sheet).getByRole("button", { name: "Remove Coast Pool" })).toBeTruthy();
+    fireEvent.click(within(sheet).getByRole("button", { name: "All selected" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
+
+    expect(mocks.navigate).toHaveBeenCalledTimes(1);
+    const call = mocks.navigate.mock.calls[0]?.[0];
+    const search = call?.search as (previous: Record<string, unknown>) => Record<string, unknown>;
+    expect(search({})).toMatchObject({
+      pools:
+        "100:0x1111111111111111111111111111111111111111,100:0x2222222222222222222222222222222222222222",
+      poolMatch: "all",
+    });
+    expect(JSON.parse(window.localStorage.getItem(POSTS_FILTER_KEY) ?? "null")).toMatchObject({
+      pools: [
+        "100:0x1111111111111111111111111111111111111111",
+        "100:0x2222222222222222222222222222222222222222",
+      ],
+      poolMatch: "all",
+    });
+  });
+
+  it("resets staged pool selections with the shared Reset action", () => {
+    mocks.poolResults = [
+      {
+        chainId: 100,
+        address: "0x1111111111111111111111111111111111111111",
+        name: "Kilifi Pool",
+        symbol: "KLF",
+      },
+    ];
+    mocks.poolSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const pools = within(sheet).getByRole("listbox", { name: "Pool search results" });
+    fireEvent.click(within(pools).getByRole("option", { name: /Kilifi Pool/ }));
+    fireEvent.click(within(sheet).getByRole("button", { name: "Reset" }));
+
+    expect(within(sheet).queryByRole("button", { name: "Remove Kilifi Pool" })).toBeNull();
   });
 
   it("keeps the selected chips keyboard-operable from the voucher input", () => {

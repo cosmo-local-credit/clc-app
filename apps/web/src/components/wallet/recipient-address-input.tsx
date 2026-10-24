@@ -173,6 +173,14 @@ export function RecipientAddressInput({
         </Button>
       </div>
 
+      <p className="mt-2 text-xs text-muted-foreground">
+        {allowPools ? (
+          <Trans>Enter an exact username or full phone number. Pool names can be searched.</Trans>
+        ) : (
+          <Trans>Enter an exact username or full phone number.</Trans>
+        )}
+      </p>
+
       {matches.length > 0 ? (
         <ul className="mt-3 border border-border bg-card" aria-label={t`Matching recipients`}>
           {matches.map((match) => (

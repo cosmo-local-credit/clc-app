@@ -252,9 +252,8 @@ describe("SendReceiptPage", () => {
     );
 
     expect(screen.getAllByText("Recipient")).toHaveLength(1);
-    expect(screen.getByText("Alice Updated").parentElement?.textContent).toBe(
-      "Alice Updated (alice-new)",
-    );
+    expect(screen.getByText("alice-new")).toBeTruthy();
+    expect(screen.queryByText("Alice Updated")).toBeNull();
     expect(screen.queryByText("Alice")).toBeNull();
     expect(screen.getByText("Recipient").parentElement?.textContent).toContain(RECIPIENT);
   });

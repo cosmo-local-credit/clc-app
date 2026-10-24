@@ -1,7 +1,7 @@
 import type { ReportStatus } from "@clc/core/features/reports/logic";
 import type { QueryClient } from "@tanstack/react-query";
 
-import type { ManagedReportDetail } from "./client";
+import type { ManagedReportDetail, ReportDetail } from "./client";
 import { reportKeys } from "./queries";
 
 /**
@@ -95,10 +95,15 @@ function seedReportDetails(
   }
 
   if (report.status === "APPROVED") {
-    queryClient.setQueryData(reportKeys.detail(report.id), report);
+    queryClient.setQueryData(reportKeys.detail(report.id), asPublicReportDetail(report));
   } else {
     queryClient.removeQueries({ queryKey: reportKeys.detail(report.id), exact: true });
   }
+}
+
+function asPublicReportDetail(report: ManagedReportDetail): ReportDetail {
+  const { authorAddress: _authorAddress, ...publicReport } = report;
+  return { ...publicReport, status: null };
 }
 
 /**

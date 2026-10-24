@@ -19,7 +19,7 @@ export function PostsPage() {
   const filter = usePersistedCatalogFilter(
     CATALOG_FILTER_PREFERENCE_NAMES.posts,
     useStorageOwner(),
-    { voucherRelationships: true },
+    { voucherRelationships: true, poolRelationships: true },
   );
   const reportsQuery = useReportsInfinite(
     undefined,
@@ -85,6 +85,7 @@ export function PostsPage() {
             filter={filter}
             facets={feed.tagFacets}
             voucherFacets={feed.voucherFacets}
+            poolFacets={feed.poolFacets}
             open={filtersOpen}
             onOpenChange={(next) => {
               if (next) setFiltersEverOpened(true);

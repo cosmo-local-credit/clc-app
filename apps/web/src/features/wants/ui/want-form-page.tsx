@@ -24,6 +24,7 @@ import { Field } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet";
@@ -278,11 +279,7 @@ function WantForm({
         required
         markerStyle={{ icon: markerIcon, color: markerColor }}
       />
-      <p className="border border-warning bg-card p-3 text-xs text-warning-foreground">
-        <Trans>
-          The exact pin will be public. Choose a safe public meeting place, not a private home.
-        </Trans>
-      </p>
+      <PublicLocationWarning />
       <MarkerStylePicker
         mode="want"
         value={{ icon: markerIcon, color: markerColor }}

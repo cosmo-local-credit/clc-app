@@ -55,9 +55,16 @@ export function RecipientIdentityText({
   identity: RecipientIdentity;
   className?: string;
 }) {
+  if (identity.kind === "user") {
+    return (
+      <span dir="ltr" className={className}>
+        {identity.alias}
+      </span>
+    );
+  }
   if (identity.name === identity.alias) {
     return (
-      <span dir={identity.kind === "user" ? "ltr" : "auto"} className={className}>
+      <span dir="auto" className={className}>
         {identity.name}
       </span>
     );

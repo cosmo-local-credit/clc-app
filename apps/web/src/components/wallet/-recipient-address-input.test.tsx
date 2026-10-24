@@ -79,7 +79,7 @@ describe("RecipientAddressInput", () => {
     },
   );
 
-  it("searches short numeric and 0x-prefixed names and clears selection", async () => {
+  it("searches exact username or full-phone candidates and clears selection", async () => {
     const fetcher = vi.fn((_url: string) =>
       Promise.resolve(
         json({
@@ -102,10 +102,10 @@ describe("RecipientAddressInput", () => {
       expect(new URL(String(fetcher.mock.calls.at(-1)?.[0])).searchParams.get("q")).toBe(value);
     }
     fireEvent.change(input, { target: { value: "007" } });
-    fireEvent.click(await screen.findByRole("button", { name: /Alice \(alice\)/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /alice/ }));
     expect(onRecipientChange).toHaveBeenLastCalledWith({
       address: ADDRESS,
-      name: "Alice (alice)",
+      name: "alice",
       source: "phone",
     });
     fireEvent.change(input, { target: { value: "00" } });
@@ -167,7 +167,7 @@ describe("RecipientAddressInput", () => {
     }
 
     fireEvent.change(input, { target: { value: "  李  " } });
-    expect(await screen.findByRole("button", { name: /Alice \(alice\)/ })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /alice/ })).toBeTruthy();
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.get("q")).toBe("李");
 
@@ -213,11 +213,11 @@ describe("RecipientAddressInput", () => {
     const onRecipientChange = renderInput();
     const input = screen.getByRole("textbox", { name: "Recipient" });
     fireEvent.change(input, { target: { value: "alice" } });
-    fireEvent.click(await screen.findByRole("button", { name: /Alice \(alice\)/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /alice/ }));
     await waitFor(() =>
       expect(onRecipientChange).toHaveBeenLastCalledWith({
         address: ADDRESS,
-        name: "Alice (alice)",
+        name: "alice",
         source: "alias",
       }),
     );
@@ -262,7 +262,7 @@ describe("RecipientAddressInput", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Recipient" }), {
       target: { value: "alex" },
     });
-    const matches = await screen.findAllByRole("button", { name: /Alex \(alex\)/ });
+    const matches = await screen.findAllByRole("button", { name: /alex/ });
     expect(matches).toHaveLength(2);
     expect(matches[0].textContent).toContain("0xa316…5fad4");
     expect(matches[1].textContent).toContain("0xb316…5fad4");
@@ -271,7 +271,7 @@ describe("RecipientAddressInput", () => {
     await waitFor(() =>
       expect(onRecipientChange).toHaveBeenLastCalledWith({
         address: secondAddress,
-        name: "Alex (alex)",
+        name: "alex",
         source: "alias",
       }),
     );

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
 import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
+import { ProfilePrivacyNotice } from "#/components/profile-privacy-notice";
 import { UsernameInput } from "#/components/profile/username-input";
 import { ActionRow } from "#/components/ui/action-row";
 import { AvatarPicker } from "#/components/ui/avatar-picker";
@@ -357,6 +358,7 @@ export function OnboardingProfileForm({
 
         {page === "contact" ? (
           <>
+            <ProfilePrivacyNotice />
             <form.Field name="email">
               {(field) => {
                 const err = shownError("email", field.state.meta.isTouched);

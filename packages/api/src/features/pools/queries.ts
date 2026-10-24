@@ -23,7 +23,7 @@ export type PoolListParams = {
 };
 
 /** One cursor page of the pool list as the backend filtered it. */
-export type PoolFilteredListParams = PoolListParams & { filter: CatalogFilter };
+export type PoolFilteredListParams = PoolListParams & { filter: CatalogFilter; owner?: string };
 
 export const poolKeys = {
   all: ["clc", "pools"] as const,
@@ -79,6 +79,7 @@ export const poolKeys = {
         perPage: params.perPage,
         cursor: params.cursor,
         next: params.next,
+        owner: params.owner?.toLowerCase(),
       },
     ] as const,
   /**
@@ -184,6 +185,7 @@ export function poolFilteredPageQueryOptions(pools: PoolsClient, params: PoolFil
           cursor: params.cursor,
           next: params.next,
           filter: params.filter,
+          owner: params.owner,
         },
         signal,
       ),

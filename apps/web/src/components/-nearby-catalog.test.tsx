@@ -283,6 +283,8 @@ it("refreshes stale searches and facet counts on reconnect for all three catalog
     tagMatch: "any",
     vouchers: [],
     voucherMatch: "any",
+    pools: [],
+    poolMatch: "any",
   } as const;
   const controls: CatalogFilterControls = {
     ...filter,
@@ -296,6 +298,7 @@ it("refreshes stale searches and facet counts on reconnect for all three catalog
     setTags: vi.fn(),
     setTagMatch: vi.fn(),
     setFacets: vi.fn(),
+    setResourceFacets: vi.fn(),
     clearTerm: vi.fn(),
     clear: vi.fn(),
   };

@@ -20,6 +20,14 @@ export type PersistedCatalogFilterControls = Omit<CatalogFilterControls, "clear"
     vouchers: readonly VoucherRef[],
     voucherMatch: TagMatch,
   ) => void;
+  applyResourceFilters: (
+    tags: readonly string[],
+    tagMatch: TagMatch,
+    vouchers: readonly VoucherRef[],
+    voucherMatch: TagMatch,
+    pools: readonly VoucherRef[],
+    poolMatch: TagMatch,
+  ) => void;
   /** Clears both the current URL filter and this catalog's remembered preference. */
   clear: () => void;
 };
@@ -39,10 +47,15 @@ export type PersistedCatalogFilterControls = Omit<CatalogFilterControls, "clear"
 export function usePersistedCatalogFilter(
   name: string,
   owner: StorageOwner | null,
-  options?: { voucherRelationships?: boolean; externalFilterActive?: boolean },
+  options?: {
+    voucherRelationships?: boolean;
+    poolRelationships?: boolean;
+    externalFilterActive?: boolean;
+  },
 ): PersistedCatalogFilterControls {
   const filter = useCatalogFilter(options);
   const voucherRelationships = options?.voucherRelationships === true;
+  const poolRelationships = options?.poolRelationships === true;
   const checkedStorage = useRef(false);
   const [preferenceToRestore, setPreferenceToRestore] = useState<
     CatalogFilterPreference | null | undefined
@@ -71,15 +84,26 @@ export function usePersistedCatalogFilter(
       return;
     }
 
-    const preference = voucherRelationships
-      ? storedPreference
-      : { ...storedPreference, vouchers: [], voucherMatch: "any" as const };
-    if (preference.tags.length === 0 && preference.vouchers.length === 0) {
+    const preference = {
+      ...storedPreference,
+      vouchers: voucherRelationships ? storedPreference.vouchers : [],
+      voucherMatch: voucherRelationships ? storedPreference.voucherMatch : ("any" as const),
+      pools: poolRelationships ? storedPreference.pools : [],
+      poolMatch: poolRelationships ? storedPreference.poolMatch : ("any" as const),
+    };
+    if (
+      preference.tags.length === 0 &&
+      preference.vouchers.length === 0 &&
+      preference.pools.length === 0
+    ) {
       clearCatalogFilterPreference(owner, name);
       setPreferenceToRestore(null);
       return;
     }
-    if (!voucherRelationships && storedPreference.vouchers.length > 0) {
+    if (
+      (!voucherRelationships && storedPreference.vouchers.length > 0) ||
+      (!poolRelationships && storedPreference.pools.length > 0)
+    ) {
       writeCatalogFilterPreference(
         owner,
         name,
@@ -87,24 +111,29 @@ export function usePersistedCatalogFilter(
         preference.tagMatch,
         preference.vouchers,
         preference.voucherMatch,
+        preference.pools,
+        preference.poolMatch,
       );
     }
 
     setPreferenceToRestore(preference);
     // Restoration normalizes the current route rather than adding a Back entry.
-    filter.setFacets(
+    filter.setResourceFacets(
       preference.tags,
       preference.tagMatch,
       preference.vouchers,
       preference.voucherMatch,
+      preference.pools,
+      preference.poolMatch,
       { replace: true },
     );
   }, [
     filter.isFiltered,
-    filter.setFacets,
+    filter.setResourceFacets,
     name,
     owner,
     options?.externalFilterActive,
+    poolRelationships,
     voucherRelationships,
   ]);
 
@@ -120,11 +149,26 @@ export function usePersistedCatalogFilter(
         (voucher, index) =>
           voucher.chainId === preferenceToRestore.vouchers[index]?.chainId &&
           voucher.address === preferenceToRestore.vouchers[index]?.address,
+      ) &&
+      filter.poolMatch === preferenceToRestore.poolMatch &&
+      filter.pools.length === preferenceToRestore.pools.length &&
+      filter.pools.every(
+        (pool, index) =>
+          pool.chainId === preferenceToRestore.pools[index]?.chainId &&
+          pool.address === preferenceToRestore.pools[index]?.address,
       )
     ) {
       setPreferenceToRestore(null);
     }
-  }, [filter.tagMatch, filter.tags, filter.voucherMatch, filter.vouchers, preferenceToRestore]);
+  }, [
+    filter.tagMatch,
+    filter.tags,
+    filter.voucherMatch,
+    filter.vouchers,
+    filter.poolMatch,
+    filter.pools,
+    preferenceToRestore,
+  ]);
 
   const applyFacetFilters = useCallback(
     (
@@ -143,6 +187,32 @@ export function usePersistedCatalogFilter(
     [filter.setFacets, name, owner],
   );
 
+  const applyResourceFilters = useCallback(
+    (
+      tags: readonly string[],
+      tagMatch: TagMatch,
+      vouchers: readonly VoucherRef[],
+      voucherMatch: TagMatch,
+      pools: readonly VoucherRef[],
+      poolMatch: TagMatch,
+    ) => {
+      if (owner !== null) {
+        writeCatalogFilterPreference(
+          owner,
+          name,
+          tags,
+          tagMatch,
+          vouchers,
+          voucherMatch,
+          pools,
+          poolMatch,
+        );
+      }
+      filter.setResourceFacets(tags, tagMatch, vouchers, voucherMatch, pools, poolMatch);
+    },
+    [filter.setResourceFacets, name, owner],
+  );
+
   const clear = useCallback(() => {
     if (owner !== null) clearCatalogFilterPreference(owner, name);
     filter.clear();
@@ -152,6 +222,7 @@ export function usePersistedCatalogFilter(
     ...filter,
     isRestoringPreference: preferenceToRestore !== null,
     applyFacetFilters,
+    applyResourceFilters,
     clear,
   };
 }

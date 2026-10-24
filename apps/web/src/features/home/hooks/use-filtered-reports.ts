@@ -21,6 +21,8 @@ import {
   type ReportCursor,
   type ReportSummary,
   type ReportTagFacet,
+  type ReportPoolFacet,
+  type ReportFilter,
   type ReportVoucherFacet,
 } from "@clc/api/features/reports/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
@@ -39,6 +41,8 @@ const EMPTY_CATALOG_FILTER: CatalogFilter = {
   tagMatch: "any",
   vouchers: [],
   voucherMatch: "any",
+  pools: [],
+  poolMatch: "any",
 };
 
 // Identity is canonical in @clc/api; the multi-page assembly and page budget
@@ -59,6 +63,7 @@ type FilteredReportFeed = {
   reports: ReportSummary[];
   tagFacets: ReportTagFacet[] | null;
   voucherFacets: ReportVoucherFacet[] | null;
+  poolFacets: ReportPoolFacet[] | null;
 };
 
 type FilteredReportsState =
@@ -68,13 +73,20 @@ type FilteredReportsState =
   | { status: "ready"; data: FilteredReportFeed }
   | { status: "error"; error: Error };
 
+function asReportFilter(filter: CatalogFilter | null): ReportFilter | null {
+  return filter
+    ? { ...filter, pools: filter.pools ?? [], poolMatch: filter.poolMatch ?? "any" }
+    : null;
+}
+
 function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS_FILTER_PAGE_SIZE) {
+  const reportFilter = asReportFilter(filter);
   const nearby = useNearbyCatalog();
   const visibilityFilter = useNearbyCatalogFilter();
   return useQuery({
-    queryKey: nearbyQueryKey(filteredReportQueryKeys.filtered(filter, perPage), nearby),
+    queryKey: nearbyQueryKey(filteredReportQueryKeys.filtered(reportFilter, perPage), nearby),
     queryFn: async ({ signal }): Promise<FilteredReportFeed> => {
-      if (!filter) throw new Error("The filtered reports query ran without a filter.");
+      if (!reportFilter) throw new Error("The filtered reports query ran without a filter.");
 
       const pages: FilteredReportPage[] = [];
       let cursor: ReportCursor | undefined;
@@ -84,7 +96,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
           {
             perPage,
             cursor,
-            filter,
+            filter: reportFilter,
             facets: index === 0,
             ...(nearby?.nearby === true ? { nearby: true } : {}),
           },
@@ -114,13 +126,14 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
         reports: [...byId.values()],
         tagFacets: pages[0]?.tagFacets ?? null,
         voucherFacets: pages[0]?.voucherFacets ?? null,
+        poolFacets: pages[0]?.poolFacets ?? null,
       };
     },
     select: (data: FilteredReportFeed) => ({
       ...data,
       reports: filterNearbyCatalog(data.reports, visibilityFilter),
     }),
-    enabled: filter !== null,
+    enabled: reportFilter !== null,
     placeholderData: keepPreviousData,
     staleTime: REPORTS_STALE_TIME,
     gcTime: FILTERED_REPORTS_GC_TIME,
@@ -141,7 +154,7 @@ function useReportFacetVocabulary(enabled: boolean) {
       const page = await reportsClient.getFilteredReports(
         {
           perPage: 1,
-          filter: EMPTY_CATALOG_FILTER,
+          filter: asReportFilter(EMPTY_CATALOG_FILTER)!,
           facets: true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
         },
@@ -150,6 +163,7 @@ function useReportFacetVocabulary(enabled: boolean) {
       return {
         tagFacets: page.tagFacets ?? [],
         voucherFacets: page.voucherFacets ?? [],
+        poolFacets: page.poolFacets ?? [],
       };
     },
     enabled,
@@ -200,6 +214,7 @@ export type ReportFeed = {
   retrying: boolean;
   tagFacets: ReportTagFacet[];
   voucherFacets: ReportVoucherFacet[];
+  poolFacets: ReportPoolFacet[];
   hasMore: boolean;
   loadMore: () => void;
   isLoadingMore: boolean;
@@ -260,6 +275,18 @@ export function useReportFeed(
     return ensureSelectedReportVoucherFacets(voucherSource ?? [], selected);
   }, [filter.result, voucherSource]);
 
+  const poolSource = useMemo(
+    () =>
+      (state.status === "refining" || state.status === "ready" ? state.data.poolFacets : null) ??
+      vocabulary.data?.poolFacets ??
+      null,
+    [state, vocabulary.data],
+  );
+  const poolFacets = useMemo(() => {
+    const selected = filter.result.ok ? (filter.result.filter.pools ?? []) : [];
+    return ensureSelectedReportVoucherFacets(poolSource ?? [], selected);
+  }, [filter.result, poolSource]);
+
   return useMemo(() => {
     if (!filter.isFiltered) {
       return {
@@ -270,6 +297,7 @@ export function useReportFeed(
         retrying: unfiltered.retrying,
         tagFacets: chipFacets,
         voucherFacets,
+        poolFacets,
         hasMore: unfiltered.hasNextPage,
         loadMore: unfiltered.fetchNextPage,
         isLoadingMore: unfiltered.isFetchingNextPage,
@@ -286,9 +314,10 @@ export function useReportFeed(
       retrying: filtered.isFetching,
       tagFacets: chipFacets,
       voucherFacets,
+      poolFacets,
       hasMore: false,
       loadMore: () => {},
       isLoadingMore: false,
     };
-  }, [filter.isFiltered, unfiltered, state, chipFacets, voucherFacets, filtered]);
+  }, [filter.isFiltered, unfiltered, state, chipFacets, voucherFacets, poolFacets, filtered]);
 }

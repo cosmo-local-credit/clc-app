@@ -437,13 +437,13 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     lng: 36.82,
     periodFrom: null,
     periodTo: null,
-    authorAddress: null,
     createdAt: null,
     updatedAt: "2026-07-19T08:14:02.311Z",
     tags: ["Food production"],
     vouchers: [
       { id: "7", chainId: 42220, address: ADDRESS, name: "Priscilah Malii", symbol: "MALII" },
     ],
+    pools: [],
     ...overrides,
   };
 }
