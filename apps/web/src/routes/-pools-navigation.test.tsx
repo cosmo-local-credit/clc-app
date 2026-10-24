@@ -35,17 +35,23 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
-  useLatestAccountTokens: () => ({
-    data: { tokens: [] },
+  useAccountTokensInfinite: () => ({
+    data: { pages: [{ tokens: [] }] },
     isPending: false,
     isError: false,
+    isFetchNextPageError: false,
     isSuccess: true,
+    isFetching: false,
+    isFetchingNextPage: false,
+    hasNextPage: false,
+    fetchNextPage: vi.fn(),
     refetch: vi.fn(),
   }),
   useAllAccountIssuedTokens: () => ({
     tokens: [],
     isPending: false,
     isError: false,
+    isFetching: false,
     refetch: vi.fn(),
   }),
 }));

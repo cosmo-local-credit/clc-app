@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
   accountActivityInfiniteQueryOptions,
@@ -6,7 +6,6 @@ import {
   accountKeys,
   accountTokensInfiniteQueryOptions,
   accountTransfersInfiniteQueryOptions,
-  latestAccountTokensQueryOptions,
 } from "@clc/api/features/accounts/queries";
 import type { ActivityKind } from "@clc/api/features/accounts/client";
 import { accountsClient } from "#/lib/api/accounts";
@@ -46,22 +45,11 @@ function pollOptions(poll: boolean) {
  */
 export const accountWalletQueryKeys = {
   all: accountKeys.all,
-  latestTokens: (address: string | undefined) =>
-    accountKeys.latestTokens(normalizeAddress(address)),
   tokens: (address: string | undefined, perPage: number) =>
     accountKeys.tokensInfinite(normalizeAddress(address), perPage),
   transfers: (address: string | undefined, perPage: number) =>
     accountKeys.transfersInfinite(normalizeAddress(address), perPage),
 };
-
-/** Backs the wallet balance list — the one live balance poll. The screen splits it. */
-export function useLatestAccountTokens(address: string | undefined) {
-  return useQuery({
-    ...latestAccountTokensQueryOptions(accountsClient, address),
-    ...walletAccountQueryFreshness,
-    ...pollOptions(true),
-  });
-}
 
 export function useAccountTokensInfinite(
   address: string | undefined,
@@ -77,11 +65,9 @@ export function useAccountTokensInfinite(
 /**
  * Every positive indexed token balance for an account.
  *
- * The wallet home deliberately uses the five-token `latest` endpoint, while
- * eligibility and picker decisions must not mistake an older holding for zero.
- * This drains the existing cursor query and reports pending until the final
- * page is present, matching the complete-list contract used by pool voucher
- * pickers.
+ * Eligibility and picker decisions must not mistake an older holding for zero.
+ * This drains the cursor query and reports pending until the final page is
+ * present, matching the complete-list contract used by pool voucher pickers.
  */
 export function useAllAccountTokens(address: string | undefined) {
   const query = useAccountTokensInfinite(address, { perPage: 100 });
