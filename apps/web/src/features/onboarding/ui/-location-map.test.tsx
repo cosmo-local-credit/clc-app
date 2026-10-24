@@ -156,13 +156,39 @@ describe("LocationMap", () => {
     render(<LocationMap />);
 
     expect(mapInstances).toHaveLength(1);
-    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
     expect(mapInstances[0]?.options.center).toEqual([36.8219, -1.2921]);
     expect(mapInstances[0]?.options.zoom).toBe(5);
     expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual([
       "bottom-right",
       "bottom-left",
     ]);
+  });
+
+  it("switches the existing map to the dark style when the app theme changes", () => {
+    render(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(mapInstances).toHaveLength(1);
+    expect(map?.setStyle).toHaveBeenCalledWith("https://tiles.openfreemap.org/styles/fiord");
+    expect(map?.remove).not.toHaveBeenCalled();
+    expect(markerInstances).toHaveLength(1);
+  });
+
+  it("removes the map when a theme style cannot be applied", () => {
+    render(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+    map?.setStyle.mockImplementationOnce(() => {
+      throw new Error("style unavailable");
+    });
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(screen.queryByLabelText("Location map")).toBeNull();
   });
 
   it("places a pending marker after style load and flies to zoom 13", () => {
@@ -225,7 +251,7 @@ describe("LocationMap", () => {
     vi.stubEnv("VITE_MAPTILER_KEY", "");
     render(<LocationMap />);
     expect(screen.getByLabelText("Location map")).toBeTruthy();
-    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
   });
 
   it("renders nothing when WebGL is not supported", () => {
