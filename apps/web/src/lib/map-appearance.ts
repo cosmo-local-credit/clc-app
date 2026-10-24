@@ -1,11 +1,6 @@
-import { useEffect } from "react";
-import { create } from "zustand";
-
 import type { Theme } from "#/providers/theme";
 
 export type MarketMapMode = "standard" | "satellite";
-
-export const MARKET_MAP_MODE_STORAGE_KEY = "clc.market-map-mode";
 
 const MAPTILER_STYLE_ID: Record<Theme, string> = {
   light: "hybrid-v4",
@@ -13,8 +8,8 @@ const MAPTILER_STYLE_ID: Record<Theme, string> = {
 };
 
 const STANDARD_STYLE_URL: Record<Theme, string> = {
-  light: "https://tiles.openfreemap.org/styles/liberty",
-  dark: "https://tiles.openfreemap.org/styles/liberty",
+  light: "https://tiles.openfreemap.org/styles/positron",
+  dark: "https://tiles.openfreemap.org/styles/fiord",
 };
 
 export function standardMapStyleUrl(theme: Theme): string {
@@ -43,48 +38,4 @@ export function resolveMapStyleUrl(
   return mode === "satellite"
     ? (satelliteMapStyleUrl(apiKey, theme) ?? standardMapStyleUrl(theme))
     : standardMapStyleUrl(theme);
-}
-
-export function readInitialMarketMapMode(): MarketMapMode {
-  if (typeof window === "undefined") return "standard";
-  try {
-    return window.localStorage.getItem(MARKET_MAP_MODE_STORAGE_KEY) === "satellite"
-      ? "satellite"
-      : "standard";
-  } catch {
-    return "standard";
-  }
-}
-
-type MarketMapModeState = {
-  mode: MarketMapMode;
-  setMode: (mode: MarketMapMode) => void;
-};
-
-/** Device-local map presentation. It intentionally is not route state. */
-export const useMarketMapModeStore = create<MarketMapModeState>((set) => ({
-  // Match the server render. The hydrated hook reads localStorage after mount.
-  mode: "standard",
-  setMode: (mode) => {
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem(MARKET_MAP_MODE_STORAGE_KEY, mode);
-      } catch {}
-    }
-    set({ mode });
-  },
-}));
-
-export function useHydratedMarketMapMode() {
-  const mode = useMarketMapModeStore((state) => state.mode);
-  const setMode = useMarketMapModeStore((state) => state.setMode);
-
-  useEffect(() => {
-    const initial = readInitialMarketMapMode();
-    if (initial !== useMarketMapModeStore.getState().mode) {
-      useMarketMapModeStore.setState({ mode: initial });
-    }
-  }, []);
-
-  return { mode, setMode };
 }

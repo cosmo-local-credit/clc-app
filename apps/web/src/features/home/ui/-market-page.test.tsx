@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MarketPoolLocation } from "#/features/home/hooks/use-market-pools";
-import { MARKET_MAP_MODE_STORAGE_KEY, useMarketMapModeStore } from "#/lib/map-appearance";
 import type { MarketLocation } from "./market-data";
 import type { MarketCamera } from "./market-map";
 
@@ -34,7 +33,6 @@ type MapProps = {
     north: number;
     zoom: number;
   }) => void;
-  onSatelliteUnavailable?: () => void;
 };
 
 const {
@@ -411,7 +409,6 @@ beforeEach(() => {
   authState.current = { isAuthenticated: false, isLoading: false, session: null };
   creditFeedback.current = false;
   window.localStorage.clear();
-  useMarketMapModeStore.setState({ mode: "standard" });
   mockRequestLocation.mockReset();
   mockRetry.mockReset();
   lastMapProps.current = null;
@@ -455,47 +452,14 @@ beforeEach(() => {
 });
 
 describe("MarketPage location button", () => {
-  it("places a persisted Satellite toggle directly above location", () => {
+  it("shows only the location control and ignores a legacy Satellite preference", () => {
+    window.localStorage.setItem("clc.market-map-mode", "satellite");
     renderPage();
 
-    const satellite = screen.getByRole("button", { name: "Satellite view" });
-    const location = screen.getByRole("button", { name: "Use current location" });
-    expect(satellite.getAttribute("aria-pressed")).toBe("false");
-    expect(satellite.compareDocumentPosition(location) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
-    expect(lastMapProps.current?.mode).toBe("standard");
-
-    fireEvent.click(satellite);
-
-    expect(
-      screen.getByRole("button", { name: "Satellite view" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(lastMapProps.current?.mode).toBe("satellite");
-    expect(window.localStorage.getItem(MARKET_MAP_MODE_STORAGE_KEY)).toBe("satellite");
-  });
-
-  it("restores a saved Satellite choice", () => {
-    window.localStorage.setItem(MARKET_MAP_MODE_STORAGE_KEY, "satellite");
-    renderPage();
-
-    expect(
-      screen.getByRole("button", { name: "Satellite view" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(lastMapProps.current?.mode).toBe("satellite");
-  });
-
-  it("returns to Standard and disables Satellite when its provider is unavailable", () => {
-    renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Satellite view" }));
-
-    act(() => lastMapProps.current?.onSatelliteUnavailable?.());
-
-    const satellite = screen.getByRole("button", { name: "Satellite view" });
-    expect(satellite.getAttribute("aria-pressed")).toBe("false");
-    expect((satellite as HTMLButtonElement).disabled).toBe(true);
-    expect(lastMapProps.current?.mode).toBe("standard");
-    expect(window.localStorage.getItem(MARKET_MAP_MODE_STORAGE_KEY)).toBe("standard");
+    expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Use current location" })).toBeTruthy();
+    expect(lastMapProps.current?.mode).toBeUndefined();
+    expect(window.localStorage.getItem("clc.market-map-mode")).toBe("satellite");
   });
 
   it("writes and clears Credit without leaving the canonical map route", () => {
@@ -897,7 +861,7 @@ describe("MarketPage voucher card", () => {
     expect(lastMapProps.current?.camera).toBeNull();
   });
 
-  it("moves the location button onto the card", () => {
+  it("moves the location button onto the card without exposing Satellite", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
     expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
@@ -905,9 +869,8 @@ describe("MarketPage voucher card", () => {
     fireEvent.click(screen.getByTestId("marker-1"));
 
     const location = screen.getByRole("button", { name: "Use current location" });
-    const satellite = screen.getByRole("button", { name: "Satellite view" });
     expect(screen.getByRole("dialog").contains(location)).toBe(true);
-    expect(screen.getByRole("dialog").contains(satellite)).toBe(true);
+    expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
   });
 
   it("pads the map by the open card and drops the padding once it closes", () => {

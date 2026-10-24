@@ -318,6 +318,39 @@ function clickEmptyMap(map: ReturnType<typeof loadedMap>) {
 }
 
 describe("MarketMap lifecycle", () => {
+  it("switches Standard themes in place and restores theme-aware overlays", () => {
+    render(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId="1"
+        camera={null}
+        userLocation={{ lat: -1.29, lng: 36.82 }}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    const map = loadedMap();
+    const originalMarker = markerInstances[0];
+
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.hasImage(MARKET_NETWORK_BADGE_IMAGE_ID.light)).toBe(true);
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(map.setStyle).toHaveBeenCalledWith("https://tiles.openfreemap.org/styles/fiord");
+    expect(mapInstances).toHaveLength(1);
+    expect(map.getSource(MARKET_SOURCE_ID)).toBeUndefined();
+
+    act(() => map.trigger("style.load"));
+
+    expect(map.getSource(MARKET_SOURCE_ID)).toBeDefined();
+    expect(map.getSource("market-label-edges")).toBeDefined();
+    expect(map.getLayer("market-point-selected")).toBeDefined();
+    expect(map.getLayer("market-clusters")).toBeDefined();
+    expect(map.hasImage(MARKET_NETWORK_BADGE_IMAGE_ID.dark)).toBe(true);
+    expect(markerInstances).toEqual([originalMarker]);
+    expect(map.remove).not.toHaveBeenCalled();
+  });
+
   it("switches styles in place and restores every app-owned overlay", () => {
     const { rerender } = render(
       <MarketMap
@@ -337,7 +370,7 @@ describe("MarketMap lifecycle", () => {
       return (source.spec.data as { features: unknown[] }).features;
     };
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
     clickFeature(
       map,
       "market-stacks",
@@ -1766,6 +1799,18 @@ describe("MarketMap style failure", () => {
     expect(map.remove).not.toHaveBeenCalled();
   });
 
+  it("uses the unavailable surface when switching Standard themes throws", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    map.setStyle.mockImplementationOnce(() => {
+      throw new Error("standard style unavailable");
+    });
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
+  });
+
   it("falls back to the standard map when the satellite style fails", () => {
     const onSatelliteUnavailable = vi.fn();
     const { rerender } = render(
@@ -1797,7 +1842,7 @@ describe("MarketMap style failure", () => {
     });
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
-    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty");
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
     expect(map.remove).not.toHaveBeenCalled();
   });
@@ -1833,7 +1878,7 @@ describe("MarketMap style failure", () => {
     );
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
-    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty");
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
   });
 
@@ -1874,7 +1919,7 @@ describe("MarketMap style failure", () => {
     );
     const map = loadedMap();
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
     expect(map.setStyle).not.toHaveBeenCalled();
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
   });

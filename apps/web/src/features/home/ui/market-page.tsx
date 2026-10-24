@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { RiEarthLine, RiFocus3Line } from "react-icons/ri";
+import { RiFocus3Line } from "react-icons/ri";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
@@ -33,7 +33,6 @@ import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection";
 import { wantsClient } from "#/lib/api/wants";
-import { useHydratedMarketMapMode } from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
 import { MarketFilterSheet, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
@@ -59,10 +58,8 @@ export function MarketPage({
     requestLocation,
   } = useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
-  const [satelliteUnavailable, setSatelliteUnavailable] = useState(false);
   const voucherSelection = useVoucherSheetSelection();
   const wantSelection = useWantSheetSelection();
-  const { mode: mapMode, setMode: setMapMode } = useHydratedMarketMapMode();
 
   // A link that opens the market on a card centres the map on its voucher,
   // which may lie far outside anything the catalog has loaded.
@@ -278,24 +275,7 @@ export function MarketPage({
     </Button>
   );
 
-  const satelliteLabel = t`Satellite view`;
-  const mapControls = (
-    <div className="flex flex-col gap-2">
-      <Button
-        variant={mapMode === "satellite" ? "default" : "outline"}
-        size="icon-lg"
-        className="pointer-events-auto"
-        aria-label={satelliteLabel}
-        aria-pressed={mapMode === "satellite"}
-        title={satelliteLabel}
-        disabled={satelliteUnavailable}
-        onClick={() => setMapMode(mapMode === "satellite" ? "standard" : "satellite")}
-      >
-        <RiEarthLine className="size-5" aria-hidden="true" />
-      </Button>
-      {locationButton}
-    </div>
-  );
+  const mapControls = locationButton;
 
   const isEmpty =
     locations.length === 0 &&
@@ -367,7 +347,6 @@ export function MarketPage({
       >
         <MarketMap
           locations={locations}
-          mode={mapMode}
           selectedLocationId={selectedLocationId}
           camera={camera}
           fitBounds={fitBounds}
@@ -378,10 +357,6 @@ export function MarketPage({
           onUserPan={handleUserPan}
           bottomInset={isCardOpen ? sheetInset : 0}
           onViewportSettled={handleViewportSettled}
-          onSatelliteUnavailable={() => {
-            setSatelliteUnavailable(true);
-            setMapMode("standard");
-          }}
           className="absolute inset-0 h-full w-full"
         />
       </Suspense>
@@ -423,7 +398,7 @@ export function MarketPage({
         </div>
       ) : null}
 
-      {/* With a card open, both map controls stay available and ride the sheet. */}
+      {/* With a card open, the location control stays available and rides the sheet. */}
       {isCardOpen ? null : (
         <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
           <div className="flex justify-end">{mapControls}</div>
