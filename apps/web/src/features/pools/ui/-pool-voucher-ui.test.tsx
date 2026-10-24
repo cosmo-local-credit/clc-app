@@ -597,6 +597,7 @@ describe("pool voucher UI", () => {
     const tabs = await screen.findAllByRole("tab");
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "Offerings",
+      "Wants",
       "Vouchers",
       "Holdings",
       "Credit",
@@ -605,6 +606,7 @@ describe("pool voucher UI", () => {
     expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
     expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual([
       "pool-panel-offerings",
+      "pool-panel-wants",
       "pool-panel-vouchers",
       "pool-panel-holdings",
       "pool-panel-credit",

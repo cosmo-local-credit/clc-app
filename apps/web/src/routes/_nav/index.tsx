@@ -14,6 +14,7 @@ import {
   parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
+import { parseWantId } from "#/lib/navigation/want-sheet-search";
 import {
   canonicalActivityRouteSearch,
   clearActivityRouteSearch,
@@ -33,6 +34,26 @@ export const Route = createFileRoute("/_nav/")({
     ...pickMarketplaceSearch(search),
   }),
   beforeLoad: ({ search }) => {
+    const wantId = parseWantId(search.want);
+    const isMarketMap = search.tab === "market" && search.view === "map";
+    if (wantId && !isMarketMap) {
+      throw redirect({
+        to: "/wants/$wantId",
+        params: { wantId },
+        search: { from: search.tab === "wallet" ? "wallet" : "market" },
+        replace: true,
+      });
+    }
+    if (search.want !== undefined && !wantId) {
+      throw redirect({ to: "/", search: { ...search, want: undefined }, replace: true });
+    }
+    if (wantId && search.voucher !== undefined) {
+      throw redirect({
+        to: "/",
+        search: { ...search, voucher: undefined },
+        replace: true,
+      });
+    }
     const voucherAddress = parseVoucherAddress(search.voucher);
     const isMapVoucher = search.tab === "market" && search.view === "map";
     if (voucherAddress && !isMapVoucher) {

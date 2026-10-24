@@ -8,7 +8,7 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const searchSchema = z.object({
   tab: z
-    .enum(["offerings", "vouchers", "holdings", "credit", "activity"])
+    .enum(["offerings", "wants", "vouchers", "holdings", "credit", "activity"])
     .optional()
     .catch(undefined),
   voucher: z.string().optional().catch(undefined),
@@ -46,7 +46,10 @@ function PoolDetailRoute() {
   const auth = useAuthStatus();
   const requested = tab ?? "offerings";
   const activeTab =
-    auth.isAuthenticated || requested === "offerings" || requested === "vouchers"
+    auth.isAuthenticated ||
+    requested === "offerings" ||
+    requested === "wants" ||
+    requested === "vouchers"
       ? requested
       : "offerings";
 

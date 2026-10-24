@@ -28,15 +28,24 @@ import { PoolHoldingsPanel } from "./pool-holdings-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
 import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
+import { PoolWantsPanel } from "./pool-wants-panel";
 
-export type PoolDetailTab = "offerings" | "vouchers" | "holdings" | "credit" | "activity";
+export type PoolDetailTab = "offerings" | "wants" | "vouchers" | "holdings" | "credit" | "activity";
 
 // Holdings and credit sit side by side because they read the same rows two
 // ways: what the pool is made of, and how much more of each it will take.
-const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers", "holdings", "credit", "activity"];
+const POOL_TABS: PoolDetailTab[] = [
+  "offerings",
+  "wants",
+  "vouchers",
+  "holdings",
+  "credit",
+  "activity",
+];
 
 const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
   offerings: <Trans>Offerings</Trans>,
+  wants: <Trans>Wants</Trans>,
   vouchers: <Trans>Vouchers</Trans>,
   // Its own message rather than the wallet's: a tab has a fifth of a 360px
   // row, and a translation that suits a section heading — Italian's
@@ -92,7 +101,7 @@ export function PoolDetailPage({
   const [receiving, setReceiving] = useState(false);
   const visibleTabs = auth.isAuthenticated
     ? POOL_TABS
-    : POOL_TABS.filter((tab) => tab === "offerings" || tab === "vouchers");
+    : POOL_TABS.filter((tab) => tab === "offerings" || tab === "wants" || tab === "vouchers");
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -191,10 +200,7 @@ export function PoolDetailPage({
       ) : null}
 
       <div
-        className={[
-          "grid border border-border bg-card p-1",
-          auth.isAuthenticated ? "grid-cols-5" : "grid-cols-2",
-        ].join(" ")}
+        className="flex overflow-x-auto border border-border bg-card p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
         aria-label={t`Pool contents`}
       >
@@ -204,7 +210,7 @@ export function PoolDetailPage({
           // wraps onto a second line centred under the first; a single word
           // has to fit, which is what the tab's own `context` is for.
           const className = [
-            "flex h-10 min-w-0 items-center justify-center px-1 text-center text-2xs leading-tight font-semibold",
+            "flex h-10 min-w-20 flex-1 items-center justify-center px-2 text-center text-2xs leading-tight font-semibold",
             activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
           ].join(" ");
 
@@ -249,6 +255,8 @@ export function PoolDetailPage({
       {activeTab === "offerings" ? (
         <PoolOfferingsPanel poolAddress={poolAddress} vouchers={vouchers} />
       ) : null}
+
+      {activeTab === "wants" ? <PoolWantsPanel poolAddress={poolAddress} /> : null}
 
       {activeTab === "vouchers" ? (
         <div

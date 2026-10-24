@@ -179,6 +179,8 @@ describe("vocabulary client", () => {
           pools: 0,
           posts: 1,
           offerings: 0,
+          catalogs: 0,
+          wants: 0,
           total: 3,
         },
         {
@@ -190,6 +192,8 @@ describe("vocabulary client", () => {
           pools: 1,
           posts: 0,
           offerings: 0,
+          catalogs: 0,
+          wants: 0,
           total: 1,
         },
       ],

@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useState } from "react";
 import type { IconType } from "react-icons";
-import { RiApps2Line, RiArticleLine, RiNotification3Line } from "react-icons/ri";
+import { RiApps2Line, RiArticleLine, RiMap2Line, RiNotification3Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
@@ -157,17 +157,19 @@ function MarketBadges({ current }: { current: MarketSurface }) {
   const { t } = useLingui();
   const labels: Record<MarketListScope, string> = {
     all: t`All`,
-    pools: t`Pools`,
-    vouchers: t`Vouchers`,
     offers: t`Offers`,
+    wants: t`Wants`,
+    vouchers: t`Vouchers`,
+    pools: t`Pools`,
     catalogs: t`Catalogs`,
   };
+  const scopes: MarketListScope[] = ["all", "offers", "wants", "vouchers", "pools", "catalogs"];
   return (
     <nav
       aria-label={t`Marketplace sections`}
       className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {(Object.keys(labels) as MarketListScope[]).map((scope) => {
+      {scopes.map((scope) => {
         const active = scope === current;
         const Icon = LIST_ICON[scope];
         return (
@@ -221,6 +223,25 @@ function MarketBadges({ current }: { current: MarketSurface }) {
           </Button>
         );
       })}
+      <Button
+        asChild
+        variant="outline"
+        tap
+        className={cn("font-semibold", current === "map" && "border-foreground bg-muted")}
+      >
+        <Link
+          to={current === "map" ? "/market" : "/"}
+          search={(previous) =>
+            current === "map"
+              ? marketplaceSearchForScope(pickMarketplaceSearch(previous), "all")
+              : mapSearchFrom(previous)
+          }
+          aria-current={current === "map" ? "page" : undefined}
+        >
+          <RiMap2Line aria-hidden="true" />
+          <Trans>Map</Trans>
+        </Link>
+      </Button>
     </nav>
   );
 }

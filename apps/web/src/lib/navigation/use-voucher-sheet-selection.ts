@@ -2,6 +2,7 @@ import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
 
 import { parseVoucherSheetSearch } from "#/lib/navigation/voucher-sheet-search";
+import { parseWantSheetSearch } from "#/lib/navigation/want-sheet-search";
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -39,6 +40,7 @@ export function useVoucherSheetSelection(): VoucherSheetSelection {
   const navigate = useNavigate();
   const router = useRouter();
   const { voucher = null } = parseVoucherSheetSearch(search);
+  const { want = null } = parseWantSheetSearch(search);
 
   // Closing by Back is asynchronous. A swipe and a tap landing together must
   // not pop two entries.
@@ -51,15 +53,23 @@ export function useVoucherSheetSelection(): VoucherSheetSelection {
     (address: `0x${string}`) => {
       if (voucher?.toLowerCase() === address.toLowerCase()) return;
       closingRef.current = null;
+      const replacingSheet = voucher !== null || want !== null;
+      const currentEntryIsSheet =
+        router.state.location.state.voucherSheet || router.state.location.state.wantSheet;
       void navigate({
         to: ".",
-        search: (previous) => ({ ...previous, voucher: address, voucherTab: undefined }),
-        replace: voucher !== null,
-        state: voucher !== null ? true : { voucherSheet: true },
+        search: (previous) => ({
+          ...previous,
+          voucher: address,
+          voucherTab: undefined,
+          want: undefined,
+        }),
+        replace: replacingSheet,
+        state: !replacingSheet || currentEntryIsSheet ? { voucherSheet: true } : true,
         resetScroll: false,
       });
     },
-    [navigate, voucher],
+    [navigate, router, voucher, want],
   );
 
   const close = useCallback(() => {

@@ -114,6 +114,7 @@ export function ResourceUsage({
     catalogs: t`Catalogs`,
     offers: t`Offers`,
     pools: t`Pools`,
+    wants: t`Wants`,
   }[resource];
   const quota = query.data?.[resource];
   if (query.isError)

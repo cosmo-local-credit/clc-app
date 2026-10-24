@@ -1,6 +1,12 @@
 import type { MarketplaceScope } from "@clc/core/features/marketplace/logic";
 import type { IconType } from "react-icons";
-import { RiBookOpenLine, RiCoupon3Line, RiGroupLine, RiStore2Line } from "react-icons/ri";
+import {
+  RiBookOpenLine,
+  RiCoupon3Line,
+  RiGroupLine,
+  RiQuestionLine,
+  RiStore2Line,
+} from "react-icons/ri";
 
 /**
  * Each marketplace resource keeps one hue and one icon wherever it is offered:
@@ -12,6 +18,7 @@ export const RESOURCE_HUE: Record<MarketplaceScope, string> = {
   pools: "[--hue:var(--color-info)] [--ink:var(--color-info-ink)]",
   vouchers: "[--hue:var(--color-voucher)] [--ink:var(--color-voucher-ink)]",
   offers: "[--hue:var(--color-offer)] [--ink:var(--color-offer-ink)]",
+  wants: "[--hue:var(--color-warning)] [--ink:var(--color-warning-foreground)]",
   catalogs: "[--hue:var(--color-catalog)] [--ink:var(--color-catalog-ink)]",
 };
 
@@ -19,6 +26,7 @@ export const RESOURCE_ICON: Record<MarketplaceScope, IconType> = {
   pools: RiGroupLine,
   vouchers: RiCoupon3Line,
   offers: RiStore2Line,
+  wants: RiQuestionLine,
   catalogs: RiBookOpenLine,
 };
 

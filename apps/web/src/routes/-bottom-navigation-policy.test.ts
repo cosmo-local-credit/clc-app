@@ -92,6 +92,18 @@ const routePolicy = [
     source: "_nav/vouchers/index.tsx",
     navOwner: "market",
   },
+  {
+    id: "/_nav/wants/",
+    fullPath: "/wants/",
+    source: "_nav/wants/index.tsx",
+    navOwner: "market",
+  },
+  {
+    id: "/_nav/wants/$wantId",
+    fullPath: "/wants/$wantId",
+    source: "_nav/wants/$wantId.tsx",
+    navOwner: "market",
+  },
   { id: "/onboarding", fullPath: "/onboarding", source: "onboarding.tsx" },
   { id: "/install", fullPath: "/install", source: "install.tsx" },
   {
@@ -126,6 +138,12 @@ const routePolicy = [
   { id: "/wallet/collect", fullPath: "/wallet/collect", source: "wallet/collect.tsx" },
   { id: "/wallet/receive", fullPath: "/wallet/receive", source: "wallet/receive.tsx" },
   { id: "/wallet/top-up", fullPath: "/wallet/top-up", source: "wallet/top-up.tsx" },
+  { id: "/wallet/wants/new", fullPath: "/wallet/wants/new", source: "wallet/wants/new.tsx" },
+  {
+    id: "/wallet/wants/$wantId/edit",
+    fullPath: "/wallet/wants/$wantId/edit",
+    source: "wallet/wants/$wantId/edit.tsx",
+  },
   { id: "/wallet/send/", fullPath: "/wallet/send/", source: "wallet/send/index.tsx" },
   {
     id: "/wallet/send/amount",

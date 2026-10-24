@@ -7,6 +7,7 @@ import { MarketListPage } from "#/features/home/ui/market-list-page";
 import { MarketplacePage } from "#/features/home/ui/marketplace-page";
 import { OffersPage } from "#/features/home/ui/offers-page";
 import { PoolsPage } from "#/features/pools/ui";
+import { WantsPage } from "#/features/wants/ui/wants-page";
 import {
   canonicalMarketplaceSearch,
   mapSearchFrom,
@@ -70,6 +71,13 @@ function MarketListRoute() {
     auth.isAuthenticated && auth.address ? auth.address.toLowerCase() : GUEST_STORAGE_OWNER;
   if (scope === "catalogs") {
     return <CatalogsPage creditableSearch={search.creditable} />;
+  }
+  if (scope === "wants") {
+    return (
+      <NearbyCatalog allowMissingLocation>
+        <WantsPage creditableSearch={search.creditable} />
+      </NearbyCatalog>
+    );
   }
   return (
     <NearbyCatalog allowMissingLocation>

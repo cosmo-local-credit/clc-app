@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
       pools: { used: 0, limit: 1, unlimited: false, canCreate: true },
       catalogs: { used: 0, limit: 1, unlimited: false, canCreate: true },
       offers: { used: 0, limit: 0, unlimited: true, canCreate: true },
+      wants: { used: 0, limit: 3, unlimited: false, canCreate: true },
     },
     isPending: false,
     isError: false,
@@ -116,6 +117,8 @@ function mockLatestTokens({
 } = {}) {
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
     const href = String(url);
+    if (href.includes("/users/me/wants"))
+      return Promise.resolve(jsonResponse({ wants: [], first: 0, last: 0 }));
     if (href.includes("/tokens/issued")) {
       if (issuedStatus !== 200) return Promise.resolve(jsonResponse(null, issuedStatus));
       const issued = tokens.filter((value) => {
@@ -138,7 +141,15 @@ function mockLatestTokens({
 function mockNoTokens() {
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({ tokens: [] }))),
+    vi
+      .fn()
+      .mockImplementation((url: string | URL) =>
+        Promise.resolve(
+          String(url).includes("/users/me/wants")
+            ? jsonResponse({ wants: [], first: 0, last: 0 })
+            : jsonResponse({ tokens: [] }),
+        ),
+      ),
   );
 }
 
@@ -170,6 +181,8 @@ function mockEndpoints({
 }) {
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
     const href = String(url);
+    if (href.includes("/users/me/wants"))
+      return Promise.resolve(jsonResponse({ wants: [], first: 0, last: 0 }));
     if (href.includes("/api/v2/pools") && poolStatus !== 200)
       return Promise.resolve(jsonResponse(null, poolStatus));
     const result = href.includes("/api/v2/pools")

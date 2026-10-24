@@ -14,15 +14,18 @@ import { pickCatalogSearch } from "#/lib/navigation/catalog-search";
 import { isAtHomeTabRoot, parseHomeSearch } from "#/lib/navigation/home-tabs";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { parseVoucherSheetSearch } from "#/lib/navigation/voucher-sheet-search";
+import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection";
 
 const A = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const B = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 function Market() {
   const { voucher, open, close } = useVoucherSheetSelection();
+  const want = useWantSheetSelection();
   return (
     <div>
       <output data-testid="card">{voucher ?? "none"}</output>
+      <output data-testid="want">{want.want ?? "none"}</output>
       <button type="button" onClick={() => open(A)}>
         Pin A
       </button>
@@ -31,6 +34,12 @@ function Market() {
       </button>
       <button type="button" onClick={close}>
         Close
+      </button>
+      <button type="button" onClick={() => want.open("7")}>
+        Want 7
+      </button>
+      <button type="button" onClick={want.close}>
+        Close Want
       </button>
       <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
         List
@@ -111,6 +120,32 @@ describe("market voucher card history", () => {
     await back(history);
 
     await waitFor(() => expect(screen.getByTestId("card").textContent).toBe("none"));
+  });
+
+  it("switches between voucher and Want sheets in place, so close returns to the map", async () => {
+    const { history } = await renderMarket();
+
+    fireEvent.click(screen.getByRole("button", { name: "Pin A" }));
+    await waitFor(() => expect(voucherParam(history)).toBe(A));
+    fireEvent.click(screen.getByRole("button", { name: "Want 7" }));
+    await waitFor(() => expect(screen.getByTestId("want").textContent).toBe("7"));
+    expect(voucherParam(history)).toBeNull();
+    expect(history.length).toBe(2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Close Want" }));
+    await waitFor(() => expect(screen.getByTestId("want").textContent).toBe("none"));
+    expect(voucherParam(history)).toBeNull();
+    expect(history.length).toBe(2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Want 7" }));
+    await waitFor(() => expect(screen.getByTestId("want").textContent).toBe("7"));
+    fireEvent.click(screen.getByRole("button", { name: "Pin B" }));
+    await waitFor(() => expect(voucherParam(history)).toBe(B));
+    expect(screen.getByTestId("want").textContent).toBe("none");
+    expect(history.length).toBe(2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    await waitFor(() => expect(voucherParam(history)).toBeNull());
   });
 
   it("treats a tap on the open card's own pin as nothing", async () => {
