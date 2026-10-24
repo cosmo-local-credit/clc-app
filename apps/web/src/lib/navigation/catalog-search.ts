@@ -13,6 +13,8 @@ export const CLEARED_CATALOG_SEARCH: Record<keyof CatalogRouteSearch, undefined>
   tagMatch: undefined,
   vouchers: undefined,
   voucherMatch: undefined,
+  pools: undefined,
+  poolMatch: undefined,
 };
 
 export function pickCatalogSearch(search: unknown): CatalogSearchState {
@@ -22,17 +24,30 @@ export function pickCatalogSearch(search: unknown): CatalogSearchState {
 export function catalogSearchForScope(
   search: unknown,
   voucherRelationships: boolean,
+  poolRelationships = false,
 ): CatalogSearchState {
   const state = pickCatalogSearch(search);
-  return voucherRelationships ? state : { ...state, vouchers: undefined, voucherMatch: undefined };
+  return {
+    ...state,
+    vouchers: voucherRelationships ? state.vouchers : undefined,
+    voucherMatch: voucherRelationships ? state.voucherMatch : undefined,
+    pools: poolRelationships ? state.pools : undefined,
+    poolMatch: poolRelationships ? state.poolMatch : undefined,
+  };
 }
 
 export function canonicalCatalogSearch(
   search: unknown,
-  options: { voucherRelationships: boolean } = { voucherRelationships: true },
+  options: { voucherRelationships: boolean; poolRelationships?: boolean } = {
+    voucherRelationships: true,
+  },
 ): CatalogSearchState | null {
   const incoming = pickCatalogSearch(search);
-  const state = catalogSearchForScope(incoming, options.voucherRelationships);
+  const state = catalogSearchForScope(
+    incoming,
+    options.voucherRelationships,
+    options.poolRelationships,
+  );
   const result = parseCatalogFilter(state);
   if (!result.ok) return null;
 
@@ -40,12 +55,21 @@ export function canonicalCatalogSearch(
   const hasUnsupportedVoucherFilter =
     !options.voucherRelationships &&
     (incoming.vouchers !== undefined || incoming.voucherMatch !== undefined);
-  return !hasUnsupportedVoucherFilter && isSameCatalogSearch(state, canonical) ? null : canonical;
+  const hasUnsupportedPoolFilter =
+    !options.poolRelationships &&
+    (incoming.pools !== undefined || incoming.poolMatch !== undefined);
+  return !hasUnsupportedVoucherFilter &&
+    !hasUnsupportedPoolFilter &&
+    isSameCatalogSearch(state, canonical)
+    ? null
+    : canonical;
 }
 
 export function canonicalRedirectSearch<S extends CatalogRouteSearch>(
   search: S,
-  options: { voucherRelationships: boolean } = { voucherRelationships: true },
+  options: { voucherRelationships: boolean; poolRelationships?: boolean } = {
+    voucherRelationships: true,
+  },
 ): S | null {
   const canonical = canonicalCatalogSearch(search, options);
   if (!canonical) return null;
@@ -60,7 +84,10 @@ function isSameCatalogSearch(incoming: CatalogSearchState, canonical: CatalogSea
   if (incoming.tags !== serializeList(canonical.tags)) return false;
   if (incoming.voucherMatch !== canonical.voucherMatch) return false;
   if (incoming.vouchers !== undefined && typeof incoming.vouchers !== "string") return false;
-  return incoming.vouchers === serializeList(canonical.vouchers);
+  if (incoming.vouchers !== serializeList(canonical.vouchers)) return false;
+  if (incoming.poolMatch !== canonical.poolMatch) return false;
+  if (incoming.pools !== undefined && typeof incoming.pools !== "string") return false;
+  return incoming.pools === serializeList(canonical.pools);
 }
 
 function serializeList(values: string | readonly string[] | undefined): string | undefined {

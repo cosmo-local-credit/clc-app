@@ -14,6 +14,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { PublicContactWarning } from "#/components/public-contact-warning";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
@@ -289,6 +291,7 @@ function VoucherProfileForm({
             );
           }}
         </form.Field>
+        <PublicLocationWarning />
 
         <form.Subscribe
           selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
@@ -350,6 +353,8 @@ function VoucherProfileForm({
             </div>
           )}
         </form.Field>
+
+        <PublicContactWarning />
 
         <form.Field name="email">
           {(field) => (

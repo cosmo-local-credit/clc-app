@@ -325,6 +325,8 @@ describe("pools list", () => {
       tagMatch: "any",
       vouchers: [],
       voucherMatch: "any",
+      pools: [],
+      poolMatch: "any",
     });
   });
 

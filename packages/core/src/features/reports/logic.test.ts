@@ -19,7 +19,12 @@ import {
 } from "./logic";
 
 function write(overrides: Partial<ReportWrite> = {}): ReportWrite {
-  return { ...emptyReportWrite, title: "August community harvest", ...overrides };
+  return {
+    ...emptyReportWrite,
+    title: "August community harvest",
+    vouchers: [{ chainId: 100, address: "0x0000000000000000000000000000000000000001" }],
+    ...overrides,
+  };
 }
 
 function firstError(value: ReportWrite): string | undefined {
@@ -44,8 +49,22 @@ describe("the closed sets", () => {
 });
 
 describe("reportWriteSchema", () => {
-  it("accepts a title-only post", () => {
+  it("accepts a minimal post linked to a voucher", () => {
     expect(reportWriteSchema.safeParse(write()).success).toBe(true);
+  });
+
+  it("requires a voucher or pool and accepts either resource type", () => {
+    expect(firstError(write({ vouchers: [], pools: [] }))).toBe(
+      "Link at least one voucher or pool",
+    );
+    expect(
+      reportWriteSchema.safeParse(
+        write({
+          vouchers: [],
+          pools: [{ chainId: 100, address: "0x0000000000000000000000000000000000000002" }],
+        }),
+      ).success,
+    ).toBe(true);
   });
 
   it("accepts a complete document", () => {
@@ -139,6 +158,17 @@ describe("reportWriteSchema", () => {
     expect(
       firstError(
         write({
+          vouchers: [],
+          pools: Array.from({ length: 13 }, (_, index) => ({
+            chainId: 100,
+            address: `0x${String(index).padStart(40, "0")}`,
+          })),
+        }),
+      ),
+    ).toBe("Link at most 12 pools");
+    expect(
+      firstError(
+        write({
           images: Array.from({ length: 51 }, (_, index) => ({
             url: `https://content.example/${index}.jpg`,
             width: null,
@@ -209,8 +239,8 @@ describe("reportWriteSchema", () => {
     expect(firstError(write({ periodFrom: "last August" }))).toBe("Enter a valid date and time");
   });
 
-  // clc-core answers 400 for a duplicate in any of the four collections, so all
-  // four are rejected here rather than deduplicated in some and not others.
+  // clc-core answers 400 for a duplicate in any of the five collections, so all
+  // five are rejected here rather than deduplicated in some and not others.
   it("rejects duplicates in every collection", () => {
     expect(firstError(write({ tags: ["Youth", "Youth"] }))).toBe("Each tag can only be added once");
     expect(
@@ -223,6 +253,17 @@ describe("reportWriteSchema", () => {
         }),
       ),
     ).toBe("Each voucher can only be linked once");
+    expect(
+      firstError(
+        write({
+          vouchers: [],
+          pools: [
+            { chainId: 100, address: "0x000000000000000000000000000000000000000a" },
+            { chainId: 100, address: "0x000000000000000000000000000000000000000A" },
+          ],
+        }),
+      ),
+    ).toBe("Each pool can only be linked once");
     expect(
       firstError(
         write({
@@ -322,6 +363,7 @@ describe("reportToFormValues", () => {
       timeTaken: "4 hours",
       tags: ["Agriculture"],
       vouchers: [{ chainId: 42220, address: "0x0000000000000000000000000000000000000001" }],
+      pools: [{ chainId: 100, address: "0x0000000000000000000000000000000000000002" }],
       images: [
         {
           url: "https://content.example/one.jpg",
@@ -357,6 +399,7 @@ describe("reportToFormValues", () => {
       timeTaken: "4 hours",
       tags: ["Agriculture"],
       vouchers: [{ chainId: 42220, address: "0x0000000000000000000000000000000000000001" }],
+      pools: [{ chainId: 100, address: "0x0000000000000000000000000000000000000002" }],
       images: [
         {
           url: "https://content.example/one.jpg",
@@ -387,6 +430,7 @@ describe("reportToFormValues", () => {
     const values = reportToFormValues({
       title: "Round trip",
       tags: ["Youth"],
+      vouchers: [{ chainId: 100, address: "0x0000000000000000000000000000000000000001" }],
       images: [
         {
           url: "https://content.example/one.jpg",

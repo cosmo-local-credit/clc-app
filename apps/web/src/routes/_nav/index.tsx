@@ -97,7 +97,10 @@ export const Route = createFileRoute("/_nav/")({
         replace: true,
       });
     }
-    const next = canonicalRedirectSearch(search, { voucherRelationships: search.tab === "posts" });
+    const next = canonicalRedirectSearch(search, {
+      voucherRelationships: search.tab === "posts",
+      poolRelationships: search.tab === "posts",
+    });
     if (!next) return;
     throw redirect({ to: "/", search: next, replace: true });
   },

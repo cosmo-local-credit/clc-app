@@ -31,6 +31,7 @@ function detail(status: ReportStatus, id = "4633"): ManagedReportDetail {
     updatedAt: "2026-08-20T10:00:00Z",
     tags: [],
     vouchers: [],
+    pools: [],
     images: [],
     attachments: [],
     hostName: null,
@@ -158,7 +159,8 @@ describe("settleReportUpdate", () => {
     await settleReportUpdate(queryClient, report, "APPROVED", AUTHOR);
 
     expect(publicListsStale(queryClient)).toEqual([true, true, true, true]);
-    expect(queryClient.getQueryData(reportKeys.detail("4633"))).toStrictEqual(report);
+    expect(queryClient.getQueryData(reportKeys.detail("4633"))).not.toHaveProperty("authorAddress");
+    expect(queryClient.getQueryData(reportKeys.detail("4633"))).toHaveProperty("status", null);
   });
 
   // A caller that cannot say what the post was must not be the reason published
@@ -174,7 +176,8 @@ describe("settleReportApproval", () => {
     const report = detail("APPROVED");
     await settleReportApproval(queryClient, report, AUTHOR);
 
-    expect(queryClient.getQueryData(reportKeys.detail("4633"))).toStrictEqual(report);
+    expect(queryClient.getQueryData(reportKeys.detail("4633"))).not.toHaveProperty("authorAddress");
+    expect(queryClient.getQueryData(reportKeys.detail("4633"))).toHaveProperty("status", null);
     expect(queryClient.getQueryData(reportKeys.adminDetail("4633"))).toStrictEqual(report);
     expect(queryClient.getQueryData(reportKeys.myDetail(AUTHOR, "4633"))).toStrictEqual(report);
     expect(publicListsStale(queryClient)).toEqual([true, true, true, true]);
