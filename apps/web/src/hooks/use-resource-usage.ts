@@ -6,12 +6,13 @@ import { clcHttp } from "#/lib/api/http";
 
 const client = createResourceLimitsClient(clcHttp);
 
-export function useResourceUsage(enabled = true) {
+export function useResourceUsage(enabled = true, voucher?: string) {
   const auth = useAuthStatus();
   return useQuery(
     resourceUsageQueryOptions(
       client,
       enabled && auth.isAuthenticated ? (auth.session?.address ?? "") : "",
+      voucher,
     ),
   );
 }

@@ -103,11 +103,13 @@ export function ResourceLimitMessage({ quota }: { quota: ResourceQuota | undefin
 export function ResourceUsage({
   resource,
   count = true,
+  voucher,
 }: {
   resource: ResourceKind;
   count?: boolean;
+  voucher?: string;
 }) {
-  const query = useResourceUsage();
+  const query = useResourceUsage(true, voucher);
   const { t } = useLingui();
   const label = {
     vouchers: t`Vouchers`,

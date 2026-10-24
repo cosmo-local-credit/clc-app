@@ -6,9 +6,10 @@ import { VoucherDetailPage } from "#/features/wallet/ui";
 const searchSchema = z.object({
   tab: z.enum(["offerings", "activity", "info", "reviews", "posts"]).optional().catch(undefined),
   /** Screen the voucher was opened from; names the Back chevron. */
-  from: z.enum(["market", "posts", "wallet", "vouchers"]).optional().catch(undefined),
+  from: z.enum(["market", "posts", "wallet", "vouchers", "wants"]).optional().catch(undefined),
   poolAddress: z.string().optional().catch(undefined),
   reportId: z.string().trim().min(1).optional().catch(undefined),
+  wantId: z.string().trim().min(1).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/vouchers/$voucherAddress")({
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/_nav/vouchers/$voucherAddress")({
 
 function VoucherDetailRoute() {
   const { voucherAddress } = Route.useParams();
-  const { from, poolAddress, reportId, tab } = Route.useSearch();
+  const { from, poolAddress, reportId, tab, wantId } = Route.useSearch();
   return (
     <VoucherDetailPage
       voucherAddress={voucherAddress}
@@ -27,6 +28,7 @@ function VoucherDetailRoute() {
       origin={from ?? "market"}
       poolAddress={poolAddress}
       reportId={reportId}
+      wantId={wantId}
     />
   );
 }

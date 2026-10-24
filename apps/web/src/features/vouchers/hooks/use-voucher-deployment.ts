@@ -4,6 +4,7 @@ import { createVoucherDeployClient } from "@clc/api/features/vouchers/deploy-cli
 import { nameKeys } from "@clc/api/features/names/queries";
 import { symbolKeys } from "@clc/api/features/symbols/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
+import { wantKeys } from "@clc/api/features/wants/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { clcHttp } from "#/lib/api/http";
@@ -23,6 +24,7 @@ export function useDeployVoucher() {
         queryClient.invalidateQueries({ queryKey: nameKeys.all }),
         queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey }),
         queryClient.invalidateQueries({ queryKey: vocabularyKeys.all }),
+        queryClient.invalidateQueries({ queryKey: wantKeys.all }),
       ]),
   });
 }

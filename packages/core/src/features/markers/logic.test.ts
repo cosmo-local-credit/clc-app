@@ -4,8 +4,10 @@ import {
   MARKER_COLOR_HEX,
   MARKER_COLORS,
   MARKER_ICONS,
+  WANT_MARKER_ICONS,
   isMarkerColor,
   isMarkerIcon,
+  isWantMarkerIcon,
   resolveMarkerStyle,
 } from "./logic";
 
@@ -60,5 +62,8 @@ describe("marker palette", () => {
     expect(isMarkerColor("red")).toBe(false);
     expect(isMarkerColor("green")).toBe(false);
     expect(MARKER_ICONS).toHaveLength(8);
+    expect(WANT_MARKER_ICONS).toEqual(["question", "message", "request"]);
+    expect(isWantMarkerIcon("message")).toBe(true);
+    expect(isWantMarkerIcon("coupon")).toBe(false);
   });
 });

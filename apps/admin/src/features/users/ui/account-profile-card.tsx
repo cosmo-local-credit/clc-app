@@ -96,7 +96,7 @@ export function AccountProfileCard({ account }: { account: AdminUser }) {
           <RecordRow label="Max catalogs">
             <RecordData>{account.maxCatalogs}</RecordData>
           </RecordRow>
-          <RecordRow label="Max offers">
+          <RecordRow label="Offers per voucher">
             <RecordData>{account.maxOffers}</RecordData>
           </RecordRow>
           <RecordRow label="Max wants">

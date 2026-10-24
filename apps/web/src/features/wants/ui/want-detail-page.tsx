@@ -48,7 +48,7 @@ export function WantDetailPage({
           </Button>
         </div>
       ) : (
-        <WantDetail want={query.data} distanceOrigin={distanceOrigin} />
+        <WantDetail want={query.data} distanceOrigin={distanceOrigin} showLocationMap showRelated />
       )}
     </main>
   );

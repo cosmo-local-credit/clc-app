@@ -40,6 +40,28 @@ describe("resource allowances", () => {
     expect(resourceUsageQueryOptions(client, "").enabled).toBe(false);
   });
 
+  it("scopes offering usage and its cache identity to a canonical voucher address", async () => {
+    const quota = { used: 2, limit: 3, canCreate: true, unlimited: false };
+    const usage = { vouchers: quota, pools: quota, catalogs: quota, offers: quota, wants: quota };
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true, result: { usage } }), { status: 200 }),
+      );
+    vi.stubGlobal("fetch", fetcher);
+    const client = createResourceLimitsClient(createHttpClient({ baseUrl: "https://api.test" }));
+    const voucher = `0x${"A".repeat(40)}`;
+
+    expect(await client.usage({ voucher })).toEqual(usage);
+    expect(new URL(fetcher.mock.calls[0]?.[0]).searchParams.get("voucher")).toBe(voucher);
+    expect(resourceUsageQueryOptions(client, "0xAlice", voucher).queryKey).toEqual(
+      resourceUsageQueryOptions(client, "0xAlice", voucher.toLowerCase()).queryKey,
+    );
+    expect(
+      resourceUsageQueryOptions(client, "0xAlice", `0x${"b".repeat(40)}`).queryKey,
+    ).not.toEqual(resourceUsageQueryOptions(client, "0xAlice", voucher).queryKey);
+  });
+
   it("rejects an incomplete response instead of assuming zero usage", async () => {
     vi.stubGlobal(
       "fetch",

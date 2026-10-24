@@ -58,9 +58,11 @@ const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
 export function PoolDetailPage({
   poolAddress,
   activeTab,
+  wantId,
 }: {
   poolAddress: string;
   activeTab: PoolDetailTab;
+  wantId?: string;
 }) {
   const { t } = useLingui();
   const poolQuery = useUserPoolByAddress(poolAddress);
@@ -115,7 +117,11 @@ export function PoolDetailPage({
 
   return (
     <div className="space-y-3">
-      <BackChevron label={t`Pools`} to="/market" search={{ scope: "pools" }} />
+      <BackChevron
+        label={wantId ? t`Want` : t`Pools`}
+        to={wantId ? `/wants/${wantId}` : "/market"}
+        search={wantId ? undefined : { scope: "pools" }}
+      />
       <section className="border border-border bg-card p-3">
         <div className="flex items-start gap-3">
           <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />

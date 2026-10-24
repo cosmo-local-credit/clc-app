@@ -1,25 +1,47 @@
+import {
+  wantCreatorPoolsInfiniteQueryOptions,
+  wantCreatorVouchersInfiniteQueryOptions,
+} from "@clc/api/features/wants/queries";
+import type { WantCreatorPool, WantCreatorVoucher } from "@clc/api/features/wants/client";
 import type { Want } from "@clc/core/features/wants/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { RiMailLine, RiPhoneLine, RiShareLine } from "react-icons/ri";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { Suspense, type ReactNode } from "react";
+import {
+  RiArrowRightSLine,
+  RiExternalLinkLine,
+  RiMailLine,
+  RiPhoneLine,
+  RiShareLine,
+} from "react-icons/ri";
 import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
+import { LocationMap } from "#/components/ui/location-map.lazy";
 import { TagBadge } from "#/components/ui/tag-badge";
+import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { WantPicture } from "./want-row";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
+import { wantsClient } from "#/lib/api/wants";
 
 export function WantDetail({
   want,
   showHeader = true,
   distanceOrigin = null,
+  showLocationMap = false,
+  showRelated = false,
 }: {
   want: Want;
   showHeader?: boolean;
   distanceOrigin?: { lat: number; lng: number } | null;
+  showLocationMap?: boolean;
+  showRelated?: boolean;
 }) {
   const { i18n } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
   const distance = useMarketDistanceLabel(distanceOrigin, { lat: want.geoLat, lng: want.geoLng });
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${want.geoLat},${want.geoLng}`)}`;
   return (
     <div className="space-y-4">
       {showHeader ? (
@@ -51,10 +73,39 @@ export function WantDetail({
         <h2>
           <Trans>When and where</Trans>
         </h2>
-        <p dir="auto" className="text-sm">
-          {want.locationName}
-          {distance ? ` · ${distance}` : null}
-        </p>
+        <a
+          dir="auto"
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center gap-1 text-sm underline underline-offset-4"
+        >
+          <span>
+            {want.locationName}
+            {distance ? ` · ${distance}` : null}
+          </span>
+          <RiExternalLinkLine className="size-4 shrink-0" aria-hidden="true" />
+          <span className="sr-only">
+            <Trans>Open location in Google Maps</Trans>
+          </span>
+        </a>
+        {showLocationMap ? (
+          <Suspense
+            fallback={
+              <output className="block h-52 w-full border border-border bg-card">
+                <span className="sr-only">
+                  <Trans>Loading location map</Trans>
+                </span>
+              </output>
+            }
+          >
+            <LocationMap
+              lat={want.geoLat}
+              lng={want.geoLng}
+              markerStyle={{ icon: want.markerIcon, color: want.markerColor }}
+            />
+          </Suspense>
+        ) : null}
         <p className="font-mono text-xs text-muted-foreground">
           <Trans>Starts {dates.format(new Date(want.startsAt))}</Trans>
         </p>
@@ -106,7 +157,163 @@ export function WantDetail({
           </div>
         </section>
       ) : null}
+
+      {showRelated ? <WantCreatorResources want={want} /> : null}
     </div>
+  );
+}
+
+function WantCreatorResources({ want }: { want: Want }) {
+  const vouchers = useInfiniteQuery(wantCreatorVouchersInfiniteQueryOptions(wantsClient, want.id));
+  const pools = useInfiniteQuery(wantCreatorPoolsInfiniteQueryOptions(wantsClient, want.id));
+  return (
+    <>
+      <RelatedSection
+        title={<Trans>Vouchers by {want.ownerName}</Trans>}
+        pending={vouchers.isPending}
+        error={vouchers.isError}
+        fetching={vouchers.isFetchingNextPage}
+        hasMore={vouchers.hasNextPage}
+        onRetry={() => void vouchers.refetch()}
+        onLoadMore={() => void vouchers.fetchNextPage()}
+        empty={<Trans>No vouchers yet.</Trans>}
+        errorMessage={<Trans>Couldn't load vouchers.</Trans>}
+      >
+        {vouchers.data?.pages
+          .flatMap((page) => page.vouchers)
+          .map((voucher) => (
+            <CreatorVoucherRow
+              key={voucher.address.toLowerCase()}
+              voucher={voucher}
+              wantId={want.id}
+            />
+          ))}
+      </RelatedSection>
+      <RelatedSection
+        title={<Trans>Creditable pools</Trans>}
+        pending={pools.isPending}
+        error={pools.isError}
+        fetching={pools.isFetchingNextPage}
+        hasMore={pools.hasNextPage}
+        onRetry={() => void pools.refetch()}
+        onLoadMore={() => void pools.fetchNextPage()}
+        empty={<Trans>No pools yet.</Trans>}
+        errorMessage={<Trans>Couldn't load pools.</Trans>}
+      >
+        {pools.data?.pages
+          .flatMap((page) => page.pools)
+          .map((pool) => (
+            <CreatorPoolRow key={pool.address.toLowerCase()} pool={pool} wantId={want.id} />
+          ))}
+      </RelatedSection>
+    </>
+  );
+}
+
+function RelatedSection({
+  title,
+  pending,
+  error,
+  fetching,
+  hasMore,
+  onRetry,
+  onLoadMore,
+  empty,
+  errorMessage,
+  children,
+}: {
+  title: ReactNode;
+  pending: boolean;
+  error: boolean;
+  fetching: boolean;
+  hasMore: boolean;
+  onRetry: () => void;
+  onLoadMore: () => void;
+  empty: ReactNode;
+  errorMessage: ReactNode;
+  children: ReactNode;
+}) {
+  const rows = Array.isArray(children) ? children.filter(Boolean) : children ? [children] : [];
+  return (
+    <section className="space-y-3 border border-border bg-card p-4">
+      <h2>{title}</h2>
+      {pending ? (
+        <p className="text-sm text-muted-foreground">
+          <Trans>Loading…</Trans>
+        </p>
+      ) : error ? (
+        <div className="space-y-2" role="alert">
+          <p className="text-sm">{errorMessage}</p>
+          <Button variant="outline" tap onClick={onRetry}>
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{empty}</p>
+      ) : (
+        <div className="border border-border">{children}</div>
+      )}
+      {hasMore ? (
+        <Button variant="outline" tap className="w-full" pending={fetching} onClick={onLoadMore}>
+          <Trans>Load more</Trans>
+        </Button>
+      ) : null}
+    </section>
+  );
+}
+
+function CreatorVoucherRow({ voucher, wantId }: { voucher: WantCreatorVoucher; wantId: string }) {
+  return (
+    <Link
+      to="/vouchers/$voucherAddress"
+      params={{ voucherAddress: voucher.address }}
+      search={{ from: "wants", wantId }}
+      className="flex min-h-16 items-center gap-3 border-b border-border p-3 text-start last:border-b-0 active:bg-muted"
+    >
+      <VoucherAvatar
+        address={voucher.address}
+        symbol={voucher.symbol}
+        iconUrl={voucher.iconUrl}
+        size={40}
+      />
+      <span className="min-w-0 flex-1">
+        <span dir="auto" className="block truncate text-sm font-semibold">
+          {voucher.name}
+        </span>
+        <span className="mt-0.5 block truncate font-mono text-xs text-muted-foreground">
+          {voucher.symbol}
+        </span>
+      </span>
+      <RiArrowRightSLine
+        className="size-5 shrink-0 text-muted-foreground rtl:-scale-x-100"
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
+
+function CreatorPoolRow({ pool, wantId }: { pool: WantCreatorPool; wantId: string }) {
+  return (
+    <Link
+      to="/pools/$poolAddress"
+      params={{ poolAddress: pool.address }}
+      search={{ wantId }}
+      className="flex min-h-16 items-center gap-3 border-b border-border p-3 text-start last:border-b-0 active:bg-muted"
+    >
+      <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={40} />
+      <span className="min-w-0 flex-1">
+        <span dir="auto" className="block truncate text-sm font-semibold">
+          {pool.name}
+        </span>
+        <span dir="auto" className="mt-0.5 block truncate text-xs text-muted-foreground">
+          {pool.locationName ?? pool.symbol}
+        </span>
+      </span>
+      <RiArrowRightSLine
+        className="size-5 shrink-0 text-muted-foreground rtl:-scale-x-100"
+        aria-hidden="true"
+      />
+    </Link>
   );
 }
 

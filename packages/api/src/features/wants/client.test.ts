@@ -88,6 +88,68 @@ describe("Wants HTTP contract", () => {
     expect(fetcher.mock.calls[1]?.[1].credentials).toBe("omit");
   });
 
+  it("loads paginated creator vouchers and pools from the public Want routes", async () => {
+    const voucherAddress = `0x${"c".repeat(40)}`;
+    const poolAddress = `0x${"d".repeat(40)}`;
+    const ownerAddress = `0x${"e".repeat(40)}`;
+    const fetcher = respond({
+      vouchers: [
+        {
+          id: 11,
+          chainId: 100,
+          address: voucherAddress,
+          name: "Amina Hours",
+          symbol: "AH",
+          decimals: 6,
+          iconUrl: null,
+          ownerAddress,
+          active: true,
+        },
+      ],
+      first: 11,
+      last: 11,
+    });
+
+    expect(await api.creatorVouchers("7", { perPage: 3, cursor: 12, next: true })).toMatchObject({
+      vouchers: [{ id: "11", address: voucherAddress }],
+    });
+    expect(fetcher.mock.calls[0]?.[0]).toBe(
+      "https://api.test/api/v2/wants/7/vouchers?perPage=3&cursor=12&next=true",
+    );
+    expect(fetcher.mock.calls[0]?.[1].credentials).toBe("omit");
+
+    fetcher.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          ok: true,
+          result: {
+            pools: [
+              {
+                id: 13,
+                chainId: 100,
+                address: poolAddress,
+                name: "Shared Pool",
+                symbol: "SP",
+                locationName: null,
+                imageUrl: null,
+                voucherCount: 2,
+                tags: [],
+              },
+            ],
+            first: 13,
+            last: 13,
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+    expect(await api.creatorPools("7", { perPage: 3 })).toMatchObject({
+      pools: [{ id: "13", address: poolAddress }],
+    });
+    expect(fetcher.mock.calls[1]?.[0]).toBe("https://api.test/api/v2/wants/7/pools?perPage=3");
+    expect(fetcher.mock.calls[1]?.[1].credentials).toBe("omit");
+  });
+
   it("writes canonical form fields and exposes owner lifecycle endpoints", async () => {
     const fetcher = respond({ want: row });
     const input = {

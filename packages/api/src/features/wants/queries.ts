@@ -11,6 +11,8 @@ export const wantKeys = {
   detail: (id: string) => ["clc", "wants", "detail", id] as const,
   mine: (address: string) => ["clc", "wants", "mine", address.toLowerCase()] as const,
   pool: (address: string) => ["clc", "wants", "pool", address.toLowerCase()] as const,
+  creatorVouchers: (id: string) => ["clc", "wants", "detail", id, "creator-vouchers"] as const,
+  creatorPools: (id: string) => ["clc", "wants", "detail", id, "creator-pools"] as const,
 };
 
 export function wantsInfiniteQueryOptions(
@@ -53,6 +55,32 @@ export function wantDetailQueryOptions(client: WantsClient, id: string) {
     queryKey: wantKeys.detail(id),
     queryFn: ({ signal }) => client.detail(id, signal),
     enabled: !!id,
+  });
+}
+
+export function wantCreatorVouchersInfiniteQueryOptions(client: WantsClient, id: string) {
+  const perPage = 3;
+  return infiniteQueryOptions({
+    queryKey: wantKeys.creatorVouchers(id),
+    enabled: !!id,
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam, signal }) =>
+      client.creatorVouchers(id, { perPage, cursor: pageParam, next: true }, signal),
+    getNextPageParam: (page) =>
+      page.vouchers.length >= perPage && page.last > 0 ? page.last : undefined,
+  });
+}
+
+export function wantCreatorPoolsInfiniteQueryOptions(client: WantsClient, id: string) {
+  const perPage = 3;
+  return infiniteQueryOptions({
+    queryKey: wantKeys.creatorPools(id),
+    enabled: !!id,
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam, signal }) =>
+      client.creatorPools(id, { perPage, cursor: pageParam, next: true }, signal),
+    getNextPageParam: (page) =>
+      page.pools.length >= perPage && page.last > 0 ? page.last : undefined,
   });
 }
 

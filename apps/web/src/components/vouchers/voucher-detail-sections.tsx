@@ -115,7 +115,7 @@ export function VoucherDetailSections({
   const reportVoucher: VoucherRef | undefined =
     chainId && address ? { chainId, address: address as VoucherRef["address"] } : undefined;
   const rate = formatVoucherRate(voucherValue, voucherUoa);
-  const usage = useResourceUsage(canEditDetails);
+  const usage = useResourceUsage(canEditDetails, address);
 
   return (
     <div className={cn("space-y-8 pb-6", className)}>
