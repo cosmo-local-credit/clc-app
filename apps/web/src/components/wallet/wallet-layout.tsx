@@ -76,6 +76,7 @@ export function SectionHeader({
   id,
   title,
   action,
+  actionLabel,
   actionTo,
   onAction,
   className,
@@ -83,6 +84,7 @@ export function SectionHeader({
   id?: string;
   title: ReactNode;
   action?: ReactNode;
+  actionLabel?: string;
   actionTo?: string;
   onAction?: () => void;
   className?: string;
@@ -94,6 +96,7 @@ export function SectionHeader({
         actionTo ? (
           <Link
             to={actionTo}
+            aria-label={actionLabel}
             className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
           >
             {action}
@@ -101,6 +104,7 @@ export function SectionHeader({
         ) : (
           <button
             type="button"
+            aria-label={actionLabel}
             onClick={onAction}
             className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
           >

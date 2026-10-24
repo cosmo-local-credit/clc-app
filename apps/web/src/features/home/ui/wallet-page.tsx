@@ -14,9 +14,7 @@ import { Button } from "#/components/ui/button";
 import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
 import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
-import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
-import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
-import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { useWalletVoucherPreview } from "#/features/wallet/hooks/use-wallet-voucher-preview";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
@@ -84,11 +82,7 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/cash",
     },
   ] as const;
-  const balancesQuery = useLatestAccountTokens(address);
-  const voucherGroups = usePartitionedVouchers(
-    balancesQuery.data?.tokens.map(accountTokenToWalletToken) ?? [],
-    address,
-  );
+  const voucherGroups = useWalletVoucherPreview(address);
   const usage = useResourceUsage();
   const wantsQuery = useInfiniteQuery(myWantsInfiniteQueryOptions(wantsClient, address ?? ""));
   const wants = wantsQuery.data?.pages.flatMap((page) => page.wants) ?? [];
@@ -113,6 +107,8 @@ export function WalletPage({ address }: { address?: string }) {
       <Trans>My Vouchers</Trans>
     </ResourceQuotaTitle>
   );
+  const openAllVouchers = () => void navigate({ to: "/wallet/vouchers" });
+  const viewAllAction = <Trans>View all</Trans>;
 
   return (
     <div className="space-y-6">
@@ -154,27 +150,27 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       ) : null}
 
-      {voucherGroups.isPending || balancesQuery.isPending ? (
+      {voucherGroups.isPending ? (
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
             title={myVouchersTitle}
-            action={<Trans>View all</Trans>}
-            onAction={() => {
-              void navigate({ to: "/wallet/vouchers" });
-            }}
+            action={viewAllAction}
+            actionLabel={`${t`View all`} ${t`My Vouchers`}`}
+            onAction={openAllVouchers}
           />
           <div className="border-border bg-card border">
             <ListSkeleton framed={false} count={3} label={<Trans>Loading vouchers…</Trans>} />
           </div>
         </section>
-      ) : voucherGroups.isError ? (
+      ) : voucherGroups.isIssuedError ? (
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
             title={myVouchersTitle}
-            action={<Trans>View all</Trans>}
-            onAction={() => void navigate({ to: "/wallet/vouchers" })}
+            action={viewAllAction}
+            actionLabel={`${t`View all`} ${t`My Vouchers`}`}
+            onAction={openAllVouchers}
           />
           <div className="border-border bg-card border">
             <div className="space-y-2 p-3">
@@ -185,7 +181,7 @@ export function WalletPage({ address }: { address?: string }) {
                 variant="outline"
                 tap
                 pending={voucherGroups.isFetching}
-                onClick={() => void voucherGroups.refetch()}
+                onClick={() => void voucherGroups.refetchIssued()}
               >
                 <Trans>Try again</Trans>
               </Button>
@@ -194,7 +190,7 @@ export function WalletPage({ address }: { address?: string }) {
         </section>
       ) : (
         <>
-          {balancesQuery.isError ? (
+          {voucherGroups.isBalanceError ? (
             <div role="alert" className="border-border bg-card space-y-2 border p-3">
               <p className="text-muted-foreground text-sm">
                 <Trans>Couldn't load vouchers.</Trans>
@@ -202,8 +198,8 @@ export function WalletPage({ address }: { address?: string }) {
               <Button
                 variant="outline"
                 tap
-                pending={balancesQuery.isFetching}
-                onClick={() => void balancesQuery.refetch()}
+                pending={voucherGroups.isFetching}
+                onClick={() => void voucherGroups.refetchBalances()}
               >
                 <Trans>Try again</Trans>
               </Button>
@@ -211,7 +207,13 @@ export function WalletPage({ address }: { address?: string }) {
           ) : null}
           {voucherGroups.holdings.length > 0 ? (
             <section aria-labelledby="holdings-title">
-              <SectionHeader id="holdings-title" title={<Trans>Holdings</Trans>} />
+              <SectionHeader
+                id="holdings-title"
+                title={<Trans>Holdings</Trans>}
+                action={viewAllAction}
+                actionLabel={`${t`View all`} ${t`Holdings`}`}
+                onAction={openAllVouchers}
+              />
               <div className="border-border bg-card border">
                 <WalletVoucherRows tokens={voucherGroups.holdings} />
               </div>
@@ -221,10 +223,9 @@ export function WalletPage({ address }: { address?: string }) {
             <SectionHeader
               id="my-vouchers-title"
               title={myVouchersTitle}
-              action={<Trans>View all</Trans>}
-              onAction={() => {
-                void navigate({ to: "/wallet/vouchers" });
-              }}
+              action={viewAllAction}
+              actionLabel={`${t`View all`} ${t`My Vouchers`}`}
+              onAction={openAllVouchers}
             />
             <div className="border-border bg-card border">
               {voucherGroups.issued.length === 0 ? (
