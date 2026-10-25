@@ -1,12 +1,30 @@
 # Cloudflare Pages config for the admin console. Keep this file: Nitro and Pages
-# use it to select the admin project settings.
-name = "clc-admin-gnosis"
+# use it to select the admin project settings. Like the web config it is
+# identical on develop and master: production builds master and the preview
+# environment builds develop.
+name = "clc-admin"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
+# Production: master, served at admin.cosmolocal.credit.
 [vars]
-# Per-environment values; keep in sync with the corresponding master config.
+VITE_API_URL = "https://api.cosmolocal.credit"
+VITE_BRAND = "prod"
+VITE_PAPER_WALLET_ORIGIN = "https://cosmolocal.credit"
+VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
+VITE_RELYING_PARTY_ID = "cosmolocal.credit"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
+
+# Shared values.
+# Install skips the Chrome builds puppeteer downloads; no build uses them.
+PUPPETEER_SKIP_DOWNLOAD = "true"
+VITE_CHAIN_ID = "100"
+VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
+
+# Staging: develop, served at admin.test.cosmolocal.credit. Vars are
+# non-inheritable, so repeat all values in this block.
+[env.preview.vars]
 VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
 VITE_BRAND = "staging"
 VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
@@ -15,20 +33,7 @@ VITE_RELYING_PARTY_ID = "test.cosmolocal.credit"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
 
 # Shared values.
-VITE_CHAIN_ID = "100"
-VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
-
-# Preview deploys use their pages.dev host as the relying party. Vars are
-# non-inheritable, so repeat all values in this block.
-[env.preview.vars]
-# Per-environment preview values.
-VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
-VITE_BRAND = "staging"
-VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
-VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
-VITE_RELYING_PARTY_ID = "clc-admin-gnosis.pages.dev"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
-
-# Shared preview values.
+# Install skips the Chrome builds puppeteer downloads; no build uses them.
+PUPPETEER_SKIP_DOWNLOAD = "true"
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
