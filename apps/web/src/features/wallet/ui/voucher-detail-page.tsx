@@ -1,6 +1,5 @@
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import { Button } from "#/components/ui/button";
@@ -47,7 +46,6 @@ export function VoucherDetailPage({
   wantId?: string;
 }) {
   const { t } = useLingui();
-  const navigate = useNavigate();
   const auth = useAuthStatus();
   const voucherNavigation = resolveVoucherNavigationOwner({
     from: origin,
@@ -242,9 +240,6 @@ export function VoucherDetailPage({
         lat={lat}
         lng={lng}
         dataPending={detailQuery.isPending || supportingDataPending}
-        onRetired={() => {
-          void navigate({ to: back.to, search: back.search, replace: true });
-        }}
       />
     </div>
   );

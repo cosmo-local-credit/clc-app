@@ -13,6 +13,132 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: apps/web/src/components/retirement/retirement-request-list.tsx:31
+msgid "Admin response:"
+msgstr "Antwoord van de beheerder:"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:70
+msgid "An admin will review your request. It will stay active until approval."
+msgstr "Een beheerder beoordeelt uw verzoek. De waardebon of het fonds blijft actief tot de goedkeuring."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:68
+msgid "Are you sure you want to request retirement of this pool?"
+msgstr "Weet u zeker dat u dit fonds buiten gebruik wilt laten stellen?"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:68
+msgid "Are you sure you want to request retirement of this voucher?"
+msgstr "Weet u zeker dat u deze waardebon buiten gebruik wilt laten stellen?"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:8
+msgid "Awaiting admin review"
+msgstr "Wacht op beoordeling door een beheerder"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:34
+msgid "Cancel request"
+msgstr "Verzoek annuleren"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:45
+msgid "Checking balances…"
+msgstr "Saldi controleren…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:48
+msgid "Could not check balances. Try again before submitting your request."
+msgstr "De saldi konden niet worden gecontroleerd. Probeer het opnieuw voordat u uw verzoek indient."
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:18
+#: apps/web/src/components/retirement/retirement-control.tsx:39
+msgid "Could not load retirement requests."
+msgstr "De verzoeken voor buitengebruikstelling konden niet worden geladen."
+
+#: apps/web/src/components/retirement/retirement-control.tsx:37
+msgid "Loading retirement requests…"
+msgstr "Verzoeken voor buitengebruikstelling laden…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:56
+msgid "Other accounts hold <0>{amount} {symbol}</0> of your voucher."
+msgstr "Andere rekeningen bezitten <0>{amount} {symbol}</0> van uw waardebon."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:73
+msgid "Reason for retirement"
+msgstr "Reden voor buitengebruikstelling"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:11
+msgid "Request cancelled"
+msgstr "Verzoek geannuleerd"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:12
+msgid "Request closed because ownership changed"
+msgstr "Verzoek gesloten omdat de eigenaar is gewijzigd"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:10
+msgid "Request rejected"
+msgstr "Verzoek afgewezen"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+#: apps/web/src/components/retirement/retirement-request-form.tsx:78
+msgid "Request retirement"
+msgstr "Buitengebruikstelling aanvragen"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:150
+msgid "Retired pool"
+msgstr "Fonds buiten gebruik"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:438
+msgid "Retired — withdrawals available"
+msgstr "Buiten gebruik — opnames beschikbaar"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:9
+msgid "Retirement approved"
+msgstr "Buitengebruikstelling goedgekeurd"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:71
+msgid "Retirement does not delete the voucher or pool from the blockchain. "
+"Existing balances and transaction history remain."
+msgstr "Buitengebruikstelling verwijdert de waardebon of het fonds niet van de blockchain. Bestaande saldi en de transactiegeschiedenis blijven behouden."
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+msgid "Retirement history"
+msgstr "Geschiedenis van buitengebruikstelling"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+msgid "Retirement requested"
+msgstr "Buitengebruikstelling aangevraagd"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:44
+msgid "Retirement requested — awaiting admin review. This resource stays active "
+"until approval."
+msgstr "Buitengebruikstelling aangevraagd — wacht op beoordeling door een beheerder. Deze waardebon of dit fonds blijft actief tot de goedkeuring."
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:14
+msgid "Retirement requests"
+msgstr "Verzoeken voor buitengebruikstelling"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:78
+msgid "Submitting request…"
+msgstr "Verzoek indienen…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:61
+msgid "This check includes known pool holdings. Tokens not yet tracked may be "
+"missing."
+msgstr "Deze controle omvat de bekende tegoeden van het fonds. Tokens die nog niet worden gevolgd, kunnen ontbreken."
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:151
+msgid "This pool is hidden from discovery and does not accept new swaps or "
+"deposits in CLC. You can still withdraw funds and view its history."
+msgstr "Dit fonds wordt niet meer in zoekresultaten getoond en accepteert geen nieuwe wissels of stortingen in CLC. U kunt nog steeds tegoeden opnemen en de geschiedenis bekijken."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
+msgid "This pool is retired. New swaps and deposits are not available."
+msgstr "Dit fonds is buiten gebruik. Nieuwe wissels en stortingen zijn niet beschikbaar."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:63
+msgid "This resource is already retired."
+msgstr "Deze waardebon of dit fonds is al buiten gebruik."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:72
+msgid "You can still withdraw funds after the pool is retired."
+msgstr "U kunt nog steeds tegoeden opnemen nadat het fonds buiten gebruik is gesteld."
+
 #. js-lingui-explicit-id
 #: apps/web/src/features/pools/ui/pools-page.tsx:142
 msgid "{count, plural, one {# pool} other {# pools}}"
@@ -261,6 +387,12 @@ msgstr "{completedCount} van {0} bevestigd"
 #~ msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
 #~ msgstr "{count, plural, one {# overdracht weergegeven.} other {# overdrachten "
 #~ "weergegeven.}}"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:58
+msgid "{count, plural, one {Your pool holds # known voucher type with a "
+"positive balance.} other {Your pool holds # known voucher types with "
+"positive balances.}}"
+msgstr "{count, plural, one {Uw fonds bevat # bekend type waardebon met een positief saldo.} other {Uw fonds bevat # bekende typen waardebonnen met positieve saldi.}}"
 
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:210

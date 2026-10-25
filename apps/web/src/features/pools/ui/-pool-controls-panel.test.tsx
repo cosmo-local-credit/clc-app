@@ -1,3 +1,9 @@
+vi.mock("#/components/retirement/retirement-control", () => ({
+  RetirementControl: () => <button type="button">Request retirement</button>,
+}));
+vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAllAccountTokens: () => ({ tokens: [], isPending: false, isError: false }),
+}));
 vi.mock("#/lib/ownership-transfer-config", () => ({ POOL_OWNERSHIP_TRANSFER_ENABLED: true }));
 vi.mock("#/features/pools/hooks/use-pool-ownership-transfer", () => ({
   usePoolOwnershipTransfer: () => ({
@@ -310,12 +316,13 @@ describe("PoolControlsPanel fee settings", () => {
 });
 
 describe("PoolControlsPanel ownership", () => {
-  it("places transfer last for owners and withholds it from catalog-only admins", () => {
+  it("places retirement after transfer for owners and withholds both from catalog-only admins", () => {
     const view = render(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
     const rows = within(screen.getByRole("region", { name: "Pool controls" })).getAllByRole(
       "button",
     );
-    expect(rows.at(-1)?.textContent).toContain("Transfer ownership");
+    expect(rows.at(-2)?.textContent).toContain("Transfer ownership");
+    expect(rows.at(-1)?.textContent).toContain("Request retirement");
     view.rerender(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain={false} />);
     expect(screen.queryByRole("button", { name: "Transfer ownership" })).toBeNull();
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();

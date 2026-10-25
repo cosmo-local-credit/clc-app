@@ -1,5 +1,6 @@
 import type { PoolProfileUpdate, UserPool } from "@clc/api/features/pools/client";
 import { poolKeys } from "@clc/api/features/pools/queries";
+import { adminKeys } from "@clc/api/features/admin/queries";
 import { deploymentKeys } from "@clc/api/features/deployments/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -22,8 +23,15 @@ export function useUpdatePoolProfile(address: string) {
   return useMutation({
     mutationFn: (profile: PoolProfileUpdate) => clcApi.admin.updatePoolProfile(address, profile),
     onSuccess: (pool: UserPool) => {
-      queryClient.setQueryData(poolKeys.detail(address), pool);
+      queryClient.setQueryData(adminKeys.pool(address), pool);
+      // Public entries must never receive a retired record from an admin write.
+      if (pool.active !== false) queryClient.setQueryData(poolKeys.detail(address), pool);
+      else queryClient.removeQueries({ queryKey: poolKeys.detail(address) });
       return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: adminKeys.all,
+          predicate: (query) => query.queryKey[3] !== "detail",
+        }),
         queryClient.invalidateQueries({
           queryKey: poolKeys.all,
           predicate: (query) => query.queryKey[2] !== "detail",

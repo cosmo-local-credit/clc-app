@@ -2,7 +2,8 @@ import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog
 import {
   poolListInfiniteQueryOptions,
   poolQueryOptions,
-  poolsByOwnerInfiniteQueryOptions,
+  ownedPoolQueryOptions,
+  ownedPoolsInfiniteQueryOptions,
 } from "@clc/api/features/pools/queries";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { poolsClient } from "#/lib/api/pools";
@@ -20,8 +21,18 @@ export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled 
   });
 }
 
-export function useUserPoolByAddress(poolAddress: string | undefined) {
-  return useQuery(poolQueryOptions(poolsClient, poolAddress));
+export function useUserPoolByAddress(poolAddress: string | undefined, viewer?: string) {
+  const publicQuery = useQuery({
+    ...poolQueryOptions(poolsClient, poolAddress),
+    staleTime: 0,
+    refetchInterval: 30_000,
+    retry: false,
+  });
+  const ownerQuery = useQuery({
+    ...ownedPoolQueryOptions(poolsClient, poolAddress, viewer),
+    enabled: !!viewer && !!poolAddress && publicQuery.isError,
+  });
+  return publicQuery.isError && viewer ? ownerQuery : publicQuery;
 }
 
 /**
@@ -34,6 +45,6 @@ export function useUserPoolByAddress(poolAddress: string | undefined) {
  */
 export function useOwnedPoolsInfinite(owner: string | undefined) {
   return useInfiniteQuery(
-    poolsByOwnerInfiniteQueryOptions(poolsClient, owner, DEFAULT_POOLS_PAGE_SIZE),
+    ownedPoolsInfiniteQueryOptions(poolsClient, owner, DEFAULT_POOLS_PAGE_SIZE),
   );
 }

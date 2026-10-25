@@ -28,10 +28,12 @@ const getPoolByAddress = vi.hoisted(() => vi.fn());
 const getPoolVouchers = vi.hoisted(() => vi.fn());
 const getPoolOfferings = vi.hoisted(() => vi.fn());
 const listPoolTransactions = vi.hoisted(() => vi.fn());
+const restorePool = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
     accounts: { getAccountTokens: () => Promise.resolve({ tokens: [] }) },
+    retirement: { restore: (...args: unknown[]) => restorePool(...args) },
     pools: {
       getPoolByAddress: (...args: unknown[]) => getPoolByAddress(...args),
       getPoolVouchers: (...args: unknown[]) => getPoolVouchers(...args),
@@ -40,6 +42,7 @@ vi.mock("#/lib/api", () => ({
       getPoolOfferings: (...args: unknown[]) => getPoolOfferings(...args),
     },
     admin: {
+      getPoolByAddress: (...args: unknown[]) => getPoolByAddress(...args),
       listPoolTransactions: (...args: unknown[]) => listPoolTransactions(...args),
     },
   },
@@ -150,6 +153,8 @@ beforeEach(() => {
   getPoolVouchers.mockReset();
   getPoolOfferings.mockReset();
   listPoolTransactions.mockReset();
+  restorePool.mockReset();
+  restorePool.mockResolvedValue(pool({ active: true }));
   getPoolVouchers.mockResolvedValue({ vouchers: [] });
   getPoolOfferings.mockResolvedValue({ offerings: [], first: 0, last: 0, receivedCount: 0 });
   listPoolTransactions.mockResolvedValue({
@@ -161,6 +166,25 @@ beforeEach(() => {
 });
 
 describe("PoolDetailPage", () => {
+  it("opens retired pools through the admin read and restores with a reason", async () => {
+    getPoolByAddress.mockResolvedValue(pool({ active: false }));
+    renderDetailRoute();
+    const restore = await screen.findByRole("button", { name: "Restore" });
+    expect(
+      (screen.getByRole("button", { name: "Add voucher" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    fireEvent.click(restore);
+    fireEvent.change(await screen.findByLabelText("Reason for restoration"), {
+      target: { value: "Pool owner is ready to reopen" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Restore pool" }));
+    await waitFor(() =>
+      expect(restorePool).toHaveBeenCalledWith("pool", ADDRESS, {
+        reason: "Pool owner is ready to reopen",
+      }),
+    );
+  });
+
   it("leads with identity and keeps the address in the header only", async () => {
     getPoolByAddress.mockResolvedValue(pool());
 

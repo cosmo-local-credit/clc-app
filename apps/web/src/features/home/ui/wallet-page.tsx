@@ -18,6 +18,7 @@ import { useWalletVoucherPreview } from "#/features/wallet/hooks/use-wallet-vouc
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
+import { MyRetirementRequests } from "#/components/retirement/my-retirement-requests";
 import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/resource-tone";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
@@ -86,16 +87,10 @@ export function WalletPage({ address }: { address?: string }) {
   const usage = useResourceUsage();
   const wantsQuery = useInfiniteQuery(myWantsInfiniteQueryOptions(wantsClient, address ?? ""));
   const wants = wantsQuery.data?.pages.flatMap((page) => page.wants) ?? [];
-  // Only the first page: this is a shortcut into pools a steward manages, not a
-  // list to page through. "All pools" carries the rest.
-  //
-  // Re-checked against the owner here as well. `owner` is a server predicate,
-  // but a backend that predates it ignores unknown query parameters and answers
-  // with the whole catalog — which would present every pool on the network as
-  // this user's. A row the server did filter already passes, so this costs
-  // nothing once clc-core has the parameter.
+  // The protected list keeps retired pools reachable for withdrawals. It is
+  // paginated here because public "All pools" intentionally hides them.
   const ownedPoolsQuery = useOwnedPoolsInfinite(address);
-  const ownedPools = (ownedPoolsQuery.data?.pages[0]?.pools ?? []).filter(
+  const ownedPools = (ownedPoolsQuery.data?.pages.flatMap((page) => page.pools) ?? []).filter(
     (pool) => pool.ownerAddress?.toLowerCase() === address?.toLowerCase(),
   );
   const myVouchersTitle = (
@@ -440,6 +435,11 @@ export function WalletPage({ address }: { address?: string }) {
               <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={34} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{pool.name}</p>
+                {pool.active === false ? (
+                  <p className="text-xs font-semibold">
+                    <Trans>Retired — withdrawals available</Trans>
+                  </p>
+                ) : null}
                 <p className="text-muted-foreground mt-0.5 text-xs">
                   {pool.voucherCount === 1 ? (
                     <Trans>1 voucher</Trans>
@@ -454,9 +454,23 @@ export function WalletPage({ address }: { address?: string }) {
               />
             </Link>
           ))}
+          {ownedPoolsQuery.hasNextPage ? (
+            <div className="p-3">
+              <Button
+                variant="outline"
+                tap
+                className="w-full"
+                pending={ownedPoolsQuery.isFetchingNextPage}
+                onClick={() => void ownedPoolsQuery.fetchNextPage()}
+              >
+                <Trans>Load more</Trans>
+              </Button>
+            </div>
+          ) : null}
         </div>
       </section>
 
+      {address ? <MyRetirementRequests viewer={address} /> : null}
       <MyCatalogSection usage={usage} />
     </div>
   );

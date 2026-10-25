@@ -32,6 +32,45 @@ afterEach(() => {
 });
 
 describe("pool queries", () => {
+  it("recovers a retired pool only through a viewer-scoped protected read", async () => {
+    const owner = "0x2222222222222222222222222222222222222222";
+    const fetcher = vi.fn().mockImplementation((url: string) =>
+      url.includes("/users/me/owned-pools/")
+        ? Promise.resolve(
+            response({ pool: { ...pool(1, POOL_ADDRESS), active: false, ownerAddress: owner } }),
+          )
+        : Promise.resolve({
+            ok: false,
+            status: 404,
+            text: async () => JSON.stringify({ ok: false, description: "Pool not found" }),
+          }),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useUserPoolByAddress(POOL_ADDRESS, owner), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.data?.active).toBe(false));
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining(`/users/me/owned-pools/${POOL_ADDRESS}`),
+      expect.objectContaining({ credentials: "include", cache: "no-store" }),
+    );
+  });
+
+  it("does not attempt owner recovery for a guest", async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: async () => JSON.stringify({ ok: false, description: "Pool not found" }),
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useUserPoolByAddress(POOL_ADDRESS), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(fetcher.mock.calls[0]?.[0]).not.toContain("/users/me/");
+  });
+
   it("loads successive pool pages and stops when the backend returns a short page", async () => {
     const fetcher = vi
       .fn()
