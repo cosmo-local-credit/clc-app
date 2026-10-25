@@ -37,6 +37,8 @@ function report(id: number): ReportSummary {
     periodTo: null,
     createdAt: null,
     updatedAt: `2026-08-${String(id).padStart(2, "0")}T00:00:00Z`,
+    markerIcon: "post",
+    markerColor: "pink",
     tags: [],
     vouchers: [],
     pools: [],

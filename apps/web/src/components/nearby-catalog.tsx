@@ -36,6 +36,7 @@ export type MarketDiscoveryArea = {
 type MarketDiscoveryAreaValue = {
   area: MarketDiscoveryArea | null;
   setArea: (area: Omit<MarketDiscoveryArea, "owner">) => void;
+  clearArea: () => void;
 };
 
 const NearbyCatalogContext = createContext<NearbyRequest | undefined>(undefined);
@@ -102,12 +103,21 @@ export function NearbyCatalog({ children }: { children: ReactNode }) {
     [owner],
   );
 
+  const clearArea = useCallback(() => {
+    if (!owner) return;
+    removeOwnerScoped(owner, MARKET_AREA_STORAGE_NAME);
+    setSnapshot((current) =>
+      current?.owner === owner && current.area !== null ? { owner, area: null } : current,
+    );
+  }, [owner]);
+
   const areaValue = useMemo(
     () => ({
       area: snapshot && snapshot.owner === owner ? snapshot.area : null,
       setArea,
+      clearArea,
     }),
-    [owner, setArea, snapshot],
+    [clearArea, owner, setArea, snapshot],
   );
 
   if (!owner || snapshot?.owner !== owner) {
@@ -165,7 +175,8 @@ function normalizeMarketArea(value: unknown): MarketDiscoveryArea | null {
     !Array.isArray(rawBoxes) ||
     rawBoxes.length === 0 ||
     rawBoxes.length > 2 ||
-    boxes.length !== rawBoxes.length
+    boxes.length !== rawBoxes.length ||
+    coversWholeWorld(boxes)
   ) {
     return null;
   }
@@ -175,6 +186,10 @@ function normalizeMarketArea(value: unknown): MarketDiscoveryArea | null {
     zoom: roundMapValue(zoom, 3),
     boxes,
   };
+}
+
+function coversWholeWorld(boxes: readonly MarketBoundingBox[]): boolean {
+  return boxes.some((box) => box.minLng === -180 && box.maxLng === 180);
 }
 
 function equalMarketAreas(left: MarketDiscoveryArea | null, right: MarketDiscoveryArea): boolean {

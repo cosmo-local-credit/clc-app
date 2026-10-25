@@ -29,21 +29,20 @@ export function useMarketMapWants(bounds: readonly MarketBoundingBox[], enabled:
     },
   });
 
-  const wants = useMemo<MarketWantSearchLocation[]>(
-    () =>
-      (query.data ?? []).map((want) => ({
-        id: `market:want:${want.id}`,
-        wantId: want.id,
-        name: want.name,
-        kind: "want",
-        markerIcon: want.markerIcon,
-        markerColor: want.markerColor,
-        lat: want.geoLat,
-        lng: want.geoLng,
-        locationName: want.locationName,
-      })),
-    [query.data],
-  );
+  const wants = useMemo<MarketWantSearchLocation[]>(() => {
+    if (!enabled) return [];
+    return (query.data ?? []).map((want) => ({
+      id: `market:want:${want.id}`,
+      wantId: want.id,
+      name: want.name,
+      kind: "want",
+      markerIcon: want.markerIcon,
+      markerColor: want.markerColor,
+      lat: want.geoLat,
+      lng: want.geoLng,
+      locationName: want.locationName,
+    }));
+  }, [enabled, query.data]);
   const retry = useCallback(() => void query.refetch(), [query]);
   return {
     wants,

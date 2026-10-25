@@ -478,7 +478,7 @@ msgid "Active"
 msgstr "Aktibo"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:100
-#: apps/web/src/components/market-bar.tsx:221
+#: apps/web/src/components/market-bar.tsx:323
 #: apps/web/src/components/navigation/bottom-navigation.tsx:50
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:193
 #: apps/web/src/features/home/ui/activity-page.tsx:97
@@ -659,7 +659,8 @@ msgstr "Mga advanced na opsyon"
 msgid "Agriculture"
 msgstr "Agrikultura"
 
-#: apps/web/src/components/market-bar.tsx:159
+#: apps/web/src/components/market-bar.tsx:202
+#: apps/web/src/components/market-bar.tsx:261
 msgid "All"
 msgstr "Lahat"
 
@@ -730,6 +731,10 @@ msgid "intro.offer.body"
 msgstr "Inilalarawan ng alok ang mga produkto o serbisyong ibinibigay ng isang "
 "tao. Tingnan ang mga detalye, presyo, at kung aling voucher ang "
 "tinatanggap."
+
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:131
+msgid "Announcement"
+msgstr "Anunsyo"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
@@ -1009,7 +1014,8 @@ msgstr "Larawan ng katalogo"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Na-save ang katalogo. Hindi maidagdag ang item. Subukan muli."
 
-#: apps/web/src/components/market-bar.tsx:164
+#: apps/web/src/components/market-bar.tsx:187
+#: apps/web/src/components/market-bar.tsx:266
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
@@ -1211,6 +1217,10 @@ msgid "intro.send.body"
 msgstr "Pumili ng tatanggap, voucher na hawak mo, at halaga. Suriin ang mga "
 "detalye bago kumpirmahin, saka hintayin ang resulta ng paglilipat."
 
+#: apps/web/src/features/home/ui/market-page.tsx:450
+msgid "Choose a resource type to show it on the map."
+msgstr "Pumili ng uri ng resource na ipapakita sa mapa."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:88
 msgid "Choose a unit of account"
@@ -1312,7 +1322,7 @@ msgstr "I-clear ang filter"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:41
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:125
-#: apps/web/src/features/home/ui/market-page.tsx:347
+#: apps/web/src/features/home/ui/market-page.tsx:483
 #: apps/web/src/features/home/ui/marketplace-page.tsx:165
 #: apps/web/src/features/home/ui/marketplace-page.tsx:215
 #: apps/web/src/features/home/ui/offers-page.tsx:149
@@ -1886,10 +1896,15 @@ msgstr "Hindi ma-load ang mga item sa katalogo."
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:44
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:136
+#: apps/web/src/features/home/ui/market-page.tsx:394
 msgid "Couldn't load catalogs."
 msgstr "Hindi ma-load ang mga katalogo."
 
-#: apps/web/src/features/home/ui/market-page.tsx:263
+#: apps/web/src/features/home/ui/market-page.tsx:394
+#~ msgid "Couldn't load Catalogs."
+#~ msgstr "Hindi ma-load ang mga katalogo."
+
+#: apps/web/src/features/home/ui/market-page.tsx:372
 msgid "Couldn't load complete marketplace results."
 msgstr "Hindi ma-load ang kumpletong mga resulta sa pamilihan."
 
@@ -1917,15 +1932,20 @@ msgid "Couldn't load pool tags."
 msgstr "Hindi ma-load ang mga tag ng pool."
 
 #: apps/web/src/components/wants/want-detail.tsx:198
-#: apps/web/src/features/home/ui/market-page.tsx:271
+#: apps/web/src/features/home/ui/market-page.tsx:380
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "Hindi ma-load ang mga pool."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:277
+#: apps/web/src/features/home/ui/market-page.tsx:401
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:316
 msgid "Couldn't load posts."
 msgstr "Hindi ma-load ang mga post."
+
+#: apps/web/src/features/home/ui/market-page.tsx:401
+#~ msgid "Couldn't load Posts."
+#~ msgstr "Hindi ma-load ang mga post."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:454
 msgid "Couldn't load Pretium history."
@@ -1940,7 +1960,7 @@ msgstr "Hindi ma-load ang mga limitasyon ng resource."
 msgid "Couldn't load reviews."
 msgstr "Hindi ma-load ang mga review."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:571
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:592
 msgid "Couldn't load tags."
 msgstr "Hindi ma-load ang mga tag."
 
@@ -1965,7 +1985,7 @@ msgstr "Hindi ma-load ang mga voucher ng pool na ito."
 msgid "Couldn't load this post."
 msgstr "Hindi ma-load ang post na ito."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:207
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:208
 msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "Hindi ma-load ang post na ito. Maaari lamang ninyong i-edit ang mga "
 "post na kayo ang sumulat."
@@ -2013,7 +2033,7 @@ msgstr "Hindi ma-load ang mga voucher."
 msgid "Couldn't load Wants for this pool."
 msgstr "Hindi ma-load ang mga pangangailangan para sa pool na ito."
 
-#: apps/web/src/features/home/ui/market-page.tsx:278
+#: apps/web/src/features/home/ui/market-page.tsx:387
 #: apps/web/src/features/wants/ui/wants-page.tsx:125
 msgid "Couldn't load Wants."
 msgstr "Hindi ma-load ang mga pangangailangan."
@@ -2114,7 +2134,7 @@ msgstr "Hindi ma-save ang mga detalye ng voucher."
 msgid "Couldn't save this Want. Try again."
 msgstr "Hindi ma-save ang pangangailangang ito. Subukan muli."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:317
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:318
 msgid "Couldn't save your post."
 msgstr "Hindi ma-save ang inyong post."
 
@@ -2452,7 +2472,7 @@ msgstr "Paglalarawan"
 msgid "Directions"
 msgstr "Mga direksyon"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:690
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:711
 msgid "Discard changes"
 msgstr "Huwag i-save ang mga pagbabago"
 
@@ -2582,7 +2602,7 @@ msgstr "I-edit ang alok"
 msgid "Edit pool details"
 msgstr "I-edit ang mga detalye ng pool"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:356
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:357
 msgid "Edit post"
 msgstr "I-edit ang post"
 
@@ -2653,7 +2673,7 @@ msgstr "Pinapahintulutan ang mga notification…"
 msgid "Endowments"
 msgstr "Pondong kaloob"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:457
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:458
 #: apps/web/src/features/wants/ui/want-form-page.tsx:266
 msgid "Ends"
 msgstr "Ang mga dulo"
@@ -2776,7 +2796,11 @@ msgstr "Ilagay ang address ng inyong Gnosis wallet."
 msgid "Equal value"
 msgstr "Katumbas na halaga"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:430
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:129
+msgid "Event"
+msgstr "Kaganapan"
+
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:431
 msgid "Event details"
 msgstr "Mga detalye ng kaganapan"
 
@@ -2966,7 +2990,7 @@ msgstr "Mga filter"
 msgid "Finding a name…"
 msgstr "Paghahanap ng isang pangalan..."
 
-#: apps/web/src/features/home/ui/market-page.tsx:211
+#: apps/web/src/features/home/ui/market-page.tsx:295
 msgid "Finding location"
 msgstr "Paghahanap ng lokasyon"
 
@@ -3074,7 +3098,7 @@ msgid "Holdings"
 msgstr "Mga hawak"
 
 #: apps/web/src/features/home/ui/report-page.tsx:413
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:478
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:479
 msgid "Host"
 msgstr "Mag-host"
 
@@ -3316,7 +3340,7 @@ msgstr "Iwanang walang laman upang ipakita ang marker ng Want."
 #~ msgid "Leave empty to use your profile picture."
 #~ msgstr "Iwang walang laman upang gamitin ang iyong larawan sa profile."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:689
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:710
 msgid "Leave without saving?"
 msgstr "Umalis nang hindi nagse-save?"
 
@@ -3391,7 +3415,7 @@ msgstr "I-link ang isang passkey"
 msgid "Link address"
 msgstr "Address ng link"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:549
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:570
 msgid "Link at least one voucher or pool."
 msgstr "Mag-link ng kahit isang voucher o pool."
 
@@ -3463,7 +3487,7 @@ msgstr "Ang pag-link ng passkey ay nabigo. Ang inyong papel na wallet ay walang 
 "pagbabago."
 
 #: apps/web/src/features/home/ui/report-page.tsx:439
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:661
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:682
 msgid "Links"
 msgstr "Mga link"
 
@@ -3607,8 +3631,8 @@ msgstr "Nilo-load ang pangangailangan…"
 msgid "Loading Wants…"
 msgstr "Nilo-load ang mga pangangailangan…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:121
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:194
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:122
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:195
 msgid "Loading your post…"
 msgstr "Pag-load ng inyong post..."
 
@@ -3626,7 +3650,7 @@ msgstr "Pag-load ng inyong profile..."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
 #: apps/web/src/components/market-search.tsx:302
-#: apps/web/src/components/nearby-catalog.tsx:116
+#: apps/web/src/components/nearby-catalog.tsx:126
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:64
 #: apps/web/src/components/resource-usage.tsx:141
@@ -3663,7 +3687,7 @@ msgstr "Lokal na pera at M-Pesa"
 msgid "Location"
 msgstr "Lokasyon"
 
-#: apps/web/src/features/home/ui/market-page.tsx:213
+#: apps/web/src/features/home/ui/market-page.tsx:297
 msgid "Location denied"
 msgstr "Tinanggihan ang access sa lokasyon"
 
@@ -3711,7 +3735,7 @@ msgstr "Pamahalaan ang voucher"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "Pamahalaan ang session ng inyong wallet at mga kagustuhan sa app."
 
-#: apps/web/src/components/market-bar.tsx:242
+#: apps/web/src/components/market-bar.tsx:344
 msgid "Map"
 msgstr "Mapa"
 
@@ -3719,7 +3743,7 @@ msgstr "Mapa"
 #~ msgid "Map marker"
 #~ msgstr "Pananda sa mapa"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:120
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:140
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:47
 msgid "Map pin"
 msgstr "Pin sa mapa"
@@ -3733,7 +3757,7 @@ msgstr "Pin sa mapa"
 #~ msgstr "Kulay ng pananda"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
-#: apps/web/src/features/home/ui/market-page.tsx:359
+#: apps/web/src/features/home/ui/market-page.tsx:495
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:70
 #: apps/web/src/lib/category-label.ts:18
@@ -3744,7 +3768,7 @@ msgstr "Pamilihan"
 msgid "Marketplace"
 msgstr "Pamilihan"
 
-#: apps/web/src/components/market-bar.tsx:169
+#: apps/web/src/components/market-bar.tsx:271
 msgid "Marketplace sections"
 msgstr "Mga seksyon ng pamilihan"
 
@@ -3777,7 +3801,7 @@ msgstr "Max {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Ang media ay dapat na-upload na http(s) URL"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:109
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:123
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:346
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:493
 msgid "Message"
@@ -3899,7 +3923,7 @@ msgstr "Mga pool ko"
 #: apps/web/src/features/home/ui/posts-page.tsx:110
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:31
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:77
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:740
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:761
 msgid "My posts"
 msgstr "Ang aking mga post"
 
@@ -3984,7 +4008,7 @@ msgstr "Hindi maaaring isa sa mga kontrata ng asset na ito ang bagong may-ari"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:105
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:356
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:357
 msgid "New post"
 msgstr "Bagong post"
 
@@ -4135,7 +4159,7 @@ msgstr "Walang petsa ng pagtatapos"
 #~ msgstr "Wala pang mga item. Magdagdag ng mga pool o voucher mula sa kanilang "
 #~ "mga pahina ng detalye."
 
-#: apps/web/src/features/home/ui/market-page.tsx:325
+#: apps/web/src/features/home/ui/market-page.tsx:461
 #: apps/web/src/features/home/ui/marketplace-page.tsx:171
 msgid "No marketplace results are available through your Credit pools."
 msgstr "Walang mga resulta sa pamilihan na available sa pamamagitan ng iyong "
@@ -4145,11 +4169,11 @@ msgstr "Walang mga resulta sa pamilihan na available sa pamamagitan ng iyong "
 msgid "No marketplace results found."
 msgstr "Walang nakitang mga resulta sa pamilihan."
 
-#: apps/web/src/features/home/ui/market-page.tsx:344
+#: apps/web/src/features/home/ui/market-page.tsx:480
 msgid "No marketplace results match this search."
 msgstr "Walang mga resulta sa pamilihan na tumutugma sa paghahanap na ito."
 
-#: apps/web/src/features/home/ui/market-page.tsx:351
+#: apps/web/src/features/home/ui/market-page.tsx:487
 msgid "No marketplace results to show yet."
 msgstr "Wala pang mga resulta sa pamilihan na maipapakita."
 
@@ -4313,7 +4337,7 @@ msgstr "Walang nakitang pangangailangan."
 msgid "No Wants yet."
 msgstr "Wala pang pangangailangan."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:500
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:501
 msgid "No. of participants"
 msgstr "Bilang ng mga kalahok"
 
@@ -4448,7 +4472,7 @@ msgstr "Na-update ang alok."
 msgid "Offerings"
 msgstr "Mga alok"
 
-#: apps/web/src/components/market-bar.tsx:160
+#: apps/web/src/components/market-bar.tsx:262
 #: apps/web/src/components/resource-usage.tsx:117
 #: apps/web/src/features/home/ui/offers-page.tsx:85
 msgid "Offers"
@@ -4810,7 +4834,7 @@ msgstr "larawan {0}"
 msgid "Photo uploads are unavailable right now."
 msgstr "Hindi available ang mga upload ng larawan ngayon."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:641
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:662
 msgid "Photos"
 msgstr "Mga larawan"
 
@@ -4819,7 +4843,7 @@ msgstr "Mga larawan"
 #~ msgstr "Lalabas ang mga larawan ayon sa pagkakasunod ng pagdagdag ninyo sa mga "
 #~ "ito."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:362
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:363
 msgid "Picked up where you left off — this post has not been submitted yet."
 msgstr "Nagpatuloy mula sa huli ninyong ginawa — hindi pa naisusumite ang post "
 "na ito."
@@ -4828,11 +4852,11 @@ msgstr "Nagpatuloy mula sa huli ninyong ginawa — hindi pa naisusumite ang post
 msgid "Piece"
 msgstr "Piraso"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:172
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:197
 msgid "Pin colour"
 msgstr "kulay ng pin"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:138
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:158
 msgid "Pin icon"
 msgstr "Pin icon"
 
@@ -4840,7 +4864,7 @@ msgstr "Pin icon"
 msgid "Pink"
 msgstr "Pink"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:522
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:523
 msgid "Place"
 msgstr "Lugar"
 
@@ -5024,7 +5048,8 @@ msgid "Pool tracking details are missing."
 msgstr "Ang mga detalye ng pagsubaybay ng pool ay nawawala."
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
-#: apps/web/src/components/market-bar.tsx:163
+#: apps/web/src/components/market-bar.tsx:186
+#: apps/web/src/components/market-bar.tsx:265
 #: apps/web/src/components/resource-usage.tsx:118
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:155
@@ -5051,19 +5076,23 @@ msgstr "Listahan ng mga pool"
 msgid "Position your photo"
 msgstr "I-position ang inyong larawan"
 
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:127
+msgid "Post"
+msgstr "Post"
+
 #: apps/web/src/features/home/ui/report-page.tsx:62
 msgid "Post not found."
 msgstr "Hindi natagpuan ang post."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:307
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:308
 msgid "Post published."
 msgstr "Na-publish ang post."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:564
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:585
 msgid "Post tags"
 msgstr "Mga tag ng post"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:409
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:410
 msgid "Post text"
 msgstr "Text ng post"
 
@@ -5072,11 +5101,12 @@ msgstr "Text ng post"
 msgid "Post text is too long"
 msgstr "Masyadong mahaba ang teksto ng post"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:301
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:302
 msgid "Post updated."
 msgstr "Na-update ang post."
 
-#: apps/web/src/components/market-bar.tsx:221
+#: apps/web/src/components/market-bar.tsx:189
+#: apps/web/src/components/market-bar.tsx:323
 #: apps/web/src/components/navigation/bottom-navigation.tsx:58
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:158
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:296
@@ -5274,7 +5304,7 @@ msgstr "Bayarin sa protocol"
 msgid "Provide an email or phone number"
 msgstr "Maglagay ng email o numero ng telepono"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:682
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:703
 msgid "Publish"
 msgstr "I-publish"
 
@@ -5334,7 +5364,7 @@ msgstr "Ang QR ay kasalukuyang naglalaman ng raw private key."
 #~ msgid "Quantity"
 #~ msgstr "Dami"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:107
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:121
 msgid "Question"
 msgstr "Tanong"
 
@@ -5517,12 +5547,12 @@ msgid "Rehabilitation"
 msgstr "Rehabilitasyon"
 
 #: apps/web/src/features/home/ui/report-page.tsx:524
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:620
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:641
 msgid "Related pools"
 msgstr "Mga kaugnay na pool"
 
 #: apps/web/src/features/home/ui/report-page.tsx:492
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:597
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:618
 msgid "Related vouchers"
 msgstr "Mga kaugnay na voucher"
 
@@ -5559,7 +5589,7 @@ msgstr "Alisin ang {0}"
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:766
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:303
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:566
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:587
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:758
 #: apps/web/src/features/wants/ui/want-form-page.tsx:249
 msgid "Remove {tag}"
@@ -5620,7 +5650,7 @@ msgstr "Pagmumula ng ulat"
 msgid "Reported"
 msgstr "Nai-report"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:111
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:125
 msgid "Request"
 msgstr "Kahilingan"
 
@@ -5641,6 +5671,10 @@ msgstr "I-reset ang logo"
 
 #~ msgid "Resolving recipient…"
 #~ msgstr "Hinahanap ang tatanggap…"
+
+#: apps/web/src/components/market-bar.tsx:198
+msgid "Resources shown on the map"
+msgstr "Mga resource na ipinapakita sa mapa"
 
 #. placeholder {0}: voucher.symbol
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:457
@@ -5685,9 +5719,11 @@ msgstr "Retiro"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:144
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:975
-#: apps/web/src/features/home/ui/market-page.tsx:264
-#: apps/web/src/features/home/ui/market-page.tsx:272
-#: apps/web/src/features/home/ui/market-page.tsx:279
+#: apps/web/src/features/home/ui/market-page.tsx:373
+#: apps/web/src/features/home/ui/market-page.tsx:381
+#: apps/web/src/features/home/ui/market-page.tsx:388
+#: apps/web/src/features/home/ui/market-page.tsx:395
+#: apps/web/src/features/home/ui/market-page.tsx:402
 #: apps/web/src/features/home/ui/marketplace-page.tsx:186
 #: apps/web/src/features/home/ui/marketplace-page.tsx:237
 #: apps/web/src/features/home/ui/report-page.tsx:57
@@ -5703,8 +5739,8 @@ msgstr "Retiro"
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:32
 #: apps/web/src/features/pools/ui/pools-page.tsx:272
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:215
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:580
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:216
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:601
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:745
@@ -5761,7 +5797,7 @@ msgstr "I-save at muling buksan ang pangangailangan"
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:470
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:597
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:680
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:701
 msgid "Save changes"
 msgstr "I-save ang mga pagbabago"
 
@@ -5795,7 +5831,7 @@ msgstr "I-save ang inyong card"
 #~ msgid "Saved location unavailable"
 #~ msgstr "Hindi available ang naka-save na lokasyon"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:302
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:303
 msgid "Saved. Your post is awaiting approval again."
 msgstr "Na-save. Naghihintay muli ng pag-apruba ang inyong post."
 
@@ -5807,7 +5843,7 @@ msgstr "Na-save. Naghihintay muli ng pag-apruba ang inyong post."
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:198
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:468
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:678
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:699
 msgid "Saving…"
 msgstr "Sine-save…"
 
@@ -5905,7 +5941,7 @@ msgstr "Maghanap ng mga tag ng pool"
 msgid "Search pools"
 msgstr "Maghanap ng mga pool"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:562
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:583
 msgid "Search post tags"
 msgstr "Maghanap ng mga tag ng post"
 
@@ -5921,12 +5957,12 @@ msgstr "Ginagamit ng mga resulta ng paghahanap ang lugar na ipinapakita sa "
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:349
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:765
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:302
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:565
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:586
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:757
 msgid "Search tags"
 msgstr "Maghanap ng mga tag"
 
-#: apps/web/src/features/home/ui/market-page.tsx:388
+#: apps/web/src/features/home/ui/market-page.tsx:529
 #: apps/web/src/features/home/ui/marketplace-page.tsx:107
 msgid "Search the marketplace"
 msgstr "Maghanap sa pamilihan"
@@ -6029,7 +6065,7 @@ msgstr "Mga napiling tag ng pool"
 msgid "Selected pools"
 msgstr "Mga napiling pool"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:563
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:584
 msgid "Selected post tags"
 msgstr "Mga napiling tag ng post"
 
@@ -6268,7 +6304,7 @@ msgid "Shown to anyone using this pool"
 msgstr "Ipinakita sa sinumang gumagamit ng pool"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:127
+#: apps/web/src/components/market-bar.tsx:138
 msgid "Sign in"
 msgstr "Mag-sign in"
 
@@ -6389,7 +6425,7 @@ msgstr "Nagpadala ng stablecoin"
 msgid "Standard"
 msgstr "Standard"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:365
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:366
 msgid "Start over"
 msgstr "Magsimula muli"
 
@@ -6401,7 +6437,7 @@ msgstr "Sinisimulan ang card reader…"
 msgid "Starting…"
 msgstr "Sinisimulan…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:436
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:437
 #: apps/web/src/features/wants/ui/want-form-page.tsx:252
 msgid "Starts"
 msgstr "Simulan"
@@ -6595,7 +6631,7 @@ msgstr "May gumagamit na ng simbolo, kaya {0} ang gagamitin."
 #: apps/web/src/features/home/ui/offers-page.tsx:116
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:271
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:555
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:576
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:726
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:55
 #: apps/web/src/features/wants/ui/want-form-page.tsx:240
@@ -6603,7 +6639,7 @@ msgstr "May gumagamit na ng simbolo, kaya {0} ang gagamitin."
 msgid "Tags"
 msgstr "Mga tag"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:546
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:567
 msgid "Tags and resources"
 msgstr "Mga tag at resource"
 
@@ -7079,7 +7115,7 @@ msgid "This pool's deposit limit changed. Review the updated amounts and try "
 msgstr "Nagbago ang limitasyon ng deposito ng pool na ito. Suriin ang mga "
 "na-update na halaga at subukang muli."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:314
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:315
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Masyadong malaki ang post na ito upang i-save. Paikliin ang teksto o "
 "mag-alis ng ilang media."
@@ -7102,7 +7138,7 @@ msgid "This voucher's decimals are unknown, so a limit can't be set."
 msgstr "Ang mga decimal ng voucher na ito ay hindi kilala, kaya ang isang "
 "limitasyon ay hindi maaaring itakda."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:381
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:382
 msgid "Title"
 msgstr "Pamagat"
 
@@ -7393,7 +7429,7 @@ msgstr "I-upload ang larawan ng QR code"
 msgid "Uploading photo…"
 msgstr "Pag-upload ng larawan..."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:676
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:697
 msgid "Uploading photos…"
 msgstr "Pag-upload ng mga larawan..."
 
@@ -7416,11 +7452,11 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "Gamitin ang <0>Binance</0> o ibang lokal na exchange, pagkatapos ay ang "
 "<1>Jumper</1> upang magpadala ng pondo sa inyong Gnosis wallet."
 
-#: apps/web/src/features/home/ui/market-page.tsx:214
+#: apps/web/src/features/home/ui/market-page.tsx:298
 msgid "Use current location"
 msgstr "Gamitin ang kasalukuyang lokasyon"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:132
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:152
 msgid "Use default"
 msgstr "Gamitin ang default"
 
@@ -7561,7 +7597,7 @@ msgstr "voucher"
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
 #: apps/web/src/features/home/ui/marketplace-page.tsx:400
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:165
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:175
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:176
 msgid "Voucher"
 msgstr "Voucher"
 
@@ -7670,7 +7706,8 @@ msgid "Voucher tracking details are missing."
 msgstr "Ang mga detalye ng pagsubaybay ng voucher ay nawawala."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:320
-#: apps/web/src/components/market-bar.tsx:162
+#: apps/web/src/components/market-bar.tsx:184
+#: apps/web/src/components/market-bar.tsx:264
 #: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/wants/want-detail.tsx:169
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
@@ -7786,7 +7823,8 @@ msgstr "Larawan ng pangangailangan"
 #~ msgid "Wanted by {0}"
 #~ msgstr "Hiniling ni {0}"
 
-#: apps/web/src/components/market-bar.tsx:161
+#: apps/web/src/components/market-bar.tsx:185
+#: apps/web/src/components/market-bar.tsx:263
 #: apps/web/src/components/resource-usage.tsx:119
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
@@ -7877,7 +7915,7 @@ msgstr "Kailan at saan"
 msgid "Where and what for"
 msgstr "Saan at bakit"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:528
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:539
 msgid "Where did this happen?"
 msgstr "Saan nangyari ito?"
 
@@ -8136,7 +8174,7 @@ msgstr "Magiging available ang inyong review kapag naproseso na ang pagtubos na 
 "ito. Makikita rin ninyo ito sa ibang pagkakataon sa tab na Mga review "
 "ng voucher."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:699
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:720
 msgid "Your unsaved changes to this post will be lost."
 msgstr "Mawawala ang mga hindi pa nase-save na pagbabago sa post na ito."
 

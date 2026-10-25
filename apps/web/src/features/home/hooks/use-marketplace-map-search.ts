@@ -1,6 +1,6 @@
 import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { EMPTY_CATALOG_FILTER, type CatalogFilter } from "@clc/core/features/catalog/logic";
-import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
+import type { MarketplaceKind, MarketplaceResult } from "@clc/core/features/marketplace/logic";
 import type { WantMarkerIcon } from "@clc/core/features/wants/logic";
 import type { MarkerColor } from "@clc/core/features/markers/logic";
 import { marketBoundsKey, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
@@ -12,6 +12,7 @@ import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter"
 import { marketplaceClient } from "#/lib/api/marketplace";
 import type { MarketPoolLocation } from "./use-market-pools";
 import type { MarketLocation } from "#/features/home/ui/market-data";
+import type { MarketCatalogLocation } from "./use-market-catalogs";
 
 const MAP_SEARCH_PAGE_SIZE = 100;
 
@@ -31,7 +32,9 @@ export function useMarketplaceMapSearch(
   filter: CatalogFilterControls,
   pools: readonly { chainId: number; address: string }[] | undefined,
   bounds: readonly MarketBoundingBox[],
+  kinds: readonly MarketplaceKind[],
   enabled: boolean,
+  facets = false,
 ) {
   const parsed: CatalogFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
   const discovery = {
@@ -44,22 +47,25 @@ export function useMarketplaceMapSearch(
     q: parsed.term,
     tags: parsed.tags,
     tagMatch: parsed.tagMatch,
-    kinds: ["voucher", "pool", "want"] as const,
+    kinds,
     nearby: false,
     scope: discovery.scope,
     bounds,
     ...(pools ? { pools } : {}),
+    facets,
   };
   const query = useQuery({
     queryKey: marketplaceKeys.list(params),
     queryFn: async ({ signal }) => {
       const rows: MarketplaceResult[] = [];
+      let tagFacets: { tag: string; count: number }[] = [];
       let cursor: string | undefined;
       for (;;) {
         const result = await marketplaceClient.list({ ...params, cursor }, signal);
         rows.push(...result.results);
+        if (!cursor) tagFacets = result.tagFacets ?? [];
         cursor = result.nextCursor ?? undefined;
-        if (!cursor) return rows;
+        if (!cursor) return { rows, tagFacets };
       }
     },
     enabled,
@@ -68,11 +74,15 @@ export function useMarketplaceMapSearch(
   });
 
   const locations = useMemo(() => {
+    if (!enabled) return [];
     const byIdentity = new Map<
       string,
-      MarketPoolLocation | MarketVoucherSearchLocation | MarketWantSearchLocation
+      | MarketPoolLocation
+      | MarketVoucherSearchLocation
+      | MarketWantSearchLocation
+      | MarketCatalogLocation
     >();
-    for (const row of query.data ?? []) {
+    for (const row of query.data?.rows ?? []) {
       if (row.kind === "voucher") {
         byIdentity.set(`voucher:${row.chainId}:${row.address.toLowerCase()}`, {
           id: `market:voucher:${row.id}`,
@@ -109,17 +119,56 @@ export function useMarketplaceMapSearch(
           lng: row.geoLng,
           locationName: row.locationName,
         });
+      } else if (row.kind === "catalog") {
+        byIdentity.set(`catalog:${row.id}`, {
+          id: `market:catalog:${row.id}`,
+          catalogId: row.id,
+          name: row.name,
+          kind: "catalog",
+          markerIcon: null,
+          markerColor: null,
+          lat: row.geoLat,
+          lng: row.geoLng,
+          locationName: row.locationName,
+        });
       }
     }
     return [...byIdentity.values()];
-  }, [query.data]);
+  }, [enabled, query.data]);
 
   const retry = useCallback(() => void query.refetch(), [query]);
   return {
     locations,
+    tagFacets: enabled ? (query.data?.tagFacets ?? []) : [],
     status: !enabled ? "disabled" : query.isPending ? "loading" : query.isError ? "error" : "ready",
     error: enabled ? query.error : null,
     retry,
     retrying: enabled && query.isFetching,
   } as const;
+}
+
+/** First-page facet counts for the currently selected commerce pin types. */
+export function useMarketplaceMapFacets(
+  bounds: readonly MarketBoundingBox[],
+  kinds: readonly MarketplaceKind[],
+  enabled: boolean,
+) {
+  const params = {
+    perPage: 1,
+    q: "",
+    tags: [] as string[],
+    tagMatch: "any" as const,
+    kinds,
+    nearby: false,
+    scope: `map-facets:${marketBoundsKey(bounds)}`,
+    bounds,
+    facets: true,
+  };
+  const query = useQuery({
+    queryKey: marketplaceKeys.list(params),
+    queryFn: ({ signal }) => marketplaceClient.list(params, signal),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+  return enabled ? (query.data?.tagFacets ?? []) : [];
 }

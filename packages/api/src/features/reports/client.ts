@@ -5,11 +5,17 @@ import {
 } from "@clc/core/features/catalog/logic";
 import {
   type ReportAttachmentKind,
+  type ReportMarkerIcon,
   type ReportStatus,
   type ReportWrite,
   isReportStatus,
   reportWriteSchema,
 } from "@clc/core/features/reports/logic";
+import {
+  isMarkerColor,
+  isReportMarkerIcon,
+  type MarkerColor,
+} from "@clc/core/features/markers/logic";
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
@@ -91,6 +97,8 @@ export type ReportSummary = {
   periodTo: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  markerIcon: ReportMarkerIcon;
+  markerColor: MarkerColor;
   tags: string[];
   vouchers: ReportVoucher[];
   pools: ReportPool[];
@@ -197,6 +205,8 @@ export type FilteredReportsParams = {
   cursor?: ReportCursor;
   filter: ReportFilter;
   facets?: boolean;
+  /** Posts directly linked to these pools or to vouchers they accept. */
+  creditablePools?: readonly VoucherRef[];
 };
 
 export type FilteredReportPage = ReportPage & {
@@ -289,6 +299,8 @@ type BackendReport = Partial<{
   hostName: string | null;
   participants: string | null;
   timeTaken: string | null;
+  markerIcon: string | null;
+  markerColor: string | null;
 }>;
 
 type BackendReportPage = {
@@ -376,7 +388,7 @@ export function createReportsClient(http: HttpClient) {
     },
 
     async getFilteredReports(
-      { filter, facets, perPage, cursor, nearby, bounds }: FilteredReportsParams,
+      { filter, facets, perPage, cursor, nearby, bounds, creditablePools }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
       const query = new URLSearchParams({ perPage: String(perPage) });
@@ -388,6 +400,9 @@ export function createReportsClient(http: HttpClient) {
       if (facets) query.set("facets", "true");
       if (nearby) query.set("nearby", "true");
       appendMarketBounds(query, bounds);
+      if (creditablePools?.length) {
+        query.set("creditablePools", creditablePools.map(serializeVoucherRef).join(","));
+      }
 
       const result = await http.request<BackendFilteredReportPage>(
         `/api/v2/reports?${query.toString()}`,
@@ -563,6 +578,8 @@ export function serializeReportWrite(input: ReportWrite): string {
     hostName: normalized.hostName === "" ? null : normalized.hostName,
     participants: normalized.participants === "" ? null : normalized.participants,
     timeTaken: normalized.timeTaken === "" ? null : normalized.timeTaken,
+    markerIcon: normalized.markerIcon,
+    markerColor: normalized.markerColor,
     tags: normalized.tags,
     vouchers: normalized.vouchers.map((voucher) => ({
       chainId: voucher.chainId,
@@ -646,6 +663,8 @@ function normalizeReportSummary(report: BackendReport): ReportSummary | null {
     periodTo: normalizeText(report.periodTo),
     createdAt: normalizeText(report.createdAt),
     updatedAt: normalizeText(report.updatedAt),
+    markerIcon: isReportMarkerIcon(report.markerIcon) ? report.markerIcon : "post",
+    markerColor: isMarkerColor(report.markerColor) ? report.markerColor : "pink",
     tags: normalizeStringArray(report.tags),
     vouchers: (report.vouchers ?? []).map(normalizeReportVoucher).filter(isPresent),
     pools: (report.pools ?? []).map(normalizeReportPool).filter(isPresent),

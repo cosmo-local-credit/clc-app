@@ -49,6 +49,7 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
 }));
 
 vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
+  useMarketplaceMapFacets: () => [],
   useMarketplaceMapSearch: () => ({
     locations: [],
     status: "disabled",

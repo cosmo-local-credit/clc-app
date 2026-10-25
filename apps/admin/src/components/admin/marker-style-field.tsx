@@ -2,21 +2,28 @@ import {
   MARKER_COLORS,
   MARKER_COLOR_HEX,
   MARKER_ICONS,
+  REPORT_MARKER_ICONS,
   type MarketKind,
   type MarkerColor,
   type MarkerIcon,
-  type MarkerStyle,
+  type MapMarkerStyle,
+  type ReportMarkerIcon,
+  type ReportMarkerStyle,
   isMarkerColor,
   isMarkerIcon,
+  isReportMarkerIcon,
   resolveMarkerStyle,
 } from "@clc/core/features/markers/logic";
 import type { IconType } from "react-icons";
 import {
   RiCouponFill,
+  RiArticleLine,
+  RiCalendarEventLine,
   RiGraduationCapFill,
   RiHandCoinFill,
   RiHeartPulseFill,
   RiPlantFill,
+  RiMegaphoneLine,
   RiRestaurantFill,
   RiShoppingBasket2Fill,
   RiToolsFill,
@@ -40,6 +47,18 @@ const MARKER_GLYPHS: Record<MarkerIcon, IconType> = {
   education: RiGraduationCapFill,
 };
 
+const REPORT_MARKER_GLYPHS: Record<ReportMarkerIcon, IconType> = {
+  post: RiArticleLine,
+  event: RiCalendarEventLine,
+  announcement: RiMegaphoneLine,
+};
+
+const REPORT_MARKER_ICON_LABEL: Record<ReportMarkerIcon, string> = {
+  post: "Post",
+  event: "Event",
+  announcement: "Announcement",
+};
+
 const MARKER_ICON_LABEL: Record<MarkerIcon, string> = {
   basket: "Shopping",
   "hand-coin": "Services",
@@ -61,8 +80,13 @@ const MARKER_COLOR_LABEL: Record<MarkerColor, string> = {
 };
 
 /** The member app's map pin as SVG: the same 30 x 36 box, disc, tip and glyph. */
-function MarkerPin({ style, size = 30 }: { style: MarkerStyle; size?: number }) {
-  const Glyph = MARKER_GLYPHS[style.icon];
+export function MarkerPin({ style, size = 30 }: { style: MapMarkerStyle; size?: number }) {
+  const Glyph =
+    style.icon === "post" || style.icon === "event" || style.icon === "announcement"
+      ? REPORT_MARKER_GLYPHS[style.icon]
+      : "question" === style.icon || "message" === style.icon || "request" === style.icon
+        ? RiArticleLine
+        : MARKER_GLYPHS[style.icon];
   return (
     <svg
       viewBox="0 0 30 36"
@@ -80,6 +104,80 @@ function MarkerPin({ style, size = 30 }: { style: MarkerStyle; size?: number }) 
       />
       <Glyph x={8.04} y={8.04} size={13.92} color="#ffffff" />
     </svg>
+  );
+}
+
+/** Required Post marker style: unlike vouchers there is no automatic option. */
+export function ReportMarkerStyleField({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: ReportMarkerStyle;
+  onChange: (next: ReportMarkerStyle) => void;
+  disabled?: boolean;
+}) {
+  const toggleClass = cn(
+    "text-muted-foreground h-9 min-w-9 px-2 text-xs font-medium",
+    "data-[pressed]:bg-muted data-[pressed]:text-foreground",
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3">
+        <MarkerPin style={value} size={32} />
+        <p className="text-sm font-medium">
+          {REPORT_MARKER_ICON_LABEL[value.icon]}, {MARKER_COLOR_LABEL[value.color]}
+        </p>
+      </div>
+      <ToggleGroup
+        variant="outline"
+        size="sm"
+        spacing={0}
+        value={[value.icon]}
+        onValueChange={(values) => {
+          const next = values[0];
+          if (isReportMarkerIcon(next)) onChange({ ...value, icon: next });
+        }}
+        disabled={disabled}
+        aria-label="Post map marker icon"
+        className="border-border bg-card flex-wrap border p-0.5"
+      >
+        {REPORT_MARKER_ICONS.map((icon) => (
+          <ToggleGroupItem key={icon} value={icon} className={cn(toggleClass, "gap-1.5")}>
+            <MarkerPin style={{ icon, color: value.color }} size={14} />
+            {REPORT_MARKER_ICON_LABEL[icon]}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+      <ToggleGroup
+        variant="outline"
+        size="sm"
+        spacing={0}
+        value={[value.color]}
+        onValueChange={(values) => {
+          const next = values[0];
+          if (isMarkerColor(next)) onChange({ ...value, color: next });
+        }}
+        disabled={disabled}
+        aria-label="Post map marker colour"
+        className="border-border bg-card flex-wrap border p-0.5"
+      >
+        {MARKER_COLORS.map((color) => (
+          <ToggleGroupItem
+            key={color}
+            value={color}
+            aria-label={MARKER_COLOR_LABEL[color]}
+            className={toggleClass}
+          >
+            <span
+              className="size-4 rounded-full"
+              style={{ backgroundColor: MARKER_COLOR_HEX[color].pin }}
+            />
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
   );
 }
 

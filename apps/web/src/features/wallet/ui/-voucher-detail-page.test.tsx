@@ -439,6 +439,8 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     periodTo: null,
     createdAt: null,
     updatedAt: "2026-07-19T08:14:02.311Z",
+    markerIcon: "post",
+    markerColor: "pink",
     tags: ["Food production"],
     vouchers: [
       { id: "7", chainId: 42220, address: ADDRESS, name: "Priscilah Malii", symbol: "MALII" },

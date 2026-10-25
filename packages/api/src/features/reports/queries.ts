@@ -1,4 +1,6 @@
 import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
+import { marketBoundsKey, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { ManagedReportsParams, ReportCursor, ReportFilter, ReportsClient } from "./client";
@@ -39,6 +41,21 @@ export const reportKeys = {
 
   filtered: (filter: ReportFilter | null, perPage: number) =>
     ["clc", "reports", "filtered", { filter, perPage }] as const,
+  map: (
+    filter: CatalogFilter,
+    bounds: readonly MarketBoundingBox[],
+    pools: readonly VoucherRef[] | undefined,
+    facets: boolean,
+  ) =>
+    [
+      "clc",
+      "reports",
+      "map",
+      filter,
+      marketBoundsKey(bounds),
+      pools?.map(serializeVoucherRef).sort() ?? [],
+      facets,
+    ] as const,
 
   /**
    * Infinite feed of reports linked to one voucher.
@@ -132,6 +149,44 @@ export function reportFilteredQueryOptions(
   return queryOptions({
     queryKey: reportKeys.filtered(filter, perPage),
     queryFn: ({ signal }) => reports.getFilteredReports({ filter, perPage }, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Complete bounded Post catalog used by the Marketplace map. */
+export function reportMapQueryOptions(
+  reports: ReportsClient,
+  input: {
+    filter: CatalogFilter;
+    bounds: readonly MarketBoundingBox[];
+    creditablePools?: readonly VoucherRef[];
+    facets: boolean;
+  },
+) {
+  return queryOptions({
+    queryKey: reportKeys.map(input.filter, input.bounds, input.creditablePools, input.facets),
+    queryFn: async ({ signal }) => {
+      const rows = [];
+      let cursor: ReportCursor | undefined;
+      let tagFacets: Awaited<ReturnType<ReportsClient["getFilteredReports"]>>["tagFacets"] = [];
+      do {
+        const page = await reports.getFilteredReports(
+          {
+            filter: input.filter,
+            bounds: input.bounds,
+            perPage: 100,
+            cursor,
+            facets: input.facets && cursor === undefined,
+            creditablePools: input.creditablePools,
+          },
+          signal,
+        );
+        rows.push(...page.reports);
+        if (cursor === undefined) tagFacets = page.tagFacets ?? [];
+        cursor = page.next ?? undefined;
+      } while (cursor);
+      return { reports: rows, tagFacets: tagFacets ?? [] };
+    },
     placeholderData: keepPreviousData,
   });
 }
