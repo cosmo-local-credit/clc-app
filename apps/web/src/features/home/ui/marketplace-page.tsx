@@ -17,7 +17,6 @@ import { CreditableBrowseControl } from "#/components/creditable-browse-control"
 import { MarketBar } from "#/components/market-bar";
 import {
   isWithinNearbyCatalog,
-  MissingLocationNotice,
   nearbyQueryPolicy,
   useNearbyCatalog,
   useNearbyCatalogFilter,
@@ -153,7 +152,6 @@ export function MarketplacePage({
           />
         }
       />
-      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}

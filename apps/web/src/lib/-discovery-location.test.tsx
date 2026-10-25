@@ -4,6 +4,7 @@ import { DiscoveryLocationProvider, useDiscoveryLocation } from "./discovery-loc
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { NearbyCatalog, useNearbyCatalogFilter } from "#/components/nearby-catalog";
 import { useCatalogVisibilityStore } from "#/features/home/state/catalog-visibility";
+import { writePersistedLocation } from "#/features/home/api/last-location-storage";
 
 const mocks = vi.hoisted(() => ({
   ip: {
@@ -97,7 +98,7 @@ it("drops live state and ignores an old owner's pending callback", async () => {
   expect(screen.getByTestId("location").textContent).toBe("null");
   expect(screen.getByTestId("camera").textContent).toBe("null");
 });
-it("uses an IP city without prompting and exposes a location action while IP is pending", async () => {
+it("waits for IP resolution, then uses an IP city without prompting", async () => {
   query.mockResolvedValue({ state: "prompt" });
   const tree = () => (
     <DiscoveryLocationProvider owner="guest">
@@ -107,13 +108,42 @@ it("uses an IP city without prompting and exposes a location action while IP is 
     </DiscoveryLocationProvider>
   );
   const view = render(tree());
-  expect(screen.getByRole("button", { name: "Use my location" })).toBeTruthy();
+  expect(screen.getByRole("status").textContent).toBe("Loading…");
+  expect(screen.queryByRole("button", { name: "Refresh GPS" })).toBeNull();
   await waitFor(() => expect(query).toHaveBeenCalled());
   expect(getCurrentPosition).not.toHaveBeenCalled();
   mocks.ip = { data: { source: "ip-city", lat: 3, lng: 4 }, isPending: false };
   view.rerender(tree());
   expect(screen.getByTestId("filter").textContent).toBe('{"lat":3,"lng":4,"radiusKm":500}');
   expect(screen.getByTestId("camera").textContent).toBe("null");
+});
+
+it("does not reuse a previous account's precise location after the session becomes guest", async () => {
+  query.mockResolvedValue({ state: "prompt" });
+  writePersistedLocation({
+    owner: "0xprevious",
+    lat: 10,
+    lng: 20,
+    accuracy: 5,
+    capturedAt: new Date().toISOString(),
+  });
+  mocks.ip = {
+    data: { source: "country-default", lat: -1.2921, lng: 36.8219 },
+    isPending: false,
+  };
+
+  render(
+    <DiscoveryLocationProvider owner="guest">
+      <NearbyCatalog>
+        <Probe />
+      </NearbyCatalog>
+    </DiscoveryLocationProvider>,
+  );
+
+  await waitFor(() => expect(query).toHaveBeenCalled());
+  expect(screen.getByTestId("location").textContent).toBe("null");
+  expect(screen.getByTestId("filter").textContent).toBe("");
+  expect(getCurrentPosition).not.toHaveBeenCalled();
 });
 
 it("preserves an open form while the location owner changes", () => {

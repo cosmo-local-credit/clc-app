@@ -4,11 +4,10 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { fireEvent, act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import {
-  MissingLocationNotice,
   NearbyCatalog,
   isWithinNearbyCatalog,
   useNearbyCatalog,
@@ -44,6 +43,7 @@ const state = vi.hoisted(() => ({
   camera: {
     realFix: null as { lat: number; lng: number } | null,
     locationStatus: "idle",
+    explicitRequests: 0,
     requestLocation: vi.fn(),
   },
   ip: { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false },
@@ -83,6 +83,7 @@ vi.mock("@tanstack/react-router", () => ({
 beforeEach(() => {
   state.camera.realFix = null;
   state.camera.locationStatus = "idle";
+  state.camera.explicitRequests = 0;
   state.camera.requestLocation.mockReset();
   state.ip = { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false };
   state.auth.isAuthenticated = true;
@@ -409,16 +410,14 @@ it("does not load catalogs while authentication is loading", () => {
 
 function ScopeProbe() {
   return (
-    <>
-      <MissingLocationNotice />
-      <p data-testid="scope">
-        {(useNearbyCatalog() as { scope?: string } | undefined)?.scope ?? "global"}
-      </p>
-    </>
+    <p data-testid="scope">
+      {(useNearbyCatalog() as { scope?: string } | undefined)?.scope ?? "global"}
+    </p>
   );
 }
 
-it("blocks a screen behind Choose a location when a distance has no profile location", () => {
+it("temporarily falls back to Global when a member has no profile location", () => {
+  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "100");
   state.profile.data = {} as never;
   render(
     <NearbyCatalog>
@@ -426,32 +425,19 @@ it("blocks a screen behind Choose a location when a distance has no profile loca
     </NearbyCatalog>,
   );
 
-  expect(screen.getByText("Choose a location")).toBeTruthy();
-  expect(screen.queryByTestId("scope")).toBeNull();
-});
-
-it("keeps the market browsable everywhere with a notice when it allows a missing location", () => {
-  state.profile.data = {} as never;
-  render(
-    <NearbyCatalog allowMissingLocation>
-      <ScopeProbe />
-    </NearbyCatalog>,
-  );
-
   expect(screen.getByTestId("scope").textContent).toBe("global");
-  expect(screen.getByRole("status").textContent).toContain("Choose a location");
-  expect(screen.getByText("Edit profile")).toBeTruthy();
+  expect(window.localStorage.getItem(CATALOG_VISIBILITY_STORAGE_KEY)).toBe("100");
+  expect(useCatalogVisibilityStore.getState().visibility).toBe("100");
 });
 
-it("shows no notice once the profile has a location", () => {
+it("uses the selected radius once the profile has a location", () => {
   render(
-    <NearbyCatalog allowMissingLocation>
+    <NearbyCatalog>
       <ScopeProbe />
     </NearbyCatalog>,
   );
 
   expect(screen.getByTestId("scope").textContent).toContain("nearby:");
-  expect(screen.queryByText("Choose a location")).toBeNull();
 });
 
 it("defaults guests to 500 km and changes visible rows when choosing 50 km or Global", async () => {
@@ -490,30 +476,51 @@ it("uses device coordinates ahead of IP and drops old rows when the device moves
   expect(screen.getByTestId("lists").getAttribute("data-origin")).toBe("40:50");
 });
 
-it("asks guests for location instead of filtering around a fallback country", async () => {
+it.each(["idle", "denied", "unavailable", "error"])(
+  "falls back silently to Global for a guest with %s location and only a country camera",
+  async (locationStatus) => {
+    state.auth.isAuthenticated = false;
+    state.camera.locationStatus = locationStatus;
+    state.ip.data.source = "country-default";
+    window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "50");
+    mount();
+
+    await waitFor(() => expect(state.market).toHaveBeenCalled());
+    expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
+    expect(screen.getByTestId("lists").getAttribute("data-origin")).toBeNull();
+    expect(window.localStorage.getItem(CATALOG_VISIBILITY_STORAGE_KEY)).toBe("50");
+    expect(useCatalogVisibilityStore.getState().visibility).toBe("50");
+    expect(screen.queryByText("Location unavailable")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Global" })).toBeNull();
+  },
+);
+
+it("reapplies a guest's saved radius when a usable location arrives", async () => {
   state.auth.isAuthenticated = false;
   state.ip.data.source = "country-default";
+  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "50");
   const view = mount();
-  expect(screen.getByText("Choose a location")).toBeTruthy();
-  expect(state.market).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
-  expect(state.camera.requestLocation).toHaveBeenCalledOnce();
-  state.camera.locationStatus = "denied";
-  view.rerender(view.tree());
-  expect(screen.getByText("Location denied")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Global" }));
   await waitFor(() => expect(state.market).toHaveBeenCalled());
   expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
+
+  state.camera.realFix = { lat: 1, lng: 2 };
+  view.rerender(view.tree());
+  expect(screen.getByTestId("lists").getAttribute("data-origin")).toBe("1:2");
+  expect(useCatalogVisibilityStore.getState().visibility).toBe("50");
 });
 
-it("keeps Global available while IP lookup is pending", async () => {
+it("waits for the initial IP lookup before falling back to Global", async () => {
   state.auth.isAuthenticated = false;
   state.ip.data.source = "country-default";
   state.ip.isPending = true;
-  mount();
+  const view = mount();
   expect(state.market).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Global" }));
+  expect(screen.getByRole("status").textContent).toBe("Loading…");
+
+  state.ip.isPending = false;
+  view.rerender(view.tree());
   await waitFor(() => expect(state.market).toHaveBeenCalled());
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
 });
 
 it("widens a guest search from raw cache without losing rows or repeating downloads", async () => {

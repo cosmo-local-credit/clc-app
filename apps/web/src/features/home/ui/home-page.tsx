@@ -89,7 +89,7 @@ export function HomePage({
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        <NearbyCatalog allowMissingLocation>
+        <NearbyCatalog>
           <MarketPage
             isAuthenticated={isAuthenticated}
             locationOwner={locationOwner}
