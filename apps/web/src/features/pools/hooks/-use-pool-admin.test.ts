@@ -12,6 +12,11 @@ const mocks = vi.hoisted(() => ({
   relayBatch: vi.fn(),
   waitRelay: vi.fn(),
   relayerClient: { kind: "relayer" },
+  owner: { info: undefined, isSafeSigner: false } as {
+    info: undefined | { kind: "safe"; owner: string; threshold: number };
+    isSafeSigner: boolean;
+  },
+  safeWrite: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-query", () => ({
@@ -26,6 +31,15 @@ vi.mock("wagmi", () => ({
     address: mocks.address,
     connector: mocks.connectorId ? { id: mocks.connectorId } : undefined,
   }),
+}));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => mocks.owner,
+}));
+vi.mock("#/features/safe/hooks/use-safe-write", () => ({
+  useSafeWrite: () => ({ write: mocks.safeWrite }),
+}));
+vi.mock("#/features/safe/hooks/use-report-write-error", () => ({
+  useReportWriteError: () => vi.fn(),
 }));
 vi.mock("@clc/api/features/pools/queries", () => ({ poolKeys: { all: ["pools"] } }));
 vi.mock("@clc/api/features/relayer/client", () => ({
@@ -64,12 +78,54 @@ beforeEach(() => {
   mocks.relayBatch.mockResolvedValue({ trackingId: "tracking-1" });
   mocks.waitRelay.mockResolvedValue({ trackingId: "tracking-1", txHash: "0xabc" });
   mocks.mutationOptions = null;
+  mocks.owner = { info: undefined, isSafeSigner: false };
 });
 
 function options() {
   usePoolAdminRelay();
   return mocks.mutationOptions!;
 }
+
+describe("usePoolAdminRelay with a Safe owner", () => {
+  const pool = {
+    address: "0x3333333333333333333333333333333333333333",
+    ownerAddress: "0x4444444444444444444444444444444444444444",
+  };
+  const safeOwner = { kind: "safe" as const, owner: pool.ownerAddress, threshold: 2 };
+
+  it("proposes through the Safe instead of relaying as the connected account", async () => {
+    mocks.owner = { info: safeOwner, isSafeSigner: true };
+    mocks.safeWrite.mockResolvedValue({ trackingId: "t", txHash: "0xdef" });
+    usePoolAdminRelay(pool);
+
+    await expect(mocks.mutationOptions!.mutationFn(calls)).resolves.toEqual({
+      trackingId: "t",
+      txHash: "0xdef",
+    });
+    expect(mocks.safeWrite).toHaveBeenCalledWith({
+      assetAddress: pool.address,
+      safe: pool.ownerAddress,
+      threshold: 2,
+      calls,
+    });
+    expect(mocks.relayBatch).not.toHaveBeenCalled();
+  });
+
+  it("keeps relaying directly when the connected account is not a signer", async () => {
+    mocks.owner = { info: safeOwner, isSafeSigner: false };
+    usePoolAdminRelay(pool);
+
+    await mocks.mutationOptions!.mutationFn(calls);
+    expect(mocks.safeWrite).not.toHaveBeenCalled();
+    expect(mocks.relayBatch).toHaveBeenCalledOnce();
+  });
+
+  it("relays directly for an EOA owner", async () => {
+    usePoolAdminRelay(pool);
+    await mocks.mutationOptions!.mutationFn(calls);
+    expect(mocks.safeWrite).not.toHaveBeenCalled();
+  });
+});
 
 describe("usePoolAdminRelay", () => {
   it("resumes an existing ownership relay without requesting another signature", async () => {

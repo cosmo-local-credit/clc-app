@@ -130,7 +130,7 @@ export async function preparePoolOwnershipTransfer(
 
 export function usePoolOwnershipTransfer(pool: UserPool) {
   const client = useClient({ chainId: CHAIN_ID });
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   return useOwnershipTransfer(
     "pool",
     async (input) => {

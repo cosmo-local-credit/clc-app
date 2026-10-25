@@ -13,6 +13,7 @@ import {
   RiHandCoinLine,
   RiPencilLine,
   RiSafe2Line,
+  RiShieldKeyholeLine,
   RiUserSharedLine,
   RiWalletLine,
 } from "react-icons/ri";
@@ -34,7 +35,9 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
+import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import {
   type PoolFeeSettings,
   usePoolFeeSettings,
@@ -74,6 +77,7 @@ export function PoolControlsPanel({
 }) {
   const { t } = useLingui();
   const [sheet, setSheet] = useState<ControlSheet | null>(null);
+  const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
   // Balances are read for the withdraw sheets alone, so a superadmin who can
   // only edit the record never pays for the calls.
   const treasury = usePoolTreasury(
@@ -94,6 +98,13 @@ export function PoolControlsPanel({
         />
         {canManageOnChain ? (
           <>
+            {owner.isSafeOwned && owner.owner ? (
+              <ActionRow
+                icon={<RiShieldKeyholeLine className="size-4" aria-hidden="true" />}
+                label={t`Safe transactions`}
+                onClick={() => useSafeSheet.getState().show(owner.owner!)}
+              />
+            ) : null}
             <ActionRow
               icon={<RiSafe2Line className="size-4" aria-hidden="true" />}
               label={t`Withdraw liquidity`}
@@ -234,7 +245,7 @@ function WithdrawLiquidityForm({
 }) {
   const { t } = useLingui();
   const { address } = useConnection();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
 
@@ -276,7 +287,7 @@ function WithdrawLiquidityForm({
       toast.success(t`${amount} ${selected.symbol} withdrawn.`);
       onDone();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      relay.reportError(error, t`The transaction failed.`);
     }
   };
 
@@ -368,7 +379,7 @@ function CollectFeesForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
 
   const selected = vouchers.find((voucher) => voucher.tokenAddress.toLowerCase() === tokenAddress);
@@ -390,7 +401,7 @@ function CollectFeesForm({
       toast.success(t`${selected.symbol} fees sent to the fee recipient.`);
       onDone();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      relay.reportError(error, t`The transaction failed.`);
     }
   };
 
@@ -456,7 +467,7 @@ function FeeSettingsForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   const { address } = useConnection();
   const [feePercent, setFeePercent] = useState(settings?.feePercent ?? "");
   // Blank rather than the connected wallet when the pool has none: seeding the
@@ -495,7 +506,7 @@ function FeeSettingsForm({
       toast.success(t`Pool fee updated.`);
       onDone();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      relay.reportError(error, t`The transaction failed.`);
     }
   };
 

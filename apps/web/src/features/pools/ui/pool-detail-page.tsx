@@ -15,7 +15,7 @@ import { Button } from "#/components/ui/button";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useAssetOwner } from "#/features/ownership/hooks/use-asset-owner";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
@@ -84,13 +84,14 @@ export function PoolDetailPage({
   // The same rule the voucher screen applies: the backend session's address
   // must be the catalog owner, or the session must be a superadmin. clc-core
   // decides for real; this only keeps the button off everyone else's screen.
-  const currentOwner = useAssetOwner(poolAddress, pool?.ownerAddress);
+  // The owner itself, or a signer of the Safe that owns the pool.
+  const ownerInfo = useAssetOwnerInfo(poolAddress, pool?.ownerAddress);
   const isPoolOwner =
     auth.isAuthenticated &&
     !!pool &&
     !!auth.session?.address &&
     !!pool.ownerAddress &&
-    auth.session.address.toLowerCase() === currentOwner?.toLowerCase();
+    ownerInfo.canManage;
   const canEditDetails =
     auth.isAuthenticated && !!pool && (auth.session?.role === "SUPERADMIN" || isPoolOwner);
   // On-chain management is narrower than editing the record. Every call behind

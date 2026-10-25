@@ -40,6 +40,8 @@ export type ChainMetadata = {
   safe?: {
     /** Slug in the Safe Transaction Service host, `safe-transaction-<slug>`. */
     serviceSlug: string;
+    /** EIP-3770 prefix the Safe web app uses in `?safe=<prefix>:<address>`. */
+    appPrefix: string;
     multiSendCallOnly: readonly `0x${string}`[];
   };
 };
@@ -69,6 +71,7 @@ const CHAIN_METADATA = {
     caliburAddress: "0x48A910C8e9FF0b14051b78d0c96dB069E57f0729",
     safe: {
       serviceSlug: "gnosis-chain",
+      appPrefix: "gno",
       multiSendCallOnly: [
         "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
         "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",

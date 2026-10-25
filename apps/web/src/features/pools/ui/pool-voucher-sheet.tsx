@@ -391,7 +391,7 @@ function PoolVoucherConfigurationForm({
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
   // Save and Remove share one relay; this says which of the two is waiting.
   const [removing, setRemoving] = useState(false);
@@ -443,7 +443,7 @@ function PoolVoucherConfigurationForm({
         );
         onClose();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+        relay.reportError(error, t`The transaction failed.`);
       }
     },
   });
@@ -461,7 +461,7 @@ function PoolVoucherConfigurationForm({
       toast.success(t`${voucher.symbol} removed from ${pool.name}.`);
       onClose();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      relay.reportError(error, t`The transaction failed.`);
     } finally {
       setRemoving(false);
     }

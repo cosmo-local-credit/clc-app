@@ -15,10 +15,12 @@ import {
   buildSafeTransaction,
   classifyOwnerCode,
   computeSafeTxHash,
+  decodeSafeTransactionCalls,
   deriveSafeStatus,
   encodeMultiSend,
   isSigner,
   packSignatures,
+  safeCallName,
   type SafeCall,
 } from "./logic";
 
@@ -243,5 +245,34 @@ describe("owner classification", () => {
   it("matches signers case-insensitively", () => {
     expect(isSigner(["0x00000000000000000000000000000000000000Ab"], A(0xab))).toBe(true);
     expect(isSigner([A(1)], undefined)).toBe(false);
+  });
+});
+
+describe("decodeSafeTransactionCalls", () => {
+  it("returns a plain call as is", () => {
+    const tx = buildSafeTransaction({ calls: [callA], nonce: "0", multiSendCallOnly: multiSend });
+    expect(decodeSafeTransactionCalls(tx, [multiSend])).toEqual([callA]);
+  });
+  it("round-trips a MultiSend batch", () => {
+    const tx = buildSafeTransaction({
+      calls: [callA, { ...callB, value: "7" }],
+      nonce: "0",
+      multiSendCallOnly: multiSend,
+    });
+    expect(decodeSafeTransactionCalls(tx, [multiSend])).toEqual([callA, { ...callB, value: "7" }]);
+  });
+  it("refuses a delegatecall to anything but the pinned MultiSend", () => {
+    const tx = buildSafeTransaction({
+      calls: [callA, callB],
+      nonce: "0",
+      multiSendCallOnly: multiSend,
+    });
+    expect(decodeSafeTransactionCalls({ ...tx, to: A(9) }, [multiSend])).toBeNull();
+    expect(decodeSafeTransactionCalls(tx, [A(9)])).toBeNull();
+  });
+  it("names allowed owner actions and nothing else", () => {
+    expect(safeCallName("0xf2fde38b0000")).toBe("transferOwnership");
+    expect(safeCallName("0xdeadbeef")).toBeNull();
+    expect(safeCallName("0x12")).toBeNull();
   });
 });

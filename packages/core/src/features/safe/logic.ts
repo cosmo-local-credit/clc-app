@@ -1,11 +1,14 @@
 import {
   concatHex,
+  decodeFunctionData,
   encodeFunctionData,
   encodePacked,
   hashTypedData,
   isAddressEqual,
   parseAbi,
   size,
+  slice,
+  toFunctionSelector,
   zeroAddress,
   type Hex,
 } from "viem";
@@ -82,6 +85,14 @@ const safeTxTypes = {
 const safeAbi = parseAbi([
   "function execTransaction(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes signatures) returns (bool success)",
   "function multiSend(bytes transactions)",
+]);
+
+/** The reads that identify a Safe and give its signer set and next nonce. */
+export const safeReadAbi = parseAbi([
+  "function VERSION() view returns (string)",
+  "function getOwners() view returns (address[])",
+  "function getThreshold() view returns (uint256)",
+  "function nonce() view returns (uint256)",
 ]);
 
 /** Gas parameters clc-core requires: an inner failure reverts and nothing is refunded to the relayer. */
@@ -267,6 +278,11 @@ export function collapsesToSingleStep(threshold: number): boolean {
   return threshold === 1;
 }
 
+/** The queue in the hosted Safe app, a fallback place to sign and execute. */
+export function safeAppQueueUrl(appPrefix: string, safeAddress: `0x${string}`): string {
+  return `https://app.safe.global/transactions/queue?safe=${appPrefix}:${safeAddress}`;
+}
+
 export function isSigner(signers: readonly `0x${string}`[], account: `0x${string}` | undefined) {
   return account !== undefined && signers.some((signer) => isAddressEqual(signer, account));
 }
@@ -290,4 +306,78 @@ export const SUPPORTED_SAFE_VERSIONS = ["1.3.0", "1.4.1"] as const;
 
 export function isSupportedSafeVersion(version: string): boolean {
   return (SUPPORTED_SAFE_VERSIONS as readonly string[]).includes(version);
+}
+
+/**
+ * Owner actions clc-core's relay policy allows. Mirrors
+ * `DefaultAllowedSignatures` in clc-core's `internal/safe`: a call outside this
+ * list is rejected at execution, so the app shows it as unknown rather than
+ * offering to sign it.
+ */
+const SAFE_CALL_SIGNATURES = [
+  "transferOwnership(address)",
+  "add(address)",
+  "remove(address)",
+  "mintTo(address,uint256)",
+  "setLimitFor(address,address,uint256)",
+  "setPriceIndexValue(address,uint256)",
+  "setOracle(address,address)",
+  "setDefaultFee(uint256)",
+  "setFeeAddress(address)",
+  "setQuoter(address)",
+  "withdraw(address)",
+  "withdraw(address,uint256)",
+  "withdrawLiquidity(address,address,uint256)",
+] as const;
+
+const SAFE_CALL_NAMES = new Map<string, string>(
+  SAFE_CALL_SIGNATURES.map((signature) => [
+    toFunctionSelector(signature),
+    signature.slice(0, signature.indexOf("(")),
+  ]),
+);
+
+/** The function name of an allowed owner action, or null for anything else. */
+export function safeCallName(data: Hex): string | null {
+  if (size(data) < 4) return null;
+  return SAFE_CALL_NAMES.get(slice(data, 0, 4)) ?? null;
+}
+
+/**
+ * The calls a Safe transaction performs: the transaction itself, or each
+ * subcall when it delegatecalls the pinned MultiSendCallOnly. Returns null for
+ * a payload that does not parse, which the app shows as undecodable.
+ */
+export function decodeSafeTransactionCalls(
+  tx: Pick<SafeTransaction, "to" | "value" | "data" | "operation">,
+  multiSendCallOnly: readonly `0x${string}`[],
+): SafeCall[] | null {
+  if (tx.operation === SAFE_OPERATION_CALL) {
+    return [{ to: tx.to, value: tx.value, data: tx.data }];
+  }
+  if (!multiSendCallOnly.some((address) => isAddressEqual(address, tx.to))) return null;
+  try {
+    const { args } = decodeFunctionData({ abi: safeAbi, data: tx.data });
+    const packed = args?.[0];
+    if (typeof packed !== "string") return null;
+    const calls: SafeCall[] = [];
+    let offset = 0;
+    const total = size(packed as Hex);
+    while (offset < total) {
+      if (total - offset < 85) return null;
+      const to = slice(packed as Hex, offset + 1, offset + 21);
+      const value = BigInt(slice(packed as Hex, offset + 21, offset + 53));
+      const length = Number(BigInt(slice(packed as Hex, offset + 53, offset + 85)));
+      if (offset + 85 + length > total) return null;
+      calls.push({
+        to: to as `0x${string}`,
+        value: value.toString(),
+        data: slice(packed as Hex, offset + 85, offset + 85 + length),
+      });
+      offset += 85 + length;
+    }
+    return calls.length > 0 ? calls : null;
+  } catch {
+    return null;
+  }
 }

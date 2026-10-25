@@ -1,6 +1,5 @@
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import type { QueryClient } from "@tanstack/react-query";
-import type { ProposeSafeTransactionInput, SafeClient } from "./client";
+import { queryOptions } from "@tanstack/react-query";
+import type { SafeClient } from "./client";
 
 export const safeKeys = {
   all: ["clc", "safe"] as const,
@@ -33,32 +32,5 @@ export function safeTransactionQueryOptions(client: SafeClient, safeTxHash: stri
     enabled: Boolean(safeTxHash),
     refetchInterval: (query) => (query.state.data?.isExecuted ? false : POLL_MS),
     staleTime: 0,
-  });
-}
-
-export function proposeSafeTransactionMutationOptions(
-  client: SafeClient,
-  queryClient: QueryClient,
-) {
-  return mutationOptions({
-    mutationFn: (input: ProposeSafeTransactionInput) => client.propose(input),
-    onSuccess: async (proposal) => {
-      queryClient.setQueryData(safeKeys.transaction(proposal.safeTxHash), proposal);
-      await queryClient.invalidateQueries({ queryKey: safeKeys.pending(proposal.safe) });
-    },
-  });
-}
-
-export function confirmSafeTransactionMutationOptions(
-  client: SafeClient,
-  queryClient: QueryClient,
-) {
-  return mutationOptions({
-    mutationFn: (input: { safeTxHash: string; signature: `0x${string}` }) =>
-      client.confirm(input.safeTxHash, input.signature),
-    onSuccess: async (proposal) => {
-      queryClient.setQueryData(safeKeys.transaction(proposal.safeTxHash), proposal);
-      await queryClient.invalidateQueries({ queryKey: safeKeys.pending(proposal.safe) });
-    },
   });
 }

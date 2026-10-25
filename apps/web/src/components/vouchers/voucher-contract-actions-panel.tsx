@@ -6,7 +6,13 @@ import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { RiDeleteBin6Line, RiPencilLine, RiSparkling2Line, RiUserSharedLine } from "react-icons/ri";
+import {
+  RiDeleteBin6Line,
+  RiPencilLine,
+  RiShieldKeyholeLine,
+  RiSparkling2Line,
+  RiUserSharedLine,
+} from "react-icons/ri";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -29,6 +35,8 @@ import {
   ownershipKey,
   useOwnershipSubmissions,
 } from "#/features/ownership/state/ownership-submissions";
+import { useSafeSheet } from "#/features/safe/state/safe-sheet";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherOwnershipTransfer } from "#/features/vouchers/hooks/use-voucher-ownership-transfer";
 import { useRetireVoucher } from "#/features/wallet/hooks/use-retire-voucher";
@@ -75,12 +83,19 @@ export function VoucherContractActionsPanel({
 }) {
   const { t } = useLingui();
   const [sheet, setSheet] = useState<VoucherControlSheet | null>(null);
+  const owner = useAssetOwnerInfo(tokenAddress ?? "", ownerAddress);
 
+  // The owner signs directly; a Safe owner is managed by its signers, who sign
+  // as themselves while the Safe stays the on-chain owner.
+  const signsAsOwner =
+    !!ownerAddress &&
+    !!walletAddress &&
+    (ownerAddress.toLowerCase() === walletAddress.toLowerCase() || owner.isSafeSigner);
   const contract =
     tokenAddress &&
     ownerAddress &&
     walletAddress &&
-    ownerAddress.toLowerCase() === walletAddress.toLowerCase() &&
+    signsAsOwner &&
     tokenDecimals !== undefined &&
     Number.isInteger(tokenDecimals) &&
     tokenDecimals >= 0
@@ -89,6 +104,7 @@ export function VoucherContractActionsPanel({
           tokenDecimals,
           ownerAddress: ownerAddress as `0x${string}`,
           walletAddress: walletAddress as `0x${string}`,
+          safeOwned: owner.isSafeOwned,
         }
       : null;
 
@@ -108,6 +124,13 @@ export function VoucherContractActionsPanel({
         ) : null}
         {contract ? (
           <>
+            {contract.safeOwned ? (
+              <ActionRow
+                icon={<RiShieldKeyholeLine className="size-4" aria-hidden="true" />}
+                label={t`Safe transactions`}
+                onClick={() => useSafeSheet.getState().show(contract.ownerAddress)}
+              />
+            ) : null}
             <ActionRow
               icon={<RiSparkling2Line className="size-4" aria-hidden="true" />}
               label={t`Create vouchers`}
@@ -161,6 +184,7 @@ export function VoucherContractActionsPanel({
             tokenSymbol={tokenSymbol}
             tokenDecimals={contract.tokenDecimals}
             walletAddress={contract.walletAddress}
+            ownerAddress={contract.ownerAddress}
           />
           <VoucherOwnershipTransferSheet
             open={sheet === "ownership"}
@@ -182,6 +206,7 @@ function VoucherMintSheet({
   tokenSymbol,
   tokenDecimals,
   walletAddress,
+  ownerAddress,
 }: {
   open: boolean;
   onClose: () => void;
@@ -189,11 +214,12 @@ function VoucherMintSheet({
   tokenSymbol: string;
   tokenDecimals: number;
   walletAddress: `0x${string}`;
+  ownerAddress: `0x${string}`;
 }) {
   const { t } = useLingui();
   const queryClient = useQueryClient();
   const delegationStatus = useCaliburDelegation(walletAddress);
-  const mint = useVoucherMint();
+  const mint = useVoucherMint({ address: tokenAddress, ownerAddress });
   const form = useForm({
     defaultValues: { amount: "" },
     validators: { onSubmit: z.object({ amount: voucherMintAmountSchema(tokenDecimals) }) },
@@ -201,7 +227,7 @@ function VoucherMintSheet({
       try {
         await mint.mutateAsync({
           tokenAddress: tokenAddress as `0x${string}`,
-          ownerAddress: walletAddress,
+          ownerAddress,
           amountRaw: parseTokenAmount(value.amount, tokenDecimals),
           includeAuthorization: delegationStatus === "not-delegated",
         });
@@ -210,7 +236,7 @@ function VoucherMintSheet({
         toast.success(t`Voucher creation submitted.`);
         onClose();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`Couldn't create vouchers.`);
+        mint.reportError(error, t`Couldn't create vouchers.`);
       }
     },
   });

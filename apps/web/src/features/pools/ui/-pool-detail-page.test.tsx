@@ -127,8 +127,29 @@ vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
   usePoolAdminRelay: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", async () => {
+  const { useAuthStatus } = await import("#/features/auth/hooks/use-auth-status");
+  return {
+    useAssetOwnerInfo: (_address: string, owner: string | null | undefined) => {
+      const auth = useAuthStatus();
+      return {
+        owner,
+        info: undefined,
+        pending: false,
+        isSafeOwned: false,
+        isSafeSigner: false,
+        unsupportedOwner: false,
+        canManage:
+          !!owner &&
+          !!auth.session?.address &&
+          auth.session.address.toLowerCase() === owner.toLowerCase(),
+      };
+    },
+  };
+});
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: OWNER }),
+  useClient: () => undefined,
 }));
 
 vi.mock("./pool-voucher-sheet", () => ({
