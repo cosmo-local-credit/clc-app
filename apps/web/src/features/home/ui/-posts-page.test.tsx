@@ -196,6 +196,8 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     periodTo: "2026-07-02T00:00:00Z",
     createdAt: "2026-07-03T08:00:00Z",
     updatedAt: "2026-07-19T08:14:02.311Z",
+    markerIcon: "post",
+    markerColor: "pink",
     tags: ["Food production"],
     vouchers: [
       {

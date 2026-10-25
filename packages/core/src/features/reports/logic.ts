@@ -1,4 +1,12 @@
 import { z } from "zod";
+import {
+  markerColorSchema,
+  reportMarkerIconSchema,
+  type MarkerColor,
+  type ReportMarkerIcon,
+} from "../markers/logic";
+
+export type { ReportMarkerIcon } from "../markers/logic";
 
 /**
  * The post write document and its validation rules.
@@ -183,6 +191,8 @@ const reportWriteObjectSchema = z.object({
     .string()
     .trim()
     .max(REPORT_TIME_TAKEN_MAX, { message: "Duration must be 100 characters or fewer" }),
+  markerIcon: reportMarkerIconSchema,
+  markerColor: markerColorSchema,
   tags: z
     .array(
       z
@@ -319,6 +329,8 @@ export const emptyReportWrite: ReportWrite = {
   hostName: "",
   participants: "",
   timeTaken: "",
+  markerIcon: "post",
+  markerColor: "pink",
   tags: [],
   vouchers: [],
   pools: [],
@@ -346,6 +358,8 @@ export function reportToFormValues(report: ReportDetailSource): ReportWrite {
     hostName: report.hostName ?? "",
     participants: report.participants ?? "",
     timeTaken: report.timeTaken ?? "",
+    markerIcon: report.markerIcon ?? "post",
+    markerColor: report.markerColor ?? "pink",
     tags: [...(report.tags ?? [])],
     vouchers: (report.vouchers ?? []).map((voucher) => ({
       chainId: voucher.chainId,
@@ -392,6 +406,8 @@ export type ReportDetailSource = {
   hostName?: string | null;
   participants?: string | null;
   timeTaken?: string | null;
+  markerIcon?: ReportMarkerIcon | null;
+  markerColor?: MarkerColor | null;
   tags?: readonly string[] | null;
   vouchers?: readonly { chainId: number; address: string }[] | null;
   pools?: readonly { chainId: number; address: string }[] | null;

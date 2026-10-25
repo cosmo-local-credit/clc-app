@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -68,6 +68,46 @@ beforeEach(() => {
 });
 
 describe("MarketBar", () => {
+  it("uses persistent resource toggles instead of list navigation on the map", () => {
+    const toggle = vi.fn();
+    const toggleAll = vi.fn();
+    render(
+      <MarketBar
+        current="map"
+        surface="map"
+        filter={filter}
+        searchLabel="Search the marketplace"
+        filters={<button type="button">Filters</button>}
+        mapResources={{
+          selected: ["voucher", "want"],
+          allSelected: false,
+          toggle,
+          toggleAll,
+        }}
+      />,
+    );
+
+    const resources = screen.getByRole("group", { name: "Resources shown on the map" });
+    expect(
+      within(resources)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["All", "Vouchers", "Wants", "Pools", "Catalogs", "Posts"]);
+    expect(within(resources).queryByText("Activity")).toBeNull();
+    expect(within(resources).queryByText("Map")).toBeNull();
+    expect(
+      within(resources).getByRole("button", { name: "Vouchers" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      within(resources).getByRole("button", { name: "Pools" }).getAttribute("aria-pressed"),
+    ).toBe("false");
+
+    fireEvent.click(within(resources).getByRole("button", { name: "Pools" }));
+    fireEvent.click(within(resources).getByRole("button", { name: "All" }));
+    expect(toggle).toHaveBeenCalledWith("pool");
+    expect(toggleAll).toHaveBeenCalledOnce();
+  });
+
   it("opens each list from its badge, carrying the search, tags and Credit", () => {
     mocks.search = { q: "bike", tags: "Repair", creditable: "true", voucher: "0xabc" };
     renderBar("map");

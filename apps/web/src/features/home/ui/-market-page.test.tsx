@@ -57,6 +57,9 @@ const {
   poolsResult,
   discoveryArea,
   mapRequests,
+  mapResourceSelection,
+  catalogsResult,
+  reportsResult,
 } = vi.hoisted(() => ({
   authState: { current: { isAuthenticated: false, isLoading: false, session: null } },
   creditFeedback: { current: false },
@@ -74,12 +77,28 @@ const {
       boxes: readonly { minLng: number; minLat: number; maxLng: number; maxLat: number }[];
     } | null,
     setArea: vi.fn(),
+    clearArea: vi.fn(),
   },
   mapRequests: {
     voucherBounds: [] as unknown[],
     poolBounds: [] as unknown[],
     wantBounds: [] as unknown[],
     unifiedBounds: [] as unknown[],
+    catalogEnabled: [] as boolean[],
+    reportEnabled: [] as boolean[],
+  },
+  mapResourceSelection: {
+    current: ["voucher", "want"] as ("voucher" | "want" | "pool" | "catalog" | "post")[],
+  },
+  catalogsResult: {
+    current: [] as MarketLocation[],
+    error: null as Error | null,
+    retry: vi.fn(),
+  },
+  reportsResult: {
+    current: [] as MarketLocation[],
+    error: null as Error | null,
+    retry: vi.fn(),
   },
   selection: {
     voucher: null as `0x${string}` | null,
@@ -105,6 +124,7 @@ const {
       userLocation: null as { lat: number; lng: number } | null,
       locationStatus: "idle" as string,
       requestLocation: () => {},
+      isResolvingInitialCamera: false,
     },
   },
   vouchersResult: {
@@ -157,6 +177,7 @@ vi.mock("#/components/nearby-catalog", () => ({
   useMarketDiscoveryArea: () => ({
     area: discoveryArea.current,
     setArea: discoveryArea.setArea,
+    clearArea: discoveryArea.clearArea,
   }),
 }));
 
@@ -222,8 +243,21 @@ vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
               : "loading",
       error: enabled ? filteredResult.current.error : null,
       retry: filteredResult.current.refetch,
+      retrying: false,
+      tagFacets: [],
     };
   },
+  useMarketplaceMapFacets: () => [],
+}));
+
+vi.mock("#/features/home/hooks/use-market-map-resource-selection", () => ({
+  MARKET_MAP_RESOURCE_KINDS: ["voucher", "want", "pool", "catalog", "post"],
+  useMarketMapResourceSelection: () => ({
+    selected: mapResourceSelection.current,
+    allSelected: mapResourceSelection.current.length === 5,
+    toggle: vi.fn(),
+    toggleAll: vi.fn(),
+  }),
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
@@ -296,6 +330,7 @@ vi.mock("#/features/home/hooks/use-market-pools", () => ({
       pools: enabled ? poolsResult.current : [],
       error: enabled ? poolsResult.error : null,
       retry: poolsResult.retry,
+      retrying: false,
     };
   },
 }));
@@ -310,6 +345,25 @@ vi.mock("#/features/home/hooks/use-market-wants", () => ({
       retrying: false,
     };
   },
+}));
+
+vi.mock("#/features/home/hooks/use-market-catalogs", () => ({
+  useMarketMapCatalogs: (_bounds: unknown, enabled: boolean) => ({
+    catalogs: enabled ? catalogsResult.current : [],
+    error: enabled ? catalogsResult.error : null,
+    retry: catalogsResult.retry,
+    retrying: false,
+  }),
+}));
+
+vi.mock("#/features/home/hooks/use-market-reports", () => ({
+  useMarketMapReports: ({ enabled }: { enabled: boolean }) => ({
+    reports: enabled ? reportsResult.current : [],
+    tagFacets: [],
+    error: enabled ? reportsResult.error : null,
+    retry: reportsResult.retry,
+    retrying: false,
+  }),
 }));
 
 vi.mock("#/features/home/hooks/use-filtered-market-vouchers", async (importOriginal) => {
@@ -453,6 +507,7 @@ beforeEach(() => {
     userLocation: null,
     locationStatus: "idle",
     requestLocation: mockRequestLocation,
+    isResolvingInitialCamera: false,
   };
   vouchersResult.current = {
     vouchers: [],
@@ -478,10 +533,20 @@ beforeEach(() => {
   poolsResult.enabled = [];
   discoveryArea.current = null;
   discoveryArea.setArea.mockReset();
+  discoveryArea.clearArea.mockReset();
+  mapResourceSelection.current = ["voucher", "want"];
   mapRequests.voucherBounds = [];
   mapRequests.poolBounds = [];
   mapRequests.wantBounds = [];
   mapRequests.unifiedBounds = [];
+  mapRequests.catalogEnabled = [];
+  mapRequests.reportEnabled = [];
+  catalogsResult.current = [];
+  catalogsResult.error = null;
+  catalogsResult.retry.mockReset();
+  reportsResult.current = [];
+  reportsResult.error = null;
+  reportsResult.retry.mockReset();
   profileRequests.current = 0;
   profileResult.current = {
     data: undefined,
@@ -563,6 +628,21 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
+  it("waits for the IP-city camera before mounting or querying the map", () => {
+    cameraResult.current = {
+      ...cameraResult.current,
+      camera: null,
+      isResolvingInitialCamera: true,
+    };
+
+    renderPage();
+
+    expect(screen.queryByTestId("market-map")).toBeNull();
+    expect(mapRequests.voucherBounds.length).toBeGreaterThan(0);
+    expect(mapRequests.voucherBounds.every((bounds) => JSON.stringify(bounds) === "[]")).toBe(true);
+    expect(lastMapProps.current).toBeNull();
+  });
+
   it("puts the menu, the search field with its joined filters, and Sign in on one row", () => {
     renderPage();
 
@@ -979,6 +1059,7 @@ describe("MarketPage pools", () => {
   };
 
   it("draws pools after the vouchers, so a stack keeps its voucher anchor", () => {
+    mapResourceSelection.current = ["voucher", "pool"];
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     poolsResult.current = [pool];
     renderPage();
@@ -987,6 +1068,7 @@ describe("MarketPage pools", () => {
   });
 
   it("opens the tapped pool's page and leaves the voucher card closed", () => {
+    mapResourceSelection.current = ["voucher", "pool"];
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     poolsResult.current = [pool];
     renderPage();
@@ -1015,6 +1097,7 @@ describe("MarketPage pools", () => {
   });
 
   it("offers Retry when the pools fail to load", () => {
+    mapResourceSelection.current = ["voucher", "pool"];
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     poolsResult.error = new Error("pools are down");
     renderPage();
@@ -1027,6 +1110,7 @@ describe("MarketPage pools", () => {
   });
 
   it("puts the vouchers' failure first when both fail", () => {
+    mapResourceSelection.current = ["voucher", "pool"];
     vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
     poolsResult.error = new Error("pools are down");
     renderPage();
@@ -1035,6 +1119,63 @@ describe("MarketPage pools", () => {
     expect(alert.textContent).toContain("Could not load vouchers.");
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
     expect(mockRetry).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("MarketPage Catalogs and Posts", () => {
+  const catalog: MarketLocation = {
+    id: "market:catalog:7",
+    name: "Kilifi catalog",
+    kind: "catalog",
+    markerIcon: null,
+    markerColor: null,
+    lat: -3.63,
+    lng: 39.85,
+    locationName: "Kilifi",
+    catalogId: "7",
+  } as MarketLocation;
+  const post: MarketLocation = {
+    id: "market:post:11",
+    name: "Market day",
+    kind: "post",
+    markerIcon: "event",
+    markerColor: "pink",
+    lat: -3.64,
+    lng: 39.86,
+    locationName: null,
+    reportId: "11",
+  } as MarketLocation;
+
+  it("draws only the selected Catalog and Post resource pins", () => {
+    mapResourceSelection.current = ["catalog", "post"];
+    catalogsResult.current = [catalog];
+    reportsResult.current = [post];
+
+    renderPage();
+
+    expect(lastMapProps.current?.locations).toEqual([catalog, post]);
+    expect(lastMapProps.current?.locations.some((location) => location.kind === "voucher")).toBe(
+      false,
+    );
+  });
+
+  it("opens Catalog and Post pages with normal map history", () => {
+    mapResourceSelection.current = ["catalog", "post"];
+    catalogsResult.current = [catalog];
+    reportsResult.current = [post];
+    renderPage();
+
+    fireEvent.click(screen.getByTestId(`marker-${catalog.id}`));
+    fireEvent.click(screen.getByTestId(`marker-${post.id}`));
+
+    expect(mockNavigate).toHaveBeenNthCalledWith(1, {
+      to: "/catalogs/$catalogId",
+      params: { catalogId: "7" },
+    });
+    expect(mockNavigate).toHaveBeenNthCalledWith(2, {
+      to: "/posts/$reportId",
+      params: { reportId: "11" },
+    });
   });
 });
 
@@ -1118,6 +1259,7 @@ describe("MarketPage viewport", () => {
   });
 
   it("waits for a trustworthy initial camera to settle before loading bounded markers", () => {
+    mapResourceSelection.current = ["voucher", "pool"];
     profileResult.current = {
       data: { geoLat: -1.5, geoLng: 36.5 },
       isPending: false,
@@ -1416,13 +1558,18 @@ describe("MarketPage notices", () => {
     expect(screen.queryByText("Could not load vouchers.")).toBeNull();
   });
 
-  it("puts the list badges under the bar and no Map button over the map", () => {
+  it("puts resource toggles under the bar without list-only Activity or Map controls", () => {
     renderPage();
 
-    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
-      "/market?scope=pools",
+    expect(screen.getByRole("button", { name: "Vouchers" }).getAttribute("aria-pressed")).toBe(
+      "true",
     );
-    expect(screen.getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("button", { name: "Wants" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Pools" }).getAttribute("aria-pressed")).toBe(
+      "false",
+    );
+    expect(screen.queryByRole("link", { name: "Activity" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
   });
 });
 

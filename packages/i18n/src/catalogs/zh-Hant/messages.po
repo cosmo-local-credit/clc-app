@@ -470,7 +470,7 @@ msgid "Active"
 msgstr "啟用"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:100
-#: apps/web/src/components/market-bar.tsx:221
+#: apps/web/src/components/market-bar.tsx:323
 #: apps/web/src/components/navigation/bottom-navigation.tsx:50
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:193
 #: apps/web/src/features/home/ui/activity-page.tsx:97
@@ -652,7 +652,8 @@ msgstr "進階選項"
 msgid "Agriculture"
 msgstr "農業"
 
-#: apps/web/src/components/market-bar.tsx:159
+#: apps/web/src/components/market-bar.tsx:202
+#: apps/web/src/components/market-bar.tsx:261
 msgid "All"
 msgstr "全部"
 
@@ -721,6 +722,10 @@ msgstr "收取金額"
 #: apps/web/src/components/introduction/introduction-content.ts:37
 msgid "intro.offer.body"
 msgstr "供給描述某人提供的商品或服務。請查看詳情、價格以及接受哪種憑證。"
+
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:131
+msgid "Announcement"
+msgstr "公告"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
@@ -998,7 +1003,8 @@ msgstr "目錄圖片"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "目錄已儲存，但無法新增項目。請重試。"
 
-#: apps/web/src/components/market-bar.tsx:164
+#: apps/web/src/components/market-bar.tsx:187
+#: apps/web/src/components/market-bar.tsx:266
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
@@ -1199,6 +1205,10 @@ msgstr "選擇個人資料照片"
 msgid "intro.send.body"
 msgstr "選擇接收人、你持有的憑證和金額。確認前檢查資訊，然後等待轉帳結果。"
 
+#: apps/web/src/features/home/ui/market-page.tsx:450
+msgid "Choose a resource type to show it on the map."
+msgstr "選擇要在地圖上顯示的資源類型。"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:88
 msgid "Choose a unit of account"
@@ -1297,7 +1307,7 @@ msgstr "清除篩選條件"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:41
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:125
-#: apps/web/src/features/home/ui/market-page.tsx:347
+#: apps/web/src/features/home/ui/market-page.tsx:483
 #: apps/web/src/features/home/ui/marketplace-page.tsx:165
 #: apps/web/src/features/home/ui/marketplace-page.tsx:215
 #: apps/web/src/features/home/ui/offers-page.tsx:149
@@ -1868,10 +1878,15 @@ msgstr "無法載入目錄項目。"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:44
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:136
+#: apps/web/src/features/home/ui/market-page.tsx:394
 msgid "Couldn't load catalogs."
 msgstr "無法載入目錄。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:263
+#: apps/web/src/features/home/ui/market-page.tsx:394
+#~ msgid "Couldn't load Catalogs."
+#~ msgstr "無法載入目錄。"
+
+#: apps/web/src/features/home/ui/market-page.tsx:372
 msgid "Couldn't load complete marketplace results."
 msgstr "無法載入完整的市場結果。"
 
@@ -1899,15 +1914,20 @@ msgid "Couldn't load pool tags."
 msgstr "無法載入資金池標籤。"
 
 #: apps/web/src/components/wants/want-detail.tsx:198
-#: apps/web/src/features/home/ui/market-page.tsx:271
+#: apps/web/src/features/home/ui/market-page.tsx:380
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "無法載入資金池。"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:277
+#: apps/web/src/features/home/ui/market-page.tsx:401
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:316
 msgid "Couldn't load posts."
 msgstr "無法載入貼文。"
+
+#: apps/web/src/features/home/ui/market-page.tsx:401
+#~ msgid "Couldn't load Posts."
+#~ msgstr "無法載入貼文。"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:454
 msgid "Couldn't load Pretium history."
@@ -1922,7 +1942,7 @@ msgstr "無法載入資源限制。"
 msgid "Couldn't load reviews."
 msgstr "無法載入評價。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:571
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:592
 msgid "Couldn't load tags."
 msgstr "無法載入標籤。"
 
@@ -1947,7 +1967,7 @@ msgstr "無法載入此資金池的代金券。"
 msgid "Couldn't load this post."
 msgstr "無法載入此貼文。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:207
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:208
 msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "無法載入此貼文。您只能編輯您撰寫的貼文。"
 
@@ -1994,7 +2014,7 @@ msgstr "無法載入代金券。"
 msgid "Couldn't load Wants for this pool."
 msgstr "無法載入此資金池的需求。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:278
+#: apps/web/src/features/home/ui/market-page.tsx:387
 #: apps/web/src/features/wants/ui/wants-page.tsx:125
 msgid "Couldn't load Wants."
 msgstr "無法載入需求。"
@@ -2091,7 +2111,7 @@ msgstr "無法儲存代金券詳細資訊。"
 msgid "Couldn't save this Want. Try again."
 msgstr "無法儲存此需求，請再試一次。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:317
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:318
 msgid "Couldn't save your post."
 msgstr "無法儲存您的貼文。"
 
@@ -2429,7 +2449,7 @@ msgstr "描述"
 msgid "Directions"
 msgstr "路線"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:690
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:711
 msgid "Discard changes"
 msgstr "放棄更改"
 
@@ -2559,7 +2579,7 @@ msgstr "編輯商品或服務項目"
 msgid "Edit pool details"
 msgstr "編輯資金池詳細資訊"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:356
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:357
 msgid "Edit post"
 msgstr "編輯貼文"
 
@@ -2630,7 +2650,7 @@ msgstr "正在啟用通知…"
 msgid "Endowments"
 msgstr "捐贈基金"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:457
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:458
 #: apps/web/src/features/wants/ui/want-form-page.tsx:266
 msgid "Ends"
 msgstr "結束"
@@ -2754,7 +2774,11 @@ msgstr "請輸入您的 Gnosis 錢包地址。"
 msgid "Equal value"
 msgstr "等值"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:430
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:129
+msgid "Event"
+msgstr "活動"
+
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:431
 msgid "Event details"
 msgstr "事件詳情"
 
@@ -2947,7 +2971,7 @@ msgstr "篩選條件"
 msgid "Finding a name…"
 msgstr "正在尋找名稱…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:211
+#: apps/web/src/features/home/ui/market-page.tsx:295
 msgid "Finding location"
 msgstr "正在尋找位置"
 
@@ -3057,7 +3081,7 @@ msgid "Holdings"
 msgstr "持有的代金券"
 
 #: apps/web/src/features/home/ui/report-page.tsx:413
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:478
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:479
 msgid "Host"
 msgstr "主辦方"
 
@@ -3296,7 +3320,7 @@ msgstr "留空以顯示需求標記。"
 #~ msgid "Leave empty to use your profile picture."
 #~ msgstr "留空以使用你的個人資料圖片。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:689
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:710
 msgid "Leave without saving?"
 msgstr "不儲存就離開？"
 
@@ -3369,7 +3393,7 @@ msgstr "關聯通行金鑰"
 msgid "Link address"
 msgstr "連結地址"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:549
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:570
 msgid "Link at least one voucher or pool."
 msgstr "請至少關聯一個代金券或資金池。"
 
@@ -3439,7 +3463,7 @@ msgid "Linking the passkey failed. Your paper wallet is unchanged."
 msgstr "連結通行金鑰失敗。您的紙錢包未更改。"
 
 #: apps/web/src/features/home/ui/report-page.tsx:439
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:661
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:682
 msgid "Links"
 msgstr "連結"
 
@@ -3583,8 +3607,8 @@ msgstr "正在載入需求…"
 msgid "Loading Wants…"
 msgstr "正在載入需求…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:121
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:194
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:122
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:195
 msgid "Loading your post…"
 msgstr "正在載入您的貼文…"
 
@@ -3602,7 +3626,7 @@ msgstr "正在載入您的個人資料…"
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
 #: apps/web/src/components/market-search.tsx:302
-#: apps/web/src/components/nearby-catalog.tsx:116
+#: apps/web/src/components/nearby-catalog.tsx:126
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:64
 #: apps/web/src/components/resource-usage.tsx:141
@@ -3639,7 +3663,7 @@ msgstr "本地貨幣和 M-Pesa"
 msgid "Location"
 msgstr "地點"
 
-#: apps/web/src/features/home/ui/market-page.tsx:213
+#: apps/web/src/features/home/ui/market-page.tsx:297
 msgid "Location denied"
 msgstr "位置被拒絕"
 
@@ -3686,7 +3710,7 @@ msgstr "管理代金券"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "管理您的錢包登入狀態和應用程式首選項。"
 
-#: apps/web/src/components/market-bar.tsx:242
+#: apps/web/src/components/market-bar.tsx:344
 msgid "Map"
 msgstr "地圖"
 
@@ -3694,7 +3718,7 @@ msgstr "地圖"
 #~ msgid "Map marker"
 #~ msgstr "地圖標記"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:120
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:140
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:47
 msgid "Map pin"
 msgstr "地圖示記"
@@ -3710,7 +3734,7 @@ msgstr "地圖示記"
 #~ msgstr "標記顏色"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
-#: apps/web/src/features/home/ui/market-page.tsx:359
+#: apps/web/src/features/home/ui/market-page.tsx:495
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:70
 #: apps/web/src/lib/category-label.ts:18
@@ -3721,7 +3745,7 @@ msgstr "市場"
 msgid "Marketplace"
 msgstr "市場"
 
-#: apps/web/src/components/market-bar.tsx:169
+#: apps/web/src/components/market-bar.tsx:271
 msgid "Marketplace sections"
 msgstr "市場分區"
 
@@ -3755,7 +3779,7 @@ msgstr "最大 {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "媒體必須是上傳的 http(s) URL"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:109
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:123
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:346
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:493
 msgid "Message"
@@ -3885,7 +3909,7 @@ msgstr "我的資金池"
 #: apps/web/src/features/home/ui/posts-page.tsx:110
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:31
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:77
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:740
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:761
 msgid "My posts"
 msgstr "我的貼文"
 
@@ -3971,7 +3995,7 @@ msgstr "新所有者不能是此資產的任何合約"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:105
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:356
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:357
 msgid "New post"
 msgstr "新貼文"
 
@@ -4118,7 +4142,7 @@ msgstr "無結束日期"
 #~ msgid "No items yet. Add pools or vouchers from their detail pages."
 #~ msgstr "尚無項目。請從資金池或代金券的詳情頁面新增。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:325
+#: apps/web/src/features/home/ui/market-page.tsx:461
 #: apps/web/src/features/home/ui/marketplace-page.tsx:171
 msgid "No marketplace results are available through your Credit pools."
 msgstr "您的可存入資金池中沒有可用的市場結果。"
@@ -4127,11 +4151,11 @@ msgstr "您的可存入資金池中沒有可用的市場結果。"
 msgid "No marketplace results found."
 msgstr "找不到市場結果。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:344
+#: apps/web/src/features/home/ui/market-page.tsx:480
 msgid "No marketplace results match this search."
 msgstr "沒有符合此搜尋的市場結果。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:351
+#: apps/web/src/features/home/ui/market-page.tsx:487
 msgid "No marketplace results to show yet."
 msgstr "暫無可顯示的市場結果。"
 
@@ -4294,7 +4318,7 @@ msgstr "找不到需求。"
 msgid "No Wants yet."
 msgstr "目前還沒有需求。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:500
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:501
 msgid "No. of participants"
 msgstr "參加人數"
 
@@ -4434,7 +4458,7 @@ msgstr "商品或服務項目已更新。"
 msgid "Offerings"
 msgstr "商品或服務項目"
 
-#: apps/web/src/components/market-bar.tsx:160
+#: apps/web/src/components/market-bar.tsx:262
 #: apps/web/src/components/resource-usage.tsx:117
 #: apps/web/src/features/home/ui/offers-page.tsx:85
 msgid "Offers"
@@ -4785,7 +4809,7 @@ msgstr "照片 {0}"
 msgid "Photo uploads are unavailable right now."
 msgstr "目前無法上傳照片。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:641
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:662
 msgid "Photos"
 msgstr "照片"
 
@@ -4793,7 +4817,7 @@ msgstr "照片"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "照片會按新增順序顯示。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:362
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:363
 msgid "Picked up where you left off — this post has not been submitted yet."
 msgstr "從上次停下的位置繼續——這篇貼文尚未提交。"
 
@@ -4801,11 +4825,11 @@ msgstr "從上次停下的位置繼續——這篇貼文尚未提交。"
 msgid "Piece"
 msgstr "片"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:172
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:197
 msgid "Pin colour"
 msgstr "標記顏色"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:138
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:158
 msgid "Pin icon"
 msgstr "圖釘圖示"
 
@@ -4813,7 +4837,7 @@ msgstr "圖釘圖示"
 msgid "Pink"
 msgstr "粉色"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:522
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:523
 msgid "Place"
 msgstr "地點"
 
@@ -4999,7 +5023,8 @@ msgid "Pool tracking details are missing."
 msgstr "資金池跟蹤詳細資訊丟失。"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
-#: apps/web/src/components/market-bar.tsx:163
+#: apps/web/src/components/market-bar.tsx:186
+#: apps/web/src/components/market-bar.tsx:265
 #: apps/web/src/components/resource-usage.tsx:118
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:155
@@ -5027,19 +5052,23 @@ msgstr "資金池列表"
 msgid "Position your photo"
 msgstr "調整照片位置"
 
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:127
+msgid "Post"
+msgstr "貼文"
+
 #: apps/web/src/features/home/ui/report-page.tsx:62
 msgid "Post not found."
 msgstr "找不到貼文。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:307
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:308
 msgid "Post published."
 msgstr "貼文已發佈。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:564
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:585
 msgid "Post tags"
 msgstr "貼文標籤"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:409
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:410
 msgid "Post text"
 msgstr "貼文內容"
 
@@ -5048,11 +5077,12 @@ msgstr "貼文內容"
 msgid "Post text is too long"
 msgstr "貼文文字太長"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:301
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:302
 msgid "Post updated."
 msgstr "貼文已更新。"
 
-#: apps/web/src/components/market-bar.tsx:221
+#: apps/web/src/components/market-bar.tsx:189
+#: apps/web/src/components/market-bar.tsx:323
 #: apps/web/src/components/navigation/bottom-navigation.tsx:58
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:158
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:296
@@ -5255,7 +5285,7 @@ msgstr "協議費"
 msgid "Provide an email or phone number"
 msgstr "提供電子郵件或電話號碼"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:682
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:703
 msgid "Publish"
 msgstr "發佈"
 
@@ -5316,7 +5346,7 @@ msgstr "QR 當前包含原始私鑰。"
 #~ msgid "Quantity"
 #~ msgstr "數量"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:107
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:121
 msgid "Question"
 msgstr "問題"
 
@@ -5497,12 +5527,12 @@ msgid "Rehabilitation"
 msgstr "復健"
 
 #: apps/web/src/features/home/ui/report-page.tsx:524
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:620
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:641
 msgid "Related pools"
 msgstr "相關資金池"
 
 #: apps/web/src/features/home/ui/report-page.tsx:492
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:597
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:618
 msgid "Related vouchers"
 msgstr "相關代金券"
 
@@ -5539,7 +5569,7 @@ msgstr "刪除{0}"
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:766
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:303
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:566
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:587
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:758
 #: apps/web/src/features/wants/ui/want-form-page.tsx:249
 msgid "Remove {tag}"
@@ -5604,7 +5634,7 @@ msgstr "報告出處"
 msgid "Reported"
 msgstr "已舉報"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:111
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:125
 msgid "Request"
 msgstr "請求"
 
@@ -5626,6 +5656,10 @@ msgstr "重置徽標"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:240
 #~ msgid "Resolving recipient…"
 #~ msgstr "解決接收方…"
+
+#: apps/web/src/components/market-bar.tsx:198
+msgid "Resources shown on the map"
+msgstr "地圖上顯示的資源"
 
 #. placeholder {0}: voucher.symbol
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:457
@@ -5670,9 +5704,11 @@ msgstr "靜修"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:144
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:975
-#: apps/web/src/features/home/ui/market-page.tsx:264
-#: apps/web/src/features/home/ui/market-page.tsx:272
-#: apps/web/src/features/home/ui/market-page.tsx:279
+#: apps/web/src/features/home/ui/market-page.tsx:373
+#: apps/web/src/features/home/ui/market-page.tsx:381
+#: apps/web/src/features/home/ui/market-page.tsx:388
+#: apps/web/src/features/home/ui/market-page.tsx:395
+#: apps/web/src/features/home/ui/market-page.tsx:402
 #: apps/web/src/features/home/ui/marketplace-page.tsx:186
 #: apps/web/src/features/home/ui/marketplace-page.tsx:237
 #: apps/web/src/features/home/ui/report-page.tsx:57
@@ -5688,8 +5724,8 @@ msgstr "靜修"
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:32
 #: apps/web/src/features/pools/ui/pools-page.tsx:272
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:215
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:580
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:216
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:601
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:745
@@ -5748,7 +5784,7 @@ msgstr "儲存並重新開放需求"
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:470
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:597
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:680
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:701
 msgid "Save changes"
 msgstr "儲存更改"
 
@@ -5781,7 +5817,7 @@ msgstr "儲存您的卡片"
 #~ msgid "Saved location unavailable"
 #~ msgstr "儲存的位置不可用"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:302
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:303
 msgid "Saved. Your post is awaiting approval again."
 msgstr "已儲存。您的貼文再次等待批准。"
 
@@ -5793,7 +5829,7 @@ msgstr "已儲存。您的貼文再次等待批准。"
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:198
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:468
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:678
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:699
 msgid "Saving…"
 msgstr "儲存…"
 
@@ -5890,7 +5926,7 @@ msgstr "搜尋資金池標籤"
 msgid "Search pools"
 msgstr "搜尋資金池"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:562
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:583
 msgid "Search post tags"
 msgstr "搜尋貼文標籤"
 
@@ -5905,12 +5941,12 @@ msgstr "搜尋結果使用<0>地圖</0>上顯示的區域。"
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:349
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:765
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:302
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:565
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:586
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:757
 msgid "Search tags"
 msgstr "搜尋標籤"
 
-#: apps/web/src/features/home/ui/market-page.tsx:388
+#: apps/web/src/features/home/ui/market-page.tsx:529
 #: apps/web/src/features/home/ui/marketplace-page.tsx:107
 msgid "Search the marketplace"
 msgstr "搜尋市場"
@@ -6014,7 +6050,7 @@ msgstr "選定的資金池標籤"
 msgid "Selected pools"
 msgstr "已選資金池"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:563
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:584
 msgid "Selected post tags"
 msgstr "選定的貼文標籤"
 
@@ -6251,7 +6287,7 @@ msgid "Shown to anyone using this pool"
 msgstr "向任何使用此資金池的人展示"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:127
+#: apps/web/src/components/market-bar.tsx:138
 msgid "Sign in"
 msgstr "登入"
 
@@ -6368,7 +6404,7 @@ msgstr "穩定幣已傳送"
 msgid "Standard"
 msgstr "標準"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:365
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:366
 msgid "Start over"
 msgstr "重新開始"
 
@@ -6380,7 +6416,7 @@ msgstr "啟動讀卡器…"
 msgid "Starting…"
 msgstr "開始…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:436
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:437
 #: apps/web/src/features/wants/ui/want-form-page.tsx:252
 msgid "Starts"
 msgstr "開始"
@@ -6573,7 +6609,7 @@ msgstr "符號已被佔用，改用 {0}。"
 #: apps/web/src/features/home/ui/offers-page.tsx:116
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:271
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:555
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:576
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:726
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:55
 #: apps/web/src/features/wants/ui/want-form-page.tsx:240
@@ -6581,7 +6617,7 @@ msgstr "符號已被佔用，改用 {0}。"
 msgid "Tags"
 msgstr "標籤"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:546
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:567
 msgid "Tags and resources"
 msgstr "標籤和資源"
 
@@ -7037,7 +7073,7 @@ msgid "This pool's deposit limit changed. Review the updated amounts and try "
 "again."
 msgstr "此資金池的存入額度已更改。請檢查更新後的金額並重試。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:314
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:315
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "這篇貼文太大，無法儲存。請縮短文字或移除部分媒體。"
 
@@ -7058,7 +7094,7 @@ msgstr "此代金券已獲得批准。"
 msgid "This voucher's decimals are unknown, so a limit can't be set."
 msgstr "此代金券的小數位數未知，因此無法設定限制。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:381
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:382
 msgid "Title"
 msgstr "標題"
 
@@ -7347,7 +7383,7 @@ msgstr "上傳QR 碼圖片"
 msgid "Uploading photo…"
 msgstr "正在上傳照片…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:676
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:697
 msgid "Uploading photos…"
 msgstr "正在上傳照片…"
 
@@ -7373,11 +7409,11 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 "funds to your Gnosis wallet."
 msgstr "使用 <0>Binance</0> 或其他本地交易所，再透過 <1>Jumper</1> 將資金傳送到您的 Gnosis 錢包。"
 
-#: apps/web/src/features/home/ui/market-page.tsx:214
+#: apps/web/src/features/home/ui/market-page.tsx:298
 msgid "Use current location"
 msgstr "使用當前位置"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:132
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:152
 msgid "Use default"
 msgstr "使用預設值"
 
@@ -7518,7 +7554,7 @@ msgstr "代金券"
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
 #: apps/web/src/features/home/ui/marketplace-page.tsx:400
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:165
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:175
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:176
 msgid "Voucher"
 msgstr "代金券"
 
@@ -7627,7 +7663,8 @@ msgid "Voucher tracking details are missing."
 msgstr "缺少代金券跟蹤詳情。"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:320
-#: apps/web/src/components/market-bar.tsx:162
+#: apps/web/src/components/market-bar.tsx:184
+#: apps/web/src/components/market-bar.tsx:264
 #: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/wants/want-detail.tsx:169
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
@@ -7741,7 +7778,8 @@ msgstr "需求圖片"
 #~ msgid "Wanted by {0}"
 #~ msgstr "由 {0} 發布"
 
-#: apps/web/src/components/market-bar.tsx:161
+#: apps/web/src/components/market-bar.tsx:185
+#: apps/web/src/components/market-bar.tsx:263
 #: apps/web/src/components/resource-usage.tsx:119
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
@@ -7830,7 +7868,7 @@ msgstr "時間和地點"
 msgid "Where and what for"
 msgstr "地點和用途"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:528
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:539
 msgid "Where did this happen?"
 msgstr "這是哪裡發生的？"
 
@@ -8074,7 +8112,7 @@ msgid "Your review will be available once this redemption is processed. You can 
 "also find it later in the voucher’s Reviews tab."
 msgstr "此次兌付處理完成後即可進行評價。您也可以稍後在代金券的「評價」標籤頁中找到它。"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:699
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:720
 msgid "Your unsaved changes to this post will be lost."
 msgstr "您對此貼文未儲存的更改將會丟失。"
 

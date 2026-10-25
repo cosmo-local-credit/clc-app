@@ -545,7 +545,10 @@ export function viewportToBoundingBoxes(viewport: {
   const maxLat = clamp(Math.max(south, north), -90, 90);
 
   if (Math.abs(east - west) >= 360) {
-    return [{ minLng: -180, minLat, maxLng: 180, maxLat }];
+    // A genuine whole-world camera is Global discovery. Sending an all-world
+    // bbox gives it a false local identity and can then be persisted as a
+    // user's chosen area.
+    return [];
   }
 
   const minLng = wrapLongitude(west);
