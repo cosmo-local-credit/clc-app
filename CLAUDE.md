@@ -453,6 +453,7 @@ environments' values.
 | `VITE_BRAND`             | `prod` (green)              | `staging` (red)                    |
 | `VITE_FULL_REACT_ERRORS` | `false`                     | `true`                             |
 | Relying party            | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
+| Paper wallet origin      | `https://cosmolocal.credit` | `https://test.cosmolocal.credit`   |
 
 **Edit the Wrangler files on `develop` only; a promotion carries them to
 `master` unchanged.** A new variable goes in both blocks — with the same value
