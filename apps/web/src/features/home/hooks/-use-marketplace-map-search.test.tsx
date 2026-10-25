@@ -80,6 +80,19 @@ describe("useMarketplaceMapSearch", () => {
             voucherKind: null,
             voucherCount: 2,
           },
+          {
+            ...common,
+            kind: "want",
+            id: "3",
+            chainId: null,
+            address: null,
+            name: "Repair wanted",
+            symbol: null,
+            markerIcon: "question",
+            markerColor: "orange",
+            voucherKind: null,
+            voucherCount: null,
+          },
         ],
         nextCursor: null,
       });
@@ -89,10 +102,16 @@ describe("useMarketplaceMapSearch", () => {
     });
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
-    expect(result.current.locations.map((row) => row.kind)).toEqual(["services", "pool"]);
+    expect(result.current.locations.map((row) => row.kind)).toEqual(["services", "pool", "want"]);
     expect(result.current.locations[0]).toMatchObject({
       id: "market:voucher:1",
       markerIcon: "tools",
+      markerColor: "orange",
+    });
+    expect(result.current.locations[2]).toMatchObject({
+      id: "market:want:3",
+      wantId: "3",
+      markerIcon: "question",
       markerColor: "orange",
     });
     expect(list).toHaveBeenCalledTimes(2);

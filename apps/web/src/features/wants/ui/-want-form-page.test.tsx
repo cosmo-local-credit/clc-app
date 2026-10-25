@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BackendApiError } from "@clc/api/client/errors";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Want } from "@clc/core/features/wants/logic";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -9,14 +10,16 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   update: vi.fn(),
   reopen: vi.fn(),
+  close: vi.fn(),
+  remove: vi.fn(),
   mine: vi.fn(),
   profile: {
     data: {
       email: "amina@example.test",
       phone: "+254700000000",
-      geoLat: -1.286,
-      geoLng: 36.817,
-      locationName: "Nairobi Market",
+      geoLat: -1.286 as number | null,
+      geoLng: 36.817 as number | null,
+      locationName: "Nairobi Market" as string | null,
       country: "KE",
       avatarUrl: "https://storage.example/avatar.webp",
     },
@@ -67,8 +70,8 @@ vi.mock("#/lib/api/wants", () => ({
     update: mocks.update,
     reopen: mocks.reopen,
     mine: mocks.mine,
-    close: vi.fn(),
-    remove: vi.fn(),
+    close: mocks.close,
+    remove: mocks.remove,
   },
 }));
 vi.mock("#/components/resource-usage", () => ({
@@ -98,7 +101,17 @@ vi.mock("#/components/ui/image-upload-field", () => ({
   ),
 }));
 vi.mock("#/components/ui/tag-combobox", () => ({
-  TagCombobox: () => <div>Tag picker</div>,
+  TagCombobox: ({
+    onValueChange,
+    removeLabel,
+  }: {
+    onValueChange: (tags: string[]) => void;
+    removeLabel: (tag: string) => string;
+  }) => (
+    <button type="button" onClick={() => onValueChange(["Repair", "Transport"])}>
+      {removeLabel("Repair")}
+    </button>
+  ),
 }));
 vi.mock("#/components/ui/location-picker", () => ({
   LocationPicker: ({
@@ -141,7 +154,15 @@ beforeEach(() => {
   mocks.create.mockReset().mockResolvedValue(WANT);
   mocks.update.mockReset().mockResolvedValue(WANT);
   mocks.reopen.mockReset().mockResolvedValue(WANT);
+  mocks.close.mockReset().mockResolvedValue(undefined);
+  mocks.remove.mockReset().mockResolvedValue(undefined);
   mocks.mine.mockReset().mockResolvedValue({ wants: [WANT], first: 7, last: 7 });
+  mocks.profile.data.geoLat = -1.286;
+  mocks.profile.data.geoLng = 36.817;
+  mocks.profile.data.locationName = "Nairobi Market";
+  mocks.profile.isPending = false;
+  mocks.profile.isError = false;
+  mocks.profile.refetch.mockReset();
 });
 
 describe("Want form", () => {
@@ -172,6 +193,7 @@ describe("Want form", () => {
       target: { value: "I need help fixing a wheel" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Choose Mombasa" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove Repair" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "Share my email" }));
     fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
 
@@ -185,6 +207,7 @@ describe("Want form", () => {
       sharePhone: false,
       markerIcon: "question",
       markerColor: "orange",
+      tags: ["Repair", "Transport"],
     });
     expect(mocks.navigate).toHaveBeenCalledWith({
       to: "/wants/$wantId",
@@ -263,5 +286,106 @@ describe("Want form", () => {
 
     expect((await screen.findByRole("alert")).textContent).toBe("Check the Want details.");
     expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("shows loading and form failures, and retries both profile and owner data", async () => {
+    mocks.profile.isPending = true;
+    const view = renderForm("7");
+    expect(screen.getByText("Loading Want…")).toBeTruthy();
+
+    mocks.profile.isPending = false;
+    mocks.profile.isError = true;
+    view.rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <WantFormPage id="7" />
+      </QueryClientProvider>,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(mocks.profile.refetch).toHaveBeenCalled();
+  });
+
+  it("requires an explicit location when the profile has none", async () => {
+    mocks.profile.data.geoLat = null;
+    mocks.profile.data.geoLng = null;
+    mocks.profile.data.locationName = null;
+    renderForm();
+
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Repair help" } });
+    fireEvent.change(screen.getByLabelText("Description"), { target: { value: "A description" } });
+    fireEvent.change(screen.getByLabelText("Contact instructions"), {
+      target: { value: "Meet at the market" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe("Choose a location.");
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("returns scheduled saves to the editor", async () => {
+    mocks.create.mockResolvedValueOnce({ ...WANT, state: "scheduled" });
+    renderForm();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Repair help" } });
+    fireEvent.change(screen.getByLabelText("Description"), { target: { value: "A description" } });
+    fireEvent.change(screen.getByLabelText("Contact instructions"), {
+      target: { value: "Meet at the market" },
+    });
+    fireEvent.click(screen.getByRole("checkbox", { name: "Share my phone number" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "No ending date" }));
+    fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "2026-11-30T12:00" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
+
+    await waitFor(() =>
+      expect(mocks.navigate).toHaveBeenCalledWith({
+        to: "/wallet/wants/$wantId/edit",
+        params: { wantId: "7" },
+        replace: true,
+      }),
+    );
+    expect(mocks.create.mock.calls[0]?.[0]).toMatchObject({ sharePhone: true });
+  });
+
+  it("distinguishes quota failures from other save failures", async () => {
+    mocks.create.mockRejectedValueOnce(new BackendApiError(429, "limit", "E11"));
+    const first = renderForm();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Repair help" } });
+    fireEvent.change(screen.getByLabelText("Description"), { target: { value: "A description" } });
+    fireEvent.change(screen.getByLabelText("Contact instructions"), {
+      target: { value: "Meet at the market" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
+    expect(await screen.findByText(/Want limit reached/)).toBeTruthy();
+    first.unmount();
+
+    mocks.create.mockRejectedValueOnce(new Error("offline"));
+    renderForm();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Repair help" } });
+    fireEvent.change(screen.getByLabelText("Description"), { target: { value: "A description" } });
+    fireEvent.change(screen.getByLabelText("Contact instructions"), {
+      target: { value: "Meet at the market" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
+    expect(await screen.findByText("Couldn't save this Want. Try again.")).toBeTruthy();
+  });
+
+  it("closes and deletes owned Wants from the edit form", async () => {
+    renderForm("7");
+    await screen.findByRole("button", { name: "Close Want" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Close Want" }));
+    await waitFor(() => expect(mocks.close).toHaveBeenCalledWith("7"));
+    fireEvent.click(screen.getByRole("button", { name: "Delete Want" }));
+    await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith("7"));
+    expect(mocks.navigate).toHaveBeenCalledWith({
+      to: "/",
+      search: { tab: "wallet" },
+      replace: true,
+    });
+  });
+
+  it("surfaces lifecycle mutation failures", async () => {
+    mocks.close.mockRejectedValueOnce(new Error("offline"));
+    renderForm("7");
+    fireEvent.click(await screen.findByRole("button", { name: "Close Want" }));
+    expect(await screen.findByText("Couldn't save this Want. Try again.")).toBeTruthy();
   });
 });

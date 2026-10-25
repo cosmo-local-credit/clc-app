@@ -1,7 +1,7 @@
 import type { Want } from "@clc/core/features/wants/logic";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { WantSheet } from "./want-sheet";
 
 const WANT: Want = {
@@ -21,14 +21,25 @@ const WANT: Want = {
   markerColor: "orange",
 };
 
+const mocks = vi.hoisted(() => ({
+  close: vi.fn(),
+  refetch: vi.fn(),
+  query: {
+    data: undefined as Want | undefined,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  },
+}));
+
 vi.mock("@clc/api/features/wants/queries", () => ({
   wantDetailQueryOptions: () => ({}),
 }));
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => ({ data: WANT, isError: false, isFetching: false, refetch: vi.fn() }),
+  useQuery: () => mocks.query,
 }));
 vi.mock("#/lib/navigation/use-want-sheet-selection", () => ({
-  useWantSheetSelection: () => ({ want: "7", close: vi.fn() }),
+  useWantSheetSelection: () => ({ want: "7", close: mocks.close }),
 }));
 vi.mock("#/components/ui/map-sheet", () => ({
   MapSheet: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -36,9 +47,17 @@ vi.mock("#/components/ui/map-sheet", () => ({
   MapSheetTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
 }));
 vi.mock("#/components/wants/want-detail", () => ({
-  WantDetail: () => null,
+  WantDetail: () => <div>Full Want details</div>,
   WantShareButton: () => null,
 }));
+
+beforeEach(() => {
+  mocks.close.mockReset();
+  mocks.query.data = WANT;
+  mocks.query.isError = false;
+  mocks.query.isFetching = false;
+  mocks.query.refetch.mockReset();
+});
 vi.mock("#/components/wants/want-row", () => ({
   WantPicture: () => <span data-testid="want-picture" />,
 }));
@@ -58,5 +77,50 @@ describe("Want map sheet privacy", () => {
     expect(screen.getByText("Nairobi Market")).toBeTruthy();
     expect(screen.queryByText(/Wanted by/)).toBeNull();
     expect(screen.queryByText(/Amina/)).toBeNull();
+  });
+
+  it("opens the full sheet from the identity row and closes without bubbling", () => {
+    const onSnapChange = vi.fn();
+    render(
+      <WantSheet
+        realFix={null}
+        snap="peek"
+        onSnapChange={onSnapChange}
+        onCoveredHeightChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Bicycle repair/ }));
+    expect(onSnapChange).toHaveBeenCalledWith("full");
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(mocks.close).toHaveBeenCalled();
+  });
+
+  it("retries failed detail reads", () => {
+    mocks.query.data = undefined;
+    mocks.query.isError = true;
+    render(
+      <WantSheet
+        realFix={null}
+        snap="peek"
+        onSnapChange={vi.fn()}
+        onCoveredHeightChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.query.refetch).toHaveBeenCalled();
+  });
+
+  it("mounts the complete detail after the sheet reaches half", () => {
+    render(
+      <WantSheet
+        realFix={null}
+        snap="half"
+        onSnapChange={vi.fn()}
+        onCoveredHeightChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("Full Want details")).toBeTruthy();
   });
 });
