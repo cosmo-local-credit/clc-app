@@ -72,4 +72,12 @@ describe("useMarketMapResourceSelection", () => {
     rerender({ owner: "0xaaa" });
     expect(result.current.selected).toEqual(["pool", "post"]);
   });
+
+  it("repairs malformed JSON from an interrupted storage write", () => {
+    window.localStorage.setItem(ownerScopedKey("guest", STORAGE_NAME), "{");
+
+    const { result } = renderHook(() => useMarketMapResourceSelection("guest"));
+
+    expect(result.current.selected).toEqual(DEFAULT_MARKET_MAP_RESOURCES);
+  });
 });
