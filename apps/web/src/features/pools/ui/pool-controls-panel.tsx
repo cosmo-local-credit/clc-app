@@ -246,6 +246,7 @@ function WithdrawLiquidityForm({
   const { t } = useLingui();
   const { address } = useConnection();
   const relay = usePoolAdminRelay(pool);
+  const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
 
@@ -280,7 +281,8 @@ function WithdrawLiquidityForm({
         buildWithdrawPoolLiquidityCalls({
           poolAddress: pool.address,
           tokenAddress: selected.tokenAddress,
-          recipientAddress: address,
+          // A Safe-owned pool pays its owner, the Safe; otherwise the connected owner.
+          recipientAddress: owner.info?.kind === "safe" ? owner.info.owner : address,
           amountRaw,
         }),
       );

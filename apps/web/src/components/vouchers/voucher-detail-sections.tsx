@@ -22,6 +22,7 @@ import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
@@ -105,13 +106,12 @@ export function VoucherDetailSections({
   const { t } = useLingui();
   const auth = useAuthStatus();
   const { address: walletAddress } = useConnection();
+  const ownerInfo = useAssetOwnerInfo(address ?? "", detail?.ownerAddress);
   const canEditDetails =
     auth.isAuthenticated &&
     !!detail &&
     (auth.session?.role === "SUPERADMIN" ||
-      (!!auth.session?.address &&
-        !!detail.ownerAddress &&
-        auth.session.address.toLowerCase() === detail.ownerAddress.toLowerCase()));
+      (!!auth.session?.address && !!detail.ownerAddress && ownerInfo.canManage));
   const reportVoucher: VoucherRef | undefined =
     chainId && address ? { chainId, address: address as VoucherRef["address"] } : undefined;
   const rate = formatVoucherRate(voucherValue, voucherUoa);

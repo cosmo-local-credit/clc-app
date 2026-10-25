@@ -154,17 +154,26 @@ vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
   useDiscoveryDistanceOrigin: () => mocks.distanceOrigin,
 }));
 
-vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
-  useAssetOwnerInfo: () => ({
-    owner: undefined,
-    info: undefined,
-    pending: false,
-    isSafeOwned: false,
-    isSafeSigner: false,
-    unsupportedOwner: false,
-    canManage: false,
-  }),
-}));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", async () => {
+  const { useAuthStatus } = await import("#/features/auth/hooks/use-auth-status");
+  return {
+    useAssetOwnerInfo: (_address: string, owner: string | null | undefined) => {
+      const auth = useAuthStatus();
+      return {
+        owner,
+        info: undefined,
+        pending: false,
+        isSafeOwned: false,
+        isSafeSigner: false,
+        unsupportedOwner: false,
+        canManage:
+          !!owner &&
+          !!auth.session?.address &&
+          auth.session.address.toLowerCase() === owner.toLowerCase(),
+      };
+    },
+  };
+});
 vi.mock("#/features/safe/hooks/use-safe-write", () => ({
   useSafeWrite: () => ({ write: vi.fn() }),
 }));
