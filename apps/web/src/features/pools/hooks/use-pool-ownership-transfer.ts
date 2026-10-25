@@ -19,6 +19,7 @@ import {
 } from "#/features/ownership/hooks/use-ownership-transfer";
 import { CHAIN_ID } from "#/lib/chain";
 
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { usePoolAdminRelay } from "./use-pool-admin";
 
 function poolOwnershipContracts(pool: UserPool): PoolOwnershipContracts {
@@ -131,6 +132,7 @@ export async function preparePoolOwnershipTransfer(
 export function usePoolOwnershipTransfer(pool: UserPool) {
   const client = useClient({ chainId: CHAIN_ID });
   const relay = usePoolAdminRelay(pool);
+  const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
   return useOwnershipTransfer(
     "pool",
     async (input) => {
@@ -149,5 +151,6 @@ export function usePoolOwnershipTransfer(pool: UserPool) {
       if (!client) throw new Error("The configured chain is unavailable.");
       return preparePoolOwnershipTransfer(client, pool, input);
     },
+    owner.isSafeSigner,
   );
 }

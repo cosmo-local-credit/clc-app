@@ -38,6 +38,7 @@ const mocks = vi.hoisted(() => ({
   toastSuccess: vi.fn(),
 }));
 
+vi.mock("#/components/safe/recipient-owner-notice", () => ({ RecipientOwnerNotice: () => null }));
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: OWNER }),
   useClient: () => undefined,

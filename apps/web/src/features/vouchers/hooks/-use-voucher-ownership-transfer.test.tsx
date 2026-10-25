@@ -16,6 +16,20 @@ const mocks = vi.hoisted(() => ({
   delegation: "not-delegated",
 }));
 vi.mock("#/features/webauthn/api/relay-calibur-batch", () => ({ relayCaliburBatch: mocks.relay }));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => ({
+    owner: undefined,
+    info: undefined,
+    pending: false,
+    isSafeOwned: false,
+    isSafeSigner: false,
+    unsupportedOwner: false,
+    canManage: false,
+  }),
+}));
+vi.mock("#/features/safe/hooks/use-safe-write", () => ({
+  useSafeWrite: () => ({ write: vi.fn() }),
+}));
 vi.mock("wagmi", () => ({
   useClient: () => mocks.client,
   useConnection: () => ({ address: mocks.address, connector: { id: "private-key" } }),

@@ -35,6 +35,8 @@ import {
   ownershipKey,
   useOwnershipSubmissions,
 } from "#/features/ownership/state/ownership-submissions";
+import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
+import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
@@ -323,7 +325,8 @@ function VoucherOwnershipTransferSheet({
   const { t } = useLingui();
   const queryClient = useQueryClient();
   const delegationStatus = useCaliburDelegation(walletAddress);
-  const transferOwnership = useVoucherOwnershipTransfer();
+  const transferOwnership = useVoucherOwnershipTransfer({ address: tokenAddress, ownerAddress });
+  const reportError = useReportWriteError();
   const submission = useOwnershipSubmissions(
     (state) => state.submissions[ownershipKey(tokenAddress)],
   );
@@ -351,7 +354,7 @@ function VoucherOwnershipTransferSheet({
         else toast.success(t`Ownership transferred.`);
         onClose();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`Couldn't transfer ownership.`);
+        reportError(error, t`Couldn't transfer ownership.`);
       }
     },
   });
@@ -409,6 +412,7 @@ function VoucherOwnershipTransferSheet({
                       disabled={pending || !!submission}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
+                    <RecipientOwnerNotice address={field.state.value} />
                   </Field>
                 )}
               </form.Field>

@@ -3,6 +3,8 @@ import { ownableAbi, ownershipRecipientSchema } from "@clc/core/features/pool-ad
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { readContract } from "viem/actions";
 import { useClient, useConnection } from "wagmi";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
+import { useSafeWrite } from "#/features/safe/hooks/use-safe-write";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
 import { waitForOwnershipRelay } from "#/features/ownership/api/wait-for-ownership-relay";
@@ -20,14 +22,29 @@ export type VoucherOwnershipTransferInput = {
 };
 
 /** Existing transport, with settlement and ordered catalog refresh. */
-export function useVoucherOwnershipTransfer() {
+export function useVoucherOwnershipTransfer(asset?: {
+  address: string;
+  ownerAddress?: string | null;
+}) {
   const { address, connector } = useConnection();
+  const owner = useAssetOwnerInfo(asset?.address ?? "", asset?.ownerAddress);
+  const safeWrite = useSafeWrite();
   const client = useClient({ chainId: CHAIN_ID });
   const delegation = useCaliburDelegation(address);
   const mutation = useOwnershipTransfer(
     "voucher",
     async (input) => {
       let trackingId = input.trackingId;
+      if (!trackingId && asset && owner.info?.kind === "safe" && owner.isSafeSigner) {
+        const settled = await safeWrite.write({
+          assetAddress: asset.address,
+          safe: owner.info.owner,
+          threshold: owner.info.threshold,
+          calls: input.calls,
+        });
+        input.onConfirmed(settled.trackingId, settled.txHash);
+        return settled;
+      }
       if (!trackingId) {
         if (!address || delegation === "checking")
           throw new Error("Still checking your wallet. Try again in a moment.");
@@ -66,6 +83,7 @@ export function useVoucherOwnershipTransfer() {
         }),
       ];
     },
+    owner.isSafeSigner,
   );
   return {
     ...mutation,

@@ -84,3 +84,24 @@ CORE_TEST_DSN="$OWNERSHIP_TEST_DSN" go test -p 1 ./internal/sub ./internal/store
 ```
 
 Use an isolated migrated test database for the integration run.
+
+## Safe-owned assets
+
+`VITE_SAFE_OWNERSHIP_ENABLED` (off in both Wrangler blocks) lets a Safe own a
+voucher or pool and its signers manage it from the app. Flip it only after the
+whole chain below is live in that environment.
+
+1. eth-tracker with `SAFE_OWNERS_CHANGED` (`feat/safe-owner-events`) deployed.
+2. clc-core with migration `060_safe_signers.sql`, then `safe.multisend_call_only`
+   (the Gnosis `MultiSendCallOnly` 1.3.0 and 1.4.1 addresses) and `safe.sts_base_url`
+   set in its config. Without them `execTransaction` is refused at the relay and
+   the `/api/v2/safe` routes are not mounted.
+3. Re-run `cmd/reconcile-ownership` at a finalized block so existing Safe owners
+   are cached (the snapshot now includes them), and make sure the tracker watches
+   those Safes.
+
+Use a staging 2-of-3 Safe: transfer a voucher to it, then have a signer propose a
+mint, a second signer confirm and execute it from the Safe transactions row, and
+reject a queued transaction. Check that a removed signer loses the controls once
+the tracker has reported `RemovedOwner`. Passkey wallets cannot sign for a Safe
+yet; paper wallets and external wallets can.

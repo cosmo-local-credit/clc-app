@@ -154,6 +154,21 @@ vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
   useDiscoveryDistanceOrigin: () => mocks.distanceOrigin,
 }));
 
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => ({
+    owner: undefined,
+    info: undefined,
+    pending: false,
+    isSafeOwned: false,
+    isSafeSigner: false,
+    unsupportedOwner: false,
+    canManage: false,
+  }),
+}));
+vi.mock("#/features/safe/hooks/use-safe-write", () => ({
+  useSafeWrite: () => ({ write: vi.fn() }),
+}));
+vi.mock("#/components/safe/recipient-owner-notice", () => ({ RecipientOwnerNotice: () => null }));
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: mocks.address }),
 }));
@@ -332,7 +347,11 @@ vi.mock("#/features/vouchers/hooks/use-update-voucher-profile", () => ({
 }));
 
 vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
-  useVoucherMint: () => ({ mutateAsync: mocks.createVouchers, isPending: false }),
+  useVoucherMint: () => ({
+    mutateAsync: mocks.createVouchers,
+    isPending: false,
+    reportError: vi.fn(),
+  }),
 }));
 
 vi.mock("#/features/vouchers/hooks/use-voucher-ownership-transfer", () => ({

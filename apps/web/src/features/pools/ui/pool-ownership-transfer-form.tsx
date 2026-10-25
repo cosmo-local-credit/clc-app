@@ -12,6 +12,8 @@ import {
   ownershipKey,
   useOwnershipSubmissions,
 } from "#/features/ownership/state/ownership-submissions";
+import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
+import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
 import { usePoolOwnershipTransfer } from "#/features/pools/hooks/use-pool-ownership-transfer";
 import type { PoolFeeSettings } from "#/features/pools/hooks/use-pool-fee-settings";
 
@@ -26,6 +28,7 @@ export function PoolOwnershipTransferForm({
 }) {
   const { t } = useLingui();
   const transfer = usePoolOwnershipTransfer(pool);
+  const reportError = useReportWriteError();
   const submission = useOwnershipSubmissions(
     (state) => state.submissions[ownershipKey(pool.address)],
   );
@@ -59,7 +62,7 @@ export function PoolOwnershipTransferForm({
           );
         onDone();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`Couldn't transfer ownership.`);
+        reportError(error, t`Couldn't transfer ownership.`);
       }
     },
   });
@@ -108,6 +111,7 @@ export function PoolOwnershipTransferForm({
                 ariaInvalid={field.state.meta.errors.length > 0}
                 disabled={transfer.isPending || !!submission}
               />
+              <RecipientOwnerNotice address={field.state.value} />
             </Field>
           )}
         </form.Field>
