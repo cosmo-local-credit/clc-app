@@ -32,6 +32,16 @@ export type ChainMetadata = {
    * deployment or the relayer rejects every batch as undelegated.
    */
   caliburAddress?: `0x${string}`;
+  /**
+   * Safe deployments on this chain. `multiSendCallOnly` is pinned: a Safe
+   * transaction may delegatecall only to it, and clc-core's
+   * `safe.multisend_call_only` must list the same addresses.
+   */
+  safe?: {
+    /** Slug in the Safe Transaction Service host, `safe-transaction-<slug>`. */
+    serviceSlug: string;
+    multiSendCallOnly: readonly `0x${string}`[];
+  };
 };
 
 const CHAIN_METADATA = {
@@ -57,6 +67,13 @@ const CHAIN_METADATA = {
     explorerUrl: "https://gnosisscan.io",
     explorerName: "Gnosisscan",
     caliburAddress: "0x48A910C8e9FF0b14051b78d0c96dB069E57f0729",
+    safe: {
+      serviceSlug: "gnosis-chain",
+      multiSendCallOnly: [
+        "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+        "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
+      ],
+    },
   },
 } as const satisfies Record<number, ChainMetadata>;
 
