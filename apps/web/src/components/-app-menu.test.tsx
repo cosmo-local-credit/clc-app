@@ -57,8 +57,6 @@ vi.mock("#/components/ui/select", () => ({
 
 const { AppMenu } = await import("./app-menu");
 const { THEME_STORAGE_KEY, useThemeStore } = await import("#/providers/theme");
-const { DEFAULT_CATALOG_VISIBILITY, useCatalogVisibilityStore } =
-  await import("#/features/home/state/catalog-visibility");
 
 function mockPrefersColorScheme(dark: boolean) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
@@ -81,7 +79,6 @@ describe("AppMenu", () => {
     window.localStorage.clear();
     document.documentElement.classList.remove("dark");
     useThemeStore.setState({ theme: "light" });
-    useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY });
     mockPrefersColorScheme(false);
   });
 
@@ -102,30 +99,24 @@ describe("AppMenu", () => {
     }
   });
 
-  it("orders Language before Theme and Visibility without closing during preference changes", async () => {
+  it("orders Language before Theme without closing during preference changes", async () => {
     render(<AppMenu />);
     await openMenu();
 
-    const [language, visibility] = screen.getAllByRole("combobox") as HTMLSelectElement[];
+    const [language] = screen.getAllByRole("combobox") as HTMLSelectElement[];
     const theme = screen.getByRole("button", { name: "Dark mode" });
-    const preferenceRows = ["Language", "Theme", "Visibility"].map(
+    const preferenceRows = ["Language", "Theme"].map(
       (label) => screen.getByText(label).parentElement,
     );
     expect(preferenceRows[0]?.nextElementSibling).toBe(preferenceRows[1]);
-    expect(preferenceRows[1]?.nextElementSibling).toBe(preferenceRows[2]);
 
     fireEvent.click(theme);
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
     expect(theme.getAttribute("aria-pressed")).toBe("true");
     expect(theme.textContent).toContain("Dark");
     expect(screen.getByText("About")).toBeTruthy();
-
     fireEvent.change(language!, { target: { value: "it" } });
     expect(setLocale).toHaveBeenCalledWith("it");
-    expect(screen.getByText("About")).toBeTruthy();
-
-    fireEvent.change(visibility!, { target: { value: "global" } });
-    expect(useCatalogVisibilityStore.getState().visibility).toBe("global");
     expect(screen.getByText("About")).toBeTruthy();
   });
 
@@ -135,8 +126,7 @@ describe("AppMenu", () => {
 
     const theme = screen.getByRole("button", { name: "Dark mode" });
     const language = screen.getByLabelText("Language", { selector: "span" });
-    const visibility = screen.getByLabelText("Visibility", { selector: "span" });
-    for (const control of [theme, language, visibility]) {
+    for (const control of [theme, language]) {
       expect(control.className).toContain("w-32");
     }
   });

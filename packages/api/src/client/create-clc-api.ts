@@ -24,6 +24,7 @@ import { createReportsClient } from "../features/reports/client";
 import { createSymbolsClient } from "../features/symbols/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
 import { createVocabularyClient } from "../features/vocabulary/client";
+import { createWantsClient } from "../features/wants/client";
 import { type CreateHttpClientOptions, createHttpClient } from "./http-client";
 
 export type CreateClcApiOptions = CreateHttpClientOptions & {
@@ -66,5 +67,6 @@ export function createClcApi({
     symbols: createSymbolsClient(http),
     voucherDeploy: createVoucherDeployClient(http),
     vocabulary: createVocabularyClient(http),
+    wants: createWantsClient(http),
   };
 }

@@ -11,6 +11,7 @@ export const catalogKeys = {
       | {
           scope?: string;
           nearby?: boolean;
+          bounds?: readonly import("@clc/core/features/catalog/nearby").MarketBoundingBox[];
           q?: string;
           tags?: readonly string[];
           tagMatch?: "any" | "all";
@@ -25,6 +26,7 @@ export const catalogKeys = {
       "list",
       params.scope ?? "public",
       params.nearby === true,
+      params.bounds,
       params.q?.trim() ?? "",
       [...(params.tags ?? [])],
       params.tagMatch ?? "any",
@@ -46,6 +48,7 @@ export function catalogsInfiniteQueryOptions(
     | {
         scope?: string;
         nearby?: boolean;
+        bounds?: readonly import("@clc/core/features/catalog/nearby").MarketBoundingBox[];
         q?: string;
         tags?: readonly string[];
         tagMatch?: "any" | "all";
@@ -62,6 +65,7 @@ export function catalogsInfiniteQueryOptions(
         {
           cursor: pageParam,
           nearby: params.nearby === true,
+          bounds: params.bounds,
           q: params.q,
           tags: params.tags,
           tagMatch: params.tagMatch,

@@ -1,4 +1,4 @@
-import { NearbyCatalog } from "#/components/nearby-catalog";
+import { clearMarketDiscoveryArea, NearbyCatalog } from "#/components/nearby-catalog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useConnection, useDisconnect } from "wagmi";
@@ -67,6 +67,7 @@ export function HomePage({
     clearIdentitySecrets("none");
     // Drop the precise location too. It must not survive on a shared device.
     clearPersistedLocation();
+    if (locationOwner !== GUEST_STORAGE_OWNER) clearMarketDiscoveryArea(locationOwner);
     clearScopedQueries(queryClient);
     setIsSigningOut(true);
     try {
@@ -89,7 +90,7 @@ export function HomePage({
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        <NearbyCatalog allowMissingLocation>
+        <NearbyCatalog>
           <MarketPage
             isAuthenticated={isAuthenticated}
             locationOwner={locationOwner}

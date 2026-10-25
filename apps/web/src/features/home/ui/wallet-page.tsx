@@ -5,15 +5,16 @@ import {
   RiBankCardLine,
   RiDownloadLine,
   RiSendPlane2Line,
+  RiPencilLine,
 } from "react-icons/ri";
+import { myWantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { Button } from "#/components/ui/button";
 import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
 import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
-import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
-import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
-import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { useWalletVoucherPreview } from "#/features/wallet/hooks/use-wallet-voucher-preview";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
@@ -21,6 +22,8 @@ import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/reso
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
+import { wantsClient } from "#/lib/api/wants";
+import { WantPicture } from "#/components/wants/want-row";
 
 function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
   return tokens.map((token, index, list) => {
@@ -79,12 +82,10 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/cash",
     },
   ] as const;
-  const balancesQuery = useLatestAccountTokens(address);
-  const voucherGroups = usePartitionedVouchers(
-    balancesQuery.data?.tokens.map(accountTokenToWalletToken) ?? [],
-    address,
-  );
+  const voucherGroups = useWalletVoucherPreview(address);
   const usage = useResourceUsage();
+  const wantsQuery = useInfiniteQuery(myWantsInfiniteQueryOptions(wantsClient, address ?? ""));
+  const wants = wantsQuery.data?.pages.flatMap((page) => page.wants) ?? [];
   // Only the first page: this is a shortcut into pools a steward manages, not a
   // list to page through. "All pools" carries the rest.
   //
@@ -106,6 +107,8 @@ export function WalletPage({ address }: { address?: string }) {
       <Trans>My Vouchers</Trans>
     </ResourceQuotaTitle>
   );
+  const openAllVouchers = () => void navigate({ to: "/wallet/vouchers" });
+  const viewAllAction = <Trans>View all</Trans>;
 
   return (
     <div className="space-y-6">
@@ -147,27 +150,27 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       ) : null}
 
-      {voucherGroups.isPending || balancesQuery.isPending ? (
+      {voucherGroups.isPending ? (
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
             title={myVouchersTitle}
-            action={<Trans>View all</Trans>}
-            onAction={() => {
-              void navigate({ to: "/wallet/vouchers" });
-            }}
+            action={viewAllAction}
+            actionLabel={`${t`View all`} ${t`My Vouchers`}`}
+            onAction={openAllVouchers}
           />
           <div className="border-border bg-card border">
             <ListSkeleton framed={false} count={3} label={<Trans>Loading vouchers…</Trans>} />
           </div>
         </section>
-      ) : voucherGroups.isError ? (
+      ) : voucherGroups.isIssuedError ? (
         <section aria-labelledby="my-vouchers-title">
           <SectionHeader
             id="my-vouchers-title"
             title={myVouchersTitle}
-            action={<Trans>View all</Trans>}
-            onAction={() => void navigate({ to: "/wallet/vouchers" })}
+            action={viewAllAction}
+            actionLabel={`${t`View all`} ${t`My Vouchers`}`}
+            onAction={openAllVouchers}
           />
           <div className="border-border bg-card border">
             <div className="space-y-2 p-3">
@@ -178,7 +181,7 @@ export function WalletPage({ address }: { address?: string }) {
                 variant="outline"
                 tap
                 pending={voucherGroups.isFetching}
-                onClick={() => void voucherGroups.refetch()}
+                onClick={() => void voucherGroups.refetchIssued()}
               >
                 <Trans>Try again</Trans>
               </Button>
@@ -187,7 +190,7 @@ export function WalletPage({ address }: { address?: string }) {
         </section>
       ) : (
         <>
-          {balancesQuery.isError ? (
+          {voucherGroups.isBalanceError ? (
             <div role="alert" className="border-border bg-card space-y-2 border p-3">
               <p className="text-muted-foreground text-sm">
                 <Trans>Couldn't load vouchers.</Trans>
@@ -195,8 +198,8 @@ export function WalletPage({ address }: { address?: string }) {
               <Button
                 variant="outline"
                 tap
-                pending={balancesQuery.isFetching}
-                onClick={() => void balancesQuery.refetch()}
+                pending={voucherGroups.isFetching}
+                onClick={() => void voucherGroups.refetchBalances()}
               >
                 <Trans>Try again</Trans>
               </Button>
@@ -204,7 +207,13 @@ export function WalletPage({ address }: { address?: string }) {
           ) : null}
           {voucherGroups.holdings.length > 0 ? (
             <section aria-labelledby="holdings-title">
-              <SectionHeader id="holdings-title" title={<Trans>Holdings</Trans>} />
+              <SectionHeader
+                id="holdings-title"
+                title={<Trans>Holdings</Trans>}
+                action={viewAllAction}
+                actionLabel={`${t`View all`} ${t`Holdings`}`}
+                onAction={openAllVouchers}
+              />
               <div className="border-border bg-card border">
                 <WalletVoucherRows tokens={voucherGroups.holdings} />
               </div>
@@ -214,10 +223,9 @@ export function WalletPage({ address }: { address?: string }) {
             <SectionHeader
               id="my-vouchers-title"
               title={myVouchersTitle}
-              action={<Trans>View all</Trans>}
-              onAction={() => {
-                void navigate({ to: "/wallet/vouchers" });
-              }}
+              action={viewAllAction}
+              actionLabel={`${t`View all`} ${t`My Vouchers`}`}
+              onAction={openAllVouchers}
             />
             <div className="border-border bg-card border">
               {voucherGroups.issued.length === 0 ? (
@@ -253,6 +261,110 @@ export function WalletPage({ address }: { address?: string }) {
           </section>
         </>
       )}
+
+      <section aria-labelledby="my-wants-title">
+        <SectionHeader
+          id="my-wants-title"
+          title={
+            <ResourceQuotaTitle
+              quota={usage.data?.wants}
+              pending={usage.isPending}
+              error={usage.isError}
+            >
+              <Trans>My Wants</Trans>
+            </ResourceQuotaTitle>
+          }
+          action={usage.data?.wants?.canCreate ? <Trans>Create</Trans> : undefined}
+          actionTo={usage.data?.wants?.canCreate ? "/wallet/wants/new" : undefined}
+        />
+        <ResourceLimitMessage quota={usage.data?.wants} />
+        <div className="border-border bg-card border">
+          {wantsQuery.isPending ? (
+            <ListSkeleton framed={false} count={2} label={<Trans>Loading Wants…</Trans>} />
+          ) : wantsQuery.isError ? (
+            <div className="space-y-2 p-3">
+              <p className="text-muted-foreground text-sm">
+                <Trans>Couldn't load your Wants.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                tap
+                pending={wantsQuery.isFetching}
+                onClick={() => void wantsQuery.refetch()}
+              >
+                <Trans>Try again</Trans>
+              </Button>
+            </div>
+          ) : wants.length === 0 ? (
+            <div className="space-y-3 p-3">
+              <p className="text-muted-foreground text-sm">
+                <Trans>No Wants yet.</Trans>
+              </p>
+              <Button
+                asChild={usage.data?.wants.canCreate === true && !usage.isError}
+                disabled={usage.data?.wants.canCreate !== true || usage.isError}
+                variant="outline"
+                tap
+                className={cn("w-full", RESOURCE_HUE.wants, RESOURCE_OUTLINE)}
+              >
+                {usage.data?.wants.canCreate === true && !usage.isError ? (
+                  <Link to="/wallet/wants/new">
+                    <RESOURCE_ICON.wants aria-hidden="true" />
+                    <Trans>Create Want</Trans>
+                  </Link>
+                ) : (
+                  <span>
+                    <RESOURCE_ICON.wants aria-hidden="true" />
+                    <Trans>Create Want</Trans>
+                  </span>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <>
+              {wants.map((want, index) => (
+                <Link
+                  key={want.id}
+                  to="/wallet/wants/$wantId/edit"
+                  params={{ wantId: want.id }}
+                  className={cn(
+                    "flex min-h-16 items-center gap-3 p-3",
+                    index < wants.length - 1 && "border-b border-border",
+                  )}
+                >
+                  <WantPicture want={want} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{want.name}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {want.state === "scheduled" ? (
+                        <Trans>Scheduled</Trans>
+                      ) : want.state === "expired" ? (
+                        <Trans>Expired</Trans>
+                      ) : want.state === "closed" ? (
+                        <Trans>Closed</Trans>
+                      ) : (
+                        <Trans>Active</Trans>
+                      )}
+                    </span>
+                  </span>
+                  <RiPencilLine className="size-4 text-muted-foreground" aria-hidden="true" />
+                </Link>
+              ))}
+              {wantsQuery.hasNextPage ? (
+                <Button
+                  variant="outline"
+                  tap
+                  className="m-3 w-[calc(100%-1.5rem)]"
+                  pending={wantsQuery.isFetchingNextPage}
+                  onClick={() => void wantsQuery.fetchNextPage()}
+                >
+                  <Trans>Load more</Trans>
+                </Button>
+              ) : null}
+            </>
+          )}
+        </div>
+      </section>
 
       <section aria-labelledby="my-pools-title">
         <SectionHeader

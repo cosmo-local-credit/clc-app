@@ -195,13 +195,14 @@ describe("SendRecipientPage", () => {
     });
     vi.stubGlobal("fetch", fetcher);
     renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
-    fireEvent.click(await screen.findByRole("button", { name: /Amina \(new-name\)/ }));
-    await waitFor(() => expect(screen.getByText("Amina (new-name)")).toBeTruthy());
+    fireEvent.click(await screen.findByRole("button", { name: /new-name/ }));
+    await waitFor(() => expect(screen.getByText("new-name")).toBeTruthy());
+    expect(screen.queryByText("Amina")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
     await waitFor(() =>
       expect(navigate).toHaveBeenCalledWith({
         to: "/wallet/send/amount",
-        search: { token: "0xtoken", recipient: AMINA, recipientLabel: "Amina (new-name)" },
+        search: { token: "0xtoken", recipient: AMINA, recipientLabel: "new-name" },
       }),
     );
     expect(fetcher.mock.calls.some(([url]) => url.includes("old-name"))).toBe(false);
@@ -241,7 +242,7 @@ describe("SendRecipientPage", () => {
     );
   });
 
-  it.each(["071", "0711 777 734", "+387 (61) 123-456"])(
+  it.each(["0711 777 734", "+387 (61) 123-456"])(
     "selects a Core phone match for %s before continuing",
     async (phone) => {
       const fetcher = mockFetch({
@@ -256,7 +257,7 @@ describe("SendRecipientPage", () => {
       const input = screen.getByRole("textbox", { name: /recipient username/i });
       fireEvent.change(input, { target: { value: phone } });
 
-      const match = await screen.findByRole("button", { name: /Amina \(amina\)/ });
+      const match = await screen.findByRole("button", { name: /amina/ });
       expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);
       const recipientCalls = fetcher.mock.calls.filter(([url]) =>
         String(url).includes("/recipients?"),
@@ -272,14 +273,27 @@ describe("SendRecipientPage", () => {
       await waitFor(() =>
         expect(navigate).toHaveBeenCalledWith({
           to: "/wallet/send/amount",
-          search: { token: "0xtoken", recipient: AMINA, recipientLabel: "Amina (amina)" },
+          search: { token: "0xtoken", recipient: AMINA, recipientLabel: "amina" },
         }),
       );
       expect(readAddressBookRecipients(OWNER)).toEqual([
-        expect.objectContaining({ address: AMINA, label: "Amina (amina)", source: "phone" }),
+        expect.objectContaining({ address: AMINA, label: "amina", source: "phone" }),
       ]);
     },
   );
+
+  it("does not resolve a partial phone number", async () => {
+    const fetcher = mockFetch({ ok: true, result: { recipients: [] } });
+    renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /recipient username/i }), {
+      target: { value: "071" },
+    });
+
+    expect(await screen.findByText("No matching recipients.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);
+    expect(fetcher.mock.calls.some(([url]) => String(url).includes("q=071"))).toBe(true);
+  });
 
   it("keeps pasted addresses visible in full and shows current username when present", async () => {
     const fetcher = mockFetch({

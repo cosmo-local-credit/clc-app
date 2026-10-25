@@ -1,9 +1,4 @@
-import {
-  filterNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-  nearbyQueryPolicy,
-} from "#/components/nearby-catalog";
+import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import {
   poolListInfiniteQueryOptions,
   poolQueryOptions,
@@ -17,22 +12,11 @@ const DEFAULT_POOLS_PAGE_SIZE = 20;
 
 export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled = true) {
   const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
   const options = poolListInfiniteQueryOptions(poolsClient, perPage, nearby);
   return useInfiniteQuery({
     ...options,
     ...nearbyQueryPolicy(nearby),
     enabled,
-    select: (data) => ({
-      ...data,
-      pages: data.pages.map((page) => ({
-        ...page,
-        pools: filterNearbyCatalog(
-          page.pools.map((pool) => ({ ...pool, lat: pool.geoLat, lng: pool.geoLng })),
-          visibilityFilter,
-        ).map(({ lat: _lat, lng: _lng, ...pool }) => pool),
-      })),
-    }),
   });
 }
 

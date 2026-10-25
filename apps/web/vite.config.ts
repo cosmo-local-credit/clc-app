@@ -39,7 +39,9 @@ function loadWranglerViteVars(localEnv: Record<string, string>) {
       continue;
     }
 
-    if (activeSection !== "vars") continue;
+    // Off Cloudflare, fill gaps from staging: `[vars]` holds prod's values, and
+    // a laptop or CI build must never default to the prod backend.
+    if (activeSection !== "env.preview.vars") continue;
 
     const match = line.match(/^(VITE_[A-Z0-9_]+)\s*=\s*"([^"]*)"$/);
     if (!match) continue;

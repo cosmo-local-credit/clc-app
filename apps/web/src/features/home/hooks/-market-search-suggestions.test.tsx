@@ -4,15 +4,17 @@ import type { ReactNode } from "react";
 import { expect, it, vi } from "vite-plus/test";
 import { useMarketSearchSuggestions } from "./use-market-search-suggestions";
 
-const list = vi.hoisted(() => vi.fn());
+const { list, bounds } = vi.hoisted(() => ({
+  list: vi.fn(),
+  bounds: [{ minLng: -1, minLat: -1, maxLng: 1, maxLat: 1 }] as const,
+}));
 vi.mock("#/lib/api/marketplace", () => ({ marketplaceClient: { list } }));
 vi.mock("#/components/nearby-catalog", async (original) => ({
   ...(await original<typeof import("#/components/nearby-catalog")>()),
-  useNearbyCatalog: () => undefined,
-  useNearbyCatalogFilter: () => ({ lat: 0, lng: 0, radiusKm: 500 }),
+  useNearbyCatalog: () => ({ nearby: false, scope: "viewport:guest:box", bounds }),
 }));
 
-it("nearby suggestions on page two must not disappear behind distant page one", async () => {
+it("walks bounded server pages until both suggestion kinds are represented", async () => {
   list.mockImplementation(async (params) => {
     if (params.facets)
       return {
@@ -29,12 +31,12 @@ it("nearby suggestions on page two must not disappear behind distant page one", 
           nextCursor: null,
         }
       : {
-          results: Array.from({ length: 10 }, (_, id) => ({
+          results: Array.from({ length: 3 }, (_, id) => ({
             kind: "voucher",
             id: String(id),
-            name: "Far",
-            geoLat: 30,
-            geoLng: 30,
+            name: "Nearby",
+            geoLat: 0,
+            geoLng: 0,
           })),
           nextCursor: "page2",
         };
@@ -50,6 +52,9 @@ it("nearby suggestions on page two must not disappear behind distant page one", 
       expect.objectContaining({ q: "repair" }),
       expect.any(AbortSignal),
     ),
+  );
+  await waitFor(() =>
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ bounds }), expect.any(AbortSignal)),
   );
   await waitFor(() => expect(result.current.vouchers.map((row) => row.id)).toContain("near"));
   expect(result.current.tags).toEqual(["Repair"]);

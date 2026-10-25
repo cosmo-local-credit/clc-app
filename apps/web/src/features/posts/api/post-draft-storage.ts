@@ -55,7 +55,16 @@ export function readPostDraft(owner: string): ReportWrite | null {
   }
 
   // Shape and limits, not readiness: a draft is unfinished by definition.
-  const values = reportDraftSchema.safeParse(candidate.values);
+  const legacyValues =
+    typeof candidate.values === "object" &&
+    candidate.values !== null &&
+    !Array.isArray(candidate.values)
+      ? {
+          ...(candidate.values as Record<string, unknown>),
+          pools: (candidate.values as Record<string, unknown>).pools ?? [],
+        }
+      : candidate.values;
+  const values = reportDraftSchema.safeParse(legacyValues);
   return values.success ? values.data : null;
 }
 

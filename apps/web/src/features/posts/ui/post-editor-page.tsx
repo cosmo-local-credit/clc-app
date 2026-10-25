@@ -10,6 +10,7 @@ import {
   REPORT_MAX_IMAGES,
   REPORT_MAX_TAGS,
   REPORT_MAX_VOUCHERS,
+  REPORT_MAX_POOLS,
   REPORT_PARTICIPANTS_MAX,
   REPORT_TITLE_MAX,
   emptyReportWrite,
@@ -19,6 +20,7 @@ import {
   reportWriteSchema,
   toDateTimeLocalValue,
   voucherRefKey,
+  poolRefKey,
   type ReportVoucherRef,
   type ReportWrite,
 } from "@clc/core/features/reports/logic";
@@ -32,6 +34,7 @@ import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { MarkdownEditor } from "#/components/ui/markdown-editor";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagCombobox } from "#/components/ui/tag-combobox";
@@ -51,6 +54,7 @@ import { PostAttachmentFields } from "./post-attachment-fields";
 import { PostConfirmDialog } from "./post-confirm-dialog";
 import { PostImageManager } from "./post-image-manager";
 import { PostVoucherPicker } from "./post-voucher-picker";
+import { PostPoolPicker } from "./post-pool-picker";
 
 /** Quiet time before an in-progress post is parked in local storage. */
 const DRAFT_SAVE_DEBOUNCE_MS = 500;
@@ -79,10 +83,9 @@ export function PostEditorPage(target: PostEditorTarget) {
 /**
  * What a new post starts with.
  *
- * Nothing here is asked for twice. The host and the place are the name and
- * location the author gave at signup, the period is the moment of writing, and
- * a voucher a screen carried in arrives linked — all of it editable, and none
- * of it a field to fill before writing.
+ * The saved place and the moment of writing seed the new post, while a voucher
+ * a screen carried in arrives linked. The profile name deliberately does not
+ * seed the public Host field: naming a host is an explicit author choice.
  *
  * A draft this device parked wins over all of it: it is what the author
  * actually typed. The profile read is awaited rather than merged in later
@@ -134,7 +137,7 @@ function PostEditorCreate({ voucher }: { voucher: SeedVoucher | null }) {
   const fresh: ReportWrite = {
     ...emptyReportWrite,
     ...nowReportPeriod(),
-    hostName: profile?.name ?? "",
+    hostName: "",
     geoLat: hasProfileLocation ? (profile?.geoLat ?? null) : null,
     geoLng: hasProfileLocation ? (profile?.geoLng ?? null) : null,
     vouchers: seededRef ? [seededRef] : [],
@@ -163,6 +166,7 @@ function PostEditorCreate({ voucher }: { voucher: SeedVoucher | null }) {
           ? new Map([[voucherRefKey(seededRef), voucher.name]])
           : new Map<string, string>()
       }
+      linkedPoolNames={new Map<string, string>()}
       // Started from a voucher, so Back names the voucher — and a deep load
       // with no history lands back on the tab the button was pressed from.
       back={
@@ -230,6 +234,14 @@ function PostEditorLoader({ reportId }: { reportId: string }) {
           ]),
         )
       }
+      linkedPoolNames={
+        new Map(
+          (post.pools ?? []).map((pool) => [
+            poolRefKey({ chainId: pool.chainId, address: pool.address }),
+            pool.name,
+          ]),
+        )
+      }
       previousStatus={post.status}
     />
   );
@@ -239,6 +251,7 @@ function PostEditorForm({
   post,
   initial,
   linkedNames,
+  linkedPoolNames,
   back,
   draft,
   previousStatus,
@@ -247,6 +260,7 @@ function PostEditorForm({
   initial: ReportWrite;
   /** Names for chips the picker's search may not return, keyed by `voucherRefKey`. */
   linkedNames: Map<string, string>;
+  linkedPoolNames: Map<string, string>;
   back?: EditorBack;
   /**
    * Local draft persistence, on the create screen only. An edit has a server
@@ -505,7 +519,7 @@ function PostEditorForm({
           </div>
         </Section>
 
-        <Section title={t`Place`}>
+        <Section title={t`Place`} defaultOpen={initial.geoLat !== null && initial.geoLng !== null}>
           {/* Only geoLat/geoLng persist — reports.location_name was dropped in
               migration 010 — so the picker's place name is a search aid. */}
           <form.Subscribe selector={(state) => [state.values.geoLat, state.values.geoLng] as const}>
@@ -524,10 +538,16 @@ function PostEditorForm({
               />
             )}
           </form.Subscribe>
+          <div className="mt-3">
+            <PublicLocationWarning />
+          </div>
         </Section>
 
-        <Section title={t`Tags and vouchers`}>
+        <Section title={t`Tags and resources`} defaultOpen>
           <div className="space-y-5">
+            <p className="text-muted-foreground text-xs">
+              <Trans>Link at least one voucher or pool.</Trans>
+            </p>
             <form.Field name="tags">
               {(field) => (
                 <div>
@@ -582,6 +602,29 @@ function PostEditorForm({
                     onChange={field.handleChange}
                     disabled={saving}
                     max={REPORT_MAX_VOUCHERS}
+                    owner={voucherOwner}
+                  />
+                  {getFieldError(field.state.meta.errors) ? (
+                    <p role="alert" className="mt-1 text-destructive text-xs">
+                      {getFieldError(field.state.meta.errors)}
+                    </p>
+                  ) : null}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="pools">
+              {(field) => (
+                <div>
+                  <span className="mb-1.5 block font-medium text-sm">
+                    <Trans>Related pools</Trans>
+                  </span>
+                  <PostPoolPicker
+                    pools={field.state.value}
+                    linkedNames={linkedPoolNames}
+                    onChange={field.handleChange}
+                    disabled={saving}
+                    max={REPORT_MAX_POOLS}
                     owner={voucherOwner}
                   />
                   {getFieldError(field.state.meta.errors) ? (
@@ -660,9 +703,17 @@ function PostEditorForm({
 }
 
 /** An optional group. `<details>` rather than a Collapsible primitive. */
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
   return (
-    <details className="border border-border bg-card p-4">
+    <details className="border border-border bg-card p-4" open={defaultOpen || undefined}>
       <summary className="cursor-pointer list-none font-medium text-sm marker:hidden">
         {title}
       </summary>

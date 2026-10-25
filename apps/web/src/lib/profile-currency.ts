@@ -1,6 +1,8 @@
 import type { IsoCurrency } from "@clc/core/lib/currencies";
 
-import { resolveIPCountry } from "#/lib/ip-geolocation-client";
+import { regionFromLocale, resolveIPCountry } from "#/lib/ip-geolocation-client";
+
+export { regionFromLocale } from "#/lib/ip-geolocation-client";
 
 /** A neutral fallback while the IP lookup is pending or has no country result. */
 export const DEFAULT_PREFERRED_CURRENCY: IsoCurrency = "USD";
@@ -52,18 +54,6 @@ const CURRENCY_BY_COUNTRY: Readonly<Record<string, IsoCurrency>> = {
 
 export function preferredCurrencyForCountry(country: string | null | undefined): IsoCurrency {
   return CURRENCY_BY_COUNTRY[country?.trim().toUpperCase() ?? ""] ?? DEFAULT_PREFERRED_CURRENCY;
-}
-
-export function regionFromLocale(languages: readonly string[] | undefined): string | null {
-  for (const language of languages ?? []) {
-    try {
-      const region = new Intl.Locale(language).region;
-      if (region) return region;
-    } catch {
-      // A malformed browser locale is no reason to block onboarding.
-    }
-  }
-  return null;
 }
 
 /**

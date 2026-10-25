@@ -20,6 +20,7 @@ function user(overrides: Partial<AdminUser> = {}): AdminUser {
     maxTokens: 20,
     maxCatalogs: 1,
     maxOffers: 3,
+    maxWants: 3,
     createdAt: "2026-07-24T10:43:16.051912+03:00",
     updatedAt: "2026-07-24T10:43:16.051912+03:00",
     avatarUrl: null,

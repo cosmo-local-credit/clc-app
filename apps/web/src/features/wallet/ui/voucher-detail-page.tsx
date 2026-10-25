@@ -36,6 +36,7 @@ export function VoucherDetailPage({
   origin = "market",
   poolAddress,
   reportId,
+  wantId,
 }: {
   voucherAddress: string;
   /** A legacy tab URL now identifies the section to focus on first render. */
@@ -43,22 +44,30 @@ export function VoucherDetailPage({
   origin?: VoucherOrigin;
   poolAddress?: string;
   reportId?: string;
+  wantId?: string;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const auth = useAuthStatus();
-  const voucherNavigation = resolveVoucherNavigationOwner({ from: origin, poolAddress, reportId });
+  const voucherNavigation = resolveVoucherNavigationOwner({
+    from: origin,
+    poolAddress,
+    reportId,
+    wantId,
+  });
   const back = {
     label:
       voucherNavigation.backDestination === "pool"
         ? t`Pool`
         : voucherNavigation.backDestination === "posts"
           ? t`Posts`
-          : voucherNavigation.backDestination === "wallet"
-            ? t`Wallet`
-            : voucherNavigation.backDestination === "vouchers"
-              ? t`Vouchers`
-              : t`Market`,
+          : voucherNavigation.backDestination === "wants"
+            ? t`Want`
+            : voucherNavigation.backDestination === "wallet"
+              ? t`Wallet`
+              : voucherNavigation.backDestination === "vouchers"
+                ? t`Vouchers`
+                : t`Market`,
     to: voucherNavigation.to,
     search: voucherNavigation.search,
   };

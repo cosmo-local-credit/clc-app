@@ -14,6 +14,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { PublicContactWarning } from "#/components/public-contact-warning";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
@@ -260,6 +262,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
             );
           }}
         </form.Field>
+        <PublicLocationWarning />
 
         <form.Field name="tags">
           {(field) => (
@@ -303,6 +306,8 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
             </div>
           )}
         </form.Field>
+
+        <PublicContactWarning />
 
         <form.Field name="email">
           {(field) => (

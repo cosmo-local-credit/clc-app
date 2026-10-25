@@ -1,11 +1,8 @@
 import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
-import {
-  type CatalogFilter,
-  type VoucherRef,
-  serializeVoucherRef,
-} from "@clc/core/features/catalog/logic";
+import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
-import type { ManagedReportsParams, ReportCursor, ReportsClient } from "./client";
+import type { ManagedReportsParams, ReportCursor, ReportFilter, ReportsClient } from "./client";
+import { isRetryableBackendError } from "../../client/errors";
 
 /**
  * Canonical query identity and base options for reports.
@@ -21,12 +18,14 @@ import type { ManagedReportsParams, ReportCursor, ReportsClient } from "./client
  * third-party place lookups every time a post was saved, so nothing does.
  */
 /** No text or tag narrowing: the author is the whole filter. */
-const EMPTY_REPORT_FILTER: CatalogFilter = {
+const EMPTY_REPORT_FILTER: ReportFilter = {
   term: "",
   tags: [],
   tagMatch: "any",
   vouchers: [],
   voucherMatch: "any",
+  pools: [],
+  poolMatch: "any",
 };
 
 export const reportKeys = {
@@ -38,7 +37,7 @@ export const reportKeys = {
 
   detail: (id: string) => ["clc", "reports", "detail", id] as const,
 
-  filtered: (filter: CatalogFilter | null, perPage: number) =>
+  filtered: (filter: ReportFilter | null, perPage: number) =>
     ["clc", "reports", "filtered", { filter, perPage }] as const,
 
   /**
@@ -83,12 +82,17 @@ export function reportFeedInfiniteQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...reportKeys.feed(perPage), nearby.scope] as const)
       : reportKeys.feed(perPage),
     queryFn: ({ pageParam, signal }) =>
       reports.getReports(
-        { perPage, cursor: pageParam, ...(nearby?.nearby === true ? { nearby: true } : {}) },
+        {
+          perPage,
+          cursor: pageParam,
+          ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
+        },
         signal,
       ),
     initialPageParam: undefined as ReportCursor | undefined,
@@ -122,7 +126,7 @@ export function reportVoucherFeedInfiniteQueryOptions(
 
 export function reportFilteredQueryOptions(
   reports: ReportsClient,
-  filter: CatalogFilter,
+  filter: ReportFilter,
   perPage: number,
 ) {
   return queryOptions({
@@ -179,6 +183,7 @@ export function myReportQueryOptions(
     queryKey: reportKeys.myDetail(address ?? "none", id ?? "none"),
     queryFn: ({ signal }) => reports.getMyReport(requireId(id), signal),
     enabled: Boolean(address) && Boolean(id),
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 

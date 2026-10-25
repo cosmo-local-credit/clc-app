@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo } from "react";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { marketBoundsKey } from "@clc/core/features/catalog/nearby";
 
 import type { HexAddress } from "@clc/core/features/catalog/logic";
-import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
+import { poolListInfiniteQueryOptions } from "@clc/api/features/pools/queries";
+import { poolsClient } from "#/lib/api/pools";
 import type { MarketLocation } from "#/features/home/ui/market-data";
 
 /** clc-core caps a pool page at 100 rows. */
@@ -24,7 +28,15 @@ export type MarketMapPools = {
  * thousands of vouchers. Ids are namespaced because a pool's catalog id and a
  * voucher's are both plain integers, and the map tells markers apart by id.
  */
-export function useMarketMapPools(enabled: boolean): MarketMapPools {
+export function useMarketMapPools(
+  enabled: boolean,
+  bounds: readonly MarketBoundingBox[] = [],
+): MarketMapPools {
+  const options = poolListInfiniteQueryOptions(poolsClient, MARKET_POOLS_PAGE_SIZE, {
+    nearby: false,
+    scope: `map:${marketBoundsKey(bounds)}`,
+    ...(bounds.length ? { bounds } : {}),
+  });
   const {
     data,
     error,
@@ -35,7 +47,7 @@ export function useMarketMapPools(enabled: boolean): MarketMapPools {
     isFetchingNextPage,
     fetchNextPage,
     refetch,
-  } = useUserPoolsInfinite(MARKET_POOLS_PAGE_SIZE, enabled);
+  } = useInfiniteQuery({ ...options, enabled, placeholderData: keepPreviousData });
 
   // A failed page keeps `hasNextPage`, so walking on through an error would
   // request it again each time the last attempt settles, past every retry

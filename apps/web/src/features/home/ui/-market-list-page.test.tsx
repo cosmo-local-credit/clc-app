@@ -333,11 +333,11 @@ describe("MarketListPage", () => {
     expect(within(list).getAllByRole("link")).toHaveLength(25);
   });
 
-  it("keeps location controls and the redundant floating Map button out of the list view", () => {
+  it("keeps location controls out while retaining Map in the shared navigation", () => {
     render(<MarketListPage />);
 
     expect(screen.queryByRole("button", { name: "Use location" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
     expect(within(sheet).queryByRole("button", { name: "Use location" })).toBeNull();
@@ -354,6 +354,8 @@ describe("MarketListPage", () => {
     const vouchers = screen.getByRole("link", { name: "Vouchers" });
     const offers = screen.getByRole("link", { name: "Offers" });
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
+    const wants = screen.getByRole("link", { name: "Wants" });
+    const all = screen.getByRole("link", { name: "All" });
 
     expect(screen.getByRole("button", { name: FIELD }).closest(".border")?.contains(filters)).toBe(
       true,
@@ -366,10 +368,12 @@ describe("MarketListPage", () => {
     expect(vouchers.getAttribute("href")).toBe("/");
     for (const [before, after] of [
       [filters, credit],
-      [credit, pools],
-      [pools, vouchers],
-      [vouchers, offers],
-      [offers, catalogs],
+      [credit, all],
+      [all, offers],
+      [offers, wants],
+      [wants, vouchers],
+      [vouchers, pools],
+      [pools, catalogs],
     ] as const) {
       expect(before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
@@ -752,7 +756,14 @@ describe("MarketListPage filter sheet", () => {
     expect(search({})).toMatchObject({ tags: "Art" });
     expect(
       JSON.parse(window.localStorage.getItem(MARKET_FILTER_PREFERENCES_KEY) ?? "null"),
-    ).toEqual({ tags: ["Art"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+    ).toEqual({
+      tags: ["Art"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+      pools: [],
+      poolMatch: "any",
+    });
   });
 
   it("removes a category only after Apply and clears an empty saved preference", () => {

@@ -21,7 +21,13 @@ const base = {
 
 describe("marketplace result contracts", () => {
   it("accepts every list scope but keeps All implicit", () => {
-    expect(marketplaceScopeSchema.options).toEqual(["offers", "vouchers", "pools", "catalogs"]);
+    expect(marketplaceScopeSchema.options).toEqual([
+      "offers",
+      "wants",
+      "vouchers",
+      "pools",
+      "catalogs",
+    ]);
     expect(marketplaceScopeSchema.safeParse("all").success).toBe(false);
   });
 

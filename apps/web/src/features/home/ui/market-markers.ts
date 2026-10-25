@@ -1,11 +1,12 @@
 import {
   MARKER_COLOR_HEX,
+  type MarkerIcon,
   type MarkerStyle,
   resolveMarkerStyle,
 } from "@clc/core/features/markers/logic";
 import type MapLibreGL from "maplibre-gl";
 import type { IconType } from "react-icons";
-import { RiGroupFill } from "react-icons/ri";
+import { RiGroupFill, RiMessage2Line, RiQuestionLine, RiSpeakLine } from "react-icons/ri";
 
 import { MARKER_GLYPHS } from "#/components/vouchers/marker-glyphs";
 import type { Theme } from "#/providers/theme";
@@ -21,6 +22,12 @@ export const SELECTED_PIN_SUFFIX = "-selected";
 export function markerImageId({ icon, color }: MarkerStyle): string {
   return `market-pin-${icon}-${color}`;
 }
+
+const WANT_GLYPHS = {
+  question: RiQuestionLine,
+  message: RiMessage2Line,
+  request: RiSpeakLine,
+} as const;
 
 export const POOL_PIN_IMAGE_ID = "market-pin-pool";
 
@@ -69,9 +76,23 @@ export function markerArt(location: MarkerSource): MarkerArt {
       body: "square",
     };
   }
+  if (location.kind === "want") {
+    const icon =
+      location.markerIcon === "message" || location.markerIcon === "request"
+        ? location.markerIcon
+        : "question";
+    const color = location.markerColor ?? "orange";
+    return {
+      image: `market-pin-want-${icon}-${color}`,
+      fill: MARKER_COLOR_HEX[color].pin,
+      label: MARKER_COLOR_HEX[color].label,
+      glyph: WANT_GLYPHS[icon],
+      body: "disc",
+    };
+  }
   const style = resolveMarkerStyle({
     kind: location.kind,
-    markerIcon: location.markerIcon,
+    markerIcon: location.markerIcon as MarkerIcon | null,
     markerColor: location.markerColor,
   });
   return {

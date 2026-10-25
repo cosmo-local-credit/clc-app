@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MarketPoolLocation } from "#/features/home/hooks/use-market-pools";
-import { MARKET_MAP_MODE_STORAGE_KEY, useMarketMapModeStore } from "#/lib/map-appearance";
 import type { MarketLocation } from "./market-data";
 import type { MarketCamera } from "./market-map";
 
@@ -28,17 +27,17 @@ type MapProps = {
   onUserPan?: () => void;
   bottomInset?: number;
   onViewportSettled?: (viewport: {
+    center: { lat: number; lng: number };
     west: number;
     south: number;
     east: number;
     north: number;
     zoom: number;
+    userInitiated: boolean;
   }) => void;
-  onSatelliteUnavailable?: () => void;
 };
 
 const {
-  missingLocation,
   authState,
   creditFeedback,
   cameraResult,
@@ -56,8 +55,9 @@ const {
   profileResult,
   selection,
   poolsResult,
+  discoveryArea,
+  mapRequests,
 } = vi.hoisted(() => ({
-  missingLocation: { current: false },
   authState: { current: { isAuthenticated: false, isLoading: false, session: null } },
   creditFeedback: { current: false },
   poolsResult: {
@@ -65,6 +65,21 @@ const {
     error: null as Error | null,
     retry: vi.fn(),
     enabled: [] as boolean[],
+  },
+  discoveryArea: {
+    current: null as {
+      owner: string;
+      center: { lat: number; lng: number };
+      zoom: number;
+      boxes: readonly { minLng: number; minLat: number; maxLng: number; maxLat: number }[];
+    } | null,
+    setArea: vi.fn(),
+  },
+  mapRequests: {
+    voucherBounds: [] as unknown[],
+    poolBounds: [] as unknown[],
+    wantBounds: [] as unknown[],
+    unifiedBounds: [] as unknown[],
   },
   selection: {
     voucher: null as `0x${string}` | null,
@@ -135,6 +150,16 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
+vi.mock("#/components/nearby-catalog", () => ({
+  useNearbyCatalog: () => undefined,
+  nearbyQueryKey: <T extends readonly unknown[]>(key: T) => key,
+  nearbyQueryPolicy: () => ({}),
+  useMarketDiscoveryArea: () => ({
+    area: discoveryArea.current,
+    setArea: discoveryArea.setArea,
+  }),
+}));
+
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => authState.current,
 }));
@@ -176,27 +201,29 @@ vi.mock("#/components/creditable-browse-control", () => ({
   ),
 }));
 
-vi.mock("#/components/nearby-catalog", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("#/components/nearby-catalog")>()),
-  useNearbyCatalogMissingLocation: () => missingLocation.current,
-  MissingLocationNotice: () => <div role="status">Choose a location</div>,
-}));
-
 vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
-  useMarketplaceMapSearch: (_filter: unknown, _pools: unknown, enabled: boolean) => ({
-    locations: enabled ? (filteredResult.current.data?.vouchers ?? []) : [],
-    status: !enabled
-      ? "disabled"
-      : filteredResult.current.isPlaceholderData
-        ? "loading"
-        : filteredResult.current.error
-          ? "error"
-          : filteredResult.current.data
-            ? "ready"
-            : "loading",
-    error: enabled ? filteredResult.current.error : null,
-    retry: filteredResult.current.refetch,
-  }),
+  useMarketplaceMapSearch: (
+    _filter: unknown,
+    _pools: unknown,
+    bounds: unknown,
+    enabled: boolean,
+  ) => {
+    mapRequests.unifiedBounds.push(bounds);
+    return {
+      locations: enabled ? (filteredResult.current.data?.vouchers ?? []) : [],
+      status: !enabled
+        ? "disabled"
+        : filteredResult.current.isPlaceholderData
+          ? "loading"
+          : filteredResult.current.error
+            ? "error"
+            : filteredResult.current.data
+              ? "ready"
+              : "loading",
+      error: enabled ? filteredResult.current.error : null,
+      retry: filteredResult.current.refetch,
+    };
+  },
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
@@ -226,7 +253,6 @@ vi.mock("#/features/home/hooks/use-market-camera", () => ({
     liveGps: 3,
     persistedGps: 4,
     ipCity: 5,
-    countryDefault: 6,
   },
   REAL_FIX_ZOOM: 14,
   useMarketCamera: () => cameraResult.current,
@@ -255,18 +281,33 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#/features/home/hooks/use-market-vouchers")>();
   return {
     ...actual,
-    useMarketMapVouchers: (_viewport: unknown, _perPage: unknown, enabled = true) =>
-      enabled ? vouchersResult.current : { ...vouchersResult.current, vouchers: [] },
+    useMarketMapVouchers: (bounds: unknown, _perPage: unknown, enabled = true) => {
+      mapRequests.voucherBounds.push(bounds);
+      return enabled ? vouchersResult.current : { ...vouchersResult.current, vouchers: [] };
+    },
   };
 });
 
 vi.mock("#/features/home/hooks/use-market-pools", () => ({
-  useMarketMapPools: (enabled: boolean) => {
+  useMarketMapPools: (enabled: boolean, bounds: unknown) => {
     poolsResult.enabled.push(enabled);
+    mapRequests.poolBounds.push(bounds);
     return {
       pools: enabled ? poolsResult.current : [],
       error: enabled ? poolsResult.error : null,
       retry: poolsResult.retry,
+    };
+  },
+}));
+
+vi.mock("#/features/home/hooks/use-market-wants", () => ({
+  useMarketMapWants: (bounds: unknown) => {
+    mapRequests.wantBounds.push(bounds);
+    return {
+      wants: [],
+      error: null,
+      retry: vi.fn(),
+      retrying: false,
     };
   },
 }));
@@ -309,6 +350,10 @@ vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
       },
     };
   },
+}));
+
+vi.mock("#/lib/navigation/use-want-sheet-selection", () => ({
+  useWantSheetSelection: () => ({ want: null, open: vi.fn(), close: vi.fn() }),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -394,11 +439,9 @@ function renderPage(node: ReactNode = <MarketPage />) {
 }
 
 beforeEach(() => {
-  missingLocation.current = false;
   authState.current = { isAuthenticated: false, isLoading: false, session: null };
   creditFeedback.current = false;
   window.localStorage.clear();
-  useMarketMapModeStore.setState({ mode: "standard" });
   mockRequestLocation.mockReset();
   mockRetry.mockReset();
   lastMapProps.current = null;
@@ -433,6 +476,12 @@ beforeEach(() => {
   poolsResult.error = null;
   poolsResult.retry = vi.fn();
   poolsResult.enabled = [];
+  discoveryArea.current = null;
+  discoveryArea.setArea.mockReset();
+  mapRequests.voucherBounds = [];
+  mapRequests.poolBounds = [];
+  mapRequests.wantBounds = [];
+  mapRequests.unifiedBounds = [];
   profileRequests.current = 0;
   profileResult.current = {
     data: undefined,
@@ -442,47 +491,14 @@ beforeEach(() => {
 });
 
 describe("MarketPage location button", () => {
-  it("places a persisted Satellite toggle directly above location", () => {
+  it("shows only the location control and ignores a legacy Satellite preference", () => {
+    window.localStorage.setItem("clc.market-map-mode", "satellite");
     renderPage();
 
-    const satellite = screen.getByRole("button", { name: "Satellite view" });
-    const location = screen.getByRole("button", { name: "Use current location" });
-    expect(satellite.getAttribute("aria-pressed")).toBe("false");
-    expect(satellite.compareDocumentPosition(location) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
-    expect(lastMapProps.current?.mode).toBe("standard");
-
-    fireEvent.click(satellite);
-
-    expect(
-      screen.getByRole("button", { name: "Satellite view" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(lastMapProps.current?.mode).toBe("satellite");
-    expect(window.localStorage.getItem(MARKET_MAP_MODE_STORAGE_KEY)).toBe("satellite");
-  });
-
-  it("restores a saved Satellite choice", () => {
-    window.localStorage.setItem(MARKET_MAP_MODE_STORAGE_KEY, "satellite");
-    renderPage();
-
-    expect(
-      screen.getByRole("button", { name: "Satellite view" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(lastMapProps.current?.mode).toBe("satellite");
-  });
-
-  it("returns to Standard and disables Satellite when its provider is unavailable", () => {
-    renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Satellite view" }));
-
-    act(() => lastMapProps.current?.onSatelliteUnavailable?.());
-
-    const satellite = screen.getByRole("button", { name: "Satellite view" });
-    expect(satellite.getAttribute("aria-pressed")).toBe("false");
-    expect((satellite as HTMLButtonElement).disabled).toBe(true);
-    expect(lastMapProps.current?.mode).toBe("standard");
-    expect(window.localStorage.getItem(MARKET_MAP_MODE_STORAGE_KEY)).toBe("standard");
+    expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Use current location" })).toBeTruthy();
+    expect(lastMapProps.current?.mode).toBeUndefined();
+    expect(window.localStorage.getItem("clc.market-map-mode")).toBe("satellite");
   });
 
   it("writes and clears Credit without leaving the canonical map route", () => {
@@ -521,7 +537,8 @@ describe("MarketPage location button", () => {
     ["idle", "Use current location", false],
     ["requesting", "Finding location", true],
     ["denied", "Location denied", true],
-    ["unavailable", "Location unavailable", true],
+    ["unavailable", "Use current location", false],
+    ["error", "Use current location", false],
   ])("labels and enables the button for %s", (status, label, disabled) => {
     cameraResult.current = { ...cameraResult.current, locationStatus: status };
     renderPage();
@@ -532,6 +549,14 @@ describe("MarketPage location button", () => {
 
   it("asks the camera hook for an explicit fix when pressed", () => {
     renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
+    expect(mockRequestLocation).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows a transient unavailable location to be retried", () => {
+    cameraResult.current = { ...cameraResult.current, locationStatus: "unavailable" };
+    renderPage();
+
     fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
     expect(mockRequestLocation).toHaveBeenCalledTimes(1);
   });
@@ -884,7 +909,7 @@ describe("MarketPage voucher card", () => {
     expect(lastMapProps.current?.camera).toBeNull();
   });
 
-  it("moves the location button onto the card", () => {
+  it("moves the location button onto the card without exposing Satellite", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
     expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
@@ -892,9 +917,8 @@ describe("MarketPage voucher card", () => {
     fireEvent.click(screen.getByTestId("marker-1"));
 
     const location = screen.getByRole("button", { name: "Use current location" });
-    const satellite = screen.getByRole("button", { name: "Satellite view" });
     expect(screen.getByRole("dialog").contains(location)).toBe(true);
-    expect(screen.getByRole("dialog").contains(satellite)).toBe(true);
+    expect(screen.queryByRole("button", { name: "Satellite view" })).toBeNull();
   });
 
   it("pads the map by the open card and drops the padding once it closes", () => {
@@ -1045,13 +1069,25 @@ describe("MarketPage distance", () => {
     cameraResult.current = {
       ...cameraResult.current,
       realFix: null,
-      camera: { lat: 12, lng: 34, zoom: 11, rank: 3 },
+      camera: { lat: 12, lng: 34, zoom: 11, rank: 6 },
     };
     vouchersResult.current = {
       ...vouchersResult.current,
       vouchers: [voucher("1", { locationName: "C96, KEN" })],
     };
     renderPage();
+
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: 12, lng: 34 },
+        west: 33,
+        south: 11,
+        east: 35,
+        north: 13,
+        zoom: 11,
+        userInitiated: false,
+      }),
+    );
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
@@ -1062,10 +1098,175 @@ describe("MarketPage distance", () => {
 });
 
 describe("MarketPage viewport", () => {
-  it("forwards settled map bounds to the voucher query", () => {
+  const savedBox = { minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 } as const;
+
+  it("restores the saved camera and prefetches a padded marker envelope", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [savedBox],
+    };
     renderPage();
 
-    expect(typeof lastMapProps.current?.onViewportSettled).toBe("function");
+    expect(lastMapProps.current?.camera).toMatchObject({ lat: -1.5, lng: 36.5, zoom: 10 });
+    expect(mapRequests.voucherBounds.at(-1)).toEqual([
+      { minLng: 35.8, minLat: -2.2, maxLng: 37.2, maxLat: -0.8 },
+    ]);
+    expect(mapRequests.poolBounds.at(-1)).toEqual(mapRequests.voucherBounds.at(-1));
+    expect(mapRequests.wantBounds.at(-1)).toEqual(mapRequests.voucherBounds.at(-1));
+  });
+
+  it("waits for a trustworthy initial camera to settle before loading bounded markers", () => {
+    profileResult.current = {
+      data: { geoLat: -1.5, geoLng: 36.5 },
+      isPending: false,
+      isError: false,
+    };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastMapProps.current?.camera).toMatchObject({ lat: -1.5, lng: 36.5, rank: 2 });
+    expect(poolsResult.enabled.at(-1)).toBe(false);
+
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: -1.5, lng: 36.5 },
+        west: 36,
+        south: -2,
+        east: 37,
+        north: -1,
+        zoom: 10,
+        userInitiated: false,
+      }),
+    );
+
+    expect(poolsResult.enabled.at(-1)).toBe(true);
+    expect(mapRequests.poolBounds.at(-1)).toEqual([
+      { minLng: 35.8, minLat: -2.2, maxLng: 37.2, maxLat: -0.8 },
+    ]);
+  });
+
+  it("persists exact settled bounds without refetching inside the marker envelope", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [savedBox],
+    };
+    renderPage();
+    const original = mapRequests.voucherBounds.at(-1);
+
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: -1.5, lng: 36.55 },
+        west: 36.1,
+        south: -1.9,
+        east: 36.9,
+        north: -1.1,
+        zoom: 10,
+        userInitiated: true,
+      }),
+    );
+
+    expect(discoveryArea.setArea).toHaveBeenCalledWith({
+      center: { lat: -1.5, lng: 36.55 },
+      zoom: 10,
+      boxes: [{ minLng: 36.1, minLat: -1.9, maxLng: 36.9, maxLat: -1.1 }],
+    });
+    expect(mapRequests.voucherBounds.at(-1)).toEqual(original);
+  });
+
+  it("moves the buffered marker query once the visible viewport leaves it", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [savedBox],
+    };
+    renderPage();
+
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: 10.5, lng: 10.5 },
+        west: 10,
+        south: 10,
+        east: 11,
+        north: 11,
+        zoom: 10,
+        userInitiated: true,
+      }),
+    );
+
+    expect(mapRequests.voucherBounds.at(-1)).toEqual([
+      { minLng: 9.8, minLat: 9.8, maxLng: 11.2, maxLat: 11.2 },
+    ]);
+  });
+
+  it("turns a settled coarse guest camera into the initial discovery viewport", () => {
+    cameraResult.current = {
+      ...cameraResult.current,
+      camera: { lat: 0, lng: 20, zoom: 5, rank: 6 },
+    };
+    renderPage();
+    const viewport = {
+      center: { lat: 0, lng: 20 },
+      west: 10,
+      south: -10,
+      east: 30,
+      north: 10,
+      zoom: 5,
+    };
+
+    act(() => lastMapProps.current?.onViewportSettled?.({ ...viewport, userInitiated: false }));
+    expect(discoveryArea.setArea).toHaveBeenCalledOnce();
+    expect(discoveryArea.setArea).toHaveBeenCalledWith({
+      center: { lat: 0, lng: 20 },
+      zoom: 5,
+      boxes: [{ minLng: 10, minLat: -10, maxLng: 30, maxLat: 10 }],
+    });
+  });
+
+  it("keeps a world camera Global until a visitor moves it", () => {
+    renderPage();
+    const viewport = {
+      center: { lat: 0, lng: 20 },
+      west: -20,
+      south: -15,
+      east: 60,
+      north: 15,
+      zoom: 2,
+    };
+
+    act(() => lastMapProps.current?.onViewportSettled?.({ ...viewport, userInitiated: false }));
+    expect(discoveryArea.setArea).not.toHaveBeenCalled();
+
+    act(() => lastMapProps.current?.onViewportSettled?.({ ...viewport, userInitiated: true }));
+    expect(discoveryArea.setArea).toHaveBeenCalledOnce();
+  });
+
+  it("splits an antimeridian viewport before persisting and querying it", () => {
+    renderPage();
+
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: 0, lng: 180 },
+        west: 179,
+        south: -2,
+        east: 181,
+        north: 2,
+        zoom: 8,
+        userInitiated: true,
+      }),
+    );
+
+    expect(discoveryArea.setArea).toHaveBeenCalledWith(
+      expect.objectContaining({
+        boxes: [
+          { minLng: -180, minLat: -2, maxLng: -179, maxLat: 2 },
+          { minLng: 179, minLat: -2, maxLng: 180, maxLat: 2 },
+        ],
+      }),
+    );
   });
 
   it("hands the resolved camera to the map", () => {
@@ -1105,12 +1306,12 @@ describe("MarketPage filtering", () => {
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(lastMapProps.current?.locations.map((location) => location.id)).toEqual(["1"]);
   });
 
-  it("frames the filtered results", () => {
+  it("does not move the camera when filtered results change", () => {
     routeSearch.current = { q: "art" };
     filteredResult.current = {
       ...filteredResult.current,
@@ -1120,28 +1321,21 @@ describe("MarketPage filtering", () => {
       },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
-    const fit = lastMapProps.current?.fitBounds;
-    expect(fit).toMatchObject({ west: 36.82, east: 37.1, south: -1.5, north: -1.29 });
-    expect(fit?.key).toContain("art");
+    expect(lastMapProps.current?.fitBounds).toBeNull();
   });
 
-  it("produces degenerate bounds for a single match, for the map to cap", () => {
+  it("keeps the camera fixed for a single match", () => {
     routeSearch.current = { q: "art" };
     filteredResult.current = {
       ...filteredResult.current,
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
-    expect(lastMapProps.current?.fitBounds).toMatchObject({
-      west: 36.82,
-      east: 36.82,
-      south: -1.29,
-      north: -1.29,
-    });
+    expect(lastMapProps.current?.fitBounds).toBeNull();
   });
 
   it("does not frame anything while a filter is still resolving", () => {
@@ -1152,7 +1346,7 @@ describe("MarketPage filtering", () => {
       isPlaceholderData: true,
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(lastMapProps.current?.fitBounds).toBeNull();
   });
@@ -1164,7 +1358,7 @@ describe("MarketPage filtering", () => {
       isCatalogComplete: true,
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(lastMapProps.current?.fitBounds).toBeNull();
   });
@@ -1176,7 +1370,7 @@ describe("MarketPage filtering", () => {
       data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByRole("button", { name: /^Search the marketplace/ }).textContent).toBe(
       "Search the marketplace art",
@@ -1192,7 +1386,7 @@ describe("MarketPage filtering", () => {
       data: { vouchers: [], tagFacets: null },
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByText("No marketplace results match this search.")).toBeTruthy();
     expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
@@ -1203,7 +1397,7 @@ describe("MarketPage filtering", () => {
     routeSearch.current = { q: "art" };
     filteredResult.current = { ...filteredResult.current, data: undefined };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.queryByText("No marketplace results match this search.")).toBeNull();
     expect(screen.queryByText("No marketplace results to show yet.")).toBeNull();
@@ -1216,29 +1410,19 @@ describe("MarketPage notices", () => {
     creditFeedback.current = true;
     vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
 
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByTestId("credit-feedback")).toBeTruthy();
     expect(screen.queryByText("Could not load vouchers.")).toBeNull();
   });
 
-  it("asks for a profile location in the notice slot and keeps the map", () => {
-    missingLocation.current = true;
-    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
-
-    render(<MarketPage />);
-
-    expect(screen.getByRole("status").textContent).toBe("Choose a location");
-    expect(screen.getByTestId("marker-1")).toBeTruthy();
-  });
-
   it("puts the list badges under the bar and no Map button over the map", () => {
-    render(<MarketPage />);
+    renderPage();
 
     expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
       "/market?scope=pools",
     );
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBe("page");
   });
 });
 
@@ -1250,7 +1434,7 @@ describe("MarketPage filter failures", () => {
       error: new BackendApiError(400, "tags contains a value outside the tag vocabulary", "E04"),
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain("These filters aren't valid.");
@@ -1265,7 +1449,7 @@ describe("MarketPage filter failures", () => {
       error: new BackendApiError(429, "rate limit exceeded"),
     };
 
-    render(<MarketPage />);
+    renderPage();
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain("Too many searches");
@@ -1276,7 +1460,7 @@ describe("MarketPage filter failures", () => {
     filteredResult.current = { ...filteredResult.current, error: null };
     vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
 
-    render(<MarketPage />);
+    renderPage();
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain("Could not load vouchers.");

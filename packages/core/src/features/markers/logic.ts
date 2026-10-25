@@ -36,6 +36,11 @@ export type MarkerColor = (typeof MARKER_COLORS)[number];
 
 export type MarkerStyle = { icon: MarkerIcon; color: MarkerColor };
 
+export const WANT_MARKER_ICONS = ["question", "message", "request"] as const;
+export type WantMarkerIcon = (typeof WANT_MARKER_ICONS)[number];
+export type WantMarkerStyle = { icon: WantMarkerIcon; color: MarkerColor };
+export type MapMarkerStyle = MarkerStyle | WantMarkerStyle;
+
 /**
  * Fixed sRGB per colour: the pin's fill, and a darker shade for the name beside
  * it, the way Google Maps colours a place's label. Hex because the pin is drawn
@@ -79,6 +84,10 @@ export function isMarkerColor(value: unknown): value is MarkerColor {
   return typeof value === "string" && (MARKER_COLORS as readonly string[]).includes(value);
 }
 
+export function isWantMarkerIcon(value: unknown): value is WantMarkerIcon {
+  return typeof value === "string" && (WANT_MARKER_ICONS as readonly string[]).includes(value);
+}
+
 /**
  * The pin to draw. The icon and the colour are chosen independently, so a
  * voucher that picked only a colour keeps the glyph its offerings imply.
@@ -97,3 +106,4 @@ export function resolveMarkerStyle(voucher: {
 
 export const markerIconSchema = z.enum(MARKER_ICONS);
 export const markerColorSchema = z.enum(MARKER_COLORS);
+export const wantMarkerIconSchema = z.enum(WANT_MARKER_ICONS);

@@ -1,10 +1,10 @@
 # Ownership transfer rollout
 
-Pool handover is behind `VITE_POOL_OWNERSHIP_TRANSFER_ENABLED`. Its value differs
-per environment, so it sits in the "Per environment" blocks of `wrangler.toml`
-on both branches: `"true"` on `develop` (staging) and `"false"` on `master`
-(prod). Merge the develop change only after staging's backend is deployed and
-reconciled, and flip master only after prod's.
+Pool handover is behind `VITE_POOL_OWNERSHIP_TRANSFER_ENABLED`, set per
+environment in `wrangler.toml`: `[env.preview.vars]` is staging (`develop`) and
+`[vars]` is prod (`master`). Flip staging only after staging's backend is
+deployed and reconciled, and prod only after prod's; a prod flip goes live with
+the next promotion.
 
 ## Backend first
 

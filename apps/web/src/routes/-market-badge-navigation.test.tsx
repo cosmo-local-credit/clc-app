@@ -100,10 +100,10 @@ describe("market badge navigation", () => {
     expect(query(history, "q")).toBe("bike");
   });
 
-  it("does not render a redundant floating Map button on a list", async () => {
+  it("renders Map as the final shared navigation destination", async () => {
     renderMarket("/market?scope=offers&q=bike");
     expect(await screen.findByRole("heading", { name: "offers" })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/?q=bike");
   });
 
   it("returns to the map from the open list's badge", async () => {

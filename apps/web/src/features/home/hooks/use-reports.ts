@@ -1,9 +1,4 @@
-import {
-  filterNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-  nearbyQueryPolicy,
-} from "#/components/nearby-catalog";
+import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { queryOptions, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
@@ -33,20 +28,12 @@ const reportQueryKeys = {
 
 export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE, enabled = true) {
   const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
   const options = reportFeedInfiniteQueryOptions(reportsClient, perPage, nearby);
   return useInfiniteQuery({
     ...options,
     enabled,
     ...MARKET_QUERY_FRESHNESS,
     ...nearbyQueryPolicy(nearby),
-    select: (data) => ({
-      ...data,
-      pages: data.pages.map((page) => ({
-        ...page,
-        reports: filterNearbyCatalog(page.reports, visibilityFilter),
-      })),
-    }),
   });
 }
 

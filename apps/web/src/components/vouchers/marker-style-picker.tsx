@@ -4,11 +4,15 @@ import {
   MARKER_COLOR_HEX,
   MARKER_ICONS,
   type MarketKind,
+  type MapMarkerStyle,
   type MarkerColor,
   type MarkerIcon,
-  type MarkerStyle,
+  WANT_MARKER_ICONS,
+  type WantMarkerIcon,
+  type WantMarkerStyle,
   isMarkerColor,
   isMarkerIcon,
+  isWantMarkerIcon,
   resolveMarkerStyle,
 } from "@clc/core/features/markers/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -17,10 +21,10 @@ import { RiCheckLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { RadioGroup } from "#/components/ui/radio-group";
 import { cn } from "#/lib/utils";
-import { MARKER_GLYPHS } from "./marker-glyphs";
+import { MARKER_GLYPHS, WANT_MARKER_GLYPHS } from "./marker-glyphs";
 import { useMarkerLabels } from "./voucher-labels";
 
-export type MarkerChoice = { icon: MarkerIcon | null; color: MarkerColor | null };
+type MarkerChoice = { icon: MarkerIcon | null; color: MarkerColor | null };
 
 /**
  * The market map's pin as SVG, on the canvas pin's geometry: a 12 px disc
@@ -32,12 +36,15 @@ export function MarkerPin({
   size = 30,
   className,
 }: {
-  style: MarkerStyle;
+  style: MapMarkerStyle;
   /** Rendered width in px; the height follows the pin's 30:36 box. */
   size?: number;
   className?: string;
 }) {
-  const Glyph = MARKER_GLYPHS[style.icon];
+  const Glyph =
+    style.icon === "question" || style.icon === "message" || style.icon === "request"
+      ? WANT_MARKER_GLYPHS[style.icon]
+      : MARKER_GLYPHS[style.icon];
   return (
     <svg
       viewBox="0 0 30 36"
@@ -62,21 +69,47 @@ export function MarkerPin({
  * The issuer's choice of map pin: an icon and a colour, each optional. Nothing
  * chosen leaves the pin to follow what the voucher offers, which `kind` says.
  */
-export function MarkerStylePicker({
-  kind,
-  value,
-  onChange,
-  disabled = false,
-}: {
+type VoucherMarkerStylePickerProps = {
+  mode?: "voucher";
   kind: MarketKind;
   value: MarkerChoice;
   onChange: (next: MarkerChoice) => void;
   disabled?: boolean;
-}) {
+};
+
+type WantMarkerStylePickerProps = {
+  mode: "want";
+  value: WantMarkerStyle;
+  onChange: (next: WantMarkerStyle) => void;
+  disabled?: boolean;
+};
+
+export function MarkerStylePicker(
+  props: VoucherMarkerStylePickerProps | WantMarkerStylePickerProps,
+) {
+  const { value, onChange, disabled = false } = props;
+  const kind = props.mode === "want" ? undefined : props.kind;
+  const mode = props.mode ?? "voucher";
   const { t } = useLingui();
   const labels = useMarkerLabels();
-  const resolved = resolveMarkerStyle({ kind, markerIcon: value.icon, markerColor: value.color });
-  const automatic = value.icon === null && value.color === null;
+  const resolved: MapMarkerStyle =
+    mode === "want"
+      ? (value as WantMarkerStyle)
+      : resolveMarkerStyle({
+          kind: kind as MarketKind,
+          markerIcon: (value as MarkerChoice).icon,
+          markerColor: value.color,
+        });
+  const automatic = mode === "voucher" && value.icon === null && value.color === null;
+  const icons = mode === "want" ? WANT_MARKER_ICONS : MARKER_ICONS;
+  const iconLabel = (icon: MarkerIcon | WantMarkerIcon) =>
+    icon === "question"
+      ? t`Question`
+      : icon === "message"
+        ? t`Message`
+        : icon === "request"
+          ? t`Request`
+          : labels.icon(icon);
 
   return (
     <div className="space-y-4">
@@ -87,14 +120,14 @@ export function MarkerStylePicker({
             <Trans>Map pin</Trans>
           </p>
         </div>
-        {automatic ? null : (
+        {automatic || mode === "want" ? null : (
           <Button
             type="button"
             variant="destructive"
             tap
             className="bg-destructive text-white hover:bg-destructive/90"
             disabled={disabled}
-            onClick={() => onChange({ icon: null, color: null })}
+            onClick={() => (onChange as (next: MarkerChoice) => void)({ icon: null, color: null })}
           >
             <Trans>Use default</Trans>
           </Button>
@@ -103,18 +136,25 @@ export function MarkerStylePicker({
 
       <RadioGroup
         aria-label={t`Pin icon`}
-        value={value.icon}
+        value={value.icon ?? undefined}
         onValueChange={(next) => {
-          if (isMarkerIcon(next)) onChange({ ...value, icon: next });
+          if (mode === "want" && isWantMarkerIcon(next)) {
+            (onChange as (next: WantMarkerStyle) => void)({
+              ...(value as WantMarkerStyle),
+              icon: next,
+            });
+          } else if (mode === "voucher" && isMarkerIcon(next)) {
+            (onChange as (next: MarkerChoice) => void)({ ...value, icon: next });
+          }
         }}
         disabled={disabled}
-        className="grid-cols-4 gap-2"
+        className={cn(mode === "want" ? "grid-cols-3" : "grid-cols-4", "gap-2")}
       >
-        {MARKER_ICONS.map((icon) => (
+        {icons.map((icon) => (
           <Radio.Root
             key={icon}
             value={icon}
-            aria-label={labels.icon(icon)}
+            aria-label={iconLabel(icon)}
             className={cn(
               "flex h-16 min-w-0 flex-col items-center justify-center gap-1 border border-border bg-card px-2 outline-none",
               "data-[checked]:border-primary data-[checked]:bg-primary/[0.05]",
@@ -123,7 +163,7 @@ export function MarkerStylePicker({
             )}
           >
             <MarkerPin style={{ icon, color: resolved.color }} size={24} />
-            <span className="w-full truncate text-center text-2xs">{labels.icon(icon)}</span>
+            <span className="w-full truncate text-center text-2xs">{iconLabel(icon)}</span>
           </Radio.Root>
         ))}
       </RadioGroup>
@@ -132,7 +172,9 @@ export function MarkerStylePicker({
         aria-label={t`Pin colour`}
         value={value.color}
         onValueChange={(next) => {
-          if (isMarkerColor(next)) onChange({ ...value, color: next });
+          if (isMarkerColor(next)) {
+            (onChange as (next: typeof value) => void)({ ...value, color: next });
+          }
         }}
         disabled={disabled}
         className="grid-cols-6 gap-2"

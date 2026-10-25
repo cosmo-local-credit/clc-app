@@ -1,51 +1,53 @@
 import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { EMPTY_CATALOG_FILTER, type CatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
-import { useQuery } from "@tanstack/react-query";
+import type { WantMarkerIcon } from "@clc/core/features/wants/logic";
+import type { MarkerColor } from "@clc/core/features/markers/logic";
+import { marketBoundsKey, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
-import {
-  filterNearbyCatalog,
-  nearbyQueryPolicy,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-} from "#/components/nearby-catalog";
+import { nearbyQueryPolicy } from "#/components/nearby-catalog";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 import { marketplaceClient } from "#/lib/api/marketplace";
 import type { MarketPoolLocation } from "./use-market-pools";
 import type { MarketLocation } from "#/features/home/ui/market-data";
 
 const MAP_SEARCH_PAGE_SIZE = 100;
-const MAX_MAP_SEARCH_PAGES = 6;
-
-class MarketplaceMapSearchTooLargeError extends Error {
-  constructor() {
-    super("The filtered marketplace exceeded the complete map search limit.");
-    this.name = "MarketplaceMapSearchTooLargeError";
-  }
-}
 
 export type MarketVoucherSearchLocation = MarketLocation & {
   kind: "goods" | "services" | "voucher";
   address: `0x${string}`;
 };
 
+export type MarketWantSearchLocation = MarketLocation & {
+  kind: "want";
+  wantId: string;
+  markerIcon: WantMarkerIcon;
+  markerColor: MarkerColor;
+};
+
 export function useMarketplaceMapSearch(
   filter: CatalogFilterControls,
   pools: readonly { chainId: number; address: string }[] | undefined,
+  bounds: readonly MarketBoundingBox[],
   enabled: boolean,
 ) {
-  const nearby = useNearbyCatalog();
-  const visibility = useNearbyCatalogFilter();
   const parsed: CatalogFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
+  const discovery = {
+    nearby: false as const,
+    scope: `map:${marketBoundsKey(bounds)}`,
+    ...(bounds.length ? { bounds } : {}),
+  };
   const params = {
     perPage: MAP_SEARCH_PAGE_SIZE,
     q: parsed.term,
     tags: parsed.tags,
     tagMatch: parsed.tagMatch,
-    kinds: ["voucher", "pool"] as const,
-    nearby: nearby?.nearby === true,
-    scope: nearby?.nearby ? nearby.scope : undefined,
+    kinds: ["voucher", "pool", "want"] as const,
+    nearby: false,
+    scope: discovery.scope,
+    bounds,
     ...(pools ? { pools } : {}),
   };
   const query = useQuery({
@@ -53,20 +55,23 @@ export function useMarketplaceMapSearch(
     queryFn: async ({ signal }) => {
       const rows: MarketplaceResult[] = [];
       let cursor: string | undefined;
-      for (let page = 0; page < MAX_MAP_SEARCH_PAGES; page++) {
+      for (;;) {
         const result = await marketplaceClient.list({ ...params, cursor }, signal);
         rows.push(...result.results);
         cursor = result.nextCursor ?? undefined;
         if (!cursor) return rows;
       }
-      throw new MarketplaceMapSearchTooLargeError();
     },
     enabled,
-    ...nearbyQueryPolicy(nearby),
+    placeholderData: keepPreviousData,
+    ...nearbyQueryPolicy(discovery),
   });
 
   const locations = useMemo(() => {
-    const byIdentity = new Map<string, MarketPoolLocation | MarketVoucherSearchLocation>();
+    const byIdentity = new Map<
+      string,
+      MarketPoolLocation | MarketVoucherSearchLocation | MarketWantSearchLocation
+    >();
     for (const row of query.data ?? []) {
       if (row.kind === "voucher") {
         byIdentity.set(`voucher:${row.chainId}:${row.address.toLowerCase()}`, {
@@ -92,10 +97,22 @@ export function useMarketplaceMapSearch(
           locationName: row.locationName,
           address: row.address as `0x${string}`,
         });
+      } else if (row.kind === "want") {
+        byIdentity.set(`want:${row.id}`, {
+          id: `market:want:${row.id}`,
+          wantId: row.id,
+          name: row.name,
+          kind: "want",
+          markerIcon: row.markerIcon,
+          markerColor: row.markerColor,
+          lat: row.geoLat,
+          lng: row.geoLng,
+          locationName: row.locationName,
+        });
       }
     }
-    return filterNearbyCatalog([...byIdentity.values()], visibility);
-  }, [query.data, visibility]);
+    return [...byIdentity.values()];
+  }, [query.data]);
 
   const retry = useCallback(() => void query.refetch(), [query]);
   return {

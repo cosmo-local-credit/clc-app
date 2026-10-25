@@ -41,6 +41,8 @@ function tag(overrides: Record<string, unknown> = {}) {
     pools: 0,
     posts: 1,
     offerings: 0,
+    catalogs: 0,
+    wants: 0,
     total: 3,
     ...overrides,
   };
@@ -457,15 +459,22 @@ describe("renaming a value", () => {
 });
 
 describe("deleting a value", () => {
-  // A tag delete reaches six tables. The dialog has to name what goes, per
+  // A tag delete reaches every vocabulary-backed surface. The dialog has to name what goes, per
   // surface, before the operator commits to it.
   it("breaks a tag's impact down per surface before confirming", async () => {
+    mocks.getVocabulary.mockResolvedValue({
+      tags: [tag({ catalogs: 3, wants: 4, total: 10 })],
+      units: [],
+      unitsOfAccount: [unitOfAccount()],
+    });
     renderPage();
     fireEvent.click(await screen.findByRole("button", { name: "Delete Urban Farming" }));
 
     expect(screen.getByText("Delete “Urban Farming”?")).toBeTruthy();
     expect(screen.getByText("Remove from 2 vouchers.")).toBeTruthy();
     expect(screen.getByText("Remove from 1 post.")).toBeTruthy();
+    expect(screen.getByText("Remove from 3 catalogs.")).toBeTruthy();
+    expect(screen.getByText("Remove from 4 wants.")).toBeTruthy();
     expect(screen.queryByText(/Remove from 0/)).toBeNull();
   });
 

@@ -13,6 +13,7 @@ import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { MarkerStyleField } from "#/components/admin/marker-style-field";
 import { SectionLabel } from "#/components/admin/section-heading";
+import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -275,6 +276,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
 
         <div className="border-border flex flex-col gap-4 border-t pt-4">
           <SectionLabel>Issuer contact</SectionLabel>
+          <PublicDisclosureNote kind="contact" />
 
           <form.Field name="email">
             {(field) => (
@@ -382,6 +384,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
 
         <div className="border-border flex flex-col gap-4 border-t pt-4">
           <SectionLabel>Location</SectionLabel>
+          <PublicDisclosureNote kind="location" />
           <form.Field name="locationName">
             {(nameField) => (
               <form.Field name="latitude">

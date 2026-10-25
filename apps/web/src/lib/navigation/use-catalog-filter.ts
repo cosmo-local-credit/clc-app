@@ -35,11 +35,22 @@ export type CatalogFilterControls = {
   setTagMatch: (next: TagMatch) => void;
   vouchers: readonly VoucherRef[];
   voucherMatch: TagMatch;
+  pools: readonly VoucherRef[];
+  poolMatch: TagMatch;
   setFacets: (
     tags: readonly string[],
     tagMatch: TagMatch,
     vouchers: readonly VoucherRef[],
     voucherMatch: TagMatch,
+    options?: { replace?: boolean },
+  ) => void;
+  setResourceFacets: (
+    tags: readonly string[],
+    tagMatch: TagMatch,
+    vouchers: readonly VoucherRef[],
+    voucherMatch: TagMatch,
+    pools: readonly VoucherRef[],
+    poolMatch: TagMatch,
     options?: { replace?: boolean },
   ) => void;
   isAtTagLimit: boolean;
@@ -49,11 +60,16 @@ export type CatalogFilterControls = {
 
 export function useCatalogFilter(options?: {
   voucherRelationships?: boolean;
+  poolRelationships?: boolean;
 }): CatalogFilterControls {
   const search = useSearch({ strict: false });
   const navigate = useNavigate();
 
-  const searchState = catalogSearchForScope(search, options?.voucherRelationships === true);
+  const searchState = catalogSearchForScope(
+    search,
+    options?.voucherRelationships === true,
+    options?.poolRelationships === true,
+  );
   const urlTerm = typeof searchState.q === "string" ? searchState.q : "";
 
   const [term, setTerm] = useState(urlTerm);
@@ -110,6 +126,41 @@ export function useCatalogFilter(options?: {
   const tagMatch = result.ok ? result.filter.tagMatch : "any";
   const vouchers = result.ok ? result.filter.vouchers : [];
   const voucherMatch = result.ok ? result.filter.voucherMatch : "any";
+  const pools = result.ok ? (result.filter.pools ?? []) : [];
+  const poolMatch = result.ok ? (result.filter.poolMatch ?? "any") : "any";
+
+  const setResourceFacets = useCallback(
+    (
+      nextTags: readonly string[],
+      nextTagMatch: TagMatch,
+      nextVouchers: readonly VoucherRef[],
+      nextVoucherMatch: TagMatch,
+      nextPools: readonly VoucherRef[],
+      nextPoolMatch: TagMatch,
+      navigationOptions?: { replace?: boolean },
+    ) => {
+      const canonical = parseCatalogFilter({
+        ...searchState,
+        tags: nextTags,
+        tagMatch: nextTagMatch,
+        vouchers: nextVouchers.map(serializeVoucherRef),
+        voucherMatch: nextVoucherMatch,
+        pools: nextPools.map(serializeVoucherRef),
+        poolMatch: nextPoolMatch,
+      });
+      if (!canonical.ok) return;
+      void navigate({
+        to: ".",
+        replace: navigationOptions?.replace,
+        search: (previous) => ({
+          ...previous,
+          ...CLEARED_CATALOG_SEARCH,
+          ...toCatalogSearchState(canonical.filter),
+        }),
+      });
+    },
+    [navigate, searchState],
+  );
 
   const setTags = useCallback(
     (nextTags: readonly string[], nextTagMatch: TagMatch, options?: { replace?: boolean }) => {
@@ -194,7 +245,10 @@ export function useCatalogFilter(options?: {
     setTagMatch,
     vouchers,
     voucherMatch,
+    pools,
+    poolMatch,
     setFacets,
+    setResourceFacets,
     isAtTagLimit: tags.length >= CATALOG_MAX_TAGS,
     clearTerm,
     clear,

@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
       pools: { used: 0, limit: 1, unlimited: false, canCreate: true },
       catalogs: { used: 0, limit: 1, unlimited: false, canCreate: true },
       offers: { used: 0, limit: 0, unlimited: true, canCreate: true },
+      wants: { used: 0, limit: 3, unlimited: false, canCreate: true },
     },
     isPending: false,
     isError: false,
@@ -116,6 +117,8 @@ function mockLatestTokens({
 } = {}) {
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
     const href = String(url);
+    if (href.includes("/users/me/wants"))
+      return Promise.resolve(jsonResponse({ wants: [], first: 0, last: 0 }));
     if (href.includes("/tokens/issued")) {
       if (issuedStatus !== 200) return Promise.resolve(jsonResponse(null, issuedStatus));
       const issued = tokens.filter((value) => {
@@ -138,8 +141,80 @@ function mockLatestTokens({
 function mockNoTokens() {
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({ tokens: [] }))),
+    vi
+      .fn()
+      .mockImplementation((url: string | URL) =>
+        Promise.resolve(
+          String(url).includes("/users/me/wants")
+            ? jsonResponse({ wants: [], first: 0, last: 0 })
+            : jsonResponse({ tokens: [] }),
+        ),
+      ),
   );
+}
+
+function previewToken(id: number, prefix: "H" | "I") {
+  return {
+    id,
+    tokenAddress: `0x${id.toString(16).padStart(40, "0")}`,
+    tokenSymbol: `${prefix}${id}`,
+    tokenName: `${prefix === "H" ? "Holding" : "Issued"} ${id}`,
+    tokenDecimals: 2,
+    balance: "100",
+    iconUrl: null,
+    lastDateBlock: "2026-10-24T12:00:00Z",
+  };
+}
+
+function mockVoucherPreview({
+  balances,
+  issued,
+  failNextPageOnce = false,
+}: {
+  balances: readonly ReturnType<typeof previewToken>[];
+  issued: readonly ReturnType<typeof previewToken>[];
+  failNextPageOnce?: boolean;
+}) {
+  let nextPageFailed = false;
+  const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
+    const parsed = new URL(String(url));
+    if (parsed.pathname.includes("/users/me/wants"))
+      return Promise.resolve(jsonResponse({ wants: [], first: 0, last: 0 }));
+    if (parsed.pathname.endsWith("/tokens/issued")) {
+      return Promise.resolve(
+        jsonResponse({
+          tokens: issued,
+          first: issued.at(0)?.id,
+          last: issued.at(-1)?.id,
+        }),
+      );
+    }
+    if (parsed.pathname.endsWith("/tokens/latest")) {
+      return Promise.resolve(jsonResponse({ tokens: balances.slice(0, 5) }));
+    }
+    if (parsed.pathname.endsWith("/tokens")) {
+      const perPage = Number(parsed.searchParams.get("perPage") ?? "20");
+      const cursor = parsed.searchParams.get("cursor");
+      if (cursor && failNextPageOnce && !nextPageFailed) {
+        nextPageFailed = true;
+        return Promise.resolve(jsonResponse(null, 500));
+      }
+      const start = cursor
+        ? Math.max(balances.findIndex((token) => token.id === Number(cursor)) + 1, 0)
+        : 0;
+      const tokens = balances.slice(start, start + perPage);
+      return Promise.resolve(
+        jsonResponse({
+          tokens,
+          first: tokens.at(0)?.id,
+          last: tokens.at(-1)?.id,
+        }),
+      );
+    }
+    return Promise.resolve(jsonResponse({ tokens: [] }));
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
 }
 
 const OTHER = "0x9999999999999999999999999999999999999999";
@@ -170,6 +245,8 @@ function mockEndpoints({
 }) {
   const fetchMock = vi.fn().mockImplementation((url: string | URL) => {
     const href = String(url);
+    if (href.includes("/users/me/wants"))
+      return Promise.resolve(jsonResponse({ wants: [], first: 0, last: 0 }));
     if (href.includes("/api/v2/pools") && poolStatus !== 200)
       return Promise.resolve(jsonResponse(null, poolStatus));
     const result = href.includes("/api/v2/pools")
@@ -264,6 +341,68 @@ describe("WalletPage", () => {
     expect(text.indexOf("My Pools")).toBeLessThan(text.indexOf("My Catalogs"));
   });
 
+  it("fills the Holdings preview after recent owned balances consume the first five slots", async () => {
+    const issued = [100, 99, 98, 97].map((id) => previewToken(id, "I"));
+    const holdings = [96, 95, 94, 93, 92].map((id) => previewToken(id, "H"));
+    mockVoucherPreview({ balances: [...issued, ...holdings], issued });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    const holdingsRegion = within(await screen.findByRole("region", { name: "Holdings" }));
+    for (const token of holdings) expect(holdingsRegion.getByText(token.tokenSymbol)).toBeTruthy();
+    const issuedRegion = within(screen.getByRole("region", { name: /My Vouchers/ }));
+    for (const token of issued) expect(issuedRegion.getByText(token.tokenSymbol)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "View all Holdings" }));
+    fireEvent.click(screen.getByRole("button", { name: "View all My Vouchers" }));
+    expect(mocks.navigate).toHaveBeenNthCalledWith(1, { to: "/wallet/vouchers" });
+    expect(mocks.navigate).toHaveBeenNthCalledWith(2, { to: "/wallet/vouchers" });
+  });
+
+  it("loads another balance page until it finds five non-owned Holdings", async () => {
+    const issued = Array.from({ length: 20 }, (_, index) => previewToken(200 - index, "I"));
+    const holdings = [180, 179, 178, 177, 176].map((id) => previewToken(id, "H"));
+    const fetchMock = mockVoucherPreview({ balances: [...issued, ...holdings], issued });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    const holdingsRegion = within(await screen.findByRole("region", { name: "Holdings" }));
+    for (const token of holdings) expect(holdingsRegion.getByText(token.tokenSymbol)).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/tokens?perPage=20&cursor=181&next=true"),
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
+  });
+
+  it("keeps verified preview rows when a later page fails and retries that page", async () => {
+    const issued = Array.from({ length: 19 }, (_, index) => previewToken(220 - index, "I"));
+    const holdings = [201, 200, 199, 198, 197].map((id) => previewToken(id, "H"));
+    mockVoucherPreview({ balances: [...issued, ...holdings], issued, failNextPageOnce: true });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("Couldn't load vouchers.")).toBeTruthy();
+    const partialHoldings = within(screen.getByRole("region", { name: "Holdings" }));
+    expect(partialHoldings.getByText("H201")).toBeTruthy();
+    expect(partialHoldings.queryByText("H200")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    const completeHoldings = within(await screen.findByRole("region", { name: "Holdings" }));
+    await waitFor(() => expect(completeHoldings.getAllByRole("link")).toHaveLength(5));
+    expect(completeHoldings.getByText("H197")).toBeTruthy();
+  });
+
+  it("limits both Wallet voucher groups to five rows", async () => {
+    const issued = [120, 119, 118, 117, 116, 115].map((id) => previewToken(id, "I"));
+    const holdings = [114, 113, 112, 111, 110, 109].map((id) => previewToken(id, "H"));
+    mockVoucherPreview({ balances: [...issued, ...holdings], issued });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    const holdingsRegion = within(await screen.findByRole("region", { name: "Holdings" }));
+    expect(holdingsRegion.queryByText("H109")).toBeNull();
+    expect(holdingsRegion.getAllByRole("link")).toHaveLength(5);
+    const issuedRegion = within(screen.getByRole("region", { name: /My Vouchers/ }));
+    expect(issuedRegion.queryByText("I115")).toBeNull();
+    expect(issuedRegion.getAllByRole("link")).toHaveLength(5);
+  });
+
   it("treats a token the catalog does not list as a holding", async () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
@@ -303,7 +442,7 @@ describe("WalletPage", () => {
     const urls = fetchMock.mock.calls.map(([url]) => String(url));
     expect(urls.filter((url) => url.includes("/api/v2/vouchers/"))).toEqual([]);
     expect(urls).toContainEqual(
-      expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens/latest`),
+      expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens?perPage=20`),
     );
     expect(urls).toContainEqual(
       expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens/issued?perPage=100`),
@@ -339,7 +478,7 @@ describe("WalletPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
     expect(mocks.usage.refetch).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByRole("button", { name: "View all" }));
+    fireEvent.click(screen.getByRole("button", { name: "View all My Vouchers" }));
     expect(mocks.navigate).toHaveBeenCalledWith({ to: "/wallet/vouchers" });
 
     const vouchers = within(screen.getByRole("region", { name: /My Vouchers/ }));
