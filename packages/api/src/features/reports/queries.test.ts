@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { ManagedReportsParams, ReportPage, ReportsClient } from "./client";
 import {
   adminReportQueryOptions,
@@ -6,6 +6,7 @@ import {
   myReportQueryOptions,
   myReportsQueryOptions,
   reportFeedInfiniteQueryOptions,
+  reportMapQueryOptions,
   reportKeys,
   reportQueryOptions,
 } from "./queries";
@@ -25,6 +26,20 @@ describe("reportKeys", () => {
       reportKeys.feed(20),
       reportKeys.detail("42"),
       reportKeys.filtered(null, 20),
+      reportKeys.map(
+        {
+          term: "",
+          tags: [],
+          tagMatch: "any",
+          vouchers: [],
+          voucherMatch: "any",
+          pools: [],
+          poolMatch: "any",
+        },
+        [],
+        undefined,
+        false,
+      ),
       reportKeys.voucherFeed(undefined, 20),
       reportKeys.facetVocabulary(),
     ]) {
@@ -39,6 +54,66 @@ describe("reportKeys", () => {
   it("varies with page size and id", () => {
     expect(reportKeys.feed(20)).not.toEqual(reportKeys.feed(50));
     expect(reportKeys.detail("1")).not.toEqual(reportKeys.detail("2"));
+  });
+});
+
+describe("reportMapQueryOptions", () => {
+  const filter = {
+    term: "market",
+    tags: ["Food"],
+    tagMatch: "all" as const,
+    vouchers: [],
+    voucherMatch: "any" as const,
+    pools: [],
+    poolMatch: "any" as const,
+  };
+  const bounds = [{ minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 }] as const;
+  const creditablePools = [
+    { chainId: 100, address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+  ] as const;
+
+  it("isolates bounds, Credit pools, filters, and facet mode in its key", () => {
+    const base = reportKeys.map(filter, bounds, creditablePools, true);
+    expect(base).not.toEqual(reportKeys.map(filter, [], creditablePools, true));
+    expect(base).not.toEqual(reportKeys.map(filter, bounds, undefined, true));
+    expect(base).not.toEqual(
+      reportKeys.map({ ...filter, term: "other" }, bounds, creditablePools, true),
+    );
+    expect(base).not.toEqual(reportKeys.map(filter, bounds, creditablePools, false));
+  });
+
+  it("walks every bounded page, sends Credit and AbortSignal, and asks for facets once", async () => {
+    const signal = new AbortController().signal;
+    const getFilteredReports = vi
+      .fn()
+      .mockResolvedValueOnce({
+        reports: [{ id: "1" }],
+        tagFacets: [{ tag: "Food", count: 2 }],
+        next: { updatedAt: "2026-10-25T00:00:00Z", id: "1" },
+      })
+      .mockResolvedValueOnce({ reports: [{ id: "2" }], tagFacets: [], next: null });
+    const options = reportMapQueryOptions({ getFilteredReports } as unknown as ReportsClient, {
+      filter,
+      bounds,
+      creditablePools,
+      facets: true,
+    });
+    if (typeof options.queryFn !== "function") throw new Error("expected map query function");
+
+    await expect(options.queryFn({ signal } as never)).resolves.toEqual({
+      reports: [{ id: "1" }, { id: "2" }],
+      tagFacets: [{ tag: "Food", count: 2 }],
+    });
+    expect(getFilteredReports).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ bounds, creditablePools, facets: true, cursor: undefined }),
+      signal,
+    );
+    expect(getFilteredReports).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ bounds, creditablePools, facets: false }),
+      signal,
+    );
   });
 });
 

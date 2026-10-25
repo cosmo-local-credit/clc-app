@@ -283,10 +283,8 @@ describe("viewportToBoundingBoxes", () => {
     }
   });
 
-  it("collapses a whole-world viewport to one box", () => {
-    expect(viewportToBoundingBoxes({ west: -400, south: -95, east: 400, north: 95 })).toEqual([
-      { minLng: -180, minLat: -90, maxLng: 180, maxLat: 90 },
-    ]);
+  it("treats a whole-world viewport as Global discovery", () => {
+    expect(viewportToBoundingBoxes({ west: -400, south: -95, east: 400, north: 95 })).toEqual([]);
   });
 
   it("clamps latitudes to the valid range", () => {

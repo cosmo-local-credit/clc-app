@@ -67,6 +67,7 @@ describe("useMarketMapWants", () => {
     expect(mocks.query.refetch).toHaveBeenCalled();
 
     rerender({ enabled: false });
+    expect(result.current.wants).toEqual([]);
     expect(result.current.error).toBeNull();
     expect(result.current.retrying).toBe(false);
   });

@@ -97,9 +97,19 @@ describe("useMarketplaceMapSearch", () => {
         nextCursor: null,
       });
 
-    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, [], true), {
-      wrapper: wrapper(),
-    });
+    const { result } = renderHook(
+      () =>
+        useMarketplaceMapSearch(
+          filter,
+          undefined,
+          [],
+          ["voucher", "want", "pool", "catalog"],
+          true,
+        ),
+      {
+        wrapper: wrapper(),
+      },
+    );
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current.locations.map((row) => row.kind)).toEqual(["services", "pool", "want"]);
@@ -116,7 +126,7 @@ describe("useMarketplaceMapSearch", () => {
     });
     expect(list).toHaveBeenCalledTimes(2);
     expect(list.mock.calls[0]?.[0]).toMatchObject({
-      kinds: ["voucher", "pool", "want"],
+      kinds: ["voucher", "want", "pool", "catalog"],
       perPage: 100,
       q: "repair",
     });
@@ -124,12 +134,63 @@ describe("useMarketplaceMapSearch", () => {
   });
 
   it("makes no request and exposes no locations while verification blocks search", () => {
-    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, [], false), {
-      wrapper: wrapper(),
-    });
+    const { result } = renderHook(
+      () =>
+        useMarketplaceMapSearch(
+          filter,
+          undefined,
+          [],
+          ["voucher", "want", "pool", "catalog"],
+          false,
+        ),
+      {
+        wrapper: wrapper(),
+      },
+    );
     expect(result.current.status).toBe("disabled");
     expect(result.current.locations).toEqual([]);
     expect(list).not.toHaveBeenCalled();
+  });
+
+  it("hides cached locations and facets immediately when their resource query is disabled", async () => {
+    list.mockResolvedValue({
+      results: [
+        {
+          ...common,
+          kind: "catalog",
+          id: "9",
+          chainId: null,
+          address: null,
+          name: "Kilifi catalog",
+          symbol: null,
+          markerIcon: null,
+          markerColor: null,
+          voucherKind: null,
+          voucherCount: 2,
+        },
+      ],
+      tagFacets: [{ tag: "Food", count: 1 }],
+      nextCursor: null,
+    });
+    const { result, rerender } = renderHook(
+      ({ enabled }) =>
+        useMarketplaceMapSearch(
+          filter,
+          undefined,
+          [],
+          ["voucher", "want", "pool", "catalog"],
+          enabled,
+          true,
+        ),
+      { wrapper: wrapper(), initialProps: { enabled: true } },
+    );
+
+    await waitFor(() => expect(result.current.locations).toHaveLength(1));
+    expect(result.current.tagFacets).toEqual([{ tag: "Food", count: 1 }]);
+
+    rerender({ enabled: false });
+    expect(result.current.locations).toEqual([]);
+    expect(result.current.tagFacets).toEqual([]);
   });
 
   it("walks every bounded page without an arbitrary client-side cutoff", async () => {
@@ -138,9 +199,19 @@ describe("useMarketplaceMapSearch", () => {
       page++;
       return { results: [], nextCursor: page < 8 ? `page-${page + 1}` : null };
     });
-    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, [], true), {
-      wrapper: wrapper(),
-    });
+    const { result } = renderHook(
+      () =>
+        useMarketplaceMapSearch(
+          filter,
+          undefined,
+          [],
+          ["voucher", "want", "pool", "catalog"],
+          true,
+        ),
+      {
+        wrapper: wrapper(),
+      },
+    );
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current.locations).toEqual([]);

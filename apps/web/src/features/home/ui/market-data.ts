@@ -1,4 +1,4 @@
-import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
+import type { MarkerColor, MarkerIcon, ReportMarkerIcon } from "@clc/core/features/markers/logic";
 import type { WantMarkerIcon } from "@clc/core/features/wants/logic";
 
 /**
@@ -6,7 +6,14 @@ import type { WantMarkerIcon } from "@clc/core/features/wants/logic";
  * `GET /api/v2/vouchers`). There is no eatery/shop/service taxonomy — that was
  * placeholder data. `pool` is a commitment pool, which draws its own square pin.
  */
-export type MarketLocationKind = "goods" | "services" | "voucher" | "pool" | "want";
+export type MarketLocationKind =
+  | "goods"
+  | "services"
+  | "voucher"
+  | "pool"
+  | "want"
+  | "catalog"
+  | "post";
 
 /**
  * The minimal shape the map needs from a voucher or a pool. `MarketVoucher`
@@ -19,7 +26,7 @@ export type MarketLocation = {
   name: string;
   kind: MarketLocationKind;
   /** The issuer's pin; null follows `kind`. Always null for a pool. */
-  markerIcon: MarkerIcon | WantMarkerIcon | null;
+  markerIcon: MarkerIcon | WantMarkerIcon | ReportMarkerIcon | null;
   markerColor: MarkerColor | null;
   lat: number;
   lng: number;

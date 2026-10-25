@@ -39,6 +39,7 @@ import { MarkdownEditor } from "#/components/ui/markdown-editor";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { BackChevron } from "#/components/wallet";
+import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -522,20 +523,40 @@ function PostEditorForm({
         <Section title={t`Place`} defaultOpen={initial.geoLat !== null && initial.geoLng !== null}>
           {/* Only geoLat/geoLng persist — reports.location_name was dropped in
               migration 010 — so the picker's place name is a search aid. */}
-          <form.Subscribe selector={(state) => [state.values.geoLat, state.values.geoLng] as const}>
-            {([lat, lng]) => (
-              <LocationPicker
-                label={t`Where did this happen?`}
-                value={
-                  lat !== null && lng !== null
-                    ? ({ lat, lng, locationName: "" } as LocationInput)
-                    : undefined
-                }
-                onChange={(next) => {
-                  form.setFieldValue("geoLat", next ? next.lat : null);
-                  form.setFieldValue("geoLng", next ? next.lng : null);
-                }}
-              />
+          <form.Subscribe
+            selector={(state) =>
+              [
+                state.values.geoLat,
+                state.values.geoLng,
+                state.values.markerIcon,
+                state.values.markerColor,
+              ] as const
+            }
+          >
+            {([lat, lng, markerIcon, markerColor]) => (
+              <div className="space-y-4">
+                <LocationPicker
+                  label={t`Where did this happen?`}
+                  value={
+                    lat !== null && lng !== null
+                      ? ({ lat, lng, locationName: "" } as LocationInput)
+                      : undefined
+                  }
+                  markerStyle={{ icon: markerIcon, color: markerColor }}
+                  onChange={(next) => {
+                    form.setFieldValue("geoLat", next ? next.lat : null);
+                    form.setFieldValue("geoLng", next ? next.lng : null);
+                  }}
+                />
+                <MarkerStylePicker
+                  mode="report"
+                  value={{ icon: markerIcon, color: markerColor }}
+                  onChange={(next) => {
+                    form.setFieldValue("markerIcon", next.icon);
+                    form.setFieldValue("markerColor", next.color);
+                  }}
+                />
+              </div>
             )}
           </form.Subscribe>
           <div className="mt-3">

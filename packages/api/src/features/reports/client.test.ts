@@ -90,6 +90,29 @@ describe("getFilteredReports", () => {
     expect(url.searchParams.has("author")).toBe(false);
   });
 
+  it("serializes verified Credit pools independently from linked-pool filters", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getFilteredReports({
+      perPage: 20,
+      filter: {
+        ...EMPTY_FILTER,
+        pools: [{ chainId: 100, address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }],
+      },
+      creditablePools: [
+        { chainId: 100, address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+        { chainId: 100, address: "0xcccccccccccccccccccccccccccccccccccccccc" },
+      ],
+    });
+
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("pools")).toBe("100:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    expect(url.searchParams.get("creditablePools")).toBe(
+      "100:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,100:0xcccccccccccccccccccccccccccccccccccccccc",
+    );
+  });
+
   it("normalizes report relationships and facets while dropping malformed rows", async () => {
     vi.stubGlobal(
       "fetch",
@@ -194,6 +217,7 @@ describe("getFilteredReports", () => {
         symbol: "POOL",
       },
     ]);
+    expect(page.reports[0]).toMatchObject({ markerIcon: "post", markerColor: "pink" });
     expect(page.reports[0]).not.toHaveProperty("authorAddress");
     expect(page.poolFacets).toEqual([
       {
@@ -246,6 +270,8 @@ describe("serializeReportWrite", () => {
         "hostName",
         "imageUrl",
         "images",
+        "markerColor",
+        "markerIcon",
         "participants",
         "pools",
         "periodFrom",
@@ -286,6 +312,8 @@ describe("serializeReportWrite", () => {
           participants: "20",
           timeTaken: "4 hours",
           tags: ["Agriculture", "Youth"],
+          markerIcon: "event",
+          markerColor: "cyan",
           vouchers: [{ chainId: 100, address: "0x0000000000000000000000000000000000000001" }],
           pools: [{ chainId: 100, address: "0x0000000000000000000000000000000000000002" }],
           images: [
@@ -317,6 +345,8 @@ describe("serializeReportWrite", () => {
     expect(body.pools).toEqual([
       { chainId: 100, address: "0x0000000000000000000000000000000000000002" },
     ]);
+    expect(body.markerIcon).toBe("event");
+    expect(body.markerColor).toBe("cyan");
     expect(body.images[0]).toEqual({
       url: "https://content.example/one.jpg",
       width: null,

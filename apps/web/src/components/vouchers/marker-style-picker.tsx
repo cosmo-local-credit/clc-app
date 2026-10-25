@@ -3,15 +3,19 @@ import {
   MARKER_COLORS,
   MARKER_COLOR_HEX,
   MARKER_ICONS,
+  REPORT_MARKER_ICONS,
   type MarketKind,
   type MapMarkerStyle,
   type MarkerColor,
   type MarkerIcon,
+  type ReportMarkerIcon,
+  type ReportMarkerStyle,
   WANT_MARKER_ICONS,
   type WantMarkerIcon,
   type WantMarkerStyle,
   isMarkerColor,
   isMarkerIcon,
+  isReportMarkerIcon,
   isWantMarkerIcon,
   resolveMarkerStyle,
 } from "@clc/core/features/markers/logic";
@@ -21,7 +25,7 @@ import { RiCheckLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { RadioGroup } from "#/components/ui/radio-group";
 import { cn } from "#/lib/utils";
-import { MARKER_GLYPHS, WANT_MARKER_GLYPHS } from "./marker-glyphs";
+import { MARKER_GLYPHS, REPORT_MARKER_GLYPHS, WANT_MARKER_GLYPHS } from "./marker-glyphs";
 import { useMarkerLabels } from "./voucher-labels";
 
 type MarkerChoice = { icon: MarkerIcon | null; color: MarkerColor | null };
@@ -44,7 +48,9 @@ export function MarkerPin({
   const Glyph =
     style.icon === "question" || style.icon === "message" || style.icon === "request"
       ? WANT_MARKER_GLYPHS[style.icon]
-      : MARKER_GLYPHS[style.icon];
+      : style.icon === "post" || style.icon === "event" || style.icon === "announcement"
+        ? REPORT_MARKER_GLYPHS[style.icon]
+        : MARKER_GLYPHS[style.icon];
   return (
     <svg
       viewBox="0 0 30 36"
@@ -84,32 +90,46 @@ type WantMarkerStylePickerProps = {
   disabled?: boolean;
 };
 
+type ReportMarkerStylePickerProps = {
+  mode: "report";
+  value: ReportMarkerStyle;
+  onChange: (next: ReportMarkerStyle) => void;
+  disabled?: boolean;
+};
+
 export function MarkerStylePicker(
-  props: VoucherMarkerStylePickerProps | WantMarkerStylePickerProps,
+  props: VoucherMarkerStylePickerProps | WantMarkerStylePickerProps | ReportMarkerStylePickerProps,
 ) {
   const { value, onChange, disabled = false } = props;
-  const kind = props.mode === "want" ? undefined : props.kind;
+  const kind = props.mode === "want" || props.mode === "report" ? undefined : props.kind;
   const mode = props.mode ?? "voucher";
   const { t } = useLingui();
   const labels = useMarkerLabels();
   const resolved: MapMarkerStyle =
-    mode === "want"
-      ? (value as WantMarkerStyle)
+    mode === "want" || mode === "report"
+      ? (value as WantMarkerStyle | ReportMarkerStyle)
       : resolveMarkerStyle({
           kind: kind as MarketKind,
           markerIcon: (value as MarkerChoice).icon,
           markerColor: value.color,
         });
   const automatic = mode === "voucher" && value.icon === null && value.color === null;
-  const icons = mode === "want" ? WANT_MARKER_ICONS : MARKER_ICONS;
-  const iconLabel = (icon: MarkerIcon | WantMarkerIcon) =>
+  const icons =
+    mode === "want" ? WANT_MARKER_ICONS : mode === "report" ? REPORT_MARKER_ICONS : MARKER_ICONS;
+  const iconLabel = (icon: MarkerIcon | WantMarkerIcon | ReportMarkerIcon) =>
     icon === "question"
       ? t`Question`
       : icon === "message"
         ? t`Message`
         : icon === "request"
           ? t`Request`
-          : labels.icon(icon);
+          : icon === "post"
+            ? t`Post`
+            : icon === "event"
+              ? t`Event`
+              : icon === "announcement"
+                ? t`Announcement`
+                : labels.icon(icon);
 
   return (
     <div className="space-y-4">
@@ -120,7 +140,7 @@ export function MarkerStylePicker(
             <Trans>Map pin</Trans>
           </p>
         </div>
-        {automatic || mode === "want" ? null : (
+        {automatic || mode === "want" || mode === "report" ? null : (
           <Button
             type="button"
             variant="destructive"
@@ -143,12 +163,17 @@ export function MarkerStylePicker(
               ...(value as WantMarkerStyle),
               icon: next,
             });
+          } else if (mode === "report" && isReportMarkerIcon(next)) {
+            (onChange as (next: ReportMarkerStyle) => void)({
+              ...(value as ReportMarkerStyle),
+              icon: next,
+            });
           } else if (mode === "voucher" && isMarkerIcon(next)) {
             (onChange as (next: MarkerChoice) => void)({ ...value, icon: next });
           }
         }}
         disabled={disabled}
-        className={cn(mode === "want" ? "grid-cols-3" : "grid-cols-4", "gap-2")}
+        className={cn(mode === "voucher" ? "grid-cols-4" : "grid-cols-3", "gap-2")}
       >
         {icons.map((icon) => (
           <Radio.Root

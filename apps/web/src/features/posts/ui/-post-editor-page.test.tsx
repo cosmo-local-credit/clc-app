@@ -106,7 +106,11 @@ vi.mock("#/features/images/use-image-upload", () => ({
 }));
 
 vi.mock("#/components/ui/location-map.lazy", () => ({
-  LocationMap: () => <div data-testid="location-map" />,
+  LocationMap: ({ markerStyle }: { markerStyle?: { icon: string; color: string } }) => (
+    <div data-testid="location-map">
+      {markerStyle ? `${markerStyle.icon}:${markerStyle.color}` : "default"}
+    </div>
+  ),
 }));
 
 // The shell only defers the chunk. These tests want the editor inside it, and
@@ -133,6 +137,8 @@ function saved(overrides: Partial<ManagedReportDetail> = {}): ManagedReportDetai
     authorAddress: "0xAbC0000000000000000000000000000000000123",
     createdAt: "2026-08-20T10:00:00Z",
     updatedAt: "2026-08-20T10:00:00Z",
+    markerIcon: "post",
+    markerColor: "pink",
     tags: [],
     vouchers: [
       {
@@ -613,6 +619,24 @@ describe("creating a post", () => {
     });
   });
 
+  it("previews and submits a chosen Post marker icon and colour", async () => {
+    renderCreateWithVoucher();
+    fireEvent.click(screen.getByText("Place"));
+
+    expect(screen.getByTestId("location-map").textContent).toBe("post:pink");
+    fireEvent.click(screen.getByRole("radio", { name: "Event" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Cyan" }));
+    expect(screen.getByTestId("location-map").textContent).toBe("event:cyan");
+
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
+      markerIcon: "event",
+      markerColor: "cyan",
+    });
+  });
+
   it("keeps a seeded voucher removable and does not treat the seed as an edit", () => {
     render(<PostEditorPage mode="create" voucher={{ chainId: 42220, address: VOUCHER }} />);
 
@@ -675,7 +699,12 @@ describe("editing a post", () => {
   });
 
   it("opens Place for an existing located post so the public-pin warning is visible", () => {
-    mocks.detail.data = saved({ lat: -1.2864, lng: 36.8172 });
+    mocks.detail.data = saved({
+      lat: -1.2864,
+      lng: 36.8172,
+      markerIcon: "announcement",
+      markerColor: "purple",
+    });
 
     render(<PostEditorPage mode="edit" reportId="4633" />);
 
@@ -684,6 +713,7 @@ describe("editing a post", () => {
         "The exact pin will be public. Choose a safe public meeting place, not a private home.",
       ),
     ).toBeTruthy();
+    expect(screen.getByTestId("location-map").textContent).toBe("announcement:purple");
   });
 
   // PUT is assign-all, so an untouched relation has to travel back or it is

@@ -485,7 +485,7 @@ msgid "Active"
 msgstr "सक्रिय"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:100
-#: apps/web/src/components/market-bar.tsx:221
+#: apps/web/src/components/market-bar.tsx:323
 #: apps/web/src/components/navigation/bottom-navigation.tsx:50
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:193
 #: apps/web/src/features/home/ui/activity-page.tsx:97
@@ -666,7 +666,8 @@ msgstr "उन्नत विकल्प"
 msgid "Agriculture"
 msgstr "कृषि"
 
-#: apps/web/src/components/market-bar.tsx:159
+#: apps/web/src/components/market-bar.tsx:202
+#: apps/web/src/components/market-bar.tsx:261
 msgid "All"
 msgstr "सभी"
 
@@ -737,6 +738,10 @@ msgstr "एकत्रित करने हेतु राशि"
 msgid "intro.offer.body"
 msgstr "ऑफ़र किसी व्यक्ति के दिए जाने वाले सामान या सेवाओं का विवरण है। विवरण, "
 "कीमत और स्वीकार किए जाने वाले वाउचर की जाँच करें।"
+
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:131
+msgid "Announcement"
+msgstr "घोषणा"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
@@ -1015,7 +1020,8 @@ msgstr "कैटलॉग की तस्वीर"
 msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "कैटलॉग सहेजा गया। आइटम जोड़ा नहीं जा सका। फिर से प्रयास करें।"
 
-#: apps/web/src/components/market-bar.tsx:164
+#: apps/web/src/components/market-bar.tsx:187
+#: apps/web/src/components/market-bar.tsx:266
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
@@ -1217,6 +1223,10 @@ msgid "intro.send.body"
 msgstr "प्राप्तकर्ता, अपने पास मौजूद वाउचर और राशि चुनें। पुष्टि करने से पहले "
 "विवरण जाँचें, फिर हस्तांतरण के परिणाम की प्रतीक्षा करें।"
 
+#: apps/web/src/features/home/ui/market-page.tsx:450
+msgid "Choose a resource type to show it on the map."
+msgstr "मानचित्र पर दिखाने के लिए संसाधन का प्रकार चुनें।"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:88
 msgid "Choose a unit of account"
@@ -1317,7 +1327,7 @@ msgstr "फ़िल्टर साफ़ करें"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:41
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:125
-#: apps/web/src/features/home/ui/market-page.tsx:347
+#: apps/web/src/features/home/ui/market-page.tsx:483
 #: apps/web/src/features/home/ui/marketplace-page.tsx:165
 #: apps/web/src/features/home/ui/marketplace-page.tsx:215
 #: apps/web/src/features/home/ui/offers-page.tsx:149
@@ -1892,10 +1902,15 @@ msgstr "कैटलॉग के आइटम लोड नहीं हो स
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:44
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:136
+#: apps/web/src/features/home/ui/market-page.tsx:394
 msgid "Couldn't load catalogs."
 msgstr "कैटलॉग लोड नहीं हो सके।"
 
-#: apps/web/src/features/home/ui/market-page.tsx:263
+#: apps/web/src/features/home/ui/market-page.tsx:394
+#~ msgid "Couldn't load Catalogs."
+#~ msgstr "कैटलॉग लोड नहीं हो सके।"
+
+#: apps/web/src/features/home/ui/market-page.tsx:372
 msgid "Couldn't load complete marketplace results."
 msgstr "बाज़ार के पूरे परिणाम लोड नहीं किए जा सके।"
 
@@ -1923,15 +1938,20 @@ msgid "Couldn't load pool tags."
 msgstr "पूल टैग लोड नहीं हो सका."
 
 #: apps/web/src/components/wants/want-detail.tsx:198
-#: apps/web/src/features/home/ui/market-page.tsx:271
+#: apps/web/src/features/home/ui/market-page.tsx:380
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "पूल लोड नहीं किये जा सके."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:277
+#: apps/web/src/features/home/ui/market-page.tsx:401
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:316
 msgid "Couldn't load posts."
 msgstr "पोस्ट लोड नहीं हो सकीं."
+
+#: apps/web/src/features/home/ui/market-page.tsx:401
+#~ msgid "Couldn't load Posts."
+#~ msgstr "पोस्ट लोड नहीं हो सकीं।"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:454
 msgid "Couldn't load Pretium history."
@@ -1946,7 +1966,7 @@ msgstr "संसाधनों की सीमाएँ लोड नही�
 msgid "Couldn't load reviews."
 msgstr "समीक्षाएँ लोड नहीं की जा सकीं."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:571
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:592
 msgid "Couldn't load tags."
 msgstr "टैग लोड नहीं हो सके."
 
@@ -1971,7 +1991,7 @@ msgstr "इस पूल के वाउचर लोड नहीं किय
 msgid "Couldn't load this post."
 msgstr "इस पोस्ट को लोड नहीं किया जा सका."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:207
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:208
 msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "इस पोस्ट को लोड नहीं किया जा सका. आप केवल अपने द्वारा लिखे गए पोस्ट को "
 "संपादित कर सकते हैं।"
@@ -2019,7 +2039,7 @@ msgstr "वाउचर लोड नहीं किये जा सके."
 msgid "Couldn't load Wants for this pool."
 msgstr "इस पूल की ज़रूरतें लोड नहीं हो सकीं।"
 
-#: apps/web/src/features/home/ui/market-page.tsx:278
+#: apps/web/src/features/home/ui/market-page.tsx:387
 #: apps/web/src/features/wants/ui/wants-page.tsx:125
 msgid "Couldn't load Wants."
 msgstr "ज़रूरतें लोड नहीं हो सकीं।"
@@ -2121,7 +2141,7 @@ msgstr "वाउचर विवरण सहेजा नहीं जा स�
 msgid "Couldn't save this Want. Try again."
 msgstr "यह ज़रूरत सहेजी नहीं जा सकी। फिर कोशिश करें।"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:317
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:318
 msgid "Couldn't save your post."
 msgstr "आपकी पोस्ट सहेजी नहीं जा सकी."
 
@@ -2460,7 +2480,7 @@ msgstr "विवरण"
 msgid "Directions"
 msgstr "दिशा-निर्देश"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:690
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:711
 msgid "Discard changes"
 msgstr "परिवर्तन त्यागें"
 
@@ -2591,7 +2611,7 @@ msgstr "ऑफ़र संपादित करें"
 msgid "Edit pool details"
 msgstr "पूल विवरण संपादित करें"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:356
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:357
 msgid "Edit post"
 msgstr "पोस्ट संपादित करें"
 
@@ -2662,7 +2682,7 @@ msgstr "सूचनाएं सक्षम की जा रही हैं�
 msgid "Endowments"
 msgstr "न्यास निधियाँ"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:457
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:458
 #: apps/web/src/features/wants/ui/want-form-page.tsx:266
 msgid "Ends"
 msgstr "समाप्त होता है"
@@ -2787,7 +2807,11 @@ msgstr "अपने Gnosis वॉलेट का पता दर्ज कर
 msgid "Equal value"
 msgstr "समान मूल्य"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:430
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:129
+msgid "Event"
+msgstr "कार्यक्रम"
+
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:431
 msgid "Event details"
 msgstr "घटना विवरण"
 
@@ -2981,7 +3005,7 @@ msgstr "फिल्टर"
 msgid "Finding a name…"
 msgstr "एक नाम ढूंढा जा रहा है..."
 
-#: apps/web/src/features/home/ui/market-page.tsx:211
+#: apps/web/src/features/home/ui/market-page.tsx:295
 msgid "Finding location"
 msgstr "स्थान ढूँढना"
 
@@ -3092,7 +3116,7 @@ msgid "Holdings"
 msgstr "जोत"
 
 #: apps/web/src/features/home/ui/report-page.tsx:413
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:478
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:479
 msgid "Host"
 msgstr "मेज़बान"
 
@@ -3336,7 +3360,7 @@ msgstr "वांट मार्कर दिखाने के लिए ख�
 #~ msgid "Leave empty to use your profile picture."
 #~ msgstr "अपनी प्रोफ़ाइल तस्वीर उपयोग करने के लिए खाली छोड़ें।"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:689
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:710
 msgid "Leave without saving?"
 msgstr "बिना सहेजे छोड़ें?"
 
@@ -3411,7 +3435,7 @@ msgstr "एक पासकी लिंक करें"
 msgid "Link address"
 msgstr "लिंक पता"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:549
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:570
 msgid "Link at least one voucher or pool."
 msgstr "कम से कम एक वाउचर या पूल लिंक करें।"
 
@@ -3482,7 +3506,7 @@ msgid "Linking the passkey failed. Your paper wallet is unchanged."
 msgstr "पासकी को लिंक करना विफल रहा. आपका पेपर वॉलेट अपरिवर्तित है."
 
 #: apps/web/src/features/home/ui/report-page.tsx:439
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:661
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:682
 msgid "Links"
 msgstr "कड़ियाँ"
 
@@ -3626,8 +3650,8 @@ msgstr "ज़रूरत लोड हो रही है…"
 msgid "Loading Wants…"
 msgstr "ज़रूरतें लोड हो रही हैं…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:121
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:194
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:122
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:195
 msgid "Loading your post…"
 msgstr "आपकी पोस्ट लोड हो रही है..."
 
@@ -3645,7 +3669,7 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
 #: apps/web/src/components/market-search.tsx:302
-#: apps/web/src/components/nearby-catalog.tsx:116
+#: apps/web/src/components/nearby-catalog.tsx:126
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:64
 #: apps/web/src/components/resource-usage.tsx:141
@@ -3682,7 +3706,7 @@ msgstr "स्थानीय मुद्रा और M-Pesa"
 msgid "Location"
 msgstr "स्थान"
 
-#: apps/web/src/features/home/ui/market-page.tsx:213
+#: apps/web/src/features/home/ui/market-page.tsx:297
 msgid "Location denied"
 msgstr "स्थान अस्वीकृत"
 
@@ -3730,7 +3754,7 @@ msgstr "वाउचर प्रबंधित करें"
 #~ msgid "Manage your wallet session and app preferences."
 #~ msgstr "अपना वॉलेट सत्र और ऐप प्राथमिकताएं प्रबंधित करें।"
 
-#: apps/web/src/components/market-bar.tsx:242
+#: apps/web/src/components/market-bar.tsx:344
 msgid "Map"
 msgstr "मानचित्र"
 
@@ -3738,7 +3762,7 @@ msgstr "मानचित्र"
 #~ msgid "Map marker"
 #~ msgstr "मानचित्र चिह्न"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:120
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:140
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:47
 msgid "Map pin"
 msgstr "मानचित्र पिन"
@@ -3754,7 +3778,7 @@ msgstr "मानचित्र पिन"
 #~ msgstr "चिह्न का रंग"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
-#: apps/web/src/features/home/ui/market-page.tsx:359
+#: apps/web/src/features/home/ui/market-page.tsx:495
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:70
 #: apps/web/src/lib/category-label.ts:18
@@ -3765,7 +3789,7 @@ msgstr "बाज़ार"
 msgid "Marketplace"
 msgstr "बाज़ार"
 
-#: apps/web/src/components/market-bar.tsx:169
+#: apps/web/src/components/market-bar.tsx:271
 msgid "Marketplace sections"
 msgstr "बाज़ार के अनुभाग"
 
@@ -3799,7 +3823,7 @@ msgstr "अधिकतम {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "मीडिया एक अपलोड किया गया http(s) URL होना चाहिए"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:109
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:123
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:346
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:493
 msgid "Message"
@@ -3929,7 +3953,7 @@ msgstr "मेरे पूल"
 #: apps/web/src/features/home/ui/posts-page.tsx:110
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:31
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:77
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:740
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:761
 msgid "My posts"
 msgstr "मेरी पोस्ट"
 
@@ -4015,7 +4039,7 @@ msgstr "नया मालिक इस एसेट के अनुबंध�
 
 #: apps/web/src/features/home/ui/posts-page.tsx:105
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:356
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:357
 msgid "New post"
 msgstr "नई पोस्ट"
 
@@ -4164,7 +4188,7 @@ msgstr "कोई अंतिम तारीख नहीं"
 #~ msgid "No items yet. Add pools or vouchers from their detail pages."
 #~ msgstr "अभी कोई आइटम नहीं है। पूल या वाउचर उनके विवरण पृष्ठों से जोड़ें।"
 
-#: apps/web/src/features/home/ui/market-page.tsx:325
+#: apps/web/src/features/home/ui/market-page.tsx:461
 #: apps/web/src/features/home/ui/marketplace-page.tsx:171
 msgid "No marketplace results are available through your Credit pools."
 msgstr "आपके क्रेडिट पूल के माध्यम से बाज़ार का कोई परिणाम उपलब्ध नहीं है।"
@@ -4173,11 +4197,11 @@ msgstr "आपके क्रेडिट पूल के माध्यम �
 msgid "No marketplace results found."
 msgstr "बाज़ार में कोई परिणाम नहीं मिला।"
 
-#: apps/web/src/features/home/ui/market-page.tsx:344
+#: apps/web/src/features/home/ui/market-page.tsx:480
 msgid "No marketplace results match this search."
 msgstr "बाज़ार का कोई परिणाम इस खोज से मेल नहीं खाता।"
 
-#: apps/web/src/features/home/ui/market-page.tsx:351
+#: apps/web/src/features/home/ui/market-page.tsx:487
 msgid "No marketplace results to show yet."
 msgstr "अभी दिखाने के लिए बाज़ार का कोई परिणाम नहीं है।"
 
@@ -4340,7 +4364,7 @@ msgstr "कोई ज़रूरत नहीं मिली।"
 msgid "No Wants yet."
 msgstr "अभी कोई ज़रूरत नहीं है।"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:500
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:501
 msgid "No. of participants"
 msgstr "प्रतिभागियों की संख्या"
 
@@ -4478,7 +4502,7 @@ msgstr "ऑफ़र अपडेट किया गया।"
 msgid "Offerings"
 msgstr "ऑफ़र"
 
-#: apps/web/src/components/market-bar.tsx:160
+#: apps/web/src/components/market-bar.tsx:262
 #: apps/web/src/components/resource-usage.tsx:117
 #: apps/web/src/features/home/ui/offers-page.tsx:85
 msgid "Offers"
@@ -4835,7 +4859,7 @@ msgstr "फोटो {0}"
 msgid "Photo uploads are unavailable right now."
 msgstr "फ़ोटो अपलोड अभी उपलब्ध नहीं हैं."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:641
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:662
 msgid "Photos"
 msgstr "तस्वीरें"
 
@@ -4843,7 +4867,7 @@ msgstr "तस्वीरें"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "फ़ोटो उसी क्रम में दिखाई देती हैं जिस क्रम में आप उन्हें जोड़ते हैं।"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:362
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:363
 msgid "Picked up where you left off — this post has not been submitted yet."
 msgstr "वहीं से शुरू करें जहां आपने छोड़ा था - यह पोस्ट अभी तक सबमिट नहीं किया "
 "गया है।"
@@ -4852,11 +4876,11 @@ msgstr "वहीं से शुरू करें जहां आपने 
 msgid "Piece"
 msgstr "टुकड़ा"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:172
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:197
 msgid "Pin colour"
 msgstr "पिन का रंग"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:138
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:158
 msgid "Pin icon"
 msgstr "पिन आइकन"
 
@@ -4864,7 +4888,7 @@ msgstr "पिन आइकन"
 msgid "Pink"
 msgstr "गुलाबी"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:522
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:523
 msgid "Place"
 msgstr "जगह"
 
@@ -5050,7 +5074,8 @@ msgid "Pool tracking details are missing."
 msgstr "पूल ट्रैकिंग विवरण गायब हैं।"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
-#: apps/web/src/components/market-bar.tsx:163
+#: apps/web/src/components/market-bar.tsx:186
+#: apps/web/src/components/market-bar.tsx:265
 #: apps/web/src/components/resource-usage.tsx:118
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:155
@@ -5078,19 +5103,23 @@ msgstr "पूल की सूची"
 msgid "Position your photo"
 msgstr "अपना फोटो लगाएं"
 
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:127
+msgid "Post"
+msgstr "पोस्ट"
+
 #: apps/web/src/features/home/ui/report-page.tsx:62
 msgid "Post not found."
 msgstr "पोस्ट नहीं मिली."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:307
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:308
 msgid "Post published."
 msgstr "पोस्ट प्रकाशित."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:564
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:585
 msgid "Post tags"
 msgstr "टैग पोस्ट करें"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:409
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:410
 msgid "Post text"
 msgstr "पाठ पोस्ट करें"
 
@@ -5099,11 +5128,12 @@ msgstr "पाठ पोस्ट करें"
 msgid "Post text is too long"
 msgstr "पोस्ट टेक्स्ट बहुत लंबा है"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:301
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:302
 msgid "Post updated."
 msgstr "पोस्ट अपडेट किया गया."
 
-#: apps/web/src/components/market-bar.tsx:221
+#: apps/web/src/components/market-bar.tsx:189
+#: apps/web/src/components/market-bar.tsx:323
 #: apps/web/src/components/navigation/bottom-navigation.tsx:58
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:158
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:296
@@ -5306,7 +5336,7 @@ msgstr "प्रोटोकॉल शुल्क"
 msgid "Provide an email or phone number"
 msgstr "एक ईमेल या फ़ोन नंबर प्रदान करें"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:682
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:703
 msgid "Publish"
 msgstr "प्रकाशित करें"
 
@@ -5367,7 +5397,7 @@ msgstr "QR में वर्तमान में कच्ची निज�
 #~ msgid "Quantity"
 #~ msgstr "मात्रा"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:107
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:121
 msgid "Question"
 msgstr "प्रश्न"
 
@@ -5549,12 +5579,12 @@ msgid "Rehabilitation"
 msgstr "पुनर्वास"
 
 #: apps/web/src/features/home/ui/report-page.tsx:524
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:620
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:641
 msgid "Related pools"
 msgstr "संबंधित पूल"
 
 #: apps/web/src/features/home/ui/report-page.tsx:492
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:597
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:618
 msgid "Related vouchers"
 msgstr "संबंधित वाउचर"
 
@@ -5591,7 +5621,7 @@ msgstr "{0} हटाएँ"
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:766
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:303
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:566
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:587
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:758
 #: apps/web/src/features/wants/ui/want-form-page.tsx:249
 msgid "Remove {tag}"
@@ -5652,7 +5682,7 @@ msgstr "उत्पत्ति की रिपोर्ट करें"
 msgid "Reported"
 msgstr "रिपोर्ट किया गया"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:111
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:125
 msgid "Request"
 msgstr "अनुरोध"
 
@@ -5674,6 +5704,10 @@ msgstr "लोगो रीसेट करें"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:240
 #~ msgid "Resolving recipient…"
 #~ msgstr "प्राप्तकर्ता का समाधान किया जा रहा है..."
+
+#: apps/web/src/components/market-bar.tsx:198
+msgid "Resources shown on the map"
+msgstr "मानचित्र पर दिखाए गए संसाधन"
 
 #. placeholder {0}: voucher.symbol
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:457
@@ -5718,9 +5752,11 @@ msgstr "एकांत विश्राम"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:144
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
 #: apps/web/src/features/home/ui/market-map.tsx:975
-#: apps/web/src/features/home/ui/market-page.tsx:264
-#: apps/web/src/features/home/ui/market-page.tsx:272
-#: apps/web/src/features/home/ui/market-page.tsx:279
+#: apps/web/src/features/home/ui/market-page.tsx:373
+#: apps/web/src/features/home/ui/market-page.tsx:381
+#: apps/web/src/features/home/ui/market-page.tsx:388
+#: apps/web/src/features/home/ui/market-page.tsx:395
+#: apps/web/src/features/home/ui/market-page.tsx:402
 #: apps/web/src/features/home/ui/marketplace-page.tsx:186
 #: apps/web/src/features/home/ui/marketplace-page.tsx:237
 #: apps/web/src/features/home/ui/report-page.tsx:57
@@ -5736,8 +5772,8 @@ msgstr "एकांत विश्राम"
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:32
 #: apps/web/src/features/pools/ui/pools-page.tsx:272
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:215
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:580
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:216
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:601
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:745
@@ -5796,7 +5832,7 @@ msgstr "ज़रूरत सहेजें और फिर खोलें"
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:470
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:597
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:680
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:701
 msgid "Save changes"
 msgstr "परिवर्तन सहेजें"
 
@@ -5831,7 +5867,7 @@ msgstr "अपना कार्ड सहेजें"
 #~ msgid "Saved location unavailable"
 #~ msgstr "सहेजा गया स्थान अनुपलब्ध"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:302
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:303
 msgid "Saved. Your post is awaiting approval again."
 msgstr "सहेजा गया. आपकी पोस्ट पुनः अनुमोदन की प्रतीक्षा कर रही है."
 
@@ -5843,7 +5879,7 @@ msgstr "सहेजा गया. आपकी पोस्ट पुनः अ
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:198
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:468
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:678
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:699
 msgid "Saving…"
 msgstr "सहेजा जा रहा है..."
 
@@ -5940,7 +5976,7 @@ msgstr "पूल टैग खोजें"
 msgid "Search pools"
 msgstr "पूल खोजें"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:562
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:583
 msgid "Search post tags"
 msgstr "पोस्ट टैग खोजें"
 
@@ -5955,12 +5991,12 @@ msgstr "खोज परिणाम <0>मानचित्र</0> पर द�
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:349
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:765
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:302
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:565
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:586
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:757
 msgid "Search tags"
 msgstr "टैग खोजें"
 
-#: apps/web/src/features/home/ui/market-page.tsx:388
+#: apps/web/src/features/home/ui/market-page.tsx:529
 #: apps/web/src/features/home/ui/marketplace-page.tsx:107
 msgid "Search the marketplace"
 msgstr "बाज़ार में खोजें"
@@ -6064,7 +6100,7 @@ msgstr "चयनित पूल टैग"
 msgid "Selected pools"
 msgstr "चुने हुए पूल"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:563
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:584
 msgid "Selected post tags"
 msgstr "चयनित पोस्ट टैग"
 
@@ -6305,7 +6341,7 @@ msgid "Shown to anyone using this pool"
 msgstr "इस पूल का उपयोग करने वाले किसी भी व्यक्ति को दिखाया गया"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
-#: apps/web/src/components/market-bar.tsx:127
+#: apps/web/src/components/market-bar.tsx:138
 msgid "Sign in"
 msgstr "साइन इन करें"
 
@@ -6424,7 +6460,7 @@ msgstr "स्थिर भेजा गया"
 msgid "Standard"
 msgstr "मानक"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:365
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:366
 msgid "Start over"
 msgstr "फिर से शुरू करें"
 
@@ -6436,7 +6472,7 @@ msgstr "कार्ड रीडर शुरू हो रहा है..."
 msgid "Starting…"
 msgstr "शुरू हो रहा है..."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:436
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:437
 #: apps/web/src/features/wants/ui/want-form-page.tsx:252
 msgid "Starts"
 msgstr "शुरू होता है"
@@ -6629,7 +6665,7 @@ msgstr "इसके स्थान पर {0} का उपयोग करक
 #: apps/web/src/features/home/ui/offers-page.tsx:116
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:271
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:555
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:576
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:726
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:55
 #: apps/web/src/features/wants/ui/want-form-page.tsx:240
@@ -6637,7 +6673,7 @@ msgstr "इसके स्थान पर {0} का उपयोग करक
 msgid "Tags"
 msgstr "टैग"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:546
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:567
 msgid "Tags and resources"
 msgstr "टैग और संसाधन"
 
@@ -7108,7 +7144,7 @@ msgid "This pool's deposit limit changed. Review the updated amounts and try "
 msgstr "इस पूल की जमा सीमा बदल गई. अद्यतन राशियों की समीक्षा करें और पुनः "
 "प्रयास करें।"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:314
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:315
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "यह पोस्ट सहेजने के लिए बहुत बड़ी है. टेक्स्ट को छोटा करें या कुछ मीडिया "
 "हटा दें."
@@ -7130,7 +7166,7 @@ msgstr "यह वाउचर पहले से ही स्वीकृत 
 msgid "This voucher's decimals are unknown, so a limit can't be set."
 msgstr "इस वाउचर का दशमलव अज्ञात है, इसलिए कोई सीमा निर्धारित नहीं की जा सकती।"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:381
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:382
 msgid "Title"
 msgstr "शीर्षक"
 
@@ -7419,7 +7455,7 @@ msgstr "QR कोड छवि अपलोड करें"
 msgid "Uploading photo…"
 msgstr "फोटो अपलोड हो रहा है..."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:676
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:697
 msgid "Uploading photos…"
 msgstr "फ़ोटो अपलोड हो रहे हैं..."
 
@@ -7442,11 +7478,11 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "अपने Gnosis वॉलेट में धन भेजने के लिए <0>Binance</0> या किसी अन्य "
 "स्थानीय एक्सचेंज और फिर <1>Jumper</1> का उपयोग करें।"
 
-#: apps/web/src/features/home/ui/market-page.tsx:214
+#: apps/web/src/features/home/ui/market-page.tsx:298
 msgid "Use current location"
 msgstr "वर्तमान स्थान का उपयोग करें"
 
-#: apps/web/src/components/vouchers/marker-style-picker.tsx:132
+#: apps/web/src/components/vouchers/marker-style-picker.tsx:152
 msgid "Use default"
 msgstr "डिफ़ॉल्ट का प्रयोग करें"
 
@@ -7587,7 +7623,7 @@ msgstr "वाउचर"
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
 #: apps/web/src/features/home/ui/marketplace-page.tsx:400
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:165
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:175
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:176
 msgid "Voucher"
 msgstr "वाउचर"
 
@@ -7696,7 +7732,8 @@ msgid "Voucher tracking details are missing."
 msgstr "वाउचर ट्रैकिंग विवरण गायब हैं।"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:320
-#: apps/web/src/components/market-bar.tsx:162
+#: apps/web/src/components/market-bar.tsx:184
+#: apps/web/src/components/market-bar.tsx:264
 #: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/wants/want-detail.tsx:169
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
@@ -7810,7 +7847,8 @@ msgstr "ज़रूरत की तस्वीर"
 #~ msgid "Wanted by {0}"
 #~ msgstr "{0} की ज़रूरत"
 
-#: apps/web/src/components/market-bar.tsx:161
+#: apps/web/src/components/market-bar.tsx:185
+#: apps/web/src/components/market-bar.tsx:263
 #: apps/web/src/components/resource-usage.tsx:119
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
@@ -7901,7 +7939,7 @@ msgstr "कब और कहाँ"
 msgid "Where and what for"
 msgstr "कहां और किस लिए"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:528
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:539
 msgid "Where did this happen?"
 msgstr "ये कहां हुआ?"
 
@@ -8155,7 +8193,7 @@ msgid "Your review will be available once this redemption is processed. You can 
 msgstr "वाउचर भुनाने की प्रक्रिया पूरी होते ही आपकी समीक्षा उपलब्ध होगी। आप इसे "
 "बाद में वाउचर के समीक्षा टैब में भी देख सकते हैं।"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:699
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:720
 msgid "Your unsaved changes to this post will be lost."
 msgstr "इस पोस्ट में आपके सहेजे न गए परिवर्तन खो जाएंगे."
 
