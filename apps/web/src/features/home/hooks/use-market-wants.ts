@@ -1,36 +1,31 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { wantKeys } from "@clc/api/features/wants/queries";
 import { wantsClient } from "#/lib/api/wants";
-import type { MarketViewport } from "#/features/home/ui/market-map";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import type { MarketWantSearchLocation } from "./use-marketplace-map-search";
 
 const PAGE_SIZE = 100;
-const MAX_PAGES = 6;
 
-export function useMarketMapWants(viewport: MarketViewport | null, enabled: boolean) {
-  const bbox = viewport
-    ? {
-        minLng: viewport.west,
-        minLat: viewport.south,
-        maxLng: viewport.east,
-        maxLat: viewport.north,
-      }
-    : null;
+export function useMarketMapWants(bounds: readonly MarketBoundingBox[], enabled: boolean) {
   const query = useQuery({
-    queryKey: [...wantKeys.all, "map", bbox],
-    enabled: enabled && bbox !== null,
+    queryKey: [...wantKeys.all, "map", bounds],
+    enabled,
+    placeholderData: keepPreviousData,
     queryFn: async ({ signal }) => {
-      if (!bbox) return [];
       const wants = [];
       let cursor: number | undefined;
-      for (let pageNumber = 0; pageNumber < MAX_PAGES; pageNumber++) {
-        const page = await wantsClient.list({ perPage: PAGE_SIZE, cursor, bbox }, signal);
+      for (;;) {
+        const page = await wantsClient.list({ perPage: PAGE_SIZE, cursor, bounds }, signal);
         wants.push(...page.wants);
-        if (page.wants.length < PAGE_SIZE || page.last === 0) return wants;
+        if (
+          page.wants.length < PAGE_SIZE ||
+          page.last === 0 ||
+          (cursor !== undefined && page.last >= cursor)
+        )
+          return wants;
         cursor = page.last;
       }
-      throw new Error("The Want map result limit was exceeded.");
     },
   });
 

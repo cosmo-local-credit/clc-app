@@ -21,7 +21,6 @@ import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { SettingsSheet } from "#/components/ui/settings-sheet";
-import { VisibilitySettingsRow } from "#/components/visibility-selector";
 import { EllipsizedAddress, HighlightAddress } from "#/components/wallet";
 import { BUILD_INFO } from "#/features/app-updates/build-info";
 import { useInstallStore } from "#/features/install/install-store";
@@ -58,7 +57,6 @@ export function SettingsPage({
       <SettingsGroup label={t`Preferences`}>
         <LanguageSettingsRow />
         <ThemeSettingsRow />
-        <VisibilitySettingsRow />
         <NotificationSettingsSection walletAddress={address} />
       </SettingsGroup>
 

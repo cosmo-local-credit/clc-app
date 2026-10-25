@@ -13,6 +13,8 @@ import {
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 import {
   type HexAddress,
   isPresent,
@@ -190,6 +192,7 @@ export type ReportFilter = CatalogFilter;
 
 export type FilteredReportsParams = {
   nearby?: boolean;
+  bounds?: readonly MarketBoundingBox[];
   perPage: number;
   cursor?: ReportCursor;
   filter: ReportFilter;
@@ -344,11 +347,17 @@ export function createReportsClient(http: HttpClient) {
 
   return {
     async getReports(
-      params: { perPage: number; cursor?: ReportCursor; nearby?: boolean },
+      params: {
+        perPage: number;
+        cursor?: ReportCursor;
+        nearby?: boolean;
+        bounds?: readonly MarketBoundingBox[];
+      },
       signal?: AbortSignal,
     ): Promise<ReportPage> {
       const query = new URLSearchParams({ perPage: String(params.perPage) });
       if (params.nearby) query.set("nearby", "true");
+      appendMarketBounds(query, params.bounds);
       if (params.cursor) {
         query.set("cursorUpdatedAt", params.cursor.updatedAt);
         query.set("cursorId", params.cursor.id);
@@ -367,7 +376,7 @@ export function createReportsClient(http: HttpClient) {
     },
 
     async getFilteredReports(
-      { filter, facets, perPage, cursor, nearby }: FilteredReportsParams,
+      { filter, facets, perPage, cursor, nearby, bounds }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
       const query = new URLSearchParams({ perPage: String(perPage) });
@@ -378,6 +387,7 @@ export function createReportsClient(http: HttpClient) {
       appendCatalogFilter(query, filter);
       if (facets) query.set("facets", "true");
       if (nearby) query.set("nearby", "true");
+      appendMarketBounds(query, bounds);
 
       const result = await http.request<BackendFilteredReportPage>(
         `/api/v2/reports?${query.toString()}`,

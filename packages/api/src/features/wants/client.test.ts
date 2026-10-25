@@ -56,7 +56,7 @@ describe("Wants HTTP contract", () => {
       tags: ["Repair", "Bicycle"],
       tagMatch: "all",
       facets: true,
-      bbox: { minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 },
+      bounds: [{ minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 }],
       pools: [{ chainId: 100, address: `0x${"a".repeat(40)}` }],
     });
     expect(page.wants[0]).toMatchObject({ id: "7", contact: { email: "amina@example.test" } });

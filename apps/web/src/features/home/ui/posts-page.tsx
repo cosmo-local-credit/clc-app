@@ -1,4 +1,5 @@
 import { MarketFeedBar } from "#/components/market-bar";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -117,6 +118,7 @@ export function PostsPage() {
         onRetry={feed.retry}
         retrying={feed.retrying}
       />
+      <MarketViewportSearchNotice query={filter.result.ok ? filter.result.filter.term : ""} />
 
       {feed.status === "loading" ? (
         <ListSkeleton avatar="square" label={<Trans>Loading posts…</Trans>} />

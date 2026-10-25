@@ -1,8 +1,10 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RiFocus3Line } from "react-icons/ri";
+import { canonicalMarketBounds, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
@@ -30,6 +32,7 @@ import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-sel
 import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection";
 import { wantsClient } from "#/lib/api/wants";
 import { cn } from "#/lib/utils";
+import { useMarketDiscoveryArea } from "#/components/nearby-catalog";
 import { MarketFilterSheet, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
@@ -53,7 +56,16 @@ export function MarketPage({
     locationStatus,
     requestLocation,
   } = useMarketCamera(locationOwner);
-  const [viewport, setViewport] = useState<MarketViewport | null>(null);
+  const { area, setArea } = useMarketDiscoveryArea();
+  const [fetchBounds, setFetchBounds] = useState<readonly MarketBoundingBox[]>(() =>
+    expandBoundingBoxes(area?.boxes ?? []),
+  );
+  const areaOwnerRef = useRef(area?.owner);
+  useEffect(() => {
+    if (areaOwnerRef.current === area?.owner) return;
+    areaOwnerRef.current = area?.owner;
+    setFetchBounds(expandBoundingBoxes(area?.boxes ?? []));
+  }, [area]);
   const voucherSelection = useVoucherSheetSelection();
   const wantSelection = useWantSheetSelection();
 
@@ -107,10 +119,26 @@ export function MarketPage({
         : null,
     [savedLat, savedLng],
   );
+  const areaCamera = useMemo<MarketCamera | null>(
+    () =>
+      area
+        ? {
+            lat: area.center.lat,
+            lng: area.center.lng,
+            zoom: area.zoom,
+            rank: CAMERA_RANK.savedProfile,
+          }
+        : null,
+    [area],
+  );
   const camera =
     automaticCamera?.rank === CAMERA_RANK.explicit
       ? automaticCamera
-      : (wantCamera ?? voucherCamera ?? savedCamera ?? automaticCamera);
+      : (wantCamera ?? voucherCamera ?? areaCamera ?? savedCamera ?? automaticCamera);
+  // A trustworthy initial camera becomes the first viewport after MapLibre has
+  // measured the rendered canvas. Avoid starting a whole-Global marker walk in
+  // the short interval before that first settled rectangle is available.
+  const mapDiscoveryReady = fetchBounds.length > 0 || !camera;
 
   const filter = useMarketFilter(useStorageOwner());
   const credit = useCreditableBrowse(creditableSearch);
@@ -119,24 +147,32 @@ export function MarketPage({
   const usesUnifiedSearch = filter.isFiltered || credit.enabled;
   const catalog = useMarketCatalogVouchers(
     filter,
-    viewport,
-    !filter.isRestoringPreference && !credit.blocksResults,
+    fetchBounds,
+    mapDiscoveryReady && !filter.isRestoringPreference && !credit.blocksResults,
     filtersEverOpened,
     credit.enabled ? credit.poolRefs : undefined,
   );
   const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
   // The filter's terms and tags are a voucher vocabulary, so a filtered map
   // shows only the vouchers it matched.
-  const poolCatalog = useMarketMapPools(!filter.isRestoringPreference && !usesUnifiedSearch);
+  const poolCatalog = useMarketMapPools(
+    mapDiscoveryReady && !filter.isRestoringPreference && !usesUnifiedSearch,
+    fetchBounds,
+  );
   const { pools } = poolCatalog;
   const wantCatalog = useMarketMapWants(
-    viewport,
-    !filter.isRestoringPreference && !usesUnifiedSearch,
+    fetchBounds,
+    mapDiscoveryReady && !filter.isRestoringPreference && !usesUnifiedSearch,
   );
   const unifiedSearch = useMarketplaceMapSearch(
     filter,
     credit.enabled ? credit.poolRefs : undefined,
-    usesUnifiedSearch && !filter.isRestoringPreference && filter.result.ok && !credit.blocksResults,
+    fetchBounds,
+    mapDiscoveryReady &&
+      usesUnifiedSearch &&
+      !filter.isRestoringPreference &&
+      filter.result.ok &&
+      !credit.blocksResults,
   );
   // Pools go last: a stack is keyed by its first member, so pools arriving
   // after the vouchers do not re-key a fan the viewer has open.
@@ -144,23 +180,6 @@ export function MarketPage({
     if (usesUnifiedSearch) return unifiedSearch.locations;
     return [...vouchers, ...wantCatalog.wants, ...pools];
   }, [pools, unifiedSearch.locations, usesUnifiedSearch, vouchers, wantCatalog.wants]);
-
-  const fitBounds = useMemo(() => {
-    if (!usesUnifiedSearch || unifiedSearch.status !== "ready" || locations.length === 0)
-      return null;
-
-    let west = locations[0]!.lng;
-    let east = locations[0]!.lng;
-    let south = locations[0]!.lat;
-    let north = locations[0]!.lat;
-    for (const location of locations) {
-      west = Math.min(west, location.lng);
-      east = Math.max(east, location.lng);
-      south = Math.min(south, location.lat);
-      north = Math.max(north, location.lat);
-    }
-    return { key: `${catalog.filterKey}:${credit.enabled}`, west, south, east, north };
-  }, [catalog.filterKey, credit.enabled, locations, unifiedSearch.status, usesUnifiedSearch]);
 
   const isCardOpen = voucherSelection.voucher !== null || wantSelection.want !== null;
   const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
@@ -222,9 +241,19 @@ export function MarketPage({
     else voucherSelection.close();
   }, [voucherSelection, wantSelection]);
 
-  const handleViewportSettled = useCallback((settled: MarketViewport) => {
-    setViewport(settled);
-  }, []);
+  const handleViewportSettled = useCallback(
+    (settled: MarketViewport) => {
+      if (!area && !settled.userInitiated && !camera) return;
+
+      const boxes = canonicalMarketBounds(viewportToBoundingBoxes(settled));
+      if (boxes.length === 0) return;
+      setArea({ center: settled.center, zoom: settled.zoom, boxes });
+      setFetchBounds((current) =>
+        boundsContain(current, boxes) ? current : expandBoundingBoxes(boxes),
+      );
+    },
+    [area, camera?.rank, setArea],
+  );
 
   // The vouchers' notice wins: their retry is the one that fills an empty map.
   const notice =
@@ -336,7 +365,7 @@ export function MarketPage({
           locations={locations}
           selectedLocationId={selectedLocationId}
           camera={camera}
-          fitBounds={fitBounds}
+          fitBounds={null}
           cameraScope={locationOwner}
           userLocation={userLocation}
           onSelectLocation={handleSelectLocation}
@@ -410,6 +439,40 @@ export function MarketPage({
         floating={mapControls}
       />
     </main>
+  );
+}
+
+const FETCH_PADDING_RATIO = 0.2;
+
+function expandBoundingBoxes(boxes: readonly MarketBoundingBox[]): readonly MarketBoundingBox[] {
+  const expanded = boxes.map((box) => {
+    const lngPadding = (box.maxLng - box.minLng) * FETCH_PADDING_RATIO;
+    const latPadding = (box.maxLat - box.minLat) * FETCH_PADDING_RATIO;
+    return {
+      minLng: Math.max(-180, box.minLng - lngPadding),
+      minLat: Math.max(-90, box.minLat - latPadding),
+      maxLng: Math.min(180, box.maxLng + lngPadding),
+      maxLat: Math.min(90, box.maxLat + latPadding),
+    };
+  });
+  return canonicalMarketBounds(expanded);
+}
+
+function boundsContain(
+  envelope: readonly MarketBoundingBox[],
+  visible: readonly MarketBoundingBox[],
+): boolean {
+  return (
+    envelope.length > 0 &&
+    visible.every((box) =>
+      envelope.some(
+        (outer) =>
+          outer.minLng <= box.minLng &&
+          outer.minLat <= box.minLat &&
+          outer.maxLng >= box.maxLng &&
+          outer.maxLat >= box.maxLat,
+      ),
+    )
   );
 }
 

@@ -10,7 +10,7 @@ import {
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
-import type { MarketViewport } from "#/features/home/ui/market-map";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 
 export type MarketCatalog = {
   vouchers: MarketVoucher[];
@@ -26,7 +26,7 @@ export type MarketCatalog = {
 
 export function useMarketCatalogVouchers(
   filter: CatalogFilterControls,
-  viewport: MarketViewport | null = null,
+  bounds: readonly MarketBoundingBox[] = [],
   enabled = true,
   /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
   vocabularyEnabled = false,
@@ -34,7 +34,7 @@ export function useMarketCatalogVouchers(
 ): MarketCatalog {
   const usesPoolFilter = pools !== undefined;
   const unfiltered = useMarketMapVouchers(
-    viewport,
+    bounds,
     undefined,
     enabled && !filter.isFiltered && !usesPoolFilter,
   );
@@ -44,9 +44,10 @@ export function useMarketCatalogVouchers(
       : null,
     undefined,
     pools,
+    bounds,
   );
   const filteredState = toFilteredCatalogState(filtered, filter.isDebouncing);
-  const vocabulary = useMarketFacetVocabulary(vocabularyEnabled);
+  const vocabulary = useMarketFacetVocabulary(vocabularyEnabled, bounds);
 
   const retryFiltered = useCallback(() => {
     void filtered.refetch();

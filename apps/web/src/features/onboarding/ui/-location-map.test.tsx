@@ -65,6 +65,10 @@ const {
       this.handlers.get("click")?.({ lngLat: { lat, lng } });
     }
 
+    triggerDragStart() {
+      this.handlers.get("dragstart")?.();
+    }
+
     triggerError(error = new Error("tile failed")) {
       this.handlers.get("error")?.({ error });
     }
@@ -157,12 +161,44 @@ describe("LocationMap", () => {
 
     expect(mapInstances).toHaveLength(1);
     expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
-    expect(mapInstances[0]?.options.center).toEqual([36.8219, -1.2921]);
-    expect(mapInstances[0]?.options.zoom).toBe(5);
+    expect(mapInstances[0]?.options.center).toEqual([20, 0]);
+    expect(mapInstances[0]?.options.zoom).toBe(2);
     expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual([
       "bottom-right",
       "bottom-left",
     ]);
+  });
+
+  it("starts an empty picker at its approximate camera without creating a marker", () => {
+    render(<LocationMap cameraHint={{ lat: -6.7924, lng: 39.2083, zoom: 10 }} interactive />);
+
+    expect(mapInstances[0]?.options.center).toEqual([39.2083, -6.7924]);
+    expect(mapInstances[0]?.options.zoom).toBe(10);
+    mapInstances[0]?.triggerLoad();
+    expect(markerInstances).toHaveLength(0);
+  });
+
+  it("applies a late approximate camera without creating a marker or a second map", () => {
+    const { rerender } = render(<LocationMap interactive />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+
+    rerender(<LocationMap cameraHint={{ lat: 44.7866, lng: 20.4489, zoom: 10 }} interactive />);
+
+    expect(mapInstances).toHaveLength(1);
+    expect(map?.flyTo).toHaveBeenCalledWith({ center: [20.4489, 44.7866], zoom: 10 });
+    expect(markerInstances).toHaveLength(0);
+  });
+
+  it("does not override an empty map after the user has started browsing it", () => {
+    const { rerender } = render(<LocationMap interactive />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+    act(() => map?.triggerDragStart());
+
+    rerender(<LocationMap cameraHint={{ lat: 44.7866, lng: 20.4489, zoom: 10 }} interactive />);
+
+    expect(map?.flyTo).not.toHaveBeenCalled();
   });
 
   it("switches the existing map to the dark style when the app theme changes", () => {

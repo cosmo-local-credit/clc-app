@@ -21,6 +21,7 @@ type LocationPickerProps = {
   error?: string;
   label?: string;
   markerStyle?: MapMarkerStyle;
+  cameraHint?: { lat: number; lng: number; zoom: number } | null;
   required?: boolean;
   /**
    * The screen is about the location alone and already says so: the label is
@@ -42,6 +43,7 @@ export function LocationPicker({
   error,
   label,
   markerStyle,
+  cameraHint,
   required,
   fill = false,
 }: LocationPickerProps) {
@@ -288,6 +290,7 @@ export function LocationPicker({
           <LocationMap
             lat={pin?.lat ?? null}
             lng={pin?.lng ?? null}
+            cameraHint={cameraHint}
             interactive
             onLocationChange={placePin}
             markerStyle={markerStyle}

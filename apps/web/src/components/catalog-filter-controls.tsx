@@ -1,4 +1,3 @@
-import { useNearbyCatalogFilter } from "#/components/nearby-catalog";
 import {
   CATALOG_MAX_TAGS,
   CATALOG_MAX_VOUCHERS,
@@ -207,9 +206,7 @@ export function CatalogFilterSheet({
   const atVoucherLimit = draftVouchers.length >= CATALOG_MAX_VOUCHERS;
   // Disjunctive counts describe what a chip adds under Any. They ignore the selected tags,
   // so showing them under All would imply a conjunctive count the backend did not compute.
-  // Server facets are a search vocabulary. They do not count the local radius.
-  const visibilityFilter = useNearbyCatalogFilter();
-  const showCounts = draftTagMatch === "any" && visibilityFilter === undefined;
+  const showCounts = draftTagMatch === "any";
   // Counts stay scoped to the search, so a term whose matches carry no tags zeroes every chip.
   const searchTerm = filter.filter?.term ?? "";
   const hasSelectableFacet = facets.some(

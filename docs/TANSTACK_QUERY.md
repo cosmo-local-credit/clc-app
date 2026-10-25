@@ -102,7 +102,7 @@ Current local overrides:
     user tries different tag and voucher combinations.
 
 - `apps/web/src/features/home/hooks/use-ip-camera.ts`
-  - IP/country camera bootstrap for the Market map
+  - IP-city camera bootstrap for the Market map
   - `staleTime: Infinity`
   - `gcTime: 24 * 60 * 60_000`
   - `retry: 0`

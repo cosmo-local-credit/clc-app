@@ -5,6 +5,8 @@ import {
 import { z } from "zod";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 
 const tagFacetSchema = z.object({ tag: z.string(), count: z.number().int().nonnegative() });
 const marketplacePageSchema = z.object({
@@ -22,6 +24,7 @@ export type MarketplaceParams = {
   tagMatch?: "any" | "all";
   facets?: boolean;
   nearby?: boolean;
+  bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
 };
 
@@ -39,6 +42,7 @@ export function createMarketplaceClient(http: HttpClient) {
       if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");
       if (params.facets) query.set("facets", "true");
       if (params.nearby) query.set("nearby", "true");
+      appendMarketBounds(query, params.bounds);
       if (params.pools?.length)
         query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
       const parsed = marketplacePageSchema.safeParse(

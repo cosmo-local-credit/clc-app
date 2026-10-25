@@ -8,6 +8,8 @@ import {
 import { z } from "zod";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 
 const cursorSchema = z
   .union([z.number().int().nonnegative(), z.string().regex(/^\d+$/)])
@@ -78,7 +80,7 @@ export type WantsParams = {
   tagMatch?: "any" | "all";
   facets?: boolean;
   nearby?: boolean;
-  bbox?: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+  bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
 };
 
@@ -108,11 +110,7 @@ export function createWantsClient(http: HttpClient) {
     if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");
     if (params.facets) query.set("facets", "true");
     if (params.nearby) query.set("nearby", "true");
-    if (params.bbox)
-      query.set(
-        "bbox",
-        [params.bbox.minLng, params.bbox.minLat, params.bbox.maxLng, params.bbox.maxLat].join(","),
-      );
+    appendMarketBounds(query, params.bounds);
     if (params.pools?.length)
       query.set("pools", params.pools.map((pool) => `${pool.chainId}:${pool.address}`).join(","));
     return `${base}?${query}`;

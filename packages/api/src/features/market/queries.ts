@@ -171,7 +171,7 @@ export function voucherCatalogInfiniteQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...voucherKeys.catalog(perPage), nearby.scope] as const)
       : voucherKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>
@@ -181,6 +181,7 @@ export function voucherCatalogInfiniteQueryOptions(
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
         },
         signal,
       ),
@@ -197,20 +198,20 @@ export function voucherViewportQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return queryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...voucherKeys.viewport(boxes, perPage), nearby.scope] as const)
       : voucherKeys.viewport(boxes, perPage),
-    queryFn: async ({ signal }) => {
-      const pages = await Promise.all(
-        boxes.map((bbox) =>
-          market.getMarketVouchers(
-            { perPage, bbox, ...(nearby?.nearby === true ? { nearby: true } : {}) },
-            signal,
-          ),
-        ),
-      );
-      return pages.flatMap((entry) => entry.vouchers);
-    },
+    queryFn: ({ signal }) =>
+      market
+        .getMarketVouchers(
+          {
+            perPage,
+            bounds: boxes,
+            ...(nearby?.nearby === true ? { nearby: true } : {}),
+          },
+          signal,
+        )
+        .then((page) => page.vouchers),
     enabled: boxes.length > 0,
   });
 }

@@ -115,7 +115,7 @@ export function poolListInfiniteQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...poolKeys.listInfinite(perPage), nearby.scope] as const)
       : poolKeys.listInfinite(perPage),
     queryFn: ({ pageParam, signal }) =>
@@ -125,6 +125,7 @@ export function poolListInfiniteQueryOptions(
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
         },
         signal,
       ),
