@@ -552,8 +552,9 @@ unminified bundle running development React. It is `true` in
 | `apps/web`   | `clc-app`   | `wrangler.toml` (root)     | `cosmolocal.credit`       | `test.cosmolocal.credit`       |
 | `apps/admin` | `clc-admin` | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit` | `admin.test.cosmolocal.credit` |
 
-Both deploy from Git. Branch control builds `master` as production and `develop`
-as the only preview branch; no other branch builds. The staging hosts are custom
+Both deploy from Git. Branch control builds `master` as production and every
+other branch as a preview, so a branch is QA'd at `<branch>.clc-app.pages.dev`
+before it merges to `develop`. The staging hosts are custom
 domains on the `develop` branch alias: the proxied CNAME for `test` targets
 `develop.clc-app.pages.dev` and the one for `admin.test` targets
 `develop.clc-admin.pages.dev`. A CNAME aimed at the bare `<project>.pages.dev`
@@ -644,8 +645,8 @@ the file and read-only in the UI while the file exists.
 ### Previews and relying parties
 
 Pages supports exactly two environment overrides, `production` and `preview`.
-`develop` is the only preview branch, so `[env.preview.vars]` is staging's config,
-relying party included:
+`develop` and every feature branch build as previews, so `[env.preview.vars]` is
+staging's config for all of them, relying party included:
 
 | Project     | `[vars]` (production) | `[env.preview.vars]`     |
 | ----------- | --------------------- | ------------------------ |
@@ -653,23 +654,23 @@ relying party included:
 | `clc-admin` | `cosmolocal.credit`   | `test.cosmolocal.credit` |
 
 `resolveRelyingPartyId` honours a configured value only when it is a suffix of
-the serving host, so `test.` and `admin.test.` share staging's passkeys while the
-bare alias `develop.clc-app.pages.dev` falls back to its own hostname. Turning
-feature-branch previews back on gives each `<branch>.clc-app.pages.dev` staging's
-values and its own credentials the same way.
+the serving host, so `test.` and `admin.test.` share staging's passkeys while each
+`<branch>.clc-app.pages.dev` falls back to its own hostname and registers its own
+credentials. Paper wallets sign in on any of them.
 
 **`vars` is non-inheritable**, so an `[env.preview.vars]` block must restate _every_
 variable, not only the one that differs. Overriding it while omitting the rest fails
 validation at deploy time. That is why the two blocks in each file are near-duplicates
 — resist tidying them into a shared base.
 
-Feature-branch previews would also need their origins in the staging box's
-allowlists. `util.OriginAllowed` supports a single `*` matching exactly one DNS
-label, so branch previews are one entry each:
+Branch previews talk to the staging box, so their origins must be in every
+allowlist in `~/gnosis` on `clc-gnosis`: `CORE_API__CORS`,
+`CORE_RELAYER__ALLOWED_ORIGINS`, `STORAGE_API__ORIGIN`, `NOTIFICATIONS_API__CORS`
+and `CENTRIFUGO_CLIENT_ALLOWED_ORIGINS`. `util.OriginAllowed` supports a single
+`*` matching exactly one DNS label, so each project is two entries:
 
-```toml
-api.cors                += "https://clc-admin.pages.dev", "https://*.clc-admin.pages.dev"
-relayer.allowed_origins += "https://clc-admin.pages.dev", "https://*.clc-admin.pages.dev"
+```
+https://clc-app.pages.dev,https://*.clc-app.pages.dev,https://clc-admin.pages.dev,https://*.clc-admin.pages.dev
 ```
 
 Separate projects, not one project with two paths: a Pages project has a single
