@@ -11,8 +11,10 @@ import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import type {
   AdminClient,
+  AdminDeploymentParams,
   AdminOTXParams,
   AdminPoolTransactionParams,
+  AdminReviewParams,
   AdminStatsParams,
   AdminUser,
   AdminUserParams,
@@ -62,6 +64,9 @@ export const adminKeys = {
   vouchers: (params: AdminVoucherParams) => ["clc", "admin", "vouchers", "page", params] as const,
   voucher: (address: string) =>
     ["clc", "admin", "vouchers", "detail", address.toLowerCase()] as const,
+
+  reviews: (params: AdminReviewParams) => ["clc", "admin", "reviews", params] as const,
+  deployments: (params: AdminDeploymentParams) => ["clc", "admin", "deployments", params] as const,
 } as const;
 
 export function adminVouchersQueryOptions(admin: AdminClient, params: AdminVoucherParams) {
@@ -180,6 +185,22 @@ export function adminOTXQueryOptions(admin: AdminClient, params: AdminOTXParams)
   return queryOptions({
     queryKey: adminKeys.otx(params),
     queryFn: ({ signal }) => admin.listOTX(params, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function adminReviewsQueryOptions(admin: AdminClient, params: AdminReviewParams) {
+  return queryOptions({
+    queryKey: adminKeys.reviews(params),
+    queryFn: ({ signal }) => admin.listReviewNotifications(params, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function adminDeploymentsQueryOptions(admin: AdminClient, params: AdminDeploymentParams) {
+  return queryOptions({
+    queryKey: adminKeys.deployments(params),
+    queryFn: ({ signal }) => admin.listDeployments(params, signal),
     placeholderData: keepPreviousData,
   });
 }

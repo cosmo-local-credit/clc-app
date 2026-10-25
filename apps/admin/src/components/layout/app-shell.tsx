@@ -1,7 +1,11 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import type { IconType } from "react-icons";
 import {
+  HiOutlineAdjustments,
+  HiOutlineCash,
   HiOutlineCollection,
+  HiOutlineCube,
+  HiOutlineFlag,
   HiOutlineHome,
   HiOutlineNewspaper,
   HiOutlineQrcode,
@@ -41,6 +45,10 @@ type NavPath =
   | "/nfc-cards"
   | "/posts"
   | "/vocabulary"
+  | "/reviews"
+  | "/deployments"
+  | "/protocol"
+  | "/cash"
   | "/transactions"
   | "/transactions/vouchers"
   | "/transactions/pools"
@@ -68,6 +76,10 @@ const navItems: Array<{
   { to: "/nfc-cards", label: "NFC cards", icon: MdOutlineNfc },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
+  { to: "/reviews", label: "Reviews", icon: HiOutlineFlag },
+  { to: "/deployments", label: "Deployments", icon: HiOutlineCube },
+  { to: "/protocol", label: "Protocol", icon: HiOutlineAdjustments },
+  { to: "/cash", label: "Cash", icon: HiOutlineCash },
   { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },
   { to: "/vocabulary", label: "Vocabulary", icon: HiOutlineTag },
   {

@@ -24,6 +24,15 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: () => <div>Map</div>,
 }));
 
+vi.mock("viem/actions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("viem/actions")>();
+  return {
+    ...actual,
+    readContract: () => Promise.reject(new Error("offline")),
+    multicall: () => Promise.reject(new Error("offline")),
+  };
+});
+
 const getPoolByAddress = vi.hoisted(() => vi.fn());
 const getPoolVouchers = vi.hoisted(() => vi.fn());
 const getPoolOfferings = vi.hoisted(() => vi.fn());

@@ -1,6 +1,7 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 import { Link } from "@tanstack/react-router";
 import {
+  HiOutlineAdjustments,
   HiOutlineExternalLink,
   HiOutlinePencil,
   HiOutlinePlus,
@@ -12,6 +13,7 @@ import { CopyButton } from "#/components/admin/copy-button";
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
+import { sameAddress, useOperatorAddress } from "#/features/operator/operator-address";
 import { chainLabel, addressUrl } from "#/lib/explorer";
 import { cn } from "#/lib/utils";
 import { formatDateTime, initials } from "#/lib/format";
@@ -29,20 +31,21 @@ import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
  * belongs beside the pool's id rather than being inferred from the explorer link
  * an operator has not clicked yet.
  *
- * Adding a voucher is the one thing an operator does *to* a pool from this
- * console, so it is the header's only filled button. It sits beside the two
- * read-only jumps rather than inside the vouchers tab: it is the screen's
- * purpose, not a property of the table.
+ * Adding a voucher is the header's only filled button. Contract controls sit
+ * beside it, and only when the loaded key is the catalog owner.
  */
 export function PoolHeader({
   pool,
   onAddVoucher,
   onEditProfile,
+  onControls,
 }: {
   pool: UserPool;
   onAddVoucher: () => void;
   onEditProfile: () => void;
+  onControls: () => void;
 }) {
+  const canControl = sameAddress(useOperatorAddress(), pool.ownerAddress);
   return (
     <div className="flex flex-col gap-4">
       <AppBreadcrumb items={[{ label: "Pools", to: "/pools" }, { label: pool.name }]} />
@@ -108,6 +111,12 @@ export function PoolHeader({
             <HiOutlinePencil />
             Edit metadata
           </Button>
+          {canControl ? (
+            <Button size="sm" variant="outline" onClick={onControls}>
+              <HiOutlineAdjustments />
+              Controls
+            </Button>
+          ) : null}
           <Button size="sm" onClick={onAddVoucher}>
             <HiOutlinePlus />
             Add voucher

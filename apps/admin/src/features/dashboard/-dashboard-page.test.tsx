@@ -42,10 +42,25 @@ const relayerGas = vi.hoisted(() =>
     error: null,
   })),
 );
+const relayDesk = vi.hoisted(() =>
+  vi.fn(() => ({
+    data: {
+      relayerAddress: "0x0000000000000000000000000000000000000abc",
+      chainId: 100,
+      idempotentRelay: true,
+      systemSigner: "0x0000000000000000000000000000000000000def",
+      build: "core-test",
+    },
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
+);
 
 vi.mock("./use-dashboard-metrics", () => ({
   useDashboardStats: () => dashboardStats(),
   useRelayerGas: () => relayerGas(),
+  useRelayDesk: () => relayDesk(),
 }));
 
 const { DashboardPage } = await import("./dashboard-page");
@@ -78,6 +93,8 @@ describe("DashboardPage", () => {
     expect(relayerLink.getAttribute("rel")).toBe("noopener noreferrer");
     expect(screen.getAllByText("last 1d").length).toBeGreaterThan(0);
     expect(screen.getByText("Catalog")).toBeTruthy();
+    expect(screen.getByText("core-test")).toBeTruthy();
+    expect(screen.getByText("Yes")).toBeTruthy();
     expect(screen.getAllByText("Transactions").length).toBeGreaterThan(1);
     expect(screen.queryByText(/sample/i)).toBeNull();
     expect(screen.queryByText("unavailable")).toBeNull();

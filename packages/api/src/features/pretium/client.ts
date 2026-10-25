@@ -211,6 +211,24 @@ export function createPretiumClient(http: HttpClient) {
       };
     },
 
+    async getPretiumTransactionsByPhone(
+      phoneNumber: string,
+    ): Promise<PretiumTransactionsByAddressResult> {
+      const result = await http.request<PretiumTransactionsByAddressResponse>(
+        `/api/v2/pretium/transactions/${encodeURIComponent(phoneNumber)}`,
+        PRETIUM_GET_REQUEST,
+      );
+      return normalizePretiumTransactions(result, phoneNumber);
+    },
+
+    async getPretiumRecentTransactions(): Promise<PretiumTransactionsByAddressResult> {
+      const result = await http.request<PretiumTransactionsByAddressResponse>(
+        "/api/v2/pretium/transactions-recent",
+        PRETIUM_GET_REQUEST,
+      );
+      return normalizePretiumTransactions(result, "");
+    },
+
     async getPretiumTransactionsByAddress(
       address: `0x${string}`,
     ): Promise<PretiumTransactionsByAddressResult> {
@@ -218,14 +236,21 @@ export function createPretiumClient(http: HttpClient) {
         `/api/v2/pretium/transactions-by-address/${address}`,
         PRETIUM_GET_REQUEST,
       );
-      const onramps = readTransactionArray(result.onramps, "onramp");
-      const offramps = readTransactionArray(result.offramps, "offramp");
-      return {
-        address: formatValue(result.address) || address,
-        onramps,
-        offramps,
-        totalCount: readNumber(result, "totalCount") ?? onramps.length + offramps.length,
-      };
+      return normalizePretiumTransactions(result, address);
     },
+  };
+}
+
+function normalizePretiumTransactions(
+  result: PretiumTransactionsByAddressResponse,
+  fallbackAddress: string,
+): PretiumTransactionsByAddressResult {
+  const onramps = readTransactionArray(result.onramps, "onramp");
+  const offramps = readTransactionArray(result.offramps, "offramp");
+  return {
+    address: formatValue(result.address) || fallbackAddress,
+    onramps,
+    offramps,
+    totalCount: readNumber(result, "totalCount") ?? onramps.length + offramps.length,
   };
 }

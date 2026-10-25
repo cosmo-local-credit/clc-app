@@ -79,6 +79,14 @@ describe("listUsers", () => {
     expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/users?perPage=25&q=ada+lovelace`);
   });
 
+  it("sends an approval status only when one is selected", async () => {
+    fetchMock.mockResolvedValue(ok({ users: [] }));
+
+    await client().listUsers({ perPage: 25, status: "PENDING" });
+
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/users?perPage=25&status=PENDING`);
+  });
+
   it("omits q entirely when there is no term", async () => {
     // clc-core validates the term's length, so an empty q is a request it would
     // have to have an opinion about. There is nothing to ask.

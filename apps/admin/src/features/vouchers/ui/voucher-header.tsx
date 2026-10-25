@@ -1,6 +1,7 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { Link } from "@tanstack/react-router";
 import {
+  HiOutlineAdjustments,
   HiOutlineArrowCircleUp,
   HiOutlineExternalLink,
   HiOutlinePencil,
@@ -12,6 +13,7 @@ import { CopyButton } from "#/components/admin/copy-button";
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
+import { sameAddress, useOperatorAddress } from "#/features/operator/operator-address";
 import { chainLabel, addressUrl } from "#/lib/explorer";
 import { initials } from "#/lib/format";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
@@ -40,13 +42,16 @@ export function VoucherHeader({
   voucher,
   onEdit,
   onRestore,
+  onContract,
   restoring,
 }: {
   voucher: MarketVoucherDetail;
   onEdit: () => void;
   onRestore: () => void;
+  onContract: () => void;
   restoring: boolean;
 }) {
+  const canControl = sameAddress(useOperatorAddress(), voucher.ownerAddress);
   return (
     <div className="flex flex-col gap-4">
       <AppBreadcrumb items={[{ label: "Vouchers", to: "/vouchers" }, { label: voucher.name }]} />
@@ -128,6 +133,12 @@ export function VoucherHeader({
             <HiOutlinePencil />
             Edit metadata
           </Button>
+          {canControl ? (
+            <Button size="sm" variant="outline" onClick={onContract}>
+              <HiOutlineAdjustments />
+              Controls
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>

@@ -20,6 +20,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "#/components/ui/chart";
+import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import { isAddress } from "viem";
+
 import { isFigureAvailable } from "#/lib/data-state";
 import { addressUrl } from "#/lib/explorer";
 import { useDataState } from "#/lib/use-data-state";
@@ -35,7 +38,7 @@ import {
   RELAYER_GAS_FLOOR_WEI,
   relayerGasTone,
 } from "./relayer-gas";
-import { useDashboardStats, useRelayerGas } from "./use-dashboard-metrics";
+import { useDashboardStats, useRelayerGas, useRelayDesk } from "./use-dashboard-metrics";
 
 const catalogChartConfig = {
   reports: { label: "Reports", color: "var(--chart-1)" },
@@ -56,6 +59,7 @@ export function DashboardPage({
 }) {
   const statsQuery = useDashboardStats(search);
   const gasQuery = useRelayerGas();
+  const deskQuery = useRelayDesk();
 
   const statsState = useDataState(statsQuery, () => false);
   const gasState = useDataState(gasQuery, () => false);
@@ -143,6 +147,16 @@ export function DashboardPage({
         />
       </div>
 
+      <RelayDesk
+        pending={deskQuery.isPending}
+        address={deskQuery.data?.relayerAddress ?? ""}
+        chainId={deskQuery.data?.chainId}
+        idempotent={deskQuery.data?.idempotentRelay === true}
+        signer={deskQuery.data?.systemSigner ?? ""}
+        build={deskQuery.data?.build ?? ""}
+        failed={deskQuery.isError}
+      />
+
       <div className="grid gap-4 xl:grid-cols-2">
         <SeriesChart
           title="Catalog"
@@ -161,6 +175,51 @@ export function DashboardPage({
           lines={["transactions"]}
         />
       </div>
+    </div>
+  );
+}
+
+function RelayDesk({
+  pending,
+  address,
+  chainId,
+  idempotent,
+  signer,
+  build,
+  failed,
+}: {
+  pending: boolean;
+  address: string;
+  chainId: number | undefined;
+  idempotent: boolean;
+  signer: string;
+  build: string;
+  failed: boolean;
+}) {
+  const value = (text: string) => (failed ? "—" : pending ? "Reading" : text);
+  return (
+    <section className="border-border bg-card border p-4">
+      <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">Relay</h2>
+      <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <DeskFact label="Relayer" value={value(shortAddress(address))} />
+        <DeskFact label="Chain" value={value(chainId === undefined ? "—" : String(chainId))} />
+        <DeskFact label="Idempotent" value={value(idempotent ? "Yes" : "No")} />
+        <DeskFact label="System signer" value={value(shortAddress(signer))} />
+        <DeskFact label="Build" value={value(build || "—")} />
+      </dl>
+    </section>
+  );
+}
+
+function shortAddress(value: string): string {
+  return isAddress(value) ? formatVoucherAddress(value) : value || "—";
+}
+
+function DeskFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <dt className="text-muted-foreground text-xs">{label}</dt>
+      <dd className="font-data text-xs">{value}</dd>
     </div>
   );
 }

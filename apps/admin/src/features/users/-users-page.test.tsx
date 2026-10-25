@@ -85,9 +85,9 @@ function renderUsersRoute(initialEntry = "/users") {
 }
 
 describe("UsersPage", () => {
-  it("shows contact details and no approval state", async () => {
-    // The directory answers "who is this and how do we reach them". Approval
-    // state, limits and the join date belong to one account, on its own screen.
+  it("shows contact details and approval status", async () => {
+    // Limits and the join date stay on the account screen. Status is a column
+    // because the directory can be filtered by it.
     listUsers.mockResolvedValue(page(user(4210)));
 
     renderUsersRoute();
@@ -95,8 +95,8 @@ describe("UsersPage", () => {
     await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
     expect(screen.getByText("+254700004210")).toBeTruthy();
     expect(screen.getByText("KE")).toBeTruthy();
-    expect(screen.queryByText(/approve/i)).toBeNull();
-    expect(screen.queryByText(/reject/i)).toBeNull();
+    expect(screen.getByText("APPROVED")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Status" })).toBeTruthy();
   });
 
   it("sends a typed term to the backend rather than filtering the fetched page", async () => {

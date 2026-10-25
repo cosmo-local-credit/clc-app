@@ -5,11 +5,20 @@ import { parseTokenAmount } from "../wallet/logic";
 
 import {
   buildAddPoolVoucherCalls,
+  buildRemoveOracleCall,
+  buildRemovePairFeeCall,
   buildRemovePoolVoucherCalls,
+  buildSealPoolCall,
+  buildSetHolderLimitCall,
+  buildSetOracleMaxStalenessCall,
+  buildSetOracleMultiplierCall,
+  buildSetPairFeeCall,
   buildSetPoolFeeCalls,
   buildWithdrawPoolLiquidityCalls,
+  feePolicyPairFeeAbi,
   feePolicySetDefaultFeeAbi,
   limiterSetLimitForAbi,
+  oracleQuoterPolicyAbi,
   oracleQuoterSetOracleAbi,
   oracleQuoterSetOracleWithStalenessAbi,
   poolVoucherCapFromUnitValue,
@@ -19,6 +28,7 @@ import {
   toPoolVoucherRateConfig,
   POOL_FEE_PERCENT_DECIMALS,
   relativeQuoterSetPriceIndexValueAbi,
+  swapPoolSealAbi,
   swapPoolSetFeeAddressAbi,
   swapPoolWithdrawLiquidityAbi,
   tokenIndexAddAbi,
@@ -435,6 +445,109 @@ describe("poolVoucherRateSchema", () => {
     // Nothing on chain would reject the deposit, so there is no cap to write.
     const schema = poolVoucherRateSchema({ requireCreditLimit: false });
     expect(schema.safeParse({ exchangeRate: "1", creditLimit: "" }).success).toBe(true);
+  });
+});
+
+const HOLDER = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" as const;
+
+describe("buildSealPoolCall", () => {
+  it("seals the bits it is given", () => {
+    const call = buildSealPoolCall({ poolAddress: POOL, state: 3 });
+    expect(call.to).toBe(POOL);
+    expect(decodeFunctionData({ abi: swapPoolSealAbi, data: call.data })).toEqual({
+      functionName: "seal",
+      args: [3],
+    });
+  });
+
+  it("refuses a state outside 1 to 31", () => {
+    expect(() => buildSealPoolCall({ poolAddress: POOL, state: 0 })).toThrow(/1 to 31/);
+    expect(() => buildSealPoolCall({ poolAddress: POOL, state: 32 })).toThrow(/1 to 31/);
+  });
+});
+
+describe("pair fees", () => {
+  it("sets a pair fee on the fee policy", () => {
+    const call = buildSetPairFeeCall({
+      feePolicyAddress: FEE_POLICY,
+      tokenIn: TOKEN,
+      tokenOut: POOL,
+      feePpm: "10000",
+    });
+    expect(call.to).toBe(FEE_POLICY);
+    expect(decodeFunctionData({ abi: feePolicyPairFeeAbi, data: call.data })).toEqual({
+      functionName: "setPairFee",
+      args: [TOKEN, POOL, 10_000n],
+    });
+  });
+
+  it("refuses zero, because the contract reads a stored zero as the default", () => {
+    expect(() =>
+      buildSetPairFeeCall({
+        feePolicyAddress: FEE_POLICY,
+        tokenIn: TOKEN,
+        tokenOut: POOL,
+        feePpm: "0",
+      }),
+    ).toThrow(/Remove the pair fee/);
+  });
+
+  it("removes a pair fee", () => {
+    const call = buildRemovePairFeeCall({
+      feePolicyAddress: FEE_POLICY,
+      tokenIn: TOKEN,
+      tokenOut: POOL,
+    });
+    expect(decodeFunctionData({ abi: feePolicyPairFeeAbi, data: call.data }).functionName).toBe(
+      "removePairFee",
+    );
+  });
+});
+
+describe("oracle policy", () => {
+  it("stores a zero staleness bound", () => {
+    const call = buildSetOracleMaxStalenessCall({
+      quoterAddress: QUOTER,
+      maxStalenessSeconds: "0",
+    });
+    expect(decodeFunctionData({ abi: oracleQuoterPolicyAbi, data: call.data })).toEqual({
+      functionName: "setMaxStaleness",
+      args: [0n],
+    });
+  });
+
+  it("keeps the multiplier inside 0.9x to 1x", () => {
+    const call = buildSetOracleMultiplierCall({ quoterAddress: QUOTER, multiplierPpm: "900000" });
+    expect(decodeFunctionData({ abi: oracleQuoterPolicyAbi, data: call.data }).args).toEqual([
+      900_000n,
+    ]);
+    expect(() =>
+      buildSetOracleMultiplierCall({ quoterAddress: QUOTER, multiplierPpm: "899999" }),
+    ).toThrow(/0\.9x and 1x/);
+  });
+
+  it("removes one token's oracle", () => {
+    const call = buildRemoveOracleCall({ quoterAddress: QUOTER, tokenAddress: TOKEN });
+    expect(decodeFunctionData({ abi: oracleQuoterPolicyAbi, data: call.data })).toEqual({
+      functionName: "removeOracle",
+      args: [TOKEN],
+    });
+  });
+});
+
+describe("buildSetHolderLimitCall", () => {
+  it("writes a holder cap, including zero", () => {
+    const call = buildSetHolderLimitCall({
+      limiterAddress: LIMITER,
+      tokenAddress: TOKEN,
+      holderAddress: HOLDER,
+      limitRaw: "0",
+    });
+    expect(call.to).toBe(LIMITER);
+    expect(decodeFunctionData({ abi: limiterSetLimitForAbi, data: call.data })).toEqual({
+      functionName: "setLimitFor",
+      args: [TOKEN, HOLDER, 0n],
+    });
   });
 });
 
