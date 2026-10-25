@@ -11,7 +11,6 @@ import { MarketBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
 import {
   isWithinNearbyCatalog,
-  MissingLocationNotice,
   nearbyQueryPolicy,
   useNearbyCatalog,
   useNearbyCatalogFilter,
@@ -139,7 +138,6 @@ export function OffersPage({
           />
         }
       />
-      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}

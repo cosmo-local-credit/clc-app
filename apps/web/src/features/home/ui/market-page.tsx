@@ -6,10 +6,6 @@ import { RiFocus3Line } from "react-icons/ri";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
-import {
-  MissingLocationNotice,
-  useNearbyCatalogMissingLocation,
-} from "#/components/nearby-catalog";
 import { Button } from "#/components/ui/button";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import { useVoucherSheetSnap, VoucherSheet } from "#/components/vouchers/voucher-sheet";
@@ -196,9 +192,7 @@ export function MarketPage({
       ? t`Finding location`
       : locationStatus === "denied"
         ? t`Location denied`
-        : locationStatus === "unavailable"
-          ? t`Location unavailable`
-          : t`Use current location`;
+        : t`Use current location`;
 
   const navigate = useNavigate();
   const { open: openVoucher } = voucherSelection;
@@ -264,11 +258,7 @@ export function MarketPage({
       size="icon-lg"
       className="pointer-events-auto bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
       aria-label={locationButtonLabel}
-      disabled={
-        locationStatus === "requesting" ||
-        locationStatus === "denied" ||
-        locationStatus === "unavailable"
-      }
+      disabled={locationStatus === "requesting" || locationStatus === "denied"}
       onClick={requestLocation}
     >
       <RiFocus3Line className="size-5" aria-hidden="true" />
@@ -282,7 +272,6 @@ export function MarketPage({
     filter.result.ok &&
     (usesUnifiedSearch ? unifiedSearch.status === "ready" : isCatalogComplete);
 
-  const missingLocation = useNearbyCatalogMissingLocation();
   const changeCredit = (checked: boolean) =>
     void navigate({
       to: "/",
@@ -302,8 +291,6 @@ export function MarketPage({
       onChange={changeCredit}
       onClear={clearCredit}
     />
-  ) : missingLocation ? (
-    <MissingLocationNotice />
   ) : credit.enabled && credit.poolRefs?.length === 0 ? (
     <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
       <Trans>No marketplace results are available through your Credit pools.</Trans>

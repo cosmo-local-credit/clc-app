@@ -36,7 +36,6 @@ type MapProps = {
 };
 
 const {
-  missingLocation,
   authState,
   creditFeedback,
   cameraResult,
@@ -55,7 +54,6 @@ const {
   selection,
   poolsResult,
 } = vi.hoisted(() => ({
-  missingLocation: { current: false },
   authState: { current: { isAuthenticated: false, isLoading: false, session: null } },
   creditFeedback: { current: false },
   poolsResult: {
@@ -172,12 +170,6 @@ vi.mock("#/components/creditable-browse-control", () => ({
       </button>
     </div>
   ),
-}));
-
-vi.mock("#/components/nearby-catalog", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("#/components/nearby-catalog")>()),
-  useNearbyCatalogMissingLocation: () => missingLocation.current,
-  MissingLocationNotice: () => <div role="status">Choose a location</div>,
 }));
 
 vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
@@ -405,7 +397,6 @@ function renderPage(node: ReactNode = <MarketPage />) {
 }
 
 beforeEach(() => {
-  missingLocation.current = false;
   authState.current = { isAuthenticated: false, isLoading: false, session: null };
   creditFeedback.current = false;
   window.localStorage.clear();
@@ -498,7 +489,8 @@ describe("MarketPage location button", () => {
     ["idle", "Use current location", false],
     ["requesting", "Finding location", true],
     ["denied", "Location denied", true],
-    ["unavailable", "Location unavailable", true],
+    ["unavailable", "Use current location", false],
+    ["error", "Use current location", false],
   ])("labels and enables the button for %s", (status, label, disabled) => {
     cameraResult.current = { ...cameraResult.current, locationStatus: status };
     renderPage();
@@ -509,6 +501,14 @@ describe("MarketPage location button", () => {
 
   it("asks the camera hook for an explicit fix when pressed", () => {
     renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
+    expect(mockRequestLocation).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows a transient unavailable location to be retried", () => {
+    cameraResult.current = { ...cameraResult.current, locationStatus: "unavailable" };
+    renderPage();
+
     fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
     expect(mockRequestLocation).toHaveBeenCalledTimes(1);
   });
@@ -1196,16 +1196,6 @@ describe("MarketPage notices", () => {
 
     expect(screen.getByTestId("credit-feedback")).toBeTruthy();
     expect(screen.queryByText("Could not load vouchers.")).toBeNull();
-  });
-
-  it("asks for a profile location in the notice slot and keeps the map", () => {
-    missingLocation.current = true;
-    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
-
-    renderPage();
-
-    expect(screen.getByRole("status").textContent).toBe("Choose a location");
-    expect(screen.getByTestId("marker-1")).toBeTruthy();
   });
 
   it("puts the list badges under the bar and no Map button over the map", () => {
