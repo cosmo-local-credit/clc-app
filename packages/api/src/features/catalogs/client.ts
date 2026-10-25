@@ -10,6 +10,8 @@ import {
 import { z } from "zod";
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 
 const catalogPageSchema = z.object({
   catalogs: z.array(catalogSchema),
@@ -49,6 +51,7 @@ export function createCatalogsClient(http: HttpClient) {
       params: {
         cursor?: string;
         nearby?: boolean;
+        bounds?: readonly MarketBoundingBox[];
         perPage?: number;
         q?: string;
         tags?: readonly string[];
@@ -61,6 +64,7 @@ export function createCatalogsClient(http: HttpClient) {
       const query = new URLSearchParams({ perPage: String(params.perPage ?? 20) });
       if (params.cursor) query.set("cursor", params.cursor);
       if (params.nearby) query.set("nearby", "true");
+      appendMarketBounds(query, params.bounds);
       if (params.q?.trim()) query.set("q", params.q.trim());
       if (params.tags?.length) query.set("tags", params.tags.join(","));
       if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");

@@ -30,6 +30,7 @@ import {
 } from "#/lib/profile-currency";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { useFirstInvalidFieldFocus } from "#/lib/use-first-invalid-field-focus";
+import { useIPCamera } from "#/features/home/hooks/use-ip-camera";
 
 type Props = {
   /** Which third of the profile is on screen; the form and its values span all three. */
@@ -141,6 +142,7 @@ export function OnboardingProfileForm({
   // it has been touched, so a page never opens on errors from another one.
   const [attempted, setAttempted] = useState<ReadonlySet<ProfilePage>>(() => new Set());
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const approximateCamera = useIPCamera().data;
   const { formRef, focusFirstInvalidField } = useFirstInvalidFieldFocus();
   const currencyWasChosenRef = useRef(Boolean(initialValues?.preferredCurrency));
   const currencyWasSuggestedByLocationRef = useRef(
@@ -473,6 +475,7 @@ export function OnboardingProfileForm({
                 <LocationPicker
                   required
                   fill
+                  cameraHint={approximateCamera}
                   value={field.state.value}
                   onChange={(next) => {
                     field.handleChange(next);

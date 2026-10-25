@@ -24,7 +24,7 @@ msgid "{count, plural, one {# voucher} other {# vouchers}}"
 msgstr "{count, plural, one {# waardebon} other {# waardebonnen}}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/home/ui/posts-page.tsx:49
+#: apps/web/src/features/home/ui/posts-page.tsx:50
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, one {# bericht} other {# berichten}}"
 
@@ -155,9 +155,7 @@ msgstr "{0} is actief"
 #~ msgstr "{0} is klaar voor waardebonnen en omwisselingen."
 
 #. placeholder {0}: localized.value
-#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:91
 msgid "{0} km"
 msgstr "{0} km"
 
@@ -172,12 +170,12 @@ msgid "{0} of {CATALOG_MAX_POOLS}"
 msgstr "{0} van {CATALOG_MAX_POOLS}"
 
 #. placeholder {0}: draftTags.length
-#: apps/web/src/components/catalog-filter-controls.tsx:503
+#: apps/web/src/components/catalog-filter-controls.tsx:500
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} van {CATALOG_MAX_TAGS}"
 
 #. placeholder {0}: draftVouchers.length
-#: apps/web/src/components/catalog-filter-controls.tsx:326
+#: apps/web/src/components/catalog-filter-controls.tsx:323
 msgid "{0} of {CATALOG_MAX_VOUCHERS}"
 msgstr "{0} van {CATALOG_MAX_VOUCHERS}"
 
@@ -218,7 +216,7 @@ msgid "{0} updated."
 msgstr "{0} bijgewerkt."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/wallet-page.tsx:446
+#: apps/web/src/features/home/ui/wallet-page.tsx:447
 #: apps/web/src/features/pools/ui/pools-page.tsx:402
 msgid "{0} vouchers"
 msgstr "{0} waardebonnen"
@@ -300,13 +298,13 @@ msgstr "{used} van {limit} gebruikt"
 msgid "{used} used · Unlimited"
 msgstr "{used} gebruikt · Onbeperkt"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:257
-#: apps/web/src/features/home/ui/marketplace-page.tsx:286
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:195
+#: apps/web/src/features/home/ui/marketplace-page.tsx:271
 msgid "{value} km"
 msgstr "{value} km"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:257
-#: apps/web/src/features/home/ui/marketplace-page.tsx:286
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:195
+#: apps/web/src/features/home/ui/marketplace-page.tsx:271
 msgid "{value} m"
 msgstr "{value} m"
 
@@ -337,26 +335,26 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 aanbieding"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:444
+#: apps/web/src/features/home/ui/wallet-page.tsx:445
 #: apps/web/src/features/pools/ui/pools-page.tsx:400
 msgid "1 voucher"
 msgstr "1 waardebon"
 
 #: apps/web/src/components/visibility-selector.tsx:26
-msgid "1,000 km"
-msgstr "1.000 km"
+#~ msgid "1,000 km"
+#~ msgstr "1.000 km"
 
 #: apps/web/src/components/visibility-selector.tsx:28
-msgid "100 km"
-msgstr "100 km"
+#~ msgid "100 km"
+#~ msgstr "100 km"
 
 #: apps/web/src/components/visibility-selector.tsx:29
-msgid "50 km"
-msgstr "50 km"
+#~ msgid "50 km"
+#~ msgstr "50 km"
 
 #: apps/web/src/components/visibility-selector.tsx:27
-msgid "500 km"
-msgstr "500 km"
+#~ msgid "500 km"
+#~ msgstr "500 km"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:280
 #~ msgid "A good"
@@ -427,12 +425,12 @@ msgstr "Een voucher staat voor de belofte van de uitgever om goederen of "
 "diensten te leveren. Controleer waarvoor je hem kunt gebruiken en wie "
 "hem accepteert."
 
-#: apps/web/src/components/app-menu.tsx:65
+#: apps/web/src/components/app-menu.tsx:64
 msgid "About"
 msgstr "Over"
 
 #: apps/web/src/components/introduction/introduction.tsx:92
-#: apps/web/src/features/home/ui/settings-page.tsx:85
+#: apps/web/src/features/home/ui/settings-page.tsx:83
 msgid "About Cosmo-Local Credit"
 msgstr "Over Cosmo-Local Credit"
 
@@ -450,7 +448,7 @@ msgstr "Accepteer de voorwaarden om uw fonds te publiceren"
 msgid "Accept the terms to publish your voucher"
 msgstr "Accepteer de voorwaarden om uw waardebon te publiceren"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/home/ui/settings-page.tsx:53
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
@@ -488,8 +486,8 @@ msgstr "Activeren op de blockchain…"
 msgid "Activating smart wallet…"
 msgstr "Slimme portefeuille activeren…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:250
-#: apps/web/src/features/home/ui/wallet-page.tsx:345
+#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/wallet-page.tsx:346
 msgid "Active"
 msgstr "Actief"
 
@@ -641,7 +639,7 @@ msgstr "Adres"
 msgid "Address book"
 msgstr "Adresboek"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:191
+#: apps/web/src/features/home/ui/settings-page.tsx:189
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -679,7 +677,7 @@ msgstr "Landbouw"
 msgid "All"
 msgstr "Alles"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:380
+#: apps/web/src/features/home/ui/wallet-page.tsx:381
 msgid "All pools"
 msgstr "Alle fondsen"
 
@@ -687,8 +685,8 @@ msgstr "Alle fondsen"
 #~ msgid "All reviews · newest first"
 #~ msgstr "Alle beoordelingen · nieuwste eerst"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:484
-#: apps/web/src/components/catalog-filter-controls.tsx:568
+#: apps/web/src/components/catalog-filter-controls.tsx:481
+#: apps/web/src/components/catalog-filter-controls.tsx:565
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:262
 msgid "All selected"
 msgstr "Alles geselecteerd"
@@ -697,7 +695,7 @@ msgstr "Alles geselecteerd"
 msgid "All Vouchers"
 msgstr "Alle waardebonnen"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:271
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:273
 msgid "Already have an account?"
 msgstr "Hebt u al een account?"
 
@@ -752,13 +750,13 @@ msgstr "Een aanbod beschrijft goederen of diensten die iemand levert. Bekijk de 
 msgid "Another card scan is already running. Try again."
 msgstr "Er wordt al een andere kaart gescand. Probeer het opnieuw."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:479
-#: apps/web/src/components/catalog-filter-controls.tsx:563
+#: apps/web/src/components/catalog-filter-controls.tsx:476
+#: apps/web/src/components/catalog-filter-controls.tsx:560
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:259
 msgid "Any selected"
 msgstr "Een of meer geselecteerd"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:70
+#: apps/web/src/features/home/ui/settings-page.tsx:68
 msgid "App"
 msgstr "App"
 
@@ -766,12 +764,12 @@ msgstr "App"
 msgid "App installation"
 msgstr "App-installatie"
 
-#: apps/web/src/components/app-menu.tsx:50
-#: apps/web/src/components/app-menu.tsx:53
+#: apps/web/src/components/app-menu.tsx:49
+#: apps/web/src/components/app-menu.tsx:52
 msgid "App menu"
 msgstr "Appmenu"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:92
+#: apps/web/src/features/home/ui/settings-page.tsx:90
 msgid "App version"
 msgstr "Appversie"
 
@@ -780,7 +778,7 @@ msgid "Apply"
 msgstr "Toepassen"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:116
-#: apps/web/src/components/catalog-filter-controls.tsx:588
+#: apps/web/src/components/catalog-filter-controls.tsx:585
 msgid "Apply filters"
 msgstr "Filters toepassen"
 
@@ -821,7 +819,7 @@ msgstr "Wacht op goedkeuring"
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
 #: apps/web/src/features/install/ui/install-page.tsx:75
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:253
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
@@ -862,7 +860,7 @@ msgid "Balance {tokenBalance}"
 msgstr "Saldo {tokenBalance}"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:446
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:448
 msgid "Bio"
 msgstr "Biografie"
 
@@ -945,7 +943,7 @@ msgstr "Toegang tot de camera geweigerd."
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:485
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:528
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
-#: apps/web/src/features/home/ui/settings-page.tsx:145
+#: apps/web/src/features/home/ui/settings-page.tsx:143
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:481
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:747
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
@@ -993,7 +991,7 @@ msgstr "Kaart gelezen — aanmelden"
 msgid "Care"
 msgstr "Zorg"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:81
+#: apps/web/src/features/home/ui/wallet-page.tsx:79
 #: apps/web/src/features/wallet/ui/cash-page.tsx:33
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
 msgid "Cash"
@@ -1004,7 +1002,7 @@ msgstr "Contant geld"
 msgid "Cash services aren't available on {0}."
 msgstr "Contante diensten zijn niet beschikbaar op {0}."
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:417
+#: apps/web/src/features/home/ui/marketplace-page.tsx:402
 msgid "Catalog"
 msgstr "Catalogus"
 
@@ -1028,7 +1026,7 @@ msgstr "Catalogus opgeslagen. Het item kon niet worden toegevoegd. Probeer het "
 #: apps/web/src/components/market-bar.tsx:164
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:39
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "Catalogs"
 msgstr "Catalogi"
 
@@ -1176,7 +1174,7 @@ msgstr "Controleren welke waardebonnen dit fonds accepteert…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
-#: apps/web/src/features/home/ui/settings-page.tsx:250
+#: apps/web/src/features/home/ui/settings-page.tsx:248
 msgid "Checking…"
 msgstr "Controleren…"
 
@@ -1198,8 +1196,8 @@ msgstr "Kies een locatie"
 #: apps/web/src/components/nearby-catalog.tsx:59
 #: apps/web/src/components/nearby-catalog.tsx:206
 #: apps/web/src/components/nearby-catalog.tsx:248
-msgid "Choose a location"
-msgstr "Kies een locatie"
+#~ msgid "Choose a location"
+#~ msgstr "Kies een locatie"
 
 #: apps/web/src/features/wants/ui/want-form-page.tsx:163
 msgid "Choose a location."
@@ -1330,11 +1328,11 @@ msgstr "Filter wissen"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:41
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:53
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:125
-#: apps/web/src/features/home/ui/market-page.tsx:331
-#: apps/web/src/features/home/ui/marketplace-page.tsx:180
-#: apps/web/src/features/home/ui/marketplace-page.tsx:230
-#: apps/web/src/features/home/ui/offers-page.tsx:166
-#: apps/web/src/features/home/ui/posts-page.tsx:139
+#: apps/web/src/features/home/ui/market-page.tsx:347
+#: apps/web/src/features/home/ui/marketplace-page.tsx:165
+#: apps/web/src/features/home/ui/marketplace-page.tsx:215
+#: apps/web/src/features/home/ui/offers-page.tsx:149
+#: apps/web/src/features/home/ui/posts-page.tsx:141
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:292
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:301
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:311
@@ -1342,8 +1340,8 @@ msgstr "Filter wissen"
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:65
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:76
 #: apps/web/src/features/pools/ui/pools-page.tsx:328
-#: apps/web/src/features/wants/ui/wants-page.tsx:127
-#: apps/web/src/features/wants/ui/wants-page.tsx:159
+#: apps/web/src/features/wants/ui/wants-page.tsx:117
+#: apps/web/src/features/wants/ui/wants-page.tsx:149
 msgid "Clear filters"
 msgstr "Filters wissen"
 
@@ -1351,8 +1349,8 @@ msgstr "Filters wissen"
 msgid "Clear location"
 msgstr "Locatie wissen"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:82
-#: apps/web/src/components/catalog-filter-controls.tsx:544
+#: apps/web/src/components/catalog-filter-controls.tsx:81
+#: apps/web/src/components/catalog-filter-controls.tsx:541
 #: apps/web/src/components/market-search.tsx:73
 #: apps/web/src/components/market-search.tsx:180
 #: apps/web/src/features/home/ui/activity-page.tsx:121
@@ -1371,12 +1369,12 @@ msgid "Close"
 msgstr "Sluiten"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:93
-#: apps/web/src/components/catalog-filter-controls.tsx:301
-#: apps/web/src/components/catalog-filter-controls.tsx:610
+#: apps/web/src/components/catalog-filter-controls.tsx:298
+#: apps/web/src/components/catalog-filter-controls.tsx:607
 msgid "Close filters"
 msgstr "Filters sluiten"
 
-#: apps/web/src/components/app-menu.tsx:109
+#: apps/web/src/components/app-menu.tsx:101
 msgid "Close menu"
 msgstr "Menu sluiten"
 
@@ -1396,7 +1394,7 @@ msgstr "Formulier voor privésleutel sluiten"
 msgid "Close Want"
 msgstr "Verzoek sluiten"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:343
+#: apps/web/src/features/home/ui/wallet-page.tsx:344
 msgid "Closed"
 msgstr "Gesloten"
 
@@ -1542,7 +1540,7 @@ msgstr "Verbind uw portefeuille om waardebonnen uit te geven."
 msgid "Connect your wallet to use MPESA."
 msgstr "Verbind uw portefeuille om MPESA te gebruiken."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:208
+#: apps/web/src/features/home/ui/settings-page.tsx:206
 msgid "Connected address"
 msgstr "Verbonden adres"
 
@@ -1577,7 +1575,7 @@ msgid "Construction"
 msgstr "Bouw"
 
 #: apps/web/src/components/wants/want-detail.tsx:130
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:244
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:246
 msgid "Contact"
 msgstr "Contactgegevens"
 
@@ -1613,7 +1611,7 @@ msgstr "Telefoonnummer voor contact"
 msgid "Contact Website"
 msgstr "Website voor contact"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:267
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:269
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
@@ -1663,7 +1661,7 @@ msgstr "Contractadres gekopieerd"
 msgid "Copy"
 msgstr "Kopiëren"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:227
+#: apps/web/src/features/home/ui/settings-page.tsx:225
 #: apps/web/src/features/wallet/ui/cash-page.tsx:51
 msgid "Copy address"
 msgstr "Adres kopiëren"
@@ -1800,8 +1798,8 @@ msgstr "Er kon niet worden gecontroleerd welke waardebonnen dit fonds "
 msgid "Couldn't check your review access."
 msgstr "Uw toegang tot beoordelingen kon niet worden gecontroleerd."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:186
-#: apps/web/src/features/home/ui/settings-page.tsx:192
+#: apps/web/src/features/home/ui/settings-page.tsx:184
+#: apps/web/src/features/home/ui/settings-page.tsx:190
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
@@ -1890,7 +1888,7 @@ msgstr "De waardebonnen konden niet worden uitgegeven."
 msgid "Couldn't estimate this swap."
 msgstr "Deze omwisseling kon niet worden berekend."
 
-#: apps/web/src/components/ui/location-picker.tsx:123
+#: apps/web/src/components/ui/location-picker.tsx:125
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Hier kon geen land worden vastgesteld. Probeer een plek in de buurt."
 
@@ -1909,11 +1907,11 @@ msgstr "Catalogusitems konden niet worden geladen."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:58
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:44
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:198
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:136
 msgid "Couldn't load catalogs."
 msgstr "Catalogi konden niet worden geladen."
 
-#: apps/web/src/features/home/ui/market-page.tsx:240
+#: apps/web/src/features/home/ui/market-page.tsx:263
 msgid "Couldn't load complete marketplace results."
 msgstr "De volledige marktplaatsresultaten konden niet worden geladen."
 
@@ -1926,8 +1924,8 @@ msgstr "De kredietlimieten konden niet worden geladen."
 msgid "Couldn't load holdings."
 msgstr "De tegoeden konden niet worden geladen."
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:193
-#: apps/web/src/features/home/ui/marketplace-page.tsx:244
+#: apps/web/src/features/home/ui/marketplace-page.tsx:178
+#: apps/web/src/features/home/ui/marketplace-page.tsx:229
 msgid "Couldn't load marketplace results."
 msgstr "Marktplaatsresultaten konden niet worden geladen."
 
@@ -1941,7 +1939,7 @@ msgid "Couldn't load pool tags."
 msgstr "De fondstags konden niet worden geladen."
 
 #: apps/web/src/components/wants/want-detail.tsx:198
-#: apps/web/src/features/home/ui/market-page.tsx:248
+#: apps/web/src/features/home/ui/market-page.tsx:271
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "De fondsen konden niet worden geladen."
@@ -1956,7 +1954,7 @@ msgid "Couldn't load Pretium history."
 msgstr "De Pretium-geschiedenis kon niet worden geladen."
 
 #: apps/web/src/components/resource-usage.tsx:126
-#: apps/web/src/features/home/ui/wallet-page.tsx:144
+#: apps/web/src/features/home/ui/wallet-page.tsx:140
 msgid "Couldn't load resource limits."
 msgstr "Resourcelimieten konden niet worden geladen."
 
@@ -2026,8 +2024,8 @@ msgid "Couldn't load vouchers"
 msgstr "Waardebonnen konden niet worden geladen"
 
 #: apps/web/src/components/wants/want-detail.tsx:177
-#: apps/web/src/features/home/ui/wallet-page.tsx:182
-#: apps/web/src/features/home/ui/wallet-page.tsx:200
+#: apps/web/src/features/home/ui/wallet-page.tsx:178
+#: apps/web/src/features/home/ui/wallet-page.tsx:196
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:155
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:172
 msgid "Couldn't load vouchers."
@@ -2037,12 +2035,12 @@ msgstr "De waardebonnen konden niet worden geladen."
 msgid "Couldn't load Wants for this pool."
 msgstr "De verzoeken voor deze pool konden niet worden geladen."
 
-#: apps/web/src/features/home/ui/market-page.tsx:255
-#: apps/web/src/features/wants/ui/wants-page.tsx:135
+#: apps/web/src/features/home/ui/market-page.tsx:278
+#: apps/web/src/features/wants/ui/wants-page.tsx:125
 msgid "Couldn't load Wants."
 msgstr "De verzoeken konden niet worden geladen."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:390
+#: apps/web/src/features/home/ui/wallet-page.tsx:391
 msgid "Couldn't load your pools."
 msgstr "Uw fondsen konden niet worden geladen."
 
@@ -2050,7 +2048,7 @@ msgstr "Uw fondsen konden niet worden geladen."
 msgid "Couldn't load your posts."
 msgstr "Uw berichten konden niet worden geladen."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:286
+#: apps/web/src/features/home/ui/wallet-page.tsx:287
 msgid "Couldn't load your Wants."
 msgstr "Je verzoeken konden niet worden geladen."
 
@@ -2166,7 +2164,7 @@ msgstr "De wijzigingen konden niet worden opgeslagen. Probeer het opnieuw."
 msgid "Couldn't search pools."
 msgstr "De fondsen konden niet worden doorzocht."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:404
+#: apps/web/src/components/catalog-filter-controls.tsx:401
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:355
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
@@ -2226,7 +2224,7 @@ msgstr "Uw MPESA-koppeling kon niet worden geverifieerd."
 msgid "Cover photo"
 msgstr "Omslagfoto"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:276
+#: apps/web/src/features/home/ui/wallet-page.tsx:277
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:94
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:99
 msgid "Create"
@@ -2234,7 +2232,7 @@ msgstr "Aanmaken"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:85
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:45
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:291
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:293
 msgid "Create account"
 msgstr "Account aanmaken"
 
@@ -2254,8 +2252,8 @@ msgstr "Catalogus maken"
 #~ msgid "Create new vouchers in your wallet."
 #~ msgstr "Geef nieuwe waardebonnen uit in uw portefeuille."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:418
-#: apps/web/src/features/home/ui/wallet-page.tsx:423
+#: apps/web/src/features/home/ui/wallet-page.tsx:419
+#: apps/web/src/features/home/ui/wallet-page.tsx:424
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:355
 msgid "Create pool"
 msgstr "Fonds aanmaken"
@@ -2269,8 +2267,8 @@ msgid "Create the first supply to finish publishing this voucher."
 msgstr "Maak de eerste voorraad aan om de publicatie van deze waardebon te "
 "voltooien."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:246
-#: apps/web/src/features/home/ui/wallet-page.tsx:251
+#: apps/web/src/features/home/ui/wallet-page.tsx:247
+#: apps/web/src/features/home/ui/wallet-page.tsx:252
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:356
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:386
 msgid "Create voucher"
@@ -2285,14 +2283,14 @@ msgstr "Waardebon aanmaken"
 msgid "Create vouchers"
 msgstr "Waardebonnen uitgeven"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:312
-#: apps/web/src/features/home/ui/wallet-page.tsx:317
+#: apps/web/src/features/home/ui/wallet-page.tsx:313
+#: apps/web/src/features/home/ui/wallet-page.tsx:318
 #: apps/web/src/features/wants/ui/want-form-page.tsx:60
 #: apps/web/src/features/wants/ui/want-form-page.tsx:378
 msgid "Create Want"
 msgstr "Verzoek maken"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:242
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:244
 msgid "Create your account"
 msgstr "Uw account aanmaken"
 
@@ -2429,7 +2427,7 @@ msgstr "Aantal van {0} verlagen"
 msgid "Default"
 msgstr "Standaard"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:236
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 msgid "Delegated to Calibur"
 msgstr "Gedelegeerd aan Calibur"
 
@@ -2616,8 +2614,6 @@ msgstr "Fondsgegevens bewerken"
 msgid "Edit post"
 msgstr "Bericht bewerken"
 
-#: apps/web/src/components/nearby-catalog.tsx:63
-#: apps/web/src/components/nearby-catalog.tsx:210
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
 msgid "Edit profile"
@@ -2653,8 +2649,8 @@ msgstr "Ouderen"
 #: apps/web/src/components/wants/want-detail.tsx:142
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:299
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:368
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:380
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:370
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:382
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:523
@@ -2845,7 +2841,7 @@ msgstr "Vervaldatum"
 msgid "Expiration date must be in the future"
 msgstr "De vervaldatum moet in de toekomst liggen"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:341
+#: apps/web/src/features/home/ui/wallet-page.tsx:342
 msgid "Expired"
 msgstr "Verlopen"
 
@@ -2932,7 +2928,7 @@ msgstr "Saamhorigheid"
 msgid "Festivals"
 msgstr "Festivals"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:148
+#: apps/web/src/features/home/ui/posts-page.tsx:150
 msgid "Field reports"
 msgstr "Veldrapporten"
 
@@ -2955,19 +2951,19 @@ msgstr "De bestandsnaam mag maximaal 255 tekens bevatten"
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Het bestand is te groot ({0} KB). Het maximum is 512 KB."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:517
+#: apps/web/src/components/catalog-filter-controls.tsx:514
 msgid "Filter by tag"
 msgstr "Op tag filteren"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:123
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:98
 msgid "Filter catalogs"
 msgstr "Catalogi filteren"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:146
+#: apps/web/src/features/home/ui/marketplace-page.tsx:131
 msgid "Filter marketplace"
 msgstr "Marktplaats filteren"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:132
+#: apps/web/src/features/home/ui/offers-page.tsx:115
 msgid "Filter offers"
 msgstr "Aanbod filteren"
 
@@ -2983,16 +2979,16 @@ msgstr "Berichten filteren"
 msgid "Filter vouchers"
 msgstr "Waardebonnen filteren"
 
-#: apps/web/src/features/wants/ui/wants-page.tsx:96
+#: apps/web/src/features/wants/ui/wants-page.tsx:86
 msgid "Filter Wants"
 msgstr "Verzoeken filteren"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:63
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:64
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:88
-#: apps/web/src/components/catalog-filter-controls.tsx:267
-#: apps/web/src/components/catalog-filter-controls.tsx:268
-#: apps/web/src/components/catalog-filter-controls.tsx:275
+#: apps/web/src/components/catalog-filter-controls.tsx:264
+#: apps/web/src/components/catalog-filter-controls.tsx:265
+#: apps/web/src/components/catalog-filter-controls.tsx:272
 msgid "Filters"
 msgstr "Filters"
 
@@ -3004,7 +3000,7 @@ msgstr "Filters"
 msgid "Finding a name…"
 msgstr "Een naam zoeken…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:196
+#: apps/web/src/features/home/ui/market-page.tsx:211
 msgid "Finding location"
 msgstr "Locatie bepalen"
 
@@ -3054,10 +3050,10 @@ msgstr "Verkrijgen"
 
 #: apps/web/src/components/nearby-catalog.tsx:255
 #: apps/web/src/components/visibility-selector.tsx:25
-msgid "Global"
-msgstr "Wereldwijd"
+#~ msgid "Global"
+#~ msgstr "Wereldwijd"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:278
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:280
 msgid "Go back to sign in"
 msgstr "Terug naar aanmelden"
 
@@ -3102,6 +3098,7 @@ msgstr "Gezondheid"
 msgid "Hold the card flat against the back of your phone."
 msgstr "Houd de kaart plat tegen de achterkant van uw telefoon."
 
+#: apps/web/src/features/home/ui/wallet-page.tsx:212
 #: apps/web/src/features/home/ui/wallet-page.tsx:214
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:187
 msgid "Holdings"
@@ -3146,7 +3143,7 @@ msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
 msgstr "Hoeveel waarde in {unitSymbol} kan met {0}-waardebonnen uit het fonds "
 "worden omgewisseld?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:557
+#: apps/web/src/components/catalog-filter-controls.tsx:554
 msgid "How should categories match?"
 msgstr "Hoe moeten categorieën overeenkomen?"
 
@@ -3154,7 +3151,7 @@ msgstr "Hoe moeten categorieën overeenkomen?"
 msgid "How should people contact you?"
 msgstr "Hoe kunnen mensen contact met je opnemen?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:469
+#: apps/web/src/components/catalog-filter-controls.tsx:466
 msgid "How should vouchers match?"
 msgstr "Hoe moeten waardebonnen overeenkomen?"
 
@@ -3217,7 +3214,7 @@ msgstr "Ik heb in {poolName} {sentLabel} omgewisseld voor {amountLabel}."
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "Ik heb {sentLabel} omgewisseld voor {amountLabel}."
 
-#: apps/web/src/components/ui/location-picker.tsx:307
+#: apps/web/src/components/ui/location-picker.tsx:310
 msgid "Identifying location…"
 msgstr "Locatie bepalen…"
 
@@ -3243,7 +3240,7 @@ msgstr "In netwerk"
 #~ msgid "In this pool"
 #~ msgstr "In dit fonds"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:250
+#: apps/web/src/features/home/ui/settings-page.tsx:248
 msgid "Inactive"
 msgstr "Inactief"
 
@@ -3263,7 +3260,7 @@ msgstr "Informatie"
 #: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:19
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:80
+#: apps/web/src/features/home/ui/settings-page.tsx:78
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "CLC installeren"
@@ -3332,7 +3329,7 @@ msgstr "Behouden"
 msgid "Kilogram"
 msgstr "Kilogram"
 
-#: apps/web/src/components/app-menu.tsx:74
+#: apps/web/src/components/app-menu.tsx:73
 #: apps/web/src/components/language-selector.tsx:40
 #: apps/web/src/components/language-selector.tsx:111
 #: apps/web/src/components/language-selector.tsx:121
@@ -3379,7 +3376,7 @@ msgid "Limit of {CATALOG_MAX_POOLS} pools reached. Remove one to add another."
 msgstr "De limiet van {CATALOG_MAX_POOLS} pools is bereikt. Verwijder er één om "
 "een andere toe te voegen."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:386
+#: apps/web/src/components/catalog-filter-controls.tsx:383
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "De limiet van {CATALOG_MAX_VOUCHERS} waardebonnen is bereikt. Verwijder "
@@ -3519,11 +3516,11 @@ msgstr "Liter"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
 #: apps/web/src/components/wants/want-detail.tsx:255
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
-#: apps/web/src/features/home/ui/wallet-page.tsx:360
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:166
+#: apps/web/src/features/home/ui/wallet-page.tsx:361
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:54
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
-#: apps/web/src/features/wants/ui/wants-page.tsx:172
+#: apps/web/src/features/wants/ui/wants-page.tsx:162
 msgid "Load more"
 msgstr "Meer laden"
 
@@ -3559,21 +3556,21 @@ msgstr "Kredietlimieten laden…"
 msgid "Loading holdings…"
 msgstr "Tegoeden laden…"
 
-#: apps/web/src/components/ui/location-picker.tsx:283
-#: apps/web/src/components/ui/location-picker.tsx:300
+#: apps/web/src/components/ui/location-picker.tsx:285
+#: apps/web/src/components/ui/location-picker.tsx:303
 #: apps/web/src/components/wants/want-detail.tsx:94
 msgid "Loading location map"
 msgstr "Locatiekaart laden"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:193
-#: apps/web/src/features/home/ui/marketplace-page.tsx:189
+#: apps/web/src/features/home/ui/market-list-page.tsx:197
+#: apps/web/src/features/home/ui/marketplace-page.tsx:174
 msgid "Loading marketplace…"
 msgstr "Marktplaats laden…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:216
 #: apps/web/src/features/home/ui/activity-page.tsx:213
-#: apps/web/src/features/home/ui/marketplace-page.tsx:238
-#: apps/web/src/features/home/ui/posts-page.tsx:154
+#: apps/web/src/features/home/ui/marketplace-page.tsx:223
+#: apps/web/src/features/home/ui/posts-page.tsx:156
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
 #: apps/web/src/features/pools/ui/pools-page.tsx:356
 msgid "Loading more…"
@@ -3588,7 +3585,7 @@ msgstr "Aanbod laden…"
 msgid "Loading pool…"
 msgstr "Fonds laden…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:385
+#: apps/web/src/features/home/ui/wallet-page.tsx:386
 #: apps/web/src/features/pools/ui/pools-page.tsx:289
 msgid "Loading pools…"
 msgstr "Fondsen laden…"
@@ -3599,7 +3596,7 @@ msgstr "Bericht laden…"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:252
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:270
-#: apps/web/src/features/home/ui/posts-page.tsx:122
+#: apps/web/src/features/home/ui/posts-page.tsx:124
 msgid "Loading posts…"
 msgstr "Berichten laden…"
 
@@ -3630,7 +3627,7 @@ msgstr "Tokens laden…"
 msgid "Loading voucher…"
 msgstr "Waardebon laden…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:168
+#: apps/web/src/features/home/ui/wallet-page.tsx:163
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:935
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:149
 #: apps/web/src/features/wallet/ui/collect-page.tsx:167
@@ -3643,9 +3640,9 @@ msgstr "Waardebonnen laden…"
 msgid "Loading Want…"
 msgstr "Verzoek laden…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:282
+#: apps/web/src/features/home/ui/wallet-page.tsx:283
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:20
-#: apps/web/src/features/wants/ui/wants-page.tsx:131
+#: apps/web/src/features/wants/ui/wants-page.tsx:121
 msgid "Loading Wants…"
 msgstr "Verzoeken laden…"
 
@@ -3668,9 +3665,7 @@ msgstr "Uw profiel laden…"
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:54
 #: apps/web/src/components/market-search.tsx:302
-#: apps/web/src/components/nearby-catalog.tsx:137
-#: apps/web/src/components/nearby-catalog.tsx:155
-#: apps/web/src/components/nearby-catalog.tsx:242
+#: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/resource-usage.tsx:64
 #: apps/web/src/components/resource-usage.tsx:141
@@ -3685,8 +3680,8 @@ msgstr "Uw profiel laden…"
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:416
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:193
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:228
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:131
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:166
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
@@ -3697,28 +3692,25 @@ msgstr "Laden…"
 msgid "Local money and M-Pesa"
 msgstr "Lokaal geld en M-Pesa"
 
-#: apps/web/src/components/ui/location-picker.tsx:212
+#: apps/web/src/components/ui/location-picker.tsx:214
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/features/home/ui/report-page.tsx:577
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:246
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:248
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:547
 msgid "Location"
 msgstr "Locatie"
 
-#: apps/web/src/components/nearby-catalog.tsx:244
-#: apps/web/src/features/home/ui/market-page.tsx:198
+#: apps/web/src/features/home/ui/market-page.tsx:213
 msgid "Location denied"
 msgstr "Locatie geweigerd"
 
-#: apps/web/src/components/ui/location-map.tsx:221
+#: apps/web/src/components/ui/location-map.tsx:270
 msgid "Location map"
 msgstr "Locatiekaart"
 
-#: apps/web/src/components/nearby-catalog.tsx:246
-#: apps/web/src/components/ui/location-picker.tsx:240
-#: apps/web/src/features/home/ui/market-page.tsx:200
+#: apps/web/src/components/ui/location-picker.tsx:242
 msgid "Location unavailable"
 msgstr "Locatie niet beschikbaar"
 
@@ -3782,14 +3774,14 @@ msgstr "Kaartspeld"
 #~ msgstr "Markeringskleur"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
-#: apps/web/src/features/home/ui/market-page.tsx:343
+#: apps/web/src/features/home/ui/market-page.tsx:359
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:70
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
 msgstr "Markt"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:116
+#: apps/web/src/features/home/ui/marketplace-page.tsx:101
 msgid "Marketplace"
 msgstr "Marktplaats"
 
@@ -3801,7 +3793,7 @@ msgstr "Onderdelen van de marktplaats"
 #~ msgid "Marketplace vouchers"
 #~ msgstr "Waardebonnen op de marktplaats"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:559
+#: apps/web/src/components/catalog-filter-controls.tsx:556
 msgid "Match"
 msgstr "Overeenkomst"
 
@@ -3951,11 +3943,11 @@ msgid "My Catalogs"
 msgstr "Mijn catalogi"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:225
-#: apps/web/src/features/home/ui/wallet-page.tsx:377
+#: apps/web/src/features/home/ui/wallet-page.tsx:378
 msgid "My Pools"
 msgstr "Mijn fondsen"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:109
+#: apps/web/src/features/home/ui/posts-page.tsx:110
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:31
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:77
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:740
@@ -3963,7 +3955,10 @@ msgid "My posts"
 msgstr "Mijn berichten"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:178
-#: apps/web/src/features/home/ui/wallet-page.tsx:113
+#: apps/web/src/features/home/ui/wallet-page.tsx:107
+#: apps/web/src/features/home/ui/wallet-page.tsx:159
+#: apps/web/src/features/home/ui/wallet-page.tsx:172
+#: apps/web/src/features/home/ui/wallet-page.tsx:227
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:201
 msgid "My Vouchers"
 msgstr "Mijn waardebonnen"
@@ -3976,15 +3971,15 @@ msgstr "Mijn portefeuilleadres"
 #~ msgid "My wallet username"
 #~ msgstr "Gebruikersnaam van mijn portefeuille"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:273
+#: apps/web/src/features/home/ui/wallet-page.tsx:274
 msgid "My Wants"
 msgstr "Mijn verzoeken"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:191
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:202
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:102
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:325
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:336
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:327
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:338
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:248
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:28
 #: apps/web/src/features/wants/ui/want-form-page.tsx:222
@@ -4039,7 +4034,7 @@ msgstr "De nieuwe eigenaar moet een andere portefeuille zijn"
 msgid "New owner must not be one of this asset's contracts"
 msgstr "De nieuwe eigenaar mag geen van de contracten van dit bezit zijn"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:104
+#: apps/web/src/features/home/ui/posts-page.tsx:105
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:356
 msgid "New post"
@@ -4104,7 +4099,7 @@ msgstr "Geen activiteit komt overeen met deze filters."
 msgid "No activity yet."
 msgstr "Nog geen activiteit."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:218
+#: apps/web/src/features/home/ui/settings-page.tsx:216
 msgid "No address available"
 msgstr "Geen adres beschikbaar"
 
@@ -4116,19 +4111,19 @@ msgstr "Geen camera gevonden op dit apparaat."
 msgid "No cash activity yet."
 msgstr "Nog geen contante activiteit."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:190
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 msgid "No catalogs are available through your Credit pools."
 msgstr "Er zijn geen catalogi beschikbaar via uw kredietfondsen."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:212
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:150
 msgid "No catalogs found."
 msgstr "Geen catalogi gevonden."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:539
+#: apps/web/src/components/catalog-filter-controls.tsx:536
 msgid "No categories are available for the current results."
 msgstr "Er zijn geen categorieën beschikbaar voor de huidige resultaten."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:511
+#: apps/web/src/components/catalog-filter-controls.tsx:508
 msgid "No category filters are available."
 msgstr "Er zijn geen categoriefilters beschikbaar."
 
@@ -4193,20 +4188,20 @@ msgstr "Geen einddatum"
 #~ msgid "No items yet. Add pools or vouchers from their detail pages."
 #~ msgstr "Nog geen items. Voeg pools of vouchers toe vanaf hun detailpagina’s."
 
-#: apps/web/src/features/home/ui/market-page.tsx:309
-#: apps/web/src/features/home/ui/marketplace-page.tsx:186
+#: apps/web/src/features/home/ui/market-page.tsx:325
+#: apps/web/src/features/home/ui/marketplace-page.tsx:171
 msgid "No marketplace results are available through your Credit pools."
 msgstr "Er zijn geen marktplaatsresultaten beschikbaar via uw kredietfondsen."
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:226
+#: apps/web/src/features/home/ui/marketplace-page.tsx:211
 msgid "No marketplace results found."
 msgstr "Geen marktplaatsresultaten gevonden."
 
-#: apps/web/src/features/home/ui/market-page.tsx:328
+#: apps/web/src/features/home/ui/market-page.tsx:344
 msgid "No marketplace results match this search."
 msgstr "Geen marktplaatsresultaten komen overeen met deze zoekopdracht."
 
-#: apps/web/src/features/home/ui/market-page.tsx:335
+#: apps/web/src/features/home/ui/market-page.tsx:351
 msgid "No marketplace results to show yet."
 msgstr "Er zijn nog geen marktplaatsresultaten om weer te geven."
 
@@ -4218,11 +4213,11 @@ msgstr "Geen overeenkomende ontvangers."
 msgid "No offerings yet"
 msgstr "Nog geen aanbod"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:172
+#: apps/web/src/features/home/ui/offers-page.tsx:155
 msgid "No offers are available through your Credit pools."
 msgstr "Er is geen aanbod beschikbaar via uw Kredietfondsen."
 
-#: apps/web/src/features/home/ui/offers-page.tsx:177
+#: apps/web/src/features/home/ui/offers-page.tsx:160
 msgid "No offers match this search."
 msgstr "Geen aanbod komt overeen met deze zoekopdracht."
 
@@ -4258,12 +4253,12 @@ msgstr "Geen enkel fonds met deze waardebon komt overeen met deze filters."
 msgid "No pools yet."
 msgstr "Nog geen fondsen."
 
-#: apps/web/src/features/home/ui/posts-page.tsx:132
+#: apps/web/src/features/home/ui/posts-page.tsx:134
 msgid "No posts match this search."
 msgstr "Geen berichten komen overeen met deze zoekopdracht."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:292
-#: apps/web/src/features/home/ui/posts-page.tsx:134
+#: apps/web/src/features/home/ui/posts-page.tsx:136
 msgid "No posts yet."
 msgstr "Nog geen berichten."
 
@@ -4303,7 +4298,7 @@ msgstr "Geen eenheden gevonden."
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:259
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:514
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:517
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:439
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:224
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:611
@@ -4318,7 +4313,7 @@ msgstr "Geen USDm-, USDT- of USDC-saldo beschikbaar om op te nemen."
 msgid "No voucher in this pool is offering anything yet."
 msgstr "Nog geen enkele waardebon in dit fonds biedt iets aan."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:198
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "No vouchers are available through your Credit pools."
 msgstr "Er zijn geen waardebonnen beschikbaar via uw Kredietfondsen."
 
@@ -4333,7 +4328,7 @@ msgstr "Nog geen waardebonnen in dit fonds."
 msgid "No vouchers match that search."
 msgstr "Geen waardebonnen komen overeen met die zoekopdracht."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:425
+#: apps/web/src/components/catalog-filter-controls.tsx:422
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:122
 msgid "No vouchers match this search."
 msgstr "Geen waardebonnen komen overeen met deze zoekopdracht."
@@ -4342,13 +4337,13 @@ msgstr "Geen waardebonnen komen overeen met deze zoekopdracht."
 msgid "No vouchers to collect"
 msgstr "Geen waardebonnen om te innen"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:205
+#: apps/web/src/features/home/ui/market-list-page.tsx:209
 msgid "No vouchers to show yet."
 msgstr "Nog geen waardebonnen om weer te geven."
 
 #: apps/web/src/components/wants/want-detail.tsx:176
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
-#: apps/web/src/features/home/ui/wallet-page.tsx:233
+#: apps/web/src/features/home/ui/wallet-page.tsx:234
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:207
 msgid "No vouchers yet."
 msgstr "Nog geen waardebonnen."
@@ -4362,11 +4357,11 @@ msgstr "Geen portefeuilleadres beschikbaar."
 msgid "No Wants are connected to this pool yet."
 msgstr "Er zijn nog geen verzoeken aan deze pool gekoppeld."
 
-#: apps/web/src/features/wants/ui/wants-page.tsx:155
+#: apps/web/src/features/wants/ui/wants-page.tsx:145
 msgid "No Wants found."
 msgstr "Geen verzoeken gevonden."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:300
+#: apps/web/src/features/home/ui/wallet-page.tsx:301
 msgid "No Wants yet."
 msgstr "Nog geen verzoeken."
 
@@ -4425,7 +4420,7 @@ msgstr "Er is niets gewijzigd."
 msgid "Nothing has moved through this pool yet."
 msgstr "Er is nog niets door dit fonds gegaan."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:537
+#: apps/web/src/components/catalog-filter-controls.tsx:534
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Niets dat overeenkomt met ‘{searchTerm}’ heeft een categorie."
 
@@ -4486,7 +4481,7 @@ msgstr "Genummerde lijst"
 msgid "Off"
 msgstr "Uit"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:413
+#: apps/web/src/features/home/ui/marketplace-page.tsx:398
 msgid "Offer"
 msgstr "Aanbod"
 
@@ -4511,7 +4506,7 @@ msgstr "Aanbod"
 
 #: apps/web/src/components/market-bar.tsx:160
 #: apps/web/src/components/resource-usage.tsx:117
-#: apps/web/src/features/home/ui/offers-page.tsx:102
+#: apps/web/src/features/home/ui/offers-page.tsx:85
 msgid "Offers"
 msgstr "Aanbod"
 
@@ -4556,7 +4551,7 @@ msgstr "Locatie openen in Google Maps"
 #~ msgid "Open marketplace search"
 #~ msgstr "Marktplaatszoekopdracht openen"
 
-#: apps/web/src/components/app-menu.tsx:41
+#: apps/web/src/components/app-menu.tsx:40
 msgid "Open menu"
 msgstr "Menu openen"
 
@@ -4610,8 +4605,8 @@ msgstr "Papieren portefeuille openen…"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:222
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:418
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:448
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:420
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:450
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:703
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:241
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:665
@@ -4840,7 +4835,7 @@ msgstr "Permacultuur"
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:394
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:396
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:535
@@ -4848,7 +4843,7 @@ msgid "Phone"
 msgstr "Telefoon"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:402
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:404
 msgid "Phone number"
 msgstr "Telefoonnummer"
 
@@ -4866,7 +4861,7 @@ msgid "Photo {0}"
 msgstr "Foto {0}"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:74
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:315
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:317
 msgid "Photo uploads are unavailable right now."
 msgstr "Foto's kunnen momenteel niet worden geüpload."
 
@@ -4910,7 +4905,7 @@ msgstr "Plantenkwekerij"
 #: apps/web/src/components/market-search.tsx:334
 #: apps/web/src/components/wallet/recipient-address-input.tsx:196
 #: apps/web/src/features/home/ui/activity-page.tsx:267
-#: apps/web/src/features/home/ui/marketplace-page.tsx:416
+#: apps/web/src/features/home/ui/marketplace-page.tsx:401
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:292
@@ -5142,7 +5137,7 @@ msgstr "Bericht bijgewerkt."
 #: apps/web/src/components/navigation/bottom-navigation.tsx:58
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:158
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:296
-#: apps/web/src/features/home/ui/posts-page.tsx:72
+#: apps/web/src/features/home/ui/posts-page.tsx:73
 #: apps/web/src/features/home/ui/report-page.tsx:75
 #: apps/web/src/features/home/ui/report-page.tsx:611
 #: apps/web/src/features/home/ui/report-page.tsx:630
@@ -5155,7 +5150,7 @@ msgstr "Berichten"
 msgid "Posts aren't available for this voucher."
 msgstr "Berichten zijn niet beschikbaar voor deze waardebon."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:58
+#: apps/web/src/features/home/ui/settings-page.tsx:57
 msgid "Preferences"
 msgstr "Voorkeuren"
 
@@ -5169,9 +5164,9 @@ msgstr "Voorkeuren"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:381
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:389
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:494
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:503
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:515
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:497
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:506
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:518
 msgid "Preferred unit of account"
 msgstr "Voorkeursrekeneenheid"
 
@@ -5455,7 +5450,7 @@ msgstr "Reden voor melding"
 msgid "Receipt copied"
 msgstr "Ontvangstbewijs gekopieerd"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:74
+#: apps/web/src/features/home/ui/wallet-page.tsx:72
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:192
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
@@ -5620,7 +5615,7 @@ msgstr "‘{0}’ van de marktplaats verwijderen?"
 #. placeholder {0}: item.name
 #. placeholder {0}: label(pool)
 #. placeholder {0}: voucherLabel(voucher)
-#: apps/web/src/components/catalog-filter-controls.tsx:366
+#: apps/web/src/components/catalog-filter-controls.tsx:363
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:104
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:193
 msgid "Remove {0}"
@@ -5696,13 +5691,13 @@ msgid "Request"
 msgstr "Verzoek"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:133
-#: apps/web/src/components/ui/location-picker.tsx:215
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:221
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:236
+#: apps/web/src/components/ui/location-picker.tsx:217
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:223
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:238
 msgid "Required"
 msgstr "Verplicht"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:605
+#: apps/web/src/components/catalog-filter-controls.tsx:602
 msgid "Reset"
 msgstr "Opnieuw instellen"
 
@@ -5754,16 +5749,16 @@ msgstr "Retraite"
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:430
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:446
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:61
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:206
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:144
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:60
-#: apps/web/src/features/home/ui/market-map.tsx:965
-#: apps/web/src/features/home/ui/market-page.tsx:241
-#: apps/web/src/features/home/ui/market-page.tsx:249
-#: apps/web/src/features/home/ui/market-page.tsx:256
-#: apps/web/src/features/home/ui/marketplace-page.tsx:201
-#: apps/web/src/features/home/ui/marketplace-page.tsx:252
+#: apps/web/src/features/home/ui/market-map.tsx:975
+#: apps/web/src/features/home/ui/market-page.tsx:264
+#: apps/web/src/features/home/ui/market-page.tsx:272
+#: apps/web/src/features/home/ui/market-page.tsx:279
+#: apps/web/src/features/home/ui/marketplace-page.tsx:186
+#: apps/web/src/features/home/ui/marketplace-page.tsx:237
 #: apps/web/src/features/home/ui/report-page.tsx:57
-#: apps/web/src/features/home/ui/wallet-page.tsx:152
+#: apps/web/src/features/home/ui/wallet-page.tsx:148
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:753
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:290
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:336
@@ -5785,7 +5780,7 @@ msgstr "Retraite"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:155
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:47
 #: apps/web/src/features/wants/ui/want-form-page.tsx:78
-#: apps/web/src/features/wants/ui/wants-page.tsx:143
+#: apps/web/src/features/wants/ui/wants-page.tsx:133
 msgid "Retry"
 msgstr "Opnieuw proberen"
 
@@ -5899,7 +5894,7 @@ msgid "Scan recipient address"
 msgstr "Adres van ontvanger scannen"
 
 #: apps/web/src/components/wants/want-row.tsx:66
-#: apps/web/src/features/home/ui/wallet-page.tsx:339
+#: apps/web/src/features/home/ui/wallet-page.tsx:340
 msgid "Scheduled"
 msgstr "Gepland"
 
@@ -5924,7 +5919,7 @@ msgstr "Zoeken op naam of symbool"
 msgid "Search by voucher name, symbol, address or transaction hash."
 msgstr "Zoek op vouchernaam, symbool, adres of transactiehash."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:99
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
 msgid "Search catalogs"
 msgstr "Catalogi doorzoeken"
 
@@ -5941,7 +5936,7 @@ msgstr "Landen zoeken"
 #~ msgid "Search currencies"
 #~ msgstr "Valuta zoeken"
 
-#: apps/web/src/components/ui/location-picker.tsx:225
+#: apps/web/src/components/ui/location-picker.tsx:227
 msgid "Search for a town or place"
 msgstr "Een stad of plaats zoeken"
 
@@ -5949,7 +5944,7 @@ msgstr "Een stad of plaats zoeken"
 #~ msgid "Search offers"
 #~ msgstr "Aanbod zoeken"
 
-#: apps/web/src/features/home/ui/offers-page.tsx:108
+#: apps/web/src/features/home/ui/offers-page.tsx:91
 msgid "Search offers, vouchers, descriptions, or tags"
 msgstr "Zoek in aanbod, waardebonnen, beschrijvingen of tags"
 
@@ -5983,9 +5978,14 @@ msgstr "Fondsen zoeken"
 msgid "Search post tags"
 msgstr "Berichttags zoeken"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:79
+#: apps/web/src/features/home/ui/posts-page.tsx:80
 msgid "Search posts by title or description"
 msgstr "Berichten zoeken op titel of beschrijving"
+
+#: apps/web/src/components/market-viewport-search-notice.tsx:21
+msgid "Search results use the area shown on the <0>map</0>."
+msgstr "De zoekresultaten gebruiken het gebied dat op de <0>kaart</0> wordt "
+"weergegeven."
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:349
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:765
@@ -5995,21 +5995,21 @@ msgstr "Berichten zoeken op titel of beschrijving"
 msgid "Search tags"
 msgstr "Tags zoeken"
 
-#: apps/web/src/features/home/ui/market-page.tsx:372
-#: apps/web/src/features/home/ui/marketplace-page.tsx:122
+#: apps/web/src/features/home/ui/market-page.tsx:388
+#: apps/web/src/features/home/ui/marketplace-page.tsx:107
 msgid "Search the marketplace"
 msgstr "Marktplaats doorzoeken"
 
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:258
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:387
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:513
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:516
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:438
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:223
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:610
 msgid "Search units of account"
 msgstr "Rekeneenheden zoeken"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:378
+#: apps/web/src/components/catalog-filter-controls.tsx:375
 msgid "Search voucher filters"
 msgstr "Waardebonfilters zoeken"
 
@@ -6018,7 +6018,7 @@ msgstr "Waardebonfilters zoeken"
 msgid "Search voucher tags"
 msgstr "Tags van waardebonnen zoeken"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:377
+#: apps/web/src/components/catalog-filter-controls.tsx:374
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:292
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
@@ -6026,7 +6026,7 @@ msgstr "Tags van waardebonnen zoeken"
 msgid "Search vouchers"
 msgstr "Waardebonnen zoeken"
 
-#: apps/web/src/features/wants/ui/wants-page.tsx:72
+#: apps/web/src/features/wants/ui/wants-page.tsx:62
 msgid "Search Wants"
 msgstr "Verzoeken zoeken"
 
@@ -6042,7 +6042,7 @@ msgstr "Uw waardebonnen zoeken"
 msgid "Search…"
 msgstr "Zoeken…"
 
-#: apps/web/src/components/ui/location-picker.tsx:274
+#: apps/web/src/components/ui/location-picker.tsx:276
 msgid "Searching places…"
 msgstr "Plaatsen zoeken…"
 
@@ -6054,7 +6054,7 @@ msgstr "Pools zoeken…"
 msgid "Searching recipients…"
 msgstr "Ontvangers zoeken…"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:399
+#: apps/web/src/components/catalog-filter-controls.tsx:396
 msgid "Searching vouchers…"
 msgstr "Waardebonnen zoeken…"
 
@@ -6113,7 +6113,7 @@ msgstr "Geselecteerde tags"
 msgid "Selected voucher tags"
 msgstr "Geselecteerde tags van waardebonnen"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:362
+#: apps/web/src/components/catalog-filter-controls.tsx:359
 msgid "Selected vouchers"
 msgstr "Geselecteerde waardebonnen"
 
@@ -6130,7 +6130,7 @@ msgid "Sell to a bank account"
 msgstr "Verkopen naar een bankrekening"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:372
-#: apps/web/src/features/home/ui/wallet-page.tsx:71
+#: apps/web/src/features/home/ui/wallet-page.tsx:69
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:165
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:337
 msgid "Send"
@@ -6203,7 +6203,7 @@ msgid "Serving"
 msgstr "Bediening"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:75
-#: apps/web/src/features/home/ui/settings-page.tsx:102
+#: apps/web/src/features/home/ui/settings-page.tsx:100
 msgid "Session"
 msgstr "Sessie"
 
@@ -6234,7 +6234,7 @@ msgstr "Uw portefeuille instellen…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:66
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/home/ui/settings-page.tsx:51
+#: apps/web/src/features/home/ui/settings-page.tsx:50
 #: apps/web/src/features/install/ui/install-page.tsx:64
 msgid "Settings"
 msgstr "Instellingen"
@@ -6252,7 +6252,7 @@ msgid "Share card"
 msgstr "Kaart delen"
 
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:80
+#: apps/web/src/features/home/ui/settings-page.tsx:78
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
 msgstr "CLC delen"
@@ -6300,8 +6300,8 @@ msgid "Show all"
 msgstr "Alles weergeven"
 
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:173
-msgid "Showing catalogs <0>globally</0>."
-msgstr "Catalogi worden <0>wereldwijd</0> weergegeven."
+#~ msgid "Showing catalogs <0>globally</0>."
+#~ msgstr "Catalogi worden <0>wereldwijd</0> weergegeven."
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:437
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1052
@@ -6309,10 +6309,10 @@ msgid "Showing recent vouchers only."
 msgstr "Alleen recente waardebonnen worden weergegeven."
 
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:153
-msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
-"location</1>."
-msgstr "Resultaten binnen <0>{radiusLabel}</0> van de opgeslagen "
-"<1>profiellocatie</1>."
+#~ msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+#~ "location</1>."
+#~ msgstr "Resultaten binnen <0>{radiusLabel}</0> van de opgeslagen "
+#~ "<1>profiellocatie</1>."
 
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
 #~ msgid "Showing results within 1,000 km of your saved profile location."
@@ -6380,16 +6380,16 @@ msgstr "Aanmelden met privésleutel"
 #~ msgstr "Log in met de schermvergrendeling van uw apparaat in plaats van met uw "
 #~ "papieren kaart. Uw apparaat vraagt dit via {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:123
-#: apps/web/src/features/home/ui/settings-page.tsx:142
+#: apps/web/src/features/home/ui/settings-page.tsx:121
+#: apps/web/src/features/home/ui/settings-page.tsx:140
 msgid "Sign out"
 msgstr "Afmelden"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:129
+#: apps/web/src/features/home/ui/settings-page.tsx:127
 msgid "Sign out?"
 msgstr "Afmelden?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:65
+#: apps/web/src/features/home/ui/settings-page.tsx:63
 msgid "Sign-in"
 msgstr "Aanmelden"
 
@@ -6405,7 +6405,7 @@ msgstr "Aanmelden"
 #~ msgid "Signing out..."
 #~ msgstr "Afmelden..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:123
+#: apps/web/src/features/home/ui/settings-page.tsx:121
 msgid "Signing out…"
 msgstr "Afmelden…"
 
@@ -6663,16 +6663,16 @@ msgstr "Het symbool was al bezet; {0} wordt in plaats daarvan gebruikt."
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:318
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:153
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
-#: apps/web/src/features/home/ui/marketplace-page.tsx:147
-#: apps/web/src/features/home/ui/offers-page.tsx:133
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:99
+#: apps/web/src/features/home/ui/marketplace-page.tsx:132
+#: apps/web/src/features/home/ui/offers-page.tsx:116
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:271
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:555
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:726
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:55
 #: apps/web/src/features/wants/ui/want-form-page.tsx:240
-#: apps/web/src/features/wants/ui/wants-page.tsx:97
+#: apps/web/src/features/wants/ui/wants-page.tsx:87
 msgid "Tags"
 msgstr "Tags"
 
@@ -6722,7 +6722,7 @@ msgid "Tap your NFC card"
 msgstr "Houd uw NFC-kaart tegen de telefoon"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:229
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:455
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:457
 msgid "Tell people a little about yourself"
 msgstr "Vertel mensen iets over uzelf"
 
@@ -6747,7 +6747,7 @@ msgstr "Voorwaarden"
 msgid "Terms and Conditions"
 msgstr "Algemene voorwaarden"
 
-#: apps/web/src/components/app-menu.tsx:103
+#: apps/web/src/components/app-menu.tsx:95
 msgid "Terms of Service"
 msgstr "Gebruiksvoorwaarden"
 
@@ -6850,11 +6850,11 @@ msgid "The exact pin will be public. Choose a safe public meeting place, not a "
 msgstr "De exacte locatie wordt openbaar. Kies een veilige openbare "
 "ontmoetingsplek, geen privéwoning."
 
-#: apps/web/src/features/home/ui/market-map.tsx:958
+#: apps/web/src/features/home/ui/market-map.tsx:968
 msgid "The map could not be loaded."
 msgstr "De kaart kon niet worden geladen."
 
-#: apps/web/src/features/home/ui/market-map.tsx:960
+#: apps/web/src/features/home/ui/market-map.tsx:970
 msgid "The map is not supported on this device."
 msgstr "De kaart wordt niet ondersteund op dit apparaat."
 
@@ -6949,7 +6949,7 @@ msgstr "De rekeneenheid is vastgelegd door de uitgerolde oracle van dit fonds."
 msgid "The voucher could not be published."
 msgstr "De waardebon kon niet worden gepubliceerd."
 
-#: apps/web/src/components/app-menu.tsx:80
+#: apps/web/src/components/app-menu.tsx:79
 #: apps/web/src/components/theme-selector.tsx:46
 msgid "Theme"
 msgstr "Thema"
@@ -6959,11 +6959,11 @@ msgid "There is nothing available for exchange with this voucher yet."
 msgstr "Er is nog niets beschikbaar om met deze waardebon te omwisselen."
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:52
-#: apps/web/src/features/home/ui/marketplace-page.tsx:177
-#: apps/web/src/features/home/ui/offers-page.tsx:163
+#: apps/web/src/features/home/ui/marketplace-page.tsx:162
+#: apps/web/src/features/home/ui/offers-page.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:310
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:75
-#: apps/web/src/features/wants/ui/wants-page.tsx:124
+#: apps/web/src/features/wants/ui/wants-page.tsx:114
 msgid "These filters aren't valid."
 msgstr "Deze filters zijn ongeldig."
 
@@ -7283,9 +7283,8 @@ msgid "Trip"
 msgstr "Reis"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:40
-#: apps/web/src/components/catalog-filter-controls.tsx:412
+#: apps/web/src/components/catalog-filter-controls.tsx:409
 #: apps/web/src/components/market-search.tsx:306
-#: apps/web/src/components/nearby-catalog.tsx:176
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:181
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:86
@@ -7297,10 +7296,10 @@ msgstr "Reis"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:219
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:317
-#: apps/web/src/features/home/ui/wallet-page.tsx:190
-#: apps/web/src/features/home/ui/wallet-page.tsx:208
-#: apps/web/src/features/home/ui/wallet-page.tsx:294
-#: apps/web/src/features/home/ui/wallet-page.tsx:398
+#: apps/web/src/features/home/ui/wallet-page.tsx:186
+#: apps/web/src/features/home/ui/wallet-page.tsx:204
+#: apps/web/src/features/home/ui/wallet-page.tsx:295
+#: apps/web/src/features/home/ui/wallet-page.tsx:399
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:222
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
@@ -7327,7 +7326,7 @@ msgstr "Type"
 msgid "Type at least {POOL_SEARCH_MIN_CHARS} characters to search pools."
 msgstr "Typ ten minste {POOL_SEARCH_MIN_CHARS} tekens om pools te zoeken."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:393
+#: apps/web/src/components/catalog-filter-controls.tsx:390
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Voer minimaal {VOUCHER_SEARCH_MIN_CHARS} tekens in om waardebonnen te "
 "zoeken."
@@ -7491,7 +7490,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "Gebruik <0>Binance</0> of een ander lokaal handelsplatform en "
 "vervolgens <1>Jumper</1> om geld naar uw Gnosis-portefeuille te sturen."
 
-#: apps/web/src/features/home/ui/market-page.tsx:201
+#: apps/web/src/features/home/ui/market-page.tsx:214
 msgid "Use current location"
 msgstr "Huidige locatie gebruiken"
 
@@ -7509,8 +7508,7 @@ msgstr "Gebruik letters en cijfers, bijvoorbeeld KES"
 msgid "Use max · {0}"
 msgstr "Maximum gebruiken · {0}"
 
-#: apps/web/src/components/nearby-catalog.tsx:252
-#: apps/web/src/components/ui/location-picker.tsx:240
+#: apps/web/src/components/ui/location-picker.tsx:242
 msgid "Use my location"
 msgstr "Mijn locatie gebruiken"
 
@@ -7582,9 +7580,11 @@ msgstr "Trillen"
 msgid "View"
 msgstr "Bekijken"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:162
-#: apps/web/src/features/home/ui/wallet-page.tsx:176
-#: apps/web/src/features/home/ui/wallet-page.tsx:224
+#: apps/web/src/features/home/ui/wallet-page.tsx:111
+#: apps/web/src/features/home/ui/wallet-page.tsx:159
+#: apps/web/src/features/home/ui/wallet-page.tsx:172
+#: apps/web/src/features/home/ui/wallet-page.tsx:214
+#: apps/web/src/features/home/ui/wallet-page.tsx:227
 msgid "View all"
 msgstr "Alles bekijken"
 
@@ -7620,8 +7620,8 @@ msgstr "Waardebon bekijken"
 #: apps/web/src/components/visibility-selector.tsx:86
 #: apps/web/src/components/visibility-selector.tsx:90
 #: apps/web/src/components/visibility-selector.tsx:92
-msgid "Visibility"
-msgstr "Zichtbaarheid"
+#~ msgid "Visibility"
+#~ msgstr "Zichtbaarheid"
 
 #: apps/web/src/lib/category-label.ts:23
 msgid "Volunteer"
@@ -7633,7 +7633,7 @@ msgstr "waardebon"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/home/ui/marketplace-page.tsx:415
+#: apps/web/src/features/home/ui/marketplace-page.tsx:400
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:165
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:175
 msgid "Voucher"
@@ -7686,7 +7686,7 @@ msgstr "Waardebongegevens niet beschikbaar"
 msgid "Voucher details updated."
 msgstr "Waardebongegevens bijgewerkt."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:474
+#: apps/web/src/components/catalog-filter-controls.tsx:471
 msgid "Voucher match"
 msgstr "Overeenkomende waardebon"
 
@@ -7716,7 +7716,7 @@ msgstr "Waardebon buiten gebruik gesteld."
 msgid "Voucher review"
 msgstr "Waardebonbeoordeling"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:436
+#: apps/web/src/components/catalog-filter-controls.tsx:433
 msgid "Voucher search results"
 msgstr "Zoekresultaten voor waardebonnen"
 
@@ -7743,7 +7743,7 @@ msgstr "Waardebonlabels"
 msgid "Voucher tracking details are missing."
 msgstr "Gegevens voor het volgen van de waardebon ontbreken."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:323
+#: apps/web/src/components/catalog-filter-controls.tsx:320
 #: apps/web/src/components/market-bar.tsx:162
 #: apps/web/src/components/resource-usage.tsx:115
 #: apps/web/src/components/wants/want-detail.tsx:169
@@ -7762,7 +7762,7 @@ msgstr "Waardebonnen"
 #~ msgid "Vouchers by {0}"
 #~ msgstr "Vouchers van {0}"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:217
+#: apps/web/src/features/home/ui/market-list-page.tsx:221
 msgid "Vouchers list"
 msgstr "Lijst met waardebonnen"
 
@@ -7812,7 +7812,7 @@ msgstr "Wachten op de blockchain…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:42
 #: apps/web/src/components/wallet/recipient-address-input.tsx:196
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
-#: apps/web/src/features/home/ui/wallet-page.tsx:120
+#: apps/web/src/features/home/ui/wallet-page.tsx:116
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
@@ -7826,7 +7826,7 @@ msgstr "Wachten op de blockchain…"
 msgid "Wallet"
 msgstr "Portefeuille"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:125
+#: apps/web/src/features/home/ui/wallet-page.tsx:121
 msgid "Wallet actions"
 msgstr "Portefeuilleacties"
 
@@ -7835,12 +7835,12 @@ msgstr "Portefeuilleacties"
 #~ msgstr "Portefeuilleacties zijn beschikbaar nadat u een account hebt aangemaakt "
 #~ "of bent ingelogd."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:199
-#: apps/web/src/features/home/ui/settings-page.tsx:203
+#: apps/web/src/features/home/ui/settings-page.tsx:197
+#: apps/web/src/features/home/ui/settings-page.tsx:201
 msgid "Wallet session"
 msgstr "Portefeuillesessie"
 
-#: apps/web/src/features/home/ui/marketplace-page.tsx:414
+#: apps/web/src/features/home/ui/marketplace-page.tsx:399
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:121
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
 msgid "Want"
@@ -7863,7 +7863,7 @@ msgstr "Afbeelding van verzoek"
 #: apps/web/src/components/resource-usage.tsx:119
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
-#: apps/web/src/features/wants/ui/wants-page.tsx:66
+#: apps/web/src/features/wants/ui/wants-page.tsx:56
 msgid "Wants"
 msgstr "Verzoeken"
 
@@ -7880,7 +7880,6 @@ msgstr "We konden uw sessie niet verifiëren. Controleer uw verbinding en "
 msgid "We couldn't load your profile phone number."
 msgstr "We konden het telefoonnummer uit uw profiel niet laden."
 
-#: apps/web/src/components/nearby-catalog.tsx:166
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:53
 msgid "We couldn't load your profile."
 msgstr "We konden uw profiel niet laden."
@@ -7899,8 +7898,8 @@ msgstr "We konden niet verifiëren of deze waardebon al een voorraad heeft."
 #: apps/web/src/components/vouchers/voucher-summary.tsx:409
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:432
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:418
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:434
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
@@ -8068,7 +8067,7 @@ msgstr "U hebt na het inwisselen zeven dagen de tijd om uw beoordeling te "
 msgid "You haven't created a catalog yet."
 msgstr "U hebt nog geen catalogus aangemaakt."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:405
+#: apps/web/src/features/home/ui/wallet-page.tsx:406
 msgid "You haven't created a pool yet."
 msgstr "U hebt nog geen fonds aangemaakt."
 
@@ -8096,7 +8095,7 @@ msgstr "U verzendt"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "U bevestigt met Face ID, uw vingerafdruk of pincode"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:151
+#: apps/web/src/features/home/ui/settings-page.tsx:149
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "U hebt uw papieren kaart of passkey nodig om u opnieuw aan te melden."
 
@@ -8137,7 +8136,7 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "Uw MPESA-uitbetaling wordt binnenkort bijgeschreven."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:197
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:333
 msgid "Your name"
 msgstr "Uw naam"
 

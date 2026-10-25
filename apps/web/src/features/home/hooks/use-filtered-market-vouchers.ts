@@ -1,11 +1,10 @@
-import {
-  filterNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-  nearbyQueryKey,
-  nearbyQueryPolicy,
-} from "#/components/nearby-catalog";
+import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  marketBoundsKey,
+  type MarketBoundingBox,
+  type NearbyRequest,
+} from "@clc/core/features/catalog/nearby";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { isRetryableBackendError } from "@clc/api/client/errors";
@@ -49,11 +48,12 @@ export function useFilteredMarketVouchers(
   filter: CatalogFilter | null,
   perPage = MARKET_MAP_PAGE_SIZE,
   pools?: readonly { chainId: number; address: string }[],
+  boundsOverride?: readonly MarketBoundingBox[],
 ) {
   const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
+  const discovery = mapDiscovery(boundsOverride) ?? nearby;
   const query = useQuery({
-    queryKey: nearbyQueryKey(marketVoucherQueryKeys.filtered(filter, perPage, pools), nearby),
+    queryKey: nearbyQueryKey(marketVoucherQueryKeys.filtered(filter, perPage, pools), discovery),
     queryFn: async ({ signal }): Promise<FilteredMarketCatalog> => {
       if (!filter) throw new Error("The filtered catalog query ran without a filter.");
 
@@ -63,7 +63,8 @@ export function useFilteredMarketVouchers(
       for (let index = 0; index < MAX_FILTERED_PAGES; index++) {
         const page = await marketClient.getFilteredMarketVouchers(
           {
-            ...(nearby?.nearby === true ? { nearby: true } : {}),
+            ...(discovery?.nearby === true ? { nearby: true } : {}),
+            bounds: discovery?.bounds,
             perPage,
             cursor,
             next: cursor === undefined ? undefined : true,
@@ -90,16 +91,13 @@ export function useFilteredMarketVouchers(
         tagFacets: pages[0]?.tagFacets ?? null,
       };
     },
-    select: (data: FilteredMarketCatalog) => ({
-      ...data,
-      vouchers: filterNearbyCatalog(data.vouchers, visibilityFilter),
-    }),
+    select: (data: FilteredMarketCatalog) => data,
     enabled: filter !== null && (pools === undefined || pools.length > 0),
     placeholderData: keepPreviousData,
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,
     gcTime: FILTERED_GC_TIME,
-    ...nearbyQueryPolicy(nearby),
+    ...nearbyQueryPolicy(discovery),
     // Only a transport failure or server fault is worth replaying; a rejected
     // filter, an exhausted page budget, or a bug in our own query function
     // will fail identically. See isRetryableBackendError.
@@ -109,17 +107,22 @@ export function useFilteredMarketVouchers(
   return query;
 }
 
-export function useMarketFacetVocabulary(enabled: boolean) {
+export function useMarketFacetVocabulary(
+  enabled: boolean,
+  boundsOverride?: readonly MarketBoundingBox[],
+) {
   const nearby = useNearbyCatalog();
+  const discovery = mapDiscovery(boundsOverride) ?? nearby;
   return useQuery({
-    queryKey: nearbyQueryKey(marketVoucherQueryKeys.facetVocabulary(), nearby),
+    queryKey: nearbyQueryKey(marketVoucherQueryKeys.facetVocabulary(), discovery),
     queryFn: async ({ signal }) => {
       const page = await marketClient.getFilteredMarketVouchers(
         {
           perPage: 1,
           filter: EMPTY_CATALOG_FILTER,
           facets: true,
-          ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(discovery?.nearby === true ? { nearby: true } : {}),
+          bounds: discovery?.bounds,
         },
         signal,
       );
@@ -129,9 +132,18 @@ export function useMarketFacetVocabulary(enabled: boolean) {
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,
     gcTime: FILTERED_GC_TIME,
-    ...nearbyQueryPolicy(nearby),
+    ...nearbyQueryPolicy(discovery),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
+}
+
+function mapDiscovery(bounds: readonly MarketBoundingBox[] | undefined): NearbyRequest | undefined {
+  if (!bounds) return undefined;
+  return {
+    nearby: false,
+    scope: `map:${marketBoundsKey(bounds)}`,
+    ...(bounds.length ? { bounds } : {}),
+  };
 }
 
 const EMPTY_CATALOG_FILTER: CatalogFilter = {

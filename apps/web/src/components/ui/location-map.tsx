@@ -11,9 +11,9 @@ import { standardMapStyleUrl } from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
 import { useHydratedTheme } from "#/providers/theme";
 
-const NAIROBI = { lat: -1.2921, lng: 36.8219 };
+const WORLD = { lat: 0, lng: 20 };
 const PIN_ZOOM = 13;
-const EMPTY_ZOOM = 5;
+const WORLD_ZOOM = 2;
 const MARKER_COLOR = BRAND_THEME_COLOR.light;
 
 type LocationMapProps = {
@@ -21,6 +21,7 @@ type LocationMapProps = {
   lng?: number | null;
   interactive?: boolean;
   onLocationChange?: (lat: number, lng: number) => void;
+  cameraHint?: { lat: number; lng: number; zoom: number } | null;
   markerStyle?: MapMarkerStyle;
   className?: string;
 };
@@ -35,6 +36,7 @@ export function LocationMap({
   lng,
   interactive = false,
   onLocationChange,
+  cameraHint,
   markerStyle,
   className,
 }: LocationMapProps) {
@@ -44,8 +46,12 @@ export function LocationMap({
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const hasLoadedRef = useRef(false);
   const markerRef = useRef<MapLibreGL.Marker | null>(null);
+  const userInteractedRef = useRef(false);
   const onLocationChangeRef = useRef(onLocationChange);
   const initialLocationRef = useRef({ lat, lng });
+  const cameraHintRef = useRef(cameraHint);
+  cameraHintRef.current = cameraHint;
+  const appliedCameraHintRef = useRef(cameraHint ?? null);
   const interactiveRef = useRef(interactive);
   const markerStyleRef = useRef(markerStyle);
   const [markerElement, setMarkerElement] = useState<HTMLDivElement | null>(null);
@@ -85,6 +91,7 @@ export function LocationMap({
       .setLngLat([nextLng, nextLat])
       .addTo(map);
     markerRef.current.on("dragend", () => {
+      userInteractedRef.current = true;
       const markerLngLat = markerRef.current?.getLngLat();
       if (!markerLngLat) return;
       onLocationChangeRef.current?.(markerLngLat.lat, markerLngLat.lng);
@@ -104,9 +111,12 @@ export function LocationMap({
     const isInteractive = interactiveRef.current;
     const hasLocation =
       typeof initialLocation.lat === "number" && typeof initialLocation.lng === "number";
+    const initialCameraHint = cameraHintRef.current;
     const center: [number, number] = hasLocation
       ? [initialLocation.lng as number, initialLocation.lat as number]
-      : [NAIROBI.lng, NAIROBI.lat];
+      : initialCameraHint
+        ? [initialCameraHint.lng, initialCameraHint.lat]
+        : [WORLD.lng, WORLD.lat];
     let map: MapLibreGL.Map;
     try {
       const initialStyle = mapStyleRef.current;
@@ -114,7 +124,7 @@ export function LocationMap({
         container: containerRef.current,
         style: initialStyle,
         center,
-        zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
+        zoom: hasLocation ? PIN_ZOOM : (initialCameraHint?.zoom ?? WORLD_ZOOM),
         interactive: isInteractive,
         attributionControl: false,
       });
@@ -141,9 +151,14 @@ export function LocationMap({
 
     function handleMapClick(event: MapMouseEvent) {
       if (!isInteractive) return;
+      userInteractedRef.current = true;
       const { lat: clickLat, lng: clickLng } = event.lngLat;
       setMarker(map, clickLat, clickLng);
       onLocationChangeRef.current?.(clickLat, clickLng);
+    }
+
+    function handleUserDragStart() {
+      userInteractedRef.current = true;
     }
 
     function flyToPin(nextLat: number, nextLng: number) {
@@ -162,17 +177,30 @@ export function LocationMap({
       if (hasLocation) {
         setMarker(map, initialLocation.lat as number, initialLocation.lng as number);
         flyToPin(initialLocation.lat as number, initialLocation.lng as number);
+        return;
+      }
+      const latestCameraHint = cameraHintRef.current;
+      if (latestCameraHint && latestCameraHint !== initialCameraHint) {
+        appliedCameraHintRef.current = latestCameraHint;
+        map.flyTo({
+          center: [latestCameraHint.lng, latestCameraHint.lat],
+          zoom: latestCameraHint.zoom,
+        });
       }
     }
 
     if (isInteractive) {
       map.getCanvas().style.cursor = "crosshair";
       map.on("click", handleMapClick);
+      map.on("dragstart", handleUserDragStart);
     }
     map.on("load", handleLoad);
 
     return () => {
-      if (isInteractive) map.off("click", handleMapClick);
+      if (isInteractive) {
+        map.off("click", handleMapClick);
+        map.off("dragstart", handleUserDragStart);
+      }
       map.off("load", handleLoad);
       removeMap();
     };
@@ -211,6 +239,27 @@ export function LocationMap({
     markerRef.current = null;
     setMarkerElement(null);
   }, [lat, lng, setMarker]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (
+      !map ||
+      !hasLoadedRef.current ||
+      !cameraHint ||
+      userInteractedRef.current ||
+      (typeof lat === "number" && typeof lng === "number")
+    )
+      return;
+    const applied = appliedCameraHintRef.current;
+    if (
+      applied?.lat === cameraHint.lat &&
+      applied.lng === cameraHint.lng &&
+      applied.zoom === cameraHint.zoom
+    )
+      return;
+    appliedCameraHintRef.current = cameraHint;
+    map.flyTo({ center: [cameraHint.lng, cameraHint.lat], zoom: cameraHint.zoom });
+  }, [cameraHint, lat, lng]);
 
   if (failed) return null;
 

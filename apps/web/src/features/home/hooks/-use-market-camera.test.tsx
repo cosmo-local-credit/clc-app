@@ -122,7 +122,7 @@ describe("useMarketCamera ranking", () => {
     expect(result.current.camera?.lat).toBe(-1.29);
   });
 
-  it("uses a MapTiler city at rank 3", () => {
+  it("uses a MapTiler IP city as the coarse camera", () => {
     ipCameraResult.current = {
       data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" },
     };
@@ -135,16 +135,6 @@ describe("useMarketCamera ranking", () => {
       zoom: 11,
       rank: CAMERA_RANK.ipCity,
     });
-  });
-
-  it("uses a country default at rank 4", () => {
-    ipCameraResult.current = {
-      data: { lat: -1.2921, lng: 36.8219, zoom: 12, source: "country-default" },
-    };
-
-    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
-
-    expect(result.current.camera?.rank).toBe(CAMERA_RANK.countryDefault);
   });
 
   it("prefers a persisted fix over an IP city", async () => {
@@ -170,7 +160,7 @@ describe("useMarketCamera persistence", () => {
     expect(Number.isNaN(Date.parse(String(written.capturedAt)))).toBe(false);
   });
 
-  it("never persists an IP or country camera", async () => {
+  it("never persists an IP camera", async () => {
     ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
 
     renderHook(() => useMarketCamera("guest"), { wrapper });
@@ -252,7 +242,7 @@ describe("useMarketCamera real fix reporting", () => {
     expect(result.current.userLocation).toBeNull();
   });
 
-  it("never reports an IP or country camera as a real fix", () => {
+  it("never reports an IP camera as a real fix", () => {
     ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
 
     const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });

@@ -42,16 +42,21 @@ vi.mock("./location-map.lazy", () => ({
   LocationMap: ({
     lat,
     lng,
+    cameraHint,
     onLocationChange,
   }: {
     lat?: number | null;
     lng?: number | null;
+    cameraHint?: { lat: number; lng: number; zoom: number } | null;
     onLocationChange?: (lat: number, lng: number) => void;
   }) =>
     mockMapVisible.current ? (
       <div>
         <span data-testid="map-pin">
           {lat},{lng}
+        </span>
+        <span data-testid="map-camera">
+          {cameraHint?.lat},{cameraHint?.lng},{cameraHint?.zoom}
         </span>
         <button type="button" onClick={() => onLocationChange?.(-1.29, 36.82)}>
           pick map location
@@ -73,6 +78,24 @@ beforeEach(() => {
 });
 
 describe("LocationPicker", () => {
+  it("centres an empty picker from the approximate camera without selecting a location", () => {
+    const onChange = vi.fn();
+
+    render(
+      <LocationPicker
+        value={undefined}
+        onChange={onChange}
+        cameraHint={{ lat: -6.7924, lng: 39.2083, zoom: 10 }}
+        required
+      />,
+    );
+
+    expect(screen.getByTestId("map-camera").textContent).toBe("-6.7924,39.2083,10");
+    expect(screen.getByTestId("map-pin").textContent).toBe(",");
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty("value", "");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it("does not search a saved location when effects replay in StrictMode", async () => {
     mockSearchLocations.mockResolvedValue([
       { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },

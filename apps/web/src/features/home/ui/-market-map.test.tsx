@@ -151,6 +151,10 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
       return this.zoom;
     }
 
+    getCenter() {
+      return { lat: -1.3, lng: 36.85 };
+    }
+
     getMaxZoom() {
       return this.maxZoom;
     }
@@ -612,9 +616,9 @@ describe("MarketMap ranked camera", () => {
     });
   });
 
-  it("keeps the fallback camera when no location or saved view is known", () => {
+  it("uses a world camera when no location or saved view is known", () => {
     renderWithCamera(null);
-    expect(firstMap().options).toMatchObject({ center: [36.8219, -1.2921], zoom: 12 });
+    expect(firstMap().options).toMatchObject({ center: [20, 0], zoom: 2 });
   });
 
   it("applies a candidate once the map has loaded", () => {
@@ -855,11 +859,13 @@ describe("MarketMap viewport reporting", () => {
 
       expect(onViewportSettled).toHaveBeenCalledTimes(1);
       expect(onViewportSettled).toHaveBeenCalledWith({
+        center: { lat: -1.3, lng: 36.85 },
         west: 36.6,
         south: -1.5,
         east: 37.1,
         north: -1.1,
         zoom: 12,
+        userInitiated: false,
       });
     } finally {
       vi.useRealTimers();
@@ -882,6 +888,27 @@ describe("MarketMap viewport reporting", () => {
       });
 
       expect(onViewportSettled).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("treats a marker tap followed by sheet framing as user-established", () => {
+    vi.useFakeTimers();
+    const onViewportSettled = vi.fn();
+    try {
+      renderMap(LOCATIONS, { onViewportSettled });
+      const map = loadedMap();
+
+      clickFeature(map, "market-points", { id: "1" });
+      act(() => map.trigger("moveend", {}));
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+
+      expect(onViewportSettled).toHaveBeenLastCalledWith(
+        expect.objectContaining({ userInitiated: true }),
+      );
     } finally {
       vi.useRealTimers();
     }

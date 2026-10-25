@@ -7,12 +7,8 @@ import { useState } from "react";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
-import {
-  isWithinNearbyCatalog,
-  nearbyQueryPolicy,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-} from "#/components/nearby-catalog";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
+import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { Button } from "#/components/ui/button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
@@ -31,7 +27,6 @@ export function WantsPage({
   const { t } = useLingui();
   const navigate = useNavigate();
   const nearby = useNearbyCatalog();
-  const visibility = useNearbyCatalogFilter();
   const credit = useCreditableBrowse(creditableSearch);
   const storageOwner = useStorageOwner();
   const filter = useMarketFilter(storageOwner, creditableSearch !== undefined);
@@ -46,17 +41,13 @@ export function WantsPage({
       tagMatch: parsed.tagMatch,
       facets: true,
       nearby: nearby?.nearby === true,
+      bounds: nearby?.bounds,
       ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
     enabled: filter.result.ok && !filter.isDebouncing && !credit.blocksResults,
     ...nearbyQueryPolicy(nearby),
   });
-  const all = query.data?.pages.flatMap((page) => page.wants) ?? [];
-  const wants = visibility
-    ? all.filter((want) =>
-        isWithinNearbyCatalog(visibility, { lat: want.geoLat, lng: want.geoLng }),
-      )
-    : all;
+  const wants = query.data?.pages.flatMap((page) => page.wants) ?? [];
   const facets = query.data?.pages[0]?.tagFacets ?? [];
 
   return (
@@ -116,6 +107,7 @@ export function WantsPage({
           })
         }
       />
+      <MarketViewportSearchNotice query={parsed.term} />
       {!filter.result.ok ? (
         <div className="space-y-3 border border-destructive bg-card p-4" role="alert">
           <p className="text-sm">

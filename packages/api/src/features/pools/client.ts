@@ -6,6 +6,8 @@ import {
 import { POOL_QUOTER_TYPES, type PoolQuoterType } from "@clc/core/features/pools/logic";
 
 import type { HttpClient } from "../../client/http-client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 import {
   type CursorParams,
   type HexAddress,
@@ -37,6 +39,7 @@ export type PoolVoucherFacet = VoucherRef & {
 
 export type FilteredPoolsParams = CursorParams & {
   nearby?: boolean;
+  bounds?: readonly MarketBoundingBox[];
   filter: CatalogFilter;
   facets?: boolean;
   /** Only pools whose `ownerAddress` is this address. Compared case-insensitively. */
@@ -314,11 +317,14 @@ export type PoolsClient = ReturnType<typeof createPoolsClient>;
 export function createPoolsClient(http: HttpClient, options: { adminComposition?: boolean } = {}) {
   return {
     async getPools(
-      params: CursorParams & { nearby?: boolean },
+      params: CursorParams & { nearby?: boolean; bounds?: readonly MarketBoundingBox[] },
       signal?: AbortSignal,
     ): Promise<UserPoolPage> {
+      const search = new URLSearchParams(formatCursorQuery(params));
+      if (params.nearby) search.set("nearby", "true");
+      appendMarketBounds(search, params.bounds);
       const result = await http.request<BackendPoolPage>(
-        `/api/v2/pools${formatCursorQuery(params)}${params.nearby ? "&nearby=true" : ""}`,
+        `/api/v2/pools?${search.toString()}`,
         poolReadRequest(signal),
       );
       const received = result.pools ?? [];
@@ -330,7 +336,7 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
     },
 
     async getFilteredPools(
-      { filter, facets, owner, nearby, ...cursor }: FilteredPoolsParams,
+      { filter, facets, owner, nearby, bounds, ...cursor }: FilteredPoolsParams,
       signal?: AbortSignal,
     ): Promise<FilteredPoolPage> {
       const search = new URLSearchParams(formatCursorQuery(cursor));
@@ -346,6 +352,7 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
       if (owner) search.set("owner", owner);
       if (facets) search.set("facets", "true");
       if (nearby) search.set("nearby", "true");
+      appendMarketBounds(search, bounds);
 
       const result = await http.request<BackendFilteredPoolPage>(
         `/api/v2/pools?${search.toString()}`,

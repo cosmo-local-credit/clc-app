@@ -82,12 +82,17 @@ export function reportFeedInfiniteQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...reportKeys.feed(perPage), nearby.scope] as const)
       : reportKeys.feed(perPage),
     queryFn: ({ pageParam, signal }) =>
       reports.getReports(
-        { perPage, cursor: pageParam, ...(nearby?.nearby === true ? { nearby: true } : {}) },
+        {
+          perPage,
+          cursor: pageParam,
+          ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
+        },
         signal,
       ),
     initialPageParam: undefined as ReportCursor | undefined,

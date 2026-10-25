@@ -4,12 +4,7 @@ import { parseCatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import {
-  isWithinNearbyCatalog,
-  nearbyQueryPolicy,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-} from "#/components/nearby-catalog";
+import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { marketplaceClient } from "#/lib/api/marketplace";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 
@@ -29,7 +24,6 @@ export type PoolSuggestion = Extract<MarketplaceResult, { kind: "pool" }>;
  */
 export function useMarketSearchSuggestions(draft: string) {
   const nearby = useNearbyCatalog();
-  const visibility = useNearbyCatalogFilter();
   const { settled } = useDebouncedValue(draft);
   const parsed = parseCatalogFilter({ q: settled });
   const term = parsed.ok ? parsed.filter.term : "";
@@ -39,7 +33,8 @@ export function useMarketSearchSuggestions(draft: string) {
       perPage: 1,
       facets: true,
       nearby: nearby?.nearby === true,
-      scope: nearby?.nearby ? nearby.scope : undefined,
+      scope: nearby?.scope,
+      bounds: nearby?.bounds,
     }),
     ...nearbyQueryPolicy(nearby),
   });
@@ -49,18 +44,14 @@ export function useMarketSearchSuggestions(draft: string) {
       q: term,
       kinds: ["voucher", "pool"],
       nearby: nearby?.nearby === true,
-      scope: nearby?.nearby ? nearby.scope : undefined,
+      scope: nearby?.scope,
+      bounds: nearby?.bounds,
     }),
     enabled: term !== "",
     ...nearbyQueryPolicy(nearby),
   });
 
-  const rows =
-    term === ""
-      ? []
-      : (matches.data?.pages.flatMap((page) => page.results) ?? []).filter((row) =>
-          isWithinNearbyCatalog(visibility, { lat: row.geoLat, lng: row.geoLng }),
-        );
+  const rows = term === "" ? [] : (matches.data?.pages.flatMap((page) => page.results) ?? []);
 
   const vouchers = rows
     .filter((row): row is VoucherSuggestion => row.kind === "voucher")

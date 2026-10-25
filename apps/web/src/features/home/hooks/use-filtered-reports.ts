@@ -1,10 +1,4 @@
-import {
-  filterNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-  nearbyQueryKey,
-  nearbyQueryPolicy,
-} from "#/components/nearby-catalog";
+import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -82,7 +76,6 @@ function asReportFilter(filter: CatalogFilter | null): ReportFilter | null {
 function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS_FILTER_PAGE_SIZE) {
   const reportFilter = asReportFilter(filter);
   const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
   return useQuery({
     queryKey: nearbyQueryKey(filteredReportQueryKeys.filtered(reportFilter, perPage), nearby),
     queryFn: async ({ signal }): Promise<FilteredReportFeed> => {
@@ -99,6 +92,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
             filter: reportFilter,
             facets: index === 0,
             ...(nearby?.nearby === true ? { nearby: true } : {}),
+            bounds: nearby?.bounds,
           },
           signal,
         );
@@ -129,10 +123,6 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
         poolFacets: pages[0]?.poolFacets ?? null,
       };
     },
-    select: (data: FilteredReportFeed) => ({
-      ...data,
-      reports: filterNearbyCatalog(data.reports, visibilityFilter),
-    }),
     enabled: reportFilter !== null,
     placeholderData: keepPreviousData,
     staleTime: REPORTS_STALE_TIME,
@@ -157,6 +147,7 @@ function useReportFacetVocabulary(enabled: boolean) {
           filter: asReportFilter(EMPTY_CATALOG_FILTER)!,
           facets: true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
+          bounds: nearby?.bounds,
         },
         signal,
       );

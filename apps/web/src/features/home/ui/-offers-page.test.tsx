@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
   nearbyScope: undefined as { nearby: boolean; scope?: string } | undefined,
-  nearbyFilter: undefined as { lat: number; lng: number; radiusKm: number } | undefined,
   filter: {
     result: {
       ok: true as boolean,
@@ -63,7 +62,6 @@ vi.mock("#/components/nearby-catalog", async (importOriginal) => {
   return {
     ...actual,
     useNearbyCatalog: () => mocks.nearbyScope,
-    useNearbyCatalogFilter: () => mocks.nearbyFilter,
   };
 });
 vi.mock("#/lib/navigation/use-persisted-catalog-filter", () => ({
@@ -159,7 +157,6 @@ function offering(id: string, lat: number): Offering {
 
 beforeEach(() => {
   mocks.nearbyScope = undefined;
-  mocks.nearbyFilter = undefined;
   mocks.filter.result = {
     ok: true,
     filter: { term: "", tags: [], tagMatch: "any" },
@@ -214,9 +211,8 @@ describe("OffersPage", () => {
     });
   });
 
-  it("filters a nearest-first result locally and stops pagination at the boundary", () => {
-    mocks.nearbyScope = { nearby: true, scope: "nearby:account:100:0:0:100" };
-    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 100 };
+  it("renders the server-bounded result without filtering it again", () => {
+    mocks.nearbyScope = { nearby: false, scope: "viewport:account:box" };
     mocks.query.data = {
       pages: [{ offerings: [offering("1", 0.5), offering("2", 2)], tagFacets: [] }],
     };
@@ -224,21 +220,20 @@ describe("OffersPage", () => {
 
     render(<OffersPage />);
 
-    expect(screen.getByText("Offer 1")).toBeTruthy();
-    expect(screen.queryByText("Offer 2")).toBeNull();
-    expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("false");
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 1");
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 2");
+    expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("true");
   });
 
-  it("keeps guest pagination available after a distant row", () => {
+  it("keeps Global pagination available before a viewport exists", () => {
     mocks.nearbyScope = { nearby: false };
-    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 500 };
     mocks.query.data = {
       pages: [{ offerings: [offering("1", 0.5), offering("2", 8)], tagFacets: [] }],
     };
     mocks.query.hasNextPage = true;
     render(<OffersPage />);
-    expect(screen.getByText("Offer 1")).toBeTruthy();
-    expect(screen.queryByText("Offer 2")).toBeNull();
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 1");
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 2");
     expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("true");
   });
 

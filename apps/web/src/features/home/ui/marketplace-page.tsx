@@ -15,12 +15,8 @@ import { RiArrowRightSLine } from "react-icons/ri";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
-import {
-  isWithinNearbyCatalog,
-  nearbyQueryPolicy,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-} from "#/components/nearby-catalog";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
+import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -59,7 +55,6 @@ export function MarketplacePage({
   const navigate = useNavigate();
   const headingId = useId();
   const nearby = useNearbyCatalog();
-  const visibility = useNearbyCatalogFilter();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
   const credit = useCreditableBrowse(creditableSearch);
   const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
@@ -73,7 +68,8 @@ export function MarketplacePage({
       tagMatch: parsed.tagMatch,
       facets: true,
       nearby: nearby?.nearby === true,
-      scope: nearby?.nearby ? nearby.scope : undefined,
+      scope: nearby?.scope,
+      bounds: nearby?.bounds,
       ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
     enabled:
@@ -83,19 +79,9 @@ export function MarketplacePage({
       !credit.blocksResults,
     ...nearbyQueryPolicy(nearby),
   });
-  const allRows = query.data?.pages.flatMap((page) => page.results) ?? [];
-  const rows = visibility
-    ? allRows.filter((row) =>
-        isWithinNearbyCatalog(visibility, { lat: row.geoLat, lng: row.geoLng }),
-      )
-    : allRows;
-  // A nearby result comes nearest first, so the first row past the radius ends
-  // it; a guest's global result has no such order and keeps paging.
-  const crossedDistanceBoundary =
-    nearby?.nearby === true && visibility !== undefined && rows.length !== allRows.length;
+  const rows = query.data?.pages.flatMap((page) => page.results) ?? [];
   const showResults = filter.result.ok && !credit.blocksResults;
-  const hasMore =
-    showResults && query.hasNextPage && !crossedDistanceBoundary && !query.isFetchNextPageError;
+  const hasMore = showResults && query.hasNextPage && !query.isFetchNextPageError;
   const facets = query.data?.pages[0]?.tagFacets ?? [];
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -169,6 +155,7 @@ export function MarketplacePage({
           })
         }
       />
+      <MarketViewportSearchNotice query={parsed.term} />
       {!filter.result.ok ? (
         <div className="space-y-3 border border-destructive bg-card p-3" role="alert">
           <p className="text-sm">

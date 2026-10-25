@@ -97,7 +97,7 @@ describe("getMarketVouchers request", () => {
 
     await api.getMarketVouchers({
       perPage: 500,
-      bbox: { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
+      bounds: [{ minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 }],
     });
 
     expect(decodeURIComponent(requestedUrl())).toContain("bbox=36.6,-1.5,37.1,-1.1");
@@ -751,7 +751,7 @@ describe("getFilteredMarketVouchers request", () => {
 
     await api.getFilteredMarketVouchers({
       perPage: 500,
-      bbox: { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
+      bounds: [{ minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 }],
       filter: { ...FILTER, term: "art" },
     });
 

@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 const mocks = vi.hoisted(() => ({
   nearbyScope: undefined as { nearby: boolean; scope?: string } | undefined,
-  nearbyFilter: undefined as { lat: number; lng: number; radiusKm: number } | undefined,
   filter: {
     result: {
       ok: true as boolean,
@@ -80,7 +79,6 @@ vi.mock("#/components/nearby-catalog", async (importOriginal) => {
   return {
     ...actual,
     useNearbyCatalog: () => mocks.nearbyScope,
-    useNearbyCatalogFilter: () => mocks.nearbyFilter,
   };
 });
 vi.mock("#/lib/navigation/use-persisted-catalog-filter", () => ({
@@ -229,7 +227,6 @@ class VisibleObserver {
 
 beforeEach(() => {
   mocks.nearbyScope = undefined;
-  mocks.nearbyFilter = undefined;
   mocks.filter.result = {
     ok: true,
     filter: { term: "", tags: [], tagMatch: "any" },
@@ -319,30 +316,28 @@ describe("MarketplacePage", () => {
     expect(feedback.search(previous)).toEqual({ ...previous, creditable: true });
   });
 
-  it("hides rows past a nearby radius and stops paging there", () => {
+  it("renders the complete server-bounded page and preserves pagination", () => {
     vi.stubGlobal("IntersectionObserver", VisibleObserver);
     mocks.nearbyScope = { nearby: true, scope: "nearby:account:100:0:0:100" };
-    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 100 };
     mocks.query.data = { pages: [{ results: [voucher(0.5), { ...pool(), geoLat: 5 }] }] };
     mocks.query.hasNextPage = true;
 
     render(<MarketplacePage />);
 
     expect(screen.getByText("Bike voucher")).toBeTruthy();
-    expect(screen.queryByText("Kibera pool")).toBeNull();
-    expect(mocks.query.fetchNextPage).not.toHaveBeenCalled();
+    expect(screen.getByText("Kibera pool")).toBeTruthy();
+    expect(mocks.query.fetchNextPage).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps paging a guest's global result past a distant row", () => {
+  it("keeps paging a guest's Global result", () => {
     vi.stubGlobal("IntersectionObserver", VisibleObserver);
     mocks.nearbyScope = { nearby: false };
-    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 500 };
     mocks.query.data = { pages: [{ results: [{ ...pool(), geoLat: 8 }] }] };
     mocks.query.hasNextPage = true;
 
     render(<MarketplacePage />);
 
-    expect(screen.queryByText("Kibera pool")).toBeNull();
+    expect(screen.getByText("Kibera pool")).toBeTruthy();
     expect(screen.queryByText("No marketplace results found.")).toBeNull();
     expect(mocks.query.fetchNextPage).toHaveBeenCalledTimes(1);
   });

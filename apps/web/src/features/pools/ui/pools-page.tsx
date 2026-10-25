@@ -17,6 +17,7 @@ import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/po
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { MarketBar } from "#/components/market-bar";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -222,6 +223,7 @@ export function PoolsPage({
         onRetry={catalog.retry}
         retrying={catalog.retrying}
       />
+      <MarketViewportSearchNotice query={filter.result.ok ? filter.result.filter.term : ""} />
 
       {credit.enabled && credit.poolRefs?.length === 0 ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">

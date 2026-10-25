@@ -1,10 +1,4 @@
-import {
-  isWithinNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-  nearbyQueryKey,
-  nearbyQueryPolicy,
-} from "#/components/nearby-catalog";
+import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -13,6 +7,7 @@ import {
 } from "@clc/core/features/catalog/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 
 import { isRetryableBackendError } from "@clc/api/client/errors";
 import { poolKeys } from "@clc/api/features/pools/queries";
@@ -90,12 +85,14 @@ export async function fetchFilteredPoolCatalog({
   perPage = POOLS_FILTER_PAGE_SIZE,
   signal,
   nearby = false,
+  bounds,
 }: {
   filter: CatalogFilter;
   facets?: boolean;
   perPage?: number;
   signal?: AbortSignal;
   nearby?: boolean;
+  bounds?: readonly MarketBoundingBox[];
 }): Promise<FilteredPoolCatalog> {
   const pages: FilteredPoolPage[] = [];
   let cursor: number | undefined;
@@ -104,6 +101,7 @@ export async function fetchFilteredPoolCatalog({
     const page = await poolsClient.getFilteredPools(
       {
         ...(nearby ? { nearby } : {}),
+        ...(bounds ? { bounds } : {}),
         perPage,
         cursor,
         next: cursor === undefined ? undefined : true,
@@ -133,7 +131,6 @@ export async function fetchFilteredPoolCatalog({
 
 function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_PAGE_SIZE) {
   const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
   return useQuery({
     queryKey: nearbyQueryKey(filteredPoolQueryKeys.filtered(filter, perPage), nearby),
     queryFn: ({ signal }): Promise<FilteredPoolCatalog> => {
@@ -144,14 +141,9 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
         perPage,
         signal,
         nearby: nearby?.nearby === true,
+        bounds: nearby?.bounds,
       });
     },
-    select: (data) => ({
-      ...data,
-      pools: data.pools.filter((pool) =>
-        isWithinNearbyCatalog(visibilityFilter, { lat: pool.geoLat, lng: pool.geoLng }),
-      ),
-    }),
     enabled: filter !== null,
     placeholderData: keepPreviousData,
     staleTime: POOLS_STALE_TIME,
@@ -165,17 +157,19 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
   });
 }
 
-export function usePoolFacetVocabulary(enabled: boolean) {
+export function usePoolFacetVocabulary(enabled: boolean, bounded = true) {
   const nearby = useNearbyCatalog();
+  const discovery = bounded ? nearby : undefined;
   return useQuery({
-    queryKey: nearbyQueryKey(filteredPoolQueryKeys.facetVocabulary(), nearby),
+    queryKey: nearbyQueryKey(filteredPoolQueryKeys.facetVocabulary(), discovery),
     queryFn: async ({ signal }) => {
       const page = await poolsClient.getFilteredPools(
         {
           perPage: 1,
           filter: EMPTY_CATALOG_FILTER,
           facets: true,
-          ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(discovery?.nearby === true ? { nearby: true } : {}),
+          bounds: discovery?.bounds,
         },
         signal,
       );
@@ -188,7 +182,7 @@ export function usePoolFacetVocabulary(enabled: boolean) {
     staleTime: POOLS_STALE_TIME,
     gcTime: FILTERED_POOLS_GC_TIME,
     refetchOnReconnect: false,
-    ...nearbyQueryPolicy(nearby),
+    ...nearbyQueryPolicy(discovery),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }

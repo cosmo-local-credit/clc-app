@@ -8,9 +8,7 @@ const list = vi.hoisted(() => vi.fn());
 vi.mock("#/lib/api/marketplace", () => ({ marketplaceClient: { list } }));
 vi.mock("#/components/nearby-catalog", () => ({
   useNearbyCatalog: () => null,
-  useNearbyCatalogFilter: () => undefined,
   nearbyQueryPolicy: () => ({}),
-  filterNearbyCatalog: (rows: unknown[]) => rows,
 }));
 
 import { useMarketplaceMapSearch } from "./use-marketplace-map-search";
@@ -86,7 +84,7 @@ describe("useMarketplaceMapSearch", () => {
         nextCursor: null,
       });
 
-    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, true), {
+    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, [], true), {
       wrapper: wrapper(),
     });
 
@@ -107,7 +105,7 @@ describe("useMarketplaceMapSearch", () => {
   });
 
   it("makes no request and exposes no locations while verification blocks search", () => {
-    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, false), {
+    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, [], false), {
       wrapper: wrapper(),
     });
     expect(result.current.status).toBe("disabled");
@@ -115,15 +113,18 @@ describe("useMarketplaceMapSearch", () => {
     expect(list).not.toHaveBeenCalled();
   });
 
-  it("fails explicitly rather than presenting an incomplete map after the page limit", async () => {
-    list.mockResolvedValue({ results: [], nextCursor: "another-page" });
-    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, true), {
+  it("walks every bounded page without an arbitrary client-side cutoff", async () => {
+    let page = 0;
+    list.mockImplementation(async () => {
+      page++;
+      return { results: [], nextCursor: page < 8 ? `page-${page + 1}` : null };
+    });
+    const { result } = renderHook(() => useMarketplaceMapSearch(filter, undefined, [], true), {
       wrapper: wrapper(),
     });
 
-    await waitFor(() => expect(result.current.status).toBe("error"));
-    expect(result.current.error?.name).toBe("MarketplaceMapSearchTooLargeError");
+    await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current.locations).toEqual([]);
-    expect(list).toHaveBeenCalledTimes(6);
+    expect(list).toHaveBeenCalledTimes(8);
   });
 });
