@@ -4,6 +4,7 @@ import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { catalogKeys } from "@clc/api/features/catalogs/queries";
 import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { wantKeys } from "@clc/api/features/wants/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
@@ -36,6 +37,7 @@ export function useRetireVoucher(address: string) {
         queryClient.resetQueries({ queryKey: marketplaceKeys.all }),
         queryClient.resetQueries({ queryKey: poolKeys.all }),
         queryClient.resetQueries({ queryKey: catalogKeys.all }),
+        queryClient.resetQueries({ queryKey: wantKeys.all }),
         queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
         queryClient.invalidateQueries({
           queryKey: voucherKeys.all,

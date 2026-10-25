@@ -35,11 +35,13 @@ function report(id: number): ReportSummary {
     lng: null,
     periodFrom: null,
     periodTo: null,
-    authorAddress: null,
     createdAt: null,
     updatedAt: `2026-08-${String(id).padStart(2, "0")}T00:00:00Z`,
+    markerIcon: "post",
+    markerColor: "pink",
     tags: [],
     vouchers: [],
+    pools: [],
   };
 }
 
@@ -49,6 +51,7 @@ function page(ids: number[], next: FilteredReportPage["next"]): FilteredReportPa
     next,
     tagFacets: null,
     voucherFacets: null,
+    poolFacets: null,
   };
 }
 
@@ -89,6 +92,8 @@ describe("useVoucherReportsInfinite", () => {
           tagMatch: "any",
           vouchers: [{ ...VOUCHER, address: VOUCHER.address.toLowerCase() }],
           voucherMatch: "any",
+          pools: [],
+          poolMatch: "any",
         },
       },
       expect.anything(),

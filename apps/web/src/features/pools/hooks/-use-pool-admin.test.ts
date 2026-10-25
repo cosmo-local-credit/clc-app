@@ -121,12 +121,14 @@ describe("usePoolAdminRelay", () => {
   it("refreshes every affected read while honoring deferred catalog refresh", async () => {
     const mutation = options();
     await mutation.onSuccess({}, calls);
-    expect(mocks.invalidate).toHaveBeenCalledTimes(6);
+    expect(mocks.invalidate).toHaveBeenCalledTimes(8);
     expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["pools"] });
+    expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "marketplace"] });
+    expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "wants"] });
 
     mocks.invalidate.mockClear();
     await mutation.onSuccess({}, { calls, deferCatalogRefresh: true });
-    expect(mocks.invalidate).toHaveBeenCalledTimes(5);
+    expect(mocks.invalidate).toHaveBeenCalledTimes(7);
     expect(mocks.invalidate).not.toHaveBeenCalledWith({ queryKey: ["pools"] });
   });
 });

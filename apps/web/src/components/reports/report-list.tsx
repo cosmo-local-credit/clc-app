@@ -18,6 +18,7 @@ import { formatReportDate } from "#/lib/report-display";
  */
 const VISIBLE_TAGS = 2;
 const VISIBLE_VOUCHERS = 1;
+const VISIBLE_POOLS = 1;
 
 export function ReportList({
   reports,
@@ -41,6 +42,7 @@ export function ReportList({
       {reports.map((report, index) => {
         const extraTags = report.tags.length - VISIBLE_TAGS;
         const extraVouchers = report.vouchers.length - VISIBLE_VOUCHERS;
+        const extraPools = report.pools.length - VISIBLE_POOLS;
         const updated = formatReportDate(report.updatedAt, i18n.locales?.[0] ?? i18n.locale);
 
         return (
@@ -103,7 +105,7 @@ export function ReportList({
                     {updated}
                   </time>
                 ) : null}
-                {report.vouchers.length > 0 ? (
+                {report.vouchers.length > 0 || report.pools.length > 0 ? (
                   <span className="ms-auto flex h-full min-w-0 items-center justify-end gap-1">
                     {report.vouchers.slice(0, VISIBLE_VOUCHERS).map((voucher) => (
                       <Badge
@@ -122,6 +124,25 @@ export function ReportList({
                         className="font-mono text-muted-foreground"
                       >
                         {extraVouchers}+
+                      </Badge>
+                    ) : null}
+                    {report.pools.slice(0, VISIBLE_POOLS).map((pool) => (
+                      <Badge
+                        key={`${pool.chainId}:${pool.address}`}
+                        variant="outline"
+                        size="sm"
+                        className="min-w-0 max-w-20 truncate font-mono text-info"
+                      >
+                        {pool.symbol}
+                      </Badge>
+                    ))}
+                    {extraPools > 0 ? (
+                      <Badge
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-muted-foreground"
+                      >
+                        {extraPools}+
                       </Badge>
                     ) : null}
                   </span>

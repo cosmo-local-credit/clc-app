@@ -29,7 +29,12 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
+  useAuthStatus: () => ({
+    state: "authenticated",
+    address: "0xabc0000000000000000000000000000000000123",
+    isAuthenticated: true,
+    isLoading: false,
+  }),
 }));
 
 vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
@@ -44,6 +49,7 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
 }));
 
 vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
+  useMarketplaceMapFacets: () => [],
   useMarketplaceMapSearch: () => ({
     locations: [],
     status: "disabled",
@@ -64,7 +70,6 @@ vi.mock("#/features/home/hooks/use-market-camera", () => ({
     liveGps: 3,
     persistedGps: 4,
     ipCity: 5,
-    countryDefault: 6,
   },
   REAL_FIX_ZOOM: 14,
   useMarketCamera: () => ({
@@ -179,6 +184,7 @@ vi.mock("#/lib/api/market", async () => ({
 }));
 
 import { MarketPage } from "#/features/home/ui/market-page";
+import { NearbyCatalog } from "#/components/nearby-catalog";
 import { VoucherDetailPage, type VoucherOrigin } from "#/features/wallet/ui";
 import { pickCatalogSearch } from "#/lib/navigation/catalog-search";
 import { parseHomeSearch } from "#/lib/navigation/home-tabs";
@@ -215,7 +221,11 @@ function renderAt(initialPath: string) {
     getParentRoute: () => rootRoute,
     path: "/",
     validateSearch: (search) => ({ ...parseHomeSearch(search), ...pickCatalogSearch(search) }),
-    component: () => <MarketPage />,
+    component: () => (
+      <NearbyCatalog>
+        <MarketPage />
+      </NearbyCatalog>
+    ),
   });
   const voucherRoute = createRoute({
     getParentRoute: () => rootRoute,

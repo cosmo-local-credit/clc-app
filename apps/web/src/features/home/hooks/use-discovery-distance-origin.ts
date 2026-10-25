@@ -9,7 +9,7 @@ type Coordinates = { lat: number; lng: number };
  *
  * Signed-in people see distances from their saved profile location, even when
  * Visibility is Global. Guests may use a live or persisted device fix. IP and
- * country camera fallbacks never become distance origins.
+ * IP camera hints never become distance origins.
  */
 export function useDiscoveryDistanceOrigin(locationOwner: string): Coordinates | null {
   const auth = useAuthStatus();

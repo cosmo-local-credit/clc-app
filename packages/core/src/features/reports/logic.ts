@@ -1,4 +1,12 @@
 import { z } from "zod";
+import {
+  markerColorSchema,
+  reportMarkerIconSchema,
+  type MarkerColor,
+  type ReportMarkerIcon,
+} from "../markers/logic";
+
+export type { ReportMarkerIcon } from "../markers/logic";
 
 /**
  * The post write document and its validation rules.
@@ -37,6 +45,7 @@ export const REPORT_TIME_TAKEN_MAX = 100;
 const REPORT_TAG_MAX = 100;
 export const REPORT_MAX_TAGS = 12;
 export const REPORT_MAX_VOUCHERS = 12;
+export const REPORT_MAX_POOLS = 12;
 export const REPORT_MAX_IMAGES = 50;
 export const REPORT_IMAGE_CAPTION_MAX = 500;
 export const REPORT_MAX_ATTACHMENTS = 20;
@@ -103,6 +112,14 @@ const reportVoucherRefSchema = z.object({
     .string()
     .trim()
     .regex(/^0x[0-9a-fA-F]{40}$/, { message: "Choose a voucher" }),
+});
+
+const reportPoolRefSchema = z.object({
+  chainId: z.number().int().positive({ message: "Choose a pool" }),
+  address: z
+    .string()
+    .trim()
+    .regex(/^0x[0-9a-fA-F]{40}$/, { message: "Choose a pool" }),
 });
 
 const optionalPositiveInt = z.number().int().positive().nullable();
@@ -174,6 +191,8 @@ const reportWriteObjectSchema = z.object({
     .string()
     .trim()
     .max(REPORT_TIME_TAKEN_MAX, { message: "Duration must be 100 characters or fewer" }),
+  markerIcon: reportMarkerIconSchema,
+  markerColor: markerColorSchema,
   tags: z
     .array(
       z
@@ -186,6 +205,7 @@ const reportWriteObjectSchema = z.object({
   vouchers: z
     .array(reportVoucherRefSchema)
     .max(REPORT_MAX_VOUCHERS, { message: "Link at most 12 vouchers" }),
+  pools: z.array(reportPoolRefSchema).max(REPORT_MAX_POOLS, { message: "Link at most 12 pools" }),
   images: z
     .array(reportImageWriteSchema)
     .max(REPORT_MAX_IMAGES, { message: "Add at most 50 images" }),
@@ -219,9 +239,17 @@ export const reportWriteSchema = reportWriteObjectSchema
     message: "Each tag can only be added once",
     path: ["tags"],
   })
+  .refine((value) => value.vouchers.length > 0 || value.pools.length > 0, {
+    message: "Link at least one voucher or pool",
+    path: ["vouchers"],
+  })
   .refine((value) => isUnique(value.vouchers.map(voucherRefKey)), {
     message: "Each voucher can only be linked once",
     path: ["vouchers"],
+  })
+  .refine((value) => isUnique(value.pools.map(poolRefKey)), {
+    message: "Each pool can only be linked once",
+    path: ["pools"],
   })
   .refine((value) => isUnique(value.images.map((image) => image.url.trim())), {
     message: "Each image can only be added once",
@@ -248,12 +276,17 @@ export const reportDraftSchema = reportWriteObjectSchema.safeExtend({
 
 export type ReportWrite = z.infer<typeof reportWriteSchema>;
 export type ReportVoucherRef = z.infer<typeof reportVoucherRefSchema>;
+export type ReportPoolRef = z.infer<typeof reportPoolRefSchema>;
 export type ReportImageWrite = z.infer<typeof reportImageWriteSchema>;
 export type ReportAttachmentWrite = z.infer<typeof reportAttachmentWriteSchema>;
 
 /** A voucher's identity for deduplication: chain plus lower-cased address. */
 export function voucherRefKey(voucher: ReportVoucherRef): string {
   return `${voucher.chainId}:${voucher.address.trim().toLowerCase()}`;
+}
+
+export function poolRefKey(pool: ReportPoolRef): string {
+  return `${pool.chainId}:${pool.address.trim().toLowerCase()}`;
 }
 
 /**
@@ -296,8 +329,11 @@ export const emptyReportWrite: ReportWrite = {
   hostName: "",
   participants: "",
   timeTaken: "",
+  markerIcon: "post",
+  markerColor: "pink",
   tags: [],
   vouchers: [],
+  pools: [],
   images: [],
   attachments: [],
 };
@@ -322,10 +358,16 @@ export function reportToFormValues(report: ReportDetailSource): ReportWrite {
     hostName: report.hostName ?? "",
     participants: report.participants ?? "",
     timeTaken: report.timeTaken ?? "",
+    markerIcon: report.markerIcon ?? "post",
+    markerColor: report.markerColor ?? "pink",
     tags: [...(report.tags ?? [])],
     vouchers: (report.vouchers ?? []).map((voucher) => ({
       chainId: voucher.chainId,
       address: voucher.address,
+    })),
+    pools: (report.pools ?? []).map((pool) => ({
+      chainId: pool.chainId,
+      address: pool.address,
     })),
     images: (report.images ?? []).map((image) => ({
       url: image.url,
@@ -364,8 +406,11 @@ export type ReportDetailSource = {
   hostName?: string | null;
   participants?: string | null;
   timeTaken?: string | null;
+  markerIcon?: ReportMarkerIcon | null;
+  markerColor?: MarkerColor | null;
   tags?: readonly string[] | null;
   vouchers?: readonly { chainId: number; address: string }[] | null;
+  pools?: readonly { chainId: number; address: string }[] | null;
   images?: readonly ReportImageWrite[] | null;
   attachments?: readonly ReportAttachmentWrite[] | null;
 };

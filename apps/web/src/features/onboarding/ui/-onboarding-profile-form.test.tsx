@@ -2,9 +2,16 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate, mockResolveProfileCountry } = vi.hoisted(() => ({
+const { mockNavigate, mockResolveProfileCountry, mockIPCamera } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockResolveProfileCountry: vi.fn(),
+  mockIPCamera: {
+    current: { lat: -6.7924, lng: 39.2083, zoom: 11, source: "ip-city" as const },
+  },
+}));
+
+vi.mock("#/features/home/hooks/use-ip-camera", () => ({
+  useIPCamera: () => ({ data: mockIPCamera.current }),
 }));
 
 // Uploads are offered only where the service is configured, and the test env has
@@ -83,6 +90,7 @@ vi.mock("#/components/ui/location-picker", () => ({
     onChange,
     error,
     required,
+    cameraHint,
   }: {
     value:
       | {
@@ -104,9 +112,13 @@ vi.mock("#/components/ui/location-picker", () => ({
     ) => void;
     error?: string;
     required?: boolean;
+    cameraHint?: { lat: number; lng: number; zoom: number } | null;
   }) => (
     <div data-testid="location-picker">
       <span>{value?.locationName ?? "No location"}</span>
+      <output data-testid="location-camera">
+        {cameraHint?.lat},{cameraHint?.lng},{cameraHint?.zoom}
+      </output>
       {required ? <span className="text-destructive">Required</span> : null}
       <input
         aria-label="Location"
@@ -467,6 +479,17 @@ describe("OnboardingProfileForm Continue", () => {
 });
 
 describe("OnboardingProfileForm suggestions", () => {
+  it("centres the empty location picker from the approximate camera without selecting it", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+    await completeProfilePage();
+    await completeContactPage();
+
+    expect(screen.getByTestId("location-camera").textContent).toBe("-6.7924,39.2083,11");
+    expect(screen.getByText("No location")).toBeTruthy();
+    expect(mockOnNext).not.toHaveBeenCalled();
+  });
+
   it("keeps a location currency when the network suggestion arrives later", async () => {
     let resolveNetworkCountry: (country: string) => void = () => undefined;
     mockResolveProfileCountry.mockImplementation(

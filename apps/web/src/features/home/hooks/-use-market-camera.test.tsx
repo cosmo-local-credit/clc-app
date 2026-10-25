@@ -19,7 +19,7 @@ const { geoState, mockRequest, readPersistedLocation, writePersistedLocation, ip
     mockRequest: vi.fn(),
     readPersistedLocation: vi.fn(),
     writePersistedLocation: vi.fn(),
-    ipCameraResult: { current: { data: undefined as unknown } },
+    ipCameraResult: { current: { data: undefined as unknown, isPending: false } },
   }));
 
 vi.mock("#/lib/use-browser-geolocation", () => ({
@@ -57,7 +57,7 @@ const PERSISTED = {
 beforeEach(() => {
   providerOwner = "guest";
   geoState.current = { status: "idle" };
-  ipCameraResult.current = { data: undefined };
+  ipCameraResult.current = { data: undefined, isPending: false };
   mockRequest.mockReset();
   readPersistedLocation.mockReset();
   readPersistedLocation.mockReturnValue(null);
@@ -72,6 +72,14 @@ describe("useMarketCamera ranking", () => {
   it("has no camera before any source resolves", () => {
     const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
     expect(result.current.camera).toBeNull();
+  });
+
+  it("reports an unresolved initial camera while IP-city lookup is pending", () => {
+    ipCameraResult.current = { data: undefined, isPending: true };
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
+
+    expect(result.current.camera).toBeNull();
+    expect(result.current.isResolvingInitialCamera).toBe(true);
   });
 
   it("uses a live GPS fix at rank 1 and zoom 14", () => {
@@ -122,9 +130,10 @@ describe("useMarketCamera ranking", () => {
     expect(result.current.camera?.lat).toBe(-1.29);
   });
 
-  it("uses a MapTiler city at rank 3", () => {
+  it("uses a MapTiler IP city as the coarse camera", () => {
     ipCameraResult.current = {
       data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" },
+      isPending: false,
     };
 
     const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
@@ -137,19 +146,12 @@ describe("useMarketCamera ranking", () => {
     });
   });
 
-  it("uses a country default at rank 4", () => {
-    ipCameraResult.current = {
-      data: { lat: -1.2921, lng: 36.8219, zoom: 12, source: "country-default" },
-    };
-
-    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
-
-    expect(result.current.camera?.rank).toBe(CAMERA_RANK.countryDefault);
-  });
-
   it("prefers a persisted fix over an IP city", async () => {
     readPersistedLocation.mockReturnValue(PERSISTED);
-    ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
+    ipCameraResult.current = {
+      data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" },
+      isPending: false,
+    };
 
     const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
@@ -170,8 +172,11 @@ describe("useMarketCamera persistence", () => {
     expect(Number.isNaN(Date.parse(String(written.capturedAt)))).toBe(false);
   });
 
-  it("never persists an IP or country camera", async () => {
-    ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
+  it("never persists an IP camera", async () => {
+    ipCameraResult.current = {
+      data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" },
+      isPending: false,
+    };
 
     renderHook(() => useMarketCamera("guest"), { wrapper });
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -252,8 +257,11 @@ describe("useMarketCamera real fix reporting", () => {
     expect(result.current.userLocation).toBeNull();
   });
 
-  it("never reports an IP or country camera as a real fix", () => {
-    ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
+  it("never reports an IP camera as a real fix", () => {
+    ipCameraResult.current = {
+      data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" },
+      isPending: false,
+    };
 
     const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
@@ -316,7 +324,10 @@ describe("useMarketCamera location ownership", () => {
     readPersistedLocation.mockImplementation((owner: string) =>
       owner === "0xabc" ? PERSISTED : null,
     );
-    ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
+    ipCameraResult.current = {
+      data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" },
+      isPending: false,
+    };
     providerOwner = "0xabc";
     const { result, rerender } = renderHook(({ owner }) => useMarketCamera(owner), {
       wrapper,

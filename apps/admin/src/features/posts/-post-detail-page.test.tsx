@@ -63,6 +63,7 @@ function post(overrides: Record<string, unknown> = {}) {
         symbol: "SRF",
       },
     ],
+    pools: [],
     images: [
       {
         url: "https://content.example/one.jpg",

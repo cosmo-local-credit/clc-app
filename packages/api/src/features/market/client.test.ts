@@ -97,7 +97,7 @@ describe("getMarketVouchers request", () => {
 
     await api.getMarketVouchers({
       perPage: 500,
-      bbox: { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
+      bounds: [{ minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 }],
     });
 
     expect(decodeURIComponent(requestedUrl())).toContain("bbox=36.6,-1.5,37.1,-1.1");
@@ -283,10 +283,8 @@ describe("viewportToBoundingBoxes", () => {
     }
   });
 
-  it("collapses a whole-world viewport to one box", () => {
-    expect(viewportToBoundingBoxes({ west: -400, south: -95, east: 400, north: 95 })).toEqual([
-      { minLng: -180, minLat: -90, maxLng: 180, maxLat: 90 },
-    ]);
+  it("treats a whole-world viewport as Global discovery", () => {
+    expect(viewportToBoundingBoxes({ west: -400, south: -95, east: 400, north: 95 })).toEqual([]);
   });
 
   it("clamps latitudes to the valid range", () => {
@@ -751,7 +749,7 @@ describe("getFilteredMarketVouchers request", () => {
 
     await api.getFilteredMarketVouchers({
       perPage: 500,
-      bbox: { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
+      bounds: [{ minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 }],
       filter: { ...FILTER, term: "art" },
     });
 

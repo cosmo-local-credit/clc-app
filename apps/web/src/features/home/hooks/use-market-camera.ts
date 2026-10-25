@@ -23,7 +23,6 @@ export const CAMERA_RANK = {
   liveGps: 3,
   persistedGps: 4,
   ipCity: 5,
-  countryDefault: 6,
 } as const;
 
 export const REAL_FIX_ZOOM = 14;
@@ -34,13 +33,15 @@ export type MarketCameraResult = {
   camera: MarketCamera | null;
   /**
    * Only a live or persisted GPS fix. Distance is never labelled from an IP
-   * city or a country centroid, which would be a fabricated number.
+   * city, which would be a fabricated number.
    */
   realFix: Coordinates | null;
   /** The "you are here" dot: a live fix only, never a stored one. */
   userLocation: Coordinates | null;
   locationStatus: ReturnType<typeof useBrowserGeolocation>["state"]["status"];
   requestLocation: () => void;
+  /** True only while no better camera exists and the once-per-session IP city is unresolved. */
+  isResolvingInitialCamera: boolean;
 };
 
 /**
@@ -50,7 +51,7 @@ export type MarketCameraResult = {
  *   A lapsed session must fall back to the guest scope.
  */
 export function useMarketCamera(owner: string): MarketCameraResult {
-  const { realFix, liveFix, ip, locationStatus, requestLocation, explicitRequests } =
+  const { realFix, liveFix, ip, ipPending, locationStatus, requestLocation, explicitRequests } =
     useDiscoveryLocation(owner);
   const camera = useMemo<MarketCamera | null>(() => {
     if (liveFix)
@@ -72,7 +73,7 @@ export function useMarketCamera(owner: string): MarketCameraResult {
         lat: ip.lat,
         lng: ip.lng,
         zoom: ip.zoom,
-        rank: ip.source === "ip-city" ? CAMERA_RANK.ipCity : CAMERA_RANK.countryDefault,
+        rank: CAMERA_RANK.ipCity,
       };
     return null;
   }, [realFix, liveFix, ip, explicitRequests]);
@@ -82,5 +83,6 @@ export function useMarketCamera(owner: string): MarketCameraResult {
     userLocation: liveFix ? realFix : null,
     locationStatus,
     requestLocation,
+    isResolvingInitialCamera: !liveFix && !realFix && !ip && ipPending,
   };
 }

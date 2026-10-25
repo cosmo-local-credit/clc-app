@@ -99,6 +99,8 @@ function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilter
     tagMatch: "any",
     vouchers: [],
     voucherMatch: "any",
+    pools: [],
+    poolMatch: "any",
   };
   return {
     term: "food",
@@ -111,10 +113,13 @@ function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilter
     tagMatch: "any",
     vouchers: [],
     voucherMatch: "any",
+    pools: [],
+    poolMatch: "any",
     toggleTag: vi.fn(),
     setTags: vi.fn(),
     setTagMatch: vi.fn(),
     setFacets: vi.fn(),
+    setResourceFacets: vi.fn(),
     isAtTagLimit: false,
     clearTerm: vi.fn(),
     clear: vi.fn(),

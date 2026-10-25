@@ -82,6 +82,7 @@ const profileSchema = z
     maxTokens: limitSchema,
     maxCatalogs: limitSchema,
     maxOffers: limitSchema,
+    maxWants: limitSchema,
   })
   .superRefine((value, ctx) => {
     // A label with no pin, or a pin with no label, describes a place nobody can
@@ -168,6 +169,7 @@ export function EditAccountProfileSheet({
       maxTokens: String(account.maxTokens),
       maxCatalogs: String(account.maxCatalogs),
       maxOffers: String(account.maxOffers),
+      maxWants: String(account.maxWants),
       // Already a stored URL: ImageUploadField uploads on selection, so this
       // field never holds a File. Empty string is "no image", which keeps the
       // form value a string like every other field here.
@@ -216,6 +218,7 @@ export function EditAccountProfileSheet({
         maxTokens: Number(value.maxTokens),
         maxCatalogs: Number(value.maxCatalogs),
         maxOffers: Number(value.maxOffers),
+        maxWants: Number(value.maxWants),
       };
 
       // Profile and limits are separate endpoints, so each is called only when it
@@ -226,7 +229,8 @@ export function EditAccountProfileSheet({
         limits.maxPools !== account.maxPools ||
         limits.maxTokens !== account.maxTokens ||
         limits.maxCatalogs !== account.maxCatalogs ||
-        limits.maxOffers !== account.maxOffers;
+        limits.maxOffers !== account.maxOffers ||
+        limits.maxWants !== account.maxWants;
       const profileChanged =
         profile.name !== account.name ||
         profile.email !== account.email ||
@@ -493,7 +497,10 @@ export function EditAccountProfileSheet({
                 </form.Field>
                 <form.Field name="maxOffers">
                   {(field) => (
-                    <Field label="Max offers" error={getFieldError(field.state.meta.errors)}>
+                    <Field
+                      label="Offers per voucher"
+                      error={getFieldError(field.state.meta.errors)}
+                    >
                       <Input
                         id={field.name}
                         inputMode="numeric"
@@ -501,6 +508,18 @@ export function EditAccountProfileSheet({
                         onBlur={field.handleBlur}
                         onChange={(event) => field.handleChange(event.target.value)}
                         className="font-data"
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+                <form.Field name="maxWants">
+                  {(field) => (
+                    <Field label="Max wants" error={getFieldError(field.state.meta.errors)}>
+                      <Input
+                        inputMode="numeric"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) => field.handleChange(event.target.value)}
                       />
                     </Field>
                   )}

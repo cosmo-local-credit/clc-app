@@ -1,4 +1,5 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import {
   type MarketKind,
   type MarkerColor,
@@ -9,6 +10,7 @@ import {
 } from "@clc/core/features/markers/logic";
 
 import type { HttpClient } from "../../client/http-client";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 import {
   type CursorParams,
   type HexAddress,
@@ -88,12 +90,7 @@ export type MarketVoucherDetail = {
   active: boolean;
 } & MarketVoucherMarker;
 
-export type MarketBoundingBox = {
-  minLng: number;
-  minLat: number;
-  maxLng: number;
-  maxLat: number;
-};
+export type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 
 export type MarketVoucherPage = {
   vouchers: MarketVoucher[];
@@ -102,7 +99,10 @@ export type MarketVoucherPage = {
   receivedCount: number;
 };
 
-export type MarketVouchersParams = CursorParams & { bbox?: MarketBoundingBox; nearby?: boolean };
+export type MarketVouchersParams = CursorParams & {
+  bounds?: readonly MarketBoundingBox[];
+  nearby?: boolean;
+};
 
 export type MarketTagFacet = {
   tag: string;
@@ -396,15 +396,16 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
   };
 }
 
-function formatMarketQuery({ bbox, nearby, ...cursor }: MarketVouchersParams): string {
+function formatMarketQuery({ bounds, nearby, ...cursor }: MarketVouchersParams): string {
   const query = formatCursorQuery(cursor) + (nearby ? "&nearby=true" : "");
-  if (!bbox) return query;
-  const box = [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat].join(",");
-  return `${query}&bbox=${encodeURIComponent(box)}`;
+  if (!bounds?.length) return query;
+  const search = new URLSearchParams(query);
+  appendMarketBounds(search, bounds);
+  return `?${search.toString()}`;
 }
 
 function formatFilteredMarketQuery({
-  bbox,
+  bounds,
   filter,
   facets,
   owner,
@@ -413,9 +414,7 @@ function formatFilteredMarketQuery({
   ...cursor
 }: FilteredMarketVouchersParams): string {
   const search = new URLSearchParams(formatCursorQuery(cursor));
-  if (bbox) {
-    search.set("bbox", [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat].join(","));
-  }
+  appendMarketBounds(search, bounds);
   if (filter.term !== "") search.set("q", filter.term);
   if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
   if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
@@ -546,7 +545,10 @@ export function viewportToBoundingBoxes(viewport: {
   const maxLat = clamp(Math.max(south, north), -90, 90);
 
   if (Math.abs(east - west) >= 360) {
-    return [{ minLng: -180, minLat, maxLng: 180, maxLat }];
+    // A genuine whole-world camera is Global discovery. Sending an all-world
+    // bbox gives it a false local identity and can then be persisted as a
+    // user's chosen area.
+    return [];
   }
 
   const minLng = wrapLongitude(west);

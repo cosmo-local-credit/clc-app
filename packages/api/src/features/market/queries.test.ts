@@ -1,5 +1,5 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { MarketClient, MarketVoucherPage } from "./client";
 import {
   nextMarketCursor,
@@ -130,6 +130,24 @@ describe("scoped options", () => {
   it("stays disabled with no viewport boxes rather than requesting the whole world", () => {
     expect(voucherViewportQueryOptions({} as MarketClient, [], 500).enabled).toBe(false);
     expect(voucherViewportQueryOptions({} as MarketClient, [BOX], 500).enabled).toBe(true);
+  });
+
+  it("forwards viewport bounds and returns only the voucher rows", async () => {
+    const vouchers = [{ id: "7" }];
+    const getMarketVouchers = vi.fn().mockResolvedValue({ vouchers, first: 7, last: 7 });
+    const options = voucherViewportQueryOptions(
+      { getMarketVouchers } as unknown as MarketClient,
+      [BOX],
+      100,
+      { scope: "viewport", nearby: true },
+    );
+    const signal = new AbortController().signal;
+
+    await expect(options.queryFn?.({ signal } as never)).resolves.toBe(vouchers);
+    expect(getMarketVouchers).toHaveBeenCalledWith(
+      { perPage: 100, bounds: [BOX], nearby: true },
+      signal,
+    );
   });
 
   it("starts the catalog with no cursor", () => {

@@ -1,5 +1,7 @@
 import { poolKeys } from "@clc/api/features/pools/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
+import { wantKeys } from "@clc/api/features/wants/queries";
 import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
 import type { CaliburCall } from "@clc/core/features/webauthn";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -157,6 +159,8 @@ export function useOwnershipTransfer(
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: poolKeys.all }),
         queryClient.invalidateQueries({ queryKey: voucherKeys.all }),
+        queryClient.invalidateQueries({ queryKey: marketplaceKeys.all }),
+        queryClient.invalidateQueries({ queryKey: wantKeys.all }),
         queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all }),
       ]);
       if (catalogSynced) useOwnershipSubmissions.getState().remove(assetAddress);

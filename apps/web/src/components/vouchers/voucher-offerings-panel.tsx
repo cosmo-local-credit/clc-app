@@ -70,7 +70,7 @@ export function VoucherOfferingsPanel({
     Boolean(ownerAddress) &&
     session?.address?.toLowerCase() === ownerAddress?.toLowerCase();
 
-  const usage = useResourceUsage(isOwner);
+  const usage = useResourceUsage(isOwner, voucherAddress);
 
   const [editor, setEditor] = useState<OfferingEditor | null>(null);
   const [deletingID, setDeletingID] = useState<string | null>(null);
@@ -101,7 +101,7 @@ export function VoucherOfferingsPanel({
     >
       {isOwner ? (
         <>
-          <ResourceUsage resource="offers" count={false} />
+          <ResourceUsage resource="offers" count={false} voucher={voucherAddress} />
           <Button
             tap
             className="mb-3 w-full"

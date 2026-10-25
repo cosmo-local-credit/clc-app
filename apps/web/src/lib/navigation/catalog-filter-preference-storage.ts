@@ -46,6 +46,8 @@ export type CatalogFilterPreference = {
   tagMatch: TagMatch;
   vouchers: readonly VoucherRef[];
   voucherMatch: TagMatch;
+  pools: readonly VoucherRef[];
+  poolMatch: TagMatch;
 };
 
 export function readCatalogFilterPreference(
@@ -71,13 +73,18 @@ export function readCatalogFilterPreference(
   const candidate = value as Record<string, unknown>;
   const storedVouchers = candidate.vouchers ?? [];
   const storedVoucherMatch = candidate.voucherMatch ?? "any";
+  const storedPools = candidate.pools ?? [];
+  const storedPoolMatch = candidate.poolMatch ?? "any";
   if (
     !Array.isArray(candidate.tags) ||
     !candidate.tags.every((tag) => typeof tag === "string") ||
     (candidate.tagMatch !== "any" && candidate.tagMatch !== "all") ||
     !Array.isArray(storedVouchers) ||
     !storedVouchers.every((voucher) => typeof voucher === "string") ||
-    (storedVoucherMatch !== "any" && storedVoucherMatch !== "all")
+    (storedVoucherMatch !== "any" && storedVoucherMatch !== "all") ||
+    !Array.isArray(storedPools) ||
+    !storedPools.every((pool) => typeof pool === "string") ||
+    (storedPoolMatch !== "any" && storedPoolMatch !== "all")
   ) {
     clearCatalogFilterPreference(owner, name);
     return null;
@@ -88,8 +95,15 @@ export function readCatalogFilterPreference(
     tagMatch: candidate.tagMatch,
     vouchers: storedVouchers as string[],
     voucherMatch: storedVoucherMatch,
+    pools: storedPools as string[],
+    poolMatch: storedPoolMatch,
   });
-  if (!result.ok || (result.filter.tags.length === 0 && result.filter.vouchers.length === 0)) {
+  if (
+    !result.ok ||
+    (result.filter.tags.length === 0 &&
+      result.filter.vouchers.length === 0 &&
+      (result.filter.pools?.length ?? 0) === 0)
+  ) {
     clearCatalogFilterPreference(owner, name);
     return null;
   }
@@ -99,6 +113,8 @@ export function readCatalogFilterPreference(
     tagMatch: result.filter.tagMatch,
     vouchers: result.filter.vouchers,
     voucherMatch: result.filter.voucherMatch,
+    pools: result.filter.pools ?? [],
+    poolMatch: result.filter.poolMatch ?? "any",
   };
 }
 
@@ -109,14 +125,23 @@ export function writeCatalogFilterPreference(
   tagMatch: TagMatch,
   vouchers: readonly VoucherRef[],
   voucherMatch: TagMatch,
+  pools: readonly VoucherRef[] = [],
+  poolMatch: TagMatch = "any",
 ): void {
   const result = parseCatalogFilter({
     tags,
     tagMatch,
     vouchers: vouchers.map(serializeVoucherRef),
     voucherMatch,
+    pools: pools.map(serializeVoucherRef),
+    poolMatch,
   });
-  if (!result.ok || (result.filter.tags.length === 0 && result.filter.vouchers.length === 0)) {
+  if (
+    !result.ok ||
+    (result.filter.tags.length === 0 &&
+      result.filter.vouchers.length === 0 &&
+      (result.filter.pools?.length ?? 0) === 0)
+  ) {
     clearCatalogFilterPreference(owner, name);
     return;
   }
@@ -131,6 +156,8 @@ export function writeCatalogFilterPreference(
       tagMatch: result.filter.tagMatch,
       vouchers: result.filter.vouchers.map(serializeVoucherRef),
       voucherMatch: result.filter.voucherMatch,
+      pools: (result.filter.pools ?? []).map(serializeVoucherRef),
+      poolMatch: result.filter.poolMatch ?? "any",
     }),
   );
 }

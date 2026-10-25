@@ -5,17 +5,16 @@
  * a publicly usable key, so it is called directly rather than through our
  * backend. `@maptiler/sdk` is deliberately not installed for one JSON fetch.
  *
- * An IP city can center a guest discovery radius. Country-derived results are
- * display-only map defaults and must never center a radius. Neither is persisted
- * as a device fix — only real `getCurrentPosition` successes are.
+ * A resolved hint can centre the Marketplace before the visitor interacts. It
+ * is never a real position: only `getCurrentPosition` or a saved profile may
+ * produce a distance or a "you are here" marker.
  */
-type IPCameraSource = "ip-city" | "country-default";
-
 export type IPCamera = {
   lat: number;
   lng: number;
   zoom: number;
-  source: IPCameraSource;
+  source: "ip-city";
+  country?: string;
 };
 
 type MapTilerIPLocation = {
@@ -23,35 +22,17 @@ type MapTilerIPLocation = {
   country: string | null;
 };
 
-/** An IP city is coarse, so it gets a slightly wider camera than a real fix. */
+/** An IP city is coarse, so it gets a wider camera than a real fix. */
 const IP_CITY_ZOOM = 11;
-const COUNTRY_DEFAULT_ZOOM = 12;
 
-/**
- * Country defaults resolve to a representative city camera, not a geometric
- * country centroid, which is often empty land.
- */
-const COUNTRY_CAMERAS: Record<string, { lat: number; lng: number }> = {
-  KE: { lat: -1.2921, lng: 36.8219 }, // Nairobi
-  TZ: { lat: -6.7924, lng: 39.2083 }, // Dar es Salaam
-  UG: { lat: 0.3476, lng: 32.5825 }, // Kampala
-  RW: { lat: -1.9441, lng: 30.0619 }, // Kigali
-  RS: { lat: 44.7866, lng: 20.4489 }, // Belgrade
-};
-
-export const NAIROBI_DEFAULT_CAMERA: IPCamera = {
-  ...COUNTRY_CAMERAS.KE,
-  zoom: COUNTRY_DEFAULT_ZOOM,
-  source: "country-default",
-};
-
-export async function resolveIPCamera(signal?: AbortSignal): Promise<IPCamera> {
+export async function resolveIPCamera(signal?: AbortSignal): Promise<IPCamera | null> {
   const mapTiler = await fetchMapTilerLocation(signal);
-  if (mapTiler.camera) return mapTiler.camera;
-
-  const country =
-    mapTiler.country ?? (await fetchCloudflareCountry(signal)) ?? readDefaultCountry();
-  return countryCamera(country);
+  return mapTiler.camera
+    ? {
+        ...mapTiler.camera,
+        ...(mapTiler.country ? { country: mapTiler.country } : {}),
+      }
+    : null;
 }
 
 /**
@@ -62,7 +43,28 @@ export async function resolveIPCamera(signal?: AbortSignal): Promise<IPCamera> {
  */
 export async function resolveIPCountry(signal?: AbortSignal): Promise<string | null> {
   const mapTiler = await fetchMapTilerLocation(signal);
-  return mapTiler.country ?? (await fetchCloudflareCountry(signal)) ?? readDefaultCountry();
+  const ipCountry = mapTiler.country ?? (await fetchCloudflareCountry(signal));
+  if (ipCountry) return ipCountry;
+
+  return regionFromLocale(readDeviceLanguages());
+}
+
+export function regionFromLocale(languages: readonly string[] | undefined): string | null {
+  for (const language of languages ?? []) {
+    try {
+      const region = new Intl.Locale(language).region;
+      if (region) return region.toUpperCase();
+    } catch {
+      // Malformed browser locale entries are ignored independently.
+    }
+  }
+  return null;
+}
+
+function readDeviceLanguages(): readonly string[] {
+  if (typeof navigator === "undefined") return [];
+  if (navigator.languages?.length) return navigator.languages;
+  return navigator.language ? [navigator.language] : [];
 }
 
 async function fetchMapTilerLocation(signal?: AbortSignal): Promise<MapTilerIPLocation> {
@@ -116,17 +118,7 @@ async function fetchCloudflareCountry(signal?: AbortSignal): Promise<string | nu
   }
 }
 
-function countryCamera(country: string | null): IPCamera {
-  const camera = country ? COUNTRY_CAMERAS[country] : undefined;
-  if (!camera) return NAIROBI_DEFAULT_CAMERA;
-  return { ...camera, zoom: COUNTRY_DEFAULT_ZOOM, source: "country-default" };
-}
-
-function readDefaultCountry(): string | null {
-  return normalizeCountryCode(readEnv("VITE_DEFAULT_COUNTRY"));
-}
-
-function readEnv(name: "VITE_MAPTILER_KEY" | "VITE_DEFAULT_COUNTRY"): string | null {
+function readEnv(name: "VITE_MAPTILER_KEY"): string | null {
   const value = import.meta.env[name] as string | undefined;
   return value?.trim() ? value.trim() : null;
 }

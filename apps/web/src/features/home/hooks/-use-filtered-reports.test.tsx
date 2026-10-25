@@ -37,16 +37,24 @@ function report(id: number): ReportSummary {
     lng: null,
     periodFrom: null,
     periodTo: null,
-    authorAddress: null,
     createdAt: null,
     updatedAt: `2026-07-${String((id % 28) + 1).padStart(2, "0")}T00:00:00Z`,
+    markerIcon: "post",
+    markerColor: "pink",
     tags: [],
     vouchers: [],
+    pools: [],
   };
 }
 
 function page(ids: number[], next: ReportCursor | null): FilteredReportPage {
-  return { reports: ids.map(report), next, tagFacets: null, voucherFacets: null };
+  return {
+    reports: ids.map(report),
+    next,
+    tagFacets: null,
+    voucherFacets: null,
+    poolFacets: null,
+  };
 }
 
 function cursor(id: number): ReportCursor {
@@ -74,6 +82,8 @@ function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilter
     tagMatch: "any",
     vouchers: [],
     voucherMatch: "any",
+    pools: [],
+    poolMatch: "any",
   };
   return {
     term: "harvest",
@@ -86,10 +96,13 @@ function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilter
     tagMatch: "any",
     vouchers: [],
     voucherMatch: "any",
+    pools: [],
+    poolMatch: "any",
     toggleTag: vi.fn(),
     setTags: vi.fn(),
     setTagMatch: vi.fn(),
     setFacets: vi.fn(),
+    setResourceFacets: vi.fn(),
     isAtTagLimit: false,
     clearTerm: vi.fn(),
     clear: vi.fn(),

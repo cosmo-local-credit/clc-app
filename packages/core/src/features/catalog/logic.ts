@@ -13,6 +13,8 @@ export type CatalogSearchState = {
   tagMatch?: TagMatch;
   vouchers?: string | readonly string[];
   voucherMatch?: TagMatch;
+  pools?: string | readonly string[];
+  poolMatch?: TagMatch;
 };
 
 export type CatalogFilter = {
@@ -21,13 +23,17 @@ export type CatalogFilter = {
   tagMatch: TagMatch;
   vouchers: readonly VoucherRef[];
   voucherMatch: TagMatch;
+  pools?: readonly VoucherRef[];
+  poolMatch?: TagMatch;
 };
 
 export type CatalogFilterResult =
   | { ok: true; filter: CatalogFilter }
   | { ok: false; reason: "too-many-tags"; requested: number; max: number }
   | { ok: false; reason: "too-many-vouchers"; requested: number; max: number }
-  | { ok: false; reason: "invalid-vouchers" };
+  | { ok: false; reason: "too-many-pools"; requested: number; max: number }
+  | { ok: false; reason: "invalid-vouchers" }
+  | { ok: false; reason: "invalid-pools" };
 
 const CATALOG_TERM_MIN = 2;
 
@@ -40,6 +46,7 @@ export const CATALOG_MAX_TAGS = 12;
  * request from fanning out across too many voucher relationships while load is still being tuned.
  */
 export const CATALOG_MAX_VOUCHERS = 10;
+export const CATALOG_MAX_POOLS = 10;
 
 export function parseCatalogSearchState(search: unknown): CatalogSearchState {
   if (typeof search !== "object" || search === null) return {};
@@ -62,14 +69,26 @@ export function parseCatalogSearchState(search: unknown): CatalogSearchState {
   const voucherMatch = coerceScalar(source.voucherMatch)?.trim().toLowerCase();
   if (voucherMatch === "any" || voucherMatch === "all") state.voucherMatch = voucherMatch;
 
+  const pools = coerceList(source.pools);
+  if (pools !== undefined) state.pools = pools;
+
+  const poolMatch = coerceScalar(source.poolMatch)?.trim().toLowerCase();
+  if (poolMatch === "any" || poolMatch === "all") state.poolMatch = poolMatch;
+
   return state;
 }
 
 export function parseCatalogFilter(state: CatalogSearchState): CatalogFilterResult {
   const normalizedVouchers = normalizeVoucherRefs(state.vouchers);
   if (!normalizedVouchers.ok) return normalizedVouchers;
+  const normalizedPools = normalizeVoucherRefs(state.pools);
+  if (!normalizedPools.ok) return { ok: false, reason: "invalid-pools" };
 
-  const filter = normalizeCatalogFilter(state, normalizedVouchers.vouchers);
+  const filter = normalizeCatalogFilter(
+    state,
+    normalizedVouchers.vouchers,
+    normalizedPools.vouchers,
+  );
 
   if (filter.tags.length > CATALOG_MAX_TAGS) {
     return {
@@ -88,6 +107,14 @@ export function parseCatalogFilter(state: CatalogSearchState): CatalogFilterResu
       max: CATALOG_MAX_VOUCHERS,
     };
   }
+  if ((filter.pools?.length ?? 0) > CATALOG_MAX_POOLS) {
+    return {
+      ok: false,
+      reason: "too-many-pools",
+      requested: filter.pools?.length ?? 0,
+      max: CATALOG_MAX_POOLS,
+    };
+  }
 
   return { ok: true, filter };
 }
@@ -103,6 +130,9 @@ export function toCatalogSearchState(filter: CatalogFilter): CatalogSearchState 
   if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
     state.voucherMatch = "all";
   }
+  const pools = filter.pools ?? [];
+  if (pools.length > 0) state.pools = pools.map(serializeVoucherRef).join(",");
+  if (pools.length > 1 && filter.poolMatch === "all") state.poolMatch = "all";
   return state;
 }
 
@@ -120,7 +150,12 @@ export const EMPTY_CATALOG_FILTER: CatalogFilter = Object.freeze({
 });
 
 export function isFilterActive(filter: CatalogFilter): boolean {
-  return filter.term !== "" || filter.tags.length > 0 || filter.vouchers.length > 0;
+  return (
+    filter.term !== "" ||
+    filter.tags.length > 0 ||
+    filter.vouchers.length > 0 ||
+    (filter.pools?.length ?? 0) > 0
+  );
 }
 
 export function isFilterSearchActive(state: CatalogSearchState): boolean {
@@ -131,6 +166,7 @@ export function isFilterSearchActive(state: CatalogSearchState): boolean {
 function normalizeCatalogFilter(
   state: CatalogSearchState,
   vouchers: readonly VoucherRef[],
+  pools: readonly VoucherRef[],
 ): CatalogFilter {
   const tags = normalizeTags(state.tags);
   return {
@@ -139,6 +175,8 @@ function normalizeCatalogFilter(
     tagMatch: tags.length > 1 && state.tagMatch === "all" ? "all" : "any",
     vouchers,
     voucherMatch: vouchers.length > 1 && state.voucherMatch === "all" ? "all" : "any",
+    pools,
+    poolMatch: pools.length > 1 && state.poolMatch === "all" ? "all" : "any",
   };
 }
 

@@ -1,4 +1,3 @@
-import { useNearbyCatalogFilter } from "#/components/nearby-catalog";
 import {
   CATALOG_MAX_TAGS,
   CATALOG_MAX_VOUCHERS,
@@ -153,6 +152,9 @@ export function CatalogFilterSheet({
   onApply,
   children,
   trigger = "default",
+  additionalAppliedCount = 0,
+  additionalDraftCount = 0,
+  onResetAdditional,
 }: {
   filter: CatalogFilterControls;
   facets: readonly CatalogFacet[];
@@ -174,6 +176,10 @@ export function CatalogFilterSheet({
   children?: ReactNode;
   /** `bar` is the market bar's square, joined to the end of its search field. */
   trigger?: "default" | "bar";
+  additionalAppliedCount?: number;
+  /** Draft selections rendered by `children`, used by the shared Reset control. */
+  additionalDraftCount?: number;
+  onResetAdditional?: () => void;
 }) {
   const { t } = useLingui();
   const categoryHeadingId = useId();
@@ -192,7 +198,7 @@ export function CatalogFilterSheet({
   );
 
   const appliedCount = filter.result.ok
-    ? filter.tags.length + filter.vouchers.length
+    ? filter.tags.length + filter.vouchers.length + additionalAppliedCount
     : "requested" in filter.result
       ? filter.result.requested
       : 0;
@@ -200,9 +206,7 @@ export function CatalogFilterSheet({
   const atVoucherLimit = draftVouchers.length >= CATALOG_MAX_VOUCHERS;
   // Disjunctive counts describe what a chip adds under Any. They ignore the selected tags,
   // so showing them under All would imply a conjunctive count the backend did not compute.
-  // Server facets are a search vocabulary. They do not count the local radius.
-  const visibilityFilter = useNearbyCatalogFilter();
-  const showCounts = draftTagMatch === "any" && visibilityFilter === undefined;
+  const showCounts = draftTagMatch === "any";
   // Counts stay scoped to the search, so a term whose matches carry no tags zeroes every chip.
   const searchTerm = filter.filter?.term ?? "";
   const hasSelectableFacet = facets.some(
@@ -584,12 +588,15 @@ export function CatalogFilterSheet({
                 variant="outline"
                 tap
                 className="w-full border-primary! text-primary hover:bg-primary/10 hover:text-primary"
-                disabled={draftTags.length === 0 && draftVouchers.length === 0}
+                disabled={
+                  draftTags.length === 0 && draftVouchers.length === 0 && additionalDraftCount === 0
+                }
                 onClick={() => {
                   setDraftTags([]);
                   setDraftTagMatch("any");
                   setDraftVouchers([]);
                   setDraftVoucherMatch("any");
+                  onResetAdditional?.();
                 }}
               >
                 <Trans>Reset</Trans>

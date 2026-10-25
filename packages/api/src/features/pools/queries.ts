@@ -23,7 +23,7 @@ export type PoolListParams = {
 };
 
 /** One cursor page of the pool list as the backend filtered it. */
-export type PoolFilteredListParams = PoolListParams & { filter: CatalogFilter };
+export type PoolFilteredListParams = PoolListParams & { filter: CatalogFilter; owner?: string };
 
 export const poolKeys = {
   all: ["clc", "pools"] as const,
@@ -79,6 +79,7 @@ export const poolKeys = {
         perPage: params.perPage,
         cursor: params.cursor,
         next: params.next,
+        owner: params.owner?.toLowerCase(),
       },
     ] as const,
   /**
@@ -114,7 +115,7 @@ export function poolListInfiniteQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...poolKeys.listInfinite(perPage), nearby.scope] as const)
       : poolKeys.listInfinite(perPage),
     queryFn: ({ pageParam, signal }) =>
@@ -124,6 +125,7 @@ export function poolListInfiniteQueryOptions(
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
         },
         signal,
       ),
@@ -184,6 +186,7 @@ export function poolFilteredPageQueryOptions(pools: PoolsClient, params: PoolFil
           cursor: params.cursor,
           next: params.next,
           filter: params.filter,
+          owner: params.owner,
         },
         signal,
       ),

@@ -1,552 +1,214 @@
-import {
-  focusManager,
-  onlineManager,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
-import { fireEvent, act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
-import {
-  MissingLocationNotice,
-  NearbyCatalog,
-  isWithinNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-} from "./nearby-catalog";
-import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
-import { useReportsInfinite } from "#/features/home/hooks/use-reports";
-import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
-import {
-  useFilteredMarketVouchers,
-  useMarketFacetVocabulary,
-} from "#/features/home/hooks/use-filtered-market-vouchers";
-import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
-import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
-import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
-import {
-  CATALOG_VISIBILITY_STORAGE_KEY,
-  DEFAULT_CATALOG_VISIBILITY,
-  useCatalogVisibilityStore,
-} from "#/features/home/state/catalog-visibility";
 
-const state = vi.hoisted(() => ({
-  auth: {
-    isAuthenticated: true,
-    isLoading: false,
-    state: "authenticated",
-    address: "0xaaa",
-    chainId: 100,
-    error: null,
-    retry: vi.fn(),
-  },
-  profile: { data: { geoLat: 0, geoLng: 0 }, isPending: false, isError: false, refetch: vi.fn() },
-  camera: {
-    realFix: null as { lat: number; lng: number } | null,
-    locationStatus: "idle",
-    requestLocation: vi.fn(),
-  },
-  ip: { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false },
-  market: vi.fn(),
-  pools: vi.fn(),
-  reports: vi.fn(),
-  filteredMarket: vi.fn(),
-  filteredPools: vi.fn(),
-  filteredReports: vi.fn(),
-}));
-vi.mock("#/lib/discovery-location", () => ({
-  useDiscoveryLocation: () => ({
-    ...state.camera,
-    origin: state.camera.realFix ?? (state.ip.data.source === "ip-city" ? state.ip.data : null),
-    ipPending: state.ip.isPending,
-  }),
-}));
-vi.mock("#/features/home/hooks/use-ip-camera", () => ({ useIPCamera: () => state.ip }));
-vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => state.auth }));
-vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => state.profile }));
-vi.mock("#/lib/api/market", () => ({
-  marketClient: {
-    getMarketVouchers: state.market,
-    getFilteredMarketVouchers: state.filteredMarket,
-  },
-}));
-vi.mock("#/lib/api/pools", () => ({
-  poolsClient: { getPools: state.pools, getFilteredPools: state.filteredPools },
-}));
-vi.mock("#/lib/api/reports", () => ({
-  reportsClient: { getReports: state.reports, getFilteredReports: state.filteredReports },
-}));
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
-}));
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
+import {
+  clearMarketDiscoveryArea,
+  NearbyCatalog,
+  nearbyQueryKey,
+  useMarketDiscoveryArea,
+  useNearbyCatalog,
+} from "./nearby-catalog";
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: vi.fn() }));
+
+const useAuthStatusMock = vi.mocked(useAuthStatus);
+const AREA_NAME = "market-discovery-area.v1";
+const BOUNDS = [{ minLng: 36.7, minLat: -1.4, maxLng: 37.1, maxLat: -1.1 }] as const;
 
 beforeEach(() => {
-  state.camera.realFix = null;
-  state.camera.locationStatus = "idle";
-  state.camera.requestLocation.mockReset();
-  state.ip = { data: { source: "ip-city", lat: 0, lng: 0 }, isPending: false };
-  state.auth.isAuthenticated = true;
-  state.auth.isLoading = false;
-  state.auth.address = "0xaaa";
-  state.profile.data = { geoLat: 0, geoLng: 0 };
-  state.profile.isPending = false;
-  state.profile.isError = false;
   window.localStorage.clear();
-  useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY, hydrated: false });
-  state.market.mockReset().mockResolvedValue({ vouchers: [], receivedCount: 0, first: 0, last: 0 });
-  state.pools.mockReset().mockResolvedValue({ pools: [], receivedCount: 0 });
-  state.reports.mockReset().mockResolvedValue({ reports: [] });
-  state.filteredMarket
-    .mockReset()
-    .mockResolvedValue({ vouchers: [], receivedCount: 0, tagFacets: [] });
-  state.filteredPools
-    .mockReset()
-    .mockResolvedValue({ pools: [], receivedCount: 0, tagFacets: [], voucherFacets: [] });
-  state.filteredReports
-    .mockReset()
-    .mockResolvedValue({ reports: [], tagFacets: [], voucherFacets: [] });
-});
-
-it("paints its content at once on every mount after the first", () => {
-  // The stored distance is read after the first paint of the page. A later
-  // mount, as a badge or tab switch makes, must not blink "Loading…" first.
-  render(
-    <NearbyCatalog>
-      <p>Results</p>
-    </NearbyCatalog>,
-  ).unmount();
-  const painted: string[] = [];
-  function FirstPaint({ children }: { children: ReactNode }) {
-    const ref = useRef<HTMLDivElement>(null);
-    useLayoutEffect(() => {
-      painted.push(ref.current?.textContent ?? "");
-    }, []);
-    return <div ref={ref}>{children}</div>;
-  }
-  render(
-    <FirstPaint>
-      <NearbyCatalog>
-        <p>Results</p>
-      </NearbyCatalog>
-    </FirstPaint>,
-  );
-  expect(painted).toEqual(["Results"]);
-});
-
-it("uses exact saved-location radii and lets Global include every coordinate", () => {
-  expect(isWithinNearbyCatalog(undefined, { lat: 80, lng: 80 })).toBe(true);
-  const filter = { lat: 0, lng: 0, radiusKm: 100 };
-  expect(isWithinNearbyCatalog(filter, { lat: 0.5, lng: 0 })).toBe(true);
-  expect(isWithinNearbyCatalog(filter, { lat: 2, lng: 0 })).toBe(false);
-  expect(isWithinNearbyCatalog(filter, { lat: null, lng: null })).toBe(false);
-});
-
-it("filters nearby results to the selected distance", async () => {
-  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "100");
-  state.market.mockResolvedValue({
-    vouchers: [
-      { id: "near", name: "Near", lat: 0.5, lng: 0 },
-      { id: "far", name: "Far", lat: 2, lng: 0 },
-    ],
-    receivedCount: 2,
-    first: 2,
-    last: 0,
+  useAuthStatusMock.mockReturnValue({
+    state: "authenticated",
+    isAuthenticated: true,
+    isLoading: false,
+    needsBackendSignin: false,
+    address: "0xAaA",
+    chainId: 100,
+    connectorId: "test",
+    session: { address: "0xAaA", chainId: 100, role: "USER" },
+    error: null,
+    retry: vi.fn(),
+    retrying: false,
   });
-  mount();
-  expect(await screen.findByText("Near")).toBeTruthy();
-  expect(screen.queryByText("Far")).toBeNull();
-  expect(screen.getByTestId("lists").getAttribute("data-scope")).toContain(":100");
 });
 
-it("Global bypasses profile and authenticated nearby filtering", async () => {
-  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "global");
-  state.auth.isLoading = true;
-  state.profile.isError = true;
-  mount();
-  await waitFor(() => expect(state.market).toHaveBeenCalled());
-  expect(state.market.mock.lastCall?.[0].nearby).toBeUndefined();
-  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
-  state.profile.isError = false;
-});
+afterEach(cleanup);
 
-afterEach(() => {
-  cleanup();
-  focusManager.setFocused(undefined);
-  onlineManager.setOnline(true);
-  vi.useRealTimers();
-});
-
-function Lists() {
-  const scope = (useNearbyCatalog() as { scope?: string } | undefined)?.scope;
-  const filter = useNearbyCatalogFilter();
-  const [initialScope] = useState(scope);
-  const market = useMarketMapVouchers(null);
-  useUserPoolsInfinite();
-  useReportsInfinite();
+function Probe() {
+  const nearby = useNearbyCatalog();
+  const { area, setArea } = useMarketDiscoveryArea();
   return (
-    <div
-      data-testid="lists"
-      data-scope={scope}
-      data-initial-scope={initialScope}
-      data-origin={filter ? `${filter.lat}:${filter.lng}` : undefined}
-    >
-      {market.vouchers.map((v) => (
-        <span key={v.id}>{v.name}</span>
-      ))}
+    <div>
+      <output data-testid="scope">{nearby?.scope}</output>
+      <output data-testid="bounds">{JSON.stringify(nearby?.bounds ?? [])}</output>
+      <output data-testid="camera">
+        {area ? `${area.center.lat}:${area.center.lng}:${area.zoom}` : "global"}
+      </output>
+      <button
+        type="button"
+        onClick={() => setArea({ center: { lat: -1.25, lng: 36.9 }, zoom: 11.2344, boxes: BOUNDS })}
+      >
+        Set area
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          setArea({
+            center: { lat: -1.2500001, lng: 36.9000001 },
+            zoom: 11.23439,
+            boxes: BOUNDS,
+          })
+        }
+      >
+        Set equivalent area
+      </button>
     </div>
   );
 }
 
-function mount(children: ReactNode = <Lists />) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const tree = (visible = true) => (
-    <QueryClientProvider client={client}>
-      {visible ? <NearbyCatalog>{children}</NearbyCatalog> : null}
-    </QueryClientProvider>
-  );
-  return { ...render(tree()), tree, client };
+function mount(children: ReactNode = <Probe />) {
+  return render(<NearbyCatalog>{children}</NearbyCatalog>);
 }
 
-async function advanceTime(ms: number) {
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(ms);
-  });
-}
-
-it("reuses fresh lists on entry/focus/reconnect and removes unused data after five minutes", async () => {
-  // Keep React microtasks real while advancing cache timestamps and timers.
-  vi.useFakeTimers({
-    toFake: ["Date", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
-  });
-  const view = mount();
-  await advanceTime(10);
-  view.rerender(view.tree(false));
-  await advanceTime(20_000);
-  expect(view.client.getQueryCache().getAll().length).toBeGreaterThan(0);
-  view.rerender(view.tree());
-  await advanceTime(10);
-  await act(async () => {
-    focusManager.setFocused(false);
-    focusManager.setFocused(true);
-    onlineManager.setOnline(false);
-    onlineManager.setOnline(true);
-  });
-  await advanceTime(10);
-  for (const request of [state.market, state.pools, state.reports]) {
-    expect(request).toHaveBeenCalledTimes(1);
-  }
-  view.rerender(view.tree(false));
-  await advanceTime(5 * 60_000 + 1);
-  expect(view.client.getQueryCache().getAll()).toEqual([]);
+it("uses Global until the map establishes an area", async () => {
+  mount();
+  expect((await screen.findByTestId("camera")).textContent).toBe("global");
+  expect(screen.getByTestId("scope").textContent).toBe("viewport:0xaaa:global");
+  expect(screen.getByTestId("bounds").textContent).toBe("[]");
 });
 
-it.each(["entry", "focus", "reconnect"])("refreshes stale lists on %s", async (event) => {
-  // Keep React microtasks real while advancing cache timestamps and timers.
-  vi.useFakeTimers({
-    toFake: ["Date", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
+it("persists canonical settled camera state and supplies exact bounds", async () => {
+  mount();
+  fireEvent.click(await screen.findByRole("button", { name: "Set area" }));
+
+  expect(screen.getByTestId("camera").textContent).toBe("-1.25:36.9:11.234");
+  expect(screen.getByTestId("bounds").textContent).toBe(JSON.stringify(BOUNDS));
+  const stored = window.localStorage.getItem(ownerScopedKey("0xaaa", AREA_NAME));
+  expect(JSON.parse(stored ?? "null")).toMatchObject({
+    owner: "0xaaa",
+    center: { lat: -1.25, lng: 36.9 },
+    zoom: 11.234,
+    boxes: BOUNDS,
   });
-  const view = mount();
-  await advanceTime(90_000);
-  // Passing staleTime alone must not start polling an open screen.
-  for (const request of [state.market, state.pools, state.reports]) {
-    expect(request).toHaveBeenCalledTimes(1);
-  }
-  if (event === "entry") {
-    view.rerender(view.tree(false));
-    await advanceTime(10);
-    view.rerender(view.tree());
-  } else {
-    await act(async () => {
-      if (event === "focus") {
-        focusManager.setFocused(false);
-        focusManager.setFocused(true);
-      } else {
-        onlineManager.setOnline(false);
-        onlineManager.setOnline(true);
-      }
-    });
-  }
-  await advanceTime(10);
-  for (const request of [state.market, state.pools, state.reports]) {
-    expect(request).toHaveBeenCalledTimes(2);
-  }
+
+  cleanup();
+  mount();
+  expect((await screen.findByTestId("camera")).textContent).toBe("-1.25:36.9:11.234");
 });
 
-it("refreshes stale searches and facet counts on reconnect for all three catalogs", async () => {
-  // Keep React microtasks real while advancing cache timestamps and timers.
-  vi.useFakeTimers({
-    toFake: ["Date", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
-  });
-  const filter = {
-    term: "local",
-    tags: [],
-    tagMatch: "any",
-    vouchers: [],
-    voucherMatch: "any",
-  } as const;
-  const controls: CatalogFilterControls = {
-    ...filter,
-    filter: { ...filter, tags: [], vouchers: [] },
-    result: { ok: true, filter: { ...filter, tags: [], vouchers: [] } },
-    isFiltered: true,
-    isDebouncing: false,
-    isAtTagLimit: false,
-    setTerm: vi.fn(),
-    toggleTag: vi.fn(),
-    setTags: vi.fn(),
-    setTagMatch: vi.fn(),
-    setFacets: vi.fn(),
-    clearTerm: vi.fn(),
-    clear: vi.fn(),
-  };
-  const unfiltered = {
-    isPending: false,
+it("does not rewrite equivalent settled state", async () => {
+  const setItem = vi.spyOn(Storage.prototype, "setItem");
+  mount();
+  fireEvent.click(await screen.findByRole("button", { name: "Set area" }));
+  const writes = setItem.mock.calls.length;
+  fireEvent.click(screen.getByRole("button", { name: "Set equivalent area" }));
+  expect(setItem).toHaveBeenCalledTimes(writes);
+  setItem.mockRestore();
+});
+
+it("isolates areas by wallet and clears only the signed-in owner", async () => {
+  const view = mount();
+  fireEvent.click(await screen.findByRole("button", { name: "Set area" }));
+
+  useAuthStatusMock.mockReturnValue({
+    state: "guest",
+    isAuthenticated: false,
+    isLoading: false,
+    needsBackendSignin: false,
+    address: undefined,
+    chainId: 100,
+    connectorId: undefined,
+    session: null,
     error: null,
     retry: vi.fn(),
     retrying: false,
-    hasNextPage: false,
-    fetchNextPage: vi.fn(),
-    isFetchingNextPage: false,
-  };
-  function FilteredLists() {
-    useFilteredMarketVouchers(controls.filter);
-    useMarketFacetVocabulary(true);
-    useReportFeed(controls, { ...unfiltered, reports: [] }, true);
-    usePoolCatalog(controls, { ...unfiltered, pools: [] }, true);
-    return null;
-  }
-  mount(<FilteredLists />);
-  await advanceTime(90_000);
-  for (const request of [state.filteredMarket, state.filteredPools, state.filteredReports]) {
-    expect(request).toHaveBeenCalledTimes(2); // Search and facet vocabulary.
-  }
-  await act(async () => {
-    onlineManager.setOnline(false);
-    onlineManager.setOnline(true);
   });
-  await advanceTime(10);
-  for (const request of [state.filteredMarket, state.filteredPools, state.filteredReports]) {
-    expect(request).toHaveBeenCalledTimes(4);
-    expect(request.mock.calls.every(([params]) => params.nearby === true)).toBe(true);
-  }
-});
-
-it("all three screen lists request nearby results", async () => {
-  mount();
-  await waitFor(() => expect(state.market).toHaveBeenCalled());
-  for (const request of [state.market, state.pools, state.reports]) {
-    expect(request).toHaveBeenCalledWith(
-      expect.objectContaining({ nearby: true }),
-      expect.any(AbortSignal),
-    );
-  }
-});
-
-it("drops old rows and local state immediately when profile location or account changes", async () => {
-  state.market.mockResolvedValueOnce({
-    vouchers: [{ id: "1", name: "Old place", lat: 0, lng: 0 }],
-    receivedCount: 1,
-    first: 1,
-    last: 1,
-  });
-  const view = mount();
-  await screen.findByText("Old place");
-  state.market.mockImplementation(() => new Promise(() => {}));
-  state.profile.data = { geoLat: 30, geoLng: 40 };
-  view.rerender(view.tree());
-  expect(screen.queryByText("Old place")).toBeNull();
-  const scope = screen.getByTestId("lists").getAttribute("data-scope");
-  expect(scope).toContain(":30:40");
-  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toBe(scope);
-  state.auth.address = "0xbbb";
-  view.rerender(view.tree());
-  expect(screen.getByTestId("lists").getAttribute("data-scope")).toContain("0xbbb");
-  expect(screen.queryByText("Old place")).toBeNull();
-});
-
-it("cancels a pending old-location request on a location change", async () => {
-  let signal: AbortSignal | undefined;
-  state.market.mockImplementation((_params, received: AbortSignal) => {
-    signal ??= received;
-    return new Promise(() => {});
-  });
-  const view = mount();
-  await waitFor(() => expect(signal).toBeDefined());
-  state.profile.data = { geoLat: 1, geoLng: 1 };
-  await act(async () => view.rerender(view.tree()));
-  expect(signal?.aborted).toBe(true);
-});
-
-it("loads public results for guests and remounts when signing in or out", async () => {
-  state.auth.isAuthenticated = false;
-  const view = mount();
-  await waitFor(() => expect(state.market).toHaveBeenCalled());
-  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
-  for (const request of [state.market, state.reports]) {
-    expect(request.mock.calls[0]?.[0].nearby).toBeUndefined();
-  }
-  state.auth.isAuthenticated = true;
-  await act(async () => view.rerender(view.tree()));
-  await waitFor(() => expect(state.market.mock.lastCall?.[0].nearby).toBe(true));
-  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toContain("nearby:");
-  state.auth.isAuthenticated = false;
-  await act(async () => view.rerender(view.tree()));
-  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toBeNull();
-});
-
-it("does not load catalogs while authentication is loading", () => {
-  state.auth.isAuthenticated = false;
-  state.auth.isLoading = true;
-  mount();
-  expect(screen.queryByTestId("lists")).toBeNull();
-  expect(state.market).not.toHaveBeenCalled();
-  expect(state.pools).not.toHaveBeenCalled();
-  expect(state.reports).not.toHaveBeenCalled();
-});
-
-function ScopeProbe() {
-  return (
-    <>
-      <MissingLocationNotice />
-      <p data-testid="scope">
-        {(useNearbyCatalog() as { scope?: string } | undefined)?.scope ?? "global"}
-      </p>
-    </>
-  );
-}
-
-it("blocks a screen behind Choose a location when a distance has no profile location", () => {
-  state.profile.data = {} as never;
-  render(
+  view.rerender(
     <NearbyCatalog>
-      <ScopeProbe />
+      <Probe />
     </NearbyCatalog>,
   );
+  expect((await screen.findByTestId("camera")).textContent).toBe("global");
+  expect(window.localStorage.getItem(ownerScopedKey("0xaaa", AREA_NAME))).not.toBeNull();
 
-  expect(screen.getByText("Choose a location")).toBeTruthy();
-  expect(screen.queryByTestId("scope")).toBeNull();
+  act(() => clearMarketDiscoveryArea("0xaaa"));
+  expect(window.localStorage.getItem(ownerScopedKey("0xaaa", AREA_NAME))).toBeNull();
 });
 
-it("keeps the market browsable everywhere with a notice when it allows a missing location", () => {
-  state.profile.data = {} as never;
-  render(
-    <NearbyCatalog allowMissingLocation>
-      <ScopeProbe />
-    </NearbyCatalog>,
-  );
-
-  expect(screen.getByTestId("scope").textContent).toBe("global");
-  expect(screen.getByRole("status").textContent).toContain("Choose a location");
-  expect(screen.getByText("Edit profile")).toBeTruthy();
-});
-
-it("shows no notice once the profile has a location", () => {
-  render(
-    <NearbyCatalog allowMissingLocation>
-      <ScopeProbe />
-    </NearbyCatalog>,
-  );
-
-  expect(screen.getByTestId("scope").textContent).toContain("nearby:");
-  expect(screen.queryByText("Choose a location")).toBeNull();
-});
-
-it("defaults guests to 500 km and changes visible rows when choosing 50 km or Global", async () => {
-  state.auth.isAuthenticated = false;
-  state.market.mockResolvedValue({
-    vouchers: [
-      { id: "near", name: "Near", lat: 0.1, lng: 0 },
-      { id: "middle", name: "Middle", lat: 2, lng: 0 },
-      { id: "far", name: "Far", lat: 8, lng: 0 },
-    ],
-    receivedCount: 3,
-    first: 3,
-    last: 0,
-  });
+it("removes corrupt saved areas and the obsolete radius preference", async () => {
+  window.localStorage.setItem(ownerScopedKey("0xaaa", AREA_NAME), "{bad");
+  window.localStorage.setItem("clc.catalog-visibility.v1", "50");
   mount();
-  await screen.findByText("Middle");
-  expect(screen.queryByText("Far")).toBeNull();
-  act(() => useCatalogVisibilityStore.getState().setVisibility("50"));
-  await screen.findByText("Near");
-  expect(screen.queryByText("Middle")).toBeNull();
-  act(() => useCatalogVisibilityStore.getState().setVisibility("global"));
-  await screen.findByText("Far");
-  expect(state.market).toHaveBeenCalledTimes(1);
-  for (const request of [state.market, state.pools, state.reports]) {
-    expect(request.mock.calls.every(([params]) => params.nearby !== true)).toBe(true);
-  }
+
+  await waitFor(() => expect(screen.getByTestId("camera").textContent).toBe("global"));
+  expect(window.localStorage.getItem(ownerScopedKey("0xaaa", AREA_NAME))).toBeNull();
+  expect(window.localStorage.getItem("clc.catalog-visibility.v1")).toBeNull();
 });
 
-it("uses device coordinates ahead of IP and drops old rows when the device moves", async () => {
-  state.auth.isAuthenticated = false;
-  state.camera.realFix = { lat: 20, lng: 30 };
-  const view = mount();
-  expect(screen.getByTestId("lists").getAttribute("data-origin")).toBe("20:30");
-  state.camera.realFix = { lat: 40, lng: 50 };
-  view.rerender(view.tree());
-  expect(screen.getByTestId("lists").getAttribute("data-origin")).toBe("40:50");
-});
-
-it("asks guests for location instead of filtering around a fallback country", async () => {
-  state.auth.isAuthenticated = false;
-  state.ip.data.source = "country-default";
-  const view = mount();
-  expect(screen.getByText("Choose a location")).toBeTruthy();
-  expect(state.market).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
-  expect(state.camera.requestLocation).toHaveBeenCalledOnce();
-  state.camera.locationStatus = "denied";
-  view.rerender(view.tree());
-  expect(screen.getByText("Location denied")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Global" }));
-  await waitFor(() => expect(state.market).toHaveBeenCalled());
-  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
-});
-
-it("keeps Global available while IP lookup is pending", async () => {
-  state.auth.isAuthenticated = false;
-  state.ip.data.source = "country-default";
-  state.ip.isPending = true;
-  mount();
-  expect(state.market).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Global" }));
-  await waitFor(() => expect(state.market).toHaveBeenCalled());
-});
-
-it("widens a guest search from raw cache without losing rows or repeating downloads", async () => {
-  state.auth.isAuthenticated = false;
-  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "50");
-  state.filteredMarket.mockResolvedValue({
-    vouchers: [
-      { id: "near", name: "Near", lat: 0.1, lng: 0 },
-      { id: "middle", name: "Middle", lat: 2, lng: 0 },
-    ],
-    receivedCount: 2,
-    tagFacets: [],
-  });
-  function Search() {
-    const query = useFilteredMarketVouchers({
-      term: "local",
-      tags: [],
-      tagMatch: "any",
-      vouchers: [],
-      voucherMatch: "any",
-    });
-    return (
-      <>
-        {query.data?.vouchers.map((v) => (
-          <span key={v.id}>{v.name}</span>
-        ))}
-      </>
+it("rejects partially valid and overlong persisted viewport arrays", async () => {
+  const key = ownerScopedKey("0xaaa", AREA_NAME);
+  const valid = { minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 };
+  for (const boxes of [
+    [valid, { minLng: Number.NaN, minLat: -2, maxLng: 38, maxLat: -1 }],
+    [valid, valid, valid],
+  ]) {
+    cleanup();
+    window.localStorage.setItem(
+      key,
+      JSON.stringify({ owner: "0xaaa", center: { lat: -1.5, lng: 36.5 }, zoom: 10, boxes }),
     );
+    mount();
+    await waitFor(() => expect(screen.getByTestId("camera").textContent).toBe("global"));
+    expect(window.localStorage.getItem(key)).toBeNull();
   }
-  const view = mount(<Search />);
-  await screen.findByText("Near");
-  expect(screen.queryByText("Middle")).toBeNull();
-  act(() => useCatalogVisibilityStore.getState().setVisibility("500"));
-  await screen.findByText("Middle");
-  expect(state.filteredMarket).toHaveBeenCalledTimes(1);
-  expect(view.client.getQueryCache().getAll()[0]?.state.data).toMatchObject({
-    vouchers: [{ id: "near" }, { id: "middle" }],
+});
+
+it("rejects a persisted whole-world viewport instead of submitting a world bbox", async () => {
+  const key = ownerScopedKey("0xaaa", AREA_NAME);
+  window.localStorage.setItem(
+    key,
+    JSON.stringify({
+      owner: "0xaaa",
+      center: { lat: 0, lng: 0 },
+      zoom: 0,
+      boxes: [{ minLng: -180, minLat: -90, maxLng: 180, maxLat: 90 }],
+    }),
+  );
+  mount();
+
+  await waitFor(() => expect(screen.getByTestId("camera").textContent).toBe("global"));
+  expect(screen.getByTestId("bounds").textContent).toBe("[]");
+  expect(window.localStorage.getItem(key)).toBeNull();
+});
+
+it("does not expose either owner tier while the session is unresolved", () => {
+  useAuthStatusMock.mockReturnValue({
+    state: "loading",
+    isAuthenticated: false,
+    isLoading: true,
+    needsBackendSignin: false,
+    address: undefined,
+    chainId: 100,
+    connectorId: undefined,
+    session: undefined,
+    error: null,
+    retry: vi.fn(),
+    retrying: false,
   });
+  mount();
+  expect(screen.queryByTestId("camera")).toBeNull();
+  expect(screen.getByRole("status").textContent).toBe("Loading…");
+});
+
+it("includes the viewport scope in discovery query keys", () => {
+  expect(
+    nearbyQueryKey(["catalog"] as const, {
+      nearby: false,
+      scope: "viewport:guest:box",
+      bounds: BOUNDS,
+    }),
+  ).toEqual(["catalog", "viewport:guest:box"]);
 });

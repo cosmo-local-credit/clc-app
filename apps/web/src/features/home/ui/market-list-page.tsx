@@ -6,7 +6,7 @@ import { RiArrowRightSLine } from "react-icons/ri";
 
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
-import { MissingLocationNotice } from "#/components/nearby-catalog";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { Badge } from "#/components/ui/badge";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
 import { VoucherAvatar } from "#/components/wallet";
@@ -40,7 +40,7 @@ export function MarketListPage({
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
   const catalog = useMarketCatalogVouchers(
     filter,
-    null,
+    [],
     !filter.isRestoringPreference && !credit.blocksResults,
     filtersEverOpened,
     credit.enabled ? credit.poolRefs : undefined,
@@ -155,7 +155,6 @@ export function MarketListPage({
             />
           }
         />
-        <MissingLocationNotice className="mt-3" />
 
         <div className="mt-3">
           <CreditableBrowseControl
@@ -178,6 +177,11 @@ export function MarketListPage({
         </div>
 
         <MarketFilterFeedback filter={filter} error={error} onRetry={retry} retrying={retrying} />
+
+        <MarketViewportSearchNotice
+          className="mt-3"
+          query={filter.result.ok ? filter.result.filter.term : ""}
+        />
 
         {/* The count answers a search, a filter or Credit; at rest it says nothing. */}
         {(filter.isFiltered || credit.enabled) &&

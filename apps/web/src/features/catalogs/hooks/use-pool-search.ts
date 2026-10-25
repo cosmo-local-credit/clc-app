@@ -29,6 +29,7 @@ export function usePoolSearch(
   query: string,
   setQuery: (next: string) => void,
   active: boolean,
+  owner?: string,
 ): PoolSearchControls {
   const queryClient = useQueryClient();
   const { settled } = useDebouncedValue(query);
@@ -41,7 +42,7 @@ export function usePoolSearch(
     () => ({ term, tags: [], tagMatch: "any", vouchers: [], voucherMatch: "any" }),
     [term],
   );
-  const params = useMemo(() => ({ perPage: POOL_SEARCH_LIMIT, filter }), [filter]);
+  const params = useMemo(() => ({ perPage: POOL_SEARCH_LIMIT, filter, owner }), [filter, owner]);
 
   useEffect(() => {
     if (enabled || term.length < POOL_SEARCH_MIN_CHARS) return;

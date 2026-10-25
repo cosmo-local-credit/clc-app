@@ -19,6 +19,8 @@ const EMPTY_FILTER: CatalogFilter = {
   tagMatch: "any",
   vouchers: [],
   voucherMatch: "any",
+  pools: [],
+  poolMatch: "any",
 };
 
 function mockFetch(result: unknown) {
@@ -63,7 +65,55 @@ describe("getFilteredReports", () => {
     expect(url.searchParams.get("facets")).toBe("true");
   });
 
-  it("normalizes report relationships and voucher facets while dropping malformed rows", async () => {
+  it("serializes pool relationships independently from voucher relationships", async () => {
+    const fetcher = mockFetch({ reports: [], poolFacets: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getFilteredReports({
+      perPage: 20,
+      facets: true,
+      filter: {
+        ...EMPTY_FILTER,
+        pools: [
+          { chainId: 1, address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+          { chainId: 100, address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+        ],
+        poolMatch: "all",
+      },
+    });
+
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("pools")).toBe(
+      "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,100:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    );
+    expect(url.searchParams.get("poolMatch")).toBe("all");
+    expect(url.searchParams.has("author")).toBe(false);
+  });
+
+  it("serializes verified Credit pools independently from linked-pool filters", async () => {
+    const fetcher = mockFetch({ reports: [] });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getFilteredReports({
+      perPage: 20,
+      filter: {
+        ...EMPTY_FILTER,
+        pools: [{ chainId: 100, address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }],
+      },
+      creditablePools: [
+        { chainId: 100, address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+        { chainId: 100, address: "0xcccccccccccccccccccccccccccccccccccccccc" },
+      ],
+    });
+
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("pools")).toBe("100:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    expect(url.searchParams.get("creditablePools")).toBe(
+      "100:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,100:0xcccccccccccccccccccccccccccccccccccccccc",
+    );
+  });
+
+  it("normalizes report relationships and facets while dropping malformed rows", async () => {
     vi.stubGlobal(
       "fetch",
       mockFetch({
@@ -88,6 +138,18 @@ describe("getFilteredReports", () => {
                 symbol: "NID",
               },
             ],
+            pools: [
+              {
+                id: 31,
+                chainId: 100,
+                address: "0xdddddddddddddddddddddddddddddddddddddddd",
+                name: "Community Pool",
+                symbol: "POOL",
+              },
+            ],
+            // A rollout response may still include this legacy field. Public
+            // normalization must discard it rather than exposing authorship.
+            authorAddress: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
           },
         ],
         voucherFacets: [
@@ -114,6 +176,15 @@ describe("getFilteredReports", () => {
             count: 1,
           },
         ],
+        poolFacets: [
+          {
+            chainId: 100,
+            address: "0xdddddddddddddddddddddddddddddddddddddddd",
+            name: "Community Pool",
+            symbol: "POOL",
+            count: 2,
+          },
+        ],
       }),
     );
 
@@ -137,11 +208,36 @@ describe("getFilteredReports", () => {
         count: 4,
       },
     ]);
+    expect(page.reports[0]?.pools).toEqual([
+      {
+        id: "31",
+        chainId: 100,
+        address: "0xdddddddddddddddddddddddddddddddddddddddd",
+        name: "Community Pool",
+        symbol: "POOL",
+      },
+    ]);
+    expect(page.reports[0]).toMatchObject({ markerIcon: "post", markerColor: "pink" });
+    expect(page.reports[0]).not.toHaveProperty("authorAddress");
+    expect(page.poolFacets).toEqual([
+      {
+        chainId: 100,
+        address: "0xdddddddddddddddddddddddddddddddddddddddd",
+        name: "Community Pool",
+        symbol: "POOL",
+        count: 2,
+      },
+    ]);
   });
 });
 
 function write(overrides: Partial<ReportWrite> = {}): ReportWrite {
-  return { ...emptyReportWrite, title: "August community harvest", ...overrides };
+  return {
+    ...emptyReportWrite,
+    title: "August community harvest",
+    vouchers: [{ chainId: 100, address: "0x0000000000000000000000000000000000000001" }],
+    ...overrides,
+  };
 }
 
 const MANAGED_ROW = {
@@ -161,7 +257,7 @@ const MANAGED_ROW = {
 
 describe("serializeReportWrite", () => {
   // PUT is assign-all, so a key this omits is a field the server clears.
-  it("sends every editable key and all four collections", () => {
+  it("sends every editable key and all five collections", () => {
     const body = JSON.parse(serializeReportWrite(write()));
 
     expect(Object.keys(body).sort()).toEqual(
@@ -174,7 +270,10 @@ describe("serializeReportWrite", () => {
         "hostName",
         "imageUrl",
         "images",
+        "markerColor",
+        "markerIcon",
         "participants",
+        "pools",
         "periodFrom",
         "periodTo",
         "tags",
@@ -190,6 +289,10 @@ describe("serializeReportWrite", () => {
     expect(body.periodFrom).toBeNull();
     expect(body.imageUrl).toBeNull();
     expect(body.tags).toEqual([]);
+    expect(body.vouchers).toEqual([
+      { chainId: 100, address: "0x0000000000000000000000000000000000000001" },
+    ]);
+    expect(body.pools).toEqual([]);
     expect(body.images).toEqual([]);
     expect(body.attachments).toEqual([]);
   });
@@ -209,7 +312,10 @@ describe("serializeReportWrite", () => {
           participants: "20",
           timeTaken: "4 hours",
           tags: ["Agriculture", "Youth"],
+          markerIcon: "event",
+          markerColor: "cyan",
           vouchers: [{ chainId: 100, address: "0x0000000000000000000000000000000000000001" }],
+          pools: [{ chainId: 100, address: "0x0000000000000000000000000000000000000002" }],
           images: [
             {
               url: "https://content.example/one.jpg",
@@ -236,6 +342,11 @@ describe("serializeReportWrite", () => {
     expect(body.vouchers).toEqual([
       { chainId: 100, address: "0x0000000000000000000000000000000000000001" },
     ]);
+    expect(body.pools).toEqual([
+      { chainId: 100, address: "0x0000000000000000000000000000000000000002" },
+    ]);
+    expect(body.markerIcon).toBe("event");
+    expect(body.markerColor).toBe("cyan");
     expect(body.images[0]).toEqual({
       url: "https://content.example/one.jpg",
       width: null,
@@ -257,6 +368,20 @@ describe("serializeReportWrite", () => {
     const body = JSON.parse(serializeReportWrite(write({ title: "  Padded  " })));
     expect(body.title).toBe("Padded");
     expect(() => serializeReportWrite(write({ title: "  " }))).toThrow();
+  });
+
+  it("requires at least one related voucher or pool", () => {
+    expect(() => serializeReportWrite(write({ vouchers: [], pools: [] }))).toThrow(
+      "Link at least one voucher or pool",
+    );
+    expect(() =>
+      serializeReportWrite(
+        write({
+          vouchers: [],
+          pools: [{ chainId: 100, address: "0x0000000000000000000000000000000000000002" }],
+        }),
+      ),
+    ).not.toThrow();
   });
 
   // A character count is not a byte count. This body is well inside the

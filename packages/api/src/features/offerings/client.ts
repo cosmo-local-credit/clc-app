@@ -2,6 +2,8 @@ import { type OfferingWrite, offeringWriteSchema } from "@clc/core/features/offe
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 import {
   type CursorParams,
   type HexAddress,
@@ -106,6 +108,7 @@ export type OfferingDiscoveryParams = {
   tagMatch?: "any" | "all";
   facets?: boolean;
   nearby?: boolean;
+  bounds?: readonly MarketBoundingBox[];
   pools?: readonly { chainId: number; address: string }[];
 };
 
@@ -434,6 +437,7 @@ function formatOfferingDiscoveryQuery(params: OfferingDiscoveryParams): string {
   if (params.tagMatch === "all" && (params.tags?.length ?? 0) > 1) query.set("tagMatch", "all");
   if (params.facets) query.set("facets", "true");
   if (params.nearby) query.set("nearby", "true");
+  appendMarketBounds(query, params.bounds);
   if (params.pools && params.pools.length > 0) {
     query.set(
       "pools",

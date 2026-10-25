@@ -12,18 +12,26 @@ const usageSchema = z.object({
   pools: quotaSchema,
   catalogs: quotaSchema,
   offers: quotaSchema,
+  wants: quotaSchema,
 });
 export type ResourceUsage = z.infer<typeof usageSchema>;
 export type ResourceKind = keyof ResourceUsage;
+export type ResourceUsageRequest = { voucher?: string };
 
 export function createResourceLimitsClient(http: HttpClient) {
   return {
-    async usage(signal?: AbortSignal): Promise<ResourceUsage> {
-      const result = await http.request<{ usage: unknown }>("/api/v2/users/me/resource-usage", {
-        method: "GET",
-        cache: "no-store",
-        signal,
-      });
+    async usage(request: ResourceUsageRequest = {}, signal?: AbortSignal): Promise<ResourceUsage> {
+      const query = new URLSearchParams();
+      if (request.voucher?.trim()) query.set("voucher", request.voucher.trim());
+      const suffix = query.size ? `?${query}` : "";
+      const result = await http.request<{ usage: unknown }>(
+        `/api/v2/users/me/resource-usage${suffix}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          signal,
+        },
+      );
       return usageSchema.parse(result.usage);
     },
   };

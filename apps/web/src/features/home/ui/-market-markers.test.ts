@@ -16,11 +16,14 @@ import type { MarketLocation, MarketLocationKind } from "./market-data";
 import {
   MARKET_NETWORK_BADGE_COLOR,
   MARKET_NETWORK_BADGE_IMAGE_ID,
+  CATALOG_PIN_HEX,
+  CATALOG_PIN_IMAGE_ID,
   POOL_PIN_HEX,
   POOL_PIN_IMAGE_ID,
   SELECTED_PIN_SUFFIX,
   addMarketNetworkBadgeImage,
   addMarketMarkerImages,
+  markerArt,
   markerImageId,
   markerPin,
   resetMarketMarkerCache,
@@ -45,11 +48,74 @@ function fakeMap() {
   };
 }
 
-type VoucherKind = Exclude<MarketLocationKind, "pool">;
+type VoucherKind = Exclude<MarketLocationKind, "pool" | "want" | "catalog" | "post">;
 
 function automatic(kind: MarketLocationKind): MarkerSource {
   return { kind, markerIcon: null, markerColor: null };
 }
+
+describe("Want marker artwork", () => {
+  it.each(["question", "message", "request"] as const)(
+    "keeps the %s glyph distinct from voucher artwork",
+    (markerIcon) => {
+      const id = markerArt({ kind: "want", markerIcon, markerColor: "orange" }).image;
+      expect(id).toBe(`market-pin-want-${markerIcon}-orange`);
+      expect(id).not.toContain("voucher");
+    },
+  );
+
+  it("registers every Want icon and safe colour with selected artwork", () => {
+    const map = fakeMap();
+    const icons = ["question", "message", "request"] as const;
+    const wants = icons.flatMap((markerIcon) =>
+      MARKER_COLORS.map((markerColor) => ({ kind: "want" as const, markerIcon, markerColor })),
+    );
+
+    addMarketMarkerImages(map as never, wants);
+
+    for (const { markerIcon, markerColor } of wants) {
+      const id = `market-pin-want-${markerIcon}-${markerColor}`;
+      expect(map.images.has(id)).toBe(true);
+      expect(map.images.has(`${id}-selected`)).toBe(true);
+    }
+  });
+});
+
+describe("Catalog and Post marker artwork", () => {
+  it("gives Catalogs a fixed purple book pin and selected variant", () => {
+    const map = fakeMap();
+    addMarketMarkerImages(map as never, [automatic("catalog")]);
+
+    expect(markerArt(automatic("catalog"))).toMatchObject({
+      image: CATALOG_PIN_IMAGE_ID,
+      fill: CATALOG_PIN_HEX.pin,
+      body: "square",
+    });
+    expect(map.images.has(CATALOG_PIN_IMAGE_ID)).toBe(true);
+    expect(map.images.has(CATALOG_PIN_IMAGE_ID + SELECTED_PIN_SUFFIX)).toBe(true);
+  });
+
+  it.each(["post", "event", "announcement"] as const)(
+    "draws the %s Post style distinctly in its selected colour",
+    (markerIcon) => {
+      const source = { kind: "post" as const, markerIcon, markerColor: "cyan" as const };
+      const map = fakeMap();
+      addMarketMarkerImages(map as never, [source]);
+
+      const id = `market-pin-post-${markerIcon}-cyan`;
+      expect(markerArt(source)).toMatchObject({ image: id, fill: MARKER_COLOR_HEX.cyan.pin });
+      expect(map.images.has(id)).toBe(true);
+      expect(map.images.has(id + SELECTED_PIN_SUFFIX)).toBe(true);
+    },
+  );
+
+  it("uses safe Post + Pink defaults for legacy map rows", () => {
+    expect(markerArt(automatic("post"))).toMatchObject({
+      image: "market-pin-post-post-pink",
+      fill: MARKER_COLOR_HEX.pink.pin,
+    });
+  });
+});
 
 const KINDS: VoucherKind[] = ["goods", "services", "voucher"];
 const AUTOMATIC = KINDS.map(automatic);

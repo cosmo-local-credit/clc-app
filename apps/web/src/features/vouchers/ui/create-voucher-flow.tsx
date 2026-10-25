@@ -36,6 +36,8 @@ import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
+import { PublicContactWarning } from "#/components/public-contact-warning";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError } from "#/components/ui/field";
@@ -697,6 +699,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   );
                 }}
               </form.Field>
+              <PublicLocationWarning />
 
               <form.Subscribe
                 selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
@@ -761,6 +764,8 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   </div>
                 )}
               </form.Field>
+
+              <PublicContactWarning />
 
               <form.Field
                 name="email"

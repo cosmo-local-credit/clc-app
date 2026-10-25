@@ -4,7 +4,6 @@ import { RiExternalLinkLine, RiFileTextLine, RiInformationLine, RiMenuLine } fro
 
 import { LanguageSelector } from "#/components/language-selector";
 import { ThemeToggle } from "#/components/theme-selector";
-import { VisibilitySelector } from "#/components/visibility-selector";
 import { Button } from "#/components/ui/button";
 import {
   PopoverClose,
@@ -80,13 +79,6 @@ export function AppMenu({ className }: { className?: string }) {
               <Trans>Theme</Trans>
             </span>
             <ThemeToggle className={SELECTOR_TRIGGER_CLASS_NAME} />
-          </div>
-
-          <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2">
-            <span className="text-sm">
-              <Trans>Visibility</Trans>
-            </span>
-            <VisibilitySelector triggerClassName={SELECTOR_TRIGGER_CLASS_NAME} />
           </div>
 
           <div className="my-1 h-px bg-border" />

@@ -19,6 +19,7 @@ import { SectionLabel } from "#/components/admin/section-heading";
 import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
+import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -226,6 +227,7 @@ export function EditPoolProfileSheet({
 
             <div className="flex flex-col gap-4 border-t border-border pt-4">
               <SectionLabel>Contact</SectionLabel>
+              <PublicDisclosureNote kind="contact" />
 
               <form.Field name="email">
                 {(field) => (
@@ -332,6 +334,7 @@ export function EditPoolProfileSheet({
 
             <div className="border-border flex flex-col gap-4 border-t pt-4">
               <SectionLabel>Location</SectionLabel>
+              <PublicDisclosureNote kind="location" />
               <form.Field name="locationName">
                 {(nameField) => (
                   <form.Field name="latitude">

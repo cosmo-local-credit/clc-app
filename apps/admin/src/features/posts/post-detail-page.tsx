@@ -309,6 +309,31 @@ export function PostDetailPage({ reportId }: { reportId: string }) {
               </ul>
             )}
           </section>
+
+          <section className="border-border bg-card border p-4">
+            <SectionHeading>Linked pools</SectionHeading>
+            {post.pools.length === 0 ? (
+              <p className="text-muted-foreground mt-3 text-sm">No linked pools.</p>
+            ) : (
+              <ul className="mt-3 flex flex-col gap-2 text-sm">
+                {post.pools.map((pool) => (
+                  <li key={pool.id} className="flex items-center justify-between gap-2">
+                    <Link
+                      to="/pools/$address"
+                      params={{ address: pool.address }}
+                      search={{ tab: "vouchers" }}
+                      className="min-w-0 truncate underline-offset-4 hover:underline"
+                    >
+                      {pool.name}
+                    </Link>
+                    <span className="font-data text-muted-foreground shrink-0 text-xs">
+                      {formatVoucherAddress(pool.address)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </aside>
       </div>
 

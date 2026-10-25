@@ -29,6 +29,7 @@ import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { PageHeader } from "#/components/admin/page-header";
+import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { MarkerStyleField, describeMarker } from "#/components/admin/marker-style-field";
 import { SectionHeading } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
@@ -509,6 +510,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
           </FormPanel>
 
           <FormPanel title="Directory">
+            <PublicDisclosureNote kind="location" />
             <form.Field name="locationName">
               {(nameField) => (
                 <form.Field name="latitude">
@@ -576,6 +578,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
           </FormPanel>
 
           <FormPanel title="Issuer contact" className="xl:col-span-2">
+            <PublicDisclosureNote kind="contact" />
             <div className="grid grid-cols-2 gap-3">
               <form.Field name="email">
                 {(field) => (

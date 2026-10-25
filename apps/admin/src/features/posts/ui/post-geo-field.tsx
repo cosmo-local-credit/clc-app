@@ -1,4 +1,5 @@
 import { Suspense, useState } from "react";
+import type { ReportMarkerStyle } from "@clc/core/features/markers/logic";
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -22,12 +23,14 @@ export function PostGeoField({
   longitude,
   error,
   disabled,
+  markerStyle,
   onChange,
 }: {
   latitude: number | null;
   longitude: number | null;
   error?: string | null;
   disabled?: boolean;
+  markerStyle: ReportMarkerStyle;
   onChange: (value: { lat: number; lng: number } | null) => void;
 }) {
   // Drafts are text so a partly typed "-1." is not thrown away between
@@ -85,6 +88,7 @@ export function PostGeoField({
           lat={latitude}
           lng={longitude}
           interactive={!disabled}
+          markerStyle={markerStyle}
           className="h-48"
           onLocationChange={(nextLat, nextLng) => commit(String(nextLat), String(nextLng))}
         />

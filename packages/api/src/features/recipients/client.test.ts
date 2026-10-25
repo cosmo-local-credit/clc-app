@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { createHttpClient } from "../../client/http-client";
-import { createRecipientsClient } from "./client";
+import { createRecipientsClient, recipientLabel } from "./client";
 
 const address = "0x1111111111111111111111111111111111111111";
 const pool = { kind: "pool", name: "Sohail Pool", alias: "Sohail Pool", address, chainId: 100 };
@@ -25,6 +25,21 @@ describe("internal recipients", () => {
       "https://core.test/api/v2/recipients?q=wllr",
       expect.objectContaining({ method: "GET", cache: "no-store" }),
     );
+  });
+  it("discards legacy profile names from every user recipient surface", async () => {
+    const legacyUser = {
+      kind: "user",
+      name: "Private Profile Name",
+      alias: "exact_username",
+      address,
+      chainId: 100,
+    };
+    const { client } = setup({ recipients: [legacyUser] });
+
+    const recipients = await client.search("exact_username");
+
+    expect(recipients).toEqual([{ ...legacyUser, name: "exact_username" }]);
+    expect(recipientLabel(recipients[0]!)).toBe("exact_username");
   });
   it("encodes current names and reverse resolves concrete addresses", async () => {
     const { client, fetcher } = setup({ recipient: pool });

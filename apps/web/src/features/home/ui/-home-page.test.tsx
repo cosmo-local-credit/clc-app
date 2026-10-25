@@ -10,7 +10,13 @@ const nearbyAuth = vi.hoisted(() => ({ isAuthenticated: true }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   authSessionQueryKey: ["auth", "session"],
-  useAuthStatus: () => ({ ...nearbyAuth, isLoading: false, address: "0xabc", chainId: 100 }),
+  useAuthStatus: () => ({
+    ...nearbyAuth,
+    state: nearbyAuth.isAuthenticated ? "authenticated" : "guest",
+    isLoading: false,
+    address: nearbyAuth.isAuthenticated ? "0xabc" : undefined,
+    chainId: 100,
+  }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: { geoLat: 0, geoLng: 0 }, isPending: false, isError: false }),

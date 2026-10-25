@@ -39,8 +39,8 @@ import {
   spiderfyOffsets,
 } from "./market-stacks";
 
-const NAIROBI = { lat: -1.2921, lng: 36.8219 };
-const DEFAULT_ZOOM = 12;
+const WORLD = { lat: 0, lng: 20 };
+const DEFAULT_ZOOM = 2;
 
 const CLUSTER_MAX_ZOOM = 13;
 const CLUSTER_RADIUS = 50;
@@ -112,11 +112,13 @@ type UserLocation = { lat: number; lng: number };
 type SymbolLayer = Extract<LayerSpecification, { type: "symbol" }>;
 
 export type MarketViewport = {
+  center: { lat: number; lng: number };
   west: number;
   south: number;
   east: number;
   north: number;
   zoom: number;
+  userInitiated: boolean;
 };
 
 export type MarketFitBounds = {
@@ -542,12 +544,15 @@ export function MarketMap({
     const report = onViewportSettledRef.current;
     if (!report) return;
     const bounds = map.getBounds().adjustAntiMeridian();
+    const center = map.getCenter();
     report({
+      center: { lat: center.lat, lng: center.lng },
       west: bounds.getWest(),
       south: bounds.getSouth(),
       east: bounds.getEast(),
       north: bounds.getNorth(),
       zoom: map.getZoom(),
+      userInitiated: userHasInteractedRef.current,
     });
   }, []);
 
@@ -580,7 +585,7 @@ export function MarketMap({
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: initialStyle,
-        center: initialCamera ? [initialCamera.lng, initialCamera.lat] : [NAIROBI.lng, NAIROBI.lat],
+        center: initialCamera ? [initialCamera.lng, initialCamera.lat] : [WORLD.lng, WORLD.lat],
         zoom: initialCamera?.zoom ?? DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
         bearing: 0,
@@ -605,6 +610,7 @@ export function MarketMap({
     let removeLabelEdgeListeners: (() => void) | undefined;
 
     function handleMapClick(event: MapMouseEvent) {
+      userHasInteractedRef.current = true;
       const [feature] = map.queryRenderedFeatures(event.point, {
         layers: INTERACTIVE_LAYER_IDS,
       });
@@ -629,6 +635,7 @@ export function MarketMap({
       const key = feature.properties?.key;
       const count = Number(feature.properties?.count);
       if (typeof key === "string" && count > 1) {
+        userHasInteractedRef.current = true;
         const pageCount = spiderPageCount(count);
         setSpider((current) => {
           if (current?.key !== key) return { key, page: 0 };
@@ -648,6 +655,7 @@ export function MarketMap({
 
     function expandCluster(clusterId: number, feature: MapLibreGL.MapGeoJSONFeature) {
       const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
+      userHasInteractedRef.current = true;
       void source?.getClusterExpansionZoom(clusterId).then((zoom) => {
         if (feature.geometry.type !== "Point") return;
         map.easeTo({
@@ -693,6 +701,8 @@ export function MarketMap({
 
     function handleLoad() {
       restoreStyle();
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => reportViewport(map), VIEWPORT_SETTLE_MS);
     }
 
     function handleStyleLoad() {
