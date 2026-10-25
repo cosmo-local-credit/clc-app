@@ -1386,6 +1386,31 @@ describe("MarketPage viewport", () => {
     expect(discoveryArea.setArea).toHaveBeenCalledOnce();
   });
 
+  it("clears stale bounds when the settled camera is a genuine world view", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [savedBox],
+    };
+    renderPage();
+
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: 0, lng: 0 },
+        west: -180,
+        south: -90,
+        east: 180,
+        north: 90,
+        zoom: 1,
+        userInitiated: true,
+      }),
+    );
+
+    expect(discoveryArea.clearArea).toHaveBeenCalledOnce();
+    expect(discoveryArea.setArea).not.toHaveBeenCalled();
+  });
+
   it("splits an antimeridian viewport before persisting and querying it", () => {
     renderPage();
 
