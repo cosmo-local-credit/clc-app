@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test";
+import { BackendApiError } from "../../client/errors";
 import type { ManagedReportsParams, ReportPage, ReportsClient } from "./client";
 import {
   adminReportQueryOptions,
@@ -211,5 +212,14 @@ describe("managed query options", () => {
 
   it("keeps the previous page while a filter change is in flight", () => {
     expect(adminReportsQueryOptions({} as ReportsClient, MANAGED).placeholderData).toBeDefined();
+  });
+
+  it("retries one transient managed-detail failure and then stops", () => {
+    const retry = myReportQueryOptions({} as ReportsClient, AUTHOR, "42").retry;
+    if (typeof retry !== "function") throw new Error("expected retry predicate");
+    const error = new BackendApiError(503, "temporarily unavailable");
+
+    expect(retry(0, error)).toBe(true);
+    expect(retry(1, error)).toBe(false);
   });
 });

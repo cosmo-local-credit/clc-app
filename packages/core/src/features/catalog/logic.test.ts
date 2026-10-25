@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  CATALOG_MAX_POOLS,
   CATALOG_MAX_TAGS,
   CATALOG_MAX_VOUCHERS,
   CATALOG_TERM_MAX,
@@ -173,6 +174,22 @@ describe("voucher relationship normalization", () => {
       mustParse({ vouchers: `${FIRST_VOUCHER},${SECOND_VOUCHER}`, voucherMatch: "all" })
         .voucherMatch,
     ).toBe("all");
+  });
+});
+
+describe("pool relationship normalization", () => {
+  it("reports more than the independent pool maximum", () => {
+    const pools = Array.from(
+      { length: CATALOG_MAX_POOLS + 1 },
+      (_, index) => `42220:0x${String(index + 1).padStart(40, "0")}`,
+    );
+
+    expect(parseCatalogFilter({ pools })).toEqual({
+      ok: false,
+      reason: "too-many-pools",
+      requested: CATALOG_MAX_POOLS + 1,
+      max: CATALOG_MAX_POOLS,
+    });
   });
 });
 
