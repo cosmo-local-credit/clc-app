@@ -77,7 +77,8 @@ outside this release.
 
 ## Deployment and QA
 
-Keep VITE_SAFE_OWNERSHIP_ENABLED off until tracker/core and migrations 060/061
-are deployed. Configure the existing AccountIndex and system writer as for user
-signup. STS configuration is optional and must not gate ownership or metadata.
+Keep VITE_SAFE_OWNERSHIP_ENABLED off in production until eth-tracker
+v1.15.0-stable and clc-core with migration 062 are deployed there; staging and
+previews (`[env.preview.vars]`) already run them and have it on. Configure the
+existing AccountIndex and system writer as for user signup. STS configuration is optional and must not gate ownership or metadata.
 See docs/OWNERSHIP_TRANSFER.md for the short end-to-end QA procedure.

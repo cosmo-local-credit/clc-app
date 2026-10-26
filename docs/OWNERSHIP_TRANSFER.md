@@ -87,16 +87,16 @@ Use an isolated migrated test database for the integration run.
 
 ## Multisig-owned assets
 
-`VITE_SAFE_OWNERSHIP_ENABLED` (off in both Wrangler blocks) enables multisig
-ownership and single-signer metadata editing. Enable it after the tracker and
+`VITE_SAFE_OWNERSHIP_ENABLED` (on for staging and previews, off in production)
+enables multisig ownership and single-signer metadata editing. Enable it after the tracker and
 backend below are deployed. Metadata and public ownership do not require the
 Safe Transaction Service or gasless Safe execution.
 
 1. Deploy eth-tracker with `SAFE_OWNERS_CHANGED` and compatible `getOwners()`
    detection.
-2. Deploy clc-core with migrations `060_safe_signers.sql` and
-   `061_safe_compatible_owners.sql`. Configure `chain.ge_registry` as for signup;
-   the system signer must be an AccountIndex writer.
+2. Deploy clc-core with migration `062_safe_signers.sql`. Configure
+   `chain.ge_registry` as for signup; the system signer must be an AccountIndex
+   writer.
 3. A successful ownership transfer discovers the new multisig. Viewing an
    existing multisig-owned asset calls `GET /api/v2/owners/:address`, which
    persists its verified signer set. Both paths enqueue the existing account
