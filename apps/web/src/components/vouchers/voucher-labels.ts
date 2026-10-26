@@ -1,4 +1,4 @@
-import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
+import type { MarkerIcon } from "@clc/core/features/markers/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { useLingui } from "@lingui/react/macro";
 
@@ -43,7 +43,7 @@ export function useMarketDistanceLabel(
   }
 }
 
-/** Names for the map pin choices, read by assistive tech and the review rows. */
+/** Names for the map-pin glyph choices, read by assistive tech and review rows. */
 export function useMarkerLabels() {
   const { t } = useLingui();
   return {
@@ -65,22 +65,6 @@ export function useMarkerLabels() {
           return t`Health`;
         case "education":
           return t`Education`;
-      }
-    },
-    color(color: MarkerColor): string {
-      switch (color) {
-        case "blue":
-          return t`Blue`;
-        case "purple":
-          return t`Purple`;
-        case "orange":
-          return t`Orange`;
-        case "pink":
-          return t`Pink`;
-        case "cyan":
-          return t`Cyan`;
-        case "brown":
-          return t`Brown`;
       }
     },
   };

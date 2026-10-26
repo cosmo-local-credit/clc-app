@@ -62,7 +62,7 @@ export function WantRow({
         </span>
         <span className="mt-1.5 flex gap-1 overflow-hidden">
           {want.state === "scheduled" ? (
-            <span className="shrink-0 text-2xs font-semibold text-warning-foreground">
+            <span className="shrink-0 text-2xs font-semibold text-want-ink">
               <Trans>Scheduled</Trans>
             </span>
           ) : null}

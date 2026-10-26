@@ -7,6 +7,7 @@ import { TbCurrentLocation } from "react-icons/tb";
 
 import { Input } from "#/components/ui/input";
 import { Spinner } from "#/components/ui/spinner";
+import type { FixedResourceMarkerKind } from "#/components/vouchers/marker-style-picker";
 import type { GeocodeSuggestion } from "#/lib/geo-client";
 import { reverseLocation, searchLocations } from "#/lib/geo-client";
 import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
@@ -21,6 +22,7 @@ type LocationPickerProps = {
   error?: string;
   label?: string;
   markerStyle?: MapMarkerStyle;
+  markerResource?: FixedResourceMarkerKind;
   cameraHint?: { lat: number; lng: number; zoom: number } | null;
   required?: boolean;
   /**
@@ -43,6 +45,7 @@ export function LocationPicker({
   error,
   label,
   markerStyle,
+  markerResource,
   cameraHint,
   required,
   fill = false,
@@ -294,6 +297,7 @@ export function LocationPicker({
             interactive
             onLocationChange={placePin}
             markerStyle={markerStyle}
+            markerResource={markerResource}
             className={fill ? mapHeight : undefined}
           />
         </Suspense>

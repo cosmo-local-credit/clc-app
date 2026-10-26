@@ -43,7 +43,7 @@ describe("Want row privacy", () => {
     const { container, rerender } = render(<WantPicture want={WANT} />);
 
     expect(container.querySelector("img")).toBeNull();
-    expect(container.querySelector('path[fill="#ea580c"]')).toBeTruthy();
+    expect(container.querySelector('path[fill="#EA580C"]')).toBeTruthy();
 
     rerender(<WantPicture want={{ ...WANT, imageUrl: "https://storage.example/want.webp" }} />);
     expect(container.querySelector("img")?.getAttribute("src")).toBe(

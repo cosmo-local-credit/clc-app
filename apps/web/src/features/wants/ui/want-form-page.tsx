@@ -138,7 +138,7 @@ function WantForm({
     !!want && ((want.contactPermission ?? 0) & 2) === 2 && phoneAvailable,
   );
   const [markerIcon, setMarkerIcon] = useState<WantMarkerIcon>(want?.markerIcon ?? "question");
-  const [markerColor, setMarkerColor] = useState<MarkerColor>(want?.markerColor ?? "orange");
+  const markerColor: MarkerColor = want?.markerColor ?? "orange";
   const [error, setError] = useState<string | null>(null);
   const save = useMutation(
     saveWantMutationOptions(wantsClient, queryClient, want?.id, want?.status === "CLOSED"),
@@ -282,11 +282,8 @@ function WantForm({
       <PublicLocationWarning />
       <MarkerStylePicker
         mode="want"
-        value={{ icon: markerIcon, color: markerColor }}
-        onChange={(next) => {
-          setMarkerIcon(next.icon);
-          setMarkerColor(next.color);
-        }}
+        value={markerIcon}
+        onChange={setMarkerIcon}
         disabled={save.isPending}
       />
       <ImageUploadField
