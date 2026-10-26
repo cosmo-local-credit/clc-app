@@ -4,6 +4,7 @@ import type { MouseEvent, ReactNode } from "react";
 import {
   RiArticleLine,
   RiLockLine,
+  RiMap2Line,
   RiNotification3Line,
   RiSettings3Line,
   RiWallet3Line,
@@ -52,7 +53,11 @@ export function BottomNavigation({
           atActiveTabRoot={atActiveTabRoot}
           icon={<RiNotification3Line />}
         />
-        <MarketNavLink label={t`Market`} activeTab={activeTab} isMarketMap={isMarketMap} />
+        <MarketNavLink
+          label={isMarketMap ? t`Market` : t`Map`}
+          activeTab={activeTab}
+          isMarketMap={isMarketMap}
+        />
         <NavLink
           tab="posts"
           label={t`Posts`}
@@ -133,7 +138,11 @@ function MarketNavLink({
           active && "ring-2 ring-foreground/10",
         )}
       >
-        <CLCLogo className="size-8" />
+        {isMarketMap ? (
+          <CLCLogo className="size-8" />
+        ) : (
+          <RiMap2Line className="size-8 text-primary-foreground" aria-hidden="true" />
+        )}
       </span>
       <span className={cn("font-medium text-2xs", active && "font-semibold text-foreground")}>
         {label}
