@@ -444,17 +444,12 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
 
         <div className="border-border flex flex-col gap-4 border-t pt-4">
           <SectionLabel>Map marker</SectionLabel>
-          <form.Subscribe
-            selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
-          >
-            {([icon, color]) => (
+          <form.Subscribe selector={(state) => state.values.markerIcon}>
+            {(icon) => (
               <MarkerStyleField
                 kind={voucher.kind}
-                value={{ icon, color }}
-                onChange={(next) => {
-                  form.setFieldValue("markerIcon", next.icon);
-                  form.setFieldValue("markerColor", next.color);
-                }}
+                value={icon}
+                onChange={(next) => form.setFieldValue("markerIcon", next)}
                 disabled={update.isPending}
               />
             )}

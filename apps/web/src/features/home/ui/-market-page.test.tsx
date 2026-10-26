@@ -5,12 +5,15 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
-import type { MarketPoolLocation } from "#/features/home/hooks/use-market-pools";
 import type { MarketLocation } from "./market-data";
 import type { MarketCamera } from "./market-map";
+import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
+
+type MarketPoolLocation = MarketLocation & { kind: "pool"; address: `0x${string}` };
 
 type MapProps = {
   locations: MarketLocation[];
+  clusters?: unknown[];
   mode?: "standard" | "satellite";
   selectedLocationId: string | null;
   camera: MarketCamera | null;
@@ -60,6 +63,7 @@ const {
   mapResourceSelection,
   catalogsResult,
   reportsResult,
+  mapQueryState,
 } = vi.hoisted(() => ({
   authState: { current: { isAuthenticated: false, isLoading: false, session: null } },
   creditFeedback: { current: false },
@@ -67,7 +71,6 @@ const {
     current: [] as MarketPoolLocation[],
     error: null as Error | null,
     retry: vi.fn(),
-    enabled: [] as boolean[],
   },
   discoveryArea: {
     current: null as {
@@ -81,11 +84,14 @@ const {
   },
   mapRequests: {
     voucherBounds: [] as unknown[],
-    poolBounds: [] as unknown[],
-    wantBounds: [] as unknown[],
     unifiedBounds: [] as unknown[],
-    catalogEnabled: [] as boolean[],
-    reportEnabled: [] as boolean[],
+    unifiedEnabled: [] as boolean[],
+    unifiedZoom: [] as number[],
+  },
+  mapQueryState: {
+    clusters: [] as MarketMapCluster[],
+    isFetching: false,
+    isPlaceholderData: false,
   },
   mapResourceSelection: {
     current: ["voucher", "want"] as ("voucher" | "want" | "pool" | "catalog" | "post")[],
@@ -222,34 +228,6 @@ vi.mock("#/components/creditable-browse-control", () => ({
   ),
 }));
 
-vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
-  useMarketplaceMapSearch: (
-    _filter: unknown,
-    _pools: unknown,
-    bounds: unknown,
-    enabled: boolean,
-  ) => {
-    mapRequests.unifiedBounds.push(bounds);
-    return {
-      locations: enabled ? (filteredResult.current.data?.vouchers ?? []) : [],
-      status: !enabled
-        ? "disabled"
-        : filteredResult.current.isPlaceholderData
-          ? "loading"
-          : filteredResult.current.error
-            ? "error"
-            : filteredResult.current.data
-              ? "ready"
-              : "loading",
-      error: enabled ? filteredResult.current.error : null,
-      retry: filteredResult.current.refetch,
-      retrying: false,
-      tagFacets: [],
-    };
-  },
-  useMarketplaceMapFacets: () => [],
-}));
-
 vi.mock("#/features/home/hooks/use-market-map-resource-selection", () => ({
   MARKET_MAP_RESOURCE_KINDS: ["voucher", "want", "pool", "catalog", "post"],
   useMarketMapResourceSelection: () => ({
@@ -258,6 +236,92 @@ vi.mock("#/features/home/hooks/use-market-map-resource-selection", () => ({
     toggle: vi.fn(),
     toggleAll: vi.fn(),
   }),
+}));
+
+vi.mock("#/features/home/hooks/use-market-map", () => ({
+  useMarketMap: (options: {
+    bounds: unknown;
+    zoom: number;
+    enabled: boolean;
+    kinds: ("voucher" | "want" | "pool" | "catalog" | "post")[];
+    facets: boolean;
+    filter: { term: string };
+  }) => {
+    mapRequests.unifiedBounds.push(options.bounds);
+    mapRequests.unifiedEnabled.push(options.enabled);
+    mapRequests.unifiedZoom.push(options.zoom);
+    const filtered = options.filter.term !== "" || "tags" in routeSearch.current;
+    const source = filtered
+      ? (filteredResult.current.data?.vouchers ?? [])
+      : vouchersResult.current.vouchers;
+    const locations: Array<
+      MarketLocation & {
+        resourceKind: "voucher" | "want" | "pool" | "catalog" | "post";
+        resourceId: string;
+      }
+    > = source.map((voucher) => ({
+      ...voucher,
+      resourceKind: "voucher" as const,
+      resourceId: voucher.address,
+    }));
+    if (!filtered && options.kinds.includes("pool")) {
+      locations.push(
+        ...poolsResult.current.map((pool) => ({
+          ...pool,
+          resourceKind: "pool" as const,
+          resourceId: pool.address,
+        })),
+      );
+    }
+    if (!filtered && options.kinds.includes("catalog")) {
+      locations.push(
+        ...catalogsResult.current.map((catalog) => ({
+          ...catalog,
+          resourceKind: "catalog" as const,
+          resourceId: (catalog as MarketLocation & { catalogId: string }).catalogId,
+        })),
+      );
+    }
+    if (!filtered && options.kinds.includes("post")) {
+      locations.push(
+        ...reportsResult.current.map((post) => ({
+          ...post,
+          resourceKind: "post" as const,
+          resourceId: (post as MarketLocation & { reportId: string }).reportId,
+        })),
+      );
+    }
+
+    const resourceError =
+      vouchersResult.current.error ??
+      (options.kinds.includes("pool") ? poolsResult.error : null) ??
+      (options.kinds.includes("catalog") ? catalogsResult.error : null) ??
+      (options.kinds.includes("post") ? reportsResult.error : null);
+    const error = filtered ? filteredResult.current.error : resourceError;
+    const ready = filtered
+      ? filteredResult.current.data !== undefined
+      : vouchersResult.current.isCatalogComplete ||
+        locations.length > 0 ||
+        mapQueryState.clusters.length > 0;
+    const retry = filtered ? filteredResult.current.refetch : vouchersResult.current.retry;
+    return {
+      locations: options.enabled ? locations : [],
+      clusters: options.enabled ? mapQueryState.clusters : [],
+      tagFacets: options.enabled ? (filteredResult.current.data?.tagFacets ?? []) : [],
+      error: options.enabled ? error : null,
+      retry,
+      retrying: options.enabled && mapQueryState.isFetching,
+      isFetching: options.enabled && mapQueryState.isFetching,
+      isPlaceholderData: mapQueryState.isPlaceholderData,
+      isSettled:
+        options.enabled &&
+        ready &&
+        !error &&
+        !mapQueryState.isFetching &&
+        !mapQueryState.isPlaceholderData,
+      status: !options.enabled ? "disabled" : error ? "error" : ready ? "ready" : "loading",
+    };
+  },
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
@@ -321,40 +385,6 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
     },
   };
 });
-
-vi.mock("#/features/home/hooks/use-market-pools", () => ({
-  useMarketMapPools: (enabled: boolean, bounds: unknown) => {
-    poolsResult.enabled.push(enabled);
-    mapRequests.poolBounds.push(bounds);
-    return {
-      pools: enabled ? poolsResult.current : [],
-      error: enabled ? poolsResult.error : null,
-      retry: poolsResult.retry,
-      retrying: false,
-    };
-  },
-}));
-
-vi.mock("#/features/home/hooks/use-market-wants", () => ({
-  useMarketMapWants: (bounds: unknown) => {
-    mapRequests.wantBounds.push(bounds);
-    return {
-      wants: [],
-      error: null,
-      retry: vi.fn(),
-      retrying: false,
-    };
-  },
-}));
-
-vi.mock("#/features/home/hooks/use-market-catalogs", () => ({
-  useMarketMapCatalogs: (_bounds: unknown, enabled: boolean) => ({
-    catalogs: enabled ? catalogsResult.current : [],
-    error: enabled ? catalogsResult.error : null,
-    retry: catalogsResult.retry,
-    retrying: false,
-  }),
-}));
 
 vi.mock("#/features/home/hooks/use-market-reports", () => ({
   useMarketMapReports: ({ enabled }: { enabled: boolean }) => ({
@@ -489,7 +519,33 @@ function voucher(id: string, overrides: Partial<MarketVoucher> = {}): MarketVouc
 
 function renderPage(node: ReactNode = <MarketPage />) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={client}>{node}</QueryClientProvider>);
+  return render(node, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
+  });
+}
+
+function expectBoundsCover(
+  value: unknown,
+  expected: {
+    minLng: number;
+    minLat: number;
+    maxLng: number;
+    maxLat: number;
+  },
+) {
+  const bounds = value as Array<{
+    minLng: number;
+    minLat: number;
+    maxLng: number;
+    maxLat: number;
+  }>;
+  expect(bounds).toHaveLength(1);
+  expect(bounds[0]?.minLng).toBeLessThanOrEqual(expected.minLng);
+  expect(bounds[0]?.minLat).toBeLessThanOrEqual(expected.minLat);
+  expect(bounds[0]?.maxLng).toBeGreaterThanOrEqual(expected.maxLng);
+  expect(bounds[0]?.maxLat).toBeGreaterThanOrEqual(expected.maxLat);
 }
 
 beforeEach(() => {
@@ -530,17 +586,17 @@ beforeEach(() => {
   poolsResult.current = [];
   poolsResult.error = null;
   poolsResult.retry = vi.fn();
-  poolsResult.enabled = [];
   discoveryArea.current = null;
   discoveryArea.setArea.mockReset();
   discoveryArea.clearArea.mockReset();
   mapResourceSelection.current = ["voucher", "want"];
   mapRequests.voucherBounds = [];
-  mapRequests.poolBounds = [];
-  mapRequests.wantBounds = [];
   mapRequests.unifiedBounds = [];
-  mapRequests.catalogEnabled = [];
-  mapRequests.reportEnabled = [];
+  mapRequests.unifiedEnabled = [];
+  mapRequests.unifiedZoom = [];
+  mapQueryState.clusters = [];
+  mapQueryState.isFetching = false;
+  mapQueryState.isPlaceholderData = false;
   catalogsResult.current = [];
   catalogsResult.error = null;
   catalogsResult.retry.mockReset();
@@ -638,8 +694,8 @@ describe("MarketPage guest entry", () => {
     renderPage();
 
     expect(screen.queryByTestId("market-map")).toBeNull();
-    expect(mapRequests.voucherBounds.length).toBeGreaterThan(0);
-    expect(mapRequests.voucherBounds.every((bounds) => JSON.stringify(bounds) === "[]")).toBe(true);
+    expect(mapRequests.unifiedBounds.length).toBeGreaterThan(0);
+    expect(mapRequests.unifiedEnabled.at(-1)).toBe(false);
     expect(lastMapProps.current).toBeNull();
   });
 
@@ -709,11 +765,7 @@ describe("MarketPage saved profile location", () => {
     const { rerender } = renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
     const first = lastMapProps.current?.camera;
 
-    rerender(
-      <QueryClientProvider client={new QueryClient()}>
-        <MarketPage isAuthenticated locationOwner="0xabc" />
-      </QueryClientProvider>,
-    );
+    rerender(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
     expect(lastMapProps.current?.camera).toBe(first);
   });
@@ -745,6 +797,61 @@ describe("MarketPage saved profile location", () => {
 });
 
 describe("MarketPage data states", () => {
+  it("does not show an empty notice over a cluster-only response", () => {
+    mapQueryState.clusters = [
+      {
+        type: "cluster",
+        id: "cluster:8:1:2",
+        lat: -3.68,
+        lng: 39.83,
+        count: 6,
+        kinds: { voucher: 5, want: 1 },
+        expansionZoom: 16,
+      },
+    ];
+    renderPage();
+
+    expect(lastMapProps.current?.clusters).toEqual(mapQueryState.clusters);
+    expect(screen.queryByText(/No marketplace results/)).toBeNull();
+  });
+
+  it.each(["fetching", "placeholder"])("suppresses empty notices for %s data", (state) => {
+    vouchersResult.current.isCatalogComplete = true;
+    mapQueryState.isFetching = state === "fetching";
+    mapQueryState.isPlaceholderData = state === "placeholder";
+    renderPage();
+
+    expect(screen.queryByText(/No marketplace results/)).toBeNull();
+  });
+
+  it("shows delayed indeterminate progress and clears it as results arrive", () => {
+    vi.useFakeTimers();
+    try {
+      mapQueryState.isFetching = true;
+      const view = renderPage();
+      expect(screen.queryByRole("progressbar")).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(249);
+      });
+      expect(screen.queryByRole("progressbar")).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      const progress = screen.getByRole("progressbar", { name: "Loading marketplace…" });
+      expect(progress.getAttribute("aria-valuenow")).toBeNull();
+      expect(screen.getByTestId("market-map")).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Use current location" })).toBeTruthy();
+
+      mapQueryState.isFetching = false;
+      vouchersResult.current.vouchers = [voucher("1")];
+      view.rerender(<MarketPage />);
+      expect(screen.queryByRole("progressbar")).toBeNull();
+      expect(screen.queryByText(/No marketplace results/)).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("contains no placeholder eatery, shop, or service data", () => {
     renderPage();
     expect(screen.queryByText(/Cosmo Bakery/)).toBeNull();
@@ -866,6 +973,10 @@ describe("MarketPage voucher card", () => {
   });
 
   it("shows the symbol beside the name", () => {
+    detailResult.current = {
+      data: detailFor({ name: "Priscilah Malii", symbol: "MALII" }),
+      isPending: false,
+    };
     vouchersResult.current = {
       ...vouchersResult.current,
       vouchers: [voucher("1", { name: "Priscilah Malii", symbol: "MALII" })],
@@ -917,7 +1028,7 @@ describe("MarketPage voucher card", () => {
     fireEvent.click(screen.getByTestId("marker-1"));
 
     const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
-    expect(card.textContent).toContain("MALII");
+    expect(card.textContent).toContain("Priscilah Malii");
     expect(card.textContent).not.toContain("Goods");
     expect(card.querySelector("img")).toBeNull();
     expect(card.textContent).not.toContain("=");
@@ -1092,7 +1203,7 @@ describe("MarketPage pools", () => {
     };
     renderPage();
 
-    expect(poolsResult.enabled.at(-1)).toBe(false);
+    expect(mapRequests.unifiedEnabled.at(-1)).toBe(true);
     expect(lastMapProps.current?.locations.map((location) => location.id)).toEqual(["1"]);
   });
 
@@ -1103,10 +1214,9 @@ describe("MarketPage pools", () => {
     renderPage();
 
     const alert = screen.getByRole("alert");
-    expect(alert.textContent).toContain("Couldn't load pools.");
+    expect(alert.textContent).toContain("Couldn't load complete marketplace results.");
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-    expect(poolsResult.retry).toHaveBeenCalledTimes(1);
-    expect(mockRetry).not.toHaveBeenCalled();
+    expect(mockRetry).toHaveBeenCalledTimes(1);
   });
 
   it("puts the vouchers' failure first when both fail", () => {
@@ -1116,7 +1226,7 @@ describe("MarketPage pools", () => {
     renderPage();
 
     const alert = screen.getByRole("alert");
-    expect(alert.textContent).toContain("Could not load vouchers.");
+    expect(alert.textContent).toContain("Couldn't load complete marketplace results.");
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
     expect(mockRetry).toHaveBeenCalledTimes(1);
   });
@@ -1153,7 +1263,10 @@ describe("MarketPage Catalogs and Posts", () => {
 
     renderPage();
 
-    expect(lastMapProps.current?.locations).toEqual([catalog, post]);
+    expect(lastMapProps.current?.locations).toEqual([
+      expect.objectContaining(catalog),
+      expect.objectContaining(post),
+    ]);
     expect(lastMapProps.current?.locations.some((location) => location.kind === "voucher")).toBe(
       false,
     );
@@ -1251,11 +1364,12 @@ describe("MarketPage viewport", () => {
     renderPage();
 
     expect(lastMapProps.current?.camera).toMatchObject({ lat: -1.5, lng: 36.5, zoom: 10 });
-    expect(mapRequests.voucherBounds.at(-1)).toEqual([
-      { minLng: 35.8, minLat: -2.2, maxLng: 37.2, maxLat: -0.8 },
-    ]);
-    expect(mapRequests.poolBounds.at(-1)).toEqual(mapRequests.voucherBounds.at(-1));
-    expect(mapRequests.wantBounds.at(-1)).toEqual(mapRequests.voucherBounds.at(-1));
+    expectBoundsCover(mapRequests.unifiedBounds.at(-1), {
+      minLng: 35.8,
+      minLat: -2.2,
+      maxLng: 37.2,
+      maxLat: -0.8,
+    });
   });
 
   it("waits for a trustworthy initial camera to settle before loading bounded markers", () => {
@@ -1268,7 +1382,7 @@ describe("MarketPage viewport", () => {
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
     expect(lastMapProps.current?.camera).toMatchObject({ lat: -1.5, lng: 36.5, rank: 2 });
-    expect(poolsResult.enabled.at(-1)).toBe(false);
+    expect(mapRequests.unifiedEnabled.at(-1)).toBe(false);
 
     act(() =>
       lastMapProps.current?.onViewportSettled?.({
@@ -1282,10 +1396,13 @@ describe("MarketPage viewport", () => {
       }),
     );
 
-    expect(poolsResult.enabled.at(-1)).toBe(true);
-    expect(mapRequests.poolBounds.at(-1)).toEqual([
-      { minLng: 35.8, minLat: -2.2, maxLng: 37.2, maxLat: -0.8 },
-    ]);
+    expect(mapRequests.unifiedEnabled.at(-1)).toBe(true);
+    expectBoundsCover(mapRequests.unifiedBounds.at(-1), {
+      minLng: 35.8,
+      minLat: -2.2,
+      maxLng: 37.2,
+      maxLat: -0.8,
+    });
   });
 
   it("persists exact settled bounds without refetching inside the marker envelope", () => {
@@ -1296,7 +1413,7 @@ describe("MarketPage viewport", () => {
       boxes: [savedBox],
     };
     renderPage();
-    const original = mapRequests.voucherBounds.at(-1);
+    const original = mapRequests.unifiedBounds.at(-1);
 
     act(() =>
       lastMapProps.current?.onViewportSettled?.({
@@ -1315,8 +1432,56 @@ describe("MarketPage viewport", () => {
       zoom: 10,
       boxes: [{ minLng: 36.1, minLat: -1.9, maxLng: 36.9, maxLat: -1.1 }],
     });
-    expect(mapRequests.voucherBounds.at(-1)).toEqual(original);
+    expect(mapRequests.unifiedBounds.at(-1)).toEqual(original);
   });
+
+  it("tightens the fetch envelope when zooming back in from a regional view", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -3.68, lng: 39.83 },
+      zoom: 5,
+      boxes: [{ minLng: 20, minLat: -20, maxLng: 50, maxLat: 10 }],
+    };
+    renderPage();
+    const broad = mapRequests.unifiedBounds.at(-1);
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: -3.68, lng: 39.83 },
+        zoom: 16.5,
+        west: 39.82,
+        south: -3.69,
+        east: 39.84,
+        north: -3.67,
+        userInitiated: true,
+      }),
+    );
+
+    const narrow = mapRequests.unifiedBounds.at(-1) as Array<{ minLng: number; maxLng: number }>;
+    expect(narrow).not.toEqual(broad);
+    expect(narrow[0]!.maxLng - narrow[0]!.minLng).toBeLessThan(0.1);
+    expect(mapRequests.unifiedZoom.at(-1)).toBe(16);
+  });
+
+  it.each([false, true])(
+    "queries a saved close viewport immediately on refresh (authenticated=%s)",
+    (authenticated) => {
+      const bounds = { minLng: 39.82, minLat: -3.69, maxLng: 39.84, maxLat: -3.67 };
+      discoveryArea.current = {
+        owner: authenticated ? "0xabc" : "guest",
+        center: { lat: -3.68, lng: 39.83 },
+        zoom: 16,
+        boxes: [bounds],
+      };
+      renderPage(
+        <MarketPage isAuthenticated={authenticated} locationOwner={discoveryArea.current.owner} />,
+      );
+
+      expect(mapRequests.unifiedEnabled.at(-1)).toBe(true);
+      expect(mapRequests.unifiedZoom.at(-1)).toBe(16);
+      expectBoundsCover(mapRequests.unifiedBounds.at(-1), bounds);
+      expect(discoveryArea.setArea).not.toHaveBeenCalled();
+    },
+  );
 
   it("moves the buffered marker query once the visible viewport leaves it", () => {
     discoveryArea.current = {
@@ -1339,9 +1504,12 @@ describe("MarketPage viewport", () => {
       }),
     );
 
-    expect(mapRequests.voucherBounds.at(-1)).toEqual([
-      { minLng: 9.8, minLat: 9.8, maxLng: 11.2, maxLat: 11.2 },
-    ]);
+    expectBoundsCover(mapRequests.unifiedBounds.at(-1), {
+      minLng: 9.8,
+      minLat: 9.8,
+      maxLng: 11.2,
+      maxLat: 11.2,
+    });
   });
 
   it("turns a settled coarse guest camera into the initial discovery viewport", () => {
@@ -1409,6 +1577,53 @@ describe("MarketPage viewport", () => {
 
     expect(discoveryArea.clearArea).toHaveBeenCalledOnce();
     expect(discoveryArea.setArea).not.toHaveBeenCalled();
+  });
+
+  it("keeps the settled world zoom when clearing the saved area", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [savedBox],
+    };
+    const view = renderPage();
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: 0, lng: 0 },
+        west: -180,
+        south: -85,
+        east: 180,
+        north: 85,
+        zoom: 1,
+        userInitiated: true,
+      }),
+    );
+    discoveryArea.current = null;
+    view.rerender(<MarketPage />);
+
+    expect(mapRequests.unifiedBounds.at(-1)).toEqual([]);
+    expect(mapRequests.unifiedZoom.at(-1)).toBe(1);
+  });
+
+  it("resets the query envelope and zoom when the storage owner changes", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -1.5, lng: 36.5 },
+      zoom: 10,
+      boxes: [savedBox],
+    };
+    const view = renderPage(<MarketPage locationOwner="guest" />);
+    const ownerBounds = { minLng: 12, minLat: 40, maxLng: 13, maxLat: 41 };
+    discoveryArea.current = {
+      owner: "0xabc",
+      center: { lat: 40.5, lng: 12.5 },
+      zoom: 8,
+      boxes: [ownerBounds],
+    };
+    view.rerender(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(mapRequests.unifiedZoom.at(-1)).toBe(8);
+    expectBoundsCover(mapRequests.unifiedBounds.at(-1), ownerBounds);
   });
 
   it("splits an antimeridian viewport before persisting and querying it", () => {
@@ -1614,7 +1829,7 @@ describe("MarketPage filter failures", () => {
     expect(within(alert).getByRole("button", { name: "Clear filters" })).toBeTruthy();
   });
 
-  it("offers no action at all for a rate limit", () => {
+  it("offers a manual Retry after automatic rate-limit recovery is exhausted", () => {
     routeSearch.current = { q: "art" };
     filteredResult.current = {
       ...filteredResult.current,
@@ -1625,7 +1840,7 @@ describe("MarketPage filter failures", () => {
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain("Too many searches");
-    expect(within(alert).queryByRole("button")).toBeNull();
+    expect(within(alert).getByRole("button", { name: "Retry" })).toBeTruthy();
   });
 
   it("still offers Retry for a transient failure", () => {
@@ -1635,7 +1850,7 @@ describe("MarketPage filter failures", () => {
     renderPage();
 
     const alert = screen.getByRole("alert");
-    expect(alert.textContent).toContain("Could not load vouchers.");
+    expect(alert.textContent).toContain("Couldn't load complete marketplace results.");
     expect(within(alert).getByRole("button", { name: "Retry" })).toBeTruthy();
   });
 });

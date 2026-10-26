@@ -333,12 +333,9 @@ function PostEditorForm({
                   }}
                 />
                 <ReportMarkerStyleField
-                  value={{ icon: markerIcon, color: markerColor }}
+                  value={markerIcon}
                   disabled={saving}
-                  onChange={(next) => {
-                    form.setFieldValue("markerIcon", next.icon);
-                    form.setFieldValue("markerColor", next.color);
-                  }}
+                  onChange={(next) => form.setFieldValue("markerIcon", next)}
                 />
               </div>
             )}

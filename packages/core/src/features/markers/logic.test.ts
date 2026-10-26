@@ -4,6 +4,7 @@ import {
   MARKER_COLOR_HEX,
   MARKER_COLORS,
   MARKER_ICONS,
+  RESOURCE_COLOR_HEX,
   WANT_MARKER_ICONS,
   isMarkerColor,
   isMarkerIcon,
@@ -55,6 +56,17 @@ describe("marker palette", () => {
       expect(hex).toMatch(/^#[0-9a-f]{6}$/);
     }
     expect(new Set(pins).size).toBe(MARKER_COLORS.length);
+  });
+
+  it("defines the fixed resource palette", () => {
+    expect(RESOURCE_COLOR_HEX).toEqual({
+      voucher: { pin: "#007A55", label: "#006644" },
+      offer: { pin: "#007A55", label: "#006644" },
+      want: { pin: "#EA580C", label: "#C2410C" },
+      pool: { pin: "#125A98", label: "#054980" },
+      catalog: { pin: "#7C3AED", label: "#6D28D9" },
+      post: { pin: "#52525B", label: "#3F3F46" },
+    });
   });
 
   it("rejects values outside the palette", () => {

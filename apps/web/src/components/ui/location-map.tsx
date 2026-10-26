@@ -5,7 +5,11 @@ import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { MarkerPin } from "#/components/vouchers/marker-style-picker";
+import {
+  FixedResourceMarkerPin,
+  type FixedResourceMarkerKind,
+  MarkerPin,
+} from "#/components/vouchers/marker-style-picker";
 import { BRAND_THEME_COLOR } from "#/lib/brand";
 import { standardMapStyleUrl } from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
@@ -23,6 +27,7 @@ type LocationMapProps = {
   onLocationChange?: (lat: number, lng: number) => void;
   cameraHint?: { lat: number; lng: number; zoom: number } | null;
   markerStyle?: MapMarkerStyle;
+  markerResource?: FixedResourceMarkerKind;
   className?: string;
 };
 
@@ -38,6 +43,7 @@ export function LocationMap({
   onLocationChange,
   cameraHint,
   markerStyle,
+  markerResource,
   className,
 }: LocationMapProps) {
   const { t } = useLingui();
@@ -54,6 +60,7 @@ export function LocationMap({
   const appliedCameraHintRef = useRef(cameraHint ?? null);
   const interactiveRef = useRef(interactive);
   const markerStyleRef = useRef(markerStyle);
+  const markerResourceRef = useRef(markerResource);
   const [markerElement, setMarkerElement] = useState<HTMLDivElement | null>(null);
   const pendingRef = useRef<{ lat: number; lng: number } | null>(null);
   const [failed, setFailed] = useState(false);
@@ -74,13 +81,18 @@ export function LocationMap({
     markerStyleRef.current = markerStyle;
   }, [markerStyle]);
 
+  useEffect(() => {
+    markerResourceRef.current = markerResource;
+  }, [markerResource]);
+
   const setMarker = useCallback((map: MapLibreGL.Map, nextLat: number, nextLng: number) => {
     if (markerRef.current) {
       markerRef.current.setLngLat([nextLng, nextLat]);
       return;
     }
 
-    const element = markerStyleRef.current ? document.createElement("div") : null;
+    const element =
+      markerStyleRef.current || markerResourceRef.current ? document.createElement("div") : null;
     if (element) setMarkerElement(element);
     markerRef.current = new MapLibreGL.Marker({
       ...(element
@@ -272,8 +284,15 @@ export function LocationMap({
         data-base-ui-swipe-ignore={interactive ? "" : undefined}
         className={cn("h-52 w-full overflow-hidden border border-border bg-card", className)}
       />
-      {markerElement && markerStyle
-        ? createPortal(<MarkerPin style={markerStyle} size={40} className="block" />, markerElement)
+      {markerElement
+        ? createPortal(
+            markerResource ? (
+              <FixedResourceMarkerPin resource={markerResource} size={40} />
+            ) : markerStyle ? (
+              <MarkerPin style={markerStyle} size={40} className="block" />
+            ) : null,
+            markerElement,
+          )
         : null}
     </>
   );

@@ -49,6 +49,9 @@ jobs:
       - name: Test (with coverage)
         run: vp test --coverage --passWithNoTests
 
+      - name: Validate and partition coverage
+        run: node tooling/prepare-coverage.ts
+
       - name: Build web bundle analysis
         run: vp build
         working-directory: apps/web
@@ -59,16 +62,28 @@ jobs:
           VITE_FULL_REACT_ERRORS: "false"
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Upload coverage — workspace
+        uses: codecov/codecov-action@v6
+        with:
+          files: coverage/lcov.info
+          disable_search: true
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Upload coverage — core
         uses: codecov/codecov-action@v6
         with:
-          files: packages/core/coverage/lcov.info
+          files: coverage/core/lcov.info
           flags: core
+          disable_search: true
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage — web
         uses: codecov/codecov-action@v6
         with:
-          files: apps/web/coverage/lcov.info
+          files: coverage/web/lcov.info
           flags: web
+          disable_search: true
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}

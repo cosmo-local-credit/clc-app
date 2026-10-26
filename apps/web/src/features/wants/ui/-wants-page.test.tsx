@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
+  auth: { isAuthenticated: false, isLoading: false, state: "guest" },
   navigate: vi.fn(),
   clear: vi.fn(),
   setTags: vi.fn(),
@@ -33,6 +34,7 @@ const mocks = vi.hoisted(() => ({
     isPending: false,
     isError: false,
     isFetching: false,
+    isPlaceholderData: false,
     hasNextPage: false,
     isFetchingNextPage: false,
     refetch: vi.fn(),
@@ -41,7 +43,33 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@tanstack/react-query", () => ({ useInfiniteQuery: () => mocks.query }));
-vi.mock("@tanstack/react-router", () => ({ useNavigate: () => mocks.navigate }));
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: () => mocks.navigate,
+  Link: ({
+    children,
+    to,
+    search,
+    ...props
+  }: React.ComponentProps<"a"> & {
+    to: string;
+    search?:
+      | Record<string, unknown>
+      | ((previous: Record<string, unknown>) => Record<string, unknown>);
+  }) => {
+    const state = typeof search === "function" ? search({}) : search;
+    const query = new URLSearchParams(
+      Object.entries(state ?? {})
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [key, String(value)]),
+    );
+    return (
+      <a {...props} href={`${to}?${query}`}>
+        {children}
+      </a>
+    );
+  },
+}));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
 vi.mock("@clc/api/features/wants/queries", () => ({ wantsInfiniteQueryOptions: () => ({}) }));
 vi.mock("#/lib/api/wants", () => ({ wantsClient: {} }));
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({ useStorageOwner: () => "guest" }));
@@ -117,6 +145,7 @@ vi.mock("#/components/wants/want-row", () => ({
 import { WantsPage } from "./wants-page";
 
 beforeEach(() => {
+  mocks.auth.isAuthenticated = false;
   mocks.navigate.mockReset().mockResolvedValue(undefined);
   mocks.filter.result = {
     ok: true,
@@ -133,6 +162,7 @@ beforeEach(() => {
   mocks.query.isPending = false;
   mocks.query.isError = false;
   mocks.query.isFetching = false;
+  mocks.query.isPlaceholderData = false;
   mocks.query.hasNextPage = false;
   mocks.query.isFetchingNextPage = false;
   mocks.query.refetch.mockReset();
@@ -140,6 +170,24 @@ beforeEach(() => {
 });
 
 describe("Wants marketplace page", () => {
+  it.each([false, true])("guides genuinely empty Wants (authenticated=%s)", (signedIn) => {
+    mocks.auth.isAuthenticated = signedIn;
+    mocks.query.data = { pages: [{ wants: [] }] };
+    render(<WantsPage />);
+    expect(screen.getByRole("link", { name: signedIn ? "Wallet" : "Sign in" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "View this location on the map" })).toBeTruthy();
+  });
+
+  it.each(["isFetching", "isPlaceholderData", "hasNextPage"] as const)(
+    "does not guide an unsettled Wants %s",
+    (state) => {
+      mocks.query.data = { pages: [{ wants: [] }] };
+      mocks.query[state] = true;
+      render(<WantsPage />);
+      expect(screen.queryByText(/No marketplace results/)).toBeNull();
+    },
+  );
+
   it("renders rows and paginates while preserving Credit and filter navigation", () => {
     mocks.query.data = {
       pages: [

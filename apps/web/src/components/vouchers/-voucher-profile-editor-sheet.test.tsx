@@ -236,18 +236,13 @@ describe("map pin", () => {
       "true",
     );
     fireEvent.click(within(icons).getByRole("radio", { name: "Tools" }));
-    fireEvent.click(
-      within(screen.getByRole("radiogroup", { name: "Pin colour" })).getByRole("radio", {
-        name: "Brown",
-      }),
-    );
+    expect(screen.queryByRole("radiogroup", { name: "Pin colour" })).toBeNull();
     await save();
 
     await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
-    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({
-      markerIcon: "tools",
-      markerColor: "brown",
-    });
+    const update = mocks.updateProfile.mock.calls[0]![0];
+    expect(update).toMatchObject({ markerIcon: "tools" });
+    expect("markerColor" in update).toBe(false);
   });
 
   it("resets the pin to follow the offerings", async () => {
@@ -257,9 +252,8 @@ describe("map pin", () => {
     await save();
 
     await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
-    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({
-      markerIcon: null,
-      markerColor: null,
-    });
+    const update = mocks.updateProfile.mock.calls[0]![0];
+    expect(update).toMatchObject({ markerIcon: null });
+    expect("markerColor" in update).toBe(false);
   });
 });

@@ -24,11 +24,8 @@ export const MARKER_ICONS = [
 export type MarkerIcon = (typeof MARKER_ICONS)[number];
 
 /**
- * The pin fills an issuer may choose, as clc-core's `voucher_marker_color` rows.
- *
- * No red and no green: the live-location pin owns the brand colour, which is
- * green on prod and red on staging, and a voucher must never read as "you are
- * here".
+ * Legacy pin fills accepted by clc-core. Current clients preserve these values
+ * on writes for compatibility, but presentation uses `RESOURCE_COLOR_HEX`.
  */
 export const MARKER_COLORS = ["blue", "purple", "orange", "pink", "cyan", "brown"] as const;
 
@@ -38,12 +35,14 @@ export type MarkerStyle = { icon: MarkerIcon; color: MarkerColor };
 
 export const WANT_MARKER_ICONS = ["question", "message", "request"] as const;
 export type WantMarkerIcon = (typeof WANT_MARKER_ICONS)[number];
-export type WantMarkerStyle = { icon: WantMarkerIcon; color: MarkerColor };
 
 export const REPORT_MARKER_ICONS = ["post", "event", "announcement"] as const;
 export type ReportMarkerIcon = (typeof REPORT_MARKER_ICONS)[number];
 export type ReportMarkerStyle = { icon: ReportMarkerIcon; color: MarkerColor };
-export type MapMarkerStyle = MarkerStyle | WantMarkerStyle | ReportMarkerStyle;
+export type MapMarkerStyle =
+  | MarkerStyle
+  | { icon: WantMarkerIcon; color: MarkerColor }
+  | ReportMarkerStyle;
 
 /**
  * Fixed sRGB per colour: the pin's fill, and a darker shade for the name beside
@@ -60,15 +59,24 @@ export const MARKER_COLOR_HEX: Record<MarkerColor, { pin: string; label: string 
   brown: { pin: "#92400e", label: "#78350f" },
 };
 
+/** Fixed resource identity colours used by map artwork and app accents. */
+export const RESOURCE_COLOR_HEX = {
+  voucher: { pin: "#007A55", label: "#006644" },
+  offer: { pin: "#007A55", label: "#006644" },
+  want: { pin: "#EA580C", label: "#C2410C" },
+  pool: { pin: "#125A98", label: "#054980" },
+  catalog: { pin: "#7C3AED", label: "#6D28D9" },
+  post: { pin: "#52525B", label: "#3F3F46" },
+} as const;
+
 /** What a voucher offers, as clc-core derives it for the market map. */
 const MARKET_KINDS = ["goods", "services", "voucher"] as const;
 
 export type MarketKind = (typeof MARKET_KINDS)[number];
 
 /**
- * The pin a voucher gets when its issuer chose nothing: goods are a blue
- * basket, services a purple hand-coin, and a voucher with no offerings an
- * orange coupon. Every voucher that predates the choice draws exactly this.
+ * The legacy marker defaults a voucher sends when its issuer chose nothing.
+ * Current presentation uses the icon while resource identity owns the colour.
  */
 export const KIND_DEFAULT_MARKER: Record<MarketKind, MarkerStyle> = {
   goods: { icon: "basket", color: "blue" },
@@ -97,8 +105,8 @@ export function isReportMarkerIcon(value: unknown): value is ReportMarkerIcon {
 }
 
 /**
- * The pin to draw. The icon and the colour are chosen independently, so a
- * voucher that picked only a colour keeps the glyph its offerings imply.
+ * Resolve the icon and legacy wire colour independently. Current clients draw
+ * the icon in the voucher resource colour.
  */
 export function resolveMarkerStyle(voucher: {
   kind: MarketKind;

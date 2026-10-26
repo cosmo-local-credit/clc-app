@@ -174,6 +174,7 @@ export function CatalogForm({
             <LocationPicker
               value={field.state.value}
               onChange={field.handleChange}
+              markerResource="catalog"
               error={error ? translateValidationError(error, i18n) : undefined}
             />
           );

@@ -228,8 +228,8 @@ describe("Want form", () => {
     expect(map.textContent).toBe('{"icon":"question","color":"orange"}');
 
     fireEvent.click(screen.getByRole("radio", { name: "Message" }));
-    fireEvent.click(screen.getByRole("radio", { name: "Blue" }));
-    expect(map.textContent).toBe('{"icon":"message","color":"blue"}');
+    expect(screen.queryByRole("radio", { name: "Blue" })).toBeNull();
+    expect(map.textContent).toBe('{"icon":"message","color":"orange"}');
   });
 
   it("uses the marker by default and snapshots the current profile image only when selected", async () => {
