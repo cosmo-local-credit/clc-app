@@ -176,7 +176,7 @@ function AuthenticatedWantContact({ wantId }: { wantId: string }) {
   }
 
   const contact = contactQuery.data;
-  if (!contact) {
+  if (!contact || (!contact.text && !contact.email && !contact.phone)) {
     return (
       <p className="text-sm text-muted-foreground">
         <Trans>No contact details available.</Trans>

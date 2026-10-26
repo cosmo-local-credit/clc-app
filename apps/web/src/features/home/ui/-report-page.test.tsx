@@ -446,6 +446,38 @@ describe("ReportPage", () => {
     expect(screen.getAllByText("Kitui, KEN")).toHaveLength(2);
   });
 
+  it("shows an authenticated location when no updated timestamp is available", () => {
+    mocks.auth.isAuthenticated = true;
+    mocks.detail.data = detail({ updatedAt: null });
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.getAllByText("Mathira, Nyeri, Kenya")).toHaveLength(2);
+    expect(screen.queryByText("Updated")).toBeNull();
+  });
+
+  it("omits the metadata row for a guest when no updated timestamp exists", () => {
+    mocks.detail.data = detail({ updatedAt: null });
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.queryByText("Updated")).toBeNull();
+    expect(screen.queryByText("Mathira, Nyeri, Kenya")).toBeNull();
+  });
+
+  it("renders coordinate-only and label-only protected locations", () => {
+    mocks.auth.isAuthenticated = true;
+    mocks.location = { data: { locationName: "", country: "" } };
+    const coordinateOnly = render(<ReportPage reportId="3182" />);
+    expect(screen.queryByText("Mathira, Nyeri, Kenya")).toBeNull();
+    expect(screen.getByTestId("location-map")).toBeTruthy();
+    coordinateOnly.unmount();
+
+    mocks.location = { data: null };
+    mocks.detail.data = detail({ lat: null, lng: null, locationName: "Kitui, KEN" });
+    render(<ReportPage reportId="3182" />);
+    expect(screen.getAllByText("Kitui, KEN")).toHaveLength(2);
+    expect(screen.queryByTestId("location-map")).toBeNull();
+  });
+
   it("does not resolve or mount Post location details for a guest", () => {
     render(<ReportPage reportId="3182" />);
 

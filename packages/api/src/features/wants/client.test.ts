@@ -117,6 +117,12 @@ describe("Wants HTTP contract", () => {
     });
   });
 
+  it("normalizes a missing protected contact to undefined", async () => {
+    respond({ contact: null });
+
+    await expect(api.contact("7")).resolves.toBeUndefined();
+  });
+
   it("loads paginated creator vouchers and pools from the public Want routes", async () => {
     const voucherAddress = `0x${"c".repeat(40)}`;
     const poolAddress = `0x${"d".repeat(40)}`;

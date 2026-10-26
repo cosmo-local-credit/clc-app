@@ -1,6 +1,6 @@
 import type { RetirementRequest } from "@clc/api/features/retirement/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { MyRetirementRequests } from "./my-retirement-requests";
 
@@ -79,5 +79,28 @@ describe("wallet retirement history", () => {
     expect(screen.getByText("Request cancelled")).toBeTruthy();
     expect(screen.getByText("Request closed because ownership changed")).toBeTruthy();
     expect(mocks.listMine).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows an admin response and reports a failed pending cancellation", async () => {
+    const pending = {
+      ...request(5, "pending"),
+      decisionReason: "Please settle the final balance",
+    };
+    mocks.listMine.mockResolvedValue([pending]);
+    let rejectCancel: ((error: Error) => void) | undefined;
+    mocks.cancel.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectCancel = reject;
+        }),
+    );
+    mount();
+
+    expect(await screen.findByText(/Please settle the final balance/)).toBeTruthy();
+    const cancel = screen.getByRole("button", { name: "Cancel request" });
+    fireEvent.click(cancel);
+    await waitFor(() => expect(cancel.getAttribute("aria-busy")).toBe("true"));
+    rejectCancel?.(new Error("Cancellation unavailable"));
+    expect((await screen.findByRole("alert")).textContent).toContain("Cancellation unavailable");
   });
 });

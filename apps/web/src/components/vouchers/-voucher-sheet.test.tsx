@@ -479,6 +479,17 @@ describe("VoucherSheet summary", () => {
     fireEvent.click(screen.getByRole("button", { name: "Directions" }));
     expect(mocks.maps).toEqual([{ label: "Kilifi", lat: -3.63, lng: 39.85 }]);
   });
+
+  it("hides Directions for an authenticated voucher without any location", () => {
+    mocks.authenticated = true;
+    mocks.detail = detail({ locationName: null, lat: null, lng: null });
+
+    renderSheet({
+      placeholder: { ...CATALOG, locationName: null, lat: null, lng: null },
+    });
+
+    expect(screen.queryByRole("button", { name: "Directions" })).toBeNull();
+  });
 });
 
 describe("VoucherSheet continuous content", () => {
@@ -526,6 +537,21 @@ describe("VoucherSheet continuous content", () => {
     expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
     expect(screen.queryByText("Fresh vegetables from the farm.")).toBeNull();
     expect(screen.queryByText("issuer@example.org")).toBeNull();
+  });
+
+  it("uses the selected voucher identity when private info omits contract metadata", async () => {
+    mocks.authenticated = true;
+    mocks.detail = detail({
+      address: undefined as unknown as `0x${string}`,
+      symbol: undefined as unknown as string,
+      decimals: undefined as unknown as number,
+    });
+    renderSheet({ initialSnap: "full" });
+
+    expect(await screen.findByRole("heading", { name: "Info" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Copy contract address" }).textContent).toContain(
+      "0xAbC0…00123",
+    );
   });
 
   it("advances through snap points from the identity header", async () => {

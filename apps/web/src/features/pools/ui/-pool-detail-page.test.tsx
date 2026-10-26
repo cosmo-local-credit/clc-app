@@ -325,6 +325,24 @@ describe("PoolDetailPage pool details editor", () => {
     expect(refetch).toHaveBeenCalledOnce();
   });
 
+  it("retries protected pool info from the owner editor", async () => {
+    const refetch = vi.fn();
+    mocks.poolResult.privateInfo = {
+      isPending: false,
+      isError: true,
+      isFetching: false,
+      refetch,
+    };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Couldn't load pool information.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(refetch).toHaveBeenCalledOnce();
+  });
+
   it("offers the editor only to the pool's owner", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     const stranger = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);

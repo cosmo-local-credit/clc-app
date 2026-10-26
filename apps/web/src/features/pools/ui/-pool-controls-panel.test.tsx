@@ -2,7 +2,7 @@ vi.mock("#/components/retirement/retirement-control", () => ({
   RetirementControl: () => <button type="button">Request retirement</button>,
 }));
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
-  useAllAccountTokens: () => ({ tokens: [], isPending: false, isError: false }),
+  useAllAccountTokens: () => mocks.indexed,
 }));
 vi.mock("#/lib/ownership-transfer-config", () => ({ POOL_OWNERSHIP_TRANSFER_ENABLED: true }));
 vi.mock("#/features/pools/hooks/use-pool-ownership-transfer", () => ({
@@ -42,6 +42,12 @@ const mocks = vi.hoisted(() => ({
   },
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
+  indexed: {
+    tokens: [] as never[],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  },
 }));
 
 vi.mock("wagmi", () => ({
@@ -155,6 +161,7 @@ beforeEach(() => {
   };
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
+  mocks.indexed = { tokens: [], isPending: false, isError: false, refetch: vi.fn() };
 });
 
 afterEach(() => {
@@ -326,6 +333,65 @@ describe("PoolControlsPanel ownership", () => {
     view.rerender(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain={false} />);
     expect(screen.queryByRole("button", { name: "Transfer ownership" })).toBeNull();
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
+  });
+
+  it("withholds retirement when the catalog has no current owner", () => {
+    render(
+      <PoolControlsPanel pool={pool({ ownerAddress: null })} vouchers={[]} canManageOnChain />,
+    );
+    expect(screen.queryByRole("button", { name: "Request retirement" })).toBeNull();
+  });
+
+  it("shows owner-voucher loading and retry states in withdrawal sheets", async () => {
+    mocks.indexed = { tokens: [], isPending: true, isError: false, refetch: vi.fn() };
+    const view = render(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
+    fireEvent.click(screen.getByRole("button", { name: "Withdraw liquidity" }));
+    expect((await screen.findByRole("status")).textContent).toContain("Loading vouchers…");
+
+    mocks.indexed = { tokens: [], isPending: false, isError: true, refetch: vi.fn() };
+    view.rerender(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
+    expect((await screen.findByRole("alert")).textContent).toContain("Couldn't load vouchers.");
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(mocks.indexed.refetch).toHaveBeenCalledOnce();
+  });
+
+  it("retries owner-voucher discovery from the fee withdrawal sheet", async () => {
+    const refetch = vi.fn();
+    mocks.indexed = { tokens: [], isPending: false, isError: true, refetch };
+    render(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Withdraw fees" }));
+    expect((await screen.findByRole("alert")).textContent).toContain("Couldn't load vouchers.");
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(refetch).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the profile editor blocked while protected pool info loads or fails", async () => {
+    const retry = vi.fn();
+    const view = render(
+      <PoolControlsPanel
+        pool={pool()}
+        vouchers={[]}
+        canManageOnChain={false}
+        privateInfo={{ isPending: true, isError: false, isFetching: true, retry }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    expect(await screen.findByText("Loading pool information…")).toBeTruthy();
+
+    view.rerender(
+      <PoolControlsPanel
+        pool={pool()}
+        vouchers={[]}
+        canManageOnChain={false}
+        privateInfo={{ isPending: false, isError: true, isFetching: false, retry }}
+      />,
+    );
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Couldn't load pool information.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(retry).toHaveBeenCalledOnce();
   });
   it("shows the unchanged fee recipient and rejects invalid, self and dependency recipients", async () => {
     render(<PoolControlsPanel pool={pool()} vouchers={[]} canManageOnChain />);
