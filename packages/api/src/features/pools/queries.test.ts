@@ -2,6 +2,8 @@ import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { describe, expect, it, vi } from "vite-plus/test";
 import type { PoolsClient, UserPoolPage } from "./client";
 import {
+  ownedPoolQueryOptions,
+  ownedPoolsInfiniteQueryOptions,
   poolKeys,
   poolInfoQueryOptions,
   poolListInfiniteQueryOptions,
@@ -133,5 +135,72 @@ describe("address-scoped options", () => {
     expect(poolKeys.detail("none")).toEqual(
       poolQueryOptions({} as PoolsClient, undefined).queryKey,
     );
+  });
+
+  it("pages the owner recovery catalog and isolates it by viewer", async () => {
+    const getOwnedPools = vi.fn().mockResolvedValue(page(20, 500));
+    const pools = { getOwnedPools } as unknown as PoolsClient;
+    const missing = ownedPoolsInfiniteQueryOptions(pools, undefined, 20);
+    const options = ownedPoolsInfiniteQueryOptions(pools, ADDRESS, 20);
+    const signal = new AbortController().signal;
+
+    expect(missing.enabled).toBe(false);
+    expect(missing.queryKey).not.toEqual(options.queryKey);
+    await options.queryFn?.({ pageParam: undefined, signal } as never);
+    await options.queryFn?.({ pageParam: 500, signal } as never);
+
+    expect(getOwnedPools).toHaveBeenNthCalledWith(
+      1,
+      { perPage: 20, cursor: undefined, next: undefined },
+      signal,
+    );
+    expect(getOwnedPools).toHaveBeenNthCalledWith(
+      2,
+      { perPage: 20, cursor: 500, next: true },
+      signal,
+    );
+  });
+
+  it("enables a protected owner detail only with both identities", async () => {
+    const getOwnedPoolByAddress = vi.fn().mockResolvedValue({ address: ADDRESS });
+    const pools = { getOwnedPoolByAddress } as unknown as PoolsClient;
+    expect(ownedPoolQueryOptions(pools, ADDRESS, undefined).enabled).toBe(false);
+    expect(ownedPoolQueryOptions(pools, undefined, ADDRESS).enabled).toBe(false);
+
+    const options = ownedPoolQueryOptions(pools, ADDRESS, ADDRESS);
+    const signal = new AbortController().signal;
+    expect(options.enabled).toBe(true);
+    await options.queryFn?.({ signal } as never);
+    expect(getOwnedPoolByAddress).toHaveBeenCalledWith(ADDRESS, signal);
+  });
+
+  it("selects public or owner voucher pagination without sharing cache keys", async () => {
+    const getPoolVouchers = vi.fn().mockResolvedValue({ vouchers: [], last: 9 });
+    const getOwnedPoolVouchers = vi.fn().mockResolvedValue({ vouchers: [], last: 9 });
+    const pools = { getPoolVouchers, getOwnedPoolVouchers } as unknown as PoolsClient;
+    const publicOptions = poolVouchersInfiniteQueryOptions(pools, ADDRESS, 20);
+    const ownerOptions = poolVouchersInfiniteQueryOptions(pools, ADDRESS, 20, ADDRESS);
+    const signal = new AbortController().signal;
+
+    expect(publicOptions.queryKey).not.toEqual(ownerOptions.queryKey);
+    await publicOptions.queryFn?.({ pageParam: undefined, signal } as never);
+    await ownerOptions.queryFn?.({ pageParam: 9, signal } as never);
+
+    expect(getPoolVouchers).toHaveBeenCalledWith(
+      ADDRESS,
+      { perPage: 20, cursor: undefined, next: undefined },
+      signal,
+    );
+    expect(getOwnedPoolVouchers).toHaveBeenCalledWith(
+      ADDRESS,
+      { perPage: 20, cursor: 9, next: true },
+      signal,
+    );
+
+    expect(poolVouchersInfiniteQueryOptions(pools, undefined, 20, ADDRESS).queryKey).toEqual([
+      ...poolKeys.vouchersInfinite("none", 20),
+      "owner",
+      ADDRESS.toLowerCase(),
+    ]);
   });
 });

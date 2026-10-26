@@ -70,7 +70,9 @@ describe("owner retirement warning", () => {
   });
 
   it("shows a failed balance check and prevents submission instead of displaying zero", async () => {
-    mocks.preview.mockRejectedValue(new Error("RPC unavailable"));
+    mocks.preview
+      .mockRejectedValueOnce(new Error("RPC unavailable"))
+      .mockResolvedValueOnce(checked);
     show();
     await screen.findByRole("alert");
     expect(
@@ -83,6 +85,9 @@ describe("owner retirement warning", () => {
       (screen.getByRole("button", { name: "Request retirement" }) as HTMLButtonElement).disabled,
     ).toBe(true);
     expect(mocks.create).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("0.000000000000000001 TEST")).toBeTruthy();
   });
 
   it("counts known voucher types and explains pool withdrawal access", async () => {
@@ -103,5 +108,40 @@ describe("owner retirement warning", () => {
     expect(
       screen.getByText("You can still withdraw funds after the pool is retired."),
     ).toBeTruthy();
+  });
+
+  it("shows an already-retired result and guards direct form submission", async () => {
+    mocks.preview.mockResolvedValue({ ...checked, active: false });
+    const { container } = show();
+    await screen.findByText("This resource is already retired.");
+    fireEvent.change(screen.getByLabelText("Reason for retirement"), {
+      target: { value: "Already complete" },
+    });
+
+    const form = container.querySelector("form");
+    if (!form) throw new Error("Expected retirement request form");
+    fireEvent.submit(form);
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("shows submission progress and a failed request without calling the success callback", async () => {
+    let rejectRequest: ((error: Error) => void) | undefined;
+    mocks.create.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectRequest = reject;
+        }),
+    );
+    const { onSubmitted } = show();
+    await screen.findByText("0.000000000000000001 TEST");
+    fireEvent.change(screen.getByLabelText("Reason for retirement"), {
+      target: { value: "Closing" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Request retirement" }));
+
+    expect(await screen.findByRole("button", { name: "Submitting request…" })).toBeTruthy();
+    rejectRequest?.(new Error("Request could not be saved"));
+    expect((await screen.findByRole("alert")).textContent).toContain("Request could not be saved");
+    expect(onSubmitted).not.toHaveBeenCalled();
   });
 });

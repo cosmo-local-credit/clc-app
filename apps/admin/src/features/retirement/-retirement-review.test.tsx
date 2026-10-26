@@ -69,12 +69,11 @@ function renderForm(value = request()) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  render(
+  return render(
     <QueryClientProvider client={client}>
       <RetirementDecisionForm request={value} />
     </QueryClientProvider>,
   );
-  return client;
 }
 
 beforeEach(() => {
@@ -110,6 +109,24 @@ describe("retirement decisions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Approve retirement" }));
     await waitFor(() =>
       expect(mocks.approve).toHaveBeenCalledWith(1, { acknowledgeBalances: false }),
+    );
+  });
+
+  it("includes an optional trimmed explanation when approving", async () => {
+    mocks.preview.mockResolvedValue(
+      preview({ amountOutsideOwnerRaw: "0", hasPositiveBalances: false }),
+    );
+    renderForm();
+    await screen.findByText("Other accounts hold 0 CARE.");
+    fireEvent.change(screen.getByLabelText(/Decision explanation/), {
+      target: { value: "  Reviewed with the owner  " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Approve retirement" }));
+    await waitFor(() =>
+      expect(mocks.approve).toHaveBeenCalledWith(1, {
+        acknowledgeBalances: false,
+        reason: "Reviewed with the owner",
+      }),
     );
   });
 
@@ -161,6 +178,56 @@ describe("retirement decisions", () => {
     ).toBe(true);
   });
 
+  it("can clear acknowledgment directly and reports an already-retired resource", async () => {
+    mocks.preview.mockResolvedValue(preview({ active: false }));
+    renderForm();
+    await screen.findByText(/already retired/);
+    const acknowledgment = screen.getByRole("checkbox");
+    fireEvent.click(acknowledgment);
+    fireEvent.click(acknowledgment);
+    expect(acknowledgment.getAttribute("aria-checked")).toBe("false");
+    expect(
+      (screen.getByRole("button", { name: "Approve retirement" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+  });
+
+  it("shows progress for both approval and rejection mutations", async () => {
+    let resolveApprove: ((value: RetirementRequest) => void) | undefined;
+    mocks.preview.mockResolvedValue(
+      preview({ amountOutsideOwnerRaw: "0", hasPositiveBalances: false }),
+    );
+    mocks.approve.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveApprove = resolve;
+        }),
+    );
+    const { unmount } = renderForm();
+    await screen.findByText("Other accounts hold 0 CARE.");
+    fireEvent.click(screen.getByRole("button", { name: "Approve retirement" }));
+    expect(await screen.findByRole("button", { name: "Approving…" })).toBeTruthy();
+    resolveApprove?.(request({ status: "approved" }));
+    await waitFor(() => expect(mocks.approve).toHaveBeenCalledOnce());
+    unmount();
+
+    let resolveReject: ((value: RetirementRequest) => void) | undefined;
+    mocks.reject.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveReject = resolve;
+        }),
+    );
+    renderForm();
+    await screen.findByText("Other accounts hold 0 CARE.");
+    fireEvent.change(screen.getByLabelText(/Decision explanation/), {
+      target: { value: "Not ready" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Reject request" }));
+    expect(await screen.findByRole("button", { name: "Rejecting…" })).toBeTruthy();
+    resolveReject?.(request({ status: "rejected" }));
+    await waitFor(() => expect(mocks.reject).toHaveBeenCalledOnce());
+  });
+
   it("clears a stale acknowledgment and refreshes queries after an approval failure", async () => {
     mocks.approve.mockRejectedValueOnce(new Error("Approval failed"));
     renderForm();
@@ -190,6 +257,25 @@ describe("retirement decisions", () => {
   it("keeps dust visible rather than displaying zero", () => {
     render(<BalanceSummary preview={preview({ amountOutsideOwnerRaw: "1", decimals: 18 })} />);
     expect(screen.getByText("Other accounts hold 0.000000000000000001 CARE.")).toBeTruthy();
+  });
+
+  it("distinguishes unavailable voucher totals and singular or unavailable pool counts", () => {
+    const voucher = render(<BalanceSummary preview={preview({ amountOutsideOwnerRaw: null })} />);
+    expect(screen.getByText("Other accounts hold an unavailable amount CARE.")).toBeTruthy();
+    voucher.unmount();
+
+    const poolSummary = preview({
+      resourceType: "pool",
+      amountOutsideOwnerRaw: null,
+      positiveTokenCount: 1,
+      coverage: "known-tokens",
+    });
+    const single = render(<BalanceSummary preview={poolSummary} />);
+    expect(single.container.textContent).toContain("1 known voucher type with positive balances");
+    single.unmount();
+
+    render(<BalanceSummary preview={{ ...poolSummary, positiveTokenCount: null }} />);
+    expect(screen.getByText(/an unavailable number of known voucher types/)).toBeTruthy();
   });
 
   it("renders non-empty retirement events with actor, time and reason", () => {
@@ -255,4 +341,36 @@ describe("restoration", () => {
       expect(close).not.toHaveBeenCalled();
     },
   );
+
+  it("closes through the sheet control and shows progress during a successful restore", async () => {
+    const close = vi.fn();
+    let resolveRestore: ((value: { address: string; active: boolean }) => void) | undefined;
+    mocks.restore.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRestore = resolve;
+        }),
+    );
+    const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const view = render(
+      <QueryClientProvider client={client}>
+        <RestoreResourceSheet type="pool" address={ADDRESS} name="Care" open onClose={close} />
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(close).toHaveBeenCalledOnce();
+    view.rerender(
+      <QueryClientProvider client={client}>
+        <RestoreResourceSheet type="pool" address={ADDRESS} name="Care" open onClose={close} />
+      </QueryClientProvider>,
+    );
+    fireEvent.change(screen.getByLabelText("Reason for restoration"), {
+      target: { value: "Reopened" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Restore pool" }));
+    expect(await screen.findByRole("button", { name: "Restoring…" })).toBeTruthy();
+    resolveRestore?.({ address: ADDRESS, active: true });
+    await waitFor(() => expect(close).toHaveBeenCalledTimes(2));
+  });
 });

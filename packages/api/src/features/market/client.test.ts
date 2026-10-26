@@ -432,6 +432,14 @@ describe("updateVoucherProfile", () => {
     body = JSON.parse(requestedInit(1).body as string) as Record<string, unknown>;
     expect(body.markerIcon).toBe("health");
     expect(body.markerColor).toBe("");
+
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    await api.updateVoucherProfile(DETAIL_ROW.address, {
+      ...profile,
+      markerIcon: null,
+    });
+    body = JSON.parse(requestedInit(2).body as string) as Record<string, unknown>;
+    expect(body.markerIcon).toBe("");
   });
 
   it("sends explicit contact-clearing intent only when supplied", async () => {
@@ -525,6 +533,14 @@ describe("getMarketVoucher", () => {
       credentials: "include",
       signal: controller.signal,
     });
+  });
+
+  it("rejects authenticated voucher info without a usable address", async () => {
+    fetchMock.mockResolvedValue(detailResponse({ name: "Broken" }));
+
+    await expect(api.getVoucherInfo(DETAIL_ROW.address)).rejects.toThrow(
+      "Voucher info response did not include a valid address.",
+    );
   });
 
   it("returns null for every field the catalog left empty", async () => {

@@ -163,9 +163,50 @@ describe("retirement queue", () => {
     await waitFor(() => expect(router.state.location.search).toEqual({ status: "approved" }));
   });
 
+  it("clears the resource-type filter and renders address fallbacks", async () => {
+    mocks.listAdmin.mockResolvedValue({
+      requests: [{ ...request, resourceName: "", symbol: "" }],
+      pendingCount: 1,
+      nextCursor: null,
+    });
+    const router = mount("/retirement-requests?resourceType=pool");
+    expect(await screen.findByRole("link", { name: ADDRESS })).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Resource type"), { target: { value: "all" } });
+    await waitFor(() => expect(router.state.location.search).toEqual({}));
+  });
+
+  it("keeps successful rows visible when a manual refresh fails", async () => {
+    mocks.listAdmin
+      .mockResolvedValueOnce({ requests: [request], pendingCount: 2, nextCursor: null })
+      .mockResolvedValueOnce({ requests: [request], pendingCount: 2, nextCursor: null })
+      .mockRejectedValueOnce(new Error("Refresh unavailable"));
+    mount();
+    await screen.findByRole("link", { name: "Market pool" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(await screen.findByText("Refresh unavailable")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Market pool" })).toBeTruthy();
+  });
+
   it("rejects invalid request IDs before loading a detail", async () => {
     mount("/retirement-requests/not-a-number");
     expect(await screen.findByText("Invalid retirement request")).toBeTruthy();
+  });
+
+  it("uses the voucher address when a detail has no name or symbol", async () => {
+    const voucherRequest: RetirementRequest = {
+      ...request,
+      resourceType: "voucher",
+      resourceName: "",
+      symbol: "",
+      snapshot: { ...request.snapshot, resourceType: "voucher" },
+    };
+    mocks.getAdminRequest.mockResolvedValue({ request: voucherRequest, events: [] });
+
+    mount("/retirement-requests/7");
+
+    expect(await screen.findByRole("link", { name: ADDRESS })).toBeTruthy();
   });
 
   it("retries a failed request detail without leaving the route", async () => {
@@ -174,6 +215,36 @@ describe("retirement queue", () => {
     await screen.findByText("Could not load retirement request");
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(await screen.findByRole("heading", { name: "Retirement request #7" })).toBeTruthy();
+  });
+
+  it("renders a decided voucher request with its complete outcome", async () => {
+    const voucherRequest: RetirementRequest = {
+      ...request,
+      resourceType: "voucher",
+      resourceName: "",
+      symbol: "CARE",
+      status: "approved",
+      decisionAt: "2026-10-25T13:00:00Z",
+      decisionBy: "0x3333333333333333333333333333333333333333",
+      decisionReason: "Balances reviewed",
+      decisionSnapshot: {
+        ...request.snapshot,
+        resourceType: "voucher",
+        symbol: "CARE",
+        amountOutsideOwnerRaw: "0",
+        positiveTokenCount: null,
+        coverage: "total-supply",
+      },
+    };
+    mocks.getAdminRequest.mockResolvedValue({ request: voucherRequest, events: [] });
+
+    mount("/retirement-requests/7");
+
+    const resource = await screen.findByRole("link", { name: "CARE" });
+    expect(resource.getAttribute("href")).toContain(`/vouchers/${ADDRESS}`);
+    expect(screen.getByText("Balances reviewed")).toBeTruthy();
+    expect(screen.getByText(voucherRequest.decisionBy ?? "")).toBeTruthy();
+    expect(screen.getByText("Other accounts hold 0 CARE.")).toBeTruthy();
   });
 
   it("does not report zero pending requests when the queue fails", async () => {

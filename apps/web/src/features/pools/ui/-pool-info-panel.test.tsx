@@ -91,4 +91,48 @@ describe("PoolInfoPanel", () => {
     await waitFor(() => expect(mocks.error).toHaveBeenCalledWith("Couldn't copy contract address"));
     expect(writeText).toHaveBeenCalledTimes(2);
   });
+
+  it("renders the coordinate fallback and linked terms without optional contacts", () => {
+    render(
+      <PoolInfoPanel
+        pool={{
+          ...pool,
+          description: "",
+          unitOfAccount: null,
+          email: null,
+          website: null,
+          phone: null,
+          terms: "https://example.org/terms",
+          locationName: null,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("-3.63, 39.85")).toBeTruthy();
+    expect(screen.getByText("—")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "https://example.org/terms" }).getAttribute("href"),
+    ).toBe("https://example.org/terms");
+    expect(screen.queryByRole("link", { name: "steward@example.org" })).toBeNull();
+    expect(screen.getByTestId("location-map").textContent).toBe("-3.63,39.85");
+  });
+
+  it("omits location and terms when neither a label nor coordinates are available", () => {
+    render(
+      <PoolInfoPanel
+        pool={{
+          ...pool,
+          description: "",
+          terms: null,
+          locationName: null,
+          geoLat: null,
+          geoLng: null,
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Open in Maps" })).toBeNull();
+    expect(screen.queryByText("Terms")).toBeNull();
+    expect(screen.queryByTestId("location-map")).toBeNull();
+  });
 });

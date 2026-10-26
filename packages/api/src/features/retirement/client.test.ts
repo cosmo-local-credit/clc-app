@@ -212,6 +212,13 @@ describe("retirement client", () => {
     );
   });
 
+  it("omits the admin queue query string when every filter is absent", async () => {
+    const fetcher = respond({ requests: [], pendingCount: 0, nextCursor: null });
+
+    await expect(api.listAdmin()).resolves.toMatchObject({ pendingCount: 0 });
+    expect(fetcher.mock.calls[0]?.[0]).toBe("https://api.test/api/v2/admin/retirement-requests");
+  });
+
   it("separates private requests and preview caches by viewer", () => {
     expect(retirementKeys.preview("voucher", ADDRESS, OWNER)).not.toEqual(
       retirementKeys.preview("voucher", ADDRESS, ADDRESS),

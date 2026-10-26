@@ -96,7 +96,7 @@ it("shows the pending state and cancels the request without retiring the voucher
 });
 
 it("does not offer a new request while its current status cannot be loaded", async () => {
-  mocks.listResource.mockRejectedValue(new Error("Unavailable"));
+  mocks.listResource.mockRejectedValueOnce(new Error("Unavailable")).mockResolvedValueOnce([]);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
@@ -108,4 +108,27 @@ it("does not offer a new request while its current status cannot be loaded", asy
   await within(dialog).findByText("Could not load retirement requests.");
   expect(within(dialog).queryByRole("button", { name: "Request retirement" })).toBeNull();
   expect(mocks.preview).not.toHaveBeenCalled();
+
+  fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
+  expect(await within(dialog).findByLabelText("Reason for retirement")).toBeTruthy();
+});
+
+it("shows history without a new request for retired resources and closes explicitly", async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={client}>
+      <RetirementControl
+        type="pool"
+        address={ADDRESS}
+        name="Retired pool"
+        viewer={OWNER}
+        active={false}
+      />
+    </QueryClientProvider>,
+  );
+  fireEvent.click(await screen.findByRole("button", { name: "Retirement history" }));
+  const dialog = await screen.findByRole("dialog");
+  expect(within(dialog).queryByLabelText("Reason for retirement")).toBeNull();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 });

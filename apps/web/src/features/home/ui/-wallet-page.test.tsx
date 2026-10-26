@@ -577,4 +577,36 @@ describe("WalletPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
     await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
+
+  it("shows retired owner pools, singular membership, and owner pagination", async () => {
+    const pools = Array.from({ length: 20 }, (_, index) => ({
+      ...OWNED_POOL,
+      id: index + 1,
+      address: `0x${(index + 1).toString(16).padStart(40, "0")}`,
+      name: `Pool ${index + 1}`,
+      voucherCount: index === 0 ? 1 : 2,
+      active: index === 0 ? false : true,
+    }));
+    mockEndpoints({ pools });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("Retired — withdrawals available")).toBeTruthy();
+    expect(screen.getByText("1 voucher")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Load more" }));
+    await waitFor(() =>
+      expect(
+        (fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) =>
+          String(url).includes("/users/me/owned-pools"),
+        ).length,
+      ).toBeGreaterThan(1),
+    );
+  });
+
+  it("does not mount owner-only retirement content without an address", async () => {
+    mockNoTokens();
+    renderWithQueryClient(<WalletPage />);
+
+    expect(await screen.findByRole("heading", { name: "Wallet" })).toBeTruthy();
+    expect(screen.queryByText("My retirement requests")).toBeNull();
+  });
 });

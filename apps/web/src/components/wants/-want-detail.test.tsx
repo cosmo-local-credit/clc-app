@@ -167,6 +167,33 @@ describe("Want detail", () => {
     expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
   });
 
+  it("treats an empty protected contact object as having no disclosed methods", async () => {
+    api.contact.mockResolvedValueOnce({});
+    renderWant(<WantDetail want={WANT} />);
+
+    expect(await screen.findByText("No contact details available.")).toBeTruthy();
+    expect(screen.queryByText("Meet near the market")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Email" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
+  });
+
+  it("renders a single disclosed phone without empty text or email controls", async () => {
+    api.contact.mockResolvedValueOnce({ phone: "+254700000000" });
+    renderWant(<WantDetail want={WANT} />);
+
+    expect(await screen.findByRole("link", { name: "Call" })).toBeTruthy();
+    expect(screen.queryByText("Meet near the market")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Email" })).toBeNull();
+  });
+
+  it("renders a single disclosed email without a phone control", async () => {
+    api.contact.mockResolvedValueOnce({ email: "repair@example.org" });
+    renderWant(<WantDetail want={WANT} />);
+
+    expect(await screen.findByRole("link", { name: "Email" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
+  });
+
   it("renders the selected marker only when the standalone location map is requested", () => {
     const { rerender } = renderWant(<WantDetail want={WANT} showLocationMap />);
     expect(screen.getByTestId("location-map").textContent).toBe("question:orange");

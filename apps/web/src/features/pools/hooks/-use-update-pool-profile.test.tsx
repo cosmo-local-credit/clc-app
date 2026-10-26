@@ -6,13 +6,19 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const api = vi.hoisted(() => ({ updatePoolProfile: vi.fn(), getPoolInfo: vi.fn() }));
+const auth = vi.hoisted(() => ({
+  isAuthenticated: true,
+  session: { address: "0x9999999999999999999999999999999999999999" } as
+    | { address: string }
+    | undefined,
+}));
 const VIEWER = "0x9999999999999999999999999999999999999999";
 
 vi.mock("#/lib/api/pools", () => ({
   poolsClient: api,
 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, session: { address: VIEWER } }),
+  useAuthStatus: () => auth,
 }));
 
 import { useUpdatePoolProfile } from "./use-update-pool-profile";
@@ -61,6 +67,8 @@ function wrapper(client: QueryClient) {
 }
 
 beforeEach(() => {
+  auth.isAuthenticated = true;
+  auth.session = { address: VIEWER };
   api.updatePoolProfile.mockReset().mockResolvedValue(pool("Mutation response"));
   api.getPoolInfo.mockReset().mockResolvedValue(pool("Saved pool"));
 });
@@ -96,5 +104,29 @@ describe("useUpdatePoolProfile", () => {
     expect(client.getQueryState(detailKey)?.isInvalidated).toBe(true);
     expect(client.getQueryState(infoKey)?.isInvalidated).toBe(false);
     expect(client.getQueryState(listKey)?.isInvalidated).toBe(true);
+  });
+
+  it("does not seed a private viewer cache when authentication is absent", async () => {
+    auth.isAuthenticated = false;
+    auth.session = undefined;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result } = renderHook(() => useUpdatePoolProfile(ADDRESS), {
+      wrapper: wrapper(client),
+    });
+
+    await result.current.mutateAsync({
+      description: "Updated",
+      unitOfAccount: "KES",
+      email: "",
+      website: "",
+      phone: "",
+      terms: "",
+      locationName: "",
+      geoLat: null,
+      geoLng: null,
+      tags: [],
+    });
+
+    expect(client.getQueriesData({ queryKey: [...poolKeys.all, "info"] })).toEqual([]);
   });
 });

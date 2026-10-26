@@ -9,11 +9,17 @@ const api = vi.hoisted(() => ({
   updateVoucherProfile: vi.fn(),
   getVoucherInfo: vi.fn(),
 }));
+const auth = vi.hoisted(() => ({
+  isAuthenticated: true,
+  session: { address: "0x9999999999999999999999999999999999999999" } as
+    | { address: string }
+    | undefined,
+}));
 const VIEWER = "0x9999999999999999999999999999999999999999";
 
 vi.mock("#/lib/api/market", () => ({ marketClient: api }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, session: { address: VIEWER } }),
+  useAuthStatus: () => auth,
 }));
 
 import { useUpdateVoucherProfile } from "./use-update-voucher-profile";
@@ -57,6 +63,8 @@ function wrapper(client: QueryClient) {
 }
 
 beforeEach(() => {
+  auth.isAuthenticated = true;
+  auth.session = { address: VIEWER };
   api.updateVoucherProfile.mockReset();
   api.getVoucherInfo.mockReset();
   api.updateVoucherProfile.mockResolvedValue(detail("Mutation response"));
@@ -96,5 +104,30 @@ describe("useUpdateVoucherProfile", () => {
     expect(client.getQueryState(detailKey)?.isInvalidated).toBe(true);
     expect(client.getQueryState(infoKey)?.isInvalidated).toBe(false);
     expect(client.getQueryState(listKey)?.isInvalidated).toBe(true);
+  });
+
+  it("does not seed a private viewer cache when authentication is absent", async () => {
+    auth.isAuthenticated = false;
+    auth.session = undefined;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result } = renderHook(() => useUpdateVoucherProfile(ADDRESS), {
+      wrapper: wrapper(client),
+    });
+
+    await result.current.mutateAsync({
+      description: "Updated",
+      voucherUoa: "KES",
+      voucherValue: 10,
+      email: "",
+      website: "",
+      phone: "",
+      terms: "",
+      locationName: "",
+      geoLat: null,
+      geoLng: null,
+      tags: [],
+    });
+
+    expect(client.getQueriesData({ queryKey: [...voucherKeys.all, "info"] })).toEqual([]);
   });
 });
