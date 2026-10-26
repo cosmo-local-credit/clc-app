@@ -8,7 +8,7 @@ const wantStatusSchema = z.enum(["OPEN", "CLOSED"]);
 const wantStateSchema = z.enum(["scheduled", "active", "expired", "closed"]);
 export type WantState = z.infer<typeof wantStateSchema>;
 
-const wantContactSchema = z.object({
+export const wantContactSchema = z.object({
   text: z.string().trim().min(1).max(500).optional(),
   email: z.string().email().optional(),
   phone: z.string().trim().min(1).optional(),

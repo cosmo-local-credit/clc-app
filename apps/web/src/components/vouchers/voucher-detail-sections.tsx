@@ -14,6 +14,7 @@ import {
 import { useConnection } from "wagmi";
 
 import { ReportList } from "#/components/reports/report-list";
+import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { Button } from "#/components/ui/button";
 import { ResourceQuotaTitle } from "#/components/resource-usage";
@@ -65,15 +66,8 @@ export function VoucherDetailSections({
   chainId,
   voucherValue,
   voucherUoa,
-  description,
-  email,
-  website,
-  phone,
-  terms,
-  locationName,
-  lat,
-  lng,
   dataPending,
+  privateInfo,
   headingLevel = 2,
   idPrefix = "voucher-section",
   className,
@@ -87,15 +81,13 @@ export function VoucherDetailSections({
   chainId: number | null;
   voucherValue: string | null;
   voucherUoa: string | null;
-  description: string | null;
-  email: string | null;
-  website: string | null;
-  phone: string | null;
-  terms: string | null;
-  locationName: string | null;
-  lat: number | null;
-  lng: number | null;
   dataPending: boolean;
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
   headingLevel?: 2 | 3;
   idPrefix?: string;
   className?: string;
@@ -112,7 +104,6 @@ export function VoucherDetailSections({
         auth.session.address.toLowerCase() === detail.ownerAddress.toLowerCase()));
   const reportVoucher: VoucherRef | undefined =
     chainId && address ? { chainId, address: address as VoucherRef["address"] } : undefined;
-  const rate = formatVoucherRate(voucherValue, voucherUoa);
   const usage = useResourceUsage(canEditDetails, address);
 
   return (
@@ -163,35 +154,100 @@ export function VoucherDetailSections({
       </VoucherSection>
 
       <VoucherSection id="info" title={<Trans>Info</Trans>} {...{ idPrefix, headingLevel }}>
-        <VoucherInfoPanel
-          rate={rate}
-          symbol={symbol}
-          description={description}
-          contractAddress={address}
-          email={email}
-          website={website}
-          phone={phone}
-          terms={terms}
-          issuerAddress={ownerAddress}
-          locationName={locationName}
-          lat={lat}
-          lng={lng}
-          editable={canEditDetails ? detail : null}
-          contractActions={{
-            tokenAddress: address,
-            tokenSymbol: symbol,
-            tokenDecimals: decimals,
-            ownerAddress,
-            walletAddress,
-            requesterAddress: auth.isAuthenticated ? auth.session?.address : undefined,
-          }}
-        />
+        <AuthenticatedDetailsGate>
+          <AuthenticatedVoucherInfo
+            address={address}
+            symbol={symbol}
+            decimals={decimals}
+            ownerAddress={ownerAddress}
+            walletAddress={walletAddress}
+            viewerAddress={auth.session?.address}
+            canEditDetails={canEditDetails}
+            detail={detail}
+            privateInfo={privateInfo}
+          />
+        </AuthenticatedDetailsGate>
       </VoucherSection>
 
       <VoucherSection id="activity" title={<Trans>Activity</Trans>} {...{ idPrefix, headingLevel }}>
         <VoucherActivityPanel accountAddress={walletAddress} contractAddress={address} />
       </VoucherSection>
     </div>
+  );
+}
+
+function AuthenticatedVoucherInfo({
+  address,
+  symbol,
+  decimals,
+  ownerAddress,
+  walletAddress,
+  viewerAddress,
+  canEditDetails,
+  detail,
+  privateInfo,
+}: {
+  address: string;
+  symbol: string;
+  decimals?: number;
+  ownerAddress: string | null;
+  walletAddress?: `0x${string}`;
+  viewerAddress?: string;
+  canEditDetails: boolean;
+  detail: MarketVoucherDetail | undefined;
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
+}) {
+  if (privateInfo?.isPending || !detail) {
+    return (
+      <div aria-busy="true" className="space-y-2 border border-border bg-card p-4">
+        <Skeleton className="h-4 w-2/3 rounded-none" />
+        <Skeleton className="h-4 w-1/2 rounded-none" />
+      </div>
+    );
+  }
+  if (privateInfo?.isError) {
+    return (
+      <div role="alert" className="space-y-3 border border-border bg-card p-4 text-sm">
+        <p>
+          <Trans>Couldn't load voucher information.</Trans>
+        </p>
+        <Button variant="outline" tap pending={privateInfo.isFetching} onClick={privateInfo.retry}>
+          <Trans>Retry</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  const info = detail;
+  return (
+    <VoucherInfoPanel
+      rate={formatVoucherRate(info.voucherValue, info.voucherUoa)}
+      symbol={info.symbol || symbol}
+      description={info.description}
+      contractAddress={info.address || address}
+      email={info.email}
+      website={info.website}
+      phone={info.phone}
+      terms={info.terms}
+      issuerAddress={ownerAddress ?? info.ownerAddress}
+      locationName={info.locationName}
+      lat={info.lat}
+      lng={info.lng}
+      editable={canEditDetails ? info : null}
+      contractActions={{
+        tokenAddress: info.address || address,
+        tokenSymbol: info.symbol || symbol,
+        tokenDecimals: info.decimals ?? decimals,
+        ownerAddress: ownerAddress ?? info.ownerAddress,
+        walletAddress,
+        requesterAddress: viewerAddress,
+      }}
+    />
   );
 }
 

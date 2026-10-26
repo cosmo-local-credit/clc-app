@@ -130,7 +130,11 @@ export type PoolProfileUpdate = {
   imageUrl?: string;
   bannerUrl?: string;
   tags: string[];
+  /** Explicit confirmation that these existing contacts should be removed. */
+  clearContactFields?: readonly PoolContactField[];
 };
+
+export type PoolContactField = "email" | "phone" | "website";
 
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim();
@@ -160,6 +164,9 @@ export function serializePoolProfileUpdate(profile: PoolProfileUpdate) {
     ...(profile.imageUrl === undefined ? {} : { imageUrl: profile.imageUrl }),
     ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
     tags: profile.tags,
+    ...(profile.clearContactFields === undefined
+      ? {}
+      : { clearContactFields: profile.clearContactFields }),
   };
 }
 
@@ -372,7 +379,7 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
       const received = result.pools ?? [];
       return {
         ...result,
-        pools: received.map(normalizeUserPool).filter(isPresent),
+        pools: received.map(normalizePublicUserPool).filter(isPresent),
         receivedCount: received.length,
       };
     },
@@ -404,7 +411,7 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
       const received = result.pools ?? [];
       return {
         ...result,
-        pools: received.map(normalizeUserPool).filter(isPresent),
+        pools: received.map(normalizePublicUserPool).filter(isPresent),
         receivedCount: received.length,
         tagFacets: result.tagFacets
           ? result.tagFacets.map(normalizePoolTagFacet).filter(isPresent)
@@ -420,8 +427,18 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
         `/api/v2/pools/${encodeURIComponent(address)}`,
         poolReadRequest(signal),
       );
-      const pool = normalizeUserPool(result.pool ?? result);
+      const pool = normalizePublicUserPool(result.pool ?? result);
       if (!pool) throw new Error("Pool response did not include a valid address.");
+      return pool;
+    },
+
+    async getPoolInfo(address: string, signal?: AbortSignal): Promise<UserPool> {
+      const result = await http.request<BackendPoolEnvelope>(
+        `/api/v2/pools/${encodeURIComponent(address)}/info`,
+        poolReadRequest(signal),
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Pool info response did not include a valid address.");
       return pool;
     },
 
@@ -537,6 +554,11 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
     createdAt: pool.createdAt,
     updatedAt: pool.updatedAt,
   };
+}
+
+function normalizePublicUserPool(pool: BackendPool): UserPool | null {
+  const normalized = normalizeUserPool(pool);
+  return normalized ? { ...normalized, email: null, phone: null, website: null } : null;
 }
 
 function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {

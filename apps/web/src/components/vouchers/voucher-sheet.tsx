@@ -132,6 +132,14 @@ export function VoucherSheet({
           address={address}
           placeholder={placeholder}
           detail={detail}
+          privateInfo={
+            detailQuery.privateInfo
+              ? {
+                  ...detailQuery.privateInfo,
+                  retry: () => void detailQuery.privateInfo?.refetch(),
+                }
+              : undefined
+          }
           name={name}
           realFix={realFix}
           snap={snap}
@@ -166,6 +174,7 @@ function VoucherCard({
   address,
   placeholder,
   detail,
+  privateInfo,
   name,
   realFix,
   snap,
@@ -175,6 +184,12 @@ function VoucherCard({
   address: `0x${string}`;
   placeholder: VoucherPlaceholder | null;
   detail: MarketVoucherDetail | undefined;
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
   name: string;
   realFix: Coordinates | null;
   snap: MapSheetSnap;
@@ -253,7 +268,7 @@ function VoucherCard({
 
       {reachedHalf ? (
         <Suspense fallback={<Skeleton className="mx-4 mt-6 h-40 rounded-none" />}>
-          <VoucherSheetFull address={address} detail={detail} />
+          <VoucherSheetFull address={address} detail={detail} privateInfo={privateInfo} />
         </Suspense>
       ) : null}
     </>

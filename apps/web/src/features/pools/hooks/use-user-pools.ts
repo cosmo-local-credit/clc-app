@@ -2,6 +2,7 @@ import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog
 import {
   poolListInfiniteQueryOptions,
   poolQueryOptions,
+  poolInfoQueryOptions,
   ownedPoolQueryOptions,
   ownedPoolsInfiniteQueryOptions,
 } from "@clc/api/features/pools/queries";
@@ -32,7 +33,23 @@ export function useUserPoolByAddress(poolAddress: string | undefined, viewer?: s
     ...ownedPoolQueryOptions(poolsClient, poolAddress, viewer),
     enabled: !!viewer && !!poolAddress && publicQuery.isError,
   });
-  return publicQuery.isError && viewer ? ownerQuery : publicQuery;
+  const infoQuery = useQuery({
+    ...poolInfoQueryOptions(poolsClient, poolAddress, viewer),
+    retry: false,
+  });
+  const baseQuery = publicQuery.isError && viewer ? ownerQuery : publicQuery;
+  return {
+    ...baseQuery,
+    data: infoQuery.data ?? baseQuery.data,
+    privateInfo: viewer
+      ? {
+          isPending: infoQuery.isPending,
+          isError: infoQuery.isError,
+          isFetching: infoQuery.isFetching,
+          refetch: infoQuery.refetch,
+        }
+      : undefined,
+  };
 }
 
 /**

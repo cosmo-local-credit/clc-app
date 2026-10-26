@@ -73,6 +73,14 @@ const mocks = vi.hoisted(() => ({
     isPending: false,
     isError: false,
     refetch: vi.fn(),
+    privateInfo: undefined as
+      | {
+          isPending: boolean;
+          isError: boolean;
+          isFetching: boolean;
+          refetch: ReturnType<typeof vi.fn>;
+        }
+      | undefined,
   },
   openDefaultMaps: vi.fn(),
   reviewSummary: { total: 0, average: 0 },
@@ -471,6 +479,7 @@ beforeEach(() => {
     isPending: false,
     isError: false,
     refetch: vi.fn(),
+    privateInfo: undefined,
   };
   mocks.offeringAddress = undefined;
   mocks.offeringsResult = {
@@ -823,7 +832,7 @@ describe("VoucherDetailPage", () => {
     expect(within(offerings).queryByRole("button", { name: "Load more" })).toBeNull();
   });
 
-  it("hides Send and Redeem for guests while keeping public actions", () => {
+  it("hides wallet and contact actions and gates Info for guests", () => {
     mocks.auth = { isAuthenticated: false, isLoading: false, session: null };
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} />);
@@ -832,6 +841,41 @@ describe("VoucherDetailPage", () => {
     expect(within(actions).getByRole("link", { name: "Get" })).toBeTruthy();
     expect(within(actions).queryByRole("link", { name: "Send" })).toBeNull();
     expect(within(actions).queryByRole("link", { name: "Redeem" })).toBeNull();
+    expect(within(actions).queryByRole("button", { name: "Directions" })).toBeNull();
+    expect(within(actions).queryByRole("link", { name: "Call" })).toBeNull();
+    expect(within(actions).queryByRole("link", { name: "Website" })).toBeNull();
+    const info = screen.getByRole("region", { name: "Info" });
+    expect(within(info).getByRole("link", { name: "Sign in" })).toBeTruthy();
+    expect(within(info).queryByText("Fresh vegetables from the farm.")).toBeNull();
+  });
+
+  it("keeps Voucher Info unavailable until its protected read succeeds and retries failures", () => {
+    const refetch = vi.fn();
+    mocks.detailResult.privateInfo = {
+      isPending: true,
+      isError: false,
+      isFetching: true,
+      refetch,
+    };
+    const pending = render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+    const info = screen.getByRole("region", { name: "Info" });
+    expect(info.querySelector('[aria-busy="true"]')).toBeTruthy();
+    expect(within(info).queryByText("issuer@example.org")).toBeNull();
+    pending.unmount();
+
+    mocks.detailResult.privateInfo = {
+      isPending: false,
+      isError: true,
+      isFetching: false,
+      refetch,
+    };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+    const failedInfo = screen.getByRole("region", { name: "Info" });
+    expect(within(failedInfo).getByRole("alert").textContent).toContain(
+      "Couldn't load voucher information.",
+    );
+    fireEvent.click(within(failedInfo).getByRole("button", { name: "Retry" }));
+    expect(refetch).toHaveBeenCalledOnce();
   });
 
   it("colours each tag from its own name so a tag looks the same everywhere", () => {
@@ -1531,6 +1575,7 @@ describe("VoucherDetailPage voucher details editor", () => {
         ...savedProfile,
         displayName: "Malii Fresh",
         email: "",
+        clearContactFields: ["email"],
       }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());

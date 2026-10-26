@@ -4,6 +4,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
+import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
 import {
   SheetBackdrop,
@@ -64,9 +65,13 @@ export function CatalogDetailPage({ id }: { id: string }) {
               >
                 {catalog.name}
               </h1>
-              <p dir="auto" className="mt-2 text-sm text-muted-foreground">
-                {catalog.locationName}
-              </p>
+              <div className="mt-2">
+                <AuthenticatedDetailsGate>
+                  <p dir="auto" className="text-sm text-muted-foreground">
+                    {catalog.locationName}
+                  </p>
+                </AuthenticatedDetailsGate>
+              </div>
             </div>
             <CatalogShareButton id={catalog.id} name={catalog.name} className="-me-3 -mt-2" />
           </header>

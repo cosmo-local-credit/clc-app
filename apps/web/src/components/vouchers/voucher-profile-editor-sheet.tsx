@@ -136,6 +136,9 @@ function VoucherProfileForm({
     validators: { onSubmit: profileFormSchema },
     onSubmit: async ({ value }) => {
       try {
+        const clearContactFields = (["email", "website", "phone"] as const).filter(
+          (field) => Boolean(voucher[field]?.trim()) && value[field].trim() === "",
+        );
         await update.mutateAsync({
           // `name` is the effective label, not proof that an override exists, so
           // it is sent only once the owner has changed it. Entering the immutable
@@ -155,6 +158,7 @@ function VoucherProfileForm({
           email: value.email,
           website: value.website,
           phone: value.phone,
+          ...(clearContactFields.length > 0 ? { clearContactFields } : {}),
           terms: value.terms,
           // Preserved on omission by clc-core, so sent only when it changed; ""
           // is how the stored logo is removed.

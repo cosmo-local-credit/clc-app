@@ -1,11 +1,12 @@
 import {
   wantCreatorPoolsInfiniteQueryOptions,
   wantCreatorVouchersInfiniteQueryOptions,
+  wantContactQueryOptions,
 } from "@clc/api/features/wants/queries";
 import type { WantCreatorPool, WantCreatorVoucher } from "@clc/api/features/wants/client";
 import type { Want } from "@clc/core/features/wants/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Suspense, type ReactNode } from "react";
 import {
@@ -16,11 +17,13 @@ import {
   RiShareLine,
 } from "react-icons/ri";
 import { toast } from "sonner";
+import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { WantPicture } from "./want-row";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { wantsClient } from "#/lib/api/wants";
 
@@ -70,39 +73,41 @@ export function WantDetail({
         <h2>
           <Trans>When and where</Trans>
         </h2>
-        <a
-          dir="auto"
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center gap-1 text-sm underline underline-offset-4"
-        >
-          <span>
-            {want.locationName}
-            {distance ? ` · ${distance}` : null}
-          </span>
-          <RiExternalLinkLine className="size-4 shrink-0" aria-hidden="true" />
-          <span className="sr-only">
-            <Trans>Open location in Google Maps</Trans>
-          </span>
-        </a>
-        {showLocationMap ? (
-          <Suspense
-            fallback={
-              <output className="block h-52 w-full border border-border bg-card">
-                <span className="sr-only">
-                  <Trans>Loading location map</Trans>
-                </span>
-              </output>
-            }
+        <AuthenticatedDetailsGate>
+          <a
+            dir="auto"
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-1 text-sm underline underline-offset-4"
           >
-            <LocationMap
-              lat={want.geoLat}
-              lng={want.geoLng}
-              markerStyle={{ icon: want.markerIcon, color: want.markerColor }}
-            />
-          </Suspense>
-        ) : null}
+            <span>
+              {want.locationName}
+              {distance ? ` · ${distance}` : null}
+            </span>
+            <RiExternalLinkLine className="size-4 shrink-0" aria-hidden="true" />
+            <span className="sr-only">
+              <Trans>Open location in Google Maps</Trans>
+            </span>
+          </a>
+          {showLocationMap ? (
+            <Suspense
+              fallback={
+                <output className="block h-52 w-full border border-border bg-card">
+                  <span className="sr-only">
+                    <Trans>Loading location map</Trans>
+                  </span>
+                </output>
+              }
+            >
+              <LocationMap
+                lat={want.geoLat}
+                lng={want.geoLng}
+                markerStyle={{ icon: want.markerIcon, color: want.markerColor }}
+              />
+            </Suspense>
+          ) : null}
+        </AuthenticatedDetailsGate>
         <p className="font-mono text-xs text-muted-foreground">
           <Trans>Starts {dates.format(new Date(want.startsAt))}</Trans>
         </p>
@@ -124,39 +129,87 @@ export function WantDetail({
         </p>
       </section>
 
-      {want.contact ? (
-        <section className="space-y-3 border border-border bg-card p-4">
-          <h2>
-            <Trans>Contact</Trans>
-          </h2>
-          {want.contact.text ? (
-            <p dir="auto" className="whitespace-pre-wrap text-sm">
-              {want.contact.text}
-            </p>
-          ) : null}
-          <div className="flex flex-wrap gap-2">
-            {want.contact.email ? (
-              <Button asChild variant="outline" tap>
-                <a href={`mailto:${want.contact.email}`}>
-                  <RiMailLine aria-hidden="true" />
-                  <Trans>Email</Trans>
-                </a>
-              </Button>
-            ) : null}
-            {want.contact.phone ? (
-              <Button asChild variant="outline" tap>
-                <a href={`tel:${want.contact.phone}`}>
-                  <RiPhoneLine aria-hidden="true" />
-                  <Trans>Call</Trans>
-                </a>
-              </Button>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
+      <section className="space-y-3 border border-border bg-card p-4">
+        <h2>
+          <Trans>Contact</Trans>
+        </h2>
+        <AuthenticatedDetailsGate>
+          <AuthenticatedWantContact wantId={want.id} />
+        </AuthenticatedDetailsGate>
+      </section>
 
       {showRelated ? <WantCreatorResources want={want} /> : null}
     </div>
+  );
+}
+
+function AuthenticatedWantContact({ wantId }: { wantId: string }) {
+  const auth = useAuthStatus();
+  const contactQuery = useQuery({
+    ...wantContactQueryOptions(wantsClient, wantId, auth.session?.address),
+    retry: false,
+  });
+
+  if (contactQuery.isPending) {
+    return (
+      <p aria-busy="true" className="text-sm text-muted-foreground">
+        <Trans>Loading contact information…</Trans>
+      </p>
+    );
+  }
+  if (contactQuery.isError) {
+    return (
+      <div role="alert" className="space-y-2">
+        <p className="text-sm">
+          <Trans>Couldn't load contact information.</Trans>
+        </p>
+        <Button
+          variant="outline"
+          tap
+          pending={contactQuery.isFetching}
+          onClick={() => void contactQuery.refetch()}
+        >
+          <Trans>Retry</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  const contact = contactQuery.data;
+  if (!contact) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        <Trans>No contact details available.</Trans>
+      </p>
+    );
+  }
+
+  return (
+    <>
+      {contact.text ? (
+        <p dir="auto" className="whitespace-pre-wrap text-sm">
+          {contact.text}
+        </p>
+      ) : null}
+      <div className="flex flex-wrap gap-2">
+        {contact.email ? (
+          <Button asChild variant="outline" tap>
+            <a href={`mailto:${contact.email}`}>
+              <RiMailLine aria-hidden="true" />
+              <Trans>Email</Trans>
+            </a>
+          </Button>
+        ) : null}
+        {contact.phone ? (
+          <Button asChild variant="outline" tap>
+            <a href={`tel:${contact.phone}`}>
+              <RiPhoneLine aria-hidden="true" />
+              <Trans>Call</Trans>
+            </a>
+          </Button>
+        ) : null}
+      </div>
+    </>
   );
 }
 

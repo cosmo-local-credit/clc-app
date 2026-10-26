@@ -71,8 +71,12 @@ export function useReport(id: string | undefined) {
   });
 }
 
-export function useReportLocation(lat: number | null | undefined, lng: number | null | undefined) {
-  const enabled = typeof lat === "number" && typeof lng === "number";
+export function useReportLocation(
+  lat: number | null | undefined,
+  lng: number | null | undefined,
+  allow = true,
+) {
+  const enabled = allow && typeof lat === "number" && typeof lng === "number";
 
   return useQuery({
     queryKey: reportQueryKeys.location(lat, lng),

@@ -192,7 +192,11 @@ export type VoucherProfileUpdate = {
   markerIcon?: MarkerIcon | null;
   markerColor?: MarkerColor | null;
   tags: string[];
+  /** Explicit confirmation that these existing contacts should be removed. */
+  clearContactFields?: readonly VoucherContactField[];
 };
+
+export type VoucherContactField = "email" | "phone" | "website";
 
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim();
@@ -225,6 +229,9 @@ export function serializeVoucherProfileUpdate(profile: VoucherProfileUpdate) {
     ...(profile.markerIcon === undefined ? {} : { markerIcon: profile.markerIcon ?? "" }),
     ...(profile.markerColor === undefined ? {} : { markerColor: profile.markerColor ?? "" }),
     tags: profile.tags,
+    ...(profile.clearContactFields === undefined
+      ? {}
+      : { clearContactFields: profile.clearContactFields }),
   };
 }
 
@@ -319,8 +326,18 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
         },
       );
 
-      const voucher = normalizeMarketVoucherDetail(result.voucher);
+      const voucher = normalizePublicMarketVoucherDetail(result.voucher);
       if (!voucher) throw new Error("Voucher response did not include a valid address.");
+      return voucher;
+    },
+
+    async getVoucherInfo(address: string, signal?: AbortSignal): Promise<MarketVoucherDetail> {
+      const result = await http.request<{ voucher?: BackendMarketVoucherDetail | null }>(
+        `/api/v2/vouchers/${encodeURIComponent(address)}/info`,
+        { method: "GET", cache: "no-store", signal },
+      );
+      const voucher = normalizeMarketVoucherDetail(result.voucher);
+      if (!voucher) throw new Error("Voucher info response did not include a valid address.");
       return voucher;
     },
 
@@ -492,6 +509,13 @@ export function normalizeMarketVoucherDetail(
     active: voucher.active !== false,
     ...normalizeMarker(voucher),
   };
+}
+
+function normalizePublicMarketVoucherDetail(
+  voucher: BackendMarketVoucherDetail | null | undefined,
+): MarketVoucherDetail | null {
+  const normalized = normalizeMarketVoucherDetail(voucher);
+  return normalized ? { ...normalized, email: null, phone: null, website: null } : null;
 }
 
 function normalizeMarker(voucher: BackendMarketVoucher): MarketVoucherMarker {

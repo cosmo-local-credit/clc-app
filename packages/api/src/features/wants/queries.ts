@@ -9,6 +9,8 @@ export const wantKeys = {
   all: ["clc", "wants"] as const,
   list: (params: Omit<WantsParams, "cursor" | "next">) => ["clc", "wants", "list", params] as const,
   detail: (id: string) => ["clc", "wants", "detail", id] as const,
+  contact: (id: string, viewer: string) =>
+    ["clc", "wants", "contact", id, viewer.toLowerCase()] as const,
   mine: (address: string) => ["clc", "wants", "mine", address.toLowerCase()] as const,
   pool: (address: string) => ["clc", "wants", "pool", address.toLowerCase()] as const,
   creatorVouchers: (id: string) => ["clc", "wants", "detail", id, "creator-vouchers"] as const,
@@ -55,6 +57,19 @@ export function wantDetailQueryOptions(client: WantsClient, id: string) {
     queryKey: wantKeys.detail(id),
     queryFn: ({ signal }) => client.detail(id, signal),
     enabled: !!id,
+  });
+}
+
+export function wantContactQueryOptions(
+  client: WantsClient,
+  id: string,
+  viewer: string | undefined,
+) {
+  return queryOptions({
+    queryKey: wantKeys.contact(id, viewer ?? "none"),
+    queryFn: ({ signal }) => client.contact(id, signal),
+    enabled: Boolean(id && viewer),
+    staleTime: 0,
   });
 }
 
