@@ -66,6 +66,7 @@ const mocks = vi.hoisted(() => ({
   },
   updateProfile: vi.fn(),
   createVouchers: vi.fn(),
+  reportMintError: vi.fn((_error: unknown, _fallback: string) => false),
   transferOwnership: vi.fn(),
   navigate: vi.fn(),
   delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
@@ -371,7 +372,7 @@ vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
   useVoucherMint: () => ({
     mutateAsync: mocks.createVouchers,
     isPending: false,
-    reportError: vi.fn(),
+    reportError: mocks.reportMintError,
   }),
 }));
 
@@ -1702,6 +1703,39 @@ describe("VoucherDetailPage contract controls", () => {
         includeAuthorization: false,
       }),
     );
+  });
+
+  it("closes the mint sheet when the mint moves to the multisig sheet", async () => {
+    mocks.address = OWNER;
+    mocks.createVouchers.mockRejectedValueOnce(new Error("proposed"));
+    mocks.reportMintError.mockReturnValueOnce(true);
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Create vouchers" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Create vouchers"), {
+      target: { value: "1" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Create vouchers" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("keeps the mint sheet open after an ordinary failure", async () => {
+    mocks.address = OWNER;
+    mocks.createVouchers.mockRejectedValueOnce(new Error("relay rejected"));
+    mocks.reportMintError.mockReturnValueOnce(false);
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Create vouchers" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Create vouchers"), {
+      target: { value: "1" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Create vouchers" }));
+
+    await waitFor(() => expect(mocks.reportMintError).toHaveBeenCalled());
+    expect(screen.getByRole("dialog")).toBeTruthy();
   });
 
   it("relays ownership transfer with the authorization when delegation is needed", async () => {

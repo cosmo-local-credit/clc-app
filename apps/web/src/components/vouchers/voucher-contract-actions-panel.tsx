@@ -223,7 +223,7 @@ function VoucherMintSheet({
         toast.success(t`Voucher creation submitted.`);
         onClose();
       } catch (error) {
-        mint.reportError(error, t`Couldn't create vouchers.`);
+        if (mint.reportError(error, t`Couldn't create vouchers.`)) onClose();
       }
     },
   });
@@ -339,7 +339,7 @@ function VoucherOwnershipTransferSheet({
         else toast.success(t`Ownership transferred.`);
         onClose();
       } catch (error) {
-        reportError(error, t`Couldn't transfer ownership.`);
+        if (reportError(error, t`Couldn't transfer ownership.`)) onClose();
       }
     },
   });

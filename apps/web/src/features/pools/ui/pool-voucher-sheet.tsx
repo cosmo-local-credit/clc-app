@@ -443,7 +443,7 @@ function PoolVoucherConfigurationForm({
         );
         onClose();
       } catch (error) {
-        relay.reportError(error, t`The transaction failed.`);
+        if (relay.reportError(error, t`The transaction failed.`)) onClose();
       }
     },
   });
@@ -461,7 +461,7 @@ function PoolVoucherConfigurationForm({
       toast.success(t`${voucher.symbol} removed from ${pool.name}.`);
       onClose();
     } catch (error) {
-      relay.reportError(error, t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onClose();
     } finally {
       setRemoving(false);
     }

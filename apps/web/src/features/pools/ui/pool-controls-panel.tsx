@@ -348,7 +348,7 @@ function WithdrawLiquidityForm({
       toast.success(t`${amount} ${selected.symbol} withdrawn.`);
       onDone();
     } catch (error) {
-      relay.reportError(error, t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onDone();
     }
   };
 
@@ -462,7 +462,7 @@ function CollectFeesForm({
       toast.success(t`${selected.symbol} fees sent to the fee recipient.`);
       onDone();
     } catch (error) {
-      relay.reportError(error, t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onDone();
     }
   };
 
@@ -567,7 +567,7 @@ function FeeSettingsForm({
       toast.success(t`Pool fee updated.`);
       onDone();
     } catch (error) {
-      relay.reportError(error, t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onDone();
     }
   };
 

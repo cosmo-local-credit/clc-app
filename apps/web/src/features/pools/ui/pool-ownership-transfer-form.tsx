@@ -62,7 +62,7 @@ export function PoolOwnershipTransferForm({
           );
         onDone();
       } catch (error) {
-        reportError(error, t`Couldn't transfer ownership.`);
+        if (reportError(error, t`Couldn't transfer ownership.`)) onDone();
       }
     },
   });
