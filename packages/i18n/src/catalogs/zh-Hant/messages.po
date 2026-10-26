@@ -708,6 +708,7 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:230
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -785,7 +786,7 @@ msgstr "應用篩選條件"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:161
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:168
 msgid "Approve voucher"
 msgstr "批准代金券"
 
@@ -1387,7 +1388,7 @@ msgstr "清除搜尋"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:142
 msgid "Close"
 msgstr "關閉"
 
@@ -1495,7 +1496,7 @@ msgstr "完成手機上的提示。"
 msgid "Complete your profile"
 msgstr "完成您的個人資料"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:343
 msgid "Confirm"
 msgstr "確認"
 
@@ -1540,7 +1541,7 @@ msgstr "確認兌換"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:250
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:322
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1548,7 +1549,7 @@ msgstr "已確認"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:343
 msgid "Confirming"
 msgstr "正在確認"
 
@@ -2344,7 +2345,7 @@ msgstr "建立代金券"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:150
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2893,11 +2894,11 @@ msgstr "匯率"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "相對於預設代金券 ({unitSymbol}) 的匯率"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:350
 msgid "Execute it in Safe."
 msgstr "請在 Safe 中執行。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:267
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:339
 msgid "Executing…"
 msgstr "執行中…"
 
@@ -2952,7 +2953,7 @@ msgstr "農業"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:159
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
 msgid "Fee % and recipient"
 msgstr "費率和費用接收方"
 
@@ -3768,7 +3769,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:88
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3824,7 +3825,7 @@ msgid "Manage {0}"
 msgstr "管理 {0}"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:165
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
 msgid "Manage voucher"
 msgstr "管理代金券"
 
@@ -4027,7 +4028,7 @@ msgstr "由多簽錢包持有 · {1} 位簽署者中需 {0} 位簽署"
 msgid "Multisig owned · {0} signers"
 msgstr "由多簽錢包持有 · {0} 位簽署者"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:56
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:63
 msgid "Multisig transactions"
 msgstr "多簽交易"
 
@@ -4123,6 +4124,10 @@ msgstr "自然建築"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
 msgid "Network"
 msgstr "網路"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:236
+msgid "New owner"
+msgstr "新所有者"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:425
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
@@ -4381,7 +4386,7 @@ msgstr "還沒有貼文。"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "未找到QR 碼。請使用更清晰的圖片重試。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:96
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:103
 msgid "No queued proposals found."
 msgstr "找不到佇列中的提案。"
 
@@ -4488,7 +4493,7 @@ msgid "No. of participants"
 msgstr "參加人數"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:235
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:306
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4668,7 +4673,7 @@ msgid "Open in Maps"
 msgstr "在地圖中開啟"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:137
 msgid "Open in Safe"
 msgstr "在 Safe 中開啟"
 
@@ -5439,7 +5444,7 @@ msgstr "個人資料已更新"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "提案已加入佇列。請在 Safe 中確認並執行。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:92
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:99
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "此處暫時無法使用提案。你仍可使用多簽錢包。"
 
@@ -5650,6 +5655,7 @@ msgstr "最近的接收方"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5743,7 +5749,7 @@ msgstr "相對定價"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:167
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
 msgid "Remove"
 msgstr "刪除"
 
@@ -6008,7 +6014,7 @@ msgstr "重試連線"
 msgid "Reverted"
 msgstr "已回滾"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:280
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:352
 msgid "Review this transaction in your multisig wallet."
 msgstr "請在多簽錢包中檢視此交易。"
 
@@ -7478,7 +7484,7 @@ msgstr "交易雜湊已複製"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:159
 msgid "Transfer ownership"
 msgstr "轉讓所有權"
 
@@ -7608,8 +7614,8 @@ msgstr "記賬單位"
 msgid "Unknown"
 msgstr "未知"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:185
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 msgid "Unknown call"
 msgstr "未知呼叫"
 
@@ -8192,13 +8198,13 @@ msgstr "提取"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:156
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
 msgid "Withdraw fees"
 msgstr "提取費用"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:161
 msgid "Withdraw liquidity"
 msgstr "提取流動性"
 
@@ -8280,7 +8286,7 @@ msgstr "資金池停用後，您仍可提取資金。"
 msgid "You can write or edit your review until {0}."
 msgstr "您可以在 {0} 之前撰寫或編輯您的評價。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:276
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:348
 msgid "You confirmed"
 msgstr "您已確認"
 

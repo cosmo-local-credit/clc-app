@@ -725,6 +725,7 @@ msgstr "भेजने से पहले हमेशा पुष्टि �
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:230
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -804,7 +805,7 @@ msgstr "फ़िल्टर लागू करें"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:161
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:168
 msgid "Approve voucher"
 msgstr "वाउचर स्वीकृत करें"
 
@@ -1410,7 +1411,7 @@ msgstr "स्पष्ट खोज"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:142
 msgid "Close"
 msgstr "बंद करें"
 
@@ -1519,7 +1520,7 @@ msgstr "अपने फ़ोन पर संकेत पूरा करे�
 msgid "Complete your profile"
 msgstr "अपना प्रोफ़ाइल पूरा करें"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:343
 msgid "Confirm"
 msgstr "पुष्टि करें"
 
@@ -1565,7 +1566,7 @@ msgstr "अदला-बदली की पुष्टि करें"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:250
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:322
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1573,7 +1574,7 @@ msgstr "पुष्टि की गई"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:343
 msgid "Confirming"
 msgstr "पुष्टि कर रहा है"
 
@@ -2382,7 +2383,7 @@ msgstr "वाउचर जारी करें"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:150
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2935,11 +2936,11 @@ msgstr "विनिमय दर"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "डिफ़ॉल्ट वाउचर के सापेक्ष विनिमय दर ({unitSymbol})"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:350
 msgid "Execute it in Safe."
 msgstr "Safe में इसे निष्पादित करें।"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:267
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:339
 msgid "Executing…"
 msgstr "निष्पादित हो रहा है…"
 
@@ -2994,7 +2995,7 @@ msgstr "खेती"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:159
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
 msgid "Fee % and recipient"
 msgstr "शुल्क % और प्राप्तकर्ता"
 
@@ -3819,7 +3820,7 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:88
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3876,7 +3877,7 @@ msgid "Manage {0}"
 msgstr "{0} प्रबंधित करें"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:165
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
 msgid "Manage voucher"
 msgstr "वाउचर प्रबंधित करें"
 
@@ -4079,7 +4080,7 @@ msgstr "मल्टीसिग के स्वामित्व में ·
 msgid "Multisig owned · {0} signers"
 msgstr "मल्टीसिग के स्वामित्व में · {0} हस्ताक्षरकर्ता"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:56
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:63
 msgid "Multisig transactions"
 msgstr "मल्टीसिग लेनदेन"
 
@@ -4175,6 +4176,10 @@ msgstr "प्राकृतिक निर्माण"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
 msgid "Network"
 msgstr "नेटवर्क"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:236
+msgid "New owner"
+msgstr "नया मालिक"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:425
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
@@ -4437,7 +4442,7 @@ msgstr "अभी तक कोई पोस्ट नहीं."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "कोई QR कोड नहीं मिला. स्पष्ट छवि के साथ पुनः प्रयास करें."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:96
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:103
 msgid "No queued proposals found."
 msgstr "कतार में कोई प्रस्ताव नहीं मिला।"
 
@@ -4544,7 +4549,7 @@ msgid "No. of participants"
 msgstr "प्रतिभागियों की संख्या"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:235
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:306
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4723,7 +4728,7 @@ msgid "Open in Maps"
 msgstr "मानचित्र में खोलें"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:137
 msgid "Open in Safe"
 msgstr "Safe में खोलें"
 
@@ -5501,7 +5506,7 @@ msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "प्रस्ताव कतार में जोड़ा गया। Safe में इसकी पुष्टि करें और इसे निष्पादित "
 "करें।"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:92
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:99
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "यहाँ प्रस्ताव उपलब्ध नहीं हैं। आप अभी भी अपने मल्टीसिग वॉलेट का उपयोग "
 "कर सकते हैं।"
@@ -5713,6 +5718,7 @@ msgstr "हाल के प्राप्तकर्ता"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5807,7 +5813,7 @@ msgstr "सापेक्ष मूल्य निर्धारण"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:167
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
 msgid "Remove"
 msgstr "हटाएँ"
 
@@ -6070,7 +6076,7 @@ msgstr "कनेक्शन पुनः प्रयास करें"
 msgid "Reverted"
 msgstr "वापस किया गया"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:280
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:352
 msgid "Review this transaction in your multisig wallet."
 msgstr "अपने मल्टीसिग वॉलेट में इस लेनदेन की समीक्षा करें।"
 
@@ -7568,7 +7574,7 @@ msgstr "लेन-देन हैश कॉपी किया गया"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:159
 msgid "Transfer ownership"
 msgstr "स्वामित्व स्थानांतरित करें"
 
@@ -7698,8 +7704,8 @@ msgstr "खाते की इकाई"
 msgid "Unknown"
 msgstr "अज्ञात"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:185
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 msgid "Unknown call"
 msgstr "अज्ञात कॉल"
 
@@ -8281,13 +8287,13 @@ msgstr "वापस लेना"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:156
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
 msgid "Withdraw fees"
 msgstr "फीस वापस लें"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:161
 msgid "Withdraw liquidity"
 msgstr "तरलता निकालें"
 
@@ -8370,7 +8376,7 @@ msgstr "पूल को उपयोग से हटाए जाने के
 msgid "You can write or edit your review until {0}."
 msgstr "आप {0} तक अपनी समीक्षा लिख या संपादित कर सकते हैं।"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:276
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:348
 msgid "You confirmed"
 msgstr "आपने पुष्टि की"
 

@@ -725,6 +725,7 @@ msgstr "གཏང་བའི་ཧེ་མར་ ཊོ་ཀེན་དང�
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:230
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -803,7 +804,7 @@ msgstr "ཚགས་མ་ལག་ལེན་འཐབ།"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:161
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:168
 msgid "Approve voucher"
 msgstr "འཛིན་ཤོག་ཆ་འཇོག་འབད།"
 
@@ -1413,7 +1414,7 @@ msgstr "འཚོལ་ཞིབ་བསལ།"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:142
 msgid "Close"
 msgstr "ཁ་བསྡམ།"
 
@@ -1522,7 +1523,7 @@ msgstr "ཁྱོད་ཀྱི་ཁ་པར་གུ་ཞུ་ཡིག་
 msgid "Complete your profile"
 msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མཇུག་བསྡུ།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:343
 msgid "Confirm"
 msgstr "ངེས་གཏན་བཟོ།"
 
@@ -1568,7 +1569,7 @@ msgstr "བརྗེ་ལེན་ངེས་གཏན་བཟོ།"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:250
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:322
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1576,7 +1577,7 @@ msgstr "ངེས་གཏན་གྲུབ།"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:343
 msgid "Confirming"
 msgstr "ངེས་གཏན་བཟོ་དོ།"
 
@@ -2386,7 +2387,7 @@ msgstr "འཛིན་ཤོག་གསར་བཟོ།"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:150
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2940,11 +2941,11 @@ msgstr "བརྗེ་སྤོར་ཚད།"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "སྔོན་སྒྲིག་འཛིན་ཤོག་ ({unitSymbol}) དང་བསྡུར་བའི་བརྗེ་སྤོར་ཚད།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:350
 msgid "Execute it in Safe."
 msgstr "Safe ནང་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:267
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:339
 msgid "Executing…"
 msgstr "ལག་ལེན་འཐབ་དོ…"
 
@@ -2999,7 +3000,7 @@ msgstr "སོ་ནམ།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:159
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
 msgid "Fee % and recipient"
 msgstr "གླ་ཡོན་ % དང་ལེན་མི།"
 
@@ -3822,7 +3823,7 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:88
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3879,7 +3880,7 @@ msgid "Manage {0}"
 msgstr "{0} འཛིན་སྐྱོང་།"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:165
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
 msgid "Manage voucher"
 msgstr "འཛིན་ཤོག་འཛིན་སྐྱོང་།"
 
@@ -4083,7 +4084,7 @@ msgstr "མཚན་རྟགས་མང་པོའི་བདག་དབང
 msgid "Multisig owned · {0} signers"
 msgstr "མཚན་རྟགས་མང་པོའི་བདག་དབང་ · མཚན་རྟགས་བཀོད་མི་ {0}"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:56
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:63
 msgid "Multisig transactions"
 msgstr "མཚན་རྟགས་མང་པོའི་སྤྲོད་ལེན"
 
@@ -4179,6 +4180,10 @@ msgstr "རང་བཞིན་བཟོ་སྐྲུན།"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
 msgid "Network"
 msgstr "ཡོངས་འབྲེལ།"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:236
+msgid "New owner"
+msgstr "བདག་པོ་གསར་པ།"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:425
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
@@ -4446,7 +4451,7 @@ msgstr "ད་ཚུན་གསལ་བསྒྲགས་མེད།"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "QR ཨང་རྟགས་མ་ཐོབ། པར་གསལ་ཏོག་ཏོ་ཅིག་གིས་ལོག་འབད།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:96
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:103
 msgid "No queued proposals found."
 msgstr "གྲལ་རིམ་ནང་གྲོས་འཆར་མ་ཐོབ།"
 
@@ -4553,7 +4558,7 @@ msgid "No. of participants"
 msgstr "བཅའ་མར་གཏོགས་མིའི་གྱངས་ཁ།"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:235
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:306
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4734,7 +4739,7 @@ msgid "Open in Maps"
 msgstr "ས་ཁྲ་ནང་ཁ་ཕྱེ།"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:137
 msgid "Open in Safe"
 msgstr "Safe ནང་ཁ་ཕྱེ།"
 
@@ -5514,7 +5519,7 @@ msgstr "གསལ་སྡུད་དུས་མཐུན་བཟོ་ཡོ
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "གྲོས་འཆར་གྲལ་རིམ་ནང་བཙུགས་ཡོད། Safe ནང་ངེས་དཔྱད་དང་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:92
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:99
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "ནཱ་ལུ་གྲོས་འཆར་མི་འཐོབ། "
 "ཁྱོད་རའི་མཚན་རྟགས་མང་པོའི་དངུལ་ཁུག་ལག་ལེན་འཐབ་ཚུགས།"
@@ -5727,6 +5732,7 @@ msgstr "ཉེ་ཆར་གྱི་ལེན་མི།"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5825,7 +5831,7 @@ msgstr "བསྡུར་བའི་གནས་གོང་།"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:167
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
 msgid "Remove"
 msgstr "བཏོན།"
 
@@ -6087,7 +6093,7 @@ msgstr "མཐུད་ལམ་ལོག་འབད།"
 msgid "Reverted"
 msgstr "ལོག་བཏང་ཡོད།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:280
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:352
 msgid "Review this transaction in your multisig wallet."
 msgstr "སྤྲོད་ལེན་འདི་ཁྱོད་རའི་མཚན་རྟགས་མང་པོའི་དངུལ་ཁུག་ནང་བསྐྱར་ཞིབ་འབད།"
 
@@ -7593,7 +7599,7 @@ msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས་གྲུབ
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:159
 msgid "Transfer ownership"
 msgstr "བདག་དབང་སྤོ་བཤུད།"
 
@@ -7724,8 +7730,8 @@ msgstr "རྩིས་ཀྱི་ཆ་ཕྲན།"
 msgid "Unknown"
 msgstr "མ་ཤེས།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:185
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 msgid "Unknown call"
 msgstr "ཁྱད་མེད་ཀྱི་འབོད་བརྡ།"
 
@@ -8308,13 +8314,13 @@ msgstr "ཕྱིར་བཏོན།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:156
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:163
 msgid "Withdraw fees"
 msgstr "གླ་ཡོན་ཕྱིར་བཏོན།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:161
 msgid "Withdraw liquidity"
 msgstr "དངུལ་རྒྱུན་ཕྱིར་བཏོན།"
 
@@ -8396,7 +8402,7 @@ msgstr "You can still withdraw funds after the pool is retired."
 msgid "You can write or edit your review until {0}."
 msgstr "{0} ཚུན་ཁྱོད་ཀྱིས་བསྐྱར་ཞིབ་བྲིས་ཡང་ན་ཞུན་དག་འབད་ཚུགས།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:276
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:348
 msgid "You confirmed"
 msgstr "ཁྱོད་ཀྱིས་ངེས་གཏན་བཟོ་ཡི།"
 

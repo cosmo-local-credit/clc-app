@@ -10,7 +10,12 @@ const OTHER = "0x00000000000000000000000000000000000000b2";
 const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   confirm: vi.fn(),
+  voucher: vi.fn(),
   connectorId: "private-key",
+}));
+vi.mock("#/lib/api/market", () => ({ marketClient: { getMarketVoucher: mocks.voucher } }));
+vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
+  useReverseRecipientResolution: () => ({ data: null, isPending: false }),
 }));
 vi.mock("#/lib/api/safe", () => ({ safeClient: { pending: mocks.pending } }));
 vi.mock("#/lib/safe-config", () => ({ SAFE_APP_PREFIX: "gno", SAFE_MULTISEND_CALL_ONLY: [] }));
@@ -76,6 +81,7 @@ async function openWith(transactions: unknown[]) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.voucher.mockResolvedValue({ decimals: 6, symbol: "MLTT" });
   mocks.connectorId = "private-key";
   act(() => useSafeSheet.getState().close());
 });
@@ -88,6 +94,32 @@ describe("SafePendingSheet", () => {
     expect(within(sheet).getByText("1/2")).toBeTruthy();
     fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
     expect(mocks.confirm).toHaveBeenCalledWith(tx, expect.anything());
+  });
+
+  it("shows who receives a mint and how much before anyone confirms", async () => {
+    const sheet = await openWith([proposal()]);
+    const amount = await within(sheet).findByText(
+      (_text, node) => node?.tagName === "SPAN" && node.textContent === "1.00 MLTT",
+    );
+    expect(amount).toBeTruthy();
+    expect(within(sheet).getByText("Recipient")).toBeTruthy();
+    expect(within(sheet).getByText("Amount")).toBeTruthy();
+    expect(mocks.voucher).toHaveBeenCalledWith(
+      "0x2222222222222222222222222222222222222222",
+      expect.anything(),
+    );
+  });
+
+  it("shows the new owner of a handover", async () => {
+    const handover = encodeFunctionData({
+      abi: parseAbi(["function transferOwnership(address)"]),
+      functionName: "transferOwnership",
+      args: [OTHER],
+    });
+    const sheet = await openWith([proposal({ data: handover })]);
+    expect(within(sheet).getByText("Transfer ownership")).toBeTruthy();
+    expect(within(sheet).getByText("New owner")).toBeTruthy();
+    expect(within(sheet).queryByText("Amount")).toBeNull();
   });
 
   it("shows the viewer's own confirmation instead of the button", async () => {

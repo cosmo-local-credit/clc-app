@@ -15,6 +15,7 @@ import {
   classifyOwnerCode,
   computeSafeTxHash,
   decodeSafeTransactionCalls,
+  describeSafeCall,
   safeProposalAction,
   encodeMultiSend,
   isSigner,
@@ -227,5 +228,38 @@ describe("safeProposalAction", () => {
     expect(safeProposalAction({ ...none, calls: null })).toBe("review");
     expect(safeProposalAction({ ...none, calls: [{ ...mint, data: "0x" }] })).toBe("review");
     expect(safeProposalAction({ ...none, canSign: false })).toBe("review");
+  });
+});
+
+describe("describeSafeCall", () => {
+  const token = "0x2222222222222222222222222222222222222222";
+  const person = "0x9999999999999999999999999999999999999999";
+  it("reads a mint's recipient and raw amount", () => {
+    const data = encodeFunctionData({
+      abi: parseAbi(["function mintTo(address,uint256)"]),
+      functionName: "mintTo",
+      args: [person, 1_500_000n],
+    });
+    expect(describeSafeCall({ to: token, value: "0", data })).toEqual({
+      kind: "mint",
+      token,
+      recipient: person,
+      amountRaw: "1500000",
+    });
+  });
+  it("reads an ownership transfer's new owner", () => {
+    const data = encodeFunctionData({
+      abi: parseAbi(["function transferOwnership(address)"]),
+      functionName: "transferOwnership",
+      args: [person],
+    });
+    expect(describeSafeCall({ to: token, value: "0", data })).toEqual({
+      kind: "ownership",
+      asset: token,
+      newOwner: person,
+    });
+  });
+  it("has nothing to say about other calls", () => {
+    expect(describeSafeCall({ to: token, value: "0", data: "0x12345678" })).toBeNull();
   });
 });

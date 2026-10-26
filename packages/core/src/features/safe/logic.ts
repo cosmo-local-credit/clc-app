@@ -303,3 +303,26 @@ export function safeProposalAction(input: {
     input.calls.every((call) => safeCallName(call.data) !== null);
   return input.canSign && allowed ? "confirm" : "review";
 }
+
+const describeAbi = parseAbi([
+  "function mintTo(address beneficiary, uint256 amount)",
+  "function transferOwnership(address newOwner)",
+]);
+
+/** What a confirming signer needs to see in a call: who receives what. */
+export type SafeCallDetail =
+  | { kind: "mint"; token: `0x${string}`; recipient: `0x${string}`; amountRaw: string }
+  | { kind: "ownership"; asset: `0x${string}`; newOwner: `0x${string}` };
+
+export function describeSafeCall(call: SafeCall): SafeCallDetail | null {
+  try {
+    const decoded = decodeFunctionData({ abi: describeAbi, data: call.data });
+    if (decoded.functionName === "mintTo") {
+      const [recipient, amount] = decoded.args;
+      return { kind: "mint", token: call.to, recipient, amountRaw: amount.toString() };
+    }
+    return { kind: "ownership", asset: call.to, newOwner: decoded.args[0] };
+  } catch {
+    return null;
+  }
+}

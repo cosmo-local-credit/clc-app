@@ -1,13 +1,17 @@
+import { voucherQueryOptions } from "@clc/api/features/market/queries";
 import type { SafeProposal } from "@clc/api/features/safe/client";
 import { safePendingQueryOptions } from "@clc/api/features/safe/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
   decodeSafeTransactionCalls,
+  describeSafeCall,
   safeAppQueueUrl,
   safeCallName,
   safeProposalAction,
   type SafeCall,
+  type SafeCallDetail,
 } from "@clc/core/features/safe/logic";
+import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode } from "react";
@@ -16,6 +20,8 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { Skeleton } from "#/components/ui/skeleton";
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { Spinner } from "#/components/ui/spinner";
 import {
   SheetBackdrop,
@@ -29,6 +35,7 @@ import {
 import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
+import { marketClient } from "#/lib/api/market";
 import { safeClient } from "#/lib/api/safe";
 import { SAFE_APP_PREFIX, SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
 import { useSafeConfirm } from "../hooks/use-safe-confirm";
@@ -195,6 +202,70 @@ function proposalTitle(calls: readonly SafeCall[] | null): ReactNode {
   ));
 }
 
+/**
+ * Who receives what, for the calls where that is the decision: each mint's
+ * recipient and amount, and the new owner of a handover (one entry for a
+ * pool's batch of wiring contracts).
+ */
+function ProposalDetails({ calls }: { calls: readonly SafeCall[] | null }) {
+  const details = (calls ?? [])
+    .map(describeSafeCall)
+    .filter((detail): detail is SafeCallDetail => detail !== null);
+  const mints = details.filter((detail) => detail.kind === "mint");
+  const newOwners = [
+    ...new Set(
+      details.flatMap((detail) =>
+        detail.kind === "ownership" ? [detail.newOwner.toLowerCase()] : [],
+      ),
+    ),
+  ];
+  if (mints.length === 0 && newOwners.length === 0) return null;
+  return (
+    <dl className="space-y-1.5">
+      {mints.map((mint, index) => (
+        <Fragment key={index}>
+          <DetailRow label={<Trans>Recipient</Trans>}>
+            <RecipientIdentityLabel address={mint.recipient} showAddress />
+          </DetailRow>
+          <DetailRow label={<Trans>Amount</Trans>}>
+            <MintAmount token={mint.token} amountRaw={mint.amountRaw} />
+          </DetailRow>
+        </Fragment>
+      ))}
+      {newOwners.map((owner) => (
+        <DetailRow key={owner} label={<Trans>New owner</Trans>}>
+          <RecipientIdentityLabel address={owner} showAddress />
+        </DetailRow>
+      ))}
+    </dl>
+  );
+}
+
+function DetailRow({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <dt className="shrink-0 text-xs text-muted-foreground">{label}</dt>
+      <dd className="min-w-0 text-end text-xs">{children}</dd>
+    </div>
+  );
+}
+
+function MintAmount({ token, amountRaw }: { token: `0x${string}`; amountRaw: string }) {
+  const { i18n } = useLingui();
+  const voucher = useQuery(voucherQueryOptions(marketClient, token));
+  if (voucher.isPending) return <Skeleton className="ms-auto h-3.5 w-16 rounded-none" />;
+  const decimals = voucher.data?.decimals;
+  if (decimals === undefined || decimals === null)
+    return <span className="text-muted-foreground">—</span>;
+  const locale = i18n.locales?.[0] ?? i18n.locale;
+  return (
+    <span className="font-mono font-semibold">
+      {formatTokenAmountFixed(amountRaw, decimals, 2, locale)}{" "}
+      <span dir="ltr">{voucher.data?.symbol}</span>
+    </span>
+  );
+}
+
 function Proposal({
   transaction,
   viewer,
@@ -234,6 +305,7 @@ function Proposal({
       <p className="text-xs text-muted-foreground">
         <Trans>Nonce {transaction.nonce}</Trans>
       </p>
+      <ProposalDetails calls={calls} />
       {calls && calls.length > 1 ? (
         <ul className="space-y-1">
           {calls.map((call, index) => (
