@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { FormEvent, ReactNode } from "react";
-import { lazy, Suspense, useState } from "react";
+import { createContext, lazy, Suspense, useContext, useEffect, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiKey, FiX } from "react-icons/fi";
 import { TbNfc, TbScan } from "react-icons/tb";
@@ -24,6 +24,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { Dialog } from "@base-ui/react/dialog";
 import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
@@ -54,6 +55,39 @@ const EncryptedPaperWalletImportForm = lazy(() =>
 
 type AuthPanelState = "form" | "approvalPending" | "approvalRejected";
 
+type SignInCanvasMode = "concept" | "scanner" | "captured";
+
+export type SignInCanvasStage = {
+  mode: SignInCanvasMode;
+  error: string | null;
+};
+
+/** Latest scan handlers. The desktop split reads this while it paints the left column. */
+export type SignInCanvasApi = {
+  onKeyDecoded: (raw: string) => void;
+  closeScanner: () => void;
+  closeEncrypted: () => void;
+  /** Drops a captured card and opens the camera again. */
+  resumeScanner: () => void;
+};
+
+type SignInCanvasHost = {
+  setStage: (stage: SignInCanvasStage) => void;
+  api: { current: SignInCanvasApi | null };
+};
+
+const SignInCanvasContext = createContext<SignInCanvasHost | null>(null);
+
+export function SignInCanvasProvider({
+  children,
+  host,
+}: {
+  children: ReactNode;
+  host: SignInCanvasHost;
+}) {
+  return <SignInCanvasContext.Provider value={host}>{children}</SignInCanvasContext.Provider>;
+}
+
 export type SignInPanelProps = {
   onAuthenticated: () => void;
   onCancel?: () => void;
@@ -66,6 +100,12 @@ export type SignInPanelProps = {
   createAccountStep?: "welcome" | "profile";
   /** When true, create-account navigation replaces the current history entry. */
   createAccountReplace?: boolean;
+  /**
+   * Keep sign-in inside the page instead of a sheet. Off by default, so the
+   * phone sheets stay as they are. With a canvas host, the scanner and the
+   * captured card go to that host and this column keeps the methods.
+   */
+  embedded?: boolean;
 };
 
 export function SignInPanel({
@@ -74,6 +114,7 @@ export function SignInPanel({
   redirectTo,
   createAccountStep = "profile",
   createAccountReplace = false,
+  embedded = false,
 }: SignInPanelProps) {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -224,6 +265,20 @@ export function SignInPanel({
     }
   }
 
+  const canvas = useContext(SignInCanvasContext);
+  const hosted = embedded && canvas !== null;
+  useEffect(() => {
+    if (!canvas || !embedded) return;
+    canvas.setStage({
+      mode: showScanner ? "scanner" : encryptedPaperWallet ? "captured" : "concept",
+      error: showScanner ? error : null,
+    });
+  }, [canvas, embedded, showScanner, encryptedPaperWallet, error]);
+  useEffect(() => {
+    if (!canvas || !embedded) return;
+    return () => canvas.setStage({ mode: "concept", error: null });
+  }, [canvas, embedded]);
+
   // A login scan ends after one valid card. Like the QR scanner, tapping the
   // card is already the choice to import it, so a raw card signs in without a
   // further confirmation and an encrypted one goes to the password step.
@@ -327,9 +382,24 @@ export function SignInPanel({
     setError(null);
   }
 
+  function resumeScanner() {
+    setEncryptedPaperWallet(null);
+    setShowScanner(true);
+    setError(null);
+  }
+
   function openScanner() {
     setShowScanner(true);
     setError(null);
+  }
+
+  if (canvas) {
+    canvas.api.current = {
+      onKeyDecoded: handleKeyScanned,
+      closeScanner,
+      closeEncrypted,
+      resumeScanner,
+    };
   }
 
   // An error belongs to whichever method raised it: inside its sheet while one
@@ -341,6 +411,117 @@ export function SignInPanel({
       {error}
     </p>
   ) : null;
+  const passwordOnRight = hosted && !connecting && encryptedPaperWallet !== null;
+
+  if (passwordOnRight) {
+    return (
+      <div className="flex flex-1 flex-col gap-3">
+        <Suspense fallback={null}>
+          <EncryptedPaperWalletImportForm
+            encryptedKey={encryptedPaperWallet}
+            onDecrypted={async (key) => {
+              const connected = await connectWithKey(key);
+              if (connected) setEncryptedPaperWallet(null);
+            }}
+            onCancel={resumeScanner}
+          />
+        </Suspense>
+        {errorAlert}
+        <Button variant="ghost" tap className="w-full" onClick={closeEncrypted}>
+          <Trans>Cancel</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  if (embedded && !hosted && (accountNotFoundOpen || sheetOpen)) {
+    return (
+      <div className="flex flex-1 flex-col gap-3">
+        {accountNotFoundOpen ? (
+          <>
+            <h2 className="font-heading text-base font-semibold">
+              <Trans>Account not found</Trans>
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              <Trans>No CLC account was found for this sign-in.</Trans>
+            </p>
+            <Button tap className="w-full" onClick={routeToSignup}>
+              <Trans>Create an account</Trans>
+            </Button>
+            <Button
+              variant="ghost"
+              tap
+              className="w-full"
+              onClick={() => setAccountNotFoundOpen(false)}
+            >
+              <Trans>Cancel</Trans>
+            </Button>
+          </>
+        ) : showScanner ? (
+          <div className="space-y-3">
+            <PaperWalletScanner onKeyDecoded={handleKeyScanned} onCancel={closeScanner} />
+            {errorAlert}
+          </div>
+        ) : showNfc ? (
+          <NfcCardPrompt
+            phase={nfcScan.phase}
+            error={nfcScan.error}
+            readFailed={nfcScan.readFailed}
+            problem={nfcProblem}
+            title={<Trans>Tap your NFC card</Trans>}
+            onRetry={startNfc}
+            onCancel={closeNfc}
+          />
+        ) : encryptedPaperWallet ? (
+          <>
+            <Suspense fallback={null}>
+              <EncryptedPaperWalletImportForm
+                encryptedKey={encryptedPaperWallet}
+                onDecrypted={async (key) => {
+                  const connected = await connectWithKey(key);
+                  if (connected) setEncryptedPaperWallet(null);
+                }}
+                onCancel={closeEncrypted}
+              />
+            </Suspense>
+            {errorAlert}
+          </>
+        ) : (
+          <form onSubmit={handlePkSubmit} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">
+                <Trans>Private key</Trans>
+              </p>
+              <Button
+                variant="ghost"
+                size="icon"
+                tap
+                aria-label={t`Close private key form`}
+                onClick={closePrivateKey}
+              >
+                <FiX className="size-4" />
+              </Button>
+            </div>
+            <Input
+              type="password"
+              autoComplete="off"
+              value={pkInput}
+              onChange={(e) => setPkInput(e.target.value)}
+              placeholder="0x..."
+              className="font-mono"
+              aria-invalid={!!error}
+              aria-label={t`Private key`}
+            />
+            {errorAlert}
+            <Button type="submit" tap disabled={!pkInput.trim()} className="w-full">
+              <FiKey className="me-2 size-4" />
+              <Trans>Sign in with private key</Trans>
+            </Button>
+          </form>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-3">
@@ -405,19 +586,60 @@ export function SignInPanel({
           </Button>
 
           {showAdvanced ? (
-            <div className="border border-border bg-card">
-              <ActionRow
-                icon={<FiKey className="size-4" aria-hidden="true" />}
-                label={t`Private key`}
-                onClick={() => {
-                  setShowPkInput(true);
-                  setError(null);
-                }}
-              />
+            <div className="space-y-3">
+              <div className="border border-border bg-card">
+                <ActionRow
+                  icon={<FiKey className="size-4" aria-hidden="true" />}
+                  label={t`Private key`}
+                  onClick={() => {
+                    setShowPkInput(true);
+                    setError(null);
+                  }}
+                />
+              </div>
+              {hosted && showPkInput ? (
+                <form onSubmit={handlePkSubmit} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">
+                      <Trans>Private key</Trans>
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      tap
+                      aria-label={t`Close private key form`}
+                      onClick={closePrivateKey}
+                    >
+                      <FiX className="size-4" />
+                    </Button>
+                  </div>
+                  <Input
+                    type="password"
+                    autoComplete="off"
+                    value={pkInput}
+                    onChange={(e) => setPkInput(e.target.value)}
+                    placeholder="0x..."
+                    className="font-mono"
+                    aria-invalid={!!error}
+                    aria-label={t`Private key`}
+                  />
+                  {errorAlert}
+                  <Button type="submit" tap disabled={!pkInput.trim()} className="w-full">
+                    <FiKey className="me-2 size-4" />
+                    <Trans>Sign in with private key</Trans>
+                  </Button>
+                </form>
+              ) : null}
             </div>
           ) : null}
         </>
       )}
+
+      {hosted && showScanner ? (
+        <Button variant="ghost" tap className="w-full" onClick={closeScanner}>
+          <Trans>Cancel</Trans>
+        </Button>
+      ) : null}
 
       {onCancel ? (
         <Button variant="ghost" tap className="w-full" onClick={onCancel}>
@@ -437,111 +659,130 @@ export function SignInPanel({
         </Link>
       </p>
 
-      <MethodSheet open={showScanner && !connecting} onClose={closeScanner} title={t`Paper Wallet`}>
-        <div className="space-y-3">
-          <PaperWalletScanner onKeyDecoded={handleKeyScanned} onCancel={closeScanner} />
-          {errorAlert}
-        </div>
-      </MethodSheet>
-
-      <MethodSheet open={showNfc && !connecting} onClose={closeNfc} title={t`Tap your NFC card`}>
-        <NfcCardPrompt
-          phase={nfcScan.phase}
-          error={nfcScan.error}
-          readFailed={nfcScan.readFailed}
-          problem={nfcProblem}
-          title={<Trans>Tap your NFC card</Trans>}
-          onRetry={startNfc}
-          onCancel={closeNfc}
+      {hosted && accountNotFoundOpen ? (
+        <AccountNotFoundDialog
+          onCancel={() => setAccountNotFoundOpen(false)}
+          onCreate={routeToSignup}
         />
-      </MethodSheet>
+      ) : null}
 
-      <MethodSheet
-        open={!!encryptedPaperWallet && !connecting}
-        onClose={closeEncrypted}
-        title={t`Password-protected paper wallet`}
-      >
-        {encryptedPaperWallet ? (
-          <Suspense fallback={null}>
-            <EncryptedPaperWalletImportForm
-              encryptedKey={encryptedPaperWallet}
-              onDecrypted={async (key) => {
-                const connected = await connectWithKey(key);
-                if (connected) setEncryptedPaperWallet(null);
-              }}
-              onCancel={closeEncrypted}
+      {embedded ? null : (
+        <>
+          <MethodSheet
+            open={showScanner && !connecting}
+            onClose={closeScanner}
+            title={t`Paper Wallet`}
+          >
+            <div className="space-y-3">
+              <PaperWalletScanner onKeyDecoded={handleKeyScanned} onCancel={closeScanner} />
+              {errorAlert}
+            </div>
+          </MethodSheet>
+
+          <MethodSheet
+            open={showNfc && !connecting}
+            onClose={closeNfc}
+            title={t`Tap your NFC card`}
+          >
+            <NfcCardPrompt
+              phase={nfcScan.phase}
+              error={nfcScan.error}
+              readFailed={nfcScan.readFailed}
+              problem={nfcProblem}
+              title={<Trans>Tap your NFC card</Trans>}
+              onRetry={startNfc}
+              onCancel={closeNfc}
             />
-          </Suspense>
-        ) : null}
-        {errorAlert}
-      </MethodSheet>
+          </MethodSheet>
 
-      <MethodSheet
-        open={showPkInput && !connecting}
-        onClose={closePrivateKey}
-        title={t`Private key`}
-      >
-        <form onSubmit={handlePkSubmit} className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">
-              <Trans>Private key</Trans>
-            </p>
-            <Button
-              variant="ghost"
-              size="icon"
-              tap
-              aria-label={t`Close private key form`}
-              onClick={closePrivateKey}
-            >
-              <FiX className="size-4" />
-            </Button>
-          </div>
-          <Input
-            type="password"
-            autoComplete="off"
-            value={pkInput}
-            onChange={(e) => setPkInput(e.target.value)}
-            placeholder="0x..."
-            className="font-mono"
-            aria-invalid={!!error}
-            aria-label={t`Private key`}
-          />
-          {errorAlert}
-          <Button type="submit" tap disabled={!pkInput.trim()} className="w-full">
-            <FiKey className="me-2 size-4" />
-            <Trans>Sign in with private key</Trans>
-          </Button>
-        </form>
-      </MethodSheet>
+          <MethodSheet
+            open={!!encryptedPaperWallet && !connecting}
+            onClose={closeEncrypted}
+            title={t`Password-protected paper wallet`}
+          >
+            {encryptedPaperWallet ? (
+              <Suspense fallback={null}>
+                <EncryptedPaperWalletImportForm
+                  encryptedKey={encryptedPaperWallet}
+                  onDecrypted={async (key) => {
+                    const connected = await connectWithKey(key);
+                    if (connected) setEncryptedPaperWallet(null);
+                  }}
+                  onCancel={closeEncrypted}
+                />
+              </Suspense>
+            ) : null}
+            {errorAlert}
+          </MethodSheet>
 
-      <SheetRoot open={accountNotFoundOpen} onOpenChange={setAccountNotFoundOpen}>
-        <SheetPortal>
-          <SheetBackdrop />
-          <SheetContent className="[&>div:first-child]:hidden">
-            <SheetHeader className="px-6 pt-6">
-              <SheetTitle>
-                <Trans>Account not found</Trans>
-              </SheetTitle>
-              <p className="text-muted-foreground text-sm">
-                <Trans>No CLC account was found for this sign-in.</Trans>
-              </p>
-            </SheetHeader>
-            <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <Button tap className="w-full" onClick={routeToSignup}>
-                <Trans>Create an account</Trans>
+          <MethodSheet
+            open={showPkInput && !connecting}
+            onClose={closePrivateKey}
+            title={t`Private key`}
+          >
+            <form onSubmit={handlePkSubmit} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">
+                  <Trans>Private key</Trans>
+                </p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  tap
+                  aria-label={t`Close private key form`}
+                  onClick={closePrivateKey}
+                >
+                  <FiX className="size-4" />
+                </Button>
+              </div>
+              <Input
+                type="password"
+                autoComplete="off"
+                value={pkInput}
+                onChange={(e) => setPkInput(e.target.value)}
+                placeholder="0x..."
+                className="font-mono"
+                aria-invalid={!!error}
+                aria-label={t`Private key`}
+              />
+              {errorAlert}
+              <Button type="submit" tap disabled={!pkInput.trim()} className="w-full">
+                <FiKey className="me-2 size-4" />
+                <Trans>Sign in with private key</Trans>
               </Button>
-              <Button
-                variant="ghost"
-                tap
-                className="w-full"
-                onClick={() => setAccountNotFoundOpen(false)}
-              >
-                <Trans>Cancel</Trans>
-              </Button>
-            </SheetFooter>
-          </SheetContent>
-        </SheetPortal>
-      </SheetRoot>
+            </form>
+          </MethodSheet>
+
+          <SheetRoot open={accountNotFoundOpen} onOpenChange={setAccountNotFoundOpen}>
+            <SheetPortal>
+              <SheetBackdrop />
+              <SheetContent className="[&>div:first-child]:hidden">
+                <SheetHeader className="px-6 pt-6">
+                  <SheetTitle>
+                    <Trans>Account not found</Trans>
+                  </SheetTitle>
+                  <p className="text-muted-foreground text-sm">
+                    <Trans>No CLC account was found for this sign-in.</Trans>
+                  </p>
+                </SheetHeader>
+                <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                  <Button tap className="w-full" onClick={routeToSignup}>
+                    <Trans>Create an account</Trans>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    tap
+                    className="w-full"
+                    onClick={() => setAccountNotFoundOpen(false)}
+                  >
+                    <Trans>Cancel</Trans>
+                  </Button>
+                </SheetFooter>
+              </SheetContent>
+            </SheetPortal>
+          </SheetRoot>
+        </>
+      )}
     </div>
   );
 }
@@ -579,5 +820,42 @@ function MethodSheet({
         </SheetContent>
       </SheetPortal>
     </SheetRoot>
+  );
+}
+
+function AccountNotFoundDialog({
+  onCancel,
+  onCreate,
+}: {
+  onCancel: () => void;
+  onCreate: () => void;
+}) {
+  return (
+    <Dialog.Root
+      open
+      onOpenChange={(next) => {
+        if (!next) onCancel();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50" />
+        <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 w-[min(24rem,calc(100vw-3rem))] -translate-x-1/2 -translate-y-1/2 border border-border bg-card p-6">
+          <Dialog.Title className="font-heading text-base font-semibold">
+            <Trans>Account not found</Trans>
+          </Dialog.Title>
+          <p className="mt-2 text-sm text-muted-foreground">
+            <Trans>No CLC account was found for this sign-in.</Trans>
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-2">
+            <Button variant="outline" tap onClick={onCancel}>
+              <Trans>Cancel</Trans>
+            </Button>
+            <Button tap onClick={onCreate}>
+              <Trans>Create an account</Trans>
+            </Button>
+          </div>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

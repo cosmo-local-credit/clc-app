@@ -14,12 +14,30 @@ import { catalogsClient } from "#/lib/api/catalogs";
 import { useMyCatalog } from "../hooks/use-my-catalog";
 import { CatalogForm } from "./catalog-form";
 
-export function CatalogCreatePage({ intent }: { intent?: CatalogCreateIntent }) {
+export function CatalogCreatePage({
+  intent,
+  embedded = false,
+}: {
+  intent?: CatalogCreateIntent;
+  embedded?: boolean;
+}) {
   const auth = useAuthStatus();
-  return <CatalogCreateContent key={auth.session?.address ?? "guest"} intent={intent} />;
+  return (
+    <CatalogCreateContent
+      key={auth.session?.address ?? "guest"}
+      intent={intent}
+      embedded={embedded}
+    />
+  );
 }
 
-function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
+function CatalogCreateContent({
+  intent,
+  embedded = false,
+}: {
+  intent?: CatalogCreateIntent;
+  embedded?: boolean;
+}) {
   const { t } = useLingui();
   const mine = useMyCatalog();
   const usage = useResourceUsage();
@@ -78,8 +96,10 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
         }
       : undefined;
   return (
-    <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12">
-      <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
+    <div
+      className={embedded ? "space-y-5" : "min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12"}
+    >
+      {embedded ? null : <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />}
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         <Trans>Create catalog</Trans>
       </h1>

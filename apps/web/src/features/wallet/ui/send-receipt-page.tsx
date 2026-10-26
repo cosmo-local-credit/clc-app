@@ -72,6 +72,7 @@ export function SendReceiptPage({
   uoa,
   uoaUnavailable,
   returnPool,
+  embedded = false,
 }: {
   token?: string;
   trackingId?: string;
@@ -92,6 +93,8 @@ export function SendReceiptPage({
    * is a form that Back must not reopen behind a signed transaction.
    */
   returnPool?: string;
+  /** Desktop inspector. The phone screen is unchanged when this is omitted. */
+  embedded?: boolean;
 }) {
   const { i18n, t } = useLingui();
   const navigate = useNavigate();
@@ -123,7 +126,7 @@ export function SendReceiptPage({
   const amountLabel =
     amount && symbol ? `${amount} ${symbol}${uoaLabel ? ` (${uoaLabel})` : ""}` : null;
   const outcome = tracking.outcome;
-  const exitReceipt = () => {
+  const exitReceipt = (txHash?: string | null) => {
     if (returnPool) {
       void navigate({
         to: "/pools/$poolAddress",
@@ -132,8 +135,15 @@ export function SendReceiptPage({
       });
       return;
     }
+    if (embedded && txHash) {
+      void navigate({ to: "/", search: { tab: "activity", tx: txHash }, replace: true });
+      return;
+    }
     void navigate({ to: "/", search: { tab: "wallet" }, replace: true });
   };
+  const pageClass = embedded
+    ? "flex flex-col"
+    : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]";
 
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -149,6 +159,7 @@ export function SendReceiptPage({
   if (outcome.kind === "pending") {
     return (
       <ReceiptShell
+        embedded={embedded}
         icon={<PendingClock />}
         title={<Trans>Sending</Trans>}
         amount={amountLabel}
@@ -163,6 +174,7 @@ export function SendReceiptPage({
   if (outcome.kind === "error") {
     return (
       <ReceiptShell
+        embedded={embedded}
         icon={<FailureCross />}
         title={<Trans>Reverted</Trans>}
         amount={amountLabel}
@@ -170,7 +182,7 @@ export function SendReceiptPage({
         toAddress={toAddress}
         recipientLabel={fallbackRecipientLabel}
         status={<StatusPill tone="error" label={<Trans>Reverted</Trans>} />}
-        onDone={exitReceipt}
+        onDone={() => exitReceipt()}
       />
     );
   }
@@ -185,13 +197,15 @@ export function SendReceiptPage({
     : null;
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <div className="flex flex-col items-center text-center">
-        <SuccessCheck />
-        <h1 className="font-heading mt-3.5 text-[1.75rem] font-bold leading-tight">
-          <Trans>Sent</Trans>
-        </h1>
-      </div>
+    <div className={pageClass}>
+      {embedded ? null : (
+        <div className="flex flex-col items-center text-center">
+          <SuccessCheck />
+          <h1 className="font-heading mt-3.5 text-[1.75rem] font-bold leading-tight">
+            <Trans>Sent</Trans>
+          </h1>
+        </div>
+      )}
 
       <div className="my-5 border border-border bg-card">
         {amountLabel ? (
@@ -261,7 +275,7 @@ export function SendReceiptPage({
       {/* Stacked rather than side by side: half a 360px row is too narrow for
           "Back to pool" in German, Dutch, Serbian and Swahili. */}
       <div className="flex flex-col gap-2.5">
-        <Button tap onClick={exitReceipt}>
+        <Button tap onClick={() => exitReceipt(txHash)}>
           {returnPool ? t`Back to pool` : t`Done`}
         </Button>
         {explorerUrl ? (
@@ -276,7 +290,7 @@ export function SendReceiptPage({
   );
 }
 
-function SendSharePanel({
+export function SendSharePanel({
   txHash,
   recipientAddress,
   tokenAddress,
@@ -651,6 +665,7 @@ function ShareOption({
 }
 
 function ReceiptShell({
+  embedded = false,
   icon,
   title,
   amount,
@@ -660,6 +675,7 @@ function ReceiptShell({
   status,
   onDone,
 }: {
+  embedded?: boolean;
   icon: React.ReactNode;
   title: React.ReactNode;
   amount: string | null;
@@ -675,7 +691,13 @@ function ReceiptShell({
   onDone?: () => void;
 }) {
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div
+      className={
+        embedded
+          ? "flex flex-col"
+          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+      }
+    >
       <div className="flex flex-col items-center text-center">
         {icon}
         <h1 className="font-heading mt-3.5 flex flex-col items-center gap-1 text-[1.75rem] font-bold leading-tight">

@@ -39,6 +39,12 @@ const webRestrictedImports = {
   ],
 };
 
+const desktopImportBan = {
+  group: ["#/desktop", "#/desktop/**"],
+  message:
+    "Desktop is a second view layer. Only apps/web/src/desktop and route files may import it.",
+};
+
 const featureUiPattern = {
   group: ["#/features/*/ui", "#/features/*/ui/**", "@/features/*/ui", "@/features/*/ui/**"],
   message:
@@ -257,13 +263,34 @@ export default defineConfig({
         },
       },
       {
+        // Last matching override wins, so this restates the web bans and adds
+        // the desktop ban outside the layer and the route switches. Oxlint
+        // overrides have no ignore list; name the trees that are neither.
+        files: [
+          "apps/web/src/components/**",
+          "apps/web/src/features/**",
+          "apps/web/src/hooks/**",
+          "apps/web/src/lib/**",
+          "apps/web/src/providers/**",
+        ],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              paths: webRestrictedImports.paths,
+              patterns: [...webRestrictedImports.patterns, desktopImportBan],
+            },
+          ],
+        },
+      },
+      {
         files: ["apps/web/src/features/*/ui/**"],
         rules: {
           "no-restricted-imports": [
             "error",
             {
               paths: webRestrictedImports.paths,
-              patterns: [...webRestrictedImports.patterns, featureUiPattern],
+              patterns: [...webRestrictedImports.patterns, featureUiPattern, desktopImportBan],
             },
           ],
         },

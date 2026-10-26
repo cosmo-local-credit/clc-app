@@ -66,6 +66,16 @@ describe("legacy non-map voucher sheet links", () => {
     });
   });
 
+  it("keeps a voucher on the desktop market map", () => {
+    const beforeLoad = MarketRoute.options.beforeLoad as unknown as BeforeLoad;
+    expect(() =>
+      beforeLoad({
+        params: {},
+        search: validateMarketSearch({ scope: "vouchers", view: "map", voucher: VOUCHER }),
+      }),
+    ).not.toThrow();
+  });
+
   it("redirects a legacy Marketplace list card to the canonical voucher page", () => {
     const beforeLoad = MarketRoute.options.beforeLoad as unknown as BeforeLoad;
     expect(

@@ -12,6 +12,8 @@ const ARBITRARY_SIZE_EXCEPTIONS: Record<string, readonly string[]> = {
   // The amounts being entered keep the sizes master gave them.
   "components/wallet/amount-input.tsx": ["text-[1.375rem]"],
   "features/wallet/ui/send-amount-page.tsx": ["text-[2.5rem]"],
+  // Desktop send keeps the amount size from the phone send screen.
+  "desktop/wallet/send-desk.tsx": ["text-[2.5rem]"],
 };
 
 /**
@@ -165,6 +167,8 @@ describe("type and button contract", () => {
       "components/market-bar.tsx",
       // The pool's three quick actions.
       "features/pools/ui/pool-detail-page.tsx",
+      // The desktop top bar's search sits beside the 44px icon buttons.
+      "desktop/shell/top-bar.tsx",
     ]);
     const large = FILES.flatMap(({ path, text }) =>
       allowed.has(path)

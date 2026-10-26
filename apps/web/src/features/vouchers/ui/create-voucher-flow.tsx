@@ -126,7 +126,17 @@ const DETAIL_FIELDS = ["name", "symbol", "price", "supply", "description"] as co
 const ADVANCED_FIELDS = ["symbol", "price", "unitOfAccount"] as const;
 const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "iconUrl"] as const;
 
-export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
+export function CreateVoucherFlow({
+  step,
+  embedded = false,
+  advancedDefaultOpen = false,
+}: {
+  step: VoucherCreateStep;
+  /** Desktop canvas. Hides the back control, the step count, and the phone padding. */
+  embedded?: boolean;
+  /** Desktop opens Advanced on arrival. The phone leaves it closed. */
+  advancedDefaultOpen?: boolean;
+}) {
   const { i18n, t } = useLingui();
   const navigate = useNavigate();
   const router = useRouter();
@@ -147,6 +157,13 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const [tagsOpen, setTagsOpen] = useState(false);
   const [iconBusy, setIconBusy] = useState(false);
   const [advancing, setAdvancing] = useState(false);
+
+  // Open once per visit to this step. A later render must not force it open
+  // again, or the user cannot close the disclosure.
+  useEffect(() => {
+    if (!advancedDefaultOpen || !advancedRef.current) return;
+    advancedRef.current.open = true;
+  }, [advancedDefaultOpen, step]);
 
   const defaultValues: VoucherFormValues = draft
     ? {
@@ -350,8 +367,12 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
   if (usage.isError || !usage.data?.vouchers.canCreate) {
     return (
-      <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12">
-        <BackChevron label={t`Vouchers`} to="/" />
+      <div
+        className={
+          embedded ? "space-y-5" : "min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12"
+        }
+      >
+        {embedded ? null : <BackChevron label={t`Vouchers`} to="/" />}
         <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Create voucher</Trans>
         </h1>
@@ -361,15 +382,23 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   }
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron
-        label={step === "voucher" ? t`Vouchers` : t`Back`}
-        to={fallbackTo}
-        onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
-        className="self-start"
-      />
+    <div
+      className={
+        embedded
+          ? "flex flex-col"
+          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+      }
+    >
+      {embedded ? null : (
+        <BackChevron
+          label={step === "voucher" ? t`Vouchers` : t`Back`}
+          to={fallbackTo}
+          onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
+          className="self-start"
+        />
+      )}
 
-      <StepProgress step={progressStep} total={3} />
+      {embedded ? null : <StepProgress step={progressStep} total={3} />}
       <ResourceUsage resource="vouchers" />
 
       <form
@@ -386,23 +415,25 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               <Trans>Create voucher</Trans>
             </h1>
 
-            <aside
-              className="mt-3.5 border border-primary/30 bg-card"
-              aria-labelledby="voucher-guidance-title"
-            >
-              <p
-                id="voucher-guidance-title"
-                className="border-primary/20 border-b bg-primary/[0.08] px-4 py-2.5 font-semibold text-primary text-sm leading-tight"
+            {embedded ? null : (
+              <aside
+                className="mt-3.5 border border-primary/30 bg-card"
+                aria-labelledby="voucher-guidance-title"
               >
-                <Trans>What's a voucher?</Trans>
-              </p>
-              <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
-                <Trans>
-                  A voucher acts like a gift card for your offers. When someone redeems your
-                  voucher, you are committing to provide them with your offers.
-                </Trans>
-              </p>
-            </aside>
+                <p
+                  id="voucher-guidance-title"
+                  className="border-primary/20 border-b bg-primary/[0.08] px-4 py-2.5 font-semibold text-primary text-sm leading-tight"
+                >
+                  <Trans>What's a voucher?</Trans>
+                </p>
+                <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
+                  <Trans>
+                    A voucher acts like a gift card for your offers. When someone redeems your
+                    voucher, you are committing to provide them with your offers.
+                  </Trans>
+                </p>
+              </aside>
+            )}
 
             <div className="mt-3.5 space-y-3.5">
               {/*

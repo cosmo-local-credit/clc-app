@@ -45,6 +45,8 @@ type Props = {
   /** A later page was opened before the earlier ones were filled in. */
   onRestart: () => void;
   onNext: (data: ProfileInput, avatarFile: File) => void;
+  /** Hides the phone frame and the step bar. Off by default. */
+  embedded?: boolean;
 };
 
 type ProfileFormValues = {
@@ -131,6 +133,7 @@ export function OnboardingProfileForm({
   onPage,
   onRestart,
   onNext,
+  embedded = false,
 }: Props) {
   const { i18n, t } = useLingui();
   // Outside the form: profileSchema lives in @clc/core, which is React Native
@@ -250,6 +253,7 @@ export function OnboardingProfileForm({
 
   return (
     <OnboardingScreen
+      embedded={embedded}
       start={
         <BackChevron
           label={t`Back`}
@@ -284,7 +288,9 @@ export function OnboardingProfileForm({
         </>
       }
     >
-      <StepProgress step={PAGES.indexOf(page) + 1} total={progressTotal} className="" />
+      {embedded ? null : (
+        <StepProgress step={PAGES.indexOf(page) + 1} total={progressTotal} className="" />
+      )}
       <OnboardingTitle>{title}</OnboardingTitle>
 
       <form

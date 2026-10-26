@@ -1,0 +1,317 @@
+import { isHttpUrl } from "@clc/core/lib/contact";
+import { useLingui, Trans } from "@lingui/react/macro";
+import { Link, useSearch } from "@tanstack/react-router";
+import {
+  RiCoinLine,
+  RiGlobalLine,
+  RiHandCoinLine,
+  RiNavigationLine,
+  RiPhoneLine,
+  RiSendPlane2Line,
+} from "react-icons/ri";
+import { isAddress, zeroAddress } from "viem";
+
+import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
+import { Button } from "#/components/ui/button";
+import { VoucherDetailSections } from "#/components/vouchers/voucher-detail-sections";
+import {
+  ShareVoucherButton,
+  useVoucherBalanceSummary,
+  VoucherIdentitySummary,
+} from "#/components/vouchers/voucher-summary";
+import { WALLET_TOKEN_BY_ID, type WalletToken } from "#/components/wallet";
+import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
+import { DeskCanvas } from "#/desktop/ui/page";
+import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
+import { useDeskTrailLabel } from "#/desktop/trail";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
+import { useAssetOwner } from "#/features/ownership/hooks/use-asset-owner";
+import { usePoolVouchersInfinite } from "#/features/pools/hooks/use-pool-vouchers";
+import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
+import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
+import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { openDefaultMaps } from "#/lib/default-maps";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+
+export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` }) {
+  const { t } = useLingui();
+  const search = useSearch({ strict: false }) as { poolAddress?: unknown };
+  const poolAddress = typeof search.poolAddress === "string" ? search.poolAddress : undefined;
+  const auth = useAuthStatus();
+  const holdingsAddress = auth.isAuthenticated ? auth.session?.address : undefined;
+  const tokensQuery = useAllAccountTokens(holdingsAddress);
+  const poolVouchersQuery = usePoolVouchersInfinite(poolAddress);
+  const normalizedVoucherAddress = voucherAddress.toLowerCase();
+  const fetchedTokens = tokensQuery.tokens.map(accountTokenToWalletToken);
+  const fetchedToken = fetchedTokens.find((item) => item.id === normalizedVoucherAddress);
+  const poolVoucher = poolVouchersQuery.data?.pages
+    .flatMap((page) => page.vouchers)
+    .find(
+      (voucher) =>
+        voucher.tokenAddress.toLowerCase() === normalizedVoucherAddress ||
+        voucher.id === voucherAddress,
+    );
+  const catalogToken = poolVoucher ? poolVoucherToWalletToken(poolVoucher) : undefined;
+  const staticToken =
+    WALLET_TOKEN_BY_ID[voucherAddress] ??
+    Object.values(WALLET_TOKEN_BY_ID).find(
+      (item) => item.contractAddress?.toLowerCase() === normalizedVoucherAddress,
+    );
+  const baseToken = fetchedToken ?? catalogToken ?? staticToken;
+  const detailAddress = baseToken?.contractAddress ?? voucherAddress;
+  const detailQuery = useMarketVoucherDetail(detailAddress);
+  const currentOwner = useAssetOwner(
+    detailAddress,
+    detailQuery.data?.ownerAddress ?? baseToken?.owner,
+  );
+  const detail = detailQuery.data
+    ? { ...detailQuery.data, ownerAddress: currentOwner as `0x${string}` | null }
+    : undefined;
+  const distanceOrigin = useDiscoveryDistanceOrigin(
+    holdingsAddress?.toLowerCase() ?? GUEST_STORAGE_OWNER,
+  );
+  const distanceTarget =
+    typeof (detail?.lat ?? baseToken?.lat) === "number" &&
+    typeof (detail?.lng ?? baseToken?.lng) === "number"
+      ? { lat: (detail?.lat ?? baseToken?.lat)!, lng: (detail?.lng ?? baseToken?.lng)! }
+      : null;
+  const distanceLabel = useMarketDistanceLabel(distanceOrigin, distanceTarget);
+  const supportingDataPending =
+    (!!holdingsAddress && tokensQuery.isPending) || (!!poolAddress && poolVouchersQuery.isPending);
+  const resolvedAddress = detail?.address ?? baseToken?.contractAddress ?? voucherAddress;
+  const resolvedVoucherValue = detail?.voucherValue ?? poolVoucher?.voucherValue ?? null;
+  const resolvedVoucherUoa = detail?.voucherUoa ?? poolVoucher?.voucherUoa ?? null;
+  const balance = useVoucherBalanceSummary({
+    address: resolvedAddress,
+    symbol: detail?.symbol ?? baseToken?.symbol ?? "TOKEN",
+    decimals: baseToken?.tokenDecimals ?? detail?.decimals,
+    voucherValue: resolvedVoucherValue,
+    voucherUoa: resolvedVoucherUoa,
+  });
+  useDeskTrailLabel(detail?.name ?? baseToken?.name);
+
+  if (!baseToken && !detail && (detailQuery.isPending || supportingDataPending)) {
+    return (
+      <DeskCanvas width="read">
+        <p className="text-sm text-muted-foreground">{t`Loading voucher…`}</p>
+      </DeskCanvas>
+    );
+  }
+  if (!baseToken && !detail && detailQuery.isError) {
+    return (
+      <DeskCanvas width="read" className="space-y-3">
+        <p className="text-sm text-muted-foreground">{t`Couldn't load this voucher.`}</p>
+        <Button
+          variant="outline"
+          tap
+          pending={detailQuery.isFetching}
+          onClick={() => void detailQuery.refetch()}
+        >
+          {t`Retry`}
+        </Button>
+      </DeskCanvas>
+    );
+  }
+
+  const token: WalletToken = {
+    id: baseToken?.id ?? detail?.address.toLowerCase() ?? normalizedVoucherAddress,
+    symbol: detail?.symbol ?? baseToken?.symbol ?? "TOKEN",
+    name: detail?.name ?? baseToken?.name ?? "Token",
+    amount: baseToken?.amount ?? "0",
+    fiat: baseToken?.fiat ?? "",
+    color: baseToken?.color ?? "var(--primary)",
+    kind: "voucher",
+    admin: baseToken?.admin,
+    location: detail?.locationName ?? baseToken?.location,
+    phone: detail?.phone ?? baseToken?.phone,
+    email: detail?.email ?? baseToken?.email,
+    owner: currentOwner ?? baseToken?.owner,
+    contractAddress: detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
+    iconUrl: detail?.iconUrl ?? baseToken?.iconUrl,
+    tokenDecimals: baseToken?.tokenDecimals ?? detail?.decimals ?? undefined,
+    balance: baseToken?.balance,
+    lastDateBlock: baseToken?.lastDateBlock,
+    lat: detail?.lat ?? baseToken?.lat,
+    lng: detail?.lng ?? baseToken?.lng,
+  };
+  const address = token.contractAddress ?? voucherAddress;
+  const locationName = detail?.locationName ?? poolVoucher?.locationName ?? token.location ?? null;
+  const lat = detail?.lat ?? token.lat ?? null;
+  const lng = detail?.lng ?? token.lng ?? null;
+
+  return (
+    <div className="flex h-full min-h-0">
+      <DeskSplit
+        main={
+          <DeskCanvas width="full" className="space-y-4">
+            <div className="[&_[role=group]]:hidden">
+              <VoucherIdentitySummary
+                address={address}
+                name={token.name}
+                symbol={token.symbol}
+                iconUrl={token.iconUrl}
+                avatarSize={56}
+                balance={balance}
+                place={distanceLabel ?? locationName}
+                tags={detail?.tags}
+                ownerAddress={detail?.ownerAddress}
+                locationName={locationName}
+                lat={lat}
+                lng={lng}
+                phone={detail?.phone ?? token.phone}
+                website={detail?.website}
+                catalogResourceId={detail?.id}
+                catalogAddress={detail?.address}
+                title={
+                  <h1 className="font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
+                    {token.name}
+                  </h1>
+                }
+                headerActions={
+                  <ShareVoucherButton name={token.name} address={address} destination="detail" />
+                }
+              />
+            </div>
+            <VoucherDetailSections
+              address={address}
+              detail={detail}
+              symbol={token.symbol}
+              name={token.name}
+              decimals={token.tokenDecimals}
+              ownerAddress={token.owner ?? null}
+              chainId={detail?.chainId ?? poolVoucher?.chainId ?? null}
+              voucherValue={resolvedVoucherValue}
+              voucherUoa={resolvedVoucherUoa}
+              dataPending={detailQuery.isPending || supportingDataPending}
+              privateInfo={
+                detailQuery.privateInfo
+                  ? {
+                      ...detailQuery.privateInfo,
+                      retry: () => void detailQuery.privateInfo?.refetch(),
+                    }
+                  : undefined
+              }
+            />
+          </DeskCanvas>
+        }
+        side={
+          <DeskInspector title={<Trans>Vouchers</Trans>}>
+            <VoucherActions
+              address={address}
+              name={token.name}
+              ownerAddress={detail?.ownerAddress}
+              hasPositiveBalance={balance.hasPositiveBalance}
+              locationName={locationName}
+              lat={lat}
+              lng={lng}
+              phone={detail?.phone ?? token.phone}
+              website={detail?.website}
+              catalogResourceId={detail?.id}
+              catalogAddress={detail?.address}
+            />
+          </DeskInspector>
+        }
+      />
+    </div>
+  );
+}
+
+function VoucherActions({
+  address,
+  name,
+  ownerAddress,
+  hasPositiveBalance,
+  locationName,
+  lat,
+  lng,
+  phone,
+  website,
+  catalogResourceId,
+  catalogAddress,
+}: {
+  address: string;
+  name: string;
+  ownerAddress?: string | null;
+  hasPositiveBalance: boolean;
+  locationName?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  phone?: string | null;
+  website?: string | null;
+  catalogResourceId?: string | null;
+  catalogAddress?: `0x${string}` | null;
+}) {
+  const { t } = useLingui();
+  const auth = useAuthStatus();
+  const coordinates = typeof lat === "number" && typeof lng === "number";
+  const verifiedOwnerAddress =
+    ownerAddress &&
+    isAddress(ownerAddress, { strict: false }) &&
+    ownerAddress.toLowerCase() !== zeroAddress
+      ? ownerAddress
+      : null;
+  const verifiedWebsite = website && isHttpUrl(website) ? website : null;
+  return (
+    <div className="flex flex-col gap-2" role="group" aria-label={t`Voucher actions`}>
+      <Button asChild>
+        <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
+          <RiHandCoinLine aria-hidden="true" />
+          <Trans>Get</Trans>
+        </Link>
+      </Button>
+      {hasPositiveBalance ? (
+        <Button asChild variant="outline">
+          <Link to="/wallet/send" search={{ token: address }}>
+            <RiSendPlane2Line aria-hidden="true" />
+            <Trans>Send</Trans>
+          </Link>
+        </Button>
+      ) : null}
+      {hasPositiveBalance && verifiedOwnerAddress ? (
+        <Button asChild variant="outline">
+          <Link
+            to="/wallet/send/amount"
+            search={{ token: address, recipient: verifiedOwnerAddress }}
+          >
+            <RiCoinLine aria-hidden="true" />
+            <Trans>Redeem</Trans>
+          </Link>
+        </Button>
+      ) : null}
+      {auth.isAuthenticated && (coordinates || locationName) ? (
+        <Button
+          variant="outline"
+          onClick={() => openDefaultMaps({ label: locationName ?? name, lat, lng })}
+        >
+          <RiNavigationLine aria-hidden="true" />
+          <Trans>Directions</Trans>
+        </Button>
+      ) : null}
+      {auth.isAuthenticated && phone ? (
+        <Button asChild variant="outline">
+          <a href={`tel:${phone}`}>
+            <RiPhoneLine aria-hidden="true" />
+            <Trans>Call</Trans>
+          </a>
+        </Button>
+      ) : null}
+      {auth.isAuthenticated && verifiedWebsite ? (
+        <Button asChild variant="outline">
+          <a href={verifiedWebsite} target="_blank" rel="noreferrer noopener">
+            <RiGlobalLine aria-hidden="true" />
+            <Trans>Website</Trans>
+          </a>
+        </Button>
+      ) : null}
+      {catalogResourceId && catalogAddress ? (
+        <AddToCatalogButton
+          kind="voucher"
+          resourceId={catalogResourceId}
+          address={catalogAddress}
+        />
+      ) : null}
+    </div>
+  );
+}

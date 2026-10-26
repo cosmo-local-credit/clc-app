@@ -43,6 +43,8 @@ import {
   BRAND_THEME_COLOR,
 } from "#/lib/brand";
 import { AppI18nProvider } from "#/providers/i18n";
+import { DesktopBoundary } from "#/desktop/shell/boundary";
+import { layoutBootstrapScript, useLayout } from "#/desktop/layout";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
@@ -130,6 +132,7 @@ function AppInner() {
   const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
     useScanUrlImport({ address, isSwitching: switching });
   const [switchError, setSwitchError] = useState<string | null>(null);
+  const layout = useLayout();
 
   const pendingAddress = useMemo(
     () => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
@@ -252,9 +255,14 @@ function AppInner() {
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
       <SafePendingSheet />
-      <IntroductionProvider suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}>
+      <IntroductionProvider
+        desktop={layout === "desktop"}
+        suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}
+      >
         <RootDiscoveryLocation>
-          <Outlet />
+          <DesktopBoundary>
+            <Outlet />
+          </DesktopBoundary>
         </RootDiscoveryLocation>
       </IntroductionProvider>
       {pendingEncryptedKey ? (
@@ -404,6 +412,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: installBootstrapScript }} />
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: layoutBootstrapScript }} />
       </head>
       <body>
         {children}

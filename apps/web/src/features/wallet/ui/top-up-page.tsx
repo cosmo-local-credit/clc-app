@@ -55,7 +55,7 @@ function isSafaricomNumber(phone: string): boolean {
   return SAFARICOM_REGEX.test(phone.replace(/\s+/g, ""));
 }
 
-export function TopUpPage() {
+export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useLingui();
   const { address } = useConnection();
   const profileQuery = useAuthProfile();
@@ -103,14 +103,26 @@ export function TopUpPage() {
   const canContinue = !!cashAddress && hasKenyanPhone && hasValidAmount;
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
+    <div
+      className={
+        embedded
+          ? "flex flex-col"
+          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+      }
+    >
+      {embedded ? null : <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />}
 
-      <h1 className="mb-6 font-heading text-[1.75rem] font-bold leading-tight">
+      <h1
+        className={
+          embedded
+            ? "font-heading text-[1.75rem] font-bold leading-tight"
+            : "mb-6 font-heading text-[1.75rem] font-bold leading-tight"
+        }
+      >
         <Trans>Cash</Trans>
       </h1>
 
-      <div className="space-y-5">
+      <div className={embedded ? "mt-6 grid grid-cols-2 gap-6" : "space-y-5"}>
         <section aria-labelledby="add-stables-title" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <SectionHeading id="add-stables-title">
@@ -164,17 +176,19 @@ export function TopUpPage() {
           </button>
         </section>
 
-        <PretiumHistory
-          transactions={cashTransactions}
-          isPending={!!cashAddress && transactionsQuery.isPending}
-          isError={!!cashAddress && transactionsQuery.isError}
-          retrying={transactionsQuery.isFetching}
-          onRetry={() => {
-            void transactionsQuery.refetch();
-          }}
-          onSelectOnramp={setSelectedOnramp}
-          onSelectOfframp={setSelectedOfframp}
-        />
+        <div className={embedded ? "col-span-2" : undefined}>
+          <PretiumHistory
+            transactions={cashTransactions}
+            isPending={!!cashAddress && transactionsQuery.isPending}
+            isError={!!cashAddress && transactionsQuery.isError}
+            retrying={transactionsQuery.isFetching}
+            onRetry={() => {
+              void transactionsQuery.refetch();
+            }}
+            onSelectOnramp={setSelectedOnramp}
+            onSelectOfframp={setSelectedOfframp}
+          />
+        </div>
       </div>
 
       <AddStablesSheet

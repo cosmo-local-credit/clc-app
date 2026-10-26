@@ -27,7 +27,7 @@ pnpm workspace monorepo separating logic (platform-agnostic, testable) from UI.
 
 ```
 apps/
-  web/      TanStack Start PWA, mobile only — @clc/web
+  web/      TanStack Start PWA — @clc/web (phone, plus desktop/ at 1024px)
   admin/    TanStack Start console, desktop only — @clc/admin
 packages/
   core/     Platform-agnostic domain logic — @clc/core
@@ -35,10 +35,11 @@ packages/
   i18n/     lingui catalogs (apps/web only) — @clc/i18n
 ```
 
-**`apps/web` is mobile only. `apps/admin` is desktop only.** The two never share
-a stylesheet, a route tree, or a service worker; they share logic through
-`@clc/core` and `@clc/api`. A UI rule in this file applies to `apps/web` unless
-it says otherwise.
+**`apps/web` is a phone PWA, with a second view in `apps/web/src/desktop/`.**
+`apps/admin` is desktop only. The two apps never share a stylesheet, a route
+tree, or a service worker; they share logic through `@clc/core` and `@clc/api`.
+A UI rule in this file applies to `apps/web` unless it says otherwise. The
+Mobile UI rules do not apply inside `apps/web/src/desktop/`.
 
 ## Platform boundary (enforced by lint overrides in `vite.config.ts`)
 
@@ -257,15 +258,17 @@ the two stylesheets.
 Do not import `@fontsource-variable/noto-sans` or `@fontsource-variable/roboto`
 — removed. Do not add new font packages outside fonttrio.
 
-### Mobile UI rules — `apps/web` only (hard constraints, enforced at review)
+### Mobile UI rules — `apps/web` outside `desktop/` (hard constraints, enforced at review)
 
-**Scope: everything in this section applies to `apps/web/` and nowhere else.**
-`apps/admin/` is desktop-first and is governed by the Admin console UI rules
-below instead. Do not apply these constraints to admin code, and do not relax
-them in web code because admin does something differently.
+**Scope: everything in this section applies to `apps/web/` except
+`apps/web/src/desktop/`, and nowhere else.** `apps/admin/` is desktop-first and
+is governed by the Admin console UI rules below. The desktop view has its own
+section. Do not apply these constraints to admin or desktop code, and do not
+relax them in the phone UI because another surface does something differently.
 
-`apps/web` is **mobile only (360–430px)**. Every layout decision must be made
-as if there is no desktop, ever.
+The phone UI is **360–430px**. Every layout decision there must be made as if
+there is no desktop, ever. No phone component gains an `lg:` / `md:` / `xl:`
+class to serve the wide layout.
 
 **Banned layout patterns:**
 
@@ -360,6 +363,36 @@ stables, and Withdraw remain legacy migrations tracked by issue #52.
 > "Does this interactive element blend into the gray background?"
 > If yes — use `bg-card` instead of `bg-background` or `bg-transparent`.
 
+### Desktop view — `apps/web/src/desktop/` only
+
+A fine pointer at 1024px or wider (`useLayout`, media
+`(min-width: 1024px) and (pointer: fine)`) renders this layer. Phones, and
+tablets with a coarse pointer, stay on the mobile tree. SSR has no viewport:
+the server snapshot is mobile, and the client swaps once after hydration. There
+is no Settings override and no `Sec-CH-Viewport-Width` hint.
+
+- Code lives in `apps/web/src/desktop/**`. Route files are the only other place
+  that may import `#/desktop`. Desktop views are lazy chunks. They import
+  feature hooks and `#/components/ui` primitives, never a mobile page component.
+- No `md:` / `lg:` / `xl:` classes inside the layer. It only mounts at 1024px.
+- Carry the phone rules that are not about the 360px scaffold: tokens, brand,
+  dark mode, the font trio, square corners, flat surfaces, button sizes (the
+  top-bar search is the one extra `size="lg"`), `pending` Spinner, number
+  fonts, `SectionHeading`, the explainer-copy ban, lingui, and logical
+  `start`/`end`.
+- Shell: sidebar 224px collapsing to a 56px rail (`[`, key `clc.desktop.sidebar`),
+  56px top bar, canvas, 380px inspector. Market children stay visible. Reading
+  pages cap at 1200px. A route without `staticData.desktop` renders the phone
+  view in a 430px column. `/install` stays there. `/wallet/collect` is a phone
+  panel because Web NFC is Android-only.
+- Tables are a local sortable grid (mono uppercase headers, 40px rows,
+  right-aligned figures). Do not add `@tanstack/react-table`. The selected row
+  is a 2px primary inset on the start edge plus a 7% tint.
+- Inspector state stays the existing search params. Opening one pushes history.
+  Payment actions have no single-key shortcuts and still confirm through the
+  existing signer.
+- Do not copy admin's sidebar widths, `b` shortcut, or `rounded-none` mechanism.
+
 ### Admin console UI rules — `apps/admin` only
 
 Desktop-first back office for stewards and operators. Look and feel is drawn
@@ -370,15 +403,15 @@ environment read as one product.
 
 What differs from `apps/web`:
 
-|                        | `apps/web`                                         | `apps/admin`                                              |
-| ---------------------- | -------------------------------------------------- | --------------------------------------------------------- |
-| Viewport               | 360–430px only                                     | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
-| Breakpoint overrides   | Banned                                             | Required — tables and metric grids reflow                 |
-| `<Card>` as page shell | Banned                                             | Still banned; screens are shell + sections                |
-| Navigation             | Bottom nav                                         | Collapsible sidebar + `⌘K` palette                        |
-| Dark mode              | Zustand theme store                                | Same pattern, key `clc.admin.theme`                       |
-| i18n                   | lingui, ar + dz + en + es + fr + it + pt + sr + sw | None — English only, no `<Trans>`                         |
-| Service worker         | Serwist                                            | Never. Not a PWA                                          |
+|                        | `apps/web`                                          | `apps/admin`                                              |
+| ---------------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| Viewport               | Phone 360–430px. `desktop/` at 1024px, fine pointer | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
+| Breakpoint overrides   | Banned on the phone and inside `desktop/`           | Required — tables and metric grids reflow                 |
+| `<Card>` as page shell | Banned                                              | Still banned; screens are shell + sections                |
+| Navigation             | Bottom nav on the phone. Sidebar in `desktop/`      | Collapsible sidebar + `⌘K` palette                        |
+| Dark mode              | Zustand theme store                                 | Same pattern, key `clc.admin.theme`                       |
+| i18n                   | lingui, ar + dz + en + es + fr + it + pt + sr + sw  | None — English only, no `<Trans>`                         |
+| Service worker         | Serwist                                             | Never. Not a PWA                                          |
 
 Shared with `apps/web`: square corners, flat surfaces (no
 `shadow-lg`/`backdrop-blur`), `bg-card` for anything sitting on `bg-background`,
@@ -982,10 +1015,11 @@ pattern first.
 - Don't introduce new form libs (RHF). TanStack Form is the answer.
 - Don't roll your own wallet connect button — use ConnectKit.
 - Don't import `radix-ui` or `@radix-ui/*` — port shadcn to Base UI.
-- **In `apps/web`:** don't build desktop layouts or add `md:`/`lg:`/`xl:`
-  overrides, and don't violate the Mobile UI rules — re-read them before writing
-  layout. **In `apps/admin`:** breakpoints are expected; follow the Admin console
-  UI rules instead.
+- **In `apps/web` outside `src/desktop/`:** don't build desktop layouts or add
+  `md:`/`lg:`/`xl:` overrides, and don't violate the Mobile UI rules — re-read
+  them before writing layout. Desktop layout belongs in `apps/web/src/desktop/`
+  and follows the Desktop view section. **In `apps/admin`:** breakpoints are
+  expected; follow the Admin console UI rules instead.
 - Don't add explainer copy to any component, in either app: no subtitle under a
   title or heading, no description or hint that restates a label, no unit or
   caveat footnote, no sentence under an empty-state title. The only exceptions

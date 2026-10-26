@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { RiBookOpenLine } from "react-icons/ri";
-import { useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   createContext,
   lazy,
@@ -29,11 +29,19 @@ const FirstVisitContext = createContext({ show: false, complete: completeIntrodu
 export function IntroductionProvider({
   children,
   suppressed = false,
+  desktop = false,
 }: {
   children: ReactNode;
+  /** Wallet import and account switching already own the screen. */
   suppressed?: boolean;
+  /**
+   * Desktop has no carousel. The welcome concept grid is the guide, and
+   * replaying it opens that screen.
+   */
+  desktop?: boolean;
 }) {
   const auth = useAuthStatus();
+  const navigate = useNavigate();
   const location = useRouterState({ select: (state) => state.location });
   const [seen, setSeen] = useState<boolean | null>(null);
   const [replay, setReplay] = useState(false);
@@ -62,8 +70,15 @@ export function IntroductionProvider({
     }
   }, [auth.address, auth.isAuthenticated]);
   const entry = isIntroductionEntry(location.pathname, location.search, location.hash);
-  const waiting = !suppressed && !replay && entry && (seen === null || auth.isLoading);
-  const show = !suppressed && (replay || (entry && auth.state === "guest" && seen === false));
+  const blockGuide = suppressed || desktop;
+  const waiting = !blockGuide && !replay && entry && (seen === null || auth.isLoading);
+  const show = !blockGuide && (replay || (entry && auth.state === "guest" && seen === false));
+
+  useEffect(() => {
+    if (!desktop || !replay) return;
+    setReplay(false);
+    void navigate({ to: "/onboarding", search: { step: "welcome" } });
+  }, [desktop, replay, navigate]);
 
   function complete() {
     completeIntroduction();
@@ -75,7 +90,7 @@ export function IntroductionProvider({
     <FirstVisitContext.Provider
       value={{
         show:
-          !suppressed &&
+          !blockGuide &&
           !auth.isLoading &&
           auth.state === "guest" &&
           !auth.address &&

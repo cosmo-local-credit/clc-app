@@ -44,7 +44,7 @@ function localDateTime(value: string | Date) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
 
-export function WantFormPage({ id }: { id?: string }) {
+export function WantFormPage({ id, embedded = false }: { id?: string; embedded?: boolean }) {
   const { t } = useLingui();
   const auth = useAuthStatus();
   const ownerQuery = useQuery({
@@ -55,8 +55,14 @@ export function WantFormPage({ id }: { id?: string }) {
   const usage = useResourceUsage(!id);
 
   return (
-    <main className="min-h-[100svh] space-y-5 bg-background px-4 pb-12 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-      <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
+    <main
+      className={
+        embedded
+          ? "space-y-5"
+          : "min-h-[100svh] space-y-5 bg-background px-4 pb-12 pt-[calc(env(safe-area-inset-top)+0.875rem)]"
+      }
+    >
+      {embedded ? null : <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />}
       <h1>{id ? <Trans>Edit Want</Trans> : <Trans>Create Want</Trans>}</h1>
       {profile.isPending || (id && ownerQuery.isPending) ? (
         <p className="border border-border bg-card p-4 text-sm">

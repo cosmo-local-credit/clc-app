@@ -5,6 +5,8 @@ export const ACTIVITY_KIND_ORDER = ["creation", "sent", "received", "swapped"] a
 export type ActivityRouteSearch = {
   activityQ?: string | readonly string[];
   activityTypes?: string | readonly string[];
+  /** Selected activity row. Opening it pushes history so Back closes the inspector. */
+  tx?: string;
 };
 
 export type ActivitySearch = {
@@ -17,9 +19,11 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
   const record = search as Record<string, unknown>;
   const activityQ = pickStringSearchValue(record.activityQ);
   const activityTypes = pickStringSearchValue(record.activityTypes);
+  const tx = typeof record.tx === "string" && record.tx.length > 0 ? record.tx : undefined;
   return {
     ...(activityQ !== undefined ? { activityQ } : {}),
     ...(activityTypes !== undefined ? { activityTypes } : {}),
+    ...(tx !== undefined ? { tx } : {}),
   };
 }
 
@@ -56,7 +60,7 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
 }
 
 export function clearActivityRouteSearch(): ActivityRouteSearch {
-  return { activityQ: undefined, activityTypes: undefined };
+  return { activityQ: undefined, activityTypes: undefined, tx: undefined };
 }
 
 function pickStringSearchValue(value: unknown): string | readonly string[] | undefined {

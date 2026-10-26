@@ -18,6 +18,7 @@ export function OnboardingScreen({
   menu = true,
   footer,
   className,
+  embedded = false,
   children,
 }: {
   start?: ReactNode;
@@ -25,8 +26,18 @@ export function OnboardingScreen({
   menu?: boolean;
   footer?: ReactNode;
   className?: string;
+  /** Drop the phone frame so a desktop column can hold the same body. */
+  embedded?: boolean;
   children: ReactNode;
 }) {
+  if (embedded) {
+    return (
+      <div className={cn("flex min-h-0 flex-col gap-4", className)}>
+        {children}
+        {footer ? <div className="flex shrink-0 flex-col gap-3">{footer}</div> : null}
+      </div>
+    );
+  }
   return (
     <div className="flex h-[calc(100dvh-var(--bottom-nav-offset))] flex-col bg-background">
       <header className="flex min-h-11 shrink-0 items-center justify-between gap-3 px-6 pt-[calc(env(safe-area-inset-top)+0.5rem)]">

@@ -62,6 +62,8 @@ type Props = {
   linkPasskey: boolean;
   /** Session verified — parent/route owns history exit. */
   onDone: () => void;
+  /** Hides the phone frame and the step bar. Off by default. */
+  embedded?: boolean;
 };
 
 /**
@@ -83,6 +85,7 @@ export function OnboardingWalletStep({
   progressTotal,
   linkPasskey,
   onDone,
+  embedded = false,
 }: Props) {
   const { t, i18n } = useLingui();
   const queryClient = useQueryClient();
@@ -419,6 +422,7 @@ export function OnboardingWalletStep({
   if (showPendingView) {
     return (
       <OnboardingWalletPending
+        embedded={embedded}
         path={pendingMethod === "passkey" ? "passkey" : "paper"}
         phase={
           isRegistering
@@ -466,6 +470,7 @@ export function OnboardingWalletStep({
   if (page === "card") {
     return (
       <OnboardingScreen
+        embedded={embedded}
         start={
           <BackChevron
             label={t`Back`}
@@ -491,7 +496,9 @@ export function OnboardingWalletStep({
           )
         }
       >
-        <StepProgress step={PAGE_STEP.card} total={progressTotal} className="" />
+        {embedded ? null : (
+          <StepProgress step={PAGE_STEP.card} total={progressTotal} className="" />
+        )}
         <OnboardingTitle>
           <Trans>Your paper wallet</Trans>
         </OnboardingTitle>
@@ -517,6 +524,7 @@ export function OnboardingWalletStep({
       paperWalletDownloaded && acked && paperWalletReady && !paperWalletEncrypting;
     return (
       <OnboardingScreen
+        embedded={embedded}
         start={
           <BackChevron
             label={t`Back`}
@@ -552,7 +560,9 @@ export function OnboardingWalletStep({
           </>
         }
       >
-        <StepProgress step={PAGE_STEP.save} total={progressTotal} className="" />
+        {embedded ? null : (
+          <StepProgress step={PAGE_STEP.save} total={progressTotal} className="" />
+        )}
         <div className="flex items-start justify-between gap-3">
           <OnboardingTitle>
             <Trans>Save your card</Trans>
@@ -603,6 +613,7 @@ export function OnboardingWalletStep({
 
   return (
     <OnboardingScreen
+      embedded={embedded}
       start={
         <BackChevron label={t`Back`} to="/onboarding" search={onboardingSearch(back, redirectTo)} />
       }
@@ -635,7 +646,7 @@ export function OnboardingWalletStep({
         </>
       }
     >
-      <StepProgress step={PAGE_STEP.link} total={progressTotal} className="" />
+      {embedded ? null : <StepProgress step={PAGE_STEP.link} total={progressTotal} className="" />}
       <OnboardingTitle>{t`Link ${providerLabel}?`}</OnboardingTitle>
       <p className="text-muted-foreground text-sm leading-relaxed">
         {t`Every account gets a paper wallet. Linking ${providerLabel} adds another way to sign in.`}
@@ -661,10 +672,12 @@ function OnboardingWalletPending({
   path,
   phase,
   status,
+  embedded = false,
 }: {
   path: PendingPath;
   phase: number;
   status: string | null;
+  embedded?: boolean;
 }) {
   const { t } = useLingui();
   const labels =
@@ -673,7 +686,7 @@ function OnboardingWalletPending({
       : [t`Account`, t`Paper wallet`, t`Network`, t`Wallet`];
 
   return (
-    <OnboardingScreen start={<CLCLogo className="size-9" sharp />}>
+    <OnboardingScreen embedded={embedded} start={<CLCLogo className="size-9" sharp />}>
       <OnboardingTitle>
         <Trans>Setting up your wallet…</Trans>
       </OnboardingTitle>

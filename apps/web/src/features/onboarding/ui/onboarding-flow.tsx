@@ -16,6 +16,8 @@ const OnboardingWalletStep = lazy(() =>
 type Props = {
   step: Extract<OnboardingStep, "profile" | "contact" | "location" | "card" | "save" | "link">;
   redirectTo?: string;
+  /** Hides the phone frame. Off by default, so the phone render stays as it is. */
+  embedded?: boolean;
 };
 
 function profileFingerprint(profile: ProfileInput): string {
@@ -42,7 +44,7 @@ function profileFingerprint(profile: ProfileInput): string {
  * The paper-wallet private key is owned here so remounting the card step
  * cannot mint a second key after backend signup already bound the first one.
  */
-export function OnboardingFlow({ step, redirectTo }: Props) {
+export function OnboardingFlow({ step, redirectTo, embedded = false }: Props) {
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState<ProfileInput | null>(null);
   /**
@@ -129,6 +131,7 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
           progressTotal={passkeyAvailable ? 6 : 5}
           linkPasskey={passkeyAvailable}
           onDone={finish}
+          embedded={embedded}
         />
       </Suspense>
     );
@@ -144,6 +147,7 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
       initialAvatarFile={avatarFile}
       onPage={go}
       onRestart={() => goReplace("profile")}
+      embedded={embedded}
       onNext={(data, nextAvatarFile) => {
         // Edited profile after a prior signup must be re-persisted. A newly
         // chosen photo is an edit too: signup is what uploads it.

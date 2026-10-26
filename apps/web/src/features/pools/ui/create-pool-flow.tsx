@@ -117,7 +117,17 @@ const DETAIL_FIELDS = [
 const ADVANCED_FIELDS = ["symbol", "feePolicyDefault"] as const;
 const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "imageUrl"] as const;
 
-export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
+export function CreatePoolFlow({
+  step,
+  embedded = false,
+  advancedDefaultOpen = false,
+}: {
+  step: PoolCreateStep;
+  /** Desktop canvas. Hides the back control, the step count, and the phone padding. */
+  embedded?: boolean;
+  /** Desktop opens Advanced on arrival. The phone leaves it closed. */
+  advancedDefaultOpen?: boolean;
+}) {
   const { i18n, t } = useLingui();
   const navigate = useNavigate();
   const router = useRouter();
@@ -141,6 +151,13 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const [tagsOpen, setTagsOpen] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
   const [advancing, setAdvancing] = useState(false);
+
+  // Open once per visit to this step. A later render must not force it open
+  // again, or the user cannot close the disclosure.
+  useEffect(() => {
+    if (!advancedDefaultOpen || !advancedRef.current) return;
+    advancedRef.current.open = true;
+  }, [advancedDefaultOpen, step]);
 
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
@@ -330,15 +347,23 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     step === "review" ? "/pools/create/place" : step === "place" ? "/pools/create/pool" : "/pools/";
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron
-        label={step === "pool" ? t`Pools` : t`Back`}
-        to={fallbackTo}
-        onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
-        className="self-start"
-      />
+    <div
+      className={
+        embedded
+          ? "flex flex-col"
+          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+      }
+    >
+      {embedded ? null : (
+        <BackChevron
+          label={step === "pool" ? t`Pools` : t`Back`}
+          to={fallbackTo}
+          onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
+          className="self-start"
+        />
+      )}
 
-      <StepProgress step={progressStep} total={3} />
+      {embedded ? null : <StepProgress step={progressStep} total={3} />}
       <ResourceUsage resource="pools" />
 
       <form
@@ -355,23 +380,25 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
               <Trans>Create pool</Trans>
             </h1>
 
-            <aside
-              className="mt-3.5 border border-info/30 bg-card"
-              aria-labelledby="pool-guidance-title"
-            >
-              <p
-                id="pool-guidance-title"
-                className="border-info/20 border-b bg-info/[0.08] px-4 py-2.5 font-semibold text-info text-sm leading-tight"
+            {embedded ? null : (
+              <aside
+                className="mt-3.5 border border-info/30 bg-card"
+                aria-labelledby="pool-guidance-title"
               >
-                <Trans>What's a pool?</Trans>
-              </p>
-              <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
-                <Trans>
-                  A pool holds vouchers together so members can swap between them at a published
-                  value.
-                </Trans>
-              </p>
-            </aside>
+                <p
+                  id="pool-guidance-title"
+                  className="border-info/20 border-b bg-info/[0.08] px-4 py-2.5 font-semibold text-info text-sm leading-tight"
+                >
+                  <Trans>What's a pool?</Trans>
+                </p>
+                <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
+                  <Trans>
+                    A pool holds vouchers together so members can swap between them at a published
+                    value.
+                  </Trans>
+                </p>
+              </aside>
+            )}
 
             <div className="mt-3.5 space-y-3.5">
               <form.Field

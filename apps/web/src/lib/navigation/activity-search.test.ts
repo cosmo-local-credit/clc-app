@@ -42,6 +42,7 @@ describe("activity search", () => {
     expect(clearActivityRouteSearch()).toEqual({
       activityQ: undefined,
       activityTypes: undefined,
+      tx: undefined,
     });
   });
 
