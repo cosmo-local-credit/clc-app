@@ -1,8 +1,11 @@
 import type { RetirementPreview, RetirementRequest } from "@clc/api/features/retirement/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { RetirementDecisionForm } from "./retirement-decision-form";
+import { RetirementEvents } from "./retirement-events";
+import { RetirementResourceHistory } from "./retirement-resource-history";
 import { RestoreResourceSheet } from "./restore-resource-sheet";
 import { BalanceSummary } from "./balance-summary";
 
@@ -13,8 +16,12 @@ const mocks = vi.hoisted(() => ({
   approve: vi.fn(),
   reject: vi.fn(),
   restore: vi.fn(),
+  adminResourceHistory: vi.fn(),
 }));
 vi.mock("#/lib/api", () => ({ clcApi: { retirement: mocks } }));
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children }: { children: ReactNode }) => <a href="/retirement-requests/1">{children}</a>,
+}));
 
 function preview(overrides: Partial<RetirementPreview> = {}): RetirementPreview {
   return {
@@ -76,6 +83,7 @@ beforeEach(() => {
   mocks.approve.mockResolvedValue(request({ status: "approved" }));
   mocks.reject.mockResolvedValue(request({ status: "rejected" }));
   mocks.restore.mockResolvedValue({ address: ADDRESS, active: true });
+  mocks.adminResourceHistory.mockResolvedValue({ requests: [], events: [] });
 });
 
 describe("retirement decisions", () => {
@@ -153,6 +161,16 @@ describe("retirement decisions", () => {
     ).toBe(true);
   });
 
+  it("clears a stale acknowledgment and refreshes queries after an approval failure", async () => {
+    mocks.approve.mockRejectedValueOnce(new Error("Approval failed"));
+    renderForm();
+    await screen.findByText("Other accounts hold 1.25 CARE.");
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Approve retirement" }));
+    expect((await screen.findByRole("alert")).textContent).toContain("Approval failed");
+    expect(screen.getByRole("checkbox").getAttribute("aria-checked")).toBe("false");
+  });
+
   it("shows pool types and partial-coverage information without summing different tokens", async () => {
     mocks.preview.mockResolvedValue(
       preview({
@@ -172,6 +190,45 @@ describe("retirement decisions", () => {
   it("keeps dust visible rather than displaying zero", () => {
     render(<BalanceSummary preview={preview({ amountOutsideOwnerRaw: "1", decimals: 18 })} />);
     expect(screen.getByText("Other accounts hold 0.000000000000000001 CARE.")).toBeTruthy();
+  });
+
+  it("renders non-empty retirement events with actor, time and reason", () => {
+    render(
+      <RetirementEvents
+        events={[
+          {
+            id: 2,
+            action: "restored",
+            actorAddress: OWNER,
+            reason: "Community reopened",
+            createdAt: "2026-10-25T13:00:00Z",
+            requestId: 1,
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByText("restored")).toBeTruthy();
+    expect(screen.getByText(OWNER)).toBeTruthy();
+    expect(screen.getByText("Community reopened")).toBeTruthy();
+  });
+
+  it("retries resource history and renders its request after recovery", async () => {
+    mocks.adminResourceHistory
+      .mockRejectedValueOnce(new Error("History unavailable"))
+      .mockResolvedValueOnce({ requests: [request()], events: [] });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = render(
+      <QueryClientProvider client={client}>
+        <RetirementResourceHistory type="voucher" address={ADDRESS} />
+      </QueryClientProvider>,
+    );
+    const details = container.querySelector("details");
+    if (!details) throw new Error("Expected retirement history details");
+    details.open = true;
+    fireEvent(details, new Event("toggle"));
+    expect(await screen.findByText("History unavailable")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry history" }));
+    expect(await screen.findByRole("link", { name: "Request #1" })).toBeTruthy();
   });
 });
 

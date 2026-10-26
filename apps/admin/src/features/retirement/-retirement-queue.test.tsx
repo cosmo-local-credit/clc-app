@@ -13,7 +13,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { RetirementRequestsPage } from "./retirement-requests-page";
 import { RetirementRequestPage } from "./retirement-request-page";
-import { RetirementPendingBadge } from "./retirement-notification";
+import { RetirementDashboardLink, RetirementPendingBadge } from "./retirement-notification";
 import { parseRetirementSearch } from "./retirement-search";
 
 const mocks = vi.hoisted(() => ({
@@ -67,6 +67,7 @@ function mount(entry = "/retirement-requests") {
     component: () => (
       <QueryClientProvider client={client}>
         <RetirementPendingBadge />
+        <RetirementDashboardLink />
         <Outlet />
       </QueryClientProvider>
     ),
@@ -135,6 +136,44 @@ describe("retirement queue", () => {
     expect(router.state.location.search).toEqual({ status: "all", resourceType: "voucher" });
     act(() => router.history.back());
     await waitFor(() => expect(router.state.location.search).toEqual({ status: "all", cursor: 8 }));
+  });
+
+  it("refreshes, filters by status, and navigates both cursor controls", async () => {
+    mocks.listAdmin.mockResolvedValue({ requests: [request], pendingCount: 2, nextCursor: 12 });
+    const router = mount("/retirement-requests?cursor=8");
+    await screen.findByRole("link", { name: "Market pool" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    await waitFor(() =>
+      expect(mocks.listAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({ status: "pending", cursor: 8, perPage: 25 }),
+        expect.anything(),
+      ),
+    );
+
+    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "approved" } });
+    await waitFor(() => expect(router.state.location.search).toEqual({ status: "approved" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Older requests" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({ status: "approved", cursor: 12 }),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "First page" }));
+    await waitFor(() => expect(router.state.location.search).toEqual({ status: "approved" }));
+  });
+
+  it("rejects invalid request IDs before loading a detail", async () => {
+    mount("/retirement-requests/not-a-number");
+    expect(await screen.findByText("Invalid retirement request")).toBeTruthy();
+  });
+
+  it("retries a failed request detail without leaving the route", async () => {
+    mocks.getAdminRequest.mockRejectedValueOnce(new Error("Service unavailable"));
+    mount("/retirement-requests/7");
+    await screen.findByText("Could not load retirement request");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("heading", { name: "Retirement request #7" })).toBeTruthy();
   });
 
   it("does not report zero pending requests when the queue fails", async () => {
