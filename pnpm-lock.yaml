@@ -43,6 +43,9 @@ importers:
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
+      '@vitest/coverage-v8':
+        specifier: 4.1.10
+        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       eslint-plugin-better-tailwindcss:
         specifier: ^4.5.0
         version: 4.5.0(oxlint@1.79.0(oxlint-tsgolint@7.0.2001)(vite-plus@0.2.9(@types/node@25.9.3)(@vitest/coverage-v8@4.1.10)(esbuild@0.27.3)(jiti@2.7.0)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(typescript@6.0.3)(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0)))(tailwindcss@4.3.0)(typescript@6.0.3)
@@ -55,6 +58,9 @@ importers:
       vite-plus:
         specifier: 'catalog:'
         version: 0.2.9(@types/node@25.9.3)(@vitest/coverage-v8@4.1.10)(esbuild@0.27.3)(jiti@2.7.0)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(typescript@6.0.3)(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0)
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))
       wrangler:
         specifier: ^4.100.0
         version: 4.100.0
@@ -191,9 +197,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.0.1
         version: 6.0.2(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.2)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(rolldown@1.2.0))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))
-      '@vitest/coverage-v8':
-        specifier: 4.1.10
-        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       canvas:
         specifier: 3.2.3
         version: 3.2.3
@@ -209,9 +212,6 @@ importers:
       vite-plus:
         specifier: 'catalog:'
         version: 0.2.9(@types/node@25.9.3)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(esbuild@0.27.3)(jiti@2.7.0)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(typescript@6.0.3)(yaml@2.9.0)
-      vitest:
-        specifier: 4.1.10
-        version: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))
 
   apps/web:
     dependencies:
@@ -420,9 +420,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.0.1
         version: 6.0.2(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.2)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(rolldown@1.2.0))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))
-      '@vitest/coverage-v8':
-        specifier: 4.1.10
-        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       canvas:
         specifier: 3.2.3
         version: 3.2.3
@@ -438,9 +435,6 @@ importers:
       vite-plus:
         specifier: 'catalog:'
         version: 0.2.9(@types/node@25.9.3)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(esbuild@0.27.3)(jiti@2.7.0)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(typescript@6.0.3)(yaml@2.9.0)
-      vitest:
-        specifier: 4.1.10
-        version: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))
 
   packages/api:
     dependencies:
@@ -457,18 +451,12 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@vitest/coverage-v8':
-        specifier: 4.1.10
-        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.2.9
         version: '@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0)'
       vite-plus:
         specifier: 'catalog:'
         version: 0.2.9(@types/node@25.9.3)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(esbuild@0.27.3)(jiti@2.7.0)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(typescript@6.0.3)(yaml@2.9.0)
-      vitest:
-        specifier: 4.1.10
-        version: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0))(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))
 
   packages/core:
     dependencies:
@@ -500,15 +488,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@vitest/coverage-v8':
-        specifier: 4.1.10
-        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       vite-plus:
         specifier: 'catalog:'
         version: 0.2.9(@types/node@25.9.3)(@vitest/coverage-v8@4.1.10)(esbuild@0.27.3)(jiti@2.7.0)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(typescript@6.0.3)(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0)
-      vitest:
-        specifier: 4.1.10
-        version: 4.1.10(@types/node@25.9.3)(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.3))(vite@8.0.13(@types/node@25.9.3)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0))
 
   packages/i18n:
     dependencies:
