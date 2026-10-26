@@ -9,6 +9,7 @@ import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
+import { Progress, ProgressTrack } from "#/components/ui/progress";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import { useVoucherSheetSnap, VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { WantSheet } from "#/components/wants/want-sheet";
@@ -62,13 +63,15 @@ export function MarketPage({
     bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2),
   );
   const [fetchZoom, setFetchZoom] = useState(() => Math.floor(area?.zoom ?? 2));
-  const areaOwnerRef = useRef(area?.owner);
+  const fetchZoomRef = useRef(fetchZoom);
+  const areaOwnerRef = useRef(locationOwner);
   useEffect(() => {
-    if (areaOwnerRef.current === area?.owner) return;
-    areaOwnerRef.current = area?.owner;
+    if (areaOwnerRef.current === locationOwner) return;
+    areaOwnerRef.current = locationOwner;
     setFetchBounds(bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2));
     setFetchZoom(Math.floor(area?.zoom ?? 2));
-  }, [area]);
+    fetchZoomRef.current = Math.floor(area?.zoom ?? 2);
+  }, [area, locationOwner]);
   const voucherSelection = useVoucherSheetSelection();
   const wantSelection = useWantSheetSelection();
 
@@ -270,18 +273,23 @@ export function MarketPage({
       if (!area && !settled.userInitiated && !camera) return;
 
       const boxes = canonicalMarketBounds(viewportToBoundingBoxes(settled));
+      const zoom = Math.floor(settled.zoom);
+      const zoomChanged = fetchZoomRef.current !== zoom;
+      fetchZoomRef.current = zoom;
       if (boxes.length === 0) {
         if (Math.abs(settled.east - settled.west) >= 360) {
           clearArea();
           setFetchBounds([]);
-          setFetchZoom(Math.floor(settled.zoom));
+          setFetchZoom(zoom);
         }
         return;
       }
       setArea({ center: settled.center, zoom: settled.zoom, boxes });
-      setFetchZoom(Math.floor(settled.zoom));
+      setFetchZoom(zoom);
       setFetchBounds((current) =>
-        boundsContain(current, boxes) ? current : bufferedTileBounds(boxes, settled.zoom),
+        !zoomChanged && boundsContain(current, boxes)
+          ? current
+          : bufferedTileBounds(boxes, settled.zoom),
       );
     },
     [area, camera?.rank, clearArea, setArea],
@@ -312,8 +320,9 @@ export function MarketPage({
   const isEmpty =
     mapResources.selected.length > 0 &&
     locations.length === 0 &&
+    marketMap.clusters.length === 0 &&
     filter.result.ok &&
-    marketMap.status === "ready";
+    marketMap.isSettled;
 
   const changeCredit = (checked: boolean) =>
     void navigate({
@@ -410,6 +419,7 @@ export function MarketPage({
         )}
         filter={filter}
         mapResources={mapResources}
+        progress={<MarketMapLoading loading={marketMap.isFetching} />}
         searchLabel={t`Search the marketplace`}
         credit={
           <CreditableBrowseControl
@@ -464,6 +474,32 @@ export function MarketPage({
         floating={mapControls}
       />
     </main>
+  );
+}
+
+function MarketMapLoading({ loading }: { loading: boolean }) {
+  const { t } = useLingui();
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!loading) {
+      setVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setVisible(true), 250);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  if (!loading || !visible) return null;
+  return (
+    <Progress
+      value={null}
+      aria-label={t`Loading marketplace…`}
+      className="pointer-events-none h-0.5 overflow-hidden bg-card"
+    >
+      <ProgressTrack className="h-full w-full">
+        <div className="market-results-loading-indicator h-full bg-primary" />
+      </ProgressTrack>
+    </Progress>
   );
 }
 

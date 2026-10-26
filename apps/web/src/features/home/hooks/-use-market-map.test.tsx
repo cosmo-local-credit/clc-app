@@ -13,6 +13,8 @@ const mocks = vi.hoisted(() => ({
     isFetching: false,
     isPending: false,
     isError: false,
+    isSuccess: true,
+    isPlaceholderData: false,
     refetch: vi.fn(),
   },
   options: vi.fn(() => ({ queryKey: ["market-map"], queryFn: vi.fn() })),
@@ -44,6 +46,8 @@ beforeEach(() => {
   mocks.query.isFetching = false;
   mocks.query.isPending = false;
   mocks.query.isError = false;
+  mocks.query.isSuccess = true;
+  mocks.query.isPlaceholderData = false;
   mocks.query.refetch.mockReset();
   mocks.options.mockClear();
 });
@@ -91,6 +95,7 @@ describe("useMarketMap", () => {
     ]);
     expect(result.current.tagFacets).toEqual([{ tag: "Food", count: 18 }]);
     expect(result.current.status).toBe("ready");
+    expect(result.current.isSettled).toBe(true);
     expect(mocks.options).toHaveBeenCalledWith(
       {},
       expect.objectContaining({ zoom: 9, kinds: ["voucher", "post"], facets: true }),
@@ -134,5 +139,44 @@ describe("useMarketMap", () => {
     expect(result.current.clusters).toEqual([]);
     expect(result.current.error).toBeNull();
     expect(result.current.retrying).toBe(false);
+    expect(result.current.isSettled).toBe(false);
+  });
+
+  it.each([
+    { isFetching: true, isPlaceholderData: false },
+    { isFetching: true, isPlaceholderData: true },
+    { isFetching: false, isPlaceholderData: true },
+  ])("keeps an empty retained response unsettled while refining: %j", (state) => {
+    mocks.query.data = { features: [] };
+    Object.assign(mocks.query, state);
+    const { result } = renderHook(() => useMarketMap(options));
+
+    expect(result.current.isSettled).toBe(false);
+    expect(result.current.status).toBe("refreshing");
+    expect(result.current.isFetching).toBe(state.isFetching);
+    expect(result.current.isPlaceholderData).toBe(state.isPlaceholderData);
+  });
+
+  it("keeps the last successful clusters when a later viewport request fails", () => {
+    const cluster = {
+      type: "cluster",
+      id: "cluster:8:1:2",
+      lat: -3.68,
+      lng: 39.83,
+      count: 12,
+      kinds: { voucher: 12 },
+      expansionZoom: 16,
+    };
+    mocks.query.data = { features: [cluster] };
+    const { result, rerender } = renderHook(() => useMarketMap(options));
+    mocks.query.data = undefined;
+    mocks.query.isSuccess = false;
+    mocks.query.isError = true;
+    mocks.query.error = new Error("network unavailable");
+    rerender();
+
+    expect(result.current.clusters).toEqual([cluster]);
+    expect(result.current.isSettled).toBe(false);
+    expect(result.current.status).toBe("error");
   });
 });

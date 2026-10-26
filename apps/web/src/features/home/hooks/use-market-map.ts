@@ -5,9 +5,10 @@ import type {
   MarketMapCluster,
   MarketMapKind,
   MarketMapMarker,
+  MarketMapResponse,
 } from "@clc/core/features/market-map/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { marketMapClient } from "#/lib/api/market-map";
 import type { MarketLocation } from "#/features/home/ui/market-data";
@@ -40,35 +41,45 @@ export function useMarketMap(options: UseMarketMapOptions) {
     enabled: options.enabled,
     placeholderData: keepPreviousData,
   });
+  const lastSuccess = useRef<MarketMapResponse | undefined>(undefined);
+  useEffect(() => {
+    if (!options.enabled) lastSuccess.current = undefined;
+    else if (query.isSuccess && !query.isPlaceholderData) lastSuccess.current = query.data;
+  }, [options.enabled, query.data, query.isPlaceholderData, query.isSuccess]);
+  const data = query.data ?? lastSuccess.current;
 
   const locations = useMemo(
     () =>
       options.enabled
-        ? (query.data?.features.filter(isMarker).map(toLocation) ?? [])
+        ? (data?.features.filter(isMarker).map(toLocation) ?? [])
         : ([] as MarketMapLocation[]),
-    [options.enabled, query.data],
+    [options.enabled, data],
   );
   const clusters = useMemo(
-    () =>
-      options.enabled ? (query.data?.features.filter(isCluster) ?? []) : ([] as MarketMapCluster[]),
-    [options.enabled, query.data],
+    () => (options.enabled ? (data?.features.filter(isCluster) ?? []) : ([] as MarketMapCluster[])),
+    [options.enabled, data],
   );
   const retry = useCallback(() => void query.refetch(), [query.refetch]);
 
   return {
     locations,
     clusters,
-    tagFacets: options.enabled ? (query.data?.tagFacets ?? []) : [],
+    tagFacets: options.enabled ? (data?.tagFacets ?? []) : [],
     error: options.enabled ? query.error : null,
     retry,
     retrying: options.enabled && query.isFetching,
+    isFetching: options.enabled && query.isFetching,
+    isPlaceholderData: options.enabled && query.isPlaceholderData,
+    isSettled: options.enabled && query.isSuccess && !query.isFetching && !query.isPlaceholderData,
     status: !options.enabled
       ? ("disabled" as const)
       : query.isPending
         ? ("loading" as const)
         : query.isError
           ? ("error" as const)
-          : ("ready" as const),
+          : query.isPlaceholderData || query.isFetching
+            ? ("refreshing" as const)
+            : ("ready" as const),
   };
 }
 
