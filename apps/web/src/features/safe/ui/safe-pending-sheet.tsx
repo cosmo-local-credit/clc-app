@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { Spinner } from "#/components/ui/spinner";
 import {
   SheetBackdrop,
   SheetContent,
@@ -217,12 +218,16 @@ function Proposal({
     calls,
     viewer,
     canSign,
+    executing: transaction.executing,
   });
   return (
     <li className="space-y-2 py-3">
       <div className="flex items-start justify-between gap-3">
         <span className="min-w-0 text-sm font-semibold">{proposalTitle(calls)}</span>
-        <Badge size="sm" variant={action === "execute" ? "primary" : "muted"}>
+        <Badge
+          size="sm"
+          variant={action === "execute" || action === "executing" ? "primary" : "muted"}
+        >
           {transaction.confirmations.length}/{transaction.confirmationsRequired}
         </Badge>
       </div>
@@ -256,7 +261,12 @@ function Proposal({
           ))}
         </ul>
       ) : null}
-      {action === "confirm" ? (
+      {action === "executing" ? (
+        <p role="status" className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Spinner className="size-3.5" />
+          <Trans>Executing…</Trans>
+        </p>
+      ) : action === "confirm" ? (
         <Button tap pending={confirmingThis} disabled={confirming} onClick={onConfirm}>
           {confirmingThis ? <Trans>Confirming</Trans> : <Trans>Confirm</Trans>}
         </Button>

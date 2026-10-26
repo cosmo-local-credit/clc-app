@@ -200,6 +200,15 @@ describe("safeProposalAction", () => {
   it("offers a signer the confirmation of an allowed call", () => {
     expect(safeProposalAction({ ...base, confirmations: [{ owner: other }] })).toBe("confirm");
   });
+  it("shows a fully confirmed proposal clc-core is executing", () => {
+    expect(
+      safeProposalAction({
+        ...base,
+        executing: true,
+        confirmations: [{ owner: other }, { owner: viewer }],
+      }),
+    ).toBe("executing");
+  });
   it("sends a fully confirmed proposal to Safe for execution", () => {
     expect(
       safeProposalAction({

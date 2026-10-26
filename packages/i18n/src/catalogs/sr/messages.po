@@ -803,7 +803,7 @@ msgstr "Примени филтере"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:160
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:161
 msgid "Approve voucher"
 msgstr "Одобри ваучер"
 
@@ -1411,7 +1411,7 @@ msgstr "Обриши претрагу"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:134
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
 msgid "Close"
 msgstr "Затвори"
 
@@ -1519,7 +1519,7 @@ msgstr "Довршите захтјев на телефону."
 msgid "Complete your profile"
 msgstr "Допуни свој профил"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
 msgid "Confirm"
 msgstr "Потврдите"
 
@@ -1565,7 +1565,7 @@ msgstr "Потврдите размјену"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:250
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1573,7 +1573,7 @@ msgstr "Потврђено"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:271
 msgid "Confirming"
 msgstr "Потврђивање"
 
@@ -2382,7 +2382,7 @@ msgstr "Креирај ваучер"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:245
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:259
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:286
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:149
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:150
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2933,9 +2933,13 @@ msgstr "Курс размјене"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Курс размјене у односу на подразумијевани ваучер ({unitSymbol})"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:268
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
 msgid "Execute it in Safe."
 msgstr "Извршите га у Safe-у."
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:267
+msgid "Executing…"
+msgstr "Извршава се…"
 
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:84
 msgid "Existing fee recipient"
@@ -2988,7 +2992,7 @@ msgstr "Пољопривреда"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:158
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:159
 msgid "Fee % and recipient"
 msgstr "Проценат накнаде и прималац"
 
@@ -3813,7 +3817,7 @@ msgstr "Учитавање вашег профила…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:87
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:88
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3870,7 +3874,7 @@ msgid "Manage {0}"
 msgstr "Управљај: {0}"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:165
 msgid "Manage voucher"
 msgstr "Управљање ваучером"
 
@@ -4073,7 +4077,7 @@ msgstr "У власништву мултисига · {0} од {1} потпис�
 msgid "Multisig owned · {0} signers"
 msgstr "У власништву мултисига · {0} потписника"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:55
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:56
 msgid "Multisig transactions"
 msgstr "Мултисиг трансакције"
 
@@ -4435,7 +4439,7 @@ msgstr "Још нема објава."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "QR код није пронађен. Покушајте поново са јаснијом сликом."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:96
 msgid "No queued proposals found."
 msgstr "Нема предлога у реду."
 
@@ -4542,7 +4546,7 @@ msgid "No. of participants"
 msgstr "Број учесника"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:230
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:235
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4722,7 +4726,7 @@ msgid "Open in Maps"
 msgstr "Отвори у мапама"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:129
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
 msgid "Open in Safe"
 msgstr "Отвори у Safe"
 
@@ -5501,7 +5505,7 @@ msgstr "Профил је ажуриран"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "Предлог је додат у ред. Потврдите га и извршите у Safe-у."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:91
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:92
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Предлози овде нису доступни. И даље можете користити свој мултисиг "
 "новчаник."
@@ -5808,7 +5812,7 @@ msgstr "Релативно одређивање цена"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:167
 msgid "Remove"
 msgstr "Уклони"
 
@@ -6071,7 +6075,7 @@ msgstr "Поново покушај повезивање"
 msgid "Reverted"
 msgstr "Поништено"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:280
 msgid "Review this transaction in your multisig wallet."
 msgstr "Прегледајте ову трансакцију у свом мултисиг новчанику."
 
@@ -7572,7 +7576,7 @@ msgstr "Хеш трансакције је копиран"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:151
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
 msgid "Transfer ownership"
 msgstr "Пренеси власништво"
 
@@ -7702,8 +7706,8 @@ msgstr "Обрачунска јединица"
 msgid "Unknown"
 msgstr "Непознато"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:168
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:185
 msgid "Unknown call"
 msgstr "Непознат позив"
 
@@ -8286,13 +8290,13 @@ msgstr "Исплати"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:155
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:156
 msgid "Withdraw fees"
 msgstr "Повуци накнаде"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:153
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
 msgid "Withdraw liquidity"
 msgstr "Повуци ликвидност"
 
@@ -8375,7 +8379,7 @@ msgstr "И даље можете да повучете средства нако
 msgid "You can write or edit your review until {0}."
 msgstr "Можете написати или измијенити своју рецензију до {0}."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:266
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:276
 msgid "You confirmed"
 msgstr "Потврдили сте"
 

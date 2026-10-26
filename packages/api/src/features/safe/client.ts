@@ -19,6 +19,8 @@ const safeProposalSchema = safeTransactionSchema.extend({
   isExecuted: z.boolean(),
   isSuccessful: z.boolean().nullable(),
   transactionHash: hexSchema.nullable(),
+  /** clc-core has queued or sent the execution; absent from older backends. */
+  executing: z.boolean().optional(),
 });
 export type SafeProposal = z.infer<typeof safeProposalSchema>;
 

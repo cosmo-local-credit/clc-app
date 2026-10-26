@@ -111,6 +111,20 @@ describe("SafePendingSheet", () => {
     expect(within(sheet).getByText("Execute it in Safe.")).toBeTruthy();
   });
 
+  it("shows clc-core executing a fully confirmed proposal", async () => {
+    const sheet = await openWith([
+      proposal({
+        executing: true,
+        confirmations: [
+          { owner: OTHER, signature: "0x", submittedAt: "2026-10-26" },
+          { owner: ME, signature: "0x", submittedAt: "2026-10-26" },
+        ],
+      }),
+    ]);
+    expect(within(sheet).getByRole("status").textContent).toContain("Executing…");
+    expect(within(sheet).queryByText("Execute it in Safe.")).toBeNull();
+  });
+
   it("leaves a passkey session and undecodable calls to Safe", async () => {
     mocks.connectorId = "calibur-webauthn";
     const sheet = await openWith([proposal()]);
