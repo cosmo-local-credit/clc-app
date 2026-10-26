@@ -10,6 +10,7 @@ import { NearbyCatalog, nearbyQueryPolicy, useNearbyCatalog } from "#/components
 import { Button } from "#/components/ui/button";
 import { catalogsClient } from "#/lib/api/catalogs";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
@@ -145,9 +146,19 @@ function CatalogList({
           </Button>
         </div>
       ) : null}
-      {!credit.blocksResults && query.isSuccess && visibleCatalogs.length === 0 ? (
+      {!credit.blocksResults &&
+      query.isSuccess &&
+      !query.isFetching &&
+      !query.isPlaceholderData &&
+      !query.hasNextPage &&
+      !search.isDebouncing &&
+      visibleCatalogs.length === 0 ? (
         <p>
-          <Trans>No catalogs found.</Trans>
+          {search.isFiltered || credit.enabled ? (
+            <Trans>No catalogs found.</Trans>
+          ) : (
+            <MarketEmptyMessage />
+          )}
         </p>
       ) : null}
       {!credit.blocksResults

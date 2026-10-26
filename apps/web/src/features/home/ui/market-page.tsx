@@ -8,6 +8,7 @@ import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { Button } from "#/components/ui/button";
 import { Progress, ProgressTrack } from "#/components/ui/progress";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
@@ -376,7 +377,7 @@ export function MarketPage({
             </Button>
           </>
         ) : (
-          <Trans>No marketplace results to show yet.</Trans>
+          <MarketEmptyMessage surface="map" />
         )}
       </div>
     ) : null;

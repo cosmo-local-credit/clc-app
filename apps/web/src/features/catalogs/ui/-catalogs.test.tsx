@@ -207,6 +207,17 @@ beforeEach(() => {
   mocks.api.update.mockResolvedValue(catalog);
 });
 describe("catalog curation", () => {
+  it.each([false, true])("guides an empty Catalog list (authenticated=%s)", async (signedIn) => {
+    mocks.auth.isAuthenticated = signedIn;
+    mocks.auth.state = signedIn ? "authenticated" : "guest";
+    mocks.api.list.mockResolvedValue({ catalogs: [], nextCursor: null });
+    mount(<CatalogsPage />);
+    const message = await screen.findByText(/^No marketplace results to show yet,/);
+    expect(
+      within(message).getByRole("link", { name: signedIn ? "Wallet" : "Sign in" }),
+    ).toBeTruthy();
+  });
+
   it("routes an empty wallet through creation with a validated pool intent", async () => {
     mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
     mount(<AddToCatalogButton {...intent} />);

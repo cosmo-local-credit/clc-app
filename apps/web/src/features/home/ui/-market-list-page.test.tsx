@@ -227,6 +227,12 @@ beforeEach(() => {
   );
 });
 
+it("guides an empty Vouchers area to Wallet and the map", () => {
+  render(<MarketListPage />);
+  expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("href")).toBe("/?tab=wallet");
+  expect(screen.getByRole("link", { name: "View this location on the map" })).toBeTruthy();
+});
+
 describe("MarketListPage", () => {
   it("writes and clears Credit from both shell and feedback controls", () => {
     render(<MarketListPage />);
