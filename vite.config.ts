@@ -277,6 +277,18 @@ export default defineConfig({
     ],
   },
   test: {
+    // Coverage belongs to the workspace run; project-level settings are ignored.
+    coverage: {
+      provider: "v8",
+      reporter: ["lcov", "json", "json-summary", "text-summary"],
+      reportsDirectory: "./coverage",
+      include: [
+        "apps/*/src/**/*.{ts,tsx}",
+        "packages/{api,core}/src/**/*.{ts,tsx}",
+        "tooling/**/*.ts",
+      ],
+      exclude: ["**/*.test.{ts,tsx}", "**/*.d.ts", "**/routeTree.gen.ts", "**/vitest.config.ts"],
+    },
     projects: [
       "apps/admin/vitest.config.ts",
       "apps/web/vitest.config.ts",
