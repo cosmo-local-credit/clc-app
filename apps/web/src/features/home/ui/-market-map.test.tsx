@@ -91,6 +91,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     remove = vi.fn();
     removeImage = vi.fn((id: string) => this.images.delete(id));
     getCanvas = vi.fn(() => ({ clientWidth: 360, clientHeight: 640 }));
+    isMoving = vi.fn(() => false);
     zoom = 12;
     maxZoom = 21;
     bounds = { west: 36.6, south: -1.5, east: 37.1, north: -1.1 };
@@ -840,12 +841,68 @@ describe("MarketMap ranked camera", () => {
 });
 
 describe("MarketMap viewport reporting", () => {
+  it("reports measured initial bounds before tiles load and deduplicates later reports", () => {
+    vi.useFakeTimers();
+    try {
+      const onViewportSettled = vi.fn();
+      renderWithCamera({ lat: -3.68, lng: 39.83, zoom: 16, rank: 2 }, { onViewportSettled });
+      const map = firstMap();
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      expect(onViewportSettled).toHaveBeenCalledTimes(1);
+      expect(onViewportSettled).toHaveBeenCalledWith(
+        expect.objectContaining({
+          west: map.bounds.west,
+          east: map.bounds.east,
+          zoom: map.zoom,
+        }),
+      );
+
+      act(() => {
+        map.trigger("load");
+        map.trigger("moveend");
+        vi.advanceTimersByTime(400);
+      });
+      expect(onViewportSettled).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("waits for movement to settle when the camera is moving on its first frame", () => {
+    vi.useFakeTimers();
+    try {
+      const onViewportSettled = vi.fn();
+      renderWithCamera(null, { onViewportSettled });
+      const map = firstMap();
+      map.isMoving.mockReturnValue(true);
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      expect(onViewportSettled).not.toHaveBeenCalled();
+      map.isMoving.mockReturnValue(false);
+      act(() => {
+        map.trigger("moveend");
+        vi.advanceTimersByTime(400);
+      });
+      expect(onViewportSettled).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("reports settled bounds once after a debounce", () => {
     vi.useFakeTimers();
     const onViewportSettled = vi.fn();
     try {
       renderWithCamera(null, { onViewportSettled });
       const map = loadedMap();
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      onViewportSettled.mockClear();
+      map.bounds = { ...map.bounds, east: 37.2 };
 
       act(() => {
         map.trigger("moveend", {});
@@ -863,11 +920,39 @@ describe("MarketMap viewport reporting", () => {
         center: { lat: -1.3, lng: 36.85 },
         west: 36.6,
         south: -1.5,
-        east: 37.1,
+        east: 37.2,
         north: -1.1,
         zoom: 12,
         userInitiated: false,
       });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels settlement when another gesture starts", () => {
+    vi.useFakeTimers();
+    try {
+      const onViewportSettled = vi.fn();
+      renderWithCamera(null, { onViewportSettled });
+      const map = loadedMap();
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      onViewportSettled.mockClear();
+      map.bounds = { ...map.bounds, east: 37.2 };
+      act(() => {
+        map.trigger("moveend");
+        vi.advanceTimersByTime(200);
+        map.trigger("movestart");
+        vi.advanceTimersByTime(500);
+      });
+      expect(onViewportSettled).not.toHaveBeenCalled();
+      act(() => {
+        map.trigger("moveend");
+        vi.advanceTimersByTime(400);
+      });
+      expect(onViewportSettled).toHaveBeenCalledOnce();
     } finally {
       vi.useRealTimers();
     }
@@ -1500,7 +1585,7 @@ describe("MarketMap badge counts", () => {
     locationName: null,
   }));
 
-  it("uses the backend-provided cluster total and kind composition", () => {
+  it("uses the backend-provided total without rendering resource initials", () => {
     renderMap([...CBD_STACK, ...LOCATIONS], {
       clusters: [
         {
@@ -1521,7 +1606,7 @@ describe("MarketMap badge counts", () => {
     const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
 
     expect(cluster?.properties.markerCount).toBe(65);
-    expect(cluster?.properties.badgeLabel).toBe("65\nV W");
+    expect(cluster?.properties).not.toHaveProperty("badgeLabel");
   });
 
   it("draws clusters and coincident stacks as theme-aware network badges", () => {
@@ -1543,14 +1628,15 @@ describe("MarketMap badge counts", () => {
     }
   });
 
-  it("labels clusters from the server-computed badge label", () => {
+  it("centers count-only labels using the supported font for clusters and stacks", () => {
     renderMap(CBD_STACK);
     const map = loadedMap();
-    const layer = map.getLayer("market-cluster-count") as {
-      layout?: { "text-field"?: unknown };
-    };
-
-    expect(layer.layout?.["text-field"]).toEqual(["get", "badgeLabel"]);
+    for (const id of ["market-cluster-count", "market-stack-count"]) {
+      const layer = map.getLayer(id) as { layout?: Record<string, unknown> };
+      expect(layer.layout?.["text-font"]).toEqual(["Noto Sans Regular"]);
+      expect(layer.layout?.["text-anchor"]).toBe("center");
+      expect(layer.layout).not.toHaveProperty("text-line-height");
+    }
   });
 
   it("labels a coincident stack from its own voucher count", () => {
@@ -1583,7 +1669,15 @@ describe("MarketMap badge counts", () => {
     };
     const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
 
-    expect(cluster?.properties.badgeLabel).toBe("1k\nV");
+    expect(cluster?.properties.markerCount).toBe(1_234);
+    const layout = map.getLayer("market-cluster-count")?.layout as Record<string, unknown>;
+    expect(layout["text-field"]).toEqual([
+      "step",
+      ["get", "markerCount"],
+      ["to-string", ["get", "markerCount"]],
+      1000,
+      ["concat", ["to-string", ["round", ["/", ["get", "markerCount"], 1000]]], "k"],
+    ]);
   });
 });
 

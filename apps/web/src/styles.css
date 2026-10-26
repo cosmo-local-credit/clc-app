@@ -282,6 +282,27 @@ body {
 	background-size: 3rem 3rem;
 }
 
+.market-results-loading-indicator {
+	width: 35%;
+	animation: market-results-loading 1.2s ease-in-out infinite;
+}
+
+@keyframes market-results-loading {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(300%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.market-results-loading-indicator {
+		width: 100%;
+		animation: none;
+	}
+}
+
 .maplibregl-ctrl-attrib,
 .maplibregl-ctrl-logo {
 	display: none !important;

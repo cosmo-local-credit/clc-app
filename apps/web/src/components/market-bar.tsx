@@ -96,6 +96,7 @@ export function MarketBar({
   surface = "page",
   className,
   mapResources,
+  progress,
 }: {
   current: MarketSurface;
   /** A remembered filter keeps the tags the search screen adds. */
@@ -113,6 +114,7 @@ export function MarketBar({
     toggle: (kind: MarketMapResourceKind) => void;
     toggleAll: () => void;
   };
+  progress?: ReactNode;
 }) {
   const auth = useAuthStatus();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -147,6 +149,7 @@ export function MarketBar({
       ) : (
         <MarketBadges current={current} />
       )}
+      {progress}
       {searchOpen ? (
         <MarketSearchScreen
           onClose={() => setSearchOpen(false)}

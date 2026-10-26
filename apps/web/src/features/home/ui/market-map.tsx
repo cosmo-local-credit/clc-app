@@ -175,7 +175,6 @@ type ServerClusterFeature = {
     id: string;
     point_count: number;
     markerCount: number;
-    badgeLabel: string;
     serverCluster: true;
     expansionZoom: number;
   };
@@ -240,7 +239,6 @@ function createMapCollection(
           id: cluster.id,
           point_count: cluster.count,
           markerCount: cluster.count,
-          badgeLabel: clusterBadgeLabel(cluster),
           serverCluster: true as const,
           expansionZoom: cluster.expansionZoom,
         },
@@ -251,19 +249,6 @@ function createMapCollection(
       })),
     ],
   };
-}
-
-function clusterBadgeLabel(cluster: MarketMapCluster): string {
-  const count =
-    cluster.count >= 1000 ? `${Math.round(cluster.count / 1000)}k` : String(cluster.count);
-  const abbreviations = [
-    cluster.kinds.voucher ? "V" : "",
-    cluster.kinds.want ? "W" : "",
-    cluster.kinds.pool ? "P" : "",
-    cluster.kinds.catalog ? "C" : "",
-    cluster.kinds.post ? "R" : "",
-  ].filter(Boolean);
-  return abbreviations.length ? `${count}\n${abbreviations.join(" ")}` : count;
 }
 
 function createUserMarker(): HTMLDivElement {
@@ -422,9 +407,10 @@ function addMarketLayers(
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
     layout: {
-      "text-field": ["get", "badgeLabel"],
-      "text-size": 10,
-      "text-line-height": 0.9,
+      "text-field": countLabel("markerCount"),
+      "text-font": LABEL_FONT,
+      "text-size": 11,
+      "text-anchor": "center",
       "text-allow-overlap": true,
       "text-padding": BADGE_COLLISION_PADDING,
     },
@@ -465,7 +451,9 @@ function addMarketLayers(
     filter: stackFilter,
     layout: {
       "text-field": countLabel("count"),
+      "text-font": LABEL_FONT,
       "text-size": 11,
+      "text-anchor": "center",
       "text-allow-overlap": true,
       "text-padding": BADGE_COLLISION_PADDING,
     },
@@ -588,13 +576,14 @@ export function MarketMap({
   // the camera changes. Starting at Nairobi would flash before the load handler.
   const cameraRef = useRef(camera);
   cameraRef.current = camera;
+  const lastReportedViewportRef = useRef<string | null>(null);
 
   const reportViewport = useCallback((map: MapLibreGL.Map) => {
     const report = onViewportSettledRef.current;
     if (!report) return;
     const bounds = map.getBounds().adjustAntiMeridian();
     const center = map.getCenter();
-    report({
+    const viewport = {
       center: { lat: center.lat, lng: center.lng },
       west: bounds.getWest(),
       south: bounds.getSouth(),
@@ -602,7 +591,17 @@ export function MarketMap({
       north: bounds.getNorth(),
       zoom: map.getZoom(),
       userInitiated: userHasInteractedRef.current,
-    });
+    };
+    const key = JSON.stringify([
+      ...[center.lat, center.lng, viewport.west, viewport.south, viewport.east, viewport.north].map(
+        (value) => Number(value.toFixed(6)),
+      ),
+      Number(viewport.zoom.toFixed(3)),
+      viewport.userInitiated,
+    ]);
+    if (key === lastReportedViewportRef.current) return;
+    lastReportedViewportRef.current = key;
+    report(viewport);
   }, []);
 
   const fallBackToStandard = useCallback(() => {
@@ -726,7 +725,13 @@ export function MarketMap({
 
     function handleMoveEnd() {
       clearTimeout(settleTimer);
-      settleTimer = setTimeout(() => reportViewport(map), VIEWPORT_SETTLE_MS);
+      settleTimer = setTimeout(() => {
+        if (!map.isMoving()) reportViewport(map);
+      }, VIEWPORT_SETTLE_MS);
+    }
+
+    function handleMoveStart() {
+      clearTimeout(settleTimer);
     }
 
     function restoreStyle() {
@@ -748,8 +753,6 @@ export function MarketMap({
 
     function handleLoad() {
       restoreStyle();
-      clearTimeout(settleTimer);
-      settleTimer = setTimeout(() => reportViewport(map), VIEWPORT_SETTLE_MS);
     }
 
     function handleStyleLoad() {
@@ -777,8 +780,19 @@ export function MarketMap({
     map.on("zoomstart", handleUserInteraction);
     map.on("zoomstart", handleZoomStart);
     map.on("moveend", handleMoveEnd);
+    map.on("movestart", handleMoveStart);
+
+    // The constructor already measures the container and sets the camera.
+    // Discovery can use those bounds while basemap tiles are still loading.
+    const initialFrame = requestAnimationFrame(() => {
+      const canvas = map.getCanvas();
+      if (canvas.clientWidth > 0 && canvas.clientHeight > 0 && !map.isMoving()) {
+        reportViewport(map);
+      }
+    });
 
     return () => {
+      cancelAnimationFrame(initialFrame);
       clearTimeout(settleTimer);
       removeLabelEdgeListeners?.();
       map.off("load", handleLoad);
@@ -789,6 +803,7 @@ export function MarketMap({
       map.off("zoomstart", handleUserInteraction);
       map.off("zoomstart", handleZoomStart);
       map.off("moveend", handleMoveEnd);
+      map.off("movestart", handleMoveStart);
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       map.remove();
@@ -798,6 +813,7 @@ export function MarketMap({
       appliedInsetRef.current = 0;
       userHasInteractedRef.current = false;
       loadedRef.current = false;
+      lastReportedViewportRef.current = null;
       appliedStyleRef.current = null;
       pendingStyleRef.current = null;
       setLoaded(false);
