@@ -536,14 +536,15 @@ describe("MarketListPage search", () => {
     expect(screen.getByRole("alert").textContent).toContain("Too many matches");
   });
 
-  it("reports a rate limit as its own state, with no retry offered", () => {
+  it("reports a rate limit and offers manual recovery", () => {
     mocks.search = { q: "art" };
     mocks.filtered = { ...mocks.filtered, error: new BackendApiError(429, "rate limit exceeded") };
 
     render(<MarketListPage />);
 
     expect(screen.getByRole("alert").textContent).toContain("Too many searches");
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.filtered.refetch).toHaveBeenCalledOnce();
   });
 
   it("reports an invalid filter generically, never by matching backend prose", () => {
@@ -893,14 +894,15 @@ describe("MarketListPage clear affordances", () => {
     expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
   });
 
-  it("offers no Retry for a 429, where retrying spends the exhausted burst", () => {
+  it("keeps rate-limit recovery separate from clearing filters", () => {
     mocks.search = { q: "art" };
     mocks.filtered = { ...mocks.filtered, error: new BackendApiError(429, "rate limited") };
 
     render(<MarketListPage />);
 
     expect(screen.getByRole("alert").textContent).toContain("Too many searches");
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.filtered.refetch).toHaveBeenCalledOnce();
     expect(screen.queryByRole("button", { name: "Clear filters" })).toBeNull();
   });
 });

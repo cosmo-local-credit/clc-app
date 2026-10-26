@@ -48,13 +48,28 @@ vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
   }),
 }));
 
-vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
-  useMarketplaceMapFacets: () => [],
-  useMarketplaceMapSearch: () => ({
-    locations: [],
-    status: "disabled",
+vi.mock("#/features/home/hooks/use-market-map", () => ({
+  useMarketMap: () => ({
+    locations: [
+      {
+        id: "2710",
+        resourceKind: "voucher",
+        resourceId: VOUCHER_ADDRESS,
+        name: "Priscilah Malii",
+        kind: "voucher",
+        markerIcon: null,
+        markerColor: null,
+        lat: -1.450979,
+        lng: 38.235115,
+        locationName: "C96, KEN",
+      },
+    ],
+    clusters: [],
+    tagFacets: [],
+    status: "ready",
     error: null,
     retry: vi.fn(),
+    retrying: false,
   }),
 }));
 

@@ -227,6 +227,7 @@ vi.mock("maplibre-gl", () => ({
 
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
+import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
 import { EXPLICIT_CAMERA_RANK } from "#/features/home/logic/market-camera";
 import { useThemeStore } from "#/providers/theme";
 import { type MarketCamera, MarketMap } from "./market-map";
@@ -962,14 +963,23 @@ function renderMap(locations: MarketLocation[], extra = {}) {
 }
 
 describe("MarketMap clustering scope", () => {
-  it("clusters by distance only below zoom 14", () => {
-    renderMap(LOCATIONS);
+  it("renders the server cluster without reclustering it in MapLibre", () => {
+    const cluster: MarketMapCluster = {
+      type: "cluster",
+      id: "cluster:8:1:2",
+      lat: -1.29,
+      lng: 36.82,
+      count: 3,
+      kinds: { voucher: 2, want: 1 },
+      expansionZoom: 10,
+    };
+    renderMap(LOCATIONS, { clusters: [cluster] });
     const map = loadedMap();
     const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
+    const data = spec?.data as { features: Array<{ properties: Record<string, unknown> }> };
 
-    expect(spec?.cluster).toBe(true);
-    expect(spec?.clusterMaxZoom).toBe(13);
-    expect((spec?.clusterMaxZoom ?? 0) + 1).toBe(14);
+    expect(spec?.cluster).toBeUndefined();
+    expect(data.features.some((feature) => feature.properties.serverCluster === true)).toBe(true);
     expect(map.options.maxZoom).toBeGreaterThanOrEqual(18);
   });
 
@@ -1307,9 +1317,14 @@ describe("MarketMap click wiring", () => {
     renderMap(LOCATIONS, { onDeselect });
     const map = loadedMap();
 
-    clickFeature(map, "market-clusters", { cluster_id: 7, point_count: 3 });
+    clickFeature(map, "market-clusters", {
+      serverCluster: true,
+      point_count: 3,
+      expansionZoom: 12,
+    });
 
     expect(onDeselect).not.toHaveBeenCalled();
+    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.82, -1.28], zoom: 12 });
   });
 
   it("opens the fan on a single real click without immediately closing it", () => {
@@ -1485,15 +1500,28 @@ describe("MarketMap badge counts", () => {
     locationName: null,
   }));
 
-  it("makes a distance cluster count markers, not locations", () => {
-    renderMap([...CBD_STACK, ...LOCATIONS]);
+  it("uses the backend-provided cluster total and kind composition", () => {
+    renderMap([...CBD_STACK, ...LOCATIONS], {
+      clusters: [
+        {
+          type: "cluster",
+          id: "cluster:7:1:1",
+          lat: -1.28,
+          lng: 36.82,
+          count: 65,
+          kinds: { voucher: 63, want: 2 },
+          expansionZoom: 9,
+        },
+      ],
+    });
     const map = loadedMap();
-    const spec = map.getSource(MARKET_SOURCE_ID)?.spec as {
-      clusterProperties?: Record<string, unknown>;
+    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
+      features: Array<{ properties: Record<string, unknown> }>;
     };
+    const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
 
-    expect(spec.clusterProperties).toBeDefined();
-    expect(spec.clusterProperties?.markerCount).toEqual(["+", ["get", "count"]]);
+    expect(cluster?.properties.markerCount).toBe(65);
+    expect(cluster?.properties.badgeLabel).toBe("65\nV W");
   });
 
   it("draws clusters and coincident stacks as theme-aware network badges", () => {
@@ -1515,15 +1543,14 @@ describe("MarketMap badge counts", () => {
     }
   });
 
-  it("labels clusters from the summed marker count", () => {
+  it("labels clusters from the server-computed badge label", () => {
     renderMap(CBD_STACK);
     const map = loadedMap();
     const layer = map.getLayer("market-cluster-count") as {
       layout?: { "text-field"?: unknown };
     };
 
-    expect(JSON.stringify(layer.layout?.["text-field"])).toContain("markerCount");
-    expect(JSON.stringify(layer.layout?.["text-field"])).not.toContain("point_count");
+    expect(layer.layout?.["text-field"]).toEqual(["get", "badgeLabel"]);
   });
 
   it("labels a coincident stack from its own voucher count", () => {
@@ -1536,17 +1563,27 @@ describe("MarketMap badge counts", () => {
     expect(JSON.stringify(layer.layout?.["text-field"])).toContain('"count"');
   });
 
-  it("abbreviates counts that cannot fit inside the badge", () => {
-    renderMap(CBD_STACK);
-    const map = loadedMap();
-    const field = JSON.stringify(
-      (map.getLayer("market-cluster-count") as { layout?: { "text-field"?: unknown } }).layout?.[
-        "text-field"
+  it("abbreviates server cluster counts that cannot fit inside the badge", () => {
+    renderMap(CBD_STACK, {
+      clusters: [
+        {
+          type: "cluster",
+          id: "cluster:2:1:1",
+          lat: 0,
+          lng: 0,
+          count: 1_234,
+          kinds: { voucher: 1_234 },
+          expansionZoom: 4,
+        },
       ],
-    );
+    });
+    const map = loadedMap();
+    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
 
-    expect(field).toContain("step");
-    expect(field).toContain("k");
+    expect(cluster?.properties.badgeLabel).toBe("1k\nV");
   });
 });
 

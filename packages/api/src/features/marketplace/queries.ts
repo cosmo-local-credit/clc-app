@@ -1,5 +1,6 @@
 import { infiniteQueryOptions } from "@tanstack/react-query";
 import type { MarketplaceClient, MarketplaceParams } from "./client";
+import { discoveryRetryDelayMs, isRetryableDiscoveryError } from "../market-map/queries";
 
 export const marketplaceKeys = {
   all: ["clc", "marketplace"] as const,
@@ -28,5 +29,7 @@ export function marketplaceInfiniteQueryOptions(
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam, signal }) => client.list({ ...request, cursor: pageParam }, signal),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
+    retry: (failureCount, error) => failureCount < 3 && isRetryableDiscoveryError(error),
+    retryDelay: (attempt, error) => discoveryRetryDelayMs(attempt, error),
   });
 }
