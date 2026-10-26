@@ -166,6 +166,24 @@ it("rejects partially valid and overlong persisted viewport arrays", async () =>
   }
 });
 
+it("rejects a persisted whole-world viewport instead of submitting a world bbox", async () => {
+  const key = ownerScopedKey("0xaaa", AREA_NAME);
+  window.localStorage.setItem(
+    key,
+    JSON.stringify({
+      owner: "0xaaa",
+      center: { lat: 0, lng: 0 },
+      zoom: 0,
+      boxes: [{ minLng: -180, minLat: -90, maxLng: 180, maxLat: 90 }],
+    }),
+  );
+  mount();
+
+  await waitFor(() => expect(screen.getByTestId("camera").textContent).toBe("global"));
+  expect(screen.getByTestId("bounds").textContent).toBe("[]");
+  expect(window.localStorage.getItem(key)).toBeNull();
+});
+
 it("does not expose either owner tier while the session is unresolved", () => {
   useAuthStatusMock.mockReturnValue({
     state: "loading",

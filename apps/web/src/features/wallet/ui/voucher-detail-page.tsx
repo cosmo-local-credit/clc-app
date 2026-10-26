@@ -1,6 +1,5 @@
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import { Button } from "#/components/ui/button";
@@ -47,7 +46,6 @@ export function VoucherDetailPage({
   wantId?: string;
 }) {
   const { t } = useLingui();
-  const navigate = useNavigate();
   const auth = useAuthStatus();
   const voucherNavigation = resolveVoucherNavigationOwner({
     from: origin,
@@ -203,7 +201,7 @@ export function VoucherDetailPage({
         locationName={locationName}
         lat={lat}
         lng={lng}
-        phone={token.phone}
+        phone={detail?.phone ?? token.phone}
         website={detail?.website}
         catalogResourceId={detail?.id}
         catalogAddress={detail?.address}
@@ -233,18 +231,15 @@ export function VoucherDetailPage({
         chainId={detail?.chainId ?? poolVoucher?.chainId ?? null}
         voucherValue={voucherValue}
         voucherUoa={voucherUoa}
-        description={detail?.description ?? poolVoucher?.description ?? null}
-        email={token.email ?? null}
-        website={detail?.website ?? null}
-        phone={token.phone ?? null}
-        terms={detail?.terms ?? null}
-        locationName={locationName}
-        lat={lat}
-        lng={lng}
         dataPending={detailQuery.isPending || supportingDataPending}
-        onRetired={() => {
-          void navigate({ to: back.to, search: back.search, replace: true });
-        }}
+        privateInfo={
+          detailQuery.privateInfo
+            ? {
+                ...detailQuery.privateInfo,
+                retry: () => void detailQuery.privateInfo?.refetch(),
+              }
+            : undefined
+        }
       />
     </div>
   );

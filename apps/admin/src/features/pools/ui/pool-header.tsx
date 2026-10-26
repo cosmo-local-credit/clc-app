@@ -4,6 +4,7 @@ import {
   HiOutlineExternalLink,
   HiOutlinePencil,
   HiOutlinePlus,
+  HiOutlineRefresh,
   HiOutlineSwitchHorizontal,
 } from "react-icons/hi";
 
@@ -38,10 +39,12 @@ export function PoolHeader({
   pool,
   onAddVoucher,
   onEditProfile,
+  onRestore,
 }: {
   pool: UserPool;
   onAddVoucher: () => void;
   onEditProfile: () => void;
+  onRestore?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -76,6 +79,11 @@ export function PoolHeader({
               <Badge variant="outline" className="font-data text-xs">
                 ID {pool.id}
               </Badge>
+              {pool.active === false ? (
+                <Badge variant="outline" className="font-mono text-xs uppercase">
+                  Retired
+                </Badge>
+              ) : null}
               <span className="font-data text-muted-foreground text-xs">
                 {pool.voucherCount} {pool.voucherCount === 1 ? "voucher" : "vouchers"}
               </span>
@@ -108,7 +116,13 @@ export function PoolHeader({
             <HiOutlinePencil />
             Edit metadata
           </Button>
-          <Button size="sm" onClick={onAddVoucher}>
+          {pool.active === false && onRestore ? (
+            <Button size="sm" onClick={onRestore}>
+              <HiOutlineRefresh />
+              Restore
+            </Button>
+          ) : null}
+          <Button size="sm" onClick={onAddVoucher} disabled={pool.active === false}>
             <HiOutlinePlus />
             Add voucher
           </Button>

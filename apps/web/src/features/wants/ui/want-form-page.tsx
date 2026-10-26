@@ -138,7 +138,7 @@ function WantForm({
     !!want && ((want.contactPermission ?? 0) & 2) === 2 && phoneAvailable,
   );
   const [markerIcon, setMarkerIcon] = useState<WantMarkerIcon>(want?.markerIcon ?? "question");
-  const [markerColor, setMarkerColor] = useState<MarkerColor>(want?.markerColor ?? "orange");
+  const markerColor: MarkerColor = want?.markerColor ?? "orange";
   const [error, setError] = useState<string | null>(null);
   const save = useMutation(
     saveWantMutationOptions(wantsClient, queryClient, want?.id, want?.status === "CLOSED"),
@@ -282,11 +282,8 @@ function WantForm({
       <PublicLocationWarning />
       <MarkerStylePicker
         mode="want"
-        value={{ icon: markerIcon, color: markerColor }}
-        onChange={(next) => {
-          setMarkerIcon(next.icon);
-          setMarkerColor(next.color);
-        }}
+        value={markerIcon}
+        onChange={setMarkerIcon}
         disabled={save.isPending}
       />
       <ImageUploadField
@@ -320,7 +317,10 @@ function WantForm({
           <Trans>How should people contact you?</Trans>
         </h2>
         <p className="text-xs text-warning-foreground">
-          <Trans>The contact details you select will be public on this Want.</Trans>
+          <Trans>
+            The contact details you select are visible to signed-in users. The Want's map pin and
+            exact coordinates stay public.
+          </Trans>
         </p>
         <Field label={t`Contact instructions`} htmlFor="want-contact">
           <Textarea

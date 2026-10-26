@@ -720,6 +720,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       label={t`Pool Location`}
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value)}
+                      markerResource="pool"
                       error={error ? translateValidationError(error, i18n) : undefined}
                     />
                   );

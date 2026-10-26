@@ -7,6 +7,7 @@ import { useState } from "react";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { Button } from "#/components/ui/button";
@@ -139,10 +140,18 @@ export function WantsPage({
             <WantRow key={want.id} want={want} distanceOrigin={distanceOrigin} />
           ))}
         </section>
-      ) : (
+      ) : !query.isFetching &&
+        !query.isPlaceholderData &&
+        !query.isError &&
+        !query.hasNextPage &&
+        !filter.isDebouncing ? (
         <div className="space-y-3 border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">
-            <Trans>No Wants found.</Trans>
+            {filter.isFiltered || credit.enabled ? (
+              <Trans>No Wants found.</Trans>
+            ) : (
+              <MarketEmptyMessage />
+            )}
           </p>
           {filter.isFiltered ? (
             <Button variant="outline" tap onClick={filter.clear}>
@@ -150,7 +159,7 @@ export function WantsPage({
             </Button>
           ) : null}
         </div>
-      )}
+      ) : null}
       {query.hasNextPage ? (
         <Button
           variant="outline"

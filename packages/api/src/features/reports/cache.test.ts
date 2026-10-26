@@ -29,6 +29,8 @@ function detail(status: ReportStatus, id = "4633"): ManagedReportDetail {
     authorAddress: AUTHOR,
     createdAt: "2026-08-20T10:00:00Z",
     updatedAt: "2026-08-20T10:00:00Z",
+    markerIcon: "post",
+    markerColor: "pink",
     tags: [],
     vouchers: [],
     pools: [],

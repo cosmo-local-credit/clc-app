@@ -10,6 +10,7 @@ import {
   wantCreatorPoolsInfiniteQueryOptions,
   wantCreatorVouchersInfiniteQueryOptions,
   wantDetailQueryOptions,
+  wantContactQueryOptions,
   wantKeys,
   wantsInfiniteQueryOptions,
 } from "./queries";
@@ -32,6 +33,19 @@ describe("Want query keys", () => {
     expect(wantKeys.pool(ADDRESS)).toEqual(wantKeys.pool(ADDRESS.toLowerCase()));
     expect(wantKeys.creatorVouchers("7")).not.toEqual(wantKeys.creatorPools("7"));
     expect(wantKeys.detail("7")).not.toEqual(wantKeys.detail("8"));
+    expect(wantKeys.contact("7", ADDRESS)).toEqual(wantKeys.contact("7", ADDRESS.toLowerCase()));
+    expect(wantKeys.contact("7", ADDRESS)).not.toEqual(wantKeys.detail("7"));
+  });
+
+  it("wallet-scopes contact reads and forwards cancellation", async () => {
+    const contact = vi.fn().mockResolvedValue({ text: "Meet outside" });
+    const client = { contact } as unknown as WantsClient;
+    expect(wantContactQueryOptions(client, "7", undefined).enabled).toBe(false);
+    expect(wantContactQueryOptions(client, "", ADDRESS).enabled).toBe(false);
+
+    const options = wantContactQueryOptions(client, "7", ADDRESS);
+    await options.queryFn?.({ signal: SIGNAL } as never);
+    expect(contact).toHaveBeenCalledWith("7", SIGNAL);
   });
 });
 

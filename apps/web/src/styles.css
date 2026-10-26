@@ -38,17 +38,23 @@
 	--success-foreground: oklch(0.979 0.021 166.113);
 	--warning: oklch(0.74 0.16 80);
 	--warning-foreground: oklch(0.58 0.14 70);
-	--offer: oklch(0.64 0.19 45);
+	--offer: #007a55;
 	--offer-foreground: oklch(0.985 0 0);
-	--voucher: oklch(0.78 0.15 80);
-	--voucher-foreground: oklch(0.24 0.04 70);
-	--catalog: oklch(0.5 0.17 300);
+	--voucher: #007a55;
+	--voucher-foreground: oklch(0.985 0 0);
+	--want: #ea580c;
+	--pool: #125a98;
+	--catalog: #7c3aed;
+	--post: #52525b;
 	/* Text in each hue on a light tint of it, 4.5:1 or better. */
 	--success-ink: oklch(0.42 0.1 165);
 	--info-ink: oklch(0.46 0.12 250);
-	--voucher-ink: oklch(0.47 0.11 70);
-	--offer-ink: oklch(0.52 0.17 40);
-	--catalog-ink: oklch(0.5 0.17 300);
+	--voucher-ink: #006644;
+	--offer-ink: #006644;
+	--want-ink: #c2410c;
+	--pool-ink: #054980;
+	--catalog-ink: #6d28d9;
+	--post-ink: #3f3f46;
 	--border: oklch(0.922 0 0);
 	--input: oklch(0.922 0 0);
 	--ring: oklch(0.708 0 0);
@@ -91,16 +97,22 @@
 	--success-foreground: oklch(0.985 0.021 166.113);
 	--warning: oklch(0.78 0.15 80);
 	--warning-foreground: oklch(0.84 0.13 78);
-	--offer: oklch(0.68 0.18 45);
-	--offer-foreground: oklch(0.16 0.02 45);
-	--voucher: oklch(0.8 0.14 80);
-	--voucher-foreground: oklch(0.18 0.03 70);
-	--catalog: oklch(0.62 0.16 300);
+	--offer: #007a55;
+	--offer-foreground: oklch(0.985 0 0);
+	--voucher: #007a55;
+	--voucher-foreground: oklch(0.985 0 0);
+	--want: #ea580c;
+	--pool: #125a98;
+	--catalog: #7c3aed;
+	--post: #52525b;
 	--success-ink: oklch(0.8 0.11 165);
 	--info-ink: oklch(0.76 0.1 250);
-	--voucher-ink: oklch(0.84 0.13 80);
-	--offer-ink: oklch(0.77 0.15 45);
-	--catalog-ink: oklch(0.77 0.12 300);
+	--voucher-ink: #4ade80;
+	--offer-ink: #4ade80;
+	--want-ink: #fb923c;
+	--pool-ink: #60a5fa;
+	--catalog-ink: #a78bfa;
+	--post-ink: #d4d4d8;
 	--border: oklch(1 0 0 / 12%);
 	--input: oklch(1 0 0 / 16%);
 	--ring: oklch(0.556 0 0);
@@ -161,12 +173,18 @@
 	--color-offer-foreground: var(--offer-foreground);
 	--color-voucher: var(--voucher);
 	--color-voucher-foreground: var(--voucher-foreground);
+	--color-want: var(--want);
+	--color-pool: var(--pool);
 	--color-catalog: var(--catalog);
+	--color-post: var(--post);
 	--color-success-ink: var(--success-ink);
 	--color-info-ink: var(--info-ink);
 	--color-voucher-ink: var(--voucher-ink);
 	--color-offer-ink: var(--offer-ink);
+	--color-want-ink: var(--want-ink);
+	--color-pool-ink: var(--pool-ink);
 	--color-catalog-ink: var(--catalog-ink);
+	--color-post-ink: var(--post-ink);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
@@ -262,6 +280,27 @@ body {
 		linear-gradient(90deg, color-mix(in oklch, var(--color-border) 70%, transparent) 1px, transparent 1px),
 		linear-gradient(color-mix(in oklch, var(--color-border) 70%, transparent) 1px, transparent 1px);
 	background-size: 3rem 3rem;
+}
+
+.market-results-loading-indicator {
+	width: 35%;
+	animation: market-results-loading 1.2s ease-in-out infinite;
+}
+
+@keyframes market-results-loading {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(300%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.market-results-loading-indicator {
+		width: 100%;
+		animation: none;
+	}
 }
 
 .maplibregl-ctrl-attrib,

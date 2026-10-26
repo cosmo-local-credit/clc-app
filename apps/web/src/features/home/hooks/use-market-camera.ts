@@ -40,6 +40,8 @@ export type MarketCameraResult = {
   userLocation: Coordinates | null;
   locationStatus: ReturnType<typeof useBrowserGeolocation>["state"]["status"];
   requestLocation: () => void;
+  /** True only while no better camera exists and the once-per-session IP city is unresolved. */
+  isResolvingInitialCamera: boolean;
 };
 
 /**
@@ -49,7 +51,7 @@ export type MarketCameraResult = {
  *   A lapsed session must fall back to the guest scope.
  */
 export function useMarketCamera(owner: string): MarketCameraResult {
-  const { realFix, liveFix, ip, locationStatus, requestLocation, explicitRequests } =
+  const { realFix, liveFix, ip, ipPending, locationStatus, requestLocation, explicitRequests } =
     useDiscoveryLocation(owner);
   const camera = useMemo<MarketCamera | null>(() => {
     if (liveFix)
@@ -81,5 +83,6 @@ export function useMarketCamera(owner: string): MarketCameraResult {
     userLocation: liveFix ? realFix : null,
     locationStatus,
     requestLocation,
+    isResolvingInitialCamera: !liveFix && !realFix && !ip && ipPending,
   };
 }

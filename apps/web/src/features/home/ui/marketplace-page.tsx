@@ -15,6 +15,7 @@ import { RiArrowRightSLine } from "react-icons/ri";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
@@ -205,10 +206,20 @@ export function MarketplacePage({
                 />
               ))}
             </section>
-          ) : !hasMore && !query.isFetchingNextPage && !query.isFetchNextPageError ? (
+          ) : !hasMore &&
+            !query.isFetching &&
+            !query.isPlaceholderData &&
+            !query.isError &&
+            !filter.isDebouncing &&
+            !filter.isRestoringPreference &&
+            !query.isFetchNextPageError ? (
             <div className="space-y-3 border border-border bg-card p-4">
               <p className="text-sm text-muted-foreground">
-                <Trans>No marketplace results found.</Trans>
+                {filter.isFiltered || credit.enabled ? (
+                  <Trans>No marketplace results found.</Trans>
+                ) : (
+                  <MarketEmptyMessage />
+                )}
               </p>
               {filter.isFiltered ? (
                 <Button variant="outline" tap onClick={filter.clear}>

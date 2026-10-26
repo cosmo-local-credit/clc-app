@@ -471,9 +471,12 @@ describe("VoucherSheet summary", () => {
   });
 
   it("does not show a wallet balance to a guest", () => {
-    mocks.detail = detail();
+    mocks.detail = detail({ phone: "+254700000000", website: "https://example.org" });
     renderSheet();
     expect(screen.queryByLabelText("Your Balance")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Directions" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Website" })).toBeNull();
   });
 
   it.each([null, "not-an-address", "0x0000000000000000000000000000000000000000"])(
@@ -489,6 +492,7 @@ describe("VoucherSheet summary", () => {
   );
 
   it("keeps existing Get and Directions behavior", () => {
+    mocks.authenticated = true;
     renderSheet();
     expect(screen.getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
       `/market?scope=pools&out_voucher=${VOUCHER.toLowerCase()}`,
@@ -513,6 +517,7 @@ describe("VoucherSheet continuous content", () => {
 
   it("has no old tabs, overview, or pool carousel", async () => {
     mocks.detail = detail();
+    mocks.authenticated = true;
     renderSheet({ initialSnap: "full" });
     expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByRole("tab")).toBeNull();
@@ -528,6 +533,20 @@ describe("VoucherSheet continuous content", () => {
     renderSheet({ initialSnap: "half" });
     expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Open voucher page" })).toBeNull();
+  });
+
+  it("keeps the complete Info section unmounted for a guest", async () => {
+    mocks.detail = detail({
+      email: "issuer@example.org",
+      phone: "+254700000000",
+      website: "https://example.org",
+    });
+    renderSheet({ initialSnap: "full" });
+
+    expect(await screen.findByRole("heading", { name: "Info" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
+    expect(screen.queryByText("Fresh vegetables from the farm.")).toBeNull();
+    expect(screen.queryByText("issuer@example.org")).toBeNull();
   });
 
   it("advances through snap points from the identity header", async () => {

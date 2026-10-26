@@ -344,6 +344,7 @@ function VoucherActionRow({
   className?: string;
 }) {
   const { t } = useLingui();
+  const auth = useAuthStatus();
   const coordinates = typeof lat === "number" && typeof lng === "number";
   const verifiedOwnerAddress =
     ownerAddress &&
@@ -384,7 +385,7 @@ function VoucherActionRow({
           </Link>
         </Button>
       ) : null}
-      {coordinates || locationName ? (
+      {auth.isAuthenticated && (coordinates || locationName) ? (
         <Button
           variant="outline"
           tap
@@ -394,7 +395,7 @@ function VoucherActionRow({
           <Trans>Directions</Trans>
         </Button>
       ) : null}
-      {phone ? (
+      {auth.isAuthenticated && phone ? (
         <Button asChild variant="outline" tap>
           <a href={`tel:${phone}`}>
             <RiPhoneLine aria-hidden="true" />
@@ -402,7 +403,7 @@ function VoucherActionRow({
           </a>
         </Button>
       ) : null}
-      {verifiedWebsite ? (
+      {auth.isAuthenticated && verifiedWebsite ? (
         <Button asChild variant="outline" tap>
           <a href={verifiedWebsite} target="_blank" rel="noreferrer noopener">
             <RiGlobalLine aria-hidden="true" />

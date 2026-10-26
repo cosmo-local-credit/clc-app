@@ -1,12 +1,21 @@
 import {
-  MARKER_COLOR_HEX,
+  RESOURCE_COLOR_HEX,
   type MarkerIcon,
-  type MarkerStyle,
+  type ReportMarkerIcon,
   resolveMarkerStyle,
 } from "@clc/core/features/markers/logic";
 import type MapLibreGL from "maplibre-gl";
 import type { IconType } from "react-icons";
-import { RiGroupFill, RiMessage2Line, RiQuestionLine, RiSpeakLine } from "react-icons/ri";
+import {
+  RiArticleLine,
+  RiBookOpenFill,
+  RiCalendarEventLine,
+  RiGroupFill,
+  RiMegaphoneLine,
+  RiMessage2Line,
+  RiQuestionLine,
+  RiSpeakLine,
+} from "react-icons/ri";
 
 import { MARKER_GLYPHS } from "#/components/vouchers/marker-glyphs";
 import type { Theme } from "#/providers/theme";
@@ -16,11 +25,11 @@ import type { MarketLocation } from "./market-data";
 export const SELECTED_PIN_SUFFIX = "-selected";
 
 /**
- * One image per icon and colour a voucher on the map actually uses, plus its
- * selected variant. Cluster circles and counts are style layers, not images.
+ * One image per voucher icon, plus its selected variant. Resource kind owns
+ * the fill colour; legacy stored colours never create duplicate atlas images.
  */
-export function markerImageId({ icon, color }: MarkerStyle): string {
-  return `market-pin-${icon}-${color}`;
+export function markerImageId({ icon }: { icon: MarkerIcon }): string {
+  return `market-pin-voucher-${icon}`;
 }
 
 const WANT_GLYPHS = {
@@ -29,7 +38,14 @@ const WANT_GLYPHS = {
   request: RiSpeakLine,
 } as const;
 
+const REPORT_GLYPHS: Record<ReportMarkerIcon, IconType> = {
+  post: RiArticleLine,
+  event: RiCalendarEventLine,
+  announcement: RiMegaphoneLine,
+};
+
 export const POOL_PIN_IMAGE_ID = "market-pin-pool";
+export const CATALOG_PIN_IMAGE_ID = "market-pin-catalog";
 
 export const MARKET_NETWORK_BADGE_IMAGE_ID: Record<Theme, string> = {
   light: "market-network-badge-light",
@@ -48,10 +64,11 @@ export const MARKET_NETWORK_BADGE_COLOR: Record<
 /**
  * The Pools button's `--info` blue, `oklch(0.46 0.12 250)`, in sRGB, and a
  * darker shade of it for the name. The pool pin wears the button's colour and
- * glyph so the two read as one thing; its square body keeps it apart from the
- * round voucher pins, some of which are blue too.
+ * glyph so the two read as one thing; its square body and blue fill keep it
+ * apart from round green voucher pins.
  */
-export const POOL_PIN_HEX = { pin: "#125a98", label: "#054980" } as const;
+export const POOL_PIN_HEX = RESOURCE_COLOR_HEX.pool;
+export const CATALOG_PIN_HEX = RESOURCE_COLOR_HEX.catalog;
 
 type PinShape = { radius: number; tail: number };
 
@@ -76,17 +93,38 @@ export function markerArt(location: MarkerSource): MarkerArt {
       body: "square",
     };
   }
+  if (location.kind === "catalog") {
+    return {
+      image: CATALOG_PIN_IMAGE_ID,
+      fill: CATALOG_PIN_HEX.pin,
+      label: CATALOG_PIN_HEX.label,
+      glyph: RiBookOpenFill,
+      body: "square",
+    };
+  }
   if (location.kind === "want") {
     const icon =
       location.markerIcon === "message" || location.markerIcon === "request"
         ? location.markerIcon
         : "question";
-    const color = location.markerColor ?? "orange";
     return {
-      image: `market-pin-want-${icon}-${color}`,
-      fill: MARKER_COLOR_HEX[color].pin,
-      label: MARKER_COLOR_HEX[color].label,
+      image: `market-pin-want-${icon}`,
+      fill: RESOURCE_COLOR_HEX.want.pin,
+      label: RESOURCE_COLOR_HEX.want.label,
       glyph: WANT_GLYPHS[icon],
+      body: "disc",
+    };
+  }
+  if (location.kind === "post") {
+    const icon =
+      location.markerIcon === "event" || location.markerIcon === "announcement"
+        ? location.markerIcon
+        : "post";
+    return {
+      image: `market-pin-post-${icon}`,
+      fill: RESOURCE_COLOR_HEX.post.pin,
+      label: RESOURCE_COLOR_HEX.post.label,
+      glyph: REPORT_GLYPHS[icon],
       body: "disc",
     };
   }
@@ -97,8 +135,8 @@ export function markerArt(location: MarkerSource): MarkerArt {
   });
   return {
     image: markerImageId(style),
-    fill: MARKER_COLOR_HEX[style.color].pin,
-    label: MARKER_COLOR_HEX[style.color].label,
+    fill: RESOURCE_COLOR_HEX.voucher.pin,
+    label: RESOURCE_COLOR_HEX.voucher.label,
     glyph: MARKER_GLYPHS[style.icon],
     body: "disc",
   };
@@ -229,8 +267,8 @@ function addImage(map: MapLibreGL.Map, imageId: string, art: MarkerArt, shape: P
 }
 
 /**
- * Fills are fixed sRGB that stays off `--primary`: the live-location pin owns
- * the brand colour (green on prod, red on staging).
+ * Fills are fixed sRGB resource colours. The live-location marker remains
+ * distinguishable through its taller, glyph-free silhouette.
  */
 function createMarkerImage(
   { fill, glyph, body }: MarkerArt,

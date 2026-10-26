@@ -207,6 +207,17 @@ beforeEach(() => {
   mocks.api.update.mockResolvedValue(catalog);
 });
 describe("catalog curation", () => {
+  it.each([false, true])("guides an empty Catalog list (authenticated=%s)", async (signedIn) => {
+    mocks.auth.isAuthenticated = signedIn;
+    mocks.auth.state = signedIn ? "authenticated" : "guest";
+    mocks.api.list.mockResolvedValue({ catalogs: [], nextCursor: null });
+    mount(<CatalogsPage />);
+    const message = await screen.findByText(/^No marketplace results to show yet,/);
+    expect(
+      within(message).getByRole("link", { name: signedIn ? "Wallet" : "Sign in" }),
+    ).toBeTruthy();
+  });
+
   it("routes an empty wallet through creation with a validated pool intent", async () => {
     mocks.api.mine.mockResolvedValue({ catalogs: [], nextCursor: null });
     mount(<AddToCatalogButton {...intent} />);
@@ -413,6 +424,19 @@ describe("catalog curation", () => {
     expect(screen.queryByRole("button", { name: "Add a pool" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Add a voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
+  });
+  it("gates the Catalog location for guests without hiding public content", async () => {
+    mocks.auth.isAuthenticated = false;
+    mocks.auth.state = "guest";
+    mocks.auth.session.address = "";
+    const detailed = { ...catalog, description: "Local food and services" };
+    mocks.api.detail.mockResolvedValue(detailed);
+
+    mount(<CatalogDetailPage id="7" />);
+
+    expect(await screen.findByText("Local food and services")).toBeTruthy();
+    expect(screen.queryByText("Sarajevo")).toBeNull();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
   });
   it("lets the owner edit and remove one pool relationship", async () => {
     const item = {

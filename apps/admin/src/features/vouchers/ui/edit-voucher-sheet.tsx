@@ -146,6 +146,9 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
     validators: { onChange: profileSchema, onSubmit: profileSchema },
     onSubmit: async ({ value }) => {
       try {
+        const clearContactFields = (["email", "website", "phone"] as const).filter(
+          (field) => Boolean(voucher[field]?.trim()) && value[field].trim() === "",
+        );
         await update.mutateAsync({
           // `name` is the effective label, not proof that an override exists.
           // Do not turn an ordinary metadata save into a redundant override;
@@ -157,6 +160,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
           email: value.email,
           website: value.website,
           phone: value.phone,
+          ...(clearContactFields.length > 0 ? { clearContactFields } : {}),
           terms: value.terms,
           // Unlike every other field here, these preserve on omission — so they
           // are sent only when the operator changed one. "" is how this endpoint
@@ -444,17 +448,12 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
 
         <div className="border-border flex flex-col gap-4 border-t pt-4">
           <SectionLabel>Map marker</SectionLabel>
-          <form.Subscribe
-            selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
-          >
-            {([icon, color]) => (
+          <form.Subscribe selector={(state) => state.values.markerIcon}>
+            {(icon) => (
               <MarkerStyleField
                 kind={voucher.kind}
-                value={{ icon, color }}
-                onChange={(next) => {
-                  form.setFieldValue("markerIcon", next.icon);
-                  form.setFieldValue("markerColor", next.color);
-                }}
+                value={icon}
+                onChange={(next) => form.setFieldValue("markerIcon", next)}
                 disabled={update.isPending}
               />
             )}

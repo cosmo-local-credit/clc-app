@@ -15,12 +15,14 @@ import {
  * dark.
  */
 export const RESOURCE_HUE: Record<MarketplaceScope, string> = {
-  pools: "[--hue:var(--color-info)] [--ink:var(--color-info-ink)]",
+  pools: "[--hue:var(--color-pool)] [--ink:var(--color-pool-ink)]",
   vouchers: "[--hue:var(--color-voucher)] [--ink:var(--color-voucher-ink)]",
   offers: "[--hue:var(--color-offer)] [--ink:var(--color-offer-ink)]",
-  wants: "[--hue:var(--color-warning)] [--ink:var(--color-warning-foreground)]",
+  wants: "[--hue:var(--color-want)] [--ink:var(--color-want-ink)]",
   catalogs: "[--hue:var(--color-catalog)] [--ink:var(--color-catalog-ink)]",
 };
+
+export const POST_RESOURCE_HUE = "[--hue:var(--color-post)] [--ink:var(--color-post-ink)]";
 
 export const RESOURCE_ICON: Record<MarketplaceScope, IconType> = {
   pools: RiGroupLine,

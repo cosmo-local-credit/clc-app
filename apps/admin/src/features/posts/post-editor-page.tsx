@@ -35,6 +35,7 @@ import { HiOutlinePlus, HiOutlineTrash } from "react-icons/hi";
 import { toast } from "sonner";
 
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
+import { ReportMarkerStyleField } from "#/components/admin/marker-style-field";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { MarkdownContent } from "#/components/admin/markdown-content";
 import { PageHeader } from "#/components/admin/page-header";
@@ -309,17 +310,34 @@ function PostEditorForm({
           <PublicDisclosureNote kind="location" />
           {/* reports.location_name was dropped in migration 010, so only the
               coordinates persist. */}
-          <form.Subscribe selector={(state) => [state.values.geoLat, state.values.geoLng] as const}>
-            {([lat, lng]) => (
-              <PostGeoField
-                latitude={lat}
-                longitude={lng}
-                disabled={saving}
-                onChange={(next) => {
-                  form.setFieldValue("geoLat", next ? next.lat : null);
-                  form.setFieldValue("geoLng", next ? next.lng : null);
-                }}
-              />
+          <form.Subscribe
+            selector={(state) =>
+              [
+                state.values.geoLat,
+                state.values.geoLng,
+                state.values.markerIcon,
+                state.values.markerColor,
+              ] as const
+            }
+          >
+            {([lat, lng, markerIcon, markerColor]) => (
+              <div className="flex flex-col gap-4">
+                <PostGeoField
+                  latitude={lat}
+                  longitude={lng}
+                  markerStyle={{ icon: markerIcon, color: markerColor }}
+                  disabled={saving}
+                  onChange={(next) => {
+                    form.setFieldValue("geoLat", next ? next.lat : null);
+                    form.setFieldValue("geoLng", next ? next.lng : null);
+                  }}
+                />
+                <ReportMarkerStyleField
+                  value={markerIcon}
+                  disabled={saving}
+                  onChange={(next) => form.setFieldValue("markerIcon", next)}
+                />
+              </div>
             )}
           </form.Subscribe>
         </section>

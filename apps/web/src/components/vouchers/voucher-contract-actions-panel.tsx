@@ -7,7 +7,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  RiDeleteBin6Line,
   RiPencilLine,
   RiShieldKeyholeLine,
   RiSparkling2Line,
@@ -41,13 +40,13 @@ import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherOwnershipTransfer } from "#/features/vouchers/hooks/use-voucher-ownership-transfer";
-import { useRetireVoucher } from "#/features/wallet/hooks/use-retire-voucher";
+import { RetirementControl } from "#/components/retirement/retirement-control";
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 
 import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
 
-type VoucherControlSheet = "details" | "mint" | "ownership" | "retire";
+type VoucherControlSheet = "details" | "mint" | "ownership";
 
 /**
  * Everything the issuer can change about one voucher, in a single group.
@@ -65,23 +64,17 @@ export function VoucherContractActionsPanel({
   tokenDecimals,
   ownerAddress,
   walletAddress,
+  requesterAddress,
   editable,
-  onRetired,
 }: {
   tokenAddress: string | undefined;
   tokenSymbol: string;
   tokenDecimals: number | undefined;
   ownerAddress: string | null;
   walletAddress: string | undefined;
+  requesterAddress?: string;
   /** The catalog record, when the viewer may edit it; null for everyone else. */
   editable: MarketVoucherDetail | null;
-  /**
-   * Leaves this screen once the voucher is retired. The caller owns it because
-   * the screen's own Back target is where the viewer came from, and a retired
-   * voucher's page no longer resolves — staying would show an error for a
-   * request that succeeded.
-   */
-  onRetired: () => void;
 }) {
   const { t } = useLingui();
   const [sheet, setSheet] = useState<VoucherControlSheet | null>(null);
@@ -145,18 +138,15 @@ export function VoucherContractActionsPanel({
             />
           </>
         ) : null}
-        {/*
-          Last, and gated on `editable` rather than `contract`: retiring writes
-          the catalog record, not the token, so it follows the same rule as
-          editing the details — the owner or a superadmin — while mint and
-          transfer need a wallet that can sign as the on-chain owner.
-        */}
-        {editable ? (
-          <ActionRow
-            tone="destructive"
-            icon={<RiDeleteBin6Line className="size-4" aria-hidden="true" />}
-            label={t`Retire voucher`}
-            onClick={() => setSheet("retire")}
+        {editable &&
+        requesterAddress &&
+        ownerAddress?.toLowerCase() === requesterAddress.toLowerCase() ? (
+          <RetirementControl
+            type="voucher"
+            address={editable.address}
+            name={editable.name}
+            viewer={requesterAddress}
+            active={editable.active}
           />
         ) : null}
       </section>
@@ -167,12 +157,6 @@ export function VoucherContractActionsPanel({
             open={sheet === "details"}
             voucher={editable}
             onClose={() => setSheet(null)}
-          />
-          <VoucherRetireSheet
-            open={sheet === "retire"}
-            onClose={() => setSheet(null)}
-            voucher={editable}
-            onRetired={onRetired}
           />
         </>
       ) : null}
@@ -431,90 +415,6 @@ function VoucherOwnershipTransferSheet({
               </Button>
             </SheetFooter>
           </form>
-        </SheetContent>
-      </SheetPortal>
-    </SheetRoot>
-  );
-}
-
-/**
- * Confirms a retire before it happens.
- *
- * A sheet rather than the posts feature's confirm dialog: sibling features do
- * not import each other's `ui/`, and every other decision on this screen is
- * already taken in a bottom sheet.
- *
- * The copy names the voucher and says who can undo it, because the one thing a
- * viewer cannot tell from the button is that this is reversible but not by them.
- */
-function VoucherRetireSheet({
-  open,
-  onClose,
-  voucher,
-  onRetired,
-}: {
-  open: boolean;
-  onClose: () => void;
-  voucher: MarketVoucherDetail;
-  onRetired: () => void;
-}) {
-  const { t } = useLingui();
-  const retire = useRetireVoucher(voucher.address);
-
-  async function confirm() {
-    try {
-      await retire.mutateAsync();
-      toast.success(t`Voucher retired.`);
-      onClose();
-      onRetired();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`Couldn't retire the voucher.`);
-    }
-  }
-
-  return (
-    <SheetRoot
-      open={open}
-      onOpenChange={(next) => {
-        if (!next && !retire.isPending) onClose();
-      }}
-    >
-      <SheetPortal>
-        <SheetBackdrop />
-        <SheetContent className="[&>div:first-child]:hidden">
-          <SheetHeader className="px-6 pt-5 pb-3">
-            <SheetTitle>
-              <Trans>Retire {voucher.symbol}?</Trans>
-            </SheetTitle>
-            <p className="text-muted-foreground text-sm">
-              <Trans>
-                {voucher.name} disappears from the market, search and everyone's wallet. Balances
-                and past activity are kept, and an admin can bring it back.
-              </Trans>
-            </p>
-          </SheetHeader>
-          <SheetFooter className="gap-2 border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button
-              type="button"
-              variant="destructive"
-              tap
-              className="w-full"
-              pending={retire.isPending}
-              onClick={() => void confirm()}
-            >
-              {retire.isPending ? <Trans>Retiring…</Trans> : <Trans>Retire voucher</Trans>}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              tap
-              className="w-full"
-              disabled={retire.isPending}
-              onClick={onClose}
-            >
-              <Trans>Cancel</Trans>
-            </Button>
-          </SheetFooter>
         </SheetContent>
       </SheetPortal>
     </SheetRoot>

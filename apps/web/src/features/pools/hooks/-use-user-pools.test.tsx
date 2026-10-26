@@ -4,11 +4,14 @@ import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useUserPoolByAddress, useUserPoolsInfinite } from "./use-user-pools";
+import type { UserPool } from "@clc/api/features/pools/client";
+import { poolKeys } from "@clc/api/features/pools/queries";
 
 const POOL_ADDRESS = "0xAa00000000000000000000000000000000000001";
 
-function createWrapper() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function createWrapper(
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
@@ -32,6 +35,70 @@ afterEach(() => {
 });
 
 describe("pool queries", () => {
+  it("merges wallet-scoped info without exposing contacts in the public cache", async () => {
+    const owner = "0x2222222222222222222222222222222222222222";
+    const fetcher = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve(
+        response({
+          pool: {
+            ...pool(1, POOL_ADDRESS),
+            email: url.endsWith("/info") ? "steward@example.org" : null,
+          },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result } = renderHook(() => useUserPoolByAddress(POOL_ADDRESS, owner), {
+      wrapper: createWrapper(client),
+    });
+
+    await waitFor(() => expect(result.current.data?.email).toBe("steward@example.org"));
+    expect(client.getQueryData<UserPool>(poolKeys.detail(POOL_ADDRESS))?.email).toBeNull();
+    expect(client.getQueryData<UserPool>(poolKeys.info(POOL_ADDRESS, owner))?.email).toBe(
+      "steward@example.org",
+    );
+  });
+
+  it("recovers a retired pool only through a viewer-scoped protected read", async () => {
+    const owner = "0x2222222222222222222222222222222222222222";
+    const fetcher = vi.fn().mockImplementation((url: string) =>
+      url.includes("/users/me/owned-pools/")
+        ? Promise.resolve(
+            response({ pool: { ...pool(1, POOL_ADDRESS), active: false, ownerAddress: owner } }),
+          )
+        : Promise.resolve({
+            ok: false,
+            status: 404,
+            text: async () => JSON.stringify({ ok: false, description: "Pool not found" }),
+          }),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useUserPoolByAddress(POOL_ADDRESS, owner), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.data?.active).toBe(false));
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining(`/users/me/owned-pools/${POOL_ADDRESS}`),
+      expect.objectContaining({ credentials: "include", cache: "no-store" }),
+    );
+  });
+
+  it("does not attempt owner recovery for a guest", async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: async () => JSON.stringify({ ok: false, description: "Pool not found" }),
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useUserPoolByAddress(POOL_ADDRESS), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(fetcher.mock.calls[0]?.[0]).not.toContain("/users/me/");
+  });
+
   it("loads successive pool pages and stops when the backend returns a short page", async () => {
     const fetcher = vi
       .fn()

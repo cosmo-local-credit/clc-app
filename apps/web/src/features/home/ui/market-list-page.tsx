@@ -6,6 +6,7 @@ import { RiArrowRightSLine } from "react-icons/ri";
 
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { Badge } from "#/components/ui/badge";
 import { useMarketDistanceLabel, useMarketKindLabel } from "#/components/vouchers/voucher-labels";
@@ -85,6 +86,9 @@ export function MarketListPage({
 
   const showEmpty =
     sortedVouchers.length === 0 &&
+    !credit.blocksResults &&
+    !isRefining &&
+    !retrying &&
     !error &&
     filter.result.ok &&
     (filter.isFiltered ? catalog.status === "ready" : isCatalogComplete);
@@ -202,11 +206,11 @@ export function MarketListPage({
             <Trans>No vouchers are available through your Credit pools.</Trans>
           </div>
         ) : showEmpty ? (
-          filter.isFiltered ? (
+          filter.isFiltered || credit.enabled ? (
             <MarketFilteredEmpty onClear={filter.clear} />
           ) : (
             <div className="mt-3 border border-border bg-card p-4 text-muted-foreground text-sm">
-              <Trans>No vouchers to show yet.</Trans>
+              <MarketEmptyMessage />
             </div>
           )
         ) : null}

@@ -5,7 +5,7 @@ import type { IconType } from "react-icons";
 import { RiApps2Line, RiArticleLine, RiMap2Line, RiNotification3Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
-import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
+import { POST_RESOURCE_HUE, RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
 import { MarketSearchField, MarketSearchScreen } from "#/components/market-search";
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -19,6 +19,10 @@ import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter"
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
+import {
+  MARKET_MAP_RESOURCE_KINDS,
+  type MarketMapResourceKind,
+} from "#/features/home/hooks/use-market-map-resource-selection";
 
 /** Where the bar stands: the map, or one of the lists its badges open. */
 export type MarketSurface = "map" | MarketListScope | "posts" | "activity";
@@ -91,6 +95,8 @@ export function MarketBar({
   credit,
   surface = "page",
   className,
+  mapResources,
+  progress,
 }: {
   current: MarketSurface;
   /** A remembered filter keeps the tags the search screen adds. */
@@ -102,6 +108,13 @@ export function MarketBar({
   credit?: ReactNode;
   surface?: "map" | "page";
   className?: string;
+  mapResources?: {
+    selected: readonly MarketMapResourceKind[];
+    allSelected: boolean;
+    toggle: (kind: MarketMapResourceKind) => void;
+    toggleAll: () => void;
+  };
+  progress?: ReactNode;
 }) {
   const auth = useAuthStatus();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -131,7 +144,12 @@ export function MarketBar({
           </>
         }
       />
-      <MarketBadges current={current} />
+      {surface === "map" && mapResources ? (
+        <MarketMapResourceToggles {...mapResources} />
+      ) : (
+        <MarketBadges current={current} />
+      )}
+      {progress}
       {searchOpen ? (
         <MarketSearchScreen
           onClose={() => setSearchOpen(false)}
@@ -150,6 +168,93 @@ export function MarketBar({
         />
       ) : null}
     </div>
+  );
+}
+
+function MarketMapResourceToggles({
+  selected,
+  allSelected,
+  toggle,
+  toggleAll,
+}: {
+  selected: readonly MarketMapResourceKind[];
+  allSelected: boolean;
+  toggle: (kind: MarketMapResourceKind) => void;
+  toggleAll: () => void;
+}) {
+  const { t } = useLingui();
+  const config: Record<MarketMapResourceKind, { label: string; icon: IconType; tone: string }> = {
+    voucher: { label: t`Vouchers`, icon: RESOURCE_ICON.vouchers, tone: LIST_HUE.vouchers },
+    want: { label: t`Wants`, icon: RESOURCE_ICON.wants, tone: LIST_HUE.wants },
+    pool: { label: t`Pools`, icon: RESOURCE_ICON.pools, tone: LIST_HUE.pools },
+    catalog: { label: t`Catalogs`, icon: RESOURCE_ICON.catalogs, tone: LIST_HUE.catalogs },
+    post: {
+      label: t`Posts`,
+      icon: RiArticleLine,
+      tone: POST_RESOURCE_HUE,
+    },
+  };
+
+  return (
+    <div
+      role="group"
+      aria-label={t`Resources shown on the map`}
+      className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      <MapResourceToggle
+        label={t`All`}
+        icon={RiApps2Line}
+        pressed={allSelected}
+        tone={LIST_HUE.all}
+        onClick={toggleAll}
+      />
+      {MARKET_MAP_RESOURCE_KINDS.map((kind) => {
+        const item = config[kind];
+        return (
+          <MapResourceToggle
+            key={kind}
+            label={item.label}
+            icon={item.icon}
+            pressed={selected.includes(kind)}
+            tone={item.tone}
+            onClick={() => toggle(kind)}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function MapResourceToggle({
+  label,
+  icon: Icon,
+  pressed,
+  tone,
+  onClick,
+}: {
+  label: string;
+  icon: IconType;
+  pressed: boolean;
+  tone: string;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      tap
+      aria-pressed={pressed}
+      onClick={onClick}
+      className={cn(
+        "font-semibold text-(--ink) hover:text-(--ink)",
+        tone,
+        pressed &&
+          "border-(--hue)! bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))] shadow-[inset_0_0_0_1px_var(--hue)] hover:bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))]",
+      )}
+    >
+      <Icon aria-hidden="true" />
+      {label}
+    </Button>
   );
 }
 
@@ -214,7 +319,15 @@ function MarketBadges({ current }: { current: MarketSurface }) {
             asChild
             variant="outline"
             tap
-            className={cn("font-semibold", active && "border-foreground bg-muted")}
+            className={cn(
+              "font-semibold",
+              tab === "posts" && "text-(--ink) hover:text-(--ink)",
+              tab === "posts" && POST_RESOURCE_HUE,
+              active &&
+                (tab === "posts"
+                  ? "border-(--hue)! bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))]"
+                  : "border-foreground bg-muted"),
+            )}
           >
             <Link to="/" search={active ? {} : { tab }} aria-current={active ? "page" : undefined}>
               <Icon aria-hidden="true" />

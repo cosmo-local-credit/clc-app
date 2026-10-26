@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({ active: true, restoreVoucher: vi.fn() }));
 vi.mock("#/lib/api", () => ({
   clcApi: {
     admin: { restoreVoucher: (...args: unknown[]) => mocks.restoreVoucher(...args) },
+    retirement: { restore: (...args: unknown[]) => mocks.restoreVoucher(...args) },
     market: {},
   },
 }));
@@ -290,7 +291,15 @@ describe("VoucherDetailPage restore", () => {
     expect(screen.getByText("Retired")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Restore" }));
+    fireEvent.change(await screen.findByLabelText("Reason for restoration"), {
+      target: { value: "Owner has resumed the project" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Restore voucher" }));
 
-    await waitFor(() => expect(mocks.restoreVoucher).toHaveBeenCalledWith(ADDRESS));
+    await waitFor(() =>
+      expect(mocks.restoreVoucher).toHaveBeenCalledWith("voucher", ADDRESS, {
+        reason: "Owner has resumed the project",
+      }),
+    );
   });
 });

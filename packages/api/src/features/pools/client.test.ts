@@ -90,6 +90,41 @@ describe("pools client", () => {
     );
   });
 
+  it("strips legacy contacts publicly and loads them only from authenticated info", async () => {
+    const address = "0x1111111111111111111111111111111111111111";
+    const row = {
+      id: 7,
+      address,
+      name: "Fresh Food Circle",
+      symbol: "FFC",
+      email: "pool@example.test",
+      phone: "+254700000000",
+      website: "https://pool.example.test",
+    };
+    const fetcher = mockFetch({ ok: true, result: { pool: row } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await expect(api.getPoolByAddress(address)).resolves.toMatchObject({
+      email: null,
+      phone: null,
+      website: null,
+    });
+    expect((fetcher.mock.calls[0] as [string, RequestInit])[1].credentials).toBe("include");
+
+    const controller = new AbortController();
+    await expect(api.getPoolInfo(address, controller.signal)).resolves.toMatchObject({
+      email: "pool@example.test",
+      phone: "+254700000000",
+      website: "https://pool.example.test",
+    });
+    expect(fetcher.mock.calls[1]?.[0]).toBe(`https://api.test/api/v2/pools/${address}/info`);
+    expect(fetcher.mock.calls[1]?.[1]).toMatchObject({
+      cache: "no-store",
+      credentials: "include",
+      signal: controller.signal,
+    });
+  });
+
   it("normalizes null pools and trims metadata safely", async () => {
     const fetcher = mockFetch({ ok: true, result: { pools: null } });
     vi.stubGlobal("fetch", fetcher);
@@ -137,6 +172,30 @@ describe("pools client", () => {
     expect(normalizeUserPool({ address: "nope" })).toBeNull();
   });
 
+  it("strips contacts from legacy public pool-list rows", async () => {
+    const fetcher = mockFetch({
+      ok: true,
+      result: {
+        pools: [
+          {
+            id: 2,
+            address: "0x3333333333333333333333333333333333333333",
+            name: "Valid Pool",
+            symbol: "GOOD",
+            email: "pool@example.test",
+            phone: "+254700000000",
+            website: "https://pool.example.test",
+          },
+        ],
+      },
+    });
+    vi.stubGlobal("fetch", fetcher);
+
+    await expect(api.getPools({ perPage: 20 })).resolves.toMatchObject({
+      pools: [{ email: null, phone: null, website: null }],
+    });
+  });
+
   it("fetches real pool vouchers with oracle and offering metadata", async () => {
     const fetcher = mockFetch({
       ok: true,
@@ -158,6 +217,9 @@ describe("pools client", () => {
             oracleFeedId: 11,
             oracleName: "KES",
             oracleAddress: "0x5555555555555555555555555555555555555555",
+            email: "issuer@example.test",
+            phone: "+254700000000",
+            website: "https://voucher.example.test",
             tags: ["Market"],
           },
         ],
@@ -177,6 +239,9 @@ describe("pools client", () => {
       availableOfferCount: 5,
       oracleName: "KES",
     });
+    expect(page.vouchers[0]).not.toHaveProperty("email");
+    expect(page.vouchers[0]).not.toHaveProperty("phone");
+    expect(page.vouchers[0]).not.toHaveProperty("website");
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(
         "/api/v2/pools/0x1111111111111111111111111111111111111111/vouchers?perPage=20&cursor=11&next=true",
@@ -261,6 +326,22 @@ describe("updatePoolProfile", () => {
     await expect(api.updatePoolProfile(ADDRESS, base)).rejects.toThrow(
       "Pool update response did not include a valid address.",
     );
+  });
+
+  it("sends explicit contact-clearing intent only when supplied", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pool: { address: ADDRESS } } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.updatePoolProfile(ADDRESS, base);
+    let body = JSON.parse((fetcher.mock.calls[0] as [string, RequestInit])[1].body as string);
+    expect(body).not.toHaveProperty("clearContactFields");
+
+    await api.updatePoolProfile(ADDRESS, {
+      ...base,
+      clearContactFields: ["phone", "website"],
+    });
+    body = JSON.parse((fetcher.mock.calls[1] as [string, RequestInit])[1].body as string);
+    expect(body.clearContactFields).toEqual(["phone", "website"]);
   });
 });
 

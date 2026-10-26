@@ -1,7 +1,9 @@
 import {
   type Want,
+  type WantContact,
   type WantWrite,
   wantContactFrom,
+  wantContactSchema,
   wantSchema,
   wantWriteSchema,
 } from "@clc/core/features/wants/logic";
@@ -23,6 +25,7 @@ const wantPageSchema = z.object({
     .optional(),
 });
 const wantResultSchema = z.object({ want: wantSchema });
+const wantContactResultSchema = z.object({ contact: wantContactSchema.nullish() });
 
 const creatorVoucherSchema = z.object({
   id: z.union([z.string(), z.number()]).transform(String),
@@ -88,6 +91,16 @@ function withContact(want: Want): Want {
   return { ...want, contact: wantContactFrom(want) };
 }
 
+function withoutContact(want: Want): Want {
+  const { contactPermission, contactText, email, phone, contact, ...publicWant } = want;
+  void contactPermission;
+  void contactText;
+  void email;
+  void phone;
+  void contact;
+  return publicWant;
+}
+
 export function createWantsClient(http: HttpClient) {
   async function read<S extends z.ZodType>(schema: S, path: string, init: RequestInit) {
     const parsed = schema.safeParse(
@@ -123,7 +136,7 @@ export function createWantsClient(http: HttpClient) {
         credentials: params.nearby ? "include" : "omit",
         signal,
       });
-      return { ...page, wants: page.wants.map(withContact) };
+      return { ...page, wants: page.wants.map(withoutContact) };
     },
     async pool(poolAddress: string, params: WantsParams, signal?: AbortSignal): Promise<WantPage> {
       const page = await read(
@@ -131,7 +144,7 @@ export function createWantsClient(http: HttpClient) {
         listPath(`/api/v2/pools/${encodeURIComponent(poolAddress)}/wants`, params),
         { method: "GET", credentials: "omit", signal },
       );
-      return { ...page, wants: page.wants.map(withContact) };
+      return { ...page, wants: page.wants.map(withoutContact) };
     },
     async mine(params: WantsParams, signal?: AbortSignal): Promise<WantPage> {
       const page = await read(wantPageSchema, listPath("/api/v2/users/me/wants", params), {
@@ -146,7 +159,15 @@ export function createWantsClient(http: HttpClient) {
         credentials: "omit",
         signal,
       });
-      return withContact(result.want);
+      return withoutContact(result.want);
+    },
+    async contact(id: string, signal?: AbortSignal): Promise<WantContact | undefined> {
+      const result = await read(
+        wantContactResultSchema,
+        `/api/v2/wants/${encodeURIComponent(id)}/contact`,
+        { method: "GET", signal },
+      );
+      return result.contact ?? undefined;
     },
     async creatorVouchers(
       id: string,

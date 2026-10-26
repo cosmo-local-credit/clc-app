@@ -283,10 +283,8 @@ describe("viewportToBoundingBoxes", () => {
     }
   });
 
-  it("collapses a whole-world viewport to one box", () => {
-    expect(viewportToBoundingBoxes({ west: -400, south: -95, east: 400, north: 95 })).toEqual([
-      { minLng: -180, minLat: -90, maxLng: 180, maxLat: 90 },
-    ]);
+  it("treats a whole-world viewport as Global discovery", () => {
+    expect(viewportToBoundingBoxes({ west: -400, south: -95, east: 400, north: 95 })).toEqual([]);
   });
 
   it("clamps latitudes to the valid range", () => {
@@ -436,6 +434,22 @@ describe("updateVoucherProfile", () => {
     expect(body.markerColor).toBe("");
   });
 
+  it("sends explicit contact-clearing intent only when supplied", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    await api.updateVoucherProfile(DETAIL_ROW.address, profile);
+    expect(JSON.parse(requestedInit().body as string)).not.toHaveProperty("clearContactFields");
+
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    await api.updateVoucherProfile(DETAIL_ROW.address, {
+      ...profile,
+      clearContactFields: ["email", "website"],
+    });
+    expect(JSON.parse(requestedInit(1).body as string).clearContactFields).toEqual([
+      "email",
+      "website",
+    ]);
+  });
+
   it("rejects a response without a usable voucher", async () => {
     fetchMock.mockResolvedValue(detailResponse(null));
     await expect(api.updateVoucherProfile(DETAIL_ROW.address, profile)).rejects.toThrow(
@@ -469,7 +483,7 @@ describe("getMarketVoucher", () => {
     expect(requestedInit(1).credentials).toBe("omit");
   });
 
-  it("reads the voucher the card and the page render", async () => {
+  it("strips legacy contact fields from the public voucher response", async () => {
     fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
 
     const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
@@ -483,12 +497,33 @@ describe("getMarketVoucher", () => {
       symbol: "MALII",
       voucherUoa: "KSH",
       voucherValue: "10",
-      email: "issuer@example.org",
+      email: null,
+      phone: null,
+      website: null,
       iconUrl: "https://content.example/icon.jpg",
       bannerUrl: "https://content.example/banner.jpg",
       lat: -1.450979,
       lng: 38.235115,
       kind: "goods",
+    });
+  });
+
+  it("loads the complete authenticated voucher info without sharing the public cache", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    const controller = new AbortController();
+
+    const voucher = await api.getVoucherInfo(DETAIL_ROW.address, controller.signal);
+
+    expect(voucher).toMatchObject({
+      email: "issuer@example.org",
+      phone: "+254700000000",
+      website: "https://example.org",
+    });
+    expect(requestedUrl()).toBe(`https://api.test/api/v2/vouchers/${DETAIL_ROW.address}/info`);
+    expect(requestedInit()).toMatchObject({
+      cache: "no-store",
+      credentials: "include",
+      signal: controller.signal,
     });
   });
 

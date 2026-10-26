@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { Button } from "#/components/ui/button";
 import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
@@ -74,8 +75,15 @@ export function OffersPage({
           }
         : undefined,
       hasNextPage: query.hasNextPage,
+      isSuccess:
+        query.isSuccess &&
+        !query.isFetching &&
+        !query.isPlaceholderData &&
+        !query.hasNextPage &&
+        !filter.isDebouncing &&
+        !filter.isRestoringPreference,
     }),
-    [query, visibleOfferings],
+    [query, visibleOfferings, filter.isDebouncing, filter.isRestoringPreference],
   );
   const facets = query.data?.pages[0]?.tagFacets ?? [];
 
@@ -157,7 +165,13 @@ export function OffersPage({
       ) : filter.result.ok && !credit.blocksResults ? (
         <OfferingsPanel
           query={viewQuery}
-          emptyState={<Trans>No offers match this search.</Trans>}
+          emptyState={
+            filter.isFiltered || credit.enabled ? (
+              <Trans>No offers match this search.</Trans>
+            ) : (
+              <MarketEmptyMessage />
+            )
+          }
           showVoucher
           showVoucherName
           showLocation

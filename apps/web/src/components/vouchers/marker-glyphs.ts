@@ -1,7 +1,13 @@
-import type { MarkerIcon, WantMarkerIcon } from "@clc/core/features/markers/logic";
+import type {
+  MarkerIcon,
+  ReportMarkerIcon,
+  WantMarkerIcon,
+} from "@clc/core/features/markers/logic";
 import type { IconType } from "react-icons";
 import {
   RiCouponFill,
+  RiArticleLine,
+  RiCalendarEventLine,
   RiGraduationCapFill,
   RiHandCoinFill,
   RiHeartPulseFill,
@@ -11,6 +17,7 @@ import {
   RiRestaurantFill,
   RiShoppingBasket2Fill,
   RiSpeakLine,
+  RiMegaphoneLine,
   RiToolsFill,
 } from "react-icons/ri";
 
@@ -33,4 +40,10 @@ export const WANT_MARKER_GLYPHS: Record<WantMarkerIcon, IconType> = {
   question: RiQuestionLine,
   message: RiMessage2Line,
   request: RiSpeakLine,
+};
+
+export const REPORT_MARKER_GLYPHS: Record<ReportMarkerIcon, IconType> = {
+  post: RiArticleLine,
+  event: RiCalendarEventLine,
+  announcement: RiMegaphoneLine,
 };

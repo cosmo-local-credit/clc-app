@@ -127,12 +127,16 @@ export function EditPoolProfileSheet({
     validators: { onChange: profileSchema, onSubmit: profileSchema },
     onSubmit: async ({ value }) => {
       try {
+        const clearContactFields = (["email", "website", "phone"] as const).filter(
+          (field) => Boolean(pool[field]?.trim()) && value[field].trim() === "",
+        );
         await update.mutateAsync({
           description: value.description,
           unitOfAccount: value.unitOfAccount,
           email: value.email,
           website: value.website,
           phone: value.phone,
+          ...(clearContactFields.length > 0 ? { clearContactFields } : {}),
           terms: value.terms,
           // Unlike every other field here, these preserve on omission — so they
           // are sent only when the operator changed one. "" is how this endpoint

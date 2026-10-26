@@ -105,6 +105,20 @@ client only. **No serverless**: no TanStack Start server functions
 - `vp test` — vitest across all packages
 - **Do not auto-run** `vp build` — slow, surfaces env-specific issues.
 
+## Cross-repository regression checks
+
+- The Go backend is `../clc-core`, separate from this repo's `packages/core`.
+  Read its guidance and run validation in every repository changed.
+- Reproduce bugs at the failing boundary: real PostgreSQL/driver tests for SQL,
+  real QueryClient lifecycle tests for async UI. Include representative inputs
+  such as fractional coordinates and pending, retained, cluster-only, empty,
+  and failed responses; execution coverage alone does not prove correctness.
+- Backend checks need an isolated `CORE_TEST_DSN`, serial `go test -p 1 ./...`,
+  formatting, lint, and relevant query-plan tests. Confirm regressions ran,
+  rather than skipped. Run app coverage from the workspace root and verify the
+  generated reports. Distinguish fixture-based browser checks from staging
+  checks, and use functional WebGL for map rendering verification.
+
 ## Skill / MCP routing
 
 Trigger conditions are concrete — when the condition holds, invoke the named

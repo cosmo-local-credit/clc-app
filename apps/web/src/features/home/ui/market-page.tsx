@@ -8,7 +8,9 @@ import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { Button } from "#/components/ui/button";
+import { Progress, ProgressTrack } from "#/components/ui/progress";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import { useVoucherSheetSnap, VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { WantSheet } from "#/components/wants/want-sheet";
@@ -20,11 +22,9 @@ import {
   REAL_FIX_ZOOM,
   useMarketCamera,
 } from "#/features/home/hooks/use-market-camera";
-import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
-import { useMarketMapPools } from "#/features/home/hooks/use-market-pools";
-import { useMarketMapWants } from "#/features/home/hooks/use-market-wants";
+import { useMarketMap } from "#/features/home/hooks/use-market-map";
+import { useMarketMapResourceSelection } from "#/features/home/hooks/use-market-map-resource-selection";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useMarketplaceMapSearch } from "#/features/home/hooks/use-marketplace-map-search";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
@@ -36,6 +36,8 @@ import { useMarketDiscoveryArea } from "#/components/nearby-catalog";
 import { MarketFilterSheet, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
+import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
+import { CHAIN_ID } from "#/lib/chain";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -55,17 +57,22 @@ export function MarketPage({
     userLocation,
     locationStatus,
     requestLocation,
+    isResolvingInitialCamera,
   } = useMarketCamera(locationOwner);
-  const { area, setArea } = useMarketDiscoveryArea();
+  const { area, setArea, clearArea } = useMarketDiscoveryArea();
   const [fetchBounds, setFetchBounds] = useState<readonly MarketBoundingBox[]>(() =>
-    expandBoundingBoxes(area?.boxes ?? []),
+    bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2),
   );
-  const areaOwnerRef = useRef(area?.owner);
+  const [fetchZoom, setFetchZoom] = useState(() => Math.floor(area?.zoom ?? 2));
+  const fetchZoomRef = useRef(fetchZoom);
+  const areaOwnerRef = useRef(locationOwner);
   useEffect(() => {
-    if (areaOwnerRef.current === area?.owner) return;
-    areaOwnerRef.current = area?.owner;
-    setFetchBounds(expandBoundingBoxes(area?.boxes ?? []));
-  }, [area]);
+    if (areaOwnerRef.current === locationOwner) return;
+    areaOwnerRef.current = locationOwner;
+    setFetchBounds(bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2));
+    setFetchZoom(Math.floor(area?.zoom ?? 2));
+    fetchZoomRef.current = Math.floor(area?.zoom ?? 2);
+  }, [area, locationOwner]);
   const voucherSelection = useVoucherSheetSelection();
   const wantSelection = useWantSheetSelection();
 
@@ -135,65 +142,71 @@ export function MarketPage({
     automaticCamera?.rank === CAMERA_RANK.explicit
       ? automaticCamera
       : (wantCamera ?? voucherCamera ?? areaCamera ?? savedCamera ?? automaticCamera);
+  const cameraBootstrapPending =
+    !wantCamera &&
+    !voucherCamera &&
+    !areaCamera &&
+    !savedCamera &&
+    !automaticCamera &&
+    isResolvingInitialCamera;
   // A trustworthy initial camera becomes the first viewport after MapLibre has
   // measured the rendered canvas. Avoid starting a whole-Global marker walk in
   // the short interval before that first settled rectangle is available.
-  const mapDiscoveryReady = fetchBounds.length > 0 || !camera;
+  const mapDiscoveryReady = fetchBounds.length > 0 || (!camera && !cameraBootstrapPending);
 
   const filter = useMarketFilter(useStorageOwner());
   const credit = useCreditableBrowse(creditableSearch);
+  const mapResources = useMarketMapResourceSelection(locationOwner);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
-  const usesUnifiedSearch = filter.isFiltered || credit.enabled;
-  const catalog = useMarketCatalogVouchers(
-    filter,
-    fetchBounds,
-    mapDiscoveryReady && !filter.isRestoringPreference && !credit.blocksResults,
-    filtersEverOpened,
-    credit.enabled ? credit.poolRefs : undefined,
-  );
-  const { vouchers, isCatalogComplete, error, retry, retrying } = catalog;
-  // The filter's terms and tags are a voucher vocabulary, so a filtered map
-  // shows only the vouchers it matched.
-  const poolCatalog = useMarketMapPools(
-    mapDiscoveryReady && !filter.isRestoringPreference && !usesUnifiedSearch,
-    fetchBounds,
-  );
-  const { pools } = poolCatalog;
-  const wantCatalog = useMarketMapWants(
-    fetchBounds,
-    mapDiscoveryReady && !filter.isRestoringPreference && !usesUnifiedSearch,
-  );
-  const unifiedSearch = useMarketplaceMapSearch(
-    filter,
-    credit.enabled ? credit.poolRefs : undefined,
-    fetchBounds,
-    mapDiscoveryReady &&
-      usesUnifiedSearch &&
+  const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
+  const marketMap = useMarketMap({
+    filter: parsedFilter,
+    bounds: fetchBounds,
+    zoom: fetchZoom,
+    kinds: mapResources.selected,
+    creditablePools: credit.enabled ? credit.poolRefs : undefined,
+    enabled:
+      mapDiscoveryReady &&
+      mapResources.selected.length > 0 &&
       !filter.isRestoringPreference &&
       filter.result.ok &&
-      !credit.blocksResults,
-  );
-  // Pools go last: a stack is keyed by its first member, so pools arriving
-  // after the vouchers do not re-key a fan the viewer has open.
-  const locations = useMemo(() => {
-    if (usesUnifiedSearch) return unifiedSearch.locations;
-    return [...vouchers, ...wantCatalog.wants, ...pools];
-  }, [pools, unifiedSearch.locations, usesUnifiedSearch, vouchers, wantCatalog.wants]);
+      !credit.blocksResults &&
+      !(credit.enabled && credit.poolRefs?.length === 0),
+    facets: filtersEverOpened,
+  });
+  const locations = marketMap.locations;
+  const tagFacets = marketMap.tagFacets;
 
   const isCardOpen = voucherSelection.voucher !== null || wantSelection.want !== null;
   const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
   const cardAddress = voucherSelection.voucher?.toLowerCase() ?? null;
-  const cardCatalogVoucher = useMemo(
-    () => vouchers.find((voucher) => voucher.address.toLowerCase() === cardAddress) ?? null,
-    [vouchers, cardAddress],
+  const cardLocation = locations.find(
+    (location) =>
+      location.resourceKind === "voucher" && location.resourceId.toLowerCase() === cardAddress,
   );
+  const cardCatalogVoucher = cardLocation
+    ? {
+        id: cardLocation.id,
+        chainId: CHAIN_ID,
+        address: cardLocation.resourceId as `0x${string}`,
+        name: cardLocation.name,
+        symbol: "",
+        iconUrl: null,
+        locationName: cardLocation.locationName,
+        lat: cardLocation.lat,
+        lng: cardLocation.lng,
+        kind: "voucher" as const,
+        markerIcon: cardLocation.markerIcon,
+        markerColor: cardLocation.markerColor,
+      }
+    : null;
   const selectedLocationId =
     locations.find((location) => {
-      if (location.kind === "want") {
-        return "wantId" in location && location.wantId === wantSelection.want;
-      }
-      return "address" in location && location.address.toLowerCase() === cardAddress;
+      if (location.resourceKind === "want") return location.resourceId === wantSelection.want;
+      return (
+        location.resourceKind === "voucher" && location.resourceId.toLowerCase() === cardAddress
+      );
     })?.id ?? null;
 
   const [sheetInset, setSheetInset] = useState(0);
@@ -220,19 +233,34 @@ export function MarketPage({
     (id: string) => {
       const location = locations.find((candidate) => candidate.id === id);
       if (!location) return;
-      if (location.kind === "pool") {
+      if (location.resourceKind === "pool") {
         void navigate({
           to: "/pools/$poolAddress",
-          params: { poolAddress: location.address },
+          params: { poolAddress: location.resourceId },
         });
         return;
       }
-      if (location.kind === "want" && "wantId" in location) {
-        openWant(location.wantId);
+      if (location.resourceKind === "catalog") {
+        void navigate({
+          to: "/catalogs/$catalogId",
+          params: { catalogId: location.resourceId },
+        });
         return;
       }
-      const voucher = "address" in location ? location : undefined;
-      if (voucher) openVoucher(voucher.address);
+      if (location.resourceKind === "post") {
+        void navigate({
+          to: "/posts/$reportId",
+          params: { reportId: location.resourceId },
+        });
+        return;
+      }
+      if (location.resourceKind === "want") {
+        openWant(location.resourceId);
+        return;
+      }
+      if (location.resourceKind === "voucher") {
+        openVoucher(location.resourceId as `0x${string}`);
+      }
     },
     [locations, navigate, openVoucher, openWant],
   );
@@ -246,41 +274,35 @@ export function MarketPage({
       if (!area && !settled.userInitiated && !camera) return;
 
       const boxes = canonicalMarketBounds(viewportToBoundingBoxes(settled));
-      if (boxes.length === 0) return;
+      const zoom = Math.floor(settled.zoom);
+      const zoomChanged = fetchZoomRef.current !== zoom;
+      fetchZoomRef.current = zoom;
+      if (boxes.length === 0) {
+        if (Math.abs(settled.east - settled.west) >= 360) {
+          clearArea();
+          setFetchBounds([]);
+          setFetchZoom(zoom);
+        }
+        return;
+      }
       setArea({ center: settled.center, zoom: settled.zoom, boxes });
+      setFetchZoom(zoom);
       setFetchBounds((current) =>
-        boundsContain(current, boxes) ? current : expandBoundingBoxes(boxes),
+        !zoomChanged && boundsContain(current, boxes)
+          ? current
+          : bufferedTileBounds(boxes, settled.zoom),
       );
     },
-    [area, camera?.rank, setArea],
+    [area, camera?.rank, clearArea, setArea],
   );
 
-  // The vouchers' notice wins: their retry is the one that fills an empty map.
-  const notice =
-    useMarketFilterNotice(filter, error, retry, retrying) ??
-    (unifiedSearch.error
-      ? {
-          message: t`Couldn't load complete marketplace results.`,
-          actionLabel: t`Retry`,
-          onAction: unifiedSearch.retry,
-          actionPending: unifiedSearch.retrying,
-        }
-      : null) ??
-    (poolCatalog.error
-      ? {
-          message: t`Couldn't load pools.`,
-          actionLabel: t`Retry`,
-          onAction: poolCatalog.retry,
-          actionPending: poolCatalog.retrying,
-        }
-      : wantCatalog.error
-        ? {
-            message: t`Couldn't load Wants.`,
-            actionLabel: t`Retry`,
-            onAction: wantCatalog.retry,
-            actionPending: wantCatalog.retrying,
-          }
-        : null);
+  const notice = useMarketFilterNotice(
+    filter,
+    marketMap.error,
+    marketMap.retry,
+    marketMap.retrying,
+    t`Couldn't load complete marketplace results.`,
+  );
 
   const locationButton = (
     <Button
@@ -297,9 +319,11 @@ export function MarketPage({
   const mapControls = locationButton;
 
   const isEmpty =
+    mapResources.selected.length > 0 &&
     locations.length === 0 &&
+    marketMap.clusters.length === 0 &&
     filter.result.ok &&
-    (usesUnifiedSearch ? unifiedSearch.status === "ready" : isCatalogComplete);
+    marketMap.isSettled;
 
   const changeCredit = (checked: boolean) =>
     void navigate({
@@ -313,69 +337,79 @@ export function MarketPage({
       search: (previous) => ({ ...previous, tab: "market", view: "map", creditable: false }),
     });
 
-  const mapNotice = hasCreditFeedback(credit) ? (
-    <CreditableBrowseControl
-      part="feedback"
-      state={credit}
-      onChange={changeCredit}
-      onClear={clearCredit}
-    />
-  ) : credit.enabled && credit.poolRefs?.length === 0 ? (
-    <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-      <Trans>No marketplace results are available through your Credit pools.</Trans>
-    </div>
-  ) : notice ? (
-    <div
-      className="flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
-      role="alert"
-    >
-      <span className="min-w-0 text-sm">{notice.message}</span>
-      {notice.actionLabel && notice.onAction ? (
-        <Button variant="outline" tap pending={notice.actionPending} onClick={notice.onAction}>
-          {notice.actionLabel}
-        </Button>
-      ) : null}
-    </div>
-  ) : isEmpty ? (
-    <div className="space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
-      {filter.isFiltered ? (
-        <>
-          <p>
-            <Trans>No marketplace results match this search.</Trans>
-          </p>
-          <Button variant="outline" tap onClick={filter.clear}>
-            <Trans>Clear filters</Trans>
+  const mapNotice =
+    mapResources.selected.length === 0 ? (
+      <div className="border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
+        <Trans>Choose a resource type to show it on the map.</Trans>
+      </div>
+    ) : hasCreditFeedback(credit) ? (
+      <CreditableBrowseControl
+        part="feedback"
+        state={credit}
+        onChange={changeCredit}
+        onClear={clearCredit}
+      />
+    ) : credit.enabled && credit.poolRefs?.length === 0 ? (
+      <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        <Trans>No marketplace results are available through your Credit pools.</Trans>
+      </div>
+    ) : notice ? (
+      <div
+        className="flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
+        role="alert"
+      >
+        <span className="min-w-0 text-sm">{notice.message}</span>
+        {notice.actionLabel && notice.onAction ? (
+          <Button variant="outline" tap pending={notice.actionPending} onClick={notice.onAction}>
+            {notice.actionLabel}
           </Button>
-        </>
-      ) : (
-        <Trans>No marketplace results to show yet.</Trans>
-      )}
-    </div>
-  ) : null;
+        ) : null}
+      </div>
+    ) : isEmpty ? (
+      <div className="space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
+        {filter.isFiltered ? (
+          <>
+            <p>
+              <Trans>No marketplace results match this search.</Trans>
+            </p>
+            <Button variant="outline" tap onClick={filter.clear}>
+              <Trans>Clear filters</Trans>
+            </Button>
+          </>
+        ) : (
+          <MarketEmptyMessage surface="map" />
+        )}
+      </div>
+    ) : null;
 
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
       <h1 className="sr-only">
         <Trans>Market</Trans>
       </h1>
-      <Suspense
-        fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
-      >
-        <MarketMap
-          locations={locations}
-          selectedLocationId={selectedLocationId}
-          camera={camera}
-          fitBounds={null}
-          cameraScope={locationOwner}
-          userLocation={userLocation}
-          onSelectLocation={handleSelectLocation}
-          onDeselect={closeSelection}
-          onUserPan={handleUserPan}
-          bottomInset={isCardOpen ? sheetInset : 0}
-          onViewportSettled={handleViewportSettled}
-          className="absolute inset-0 h-full w-full"
-        />
-      </Suspense>
+      {cameraBootstrapPending ? (
+        <div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />
+      ) : (
+        <Suspense
+          fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
+        >
+          <MarketMap
+            locations={locations}
+            clusters={marketMap.clusters}
+            selectedLocationId={selectedLocationId}
+            camera={camera}
+            fitBounds={null}
+            cameraScope={locationOwner}
+            userLocation={userLocation}
+            onSelectLocation={handleSelectLocation}
+            onDeselect={closeSelection}
+            onUserPan={handleUserPan}
+            bottomInset={isCardOpen ? sheetInset : 0}
+            onViewportSettled={handleViewportSettled}
+            className="absolute inset-0 h-full w-full"
+          />
+        </Suspense>
+      )}
 
       <MarketBar
         current="map"
@@ -385,6 +419,8 @@ export function MarketPage({
           isCardOpen ? "z-20" : "z-30",
         )}
         filter={filter}
+        mapResources={mapResources}
+        progress={<MarketMapLoading loading={marketMap.isFetching} />}
         searchLabel={t`Search the marketplace`}
         credit={
           <CreditableBrowseControl
@@ -397,7 +433,7 @@ export function MarketPage({
         filters={
           <MarketFilterSheet
             filter={filter}
-            facets={catalog.tagFacets}
+            facets={tagFacets}
             open={filtersOpen}
             onOpenChange={(next) => {
               if (next) setFiltersEverOpened(true);
@@ -442,20 +478,77 @@ export function MarketPage({
   );
 }
 
+function MarketMapLoading({ loading }: { loading: boolean }) {
+  const { t } = useLingui();
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!loading) {
+      setVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setVisible(true), 250);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  if (!loading || !visible) return null;
+  return (
+    <Progress
+      value={null}
+      aria-label={t`Loading marketplace…`}
+      className="pointer-events-none h-0.5 overflow-hidden bg-card"
+    >
+      <ProgressTrack className="h-full w-full">
+        <div className="market-results-loading-indicator h-full bg-primary" />
+      </ProgressTrack>
+    </Progress>
+  );
+}
+
 const FETCH_PADDING_RATIO = 0.2;
 
-function expandBoundingBoxes(boxes: readonly MarketBoundingBox[]): readonly MarketBoundingBox[] {
+function bufferedTileBounds(
+  boxes: readonly MarketBoundingBox[],
+  zoom: number,
+): readonly MarketBoundingBox[] {
   const expanded = boxes.map((box) => {
     const lngPadding = (box.maxLng - box.minLng) * FETCH_PADDING_RATIO;
     const latPadding = (box.maxLat - box.minLat) * FETCH_PADDING_RATIO;
-    return {
-      minLng: Math.max(-180, box.minLng - lngPadding),
-      minLat: Math.max(-90, box.minLat - latPadding),
-      maxLng: Math.min(180, box.maxLng + lngPadding),
-      maxLat: Math.min(90, box.maxLat + latPadding),
-    };
+    return snapBoxToTiles(
+      {
+        minLng: Math.max(-180, box.minLng - lngPadding),
+        minLat: Math.max(-90, box.minLat - latPadding),
+        maxLng: Math.min(180, box.maxLng + lngPadding),
+        maxLat: Math.min(90, box.maxLat + latPadding),
+      },
+      zoom,
+    );
   });
   return canonicalMarketBounds(expanded);
+}
+
+function snapBoxToTiles(box: MarketBoundingBox, zoom: number): MarketBoundingBox {
+  const tileZoom = Math.max(0, Math.min(16, Math.floor(zoom)));
+  const tiles = 2 ** tileZoom;
+  const minX = Math.floor(((box.minLng + 180) / 360) * tiles);
+  const maxX = Math.ceil(((box.maxLng + 180) / 360) * tiles);
+  const minY = Math.floor(latitudeToTileY(box.maxLat, tiles));
+  const maxY = Math.ceil(latitudeToTileY(box.minLat, tiles));
+  return {
+    minLng: Math.max(-180, (minX / tiles) * 360 - 180),
+    maxLng: Math.min(180, (maxX / tiles) * 360 - 180),
+    minLat: tileYToLatitude(maxY, tiles),
+    maxLat: tileYToLatitude(minY, tiles),
+  };
+}
+
+function latitudeToTileY(latitude: number, tiles: number): number {
+  const clamped = Math.max(-85.05112878, Math.min(85.05112878, latitude));
+  const radians = (clamped * Math.PI) / 180;
+  return ((1 - Math.asinh(Math.tan(radians)) / Math.PI) / 2) * tiles;
+}
+
+function tileYToLatitude(y: number, tiles: number): number {
+  return (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / tiles))) * 180) / Math.PI;
 }
 
 function boundsContain(

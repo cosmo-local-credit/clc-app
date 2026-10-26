@@ -11,6 +11,9 @@ import { describe, expect, it, vi } from "vite-plus/test";
 vi.mock("#/components/layout/operator-menu", () => ({ OperatorMenu: () => null }));
 vi.mock("#/components/layout/command-palette", () => ({ CommandPalette: () => null }));
 vi.mock("#/hooks/use-mobile", () => ({ useIsMobile: () => false }));
+vi.mock("#/features/retirement/retirement-notification", () => ({
+  RetirementPendingBadge: () => null,
+}));
 
 import { AppShell } from "./app-shell";
 

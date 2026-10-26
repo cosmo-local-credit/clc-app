@@ -639,7 +639,6 @@ describe("CreateVoucherFlow", () => {
     const view = renderFlow(<CreateVoucherFlow step="place" />);
 
     const icons = screen.getByRole("radiogroup", { name: "Pin icon" });
-    const colours = screen.getByRole("radiogroup", { name: "Pin colour" });
     // Nothing is chosen until the issuer picks: the pin follows the offerings.
     expect(within(icons).queryByRole("radio", { checked: true })).toBeNull();
     expect(screen.queryByRole("button", { name: "Use default" })).toBeNull();
@@ -649,7 +648,7 @@ describe("CreateVoucherFlow", () => {
     ).toBe("coupon");
 
     fireEvent.click(within(icons).getByRole("radio", { name: "Education" }));
-    fireEvent.click(within(colours).getByRole("radio", { name: "Pink" }));
+    expect(screen.queryByRole("radiogroup", { name: "Pin colour" })).toBeNull();
     expect(
       within(icons).getByRole("radio", { name: "Education" }).getAttribute("aria-checked"),
     ).toBe("true");
@@ -658,16 +657,17 @@ describe("CreateVoucherFlow", () => {
     ).toBe("education");
     expect(
       screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-color"),
-    ).toBe("pink");
+    ).toBe("orange");
 
     view.rerender(<CreateVoucherFlow step="review" />);
-    expect(screen.getByText("Education, Pink")).toBeTruthy();
+    expect(screen.getByText("Education")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
     await waitFor(() =>
       expect(deployMutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ markerIcon: "education", markerColor: "pink" }),
+        expect.objectContaining({ markerIcon: "education" }),
       ),
     );
+    expect("markerColor" in deployMutateAsync.mock.calls[0]![0]).toBe(false);
 
     view.rerender(<CreateVoucherFlow step="place" />);
     fireEvent.click(screen.getByRole("button", { name: "Use default" }));

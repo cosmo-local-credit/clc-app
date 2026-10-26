@@ -91,6 +91,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     remove = vi.fn();
     removeImage = vi.fn((id: string) => this.images.delete(id));
     getCanvas = vi.fn(() => ({ clientWidth: 360, clientHeight: 640 }));
+    isMoving = vi.fn(() => false);
     zoom = 12;
     maxZoom = 21;
     bounds = { west: 36.6, south: -1.5, east: 37.1, north: -1.1 };
@@ -227,6 +228,7 @@ vi.mock("maplibre-gl", () => ({
 
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
+import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
 import { EXPLICIT_CAMERA_RANK } from "#/features/home/logic/market-camera";
 import { useThemeStore } from "#/providers/theme";
 import { type MarketCamera, MarketMap } from "./market-map";
@@ -335,7 +337,7 @@ describe("MarketMap lifecycle", () => {
     const map = loadedMap();
     const originalMarker = markerInstances[0];
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
     expect(map.hasImage(MARKET_NETWORK_BADGE_IMAGE_ID.light)).toBe(true);
 
     act(() => useThemeStore.getState().setTheme("dark"));
@@ -350,6 +352,7 @@ describe("MarketMap lifecycle", () => {
     expect(map.getSource("market-label-edges")).toBeDefined();
     expect(map.getLayer("market-point-selected")).toBeDefined();
     expect(map.getLayer("market-clusters")).toBeDefined();
+    expect(map.getLayer("market-spider-labels")).toBeDefined();
     expect(map.hasImage(MARKET_NETWORK_BADGE_IMAGE_ID.dark)).toBe(true);
     expect(markerInstances).toEqual([originalMarker]);
     expect(map.remove).not.toHaveBeenCalled();
@@ -374,7 +377,7 @@ describe("MarketMap lifecycle", () => {
       return (source.spec.data as { features: unknown[] }).features;
     };
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
     clickFeature(
       map,
       "market-stacks",
@@ -408,6 +411,7 @@ describe("MarketMap lifecycle", () => {
     expect(map.getSource("market-label-edges")).toBeDefined();
     expect(map.getLayer("market-point-selected")).toBeDefined();
     expect(map.getLayer("market-clusters")).toBeDefined();
+    expect(map.getLayer("market-spider-labels")).toBeDefined();
     expect(markerInstances).toEqual([originalMarker]);
     expect(spiderFeatures()).toHaveLength(6);
     expect(map.easeTo).toHaveBeenCalledTimes(cameraMoves);
@@ -513,18 +517,18 @@ describe("MarketMap lifecycle", () => {
     expect(data.features[0]?.properties).toMatchObject({
       id: "1",
       name: "Alpha",
-      pin: "market-pin-basket-blue",
-      label: "#1d4ed8",
+      pin: "market-pin-voucher-basket",
+      label: "#006644",
     });
     expect(data.features.map((feature) => feature.properties.pin)).toEqual([
-      "market-pin-basket-blue",
-      "market-pin-hand-coin-purple",
-      "market-pin-coupon-orange",
-      "market-pin-farm-cyan",
+      "market-pin-voucher-basket",
+      "market-pin-voucher-hand-coin",
+      "market-pin-voucher-coupon",
+      "market-pin-voucher-farm",
     ]);
     // Registered before the source that references them, so no pin is skipped.
-    expect(map.hasImage("market-pin-farm-cyan")).toBe(true);
-    expect(map.hasImage("market-pin-farm-cyan-selected")).toBe(true);
+    expect(map.hasImage("market-pin-voucher-farm")).toBe(true);
+    expect(map.hasImage("market-pin-voucher-farm-selected")).toBe(true);
   });
 
   it("gives a pool its own pin, named in the pool's blue", () => {
@@ -839,12 +843,68 @@ describe("MarketMap ranked camera", () => {
 });
 
 describe("MarketMap viewport reporting", () => {
+  it("reports measured initial bounds before tiles load and deduplicates later reports", () => {
+    vi.useFakeTimers();
+    try {
+      const onViewportSettled = vi.fn();
+      renderWithCamera({ lat: -3.68, lng: 39.83, zoom: 16, rank: 2 }, { onViewportSettled });
+      const map = firstMap();
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      expect(onViewportSettled).toHaveBeenCalledTimes(1);
+      expect(onViewportSettled).toHaveBeenCalledWith(
+        expect.objectContaining({
+          west: map.bounds.west,
+          east: map.bounds.east,
+          zoom: map.zoom,
+        }),
+      );
+
+      act(() => {
+        map.trigger("load");
+        map.trigger("moveend");
+        vi.advanceTimersByTime(400);
+      });
+      expect(onViewportSettled).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("waits for movement to settle when the camera is moving on its first frame", () => {
+    vi.useFakeTimers();
+    try {
+      const onViewportSettled = vi.fn();
+      renderWithCamera(null, { onViewportSettled });
+      const map = firstMap();
+      map.isMoving.mockReturnValue(true);
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      expect(onViewportSettled).not.toHaveBeenCalled();
+      map.isMoving.mockReturnValue(false);
+      act(() => {
+        map.trigger("moveend");
+        vi.advanceTimersByTime(400);
+      });
+      expect(onViewportSettled).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("reports settled bounds once after a debounce", () => {
     vi.useFakeTimers();
     const onViewportSettled = vi.fn();
     try {
       renderWithCamera(null, { onViewportSettled });
       const map = loadedMap();
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      onViewportSettled.mockClear();
+      map.bounds = { ...map.bounds, east: 37.2 };
 
       act(() => {
         map.trigger("moveend", {});
@@ -862,11 +922,39 @@ describe("MarketMap viewport reporting", () => {
         center: { lat: -1.3, lng: 36.85 },
         west: 36.6,
         south: -1.5,
-        east: 37.1,
+        east: 37.2,
         north: -1.1,
         zoom: 12,
         userInitiated: false,
       });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels settlement when another gesture starts", () => {
+    vi.useFakeTimers();
+    try {
+      const onViewportSettled = vi.fn();
+      renderWithCamera(null, { onViewportSettled });
+      const map = loadedMap();
+      act(() => {
+        vi.advanceTimersToNextFrame();
+      });
+      onViewportSettled.mockClear();
+      map.bounds = { ...map.bounds, east: 37.2 };
+      act(() => {
+        map.trigger("moveend");
+        vi.advanceTimersByTime(200);
+        map.trigger("movestart");
+        vi.advanceTimersByTime(500);
+      });
+      expect(onViewportSettled).not.toHaveBeenCalled();
+      act(() => {
+        map.trigger("moveend");
+        vi.advanceTimersByTime(400);
+      });
+      expect(onViewportSettled).toHaveBeenCalledOnce();
     } finally {
       vi.useRealTimers();
     }
@@ -962,14 +1050,23 @@ function renderMap(locations: MarketLocation[], extra = {}) {
 }
 
 describe("MarketMap clustering scope", () => {
-  it("clusters by distance only below zoom 14", () => {
-    renderMap(LOCATIONS);
+  it("renders the server cluster without reclustering it in MapLibre", () => {
+    const cluster: MarketMapCluster = {
+      type: "cluster",
+      id: "cluster:8:1:2",
+      lat: -1.29,
+      lng: 36.82,
+      count: 3,
+      kinds: { voucher: 2, want: 1 },
+      expansionZoom: 10,
+    };
+    renderMap(LOCATIONS, { clusters: [cluster] });
     const map = loadedMap();
     const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
+    const data = spec?.data as { features: Array<{ properties: Record<string, unknown> }> };
 
-    expect(spec?.cluster).toBe(true);
-    expect(spec?.clusterMaxZoom).toBe(13);
-    expect((spec?.clusterMaxZoom ?? 0) + 1).toBe(14);
+    expect(spec?.cluster).toBeUndefined();
+    expect(data.features.some((feature) => feature.properties.serverCluster === true)).toBe(true);
     expect(map.options.maxZoom).toBeGreaterThanOrEqual(18);
   });
 
@@ -1049,6 +1146,36 @@ describe("MarketMap spiderfy", () => {
     expect(points.map((point) => point.properties.id).sort()).toEqual(["s1", "s2", "s3"]);
   });
 
+  it("adds one outward, always-visible name for every fanned pin", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    openStack(map);
+
+    const layer = map.getLayer("market-spider-labels") as {
+      type?: string;
+      filter?: unknown;
+      layout?: Record<string, unknown>;
+      paint?: Record<string, unknown>;
+    };
+    expect(layer.type).toBe("symbol");
+    expect(layer.filter).toEqual(["==", ["geometry-type"], "Point"]);
+    expect(layer.layout).toMatchObject({
+      "text-field": ["get", "name"],
+      "text-font": ["Noto Sans Regular"],
+      "text-anchor": ["get", "labelAnchor"],
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    });
+    expect(layer.layout?.["text-radial-offset"]).toBeGreaterThan(1);
+
+    const points = spiderData(map).features.filter(
+      (feature) => feature.geometry.type === "Point",
+    ) as Array<{ properties: { id: string; name?: string; labelAnchor?: string } }>;
+    expect(points.map((point) => point.properties.name)).toEqual(["Farm Star", "Beta", "Gamma"]);
+    expect(points.every((point) => typeof point.properties.labelAnchor === "string")).toBe(true);
+  });
+
   it("places every fanned pin somewhere different from the shared anchor", () => {
     renderMap(KILIFI_STACK);
     const map = loadedMap();
@@ -1077,6 +1204,17 @@ describe("MarketMap spiderfy", () => {
         coordinates: [39.85, -3.63],
       },
     );
+
+    expect(onSelect).toHaveBeenCalledWith("s2");
+  });
+
+  it("selects the corresponding member when its expanded name is tapped", () => {
+    const onSelect = vi.fn();
+    renderMap(KILIFI_STACK, { onSelectLocation: onSelect });
+    const map = loadedMap();
+    openStack(map);
+
+    clickFeature(map, "market-spider-labels", { id: "s2" });
 
     expect(onSelect).toHaveBeenCalledWith("s2");
   });
@@ -1307,9 +1445,14 @@ describe("MarketMap click wiring", () => {
     renderMap(LOCATIONS, { onDeselect });
     const map = loadedMap();
 
-    clickFeature(map, "market-clusters", { cluster_id: 7, point_count: 3 });
+    clickFeature(map, "market-clusters", {
+      serverCluster: true,
+      point_count: 3,
+      expansionZoom: 12,
+    });
 
     expect(onDeselect).not.toHaveBeenCalled();
+    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.82, -1.28], zoom: 12 });
   });
 
   it("opens the fan on a single real click without immediately closing it", () => {
@@ -1396,17 +1539,17 @@ describe("MarketMap fan paging", () => {
       .map((feature) => feature.properties.id);
   }
 
-  it("fans the whole 63-voucher CBD stack in one go", () => {
+  it("fans one readable page of the 63-voucher CBD stack", () => {
     renderMap(bigStack(63));
     const map = loadedMap();
 
     tapBadge(map, 63);
 
-    expect(fanIds(map)).toHaveLength(63);
+    expect(fanIds(map)).toHaveLength(SPIDER_PAGE_SIZE);
   });
 
   it("walks every member of an oversized stack across taps", () => {
-    const size = SPIDER_PAGE_SIZE + 12;
+    const size = SPIDER_PAGE_SIZE + 4;
     renderMap(bigStack(size));
     const map = loadedMap();
 
@@ -1416,13 +1559,13 @@ describe("MarketMap fan paging", () => {
 
     tapBadge(map, size);
     const second = fanIds(map);
-    expect(second).toHaveLength(12);
+    expect(second).toHaveLength(4);
 
     expect(new Set([...first, ...second]).size).toBe(size);
   });
 
   it("closes after the last page", () => {
-    const size = SPIDER_PAGE_SIZE + 12;
+    const size = SPIDER_PAGE_SIZE + 4;
     renderMap(bigStack(size));
     const map = loadedMap();
 
@@ -1485,15 +1628,28 @@ describe("MarketMap badge counts", () => {
     locationName: null,
   }));
 
-  it("makes a distance cluster count markers, not locations", () => {
-    renderMap([...CBD_STACK, ...LOCATIONS]);
+  it("uses the backend-provided total without rendering resource initials", () => {
+    renderMap([...CBD_STACK, ...LOCATIONS], {
+      clusters: [
+        {
+          type: "cluster",
+          id: "cluster:7:1:1",
+          lat: -1.28,
+          lng: 36.82,
+          count: 65,
+          kinds: { voucher: 63, want: 2 },
+          expansionZoom: 9,
+        },
+      ],
+    });
     const map = loadedMap();
-    const spec = map.getSource(MARKET_SOURCE_ID)?.spec as {
-      clusterProperties?: Record<string, unknown>;
+    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
+      features: Array<{ properties: Record<string, unknown> }>;
     };
+    const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
 
-    expect(spec.clusterProperties).toBeDefined();
-    expect(spec.clusterProperties?.markerCount).toEqual(["+", ["get", "count"]]);
+    expect(cluster?.properties.markerCount).toBe(65);
+    expect(cluster?.properties).not.toHaveProperty("badgeLabel");
   });
 
   it("draws clusters and coincident stacks as theme-aware network badges", () => {
@@ -1515,15 +1671,15 @@ describe("MarketMap badge counts", () => {
     }
   });
 
-  it("labels clusters from the summed marker count", () => {
+  it("centers count-only labels using the supported font for clusters and stacks", () => {
     renderMap(CBD_STACK);
     const map = loadedMap();
-    const layer = map.getLayer("market-cluster-count") as {
-      layout?: { "text-field"?: unknown };
-    };
-
-    expect(JSON.stringify(layer.layout?.["text-field"])).toContain("markerCount");
-    expect(JSON.stringify(layer.layout?.["text-field"])).not.toContain("point_count");
+    for (const id of ["market-cluster-count", "market-stack-count"]) {
+      const layer = map.getLayer(id) as { layout?: Record<string, unknown> };
+      expect(layer.layout?.["text-font"]).toEqual(["Noto Sans Regular"]);
+      expect(layer.layout?.["text-anchor"]).toBe("center");
+      expect(layer.layout).not.toHaveProperty("text-line-height");
+    }
   });
 
   it("labels a coincident stack from its own voucher count", () => {
@@ -1536,17 +1692,35 @@ describe("MarketMap badge counts", () => {
     expect(JSON.stringify(layer.layout?.["text-field"])).toContain('"count"');
   });
 
-  it("abbreviates counts that cannot fit inside the badge", () => {
-    renderMap(CBD_STACK);
-    const map = loadedMap();
-    const field = JSON.stringify(
-      (map.getLayer("market-cluster-count") as { layout?: { "text-field"?: unknown } }).layout?.[
-        "text-field"
+  it("abbreviates server cluster counts that cannot fit inside the badge", () => {
+    renderMap(CBD_STACK, {
+      clusters: [
+        {
+          type: "cluster",
+          id: "cluster:2:1:1",
+          lat: 0,
+          lng: 0,
+          count: 1_234,
+          kinds: { voucher: 1_234 },
+          expansionZoom: 4,
+        },
       ],
-    );
+    });
+    const map = loadedMap();
+    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    const cluster = data.features.find((feature) => feature.properties.serverCluster === true);
 
-    expect(field).toContain("step");
-    expect(field).toContain("k");
+    expect(cluster?.properties.markerCount).toBe(1_234);
+    const layout = map.getLayer("market-cluster-count")?.layout as Record<string, unknown>;
+    expect(layout["text-field"]).toEqual([
+      "step",
+      ["get", "markerCount"],
+      ["to-string", ["get", "markerCount"]],
+      1000,
+      ["concat", ["to-string", ["round", ["/", ["get", "markerCount"], 1000]]], "k"],
+    ]);
   });
 });
 
@@ -1619,6 +1793,27 @@ describe("MarketMap pins and names", () => {
     ]);
     expect(layer.paint?.["text-color"]).toEqual(["get", "label"]);
     expect(layer.paint?.["text-halo-color"]).toBe("#ffffff");
+    expect(layer.paint?.["text-halo-width"]).toBe(2);
+  });
+
+  it("uses light text with a dark halo for names on Fiord", () => {
+    window.localStorage.setItem("clc.theme", "dark");
+    useThemeStore.setState({ theme: "dark" });
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const pointLabel = map.getLayer("market-point-labels") as {
+      paint?: Record<string, unknown>;
+    };
+    const spiderLabel = map.getLayer("market-spider-labels") as {
+      paint?: Record<string, unknown>;
+    };
+
+    for (const layer of [pointLabel, spiderLabel]) {
+      expect(layer.paint?.["text-color"]).toBe("#fafafa");
+      expect(layer.paint?.["text-halo-color"]).toBe("rgba(9, 9, 11, 0.92)");
+      expect(layer.paint?.["text-halo-width"]).toBe(2.5);
+      expect(layer.paint?.["text-halo-blur"]).toBe(0.75);
+    }
   });
 
   it("sets each name beside the pin, on whichever side fits", () => {
@@ -1869,7 +2064,7 @@ describe("MarketMap style failure", () => {
     });
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
-    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty");
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
     expect(map.remove).not.toHaveBeenCalled();
   });
@@ -1905,7 +2100,7 @@ describe("MarketMap style failure", () => {
     );
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
-    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty");
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
   });
 
@@ -1946,7 +2141,7 @@ describe("MarketMap style failure", () => {
     );
     const map = loadedMap();
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
     expect(map.setStyle).not.toHaveBeenCalled();
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
   });

@@ -13,6 +13,8 @@ describe("PublicDisclosureNote", () => {
     );
 
     expect(screen.getByText(/exact pin will be public/i)).toBeTruthy();
-    expect(screen.getByText(/Contact details entered here will be public/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Contact details entered here are visible to signed-in users/i),
+    ).toBeTruthy();
   });
 });
