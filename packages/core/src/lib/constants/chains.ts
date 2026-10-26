@@ -72,9 +72,13 @@ const CHAIN_METADATA = {
     safe: {
       serviceSlug: "gnosis-chain",
       appPrefix: "gno",
+      // Safe's official deployments: 1.3.0 (canonical, eip155), 1.4.1, 1.5.0.
+      // The first is used for new batches; any Safe version can delegatecall it.
       multiSendCallOnly: [
         "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+        "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B",
         "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
+        "0xA83c336B20401Af773B6219BA5027174338D1836",
       ],
     },
   },
