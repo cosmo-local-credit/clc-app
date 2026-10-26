@@ -81,6 +81,12 @@ const {
   swapTransferState: { error: null as Error | null, isPending: false },
 }));
 
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => ({ info: undefined, isSafeSigner: false }),
+}));
+vi.mock("#/features/safe/hooks/use-safe-write", () => ({
+  useSafeWrite: () => ({ write: vi.fn() }),
+}));
 vi.mock("@tanstack/react-router", () => ({
   // Router props are dropped, but ARIA and identity props are forwarded: the
   // pool tab strip is built from Links and its roles are part of the contract.

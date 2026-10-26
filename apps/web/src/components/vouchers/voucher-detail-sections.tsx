@@ -23,6 +23,10 @@ import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
+import {
+  type AssetOwnerInfo,
+  useAssetOwnerInfo,
+} from "#/features/ownership/hooks/use-asset-owner-info";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
@@ -95,13 +99,12 @@ export function VoucherDetailSections({
   const { t } = useLingui();
   const auth = useAuthStatus();
   const { address: walletAddress } = useConnection();
+  const ownerInfo = useAssetOwnerInfo(address ?? "", detail?.ownerAddress);
   const canEditDetails =
     auth.isAuthenticated &&
     !!detail &&
     (auth.session?.role === "SUPERADMIN" ||
-      (!!auth.session?.address &&
-        !!detail.ownerAddress &&
-        auth.session.address.toLowerCase() === detail.ownerAddress.toLowerCase()));
+      (!!auth.session?.address && !!detail.ownerAddress && ownerInfo.canManage));
   const reportVoucher: VoucherRef | undefined =
     chainId && address ? { chainId, address: address as VoucherRef["address"] } : undefined;
   const usage = useResourceUsage(canEditDetails, address);
@@ -165,6 +168,7 @@ export function VoucherDetailSections({
             canEditDetails={canEditDetails}
             detail={detail}
             privateInfo={privateInfo}
+            ownerInfo={ownerInfo.info}
           />
         </AuthenticatedDetailsGate>
       </VoucherSection>
@@ -186,6 +190,7 @@ function AuthenticatedVoucherInfo({
   canEditDetails,
   detail,
   privateInfo,
+  ownerInfo,
 }: {
   address: string;
   symbol: string;
@@ -195,6 +200,7 @@ function AuthenticatedVoucherInfo({
   viewerAddress?: string;
   canEditDetails: boolean;
   detail: MarketVoucherDetail | undefined;
+  ownerInfo?: AssetOwnerInfo;
   privateInfo?: {
     isPending: boolean;
     isError: boolean;
@@ -235,6 +241,7 @@ function AuthenticatedVoucherInfo({
       phone={info.phone}
       terms={info.terms}
       issuerAddress={ownerAddress ?? info.ownerAddress}
+      ownerInfo={ownerInfo}
       locationName={info.locationName}
       lat={info.lat}
       lng={info.lng}

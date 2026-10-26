@@ -50,8 +50,19 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("#/components/safe/recipient-owner-notice", () => ({ RecipientOwnerNotice: () => null }));
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: OWNER }),
+  useClient: () => undefined,
+}));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => ({
+    owner: undefined,
+    info: undefined,
+    isSafeOwned: false,
+    isSafeSigner: false,
+    canManage: true,
+  }),
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-admin", () => ({

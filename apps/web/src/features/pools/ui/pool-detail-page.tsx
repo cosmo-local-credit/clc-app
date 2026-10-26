@@ -16,7 +16,8 @@ import { Button } from "#/components/ui/button";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useAssetOwner } from "#/features/ownership/hooks/use-asset-owner";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
+import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
@@ -82,31 +83,28 @@ export function PoolDetailPage({
     auth.isAuthenticated ? auth.session?.address : undefined,
   );
   const pool = poolQuery.data;
-  // Public composition hides retired vouchers. The owner's protected read
-  // retains them so withdrawal controls can recover every recorded holding.
-  // Browse rows below still hide retired vouchers whose public page is gone.
-  const poolVouchersQuery = usePoolVouchersWithStatus(pool, {
-    all: true,
-    owner:
-      auth.isAuthenticated &&
-      auth.session &&
-      auth.session.address.toLowerCase() === pool?.ownerAddress?.toLowerCase()
-        ? auth.session.address
-        : undefined,
-  });
-  const poolVouchers = poolVouchersQuery.vouchers;
-  const vouchers = poolVouchers.filter((voucher) => voucher.active);
-  const voucherTokens = usePoolVoucherTokens(vouchers);
   // The same rule the voucher screen applies: the backend session's address
   // must be the catalog owner, or the session must be a superadmin. clc-core
   // decides for real; this only keeps the button off everyone else's screen.
-  const currentOwner = useAssetOwner(poolAddress, pool?.ownerAddress);
+  // The owner itself, or a signer of the Safe that owns the pool.
+  const ownerInfo = useAssetOwnerInfo(poolAddress, pool?.ownerAddress);
   const isPoolOwner =
     auth.isAuthenticated &&
     !!pool &&
     !!auth.session?.address &&
     !!pool.ownerAddress &&
-    auth.session.address.toLowerCase() === currentOwner?.toLowerCase();
+    ownerInfo.canManage;
+  // Public composition hides retired vouchers. The owner's protected read,
+  // which clc-core also grants a Safe owner's signers, retains them so
+  // withdrawal controls can recover every recorded holding. Browse rows below
+  // still hide retired vouchers whose public page is gone.
+  const poolVouchersQuery = usePoolVouchersWithStatus(pool, {
+    all: true,
+    owner: isPoolOwner ? auth.session?.address : undefined,
+  });
+  const poolVouchers = poolVouchersQuery.vouchers;
+  const vouchers = poolVouchers.filter((voucher) => voucher.active);
+  const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
     auth.isAuthenticated && !!pool && (auth.session?.role === "SUPERADMIN" || isPoolOwner);
   // On-chain management is narrower than editing the record. Every call behind
@@ -154,6 +152,7 @@ export function PoolDetailPage({
             <h1 className="truncate font-heading text-[1.75rem] font-bold leading-tight">
               {pool.name}
             </h1>
+            <MultisigOwnerNotice info={ownerInfo.info} />
             <p
               dir="auto"
               className="mt-1 line-clamp-3 overflow-hidden text-muted-foreground text-xs break-words"

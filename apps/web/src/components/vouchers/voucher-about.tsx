@@ -1,4 +1,5 @@
 import { isHttpUrl } from "@clc/core/lib/contact";
+import type { AssetOwnerInfo } from "@clc/core/features/safe/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { InfoRow } from "#/components/ui/info-row";
 import { MarkdownContent } from "#/components/ui/markdown-content";
 import { EllipsizedAddress } from "#/components/wallet";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 
 /**
  * What a voucher is worth, what it is for, and how to reach its issuer.
@@ -25,6 +27,7 @@ export function VoucherAbout({
   phone,
   terms,
   issuerAddress,
+  ownerInfo,
 }: {
   rate: { value: string; unit: string } | null;
   symbol: string;
@@ -36,6 +39,7 @@ export function VoucherAbout({
   /** Either a link to the issuer's terms or the terms themselves, as Markdown. */
   terms: string | null;
   issuerAddress: string | null;
+  ownerInfo?: AssetOwnerInfo;
 }) {
   const { t } = useLingui();
 
@@ -129,7 +133,14 @@ export function VoucherAbout({
           </InfoRow>
         ) : null}
         <InfoRow label={t`Issuer`}>
-          {issuerAddress ? <RecipientIdentityLabel address={issuerAddress} /> : "—"}
+          {issuerAddress ? (
+            <div className="min-w-0 space-y-1">
+              <RecipientIdentityLabel address={issuerAddress} />
+              <MultisigOwnerNotice info={ownerInfo} />
+            </div>
+          ) : (
+            "—"
+          )}
         </InfoRow>
       </dl>
 

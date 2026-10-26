@@ -23,6 +23,7 @@ import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
 import { AppUpdateBanner } from "#/features/app-updates/ui/app-update-banner";
+import { SafePendingSheet } from "#/features/safe/ui/safe-pending-sheet";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useNotificationSession } from "#/features/notifications/realtime/use-notification-session";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
@@ -250,6 +251,7 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
+      <SafePendingSheet />
       <IntroductionProvider suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}>
         <RootDiscoveryLocation>
           <Outlet />

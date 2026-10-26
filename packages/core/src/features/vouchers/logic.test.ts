@@ -275,6 +275,21 @@ describe("buildVoucherMintCall", () => {
     });
   });
 
+  it("mints to another account when a multisig owner names one", () => {
+    const recipientAddress = "0x9999999999999999999999999999999999999999" as const;
+    const call = buildVoucherMintCall({
+      tokenAddress,
+      ownerAddress,
+      recipientAddress,
+      amountRaw: "1",
+    });
+
+    expect(decodeFunctionData({ abi: giftableTokenMintToAbi, data: call.data })).toEqual({
+      functionName: "mintTo",
+      args: [recipientAddress, 1n],
+    });
+  });
+
   it("rejects a non-integer or non-positive raw amount", () => {
     for (const amountRaw of ["0", "-1", "1.5", "", "1e6"]) {
       expect(() => buildVoucherMintCall({ tokenAddress, ownerAddress, amountRaw })).toThrow();

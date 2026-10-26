@@ -251,8 +251,10 @@ export const giftableTokenTotalSupplyAbi = parseAbi([
 
 export type BuildVoucherMintCallInput = {
   tokenAddress: `0x${string}`;
-  /** Always the issuer's own wallet — the voucher owner mints to themselves. */
+  /** The issuer's own wallet, or the multisig that owns the voucher. */
   ownerAddress: `0x${string}`;
+  /** Where the supply lands; the owner unless a multisig mints to someone else. */
+  recipientAddress?: `0x${string}`;
   amountRaw: string;
 };
 
@@ -269,7 +271,7 @@ export function buildVoucherMintCall(input: BuildVoucherMintCallInput): CaliburC
     data: encodeFunctionData({
       abi: giftableTokenMintToAbi,
       functionName: "mintTo",
-      args: [input.ownerAddress, amount],
+      args: [input.recipientAddress ?? input.ownerAddress, amount],
     }),
   };
 }

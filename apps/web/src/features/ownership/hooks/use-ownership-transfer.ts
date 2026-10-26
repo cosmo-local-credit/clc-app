@@ -36,6 +36,8 @@ export function useOwnershipTransfer(
   kind: "pool" | "voucher",
   submit: SubmitOwnership,
   prepare: (input: OwnershipTransferInput) => Promise<CaliburCall[]>,
+  /** The viewer signs for a Safe that owns the asset, so the Safe stands in for the owner wallet. */
+  isSafeSigner = false,
 ) {
   const client = useClient({ chainId: CHAIN_ID });
   const connection = useConnection();
@@ -48,11 +50,11 @@ export function useOwnershipTransfer(
       const { assetAddress, ownerAddress } = input;
       if (!client || client.chain?.id !== CHAIN_ID)
         throw new Error("The configured chain is unavailable.");
-      if (
-        !auth.isAuthenticated ||
-        auth.session?.address.toLowerCase() !== ownerAddress.toLowerCase() ||
-        connection.address?.toLowerCase() !== ownerAddress.toLowerCase()
-      ) {
+      const connected = connection.address?.toLowerCase();
+      const session = auth.session?.address.toLowerCase();
+      const isOwnerWallet = session === ownerAddress.toLowerCase() && connected === session;
+      const isSigningForSafe = isSafeSigner && !!connected && connected === session;
+      if (!auth.isAuthenticated || !(isOwnerWallet || isSigningForSafe)) {
         throw new Error("Connect and sign in with this asset's current owner wallet.");
       }
       let saved: OwnershipSubmission | undefined =

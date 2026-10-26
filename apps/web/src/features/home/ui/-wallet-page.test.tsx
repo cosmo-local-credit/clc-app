@@ -52,6 +52,11 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 // The profile nudge reads the connected wallet; it has its own test.
+const safeOwners = vi.hoisted(() => ({ signed: new Set<string>() }));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", async (original) => ({
+  ...(await original<typeof import("#/features/ownership/hooks/use-asset-owner-info")>()),
+  useSafeOwnersSignedBy: () => safeOwners.signed,
+}));
 vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
 vi.mock("#/components/catalogs/my-catalog-section", () => ({
   MyCatalogSection: () => <section aria-label="My Catalogs">My Catalogs</section>,
@@ -271,6 +276,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  safeOwners.signed = new Set();
   mocks.navigate.mockReset();
   mocks.usage.isError = false;
   mocks.usage.isFetching = false;
@@ -557,6 +563,23 @@ describe("WalletPage", () => {
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     expect(await screen.findByText("Kilifi Mkulima")).toBeTruthy();
+    expect(screen.queryByText("Someone Else's")).toBeNull();
+  });
+
+  it("lists a pool owned by a Safe this account signs for", async () => {
+    const safe = "0x5afe00000000000000000000000000000000a5a1";
+    safeOwners.signed = new Set([safe]);
+    mockEndpoints({
+      pools: [
+        OWNED_POOL,
+        { ...OWNED_POOL, id: 9, name: "Multisig Pool", ownerAddress: safe },
+        { ...OWNED_POOL, id: 8, name: "Someone Else's", ownerAddress: OTHER },
+      ],
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("Multisig Pool")).toBeTruthy();
+    expect(screen.getByText("Kilifi Mkulima")).toBeTruthy();
     expect(screen.queryByText("Someone Else's")).toBeNull();
   });
 
