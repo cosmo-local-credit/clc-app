@@ -781,6 +781,7 @@ msgstr "应用筛选条件"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:160
 msgid "Approve voucher"
 msgstr "批准代金券"
 
@@ -1095,7 +1096,7 @@ msgstr "检查增发状态"
 msgid "Check supply again"
 msgstr "重新检查发行量"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:372
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:377
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "请先核对已有的提交，再进行另一次转让："
@@ -1104,7 +1105,7 @@ msgstr "请先核对已有的提交，再进行另一次转让："
 msgid "Check the Want details."
 msgstr "请检查需求详情。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:407
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:412
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "查看转让状态"
@@ -1382,7 +1383,7 @@ msgstr "清除搜索"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:94
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:134
 msgid "Close"
 msgstr "关闭"
 
@@ -1490,6 +1491,10 @@ msgstr "完成手机上的提示。"
 msgid "Complete your profile"
 msgstr "完成您的个人资料"
 
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
+msgid "Confirm"
+msgstr "确认"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:959
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:948
 msgid "Confirm & publish"
@@ -1501,9 +1506,9 @@ msgid "Confirm & Publish"
 msgstr "确认并发布"
 
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:58
-msgid "Confirm and execute transactions in your multisig wallet. Queueing here "
-"is optional."
-msgstr "请在多签钱包中确认并执行交易。在此排队是可选的。"
+#~ msgid "Confirm and execute transactions in your multisig wallet. Queueing here "
+#~ "is optional."
+#~ msgstr "请在多签钱包中确认并执行交易。在此排队是可选的。"
 
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:476
 msgid "Confirm and send"
@@ -1531,6 +1536,7 @@ msgstr "确认兑换"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1538,6 +1544,7 @@ msgstr "已确认"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
 msgid "Confirming"
 msgstr "正在确认"
 
@@ -1918,7 +1925,7 @@ msgstr "无法复制用户名"
 msgid "Couldn't create the first supply."
 msgstr "无法完成首次增发。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:221
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:226
 msgid "Couldn't create vouchers."
 msgstr "无法发行代金券。"
 
@@ -2242,7 +2249,7 @@ msgstr "无法提交提款"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "无法建议用户名。请再试一次。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:337
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:342
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "无法转移所有权。"
@@ -2317,7 +2324,7 @@ msgstr "增发"
 msgid "Create the first supply to finish publishing this voucher."
 msgstr "请先完成首次增发，以发布此代金券。"
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:26
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:29
 msgid "Create this transaction in your multisig wallet. Metadata edits are "
 "still available here."
 msgstr "请在多签钱包中创建此交易。你仍可在此编辑元数据。"
@@ -2329,10 +2336,11 @@ msgstr "请在多签钱包中创建此交易。你仍可在此编辑元数据。
 msgid "Create voucher"
 msgstr "创建代金券"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:240
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:254
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:281
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:131
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:245
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:259
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:286
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:149
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2382,7 +2390,7 @@ msgstr "正在创建 {0}…"
 msgid "Creating account…"
 msgstr "正在创建帐户…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:279
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:284
 msgid "Creating vouchers…"
 msgstr "正在发行代金券…"
 
@@ -2646,7 +2654,7 @@ msgstr "编辑"
 msgid "Edit catalog"
 msgstr "编辑目录"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:111
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:116
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:110
 msgid "Edit details"
 msgstr "编辑详细信息"
@@ -2880,6 +2888,10 @@ msgstr "汇率"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "相对于默认代金券 ({unitSymbol}) 的汇率"
 
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:268
+msgid "Execute it in Safe."
+msgstr "请在 Safe 中执行。"
+
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:84
 msgid "Existing fee recipient"
 msgstr "当前费用接收方"
@@ -2931,6 +2943,7 @@ msgstr "农业"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:158
 msgid "Fee % and recipient"
 msgstr "费率和费用接收方"
 
@@ -3746,7 +3759,7 @@ msgstr "正在加载您的个人资料…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:65
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:87
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3802,6 +3815,7 @@ msgid "Manage {0}"
 msgstr "管理 {0}"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
 msgid "Manage voucher"
 msgstr "管理代金券"
 
@@ -3995,16 +4009,16 @@ msgstr "MPESA 通过 Pretium"
 
 #. placeholder {0}: info.threshold
 #. placeholder {1}: info.signers.length
-#: apps/web/src/components/safe/multisig-owner-notice.tsx:14
+#: apps/web/src/components/safe/multisig-owner-notice.tsx:18
 msgid "Multisig owned · {0} of {1} signers"
 msgstr "由多签钱包持有 · {1} 位签名者中需 {0} 位签名"
 
 #. placeholder {0}: info.signers.length
-#: apps/web/src/components/safe/multisig-owner-notice.tsx:12
+#: apps/web/src/components/safe/multisig-owner-notice.tsx:16
 msgid "Multisig owned · {0} signers"
 msgstr "由多签钱包持有 · {0} 位签名者"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:42
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:55
 msgid "Multisig transactions"
 msgstr "多签交易"
 
@@ -4101,8 +4115,8 @@ msgstr "自然建筑"
 msgid "Network"
 msgstr "网络"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:379
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:391
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:384
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:396
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4358,7 +4372,7 @@ msgstr "还没有帖子。"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "未找到二维码。请使用更清晰的图片重试。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:73
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
 msgid "No queued proposals found."
 msgstr "未找到排队中的提案。"
 
@@ -4465,7 +4479,7 @@ msgid "No. of participants"
 msgstr "参加人数"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:107
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:230
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4640,8 +4654,8 @@ msgstr "充值详情"
 msgid "Open in Maps"
 msgstr "在地图中打开"
 
-#: apps/web/src/components/safe/multisig-owner-notice.tsx:26
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:89
+#: apps/web/src/components/safe/multisig-owner-notice.tsx:30
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:129
 msgid "Open in Safe"
 msgstr "在 Safe 中打开"
 
@@ -4770,13 +4784,13 @@ msgstr "发行方回复"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "已提交所有权转让。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:332
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:337
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "所有权已在链上转让。目录同步有所延迟；您的管理权限已被移除。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:334
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:339
 msgid "Ownership transferred."
 msgstr "所有权已转让。"
 
@@ -5273,8 +5287,8 @@ msgstr "偏好设置"
 msgid "Preferred unit of account"
 msgstr "首选记账单位"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:277
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:403
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:282
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:408
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "正在准备钱包…"
@@ -5408,11 +5422,11 @@ msgstr "个人资料照片"
 msgid "Profile updated"
 msgstr "个人资料已更新"
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:20
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:23
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "提案已加入队列。请在 Safe 中确认并执行。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:91
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "此处暂时无法使用提案。你仍可使用多签钱包。"
 
@@ -5714,6 +5728,7 @@ msgstr "相对定价"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
 msgid "Remove"
 msgstr "删除"
 
@@ -5973,7 +5988,7 @@ msgstr "重试连接"
 msgid "Reverted"
 msgstr "已回滚"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:126
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "Review this transaction in your multisig wallet."
 msgstr "请在多签钱包中查看此交易。"
 
@@ -5985,7 +6000,7 @@ msgstr "评价"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "对此代金券的评价将出现在此处。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:120
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:125
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
 msgid "Safe transactions"
 msgstr "Safe 交易"
@@ -7035,7 +7050,7 @@ msgstr "此设备不支持该地图。"
 msgid "The message and order must be 500 characters or fewer."
 msgstr "消息和订单不得超过 500 个字符。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:359
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:364
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "新所有者可以发行代金券并转让所有权。"
 
@@ -7432,16 +7447,17 @@ msgstr "交易哈希已复制"
 #~ msgid "Transfer history"
 #~ msgstr "转账记录"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:131
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:356
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:409
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:136
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:361
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:414
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:151
 msgid "Transfer ownership"
 msgstr "转让所有权"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:405
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:410
 msgid "Transferring ownership…"
 msgstr "转让所有权…"
 
@@ -7567,7 +7583,8 @@ msgstr "记账单位"
 msgid "Unknown"
 msgstr "未知"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:117
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:168
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
 msgid "Unknown call"
 msgstr "未知调用"
 
@@ -7826,7 +7843,7 @@ msgstr "代金券操作"
 msgid "Voucher contract"
 msgstr "代金券合同"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:107
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:112
 msgid "Voucher controls"
 msgstr "代金券管理"
 
@@ -7834,7 +7851,7 @@ msgstr "代金券管理"
 msgid "Voucher creation receipt"
 msgstr "代金券创建收据"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:218
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:223
 msgid "Voucher creation submitted."
 msgstr "代金券创建已提交。"
 
@@ -8146,11 +8163,13 @@ msgstr "提取"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:155
 msgid "Withdraw fees"
 msgstr "提取费用"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:153
 msgid "Withdraw liquidity"
 msgstr "提取流动性"
 
@@ -8231,6 +8250,10 @@ msgstr "资金池停用后，您仍可提取资金。"
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:175
 msgid "You can write or edit your review until {0}."
 msgstr "您可以在 {0} 之前撰写或编辑您的评价。"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:266
+msgid "You confirmed"
+msgstr "您已确认"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:244
 #~ msgid "You didn't issue any of these."

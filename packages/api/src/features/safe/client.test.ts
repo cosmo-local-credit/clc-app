@@ -71,6 +71,24 @@ describe("safe client", () => {
     );
   });
 
+  it("POSTs a confirmation and returns the updated proposal", async () => {
+    const { spy, safe } = client({ ...proposal, confirmations: [] });
+    await safe.confirm({
+      safeTxHash: proposal.safeTxHash as `0x${string}`,
+      signature: `0x${"22".repeat(65)}`,
+    });
+    expect(spy).toHaveBeenCalledWith(
+      "https://api.example/api/v2/safe/confirmations",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          safeTxHash: proposal.safeTxHash,
+          signature: `0x${"22".repeat(65)}`,
+        }),
+      }),
+    );
+  });
+
   it("rejects a malformed response", async () => {
     const { safe } = client({ results: [{ ...proposal, confirmationsRequired: 0 }] });
     await expect(safe.pending(A(1))).rejects.toThrow();

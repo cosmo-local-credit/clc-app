@@ -812,6 +812,7 @@ msgstr "Filters toepassen"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:160
 msgid "Approve voucher"
 msgstr "Waardebon goedkeuren"
 
@@ -1129,7 +1130,7 @@ msgstr "Aanmaakstatus controleren"
 msgid "Check supply again"
 msgstr "Voorraad opnieuw controleren"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:372
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:377
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "Controleer de bestaande indiening vóór een volgende overdracht:"
@@ -1138,7 +1139,7 @@ msgstr "Controleer de bestaande indiening vóór een volgende overdracht:"
 msgid "Check the Want details."
 msgstr "Controleer de details van het verzoek."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:407
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:412
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "Status van overdracht controleren"
@@ -1420,7 +1421,7 @@ msgstr "Zoekopdracht wissen"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:94
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:134
 msgid "Close"
 msgstr "Sluiten"
 
@@ -1530,6 +1531,10 @@ msgstr "Rond de melding op uw telefoon af."
 msgid "Complete your profile"
 msgstr "Voltooi uw profiel"
 
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
+msgid "Confirm"
+msgstr "Bevestigen"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:959
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:948
 msgid "Confirm & publish"
@@ -1541,10 +1546,10 @@ msgid "Confirm & Publish"
 msgstr "Bevestigen en publiceren"
 
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:58
-msgid "Confirm and execute transactions in your multisig wallet. Queueing here "
-"is optional."
-msgstr "Bevestig transacties en voer ze uit in je multisigwallet. Hier in de "
-"wachtrij plaatsen is optioneel."
+#~ msgid "Confirm and execute transactions in your multisig wallet. Queueing here "
+#~ "is optional."
+#~ msgstr "Bevestig transacties en voer ze uit in je multisigwallet. Hier in de "
+#~ "wachtrij plaatsen is optioneel."
 
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:476
 msgid "Confirm and send"
@@ -1572,6 +1577,7 @@ msgstr "Omwisseling bevestigen"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:245
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1579,6 +1585,7 @@ msgstr "Bevestigd"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:261
 msgid "Confirming"
 msgstr "Bevestigen"
 
@@ -1970,7 +1977,7 @@ msgstr "Gebruikersnaam kon niet worden gekopieerd"
 msgid "Couldn't create the first supply."
 msgstr "De eerste voorraad kon niet worden aangemaakt."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:221
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:226
 msgid "Couldn't create vouchers."
 msgstr "De waardebonnen konden niet worden uitgegeven."
 
@@ -2302,7 +2309,7 @@ msgstr "De opname kon niet worden ingediend"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "Er kon geen gebruikersnaam worden voorgesteld. Probeer het opnieuw."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:337
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:342
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "Het eigendom kon niet worden overgedragen."
@@ -2378,7 +2385,7 @@ msgid "Create the first supply to finish publishing this voucher."
 msgstr "Maak de eerste voorraad aan om de publicatie van deze waardebon te "
 "voltooien."
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:26
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:29
 msgid "Create this transaction in your multisig wallet. Metadata edits are "
 "still available here."
 msgstr "Maak deze transactie in je multisigwallet. Je kunt hier nog steeds "
@@ -2391,10 +2398,11 @@ msgstr "Maak deze transactie in je multisigwallet. Je kunt hier nog steeds "
 msgid "Create voucher"
 msgstr "Waardebon aanmaken"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:240
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:254
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:281
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:131
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:245
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:259
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:286
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:149
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2444,7 +2452,7 @@ msgstr "{0} aanmaken…"
 msgid "Creating account…"
 msgstr "Account aanmaken…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:279
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:284
 msgid "Creating vouchers…"
 msgstr "Waardebonnen uitgeven…"
 
@@ -2710,7 +2718,7 @@ msgstr "Bewerken"
 msgid "Edit catalog"
 msgstr "Catalogus bewerken"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:111
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:116
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:110
 msgid "Edit details"
 msgstr "Gegevens bewerken"
@@ -2946,6 +2954,10 @@ msgstr "Wisselkoers"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Wisselkoers ten opzichte van de standaardwaardebon ({unitSymbol})"
 
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:268
+msgid "Execute it in Safe."
+msgstr "Voer het uit in Safe."
+
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:84
 msgid "Existing fee recipient"
 msgstr "Huidige ontvanger van kosten"
@@ -2997,6 +3009,7 @@ msgstr "Landbouw"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:158
 msgid "Fee % and recipient"
 msgstr "Kostenpercentage en ontvanger"
 
@@ -3822,7 +3835,7 @@ msgstr "Uw profiel laden…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:65
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:87
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3879,6 +3892,7 @@ msgid "Manage {0}"
 msgstr "{0} beheren"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
 msgid "Manage voucher"
 msgstr "Waardebon beheren"
 
@@ -4073,16 +4087,16 @@ msgstr "MPESA via Pretium"
 
 #. placeholder {0}: info.threshold
 #. placeholder {1}: info.signers.length
-#: apps/web/src/components/safe/multisig-owner-notice.tsx:14
+#: apps/web/src/components/safe/multisig-owner-notice.tsx:18
 msgid "Multisig owned · {0} of {1} signers"
 msgstr "In bezit van een multisig · {0} van {1} ondertekenaars"
 
 #. placeholder {0}: info.signers.length
-#: apps/web/src/components/safe/multisig-owner-notice.tsx:12
+#: apps/web/src/components/safe/multisig-owner-notice.tsx:16
 msgid "Multisig owned · {0} signers"
 msgstr "In bezit van een multisig · {0} ondertekenaars"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:42
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:55
 msgid "Multisig transactions"
 msgstr "Multisigtransacties"
 
@@ -4179,8 +4193,8 @@ msgstr "Natuurlijk bouwen"
 msgid "Network"
 msgstr "Netwerk"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:379
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:391
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:384
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:396
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4444,7 +4458,7 @@ msgid "No QR code found. Try again with a clearer image."
 msgstr "Geen QR-code gevonden. Probeer het opnieuw met een duidelijkere "
 "afbeelding."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:73
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:95
 msgid "No queued proposals found."
 msgstr "Geen voorstellen in de wachtrij gevonden."
 
@@ -4551,7 +4565,7 @@ msgid "No. of participants"
 msgstr "Aantal deelnemers"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:107
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:230
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4730,8 +4744,8 @@ msgstr "Stortingsgegevens"
 msgid "Open in Maps"
 msgstr "Openen in Kaarten"
 
-#: apps/web/src/components/safe/multisig-owner-notice.tsx:26
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:89
+#: apps/web/src/components/safe/multisig-owner-notice.tsx:30
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:129
 msgid "Open in Safe"
 msgstr "Openen in Safe"
 
@@ -4863,14 +4877,14 @@ msgstr "Antwoord van eigenaar"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "Eigendomsoverdracht ingediend."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:332
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:337
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "Eigendom overgedragen op de blockchain. De catalogussynchronisatie "
 "loopt vertraging op; uw beheerrechten zijn verwijderd."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:334
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:339
 msgid "Ownership transferred."
 msgstr "Eigendom overgedragen."
 
@@ -5373,8 +5387,8 @@ msgstr "Voorkeuren"
 msgid "Preferred unit of account"
 msgstr "Voorkeursrekeneenheid"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:277
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:403
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:282
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:408
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "Portefeuille voorbereiden…"
@@ -5509,12 +5523,12 @@ msgstr "Profielfoto"
 msgid "Profile updated"
 msgstr "Profiel bijgewerkt"
 
-#: apps/web/src/features/safe/hooks/use-report-write-error.ts:20
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:23
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "Voorstel in de wachtrij geplaatst. Bevestig het en voer het uit in "
 "Safe."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:91
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Voorstellen zijn hier niet beschikbaar. Je kunt je multisigwallet nog "
 "steeds gebruiken."
@@ -5821,6 +5835,7 @@ msgstr "Relatieve prijsstelling"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:166
 msgid "Remove"
 msgstr "Verwijderen"
 
@@ -6085,7 +6100,7 @@ msgstr "Verbinding opnieuw proberen"
 msgid "Reverted"
 msgstr "Teruggedraaid"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:126
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:270
 msgid "Review this transaction in your multisig wallet."
 msgstr "Controleer deze transactie in je multisigwallet."
 
@@ -6097,7 +6112,7 @@ msgstr "Beoordelingen"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Beoordelingen van deze waardebon verschijnen hier."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:120
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:125
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
 msgid "Safe transactions"
 msgstr "Safe-transacties"
@@ -7166,7 +7181,7 @@ msgstr "De kaart wordt niet ondersteund op dit apparaat."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "Het bericht en de bestelling mogen samen maximaal 500 tekens bevatten."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:359
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:364
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "De nieuwe eigenaar kan waardebonnen uitgeven en het eigendom "
 "overdragen."
@@ -7593,16 +7608,17 @@ msgstr "Transactiehash gekopieerd"
 #~ msgid "Transfer history"
 #~ msgstr "Overdrachtsgeschiedenis"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:131
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:356
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:409
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:136
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:361
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:414
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:151
 msgid "Transfer ownership"
 msgstr "Eigendom overdragen"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:405
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:410
 msgid "Transferring ownership…"
 msgstr "Eigendom overdragen…"
 
@@ -7729,7 +7745,8 @@ msgstr "Rekeneenheid"
 msgid "Unknown"
 msgstr "Onbekend"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:117
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:168
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
 msgid "Unknown call"
 msgstr "Onbekende aanroep"
 
@@ -7989,7 +8006,7 @@ msgstr "Waardebonacties"
 msgid "Voucher contract"
 msgstr "Waardeboncontract"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:107
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:112
 msgid "Voucher controls"
 msgstr "Waardebonbeheer"
 
@@ -7997,7 +8014,7 @@ msgstr "Waardebonbeheer"
 msgid "Voucher creation receipt"
 msgstr "Bewijs van waardebonuitgifte"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:218
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:223
 msgid "Voucher creation submitted."
 msgstr "De waardebonuitgifte is ingediend."
 
@@ -8312,11 +8329,13 @@ msgstr "Opnemen"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:155
 msgid "Withdraw fees"
 msgstr "Kosten opnemen"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:153
 msgid "Withdraw liquidity"
 msgstr "Liquiditeit opnemen"
 
@@ -8399,6 +8418,10 @@ msgstr "U kunt nog steeds tegoeden opnemen nadat het fonds buiten gebruik is "
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:175
 msgid "You can write or edit your review until {0}."
 msgstr "U kunt uw beoordeling tot {0} schrijven of bewerken."
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:266
+msgid "You confirmed"
+msgstr "Je hebt bevestigd"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:244
 #~ msgid "You didn't issue any of these."

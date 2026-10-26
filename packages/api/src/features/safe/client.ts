@@ -51,6 +51,15 @@ export function createSafeClient(http: HttpClient) {
         }),
       );
     },
+    /** Adds the signed-in signer's confirmation; clc-core re-checks policy and signature. */
+    async confirm(input: { safeTxHash: `0x${string}`; signature: `0x${string}` }) {
+      return safeProposalSchema.parse(
+        await http.request<unknown>("/api/v2/safe/confirmations", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
+      );
+    },
     async pending(safe: string, signal?: AbortSignal) {
       const result = await http.request<unknown>(
         `/api/v2/safe/${encodeURIComponent(safe)}/pending`,

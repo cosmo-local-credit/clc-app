@@ -268,3 +268,33 @@ export function decodeSafeTransactionCalls(
     return null;
   }
 }
+
+/**
+ * What a signer can do with a queued proposal from the app.
+ *
+ * - `execute`: enough signers confirmed; execution happens in Safe.
+ * - `confirmed`: the viewer already signed it.
+ * - `confirm`: the viewer may add a confirmation here. Only for calls the app
+ *   can decode and clc-core's policy allows, which it re-checks on confirm.
+ * - `review`: anything else, reviewed in Safe.
+ */
+export type SafeProposalAction = "execute" | "confirmed" | "confirm" | "review";
+
+export function safeProposalAction(input: {
+  confirmations: readonly { owner: string }[];
+  confirmationsRequired: number;
+  calls: readonly SafeCall[] | null;
+  viewer: `0x${string}` | undefined;
+  canSign: boolean;
+}): SafeProposalAction {
+  if (input.confirmations.length >= input.confirmationsRequired) return "execute";
+  const viewer = input.viewer;
+  if (viewer && input.confirmations.some((c) => c.owner.toLowerCase() === viewer.toLowerCase())) {
+    return "confirmed";
+  }
+  const allowed =
+    input.calls !== null &&
+    input.calls.length > 0 &&
+    input.calls.every((call) => safeCallName(call.data) !== null);
+  return input.canSign && allowed ? "confirm" : "review";
+}

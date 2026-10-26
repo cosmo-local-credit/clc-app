@@ -3,6 +3,7 @@ import {
   concatHex,
   decodeFunctionData,
   encodeAbiParameters,
+  encodeFunctionData,
   keccak256,
   parseAbi,
   toHex,
@@ -14,6 +15,7 @@ import {
   classifyOwnerCode,
   computeSafeTxHash,
   decodeSafeTransactionCalls,
+  safeProposalAction,
   encodeMultiSend,
   isSigner,
   safeCallName,
@@ -178,5 +180,43 @@ describe("decodeSafeTransactionCalls", () => {
     expect(safeCallName("0xf2fde38b0000")).toBe("transferOwnership");
     expect(safeCallName("0xdeadbeef")).toBeNull();
     expect(safeCallName("0x12")).toBeNull();
+  });
+});
+
+describe("safeProposalAction", () => {
+  const viewer = "0x00000000000000000000000000000000000000a1";
+  const other = "0x00000000000000000000000000000000000000b2";
+  const mint = {
+    to: other,
+    value: "0",
+    data: encodeFunctionData({
+      abi: parseAbi(["function mintTo(address,uint256)"]),
+      functionName: "mintTo",
+      args: [other, 1n],
+    }),
+  } as const;
+  const base = { confirmationsRequired: 2, calls: [mint], viewer, canSign: true } as const;
+
+  it("offers a signer the confirmation of an allowed call", () => {
+    expect(safeProposalAction({ ...base, confirmations: [{ owner: other }] })).toBe("confirm");
+  });
+  it("sends a fully confirmed proposal to Safe for execution", () => {
+    expect(
+      safeProposalAction({
+        ...base,
+        confirmations: [{ owner: other }, { owner: viewer.toUpperCase() }],
+      }),
+    ).toBe("execute");
+  });
+  it("recognizes the viewer's own confirmation case-insensitively", () => {
+    expect(safeProposalAction({ ...base, confirmations: [{ owner: viewer.toUpperCase() }] })).toBe(
+      "confirmed",
+    );
+  });
+  it("leaves undecodable, disallowed or unsignable proposals to Safe", () => {
+    const none = { ...base, confirmations: [] };
+    expect(safeProposalAction({ ...none, calls: null })).toBe("review");
+    expect(safeProposalAction({ ...none, calls: [{ ...mint, data: "0x" }] })).toBe("review");
+    expect(safeProposalAction({ ...none, canSign: false })).toBe("review");
   });
 });
