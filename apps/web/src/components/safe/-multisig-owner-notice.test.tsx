@@ -11,9 +11,11 @@ const signers = [
 
 describe("public multisig ownership", () => {
   it("shows quorum and dashboard without an authenticated session", () => {
-    render(
+    const { container } = render(
       <MultisigOwnerNotice info={{ kind: "safe", owner, signers: [...signers], threshold: 2 }} />,
     );
+    // A paragraph would take the base body size instead of the caption size.
+    expect(container.querySelector("p")).toBeNull();
     expect(screen.getByText("Multisig owned · 2 of 2 signers")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open in Safe" }).getAttribute("href")).toContain(
       `gno:${owner}`,
