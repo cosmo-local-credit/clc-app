@@ -201,7 +201,7 @@ export function VoucherDetailPage({
         locationName={locationName}
         lat={lat}
         lng={lng}
-        phone={token.phone}
+        phone={detail?.phone ?? token.phone}
         website={detail?.website}
         catalogResourceId={detail?.id}
         catalogAddress={detail?.address}
@@ -231,15 +231,15 @@ export function VoucherDetailPage({
         chainId={detail?.chainId ?? poolVoucher?.chainId ?? null}
         voucherValue={voucherValue}
         voucherUoa={voucherUoa}
-        description={detail?.description ?? poolVoucher?.description ?? null}
-        email={token.email ?? null}
-        website={detail?.website ?? null}
-        phone={token.phone ?? null}
-        terms={detail?.terms ?? null}
-        locationName={locationName}
-        lat={lat}
-        lng={lng}
         dataPending={detailQuery.isPending || supportingDataPending}
+        privateInfo={
+          detailQuery.privateInfo
+            ? {
+                ...detailQuery.privateInfo,
+                retry: () => void detailQuery.privateInfo?.refetch(),
+              }
+            : undefined
+        }
       />
     </div>
   );

@@ -12,11 +12,18 @@ import {
 } from "./use-market-voucher-detail";
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
+const getVoucherInfo = vi.hoisted(() => vi.fn());
+const auth = vi.hoisted(() => ({
+  isAuthenticated: false,
+  session: undefined as { address: string } | undefined,
+}));
 
 vi.mock("@clc/api/features/market/client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@clc/api/features/market/client")>();
-  return { ...actual, getMarketVoucher };
+  return { ...actual, getMarketVoucher, getVoucherInfo };
 });
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => auth }));
 
 // The app-owned client is the seam the code now goes through. Build it from
 // the already-mocked resource modules above so their overrides still apply.
@@ -72,6 +79,9 @@ function wrapper(client: QueryClient) {
 
 beforeEach(() => {
   getMarketVoucher.mockReset();
+  getVoucherInfo.mockReset();
+  auth.isAuthenticated = false;
+  auth.session = undefined;
 });
 
 afterEach(() => {
@@ -89,6 +99,26 @@ describe("useMarketVoucherDetail", () => {
 
     await waitFor(() => expect(result.current.data?.symbol).toBe("MALII"));
     expect(getMarketVoucher).toHaveBeenCalledWith(CHECKSUMMED, expect.anything());
+  });
+
+  it("merges wallet-scoped authenticated information without writing it to the public cache", async () => {
+    auth.isAuthenticated = true;
+    auth.session = { address: "0x1111111111111111111111111111111111111111" };
+    getMarketVoucher.mockResolvedValue(detail({ email: null, website: null, phone: null }));
+    getVoucherInfo.mockResolvedValue(
+      detail({ email: "issuer@example.org", website: "https://example.org", phone: "+254700" }),
+    );
+    const client = newClient();
+
+    const { result } = renderHook(() => useMarketVoucherDetail(CHECKSUMMED), {
+      wrapper: wrapper(client),
+    });
+
+    await waitFor(() => expect(result.current.data?.phone).toBe("+254700"));
+    expect(client.getQueryData<MarketVoucherDetail>(voucherKeys.detail(CHECKSUMMED))?.phone).toBe(
+      null,
+    );
+    expect(getVoucherInfo).toHaveBeenCalledWith(CHECKSUMMED, expect.anything());
   });
 
   it("refreshes cached detail with a no-store owner verification on receipt mount", async () => {

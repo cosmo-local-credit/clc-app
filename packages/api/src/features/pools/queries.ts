@@ -1,5 +1,5 @@
 import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
-import { type CatalogFilter, EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { PoolsClient, UserPoolPage } from "./client";
 
@@ -47,6 +47,8 @@ export const poolKeys = {
   listInfinite: (perPage: number) => ["clc", "pools", "list", "infinite", perPage] as const,
 
   detail: (address: string) => ["clc", "pools", "detail", address.toLowerCase()] as const,
+  info: (address: string, viewer: string) =>
+    ["clc", "pools", "info", address.toLowerCase(), viewer.toLowerCase()] as const,
   ownedDetail: (address: string, viewer: string) =>
     ["clc", "pools", "owner-detail", viewer.toLowerCase(), address.toLowerCase()] as const,
   recoveryInfinite: (viewer: string, perPage: number) =>
@@ -93,9 +95,6 @@ export const poolKeys = {
    * *member* of, which is a different set — an address can hold a pool's vouchers
    * without having deployed it, and can own a pool it holds nothing of.
    */
-  ownedInfinite: (owner: string, perPage: number) =>
-    ["clc", "pools", "owned", "infinite", owner.toLowerCase(), perPage] as const,
-
   /** One page of the pools an account belongs to. */
   account: (address: string, params: PoolListParams) =>
     [
@@ -133,41 +132,6 @@ export function poolListInfiniteQueryOptions(
         },
         signal,
       ),
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: (lastPage) => nextPoolCursor(lastPage, perPage),
-  });
-}
-
-/**
- * The pools an address owns.
- *
- * Goes through the filtered endpoint because `owner` is a server predicate
- * there: filtering a fetched page client-side would show "your pools" as
- * whatever of them happened to land in the first page of a catalog that grows
- * without bound.
- *
- * The filter is otherwise empty — this list carries no search box — so `owner`
- * is the only narrowing the request sends.
- */
-export function poolsByOwnerInfiniteQueryOptions(
-  pools: PoolsClient,
-  owner: string | undefined,
-  perPage: number,
-) {
-  return infiniteQueryOptions({
-    queryKey: poolKeys.ownedInfinite(owner ?? "none", perPage),
-    queryFn: ({ pageParam, signal }) =>
-      pools.getFilteredPools(
-        {
-          perPage,
-          cursor: pageParam,
-          next: pageParam === undefined ? undefined : true,
-          filter: EMPTY_CATALOG_FILTER,
-          owner: requireAddress(owner),
-        },
-        signal,
-      ),
-    enabled: Boolean(owner),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => nextPoolCursor(lastPage, perPage),
   });
@@ -217,6 +181,19 @@ export function poolQueryOptions(pools: PoolsClient, address: string | undefined
     queryKey: poolKeys.detail(address ?? "none"),
     queryFn: ({ signal }) => pools.getPoolByAddress(requireAddress(address), signal),
     enabled: Boolean(address),
+  });
+}
+
+export function poolInfoQueryOptions(
+  pools: PoolsClient,
+  address: string | undefined,
+  viewer: string | undefined,
+) {
+  return queryOptions({
+    queryKey: poolKeys.info(address ?? "none", viewer ?? "none"),
+    queryFn: ({ signal }) => pools.getPoolInfo(requireAddress(address), signal),
+    enabled: Boolean(address && viewer),
+    staleTime: 0,
   });
 }
 

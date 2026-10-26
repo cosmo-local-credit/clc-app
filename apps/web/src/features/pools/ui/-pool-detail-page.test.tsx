@@ -42,6 +42,14 @@ const mocks = vi.hoisted(() => ({
     data: undefined as UserPool | undefined,
     isPending: false,
     isError: false,
+    privateInfo: undefined as
+      | {
+          isPending: boolean;
+          isError: boolean;
+          isFetching: boolean;
+          refetch: ReturnType<typeof vi.fn>;
+        }
+      | undefined,
   },
   updateProfile: vi.fn(),
 }));
@@ -225,6 +233,7 @@ const savedProfile = {
 
 beforeEach(() => {
   mocks.poolResult.data = pool();
+  mocks.poolResult.privateInfo = undefined;
   mocks.updateProfile.mockReset();
   mocks.updateProfile.mockResolvedValue(pool({ name: "Kilifi Market Traders" }));
 });
@@ -263,6 +272,7 @@ describe("PoolDetailPage pool details editor", () => {
       "Offerings",
       "Wants",
       "Vouchers",
+      "Info",
     ]);
     expect(screen.queryByRole("link", { name: "Swap" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Deposit" })).toBeNull();
@@ -270,6 +280,49 @@ describe("PoolDetailPage pool details editor", () => {
     expect(screen.queryByRole("tab", { name: "Holdings" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "Credit" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "Activity" })).toBeNull();
+  });
+
+  it("gates Pool Info for guests and restores the complete panel after sign-in", () => {
+    mocks.auth.isAuthenticated = false;
+    mocks.auth.session = null;
+    const guest = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="info" />);
+
+    expect(screen.getByText("Sign in")).toBeTruthy();
+    expect(screen.queryByText("steward@example.org")).toBeNull();
+    expect(screen.queryByText("Open in Maps")).toBeNull();
+    guest.unmount();
+
+    mocks.auth.isAuthenticated = true;
+    mocks.auth.session = { address: OWNER, chainId: 100 };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("tabpanel", { name: "Info" })).toBeTruthy();
+    expect(screen.getByText("steward@example.org")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Open in Maps" })).toBeTruthy();
+  });
+
+  it("keeps Pool Info unavailable until its protected read succeeds and retries failures", () => {
+    const refetch = vi.fn();
+    mocks.poolResult.privateInfo = {
+      isPending: true,
+      isError: false,
+      isFetching: true,
+      refetch,
+    };
+    const pending = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByText("Loading pool information…")).toBeTruthy();
+    expect(screen.queryByText("steward@example.org")).toBeNull();
+    pending.unmount();
+
+    mocks.poolResult.privateInfo = {
+      isPending: false,
+      isError: true,
+      isFetching: false,
+      refetch,
+    };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("alert").textContent).toContain("Couldn't load pool information.");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(refetch).toHaveBeenCalledOnce();
   });
 
   it("offers the editor only to the pool's owner", () => {
@@ -323,6 +376,7 @@ describe("PoolDetailPage pool details editor", () => {
         ...savedProfile,
         displayName: "Kilifi Market Traders",
         email: "",
+        clearContactFields: ["email"],
       }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());

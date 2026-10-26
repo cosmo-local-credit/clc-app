@@ -6,9 +6,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { WantDetail } from "./want-detail";
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
-const api = vi.hoisted(() => ({ creatorVouchers: vi.fn(), creatorPools: vi.fn() }));
+const api = vi.hoisted(() => ({
+  creatorVouchers: vi.fn(),
+  creatorPools: vi.fn(),
+  contact: vi.fn(),
+}));
+const auth = vi.hoisted(() => ({
+  state: "authenticated",
+  isLoading: false,
+  isAuthenticated: true,
+  session: { address: `0x${"a".repeat(40)}` } as { address: string } | undefined,
+  retry: vi.fn(),
+  retrying: false,
+}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("#/lib/api/wants", () => ({ wantsClient: api }));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => auth }));
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: ({ markerStyle }: { markerStyle: { icon: string; color: string } }) => (
     <div data-testid="location-map">{`${markerStyle.icon}:${markerStyle.color}`}</div>
@@ -17,18 +30,24 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
-    params,
+    params = {},
+    search,
     children,
     ...props
   }: {
     to: string;
-    params: Record<string, string>;
+    params?: Record<string, string>;
+    search?: { step?: string; redirect?: string };
     children: ReactNode;
   }) => (
     <a
-      href={to
-        .replace("$voucherAddress", params.voucherAddress ?? "")
-        .replace("$poolAddress", params.poolAddress ?? "")}
+      href={
+        to === "/onboarding"
+          ? `/onboarding?step=${search?.step ?? ""}`
+          : to
+              .replace("$voucherAddress", params.voucherAddress ?? "")
+              .replace("$poolAddress", params.poolAddress ?? "")
+      }
       {...props}
     >
       {children}
@@ -68,13 +87,30 @@ beforeEach(() => {
   });
   api.creatorVouchers.mockReset().mockResolvedValue({ vouchers: [], first: 0, last: 0 });
   api.creatorPools.mockReset().mockResolvedValue({ pools: [], first: 0, last: 0 });
+  api.contact.mockReset().mockResolvedValue(WANT.contact);
+  auth.state = "authenticated";
+  auth.isLoading = false;
+  auth.isAuthenticated = true;
+  auth.session = { address: `0x${"a".repeat(40)}` };
 });
 
 afterEach(() => vi.restoreAllMocks());
 
+function queryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+}
+
+function renderWant(ui: ReactNode) {
+  return render(<QueryClientProvider client={queryClient()}>{ui}</QueryClientProvider>);
+}
+
+function rerenderWant(rerender: (ui: ReactNode) => void, ui: ReactNode) {
+  rerender(<QueryClientProvider client={queryClient()}>{ui}</QueryClientProvider>);
+}
+
 describe("Want detail", () => {
-  it("shows public scheduling, location, tags, description, and only supplied contact actions", () => {
-    render(<WantDetail want={WANT} distanceOrigin={{ lat: -1.28, lng: 36.82 }} />);
+  it("shows scheduling, protected location, tags, description, and selected contacts to a signed-in user", async () => {
+    renderWant(<WantDetail want={WANT} distanceOrigin={{ lat: -1.28, lng: 36.82 }} />);
 
     expect(screen.getByRole("heading", { name: "Bicycle repair" })).toBeTruthy();
     expect(screen.queryByText(/Wanted by/)).toBeNull();
@@ -82,7 +118,7 @@ describe("Want detail", () => {
     expect(screen.getByText("Repair")).toBeTruthy();
     expect(screen.getByText("Bicycle")).toBeTruthy();
     expect(screen.getByText("Looking for help repairing a wheel")).toBeTruthy();
-    expect(screen.getByText("Meet near the market")).toBeTruthy();
+    expect(await screen.findByText("Meet near the market")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Email" }).getAttribute("href")).toBe(
       "mailto:amina@example.test",
     );
@@ -97,11 +133,25 @@ describe("Want detail", () => {
     expect(locationLink?.getAttribute("target")).toBe("_blank");
   });
 
+  it("keeps schedule public while gating exact location and contact for guests", () => {
+    auth.state = "guest";
+    auth.isAuthenticated = false;
+    auth.session = undefined;
+    renderWant(<WantDetail want={WANT} showLocationMap />);
+
+    expect(screen.getByText("No ending date")).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: "Sign in" })).toHaveLength(2);
+    expect(screen.queryByText(/^Nairobi/)).toBeNull();
+    expect(screen.queryByTestId("location-map")).toBeNull();
+    expect(screen.queryByText("Meet near the market")).toBeNull();
+    expect(api.contact).not.toHaveBeenCalled();
+  });
+
   it("renders the selected marker only when the standalone location map is requested", () => {
-    const { rerender } = render(<WantDetail want={WANT} showLocationMap />);
+    const { rerender } = renderWant(<WantDetail want={WANT} showLocationMap />);
     expect(screen.getByTestId("location-map").textContent).toBe("question:orange");
 
-    rerender(<WantDetail want={WANT} />);
+    rerenderWant(rerender, <WantDetail want={WANT} />);
     expect(screen.queryByTestId("location-map")).toBeNull();
   });
 
@@ -218,7 +268,7 @@ describe("Want detail", () => {
   it("uses the canonical public URL for native Share", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "share", { configurable: true, value: share });
-    render(<WantDetail want={WANT} />);
+    renderWant(<WantDetail want={WANT} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Share" }));
     await waitFor(() =>
@@ -235,7 +285,7 @@ describe("Want detail", () => {
       configurable: true,
       value: { writeText: clipboard },
     });
-    const { rerender } = render(<WantDetail want={{ ...WANT, contact: undefined }} />);
+    const { rerender } = renderWant(<WantDetail want={{ ...WANT, contact: undefined }} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Share" }));
     await waitFor(() =>
@@ -246,7 +296,7 @@ describe("Want detail", () => {
     expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
 
     clipboard.mockRejectedValueOnce(new Error("blocked"));
-    rerender(<WantDetail want={WANT} />);
+    rerenderWant(rerender, <WantDetail want={WANT} />);
     fireEvent.click(screen.getByRole("button", { name: "Share" }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't share this Want."));
   });

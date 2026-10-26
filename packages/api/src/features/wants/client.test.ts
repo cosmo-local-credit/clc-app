@@ -59,7 +59,12 @@ describe("Wants HTTP contract", () => {
       bounds: [{ minLng: 36, minLat: -2, maxLng: 37, maxLat: -1 }],
       pools: [{ chainId: 100, address: `0x${"a".repeat(40)}` }],
     });
-    expect(page.wants[0]).toMatchObject({ id: "7", contact: { email: "amina@example.test" } });
+    expect(page.wants[0]).toMatchObject({ id: "7" });
+    expect(page.wants[0]).not.toHaveProperty("contact");
+    expect(page.wants[0]).not.toHaveProperty("contactText");
+    expect(page.wants[0]).not.toHaveProperty("contactPermission");
+    expect(page.wants[0]).not.toHaveProperty("email");
+    expect(page.wants[0]).not.toHaveProperty("phone");
     expect(page.wants[0]).not.toHaveProperty("ownerUserId");
     expect(page.wants[0]).not.toHaveProperty("ownerName");
     expect(page.wants[0]).not.toHaveProperty("ownerUsername");
@@ -80,7 +85,7 @@ describe("Wants HTTP contract", () => {
 
   it("uses public detail and pool routes without credentials", async () => {
     const fetcher = respond({ want: row });
-    expect((await api.detail("7")).contact?.text).toBe("Meet near the market");
+    expect(await api.detail("7")).not.toHaveProperty("contact");
     expect(fetcher.mock.calls[0]?.[0]).toBe("https://api.test/api/v2/wants/7");
     expect(fetcher.mock.calls[0]?.[1].credentials).toBe("omit");
 
@@ -92,6 +97,24 @@ describe("Wants HTTP contract", () => {
     await api.pool(`0x${"b".repeat(40)}`, { perPage: 20 });
     expect(fetcher.mock.calls[1]?.[0]).toContain(`/api/v2/pools/0x${"b".repeat(40)}/wants`);
     expect(fetcher.mock.calls[1]?.[1].credentials).toBe("omit");
+  });
+
+  it("loads selected contact only from the authenticated contact route", async () => {
+    const fetcher = respond({
+      contact: { text: "Meet near the market", email: "amina@example.test" },
+    });
+    const controller = new AbortController();
+
+    await expect(api.contact("7", controller.signal)).resolves.toEqual({
+      text: "Meet near the market",
+      email: "amina@example.test",
+    });
+    expect(fetcher.mock.calls[0]?.[0]).toBe("https://api.test/api/v2/wants/7/contact");
+    expect(fetcher.mock.calls[0]?.[1]).toMatchObject({
+      cache: "no-store",
+      credentials: "include",
+      signal: controller.signal,
+    });
   });
 
   it("loads paginated creator vouchers and pools from the public Want routes", async () => {

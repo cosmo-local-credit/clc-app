@@ -5,10 +5,14 @@ import { renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const updatePoolProfile = vi.hoisted(() => vi.fn());
+const api = vi.hoisted(() => ({ updatePoolProfile: vi.fn(), getPoolInfo: vi.fn() }));
+const VIEWER = "0x9999999999999999999999999999999999999999";
 
 vi.mock("#/lib/api/pools", () => ({
-  poolsClient: { updatePoolProfile: (...args: unknown[]) => updatePoolProfile(...args) },
+  poolsClient: api,
+}));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: true, session: { address: VIEWER } }),
 }));
 
 import { useUpdatePoolProfile } from "./use-update-pool-profile";
@@ -57,14 +61,15 @@ function wrapper(client: QueryClient) {
 }
 
 beforeEach(() => {
-  updatePoolProfile.mockReset();
-  updatePoolProfile.mockResolvedValue(pool("Saved pool"));
+  api.updatePoolProfile.mockReset().mockResolvedValue(pool("Mutation response"));
+  api.getPoolInfo.mockReset().mockResolvedValue(pool("Saved pool"));
 });
 
 describe("useUpdatePoolProfile", () => {
   it("keeps the authoritative mutation row while invalidating pool lists", async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const detailKey = poolKeys.detail(ADDRESS);
+    const infoKey = poolKeys.info(ADDRESS, VIEWER);
     const listKey = poolKeys.list({ perPage: 20 });
     client.setQueryData(detailKey, pool("Before"));
     client.setQueryData(listKey, { pools: [] });
@@ -85,8 +90,11 @@ describe("useUpdatePoolProfile", () => {
       tags: [],
     });
 
-    expect(client.getQueryData<UserPool>(detailKey)?.name).toBe("Saved pool");
-    expect(client.getQueryState(detailKey)?.isInvalidated).toBe(false);
+    expect(api.getPoolInfo).toHaveBeenCalledWith(ADDRESS);
+    expect(client.getQueryData<UserPool>(detailKey)?.name).toBe("Before");
+    expect(client.getQueryData<UserPool>(infoKey)?.name).toBe("Saved pool");
+    expect(client.getQueryState(detailKey)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(infoKey)?.isInvalidated).toBe(false);
     expect(client.getQueryState(listKey)?.isInvalidated).toBe(true);
   });
 });

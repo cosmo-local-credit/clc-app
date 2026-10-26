@@ -4,11 +4,14 @@ import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useUserPoolByAddress, useUserPoolsInfinite } from "./use-user-pools";
+import type { UserPool } from "@clc/api/features/pools/client";
+import { poolKeys } from "@clc/api/features/pools/queries";
 
 const POOL_ADDRESS = "0xAa00000000000000000000000000000000000001";
 
-function createWrapper() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function createWrapper(
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
@@ -32,6 +35,31 @@ afterEach(() => {
 });
 
 describe("pool queries", () => {
+  it("merges wallet-scoped info without exposing contacts in the public cache", async () => {
+    const owner = "0x2222222222222222222222222222222222222222";
+    const fetcher = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve(
+        response({
+          pool: {
+            ...pool(1, POOL_ADDRESS),
+            email: url.endsWith("/info") ? "steward@example.org" : null,
+          },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result } = renderHook(() => useUserPoolByAddress(POOL_ADDRESS, owner), {
+      wrapper: createWrapper(client),
+    });
+
+    await waitFor(() => expect(result.current.data?.email).toBe("steward@example.org"));
+    expect(client.getQueryData<UserPool>(poolKeys.detail(POOL_ADDRESS))?.email).toBeNull();
+    expect(client.getQueryData<UserPool>(poolKeys.info(POOL_ADDRESS, owner))?.email).toBe(
+      "steward@example.org",
+    );
+  });
+
   it("recovers a retired pool only through a viewer-scoped protected read", async () => {
     const owner = "0x2222222222222222222222222222222222222222";
     const fetcher = vi.fn().mockImplementation((url: string) =>

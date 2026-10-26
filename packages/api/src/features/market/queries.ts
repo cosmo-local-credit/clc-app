@@ -66,6 +66,8 @@ export const voucherKeys = {
    * on data that is already there.
    */
   detail: (address: string) => ["clc", "vouchers", "detail", address.toLowerCase()] as const,
+  info: (address: string, viewer: string) =>
+    ["clc", "vouchers", "info", address.toLowerCase(), viewer.toLowerCase()] as const,
 
   filtered: (
     filter: CatalogFilter | null,
@@ -228,6 +230,19 @@ export function voucherQueryOptions(
         ? market.getMarketVoucher(requireAddress(address), signal, overrides)
         : market.getMarketVoucher(requireAddress(address), signal),
     enabled: Boolean(address),
+  });
+}
+
+export function voucherInfoQueryOptions(
+  market: MarketClient,
+  address: string | undefined,
+  viewer: string | undefined,
+) {
+  return queryOptions({
+    queryKey: voucherKeys.info(address ?? "none", viewer ?? "none"),
+    queryFn: ({ signal }) => market.getVoucherInfo(requireAddress(address), signal),
+    enabled: Boolean(address && viewer),
+    staleTime: 0,
   });
 }
 

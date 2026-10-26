@@ -71,11 +71,18 @@ export function PoolControlsPanel({
   vouchers,
   canManageOnChain,
   viewerAddress,
+  privateInfo,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   canManageOnChain: boolean;
   viewerAddress?: string;
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
 }) {
   const { t } = useLingui();
   const [sheet, setSheet] = useState<ControlSheet | null>(null);
@@ -148,6 +155,7 @@ export function PoolControlsPanel({
       <PoolProfileEditorSheet
         open={sheet === "details"}
         pool={pool}
+        privateInfo={privateInfo}
         onClose={() => setSheet(null)}
       />
 

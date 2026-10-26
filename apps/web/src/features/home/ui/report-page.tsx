@@ -6,6 +6,7 @@ import { RiArrowRightSLine, RiCloseLine, RiNavigationLine } from "react-icons/ri
 import { formatByteSize } from "@clc/core/features/reports/logic";
 import { getLocaleDirection, type SupportedLocale } from "@clc/i18n/locales";
 import { Badge } from "#/components/ui/badge";
+import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
 import {
   Carousel,
@@ -34,15 +35,17 @@ import { BackChevron } from "#/components/wallet";
 import type { ReportAttachment, ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 import { useReport, useReportLocation } from "#/features/home/hooks/use-reports";
 import { useMyPost } from "#/features/posts/hooks/use-my-posts";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { formatReportDate, formatReportPeriod } from "#/lib/report-display";
 
 export function ReportPage({ reportId }: { reportId: string }) {
   const { t, i18n } = useLingui();
+  const auth = useAuthStatus();
   const reportQuery = useReport(reportId);
   const ownedReportQuery = useMyPost(reportId);
   const report = reportQuery.data;
-  const locationQuery = useReportLocation(report?.lat, report?.lng);
+  const locationQuery = useReportLocation(report?.lat, report?.lng, auth.isAuthenticated);
 
   if (reportQuery.isPending) return <ReportLoadingShell />;
   if (reportQuery.isError) {
@@ -89,7 +92,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
             ) : null}
           </div>
 
-          {updated || locationLabel ? (
+          {updated || (auth.isAuthenticated && locationLabel) ? (
             <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground text-xs leading-5">
               {updated && report.updatedAt ? (
                 <span className="inline-flex items-center gap-1">
@@ -97,8 +100,10 @@ export function ReportPage({ reportId }: { reportId: string }) {
                   <time dateTime={report.updatedAt}>{updated}</time>
                 </span>
               ) : null}
-              {updated && locationLabel ? <span aria-hidden="true">·</span> : null}
-              {locationLabel ? <span>{locationLabel}</span> : null}
+              {updated && auth.isAuthenticated && locationLabel ? (
+                <span aria-hidden="true">·</span>
+              ) : null}
+              {auth.isAuthenticated && locationLabel ? <span>{locationLabel}</span> : null}
             </p>
           ) : null}
 
@@ -569,7 +574,8 @@ function ReportProvenance({ report }: { report: ReportDetail }) {
 
 function ReportLocation({ report, label }: { report: ReportDetail; label: string | null }) {
   const hasCoordinates = typeof report.lat === "number" && typeof report.lng === "number";
-  if (!label) return null;
+  const hasLocation = hasCoordinates || Boolean(report.locationName);
+  if (!hasLocation) return null;
 
   return (
     <section aria-labelledby="report-location-heading">
@@ -577,27 +583,29 @@ function ReportLocation({ report, label }: { report: ReportDetail; label: string
         <Trans>Location</Trans>
       </SectionHeading>
       <div className="mt-2 border border-border bg-card p-4">
-        <p className="text-sm font-semibold leading-snug">{label}</p>
-        {hasCoordinates && report.lat !== null && report.lng !== null ? (
-          <>
-            <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>
-              <LocationMap
-                lat={report.lat}
-                lng={report.lng}
-                className="mt-3 h-36 rounded-none border-0"
-              />
-            </Suspense>
-            <Button
-              variant="outline"
-              tap
-              className="mt-3 w-full"
-              onClick={() => openDefaultMaps({ label, lat: report.lat, lng: report.lng })}
-            >
-              <RiNavigationLine className="size-4" aria-hidden="true" />
-              <Trans>Open in Maps</Trans>
-            </Button>
-          </>
-        ) : null}
+        <AuthenticatedDetailsGate>
+          {label ? <p className="text-sm font-semibold leading-snug">{label}</p> : null}
+          {hasCoordinates && report.lat !== null && report.lng !== null ? (
+            <>
+              <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>
+                <LocationMap
+                  lat={report.lat}
+                  lng={report.lng}
+                  className="mt-3 h-36 rounded-none border-0"
+                />
+              </Suspense>
+              <Button
+                variant="outline"
+                tap
+                className="mt-3 w-full"
+                onClick={() => openDefaultMaps({ label, lat: report.lat, lng: report.lng })}
+              >
+                <RiNavigationLine className="size-4" aria-hidden="true" />
+                <Trans>Open in Maps</Trans>
+              </Button>
+            </>
+          ) : null}
+        </AuthenticatedDetailsGate>
       </div>
     </section>
   );

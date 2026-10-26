@@ -1,8 +1,9 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { PoolsClient, UserPoolPage } from "./client";
 import {
   poolKeys,
+  poolInfoQueryOptions,
   poolListInfiniteQueryOptions,
   poolQueryOptions,
   poolVouchersInfiniteQueryOptions,
@@ -29,6 +30,7 @@ describe("poolKeys", () => {
       poolKeys.list({ perPage: 20 }),
       poolKeys.listInfinite(20),
       poolKeys.detail(ADDRESS),
+      poolKeys.info(ADDRESS, ADDRESS),
       poolKeys.vouchers(ADDRESS, 20),
       poolKeys.vouchersInfinite(ADDRESS, 20),
       poolKeys.filtered(null, 20),
@@ -49,6 +51,15 @@ describe("poolKeys", () => {
   it("normalizes address casing so one pool has one key", () => {
     expect(poolKeys.detail(ADDRESS)).toEqual(poolKeys.detail(ADDRESS.toUpperCase()));
     expect(poolKeys.vouchers(ADDRESS, 20)).toEqual(poolKeys.vouchers(ADDRESS.toLowerCase(), 20));
+  });
+
+  it("isolates authenticated info by pool and viewer", () => {
+    const viewer = `0x${"b".repeat(40)}`;
+    expect(poolKeys.info(ADDRESS, viewer)).toEqual(
+      poolKeys.info(ADDRESS.toUpperCase(), viewer.toUpperCase()),
+    );
+    expect(poolKeys.info(ADDRESS, viewer)).not.toEqual(poolKeys.info(ADDRESS, ADDRESS));
+    expect(poolKeys.info(ADDRESS, viewer)).not.toEqual(poolKeys.detail(ADDRESS));
   });
 
   it("varies the key with every parameter that changes the rows returned", () => {
@@ -101,7 +112,21 @@ describe("address-scoped options", () => {
   it("stays disabled without an address rather than requesting /pools/undefined", () => {
     expect(poolQueryOptions({} as PoolsClient, undefined).enabled).toBe(false);
     expect(poolQueryOptions({} as PoolsClient, ADDRESS).enabled).toBe(true);
+    expect(poolInfoQueryOptions({} as PoolsClient, ADDRESS, undefined).enabled).toBe(false);
+    expect(poolInfoQueryOptions({} as PoolsClient, undefined, ADDRESS).enabled).toBe(false);
     expect(poolVouchersInfiniteQueryOptions({} as PoolsClient, undefined, 20).enabled).toBe(false);
+  });
+
+  it("forwards cancellation to authenticated pool info", async () => {
+    const getPoolInfo = vi.fn().mockResolvedValue({ address: ADDRESS });
+    const options = poolInfoQueryOptions(
+      { getPoolInfo } as unknown as PoolsClient,
+      ADDRESS,
+      ADDRESS,
+    );
+    const signal = new AbortController().signal;
+    await options.queryFn?.({ signal } as never);
+    expect(getPoolInfo).toHaveBeenCalledWith(ADDRESS, signal);
   });
 
   it("keys a missing address distinctly instead of colliding with a real one", () => {

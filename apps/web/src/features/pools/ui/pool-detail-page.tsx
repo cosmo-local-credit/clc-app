@@ -11,6 +11,7 @@ import {
   RiSettings3Line,
 } from "react-icons/ri";
 import { Badge } from "#/components/ui/badge";
+import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
@@ -25,12 +26,20 @@ import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolCreditPanel } from "./pool-credit-panel";
 import { PoolHoldingsPanel } from "./pool-holdings-panel";
+import { PoolInfoPanel } from "./pool-info-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
 import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 import { PoolWantsPanel } from "./pool-wants-panel";
 
-export type PoolDetailTab = "offerings" | "wants" | "vouchers" | "holdings" | "credit" | "activity";
+export type PoolDetailTab =
+  | "offerings"
+  | "wants"
+  | "vouchers"
+  | "holdings"
+  | "credit"
+  | "activity"
+  | "info";
 
 // Holdings and credit sit side by side because they read the same rows two
 // ways: what the pool is made of, and how much more of each it will take.
@@ -41,6 +50,7 @@ const POOL_TABS: PoolDetailTab[] = [
   "holdings",
   "credit",
   "activity",
+  "info",
 ];
 
 const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
@@ -53,6 +63,7 @@ const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
   holdings: <Trans context="Pool tab">Holdings</Trans>,
   credit: <Trans>Credit</Trans>,
   activity: <Trans>Activity</Trans>,
+  info: <Trans>Info</Trans>,
 };
 
 export function PoolDetailPage({
@@ -106,13 +117,18 @@ export function PoolDetailPage({
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
   const [approving, setApproving] = useState(false);
   const [receiving, setReceiving] = useState(false);
-  const selectedTab = pool?.active === false && activeTab !== "activity" ? "holdings" : activeTab;
+  const selectedTab =
+    pool?.active === false && activeTab !== "activity" && activeTab !== "info"
+      ? "holdings"
+      : activeTab;
   const visibleTabs =
     pool?.active === false
-      ? POOL_TABS.filter((tab) => tab === "holdings" || tab === "activity")
+      ? POOL_TABS.filter((tab) => tab === "holdings" || tab === "activity" || tab === "info")
       : auth.isAuthenticated
         ? POOL_TABS
-        : POOL_TABS.filter((tab) => tab === "offerings" || tab === "wants" || tab === "vouchers");
+        : POOL_TABS.filter(
+            (tab) => tab === "offerings" || tab === "wants" || tab === "vouchers" || tab === "info",
+          );
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -230,6 +246,14 @@ export function PoolDetailPage({
           vouchers={poolVouchers}
           canManageOnChain={canManageOnChain}
           viewerAddress={auth.session?.address}
+          privateInfo={
+            poolQuery.privateInfo
+              ? {
+                  ...poolQuery.privateInfo,
+                  retry: () => void poolQuery.privateInfo?.refetch(),
+                }
+              : undefined
+          }
         />
       ) : null}
 
@@ -341,6 +365,22 @@ export function PoolDetailPage({
 
       {selectedTab === "activity" ? <PoolActivityPanel pool={pool} /> : null}
 
+      {selectedTab === "info" ? (
+        <AuthenticatedDetailsGate className="border border-border bg-card p-4">
+          <AuthenticatedPoolInfo
+            pool={pool}
+            privateInfo={
+              poolQuery.privateInfo
+                ? {
+                    ...poolQuery.privateInfo,
+                    retry: () => void poolQuery.privateInfo?.refetch(),
+                  }
+                : undefined
+            }
+          />
+        </AuthenticatedDetailsGate>
+      ) : null}
+
       {canManageOnChain ? (
         <PoolVoucherSheet
           pool={pool}
@@ -362,6 +402,41 @@ export function PoolDetailPage({
       ) : null}
     </div>
   );
+}
+
+function AuthenticatedPoolInfo({
+  pool,
+  privateInfo,
+}: {
+  pool: Parameters<typeof PoolInfoPanel>[0]["pool"];
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
+}) {
+  if (privateInfo?.isPending) {
+    return (
+      <p aria-busy="true" className="text-sm text-muted-foreground">
+        <Trans>Loading pool information…</Trans>
+      </p>
+    );
+  }
+  if (privateInfo?.isError) {
+    return (
+      <div role="alert" className="space-y-3 text-sm">
+        <p>
+          <Trans>Couldn't load pool information.</Trans>
+        </p>
+        <Button variant="outline" tap pending={privateInfo.isFetching} onClick={privateInfo.retry}>
+          <Trans>Retry</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  return <PoolInfoPanel pool={pool} />;
 }
 
 function DetailShell({ message }: { message: string }) {

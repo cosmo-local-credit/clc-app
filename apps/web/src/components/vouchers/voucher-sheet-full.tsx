@@ -9,9 +9,16 @@ import { VoucherDetailSections } from "./voucher-detail-sections";
 export function VoucherSheetFull({
   address,
   detail,
+  privateInfo,
 }: {
   address: `0x${string}`;
   detail: MarketVoucherDetail | undefined;
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
 }) {
   return (
     <VoucherDetailSections
@@ -25,15 +32,8 @@ export function VoucherSheetFull({
       chainId={detail?.chainId ?? null}
       voucherValue={detail?.voucherValue ?? null}
       voucherUoa={detail?.voucherUoa ?? null}
-      description={detail?.description ?? null}
-      email={detail?.email ?? null}
-      website={detail?.website ?? null}
-      phone={detail?.phone ?? null}
-      terms={detail?.terms ?? null}
-      locationName={detail?.locationName ?? null}
-      lat={detail?.lat ?? null}
-      lng={detail?.lng ?? null}
       dataPending={!detail}
+      privateInfo={privateInfo}
       headingLevel={3}
       idPrefix="voucher-sheet"
     />
