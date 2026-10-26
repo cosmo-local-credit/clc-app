@@ -147,6 +147,26 @@ describe("Want detail", () => {
     expect(api.contact).not.toHaveBeenCalled();
   });
 
+  it("retries protected contact details after a failed authenticated read", async () => {
+    api.contact.mockRejectedValueOnce(new Error("offline"));
+    renderWant(<WantDetail want={WANT} />);
+
+    expect(await screen.findByText("Couldn't load contact information.")).toBeTruthy();
+    api.contact.mockResolvedValueOnce(WANT.contact);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Meet near the market")).toBeTruthy();
+    expect(api.contact).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows an authenticated empty state when no contact method is available", async () => {
+    api.contact.mockResolvedValueOnce(null);
+    renderWant(<WantDetail want={WANT} />);
+
+    expect(await screen.findByText("No contact details available.")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Email" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
+  });
+
   it("renders the selected marker only when the standalone location map is requested", () => {
     const { rerender } = renderWant(<WantDetail want={WANT} showLocationMap />);
     expect(screen.getByTestId("location-map").textContent).toBe("question:orange");

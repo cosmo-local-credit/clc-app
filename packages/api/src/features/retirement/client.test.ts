@@ -106,6 +106,102 @@ describe("retirement client", () => {
     );
   });
 
+  it("loads private owner and resource histories and normalizes nullable collections", async () => {
+    const mineFetcher = respond({ requests: null });
+    const signal = new AbortController().signal;
+    await expect(api.listMine(signal)).resolves.toEqual([]);
+    expect(mineFetcher).toHaveBeenCalledWith(
+      "https://api.test/api/v2/users/me/retirement-requests",
+      expect.objectContaining({ cache: "no-store", signal }),
+    );
+
+    const resourceFetcher = respond({ requests: [request] });
+    await expect(api.listResource("pool", ADDRESS, signal)).resolves.toEqual([request]);
+    expect(resourceFetcher).toHaveBeenCalledWith(
+      `https://api.test/api/v2/pools/${ADDRESS}/retirement-requests`,
+      expect.objectContaining({ cache: "no-store", signal }),
+    );
+  });
+
+  it("cancels an owner request and loads admin request history", async () => {
+    const cancelled = { ...request, status: "cancelled" };
+    const cancelFetcher = respond({ request: cancelled });
+    await expect(api.cancel(1)).resolves.toMatchObject({ id: 1, status: "cancelled" });
+    expect(cancelFetcher).toHaveBeenCalledWith(
+      "https://api.test/api/v2/retirement-requests/1/cancel",
+      expect.objectContaining({ method: "PUT", body: "{}" }),
+    );
+
+    const event = {
+      id: 2,
+      action: "cancelled",
+      actorAddress: OWNER,
+      reason: "Owner changed plans",
+      createdAt: "2026-10-25T13:00:00Z",
+      requestId: 1,
+    };
+    const detailFetcher = respond({ request: cancelled, events: [event] });
+    await expect(api.getAdminRequest(1)).resolves.toEqual({ request: cancelled, events: [event] });
+    expect(detailFetcher).toHaveBeenCalledWith(
+      "https://api.test/api/v2/admin/retirement-requests/1",
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
+
+    const historyFetcher = respond({ requests: null, events: null });
+    await expect(api.adminResourceHistory("voucher", ADDRESS)).resolves.toEqual({
+      requests: [],
+      events: [],
+    });
+    expect(historyFetcher).toHaveBeenCalledWith(
+      `https://api.test/api/v2/admin/vouchers/${ADDRESS}/retirement-history`,
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
+  });
+
+  it("restores pools and vouchers and rejects malformed restore responses", async () => {
+    const poolFetcher = respond({
+      pool: { id: 9, address: ADDRESS, name: "Restored pool", symbol: "POOL", active: true },
+    });
+    await expect(api.restore("pool", ADDRESS, { reason: "Reopened" })).resolves.toMatchObject({
+      address: ADDRESS,
+      name: "Restored pool",
+      active: true,
+    });
+    expect(poolFetcher).toHaveBeenCalledWith(
+      `https://api.test/api/v2/admin/pools/${ADDRESS}/restore`,
+      expect.objectContaining({ method: "PUT", body: JSON.stringify({ reason: "Reopened" }) }),
+    );
+
+    const voucherFetcher = respond({
+      voucher: {
+        id: 10,
+        address: ADDRESS,
+        name: "Restored voucher",
+        symbol: "VCH",
+        active: true,
+      },
+    });
+    await expect(api.restore("voucher", ADDRESS, { reason: "Reopened" })).resolves.toMatchObject({
+      address: ADDRESS,
+      name: "Restored voucher",
+      active: true,
+    });
+    expect(voucherFetcher).toHaveBeenCalledWith(
+      `https://api.test/api/v2/admin/vouchers/${ADDRESS}/restore`,
+      expect.objectContaining({ method: "PUT" }),
+    );
+
+    respond({ pool: { address: "invalid" } });
+    await expect(api.restore("pool", ADDRESS, { reason: "Retry" })).rejects.toThrow(
+      "Pool restore response did not include a valid address.",
+    );
+
+    respond({ voucher: { id: 11, address: "invalid" } });
+    await expect(api.restore("voucher", ADDRESS, { reason: "Retry" })).rejects.toThrow(
+      "Voucher restore response did not include a valid address.",
+    );
+  });
+
   it("retains status filters, cursor and pending count in the admin queue", async () => {
     const fetcher = respond({ requests: [request], pendingCount: 3, nextCursor: 1 });
     expect(
