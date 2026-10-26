@@ -18,35 +18,21 @@ export type MarketStack = {
 export type SpiderOffset = { dx: number; dy: number };
 
 /**
- * Half of the narrowest supported viewport (360 px), less a margin so the
- * outermost legs stay on screen once the stack is centred.
- */
-const MAX_FAN_RADIUS = 168;
-
-/**
- * A fanned pin's disc is 24 px. A sunflower's nearest-neighbour distance is about
- * 1.77x the growth constant, so this spacing keeps legs ~29 px apart: tight
- * enough to fit a large fan, loose enough that icons never overlap.
+ * A fanned pin's disc is 24 px. This remains the proximity threshold used to
+ * decide whether pins can be distinguished at maximum zoom.
  */
 const LEG_SPACING = 26;
-const MIN_RING_RADIUS = 34;
-const RING_LIMIT = 8;
-/** Golden angle: a sunflower spiral packs evenly at any count. */
-const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
-const SPIRAL_GROWTH = LEG_SPACING * 0.62;
+/** Room for a 24 px pin, its outward label, and the 44 px centre badge. */
+const LABELED_RING_RADIUS = 72;
 
 /**
  * How many members one fan shows at a time.
  *
- * Derived from the radius budget rather than picked: the spiral grows as
- * sqrt(n), so this is the largest fan that still lands inside MAX_FAN_RADIUS.
- * It comfortably covers the 63-voucher Nairobi CBD stack in a single fan. The
- * three stacks above it (136, 162, 200) cannot fit on a phone at any spacing,
- * so those page rather than being truncated.
+ * Eight positions fit around a readable ring on the narrowest supported phone.
+ * Larger stacks page through the same positions so every member keeps both its
+ * pin and its name instead of becoming an unlabeled field of icons.
  */
-export const SPIDER_PAGE_SIZE = Math.floor(
-  ((MAX_FAN_RADIUS - MIN_RING_RADIUS) / SPIRAL_GROWTH) ** 2,
-);
+export const SPIDER_PAGE_SIZE = 8;
 
 /**
  * How close two markers have to be, at MAP_MAX_ZOOM, to belong to one stack.
@@ -156,9 +142,8 @@ function projectAtMaxZoom(lat: number, lng: number): ProjectedPoint {
 /**
  * Pixel offsets from the shared anchor, one per visible member.
  *
- * Small stacks get an even ring, which reads clearly as "these share a spot".
- * Larger ones get a sunflower spiral so the ring radius does not explode with
- * the member count.
+ * Every page gets an even ring, which reads clearly as "these share a spot"
+ * and gives each pin a stable outward direction for its label.
  */
 export function spiderfyOffsets(count: number): SpiderOffset[] {
   const legs = Math.min(count, SPIDER_PAGE_SIZE);
@@ -167,22 +152,14 @@ export function spiderfyOffsets(count: number): SpiderOffset[] {
   // A stack always has two or more members, but its *last page* can hold one
   // — a stack of SPIDER_PAGE_SIZE + 1, for instance. Returning nothing there
   // would render a blank fan the user cannot tell apart from a broken map.
-  if (legs === 1) return [{ dx: 0, dy: -MIN_RING_RADIUS }];
-
-  if (legs <= RING_LIMIT) {
-    // Radius that keeps neighbouring legs LEG_SPACING apart around the circle.
-    const radius = Math.max(MIN_RING_RADIUS, LEG_SPACING / (2 * Math.sin(Math.PI / legs)));
-    return Array.from({ length: legs }, (_, index) => {
-      const angle = (index / legs) * 2 * Math.PI - Math.PI / 2;
-      return { dx: radius * Math.cos(angle), dy: radius * Math.sin(angle) };
-    });
-  }
+  if (legs === 1) return [{ dx: 0, dy: -LABELED_RING_RADIUS }];
 
   return Array.from({ length: legs }, (_, index) => {
-    const step = index + 1;
-    const radius = MIN_RING_RADIUS + SPIRAL_GROWTH * Math.sqrt(step);
-    const angle = step * GOLDEN_ANGLE - Math.PI / 2;
-    return { dx: radius * Math.cos(angle), dy: radius * Math.sin(angle) };
+    const angle = (index / legs) * 2 * Math.PI - Math.PI / 2;
+    return {
+      dx: LABELED_RING_RADIUS * Math.cos(angle),
+      dy: LABELED_RING_RADIUS * Math.sin(angle),
+    };
   });
 }
 

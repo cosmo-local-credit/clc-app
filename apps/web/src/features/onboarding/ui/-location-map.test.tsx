@@ -160,7 +160,7 @@ describe("LocationMap", () => {
     render(<LocationMap />);
 
     expect(mapInstances).toHaveLength(1);
-    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
     expect(mapInstances[0]?.options.center).toEqual([20, 0]);
     expect(mapInstances[0]?.options.zoom).toBe(2);
     expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual([
@@ -287,7 +287,7 @@ describe("LocationMap", () => {
     vi.stubEnv("VITE_MAPTILER_KEY", "");
     render(<LocationMap />);
     expect(screen.getByLabelText("Location map")).toBeTruthy();
-    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
   });
 
   it("renders nothing when WebGL is not supported", () => {
