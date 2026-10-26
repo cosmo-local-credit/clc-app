@@ -437,7 +437,7 @@ type AdminVoucherPage = {
 /** Which side of the visibility gate to list. `all` is the backend default. */
 type AdminVoucherStatus = "all" | "active" | "retired";
 
-export type AdminReviewAction = "hide" | "dismiss";
+type AdminReviewAction = "hide" | "dismiss";
 
 export type AdminReviewFlag = {
   id: number;
@@ -456,7 +456,7 @@ export type AdminReviewParams = {
   before?: number;
 };
 
-export type AdminReviewPage = {
+type AdminReviewPage = {
   notifications: Array<AdminReviewFlag>;
   next: number | null;
 };
@@ -477,16 +477,23 @@ export type AdminDeploymentParams = {
   next?: boolean;
 };
 
-export type AdminDeploymentPage = {
+type AdminDeploymentPage = {
   deployments: Array<AdminDeployment>;
   first: number;
   last: number;
   receivedCount: number;
 };
 
-export type AdminUpgradeResult = {
+type AdminTokenUpgradeResult = {
   trackingId: string;
   address: string;
+};
+
+type AdminPoolUpgradeResult = {
+  /** Absent when every contract is already current, or no implementation is available. */
+  trackingId?: string;
+  upgrades: Array<{ type: string; address: string }>;
+  skipped: Array<{ type: string; address: string; reason: string }>;
 };
 
 export type AdminVoucherParams = CursorParams & {
@@ -553,8 +560,8 @@ export type AdminClient = {
     signal?: AbortSignal,
   ): Promise<AdminDeploymentPage>;
   /** Queues a proxy upgrade. The session must be a superadmin or a service token. */
-  upgradeToken(address: string): Promise<AdminUpgradeResult>;
-  upgradePool(address: string): Promise<AdminUpgradeResult>;
+  upgradeToken(address: string): Promise<AdminTokenUpgradeResult>;
+  upgradePool(address: string): Promise<AdminPoolUpgradeResult>;
 };
 
 /**
@@ -1019,21 +1026,29 @@ export function createAdminClient(http: HttpClient): AdminClient {
     },
 
     upgradeToken(address) {
-      return requestUpgrade(http, "/api/v2/contracts/upgrade/token", address);
+      return requestUpgrade<AdminTokenUpgradeResult>(
+        http,
+        "/api/v2/contracts/upgrade/token",
+        address,
+      );
     },
 
     upgradePool(address) {
-      return requestUpgrade(http, "/api/v2/contracts/upgrade/pool", address);
+      return requestUpgrade<AdminPoolUpgradeResult>(
+        http,
+        "/api/v2/contracts/upgrade/pool",
+        address,
+      );
     },
   };
 }
 
-function requestUpgrade(
+function requestUpgrade<TResult>(
   http: HttpClient,
   path: string,
   address: string,
-): Promise<AdminUpgradeResult> {
-  return http.request<AdminUpgradeResult>(path, {
+): Promise<TResult> {
+  return http.request<TResult>(path, {
     method: "POST",
     body: JSON.stringify({ address: getAddress(address) }),
   });

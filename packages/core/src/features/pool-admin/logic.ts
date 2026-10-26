@@ -692,7 +692,7 @@ export const POOL_SEAL_FEE_ADDRESS = 2;
 export const POOL_SEAL_QUOTER = 4;
 export const POOL_SEAL_REGISTRY = 8;
 export const POOL_SEAL_LIMITER = 16;
-export const POOL_SEAL_MAX = 31;
+const POOL_SEAL_MAX = 31;
 
 export const swapPoolSealAbi = parseAbi([
   "function seal(uint8 state) returns (uint8)",

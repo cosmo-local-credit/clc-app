@@ -70,13 +70,16 @@ export function ReviewsPage({ search }: { search: ReviewSearch }) {
       cell: ({ row }) => <span className="text-sm">{row.original.reason}</span>,
     },
     {
-      id: "stars",
-      header: "Stars",
+      id: "reportedReview",
+      header: "Reported review",
       cell: ({ row }) => (
-        <span className="font-data text-xs">
-          {row.original.reportedStars} / {row.original.stars}
-        </span>
+        <ReviewText stars={row.original.reportedStars} comment={row.original.reportedComment} />
       ),
+    },
+    {
+      id: "currentReview",
+      header: "Current review",
+      cell: ({ row }) => <ReviewText stars={row.original.stars} comment={row.original.comment} />,
     },
     {
       accessorKey: "createdAt",
@@ -163,7 +166,7 @@ export function ReviewsPage({ search }: { search: ReviewSearch }) {
         description={
           action?.action === "hide"
             ? "Hiding removes the review and resolves every open flag on it."
-            : "Dismissing leaves the review visible and closes this flag."
+            : "Dismissing leaves the review visible and resolves every open flag on it."
         }
         confirmLabel={action?.action === "hide" ? "Hide" : "Dismiss"}
         destructive={action?.action === "hide"}
@@ -173,6 +176,15 @@ export function ReviewsPage({ search }: { search: ReviewSearch }) {
           if (action) resolve.mutate(action);
         }}
       />
+    </div>
+  );
+}
+
+function ReviewText({ stars, comment }: { stars: number; comment: string }) {
+  return (
+    <div className="min-w-48 max-w-sm space-y-1">
+      <p className="font-data text-muted-foreground text-xs">{stars} / 5</p>
+      <p className="whitespace-pre-wrap break-words text-sm">{comment || "No comment"}</p>
     </div>
   );
 }

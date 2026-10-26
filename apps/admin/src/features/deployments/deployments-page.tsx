@@ -50,12 +50,21 @@ export function DeploymentsPage({ search }: { search: TableSearch }) {
     })),
   });
   const submit = useMutation({
-    mutationFn: (target: UpgradeTarget) =>
+    mutationFn: async (target: UpgradeTarget) =>
       target.kind === "TOKEN"
         ? clcApi.admin.upgradeToken(target.address)
         : clcApi.admin.upgradePool(target.address),
     onSuccess: (result) => {
-      toast.success(`Upgrade queued ${result.trackingId}`);
+      if (result.trackingId) {
+        toast.success(`Upgrade queued ${result.trackingId}`);
+      } else {
+        toast.info("No upgrade tasks queued", {
+          description:
+            "skipped" in result
+              ? result.skipped.map((item) => `${item.type}: ${item.reason}`).join("; ")
+              : undefined,
+        });
+      }
       setUpgrade(null);
     },
     onError: (error) => toast.error(errorMessage(error)),

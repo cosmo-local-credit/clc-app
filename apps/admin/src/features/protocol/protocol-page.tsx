@@ -1,8 +1,6 @@
 import {
   buildSealFaucetCall,
   buildSetProtocolFeeActiveCall,
-  buildSetProtocolFeeCall,
-  buildSetProtocolFeeRecipientCall,
   ethFaucetSealAbi,
   FAUCET_SEAL_MAX,
   FAUCET_SEAL_PERIOD,
@@ -10,8 +8,6 @@ import {
   FAUCET_SEAL_VALUE,
   protocolFeeControllerAbi,
 } from "@clc/core/features/protocol-admin/logic";
-import { POOL_FEE_PERCENT_DECIMALS } from "@clc/core/features/pool-admin/logic";
-import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,9 +18,7 @@ import { PageHeader } from "#/components/admin/page-header";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
-import { Input } from "#/components/ui/input";
-import { Label } from "#/components/ui/label";
+import { Card, CardContent, CardHeader } from "#/components/ui/card";
 import { sameAddress, useOperatorAddress } from "#/features/operator/operator-address";
 import { useOperatorCalls } from "#/features/operator/use-operator-calls";
 import { CHAIN_ID } from "#/lib/chain";
@@ -32,6 +26,9 @@ import { getChainClient } from "#/lib/chain-client";
 import { errorMessage } from "#/lib/data-state";
 import { formatFeePpm } from "#/lib/format";
 import { useRelayDesk } from "#/features/dashboard/use-dashboard-metrics";
+
+import { ProtocolContractLoader } from "./protocol-contract-loader";
+import { ProtocolFeeForms } from "./protocol-fee-forms";
 
 const FAUCET_BITS = [
   { bit: FAUCET_SEAL_REGISTRY, label: "Registry" },
@@ -43,11 +40,7 @@ export function ProtocolPage() {
   const operator = useOperatorAddress();
   const calls = useOperatorCalls();
   const desk = useRelayDesk();
-  const [controller, setController] = useState("");
   const [loadedController, setLoadedController] = useState("");
-  const [percent, setPercent] = useState("");
-  const [recipient, setRecipient] = useState("");
-  const [faucet, setFaucet] = useState("");
   const [loadedFaucet, setLoadedFaucet] = useState("");
   const [sealMask, setSealMask] = useState(0);
 
@@ -64,14 +57,19 @@ export function ProtocolPage() {
   const ownsFee = sameAddress(operator, fee.data?.owner);
   const ownsFaucet = sameAddress(operator, faucetState.data?.owner);
 
-  async function send(label: string, call: Parameters<typeof calls.mutateAsync>[0][number]) {
+  async function send(
+    label: string,
+    build: () => Parameters<typeof calls.mutateAsync>[0][number],
+  ): Promise<boolean> {
     try {
-      await calls.mutateAsync([call]);
+      await calls.mutateAsync([build()]);
       toast.success(label);
-      await fee.refetch();
-      await faucetState.refetch();
+      if (loadedController) await fee.refetch();
+      if (loadedFaucet) await faucetState.refetch();
+      return true;
     } catch (error) {
       toast.error(errorMessage(error));
+      return false;
     }
   }
 
@@ -81,9 +79,9 @@ export function ProtocolPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Relay
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="pt-4">
             <dl>
@@ -97,27 +95,22 @@ export function ProtocolPage() {
 
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Protocol fee
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
-            <Label htmlFor="protocol-controller">Controller</Label>
-            <div className="flex gap-2">
-              <Input
-                id="protocol-controller"
-                className="font-data"
-                value={controller}
-                onChange={(event) => setController(event.target.value)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => isAddress(controller) && setLoadedController(controller)}
-              >
-                Load
-              </Button>
-            </div>
+            <ProtocolContractLoader
+              id="protocol-controller"
+              label="Controller"
+              onLoad={setLoadedController}
+              pending={calls.isPending}
+            />
+            {fee.isError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {errorMessage(fee.error)}
+              </p>
+            ) : null}
             {fee.data ? (
               <>
                 <Row
@@ -128,52 +121,12 @@ export function ProtocolPage() {
                 <Row label="Active" value={fee.data.active ? "Yes" : "No"} />
                 {ownsFee ? (
                   <>
-                    <Label htmlFor="protocol-percent">Percent</Label>
-                    <Input
-                      id="protocol-percent"
-                      inputMode="decimal"
-                      className="font-data"
-                      value={percent}
-                      onChange={(event) => setPercent(event.target.value)}
+                    <ProtocolFeeForms
+                      key={loadedController}
+                      controllerAddress={loadedController as `0x${string}`}
+                      pending={calls.isPending}
+                      onSend={send}
                     />
-                    <Button
-                      type="button"
-                      disabled={calls.isPending}
-                      onClick={() =>
-                        void send(
-                          "Protocol fee updated",
-                          buildSetProtocolFeeCall({
-                            controllerAddress: loadedController as `0x${string}`,
-                            feePpm: parseTokenAmount(percent.trim(), POOL_FEE_PERCENT_DECIMALS),
-                          }),
-                        )
-                      }
-                    >
-                      Save fee
-                    </Button>
-                    <Label htmlFor="protocol-recipient">Recipient</Label>
-                    <Input
-                      id="protocol-recipient"
-                      className="font-data"
-                      value={recipient}
-                      onChange={(event) => setRecipient(event.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={calls.isPending || !isAddress(recipient)}
-                      onClick={() =>
-                        void send(
-                          "Recipient updated",
-                          buildSetProtocolFeeRecipientCall({
-                            controllerAddress: loadedController as `0x${string}`,
-                            recipientAddress: recipient as `0x${string}`,
-                          }),
-                        )
-                      }
-                    >
-                      Save recipient
-                    </Button>
                     <Button
                       type="button"
                       variant="outline"
@@ -181,10 +134,11 @@ export function ProtocolPage() {
                       onClick={() =>
                         void send(
                           fee.data?.active ? "Protocol fee paused" : "Protocol fee resumed",
-                          buildSetProtocolFeeActiveCall({
-                            controllerAddress: loadedController as `0x${string}`,
-                            active: !fee.data?.active,
-                          }),
+                          () =>
+                            buildSetProtocolFeeActiveCall({
+                              controllerAddress: loadedController as `0x${string}`,
+                              active: !fee.data?.active,
+                            }),
                         )
                       }
                     >
@@ -199,27 +153,25 @@ export function ProtocolPage() {
 
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Faucet
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
-            <Label htmlFor="faucet-address">Faucet</Label>
-            <div className="flex gap-2">
-              <Input
-                id="faucet-address"
-                className="font-data"
-                value={faucet}
-                onChange={(event) => setFaucet(event.target.value)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => isAddress(faucet) && setLoadedFaucet(faucet)}
-              >
-                Load
-              </Button>
-            </div>
+            <ProtocolContractLoader
+              id="faucet-address"
+              label="Faucet"
+              onLoad={(address) => {
+                setLoadedFaucet(address);
+                setSealMask(0);
+              }}
+              pending={calls.isPending}
+            />
+            {faucetState.isError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {errorMessage(faucetState.error)}
+              </p>
+            ) : null}
             {faucetState.data ? (
               <>
                 <div className="flex flex-wrap gap-1">
@@ -262,13 +214,14 @@ export function ProtocolPage() {
                       type="button"
                       disabled={calls.isPending || sealMask === 0}
                       onClick={() =>
-                        void send(
-                          "Faucet sealed",
+                        void send("Faucet sealed", () =>
                           buildSealFaucetCall({
                             faucetAddress: loadedFaucet as `0x${string}`,
                             state: sealMask,
                           }),
-                        ).then(() => setSealMask(0))
+                        ).then((success) => {
+                          if (success) setSealMask(0);
+                        })
                       }
                     >
                       Seal

@@ -12,10 +12,12 @@ import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { Badge } from "#/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
+import { Card, CardContent, CardHeader } from "#/components/ui/card";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import { clcApi } from "#/lib/api";
 import { formatDateTime } from "#/lib/format";
 import { useDataState } from "#/lib/use-data-state";
+import { mergeCashMovements } from "./cash-movements";
 
 /** The raw draft stays in the URL. A partial address is not a query. */
 export type CashSearch = { q?: string };
@@ -97,12 +99,17 @@ export function CashPage({ search }: { search: CashSearch }) {
     (page) => page.onramps.length + page.offramps.length === 0,
   );
   const recentRows = [...(recent.data?.onramps ?? []), ...(recent.data?.offramps ?? [])];
-  const accountRows = [
-    ...(transactions.data?.onramps ?? []),
-    ...(transactions.data?.offramps ?? []),
-    ...(phone.data?.onramps ?? []),
-    ...(phone.data?.offramps ?? []),
-  ];
+  const accountRows = mergeCashMovements(
+    transactions.data?.onramps ?? [],
+    transactions.data?.offramps ?? [],
+    phone.data?.onramps ?? [],
+    phone.data?.offramps ?? [],
+  );
+  const accountError = transactions.error ?? link.error ?? phone.error;
+  const accountPending =
+    transactions.isPending ||
+    link.isPending ||
+    (link.data?.linked && Boolean(link.data.phoneNumber) && phone.isPending);
 
   return (
     <div className="flex flex-col gap-6">
@@ -124,26 +131,37 @@ export function CashPage({ search }: { search: CashSearch }) {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Rates
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="pt-4">
+            {rates.isError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {errorOf(rates.error)}
+              </p>
+            ) : null}
             <p className="font-data text-sm">Buy {rates.data?.buy || "—"}</p>
             <p className="font-data text-sm">Sell {rates.data?.sell || "—"}</p>
           </CardContent>
         </Card>
         <Card className="lg:col-span-2">
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Link
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="pt-4">
             {address ? (
               <p className="font-data text-sm">
                 {formatVoucherAddress(address)} ·{" "}
-                {link.data?.linked ? link.data.phoneNumber || "Linked" : "Not linked"}
+                {link.isError
+                  ? "Unavailable"
+                  : link.isPending
+                    ? "Reading"
+                    : link.data?.linked
+                      ? link.data.phoneNumber || "Linked"
+                      : "Not linked"}
               </p>
             ) : (
               <p className="text-muted-foreground font-data text-sm">—</p>
@@ -152,10 +170,10 @@ export function CashPage({ search }: { search: CashSearch }) {
         </Card>
       </div>
       {address ? (
-        transactions.isPending ? (
+        accountError ? (
+          <PageState title="Could not load cash" message={errorOf(accountError)} />
+        ) : accountPending ? (
           <LoadingBlock rows={4} />
-        ) : transactions.isError ? (
-          <PageState title="Could not load cash" message={errorOf(transactions.error)} />
         ) : (
           <DataTable
             columns={columns}
@@ -172,11 +190,14 @@ export function CashPage({ search }: { search: CashSearch }) {
       ) : recentState.kind === "error" ? (
         <PageState title="Could not load recent cash" message={recentState.message} />
       ) : (
-        <DataTable
-          columns={columns}
-          data={recentRows}
-          emptyState={<EmptyState title="No recent cash" />}
-        />
+        <>
+          {recentState.kind === "stale" ? <StaleNotice message={recentState.message} /> : null}
+          <DataTable
+            columns={columns}
+            data={recentRows}
+            emptyState={<EmptyState title="No recent cash" />}
+          />
+        </>
       )}
     </div>
   );

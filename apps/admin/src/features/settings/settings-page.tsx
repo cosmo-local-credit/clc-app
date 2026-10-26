@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { PageHeader } from "#/components/admin/page-header";
 import { BUILD_INFO } from "#/features/app-updates/build-info";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
+import { Card, CardContent, CardHeader } from "#/components/ui/card";
 import { Label } from "#/components/ui/label";
 import { Switch } from "#/components/ui/switch";
 import { API_ORIGIN, clcApi } from "#/lib/api";
@@ -29,9 +29,9 @@ export function SettingsPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Appearance
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="space-y-5 pt-4">
             <div className="border-border flex items-center justify-between gap-4 border px-3 py-2.5">
@@ -57,9 +57,9 @@ export function SettingsPage() {
 
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Build
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="pt-4">
             {/* What this tab is running. The live deployment is /build-info.json. */}
@@ -79,9 +79,9 @@ export function SettingsPage() {
 
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Environment
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="pt-4">
             <dl className="-mx-1.5">
@@ -95,9 +95,9 @@ export function SettingsPage() {
 
         <Card>
           <CardHeader className="border-b pb-4">
-            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+            <h2 className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
               Passkeys
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="pt-4">
             {credentials.isPending ? (
