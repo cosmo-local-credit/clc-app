@@ -550,11 +550,8 @@ function PostEditorForm({
                 />
                 <MarkerStylePicker
                   mode="report"
-                  value={{ icon: markerIcon, color: markerColor }}
-                  onChange={(next) => {
-                    form.setFieldValue("markerIcon", next.icon);
-                    form.setFieldValue("markerColor", next.color);
-                  }}
+                  value={markerIcon}
+                  onChange={(next) => form.setFieldValue("markerIcon", next)}
                 />
               </div>
             )}

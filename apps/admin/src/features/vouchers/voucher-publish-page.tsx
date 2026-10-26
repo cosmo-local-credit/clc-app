@@ -558,19 +558,14 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                 </Field>
               )}
             </form.Field>
-            <form.Subscribe
-              selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
-            >
-              {([icon, color]) => (
+            <form.Subscribe selector={(state) => state.values.markerIcon}>
+              {(icon) => (
                 <Field label="Map marker" error={null}>
                   {/* A new voucher has no offerings, so its default pin is the voucher's. */}
                   <MarkerStyleField
                     kind="voucher"
-                    value={{ icon, color }}
-                    onChange={(next) => {
-                      form.setFieldValue("markerIcon", next.icon);
-                      form.setFieldValue("markerColor", next.color);
-                    }}
+                    value={icon}
+                    onChange={(next) => form.setFieldValue("markerIcon", next)}
                   />
                 </Field>
               )}
@@ -690,10 +685,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                   <BoundRow label="Tags" value={values.tags.join(", ")} />
                   <BoundRow
                     label="Map marker"
-                    value={describeMarker("voucher", {
-                      icon: values.markerIcon,
-                      color: values.markerColor,
-                    })}
+                    value={describeMarker("voucher", values.markerIcon)}
                   />
                   <BoundRow label="Email" value={values.email} optional />
                   <BoundRow label="Phone" value={values.phone} optional />

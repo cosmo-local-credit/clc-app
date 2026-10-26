@@ -619,21 +619,21 @@ describe("creating a post", () => {
     });
   });
 
-  it("previews and submits a chosen Post marker icon and colour", async () => {
+  it("previews and submits a chosen Post marker icon with its legacy wire colour", async () => {
     renderCreateWithVoucher();
     fireEvent.click(screen.getByText("Place"));
 
     expect(screen.getByTestId("location-map").textContent).toBe("post:pink");
     fireEvent.click(screen.getByRole("radio", { name: "Event" }));
-    fireEvent.click(screen.getByRole("radio", { name: "Cyan" }));
-    expect(screen.getByTestId("location-map").textContent).toBe("event:cyan");
+    expect(screen.queryByRole("radio", { name: "Cyan" })).toBeNull();
+    expect(screen.getByTestId("location-map").textContent).toBe("event:pink");
 
     typeTitle("August community harvest");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
       markerIcon: "event",
-      markerColor: "cyan",
+      markerColor: "pink",
     });
   });
 

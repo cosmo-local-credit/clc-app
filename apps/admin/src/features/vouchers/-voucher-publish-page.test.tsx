@@ -386,15 +386,15 @@ describe("VoucherPublishPage images", () => {
     expect(await screen.findByRole("heading", { name: "Publish voucher" })).toBeTruthy();
     await fillRequiredFields();
     fireEvent.click(screen.getByRole("button", { name: /Farming/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Cyan" }));
-    expect(screen.getAllByText("Farming, Cyan").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: "Cyan" })).toBeNull();
+    expect(screen.getAllByText("Farming").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: "Publish voucher" }));
 
     await waitFor(() => expect(deployVoucher).toHaveBeenCalledTimes(1));
     expect(deployVoucher.mock.calls[0]![0]).toMatchObject({
       markerIcon: "farm",
-      markerColor: "cyan",
     });
+    expect("markerColor" in (deployVoucher.mock.calls[0]![0] as object)).toBe(false);
   });
 
   it("carries an uploaded icon and banner into the deploy request", async () => {

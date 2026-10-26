@@ -323,7 +323,7 @@ describe("LocationMap", () => {
     });
     const element = markerInstances[0]?.options.element;
     expect(markerInstances[0]?.options.anchor).toBe("bottom");
-    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#2563eb");
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#007A55");
     const glyph = element?.querySelector("svg svg")?.innerHTML;
     mapInstances[0]?.flyTo.mockClear();
 
@@ -336,14 +336,14 @@ describe("LocationMap", () => {
       />,
     );
 
-    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#db2777");
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#007A55");
     expect(element?.querySelector("svg svg")?.innerHTML).not.toBe(glyph);
     expect(mapInstances).toHaveLength(1);
     expect(markerInstances).toHaveLength(1);
     expect(mapInstances[0]?.flyTo).not.toHaveBeenCalled();
   });
 
-  it("updates a Want icon and colour live on the existing marker", () => {
+  it("updates a Want icon live while keeping the fixed orange marker", () => {
     const { rerender } = render(
       <LocationMap
         interactive
@@ -365,9 +365,21 @@ describe("LocationMap", () => {
       />,
     );
 
-    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#0891b2");
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#EA580C");
     expect(element?.querySelector("svg svg")?.innerHTML).not.toBe(glyph);
     expect(mapInstances).toHaveLength(1);
     expect(markerInstances).toHaveLength(1);
+  });
+
+  it.each([
+    ["pool", "#125A98"],
+    ["catalog", "#7C3AED"],
+  ] as const)("previews a %s with its fixed resource colour", (markerResource, fill) => {
+    render(<LocationMap lat={-1.2921} lng={36.8219} markerResource={markerResource} interactive />);
+    act(() => mapInstances[0]?.triggerLoad());
+
+    const element = markerInstances[0]?.options.element;
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe(fill);
+    expect(element?.querySelector("svg svg")).toBeTruthy();
   });
 });

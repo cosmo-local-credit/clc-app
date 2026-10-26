@@ -514,18 +514,18 @@ describe("MarketMap lifecycle", () => {
     expect(data.features[0]?.properties).toMatchObject({
       id: "1",
       name: "Alpha",
-      pin: "market-pin-basket-blue",
-      label: "#1d4ed8",
+      pin: "market-pin-voucher-basket",
+      label: "#006644",
     });
     expect(data.features.map((feature) => feature.properties.pin)).toEqual([
-      "market-pin-basket-blue",
-      "market-pin-hand-coin-purple",
-      "market-pin-coupon-orange",
-      "market-pin-farm-cyan",
+      "market-pin-voucher-basket",
+      "market-pin-voucher-hand-coin",
+      "market-pin-voucher-coupon",
+      "market-pin-voucher-farm",
     ]);
     // Registered before the source that references them, so no pin is skipped.
-    expect(map.hasImage("market-pin-farm-cyan")).toBe(true);
-    expect(map.hasImage("market-pin-farm-cyan-selected")).toBe(true);
+    expect(map.hasImage("market-pin-voucher-farm")).toBe(true);
+    expect(map.hasImage("market-pin-voucher-farm-selected")).toBe(true);
   });
 
   it("gives a pool its own pin, named in the pool's blue", () => {

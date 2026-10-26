@@ -290,7 +290,7 @@ function lockMapUpright(map: MapLibreGL.Map): void {
 
 /**
  * Each feature names its own pin, so the expression stays the same size
- * however many icons and colours the palette grows to.
+ * however many resource glyphs the palette grows to.
  */
 function pinImage(selected: boolean): DataDrivenPropertyValueSpecification<string> {
   return selected ? ["concat", ["get", "pin"], SELECTED_PIN_SUFFIX] : ["get", "pin"];

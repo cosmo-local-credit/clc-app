@@ -5,7 +5,7 @@ import type { IconType } from "react-icons";
 import { RiApps2Line, RiArticleLine, RiMap2Line, RiNotification3Line } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
-import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
+import { POST_RESOURCE_HUE, RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
 import { MarketSearchField, MarketSearchScreen } from "#/components/market-search";
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -188,7 +188,7 @@ function MarketMapResourceToggles({
     post: {
       label: t`Posts`,
       icon: RiArticleLine,
-      tone: "[--hue:var(--color-foreground)] [--ink:var(--color-foreground)]",
+      tone: POST_RESOURCE_HUE,
     },
   };
 
@@ -316,7 +316,15 @@ function MarketBadges({ current }: { current: MarketSurface }) {
             asChild
             variant="outline"
             tap
-            className={cn("font-semibold", active && "border-foreground bg-muted")}
+            className={cn(
+              "font-semibold",
+              tab === "posts" && "text-(--ink) hover:text-(--ink)",
+              tab === "posts" && POST_RESOURCE_HUE,
+              active &&
+                (tab === "posts"
+                  ? "border-(--hue)! bg-[color-mix(in_oklab,var(--hue)_14%,var(--color-card))]"
+                  : "border-foreground bg-muted"),
+            )}
           >
             <Link to="/" search={active ? {} : { tab }} aria-current={active ? "page" : undefined}>
               <Icon aria-hidden="true" />
