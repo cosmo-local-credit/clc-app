@@ -24,21 +24,21 @@ const hexSchema = z.custom<Hex>(
 );
 const decimalSchema = z.string().regex(/^\d+$/);
 
-/** `eoa` includes an EIP-7702 delegated account; only other contract code can be a Safe. */
-export const ownerKindSchema = z.enum(["eoa", "safe", "unsupported"]);
-export type OwnerKind = z.infer<typeof ownerKindSchema>;
+/** Persisted ownership capabilities. A custom multisig may omit a threshold getter. */
+export const assetOwnerInfoSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("eoa"), owner: addressSchema }),
+  z.object({ kind: z.literal("unsupported"), owner: addressSchema }),
+  z.object({
+    kind: z.literal("safe"),
+    owner: addressSchema,
+    signers: z.array(addressSchema).min(1),
+    threshold: z.number().int().min(1).nullable(),
+  }),
+]);
+export type AssetOwnerInfo = z.infer<typeof assetOwnerInfoSchema>;
 
-/**
- * `pending` needs confirmations, `ready` has threshold and can be executed,
- * `executed` consumed its nonce with our effect, `failed` consumed the nonce
- * without it, `replaced` lost its nonce to a different transaction. A revert
- * leaves the nonce unused and is not `failed`: Execute is offered again.
- */
-export const safeStatusSchema = z.enum(["pending", "ready", "executed", "failed", "replaced"]);
-export type SafeStatus = z.infer<typeof safeStatusSchema>;
-
-export const SAFE_OPERATION_CALL = 0;
-export const SAFE_OPERATION_DELEGATE_CALL = 1;
+const SAFE_OPERATION_CALL = 0;
+const SAFE_OPERATION_DELEGATE_CALL = 1;
 
 export const safeTransactionSchema = z.object({
   to: addressSchema,
@@ -58,9 +58,8 @@ export const safeConfirmationSchema = z.object({
   owner: addressSchema,
   signature: hexSchema,
 });
-export type SafeConfirmation = z.infer<typeof safeConfirmationSchema>;
 
-export const safeCallSchema = z.object({
+const safeCallSchema = z.object({
   to: addressSchema,
   value: decimalSchema,
   data: hexSchema,
@@ -82,14 +81,10 @@ const safeTxTypes = {
   ],
 } as const;
 
-const safeAbi = parseAbi([
-  "function execTransaction(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes signatures) returns (bool success)",
-  "function multiSend(bytes transactions)",
-]);
+const safeAbi = parseAbi(["function multiSend(bytes transactions)"]);
 
 /** The reads that identify a Safe and give its signer set and next nonce. */
 export const safeReadAbi = parseAbi([
-  "function VERSION() view returns (string)",
   "function getOwners() view returns (address[])",
   "function getThreshold() view returns (uint256)",
   "function nonce() view returns (uint256)",
@@ -176,108 +171,6 @@ export function buildSafeTransaction(input: {
   };
 }
 
-/** A zero-value self-call at the same nonce; executing it voids the original. */
-export function buildCancellationTransaction(
-  safeAddress: `0x${string}`,
-  nonce: string,
-): SafeTransaction {
-  return {
-    to: safeAddress,
-    value: "0",
-    data: "0x",
-    operation: SAFE_OPERATION_CALL,
-    nonce,
-    ...ZERO_GAS,
-  };
-}
-
-/**
- * Concatenates ECDSA confirmations in the order the Safe verifies them:
- * signer address ascending, compared as a number. Each signature must be the
- * 65-byte `r | s | v` form with v of 27 or 28; contract and approved-hash
- * signatures are not produced by this app.
- */
-export function packSignatures(confirmations: readonly SafeConfirmation[]): Hex {
-  const seen = new Set<string>();
-  for (const { owner, signature } of confirmations) {
-    if (size(signature) !== 65) throw new Error("Safe signatures must be 65 bytes");
-    const v = Number.parseInt(signature.slice(-2), 16);
-    if (v !== 27 && v !== 28) throw new Error("Safe signature v must be 27 or 28");
-    if (seen.has(owner.toLowerCase())) throw new Error("Duplicate Safe signer");
-    seen.add(owner.toLowerCase());
-  }
-  const sorted = [...confirmations].sort((a, b) => {
-    const left = BigInt(a.owner);
-    const right = BigInt(b.owner);
-    return left < right ? -1 : left > right ? 1 : 0;
-  });
-  return concatHex(sorted.map((confirmation) => confirmation.signature));
-}
-
-export function encodeExecTransaction(tx: SafeTransaction, packedSignatures: Hex): Hex {
-  return encodeFunctionData({
-    abi: safeAbi,
-    functionName: "execTransaction",
-    args: [
-      tx.to,
-      BigInt(tx.value),
-      tx.data,
-      tx.operation,
-      BigInt(tx.safeTxGas),
-      BigInt(tx.baseGas),
-      BigInt(tx.gasPrice),
-      tx.gasToken,
-      tx.refundReceiver,
-      packedSignatures,
-    ],
-  });
-}
-
-/**
- * The single Calibur call that executes a Safe transaction: from the executing
- * signer's account to the Safe, zero value. The Safe is `msg.sender` to the asset.
- */
-export function buildExecuteSafeCall(
-  safeAddress: `0x${string}`,
-  tx: SafeTransaction,
-  confirmations: readonly SafeConfirmation[],
-): SafeCall {
-  return {
-    to: safeAddress,
-    value: "0",
-    data: encodeExecTransaction(tx, packSignatures(confirmations)),
-  };
-}
-
-export type SafeStatusInput = {
-  confirmations: number;
-  threshold: number;
-  /** The Safe's current on-chain nonce. */
-  safeNonce: bigint;
-  txNonce: bigint;
-  /** Whether this exact safeTxHash was executed on chain. */
-  executed: boolean;
-  /** Whether the executed transaction succeeded. */
-  executedSuccessfully?: boolean;
-};
-
-/**
- * Status from chain facts. A consumed nonce without our transaction is
- * `replaced`, never `failed`; `failed` means our own execution landed and its
- * inner call did not take effect. A revert leaves the nonce unused, so it never
- * reaches here as anything but `pending` or `ready`.
- */
-export function deriveSafeStatus(input: SafeStatusInput): SafeStatus {
-  if (input.executed) return input.executedSuccessfully === false ? "failed" : "executed";
-  if (input.safeNonce > input.txNonce) return "replaced";
-  return input.confirmations >= input.threshold ? "ready" : "pending";
-}
-
-/** `ready` once threshold is met; threshold 1 collapses sign and execute into one step. */
-export function collapsesToSingleStep(threshold: number): boolean {
-  return threshold === 1;
-}
-
 /** The queue in the hosted Safe app, a fallback place to sign and execute. */
 export function safeAppQueueUrl(appPrefix: string, safeAddress: `0x${string}`): string {
   return `https://app.safe.global/transactions/queue?safe=${appPrefix}:${safeAddress}`;
@@ -293,19 +186,13 @@ const DELEGATION_PREFIX = "0xef0100";
 /**
  * The first branch of owner-kind resolution, from `eth_getCode` alone. Empty
  * code and an EIP-7702 delegation (a Calibur-delegated EOA) are both `eoa`.
- * Other contract code needs the `VERSION()` / `getOwners` / `getThreshold`
- * probe, which the caller runs.
+ * Other contract code needs a valid `getOwners()` probe; threshold information
+ * is optional.
  */
 export function classifyOwnerCode(code: Hex | undefined): "eoa" | "contract" {
   if (code === undefined || code === "0x") return "eoa";
   if (code.toLowerCase().startsWith(DELEGATION_PREFIX) && size(code) === 23) return "eoa";
   return "contract";
-}
-
-export const SUPPORTED_SAFE_VERSIONS = ["1.3.0", "1.4.1"] as const;
-
-export function isSupportedSafeVersion(version: string): boolean {
-  return (SUPPORTED_SAFE_VERSIONS as readonly string[]).includes(version);
 }
 
 /**

@@ -3,11 +3,8 @@ import { renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mocks = vi.hoisted(() => ({
-  propose: vi.fn(),
-  execute: vi.fn(),
-  delegation: "delegated" as "checking" | "delegated" | "not-delegated",
-}));
+const mocks = vi.hoisted(() => ({ propose: vi.fn() }));
+const ME = "0x3333333333333333333333333333333333333333";
 vi.mock("wagmi", () => ({
   useClient: () => ({ chain: { id: 100 } }),
   useConnection: () => ({
@@ -16,82 +13,56 @@ vi.mock("wagmi", () => ({
   }),
   useSignTypedData: () => ({ signTypedDataAsync: vi.fn() }),
 }));
-vi.mock("#/lib/chain", () => ({ CHAIN_ID: 100, CHAIN_INFO: {} }));
-vi.mock("#/lib/relayer-config", () => ({ RELAYER_URL: "https://relayer.example" }));
-vi.mock("#/lib/api/safe", () => ({ safeClient: {} }));
-vi.mock("@clc/api/features/relayer/client", () => ({ createRelayerClient: () => ({}) }));
-vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
-  useCaliburDelegation: () => mocks.delegation,
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({
+    isAuthenticated: true,
+    session: { address: "0x3333333333333333333333333333333333333333" },
+  }),
 }));
-vi.mock("../api/safe-transactions", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../api/safe-transactions")>()),
+vi.mock("#/lib/chain", () => ({ CHAIN_ID: 100, CHAIN_INFO: {} }));
+vi.mock("#/lib/api/safe", () => ({ safeClient: {} }));
+vi.mock("#/connectors/calibur-webauthn", () => ({
+  CALIBUR_WEBAUTHN_CONNECTOR_ID: "calibur-webauthn",
+}));
+vi.mock("../api/safe-transactions", async (original) => ({
+  ...(await original<typeof import("../api/safe-transactions")>()),
   proposeSafeTransaction: mocks.propose,
-  executeSafeTransaction: mocks.execute,
 }));
 
-import { SafeProposedError } from "../api/safe-transactions";
-import { safeSubmissionKey, useSafeSubmissions } from "../state/safe-submissions";
+import { SafeDashboardRequiredError, SafeProposedError } from "../api/safe-transactions";
 import { useSafeWrite } from "./use-safe-write";
 
-const SAFE = "0x1111111111111111111111111111111111111111" as const;
-const ASSET = "0x2222222222222222222222222222222222222222" as const;
-const calls = [{ to: ASSET, value: "0", data: "0xf2fde38b" as const }];
-
+const SAFE = "0x1111111111111111111111111111111111111111";
+const calls = [{ to: SAFE as `0x${string}`, value: "0", data: "0xf2fde38b" as const }];
+const proposal = (required: number) => ({
+  safe: SAFE,
+  safeTxHash: `0x${"ab".repeat(32)}`,
+  confirmations: [{ owner: ME }],
+  confirmationsRequired: required,
+});
 function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>;
 }
+beforeEach(() => vi.clearAllMocks());
 
-const proposal = (confirmed: number, required: number) => ({
-  safe: SAFE,
-  safeTxHash: `0x${"ab".repeat(32)}`,
-  nonce: "5",
-  confirmations: Array.from({ length: confirmed }, (_, i) => ({
-    owner: `0x${i}`,
-    signature: "0x",
-  })),
-  confirmationsRequired: required,
-});
-
-beforeEach(() => {
-  vi.clearAllMocks();
-  mocks.delegation = "delegated";
-  useSafeSubmissions.setState({ submissions: {} });
-  mocks.execute.mockResolvedValue({ trackingId: "t1", txHash: "0xdone" });
-});
-
-describe("useSafeWrite.write", () => {
-  it("signs and executes in one action at threshold 1", async () => {
-    mocks.propose.mockResolvedValue(proposal(1, 1));
+describe("best-effort Safe proposals", () => {
+  it.each([1, 2])("stops after proposing at threshold %i", async (threshold) => {
+    mocks.propose.mockResolvedValue(proposal(threshold));
     const { result } = renderHook(() => useSafeWrite(), { wrapper });
-
-    await expect(
-      result.current.write({ assetAddress: ASSET, safe: SAFE, threshold: 1, calls }),
-    ).resolves.toEqual({ trackingId: "t1", txHash: "0xdone" });
-    expect(mocks.execute).toHaveBeenCalledOnce();
-    expect(useSafeSubmissions.getState().submissions[safeSubmissionKey(ASSET)]).toBeUndefined();
+    await expect(result.current.write({ safe: SAFE, calls })).rejects.toBeInstanceOf(
+      SafeProposedError,
+    );
+    expect(mocks.propose).toHaveBeenCalledOnce();
   });
-
-  it("stops after the proposal above threshold and remembers it for a reload", async () => {
-    mocks.propose.mockResolvedValue(proposal(1, 2));
+  it("keeps the dashboard available when the transaction service is unavailable", async () => {
+    mocks.propose.mockRejectedValue(new Error("Safe Transaction Service unavailable"));
     const { result } = renderHook(() => useSafeWrite(), { wrapper });
-
-    await expect(
-      result.current.write({ assetAddress: ASSET, safe: SAFE, threshold: 2, calls }),
-    ).rejects.toBeInstanceOf(SafeProposedError);
-    expect(mocks.execute).not.toHaveBeenCalled();
-    expect(useSafeSubmissions.getState().submissions[safeSubmissionKey(ASSET)]).toMatchObject({
+    await expect(result.current.write({ safe: SAFE, calls })).rejects.toMatchObject({
       safe: SAFE,
-      safeTxHash: `0x${"ab".repeat(32)}`,
+      message: "Safe Transaction Service unavailable",
     });
-  });
-
-  it("waits for the wallet check before asking for a signature", async () => {
-    mocks.delegation = "checking";
-    const { result } = renderHook(() => useSafeWrite(), { wrapper });
-
-    await expect(
-      result.current.write({ assetAddress: ASSET, safe: SAFE, threshold: 1, calls }),
-    ).rejects.toThrow(/Still checking/);
-    expect(mocks.propose).not.toHaveBeenCalled();
+    await expect(result.current.write({ safe: SAFE, calls })).rejects.toBeInstanceOf(
+      SafeDashboardRequiredError,
+    );
   });
 });

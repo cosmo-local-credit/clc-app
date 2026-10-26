@@ -34,9 +34,7 @@ export function useVoucherMint(asset?: { address: string; ownerAddress?: string 
         const call = buildVoucherMintCall(input);
         if (asset && owner.info?.kind === "safe" && owner.isSafeSigner) {
           return safeWrite.write({
-            assetAddress: input.tokenAddress,
             safe: owner.info.owner,
-            threshold: owner.info.threshold,
             calls: [call],
           });
         }

@@ -37,6 +37,15 @@ function client(body: unknown) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("safe client", () => {
+  it("reads public persisted ownership with an unknown threshold", async () => {
+    const state = { kind: "safe", owner: A(1), signers: [A(5)], threshold: null };
+    const { spy, safe } = client(state);
+    await expect(safe.owner(A(1))).resolves.toEqual(state);
+    expect(spy).toHaveBeenCalledWith(
+      `https://api.example/api/v2/owners/${A(1)}`,
+      expect.objectContaining({ cache: "no-store" }),
+    );
+  });
   it("lists pending transactions of a Safe", async () => {
     const { spy, safe } = client({ results: [proposal] });
     const result = await safe.pending(A(1));
@@ -62,17 +71,8 @@ describe("safe client", () => {
     );
   });
 
-  it("POSTs a confirmation", async () => {
-    const { spy, safe } = client(proposal);
-    await safe.confirm(proposal.safeTxHash, `0x${"22".repeat(65)}`);
-    expect(spy).toHaveBeenCalledWith(
-      "https://api.example/api/v2/safe/confirmations",
-      expect.objectContaining({ method: "POST" }),
-    );
-  });
-
   it("rejects a malformed response", async () => {
-    const { safe } = client({ ...proposal, confirmationsRequired: 0 });
-    await expect(safe.transaction(proposal.safeTxHash)).rejects.toThrow();
+    const { safe } = client({ results: [{ ...proposal, confirmationsRequired: 0 }] });
+    await expect(safe.pending(A(1))).rejects.toThrow();
   });
 });

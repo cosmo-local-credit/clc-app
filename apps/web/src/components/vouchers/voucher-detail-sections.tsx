@@ -175,6 +175,7 @@ export function VoucherDetailSections({
           phone={phone}
           terms={terms}
           issuerAddress={ownerAddress}
+          ownerInfo={ownerInfo.info}
           locationName={locationName}
           lat={lat}
           lng={lng}

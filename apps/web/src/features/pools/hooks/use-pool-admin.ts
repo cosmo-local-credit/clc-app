@@ -84,9 +84,7 @@ export function usePoolAdminRelay(asset?: PoolAdminAsset) {
       const calls = submission.calls;
       if (asset && owner.info?.kind === "safe" && owner.isSafeSigner) {
         return safeWrite.write({
-          assetAddress: asset.address,
           safe: owner.info.owner,
-          threshold: owner.info.threshold,
           calls,
         });
       }

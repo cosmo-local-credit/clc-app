@@ -103,9 +103,7 @@ describe("usePoolAdminRelay with a Safe owner", () => {
       txHash: "0xdef",
     });
     expect(mocks.safeWrite).toHaveBeenCalledWith({
-      assetAddress: pool.address,
       safe: pool.ownerAddress,
-      threshold: 2,
       calls,
     });
     expect(mocks.relayBatch).not.toHaveBeenCalled();

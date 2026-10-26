@@ -85,23 +85,57 @@ CORE_TEST_DSN="$OWNERSHIP_TEST_DSN" go test -p 1 ./internal/sub ./internal/store
 
 Use an isolated migrated test database for the integration run.
 
-## Safe-owned assets
+## Multisig-owned assets
 
-`VITE_SAFE_OWNERSHIP_ENABLED` (off in both Wrangler blocks) lets a Safe own a
-voucher or pool and its signers manage it from the app. Flip it only after the
-whole chain below is live in that environment.
+`VITE_SAFE_OWNERSHIP_ENABLED` (off in both Wrangler blocks) enables multisig
+ownership and single-signer metadata editing. Enable it after the tracker and
+backend below are deployed. Metadata and public ownership do not require the
+Safe Transaction Service or gasless Safe execution.
 
-1. eth-tracker with `SAFE_OWNERS_CHANGED` (`feat/safe-owner-events`) deployed.
-2. clc-core with migration `060_safe_signers.sql`, then `safe.multisend_call_only`
-   (the Gnosis `MultiSendCallOnly` 1.3.0 and 1.4.1 addresses) and `safe.sts_base_url`
-   set in its config. Without them `execTransaction` is refused at the relay and
-   the `/api/v2/safe` routes are not mounted.
-3. Re-run `cmd/reconcile-ownership` at a finalized block so existing Safe owners
-   are cached (the snapshot now includes them), and make sure the tracker watches
-   those Safes.
+1. Deploy eth-tracker with `SAFE_OWNERS_CHANGED` and compatible `getOwners()`
+   detection.
+2. Deploy clc-core with migrations `060_safe_signers.sql` and
+   `061_safe_compatible_owners.sql`. Configure `chain.ge_registry` as for signup;
+   the system signer must be an AccountIndex writer.
+3. A successful ownership transfer discovers the new multisig. Viewing an
+   existing multisig-owned asset calls `GET /api/v2/owners/:address`, which
+   persists its verified signer set. Both paths enqueue the existing account
+   registration worker. That worker checks `contains(address)` before signing,
+   so repeated discovery does not send duplicate index additions.
+4. AccountIndex's ordinary `AddressAdded` event starts normal tracking. Its
+   enumeration and the tracker's persisted cache provide restart/recovery.
+   `cmd/reconcile-ownership` remains a repair tool, not a normal onboarding step.
+5. Optional proposals: set `safe.sts_base_url`, its API key where required, and
+   the matching Gnosis `safe.multisend_call_only` addresses in clc-core. Missing
+   STS or an unsupported signer/contract opens the dashboard handoff; metadata
+   still works.
 
-Use a staging 2-of-3 Safe: transfer a voucher to it, then have a signer propose a
-mint, a second signer confirm and execute it from the Safe transactions row, and
-reject a queued transaction. Check that a removed signer loses the controls once
-the tracker has reported `RemovedOwner`. Passkey wallets cannot sign for a Safe
-yet; paper wallets and external wallets can.
+Any one current signer can edit voucher/pool profiles, voucher display names,
+create/update/delete offerings within their allowance, link owned assets to
+posts, reply to/flag reviews, and retire vouchers. Posts and review replies
+retain the real author's address. On-chain changes still require the multisig's
+own approval threshold.
+
+A valid `getOwners()` list is sufficient for metadata recognition. `VERSION()`
+is not required; `getThreshold()` is optional and is displayed only if known.
+Custom implementations get partial support: automatic membership changes require
+Safe-style owner events; viewing the asset refreshes its stored signer set when
+those events are absent. Transaction proposals depend on compatible nonce,
+transaction hashing, signatures and STS indexing, and are best effort.
+
+The app only proposes transactions, including at threshold one. Confirmation,
+execution and rejection happen in Safe. No local submission store or terminal
+transaction state is promised. Refresh the asset in CLC after execution. Passkey
+sessions can edit metadata; passkey transaction proposals are not supported.
+
+### Quick QA
+
+Use a Gnosis 2-of-3 Safe containing a paper-wallet signer and dashboard signers.
+Transfer a test voucher and pool to it, and also inspect an asset already owned
+by the Safe. Check the public ownership label while signed out. Each signer must
+independently edit metadata, use their offering allowance, post and manage review
+replies. An outsider and a removed signer must be denied by the API. Verify one
+AccountIndex addition despite repeated inspection; restart the tracker and change
+a signer again. Queue a small mint with the paper wallet: it must not execute
+until confirmed/executed in Safe. Refresh CLC afterward. With STS disabled or a
+passkey session, metadata must still work and the dashboard link remain usable.

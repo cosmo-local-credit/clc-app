@@ -21,13 +21,7 @@ vi.mock("#/connectors/calibur-webauthn", () => ({
   CALIBUR_WEBAUTHN_CONNECTOR_ID: "calibur-webauthn",
 }));
 
-import {
-  confirmSafeTransaction,
-  executeSafeTransaction,
-  proposeCancellation,
-  proposeSafeTransaction,
-  SafePendingConflictError,
-} from "./safe-transactions";
+import { proposeSafeTransaction, SafePendingConflictError } from "./safe-transactions";
 
 const SAFE = "0x1111111111111111111111111111111111111111";
 const ASSET = "0x2222222222222222222222222222222222222222";
@@ -141,50 +135,7 @@ describe("proposeSafeTransaction", () => {
         { chain: {} as never, safe: client as never },
         { safe: SAFE, signer: { ...signer, connectorId: "calibur-webauthn" }, calls: [call] },
       ),
-    ).rejects.toThrow(/Passkey wallets/);
+    ).rejects.toThrow(/multisig wallet/);
     expect(sign).not.toHaveBeenCalled();
-  });
-});
-
-describe("cancellation and confirmation", () => {
-  it("proposes a zero-value empty self-call at the original nonce", async () => {
-    const client = safeClient();
-    await proposeCancellation({ safe: client as never }, proposal({ nonce: "9" }), signer);
-    expect(client.propose.mock.calls[0]![0].tx).toMatchObject({
-      to: SAFE,
-      value: "0",
-      data: "0x",
-      operation: 0,
-      nonce: "9",
-    });
-  });
-
-  it("signs the stored transaction when confirming", async () => {
-    const client = safeClient();
-    const original = proposal();
-    await confirmSafeTransaction({ safe: client as never }, original, signer);
-    expect(client.confirm).toHaveBeenCalledWith(
-      (original as { safeTxHash: string }).safeTxHash,
-      SIGNATURE,
-    );
-  });
-});
-
-describe("executeSafeTransaction", () => {
-  it("relays one call to the Safe and waits for settlement", async () => {
-    mocks.relayBatch.mockResolvedValue({ trackingId: "t1" });
-    mocks.waitRelay.mockResolvedValue({ trackingId: "t1", txHash: "0xdone" });
-    const relayer = {} as never;
-
-    await expect(executeSafeTransaction({ relayer }, proposal(), signer)).resolves.toEqual({
-      trackingId: "t1",
-      txHash: "0xdone",
-    });
-    const batch = mocks.relayBatch.mock.calls[0]![0];
-    expect(batch.senderAddress).toBe(ME);
-    expect(batch.calls).toHaveLength(1);
-    expect(batch.calls[0]).toMatchObject({ to: SAFE, value: "0" });
-    expect(batch.calls[0].data.startsWith("0x6a761202")).toBe(true);
-    expect(mocks.waitRelay).toHaveBeenCalledWith(relayer, "t1");
   });
 });

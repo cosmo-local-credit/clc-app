@@ -16,6 +16,7 @@ import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button"
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
+import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
@@ -130,6 +131,7 @@ export function PoolDetailPage({
             <h1 className="truncate font-heading text-[1.75rem] font-bold leading-tight">
               {pool.name}
             </h1>
+            <MultisigOwnerNotice info={ownerInfo.info} />
             <p
               dir="auto"
               className="mt-1 line-clamp-3 overflow-hidden text-muted-foreground text-xs break-words"

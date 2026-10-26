@@ -63,17 +63,39 @@ describe("readAssetOwnerInfo", () => {
     for (const [, params] of mocks.read.mock.calls) expect(params.blockNumber).toBe(1234n);
   });
 
-  it.each([
-    ["an unsupported version", { VERSION: "1.2.0", getOwners: [A], getThreshold: 1n }],
-    ["a threshold above the signer count", { VERSION: "1.4.1", getOwners: [A], getThreshold: 2n }],
-    ["a zero threshold", { VERSION: "1.4.1", getOwners: [A], getThreshold: 0n }],
-    ["a contract that fails the probe", { VERSION: new Error("reverted") }],
-  ])("is unsupported for %s", async (_name, values) => {
+  it.each([["a contract that fails the probe", { VERSION: new Error("reverted") }]])(
+    "is unsupported for %s",
+    async (_name, values) => {
+      mocks.code.mockResolvedValue("0x6080");
+      answers(values as never);
+      await expect(readAssetOwnerInfo({} as never, OWNER)).resolves.toEqual({
+        kind: "unsupported",
+        owner: OWNER,
+      });
+    },
+  );
+
+  it("recognizes custom multisigs without a version or threshold getter", async () => {
     mocks.code.mockResolvedValue("0x6080");
-    answers(values as never);
+    answers({ getOwners: [A, B], getThreshold: new Error("execution reverted") });
     await expect(readAssetOwnerInfo({} as never, OWNER)).resolves.toEqual({
-      kind: "unsupported",
+      kind: "safe",
       owner: OWNER,
+      signers: [A, B],
+      threshold: null,
     });
   });
+
+  it.each([0n, 3n])(
+    "retains signer permissions with an unusable threshold %s",
+    async (threshold) => {
+      mocks.code.mockResolvedValue("0x6080");
+      answers({ getOwners: [A, B], getThreshold: threshold });
+      await expect(readAssetOwnerInfo({} as never, OWNER)).resolves.toMatchObject({
+        kind: "safe",
+        signers: [A, B],
+        threshold: null,
+      });
+    },
+  );
 });

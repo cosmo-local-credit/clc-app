@@ -36,14 +36,10 @@ export function useVoucherOwnershipTransfer(asset?: {
     async (input) => {
       let trackingId = input.trackingId;
       if (!trackingId && asset && owner.info?.kind === "safe" && owner.isSafeSigner) {
-        const settled = await safeWrite.write({
-          assetAddress: asset.address,
+        return safeWrite.write({
           safe: owner.info.owner,
-          threshold: owner.info.threshold,
           calls: input.calls,
         });
-        input.onConfirmed(settled.trackingId, settled.txHash);
-        return settled;
       }
       if (!trackingId) {
         if (!address || delegation === "checking")

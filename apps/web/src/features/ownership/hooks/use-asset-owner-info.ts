@@ -1,27 +1,20 @@
 import {
   classifyOwnerCode,
   isSigner,
-  isSupportedSafeVersion,
   safeReadAbi,
+  type AssetOwnerInfo,
 } from "@clc/core/features/safe/logic";
 import { useQuery } from "@tanstack/react-query";
-import { isAddress, type Client } from "viem";
+import { isAddress, zeroAddress, type Client } from "viem";
 import { getBlockNumber, getCode, readContract } from "viem/actions";
 import { useClient } from "wagmi";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { CHAIN_ID } from "#/lib/chain";
 import { SAFE_OWNERSHIP_ENABLED } from "#/lib/safe-config";
+import { safeClient } from "#/lib/api/safe";
 import { useAssetOwner } from "./use-asset-owner";
 
-export type AssetOwnerInfo =
-  | { kind: "eoa"; owner: `0x${string}` }
-  | {
-      kind: "safe";
-      owner: `0x${string}`;
-      signers: readonly `0x${string}`[];
-      threshold: number;
-    }
-  | { kind: "unsupported"; owner: `0x${string}` };
+export type { AssetOwnerInfo } from "@clc/core/features/safe/logic";
 
 export const assetOwnerInfoKey = (owner: string) =>
   ["asset-owner-info", CHAIN_ID, owner.toLowerCase()] as const;
@@ -29,9 +22,9 @@ export const assetOwnerInfoKey = (owner: string) =>
 /**
  * Classifies an owner address. Order matters: empty code is an EOA, and so is an
  * EIP-7702 delegation (a Calibur-delegated EOA), whose execution path stays
- * untouched. Only other contract code is probed as a Safe, at one block so the
- * version, signers and threshold describe the same state; a contract that fails
- * the probe, or runs an unsupported version, is `unsupported`.
+ * untouched. Other contracts are recognized by getOwners at one block. A
+ * threshold getter is optional, so partially compatible multisigs can still
+ * receive an ownership handover and manage metadata.
  */
 export async function readAssetOwnerInfo(
   client: Client,
@@ -41,17 +34,28 @@ export async function readAssetOwnerInfo(
   if (classifyOwnerCode(code) === "eoa") return { kind: "eoa", owner };
   try {
     const blockNumber = await getBlockNumber(client, { cacheTime: 0 });
-    const read = <TName extends "VERSION" | "getOwners" | "getThreshold">(functionName: TName) =>
+    const read = <TName extends "getOwners" | "getThreshold">(functionName: TName) =>
       readContract(client, { address: owner, abi: safeReadAbi, functionName, blockNumber });
-    const [version, signers, threshold] = await Promise.all([
-      read("VERSION"),
+    const [signers, threshold] = await Promise.all([
       read("getOwners"),
-      read("getThreshold"),
+      read("getThreshold").catch(() => null),
     ]);
-    if (!isSupportedSafeVersion(version) || threshold < 1n || threshold > BigInt(signers.length)) {
+    if (
+      !signers?.length ||
+      signers.some((signer) => signer.toLowerCase() === zeroAddress) ||
+      new Set(signers.map((signer) => signer.toLowerCase())).size !== signers.length
+    ) {
       return { kind: "unsupported", owner };
     }
-    return { kind: "safe", owner, signers, threshold: Number(threshold) };
+    return {
+      kind: "safe",
+      owner,
+      signers: [...signers],
+      threshold:
+        threshold === null || threshold < 1n || threshold > BigInt(signers.length)
+          ? null
+          : Number(threshold),
+    };
   } catch {
     return { kind: "unsupported", owner };
   }
@@ -72,7 +76,14 @@ export function useAssetOwnerInfo(address: string, catalogOwner: string | null |
   const ownerAddress = owner && isAddress(owner) ? owner : undefined;
   const query = useQuery({
     queryKey: assetOwnerInfoKey(ownerAddress ?? "none"),
-    queryFn: () => readAssetOwnerInfo(client!, ownerAddress!),
+    queryFn: async ({ signal }): Promise<AssetOwnerInfo> => {
+      // The backend persists discovery and registers verified catalog owners
+      // in AccountIndex. Membership comes from the same projection as writes.
+      const projected = await safeClient.owner(ownerAddress!, signal);
+      if (projected.kind === "safe") return projected;
+      const code = await getCode(client!, { address: ownerAddress! });
+      return classifyOwnerCode(code) === "eoa" ? { kind: "eoa", owner: ownerAddress! } : projected;
+    },
     enabled: SAFE_OWNERSHIP_ENABLED && !!client && !!ownerAddress,
     staleTime: 30_000,
     retry: false,

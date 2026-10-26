@@ -29,16 +29,20 @@ export function RecipientOwnerNotice({ address }: { address: string }) {
   if (info.kind === "safe") {
     return (
       <p role="status" className="text-xs text-muted-foreground">
-        <Trans>
-          Safe, {info.threshold} of {info.signers.length} signers
-        </Trans>
+        {info.threshold === null ? (
+          <Trans>Compatible multisig, {info.signers.length} signers</Trans>
+        ) : (
+          <Trans>
+            Multisig, {info.threshold} of {info.signers.length} signers
+          </Trans>
+        )}
       </p>
     );
   }
   return (
     <p role="alert" className="text-destructive text-sm">
       <Trans>
-        This address is a contract that is not a supported Safe. The asset could be locked.
+        This contract does not expose a compatible multisig owner list. The asset could be locked.
       </Trans>
     </p>
   );

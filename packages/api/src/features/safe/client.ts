@@ -1,4 +1,5 @@
 import {
+  assetOwnerInfoSchema,
   safeConfirmationSchema,
   safeTransactionSchema,
   type SafeTransaction,
@@ -10,7 +11,7 @@ const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 const hexSchema = z.string().regex(/^0x([a-fA-F0-9]{2})*$/);
 
 /** A Safe transaction as clc-core's Transaction Service proxy reports it. */
-export const safeProposalSchema = safeTransactionSchema.extend({
+const safeProposalSchema = safeTransactionSchema.extend({
   safe: addressSchema,
   safeTxHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
   confirmations: z.array(safeConfirmationSchema.extend({ submittedAt: z.string() })),
@@ -33,19 +34,20 @@ export type ProposeSafeTransactionInput = {
 
 export function createSafeClient(http: HttpClient) {
   return {
+    async owner(address: string, signal?: AbortSignal) {
+      return assetOwnerInfoSchema.parse(
+        await http.request<unknown>(`/api/v2/owners/${encodeURIComponent(address)}`, {
+          method: "GET",
+          signal,
+          cache: "no-store",
+        }),
+      );
+    },
     async propose(input: ProposeSafeTransactionInput) {
       return safeProposalSchema.parse(
         await http.request<unknown>("/api/v2/safe/proposals", {
           method: "POST",
           body: JSON.stringify(input),
-        }),
-      );
-    },
-    async confirm(safeTxHash: string, signature: `0x${string}`) {
-      return safeProposalSchema.parse(
-        await http.request<unknown>("/api/v2/safe/confirmations", {
-          method: "POST",
-          body: JSON.stringify({ safeTxHash, signature }),
         }),
       );
     },
@@ -55,15 +57,6 @@ export function createSafeClient(http: HttpClient) {
         { method: "GET", signal, cache: "no-store" },
       );
       return pendingSchema.parse(result).results;
-    },
-    async transaction(safeTxHash: string, signal?: AbortSignal) {
-      return safeProposalSchema.parse(
-        await http.request<unknown>(`/api/v2/safe/transactions/${encodeURIComponent(safeTxHash)}`, {
-          method: "GET",
-          signal,
-          cache: "no-store",
-        }),
-      );
     },
   };
 }

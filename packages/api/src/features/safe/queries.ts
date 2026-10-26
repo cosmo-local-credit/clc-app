@@ -4,7 +4,6 @@ import type { SafeClient } from "./client";
 export const safeKeys = {
   all: ["clc", "safe"] as const,
   pending: (safe: string) => ["clc", "safe", "pending", safe.toLowerCase()] as const,
-  transaction: (safeTxHash: string) => ["clc", "safe", "transaction", safeTxHash] as const,
 };
 
 const POLL_MS = 5_000;
@@ -16,21 +15,6 @@ export function safePendingQueryOptions(client: SafeClient, safe: string | undef
     queryFn: ({ signal }) => client.pending(safe!, signal),
     enabled: Boolean(safe),
     refetchInterval: POLL_MS,
-    staleTime: 0,
-  });
-}
-
-/**
- * One transaction's confirmations and execution state. `refetchInterval` stops
- * once the transaction executed: the chain is the truth after that and nothing
- * on the service side changes.
- */
-export function safeTransactionQueryOptions(client: SafeClient, safeTxHash: string | undefined) {
-  return queryOptions({
-    queryKey: safeKeys.transaction(safeTxHash ?? "none"),
-    queryFn: ({ signal }) => client.transaction(safeTxHash!, signal),
-    enabled: Boolean(safeTxHash),
-    refetchInterval: (query) => (query.state.data?.isExecuted ? false : POLL_MS),
     staleTime: 0,
   });
 }
