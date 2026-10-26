@@ -13,6 +13,7 @@ import {
   RiUserSharedLine,
 } from "react-icons/ri";
 import { toast } from "sonner";
+import { getAddress, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { z } from "zod";
 
 import { ActionRow } from "#/components/ui/action-row";
@@ -172,6 +173,7 @@ export function VoucherContractActionsPanel({
             tokenDecimals={contract.tokenDecimals}
             walletAddress={contract.walletAddress}
             ownerAddress={contract.ownerAddress}
+            safeOwned={contract.safeOwned}
           />
           <VoucherOwnershipTransferSheet
             open={sheet === "ownership"}
@@ -194,6 +196,7 @@ function VoucherMintSheet({
   tokenDecimals,
   walletAddress,
   ownerAddress,
+  safeOwned,
 }: {
   open: boolean;
   onClose: () => void;
@@ -202,19 +205,33 @@ function VoucherMintSheet({
   tokenDecimals: number;
   walletAddress: `0x${string}`;
   ownerAddress: `0x${string}`;
+  /** A multisig's supply can go straight to another account; it defaults to the multisig. */
+  safeOwned: boolean;
 }) {
   const { t } = useLingui();
   const queryClient = useQueryClient();
   const delegationStatus = useCaliburDelegation(walletAddress);
   const mint = useVoucherMint({ address: tokenAddress, ownerAddress });
+  const recipientSchema = z
+    .string()
+    .trim()
+    .refine((value) => isAddress(value, { strict: false }) && !isAddressEqual(value, zeroAddress), {
+      message: t`Enter a valid wallet address`,
+    });
   const form = useForm({
-    defaultValues: { amount: "" },
-    validators: { onSubmit: z.object({ amount: voucherMintAmountSchema(tokenDecimals) }) },
+    defaultValues: { amount: "", recipient: ownerAddress as string },
+    validators: {
+      onSubmit: z.object({
+        amount: voucherMintAmountSchema(tokenDecimals),
+        recipient: safeOwned ? recipientSchema : z.string(),
+      }),
+    },
     onSubmit: async ({ value }) => {
       try {
         await mint.mutateAsync({
           tokenAddress: tokenAddress as `0x${string}`,
           ownerAddress,
+          ...(safeOwned ? { recipientAddress: getAddress(value.recipient.trim()) } : {}),
           amountRaw: parseTokenAmount(value.amount, tokenDecimals),
           includeAuthorization: delegationStatus === "not-delegated",
         });
@@ -252,7 +269,7 @@ function VoucherMintSheet({
               void form.handleSubmit();
             }}
           >
-            <div className="px-6 pb-3">
+            <div className="space-y-4 px-6 pb-3">
               <form.Field name="amount">
                 {(field) => (
                   <Field
@@ -275,6 +292,30 @@ function VoucherMintSheet({
                   </Field>
                 )}
               </form.Field>
+              {safeOwned ? (
+                <form.Field name="recipient">
+                  {(field) => (
+                    <Field
+                      label={t`Recipient`}
+                      htmlFor="voucher-mint-recipient"
+                      error={getFieldError(field.state.meta.errors)}
+                    >
+                      <RecipientAddressInput
+                        id="voucher-mint-recipient"
+                        defaultValue={field.state.value}
+                        onValueChange={field.handleChange}
+                        onRecipientChange={(recipient) => {
+                          if (recipient) field.handleChange(recipient.address);
+                        }}
+                        onBlur={field.handleBlur}
+                        ariaLabel={t`Recipient`}
+                        ariaInvalid={field.state.meta.errors.length > 0}
+                        disabled={pending}
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+              ) : null}
             </div>
             <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <Button type="submit" tap className="w-full" pending={pending}>

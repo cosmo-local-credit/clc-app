@@ -14,6 +14,8 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 export type VoucherMintInput = {
   tokenAddress: `0x${string}`;
   ownerAddress: `0x${string}`;
+  /** A multisig owner may mint straight to another account. */
+  recipientAddress?: `0x${string}`;
   amountRaw: string;
   includeAuthorization?: boolean;
 };

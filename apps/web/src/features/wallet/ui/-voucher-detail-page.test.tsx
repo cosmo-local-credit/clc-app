@@ -1690,6 +1690,8 @@ describe("VoucherDetailPage contract controls", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Create vouchers" }));
     const dialog = await screen.findByRole("dialog");
+    // An ordinary owner always mints to their own wallet.
+    expect(within(dialog).queryByLabelText("Recipient")).toBeNull();
     fireEvent.change(within(dialog).getByLabelText("Create vouchers"), {
       target: { value: "12.34" },
     });
@@ -1736,6 +1738,63 @@ describe("VoucherDetailPage contract controls", () => {
 
     await waitFor(() => expect(mocks.reportMintError).toHaveBeenCalled());
     expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
+  it("lets a Safe signer create vouchers straight into another account", async () => {
+    const SIGNER = "0x5150000000000000000000000000000000000005";
+    mocks.safeSigners = [SIGNER];
+    try {
+      mocks.auth.session = { address: SIGNER, chainId: 100 };
+      mocks.address = SIGNER;
+      render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Create vouchers" }));
+      const dialog = await screen.findByRole("dialog");
+      const recipient = within(dialog).getByLabelText("Recipient") as HTMLInputElement;
+      expect(recipient.value).toBe(OWNER);
+      fireEvent.change(within(dialog).getByLabelText("Create vouchers"), {
+        target: { value: "1" },
+      });
+      fireEvent.change(recipient, { target: { value: OTHER } });
+      fireEvent.click(within(dialog).getByRole("button", { name: "Create vouchers" }));
+
+      await waitFor(() =>
+        expect(mocks.createVouchers).toHaveBeenCalledWith(
+          expect.objectContaining({
+            ownerAddress: OWNER,
+            recipientAddress: OTHER,
+            amountRaw: "100",
+          }),
+        ),
+      );
+    } finally {
+      mocks.safeSigners = [];
+    }
+  });
+
+  it("refuses a Safe mint without a valid recipient", async () => {
+    const SIGNER = "0x5150000000000000000000000000000000000005";
+    mocks.safeSigners = [SIGNER];
+    try {
+      mocks.auth.session = { address: SIGNER, chainId: 100 };
+      mocks.address = SIGNER;
+      render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Create vouchers" }));
+      const dialog = await screen.findByRole("dialog");
+      fireEvent.change(within(dialog).getByLabelText("Create vouchers"), {
+        target: { value: "1" },
+      });
+      fireEvent.change(within(dialog).getByLabelText("Recipient"), {
+        target: { value: "not-an-address" },
+      });
+      fireEvent.click(within(dialog).getByRole("button", { name: "Create vouchers" }));
+
+      expect(await within(dialog).findByText("Enter a valid wallet address")).toBeTruthy();
+      expect(mocks.createVouchers).not.toHaveBeenCalled();
+    } finally {
+      mocks.safeSigners = [];
+    }
   });
 
   it("relays ownership transfer with the authorization when delegation is needed", async () => {
