@@ -347,26 +347,6 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
       return voucher;
     },
 
-    /**
-     * Takes a voucher out of the public catalog.
-     *
-     * Soft: clc-core flips the `active` flag every market, search and offering
-     * statement filters on, so the reports and offerings that reference the
-     * voucher keep their foreign keys and a restore returns it intact.
-     *
-     * Returns nothing on purpose. The other catalog writes answer with the saved
-     * row so a caller can seed its cache; this one cannot, because the row it
-     * wrote is no longer visible to the detail route. Drop the voucher from the
-     * cache instead of re-reading it.
-     */
-    async retireVoucher(address: string, signal?: AbortSignal): Promise<void> {
-      await http.request<unknown>(`/api/v2/vouchers/${encodeURIComponent(address)}`, {
-        method: "DELETE",
-        cache: "no-store",
-        signal,
-      });
-    },
-
     async getFilteredMarketVouchers(
       params: FilteredMarketVouchersParams,
       signal?: AbortSignal,

@@ -53,6 +53,8 @@ export type FilteredPoolPage = UserPoolPage & {
 
 export type UserPool = {
   id: string;
+  /** False when retired in CLC; the contract and owner withdrawals remain. */
+  active?: boolean;
   chainId: number | null;
   address: HexAddress;
   name: string;
@@ -214,6 +216,7 @@ export type PoolVoucherPage = {
 
 type BackendPool = Partial<{
   id: string | number;
+  active: boolean;
   chainId: string | number;
   address: string;
   name: string;
@@ -316,6 +319,45 @@ export type PoolsClient = ReturnType<typeof createPoolsClient>;
 
 export function createPoolsClient(http: HttpClient, options: { adminComposition?: boolean } = {}) {
   return {
+    /** Owner recovery includes retired catalog rows, unlike public discovery. */
+    async getOwnedPools(params: CursorParams, signal?: AbortSignal): Promise<UserPoolPage> {
+      const result = await http.request<BackendPoolPage>(
+        `/api/v2/users/me/owned-pools${formatCursorQuery(params)}`,
+        poolReadRequest(signal),
+      );
+      const received = result.pools ?? [];
+      return {
+        ...result,
+        pools: received.map(normalizeUserPool).filter(isPresent),
+        receivedCount: received.length,
+      };
+    },
+
+    async getOwnedPoolByAddress(address: string, signal?: AbortSignal): Promise<UserPool> {
+      const result = await http.request<BackendPoolEnvelope>(
+        `/api/v2/users/me/owned-pools/${encodeURIComponent(address)}`,
+        poolReadRequest(signal),
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Owned pool response did not include a valid address.");
+      return pool;
+    },
+
+    async getOwnedPoolVouchers(
+      address: string,
+      params: CursorParams,
+      signal?: AbortSignal,
+    ): Promise<PoolVoucherPage> {
+      const result = await http.request<BackendPoolVoucherPage>(
+        `/api/v2/users/me/owned-pools/${encodeURIComponent(address)}/vouchers${formatCursorQuery(params)}`,
+        poolReadRequest(signal),
+      );
+      return {
+        ...result,
+        vouchers: (result.vouchers ?? []).map(normalizePoolVoucher).filter(isPresent),
+      };
+    },
+
     async getPools(
       params: CursorParams & { nearby?: boolean; bounds?: readonly MarketBoundingBox[] },
       signal?: AbortSignal,
@@ -461,6 +503,7 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
   const symbol = normalizeText(pool.symbol) ?? "POOL";
   return {
     id: String(pool.id ?? address),
+    active: pool.active !== false,
     chainId: normalizeNumber(pool.chainId),
     address,
     name,

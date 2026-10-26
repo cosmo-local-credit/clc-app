@@ -1,6 +1,7 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import type { IconType } from "react-icons";
 import {
+  HiOutlineBell,
   HiOutlineCollection,
   HiOutlineHome,
   HiOutlineNewspaper,
@@ -14,6 +15,7 @@ import { MdOutlineNfc } from "react-icons/md";
 import { BRAND_ICON_BASE } from "#/lib/brand";
 import { CommandPalette } from "#/components/layout/command-palette";
 import { OperatorMenu } from "#/components/layout/operator-menu";
+import { RetirementPendingBadge } from "#/features/retirement/retirement-notification";
 import {
   Sidebar,
   SidebarContent,
@@ -36,6 +38,7 @@ type NavPath =
   | "/"
   | "/pools"
   | "/vouchers"
+  | "/retirement-requests"
   | "/users"
   | "/paper-wallets"
   | "/nfc-cards"
@@ -68,6 +71,7 @@ const navItems: Array<{
   { to: "/nfc-cards", label: "NFC cards", icon: MdOutlineNfc },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
+  { to: "/retirement-requests", label: "Retirement requests", icon: HiOutlineBell },
   { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },
   { to: "/vocabulary", label: "Vocabulary", icon: HiOutlineTag },
   {
@@ -134,6 +138,7 @@ function AppShellInner() {
                         <item.icon />
                         <span>{item.label}</span>
                       </SidebarMenuButton>
+                      {item.to === "/retirement-requests" ? <RetirementPendingBadge /> : null}
                       {item.children ? (
                         <SidebarMenuSub>
                           {item.children.map((child) => (

@@ -253,7 +253,7 @@ function VoucherCard({
 
       {reachedHalf ? (
         <Suspense fallback={<Skeleton className="mx-4 mt-6 h-40 rounded-none" />}>
-          <VoucherSheetFull address={address} detail={detail} onRetired={onClose} />
+          <VoucherSheetFull address={address} detail={detail} />
         </Suspense>
       ) : null}
     </>

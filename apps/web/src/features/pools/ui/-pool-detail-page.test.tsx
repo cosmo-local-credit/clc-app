@@ -1,3 +1,19 @@
+vi.mock("#/components/retirement/retirement-control", () => ({
+  RetirementControl: () => <button type="button">Request retirement</button>,
+}));
+vi.mock("#/features/pools/hooks/use-pool-holdings", () => ({
+  usePoolHoldings: () => ({
+    holdings: [],
+    unit: "KES",
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
+}));
+vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAllAccountTokens: () => ({ tokens: [], isPending: false, isError: false }),
+}));
 vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
   useAssetOwner: (_address: string, owner: string | null) => owner,
 }));
@@ -220,6 +236,22 @@ afterEach(() => {
 });
 
 describe("PoolDetailPage pool details editor", () => {
+  it("opens a retired pool on Holdings and keeps withdrawals while hiding new pool actions", () => {
+    mocks.poolResult.data = pool({ active: false });
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    expect(screen.getByText("Retired pool")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Swap" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Deposit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Receive" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Withdraw liquidity" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Withdraw fees" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Holdings" }).getAttribute("aria-selected")).toBe(
+      "true",
+    );
+    expect(screen.getByRole("tabpanel", { name: "Holdings" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Activity" })).toBeTruthy();
+  });
+
   it("keeps guest browsing public while hiding wallet and private pool controls", () => {
     mocks.auth.isAuthenticated = false;
     mocks.auth.session = null;

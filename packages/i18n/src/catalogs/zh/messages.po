@@ -13,6 +13,132 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: apps/web/src/components/retirement/retirement-request-list.tsx:31
+msgid "Admin response:"
+msgstr "管理员回复："
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:70
+msgid "An admin will review your request. It will stay active until approval."
+msgstr "管理员将审核您的申请。在获批前，此资源将保持启用状态。"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:68
+msgid "Are you sure you want to request retirement of this pool?"
+msgstr "您确定要申请停用此资金池吗？"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:68
+msgid "Are you sure you want to request retirement of this voucher?"
+msgstr "您确定要申请停用此代金券吗？"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:8
+msgid "Awaiting admin review"
+msgstr "等待管理员审核"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:34
+msgid "Cancel request"
+msgstr "取消申请"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:45
+msgid "Checking balances…"
+msgstr "正在检查余额…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:48
+msgid "Could not check balances. Try again before submitting your request."
+msgstr "无法检查余额。请重试后再提交申请。"
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:18
+#: apps/web/src/components/retirement/retirement-control.tsx:39
+msgid "Could not load retirement requests."
+msgstr "无法加载停用申请。"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:37
+msgid "Loading retirement requests…"
+msgstr "正在加载停用申请…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:56
+msgid "Other accounts hold <0>{amount} {symbol}</0> of your voucher."
+msgstr "其他账户持有您发行的代金券，共计 <0>{amount} {symbol}</0>。"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:73
+msgid "Reason for retirement"
+msgstr "停用原因"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:11
+msgid "Request cancelled"
+msgstr "申请已取消"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:12
+msgid "Request closed because ownership changed"
+msgstr "因所有者变更，申请已关闭"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:10
+msgid "Request rejected"
+msgstr "申请已被拒绝"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+#: apps/web/src/components/retirement/retirement-request-form.tsx:78
+msgid "Request retirement"
+msgstr "申请停用"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:150
+msgid "Retired pool"
+msgstr "已停用的资金池"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:438
+msgid "Retired — withdrawals available"
+msgstr "已停用 — 仍可提取资金"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:9
+msgid "Retirement approved"
+msgstr "停用申请已获批"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:71
+msgid "Retirement does not delete the voucher or pool from the blockchain. "
+"Existing balances and transaction history remain."
+msgstr "停用不会从区块链上删除代金券或资金池。现有余额和交易历史将保留。"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+msgid "Retirement history"
+msgstr "停用历史"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+msgid "Retirement requested"
+msgstr "已申请停用"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:44
+msgid "Retirement requested — awaiting admin review. This resource stays active "
+"until approval."
+msgstr "已申请停用 — 等待管理员审核。在获批前，此资源将保持启用状态。"
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:14
+msgid "Retirement requests"
+msgstr "停用申请"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:78
+msgid "Submitting request…"
+msgstr "正在提交申请…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:61
+msgid "This check includes known pool holdings. Tokens not yet tracked may be "
+"missing."
+msgstr "本次检查包括资金池中已知的资产。尚未被跟踪的代币可能未包含在内。"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:151
+msgid "This pool is hidden from discovery and does not accept new swaps or "
+"deposits in CLC. You can still withdraw funds and view its history."
+msgstr "此资金池已从搜索中隐藏，且不再接受 CLC 中的新兑换或存入。您仍可提取资金并查看其历史记录。"
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
+msgid "This pool is retired. New swaps and deposits are not available."
+msgstr "此资金池已停用。无法进行新的兑换或存入。"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:63
+msgid "This resource is already retired."
+msgstr "此资源已停用。"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:72
+msgid "You can still withdraw funds after the pool is retired."
+msgstr "资金池停用后，您仍可提取资金。"
+
 #. js-lingui-explicit-id
 #: apps/web/src/features/pools/ui/pools-page.tsx:143
 msgid "{count, plural, one {# pool} other {# pools}}"
@@ -255,6 +381,12 @@ msgstr "已确认 {completedCount} / {0}"
 #: apps/web/src/features/home/ui/activity-page.tsx:96
 #~ msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
 #~ msgstr "{count, plural, other {已显示 # 笔转账。}}"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:58
+msgid "{count, plural, one {Your pool holds # known voucher type with a "
+"positive balance.} other {Your pool holds # known voucher types with "
+"positive balances.}}"
+msgstr "{count, plural, other {您的资金池持有 # 种已知的余额为正的代金券。}}"
 
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:210

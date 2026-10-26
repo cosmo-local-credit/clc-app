@@ -14,6 +14,132 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 
+#: apps/web/src/components/retirement/retirement-request-list.tsx:31
+msgid "Admin response:"
+msgstr "Resposta do administrador:"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:70
+msgid "An admin will review your request. It will stay active until approval."
+msgstr "Um administrador analisará o seu pedido. O recurso permanecerá ativo até à aprovação."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:68
+msgid "Are you sure you want to request retirement of this pool?"
+msgstr "Tem a certeza de que pretende solicitar a retirada deste fundo?"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:68
+msgid "Are you sure you want to request retirement of this voucher?"
+msgstr "Tem a certeza de que pretende solicitar a retirada deste vale?"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:8
+msgid "Awaiting admin review"
+msgstr "A aguardar análise do administrador"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:34
+msgid "Cancel request"
+msgstr "Cancelar pedido"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:45
+msgid "Checking balances…"
+msgstr "A verificar saldos…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:48
+msgid "Could not check balances. Try again before submitting your request."
+msgstr "Não foi possível verificar os saldos. Tente novamente antes de enviar o pedido."
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:18
+#: apps/web/src/components/retirement/retirement-control.tsx:39
+msgid "Could not load retirement requests."
+msgstr "Não foi possível carregar os pedidos de retirada."
+
+#: apps/web/src/components/retirement/retirement-control.tsx:37
+msgid "Loading retirement requests…"
+msgstr "A carregar pedidos de retirada…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:56
+msgid "Other accounts hold <0>{amount} {symbol}</0> of your voucher."
+msgstr "Outras contas detêm <0>{amount} {symbol}</0> do seu vale."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:73
+msgid "Reason for retirement"
+msgstr "Motivo da retirada"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:11
+msgid "Request cancelled"
+msgstr "Pedido cancelado"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:12
+msgid "Request closed because ownership changed"
+msgstr "Pedido encerrado porque o proprietário mudou"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:10
+msgid "Request rejected"
+msgstr "Pedido rejeitado"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+#: apps/web/src/components/retirement/retirement-request-form.tsx:78
+msgid "Request retirement"
+msgstr "Solicitar retirada"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:150
+msgid "Retired pool"
+msgstr "Fundo retirado"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:438
+msgid "Retired — withdrawals available"
+msgstr "Retirado — levantamentos disponíveis"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:9
+msgid "Retirement approved"
+msgstr "Retirada aprovada"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:71
+msgid "Retirement does not delete the voucher or pool from the blockchain. "
+"Existing balances and transaction history remain."
+msgstr "A retirada não elimina o vale nem o fundo da blockchain. Os saldos existentes e o histórico de transações são mantidos."
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+msgid "Retirement history"
+msgstr "Histórico de retiradas"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:26
+msgid "Retirement requested"
+msgstr "Retirada solicitada"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:44
+msgid "Retirement requested — awaiting admin review. This resource stays active "
+"until approval."
+msgstr "Retirada solicitada — a aguardar análise do administrador. Este recurso permanece ativo até à aprovação."
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:14
+msgid "Retirement requests"
+msgstr "Pedidos de retirada"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:78
+msgid "Submitting request…"
+msgstr "A enviar pedido…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:61
+msgid "This check includes known pool holdings. Tokens not yet tracked may be "
+"missing."
+msgstr "Esta verificação inclui os ativos conhecidos do fundo. Podem faltar tokens que ainda não são acompanhados."
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:151
+msgid "This pool is hidden from discovery and does not accept new swaps or "
+"deposits in CLC. You can still withdraw funds and view its history."
+msgstr "Este fundo deixa de aparecer nas pesquisas e não aceita novas trocas ou depósitos no CLC. Pode continuar a levantar fundos e a consultar o seu histórico."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
+msgid "This pool is retired. New swaps and deposits are not available."
+msgstr "Este fundo está retirado. Não estão disponíveis novas trocas ou depósitos."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:63
+msgid "This resource is already retired."
+msgstr "Este recurso já está retirado."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:72
+msgid "You can still withdraw funds after the pool is retired."
+msgstr "Pode continuar a levantar fundos após a retirada do fundo."
+
 #. js-lingui-explicit-id
 #: apps/web/src/features/pools/ui/pools-page.tsx:143
 msgid "{count, plural, one {# pool} other {# pools}}"
@@ -262,6 +388,12 @@ msgstr "{completedCount} de {0} confirmados"
 #~ msgid "{count, plural, one {# transfer shown.} other {# transfers shown.}}"
 #~ msgstr "{count, plural, one {# transferência apresentada.} other {# "
 #~ "transferências apresentadas.}}"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:58
+msgid "{count, plural, one {Your pool holds # known voucher type with a "
+"positive balance.} other {Your pool holds # known voucher types with "
+"positive balances.}}"
+msgstr "{count, plural, one {O seu fundo contém # tipo de vale conhecido com saldo positivo.} other {O seu fundo contém # tipos de vales conhecidos com saldos positivos.}}"
 
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:210

@@ -74,7 +74,6 @@ export function VoucherDetailSections({
   lat,
   lng,
   dataPending,
-  onRetired,
   headingLevel = 2,
   idPrefix = "voucher-section",
   className,
@@ -97,7 +96,6 @@ export function VoucherDetailSections({
   lat: number | null;
   lng: number | null;
   dataPending: boolean;
-  onRetired: () => void;
   headingLevel?: 2 | 3;
   idPrefix?: string;
   className?: string;
@@ -185,7 +183,7 @@ export function VoucherDetailSections({
             tokenDecimals: decimals,
             ownerAddress,
             walletAddress,
-            onRetired,
+            requesterAddress: auth.isAuthenticated ? auth.session?.address : undefined,
           }}
         />
       </VoucherSection>

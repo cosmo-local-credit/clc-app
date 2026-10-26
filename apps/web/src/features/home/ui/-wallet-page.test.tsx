@@ -1,3 +1,6 @@
+vi.mock("#/components/retirement/my-retirement-requests", () => ({
+  MyRetirementRequests: () => null,
+}));
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -247,9 +250,9 @@ function mockEndpoints({
     const href = String(url);
     if (href.includes("/users/me/wants"))
       return Promise.resolve(jsonResponse({ wants: [], first: 0, last: 0 }));
-    if (href.includes("/api/v2/pools") && poolStatus !== 200)
+    if (href.includes("/api/v2/users/me/owned-pools") && poolStatus !== 200)
       return Promise.resolve(jsonResponse(null, poolStatus));
-    const result = href.includes("/api/v2/pools")
+    const result = href.includes("/api/v2/users/me/owned-pools")
       ? { pools, first: 0, last: 0 }
       : { tokens: [] as unknown[] };
     return Promise.resolve({
@@ -532,18 +535,17 @@ describe("WalletPage", () => {
     expect(screen.queryByText(/Fresh Food Circle/)).toBeNull();
   });
 
-  it("asks the catalog for this address' pools rather than filtering a fetched page", async () => {
+  it("asks the protected owner endpoint for active and retired pools", async () => {
     const fetchMock = mockEndpoints({ pools: [OWNED_POOL] });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
     await screen.findByText("Kilifi Mkulima");
 
     const poolRequest = fetchMock.mock.calls
       .map(([url]) => String(url))
-      .find((url) => url.includes("/api/v2/pools"));
-    // Lowercased or checksummed does not matter — clc-core folds case — but the
-    // predicate has to be on the request, or the list is "whichever of your
-    // pools happened to land in page one of the whole catalog".
-    expect(poolRequest).toContain(`owner=${ADDRESS}`);
+      .find((url) => url.includes("/api/v2/users/me/owned-pools"));
+    // Session ownership is enforced by the protected route, which also keeps
+    // retired pools accessible to their owner.
+    expect(poolRequest).toContain("/api/v2/users/me/owned-pools?perPage=20");
   });
 
   it("drops rows a backend without the owner filter would have returned", async () => {

@@ -9,11 +9,9 @@ import { VoucherDetailSections } from "./voucher-detail-sections";
 export function VoucherSheetFull({
   address,
   detail,
-  onRetired,
 }: {
   address: `0x${string}`;
   detail: MarketVoucherDetail | undefined;
-  onRetired: () => void;
 }) {
   return (
     <VoucherDetailSections
@@ -36,7 +34,6 @@ export function VoucherSheetFull({
       lat={detail?.lat ?? null}
       lng={detail?.lng ?? null}
       dataPending={!detail}
-      onRetired={onRetired}
       headingLevel={3}
       idPrefix="voucher-sheet"
     />
