@@ -4,7 +4,7 @@ import {
   safeReadAbi,
   type AssetOwnerInfo,
 } from "@clc/core/features/safe/logic";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { isAddress, zeroAddress, type Client } from "viem";
 import { getBlockNumber, getCode, readContract } from "viem/actions";
 import { useClient } from "wagmi";
@@ -18,6 +18,9 @@ export type { AssetOwnerInfo } from "@clc/core/features/safe/logic";
 
 export const assetOwnerInfoKey = (owner: string) =>
   ["asset-owner-info", CHAIN_ID, owner.toLowerCase()] as const;
+
+const assetOwnerProjectionKey = (owner: string) =>
+  ["asset-owner-projection", CHAIN_ID, owner.toLowerCase()] as const;
 
 /**
  * Classifies an owner address. Order matters: empty code is an EOA, and so is an
@@ -108,4 +111,34 @@ export function useAssetOwnerInfo(address: string, catalogOwner: string | null |
     canManage: isEoaOwner || isSafeSigner,
     unsupportedOwner: info?.kind === "unsupported",
   };
+}
+
+/**
+ * The subset of `owners` that are multisigs listing `account` as a signer, read
+ * from the backend projection that also authorizes writes. Empty while the
+ * feature is off, so callers keep their account-only behaviour.
+ */
+export function useSafeOwnersSignedBy(
+  owners: readonly string[],
+  account: string | undefined,
+): ReadonlySet<string> {
+  const distinct = [...new Set(owners.map((owner) => owner.toLowerCase()))].filter((owner) =>
+    isAddress(owner),
+  );
+  const results = useQueries({
+    queries: distinct.map((owner) => ({
+      queryKey: assetOwnerProjectionKey(owner),
+      queryFn: ({ signal }: { signal: AbortSignal }) => safeClient.owner(owner, signal),
+      enabled: SAFE_OWNERSHIP_ENABLED && !!account,
+      staleTime: 30_000,
+      retry: false,
+    })),
+  });
+  const signed = new Set<string>();
+  for (const { data } of results) {
+    if (data?.kind === "safe" && isSigner(data.signers, account as `0x${string}` | undefined)) {
+      signed.add(data.owner.toLowerCase());
+    }
+  }
+  return signed;
 }
