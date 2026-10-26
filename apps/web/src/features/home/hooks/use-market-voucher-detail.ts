@@ -1,8 +1,9 @@
-import { voucherQueryOptions } from "@clc/api/features/market/queries";
+import { voucherInfoQueryOptions, voucherQueryOptions } from "@clc/api/features/market/queries";
 import { useQuery } from "@tanstack/react-query";
 
 import { MARKET_QUERY_FRESHNESS } from "./use-market-vouchers";
 import { marketClient } from "#/lib/api/market";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 
 /**
  * Canonical detail options plus this app's freshness. Kept as a named factory
@@ -16,10 +17,29 @@ export function marketVoucherDetailQuery(address: string) {
 }
 
 export function useMarketVoucherDetail(address: string | undefined) {
-  return useQuery({
+  const auth = useAuthStatus();
+  const publicQuery = useQuery({
     ...voucherQueryOptions(marketClient, address),
     ...MARKET_QUERY_FRESHNESS,
   });
+  const viewer = auth.isAuthenticated ? auth.session?.address : undefined;
+  const infoQuery = useQuery({
+    ...voucherInfoQueryOptions(marketClient, address, viewer),
+    retry: false,
+  });
+
+  return {
+    ...publicQuery,
+    data: infoQuery.data ?? publicQuery.data,
+    privateInfo: viewer
+      ? {
+          isPending: infoQuery.isPending,
+          isError: infoQuery.isError,
+          isFetching: infoQuery.isFetching,
+          refetch: infoQuery.refetch,
+        }
+      : undefined,
+  };
 }
 
 /**

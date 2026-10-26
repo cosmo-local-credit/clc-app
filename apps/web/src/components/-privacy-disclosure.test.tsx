@@ -18,7 +18,9 @@ describe("privacy disclosures", () => {
     expect(
       screen.getByText(/profile name, email, phone number, and saved location are not shown/i),
     ).toBeTruthy();
-    expect(screen.getByText(/Contact details entered here will be public/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Contact details entered here are visible to signed-in users/i),
+    ).toBeTruthy();
     expect(screen.getByText(/The exact pin will be public/i)).toBeTruthy();
   });
 });

@@ -1,3 +1,6 @@
+vi.mock("#/components/retirement/retirement-control", () => ({
+  RetirementControl: () => <button type="button">Request retirement</button>,
+}));
 vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
   useAssetOwner: (_address: string, owner: string | null) => owner,
 }));
@@ -62,7 +65,6 @@ const mocks = vi.hoisted(() => ({
   updateProfile: vi.fn(),
   createVouchers: vi.fn(),
   transferOwnership: vi.fn(),
-  retireVoucher: vi.fn(),
   navigate: vi.fn(),
   delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
   queryClient: { invalidateQueries: vi.fn() },
@@ -71,6 +73,14 @@ const mocks = vi.hoisted(() => ({
     isPending: false,
     isError: false,
     refetch: vi.fn(),
+    privateInfo: undefined as
+      | {
+          isPending: boolean;
+          isError: boolean;
+          isFetching: boolean;
+          refetch: ReturnType<typeof vi.fn>;
+        }
+      | undefined,
   },
   openDefaultMaps: vi.fn(),
   reviewSummary: { total: 0, average: 0 },
@@ -258,10 +268,6 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("#/lib/default-maps", () => ({
   openDefaultMaps: mocks.openDefaultMaps,
-}));
-
-vi.mock("#/features/wallet/hooks/use-retire-voucher", () => ({
-  useRetireVoucher: () => ({ mutateAsync: mocks.retireVoucher, isPending: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
@@ -473,6 +479,7 @@ beforeEach(() => {
     isPending: false,
     isError: false,
     refetch: vi.fn(),
+    privateInfo: undefined,
   };
   mocks.offeringAddress = undefined;
   mocks.offeringsResult = {
@@ -825,7 +832,7 @@ describe("VoucherDetailPage", () => {
     expect(within(offerings).queryByRole("button", { name: "Load more" })).toBeNull();
   });
 
-  it("hides Send and Redeem for guests while keeping public actions", () => {
+  it("hides wallet and contact actions and gates Info for guests", () => {
     mocks.auth = { isAuthenticated: false, isLoading: false, session: null };
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} />);
@@ -834,6 +841,41 @@ describe("VoucherDetailPage", () => {
     expect(within(actions).getByRole("link", { name: "Get" })).toBeTruthy();
     expect(within(actions).queryByRole("link", { name: "Send" })).toBeNull();
     expect(within(actions).queryByRole("link", { name: "Redeem" })).toBeNull();
+    expect(within(actions).queryByRole("button", { name: "Directions" })).toBeNull();
+    expect(within(actions).queryByRole("link", { name: "Call" })).toBeNull();
+    expect(within(actions).queryByRole("link", { name: "Website" })).toBeNull();
+    const info = screen.getByRole("region", { name: "Info" });
+    expect(within(info).getByRole("link", { name: "Sign in" })).toBeTruthy();
+    expect(within(info).queryByText("Fresh vegetables from the farm.")).toBeNull();
+  });
+
+  it("keeps Voucher Info unavailable until its protected read succeeds and retries failures", () => {
+    const refetch = vi.fn();
+    mocks.detailResult.privateInfo = {
+      isPending: true,
+      isError: false,
+      isFetching: true,
+      refetch,
+    };
+    const pending = render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+    const info = screen.getByRole("region", { name: "Info" });
+    expect(info.querySelector('[aria-busy="true"]')).toBeTruthy();
+    expect(within(info).queryByText("issuer@example.org")).toBeNull();
+    pending.unmount();
+
+    mocks.detailResult.privateInfo = {
+      isPending: false,
+      isError: true,
+      isFetching: false,
+      refetch,
+    };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} />);
+    const failedInfo = screen.getByRole("region", { name: "Info" });
+    expect(within(failedInfo).getByRole("alert").textContent).toContain(
+      "Couldn't load voucher information.",
+    );
+    fireEvent.click(within(failedInfo).getByRole("button", { name: "Retry" }));
+    expect(refetch).toHaveBeenCalledOnce();
   });
 
   it("colours each tag from its own name so a tag looks the same everywhere", () => {
@@ -1533,6 +1575,7 @@ describe("VoucherDetailPage voucher details editor", () => {
         ...savedProfile,
         displayName: "Malii Fresh",
         email: "",
+        clearContactFields: ["email"],
       }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -1650,92 +1693,38 @@ describe("VoucherDetailPage contract controls", () => {
   });
 });
 
-describe("VoucherDetailPage retire", () => {
+describe("VoucherDetailPage retirement requests", () => {
   const OWNER = "0xDeF0000000000000000000000000000000000456";
 
-  beforeEach(() => {
-    mocks.retireVoucher.mockReset();
-    mocks.retireVoucher.mockResolvedValue(undefined);
-    mocks.navigate.mockReset();
-  });
-
-  it("offers retire on the catalog rule, not the wallet one", () => {
-    // A stranger sees nothing, whatever wallet is connected.
-    mocks.auth.session = { address: OTHER, chainId: 42220 };
+  it("offers requests only to the current authenticated owner", () => {
+    mocks.auth.session = { address: OTHER, chainId: 100 };
     mocks.address = OWNER;
     const stranger = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    expect(screen.queryByRole("button", { name: "Retire voucher" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Request retirement" })).toBeNull();
     stranger.unmount();
 
-    // The catalog owner sees it even with no wallet connected: retiring writes
-    // the record, not the token, so it needs no signature.
-    mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 42220 };
+    mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 100 };
     mocks.address = undefined;
-    const owner = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    expect(screen.getByRole("button", { name: "Retire voucher" })).toBeTruthy();
-    // And it reads below Transfer ownership rather than above it.
-    owner.unmount();
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Request retirement" })).toBeTruthy();
+  });
 
+  it("puts the request after owner contract controls", () => {
+    mocks.auth.session = { address: OWNER, chainId: 100 };
     mocks.address = OWNER;
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    const controls = screen.getByLabelText("Voucher controls");
-    const labels = within(controls)
+    const labels = within(screen.getByLabelText("Voucher controls"))
       .getAllByRole("button")
       .map((button) => button.textContent);
-    expect(labels.indexOf("Retire voucher")).toBeGreaterThan(labels.indexOf("Transfer ownership"));
-  });
-
-  it("lets a superadmin retire a voucher they do not own", () => {
-    mocks.auth.session = { address: OTHER, chainId: 42220, role: "SUPERADMIN" };
-    mocks.address = undefined;
-    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    expect(screen.getByRole("button", { name: "Retire voucher" })).toBeTruthy();
-  });
-
-  it("confirms before retiring, then leaves for the screen Back points at", async () => {
-    mocks.auth.session = { address: OWNER, chainId: 42220 };
-    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" origin="wallet" />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Retire voucher" }));
-    const dialog = await screen.findByRole("dialog");
-    // Opening the sheet must not have written anything yet.
-    expect(mocks.retireVoucher).not.toHaveBeenCalled();
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Retire voucher" }));
-
-    await waitFor(() => expect(mocks.retireVoucher).toHaveBeenCalledTimes(1));
-    // `replace`, so Back cannot return to a page that no longer resolves.
-    await waitFor(() =>
-      expect(mocks.navigate).toHaveBeenCalledWith({
-        to: "/",
-        search: { tab: "wallet" },
-        replace: true,
-      }),
+    expect(labels.indexOf("Request retirement")).toBeGreaterThan(
+      labels.indexOf("Transfer ownership"),
     );
   });
 
-  it("stays put when the confirmation is cancelled", async () => {
-    mocks.auth.session = { address: OWNER, chainId: 42220 };
+  it("does not offer an owner request to a superadmin who does not own the voucher", () => {
+    mocks.auth.session = { address: OTHER, chainId: 100, role: "SUPERADMIN" };
+    mocks.address = undefined;
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Retire voucher" }));
-    const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-
-    expect(mocks.retireVoucher).not.toHaveBeenCalled();
-    expect(mocks.navigate).not.toHaveBeenCalled();
-  });
-
-  it("keeps the viewer on the page when the write fails", async () => {
-    mocks.auth.session = { address: OWNER, chainId: 42220 };
-    mocks.retireVoucher.mockRejectedValue(new Error("Voucher is already retired"));
-    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Retire voucher" }));
-    const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Retire voucher" }));
-
-    await waitFor(() => expect(mocks.retireVoucher).toHaveBeenCalledTimes(1));
-    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Request retirement" })).toBeNull();
   });
 });

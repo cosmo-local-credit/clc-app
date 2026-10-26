@@ -128,10 +128,10 @@ msgstr "رصيد متاح بقيمة {0}"
 
 #. placeholder {0}: voucher.name
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:460
-msgid "{0} disappears from the market, search and everyone's wallet. Balances "
-"and past activity are kept, and an admin can bring it back."
-msgstr "ستختفي {0} من السوق والبحث ومحافظ الجميع. ستُحفظ الأرصدة والأنشطة "
-"السابقة، ويمكن للمسؤول إعادتها."
+#~ msgid "{0} disappears from the market, search and everyone's wallet. Balances "
+#~ "and past activity are kept, and an admin can bring it back."
+#~ msgstr "ستختفي {0} من السوق والبحث ومحافظ الجميع. ستُحفظ الأرصدة والأنشطة "
+#~ "السابقة، ويمكن للمسؤول إعادتها."
 
 #. placeholder {0}: failedStage.label
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:98
@@ -139,7 +139,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "فشلت {0} على السلسلة. لم يتم إنشاء الصندوق."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:390
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:449
 msgid "{0} fees sent to the fee recipient."
 msgstr "أُرسلت رسوم {0} إلى مستلم الرسوم."
 
@@ -233,7 +233,7 @@ msgid "{0} wallet address"
 msgstr "عنوان محفظة {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:276
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:335
 msgid "{amount} {0} withdrawn."
 msgstr "تم سحب {amount} {0}."
 
@@ -269,9 +269,20 @@ msgstr "تم تأكيد {completedCount} من {0}"
 #~ "two {تحويلان معروضان.} few {# تحويلات معروضة.} many {# تحويلاً "
 #~ "معروضًا.} other {# تحويل معروض.}}"
 
+#: apps/web/src/components/retirement/retirement-request-form.tsx:82
+msgid "{count, plural, one {Your pool holds # known voucher type with a "
+"positive balance.} other {Your pool holds # known voucher types with "
+"positive balances.}}"
+msgstr "{count, plural, zero {لا يحتوي صندوقك على أي نوع معروف من القسائم برصيد "
+"موجب.} one {يحتوي صندوقك على نوع واحد معروف من القسائم برصيد موجب.} two "
+"{يحتوي صندوقك على نوعين معروفين من القسائم بأرصدة موجبة.} few {يحتوي "
+"صندوقك على # أنواع معروفة من القسائم بأرصدة موجبة.} many {يحتوي صندوقك "
+"على # نوعًا معروفًا من القسائم بأرصدة موجبة.} other {يحتوي صندوقك على # "
+"نوع من القسائم المعروفة بأرصدة موجبة.}}"
+
 #. placeholder {0}: images.length
-#: apps/web/src/features/home/ui/report-page.tsx:210
-#: apps/web/src/features/home/ui/report-page.tsx:341
+#: apps/web/src/features/home/ui/report-page.tsx:215
+#: apps/web/src/features/home/ui/report-page.tsx:346
 msgid "{current} / {0}"
 msgstr "{current} / {0}"
 
@@ -320,9 +331,13 @@ msgid "{value} stars"
 msgstr "{value} نجوم"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:306
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:365
 msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
 msgstr "يتوفر {withdrawable} {0}. تبقى الرسوم المخصصة للتحصيل في الصندوق."
+
+#: apps/web/src/components/auth/authenticated-details-gate.tsx:66
+msgid "<0>Sign in</0> for more information."
+msgstr "<0>سجّل الدخول</0> لمزيد من المعلومات."
 
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: rate.value
@@ -486,17 +501,17 @@ msgid "Activating smart wallet…"
 msgstr "جارٍ تفعيل المحفظة الذكية…"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:248
-#: apps/web/src/features/home/ui/wallet-page.tsx:346
+#: apps/web/src/features/home/ui/wallet-page.tsx:341
 msgid "Active"
 msgstr "نشط"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:100
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:51
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:193
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:172
 #: apps/web/src/features/home/ui/activity-page.tsx:97
 #: apps/web/src/features/home/ui/activity-page.tsx:140
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:55
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:65
 msgid "Activity"
 msgstr "النشاط"
 
@@ -648,6 +663,10 @@ msgstr "تم نسخ العنوان"
 msgid "Admin"
 msgstr "المسؤول"
 
+#: apps/web/src/components/retirement/retirement-request-list.tsx:59
+msgid "Admin response:"
+msgstr "رد المسؤول:"
+
 #: apps/web/src/components/reviews/review-editor.tsx:127
 msgid "Admins will review your report. The review stays visible until they make "
 "a decision."
@@ -675,7 +694,7 @@ msgstr "الزراعة"
 msgid "All"
 msgstr "الكل"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:381
+#: apps/web/src/features/home/ui/wallet-page.tsx:376
 msgid "All pools"
 msgstr "كل الصناديق"
 
@@ -711,7 +730,7 @@ msgstr "تأكد دائمًا من تطابق الرمز والشبكة قبل �
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:361
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -723,7 +742,7 @@ msgstr "تأكد دائمًا من تطابق الرمز والشبكة قبل �
 msgid "Amount"
 msgstr "المبلغ"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:449
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:458
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:324
 msgid "Amount exceeds your balance"
 msgstr "المبلغ يتجاوز رصيدك"
@@ -735,6 +754,10 @@ msgstr "المبلغ في الصندوق"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:176
 msgid "Amount to collect"
 msgstr "المبلغ المطلوب تحصيله"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:112
+msgid "An admin will review your request. It will stay active until approval."
+msgstr "سيراجع مسؤول طلبك. سيظل المورد نشطًا حتى الموافقة."
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/introduction/introduction-content.ts:37
@@ -782,7 +805,7 @@ msgstr "تطبيق"
 msgid "Apply filters"
 msgstr "تطبيق عوامل التصفية"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:277
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:331
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
@@ -792,6 +815,14 @@ msgstr "الموافقة على القسيمة"
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:20
 msgid "Approved"
 msgstr "تمت الموافقة"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:108
+msgid "Are you sure you want to request retirement of this pool?"
+msgstr "هل أنت متأكد من رغبتك في طلب إيقاف هذا الصندوق؟"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:106
+msgid "Are you sure you want to request retirement of this voucher?"
+msgstr "هل أنت متأكد من رغبتك في طلب إيقاف هذه القسيمة؟"
 
 #: apps/web/src/lib/category-label.ts:27
 msgid "Art"
@@ -809,6 +840,10 @@ msgstr "يعتمد التوفر على بلدك."
 #: apps/web/src/features/wants/ui/want-form-page.tsx:247
 msgid "Available tags"
 msgstr "الوسوم المتاحة"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:12
+msgid "Awaiting admin review"
+msgstr "بانتظار مراجعة المسؤول"
 
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:19
 msgid "Awaiting approval"
@@ -925,8 +960,8 @@ msgstr "شراء العملات المستقرة على Gnosis"
 msgid "Buy USD₮ with KES."
 msgstr "شراء USD₮ باستخدام KES."
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:401
-#: apps/web/src/components/wants/want-detail.tsx:150
+#: apps/web/src/components/vouchers/voucher-summary.tsx:402
+#: apps/web/src/components/wants/want-detail.tsx:207
 msgid "Call"
 msgstr "اتصال"
 
@@ -940,12 +975,11 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/components/reviews/review-editor.tsx:148
 #: apps/web/src/components/ui/photo-source-picker.tsx:128
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:373
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:485
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:523
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:527
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
 #: apps/web/src/features/home/ui/settings-page.tsx:143
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:482
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:747
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:515
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:756
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:610
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:54
@@ -956,6 +990,10 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/routes/__root.tsx:315
 msgid "Cancel"
 msgstr "إلغاء"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:72
+msgid "Cancel request"
+msgstr "إلغاء الطلب"
 
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:215
 msgid "Caption (optional)"
@@ -991,7 +1029,7 @@ msgstr "تمت قراءة البطاقة — جارٍ تسجيل الدخول"
 msgid "Care"
 msgstr "الرعاية"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:79
+#: apps/web/src/features/home/ui/wallet-page.tsx:80
 #: apps/web/src/features/wallet/ui/cash-page.tsx:33
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
 msgid "Cash"
@@ -1010,7 +1048,7 @@ msgstr "كتالوج"
 msgid "Catalog limit reached. Ask an administrator to increase your allowance."
 msgstr "تم بلوغ الحد الأقصى للكتالوجات. اطلب من المسؤول زيادة حصتك."
 
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:42
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:43
 msgid "Catalog not found."
 msgstr "لم يتم العثور على الكتالوج."
 
@@ -1025,7 +1063,7 @@ msgstr "تم حفظ الكتالوج. تعذرت إضافة العنصر. حاو
 #: apps/web/src/components/market-bar.tsx:190
 #: apps/web/src/components/market-bar.tsx:269
 #: apps/web/src/components/resource-usage.tsx:116
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:35
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:36
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:33
 msgid "Catalogs"
 msgstr "الكتالوجات"
@@ -1085,7 +1123,7 @@ msgstr "التحقق من حالة الإصدار"
 msgid "Check supply again"
 msgstr "التحقق من المعروض مجددًا"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:363
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:348
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:88
 msgid "Check the existing submission before another transfer:"
 msgstr "تحقّق من الإرسال الحالي قبل أي نقل آخر:"
@@ -1094,7 +1132,7 @@ msgstr "تحقّق من الإرسال الحالي قبل أي نقل آخر:"
 msgid "Check the Want details."
 msgstr "تحقق من تفاصيل الطلب."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:397
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:382
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:126
 msgid "Check transfer status"
 msgstr "التحقق من حالة النقل"
@@ -1116,6 +1154,10 @@ msgstr "جارٍ التحقق من القسائم الموافق عليها…"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:430
 msgid "Checking availability…"
 msgstr "جارٍ التحقق من التوفر…"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:51
+msgid "Checking balances…"
+msgstr "جارٍ التحقق من الأرصدة…"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:327
 msgid "Checking creation status"
@@ -1165,9 +1207,13 @@ msgstr "جارٍ التحقق من المعروض…"
 msgid "Checking voucher availability…"
 msgstr "جارٍ التحقق من توفر القسيمة…"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:402
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:411
 msgid "Checking which vouchers this pool takes…"
 msgstr "جارٍ التحقق من القسائم التي يقبلها هذا الصندوق…"
+
+#: apps/web/src/components/auth/authenticated-details-gate.tsx:42
+msgid "Checking your session…"
+msgstr "جارٍ التحقق من جلستك…"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
@@ -1359,12 +1405,13 @@ msgstr "مسح البحث"
 
 #: apps/web/src/components/introduction/introduction.tsx:159
 #: apps/web/src/components/offerings/offerings-panel.tsx:498
+#: apps/web/src/components/retirement/retirement-control.tsx:112
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:117
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:248
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:263
 #: apps/web/src/components/wants/want-sheet.tsx:71
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
-#: apps/web/src/features/home/ui/report-page.tsx:287
+#: apps/web/src/features/home/ui/report-page.tsx:292
 msgid "Close"
 msgstr "إغلاق"
 
@@ -1390,11 +1437,11 @@ msgstr "إغلاق استيراد المحفظة المحمية بكلمة مر�
 msgid "Close private key form"
 msgstr "إغلاق نموذج المفتاح الخاص"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:390
+#: apps/web/src/features/wants/ui/want-form-page.tsx:393
 msgid "Close Want"
 msgstr "إغلاق الطلب"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:344
+#: apps/web/src/features/home/ui/wallet-page.tsx:339
 msgid "Closed"
 msgstr "مغلق"
 
@@ -1420,7 +1467,7 @@ msgstr "التحصيل مرة أخرى من هذه البطاقة"
 msgid "Collect by card"
 msgstr "التحصيل بالبطاقة"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
 msgid "Collect fees"
 msgstr "تحصيل الرسوم"
 
@@ -1429,7 +1476,7 @@ msgstr "تحصيل الرسوم"
 #~ msgstr "تُدفع رسوم المبادلة المحصلة هنا."
 
 #. placeholder {0}: formatVoucherAddress(address as `0x${string}`)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:537
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:596
 msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "تُدفع رسوم المبادلة المحصلة هنا. محفظتك هي {0}."
 
@@ -1493,8 +1540,8 @@ msgstr "تأكيد كلمة المرور"
 msgid "Confirm send"
 msgstr "تأكيد الإرسال"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:686
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:738
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:695
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:747
 msgid "Confirm swap"
 msgstr "تأكيد المبادلة"
 
@@ -1572,38 +1619,46 @@ msgstr "فشل الاتصال."
 msgid "Construction"
 msgstr "البناء"
 
-#: apps/web/src/components/wants/want-detail.tsx:130
+#: apps/web/src/components/wants/want-detail.tsx:134
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:246
 msgid "Contact"
 msgstr "بيانات الاتصال"
 
 #: apps/web/src/components/public-contact-warning.tsx:6
-msgid "Contact details entered here will be public. Your profile contact "
-"details stay private unless you choose to add or share them."
-msgstr "ستكون بيانات الاتصال المُدخلة هنا عامة. تبقى بيانات اتصال ملفك الشخصي "
-"خاصة ما لم تختر إضافتها أو مشاركتها."
+msgid "Contact details entered here are visible to signed-in users. Map pins "
+"and coordinates stay public. Your profile contact details stay private "
+"unless you choose to add or share them."
+msgstr "تظهر بيانات الاتصال المُدخلة هنا للمستخدمين المسجّلين. تبقى علامات "
+"الخريطة والإحداثيات عامة. تبقى بيانات اتصال ملفك الشخصي خاصة ما لم تختر "
+"إضافتها أو مشاركتها."
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:357
+#: apps/web/src/components/public-contact-warning.tsx:6
+#~ msgid "Contact details entered here will be public. Your profile contact "
+#~ "details stay private unless you choose to add or share them."
+#~ msgstr "ستكون بيانات الاتصال المُدخلة هنا عامة. تبقى بيانات اتصال ملفك الشخصي "
+#~ "خاصة ما لم تختر إضافتها أو مشاركتها."
+
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:361
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:785
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:316
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:349
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:771
 msgid "Contact Email"
 msgstr "البريد الإلكتروني للتواصل"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:322
+#: apps/web/src/features/wants/ui/want-form-page.tsx:325
 msgid "Contact instructions"
 msgstr "تعليمات التواصل"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:402
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:406
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:836
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:361
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:394
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:822
 msgid "Contact Phone"
 msgstr "هاتف التواصل"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:379
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:383
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:810
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:338
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:371
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:796
 msgid "Contact Website"
 msgstr "موقع الويب للتواصل"
@@ -1644,12 +1699,14 @@ msgstr "المتابعة باستخدام المحفظة الورقية"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:62
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:183
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:44
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:260
 msgid "Contract address"
 msgstr "عنوان العقد"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:75
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:188
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:29
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:265
 msgid "Contract address copied"
 msgstr "تم نسخ عنوان العقد"
@@ -1665,6 +1722,7 @@ msgstr "نسخ العنوان"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:66
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:186
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:47
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:263
 msgid "Copy contract address"
 msgstr "نسخ عنوان العقد"
@@ -1677,7 +1735,7 @@ msgstr "نسخ تجزئة معاملة النشر"
 msgid "Copy fee recipient"
 msgstr "نسخ مستلم الرسوم"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:439
+#: apps/web/src/components/vouchers/voucher-summary.tsx:440
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 msgid "Copy link"
 msgstr "نسخ الرابط"
@@ -1734,9 +1792,18 @@ msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 msgstr "تساعد Cosmo-Local Credit الأشخاص والمؤسسات على دعم السلع والخدمات "
 "ومشاركتها وتبادلها."
 
+#: apps/web/src/components/retirement/retirement-request-form.tsx:56
+msgid "Could not check balances. Try again before submitting your request."
+msgstr "تعذّر التحقق من الأرصدة. حاول مرة أخرى قبل إرسال طلبك."
+
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
 msgid "Could not import this paper wallet."
 msgstr "تعذّر استيراد هذه المحفظة الورقية."
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:21
+#: apps/web/src/components/retirement/retirement-control.tsx:72
+msgid "Could not load retirement requests."
+msgstr "تعذّر تحميل طلبات الإيقاف."
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:65
 msgid "Could not load vouchers."
@@ -1783,7 +1850,7 @@ msgstr "تعذّر التحقق من توفر القسيمة."
 msgid "Couldn't check which vouchers are already approved."
 msgstr "تعذّر التحقق من القسائم التي تمت الموافقة عليها بالفعل."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:407
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:416
 msgid "Couldn't check which vouchers this pool takes."
 msgstr "تعذّر التحقق من القسائم التي يقبلها هذا الصندوق."
 
@@ -1805,6 +1872,8 @@ msgstr "تعذّر نسخ العنوان"
 #: apps/web/src/components/vouchers/voucher-about.tsx:70
 #: apps/web/src/components/vouchers/voucher-about.tsx:76
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:188
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:24
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:30
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:265
 msgid "Couldn't copy contract address"
 msgstr "تعذّر نسخ عنوان العقد"
@@ -1817,8 +1886,8 @@ msgstr "تعذّر نسخ تجزئة معاملة النشر"
 msgid "Couldn't copy fee recipient"
 msgstr "تعذّر نسخ مستلم الرسوم"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:450
-#: apps/web/src/components/vouchers/voucher-summary.tsx:456
+#: apps/web/src/components/vouchers/voucher-summary.tsx:451
+#: apps/web/src/components/vouchers/voucher-summary.tsx:457
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
 msgid "Couldn't copy link"
@@ -1872,12 +1941,12 @@ msgstr "تعذّر نسخ اسم المستخدم"
 msgid "Couldn't create the first supply."
 msgstr "تعذّر إصدار المعروض الأول."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:213
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:198
 msgid "Couldn't create vouchers."
 msgstr "تعذّر إنشاء القسائم."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:433
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:436
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:442
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:445
 msgid "Couldn't estimate this swap."
 msgstr "تعذّر تقدير هذه المبادلة."
 
@@ -1885,7 +1954,7 @@ msgstr "تعذّر تقدير هذه المبادلة."
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "تعذّر تحديد بلد في هذا الموقع. جرّب نقطة قريبة."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:363
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
 #: apps/web/src/features/home/ui/activity-page.tsx:186
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:77
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:209
@@ -1899,7 +1968,7 @@ msgstr "تعذر تحميل عناصر الكتالوج."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:58
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:44
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:137
 msgid "Couldn't load catalogs."
 msgstr "تعذر تحميل الكتالوجات."
@@ -1911,6 +1980,10 @@ msgstr "تعذر تحميل الكتالوجات."
 #: apps/web/src/features/home/ui/market-page.tsx:304
 msgid "Couldn't load complete marketplace results."
 msgstr "تعذر تحميل نتائج السوق كاملة."
+
+#: apps/web/src/components/wants/want-detail.tsx:164
+msgid "Couldn't load contact information."
+msgstr "تعذّر تحميل بيانات الاتصال."
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:37
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:214
@@ -1930,17 +2003,22 @@ msgstr "تعذر تحميل نتائج السوق."
 msgid "Couldn't load offerings."
 msgstr "تعذّر تحميل العروض."
 
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:430
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:108
+msgid "Couldn't load pool information."
+msgstr "تعذّر تحميل معلومات الصندوق."
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:745
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:282
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:315
 msgid "Couldn't load pool tags."
 msgstr "تعذّر تحميل وسوم الصندوق."
 
-#: apps/web/src/components/wants/want-detail.tsx:198
+#: apps/web/src/components/wants/want-detail.tsx:251
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
 msgid "Couldn't load pools."
 msgstr "تعذّر تحميل الصناديق."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:277
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:331
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:316
 msgid "Couldn't load posts."
 msgstr "تعذّر تحميل المنشورات."
@@ -1954,7 +2032,7 @@ msgid "Couldn't load Pretium history."
 msgstr "تعذّر تحميل سجل Pretium."
 
 #: apps/web/src/components/resource-usage.tsx:126
-#: apps/web/src/features/home/ui/wallet-page.tsx:140
+#: apps/web/src/features/home/ui/wallet-page.tsx:135
 msgid "Couldn't load resource limits."
 msgstr "تعذر تحميل حدود الموارد."
 
@@ -1974,16 +2052,16 @@ msgstr "تعذّر تحميل المرفق الخاص."
 msgid "Couldn't load the Want form."
 msgstr "تعذر تحميل نموذج الطلب."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:112
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:284
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:137
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:285
 msgid "Couldn't load this pool."
 msgstr "تعذّر تحميل هذا الصندوق."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:939
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:948
 msgid "Couldn't load this pool's vouchers."
 msgstr "تعذّر تحميل قسائم هذا الصندوق."
 
-#: apps/web/src/features/home/ui/report-page.tsx:50
+#: apps/web/src/features/home/ui/report-page.tsx:53
 msgid "Couldn't load this post."
 msgstr "تعذّر تحميل هذا المنشور."
 
@@ -1992,7 +2070,7 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "تعذّر تحميل هذا المنشور. لا يمكنك تعديل سوى المنشورات التي كتبتها."
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:115
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:148
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:146
 msgid "Couldn't load this voucher."
 msgstr "تعذّر تحميل هذه القسيمة."
 
@@ -2013,7 +2091,11 @@ msgstr "تعذّر تحميل وحدات الحساب."
 #~ msgid "Couldn't load voucher choices."
 #~ msgstr "تعذّر تحميل خيارات القسائم."
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:323
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:217
+msgid "Couldn't load voucher information."
+msgstr "تعذّر تحميل معلومات القسيمة."
+
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:327
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:731
 msgid "Couldn't load voucher tags."
 msgstr "تعذّر تحميل وسوم القسائم."
@@ -2022,9 +2104,10 @@ msgstr "تعذّر تحميل وسوم القسائم."
 msgid "Couldn't load vouchers"
 msgstr "تعذّر تحميل القسائم"
 
-#: apps/web/src/components/wants/want-detail.tsx:177
-#: apps/web/src/features/home/ui/wallet-page.tsx:178
-#: apps/web/src/features/home/ui/wallet-page.tsx:196
+#: apps/web/src/components/wants/want-detail.tsx:230
+#: apps/web/src/features/home/ui/wallet-page.tsx:173
+#: apps/web/src/features/home/ui/wallet-page.tsx:191
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:234
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:155
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:172
 msgid "Couldn't load vouchers."
@@ -2038,7 +2121,7 @@ msgstr "تعذر تحميل طلبات هذا الصندوق."
 msgid "Couldn't load Wants."
 msgstr "تعذر تحميل الطلبات."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:391
+#: apps/web/src/features/home/ui/wallet-page.tsx:386
 msgid "Couldn't load your pools."
 msgstr "تعذّر تحميل صناديقك."
 
@@ -2046,7 +2129,7 @@ msgstr "تعذّر تحميل صناديقك."
 msgid "Couldn't load your posts."
 msgstr "تعذّر تحميل منشوراتك."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:287
+#: apps/web/src/features/home/ui/wallet-page.tsx:282
 msgid "Couldn't load your Wants."
 msgstr "تعذر تحميل طلباتك."
 
@@ -2106,8 +2189,8 @@ msgid "Couldn't resolve that recipient."
 msgstr "تعذّر تحديد ذلك المستلم."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:441
-msgid "Couldn't retire the voucher."
-msgstr "تعذّر سحب القسيمة من التداول."
+#~ msgid "Couldn't retire the voucher."
+#~ msgstr "تعذّر سحب القسيمة من التداول."
 
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:84
 msgid "Couldn't save the catalog. Try again."
@@ -2117,11 +2200,11 @@ msgstr "تعذر حفظ الكتالوج. حاول مجددًا."
 msgid "Couldn't save the offering."
 msgstr "تعذّر حفظ العرض."
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:159
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:192
 msgid "Couldn't save the pool details."
 msgstr "تعذّر حفظ تفاصيل الصندوق."
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:174
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:178
 msgid "Couldn't save the voucher details."
 msgstr "تعذّر حفظ تفاصيل القسيمة."
 
@@ -2166,7 +2249,7 @@ msgstr "تعذّر البحث عن القسائم."
 msgid "Couldn't share this message."
 msgstr "تعذّرت مشاركة هذه الرسالة."
 
-#: apps/web/src/components/wants/want-detail.tsx:329
+#: apps/web/src/components/wants/want-detail.tsx:382
 msgid "Couldn't share this Want."
 msgstr "تعذر مشاركة هذا الطلب."
 
@@ -2182,7 +2265,7 @@ msgstr "تعذّر إرسال طلب السحب"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "تعذّر اقتراح اسم مستخدم. يُرجى المحاولة مرة أخرى."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:328
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:313
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:62
 msgid "Couldn't transfer ownership."
 msgstr "تعذّر نقل الملكية."
@@ -2197,8 +2280,8 @@ msgstr "تعذر تحديث الكتالوج. حاول مجددًا."
 msgid "Couldn't upload that photo. Try again."
 msgstr "تعذّر تحميل تلك الصورة. حاول مرة أخرى."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:552
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:580
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:561
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:589
 msgid "Couldn't verify this swap. Try again."
 msgstr "تعذّر التحقق من هذه المبادلة. حاول مرة أخرى."
 
@@ -2215,7 +2298,7 @@ msgstr "تعذّر التحقق من ارتباطك بخدمة MPESA."
 msgid "Cover photo"
 msgstr "صورة الغلاف"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:277
+#: apps/web/src/features/home/ui/wallet-page.tsx:272
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:94
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:99
 msgid "Create"
@@ -2243,8 +2326,8 @@ msgstr "إنشاء كتالوج"
 #~ msgid "Create new vouchers in your wallet."
 #~ msgstr "أصدر قسائم جديدة في محفظتك."
 
+#: apps/web/src/features/home/ui/wallet-page.tsx:414
 #: apps/web/src/features/home/ui/wallet-page.tsx:419
-#: apps/web/src/features/home/ui/wallet-page.tsx:424
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:355
 msgid "Create pool"
 msgstr "إنشاء صندوق"
@@ -2257,26 +2340,26 @@ msgstr "إصدار المعروض"
 msgid "Create the first supply to finish publishing this voucher."
 msgstr "أصدر المعروض الأول لإكمال نشر هذه القسيمة."
 
+#: apps/web/src/features/home/ui/wallet-page.tsx:242
 #: apps/web/src/features/home/ui/wallet-page.tsx:247
-#: apps/web/src/features/home/ui/wallet-page.tsx:252
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:356
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:386
 msgid "Create voucher"
 msgstr "إنشاء قسيمة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:113
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:232
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:246
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:273
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:107
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:217
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:231
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:258
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
 msgstr "إنشاء قسائم"
 
+#: apps/web/src/features/home/ui/wallet-page.tsx:308
 #: apps/web/src/features/home/ui/wallet-page.tsx:313
-#: apps/web/src/features/home/ui/wallet-page.tsx:318
 #: apps/web/src/features/wants/ui/want-form-page.tsx:60
-#: apps/web/src/features/wants/ui/want-form-page.tsx:375
+#: apps/web/src/features/wants/ui/want-form-page.tsx:378
 msgid "Create Want"
 msgstr "إنشاء طلب"
 
@@ -2284,9 +2367,9 @@ msgstr "إنشاء طلب"
 msgid "Create your account"
 msgstr "أنشئ حسابك"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
 #: apps/web/src/features/home/ui/activity-page.tsx:308
-#: apps/web/src/features/home/ui/report-page.tsx:562
+#: apps/web/src/features/home/ui/report-page.tsx:567
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:75
 msgid "Created"
 msgstr "تم الإنشاء"
@@ -2317,7 +2400,7 @@ msgstr "جارٍ إنشاء {0}…"
 msgid "Creating account…"
 msgstr "جارٍ إنشاء الحساب…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:271
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:256
 msgid "Creating vouchers…"
 msgstr "جارٍ إنشاء القسائم…"
 
@@ -2334,7 +2417,7 @@ msgid "Creation failed"
 msgstr "فشل الإنشاء"
 
 #: apps/web/src/components/creditable-browse-control.tsx:102
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:54
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:64
 msgid "Credit"
 msgstr "الائتمان"
 
@@ -2346,7 +2429,7 @@ msgstr "حد الائتمان"
 msgid "Credit limit unknown"
 msgstr "حد الائتمان غير معروف"
 
-#: apps/web/src/components/wants/want-detail.tsx:190
+#: apps/web/src/components/wants/want-detail.tsx:243
 msgid "Creditable pools"
 msgstr "مجمعات الائتمان"
 
@@ -2421,7 +2504,7 @@ msgstr "افتراضي"
 msgid "Delegated to Calibur"
 msgstr "مفوّض إلى Calibur"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:405
+#: apps/web/src/features/wants/ui/want-form-page.tsx:408
 msgid "Delete Want"
 msgstr "حذف الطلب"
 
@@ -2439,7 +2522,7 @@ msgstr "تم نسخ تجزئة معاملة النشر"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:196
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:180
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:219
 msgid "Deposit"
 msgstr "إيداع"
 
@@ -2456,7 +2539,7 @@ msgid "Describe your pool"
 msgstr "صِف صندوقك"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
-#: apps/web/src/components/wants/want-detail.tsx:120
+#: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
@@ -2465,7 +2548,7 @@ msgstr "صِف صندوقك"
 msgid "Description"
 msgstr "الوصف"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:394
+#: apps/web/src/components/vouchers/voucher-summary.tsx:395
 msgid "Directions"
 msgstr "الاتجاهات"
 
@@ -2478,8 +2561,8 @@ msgstr "تجاهل التغييرات"
 msgid "Dismiss"
 msgstr "إغلاق"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:191
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:177
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:195
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:210
 msgid "Display name"
 msgstr "اسم العرض"
 
@@ -2529,7 +2612,7 @@ msgstr "مسودة"
 #~ msgid "Drag to move, pinch or use the slider to zoom."
 #~ msgstr "اسحب للتحريك، واقرص أو استخدم شريط التمرير للتكبير."
 
-#: apps/web/src/features/home/ui/report-page.tsx:420
+#: apps/web/src/features/home/ui/report-page.tsx:425
 msgid "Duration"
 msgstr "المدة"
 
@@ -2571,19 +2654,19 @@ msgid "Ecovillage"
 msgstr "القرية البيئية"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:393
-#: apps/web/src/features/home/ui/report-page.tsx:86
+#: apps/web/src/features/home/ui/report-page.tsx:89
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:117
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:196
 msgid "Edit"
 msgstr "تعديل"
 
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:90
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:95
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:108
 msgid "Edit catalog"
 msgstr "تعديل الكتالوج"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:105
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:92
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:99
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
 msgid "Edit details"
 msgstr "تعديل التفاصيل"
 
@@ -2595,7 +2678,7 @@ msgstr "تعديل التفاصيل"
 msgid "Edit offering"
 msgstr "تعديل العرض"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:88
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:95
 msgid "Edit pool details"
 msgstr "تعديل تفاصيل الصندوق"
 
@@ -2635,18 +2718,19 @@ msgstr "كبار السن"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:89
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:267
-#: apps/web/src/components/wants/want-detail.tsx:142
+#: apps/web/src/components/wants/want-detail.tsx:199
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:299
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:370
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:382
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:53
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:55
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:523
 msgid "Email"
 msgstr "البريد الإلكتروني"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:342
+#: apps/web/src/features/wants/ui/want-form-page.tsx:345
 msgid "Email unavailable"
 msgstr "البريد الإلكتروني غير متاح"
 
@@ -2676,7 +2760,7 @@ msgid "Ends"
 msgstr "ينتهي"
 
 #. placeholder {0}: dates.format(new Date(want.expiresAt))
-#: apps/web/src/components/wants/want-detail.tsx:111
+#: apps/web/src/components/wants/want-detail.tsx:116
 msgid "Ends {0}"
 msgstr "ينتهي {0}"
 
@@ -2685,7 +2769,7 @@ msgstr "ينتهي {0}"
 msgid "Enter a credit limit greater than zero"
 msgstr "أدخل حد ائتمان أكبر من صفر"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:518
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:577
 msgid "Enter a fee from 0 to 100"
 msgstr "أدخل رسومًا من 0 إلى 100"
 
@@ -2716,7 +2800,7 @@ msgstr "أدخل مفتاحًا خاصًا صالحًا أو محفظة ورقي
 msgid "Enter a valid wallet address"
 msgstr "أدخل عنوان محفظة صالحًا"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:540
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:599
 msgid "Enter a valid wallet address"
 msgstr "أدخل عنوان محفظة صالحًا"
 
@@ -2725,12 +2809,12 @@ msgstr "أدخل عنوان محفظة صالحًا"
 msgid "Enter a valid website URL including https://"
 msgstr "أدخل رابط موقع ويب صالحًا يتضمن https://"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:259
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:478
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:318
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:487
 msgid "Enter an amount greater than zero."
 msgstr "أدخل مبلغًا أكبر من صفر."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:255
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:314
 msgid "Enter an amount this voucher supports."
 msgstr "أدخل مبلغًا تدعمه هذه القسيمة."
 
@@ -2834,7 +2918,7 @@ msgstr "انتهاء الصلاحية"
 msgid "Expiration date must be in the future"
 msgstr "يجب أن يكون تاريخ انتهاء الصلاحية في المستقبل"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:342
+#: apps/web/src/features/home/ui/wallet-page.tsx:337
 msgid "Expired"
 msgstr "منتهي الصلاحية"
 
@@ -2866,8 +2950,8 @@ msgstr "الزراعة"
 #~ msgid "fee"
 #~ msgstr "رسم"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:109
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:123
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:209
 msgid "Fee % and recipient"
 msgstr "نسبة الرسم ومستلمه"
 
@@ -2886,8 +2970,8 @@ msgstr "سياسة الرسوم"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:650
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:663
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:533
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:549
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:592
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:608
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:48
 msgid "Fee recipient"
 msgstr "مستلم الرسوم"
@@ -2905,7 +2989,7 @@ msgstr "تم نسخ مستلم الرسوم"
 #~ msgstr "تُحفظ الرسوم منفصلة عن سيولة الصندوق"
 
 #. placeholder {0}: formatVoucherAddress(feeAddress)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:402
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:461
 msgid "Fees are paid to {0}."
 msgstr "تُدفع الرسوم إلى {0}."
 
@@ -2925,7 +3009,7 @@ msgstr "المهرجانات"
 msgid "Field reports"
 msgstr "تقارير ميدانية"
 
-#: apps/web/src/features/home/ui/report-page.tsx:456
+#: apps/web/src/features/home/ui/report-page.tsx:461
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:74
 msgid "File"
 msgstr "ملف"
@@ -3025,7 +3109,7 @@ msgstr "إنتاج الغذاء"
 msgid "Frame your photo"
 msgstr "اضبط إطار صورتك"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:429
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:156
 #: apps/web/src/features/home/ui/activity-page.tsx:329
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:178
@@ -3037,7 +3121,7 @@ msgstr "من"
 msgid "Gathering"
 msgstr "التجمعات"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:365
+#: apps/web/src/components/vouchers/voucher-summary.tsx:366
 msgid "Get"
 msgstr "احصل عليها"
 
@@ -3091,18 +3175,18 @@ msgstr "الصحة"
 msgid "Hold the card flat against the back of your phone."
 msgstr "ضع البطاقة مسطّحة على ظهر هاتفك."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:212
-#: apps/web/src/features/home/ui/wallet-page.tsx:214
+#: apps/web/src/features/home/ui/wallet-page.tsx:207
+#: apps/web/src/features/home/ui/wallet-page.tsx:209
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:187
 msgid "Holdings"
 msgstr "الأرصدة"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:53
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:63
 msgctxt "Pool tab"
 msgid "Holdings"
 msgstr "الأرصدة"
 
-#: apps/web/src/features/home/ui/report-page.tsx:413
+#: apps/web/src/features/home/ui/report-page.tsx:418
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:479
 msgid "Host"
 msgstr "الجهة المنظمة"
@@ -3243,7 +3327,8 @@ msgstr "زيادة كمية {0}"
 #~ msgid "Increase quantity"
 #~ msgstr "زيادة الكمية"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:167
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:156
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:66
 msgid "Info"
 msgstr "معلومات"
 
@@ -3382,7 +3467,7 @@ msgid "Limits"
 msgstr "الحدود"
 
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:557
-#: apps/web/src/features/home/ui/report-page.tsx:457
+#: apps/web/src/features/home/ui/report-page.tsx:462
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:74
 msgid "Link"
 msgstr "رابط"
@@ -3426,8 +3511,8 @@ msgstr "اربط قسيمة أو مجمعًا واحدًا على الأقل."
 msgid "Link at most 12 vouchers"
 msgstr "اربط 12 قسيمة كحد أقصى"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:455
-#: apps/web/src/components/wants/want-detail.tsx:325
+#: apps/web/src/components/vouchers/voucher-summary.tsx:456
+#: apps/web/src/components/wants/want-detail.tsx:378
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
 msgid "Link copied"
@@ -3487,7 +3572,7 @@ msgstr "جارٍ ربط مفتاح المرور…"
 msgid "Linking the passkey failed. Your paper wallet is unchanged."
 msgstr "فشل ربط مفتاح المرور. لم تتغير محفظتك الورقية."
 
-#: apps/web/src/features/home/ui/report-page.tsx:439
+#: apps/web/src/features/home/ui/report-page.tsx:444
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:679
 msgid "Links"
 msgstr "الروابط"
@@ -3498,12 +3583,13 @@ msgstr "لتر"
 
 #: apps/web/src/components/market-search.tsx:310
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:320
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/components/wants/want-detail.tsx:255
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:374
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:525
+#: apps/web/src/components/wants/want-detail.tsx:308
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:134
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
-#: apps/web/src/features/home/ui/wallet-page.tsx:361
+#: apps/web/src/features/home/ui/wallet-page.tsx:356
+#: apps/web/src/features/home/ui/wallet-page.tsx:466
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:54
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wants/ui/wants-page.tsx:171
@@ -3514,7 +3600,7 @@ msgstr "تحميل المزيد"
 msgid "Load more reviews"
 msgstr "تحميل المزيد من المراجعات"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:357
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:411
 #: apps/web/src/features/home/ui/activity-page.tsx:181
 #: apps/web/src/features/home/ui/activity-page.tsx:218
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
@@ -3534,6 +3620,10 @@ msgstr "جارٍ تحميل الأرصدة…"
 msgid "Loading cash activity…"
 msgstr "جارٍ تحميل النشاط النقدي…"
 
+#: apps/web/src/components/wants/want-detail.tsx:156
+msgid "Loading contact information…"
+msgstr "جارٍ تحميل بيانات الاتصال…"
+
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:36
 msgid "Loading credit limits…"
 msgstr "جارٍ تحميل حدود الائتمان…"
@@ -3544,7 +3634,7 @@ msgstr "جارٍ تحميل الأرصدة…"
 
 #: apps/web/src/components/ui/location-picker.tsx:288
 #: apps/web/src/components/ui/location-picker.tsx:307
-#: apps/web/src/components/wants/want-detail.tsx:94
+#: apps/web/src/components/wants/want-detail.tsx:98
 msgid "Loading location map"
 msgstr "جارٍ تحميل خريطة الموقع"
 
@@ -3567,22 +3657,27 @@ msgstr "جارٍ تحميل المزيد…"
 msgid "Loading offerings…"
 msgstr "جارٍ تحميل العروض…"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:109
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:281
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:422
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:102
+msgid "Loading pool information…"
+msgstr "جارٍ تحميل معلومات الصندوق…"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:134
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:282
 msgid "Loading pool…"
 msgstr "جارٍ تحميل الصندوق…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:386
+#: apps/web/src/features/home/ui/wallet-page.tsx:381
 #: apps/web/src/features/pools/ui/pools-page.tsx:290
 msgid "Loading pools…"
 msgstr "جارٍ تحميل الصناديق…"
 
-#: apps/web/src/features/home/ui/report-page.tsx:612
+#: apps/web/src/features/home/ui/report-page.tsx:620
 msgid "Loading post…"
 msgstr "جارٍ تحميل المنشور…"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:252
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:270
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:306
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:324
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 msgid "Loading posts…"
 msgstr "جارٍ تحميل المنشورات…"
@@ -3591,13 +3686,17 @@ msgstr "جارٍ تحميل المنشورات…"
 msgid "Loading private attachment…"
 msgstr "جارٍ تحميل المرفق الخاص…"
 
+#: apps/web/src/components/retirement/retirement-control.tsx:67
+msgid "Loading retirement requests…"
+msgstr "جارٍ تحميل طلبات الإيقاف…"
+
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:72
 msgid "Loading reviews…"
 msgstr "جارٍ تحميل المراجعات…"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:317
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:321
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:739
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:276
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:309
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:725
 msgid "Loading tags…"
 msgstr "جارٍ تحميل الوسوم…"
@@ -3610,12 +3709,13 @@ msgstr "جارٍ تحميل المحرر…"
 msgid "Loading tokens…"
 msgstr "جارٍ تحميل الرموز…"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:144
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:142
 msgid "Loading voucher…"
 msgstr "جارٍ تحميل القسيمة…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:163
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:935
+#: apps/web/src/features/home/ui/wallet-page.tsx:158
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:229
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:944
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:149
 #: apps/web/src/features/wallet/ui/collect-page.tsx:167
 msgid "Loading vouchers…"
@@ -3627,7 +3727,7 @@ msgstr "جارٍ تحميل القسائم…"
 msgid "Loading Want…"
 msgstr "جارٍ تحميل الطلب…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:283
+#: apps/web/src/features/home/ui/wallet-page.tsx:278
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:20
 #: apps/web/src/features/wants/ui/wants-page.tsx:122
 msgid "Loading Wants…"
@@ -3657,12 +3757,12 @@ msgstr "جارٍ تحميل ملفك الشخصي…"
 #: apps/web/src/components/resource-usage.tsx:64
 #: apps/web/src/components/resource-usage.tsx:141
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:320
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:374
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:525
 #: apps/web/src/components/vouchers/voucher-summary.tsx:142
-#: apps/web/src/components/wants/want-detail.tsx:239
+#: apps/web/src/components/wants/want-detail.tsx:292
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:88
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:92
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:416
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:49
@@ -3681,7 +3781,7 @@ msgstr "الأموال المحلية وM-Pesa"
 
 #: apps/web/src/components/ui/location-picker.tsx:217
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
-#: apps/web/src/features/home/ui/report-page.tsx:577
+#: apps/web/src/features/home/ui/report-page.tsx:583
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:248
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:45
@@ -3701,10 +3801,10 @@ msgstr "خريطة الموقع"
 msgid "Location unavailable"
 msgstr "الموقع غير متاح"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:270
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:240
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
 msgid "Logo"
 msgstr "الشعار"
@@ -3721,7 +3821,7 @@ msgstr "ابحث عن «تثبيت التطبيق» في قائمة متصفحك
 "اختر «ملف»، ثم «إضافة إلى Dock»."
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:402
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:511
 msgid "Manage {0}"
 msgstr "إدارة {0}"
 
@@ -3764,7 +3864,7 @@ msgstr "دبوس الخريطة"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:57
 #: apps/web/src/features/home/ui/market-page.tsx:388
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:70
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:68
 #: apps/web/src/lib/category-label.ts:18
 msgid "Market"
 msgstr "السوق"
@@ -3789,7 +3889,7 @@ msgstr "تطابق"
 msgid "Matching recipients"
 msgstr "المستلمون المطابقون"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:327
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:386
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:301
 msgid "Max"
 msgstr "الحد الأقصى"
@@ -3798,7 +3898,7 @@ msgstr "الحد الأقصى"
 #~ msgid "Max {max}"
 #~ msgstr "الحد الأقصى {max}"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:838
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:847
 msgid "Max {max} {symbol}"
 msgstr "الحد الأقصى {max} {symbol}"
 
@@ -3930,7 +4030,7 @@ msgid "My Catalogs"
 msgstr "كتالوجاتي"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:225
-#: apps/web/src/features/home/ui/wallet-page.tsx:378
+#: apps/web/src/features/home/ui/wallet-page.tsx:373
 msgid "My Pools"
 msgstr "صناديقي"
 
@@ -3942,10 +4042,10 @@ msgid "My posts"
 msgstr "منشوراتي"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:178
-#: apps/web/src/features/home/ui/wallet-page.tsx:107
-#: apps/web/src/features/home/ui/wallet-page.tsx:159
-#: apps/web/src/features/home/ui/wallet-page.tsx:172
-#: apps/web/src/features/home/ui/wallet-page.tsx:227
+#: apps/web/src/features/home/ui/wallet-page.tsx:102
+#: apps/web/src/features/home/ui/wallet-page.tsx:154
+#: apps/web/src/features/home/ui/wallet-page.tsx:167
+#: apps/web/src/features/home/ui/wallet-page.tsx:222
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:201
 msgid "My Vouchers"
 msgstr "قسائمي"
@@ -3958,7 +4058,7 @@ msgstr "عنوان محفظتي"
 #~ msgid "My wallet username"
 #~ msgstr "اسم مستخدم محفظتي"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:274
+#: apps/web/src/features/home/ui/wallet-page.tsx:269
 msgid "My Wants"
 msgstr "طلباتي"
 
@@ -4004,8 +4104,8 @@ msgstr "البناء الطبيعي"
 msgid "Network"
 msgstr "الشبكة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:370
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:382
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:355
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:367
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:95
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:107
 msgid "New owner address"
@@ -4027,7 +4127,7 @@ msgstr "يجب ألا يكون المالك الجديد أحد عقود هذا 
 msgid "New post"
 msgstr "منشور جديد"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:426
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:480
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:160
 #: apps/web/src/features/home/ui/activity-page.tsx:326
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:181
@@ -4048,8 +4148,8 @@ msgstr "هل أنت جديد في CLC؟"
 msgid "Next"
 msgstr "التالي"
 
-#: apps/web/src/features/home/ui/report-page.tsx:202
-#: apps/web/src/features/home/ui/report-page.tsx:333
+#: apps/web/src/features/home/ui/report-page.tsx:207
+#: apps/web/src/features/home/ui/report-page.tsx:338
 msgid "Next image"
 msgstr "الصورة التالية"
 
@@ -4068,7 +4168,7 @@ msgid "No"
 msgstr "لا"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:380
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:439
 msgid "No {0} fees have accrued yet."
 msgstr "لم تتراكم أي رسوم {0} بعد."
 
@@ -4080,7 +4180,7 @@ msgstr "لا توجد أنشطة تطابق عوامل التصفية هذه."
 #~ msgid "No activity matches this search."
 #~ msgstr "لا يوجد نشاط يطابق هذا البحث."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:380
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:434
 #: apps/web/src/features/home/ui/activity-page.tsx:159
 msgid "No activity yet."
 msgstr "لا يوجد نشاط بعد."
@@ -4116,6 +4216,10 @@ msgstr "لا تتوفر عوامل تصفية للفئات."
 #: apps/web/src/components/auth/sign-in-panel.tsx:526
 msgid "No CLC account was found for this sign-in."
 msgstr "لم يُعثر على حساب CLC لتسجيل الدخول هذا."
+
+#: apps/web/src/components/wants/want-detail.tsx:182
+msgid "No contact details available."
+msgstr "لا تتوفر بيانات اتصال."
 
 #: apps/web/src/components/ui/country-sheet.tsx:89
 msgid "No countries found"
@@ -4163,7 +4267,7 @@ msgstr "لا توجد صناديق تقبل قسائمك وتتوفر فيها �
 #~ msgid "No deposit limit"
 #~ msgstr "لا يوجد حد للإيداع"
 
-#: apps/web/src/components/wants/want-detail.tsx:113
+#: apps/web/src/components/wants/want-detail.tsx:118
 #: apps/web/src/features/wants/ui/want-form-page.tsx:263
 msgid "No ending date"
 msgstr "بدون تاريخ انتهاء"
@@ -4243,7 +4347,7 @@ msgstr "لا توجد صناديق تطابق هذا البحث."
 msgid "No pools with this voucher match these filters."
 msgstr "لا توجد صناديق تتوفر فيها هذه القسيمة وتطابق عوامل التصفية هذه."
 
-#: apps/web/src/components/wants/want-detail.tsx:197
+#: apps/web/src/components/wants/want-detail.tsx:250
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
 msgid "No pools yet."
 msgstr "لا توجد صناديق بعد."
@@ -4252,7 +4356,7 @@ msgstr "لا توجد صناديق بعد."
 msgid "No posts match this search."
 msgstr "لا توجد منشورات تطابق هذا البحث."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:292
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:346
 #: apps/web/src/features/home/ui/posts-page.tsx:136
 msgid "No posts yet."
 msgstr "لا توجد منشورات بعد."
@@ -4290,11 +4394,11 @@ msgstr "لا توجد رموز متاحة"
 msgid "No units found."
 msgstr "لم يُعثر على وحدات."
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:259
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:263
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:517
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:439
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:224
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:257
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:611
 msgid "No units of account found"
 msgstr "لم يتم العثور على وحدات حساب"
@@ -4312,7 +4416,7 @@ msgid "No vouchers are available through your Credit pools."
 msgstr "لا تتوفر قسائم عبر مجمعات الائتمان الخاصة بك."
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:38
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:283
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:337
 msgid "No vouchers in this pool yet."
 msgstr "لا توجد قسائم في هذا الصندوق بعد."
 
@@ -4335,9 +4439,9 @@ msgstr "لا توجد قسائم للتحصيل"
 #~ msgid "No vouchers to show yet."
 #~ msgstr "لا توجد قسائم لعرضها بعد."
 
-#: apps/web/src/components/wants/want-detail.tsx:176
+#: apps/web/src/components/wants/want-detail.tsx:229
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:67
-#: apps/web/src/features/home/ui/wallet-page.tsx:234
+#: apps/web/src/features/home/ui/wallet-page.tsx:229
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:207
 msgid "No vouchers yet."
 msgstr "لا توجد قسائم بعد."
@@ -4355,7 +4459,7 @@ msgstr "لا توجد طلبات مرتبطة بهذا الصندوق حتى ا�
 msgid "No Wants found."
 msgstr "لم يتم العثور على طلبات."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:301
+#: apps/web/src/features/home/ui/wallet-page.tsx:296
 msgid "No Wants yet."
 msgstr "لا توجد طلبات حتى الآن."
 
@@ -4363,7 +4467,7 @@ msgstr "لا توجد طلبات حتى الآن."
 msgid "No. of participants"
 msgstr "عدد المشاركين"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1052
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1061
 msgid "None left to swap for"
 msgstr "لا يتبقى رصيد للمبادلة مقابله"
 
@@ -4387,7 +4491,7 @@ msgstr "هذا ليس رقم Safaricom قياسيًا. تابع فقط إذا ك
 msgid "Not approved"
 msgstr "غير معتمد"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:950
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:959
 msgid "Not held"
 msgstr "غير محتفظ به"
 
@@ -4400,7 +4504,7 @@ msgid "Not sent"
 msgstr "لم يُرسل"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:67
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:113
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:127
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:83
 msgid "Not set"
 msgstr "غير محدد"
@@ -4488,10 +4592,10 @@ msgstr "تم حذف العرض."
 msgid "Offering updated."
 msgstr "تم تحديث العرض."
 
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:113
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:121
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:124
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:132
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:135
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:47
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:57
 msgid "Offerings"
 msgstr "العروض"
 
@@ -4529,12 +4633,13 @@ msgstr "شراء الرصيد"
 msgid "Onramp details"
 msgstr "تفاصيل شراء الرصيد"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:523
-#: apps/web/src/features/home/ui/report-page.tsx:597
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:577
+#: apps/web/src/features/home/ui/report-page.tsx:604
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:129
 msgid "Open in Maps"
 msgstr "فتح في الخرائط"
 
-#: apps/web/src/components/wants/want-detail.tsx:86
+#: apps/web/src/components/wants/want-detail.tsx:90
 msgid "Open location in Google Maps"
 msgstr "فتح الموقع في خرائط Google"
 
@@ -4591,14 +4696,14 @@ msgstr "جارٍ فتح المحفظة الورقية…"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:339
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:271
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:275
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:222
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:420
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:450
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:703
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:241
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:274
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:665
 msgid "Optional"
 msgstr "اختياري"
@@ -4633,6 +4738,10 @@ msgstr "إجمالي الطلب"
 msgid "Other"
 msgstr "أخرى"
 
+#: apps/web/src/components/retirement/retirement-request-form.tsx:72
+msgid "Other accounts hold <0>{amount} {symbol}</0> of your voucher."
+msgstr "تحتفظ حسابات أخرى بمقدار <0>{amount} {symbol}</0> من قسيمتك."
+
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:115
 #~ msgid "Output voucher"
 #~ msgstr "قسيمة الاستلام"
@@ -4657,14 +4766,14 @@ msgstr "رد المالك"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "تم إرسال نقل الملكية."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:323
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:308
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:58
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "نُقلت الملكية على السلسلة. تتأخر مزامنة الكتالوج، وقد أُزيلت عناصر "
 "التحكم الإدارية الخاصة بك."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:325
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:310
 msgid "Ownership transferred."
 msgstr "نُقلت الملكية."
 
@@ -4695,7 +4804,7 @@ msgstr "المحفظة الورقية محمية. احتفظ بكلمة المر
 #~ msgid "Paper wallet only"
 #~ msgstr "المحفظة الورقية فقط"
 
-#: apps/web/src/features/home/ui/report-page.tsx:418
+#: apps/web/src/features/home/ui/report-page.tsx:423
 msgid "Participants"
 msgstr "المشاركون"
 
@@ -4824,6 +4933,7 @@ msgstr "الزراعة المستدامة"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:396
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:61
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:535
 msgid "Phone"
@@ -4834,7 +4944,7 @@ msgstr "الهاتف"
 msgid "Phone number"
 msgstr "رقم الهاتف"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:355
+#: apps/web/src/features/wants/ui/want-form-page.tsx:358
 msgid "Phone unavailable"
 msgstr "الهاتف غير متاح"
 
@@ -4895,17 +5005,17 @@ msgstr "مشتل النباتات"
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:292
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:726
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1063
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:301
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:735
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1072
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:234
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:379
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:61
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:59
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:25
 msgid "Pool"
 msgstr "الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:192
 msgid "Pool actions"
 msgstr "إجراءات الصندوق"
 
@@ -4925,11 +5035,11 @@ msgstr "عنوان الصندوق"
 msgid "Pool balances"
 msgstr "أرصدة الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:211
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:263
 msgid "Pool contents"
 msgstr "محتويات الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:89
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:103
 msgid "Pool controls"
 msgstr "عناصر التحكم في الصندوق"
 
@@ -4938,7 +5048,7 @@ msgid "Pool credit limits"
 msgstr "حدود ائتمان الصندوق"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:456
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:196
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:229
 msgid "Pool Description"
 msgstr "وصف الصندوق"
 
@@ -4952,13 +5062,13 @@ msgstr "وصف الصندوق مطلوب"
 msgid "Pool description must be 500 characters or fewer"
 msgstr "يجب ألا يتجاوز وصف الصندوق 500 حرف"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:154
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:187
 msgid "Pool details updated."
 msgstr "تم تحديث تفاصيل الصندوق."
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:119
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:361
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:699
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:370
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:708
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:200
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:296
 msgid "Pool fee"
@@ -4969,16 +5079,16 @@ msgstr "رسوم الصندوق"
 #~ msgid "Pool fee ({poolFeePercent})"
 #~ msgstr "رسوم الصندوق ({poolFeePercent})"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:495
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:554
 msgid "Pool fee updated."
 msgstr "تم تحديث رسوم الصندوق."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:556
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:565
 msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "تغيّرت سيولة الصندوق. راجع عرض السعر المحدّث وحاول مرة أخرى."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:720
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:257
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:290
 msgid "Pool Location"
 msgstr "موقع الصندوق"
 
@@ -5008,8 +5118,8 @@ msgstr "اسم الصندوق مطلوب"
 msgid "Pool name must be 80 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم الصندوق 80 حرفًا"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:115
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:287
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:140
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:288
 msgid "Pool not found."
 msgstr "لم يُعثر على الصندوق."
 
@@ -5053,7 +5163,7 @@ msgid "Pool symbol must be at least 3 characters"
 msgstr "يجب أن يتكون رمز الصندوق من 3 أحرف على الأقل"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:765
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:302
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:335
 msgid "Pool tags"
 msgstr "وسوم الصندوق"
 
@@ -5072,8 +5182,8 @@ msgstr "تفاصيل تتبّع الصندوق مفقودة."
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:155
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:335
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:121
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:337
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:146
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:446
 #: apps/web/src/features/pools/ui/pools-page.tsx:166
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:125
 msgid "Pools"
@@ -5099,7 +5209,7 @@ msgstr "اضبط موضع صورتك"
 msgid "Post"
 msgstr "منشور"
 
-#: apps/web/src/features/home/ui/report-page.tsx:62
+#: apps/web/src/features/home/ui/report-page.tsx:65
 msgid "Post not found."
 msgstr "لم يُعثر على المنشور."
 
@@ -5127,18 +5237,18 @@ msgstr "تم تحديث المنشور."
 #: apps/web/src/components/market-bar.tsx:192
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:63
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:158
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:296
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:147
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:350
 #: apps/web/src/features/home/ui/posts-page.tsx:73
-#: apps/web/src/features/home/ui/report-page.tsx:75
-#: apps/web/src/features/home/ui/report-page.tsx:611
-#: apps/web/src/features/home/ui/report-page.tsx:630
+#: apps/web/src/features/home/ui/report-page.tsx:78
+#: apps/web/src/features/home/ui/report-page.tsx:619
+#: apps/web/src/features/home/ui/report-page.tsx:638
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:27
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:63
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:61
 msgid "Posts"
 msgstr "المنشورات"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:264
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:318
 msgid "Posts aren't available for this voucher."
 msgstr "المنشورات غير متاحة لهذه القسيمة."
 
@@ -5162,8 +5272,8 @@ msgstr "التفضيلات"
 msgid "Preferred unit of account"
 msgstr "وحدة الحساب المفضلة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:269
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:393
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:254
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:378
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "جارٍ إعداد المحفظة…"
@@ -5218,12 +5328,12 @@ msgstr "تم نسخ معرّف Pretium"
 #~ msgid "Preview"
 #~ msgstr "معاينة"
 
-#: apps/web/src/features/home/ui/report-page.tsx:197
-#: apps/web/src/features/home/ui/report-page.tsx:328
+#: apps/web/src/features/home/ui/report-page.tsx:202
+#: apps/web/src/features/home/ui/report-page.tsx:333
 msgid "Previous image"
 msgstr "الصورة السابقة"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:230
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:234
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:576
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:29
 msgid "Price"
@@ -5252,8 +5362,8 @@ msgstr "سعر الوحدة بعملة {priceCurrency}"
 msgid "Price unavailable"
 msgstr "السعر غير متاح"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:250
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:215
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:254
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:248
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:605
 msgid "Priced in"
 msgstr "التسعير بـ"
@@ -5316,8 +5426,8 @@ msgstr "جارٍ حماية المحفظة الورقية…"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:134
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:374
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:708
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:383
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:717
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:213
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:297
 msgid "Protocol fee"
@@ -5397,7 +5507,7 @@ msgstr "سؤال"
 msgid "Queued"
 msgstr "في قائمة الانتظار"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:353
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:362
 msgid "Rate"
 msgstr "سعر الصرف"
 
@@ -5409,16 +5519,16 @@ msgstr "توزيع التقييمات"
 msgid "Reading the current rate…"
 msgstr "جارٍ قراءة سعر الصرف الحالي…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:307
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:366
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:320
 msgid "Reading the pool's balance…"
 msgstr "جارٍ قراءة رصيد الصندوق…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:507
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:566
 msgid "Reading this pool's fee…"
 msgstr "جارٍ قراءة رسوم هذا الصندوق…"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:116
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:130
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:83
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:795
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:809
@@ -5437,12 +5547,16 @@ msgstr "جاهز لتحصيل {amountText}"
 msgid "Reason for reporting"
 msgstr "سبب الإبلاغ"
 
+#: apps/web/src/components/retirement/retirement-request-form.tsx:125
+msgid "Reason for retirement"
+msgstr "سبب الإيقاف"
+
 #: apps/web/src/components/wallet/share-receipt-button.tsx:37
 msgid "Receipt copied"
 msgstr "تم نسخ الإيصال"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:72
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:192
+#: apps/web/src/features/home/ui/wallet-page.tsx:73
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:231
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
 #: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
@@ -5471,7 +5585,7 @@ msgstr "استلام القسائم"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:75
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:33
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:419
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:473
 #: apps/web/src/features/home/ui/activity-page.tsx:310
 msgid "Received"
 msgstr "تم الاستلام"
@@ -5526,7 +5640,7 @@ msgstr "أعد ربط المحفظة التي نشرت هذه القسيمة ل�
 #~ msgid "Reconnect the wallet that published this voucher to mint."
 #~ msgstr "أعد ربط المحفظة التي نشرت هذه القسيمة لإصدارها."
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:383
+#: apps/web/src/components/vouchers/voucher-summary.tsx:384
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:313
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:319
 msgid "Redeem"
@@ -5540,7 +5654,7 @@ msgstr "استردّ هذه القسيمة مجدداً لتحديث مراجع�
 msgid "Redeem this voucher to leave a review within seven days."
 msgstr "استردّ هذه القسيمة لكتابة مراجعة خلال سبعة أيام."
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:465
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:469
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:888
 msgid "Redeemable at our stall on market days..."
 msgstr "قابلة للاسترداد في منصتنا خلال أيام السوق..."
@@ -5569,12 +5683,12 @@ msgstr "فشل التسجيل. تحقق من اتصالك وحاول مرة أخ
 msgid "Rehabilitation"
 msgstr "إعادة التأهيل"
 
-#: apps/web/src/features/home/ui/report-page.tsx:524
+#: apps/web/src/features/home/ui/report-page.tsx:529
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:638
 msgid "Related pools"
 msgstr "المجمعات ذات الصلة"
 
-#: apps/web/src/features/home/ui/report-page.tsx:492
+#: apps/web/src/features/home/ui/report-page.tsx:497
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:615
 msgid "Related vouchers"
 msgstr "قسائم ذات صلة"
@@ -5608,10 +5722,10 @@ msgstr "هل تريد إزالة «{0}» من السوق؟"
 msgid "Remove {0}"
 msgstr "إزالة {0}"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:345
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:349
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:165
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:767
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:304
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:337
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:584
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:753
 #: apps/web/src/features/wants/ui/want-form-page.tsx:249
@@ -5647,13 +5761,13 @@ msgstr "جارٍ الإزالة…"
 msgid "Reply"
 msgstr "رد"
 
-#: apps/web/src/features/home/ui/report-page.tsx:408
+#: apps/web/src/features/home/ui/report-page.tsx:413
 msgid "Report details"
 msgstr "تفاصيل التقرير"
 
-#: apps/web/src/features/home/ui/report-page.tsx:181
-#: apps/web/src/features/home/ui/report-page.tsx:277
-#: apps/web/src/features/home/ui/report-page.tsx:317
+#: apps/web/src/features/home/ui/report-page.tsx:186
+#: apps/web/src/features/home/ui/report-page.tsx:282
+#: apps/web/src/features/home/ui/report-page.tsx:322
 msgid "Report images"
 msgstr "صور التقرير"
 
@@ -5661,11 +5775,11 @@ msgstr "صور التقرير"
 msgid "Report inappropriate"
 msgstr "الإبلاغ عن محتوى غير لائق"
 
-#: apps/web/src/features/home/ui/report-page.tsx:411
+#: apps/web/src/features/home/ui/report-page.tsx:416
 msgid "Report period"
 msgstr "فترة التقرير"
 
-#: apps/web/src/features/home/ui/report-page.tsx:559
+#: apps/web/src/features/home/ui/report-page.tsx:564
 msgid "Report provenance"
 msgstr "مصدر التقرير"
 
@@ -5676,6 +5790,23 @@ msgstr "تم الإبلاغ"
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:157
 msgid "Request"
 msgstr "طلب"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:18
+msgid "Request cancelled"
+msgstr "تم إلغاء الطلب"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:20
+msgid "Request closed because ownership changed"
+msgstr "أُغلق الطلب بسبب تغيير المالك"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:16
+msgid "Request rejected"
+msgstr "تم رفض الطلب"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:44
+#: apps/web/src/components/retirement/retirement-request-form.tsx:148
+msgid "Request retirement"
+msgstr "طلب الإيقاف"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:133
 #: apps/web/src/components/ui/location-picker.tsx:220
@@ -5702,39 +5833,81 @@ msgstr "الموارد المعروضة على الخريطة"
 
 #. placeholder {0}: voucher.symbol
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:457
-msgid "Retire {0}?"
-msgstr "هل تريد سحب {0} من التداول؟"
+#~ msgid "Retire {0}?"
+#~ msgstr "هل تريد سحب {0} من التداول؟"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:133
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
-msgid "Retire voucher"
-msgstr "سحب القسيمة من التداول"
+#~ msgid "Retire voucher"
+#~ msgstr "سحب القسيمة من التداول"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:44
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:52
 #~ msgid "Retired"
 #~ msgstr "متوقفة"
 
+#: apps/web/src/features/home/ui/wallet-page.tsx:440
+msgid "Retired — withdrawals available"
+msgstr "متوقف — السحب متاح"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:177
+msgid "Retired pool"
+msgstr "صندوق متوقف"
+
+#: apps/web/src/components/retirement/retirement-request-list.tsx:14
+msgid "Retirement approved"
+msgstr "تمت الموافقة على الإيقاف"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:115
+msgid "Retirement does not delete the voucher or pool from the blockchain. "
+"Existing balances and transaction history remain."
+msgstr "لا يؤدي الإيقاف إلى حذف القسيمة أو الصندوق من سلسلة الكتل. تبقى الأرصدة "
+"الحالية وسجل المعاملات محفوظة."
+
+#: apps/web/src/components/retirement/retirement-control.tsx:45
+msgid "Retirement history"
+msgstr "سجل الإيقاف"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:42
+msgid "Retirement requested"
+msgstr "تم طلب الإيقاف"
+
+#: apps/web/src/components/retirement/retirement-control.tsx:87
+msgid "Retirement requested — awaiting admin review. This resource stays active "
+"until approval."
+msgstr "تم طلب الإيقاف — بانتظار مراجعة المسؤول. يظل هذا المورد نشطًا حتى "
+"الموافقة."
+
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:15
+msgid "Retirement requests"
+msgstr "طلبات الإيقاف"
+
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
-msgid "Retiring…"
-msgstr "جارٍ السحب من التداول…"
+#~ msgid "Retiring…"
+#~ msgstr "جارٍ السحب من التداول…"
 
 #: apps/web/src/lib/category-label.ts:44
 msgid "Retreat"
 msgstr "الخلوة"
 
+#: apps/web/src/components/auth/authenticated-details-gate.tsx:58
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:60
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:66
 #: apps/web/src/components/creditable-browse-control.tsx:119
 #: apps/web/src/components/resource-usage.tsx:134
+#: apps/web/src/components/retirement/my-retirement-requests.tsx:29
+#: apps/web/src/components/retirement/retirement-control.tsx:80
+#: apps/web/src/components/retirement/retirement-request-form.tsx:65
 #: apps/web/src/components/ui/unit-of-account-combobox.tsx:82
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:332
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:220
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:336
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:126
 #: apps/web/src/components/vouchers/voucher-summary.tsx:156
-#: apps/web/src/components/wants/want-detail.tsx:245
+#: apps/web/src/components/wants/want-detail.tsx:172
+#: apps/web/src/components/wants/want-detail.tsx:298
 #: apps/web/src/components/wants/want-sheet.tsx:79
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:103
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:53
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:54
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:107
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:365
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:430
@@ -5746,10 +5919,12 @@ msgstr "الخلوة"
 #: apps/web/src/features/home/ui/market-map.tsx:1038
 #: apps/web/src/features/home/ui/marketplace-page.tsx:187
 #: apps/web/src/features/home/ui/marketplace-page.tsx:248
-#: apps/web/src/features/home/ui/report-page.tsx:57
-#: apps/web/src/features/home/ui/wallet-page.tsx:148
+#: apps/web/src/features/home/ui/report-page.tsx:60
+#: apps/web/src/features/home/ui/wallet-page.tsx:143
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:754
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:433
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:116
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:324
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:336
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:828
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:919
@@ -5766,7 +5941,7 @@ msgstr "الخلوة"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:740
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:416
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:470
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:155
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:153
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:47
 #: apps/web/src/features/wants/ui/want-form-page.tsx:78
 #: apps/web/src/features/wants/ui/wants-page.tsx:134
@@ -5792,7 +5967,7 @@ msgstr "إعادة محاولة الاتصال"
 msgid "Reverted"
 msgstr "تم التراجع"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:154
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:143
 msgid "Reviews"
 msgstr "التقييمات"
 
@@ -5808,22 +5983,22 @@ msgstr "التقييمات"
 msgid "Save"
 msgstr "حفظ"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:371
+#: apps/web/src/features/wants/ui/want-form-page.tsx:374
 msgid "Save and reopen Want"
 msgstr "حفظ الطلب وإعادة فتحه"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:360
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:512
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:516
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:201
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:471
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:504
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:597
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:698
 msgid "Save changes"
 msgstr "حفظ التغييرات"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:567
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:626
 msgid "Save fee settings"
 msgstr "حفظ إعدادات الرسوم"
 
@@ -5841,7 +6016,7 @@ msgstr "احفظ هذه البطاقة بأمان. إذا استخدمت كلم�
 msgid "Save username"
 msgstr "حفظ اسم المستخدم"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:373
+#: apps/web/src/features/wants/ui/want-form-page.tsx:376
 msgid "Save Want"
 msgstr "حفظ الطلب"
 
@@ -5860,11 +6035,11 @@ msgstr "تم الحفظ. منشورك ينتظر الموافقة مرة أخر�
 #: apps/web/src/components/catalogs/add-to-catalog-button.tsx:110
 #: apps/web/src/components/reviews/review-editor.tsx:145
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:358
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:510
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:514
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:199
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:469
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:502
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:696
 msgid "Saving…"
 msgstr "جارٍ الحفظ…"
@@ -5882,7 +6057,7 @@ msgid "Scan recipient address"
 msgstr "مسح عنوان المستلم"
 
 #: apps/web/src/components/wants/want-row.tsx:66
-#: apps/web/src/features/home/ui/wallet-page.tsx:340
+#: apps/web/src/features/home/ui/wallet-page.tsx:335
 msgid "Scheduled"
 msgstr "مجدول"
 
@@ -5950,7 +6125,7 @@ msgid "Search pool filters"
 msgstr "البحث في مرشحات المجمعات"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:763
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:300
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:333
 msgid "Search pool tags"
 msgstr "البحث في وسوم الصناديق"
 
@@ -5974,9 +6149,9 @@ msgstr "البحث في المنشورات بالعنوان أو الوصف"
 msgid "Search results use the area shown on the <0>map</0>."
 msgstr "تستخدم نتائج البحث المنطقة المعروضة على <0>الخريطة</0>."
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:344
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:348
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:766
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:303
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:336
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:583
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:752
 msgid "Search tags"
@@ -5987,11 +6162,11 @@ msgstr "البحث في الوسوم"
 msgid "Search the marketplace"
 msgstr "البحث في السوق"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:258
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:262
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:387
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:516
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:438
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:223
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:256
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:610
 msgid "Search units of account"
 msgstr "ابحث في وحدات الحساب"
@@ -6000,7 +6175,7 @@ msgstr "ابحث في وحدات الحساب"
 msgid "Search voucher filters"
 msgstr "البحث في عوامل تصفية القسائم"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:341
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:345
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:749
 msgid "Search voucher tags"
 msgstr "البحث في وسوم القسائم"
@@ -6078,7 +6253,7 @@ msgid "Select country code"
 msgstr "اختر رمز البلد"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:764
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:301
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:334
 msgid "Selected pool tags"
 msgstr "وسوم الصناديق المحددة"
 
@@ -6095,7 +6270,7 @@ msgstr "وسوم المنشورات المحددة"
 msgid "Selected tags"
 msgstr "الوسوم المحددة"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:342
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:346
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:750
 msgid "Selected voucher tags"
 msgstr "وسوم القسائم المحددة"
@@ -6116,8 +6291,8 @@ msgstr "بيع"
 msgid "Sell to a bank account"
 msgstr "البيع إلى حساب مصرفي"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:372
-#: apps/web/src/features/home/ui/wallet-page.tsx:69
+#: apps/web/src/components/vouchers/voucher-summary.tsx:373
+#: apps/web/src/features/home/ui/wallet-page.tsx:70
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:165
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:337
 msgid "Send"
@@ -6169,7 +6344,7 @@ msgstr "جارٍ الإرسال…"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:69
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:32
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:421
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:475
 #: apps/web/src/features/home/ui/activity-page.tsx:312
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:192
 msgid "Sent"
@@ -6201,7 +6376,7 @@ msgstr "فشل التحقق من الجلسة"
 msgid "Session could not be verified. Try again."
 msgstr "تعذّر التحقق من الجلسة. حاول مرة أخرى."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:406
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:465
 msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
 msgstr "حدّد مستلمًا للرسوم قبل تحصيلها، وإلا فلن يجد الصندوق جهة يدفع لها."
 
@@ -6224,8 +6399,8 @@ msgstr "جارٍ إعداد محفظتك…"
 msgid "Settings"
 msgstr "الإعدادات"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:439
-#: apps/web/src/components/wants/want-detail.tsx:333
+#: apps/web/src/components/vouchers/voucher-summary.tsx:440
+#: apps/web/src/components/wants/want-detail.tsx:386
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
 #: apps/web/src/features/wallet/ui/receive-page.tsx:156
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
@@ -6246,11 +6421,11 @@ msgstr "مشاركة CLC"
 msgid "Share installation link"
 msgstr "مشاركة رابط التثبيت"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:342
+#: apps/web/src/features/wants/ui/want-form-page.tsx:345
 msgid "Share my email"
 msgstr "مشاركة بريدي الإلكتروني"
 
-#: apps/web/src/features/wants/ui/want-form-page.tsx:355
+#: apps/web/src/features/wants/ui/want-form-page.tsx:358
 msgid "Share my phone number"
 msgstr "مشاركة رقم هاتفي"
 
@@ -6311,7 +6486,7 @@ msgstr "يتم عرض القسائم الحديثة فقط."
 #~ msgid "Shown on your voucher page"
 #~ msgstr "يظهر في صفحة قسيمتك"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:455
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:459
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:878
 msgid "Shown to anyone holding this voucher"
 msgstr "يظهر لأي شخص يحمل هذه القسيمة"
@@ -6320,7 +6495,7 @@ msgstr "يظهر لأي شخص يحمل هذه القسيمة"
 msgid "Shown to anyone joining this pool"
 msgstr "يظهر لأي شخص ينضم إلى هذا الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:414
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:447
 msgid "Shown to anyone using this pool"
 msgstr "يظهر لأي شخص يستخدم هذا الصندوق"
 
@@ -6345,11 +6520,11 @@ msgstr "سجّل الدخول لتصفح النتائج المتاحة عبر م
 msgid "Sign in to continue"
 msgstr "سجّل الدخول للمتابعة"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:352
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:406
 msgid "Sign in to view activity."
 msgstr "سجّل الدخول لعرض النشاط."
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:258
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:312
 msgid "Sign in to view posts."
 msgstr "سجّل الدخول لعرض المنشورات."
 
@@ -6462,7 +6637,7 @@ msgid "Starts"
 msgstr "يبدأ"
 
 #. placeholder {0}: dates.format(new Date(want.startsAt))
-#: apps/web/src/components/wants/want-detail.tsx:107
+#: apps/web/src/components/wants/want-detail.tsx:112
 msgid "Starts {0}"
 msgstr "يبدأ {0}"
 
@@ -6489,6 +6664,10 @@ msgstr "سرد القصص"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
 msgid "Submitted"
 msgstr "تم الإرسال"
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:148
+msgid "Submitting request…"
+msgstr "جارٍ إرسال الطلب…"
 
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:338
 msgid "Submitting…"
@@ -6547,10 +6726,10 @@ msgstr "ملفات SVG غير مدعومة. استخدم PNG أو JPEG أو WebP
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:157
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:396
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:494
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:196
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:505
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:304
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:503
 msgid "Swap"
 msgstr "مبادلة"
 
@@ -6558,7 +6737,7 @@ msgstr "مبادلة"
 msgid "Swap fee"
 msgstr "رسوم المبادلة"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:516
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:575
 msgid "Swap fee (%)"
 msgstr "رسوم المبادلة (%)"
 
@@ -6572,7 +6751,7 @@ msgid "Swap fee must be a number from 0 to 100"
 msgstr "يجب أن تكون رسوم المبادلة رقمًا من 0 إلى 100"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:393
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:502
 msgid "Swap for {0}"
 msgstr "مبادلة مقابل {0}"
 
@@ -6607,11 +6786,11 @@ msgstr "تمت مبادلة {0} مقابل {1}"
 msgid "Swapping"
 msgstr "جارٍ المبادلة"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:738
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:747
 msgid "Swapping…"
 msgstr "جارٍ المبادلة…"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:424
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:457
 msgid "Swaps settle within the market association..."
 msgstr "تُسوّى المبادلات ضمن رابطة السوق..."
 
@@ -6641,14 +6820,14 @@ msgid "Symbol was taken, using {0} instead."
 msgstr "الرمز مستخدم بالفعل، سيُستخدم {0} بدلاً منه."
 
 #: apps/web/src/components/market-search.tsx:224
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:313
-#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:79
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:317
+#: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:84
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:153
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/home/ui/marketplace-page.tsx:133
 #: apps/web/src/features/home/ui/offers-page.tsx:124
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:66
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:272
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:305
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:573
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:721
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:52
@@ -6713,11 +6892,13 @@ msgstr "أخبر الناس عن نشاطك التجاري..."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:120
 #: apps/web/src/components/vouchers/voucher-about.tsx:139
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:421
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:425
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:855
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:971
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:78
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:380
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:85
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:101
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:413
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:842
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:960
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
@@ -6732,9 +6913,9 @@ msgstr "الأحكام والشروط"
 msgid "Terms of Service"
 msgstr "شروط الخدمة"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:487
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:491
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:924
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:446
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:479
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:913
 msgid "Terms URL"
 msgstr "رابط الشروط"
@@ -6808,10 +6989,16 @@ msgstr "انقطع الاتصال قبل أن تستجيب خدمة الدفع. 
 "حتى تتضح النتيجة."
 
 #: apps/web/src/features/wants/ui/want-form-page.tsx:320
-msgid "The contact details you select will be public on this Want."
-msgstr "ستكون بيانات الاتصال التي تحددها عامة في هذا الطلب."
+msgid "The contact details you select are visible to signed-in users. The "
+"Want's map pin and exact coordinates stay public."
+msgstr "تظهر بيانات الاتصال التي تحددها للمستخدمين المسجّلين. تبقى علامة الطلب "
+"على الخريطة وإحداثياته الدقيقة عامة."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1045
+#: apps/web/src/features/wants/ui/want-form-page.tsx:320
+#~ msgid "The contact details you select will be public on this Want."
+#~ msgstr "ستكون بيانات الاتصال التي تحددها عامة في هذا الطلب."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1054
 msgid "The credit limit has been reached. No more can be added to this pool."
 msgstr "تم بلوغ حد الائتمان. لا يمكن إضافة المزيد إلى هذا الصندوق."
 
@@ -6842,7 +7029,7 @@ msgstr "الخريطة غير مدعومة على هذا الجهاز."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "يجب ألا يزيد طول الرسالة والطلب على 500 حرف."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:335
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "يمكن للمالك الجديد إنشاء القسائم ونقل الملكية."
 
@@ -6885,11 +7072,11 @@ msgid "The pool could not be published."
 msgstr "تعذّر نشر الصندوق."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:263
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:322
 msgid "The pool doesn't hold that much {0}."
 msgstr "لا يحتوي الصندوق على هذا المقدار من {0}."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:566
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:575
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "تغيّر عرض السعر. راجع المبالغ المحدّثة قبل التأكيد."
 
@@ -6909,15 +7096,15 @@ msgstr "انتهت مهلة الطلب دون استجابة من خدمة ال�
 msgid "The selected unit does not have a configured price feed."
 msgstr "لا توجد خلاصة أسعار مضبوطة للوحدة المحددة."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:279
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:393
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:498
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:338
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:452
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:557
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:446
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:464
 msgid "The transaction failed."
 msgstr "فشلت المعاملة."
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:229
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:262
 msgid "The unit of account is fixed by this pool's deployed oracle."
 msgstr "تم تثبيت وحدة الحساب بواسطة أوراكل هذا الصندوق المنشور."
 
@@ -6989,6 +7176,12 @@ msgstr "لا يزال تأكيد آخر دفعة من هذه البطاقة جا
 #: apps/web/src/components/nfc-card-prompt.tsx:38
 msgid "This card's wallet key is damaged and can't be used."
 msgstr "مفتاح المحفظة في هذه البطاقة تالف ولا يمكن استخدامه."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:91
+msgid "This check includes known pool holdings. Tokens not yet tracked may be "
+"missing."
+msgstr "يشمل هذا التحقق مقتنيات الصندوق المعروفة. قد لا تظهر الرموز التي لم "
+"يبدأ تتبعها بعد."
 
 #: apps/web/src/features/wants/ui/want-form-page.tsx:310
 msgid "This copies your current profile image. Later profile changes won't "
@@ -7064,22 +7257,22 @@ msgstr "لا يمكن لهذا الهاتف أو المتصفح قراءة بط�
 
 #. placeholder {0}: localizedAmounts.depositHeadroom
 #. placeholder {1}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:456
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:465
 msgid "This pool can only take {0} more {1} right now."
 msgstr "يمكن لهذا الصندوق قبول {0} {1} إضافية فقط الآن."
 
 #. placeholder {0}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:454
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:463
 msgid "This pool can't take any more {0} right now."
 msgstr "لا يمكن لهذا الصندوق قبول المزيد من {0} الآن."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:423
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:943
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:432
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:952
 msgid "This pool doesn't take any vouchers yet."
 msgstr "لا يقبل هذا الصندوق أي قسائم بعد."
 
 #. placeholder {0}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:468
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:477
 msgid "This pool has no {0} available to swap."
 msgstr "لا يتوفر في هذا الصندوق أي {0} للمبادلة."
 
@@ -7089,7 +7282,7 @@ msgid "This pool has no limiter, so deposits are uncapped and no credit limit "
 msgstr "لا يملك هذا الصندوق آلية لتحديد الحد، لذلك لا سقف للإيداعات ولا يمكن "
 "تعيين حد ائتماني."
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:590
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:649
 msgid "This pool holds no vouchers yet."
 msgstr "لا يحتوي هذا الصندوق على قسائم بعد."
 
@@ -7101,9 +7294,19 @@ msgstr "لا يحتوي هذا الصندوق على شيء بعد."
 #~ msgid "This pool is full of it"
 #~ msgstr "بلغ هذا الصندوق حدّه"
 
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:180
+msgid "This pool is hidden from discovery and does not accept new swaps or "
+"deposits in CLC. You can still withdraw funds and view its history."
+msgstr "هذا الصندوق مخفي من البحث ولا يقبل عمليات مبادلة أو إيداع جديدة في CLC. "
+"لا يزال بإمكانك سحب الأموال وعرض سجله."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:294
+msgid "This pool is retired. New swaps and deposits are not available."
+msgstr "هذا الصندوق متوقف. لا تتوفر عمليات مبادلة أو إيداع جديدة."
+
 #. placeholder {0}: localizedAmounts.availableAmountOut
 #. placeholder {1}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:470
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:479
 msgid "This pool only has {0} {1} available to swap."
 msgstr "لا يتوفر في هذا الصندوق سوى {0} {1} للمبادلة."
 
@@ -7119,7 +7322,7 @@ msgid "This pool values every voucher equally, so there is no rate to set. "
 msgstr "يمنح هذا الصندوق كل القسائم قيمة متساوية، لذلك لا يوجد سعر صرف لتعيينه. "
 "ولا يمكن إضافة قسائم إليه من هنا بعد."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:561
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:570
 msgid "This pool's deposit limit changed. Review the updated amounts and try "
 "again."
 msgstr "تغيّر حد الإيداع لهذا الصندوق. راجع المبالغ المحدّثة وحاول مرة أخرى."
@@ -7131,6 +7334,10 @@ msgstr "هذا المنشور كبير جدًا ولا يمكن حفظه. اخت
 #: apps/web/src/components/auth/sign-in-panel.tsx:298
 msgid "This QR code does not contain a valid private key."
 msgstr "لا يحتوي رمز QR هذا على مفتاح خاص صالح."
+
+#: apps/web/src/components/retirement/retirement-request-form.tsx:98
+msgid "This resource is already retired."
+msgstr "هذا المورد متوقف بالفعل."
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
 msgid "This version is no longer supported."
@@ -7154,7 +7361,7 @@ msgstr "العنوان"
 msgid "Title must be 200 characters or fewer"
 msgstr "يجب ألا يتجاوز العنوان 200 حرف"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:429
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:172
 #: apps/web/src/features/home/ui/activity-page.tsx:329
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:187
@@ -7189,8 +7396,8 @@ msgstr "أدوات"
 #~ msgstr "الإجمالي"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:387
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:717
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:396
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:726
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:223
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:298
 msgid "Total fees"
@@ -7229,16 +7436,16 @@ msgstr "تم نسخ تجزئة المعاملة"
 #~ msgid "Transfer history"
 #~ msgstr "سجل التحويلات"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:118
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:347
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:399
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:167
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:112
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:332
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:384
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:138
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:201
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:128
 msgid "Transfer ownership"
 msgstr "نقل الملكية"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:395
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:380
 msgid "Transferring ownership…"
 msgstr "جارٍ نقل الملكية…"
 
@@ -7257,24 +7464,25 @@ msgstr "رحلة"
 #: apps/web/src/components/offerings/offerings-panel.tsx:181
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:86
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:154
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:285
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:371
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:339
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:425
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:61
 #: apps/web/src/features/home/ui/activity-page.tsx:194
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:219
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:317
-#: apps/web/src/features/home/ui/wallet-page.tsx:186
-#: apps/web/src/features/home/ui/wallet-page.tsx:204
-#: apps/web/src/features/home/ui/wallet-page.tsx:295
-#: apps/web/src/features/home/ui/wallet-page.tsx:399
+#: apps/web/src/features/home/ui/wallet-page.tsx:181
+#: apps/web/src/features/home/ui/wallet-page.tsx:199
+#: apps/web/src/features/home/ui/wallet-page.tsx:290
+#: apps/web/src/features/home/ui/wallet-page.tsx:394
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:222
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:237
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:83
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:55
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:418
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:444
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:427
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:453
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:274
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:428
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
@@ -7316,12 +7524,12 @@ msgstr "تعذّر تحميل اللغة. تمت العودة إلى الإنج�
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:421
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:272
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:281
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:115
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:305
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:329
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:534
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:537
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:314
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:338
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:543
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:546
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:797
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:811
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
@@ -7351,6 +7559,7 @@ msgid "Unit must be 32 characters or fewer"
 msgstr "يجب ألا تتجاوز الوحدة 32 حرفًا"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:32
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:51
 msgid "Unit of account"
 msgstr "وحدة الحساب"
 
@@ -7404,7 +7613,7 @@ msgstr "التحديث مطلوب"
 msgid "Update your review"
 msgstr "تحديث مراجعتك"
 
-#: apps/web/src/features/home/ui/report-page.tsx:96
+#: apps/web/src/features/home/ui/report-page.tsx:99
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "تم التحديث"
@@ -7439,9 +7648,9 @@ msgid "Uploading photos…"
 msgstr "جارٍ تحميل الصور…"
 
 #: apps/web/src/components/ui/image-upload-field.tsx:146
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:508
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:512
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:950
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:467
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:500
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:167
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:939
 msgid "Uploading…"
@@ -7547,15 +7756,15 @@ msgstr "اهتزاز"
 msgid "View"
 msgstr "عرض"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:111
-#: apps/web/src/features/home/ui/wallet-page.tsx:159
-#: apps/web/src/features/home/ui/wallet-page.tsx:172
-#: apps/web/src/features/home/ui/wallet-page.tsx:214
-#: apps/web/src/features/home/ui/wallet-page.tsx:227
+#: apps/web/src/features/home/ui/wallet-page.tsx:106
+#: apps/web/src/features/home/ui/wallet-page.tsx:154
+#: apps/web/src/features/home/ui/wallet-page.tsx:167
+#: apps/web/src/features/home/ui/wallet-page.tsx:209
+#: apps/web/src/features/home/ui/wallet-page.tsx:222
 msgid "View all"
 msgstr "عرض الكل"
 
-#: apps/web/src/features/home/ui/report-page.tsx:236
+#: apps/web/src/features/home/ui/report-page.tsx:241
 msgid "View image full screen"
 msgstr "عرض الصورة بملء الشاشة"
 
@@ -7610,7 +7819,7 @@ msgstr "قسيمة"
 msgid "Voucher"
 msgstr "قسيمة"
 
-#: apps/web/src/components/vouchers/voucher-summary.tsx:360
+#: apps/web/src/components/vouchers/voucher-summary.tsx:361
 msgid "Voucher actions"
 msgstr "إجراءات القسيمة"
 
@@ -7618,7 +7827,7 @@ msgstr "إجراءات القسيمة"
 msgid "Voucher contract"
 msgstr "عقد القسيمة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:101
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:95
 msgid "Voucher controls"
 msgstr "عناصر التحكم في القسيمة"
 
@@ -7626,11 +7835,11 @@ msgstr "عناصر التحكم في القسيمة"
 msgid "Voucher creation receipt"
 msgstr "إيصال إنشاء القسيمة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:210
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:195
 msgid "Voucher creation submitted."
 msgstr "تم إرسال طلب إنشاء القسيمة."
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:210
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:214
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:506
 msgid "Voucher Description"
 msgstr "وصف القسيمة"
@@ -7649,11 +7858,11 @@ msgstr "يجب ألا يتجاوز وصف القسيمة 500 حرف"
 #~ msgid "Voucher details"
 #~ msgstr "تفاصيل القسيمة"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1038
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1047
 msgid "Voucher details unavailable"
 msgstr "تفاصيل القسيمة غير متاحة"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:171
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:175
 msgid "Voucher details updated."
 msgstr "تم تحديث تفاصيل القسيمة."
 
@@ -7680,8 +7889,8 @@ msgid "Voucher registry"
 msgstr "سجل القسائم"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
-msgid "Voucher retired."
-msgstr "تم سحب القسيمة من التداول."
+#~ msgid "Voucher retired."
+#~ msgstr "تم سحب القسيمة من التداول."
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:218
 msgid "Voucher review"
@@ -7705,7 +7914,7 @@ msgstr "رمز القسيمة مطلوب"
 msgid "Voucher symbol must be 6 characters or fewer"
 msgstr "يجب ألا يتجاوز رمز القسيمة 6 أحرف"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:343
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:347
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:751
 msgid "Voucher tags"
 msgstr "وسوم القسيمة"
@@ -7718,14 +7927,14 @@ msgstr "تفاصيل تتبّع القسيمة مفقودة."
 #: apps/web/src/components/market-bar.tsx:187
 #: apps/web/src/components/market-bar.tsx:267
 #: apps/web/src/components/resource-usage.tsx:115
-#: apps/web/src/components/wants/want-detail.tsx:169
+#: apps/web/src/components/wants/want-detail.tsx:222
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:40
 #: apps/web/src/features/home/ui/market-list-page.tsx:124
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:49
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:59
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:354
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:366
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:69
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:67
 msgid "Vouchers"
 msgstr "القسائم"
 
@@ -7773,9 +7982,9 @@ msgstr "في انتظار التأكيد…"
 msgid "Waiting for on-chain confirmation"
 msgstr "في انتظار التأكيد على السلسلة"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:565
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:402
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:490
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:624
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:124
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:595
 msgid "Waiting for the chain…"
@@ -7784,7 +7993,7 @@ msgstr "في انتظار السلسلة…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:43
 #: apps/web/src/components/wallet/recipient-address-input.tsx:196
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
-#: apps/web/src/features/home/ui/wallet-page.tsx:116
+#: apps/web/src/features/home/ui/wallet-page.tsx:111
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
@@ -7792,13 +8001,13 @@ msgstr "في انتظار السلسلة…"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:107
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:67
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:27
 #: apps/web/src/features/wants/ui/want-form-page.tsx:59
 msgid "Wallet"
 msgstr "المحفظة"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:121
+#: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Wallet actions"
 msgstr "إجراءات المحفظة"
 
@@ -7812,8 +8021,8 @@ msgid "Wallet session"
 msgstr "جلسة المحفظة"
 
 #: apps/web/src/features/home/ui/marketplace-page.tsx:410
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:121
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:146
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:63
 msgid "Want"
 msgstr "طلب"
 
@@ -7833,7 +8042,7 @@ msgstr "صورة الطلب"
 #: apps/web/src/components/market-bar.tsx:188
 #: apps/web/src/components/market-bar.tsx:266
 #: apps/web/src/components/resource-usage.tsx:119
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:58
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
 #: apps/web/src/features/wants/ui/wants-page.tsx:57
 msgid "Wants"
@@ -7842,6 +8051,10 @@ msgstr "الطلبات"
 #: apps/web/src/lib/category-label.ts:24
 msgid "Water Catchment"
 msgstr "تجميع المياه"
+
+#: apps/web/src/components/auth/authenticated-details-gate.tsx:55
+msgid "We could not verify your session."
+msgstr "تعذّر التحقق من جلستك."
 
 #: apps/web/src/components/auth/authenticated-route.tsx:48
 msgid "We could not verify your session. Check your connection and try again."
@@ -7866,13 +8079,14 @@ msgid "We couldn't verify whether this voucher already has supply."
 msgstr "تعذّر التحقق مما إذا كانت لهذه القسيمة كمية مصدرة بالفعل."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:98
-#: apps/web/src/components/vouchers/voucher-summary.tsx:409
+#: apps/web/src/components/vouchers/voucher-summary.tsx:410
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:418
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:434
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
+#: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
 msgid "Website"
 msgstr "موقع الويب"
@@ -7912,7 +8126,7 @@ msgstr "ما هو الصندوق؟"
 msgid "What's a voucher?"
 msgstr "ما هي القسيمة؟"
 
-#: apps/web/src/components/wants/want-detail.tsx:71
+#: apps/web/src/components/wants/want-detail.tsx:74
 msgid "When and where"
 msgstr "متى وأين"
 
@@ -7925,20 +8139,20 @@ msgstr "أين ولأي غرض"
 msgid "Where did this happen?"
 msgstr "أين حدث هذا؟"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:402
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:145
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:194
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:338
 msgid "Withdraw"
 msgstr "سحب"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:104
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:153
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:182
 msgid "Withdraw fees"
 msgstr "سحب الرسوم"
 
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:99
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:140
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:113
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:164
 msgid "Withdraw liquidity"
 msgstr "سحب السيولة"
 
@@ -7946,7 +8160,7 @@ msgstr "سحب السيولة"
 msgid "Withdrawal submitted"
 msgstr "تم إرسال طلب السحب"
 
-#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:307
+#: apps/web/src/components/vouchers/voucher-detail-sections.tsx:361
 msgid "Write a post"
 msgstr "كتابة منشور"
 
@@ -7958,9 +8172,9 @@ msgstr "كتابة مراجعة"
 msgid "Write here"
 msgstr "اكتب هنا"
 
-#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:424
+#: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:428
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:858
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:383
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:416
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:845
 msgid "Write my own"
 msgstr "كتابة شروطي الخاصة"
@@ -8012,6 +8226,10 @@ msgstr "لديك كتالوج بالفعل."
 #~ msgid "You can send any token to this address on the Gnosis blockchain."
 #~ msgstr "يمكنك إرسال أي رمز إلى هذا العنوان على سلسلة كتل Gnosis."
 
+#: apps/web/src/components/retirement/retirement-request-form.tsx:122
+msgid "You can still withdraw funds after the pool is retired."
+msgstr "لا يزال بإمكانك سحب الأموال بعد إيقاف الصندوق."
+
 #. placeholder {0}: new Date(viewer!.editableUntil!).toLocaleString()
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:175
 msgid "You can write or edit your review until {0}."
@@ -8025,7 +8243,7 @@ msgstr "يمكنك كتابة مراجعتك أو تعديلها حتى {0}."
 #~ msgid "You don't have a username yet."
 #~ msgstr "ليس لديك اسم مستخدم بعد."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:427
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:436
 msgid "You don't hold any voucher this pool takes."
 msgstr "لا تحتفظ بأي قسيمة يقبلها هذا الصندوق."
 
@@ -8037,7 +8255,7 @@ msgstr "لديك سبعة أيام بعد الاسترداد لكتابة مرا
 msgid "You haven't created a catalog yet."
 msgstr "لم تنشئ كتالوجًا بعد."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:406
+#: apps/web/src/features/home/ui/wallet-page.tsx:401
 msgid "You haven't created a pool yet."
 msgstr "لم تنشئ صندوقًا بعد."
 
@@ -8050,13 +8268,13 @@ msgid "You haven't written any posts yet."
 msgstr "لم تكتب أي منشورات بعد."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:61
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:691
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:700
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:191
 msgid "You receive"
 msgstr "أنت تستلم"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:62
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:695
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:704
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:196
 msgid "You send"
 msgstr "أنت ترسل"

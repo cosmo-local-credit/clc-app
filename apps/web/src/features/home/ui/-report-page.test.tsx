@@ -78,9 +78,13 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
   useReport: () => mocks.detail,
-  useReportLocation: (lat: number | null | undefined, lng: number | null | undefined) => {
-    mocks.useReportLocation(lat, lng);
-    return typeof lat === "number" && typeof lng === "number"
+  useReportLocation: (
+    lat: number | null | undefined,
+    lng: number | null | undefined,
+    enabled: boolean,
+  ) => {
+    mocks.useReportLocation(lat, lng, enabled);
+    return enabled && typeof lat === "number" && typeof lng === "number"
       ? mocks.location
       : { data: undefined };
   },
@@ -416,9 +420,10 @@ describe("ReportPage", () => {
   });
 
   it("reverse-geocodes the coordinates for the header, location panel, and Maps label", () => {
+    mocks.auth.isAuthenticated = true;
     render(<ReportPage reportId="3182" />);
 
-    expect(mocks.useReportLocation).toHaveBeenCalledWith(-1.29, 36.82);
+    expect(mocks.useReportLocation).toHaveBeenCalledWith(-1.29, 36.82, true);
     expect(screen.getAllByText("Mathira, Nyeri, Kenya")).toHaveLength(2);
     expect(screen.queryByText("Kitui, KEN")).toBeNull();
     expect(screen.getByRole("heading", { name: "Location" })).toBeTruthy();
@@ -434,10 +439,54 @@ describe("ReportPage", () => {
   });
 
   it("falls back to the backend location name when reverse geocoding fails", () => {
+    mocks.auth.isAuthenticated = true;
     mocks.location = { data: null };
     render(<ReportPage reportId="3182" />);
 
     expect(screen.getAllByText("Kitui, KEN")).toHaveLength(2);
+  });
+
+  it("shows an authenticated location when no updated timestamp is available", () => {
+    mocks.auth.isAuthenticated = true;
+    mocks.detail.data = detail({ updatedAt: null });
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.getAllByText("Mathira, Nyeri, Kenya")).toHaveLength(2);
+    expect(screen.queryByText("Updated")).toBeNull();
+  });
+
+  it("omits the metadata row for a guest when no updated timestamp exists", () => {
+    mocks.detail.data = detail({ updatedAt: null });
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.queryByText("Updated")).toBeNull();
+    expect(screen.queryByText("Mathira, Nyeri, Kenya")).toBeNull();
+  });
+
+  it("renders coordinate-only and label-only protected locations", () => {
+    mocks.auth.isAuthenticated = true;
+    mocks.location = { data: { locationName: "", country: "" } };
+    const coordinateOnly = render(<ReportPage reportId="3182" />);
+    expect(screen.queryByText("Mathira, Nyeri, Kenya")).toBeNull();
+    expect(screen.getByTestId("location-map")).toBeTruthy();
+    coordinateOnly.unmount();
+
+    mocks.location = { data: null };
+    mocks.detail.data = detail({ lat: null, lng: null, locationName: "Kitui, KEN" });
+    render(<ReportPage reportId="3182" />);
+    expect(screen.getAllByText("Kitui, KEN")).toHaveLength(2);
+    expect(screen.queryByTestId("location-map")).toBeNull();
+  });
+
+  it("does not resolve or mount Post location details for a guest", () => {
+    render(<ReportPage reportId="3182" />);
+
+    expect(mocks.useReportLocation).toHaveBeenCalledWith(-1.29, 36.82, false);
+    expect(screen.queryByText("Kitui, KEN")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Location" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
+    expect(screen.queryByTestId("location-map")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Open in Maps/ })).toBeNull();
   });
 
   it("renders no gallery or map when the report has neither", () => {

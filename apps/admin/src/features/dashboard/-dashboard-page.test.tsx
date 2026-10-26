@@ -11,6 +11,9 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { CHAIN_INFO } from "#/lib/chain";
 import { RELAYER_GAS_FLOOR_LABEL } from "./relayer-gas";
+vi.mock("#/features/retirement/retirement-notification", () => ({
+  RetirementDashboardLink: () => null,
+}));
 
 const dashboardStats = vi.hoisted(() =>
   vi.fn(() => ({

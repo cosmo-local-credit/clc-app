@@ -602,6 +602,7 @@ describe("pool voucher UI", () => {
       "Holdings",
       "Credit",
       "Activity",
+      "Info",
     ]);
     expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
     expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual([
@@ -611,6 +612,7 @@ describe("pool voucher UI", () => {
       "pool-panel-holdings",
       "pool-panel-credit",
       "pool-panel-activity",
+      "pool-panel-info",
     ]);
     // Only the selected panel is mounted, so every tab's target exists but one
     // panel is on screen.

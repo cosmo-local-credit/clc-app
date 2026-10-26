@@ -11,6 +11,7 @@ import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import type {
   AdminClient,
+  AdminPoolParams,
   AdminOTXParams,
   AdminPoolTransactionParams,
   AdminStatsParams,
@@ -62,7 +63,25 @@ export const adminKeys = {
   vouchers: (params: AdminVoucherParams) => ["clc", "admin", "vouchers", "page", params] as const,
   voucher: (address: string) =>
     ["clc", "admin", "vouchers", "detail", address.toLowerCase()] as const,
+  pools: (params: AdminPoolParams) => ["clc", "admin", "pools", "page", params] as const,
+  pool: (address: string) => ["clc", "admin", "pools", "detail", address.toLowerCase()] as const,
 } as const;
+
+export function adminPoolsQueryOptions(admin: AdminClient, params: AdminPoolParams) {
+  return queryOptions({
+    queryKey: adminKeys.pools(params),
+    queryFn: ({ signal }) => admin.listPools(params, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function adminPoolQueryOptions(admin: AdminClient, address: string | undefined) {
+  return queryOptions({
+    queryKey: adminKeys.pool(address ?? ""),
+    queryFn: ({ signal }) => admin.getPoolByAddress(requireAddress(address), signal),
+    enabled: Boolean(address),
+  });
+}
 
 export function adminVouchersQueryOptions(admin: AdminClient, params: AdminVoucherParams) {
   return queryOptions({

@@ -53,6 +53,76 @@ beforeEach(() => {
   fetchMock = vi.fn();
 });
 
+describe("retained pool administration", () => {
+  it("reads retired pool pages through the protected catalog with status and search", async () => {
+    fetchMock.mockResolvedValue(
+      ok({ pools: [{ address: ADDRESS, active: false }], first: 7, last: 7 }),
+    );
+    const page = await client().listPools({
+      perPage: 10,
+      status: "retired",
+      filter: { term: "community", tags: [], tagMatch: "any", vouchers: [], voucherMatch: "any" },
+    });
+    const { url, init } = lastCall();
+    expect(new URL(url).pathname).toBe("/api/v2/admin/pool-catalog");
+    expect(new URL(url).searchParams.get("status")).toBe("retired");
+    expect(new URL(url).searchParams.get("q")).toBe("community");
+    expect(init.cache).toBe("no-store");
+    expect(page.pools[0]?.active).toBe(false);
+    expect(page.receivedCount).toBe(1);
+  });
+
+  it("keeps a retired pool detail available to admin restoration", async () => {
+    fetchMock.mockResolvedValue(ok({ pool: { address: ADDRESS, active: false } }));
+    const pool = await client().getPoolByAddress(ADDRESS);
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/pools/${ADDRESS}`);
+    expect(pool.active).toBe(false);
+  });
+
+  it("serializes every pool-catalog filter and preserves cancellation", async () => {
+    fetchMock.mockResolvedValue(ok({ pools: null }));
+    const controller = new AbortController();
+
+    const page = await client().listPools(
+      {
+        perPage: 10,
+        cursor: 9,
+        next: true,
+        status: "active",
+        owner: ADDRESS,
+        filter: {
+          term: "market",
+          tags: ["food", "local"],
+          tagMatch: "all",
+          vouchers: [],
+          voucherMatch: "any",
+        },
+      },
+      controller.signal,
+    );
+
+    const { url, init } = lastCall();
+    const search = new URL(url).searchParams;
+    expect(search.get("q")).toBe("market");
+    expect(search.get("tags")).toBe("food,local");
+    expect(search.get("tagMatch")).toBe("all");
+    expect(search.get("status")).toBe("active");
+    expect(search.get("owner")).toBe(ADDRESS);
+    expect(search.get("cursor")).toBe("9");
+    expect(search.get("next")).toBe("true");
+    expect(init.signal).toBe(controller.signal);
+    expect(page).toMatchObject({ pools: [], receivedCount: 0 });
+  });
+
+  it("rejects a pool detail response without a usable address", async () => {
+    fetchMock.mockResolvedValue(ok({ pool: { name: "Broken" } }));
+
+    await expect(client().getPoolByAddress(ADDRESS)).rejects.toThrow(
+      "Pool response did not include a valid address.",
+    );
+  });
+});
+
 describe("listUsers", () => {
   it("requests one page and returns its cursor bounds", async () => {
     fetchMock.mockResolvedValue(ok({ users: [user()], first: 42, last: 42 }));

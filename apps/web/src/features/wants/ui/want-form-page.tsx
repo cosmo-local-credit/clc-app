@@ -317,7 +317,10 @@ function WantForm({
           <Trans>How should people contact you?</Trans>
         </h2>
         <p className="text-xs text-warning-foreground">
-          <Trans>The contact details you select will be public on this Want.</Trans>
+          <Trans>
+            The contact details you select are visible to signed-in users. The Want's map pin and
+            exact coordinates stay public.
+          </Trans>
         </p>
         <Field label={t`Contact instructions`} htmlFor="want-contact">
           <Textarea

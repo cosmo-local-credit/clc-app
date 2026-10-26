@@ -7,10 +7,20 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const api = vi.hoisted(() => ({
   updateVoucherProfile: vi.fn(),
-  getMarketVoucher: vi.fn(),
+  getVoucherInfo: vi.fn(),
 }));
+const auth = vi.hoisted(() => ({
+  isAuthenticated: true,
+  session: { address: "0x9999999999999999999999999999999999999999" } as
+    | { address: string }
+    | undefined,
+}));
+const VIEWER = "0x9999999999999999999999999999999999999999";
 
 vi.mock("#/lib/api/market", () => ({ marketClient: api }));
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => auth,
+}));
 
 import { useUpdateVoucherProfile } from "./use-update-voucher-profile";
 
@@ -53,16 +63,19 @@ function wrapper(client: QueryClient) {
 }
 
 beforeEach(() => {
+  auth.isAuthenticated = true;
+  auth.session = { address: VIEWER };
   api.updateVoucherProfile.mockReset();
-  api.getMarketVoucher.mockReset();
+  api.getVoucherInfo.mockReset();
   api.updateVoucherProfile.mockResolvedValue(detail("Mutation response"));
-  api.getMarketVoucher.mockResolvedValue(detail("Fresh read-back"));
+  api.getVoucherInfo.mockResolvedValue(detail("Fresh read-back"));
 });
 
 describe("useUpdateVoucherProfile", () => {
-  it("reads past the HTTP cache and keeps the fresh detail out of invalidation", async () => {
+  it("keeps protected mutation data in the wallet-scoped private cache", async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const detailKey = voucherKeys.detail(ADDRESS);
+    const infoKey = voucherKeys.info(ADDRESS, VIEWER);
     const listKey = voucherKeys.list({ perPage: 20 });
     client.setQueryData(detailKey, detail("Stale cached row"));
     client.setQueryData(listKey, { vouchers: [] });
@@ -85,9 +98,36 @@ describe("useUpdateVoucherProfile", () => {
     });
 
     expect(api.updateVoucherProfile).toHaveBeenCalledTimes(1);
-    expect(api.getMarketVoucher).toHaveBeenCalledWith(ADDRESS, undefined, { cache: "reload" });
-    expect(client.getQueryData<MarketVoucherDetail>(detailKey)?.name).toBe("Fresh read-back");
-    expect(client.getQueryState(detailKey)?.isInvalidated).toBe(false);
+    expect(api.getVoucherInfo).toHaveBeenCalledWith(ADDRESS);
+    expect(client.getQueryData<MarketVoucherDetail>(detailKey)?.name).toBe("Stale cached row");
+    expect(client.getQueryData<MarketVoucherDetail>(infoKey)?.name).toBe("Fresh read-back");
+    expect(client.getQueryState(detailKey)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(infoKey)?.isInvalidated).toBe(false);
     expect(client.getQueryState(listKey)?.isInvalidated).toBe(true);
+  });
+
+  it("does not seed a private viewer cache when authentication is absent", async () => {
+    auth.isAuthenticated = false;
+    auth.session = undefined;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result } = renderHook(() => useUpdateVoucherProfile(ADDRESS), {
+      wrapper: wrapper(client),
+    });
+
+    await result.current.mutateAsync({
+      description: "Updated",
+      voucherUoa: "KES",
+      voucherValue: 10,
+      email: "",
+      website: "",
+      phone: "",
+      terms: "",
+      locationName: "",
+      geoLat: null,
+      geoLng: null,
+      tags: [],
+    });
+
+    expect(client.getQueriesData({ queryKey: [...voucherKeys.all, "info"] })).toEqual([]);
   });
 });

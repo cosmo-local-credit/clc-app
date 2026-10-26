@@ -36,6 +36,7 @@ import {
   relayerGasTone,
 } from "./relayer-gas";
 import { useDashboardStats, useRelayerGas } from "./use-dashboard-metrics";
+import { RetirementDashboardLink } from "#/features/retirement/retirement-notification";
 
 const catalogChartConfig = {
   reports: { label: "Reports", color: "var(--chart-1)" },
@@ -83,6 +84,8 @@ export function DashboardPage({
         title="Dashboard"
         actions={<TimeRangeSelect value={search} onChange={onSearchChange} />}
       />
+
+      <RetirementDashboardLink />
 
       {failures.length > 0 ? (
         <Alert className="border-destructive/30 bg-destructive/10">

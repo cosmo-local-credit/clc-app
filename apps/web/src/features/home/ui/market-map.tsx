@@ -54,6 +54,7 @@ const STACK_COUNT_LAYER_ID = "market-stack-count";
 const SPIDER_SOURCE_ID = "market-spider";
 const SPIDER_LEG_LAYER_ID = "market-spider-legs";
 const SPIDER_POINT_LAYER_ID = "market-spider-points";
+const SPIDER_LABEL_LAYER_ID = "market-spider-labels";
 
 const INTERACTIVE_LAYER_IDS = [
   CLUSTERS_LAYER_ID,
@@ -63,6 +64,7 @@ const INTERACTIVE_LAYER_IDS = [
   STACK_COUNT_LAYER_ID,
   SELECTED_LAYER_ID,
   SPIDER_POINT_LAYER_ID,
+  SPIDER_LABEL_LAYER_ID,
   LABEL_LAYER_ID,
   SELECTED_LABEL_LAYER_ID,
 ];
@@ -186,7 +188,19 @@ type PinProperties = { pin: string; label: string };
 
 type SpiderFeature = {
   type: "Feature";
-  properties: { id: string; name: string } & PinProperties;
+  properties: {
+    id: string;
+    name: string;
+    labelAnchor:
+      | "top"
+      | "bottom"
+      | "left"
+      | "right"
+      | "top-left"
+      | "top-right"
+      | "bottom-left"
+      | "bottom-right";
+  } & PinProperties;
   geometry:
     | { type: "Point"; coordinates: [number, number] }
     | { type: "LineString"; coordinates: [number, number][] };
@@ -304,12 +318,39 @@ function labelLayout(
   };
 }
 
-const LABEL_PAINT: NonNullable<SymbolLayer["paint"]> = {
-  "text-color": ["get", "label"],
-  "text-halo-color": "#ffffff",
-  "text-halo-width": 1.5,
-  "text-halo-blur": 0.5,
-};
+function labelPaint(theme: "light" | "dark"): NonNullable<SymbolLayer["paint"]> {
+  return theme === "dark"
+    ? {
+        "text-color": "#fafafa",
+        "text-halo-color": "rgba(9, 9, 11, 0.92)",
+        "text-halo-width": 2.5,
+        "text-halo-blur": 0.75,
+      }
+    : {
+        "text-color": ["get", "label"],
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 2,
+        "text-halo-blur": 0.5,
+      };
+}
+
+function spiderLabelAnchor({
+  dx,
+  dy,
+}: {
+  dx: number;
+  dy: number;
+}): SpiderFeature["properties"]["labelAnchor"] {
+  const horizontal = Math.abs(dx) > 0.35 * Math.abs(dy);
+  const vertical = Math.abs(dy) > 0.35 * Math.abs(dx);
+
+  if (horizontal && vertical) {
+    if (dx > 0) return dy > 0 ? "top-left" : "bottom-left";
+    return dy > 0 ? "top-right" : "bottom-right";
+  }
+  if (horizontal) return dx > 0 ? "left" : "right";
+  return dy > 0 ? "top" : "bottom";
+}
 
 /** The selected location uses its own text layer, below every pin and badge. */
 function labelFilter(selectedId: string | null): FilterSpecification {
@@ -378,7 +419,7 @@ function addMarketLayers(
     source: MARKET_SOURCE_ID,
     filter: labelFilter(selectedLocationId),
     layout: labelLayout(markerPin.base, LABEL_FONT),
-    paint: LABEL_PAINT,
+    paint: labelPaint(theme),
   });
   map.addLayer({
     id: SELECTED_LABEL_LAYER_ID,
@@ -386,7 +427,7 @@ function addMarketLayers(
     source: MARKET_SOURCE_ID,
     filter: selectedFilter(selectedLocationId),
     layout: labelLayout(markerPin.selected, SELECTED_LABEL_FONT),
-    paint: LABEL_PAINT,
+    paint: labelPaint(theme),
   });
 
   map.addLayer({
@@ -498,6 +539,26 @@ function addMarketLayers(
       "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
     },
+  });
+  map.addLayer({
+    id: SPIDER_LABEL_LAYER_ID,
+    type: "symbol",
+    source: SPIDER_SOURCE_ID,
+    filter: ["==", ["geometry-type"], "Point"],
+    layout: {
+      "text-field": ["get", "name"],
+      "text-font": LABEL_FONT,
+      "text-size": LABEL_SIZE,
+      "text-max-width": 7,
+      "text-line-height": 1.15,
+      "text-justify": "auto",
+      "text-anchor": ["get", "labelAnchor"],
+      "text-radial-offset": (markerPin.base.radius + LABEL_GAP) / LABEL_SIZE,
+      "text-padding": 0,
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    },
+    paint: labelPaint(theme),
   });
   map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
     "case",
@@ -878,7 +939,12 @@ export function MarketMap({
       if (!member) return;
       const point = map.unproject([anchor.x + offset.dx, anchor.y + offset.dy]);
       const coordinates: [number, number] = [point.lng, point.lat];
-      const properties = { id: member.id, name: member.name, ...pinProperties(member) };
+      const properties = {
+        id: member.id,
+        name: member.name,
+        labelAnchor: spiderLabelAnchor(offset),
+        ...pinProperties(member),
+      };
       features.push({
         type: "Feature",
         properties,

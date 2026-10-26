@@ -11,12 +11,15 @@ import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
-import { poolFilteredPageQueryOptions } from "@clc/api/features/pools/queries";
+import { adminPoolsQueryOptions } from "@clc/api/features/admin/queries";
 import { ListToolbar } from "#/components/admin/list-toolbar";
 import { TablePagination } from "#/components/admin/table-pagination";
 import { clcApi } from "#/lib/api";
 import { termFilter } from "#/lib/catalog-filter";
-import { filterSearch, type TableSearch } from "#/lib/table-search";
+import { filterSearch } from "#/lib/table-search";
+import { POOL_STATUSES, type PoolListSearch } from "./pool-list-search";
+import { Badge } from "#/components/ui/badge";
+import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
 
@@ -30,6 +33,15 @@ const columns: Array<ColumnDef<UserPool>> = [
     accessorKey: "symbol",
     header: "Symbol",
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.symbol}</span>,
+  },
+  {
+    accessorKey: "active",
+    header: "Status",
+    cell: ({ row }) => (
+      <Badge variant="outline" className="font-mono text-xs uppercase">
+        {row.original.active === false ? "Retired" : "Active"}
+      </Badge>
+    ),
   },
   {
     accessorKey: "address",
@@ -63,7 +75,7 @@ const columns: Array<ColumnDef<UserPool>> = [
   },
 ];
 
-export function PoolsPage({ search }: { search: TableSearch }) {
+export function PoolsPage({ search }: { search: PoolListSearch }) {
   const navigate = useNavigate();
   // The term goes to the endpoint, so a search covers every pool rather than the
   // page in hand. Read back off the filter rather than off `search.q`: a term the
@@ -72,11 +84,12 @@ export function PoolsPage({ search }: { search: TableSearch }) {
   const filter = termFilter(search.q ?? "");
   const searched = filter.term !== "";
   const poolsQuery = useQuery(
-    poolFilteredPageQueryOptions(clcApi.pools, {
+    adminPoolsQueryOptions(clcApi.admin, {
       perPage: search.perPage,
       cursor: search.cursor,
       next: search.dir === undefined ? undefined : search.dir === "next",
       filter,
+      status: search.status ?? "all",
     }),
   );
 
@@ -104,6 +117,36 @@ export function PoolsPage({ search }: { search: TableSearch }) {
                 })
               }
               searchPlaceholder="Name, symbol, address"
+              filters={
+                <ToggleGroup
+                  variant="outline"
+                  size="sm"
+                  spacing={0}
+                  value={[search.status ?? "all"]}
+                  onValueChange={(values) => {
+                    const status = values[0] as PoolListSearch["status"];
+                    if (status)
+                      void navigate({
+                        to: "/pools",
+                        search: filterSearch(search, {
+                          status: status === "all" ? undefined : status,
+                        }),
+                      });
+                  }}
+                  aria-label="Pool status"
+                  className="border-border bg-card h-9 items-center border p-0.5"
+                >
+                  {POOL_STATUSES.map((status) => (
+                    <ToggleGroupItem
+                      key={status}
+                      value={status}
+                      className="text-muted-foreground data-[pressed]:bg-muted data-[pressed]:text-foreground aria-pressed:bg-muted aria-pressed:text-foreground h-full min-w-9 px-2.5 font-mono text-xs font-medium tracking-wide uppercase"
+                    >
+                      {status}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              }
             />
             <Button
               type="button"

@@ -441,7 +441,15 @@ export type AdminVoucherParams = CursorParams & {
   owner?: string;
 };
 
+export type AdminPoolParams = CursorParams & {
+  filter: CatalogFilter;
+  status?: "all" | "active" | "retired";
+  owner?: string;
+};
+
 export type AdminClient = {
+  listPools(params: AdminPoolParams, signal?: AbortSignal): Promise<UserPoolPage>;
+  getPoolByAddress(address: string, signal?: AbortSignal): Promise<UserPool>;
   /** One cursor page of the account directory, newest first. */
   listUsers(params: AdminUserParams, signal?: AbortSignal): Promise<AdminUserPage>;
   approveUser(address: string): Promise<AdminUser>;
@@ -734,6 +742,35 @@ export function createAdminClient(http: HttpClient): AdminClient {
         pools: received.map(normalizeUserPool).filter(isPresent),
         receivedCount: received.length,
       };
+    },
+
+    async listPools(params, signal) {
+      const search = new URLSearchParams(formatCursorQuery(params));
+      if (params.filter.term) search.set("q", params.filter.term);
+      if (params.filter.tags.length) search.set("tags", params.filter.tags.join(","));
+      if (params.filter.tagMatch === "all") search.set("tagMatch", "all");
+      if (params.status) search.set("status", params.status);
+      if (params.owner) search.set("owner", params.owner);
+      const result = await http.request<BackendAdminPoolPage>(
+        `/api/v2/admin/pool-catalog?${search.toString()}`,
+        { method: "GET", cache: "no-store", signal },
+      );
+      const received = result.pools ?? [];
+      return {
+        ...result,
+        pools: received.map(normalizeUserPool).filter(isPresent),
+        receivedCount: received.length,
+      };
+    },
+
+    async getPoolByAddress(address, signal) {
+      const result = await http.request<BackendAdminPoolEnvelope>(
+        `/api/v2/admin/pools/${encodeURIComponent(address)}`,
+        { method: "GET", cache: "no-store", signal },
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Pool response did not include a valid address.");
+      return pool;
     },
 
     /** Saves an operator's edits to a pool's off-chain catalog record. */

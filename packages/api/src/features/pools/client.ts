@@ -53,6 +53,8 @@ export type FilteredPoolPage = UserPoolPage & {
 
 export type UserPool = {
   id: string;
+  /** False when retired in CLC; the contract and owner withdrawals remain. */
+  active?: boolean;
   chainId: number | null;
   address: HexAddress;
   name: string;
@@ -128,7 +130,11 @@ export type PoolProfileUpdate = {
   imageUrl?: string;
   bannerUrl?: string;
   tags: string[];
+  /** Explicit confirmation that these existing contacts should be removed. */
+  clearContactFields?: readonly PoolContactField[];
 };
+
+export type PoolContactField = "email" | "phone" | "website";
 
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim();
@@ -158,6 +164,9 @@ export function serializePoolProfileUpdate(profile: PoolProfileUpdate) {
     ...(profile.imageUrl === undefined ? {} : { imageUrl: profile.imageUrl }),
     ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
     tags: profile.tags,
+    ...(profile.clearContactFields === undefined
+      ? {}
+      : { clearContactFields: profile.clearContactFields }),
   };
 }
 
@@ -214,6 +223,7 @@ export type PoolVoucherPage = {
 
 type BackendPool = Partial<{
   id: string | number;
+  active: boolean;
   chainId: string | number;
   address: string;
   name: string;
@@ -316,6 +326,45 @@ export type PoolsClient = ReturnType<typeof createPoolsClient>;
 
 export function createPoolsClient(http: HttpClient, options: { adminComposition?: boolean } = {}) {
   return {
+    /** Owner recovery includes retired catalog rows, unlike public discovery. */
+    async getOwnedPools(params: CursorParams, signal?: AbortSignal): Promise<UserPoolPage> {
+      const result = await http.request<BackendPoolPage>(
+        `/api/v2/users/me/owned-pools${formatCursorQuery(params)}`,
+        poolReadRequest(signal),
+      );
+      const received = result.pools ?? [];
+      return {
+        ...result,
+        pools: received.map(normalizeUserPool).filter(isPresent),
+        receivedCount: received.length,
+      };
+    },
+
+    async getOwnedPoolByAddress(address: string, signal?: AbortSignal): Promise<UserPool> {
+      const result = await http.request<BackendPoolEnvelope>(
+        `/api/v2/users/me/owned-pools/${encodeURIComponent(address)}`,
+        poolReadRequest(signal),
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Owned pool response did not include a valid address.");
+      return pool;
+    },
+
+    async getOwnedPoolVouchers(
+      address: string,
+      params: CursorParams,
+      signal?: AbortSignal,
+    ): Promise<PoolVoucherPage> {
+      const result = await http.request<BackendPoolVoucherPage>(
+        `/api/v2/users/me/owned-pools/${encodeURIComponent(address)}/vouchers${formatCursorQuery(params)}`,
+        poolReadRequest(signal),
+      );
+      return {
+        ...result,
+        vouchers: (result.vouchers ?? []).map(normalizePoolVoucher).filter(isPresent),
+      };
+    },
+
     async getPools(
       params: CursorParams & { nearby?: boolean; bounds?: readonly MarketBoundingBox[] },
       signal?: AbortSignal,
@@ -330,7 +379,7 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
       const received = result.pools ?? [];
       return {
         ...result,
-        pools: received.map(normalizeUserPool).filter(isPresent),
+        pools: received.map(normalizePublicUserPool).filter(isPresent),
         receivedCount: received.length,
       };
     },
@@ -362,7 +411,7 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
       const received = result.pools ?? [];
       return {
         ...result,
-        pools: received.map(normalizeUserPool).filter(isPresent),
+        pools: received.map(normalizePublicUserPool).filter(isPresent),
         receivedCount: received.length,
         tagFacets: result.tagFacets
           ? result.tagFacets.map(normalizePoolTagFacet).filter(isPresent)
@@ -378,8 +427,18 @@ export function createPoolsClient(http: HttpClient, options: { adminComposition?
         `/api/v2/pools/${encodeURIComponent(address)}`,
         poolReadRequest(signal),
       );
-      const pool = normalizeUserPool(result.pool ?? result);
+      const pool = normalizePublicUserPool(result.pool ?? result);
       if (!pool) throw new Error("Pool response did not include a valid address.");
+      return pool;
+    },
+
+    async getPoolInfo(address: string, signal?: AbortSignal): Promise<UserPool> {
+      const result = await http.request<BackendPoolEnvelope>(
+        `/api/v2/pools/${encodeURIComponent(address)}/info`,
+        poolReadRequest(signal),
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Pool info response did not include a valid address.");
       return pool;
     },
 
@@ -461,6 +520,7 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
   const symbol = normalizeText(pool.symbol) ?? "POOL";
   return {
     id: String(pool.id ?? address),
+    active: pool.active !== false,
     chainId: normalizeNumber(pool.chainId),
     address,
     name,
@@ -494,6 +554,11 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
     createdAt: pool.createdAt,
     updatedAt: pool.updatedAt,
   };
+}
+
+function normalizePublicUserPool(pool: BackendPool): UserPool | null {
+  const normalized = normalizeUserPool(pool);
+  return normalized ? { ...normalized, email: null, phone: null, website: null } : null;
 }
 
 function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {

@@ -337,7 +337,7 @@ describe("MarketMap lifecycle", () => {
     const map = loadedMap();
     const originalMarker = markerInstances[0];
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
     expect(map.hasImage(MARKET_NETWORK_BADGE_IMAGE_ID.light)).toBe(true);
 
     act(() => useThemeStore.getState().setTheme("dark"));
@@ -352,6 +352,7 @@ describe("MarketMap lifecycle", () => {
     expect(map.getSource("market-label-edges")).toBeDefined();
     expect(map.getLayer("market-point-selected")).toBeDefined();
     expect(map.getLayer("market-clusters")).toBeDefined();
+    expect(map.getLayer("market-spider-labels")).toBeDefined();
     expect(map.hasImage(MARKET_NETWORK_BADGE_IMAGE_ID.dark)).toBe(true);
     expect(markerInstances).toEqual([originalMarker]);
     expect(map.remove).not.toHaveBeenCalled();
@@ -376,7 +377,7 @@ describe("MarketMap lifecycle", () => {
       return (source.spec.data as { features: unknown[] }).features;
     };
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
     clickFeature(
       map,
       "market-stacks",
@@ -410,6 +411,7 @@ describe("MarketMap lifecycle", () => {
     expect(map.getSource("market-label-edges")).toBeDefined();
     expect(map.getLayer("market-point-selected")).toBeDefined();
     expect(map.getLayer("market-clusters")).toBeDefined();
+    expect(map.getLayer("market-spider-labels")).toBeDefined();
     expect(markerInstances).toEqual([originalMarker]);
     expect(spiderFeatures()).toHaveLength(6);
     expect(map.easeTo).toHaveBeenCalledTimes(cameraMoves);
@@ -1144,6 +1146,36 @@ describe("MarketMap spiderfy", () => {
     expect(points.map((point) => point.properties.id).sort()).toEqual(["s1", "s2", "s3"]);
   });
 
+  it("adds one outward, always-visible name for every fanned pin", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    openStack(map);
+
+    const layer = map.getLayer("market-spider-labels") as {
+      type?: string;
+      filter?: unknown;
+      layout?: Record<string, unknown>;
+      paint?: Record<string, unknown>;
+    };
+    expect(layer.type).toBe("symbol");
+    expect(layer.filter).toEqual(["==", ["geometry-type"], "Point"]);
+    expect(layer.layout).toMatchObject({
+      "text-field": ["get", "name"],
+      "text-font": ["Noto Sans Regular"],
+      "text-anchor": ["get", "labelAnchor"],
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    });
+    expect(layer.layout?.["text-radial-offset"]).toBeGreaterThan(1);
+
+    const points = spiderData(map).features.filter(
+      (feature) => feature.geometry.type === "Point",
+    ) as Array<{ properties: { id: string; name?: string; labelAnchor?: string } }>;
+    expect(points.map((point) => point.properties.name)).toEqual(["Farm Star", "Beta", "Gamma"]);
+    expect(points.every((point) => typeof point.properties.labelAnchor === "string")).toBe(true);
+  });
+
   it("places every fanned pin somewhere different from the shared anchor", () => {
     renderMap(KILIFI_STACK);
     const map = loadedMap();
@@ -1172,6 +1204,17 @@ describe("MarketMap spiderfy", () => {
         coordinates: [39.85, -3.63],
       },
     );
+
+    expect(onSelect).toHaveBeenCalledWith("s2");
+  });
+
+  it("selects the corresponding member when its expanded name is tapped", () => {
+    const onSelect = vi.fn();
+    renderMap(KILIFI_STACK, { onSelectLocation: onSelect });
+    const map = loadedMap();
+    openStack(map);
+
+    clickFeature(map, "market-spider-labels", { id: "s2" });
 
     expect(onSelect).toHaveBeenCalledWith("s2");
   });
@@ -1496,17 +1539,17 @@ describe("MarketMap fan paging", () => {
       .map((feature) => feature.properties.id);
   }
 
-  it("fans the whole 63-voucher CBD stack in one go", () => {
+  it("fans one readable page of the 63-voucher CBD stack", () => {
     renderMap(bigStack(63));
     const map = loadedMap();
 
     tapBadge(map, 63);
 
-    expect(fanIds(map)).toHaveLength(63);
+    expect(fanIds(map)).toHaveLength(SPIDER_PAGE_SIZE);
   });
 
   it("walks every member of an oversized stack across taps", () => {
-    const size = SPIDER_PAGE_SIZE + 12;
+    const size = SPIDER_PAGE_SIZE + 4;
     renderMap(bigStack(size));
     const map = loadedMap();
 
@@ -1516,13 +1559,13 @@ describe("MarketMap fan paging", () => {
 
     tapBadge(map, size);
     const second = fanIds(map);
-    expect(second).toHaveLength(12);
+    expect(second).toHaveLength(4);
 
     expect(new Set([...first, ...second]).size).toBe(size);
   });
 
   it("closes after the last page", () => {
-    const size = SPIDER_PAGE_SIZE + 12;
+    const size = SPIDER_PAGE_SIZE + 4;
     renderMap(bigStack(size));
     const map = loadedMap();
 
@@ -1750,6 +1793,27 @@ describe("MarketMap pins and names", () => {
     ]);
     expect(layer.paint?.["text-color"]).toEqual(["get", "label"]);
     expect(layer.paint?.["text-halo-color"]).toBe("#ffffff");
+    expect(layer.paint?.["text-halo-width"]).toBe(2);
+  });
+
+  it("uses light text with a dark halo for names on Fiord", () => {
+    window.localStorage.setItem("clc.theme", "dark");
+    useThemeStore.setState({ theme: "dark" });
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const pointLabel = map.getLayer("market-point-labels") as {
+      paint?: Record<string, unknown>;
+    };
+    const spiderLabel = map.getLayer("market-spider-labels") as {
+      paint?: Record<string, unknown>;
+    };
+
+    for (const layer of [pointLabel, spiderLabel]) {
+      expect(layer.paint?.["text-color"]).toBe("#fafafa");
+      expect(layer.paint?.["text-halo-color"]).toBe("rgba(9, 9, 11, 0.92)");
+      expect(layer.paint?.["text-halo-width"]).toBe(2.5);
+      expect(layer.paint?.["text-halo-blur"]).toBe(0.75);
+    }
   });
 
   it("sets each name beside the pin, on whichever side fits", () => {
@@ -2000,7 +2064,7 @@ describe("MarketMap style failure", () => {
     });
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
-    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty");
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
     expect(map.remove).not.toHaveBeenCalled();
   });
@@ -2036,7 +2100,7 @@ describe("MarketMap style failure", () => {
     );
 
     expect(screen.queryByText(/could not be loaded/i)).toBeNull();
-    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/positron");
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty");
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
   });
 
@@ -2077,7 +2141,7 @@ describe("MarketMap style failure", () => {
     );
     const map = loadedMap();
 
-    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/positron");
+    expect(map.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
     expect(map.setStyle).not.toHaveBeenCalled();
     expect(onSatelliteUnavailable).toHaveBeenCalledOnce();
   });
