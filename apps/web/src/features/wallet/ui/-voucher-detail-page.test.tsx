@@ -46,6 +46,8 @@ vi.mock("#/hooks/use-resource-usage", () => ({
 }));
 
 const mocks = vi.hoisted(() => ({
+  /** Session addresses projected as signers of the voucher's owner Safe. */
+  safeSigners: [] as string[],
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
   auth: {
     isAuthenticated: true,
@@ -169,17 +171,21 @@ vi.mock("#/features/ownership/hooks/use-asset-owner-info", async () => {
   return {
     useAssetOwnerInfo: (_address: string, owner: string | null | undefined) => {
       const auth = useAuthStatus();
+      const signer = mocks.safeSigners.some(
+        (address) => address.toLowerCase() === auth.session?.address?.toLowerCase(),
+      );
       return {
         owner,
         info: undefined,
         pending: false,
-        isSafeOwned: false,
-        isSafeSigner: false,
+        isSafeOwned: signer,
+        isSafeSigner: signer,
         unsupportedOwner: false,
         canManage:
-          !!owner &&
-          !!auth.session?.address &&
-          auth.session.address.toLowerCase() === owner.toLowerCase(),
+          signer ||
+          (!!owner &&
+            !!auth.session?.address &&
+            auth.session.address.toLowerCase() === owner.toLowerCase()),
       };
     },
   };
@@ -1747,6 +1753,18 @@ describe("VoucherDetailPage retirement requests", () => {
     expect(labels.indexOf("Request retirement")).toBeGreaterThan(
       labels.indexOf("Transfer ownership"),
     );
+  });
+
+  it("offers the request to a signer of the Safe that owns the voucher", () => {
+    mocks.safeSigners = [OTHER];
+    try {
+      mocks.auth.session = { address: OTHER, chainId: 100 };
+      mocks.address = undefined;
+      render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+      expect(screen.getByRole("button", { name: "Request retirement" })).toBeTruthy();
+    } finally {
+      mocks.safeSigners = [];
+    }
   });
 
   it("does not offer an owner request to a superadmin who does not own the voucher", () => {

@@ -138,9 +138,10 @@ export function VoucherContractActionsPanel({
             />
           </>
         ) : null}
+        {/* A Safe signer requests on the Safe's behalf; clc-core records both. */}
         {editable &&
         requesterAddress &&
-        ownerAddress?.toLowerCase() === requesterAddress.toLowerCase() ? (
+        (ownerAddress?.toLowerCase() === requesterAddress.toLowerCase() || owner.isSafeSigner) ? (
           <RetirementControl
             type="voucher"
             address={editable.address}

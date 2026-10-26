@@ -83,21 +83,6 @@ export function PoolDetailPage({
     auth.isAuthenticated ? auth.session?.address : undefined,
   );
   const pool = poolQuery.data;
-  // Public composition hides retired vouchers. The owner's protected read
-  // retains them so withdrawal controls can recover every recorded holding.
-  // Browse rows below still hide retired vouchers whose public page is gone.
-  const poolVouchersQuery = usePoolVouchersWithStatus(pool, {
-    all: true,
-    owner:
-      auth.isAuthenticated &&
-      auth.session &&
-      auth.session.address.toLowerCase() === pool?.ownerAddress?.toLowerCase()
-        ? auth.session.address
-        : undefined,
-  });
-  const poolVouchers = poolVouchersQuery.vouchers;
-  const vouchers = poolVouchers.filter((voucher) => voucher.active);
-  const voucherTokens = usePoolVoucherTokens(vouchers);
   // The same rule the voucher screen applies: the backend session's address
   // must be the catalog owner, or the session must be a superadmin. clc-core
   // decides for real; this only keeps the button off everyone else's screen.
@@ -109,6 +94,17 @@ export function PoolDetailPage({
     !!auth.session?.address &&
     !!pool.ownerAddress &&
     ownerInfo.canManage;
+  // Public composition hides retired vouchers. The owner's protected read,
+  // which clc-core also grants a Safe owner's signers, retains them so
+  // withdrawal controls can recover every recorded holding. Browse rows below
+  // still hide retired vouchers whose public page is gone.
+  const poolVouchersQuery = usePoolVouchersWithStatus(pool, {
+    all: true,
+    owner: isPoolOwner ? auth.session?.address : undefined,
+  });
+  const poolVouchers = poolVouchersQuery.vouchers;
+  const vouchers = poolVouchers.filter((voucher) => voucher.active);
+  const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
     auth.isAuthenticated && !!pool && (auth.session?.role === "SUPERADMIN" || isPoolOwner);
   // On-chain management is narrower than editing the record. Every call behind
