@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { RiFocus3Line } from "react-icons/ri";
 import { canonicalMarketBounds, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
-import type { MarketTagFacet } from "@clc/api/features/market/client";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
@@ -21,17 +20,9 @@ import {
   REAL_FIX_ZOOM,
   useMarketCamera,
 } from "#/features/home/hooks/use-market-camera";
-import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
-import { useMarketMapPools } from "#/features/home/hooks/use-market-pools";
-import { useMarketMapWants } from "#/features/home/hooks/use-market-wants";
-import { useMarketMapCatalogs } from "#/features/home/hooks/use-market-catalogs";
-import { useMarketMapReports } from "#/features/home/hooks/use-market-reports";
+import { useMarketMap } from "#/features/home/hooks/use-market-map";
 import { useMarketMapResourceSelection } from "#/features/home/hooks/use-market-map-resource-selection";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import {
-  useMarketplaceMapFacets,
-  useMarketplaceMapSearch,
-} from "#/features/home/hooks/use-marketplace-map-search";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
@@ -43,8 +34,8 @@ import { useMarketDiscoveryArea } from "#/components/nearby-catalog";
 import { MarketFilterSheet, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
-import type { MarketplaceKind } from "@clc/core/features/marketplace/logic";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
+import { CHAIN_ID } from "#/lib/chain";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -68,13 +59,15 @@ export function MarketPage({
   } = useMarketCamera(locationOwner);
   const { area, setArea, clearArea } = useMarketDiscoveryArea();
   const [fetchBounds, setFetchBounds] = useState<readonly MarketBoundingBox[]>(() =>
-    expandBoundingBoxes(area?.boxes ?? []),
+    bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2),
   );
+  const [fetchZoom, setFetchZoom] = useState(() => Math.floor(area?.zoom ?? 2));
   const areaOwnerRef = useRef(area?.owner);
   useEffect(() => {
     if (areaOwnerRef.current === area?.owner) return;
     areaOwnerRef.current = area?.owner;
-    setFetchBounds(expandBoundingBoxes(area?.boxes ?? []));
+    setFetchBounds(bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2));
+    setFetchZoom(Math.floor(area?.zoom ?? 2));
   }, [area]);
   const voucherSelection = useVoucherSheetSelection();
   const wantSelection = useWantSheetSelection();
@@ -160,124 +153,56 @@ export function MarketPage({
   const filter = useMarketFilter(useStorageOwner());
   const credit = useCreditableBrowse(creditableSearch);
   const mapResources = useMarketMapResourceSelection(locationOwner);
-  const selectedResources = useMemo(() => new Set(mapResources.selected), [mapResources.selected]);
-  const showVouchers = selectedResources.has("voucher");
-  const showWants = selectedResources.has("want");
-  const showPools = selectedResources.has("pool");
-  const showCatalogs = selectedResources.has("catalog");
-  const showPosts = selectedResources.has("post");
-  const selectedCommerceKinds = useMemo<MarketplaceKind[]>(() => {
-    const kinds: MarketplaceKind[] = [];
-    if (showVouchers) kinds.push("voucher");
-    if (showWants) kinds.push("want");
-    if (showPools) kinds.push("pool");
-    if (showCatalogs) kinds.push("catalog");
-    return kinds;
-  }, [showCatalogs, showPools, showVouchers, showWants]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
-  const usesUnifiedSearch = filter.isFiltered || credit.enabled;
-  const voucherCatalog = useMarketCatalogVouchers(
-    filter,
-    fetchBounds,
-    mapDiscoveryReady &&
-      showVouchers &&
-      !usesUnifiedSearch &&
-      !filter.isRestoringPreference &&
-      !credit.blocksResults,
-    false,
-    credit.enabled ? credit.poolRefs : undefined,
-  );
-  const { vouchers, isCatalogComplete, error, retry, retrying } = voucherCatalog;
-  // The same text, tag and Credit dimensions apply to every selected resource;
-  // each query remains independently switchable so stale pins disappear at once.
-  const poolCatalog = useMarketMapPools(
-    mapDiscoveryReady && showPools && !filter.isRestoringPreference && !usesUnifiedSearch,
-    fetchBounds,
-  );
-  const { pools } = poolCatalog;
-  const wantCatalog = useMarketMapWants(
-    fetchBounds,
-    mapDiscoveryReady && showWants && !filter.isRestoringPreference && !usesUnifiedSearch,
-  );
-  const catalogCatalog = useMarketMapCatalogs(
-    fetchBounds,
-    mapDiscoveryReady && showCatalogs && !filter.isRestoringPreference && !usesUnifiedSearch,
-  );
-  const unifiedSearch = useMarketplaceMapSearch(
-    filter,
-    credit.enabled ? credit.poolRefs : undefined,
-    fetchBounds,
-    selectedCommerceKinds,
-    mapDiscoveryReady &&
-      usesUnifiedSearch &&
-      selectedCommerceKinds.length > 0 &&
-      !filter.isRestoringPreference &&
-      filter.result.ok &&
-      !credit.blocksResults &&
-      !(credit.enabled && credit.poolRefs?.length === 0),
-    filtersEverOpened,
-  );
   const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
-  const reportCatalog = useMarketMapReports({
+  const marketMap = useMarketMap({
     filter: parsedFilter,
     bounds: fetchBounds,
+    zoom: fetchZoom,
+    kinds: mapResources.selected,
     creditablePools: credit.enabled ? credit.poolRefs : undefined,
     enabled:
       mapDiscoveryReady &&
-      showPosts &&
+      mapResources.selected.length > 0 &&
       !filter.isRestoringPreference &&
       filter.result.ok &&
       !credit.blocksResults &&
       !(credit.enabled && credit.poolRefs?.length === 0),
     facets: filtersEverOpened,
   });
-  const commerceTagFacets = useMarketplaceMapFacets(
-    fetchBounds,
-    selectedCommerceKinds,
-    mapDiscoveryReady &&
-      filtersEverOpened &&
-      !usesUnifiedSearch &&
-      selectedCommerceKinds.length > 0,
-  );
-  const tagFacets = useMemo(
-    () =>
-      mergeTagFacets(
-        usesUnifiedSearch ? unifiedSearch.tagFacets : commerceTagFacets,
-        reportCatalog.tagFacets,
-      ),
-    [commerceTagFacets, reportCatalog.tagFacets, unifiedSearch.tagFacets, usesUnifiedSearch],
-  );
-  // Pools go last: a stack is keyed by its first member, so pools arriving
-  // after the vouchers do not re-key a fan the viewer has open.
-  const locations = useMemo(() => {
-    const commerce = usesUnifiedSearch
-      ? unifiedSearch.locations
-      : [...vouchers, ...wantCatalog.wants, ...pools, ...catalogCatalog.catalogs];
-    return [...commerce, ...reportCatalog.reports];
-  }, [
-    catalogCatalog.catalogs,
-    pools,
-    reportCatalog.reports,
-    unifiedSearch.locations,
-    usesUnifiedSearch,
-    vouchers,
-    wantCatalog.wants,
-  ]);
+  const locations = marketMap.locations;
+  const tagFacets = marketMap.tagFacets;
 
   const isCardOpen = voucherSelection.voucher !== null || wantSelection.want !== null;
   const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
   const cardAddress = voucherSelection.voucher?.toLowerCase() ?? null;
-  const cardCatalogVoucher = useMemo(
-    () => vouchers.find((voucher) => voucher.address.toLowerCase() === cardAddress) ?? null,
-    [vouchers, cardAddress],
+  const cardLocation = locations.find(
+    (location) =>
+      location.resourceKind === "voucher" && location.resourceId.toLowerCase() === cardAddress,
   );
+  const cardCatalogVoucher = cardLocation
+    ? {
+        id: cardLocation.id,
+        chainId: CHAIN_ID,
+        address: cardLocation.resourceId as `0x${string}`,
+        name: cardLocation.name,
+        symbol: "",
+        iconUrl: null,
+        locationName: cardLocation.locationName,
+        lat: cardLocation.lat,
+        lng: cardLocation.lng,
+        kind: "voucher" as const,
+        markerIcon: cardLocation.markerIcon,
+        markerColor: cardLocation.markerColor,
+      }
+    : null;
   const selectedLocationId =
     locations.find((location) => {
-      if (location.kind === "want") {
-        return "wantId" in location && location.wantId === wantSelection.want;
-      }
-      return "address" in location && location.address.toLowerCase() === cardAddress;
+      if (location.resourceKind === "want") return location.resourceId === wantSelection.want;
+      return (
+        location.resourceKind === "voucher" && location.resourceId.toLowerCase() === cardAddress
+      );
     })?.id ?? null;
 
   const [sheetInset, setSheetInset] = useState(0);
@@ -304,33 +229,34 @@ export function MarketPage({
     (id: string) => {
       const location = locations.find((candidate) => candidate.id === id);
       if (!location) return;
-      if (location.kind === "pool") {
+      if (location.resourceKind === "pool") {
         void navigate({
           to: "/pools/$poolAddress",
-          params: { poolAddress: location.address },
+          params: { poolAddress: location.resourceId },
         });
         return;
       }
-      if (location.kind === "catalog" && "catalogId" in location) {
+      if (location.resourceKind === "catalog") {
         void navigate({
           to: "/catalogs/$catalogId",
-          params: { catalogId: location.catalogId },
+          params: { catalogId: location.resourceId },
         });
         return;
       }
-      if (location.kind === "post" && "reportId" in location) {
+      if (location.resourceKind === "post") {
         void navigate({
           to: "/posts/$reportId",
-          params: { reportId: location.reportId },
+          params: { reportId: location.resourceId },
         });
         return;
       }
-      if (location.kind === "want" && "wantId" in location) {
-        openWant(location.wantId);
+      if (location.resourceKind === "want") {
+        openWant(location.resourceId);
         return;
       }
-      const voucher = "address" in location ? location : undefined;
-      if (voucher) openVoucher(voucher.address);
+      if (location.resourceKind === "voucher") {
+        openVoucher(location.resourceId as `0x${string}`);
+      }
     },
     [locations, navigate, openVoucher, openWant],
   );
@@ -348,62 +274,26 @@ export function MarketPage({
         if (Math.abs(settled.east - settled.west) >= 360) {
           clearArea();
           setFetchBounds([]);
+          setFetchZoom(Math.floor(settled.zoom));
         }
         return;
       }
       setArea({ center: settled.center, zoom: settled.zoom, boxes });
+      setFetchZoom(Math.floor(settled.zoom));
       setFetchBounds((current) =>
-        boundsContain(current, boxes) ? current : expandBoundingBoxes(boxes),
+        boundsContain(current, boxes) ? current : bufferedTileBounds(boxes, settled.zoom),
       );
     },
     [area, camera?.rank, clearArea, setArea],
   );
 
-  // The vouchers' notice wins: their retry is the one that fills an empty map.
-  const notice =
-    useMarketFilterNotice(
-      filter,
-      usesUnifiedSearch ? unifiedSearch.error : error,
-      usesUnifiedSearch ? unifiedSearch.retry : retry,
-      usesUnifiedSearch ? unifiedSearch.retrying : retrying,
-    ) ??
-    (unifiedSearch.error
-      ? {
-          message: t`Couldn't load complete marketplace results.`,
-          actionLabel: t`Retry`,
-          onAction: unifiedSearch.retry,
-          actionPending: unifiedSearch.retrying,
-        }
-      : null) ??
-    (poolCatalog.error
-      ? {
-          message: t`Couldn't load pools.`,
-          actionLabel: t`Retry`,
-          onAction: poolCatalog.retry,
-          actionPending: poolCatalog.retrying,
-        }
-      : wantCatalog.error
-        ? {
-            message: t`Couldn't load Wants.`,
-            actionLabel: t`Retry`,
-            onAction: wantCatalog.retry,
-            actionPending: wantCatalog.retrying,
-          }
-        : catalogCatalog.error
-          ? {
-              message: t`Couldn't load catalogs.`,
-              actionLabel: t`Retry`,
-              onAction: catalogCatalog.retry,
-              actionPending: catalogCatalog.retrying,
-            }
-          : reportCatalog.error
-            ? {
-                message: t`Couldn't load posts.`,
-                actionLabel: t`Retry`,
-                onAction: reportCatalog.retry,
-                actionPending: reportCatalog.retrying,
-              }
-            : null);
+  const notice = useMarketFilterNotice(
+    filter,
+    marketMap.error,
+    marketMap.retry,
+    marketMap.retrying,
+    t`Couldn't load complete marketplace results.`,
+  );
 
   const locationButton = (
     <Button
@@ -423,14 +313,7 @@ export function MarketPage({
     mapResources.selected.length > 0 &&
     locations.length === 0 &&
     filter.result.ok &&
-    (usesUnifiedSearch
-      ? (!selectedCommerceKinds.length || unifiedSearch.status === "ready") &&
-        (!showPosts || !reportCatalog.retrying)
-      : (!showVouchers || isCatalogComplete) &&
-        (!showWants || !wantCatalog.retrying) &&
-        (!showPools || !poolCatalog.retrying) &&
-        (!showCatalogs || !catalogCatalog.retrying) &&
-        (!showPosts || !reportCatalog.retrying));
+    marketMap.status === "ready";
 
   const changeCredit = (checked: boolean) =>
     void navigate({
@@ -502,6 +385,7 @@ export function MarketPage({
         >
           <MarketMap
             locations={locations}
+            clusters={marketMap.clusters}
             selectedLocationId={selectedLocationId}
             camera={camera}
             fitBounds={null}
@@ -585,18 +469,49 @@ export function MarketPage({
 
 const FETCH_PADDING_RATIO = 0.2;
 
-function expandBoundingBoxes(boxes: readonly MarketBoundingBox[]): readonly MarketBoundingBox[] {
+function bufferedTileBounds(
+  boxes: readonly MarketBoundingBox[],
+  zoom: number,
+): readonly MarketBoundingBox[] {
   const expanded = boxes.map((box) => {
     const lngPadding = (box.maxLng - box.minLng) * FETCH_PADDING_RATIO;
     const latPadding = (box.maxLat - box.minLat) * FETCH_PADDING_RATIO;
-    return {
-      minLng: Math.max(-180, box.minLng - lngPadding),
-      minLat: Math.max(-90, box.minLat - latPadding),
-      maxLng: Math.min(180, box.maxLng + lngPadding),
-      maxLat: Math.min(90, box.maxLat + latPadding),
-    };
+    return snapBoxToTiles(
+      {
+        minLng: Math.max(-180, box.minLng - lngPadding),
+        minLat: Math.max(-90, box.minLat - latPadding),
+        maxLng: Math.min(180, box.maxLng + lngPadding),
+        maxLat: Math.min(90, box.maxLat + latPadding),
+      },
+      zoom,
+    );
   });
   return canonicalMarketBounds(expanded);
+}
+
+function snapBoxToTiles(box: MarketBoundingBox, zoom: number): MarketBoundingBox {
+  const tileZoom = Math.max(0, Math.min(16, Math.floor(zoom)));
+  const tiles = 2 ** tileZoom;
+  const minX = Math.floor(((box.minLng + 180) / 360) * tiles);
+  const maxX = Math.ceil(((box.maxLng + 180) / 360) * tiles);
+  const minY = Math.floor(latitudeToTileY(box.maxLat, tiles));
+  const maxY = Math.ceil(latitudeToTileY(box.minLat, tiles));
+  return {
+    minLng: Math.max(-180, (minX / tiles) * 360 - 180),
+    maxLng: Math.min(180, (maxX / tiles) * 360 - 180),
+    minLat: tileYToLatitude(maxY, tiles),
+    maxLat: tileYToLatitude(minY, tiles),
+  };
+}
+
+function latitudeToTileY(latitude: number, tiles: number): number {
+  const clamped = Math.max(-85.05112878, Math.min(85.05112878, latitude));
+  const radians = (clamped * Math.PI) / 180;
+  return ((1 - Math.asinh(Math.tan(radians)) / Math.PI) / 2) * tiles;
+}
+
+function tileYToLatitude(y: number, tiles: number): number {
+  return (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / tiles))) * 180) / Math.PI;
 }
 
 function boundsContain(
@@ -635,23 +550,4 @@ function profileCoordinates(
     return null;
   }
   return { lat, lng };
-}
-
-function mergeTagFacets(
-  first: readonly MarketTagFacet[],
-  second: readonly { tag: string; count: number }[],
-): MarketTagFacet[] {
-  const merged = new Map<string, MarketTagFacet>();
-  for (const facet of [...first, ...second]) {
-    const key = facet.tag.trim().toLocaleLowerCase();
-    if (!key) continue;
-    const existing = merged.get(key);
-    merged.set(key, {
-      tag: existing?.tag ?? facet.tag,
-      count: (existing?.count ?? 0) + facet.count,
-    });
-  }
-  return [...merged.values()].sort((left, right) =>
-    left.tag.localeCompare(right.tag, undefined, { sensitivity: "base" }),
-  );
 }

@@ -21,6 +21,7 @@ export function useMarketFilterNotice(
   error: Error | null,
   onRetry: () => void,
   retrying: boolean,
+  fallbackMessage?: string,
 ): MarketFilterNotice | null {
   const { t } = useLingui();
 
@@ -44,7 +45,12 @@ export function useMarketFilterNotice(
   }
 
   if (error instanceof BackendApiError && error.kind === "rate-limited") {
-    return { message: t`Too many searches. Try again in a moment.` };
+    return {
+      message: t`Too many searches. Try again in a moment.`,
+      actionLabel: t`Retry`,
+      onAction: onRetry,
+      actionPending: retrying,
+    };
   }
 
   if (error instanceof BackendApiError && error.kind === "validation") {
@@ -56,7 +62,7 @@ export function useMarketFilterNotice(
   }
 
   return {
-    message: t`Could not load vouchers.`,
+    message: fallbackMessage ?? t`Could not load vouchers.`,
     actionLabel: t`Retry`,
     onAction: onRetry,
     actionPending: retrying,

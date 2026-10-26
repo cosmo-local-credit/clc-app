@@ -2,6 +2,7 @@ import { EXPLICIT_CAMERA_RANK, type MarketCamera } from "#/features/home/logic/m
 export type { MarketCamera } from "#/features/home/logic/market-camera";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Trans } from "@lingui/react/macro";
+import type { MarketMapCluster } from "@clc/core/features/market-map/logic";
 import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
   type FilterSpecification,
@@ -41,9 +42,6 @@ import {
 
 const WORLD = { lat: 0, lng: 20 };
 const DEFAULT_ZOOM = 2;
-
-const CLUSTER_MAX_ZOOM = 13;
-const CLUSTER_RADIUS = 50;
 
 const LABEL_LAYER_ID = "market-point-labels";
 const SELECTED_LABEL_LAYER_ID = "market-point-selected-label";
@@ -138,6 +136,7 @@ const REVEAL_MARGIN = 24;
 
 type MarketMapProps = {
   locations: MarketLocation[];
+  clusters?: MarketMapCluster[];
   mode?: MarketMapMode;
   selectedLocationId: string | null;
   camera: MarketCamera | null;
@@ -170,6 +169,19 @@ type StackFeature = {
   geometry: { type: "Point"; coordinates: [number, number] };
 };
 
+type ServerClusterFeature = {
+  type: "Feature";
+  properties: {
+    id: string;
+    point_count: number;
+    markerCount: number;
+    badgeLabel: string;
+    serverCluster: true;
+    expansionZoom: number;
+  };
+  geometry: { type: "Point"; coordinates: [number, number] };
+};
+
 /** The pin's image id and the darker shade of it the name beside it takes. */
 type PinProperties = { pin: string; label: string };
 
@@ -197,25 +209,61 @@ function pinProperties(location: MarketLocation | undefined): PinProperties {
   return { pin: art.image, label: art.label };
 }
 
-function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFeature> {
+function createMapCollection(
+  stacks: MarketStack[],
+  clusters: MarketMapCluster[],
+): FeatureCollection<StackFeature | ServerClusterFeature> {
   return {
     type: "FeatureCollection",
-    features: stacks.map((stack) => {
-      const first = stack.members[0];
-      const single = stack.members.length === 1 && first ? first : null;
-      return {
-        type: "Feature",
+    features: [
+      ...stacks.map((stack) => {
+        const first = stack.members[0];
+        const single = stack.members.length === 1 && first ? first : null;
+        return {
+          type: "Feature" as const,
+          properties: {
+            key: stack.key,
+            count: stack.members.length,
+            id: single ? single.id : "",
+            name: single?.name ?? "",
+            ...pinProperties(first),
+          },
+          geometry: {
+            type: "Point" as const,
+            coordinates: [stack.lng, stack.lat] as [number, number],
+          },
+        };
+      }),
+      ...clusters.map((cluster) => ({
+        type: "Feature" as const,
         properties: {
-          key: stack.key,
-          count: stack.members.length,
-          id: single ? single.id : "",
-          name: single?.name ?? "",
-          ...pinProperties(first),
+          id: cluster.id,
+          point_count: cluster.count,
+          markerCount: cluster.count,
+          badgeLabel: clusterBadgeLabel(cluster),
+          serverCluster: true as const,
+          expansionZoom: cluster.expansionZoom,
         },
-        geometry: { type: "Point", coordinates: [stack.lng, stack.lat] },
-      };
-    }),
+        geometry: {
+          type: "Point" as const,
+          coordinates: [cluster.lng, cluster.lat] as [number, number],
+        },
+      })),
+    ],
   };
+}
+
+function clusterBadgeLabel(cluster: MarketMapCluster): string {
+  const count =
+    cluster.count >= 1000 ? `${Math.round(cluster.count / 1000)}k` : String(cluster.count);
+  const abbreviations = [
+    cluster.kinds.voucher ? "V" : "",
+    cluster.kinds.want ? "W" : "",
+    cluster.kinds.pool ? "P" : "",
+    cluster.kinds.catalog ? "C" : "",
+    cluster.kinds.post ? "R" : "",
+  ].filter(Boolean);
+  return abbreviations.length ? `${count}\n${abbreviations.join(" ")}` : count;
 }
 
 function createUserMarker(): HTMLDivElement {
@@ -323,6 +371,7 @@ function addMarketLayers(
   map: MapLibreGL.Map,
   locations: MarketLocation[],
   stacks: MarketStack[],
+  clusters: MarketMapCluster[],
   selectedLocationId: string | null,
   theme: "light" | "dark",
 ) {
@@ -331,11 +380,7 @@ function addMarketLayers(
 
   map.addSource(MARKET_SOURCE_ID, {
     type: "geojson",
-    data: createStackCollection(stacks),
-    cluster: true,
-    clusterMaxZoom: CLUSTER_MAX_ZOOM,
-    clusterRadius: CLUSTER_RADIUS,
-    clusterProperties: { markerCount: ["+", ["get", "count"]] },
+    data: createMapCollection(stacks, clusters),
   });
   map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
 
@@ -377,8 +422,9 @@ function addMarketLayers(
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
     layout: {
-      "text-field": countLabel("markerCount"),
-      "text-size": 11,
+      "text-field": ["get", "badgeLabel"],
+      "text-size": 10,
+      "text-line-height": 0.9,
       "text-allow-overlap": true,
       "text-padding": BADGE_COLLISION_PADDING,
     },
@@ -475,6 +521,7 @@ function addMarketLayers(
 
 export function MarketMap({
   locations,
+  clusters = [],
   mode = "standard",
   selectedLocationId,
   camera,
@@ -513,6 +560,8 @@ export function MarketMap({
 
   const stacksRef = useRef(stacks);
   stacksRef.current = stacks;
+  const clustersRef = useRef(clusters);
+  clustersRef.current = clusters;
   const locationsRef = useRef(locations);
   locationsRef.current = locations;
   const selectedLocationIdRef = useRef(selectedLocationId);
@@ -626,9 +675,8 @@ export function MarketMap({
         return;
       }
 
-      const clusterId = feature.properties?.cluster_id;
-      if (typeof clusterId === "number") {
-        expandCluster(clusterId, feature);
+      if (feature.properties?.serverCluster === true) {
+        expandServerCluster(feature);
         return;
       }
 
@@ -653,15 +701,13 @@ export function MarketMap({
       if (typeof id === "string" && id) onSelectRef.current(id);
     }
 
-    function expandCluster(clusterId: number, feature: MapLibreGL.MapGeoJSONFeature) {
-      const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
+    function expandServerCluster(feature: MapLibreGL.MapGeoJSONFeature) {
+      const expansionZoom = Number(feature.properties?.expansionZoom);
       userHasInteractedRef.current = true;
-      void source?.getClusterExpansionZoom(clusterId).then((zoom) => {
-        if (feature.geometry.type !== "Point") return;
-        map.easeTo({
-          center: feature.geometry.coordinates as [number, number],
-          zoom: Math.min(zoom, map.getMaxZoom()),
-        });
+      if (feature.geometry.type !== "Point" || !Number.isFinite(expansionZoom)) return;
+      map.easeTo({
+        center: feature.geometry.coordinates as [number, number],
+        zoom: Math.min(expansionZoom, map.getMaxZoom()),
       });
     }
 
@@ -689,6 +735,7 @@ export function MarketMap({
         map,
         locationsRef.current,
         stacksRef.current,
+        clustersRef.current,
         selectedLocationIdRef.current,
         themeRef.current,
       );
@@ -786,8 +833,8 @@ export function MarketMap({
     if (!source) return;
     // Every member, not only lone pins: a fanned stack draws its members' pins.
     addMarketMarkerImages(map, locationsRef.current);
-    source.setData(createStackCollection(stacks));
-  }, [loaded, stacks, styleRevision]);
+    source.setData(createMapCollection(stacks, clusters));
+  }, [clusters, loaded, stacks, styleRevision]);
 
   useEffect(() => {
     if (spider && !stacksByKey.has(spider.key)) setSpider(null);
