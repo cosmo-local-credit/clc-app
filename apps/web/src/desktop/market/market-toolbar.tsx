@@ -1,11 +1,12 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { RiSearchLine } from "react-icons/ri";
+import { RiCloseLine, RiSearchLine } from "react-icons/ri";
 
-import { CreditableBrowseControl } from "#/components/creditable-browse-control";
+import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
+import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import { MarketFilterSheet } from "#/features/home/ui/market-filter-ui";
+import { Spinner } from "#/components/ui/spinner";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";
 import {
@@ -14,6 +15,9 @@ import {
   type MarketListScope,
 } from "#/lib/navigation/marketplace-search";
 import { cn } from "#/lib/utils";
+import { DeskKbd } from "#/desktop/ui/kbd";
+import { DeskChip, DeskSegment, DeskSegmentItem } from "#/desktop/ui/segment";
+import { DeskTab, DeskTabs } from "#/desktop/ui/tabs";
 
 const SCOPES: { id: MarketListScope; label: ReactNode }[] = [
   { id: "all", label: <Trans>All</Trans> },
@@ -24,156 +28,249 @@ const SCOPES: { id: MarketListScope; label: ReactNode }[] = [
   { id: "catalogs", label: <Trans>Catalogs</Trans> },
 ];
 
+type Credit = ReturnType<typeof useCreditableBrowse>;
+
+/**
+ * Search, Filters, Credit, the result count and Map | List over the scope
+ * tabs. `column` is the map's 400px results column; `page` is the list.
+ */
 export function MarketDeskToolbar({
+  layout,
   scope,
-  view,
   filter,
   facets,
   filtersOpen,
   onFiltersOpenChange,
   credit,
   onCredit,
-  onClearCredit,
   count,
-  searchAttribute = false,
 }: {
+  layout: "column" | "page";
   scope: MarketListScope;
-  view: "map" | "list";
   filter: MarketFilterControls;
   facets: { tag: string; count: number }[];
   filtersOpen: boolean;
   onFiltersOpenChange: (open: boolean) => void;
-  credit: ReturnType<typeof useCreditableBrowse>;
+  credit: Credit;
   onCredit: (checked: boolean) => void;
-  onClearCredit: () => void;
+  /** Shown beside the chips on the list; the column draws its own count row. */
   count?: number;
-  /** The map has no top bar, so `/` focuses this field. */
-  searchAttribute?: boolean;
 }) {
   const { t } = useLingui();
-  return (
-    <div className="flex flex-col gap-3 border-border border-b p-4">
-      <div className="flex items-center gap-2">
-        <div className="relative min-w-0 flex-1">
-          <RiSearchLine
-            className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <Input
-            value={filter.term}
-            onChange={(event) => filter.setTerm(event.target.value)}
-            placeholder={t`Search the marketplace`}
-            aria-label={t`Search the marketplace`}
-            data-desktop-search={searchAttribute ? "" : undefined}
-            className="ps-9"
-          />
+  const view = layout === "column" ? "map" : "list";
+  const search = <MarketSearchField filter={filter} scope={scope} column={layout === "column"} />;
+  const chips = (
+    <>
+      <FiltersChip
+        filter={filter}
+        facets={facets}
+        open={filtersOpen}
+        onOpenChange={onFiltersOpenChange}
+      />
+      <CreditChip credit={credit} onCredit={onCredit} />
+    </>
+  );
+  const segment = (
+    <DeskSegment label={t`View`} className="ms-auto">
+      <DeskSegmentItem active={view === "map"}>
+        <MarketLink scope={scope} view="map">
+          <Trans>Map</Trans>
+        </MarketLink>
+      </DeskSegmentItem>
+      <DeskSegmentItem active={view === "list"}>
+        <MarketLink scope={scope} view="list">
+          <Trans>List</Trans>
+        </MarketLink>
+      </DeskSegmentItem>
+    </DeskSegment>
+  );
+  const tabs = (
+    <DeskTabs
+      label={t`Marketplace`}
+      tight={layout === "column"}
+      className={layout === "column" ? "-mx-3.5 border-b-0 px-1" : undefined}
+    >
+      {SCOPES.map((entry) => (
+        <DeskTab key={entry.id} active={entry.id === scope}>
+          <MarketLink scope={entry.id} view={view}>
+            {entry.label}
+          </MarketLink>
+        </DeskTab>
+      ))}
+    </DeskTabs>
+  );
+
+  if (layout === "column") {
+    return (
+      <div className="grid shrink-0 gap-2.5 border-border border-b px-3.5 pt-3.5">
+        {search}
+        <div className="flex min-w-0 items-center gap-1.5">
+          {chips}
+          {segment}
         </div>
-        <MarketFilterSheet
-          filter={filter}
-          facets={facets}
-          open={filtersOpen}
-          onOpenChange={onFiltersOpenChange}
-        />
-        <CreditableBrowseControl
-          part="control"
-          state={credit}
-          onChange={onCredit}
-          onClear={onClearCredit}
-        />
+        {tabs}
+      </div>
+    );
+  }
+  return (
+    <div className="grid min-w-0 gap-6">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="w-[420px] min-w-0 shrink">{search}</div>
+        {chips}
         {count !== undefined ? (
-          <span className="shrink-0 font-mono text-2xs text-muted-foreground">
+          <span className="shrink-0 text-xs text-muted-foreground">
             <Trans>{count} results</Trans>
           </span>
         ) : null}
-        <div className="ms-auto flex border border-border">
-          <ViewLink scope={scope} view="map" current={view}>
-            <Trans>Map</Trans>
-          </ViewLink>
-          <ViewLink scope={scope} view="list" current={view}>
-            <Trans>List</Trans>
-          </ViewLink>
-        </div>
+        {segment}
       </div>
-      <div className="flex gap-1" role="tablist">
-        {SCOPES.map((entry) => (
-          <ScopeTab key={entry.id} id={entry.id} current={scope} view={view}>
-            {entry.label}
-          </ScopeTab>
-        ))}
-      </div>
+      {tabs}
     </div>
   );
 }
 
-function ScopeTab({
-  id,
-  current,
-  view,
-  children,
+function MarketSearchField({
+  filter,
+  scope,
+  column,
 }: {
-  id: MarketListScope;
-  current: MarketListScope;
-  view: "map" | "list";
-  children: ReactNode;
+  filter: MarketFilterControls;
+  scope: MarketListScope;
+  column: boolean;
 }) {
-  const on = id === current;
+  const { t } = useLingui();
+  const label =
+    scope === "offers"
+      ? t`Search offers, vouchers, descriptions, or tags`
+      : scope === "wants"
+        ? t`Search Wants`
+        : scope === "vouchers"
+          ? t`Search vouchers`
+          : scope === "pools"
+            ? t`Search pools`
+            : scope === "catalogs"
+              ? t`Search catalogs`
+              : t`Search the marketplace`;
   return (
-    <Link
-      to={view === "map" && id === "all" ? "/" : "/market"}
-      search={(previous) =>
-        view === "map" && id === "all"
-          ? { ...marketplaceSharedSearch(previous), tab: "market" as const, view: "map" as const }
-          : {
-              ...marketplaceSearchForScope(marketplaceSharedSearch(previous), id),
-              view,
-            }
-      }
-      role="tab"
-      aria-selected={on}
-      className={cn(
-        "px-3 py-1.5 text-sm",
-        on
-          ? "bg-foreground text-background"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground",
-      )}
-    >
-      {children}
-    </Link>
+    <div className="relative min-w-0">
+      <RiSearchLine
+        className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <Input
+        value={filter.term}
+        onChange={(event) => filter.setTerm(event.target.value)}
+        placeholder={label}
+        aria-label={label}
+        // The map has no top bar, so `/` focuses this field there.
+        data-desktop-search={column ? "" : undefined}
+        className="truncate ps-9 pe-10"
+      />
+      {filter.term !== "" ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t`Clear search`}
+          onClick={filter.clearTerm}
+          className="absolute end-0 top-0 border-0 text-muted-foreground"
+        >
+          <RiCloseLine aria-hidden="true" />
+        </Button>
+      ) : column ? (
+        <DeskKbd className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2">/</DeskKbd>
+      ) : null}
+    </div>
   );
 }
 
-function ViewLink({
+/**
+ * The shared filter sheet, its trigger dressed as a chip. The sheet copies the
+ * applied filter into its draft when its own trigger opens it, so the trigger
+ * stays the sheet's and only its look changes here.
+ */
+function FiltersChip({
+  filter,
+  facets,
+  open,
+  onOpenChange,
+}: {
+  filter: MarketFilterControls;
+  facets: { tag: string; count: number }[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <span
+      className={cn(
+        "contents",
+        "[&>button]:h-[30px] [&>button]:gap-1.5 [&>button]:border-foreground/25 [&>button]:bg-card [&>button]:px-2.5 [&>button]:text-foreground [&>button]:hover:bg-muted",
+        "[&>button>span]:border-transparent [&>button>span]:bg-foreground [&>button>span]:text-background",
+      )}
+    >
+      <CatalogFilterSheet
+        filter={filter}
+        facets={facets}
+        title={<Trans>Filter vouchers</Trans>}
+        facetTitle={<Trans>What they offer</Trans>}
+        showHeader={false}
+        open={open}
+        onOpenChange={onOpenChange}
+        onApply={filter.applyFacetFilters}
+      />
+    </span>
+  );
+}
+
+/** The Credit filter as a chip: filled while on. Its notices render elsewhere. */
+function CreditChip({
+  credit,
+  onCredit,
+}: {
+  credit: Credit;
+  onCredit: (checked: boolean) => void;
+}) {
+  if (!credit.parsed.ok || !credit.auth.isAuthenticated) return null;
+  const checking = credit.enabled && credit.verification.status === "loading";
+  return (
+    <DeskChip on={credit.enabled}>
+      <button
+        type="button"
+        aria-pressed={credit.enabled}
+        aria-busy={checking}
+        disabled={credit.auth.isLoading}
+        onClick={() => onCredit(!credit.enabled)}
+        className="disabled:opacity-50"
+      >
+        {checking ? <Spinner /> : null}
+        <Trans>Credit</Trans>
+      </button>
+    </DeskChip>
+  );
+}
+
+/** One scope in one view. All on the map is the home map; every other pairing lives on /market. */
+function MarketLink({
   scope,
   view,
-  current,
   children,
+  ...props
 }: {
   scope: MarketListScope;
   view: "map" | "list";
-  current: "map" | "list";
   children: ReactNode;
+  className?: string;
 }) {
-  const on = view === current;
-  // Home drops `view=list`, so the list of everything lives on /market.
-  const toList = view === "list";
+  const home = view === "map" && scope === "all";
   return (
     <Link
-      to={toList || scope !== "all" ? "/market" : "/"}
-      search={(previous) => {
-        const shared = marketplaceSharedSearch(previous);
-        if (!toList && scope === "all") {
-          return { ...shared, tab: "market" as const, view: "map" as const };
-        }
-        return {
-          ...marketplaceSearchForScope(shared, scope),
-          view,
-        };
-      }}
-      aria-current={on ? "page" : undefined}
-      className={cn(
-        "px-3 py-1.5 text-sm",
-        on ? "bg-foreground text-background" : "text-muted-foreground",
-      )}
+      {...props}
+      to={home ? "/" : "/market"}
+      search={(previous) =>
+        home
+          ? { ...marketplaceSharedSearch(previous), tab: "market" as const, view: "map" as const }
+          : { ...marketplaceSearchForScope(marketplaceSharedSearch(previous), scope), view }
+      }
     >
       {children}
     </Link>

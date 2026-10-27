@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-import { DeskCanvas } from "#/desktop/ui/page";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { DeskStep, DeskStepper, type DeskStepState } from "#/desktop/ui/stepper";
 import { CreatePoolFlow, type PoolCreateStep } from "#/features/pools/ui";
 
@@ -16,8 +16,8 @@ export function CreatePoolDesk({ step }: { step: PoolCreateStep }) {
   const { t } = useLingui();
   const current = STEPS.findIndex((entry) => entry.id === step);
   return (
-    <div className="flex h-full min-h-0">
-      <div className="w-64 shrink-0 overflow-auto border-border border-e px-6 py-7">
+    <div className="grid w-full max-w-[1264px] grid-cols-[200px_minmax(0,520px)_minmax(0,1fr)] items-start gap-8 px-8 pt-7 pb-10">
+      <div className="sticky top-7 min-w-0">
         <DeskStepper label={t`Create pool`}>
           {STEPS.map((entry, index) => {
             const state: DeskStepState =
@@ -42,12 +42,10 @@ export function CreatePoolDesk({ step }: { step: PoolCreateStep }) {
           })}
         </DeskStepper>
       </div>
-      <div className="min-w-0 flex-1 overflow-auto">
-        <DeskCanvas width="full">
-          <CreatePoolFlow step={step} embedded advancedDefaultOpen />
-        </DeskCanvas>
+      <div className="min-w-0">
+        <CreatePoolFlow step={step} embedded advancedDefaultOpen />
       </div>
-      <aside className="w-[380px] shrink-0 overflow-auto border-border border-s bg-card p-4">
+      <aside className="sticky top-7 grid min-w-0 gap-4">
         <PoolExplainer />
       </aside>
     </div>
@@ -56,18 +54,18 @@ export function CreatePoolDesk({ step }: { step: PoolCreateStep }) {
 
 function PoolExplainer() {
   return (
-    <div className="border border-info/30 bg-card" aria-labelledby="desk-pool-guidance-title">
-      <p
-        id="desk-pool-guidance-title"
-        className="border-info/20 border-b bg-info/[0.08] px-4 py-2.5 font-semibold text-info text-sm leading-tight"
-      >
+    <section
+      className="grid gap-1 border border-border bg-card px-4 py-3.5"
+      aria-labelledby="desk-pool-guidance-title"
+    >
+      <SectionHeading as="h2" variant="group" id="desk-pool-guidance-title">
         <Trans>What's a pool?</Trans>
-      </p>
-      <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
+      </SectionHeading>
+      <p className="text-sm text-muted-foreground">
         <Trans>
           A pool holds vouchers together so members can swap between them at a published value.
         </Trans>
       </p>
-    </div>
+    </section>
   );
 }

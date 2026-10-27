@@ -5,25 +5,27 @@ import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { RiChat1Line, RiCloseLine, RiSearchLine } from "react-icons/ri";
+import { RiChat1Line, RiCloseLine, RiExternalLinkLine, RiSearchLine } from "react-icons/ri";
 import { toast } from "sonner";
 
-import { formatActivityLegAmount, SwapActivityTitle } from "#/components/activity/swap-activity";
+import { formatActivityLegAmount } from "#/components/activity/swap-activity";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { Checkbox } from "#/components/ui/checkbox";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Input } from "#/components/ui/input";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Spinner } from "#/components/ui/spinner";
-import { ShareReceiptButton, SignedAmount } from "#/components/wallet";
-import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { ShareReceiptButton } from "#/components/wallet";
+import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import type { DeskColumn } from "#/desktop/ui/data-table";
 import { DeskTable } from "#/desktop/ui/data-table";
 import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
-import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
+import { DeskKV } from "#/desktop/ui/kv";
+import { DeskCanvas, DeskEyebrow, DeskTitleRow } from "#/desktop/ui/page";
+import { DeskChip } from "#/desktop/ui/segment";
 import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import {
   formatTransferDate,
   formatTransferUnitValue,
@@ -31,6 +33,7 @@ import {
 import { CHAIN_INFO } from "#/lib/chain";
 import { ACTIVITY_KIND_ORDER } from "#/lib/navigation/activity-search";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
+import { cn } from "#/lib/utils";
 
 /** Search for an open activity inspector. The first open pushes; Back drops `tx`. */
 export function activityInspectorSearch<Search extends { tx?: string }>(
@@ -48,6 +51,24 @@ function readTx(search: unknown): string | undefined {
   if (typeof search !== "object" || search === null) return undefined;
   const tx = (search as { tx?: unknown }).tx;
   return typeof tx === "string" && tx.length > 0 ? tx : undefined;
+}
+
+const CONFIRMED_BADGE = "border-success-ink/35 bg-success/10 text-success-ink";
+
+/** The leg a row's amount shows: what arrived for a swap, the transfer otherwise. */
+function rowAmount(item: AccountActivityItem) {
+  const leg = item.kind === "swapped" ? item.received : item.transfer;
+  return {
+    incoming: item.kind !== "sent",
+    value: formatTokenAmount(leg.amount, leg.tokenDecimals),
+    symbol: leg.tokenSymbol,
+  };
+}
+
+function counterparty(item: AccountActivityItem): string | null {
+  if (item.kind === "swapped") return item.poolAddresses[0] ?? null;
+  if (item.kind === "creation") return null;
+  return item.counterpartyAddress;
 }
 
 export function ActivityDesk({
@@ -87,11 +108,17 @@ export function ActivityDesk({
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const isFiltered = settled !== "" || types.length > 0;
   const labels: Record<ActivityKind, string> = {
-    creation: t`Creation`,
+    creation: t`Created`,
     sent: t`Sent`,
     received: t`Received`,
-    swapped: t`Swapped`,
+    swapped: t`Swaps`,
   };
+  const withHeader =
+    types.length === 1 && types[0] === "received"
+      ? t`From`
+      : types.length === 1 && types[0] === "sent"
+        ? t`To`
+        : t`With`;
 
   useEffect(() => setDraftQuery(query), [query]);
   useEffect(() => {
@@ -112,64 +139,21 @@ export function ActivityDesk({
     });
   }
 
-  function toggleType(kind: ActivityKind, checked: boolean) {
+  function toggleType(kind: ActivityKind) {
+    const on = types.includes(kind);
     onTypesChange?.(
-      checked
-        ? ACTIVITY_KIND_ORDER.filter((entry) => entry === kind || types.includes(entry))
-        : types.filter((entry) => entry !== kind),
+      on
+        ? types.filter((entry) => entry !== kind)
+        : ACTIVITY_KIND_ORDER.filter((entry) => entry === kind || types.includes(entry)),
     );
   }
 
   const columns = useMemo<DeskColumn<AccountActivityItem>[]>(
     () => [
       {
-        id: "activity",
-        header: t`Activity`,
-        width: "minmax(0,1.4fr)",
-        sortValue: (row) => row.kind,
-        cell: (row) => <ActivityLabel item={row} />,
-      },
-      {
-        id: "with",
-        header: t`With`,
-        width: "minmax(0,1.2fr)",
-        sortValue: (row) =>
-          row.kind === "swapped" ? (row.poolAddresses[0] ?? "") : row.counterpartyAddress,
-        cell: (row) =>
-          row.kind === "swapped" ? (
-            <span className="font-mono text-xs" dir="ltr">
-              {row.poolAddresses[0]
-                ? formatVoucherAddress(row.poolAddresses[0] as `0x${string}`)
-                : "—"}
-            </span>
-          ) : row.kind === "creation" ? (
-            <Trans>New supply</Trans>
-          ) : (
-            <span className="font-mono text-xs" dir="ltr">
-              {formatVoucherAddress(row.counterpartyAddress as `0x${string}`)}
-            </span>
-          ),
-      },
-      {
-        id: "amount",
-        header: t`Amount`,
-        align: "end",
-        width: "11rem",
-        sortValue: (row) =>
-          Number(row.kind === "swapped" ? row.received.amount : row.transfer.amount),
-        cell: (row) => (
-          <span className="font-mono text-xs font-semibold" dir="ltr">
-            {row.kind === "swapped"
-              ? formatActivityLegAmount(row.received, locale)
-              : `${formatTokenAmount(row.transfer.amount, row.transfer.tokenDecimals)} ${row.transfer.tokenSymbol}`}
-          </span>
-        ),
-      },
-      {
         id: "date",
         header: t`Date`,
-        align: "end",
-        width: "9rem",
+        width: "9.5rem",
         sortValue: (row) => Date.parse(row.dateBlock) || 0,
         cell: (row) => (
           <time className="font-mono text-xs" dateTime={row.dateBlock}>
@@ -177,22 +161,104 @@ export function ActivityDesk({
           </time>
         ),
       },
+      {
+        id: "with",
+        header: withHeader,
+        width: "minmax(0,1.6fr)",
+        sortValue: (row) => counterparty(row) ?? "",
+        cell: (row) => {
+          const other = counterparty(row);
+          return other ? (
+            <Counterparty address={other} />
+          ) : (
+            <span className="text-sm font-semibold">
+              <Trans>New supply</Trans>
+            </span>
+          );
+        },
+      },
+      {
+        id: "type",
+        header: t`Type`,
+        width: "7.5rem",
+        sortValue: (row) => row.kind,
+        cell: (row) => <ActivityType item={row} />,
+      },
+      {
+        id: "amount",
+        header: t`Amount`,
+        align: "end",
+        width: "minmax(0,1.2fr)",
+        sortValue: (row) =>
+          Number(row.kind === "swapped" ? row.received.amount : row.transfer.amount),
+        cell: (row) => {
+          const amount = rowAmount(row);
+          return (
+            <span
+              className={cn(
+                "font-mono text-sm font-semibold",
+                amount.incoming && "text-success-ink",
+              )}
+              dir="ltr"
+            >
+              {amount.incoming ? "+" : "−"}
+              {amount.value} {amount.symbol}
+            </span>
+          );
+        },
+      },
+      {
+        id: "status",
+        header: t`Status`,
+        width: "7.5rem",
+        sortValue: (row) => (row.success ? 1 : 0),
+        cell: (row) => (
+          <Badge
+            size="sm"
+            caps
+            variant={row.success ? "primary" : "muted"}
+            className={cn(row.success && CONFIRMED_BADGE)}
+          >
+            {row.success ? t`Confirmed` : t`Failed`}
+          </Badge>
+        ),
+      },
     ],
-    [locale, t],
+    [locale, t, withHeader],
   );
 
   return (
     <div className="flex h-full min-h-0">
       <DeskSplit
         main={
-          <DeskCanvas width="full">
-            <DeskTitle>
-              <Trans>Activity</Trans>
-            </DeskTitle>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="relative min-w-0 flex-1">
+          <DeskCanvas className="gap-4">
+            <DeskTitleRow title={<Trans>Activity</Trans>} />
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <DeskChip on={types.length === 0}>
+                <button
+                  type="button"
+                  aria-pressed={types.length === 0}
+                  onClick={() => {
+                    if (types.length > 0) onTypesChange?.([]);
+                  }}
+                >
+                  <Trans>All</Trans>
+                </button>
+              </DeskChip>
+              {(["sent", "received", "swapped", "creation"] as const).map((kind) => (
+                <DeskChip key={kind} on={types.includes(kind)}>
+                  <button
+                    type="button"
+                    aria-pressed={types.includes(kind)}
+                    onClick={() => toggleType(kind)}
+                  >
+                    {labels[kind]}
+                  </button>
+                </DeskChip>
+              ))}
+              <div className="relative ms-auto w-64 min-w-0">
                 <RiSearchLine
-                  className="pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute top-1/2 start-2.5 size-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
                 <Input
@@ -202,39 +268,31 @@ export function ActivityDesk({
                   onChange={(event) => setDraftQuery(event.target.value)}
                   aria-label={t`Search activity`}
                   placeholder={t`Search activity`}
-                  className="ps-9"
+                  className={cn("ps-8 text-sm", draftQuery && "pe-9")}
                 />
+                {draftQuery ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-0 end-0"
+                    aria-label={t`Clear search`}
+                    onClick={() => setDraftQuery("")}
+                  >
+                    <RiCloseLine aria-hidden="true" />
+                  </Button>
+                ) : null}
               </div>
-              {draftQuery ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t`Clear search`}
-                  onClick={() => setDraftQuery("")}
-                >
-                  <RiCloseLine aria-hidden="true" />
-                </Button>
-              ) : null}
             </div>
-            <fieldset className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-              <legend className="sr-only">{t`Activity`}</legend>
-              {ACTIVITY_KIND_ORDER.map((kind) => (
-                <label key={kind} className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={types.includes(kind)}
-                    onCheckedChange={(checked) => toggleType(kind, checked === true)}
-                  />
-                  <span>{labels[kind]}</span>
-                </label>
-              ))}
-            </fieldset>
             {tooShort ? (
-              <p className="mt-3 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 <Trans>Type at least two characters.</Trans>
               </p>
             ) : null}
-            <div className="mt-4" aria-busy={isDebouncing || activityQuery.isFetching}>
+            <div
+              className="grid min-w-0 justify-items-start gap-3"
+              aria-busy={isDebouncing || activityQuery.isFetching}
+            >
               {searchReady && activityQuery.isSuccess && activity.length > 0 ? (
                 <span className="sr-only">
                   <Plural
@@ -261,7 +319,7 @@ export function ActivityDesk({
                   <Trans>Loading activity…</Trans>
                 </p>
               ) : activityQuery.isError ? (
-                <div className="space-y-2">
+                <div className="grid justify-items-start gap-2">
                   <p role="alert" className="text-sm text-muted-foreground">
                     <Trans>Couldn't load activity.</Trans>
                   </p>
@@ -275,40 +333,41 @@ export function ActivityDesk({
                   </Button>
                 </div>
               ) : (
-                <DeskTable
-                  label={t`Activity`}
-                  rows={activity}
-                  columns={columns}
-                  rowKey={activityRowKey}
-                  selectedKey={selected ? activityRowKey(selected) : null}
-                  onSelect={openInspector}
-                  empty={
-                    isFiltered ? (
-                      <span className="flex flex-col items-start gap-2">
-                        <Trans>No activity matches these filters.</Trans>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            setDraftQuery("");
-                            onQueryChange?.("");
-                            onTypesChange?.([]);
-                          }}
-                        >
-                          <Trans>Clear filters</Trans>
-                        </Button>
-                      </span>
-                    ) : (
-                      <Trans>No activity yet.</Trans>
-                    )
-                  }
-                />
+                <div className="w-full min-w-0">
+                  <DeskTable
+                    label={t`Activity`}
+                    rows={activity}
+                    columns={columns}
+                    rowKey={activityRowKey}
+                    selectedKey={selected ? activityRowKey(selected) : null}
+                    onSelect={openInspector}
+                    empty={
+                      isFiltered ? (
+                        <span className="flex flex-col items-start gap-2">
+                          <Trans>No activity matches these filters.</Trans>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              setDraftQuery("");
+                              onQueryChange?.("");
+                              onTypesChange?.([]);
+                            }}
+                          >
+                            <Trans>Clear filters</Trans>
+                          </Button>
+                        </span>
+                      ) : (
+                        <Trans>No activity yet.</Trans>
+                      )
+                    }
+                  />
+                </div>
               )}
               {activityQuery.hasNextPage ? (
                 <Button
                   type="button"
                   variant="outline"
-                  className="mt-3"
                   pending={activityQuery.isFetchingNextPage}
                   onClick={() => void activityQuery.fetchNextPage()}
                 >
@@ -332,21 +391,33 @@ export function ActivityDesk({
   );
 }
 
-function ActivityLabel({ item }: { item: AccountActivityItem }) {
-  if (item.kind === "swapped") {
-    return <SwapActivityTitle symbols={[item.received.tokenSymbol, item.sent.tokenSymbol]} />;
-  }
-  const created = item.kind === "creation";
+/** A counterparty by name when one resolves, otherwise its short address. */
+function Counterparty({ address }: { address: string }) {
+  const identity = useReverseRecipientResolution(address);
+  return identity.data ? (
+    <RecipientIdentityText identity={identity.data} className="block truncate font-semibold" />
+  ) : (
+    <span className="font-mono text-xs" dir="ltr">
+      {formatVoucherAddress(address as `0x${string}`)}
+    </span>
+  );
+}
+
+function ActivityType({ item }: { item: AccountActivityItem }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      {created ? (
-        <Trans>Created</Trans>
-      ) : item.kind === "received" ? (
-        <Trans>Received</Trans>
-      ) : (
-        <Trans>Sent</Trans>
-      )}
-      {item.hasNote ? (
+      <Badge variant="outline" size="sm">
+        {item.kind === "swapped" ? (
+          <Trans>Swap</Trans>
+        ) : item.kind === "creation" ? (
+          <Trans>Created</Trans>
+        ) : item.kind === "received" ? (
+          <Trans>Received</Trans>
+        ) : (
+          <Trans>Sent</Trans>
+        )}
+      </Badge>
+      {item.kind !== "swapped" && item.hasNote ? (
         <>
           <RiChat1Line className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
           <span className="sr-only">
@@ -368,25 +439,15 @@ function ActivityInspector({
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const title =
-    item?.kind === "swapped" ? (
-      <Trans>Swap</Trans>
-    ) : item?.kind === "creation" ? (
-      <Trans>Created</Trans>
-    ) : item?.kind === "received" ? (
-      <Trans>Received</Trans>
-    ) : (
-      <Trans>Sent</Trans>
-    );
   return (
-    <DeskInspector title={item ? title : t`Activity`} onClose={onClose}>
+    <DeskInspector title={<Trans>Transfer details</Trans>} onClose={onClose}>
       {item?.kind === "swapped" ? (
         <SwapInspector item={item} />
       ) : item ? (
         <TransferInspector item={item} />
       ) : missing ? (
         <p role="alert" className="text-sm text-muted-foreground">
-          <Trans>Couldn't load activity.</Trans>
+          {t`Couldn't load activity.`}
         </p>
       ) : (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -398,12 +459,83 @@ function ActivityInspector({
   );
 }
 
-function DetailRow({ label, children }: { label: string; children: ReactNode }) {
+/** RECEIVED over the signed figure, as the mock's inspector heads a transfer. */
+function AmountHead({
+  eyebrow,
+  incoming,
+  value,
+  symbol,
+  detail,
+}: {
+  eyebrow: ReactNode;
+  incoming: boolean;
+  value: string;
+  symbol: string;
+  detail?: string | null;
+}) {
   return (
-    <div className="flex min-h-11 items-center justify-between gap-3 border-border border-b px-3 py-2 last:border-b-0">
-      <span className="shrink-0 text-muted-foreground text-xs">{label}</span>
-      <div className="min-w-0 text-end">{children}</div>
+    <div className="grid min-w-0 gap-1">
+      <DeskEyebrow>{eyebrow}</DeskEyebrow>
+      <div className="flex min-w-0 items-baseline gap-1.5" dir="ltr">
+        <span
+          className={cn(
+            "truncate font-mono text-2xl font-semibold",
+            incoming && "text-success-ink",
+          )}
+        >
+          {incoming ? "+" : "−"}
+          {value}
+        </span>
+        <span className="shrink-0 font-mono text-sm text-muted-foreground">{symbol}</span>
+      </div>
+      {detail ? (
+        <span className="font-mono text-xs text-muted-foreground" dir="ltr">
+          ({detail})
+        </span>
+      ) : null}
     </div>
+  );
+}
+
+function useCopyTxHash() {
+  const { t } = useLingui();
+  return (value: string) => {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy transaction hash`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(t`Transaction hash copied`))
+      .catch(() => toast.error(t`Couldn't copy transaction hash`));
+  };
+}
+
+function ExplorerButton({ txHash }: { txHash: string }) {
+  return (
+    <Button asChild variant="outline" className="w-full min-w-0">
+      <a href={explorerTxUrl(CHAIN_INFO, txHash)} target="_blank" rel="noreferrer">
+        <span className="truncate">{CHAIN_INFO.explorerName}</span>
+        <RiExternalLinkLine aria-hidden="true" />
+      </a>
+    </Button>
+  );
+}
+
+function AddressValue({ address }: { address: string }) {
+  const identity = useReverseRecipientResolution(address);
+  return (
+    <span className="grid min-w-0" title={address}>
+      {identity.data ? (
+        <RecipientIdentityText
+          identity={identity.data}
+          className="truncate font-sans font-semibold"
+        />
+      ) : null}
+      <span className="truncate" dir="ltr">
+        {formatVoucherAddress(address as `0x${string}`)}
+      </span>
+    </span>
   );
 }
 
@@ -417,134 +549,165 @@ function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind
   const amountLabel = uoaLabel ? `${tokenAmount} (${uoaLabel})` : tokenAmount;
   const explorerUrl = explorerTxUrl(CHAIN_INFO, item.txHash);
   const shareQuery = useSendShare(item.txHash, item.success && !created);
-  const copy = (value: string) => {
-    if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy transaction hash`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(t`Transaction hash copied`))
-      .catch(() => toast.error(t`Couldn't copy transaction hash`));
-  };
+  const copy = useCopyTxHash();
 
   return (
-    <div className="space-y-4">
-      <div className="border border-border bg-card">
-        <DetailRow label={t`Status`}>
-          <Badge variant={item.success ? "primary" : "muted"} size="sm" caps>
-            {item.success ? t`Confirmed` : t`Failed`}
-          </Badge>
-        </DetailRow>
-        <DetailRow label={t`Amount`}>
-          <span className="font-mono text-xs font-semibold" dir="ltr">
-            <span className="block">{tokenAmount}</span>
-            {uoaLabel ? <span className="block text-muted-foreground">({uoaLabel})</span> : null}
-          </span>
-        </DetailRow>
-        <DetailRow label={t`Date`}>
-          <time className="font-mono text-xs font-semibold" dateTime={item.dateBlock}>
-            {transferDate}
-          </time>
-        </DetailRow>
-        <DetailRow label={t`From`}>
-          {created ? (
-            <span className="text-xs font-semibold">
-              <Trans>New supply</Trans>
-            </span>
+    <>
+      <AmountHead
+        eyebrow={
+          created ? (
+            <Trans>Created</Trans>
+          ) : item.kind === "received" ? (
+            <Trans>Received</Trans>
           ) : (
-            <RecipientIdentityLabel address={item.senderAddress} showAddress />
-          )}
-        </DetailRow>
-        <DetailRow label={t`To`}>
-          <RecipientIdentityLabel address={item.recipientAddress} showAddress />
-        </DetailRow>
-        <DetailRow label={t`Transaction`}>
-          <CopyableInfoValue value={item.txHash} label={t`Copy transaction hash`} onCopy={copy} />
-        </DetailRow>
-      </div>
+            <Trans>Sent</Trans>
+          )
+        }
+        incoming={item.kind !== "sent"}
+        value={formatTokenAmount(item.transfer.amount, item.transfer.tokenDecimals)}
+        symbol={item.transfer.tokenSymbol}
+        detail={uoaLabel}
+      />
+      <DeskKV
+        rows={[
+          [
+            t`Status`,
+            <Badge
+              key="status"
+              size="sm"
+              caps
+              variant={item.success ? "primary" : "muted"}
+              className={cn("font-sans", item.success && CONFIRMED_BADGE)}
+            >
+              {item.success ? t`Confirmed` : t`Failed`}
+            </Badge>,
+          ],
+          [
+            t`Date`,
+            <time key="date" dateTime={item.dateBlock}>
+              {transferDate}
+            </time>,
+          ],
+          [
+            t`From`,
+            created ? (
+              <span key="from" className="font-sans">
+                <Trans>New supply</Trans>
+              </span>
+            ) : (
+              <AddressValue key="from" address={item.senderAddress} />
+            ),
+          ],
+          [t`To`, <AddressValue key="to" address={item.recipientAddress} />],
+          [
+            t`Transaction`,
+            <CopyableInfoValue
+              key="tx"
+              value={item.txHash}
+              label={t`Copy transaction hash`}
+              onCopy={copy}
+            />,
+          ],
+        ]}
+      />
       <PrivateAttachment query={shareQuery} />
-      {item.success ? (
-        <ShareReceiptButton
-          title={created ? t`Voucher creation receipt` : t`Payment receipt`}
-          lines={[
-            created
-              ? t`I created ${amountLabel}.`
-              : item.kind === "sent"
-                ? t`I sent ${amountLabel} to ${item.recipientAddress}.`
-                : t`I received ${amountLabel} from ${item.senderAddress}.`,
-            ...(transferDate ? [transferDate] : []),
-          ]}
-          url={explorerUrl}
-        />
-      ) : null}
-      <Button asChild>
-        <a href={explorerUrl} target="_blank" rel="noreferrer">
-          <Trans>View on block explorer</Trans>
-        </a>
-      </Button>
-    </div>
+      <div className={cn("grid gap-4", item.success && "grid-cols-2")}>
+        {item.success ? (
+          <ShareReceiptButton
+            className="w-full min-w-0"
+            title={created ? t`Voucher creation receipt` : t`Payment receipt`}
+            lines={[
+              created
+                ? t`I created ${amountLabel}.`
+                : item.kind === "sent"
+                  ? t`I sent ${amountLabel} to ${item.recipientAddress}.`
+                  : t`I received ${amountLabel} from ${item.senderAddress}.`,
+              ...(transferDate ? [transferDate] : []),
+            ]}
+            url={explorerUrl}
+          />
+        ) : null}
+        <ExplorerButton txHash={item.txHash} />
+      </div>
+    </>
   );
 }
 
 function SwapInspector({ item }: { item: Extract<AccountActivityItem, { kind: "swapped" }> }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const copy = (value: string) => {
-    if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy transaction hash`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(t`Transaction hash copied`))
-      .catch(() => toast.error(t`Couldn't copy transaction hash`));
-  };
+  const copy = useCopyTxHash();
   return (
-    <div className="space-y-4">
-      <div className="border border-border bg-card">
-        <DetailRow label={t`Status`}>
-          <Badge variant={item.success ? "primary" : "muted"} size="sm" caps>
-            {item.success ? t`Confirmed` : t`Failed`}
-          </Badge>
-        </DetailRow>
-        <DetailRow label={t`Sent`}>
-          <SignedAmount direction="out" amount={formatActivityLegAmount(item.sent, locale)} />
-        </DetailRow>
-        <DetailRow label={t`Received`}>
-          <SignedAmount direction="in" amount={formatActivityLegAmount(item.received, locale)} />
-        </DetailRow>
-        {item.protocolFee ? (
-          <DetailRow label={t`Protocol fee`}>
-            <span className="font-mono text-xs font-semibold" dir="ltr">
-              {formatActivityLegAmount(item.protocolFee, locale)}
-            </span>
-          </DetailRow>
-        ) : null}
-        <DetailRow label={item.poolAddresses.length > 1 ? t`Pools` : t`Pool`}>
-          <span className="space-y-1 text-end">
-            {item.poolAddresses.map((address) => (
-              <span key={address} className="block font-mono text-xs" dir="ltr">
-                {formatVoucherAddress(address as `0x${string}`)}
-              </span>
-            ))}
-          </span>
-        </DetailRow>
-        <DetailRow label={t`Date`}>
-          <time className="font-mono text-xs font-semibold" dateTime={item.dateBlock}>
-            {formatTransferDate(item.dateBlock, locale)}
-          </time>
-        </DetailRow>
-        <DetailRow label={t`Transaction`}>
-          <CopyableInfoValue value={item.txHash} label={t`Copy transaction hash`} onCopy={copy} />
-        </DetailRow>
-      </div>
-      <Button asChild>
-        <a href={explorerTxUrl(CHAIN_INFO, item.txHash)} target="_blank" rel="noreferrer">
-          <Trans>View on block explorer</Trans>
-        </a>
-      </Button>
-    </div>
+    <>
+      <AmountHead
+        eyebrow={<Trans>Swap</Trans>}
+        incoming
+        value={formatTokenAmount(item.received.amount, item.received.tokenDecimals)}
+        symbol={item.received.tokenSymbol}
+      />
+      <DeskKV
+        rows={[
+          [
+            t`Status`,
+            <Badge
+              key="status"
+              size="sm"
+              caps
+              variant={item.success ? "primary" : "muted"}
+              className={cn("font-sans", item.success && CONFIRMED_BADGE)}
+            >
+              {item.success ? t`Confirmed` : t`Failed`}
+            </Badge>,
+          ],
+          [
+            t`Sent`,
+            <span key="sent" dir="ltr">
+              −{formatActivityLegAmount(item.sent, locale)}
+            </span>,
+          ],
+          [
+            t`Received`,
+            <span key="received" className="text-success-ink" dir="ltr">
+              +{formatActivityLegAmount(item.received, locale)}
+            </span>,
+          ],
+          item.protocolFee
+            ? [
+                t`Protocol fee`,
+                <span key="fee" dir="ltr">
+                  {formatActivityLegAmount(item.protocolFee, locale)}
+                </span>,
+              ]
+            : null,
+          [
+            item.poolAddresses.length > 1 ? t`Pools` : t`Pool`,
+            <span key="pools" className="grid min-w-0">
+              {item.poolAddresses.map((address) => (
+                <span key={address} className="truncate" dir="ltr">
+                  {formatVoucherAddress(address as `0x${string}`)}
+                </span>
+              ))}
+            </span>,
+          ],
+          [
+            t`Date`,
+            <time key="date" dateTime={item.dateBlock}>
+              {formatTransferDate(item.dateBlock, locale)}
+            </time>,
+          ],
+          [
+            t`Transaction`,
+            <CopyableInfoValue
+              key="tx"
+              value={item.txHash}
+              label={t`Copy transaction hash`}
+              onCopy={copy}
+            />,
+          ],
+        ]}
+      />
+      <ExplorerButton txHash={item.txHash} />
+    </>
   );
 }
 

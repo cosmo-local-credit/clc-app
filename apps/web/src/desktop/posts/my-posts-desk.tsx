@@ -1,10 +1,11 @@
 import type { ManagedReportSummary } from "@clc/api/features/reports/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import { RiAddLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
-import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
+import { DeskCanvas, DeskTitleRow } from "#/desktop/ui/page";
 import { useMyPosts } from "#/features/posts/hooks/use-my-posts";
 import { PostStatusBadge } from "#/features/posts/ui/post-status-badge";
 import { formatReportDate } from "#/lib/report-display";
@@ -21,7 +22,7 @@ export function MyPostsDesk() {
       header: <Trans>Title</Trans>,
       width: "1.6fr",
       sortValue: (row) => row.title,
-      cell: (row) => row.title,
+      cell: (row) => <span className="font-semibold">{row.title}</span>,
     },
     {
       id: "status",
@@ -34,28 +35,50 @@ export function MyPostsDesk() {
       id: "updated",
       header: <Trans>Updated</Trans>,
       width: "9rem",
-      align: "end",
       sortValue: (row) => row.updatedAt ?? "",
       cell: (row) => (
-        <time dateTime={row.updatedAt ?? undefined} className="font-mono">
+        <time dateTime={row.updatedAt ?? undefined} className="font-mono text-xs">
           {formatReportDate(row.updatedAt, locale)}
         </time>
+      ),
+    },
+    {
+      id: "actions",
+      header: null,
+      width: "10rem",
+      align: "end",
+      cell: (row) => (
+        <span className="inline-flex justify-end gap-1">
+          {row.status === "APPROVED" ? (
+            <Button asChild variant="ghost">
+              <Link to="/posts/$reportId" params={{ reportId: row.id }}>
+                <Trans>View</Trans>
+              </Link>
+            </Button>
+          ) : null}
+          <Button asChild variant="ghost">
+            <Link to="/posts/$reportId/edit" params={{ reportId: row.id }}>
+              <Trans>Edit</Trans>
+            </Link>
+          </Button>
+        </span>
       ),
     },
   ];
 
   return (
-    <DeskCanvas width="full">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <DeskTitle>
-          <Trans>My posts</Trans>
-        </DeskTitle>
-        <Button asChild>
-          <Link to="/posts/new">
-            <Trans>New post</Trans>
-          </Link>
-        </Button>
-      </div>
+    <DeskCanvas width="read" className="max-w-[1164px]">
+      <DeskTitleRow
+        title={<Trans>My posts</Trans>}
+        actions={
+          <Button asChild>
+            <Link to="/posts/new">
+              <RiAddLine aria-hidden="true" />
+              <Trans>New post</Trans>
+            </Link>
+          </Button>
+        }
+      />
 
       {postsQuery.isPending ? (
         <p className="text-sm text-muted-foreground" aria-busy="true">
@@ -64,7 +87,7 @@ export function MyPostsDesk() {
       ) : null}
 
       {postsQuery.isError ? (
-        <div className="space-y-3 border border-border bg-card p-4">
+        <div className="grid justify-items-start gap-3 border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">
             <Trans>Couldn't load your posts.</Trans>
           </p>
@@ -79,7 +102,7 @@ export function MyPostsDesk() {
       ) : null}
 
       {postsQuery.data && posts.length === 0 ? (
-        <div className="space-y-3 border border-border bg-card p-4">
+        <div className="grid justify-items-start gap-3 border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">
             <Trans>You haven't written any posts yet.</Trans>
           </p>
@@ -97,17 +120,7 @@ export function MyPostsDesk() {
           rows={posts}
           columns={columns}
           rowKey={(row) => row.id}
-          renderRow={(row, rowProps, cells) =>
-            row.status === "APPROVED" ? (
-              <Link to="/posts/$reportId" params={{ reportId: row.id }} {...rowProps}>
-                {cells}
-              </Link>
-            ) : (
-              <Link to="/posts/$reportId/edit" params={{ reportId: row.id }} {...rowProps}>
-                {cells}
-              </Link>
-            )
-          }
+          renderRow={(_row, rowProps, cells) => <div {...rowProps}>{cells}</div>}
         />
       ) : null}
     </DeskCanvas>

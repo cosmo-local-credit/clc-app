@@ -169,7 +169,7 @@ function SettingsGroup({ label, children }: { label: string; children: ReactNode
   );
 }
 
-export function WalletSessionRow({
+function WalletSessionRow({
   address,
   delegationStatus,
 }: {

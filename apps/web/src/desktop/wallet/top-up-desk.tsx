@@ -14,7 +14,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { parsePhoneNumber } from "react-phone-number-input";
-import { RiErrorWarningLine, RiFileCopyLine } from "react-icons/ri";
+import { RiArrowRightSLine, RiErrorWarningLine, RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress, isAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -24,7 +24,9 @@ import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import { EllipsizedAddress, TokenLogo, WalletAmountInput } from "#/components/wallet";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
-import { DeskCanvas, DeskPanel, DeskSection, DeskTitle } from "#/desktop/ui/page";
+import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
+import { DeskKV } from "#/desktop/ui/kv";
+import { DeskCanvas, DeskRow, DeskRowList, DeskSection, DeskTitle } from "#/desktop/ui/page";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
   accountWalletQueryKeys,
@@ -64,7 +66,6 @@ export function TopUpDesk() {
   const cashAddress = toChecksumAddress(address);
   const transactionsQuery = usePretiumTransactionsByAddress(cashAddress);
   const ratesQuery = usePretiumRates(true);
-  const [selected, setSelected] = useState<PretiumCashTransaction | null>(null);
   const cashTransactions = useMemo(
     () =>
       [...(transactionsQuery.data?.onramps ?? []), ...(transactionsQuery.data?.offramps ?? [])]
@@ -91,44 +92,147 @@ export function TopUpDesk() {
               ? t`MPESA cash services need a Kenyan phone number.`
               : null;
 
+  const [panel, setPanel] = useState<Panel | null>({ kind: "add" });
+  const selectedKey = panel?.kind === "tx" ? historyKey(panel.transaction) : null;
+
   return (
-    <DeskCanvas width="full">
-      <DeskTitle>
-        <Trans>Cash</Trans>
-      </DeskTitle>
-      <div className="mt-6 grid grid-cols-2 gap-6">
-        <AddStablesForm
-          address={cashAddress}
-          phone={normalizedCashPhone}
-          profilePending={profileQuery.isPending}
-          disabledReason={disabledReason}
-          entryDisabled={disabledReason !== null}
-          sell={ratesQuery.data?.sell}
-          ratesPending={ratesQuery.isPending}
-          ratesSuccess={ratesQuery.isSuccess}
-        />
-        <WithdrawForm
-          key={`${cashAddress ?? ""}:${normalizedCashPhone}`}
-          address={cashAddress}
-          phone={normalizedCashPhone}
-          disabledReason={disabledReason}
-          entryDisabled={disabledReason !== null}
-          buy={ratesQuery.data?.buy}
-          ratesSuccess={ratesQuery.isSuccess}
-        />
-      </div>
-      <div className="mt-8">
-        <CashHistory
-          transactions={cashTransactions}
-          pending={!!cashAddress && transactionsQuery.isPending}
-          error={!!cashAddress && transactionsQuery.isError}
-          fetching={transactionsQuery.isFetching}
-          onRetry={() => void transactionsQuery.refetch()}
-          selected={selected}
-          onSelect={setSelected}
-        />
-      </div>
-    </DeskCanvas>
+    <div className="flex h-full min-h-0">
+      <DeskSplit
+        main={
+          <DeskCanvas>
+            <DeskTitle>
+              <Trans>Cash</Trans>
+            </DeskTitle>
+            <div className="grid grid-cols-2 gap-4">
+              <DeskSection title={<Trans>Add stables</Trans>}>
+                <DeskRowList>
+                  <RampRow
+                    selected={panel?.kind === "add"}
+                    onOpen={() => setPanel({ kind: "add" })}
+                    subtitle={<Trans>Buy USD₮ with KES.</Trans>}
+                  />
+                </DeskRowList>
+              </DeskSection>
+              <DeskSection title={<Trans>Withdraw</Trans>}>
+                <DeskRowList>
+                  <RampRow
+                    selected={panel?.kind === "withdraw"}
+                    onOpen={() => setPanel({ kind: "withdraw" })}
+                    subtitle="USDm · USDT · USDC"
+                  />
+                </DeskRowList>
+              </DeskSection>
+            </div>
+            {disabledReason ? (
+              <p className="flex items-start gap-2 text-xs text-muted-foreground">
+                <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {disabledReason}
+              </p>
+            ) : null}
+            <CashHistory
+              transactions={cashTransactions}
+              pending={!!cashAddress && transactionsQuery.isPending}
+              error={!!cashAddress && transactionsQuery.isError}
+              fetching={transactionsQuery.isFetching}
+              onRetry={() => void transactionsQuery.refetch()}
+              selectedKey={selectedKey}
+              onSelect={(transaction) => setPanel({ kind: "tx", transaction })}
+            />
+          </DeskCanvas>
+        }
+        side={
+          panel ? (
+            <DeskInspector
+              title={
+                panel.kind === "add" ? (
+                  <Trans>Add stables</Trans>
+                ) : panel.kind === "withdraw" ? (
+                  <Trans>Withdraw</Trans>
+                ) : panel.transaction.kind === "onramp" ? (
+                  <Trans>Onramp details</Trans>
+                ) : (
+                  <Trans>Offramp details</Trans>
+                )
+              }
+              onClose={() => setPanel(null)}
+            >
+              {panel.kind === "add" ? (
+                <AddStablesForm
+                  address={cashAddress}
+                  phone={normalizedCashPhone}
+                  profilePending={profileQuery.isPending}
+                  disabledReason={disabledReason}
+                  entryDisabled={disabledReason !== null}
+                  sell={ratesQuery.data?.sell}
+                  ratesPending={ratesQuery.isPending}
+                  ratesSuccess={ratesQuery.isSuccess}
+                />
+              ) : panel.kind === "withdraw" ? (
+                <WithdrawForm
+                  key={`${cashAddress ?? ""}:${normalizedCashPhone}`}
+                  address={cashAddress}
+                  phone={normalizedCashPhone}
+                  disabledReason={disabledReason}
+                  entryDisabled={disabledReason !== null}
+                  buy={ratesQuery.data?.buy}
+                  ratesSuccess={ratesQuery.isSuccess}
+                />
+              ) : (
+                <CashDetail transaction={panel.transaction} />
+              )}
+            </DeskInspector>
+          ) : null
+        }
+      />
+    </div>
+  );
+}
+
+type Panel =
+  | { kind: "add" }
+  | { kind: "withdraw" }
+  | { kind: "tx"; transaction: PretiumCashTransaction };
+
+function historyKey(transaction: PretiumCashTransaction): string {
+  return `${transaction.kind}-${transaction.reference}`;
+}
+
+function RampRow({
+  selected,
+  onOpen,
+  subtitle,
+}: {
+  selected: boolean;
+  onOpen: () => void;
+  subtitle: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onOpen}
+      className="block w-full text-start hover:bg-muted/60"
+    >
+      <DeskRow
+        selected={selected}
+        lead={
+          <img
+            src="/pretium.png"
+            alt=""
+            className="size-9 shrink-0 border border-border bg-card object-contain"
+            aria-hidden="true"
+          />
+        }
+        title={<Trans>MPESA via Pretium</Trans>}
+        subtitle={subtitle}
+        trail={
+          <RiArrowRightSLine
+            className="size-4 shrink-0 text-muted-foreground rtl:-scale-x-100"
+            aria-hidden="true"
+          />
+        }
+      />
+    </button>
   );
 }
 
@@ -190,76 +294,77 @@ function AddStablesForm({
   };
 
   return (
-    <DeskSection title={<Trans>Add stables</Trans>}>
-      <DeskPanel className="space-y-3">
-        <p className="text-sm font-semibold">
-          <Trans>MPESA via Pretium</Trans>
-        </p>
-        <div>
-          <label htmlFor="topup-amount" className="mb-1.5 block text-sm font-medium">
-            <Trans>Amount</Trans>{" "}
-            <span className="font-mono text-xs text-muted-foreground">KES</span>
-          </label>
-          <WalletAmountInput
-            id="topup-amount"
-            label={t`Amount`}
-            value={amount}
-            placeholder="100"
-            inputMode="decimal"
-            disabled={entryDisabled}
-            aria-invalid={amount !== "" && !hasValidAmount}
-            onValueChange={(value) => setAmount(value.replace(/[^0-9.]/g, ""))}
-          />
-        </div>
-        <FigureRow label={<Trans>MPESA phone</Trans>}>
-          <span className="font-mono text-xs font-semibold" dir="ltr">
-            {profilePending ? "…" : phone || "—"}
-          </span>
-        </FigureRow>
-        <FigureRow label={<Trans>You'll receive</Trans>}>
-          <span className="font-mono text-xs font-semibold" dir="ltr">
-            {ratesPending ? (
-              <span className="text-muted-foreground">…</span>
-            ) : approxUsdt !== null ? (
-              `≈ ${approxUsdt.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
-                maximumFractionDigits: 2,
-              })} ${ONRAMP_ASSET_LABEL}`
-            ) : (
-              <span className="text-muted-foreground">—</span>
-            )}
-          </span>
-        </FigureRow>
-        {showSafaricomWarning ? (
-          <p
-            className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-500"
-            role="alert"
-          >
-            <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
-          </p>
-        ) : null}
-        {disabledReason ? (
-          <p className="flex items-start gap-2 text-xs text-muted-foreground">
-            <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {disabledReason}
-          </p>
-        ) : null}
-        {mutationError ? (
-          <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
-            <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {mutationError}
-          </p>
-        ) : null}
-        <Button
-          type="button"
-          disabled={!canContinue}
-          pending={triggerOnramp.isPending}
-          onClick={() => void onContinue()}
+    <>
+      <div className="grid gap-1.5">
+        <label htmlFor="topup-amount" className="text-sm font-medium">
+          <Trans>Amount</Trans> <span className="font-mono text-xs text-muted-foreground">KES</span>
+        </label>
+        <WalletAmountInput
+          id="topup-amount"
+          label={t`Amount`}
+          value={amount}
+          placeholder="100"
+          inputMode="decimal"
+          disabled={entryDisabled}
+          aria-invalid={amount !== "" && !hasValidAmount}
+          onValueChange={(value) => setAmount(value.replace(/[^0-9.]/g, ""))}
+        />
+      </div>
+      <DeskKV
+        labelWidth="120px"
+        rows={[
+          [
+            <Trans key="label">MPESA phone</Trans>,
+            <span key="value" dir="ltr">
+              {profilePending ? "…" : phone || "—"}
+            </span>,
+          ],
+          [
+            <Trans key="label">You'll receive</Trans>,
+            <span key="value" dir="ltr">
+              {ratesPending ? (
+                <span className="text-muted-foreground">…</span>
+              ) : approxUsdt !== null ? (
+                `≈ ${approxUsdt.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
+                  maximumFractionDigits: 2,
+                })} ${ONRAMP_ASSET_LABEL}`
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </span>,
+          ],
+        ]}
+      />
+      {showSafaricomWarning ? (
+        <p
+          className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-500"
+          role="alert"
         >
-          {triggerOnramp.isPending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
-        </Button>
-      </DeskPanel>
-    </DeskSection>
+          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
+        </p>
+      ) : null}
+      {disabledReason ? (
+        <p className="flex items-start gap-2 text-xs text-muted-foreground">
+          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {disabledReason}
+        </p>
+      ) : null}
+      {mutationError ? (
+        <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
+          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {mutationError}
+        </p>
+      ) : null}
+      <Button
+        type="button"
+        disabled={!canContinue}
+        pending={triggerOnramp.isPending}
+        onClick={() => void onContinue()}
+      >
+        {triggerOnramp.isPending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
+      </Button>
+    </>
   );
 }
 
@@ -365,134 +470,135 @@ function WithdrawForm({
   };
 
   return (
-    <DeskSection title={<Trans>Withdraw</Trans>}>
-      <DeskPanel className="space-y-3">
-        <p className="text-sm font-semibold">
-          <Trans>MPESA via Pretium</Trans>
+    <>
+      {entryDisabled ? (
+        <p className="flex items-start gap-2 text-xs text-muted-foreground">
+          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {disabledReason}
         </p>
-        {entryDisabled ? (
-          <p className="flex items-start gap-2 text-xs text-muted-foreground">
-            <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {disabledReason}
-          </p>
-        ) : linkFailed ? (
-          <div className="space-y-2">
-            <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
-              <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              <Trans>Couldn't verify your MPESA link.</Trans>
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              pending={linkQuery.isFetching}
-              onClick={() => {
-                if (linkQuery.isError) void linkQuery.refetch();
-                else createLink.reset();
-              }}
-            >
-              <Trans>Try again</Trans>
-            </Button>
-          </div>
-        ) : !linkReady || linkPreparing ? (
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Spinner />
-            <Trans>Preparing your withdrawal…</Trans>
-          </p>
-        ) : tokensQuery.isPending ? (
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Spinner />
-            <Trans>Loading balances…</Trans>
-          </p>
-        ) : eligible.length === 0 ? (
-          <p className="flex items-start gap-2 text-xs text-muted-foreground">
-            <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <Trans>No USDm, USDT, or USDC balance available to withdraw.</Trans>
-          </p>
-        ) : (
-          <>
-            <div className="border border-border bg-card">
-              {eligible.map(({ token, symbol }, index, list) => {
-                const active = token.tokenAddress === selected?.token.tokenAddress;
-                const displayToken = {
-                  ...accountTokenToWalletToken(token),
-                  symbol,
-                  kind: "stable" as const,
-                };
-                return (
-                  <button
-                    key={token.tokenAddress}
-                    type="button"
-                    onClick={() => {
-                      setSelectedAddress(token.tokenAddress);
-                      setAmount("");
-                    }}
-                    className={cn(
-                      "flex w-full items-center gap-3 px-3 py-2.5 text-start",
-                      index < list.length - 1 && "border-border border-b",
-                      active && "border-s-2 border-s-primary bg-primary/[0.07]",
-                    )}
-                  >
-                    <TokenLogo token={displayToken} size={20} />
-                    <span className="text-sm font-semibold">{symbol}</span>
-                    <span className="ms-auto font-heading font-semibold tracking-tight" dir="ltr">
-                      {formatTokenAmount(token.balance, token.tokenDecimals)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <div>
-              <div className="mb-1.5 flex items-center justify-between gap-3">
-                <label htmlFor="withdraw-amount" className="text-sm font-medium">
-                  <Trans>Amount</Trans>{" "}
-                  <span className="font-mono text-xs text-muted-foreground">KES</span>
-                </label>
-                <Button
-                  type="button"
-                  variant="link"
-                  disabled={!hasRate || maxKes <= 0}
-                  onClick={() => setAmount(maxKes.toString())}
-                >
-                  <Trans>Max</Trans>
-                </Button>
-              </div>
-              <WalletAmountInput
-                id="withdraw-amount"
-                label={t`Amount`}
-                value={amount}
-                placeholder="0"
-                inputMode="numeric"
-                aria-invalid={amount !== "" && !hasValidAmount}
-                onValueChange={(value) => setAmount(sanitizeKes(value))}
-              />
-            </div>
-            <FigureRow label={<Trans>You'll send</Trans>}>
-              <span className="font-mono text-xs font-semibold" dir="ltr">
-                {selected && hasValidAmount
-                  ? `≈ ${tokenToSend.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
-                      maximumFractionDigits: 4,
-                    })} ${selected.symbol}`
-                  : "—"}
-              </span>
-            </FigureRow>
-          </>
-        )}
-        {sendError ? (
+      ) : linkFailed ? (
+        <div className="space-y-2">
           <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
             <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {sendError}
+            <Trans>Couldn't verify your MPESA link.</Trans>
           </p>
-        ) : null}
-        <Button
-          type="button"
-          disabled={!canWithdraw}
-          pending={sendTransfer.isPending}
-          onClick={() => void onWithdraw()}
-        >
-          {sendTransfer.isPending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}
-        </Button>
-      </DeskPanel>
-    </DeskSection>
+          <Button
+            type="button"
+            variant="outline"
+            pending={linkQuery.isFetching}
+            onClick={() => {
+              if (linkQuery.isError) void linkQuery.refetch();
+              else createLink.reset();
+            }}
+          >
+            <Trans>Try again</Trans>
+          </Button>
+        </div>
+      ) : !linkReady || linkPreparing ? (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Spinner />
+          <Trans>Preparing your withdrawal…</Trans>
+        </p>
+      ) : tokensQuery.isPending ? (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Spinner />
+          <Trans>Loading balances…</Trans>
+        </p>
+      ) : eligible.length === 0 ? (
+        <p className="flex items-start gap-2 text-xs text-muted-foreground">
+          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <Trans>No USDm, USDT, or USDC balance available to withdraw.</Trans>
+        </p>
+      ) : (
+        <>
+          <div className="border border-border bg-card">
+            {eligible.map(({ token, symbol }, index, list) => {
+              const active = token.tokenAddress === selected?.token.tokenAddress;
+              const displayToken = {
+                ...accountTokenToWalletToken(token),
+                symbol,
+                kind: "stable" as const,
+              };
+              return (
+                <button
+                  key={token.tokenAddress}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAddress(token.tokenAddress);
+                    setAmount("");
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-3 px-3 py-2.5 text-start",
+                    index < list.length - 1 && "border-border border-b",
+                    active && "bg-primary/[0.07] shadow-[inset_2px_0_0_var(--color-primary)]",
+                  )}
+                >
+                  <TokenLogo token={displayToken} size={20} />
+                  <span className="text-sm font-semibold">{symbol}</span>
+                  <span className="ms-auto font-heading font-semibold tracking-tight" dir="ltr">
+                    {formatTokenAmount(token.balance, token.tokenDecimals)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div>
+            <div className="mb-1.5 flex items-center justify-between gap-3">
+              <label htmlFor="withdraw-amount" className="text-sm font-medium">
+                <Trans>Amount</Trans>{" "}
+                <span className="font-mono text-xs text-muted-foreground">KES</span>
+              </label>
+              <Button
+                type="button"
+                variant="link"
+                disabled={!hasRate || maxKes <= 0}
+                onClick={() => setAmount(maxKes.toString())}
+              >
+                <Trans>Max</Trans>
+              </Button>
+            </div>
+            <WalletAmountInput
+              id="withdraw-amount"
+              label={t`Amount`}
+              value={amount}
+              placeholder="0"
+              inputMode="numeric"
+              aria-invalid={amount !== "" && !hasValidAmount}
+              onValueChange={(value) => setAmount(sanitizeKes(value))}
+            />
+          </div>
+          <DeskKV
+            labelWidth="120px"
+            rows={[
+              [
+                <Trans key="label">You'll send</Trans>,
+                <span key="value" dir="ltr">
+                  {selected && hasValidAmount
+                    ? `≈ ${tokenToSend.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
+                        maximumFractionDigits: 4,
+                      })} ${selected.symbol}`
+                    : "—"}
+                </span>,
+              ],
+            ]}
+          />
+        </>
+      )}
+      {sendError ? (
+        <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
+          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {sendError}
+        </p>
+      ) : null}
+      <Button
+        type="button"
+        disabled={!canWithdraw}
+        pending={sendTransfer.isPending}
+        onClick={() => void onWithdraw()}
+      >
+        {sendTransfer.isPending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}
+      </Button>
+    </>
   );
 }
 
@@ -502,7 +608,7 @@ function CashHistory({
   error,
   fetching,
   onRetry,
-  selected,
+  selectedKey,
   onSelect,
 }: {
   transactions: PretiumCashTransaction[];
@@ -510,36 +616,31 @@ function CashHistory({
   error: boolean;
   fetching: boolean;
   onRetry: () => void;
-  selected: PretiumCashTransaction | null;
-  onSelect: (transaction: PretiumCashTransaction | null) => void;
+  selectedKey: string | null;
+  onSelect: (transaction: PretiumCashTransaction) => void;
 }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const columns = useMemo<DeskColumn<PretiumCashTransaction>[]>(
     () => [
       {
-        id: "kind",
-        header: t`Pretium history`,
-        sortValue: (row) => row.kind,
-        cell: (row) => (
-          <span className="text-sm font-semibold">
-            {row.kind === "onramp" ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}
-          </span>
-        ),
-      },
-      {
         id: "status",
         header: t`Status`,
+        width: "minmax(0,1fr)",
         sortValue: (row) => row.status,
-        cell: (row) => (
-          <Badge variant={isCompletePretiumStatus(row.status) ? "primary" : "muted"} size="sm" caps>
-            {row.status}
-          </Badge>
-        ),
+        cell: (row) => <StatusBadge status={row.status} />,
+      },
+      {
+        id: "kind",
+        header: t`Type`,
+        width: "minmax(0,1fr)",
+        sortValue: (row) => row.kind,
+        cell: (row) => (row.kind === "onramp" ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>),
       },
       {
         id: "date",
         header: t`Date`,
+        width: "minmax(0,1fr)",
         sortValue: (row) => timestamp(row.createdAt),
         cell: (row) => (
           <time className="font-mono text-xs" dateTime={row.createdAt} dir="ltr">
@@ -549,13 +650,13 @@ function CashHistory({
       },
       {
         id: "amount",
-        header: "KES",
+        header: t`Amount`,
         align: "end",
-        width: "8rem",
+        width: "10rem",
         sortValue: (row) => Number(row.amountKes) || 0,
         cell: (row) => (
           <span className="font-mono text-xs font-semibold" dir="ltr">
-            {formatHistoryKes(row)}
+            {formatHistoryKes(row)} KES
           </span>
         ),
       },
@@ -566,13 +667,13 @@ function CashHistory({
   return (
     <DeskSection title={<Trans>Pretium history</Trans>}>
       {pending ? (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <p className="flex items-center gap-2 border border-border bg-card px-4 py-6 text-sm text-muted-foreground">
           <Spinner />
           <Trans>Loading cash activity…</Trans>
         </p>
       ) : error ? (
-        <div className="space-y-2 border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="grid justify-items-start gap-2 border border-border bg-card p-4">
+          <p role="alert" className="text-sm text-muted-foreground">
             <Trans>Couldn't load Pretium history.</Trans>
           </p>
           <Button type="button" variant="outline" pending={fetching} onClick={onRetry}>
@@ -584,24 +685,25 @@ function CashHistory({
           label={t`Pretium history`}
           rows={transactions}
           columns={columns}
-          rowKey={(row) => `${row.kind}-${row.reference}`}
-          selectedKey={selected ? `${selected.kind}-${selected.reference}` : null}
+          rowKey={historyKey}
+          selectedKey={selectedKey}
           onSelect={onSelect}
           empty={<Trans>No cash activity yet.</Trans>}
         />
       )}
-      {selected ? <CashDetail transaction={selected} onClose={() => onSelect(null)} /> : null}
     </DeskSection>
   );
 }
 
-function CashDetail({
-  transaction,
-  onClose,
-}: {
-  transaction: PretiumCashTransaction;
-  onClose: () => void;
-}) {
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <Badge variant={isCompletePretiumStatus(status) ? "primary" : "outline"} size="sm" caps>
+      {status}
+    </Badge>
+  );
+}
+
+function CashDetail({ transaction }: { transaction: PretiumCashTransaction }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const hasTxHash = transaction.txHash.trim() !== "";
@@ -619,98 +721,88 @@ function CashDetail({
   };
 
   return (
-    <DeskPanel className="mt-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <Badge caps>{incoming ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}</Badge>
-        <Button type="button" variant="ghost" onClick={onClose}>
-          <Trans>Close</Trans>
-        </Button>
-      </div>
-      <div className="border border-border">
-        <FigureRow label={<Trans>Status</Trans>}>
-          <Badge
-            variant={isCompletePretiumStatus(transaction.status) ? "primary" : "muted"}
-            size="sm"
-            caps
-          >
-            {transaction.status}
-          </Badge>
-        </FigureRow>
-        <FigureRow label={<Trans>Amount</Trans>}>
-          <span className="font-mono text-xs font-semibold" dir="ltr">
-            KES {transaction.amountKes || "—"}
-          </span>
-        </FigureRow>
-        {incoming ? null : (
-          <FigureRow label={<Trans>Stable sent</Trans>}>
-            <span className="font-mono text-xs font-semibold" dir="ltr">
-              {transaction.amountUsd || "—"}
-            </span>
-          </FigureRow>
-        )}
-        {incoming ? null : (
-          <FigureRow label={<Trans>MPESA phone</Trans>}>
-            <span className="font-mono text-xs font-semibold" dir="ltr">
-              {transaction.phoneNumber || "—"}
-            </span>
-          </FigureRow>
-        )}
-        {!incoming && transaction.mpesaConfirmation ? (
-          <FigureRow label={<Trans>MPESA confirmation</Trans>}>
-            <span className="font-mono text-xs font-semibold" dir="ltr">
-              {transaction.mpesaConfirmation}
-            </span>
-          </FigureRow>
-        ) : null}
-        <FigureRow label={<Trans>Date</Trans>}>
-          <time
-            className="font-mono text-xs font-semibold"
-            dateTime={transaction.createdAt}
-            dir="ltr"
-          >
-            {formatCashDate(transaction.createdAt, locale)}
-          </time>
-        </FigureRow>
-        <FigureRow label={<Trans>Pretium ID</Trans>}>
-          <button
-            type="button"
-            className="flex min-w-0 items-center gap-1.5"
-            aria-label={t`Copy Pretium ID`}
-            onClick={() => copyPretiumId(transaction.reference)}
-          >
-            <span className="font-mono text-xs text-muted-foreground" dir="ltr">
-              {shortenIdentifier(transaction.reference)}
-            </span>
-            <RiFileCopyLine className="size-3" aria-hidden="true" />
-          </button>
-        </FigureRow>
-        <FigureRow label={<Trans>Transaction</Trans>}>
-          {hasTxHash ? (
-            <EllipsizedAddress address={transaction.txHash} />
-          ) : (
-            <span className="font-mono text-xs text-muted-foreground">
-              <Trans>Pending</Trans>
-            </span>
-          )}
-        </FigureRow>
-      </div>
+    <>
+      <DeskKV
+        labelWidth="130px"
+        rows={[
+          [
+            <Trans key="label">Status</Trans>,
+            <StatusBadge key="value" status={transaction.status} />,
+          ],
+          [
+            <Trans key="label">Amount</Trans>,
+            <span key="value" dir="ltr">
+              {transaction.amountKes || "—"} KES
+            </span>,
+          ],
+          incoming
+            ? null
+            : [
+                <Trans key="label">Stable sent</Trans>,
+                <span key="value" dir="ltr">
+                  {transaction.amountUsd || "—"}
+                </span>,
+              ],
+          incoming
+            ? null
+            : [
+                <Trans key="label">MPESA phone</Trans>,
+                <span key="value" dir="ltr">
+                  {transaction.phoneNumber || "—"}
+                </span>,
+              ],
+          !incoming && transaction.mpesaConfirmation
+            ? [
+                <Trans key="label">MPESA confirmation</Trans>,
+                <span key="value" dir="ltr">
+                  {transaction.mpesaConfirmation}
+                </span>,
+              ]
+            : null,
+          [
+            <Trans key="label">Date</Trans>,
+            <time key="value" dateTime={transaction.createdAt} dir="ltr">
+              {formatCashDate(transaction.createdAt, locale)}
+            </time>,
+          ],
+          [
+            <Trans key="label">Pretium ID</Trans>,
+            <button
+              key="value"
+              type="button"
+              className="flex min-w-0 items-center gap-1.5"
+              aria-label={t`Copy Pretium ID`}
+              onClick={() => copyPretiumId(transaction.reference)}
+            >
+              <span className="truncate" dir="ltr">
+                {shortenIdentifier(transaction.reference)}
+              </span>
+              <RiFileCopyLine
+                className="size-3.5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </button>,
+          ],
+          [
+            <Trans key="label">Transaction</Trans>,
+            hasTxHash ? (
+              <EllipsizedAddress key="value" address={transaction.txHash} />
+            ) : (
+              <span key="value" className="text-muted-foreground">
+                <Trans>Pending</Trans>
+              </span>
+            ),
+          ],
+        ]}
+      />
       {explorerUrl ? (
-        <Button asChild className="mt-3">
+        <Button asChild variant="outline">
           <a href={explorerUrl} target="_blank" rel="noreferrer">
             <Trans>View on block explorer</Trans>
           </a>
         </Button>
       ) : null}
-    </DeskPanel>
-  );
-}
-
-function FigureRow({ label, children }: { label: ReactNode; children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3 border-border border-b px-3 py-2.5 last:border-b-0">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      {children}
-    </div>
+    </>
   );
 }
 

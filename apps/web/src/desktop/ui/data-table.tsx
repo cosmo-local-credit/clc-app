@@ -65,7 +65,7 @@ export function DeskTable<Row>({
     <div className="min-w-0 border border-border bg-card" role="table" aria-label={label}>
       <div
         role="row"
-        className="grid border-border border-b"
+        className="grid border-border border-b bg-muted"
         style={{ gridTemplateColumns: template }}
       >
         {columns.map((column) => {
@@ -84,7 +84,7 @@ export function DeskTable<Row>({
               role="columnheader"
               aria-sort={active === "asc" ? "ascending" : active === "desc" ? "descending" : "none"}
               className={cn(
-                "flex h-10 items-center px-3 font-mono text-2xs text-muted-foreground uppercase",
+                "flex h-10 items-center px-3.5 font-mono text-2xs tracking-[0.12em] whitespace-nowrap text-muted-foreground uppercase",
                 column.align === "end" && "justify-end text-end",
               )}
               onClick={() =>
@@ -104,7 +104,7 @@ export function DeskTable<Row>({
               key={column.id}
               role="columnheader"
               className={cn(
-                "flex h-10 items-center px-3 font-mono text-2xs text-muted-foreground uppercase",
+                "flex h-10 items-center px-3.5 font-mono text-2xs tracking-[0.12em] whitespace-nowrap text-muted-foreground uppercase",
                 column.align === "end" && "justify-end text-end",
               )}
             >
@@ -114,17 +114,19 @@ export function DeskTable<Row>({
         })}
       </div>
       {ordered.length === 0 ? (
-        <div className="px-3 py-8 text-sm text-muted-foreground">{empty}</div>
+        <div className="border-border border-t px-3.5 py-8 text-sm text-muted-foreground">
+          {empty}
+        </div>
       ) : (
         ordered.map((row) => {
           const key = rowKey(row);
           const selected = selectedKey != null && selectedKey === key;
           const rowProps = {
             className: cn(
-              "grid h-10 w-full items-center border-s-2 text-start",
+              "grid min-h-10 w-full items-center border-border border-t py-2.5 text-start",
               selected
-                ? "border-s-primary bg-primary/[0.07]"
-                : "border-s-transparent hover:bg-muted",
+                ? "bg-primary/[0.07] shadow-[inset_2px_0_0_var(--color-primary)]"
+                : "hover:bg-muted/60",
             ),
             style: { gridTemplateColumns: template } as CSSProperties,
             "data-desktop-row": "" as const,
@@ -132,7 +134,10 @@ export function DeskTable<Row>({
           const cells = columns.map((column) => (
             <span
               key={column.id}
-              className={cn("min-w-0 truncate px-3 text-sm", column.align === "end" && "text-end")}
+              className={cn(
+                "min-w-0 truncate px-3.5 text-sm",
+                column.align === "end" && "text-end",
+              )}
             >
               {column.cell(row)}
             </span>

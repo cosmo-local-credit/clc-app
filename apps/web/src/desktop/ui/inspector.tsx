@@ -22,9 +22,12 @@ export function DeskInspector({
   const { t } = useLingui();
   return (
     <aside
-      className={cn("flex w-[380px] shrink-0 flex-col border-border border-s bg-card", className)}
+      className={cn(
+        "flex min-h-0 w-[380px] shrink-0 flex-col border-border border-s bg-card",
+        className,
+      )}
     >
-      <div className="flex h-14 items-center justify-between gap-3 border-border border-b px-4">
+      <div className="flex h-13 shrink-0 items-center justify-between gap-3 border-border border-b px-4">
         <h2 className="font-heading text-base font-semibold">{title}</h2>
         {onClose ? (
           <Button type="button" variant="ghost" size="icon" aria-label={t`Close`} onClick={onClose}>
@@ -32,7 +35,7 @@ export function DeskInspector({
           </Button>
         ) : null}
       </div>
-      <div className="min-h-0 flex-1 overflow-auto p-4">{children}</div>
+      <div className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto p-4">{children}</div>
       {footer ? <div className="border-border border-t p-4">{footer}</div> : null}
     </aside>
   );
@@ -49,7 +52,12 @@ export function DeskSplit({
 }) {
   return (
     <div className="flex min-h-0 flex-1">
-      <div className={cn("min-w-0 flex-1 overflow-auto", dimmed && "opacity-50")}>{main}</div>
+      <div
+        className={cn("min-w-0 flex-1 overflow-y-auto", dimmed && "pointer-events-none opacity-40")}
+        inert={dimmed || undefined}
+      >
+        {main}
+      </div>
       {side}
     </div>
   );

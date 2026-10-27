@@ -8,7 +8,6 @@ import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { RiCoinLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { isAddress } from "viem";
@@ -23,8 +22,9 @@ import {
   StatusPill,
   SuccessCheck,
 } from "#/components/wallet";
-import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
-import { PoolMain } from "#/desktop/pools/pool-main";
+import { SectionHeading } from "#/components/ui/section-heading";
+import { PoolDeskFrame } from "#/desktop/pools/pool-desk";
+import { DeskKV } from "#/desktop/ui/kv";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
@@ -47,13 +47,11 @@ export function SwapReceiptDesk({
   details: SwapReceiptDetails;
 }) {
   return (
-    <div className="flex h-full min-h-0">
-      <DeskSplit
-        dimmed
-        main={<PoolMain poolAddress={poolAddress} />}
-        side={<SwapReceiptColumn poolAddress={poolAddress} details={details} />}
-      />
-    </div>
+    <PoolDeskFrame
+      dimmed
+      poolAddress={poolAddress}
+      side={<SwapReceiptColumn poolAddress={poolAddress} details={details} />}
+    />
   );
 }
 
@@ -175,163 +173,127 @@ function SwapReceiptColumn({
   };
 
   return (
-    <DeskInspector
+    <ReceiptPanel
+      icon={<SuccessCheck />}
       title={t`Swapped`}
-      footer={
-        <div className="flex flex-col gap-2">
-          {explorerUrl ? (
-            <ShareReceiptButton
-              className="w-full"
-              title={t`Swap receipt`}
-              lines={[
-                amountLabel && sentLabel
-                  ? poolName
-                    ? t`I swapped ${sentLabel} for ${amountLabel} in ${poolName}.`
-                    : t`I swapped ${sentLabel} for ${amountLabel}.`
-                  : t`I made a swap.`,
-                ...feeShareLines({
-                  breakdown: feeBreakdown,
-                  decimals: feeDecimals,
-                  symbol: details.receiveSymbol,
-                  locale,
-                  labels: { pool: t`Pool fee`, protocol: t`Protocol fee`, total: t`Total fees` },
-                }),
-                ...(submittedAt ? [formatSubmittedAt(submittedAt, locale)] : []),
-              ]}
-              url={explorerUrl}
-            />
-          ) : null}
-          {sendReceived ? (
-            redeemReceived ? (
-              <Button asChild tap className="w-full">
-                <Link to="/wallet/send/amount" search={redeemReceived}>
-                  <RiCoinLine aria-hidden="true" />
-                  <Trans>Redeem</Trans>
-                </Link>
-              </Button>
-            ) : (
-              <Button tap className="w-full" disabled>
-                <RiCoinLine aria-hidden="true" />
-                <Trans>Redeem</Trans>
-              </Button>
-            )
-          ) : null}
-          {sendReceived ? (
-            <Button asChild tap className="w-full" variant="outline">
-              <Link to="/wallet/send" search={sendReceived}>
-                <RiSendPlane2Line aria-hidden="true" />
-                <Trans>Send {details.receiveSymbol}</Trans>
-              </Link>
-            </Button>
-          ) : null}
-          <div className="flex gap-2">
-            <Button
-              tap
-              className="flex-1"
-              variant={sendReceived ? "outline" : "default"}
-              onClick={exitReceipt}
-            >
-              <Trans>Done</Trans>
-            </Button>
-            {explorerUrl ? (
-              <Button asChild tap className="flex-1" variant="outline">
-                <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
-                  {CHAIN_INFO.explorerName}
-                </a>
-              </Button>
-            ) : null}
-          </div>
-        </div>
+      subtitle={
+        submittedAt ? (
+          <time dateTime={submittedAt}>{formatSubmittedAt(submittedAt, locale)}</time>
+        ) : null
       }
     >
-      <div className="mb-4 flex flex-col items-center text-center">
-        <SuccessCheck />
-        {amountLabel ? (
-          <p className="mt-3 font-mono font-semibold text-primary">{amountLabel}</p>
-        ) : null}
-      </div>
-      <div className="border border-border">
-        {amountLabel ? (
-          <ReceiptRow label={<Trans>You receive</Trans>}>
-            <SignedAmount direction="in" amount={amountLabel} />
-          </ReceiptRow>
-        ) : null}
-        {sentLabel ? (
-          <ReceiptRow label={<Trans>You send</Trans>}>
-            <SignedAmount direction="out" amount={sentLabel} />
-          </ReceiptRow>
-        ) : null}
-        <ReceiptRow label={<Trans>Pool fee</Trans>}>
-          <PoolSwapFeeValue
-            breakdown={feeBreakdown}
-            part="pool"
-            decimals={feeDecimals}
-            symbol={details.receiveSymbol}
-            locale={locale}
-            pending={settlement.isFetching}
-            amountRaw={
-              settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
-            }
-          />
-        </ReceiptRow>
-        <ReceiptRow label={<Trans>Protocol fee</Trans>}>
-          <PoolSwapFeeValue
-            breakdown={feeBreakdown}
-            part="protocol"
-            decimals={feeDecimals}
-            symbol={details.receiveSymbol}
-            locale={locale}
-            pending={settlement.isFetching}
-          />
-        </ReceiptRow>
-        <ReceiptRow label={<Trans>Total fees</Trans>}>
-          <PoolSwapFeeValue
-            breakdown={feeBreakdown}
-            part="total"
-            decimals={feeDecimals}
-            symbol={details.receiveSymbol}
-            locale={locale}
-            pending={settlement.isFetching}
-          />
-        </ReceiptRow>
-        {details.poolName ? (
-          <ReceiptRow label={<Trans>Pool</Trans>}>
-            <span className="min-w-0 break-words text-end text-xs font-semibold">
-              {details.poolName}
-            </span>
-          </ReceiptRow>
-        ) : null}
-        {txHash ? (
-          <ReceiptRow label={<Trans>Transaction</Trans>}>
-            <CopyableInfoValue value={txHash} label={t`Copy transaction hash`} onCopy={copy} />
-          </ReceiptRow>
-        ) : null}
-        <ReceiptRow label={<Trans>Network</Trans>}>
-          <span className="text-xs font-semibold">{CHAIN_INFO.name}</span>
-        </ReceiptRow>
-        {submittedAt ? (
-          <ReceiptRow label={<Trans>Submitted</Trans>}>
-            <time className="font-mono text-xs font-semibold" dateTime={submittedAt}>
-              {formatSubmittedAt(submittedAt, locale)}
-            </time>
-          </ReceiptRow>
-        ) : null}
-        <StatusRow status={<StatusPill tone="success" label={t`Confirmed`} />} />
-      </div>
+      <DeskKV
+        rows={[
+          amountLabel
+            ? [
+                <Trans key="label">You receive</Trans>,
+                <SignedAmount key="value" direction="in" amount={amountLabel} />,
+              ]
+            : null,
+          sentLabel
+            ? [
+                <Trans key="label">You send</Trans>,
+                <SignedAmount key="value" direction="out" amount={sentLabel} />,
+              ]
+            : null,
+          [
+            <Trans key="label">Pool fee</Trans>,
+            <FeeCell key="value">
+              <PoolSwapFeeValue
+                breakdown={feeBreakdown}
+                part="pool"
+                decimals={feeDecimals}
+                symbol={details.receiveSymbol}
+                locale={locale}
+                pending={settlement.isFetching}
+                amountRaw={
+                  settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
+                }
+              />
+            </FeeCell>,
+          ],
+          [
+            <Trans key="label">Protocol fee</Trans>,
+            <FeeCell key="value">
+              <PoolSwapFeeValue
+                breakdown={feeBreakdown}
+                part="protocol"
+                decimals={feeDecimals}
+                symbol={details.receiveSymbol}
+                locale={locale}
+                pending={settlement.isFetching}
+              />
+            </FeeCell>,
+          ],
+          [
+            <Trans key="label">Total fees</Trans>,
+            <FeeCell key="value">
+              <PoolSwapFeeValue
+                breakdown={feeBreakdown}
+                part="total"
+                decimals={feeDecimals}
+                symbol={details.receiveSymbol}
+                locale={locale}
+                pending={settlement.isFetching}
+              />
+            </FeeCell>,
+          ],
+          details.poolName
+            ? [
+                <Trans key="label">Pool</Trans>,
+                <span key="value" dir="auto" className="font-sans">
+                  {details.poolName}
+                </span>,
+              ]
+            : null,
+          txHash
+            ? [
+                <Trans key="label">Transaction</Trans>,
+                <CopyableInfoValue
+                  key="value"
+                  value={txHash}
+                  label={t`Copy transaction hash`}
+                  onCopy={copy}
+                />,
+              ]
+            : null,
+          [
+            <Trans key="label">Network</Trans>,
+            explorerUrl ? (
+              <a
+                key="value"
+                href={explorerUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+                className="font-sans text-primary hover:underline"
+              >
+                {CHAIN_INFO.name}
+              </a>
+            ) : (
+              <span key="value" className="font-sans">
+                {CHAIN_INFO.name}
+              </span>
+            ),
+          ],
+          [
+            <Trans key="label">Status</Trans>,
+            <StatusPill key="value" tone="success" label={t`Confirmed`} className="font-sans" />,
+          ],
+        ]}
+      />
       {settlement.data?.source === "legacy" ? (
-        <p role="status" className="mt-2 text-muted-foreground text-xs">
+        <p role="status" className="text-xs text-muted-foreground">
           <Trans>Complete fee details are unavailable for this swap.</Trans>
         </p>
       ) : (!settlement.data && (!settlement.canLoad || settlement.isError)) ||
         feeDecimals === undefined ? (
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <p role="alert" className="text-muted-foreground text-xs">
+        <div className="flex items-center justify-between gap-3">
+          <p role="alert" className="text-xs text-muted-foreground">
             <Trans>Fee details unavailable.</Trans>
           </p>
           {settlement.isError ? (
             <Button
               variant="outline"
-              tap
               pending={settlement.isFetching}
               onClick={() => void settlement.refetch()}
             >
@@ -340,7 +302,56 @@ function SwapReceiptColumn({
           ) : null}
         </div>
       ) : null}
-    </DeskInspector>
+      <div className="grid grid-cols-2 gap-2">
+        {explorerUrl ? (
+          <ShareReceiptButton
+            className="w-full"
+            title={t`Swap receipt`}
+            lines={[
+              amountLabel && sentLabel
+                ? poolName
+                  ? t`I swapped ${sentLabel} for ${amountLabel} in ${poolName}.`
+                  : t`I swapped ${sentLabel} for ${amountLabel}.`
+                : t`I made a swap.`,
+              ...feeShareLines({
+                breakdown: feeBreakdown,
+                decimals: feeDecimals,
+                symbol: details.receiveSymbol,
+                locale,
+                labels: { pool: t`Pool fee`, protocol: t`Protocol fee`, total: t`Total fees` },
+              }),
+              ...(submittedAt ? [formatSubmittedAt(submittedAt, locale)] : []),
+            ]}
+            url={explorerUrl}
+          />
+        ) : null}
+        {sendReceived ? (
+          redeemReceived ? (
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/wallet/send/amount" search={redeemReceived}>
+                <Trans>Redeem</Trans>
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" className="w-full" disabled>
+              <Trans>Redeem</Trans>
+            </Button>
+          )
+        ) : null}
+        {sendReceived ? (
+          <Button asChild variant="outline" className="w-full min-w-0">
+            <Link to="/wallet/send" search={sendReceived}>
+              <span className="truncate">
+                <Trans>Send {details.receiveSymbol}</Trans>
+              </span>
+            </Link>
+          </Button>
+        ) : null}
+        <Button className="w-full" onClick={exitReceipt}>
+          <Trans>Done</Trans>
+        </Button>
+      </div>
+    </ReceiptPanel>
   );
 }
 
@@ -362,51 +373,76 @@ function ReceiptColumn({
   onDone?: () => void;
 }) {
   return (
-    <DeskInspector
-      title={title}
-      footer={
-        onDone ? (
-          <Button tap className="w-full" onClick={onDone}>
-            <Trans>Done</Trans>
-          </Button>
-        ) : null
-      }
+    <ReceiptPanel icon={icon} title={title} subtitle={message}>
+      <DeskKV
+        rows={[
+          amount
+            ? [
+                <Trans key="label">You receive</Trans>,
+                <span key="value" dir="ltr">
+                  {amount}
+                </span>,
+              ]
+            : null,
+          poolName
+            ? [
+                <Trans key="label">Pool</Trans>,
+                <span key="value" dir="auto" className="font-sans">
+                  {poolName}
+                </span>,
+              ]
+            : null,
+          [
+            <Trans key="label">Status</Trans>,
+            <span key="value" className="font-sans">
+              {status}
+            </span>,
+          ],
+        ]}
+      />
+      {onDone ? (
+        <Button className="w-full" onClick={onDone}>
+          <Trans>Done</Trans>
+        </Button>
+      ) : null}
+    </ReceiptPanel>
+  );
+}
+
+/** The receipt in the side column: a 56px status badge beside the title, then the rows. */
+function ReceiptPanel({
+  icon,
+  title,
+  subtitle,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  subtitle?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      aria-labelledby="desk-swap-receipt-title"
+      className="grid min-w-0 gap-3.5 border border-border bg-card p-4"
     >
-      <div className="mb-4 flex flex-col items-center text-center">
+      <div className="flex min-w-0 items-center gap-3.5">
         {icon}
-        {amount ? <p className="mt-3 font-mono font-semibold text-primary">{amount}</p> : null}
-        <p className="mt-2 text-muted-foreground text-sm">{message}</p>
+        <div className="min-w-0">
+          <SectionHeading as="h2" variant="section" id="desk-swap-receipt-title">
+            {title}
+          </SectionHeading>
+          {subtitle ? <div className="text-xs text-muted-foreground">{subtitle}</div> : null}
+        </div>
       </div>
-      <div className="border border-border">
-        {poolName ? (
-          <ReceiptRow label={<Trans>Pool</Trans>}>
-            <span className="min-w-0 break-words text-end text-xs font-semibold">{poolName}</span>
-          </ReceiptRow>
-        ) : null}
-        <StatusRow status={status} />
-      </div>
-    </DeskInspector>
-  );
-}
-
-function ReceiptRow({ label, children }: { label: ReactNode; children: ReactNode }) {
-  return (
-    <div className="flex min-h-11 items-center justify-between gap-3 border-border border-b px-3 py-2.5">
-      <span className="shrink-0 text-muted-foreground text-xs">{label}</span>
       {children}
-    </div>
+    </section>
   );
 }
 
-function StatusRow({ status }: { status: ReactNode }) {
-  return (
-    <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
-      <span className="text-muted-foreground text-xs">
-        <Trans>Status</Trans>
-      </span>
-      {status}
-    </div>
-  );
+/** The fee figures stack amount over share; in a KV cell they start-align. */
+function FeeCell({ children }: { children: ReactNode }) {
+  return <span className="block [&>span]:items-start [&>span>span]:text-start">{children}</span>;
 }
 
 function formatSubmittedAt(value: string, locale: string): string {

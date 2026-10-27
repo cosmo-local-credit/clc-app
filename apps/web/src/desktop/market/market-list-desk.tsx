@@ -1,15 +1,18 @@
 import { marketplaceInfiniteQueryOptions } from "@clc/api/features/marketplace/queries";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import type { MarketplaceKind, MarketplaceResult } from "@clc/core/features/marketplace/logic";
+import { formatOfferingDisplayValue, formatOfferingPrice } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
+import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { Button } from "#/components/ui/button";
+import { Badge } from "#/components/ui/badge";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
@@ -24,6 +27,8 @@ import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { DeskSplit } from "#/desktop/ui/inspector";
+import { DeskCanvas } from "#/desktop/ui/page";
+import { MarketAvatar, MarketKindBadge, marketSeedGradient } from "#/desktop/market/market-bits";
 import { MarketDeskToolbar } from "#/desktop/market/market-toolbar";
 import { MarketPlacePanel } from "#/desktop/market/place-panel";
 
@@ -111,58 +116,72 @@ export function MarketListDesk({
     return meters;
   };
 
+  const filtered = filter.isFiltered || credit.enabled;
+
   return (
-    <div className="flex h-full min-h-0 flex-col px-8 pt-7">
-      <MarketDeskToolbar
-        scope={scope}
-        view="list"
-        filter={filter}
-        facets={facets}
-        filtersOpen={filtersOpen}
-        onFiltersOpenChange={setFiltersOpen}
-        credit={credit}
-        onCredit={changeCredit}
-        onClearCredit={clearCredit}
-        count={rows.length}
-      />
+    <div className="flex h-full min-h-0 flex-col">
       <DeskSplit
         dimmed={open}
         main={
-          <div className="min-h-0 flex-1 overflow-auto py-4">
-            <ListBody
+          <DeskCanvas width="full">
+            <h1 className="sr-only">
+              <Trans>Market</Trans>
+            </h1>
+            <MarketDeskToolbar
+              layout="page"
               scope={scope}
-              rows={rows}
-              pending={query.isPending}
-              error={query.isError && !query.data}
-              fetching={query.isFetching}
-              onRetry={() => void query.refetch()}
-              filtered={filter.isFiltered || credit.enabled}
-              onClear={filter.clear}
-              distanceOf={distanceOf}
-              selectedKey={
-                voucher.voucher
-                  ? `voucher:${voucher.voucher.toLowerCase()}`
-                  : want.want
-                    ? `want:${want.want}`
-                    : null
-              }
-              onOpenVoucher={voucher.open}
-              onOpenWant={want.open}
-              sheetOpen={open}
+              filter={filter}
+              facets={facets}
+              filtersOpen={filtersOpen}
+              onFiltersOpenChange={setFiltersOpen}
+              credit={credit}
+              onCredit={changeCredit}
+              count={filtered && query.data ? rows.length : undefined}
             />
-            <div ref={loadMoreRef} className="h-px" />
-            {query.isFetchingNextPage ? (
-              <p className="py-3 text-center text-xs text-muted-foreground">
-                <Trans>Loading more…</Trans>
-              </p>
+            {hasCreditFeedback(credit) ? (
+              <CreditableBrowseControl
+                part="feedback"
+                state={credit}
+                onChange={changeCredit}
+                onClear={clearCredit}
+              />
             ) : null}
-          </div>
+            <div>
+              <ListBody
+                scope={scope}
+                rows={rows}
+                pending={query.isPending}
+                error={query.isError && !query.data}
+                fetching={query.isFetching}
+                onRetry={() => void query.refetch()}
+                filtered={filtered}
+                onClear={filter.clear}
+                distanceOf={distanceOf}
+                selectedKey={
+                  voucher.voucher
+                    ? `voucher:${voucher.voucher.toLowerCase()}`
+                    : want.want
+                      ? `want:${want.want}`
+                      : null
+                }
+                onOpenVoucher={voucher.open}
+                onOpenWant={want.open}
+                sheetOpen={open}
+              />
+              <div ref={loadMoreRef} className="h-px" />
+              {query.isFetchingNextPage ? (
+                <p className="py-3 text-center text-xs text-muted-foreground">
+                  <Trans>Loading more…</Trans>
+                </p>
+              ) : null}
+            </div>
+          </DeskCanvas>
         }
         side={
           open ? (
-            <div className="flex w-[380px] shrink-0 flex-col border-border border-s bg-card">
+            <aside className="flex min-h-0 w-[380px] shrink-0 flex-col border-border border-s bg-card">
               <MarketPlacePanel realFix={distanceOrigin} />
-            </div>
+            </aside>
           ) : null
         }
       />
@@ -231,45 +250,15 @@ function ListBody({
   }
   if (scope === "offers") {
     return (
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 gap-4">
         {rows.map((row) =>
           row.kind === "offering" && row.voucherAddress ? (
-            <Link
+            <OfferTile
               key={row.id}
-              to="/vouchers/$voucherAddress"
-              params={{ voucherAddress: row.voucherAddress }}
-              search={{ from: "market" }}
-              data-desktop-row=""
-              className="flex flex-col border border-border bg-card"
-            >
-              <span className="relative block h-36 bg-muted">
-                {row.imageUrl ? (
-                  <ProgressiveImage
-                    src={row.imageUrl}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                ) : null}
-              </span>
-              <span className="flex flex-col gap-1 p-3">
-                <span className="truncate font-mono text-2xs text-muted-foreground">
-                  {row.voucherName} · {row.voucherSymbol}
-                </span>
-                <span dir="auto" className="truncate text-sm font-semibold">
-                  {row.name}
-                </span>
-                <span className="font-mono text-2xs font-semibold">
-                  {row.priceInUnitOfAccount ? (
-                    `${row.priceInUnitOfAccount} ${row.voucherUoa ?? ""}`
-                  ) : (
-                    <Trans>Price on request</Trans>
-                  )}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {distanceLabel(distanceOf(row), i18n.locale, t)}
-                </span>
-              </span>
-            </Link>
+              row={row}
+              voucherAddress={row.voucherAddress}
+              distance={distanceLabel(distanceOf(row), i18n.locale, t)}
+            />
           ) : null,
         )}
       </div>
@@ -357,12 +346,31 @@ function columnsFor(
 ): DeskColumn<MarketplaceResult>[] {
   const name: DeskColumn<MarketplaceResult> = {
     id: "name",
-    header: <Trans>Name</Trans>,
-    width: "1.6fr",
+    header:
+      scope === "pools" ? (
+        <Trans>Pool</Trans>
+      ) : scope === "vouchers" ? (
+        <Trans>Voucher</Trans>
+      ) : scope === "catalogs" ? (
+        <Trans>Catalog</Trans>
+      ) : scope === "wants" ? (
+        <Trans>Want</Trans>
+      ) : (
+        <Trans>Name</Trans>
+      ),
+    width: "minmax(0,2fr)",
     sortValue: (row) => row.name,
     cell: (row) => (
-      <span dir="auto" className="font-semibold">
-        {row.name}
+      <span className="flex min-w-0 items-center gap-2.5">
+        <MarketAvatar
+          name={row.name}
+          seed={row.address ?? row.id}
+          kind={row.kind === "voucher" ? row.voucherKind : row.kind}
+          size="sm"
+        />
+        <span dir="auto" className="min-w-0 truncate font-semibold">
+          {row.name}
+        </span>
       </span>
     ),
   };
@@ -370,7 +378,7 @@ function columnsFor(
     id: "place",
     header: <Trans>Location</Trans>,
     sortValue: (row) => row.locationName ?? "",
-    cell: (row) => row.locationName,
+    cell: (row) => <span dir="auto">{row.locationName}</span>,
   };
   const distance: DeskColumn<MarketplaceResult> = {
     id: "distance",
@@ -385,13 +393,26 @@ function columnsFor(
   const tags: DeskColumn<MarketplaceResult> = {
     id: "tags",
     header: <Trans>Tags</Trans>,
+    width: "minmax(0,1.4fr)",
     cell: (row) => (
-      <span className="flex gap-1">
-        {row.tags.slice(0, 3).map((tag) => (
+      <span className="flex min-w-0 gap-1">
+        {row.tags.slice(0, 2).map((tag) => (
           <TagBadge key={tag} tag={tag} size="sm" />
         ))}
+        {row.tags.length > 2 ? (
+          <Badge size="sm" variant="outline">
+            +{row.tags.length - 2}
+          </Badge>
+        ) : null}
       </span>
     ),
+  };
+  const kind: DeskColumn<MarketplaceResult> = {
+    id: "kind",
+    header: <Trans>Type</Trans>,
+    width: "8rem",
+    sortValue: (row) => (row.kind === "voucher" ? row.voucherKind : row.kind),
+    cell: (row) => <MarketKindBadge kind={row.kind === "voucher" ? row.voucherKind : row.kind} />,
   };
   if (scope === "pools") {
     return [
@@ -419,7 +440,7 @@ function columnsFor(
       {
         id: "symbol",
         header: <Trans>Symbol</Trans>,
-        width: "8rem",
+        width: "7rem",
         sortValue: (row) => (row.kind === "voucher" ? (row.symbol ?? "") : ""),
         cell: (row) => (
           <span dir="ltr" className="font-mono font-semibold">
@@ -427,6 +448,7 @@ function columnsFor(
           </span>
         ),
       },
+      kind,
       place,
       distance,
       tags,
@@ -438,13 +460,83 @@ function columnsFor(
       {
         id: "description",
         header: <Trans>Description</Trans>,
-        cell: (row) => row.description,
+        width: "minmax(0,2fr)",
+        cell: (row) => <span dir="auto">{row.description}</span>,
       },
       place,
       distance,
     ];
   }
-  return [name, place, distance, tags];
+  if (scope === "wants") return [name, place, distance, tags];
+  return [name, kind, place, distance, tags];
+}
+
+/** An offer as an image tile: the voucher and symbol, the offering, its price and distance. */
+function OfferTile({
+  row,
+  voucherAddress,
+  distance,
+}: {
+  row: MarketplaceResult;
+  voucherAddress: string;
+  distance: string;
+}) {
+  const { i18n } = useLingui();
+  const [failed, setFailed] = useState(false);
+  const raw = formatOfferingPrice(row.priceInUnitOfAccount)?.value;
+  const price = raw ? formatOfferingDisplayValue(raw, i18n.locales?.[0] ?? i18n.locale) : null;
+  const currency = row.voucherUoa?.trim() || row.voucherSymbol || "";
+  return (
+    <Link
+      to="/vouchers/$voucherAddress"
+      params={{ voucherAddress }}
+      search={{ from: "market" }}
+      data-desktop-row=""
+      className="flex min-w-0 flex-col border border-border bg-card hover:border-foreground/25"
+    >
+      <span
+        className="relative block aspect-[4/3] overflow-hidden"
+        style={{ background: marketSeedGradient(voucherAddress) }}
+      >
+        {row.imageUrl && !failed ? (
+          <ProgressiveImage
+            src={row.imageUrl}
+            alt=""
+            loading="lazy"
+            onError={() => setFailed(true)}
+            className="absolute inset-0 size-full object-cover"
+          />
+        ) : null}
+      </span>
+      <span className="grid min-w-0 gap-0.5 p-3">
+        <span className="truncate text-xs text-muted-foreground">
+          <span dir="auto">{row.voucherName}</span>
+          {row.voucherSymbol ? (
+            <>
+              {" · "}
+              <span dir="ltr" className="font-mono">
+                {row.voucherSymbol}
+              </span>
+            </>
+          ) : null}
+        </span>
+        <span dir="auto" className="truncate text-sm font-semibold">
+          {row.name}
+        </span>
+        {price ? (
+          <span dir="ltr" className="truncate text-start font-mono text-xs font-semibold">
+            {price} {currency}
+            {row.unit ? ` / ${row.unit}` : ""}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            <Trans>Price on request</Trans>
+          </span>
+        )}
+        <span className="min-h-4 truncate text-xs text-muted-foreground">{distance}</span>
+      </span>
+    </Link>
+  );
 }
 
 function distanceLabel(

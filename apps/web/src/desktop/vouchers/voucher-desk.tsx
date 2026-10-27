@@ -21,8 +21,7 @@ import {
 } from "#/components/vouchers/voucher-summary";
 import { WALLET_TOKEN_BY_ID, type WalletToken } from "#/components/wallet";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
-import { DeskCanvas } from "#/desktop/ui/page";
-import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
+import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
@@ -34,6 +33,30 @@ import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balance
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import { cn } from "#/lib/utils";
+
+/** One cell of the action strip: icon over label, a rule between cells. */
+const ACTION_CLASS =
+  "w-full min-w-0 border-0 border-border border-e last:border-e-0 [&_svg:not([class*='size-'])]:size-[18px]";
+
+/**
+ * `.page.detail`: the header, the action strip and every section in the main
+ * column; Info alone in a sticky 360px column that spans every row. The
+ * sections are the phone's, laid onto this grid with `display: contents`, so
+ * the page and the map sheet still share one component.
+ */
+const VOUCHER_PAGE_CLASS = cn(
+  "grid w-full max-w-[1324px] min-w-0 grid-cols-[minmax(0,1fr)_360px]",
+  "grid-rows-[auto_auto_auto_auto_auto_auto_1fr] items-start gap-x-6 gap-y-7 px-8 pt-7 pb-10",
+  "[&>*]:col-start-1 [&>*]:min-w-0 [&>div>section]:col-start-1 [&>div>section]:min-w-0",
+  "[&>div>section[aria-labelledby=voucher-section-info]]:col-start-2 [&>div>section[aria-labelledby=voucher-section-info]]:row-[1/-1]",
+  "[&>div>section[aria-labelledby=voucher-section-info]]:sticky [&>div>section[aria-labelledby=voucher-section-info]]:top-7 [&>div>section[aria-labelledby=voucher-section-info]]:self-start",
+  // The column is Info by position; its heading stays for screen readers.
+  "[&>div>section[aria-labelledby=voucher-section-info]>h2]:sr-only",
+  // Owner controls move under the facts, as in the mock.
+  "[&>div>section[aria-labelledby=voucher-section-info]>div]:flex [&>div>section[aria-labelledby=voucher-section-info]>div]:flex-col [&>div>section[aria-labelledby=voucher-section-info]>div]:gap-3",
+  "[&>div>section[aria-labelledby=voucher-section-info]>div]:space-y-0 [&>div>section[aria-labelledby=voucher-section-info]>div>section]:order-last",
+);
 
 export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` }) {
   const { t } = useLingui();
@@ -142,76 +165,79 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
   const lng = detail?.lng ?? token.lng ?? null;
 
   return (
-    <div className="flex h-full min-h-0">
-      <DeskSplit
-        main={
-          <DeskCanvas width="full" className="space-y-4">
-            <div className="[&_[role=group]]:hidden">
-              <VoucherIdentitySummary
-                address={address}
+    <div className={VOUCHER_PAGE_CLASS}>
+      <div className="[&_[role=group]]:hidden">
+        <VoucherIdentitySummary
+          address={address}
+          name={token.name}
+          symbol={token.symbol}
+          iconUrl={token.iconUrl}
+          avatarSize={56}
+          balance={balance}
+          place={distanceLabel ?? locationName}
+          tags={detail?.tags}
+          ownerAddress={detail?.ownerAddress}
+          locationName={locationName}
+          lat={lat}
+          lng={lng}
+          phone={detail?.phone ?? token.phone}
+          website={detail?.website}
+          catalogResourceId={detail?.id}
+          catalogAddress={detail?.address}
+          title={
+            <DeskTitle>
+              <span className="[overflow-wrap:anywhere]">{token.name}</span>
+            </DeskTitle>
+          }
+          headerActions={
+            <div className="flex items-center gap-2">
+              {detail?.id && detail.address ? (
+                <AddToCatalogButton
+                  kind="voucher"
+                  resourceId={detail.id}
+                  address={detail.address}
+                />
+              ) : null}
+              <ShareVoucherButton
                 name={token.name}
-                symbol={token.symbol}
-                iconUrl={token.iconUrl}
-                avatarSize={56}
-                balance={balance}
-                place={distanceLabel ?? locationName}
-                tags={detail?.tags}
-                ownerAddress={detail?.ownerAddress}
-                locationName={locationName}
-                lat={lat}
-                lng={lng}
-                phone={detail?.phone ?? token.phone}
-                website={detail?.website}
-                catalogResourceId={detail?.id}
-                catalogAddress={detail?.address}
-                title={
-                  <h1 className="font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
-                    {token.name}
-                  </h1>
-                }
-                headerActions={
-                  <ShareVoucherButton name={token.name} address={address} destination="detail" />
-                }
+                address={address}
+                destination="detail"
+                className="border border-foreground/25 bg-card text-foreground"
               />
             </div>
-            <VoucherDetailSections
-              address={address}
-              detail={detail}
-              symbol={token.symbol}
-              name={token.name}
-              decimals={token.tokenDecimals}
-              ownerAddress={token.owner ?? null}
-              chainId={detail?.chainId ?? poolVoucher?.chainId ?? null}
-              voucherValue={resolvedVoucherValue}
-              voucherUoa={resolvedVoucherUoa}
-              dataPending={detailQuery.isPending || supportingDataPending}
-              privateInfo={
-                detailQuery.privateInfo
-                  ? {
-                      ...detailQuery.privateInfo,
-                      retry: () => void detailQuery.privateInfo?.refetch(),
-                    }
-                  : undefined
+          }
+        />
+      </div>
+      <VoucherActions
+        address={address}
+        name={token.name}
+        ownerAddress={detail?.ownerAddress}
+        hasPositiveBalance={balance.hasPositiveBalance}
+        locationName={locationName}
+        lat={lat}
+        lng={lng}
+        phone={detail?.phone ?? token.phone}
+        website={detail?.website}
+      />
+      <VoucherDetailSections
+        className="contents space-y-0 pb-0"
+        address={address}
+        detail={detail}
+        symbol={token.symbol}
+        name={token.name}
+        decimals={token.tokenDecimals}
+        ownerAddress={token.owner ?? null}
+        chainId={detail?.chainId ?? poolVoucher?.chainId ?? null}
+        voucherValue={resolvedVoucherValue}
+        voucherUoa={resolvedVoucherUoa}
+        dataPending={detailQuery.isPending || supportingDataPending}
+        privateInfo={
+          detailQuery.privateInfo
+            ? {
+                ...detailQuery.privateInfo,
+                retry: () => void detailQuery.privateInfo?.refetch(),
               }
-            />
-          </DeskCanvas>
-        }
-        side={
-          <DeskInspector title={<Trans>Vouchers</Trans>}>
-            <VoucherActions
-              address={address}
-              name={token.name}
-              ownerAddress={detail?.ownerAddress}
-              hasPositiveBalance={balance.hasPositiveBalance}
-              locationName={locationName}
-              lat={lat}
-              lng={lng}
-              phone={detail?.phone ?? token.phone}
-              website={detail?.website}
-              catalogResourceId={detail?.id}
-              catalogAddress={detail?.address}
-            />
-          </DeskInspector>
+            : undefined
         }
       />
     </div>
@@ -228,8 +254,6 @@ function VoucherActions({
   lng,
   phone,
   website,
-  catalogResourceId,
-  catalogAddress,
 }: {
   address: string;
   name: string;
@@ -240,8 +264,6 @@ function VoucherActions({
   lng?: number | null;
   phone?: string | null;
   website?: string | null;
-  catalogResourceId?: string | null;
-  catalogAddress?: `0x${string}` | null;
 }) {
   const { t } = useLingui();
   const auth = useAuthStatus();
@@ -254,15 +276,19 @@ function VoucherActions({
       : null;
   const verifiedWebsite = website && isHttpUrl(website) ? website : null;
   return (
-    <div className="flex flex-col gap-2" role="group" aria-label={t`Voucher actions`}>
-      <Button asChild>
+    <div
+      className="grid auto-cols-fr grid-flow-col border border-border bg-card"
+      role="group"
+      aria-label={t`Voucher actions`}
+    >
+      <Button asChild variant="ghost" size="tile" className={ACTION_CLASS}>
         <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
           <RiHandCoinLine aria-hidden="true" />
           <Trans>Get</Trans>
         </Link>
       </Button>
       {hasPositiveBalance ? (
-        <Button asChild variant="outline">
+        <Button asChild variant="ghost" size="tile" className={ACTION_CLASS}>
           <Link to="/wallet/send" search={{ token: address }}>
             <RiSendPlane2Line aria-hidden="true" />
             <Trans>Send</Trans>
@@ -270,7 +296,7 @@ function VoucherActions({
         </Button>
       ) : null}
       {hasPositiveBalance && verifiedOwnerAddress ? (
-        <Button asChild variant="outline">
+        <Button asChild variant="ghost" size="tile" className={ACTION_CLASS}>
           <Link
             to="/wallet/send/amount"
             search={{ token: address, recipient: verifiedOwnerAddress }}
@@ -282,7 +308,9 @@ function VoucherActions({
       ) : null}
       {auth.isAuthenticated && (coordinates || locationName) ? (
         <Button
-          variant="outline"
+          variant="ghost"
+          size="tile"
+          className={ACTION_CLASS}
           onClick={() => openDefaultMaps({ label: locationName ?? name, lat, lng })}
         >
           <RiNavigationLine aria-hidden="true" />
@@ -290,7 +318,7 @@ function VoucherActions({
         </Button>
       ) : null}
       {auth.isAuthenticated && phone ? (
-        <Button asChild variant="outline">
+        <Button asChild variant="ghost" size="tile" className={ACTION_CLASS}>
           <a href={`tel:${phone}`}>
             <RiPhoneLine aria-hidden="true" />
             <Trans>Call</Trans>
@@ -298,19 +326,12 @@ function VoucherActions({
         </Button>
       ) : null}
       {auth.isAuthenticated && verifiedWebsite ? (
-        <Button asChild variant="outline">
+        <Button asChild variant="ghost" size="tile" className={ACTION_CLASS}>
           <a href={verifiedWebsite} target="_blank" rel="noreferrer noopener">
             <RiGlobalLine aria-hidden="true" />
             <Trans>Website</Trans>
           </a>
         </Button>
-      ) : null}
-      {catalogResourceId && catalogAddress ? (
-        <AddToCatalogButton
-          kind="voucher"
-          resourceId={catalogResourceId}
-          address={catalogAddress}
-        />
       ) : null}
     </div>
   );

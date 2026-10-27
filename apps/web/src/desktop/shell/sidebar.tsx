@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import {
   RiArticleLine,
   RiMap2Line,
-  RiNotification3Line,
+  RiPulseLine,
   RiSettings3Line,
   RiSideBarLine,
   RiWallet3Line,
@@ -43,9 +43,10 @@ function initials(name: string | undefined, address: string | undefined) {
   return address ? address.slice(2, 4).toUpperCase() : "";
 }
 
-export function DesktopSidebar() {
+export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
   const { t } = useLingui();
-  const { collapsed, toggle } = useSidebarCollapsed();
+  const { collapsed: stored, toggle } = useSidebarCollapsed();
+  const collapsed = rail || stored;
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const search = useRouterState({ select: (state) => state.location.search });
   const selection = desktopNavSelection(pathname, search);
@@ -53,12 +54,12 @@ export function DesktopSidebar() {
   const profile = useAuthProfile({ enabled: auth.isAuthenticated });
   const address = auth.address;
   const name = profile.data?.name?.trim();
-  const itemClass = (active: boolean, parent: boolean) =>
+  const marketChild = selection.nav === "market" && Boolean(selection.scope);
+  const itemClass = (active: boolean) =>
     cn(
-      "flex h-9 items-center gap-3 px-3 text-sm",
-      active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
-      parent && !active && "text-foreground",
-      !active && !parent && "text-sidebar-foreground/80 hover:bg-sidebar-accent",
+      "flex h-[34px] items-center gap-2.5 px-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent [&_svg]:size-4 [&_svg]:shrink-0",
+      collapsed && "justify-center px-0",
+      active && "bg-sidebar-accent shadow-[inset_2px_0_0_var(--color-primary)]",
     );
 
   return (
@@ -71,24 +72,37 @@ export function DesktopSidebar() {
       >
         <div
           className={cn(
-            "flex h-14 items-center gap-2 border-sidebar-border border-b",
-            collapsed ? "justify-center px-0" : "px-3",
+            "flex h-14 shrink-0 items-center gap-2 border-sidebar-border border-b",
+            collapsed ? "justify-center" : "px-3.5",
           )}
         >
-          <CLCLogo sharp className="size-7" />
-          {collapsed ? null : <span className="font-heading text-base font-semibold">CLC</span>}
+          <CLCLogo sharp className="size-6" />
+          {collapsed ? null : <span className="font-heading text-base font-bold">CLC</span>}
+          {rail ? null : (
+            <DeskTooltip label={collapsed ? t`Expand` : t`Collapse`}>
+              <button
+                type="button"
+                className={cn(
+                  "flex size-7 items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                  collapsed ? "hidden" : "ms-auto",
+                )}
+                aria-label={collapsed ? t`Expand` : t`Collapse`}
+                onClick={toggle}
+              >
+                <RiSideBarLine aria-hidden="true" />
+              </button>
+            </DeskTooltip>
+          )}
         </div>
         <nav
           aria-label={t`Primary navigation`}
-          className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-auto py-2"
+          className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2.5"
         >
           <SidebarLink
             collapsed={collapsed}
             label={t`Market`}
-            className={itemClass(
-              selection.nav === "market" && !selection.scope,
-              selection.nav === "market" && Boolean(selection.scope),
-            )}
+            className={itemClass(selection.nav === "market" && (!selection.scope || collapsed))}
+            current={selection.nav === "market" && !marketChild}
             icon={<RiMap2Line aria-hidden="true" />}
             to="/"
             search={(previous) => ({
@@ -98,7 +112,7 @@ export function DesktopSidebar() {
             })}
           />
           {collapsed ? null : (
-            <div className="flex flex-col ps-9">
+            <div className="ms-[17px] mt-0.5 mb-1.5 flex flex-col gap-px border-sidebar-border border-s ps-2">
               {SCOPES.map((scope) => (
                 <Link
                   key={scope.id}
@@ -109,10 +123,10 @@ export function DesktopSidebar() {
                   })}
                   aria-current={selection.scope === scope.id ? "page" : undefined}
                   className={cn(
-                    "flex h-8 items-center px-3 text-sm",
+                    "flex h-7 items-center px-2 text-xs font-medium hover:bg-sidebar-accent",
                     selection.scope === scope.id
-                      ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent",
+                      ? "bg-sidebar-accent font-semibold text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {scope.label}
@@ -123,7 +137,8 @@ export function DesktopSidebar() {
           <SidebarLink
             collapsed={collapsed}
             label={t`Wallet`}
-            className={itemClass(selection.nav === "wallet", false)}
+            className={itemClass(selection.nav === "wallet")}
+            current={selection.nav === "wallet"}
             icon={<RiWallet3Line aria-hidden="true" />}
             to="/"
             search={{ tab: "wallet" }}
@@ -131,15 +146,17 @@ export function DesktopSidebar() {
           <SidebarLink
             collapsed={collapsed}
             label={t`Activity`}
-            className={itemClass(selection.nav === "activity", false)}
-            icon={<RiNotification3Line aria-hidden="true" />}
+            className={itemClass(selection.nav === "activity")}
+            current={selection.nav === "activity"}
+            icon={<RiPulseLine aria-hidden="true" />}
             to="/"
             search={{ tab: "activity" }}
           />
           <SidebarLink
             collapsed={collapsed}
             label={t`Posts`}
-            className={itemClass(selection.nav === "posts", false)}
+            className={itemClass(selection.nav === "posts")}
+            current={selection.nav === "posts"}
             icon={<RiArticleLine aria-hidden="true" />}
             to="/"
             search={{ tab: "posts" }}
@@ -147,58 +164,50 @@ export function DesktopSidebar() {
         </nav>
         <div
           className={cn(
-            "flex items-center gap-2 border-sidebar-border border-t",
-            collapsed ? "flex-col px-1 py-2" : "px-2 py-2",
+            "flex shrink-0 items-center gap-2.5 border-sidebar-border border-t p-2.5",
+            collapsed && "justify-center",
           )}
         >
           {address ? (
-            <div className={cn("flex min-w-0 items-center gap-2", collapsed && "justify-center")}>
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent font-heading text-2xs font-semibold">
+            <Link
+              to="/settings/profile"
+              aria-label={collapsed ? t`Edit profile` : undefined}
+              className="flex min-w-0 flex-1 items-center gap-2.5"
+            >
+              <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-secondary font-heading text-2xs font-bold">
                 {initials(name, address)}
               </span>
               {collapsed ? null : (
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium">
+                  <span className="block truncate text-sm font-semibold">
                     {name || formatVoucherAddress(address)}
                   </span>
-                  {name ? (
-                    <span
-                      className="block truncate font-mono text-2xs text-muted-foreground"
-                      dir="ltr"
-                    >
-                      {formatVoucherAddress(address)}
-                    </span>
-                  ) : null}
+                  <span
+                    className="block truncate font-mono text-2xs text-muted-foreground"
+                    dir="ltr"
+                  >
+                    {formatVoucherAddress(address)}
+                  </span>
                 </span>
               )}
-            </div>
-          ) : null}
-          <div
-            className={cn("flex items-center", collapsed ? "flex-col gap-1" : "ms-auto gap-0.5")}
-          >
+            </Link>
+          ) : collapsed ? null : (
+            <span className="flex-1" />
+          )}
+          {collapsed && address ? null : (
             <Link
               to="/"
               search={{ tab: "settings" }}
               aria-label={t`Settings`}
               aria-current={selection.nav === "settings" ? "page" : undefined}
               className={cn(
-                "flex size-9 items-center justify-center",
-                selection.nav === "settings"
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "hover:bg-sidebar-accent",
+                "flex size-8 shrink-0 items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                selection.nav === "settings" && "bg-sidebar-accent text-foreground",
               )}
             >
               <RiSettings3Line aria-hidden="true" />
             </Link>
-            <button
-              type="button"
-              className="flex size-9 items-center justify-center hover:bg-sidebar-accent"
-              aria-label={collapsed ? t`Expand` : t`Collapse`}
-              onClick={toggle}
-            >
-              <RiSideBarLine aria-hidden="true" />
-            </button>
-          </div>
+          )}
         </div>
       </aside>
     </DeskTooltipProvider>
@@ -209,6 +218,7 @@ function SidebarLink({
   collapsed,
   label,
   className,
+  current,
   icon,
   to,
   search,
@@ -216,6 +226,7 @@ function SidebarLink({
   collapsed: boolean;
   label: string;
   className: string;
+  current: boolean;
   icon: ReactNode;
   to: "/";
   search:
@@ -227,6 +238,7 @@ function SidebarLink({
       to={to}
       search={search as never}
       aria-label={collapsed ? label : undefined}
+      aria-current={current ? "page" : undefined}
       className={className}
     >
       {icon}

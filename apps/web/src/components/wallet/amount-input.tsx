@@ -38,8 +38,9 @@ function WalletAmountInput({
       aria-label={label}
       value={value}
       onChange={(event) => onValueChange(event.target.value)}
+      // `!` beats the Input's md:text-sm, which would shrink the amount on wide screens.
       className={cn(
-        "truncate px-2 text-end font-heading text-[1.375rem] font-semibold leading-none tracking-tight",
+        "truncate px-2 text-end font-heading text-[1.375rem]! font-semibold leading-none tracking-tight",
         highlighted && "border-primary focus-visible:border-primary",
       )}
     />

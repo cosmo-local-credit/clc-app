@@ -5,6 +5,7 @@ import {
 import { poolKeys } from "@clc/api/features/pools/queries";
 import {
   getPoolDeploymentStages,
+  type PoolCreateInput,
   type PoolDeploymentStage,
   type PoolDeploymentStageState,
 } from "@clc/core/features/pools/logic";
@@ -12,20 +13,22 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { RiCheckLine, RiCloseLine, RiRefreshLine, RiTimeLine } from "react-icons/ri";
+import { RiCheckLine, RiCloseLine, RiRefreshLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { InfoRow } from "#/components/ui/info-row";
-import { StepProgress } from "#/components/ui/step-progress";
-import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
-import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
+import { Spinner } from "#/components/ui/spinner";
+import { EllipsizedAddress, FailureCross, StatusPill, SuccessCheck } from "#/components/wallet";
+import { DeskKV } from "#/desktop/ui/kv";
+import { DeskSection, DeskTitle } from "#/desktop/ui/page";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { PoolDetailsRows } from "#/features/pools/ui/pool-details-rows";
 import { useDeploymentContract } from "#/hooks/use-deployment";
 import { exitPoolCreateHistory } from "#/lib/navigation/pool-create-history";
+import { cn } from "#/lib/utils";
 
 export function PoolReceiptDesk({ trackingId }: { trackingId?: string }) {
   const { t } = useLingui();
@@ -85,8 +88,9 @@ export function PoolReceiptDesk({ trackingId }: { trackingId?: string }) {
         title={t`Publishing unavailable`}
         message={t`Pool tracking details are missing.`}
         status={<StatusPill tone="error" label={t`Unavailable`} />}
+        summary={draft ? <DraftSummary draft={draft} /> : null}
         actions={
-          <Button variant="outline" tap className="w-full" onClick={() => exit("/pools/")}>
+          <Button variant="outline" onClick={() => exit("/pools/")}>
             <Trans>Back to pools</Trans>
           </Button>
         }
@@ -109,13 +113,14 @@ export function PoolReceiptDesk({ trackingId }: { trackingId?: string }) {
         message={message}
         status={<StatusPill tone="error" label={t`Failed`} />}
         stages={stages}
+        summary={draft ? <DraftSummary draft={draft} /> : null}
         actions={
           <>
-            <Button tap className="w-full" onClick={() => exit("/pools/create/review", true)}>
+            <Button onClick={() => exit("/pools/create/review", true)}>
               <RiRefreshLine aria-hidden="true" />
               <Trans>Try again</Trans>
             </Button>
-            <Button variant="outline" tap className="w-full" onClick={() => exit("/pools/")}>
+            <Button variant="outline" onClick={() => exit("/pools/")}>
               <Trans>Back to pools</Trans>
             </Button>
           </>
@@ -127,17 +132,19 @@ export function PoolReceiptDesk({ trackingId }: { trackingId?: string }) {
   if (!confirmed || !contract.address) {
     return (
       <ReceiptState
-        icon={<PendingClock />}
+        icon={
+          <span className="grid size-14 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
+            <Spinner className="size-6" />
+          </span>
+        }
         title={t`Publishing your pool…`}
-        message={t`Waiting for blockchain confirmation…`}
-        status={<StatusPill tone="pending" label={t`Pending`} />}
+        message={
+          <span role="status">
+            {t`${completedCount} of ${stages.length}`} · {t`Waiting for blockchain confirmation…`}
+          </span>
+        }
         stages={stages}
-        progress={{
-          completed: completedCount,
-          total: stages.length,
-          label: t`${completedCount} of ${stages.length}`,
-          ariaLabel: t`${completedCount} of ${stages.length} confirmed`,
-        }}
+        summary={draft ? <DraftSummary draft={draft} /> : null}
       />
     );
   }
@@ -156,57 +163,74 @@ export function PoolReceiptDesk({ trackingId }: { trackingId?: string }) {
   };
 
   return (
-    <DeskCanvas width="read">
-      <div className="flex flex-col items-center text-center">
-        <SuccessCheck />
-        <DeskTitle>
-          <Trans>{contract.symbol} is live</Trans>
-        </DeskTitle>
-        <div className="mt-3">
-          <StatusPill tone="success" label={t`Published`} />
-        </div>
-      </div>
-      <dl className="mt-6 border border-border bg-card">
-        {draft ? (
-          <PoolDetailsRows
-            values={draft}
-            onCopyFeeAddress={(value) =>
-              copyValue(value, t`Fee recipient copied`, t`Couldn't copy fee recipient`)
-            }
+    <ReceiptLayout
+      header={
+        <ReceiptHeader
+          icon={<SuccessCheck />}
+          title={<Trans>{contract.symbol} is live</Trans>}
+          message={<StatusPill tone="success" label={t`Published`} />}
+        />
+      }
+      main={
+        <>
+          <DeskKV
+            labelWidth="140px"
+            rows={[
+              [
+                <Trans key="label">Contract address</Trans>,
+                <CopyableInfoValue
+                  key="value"
+                  value={address}
+                  label={t`Copy contract address`}
+                  onCopy={(value) =>
+                    copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
+                  }
+                />,
+              ],
+              txHash
+                ? [
+                    <Trans key="label">Transaction hash</Trans>,
+                    <CopyableInfoValue
+                      key="value"
+                      value={txHash}
+                      label={t`Copy transaction hash`}
+                      onCopy={(value) =>
+                        copyValue(
+                          value,
+                          t`Transaction hash copied`,
+                          t`Couldn't copy transaction hash`,
+                        )
+                      }
+                    />,
+                  ]
+                : null,
+            ]}
           />
-        ) : (
-          <>
-            <InfoRow label={t`Pool`}>{contract.name}</InfoRow>
-            <InfoRow label={t`Symbol`}>{contract.symbol}</InfoRow>
-          </>
-        )}
-        <InfoRow label={t`Contract address`}>
-          <CopyableInfoValue
-            value={address}
-            label={t`Copy contract address`}
-            onCopy={(value) =>
-              copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
-            }
-          />
-        </InfoRow>
-        {txHash ? (
-          <InfoRow label={t`Transaction hash`}>
-            <CopyableInfoValue
-              value={txHash}
-              label={t`Copy transaction hash`}
-              onCopy={(value) =>
-                copyValue(value, t`Transaction hash copied`, t`Couldn't copy transaction hash`)
+          <div>
+            <Button onClick={() => exit(`/pools/${address}`)}>
+              <Trans>View pool</Trans>
+            </Button>
+          </div>
+        </>
+      }
+      summary={
+        <dl className="border border-border bg-card">
+          {draft ? (
+            <PoolDetailsRows
+              values={draft}
+              onCopyFeeAddress={(value) =>
+                copyValue(value, t`Fee recipient copied`, t`Couldn't copy fee recipient`)
               }
             />
-          </InfoRow>
-        ) : null}
-      </dl>
-      <div className="mt-6">
-        <Button tap className="w-full" onClick={() => exit(`/pools/${address}`)}>
-          <Trans>View pool</Trans>
-        </Button>
-      </div>
-    </DeskCanvas>
+          ) : (
+            <>
+              <InfoRow label={t`Pool`}>{contract.name}</InfoRow>
+              <InfoRow label={t`Symbol`}>{contract.symbol}</InfoRow>
+            </>
+          )}
+        </dl>
+      }
+    />
   );
 }
 
@@ -216,77 +240,201 @@ function ReceiptState({
   message,
   status,
   stages,
-  progress,
+  summary,
   actions,
 }: {
   icon: ReactNode;
   title: string;
   message: ReactNode;
-  status: ReactNode;
+  status?: ReactNode;
   stages?: PoolDeploymentStage[];
-  progress?: { completed: number; total: number; label: string; ariaLabel: string };
+  summary?: ReactNode;
   actions?: ReactNode;
 }) {
   return (
-    <DeskCanvas width="read">
-      <div className="flex flex-col items-center text-center">
-        {icon}
-        <DeskTitle>{title}</DeskTitle>
-        <p className="mt-2 text-muted-foreground text-sm">{message}</p>
-        <div className="mt-3">{status}</div>
+    <ReceiptLayout
+      header={<ReceiptHeader icon={icon} title={title} message={message} status={status} />}
+      main={
+        <>
+          {stages ? (
+            <div className="border border-border bg-card p-4">
+              <StageList stages={stages} />
+            </div>
+          ) : null}
+          {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+        </>
+      }
+      summary={summary}
+    />
+  );
+}
+
+/** The publish screen: stages in the main column, what was sent in the side column. */
+function ReceiptLayout({
+  header,
+  main,
+  summary,
+}: {
+  header: ReactNode;
+  main: ReactNode;
+  summary?: ReactNode;
+}) {
+  return (
+    <div className="grid w-full max-w-[1100px] grid-cols-[minmax(0,1fr)_360px] items-start gap-6 px-8 pt-7 pb-10">
+      <div className="grid min-w-0 content-start gap-5">
+        {header}
+        {main}
       </div>
-      {progress ? (
-        <StepProgress
-          step={progress.completed}
-          total={progress.total}
-          label={progress.label}
-          ariaLabel={progress.ariaLabel}
-          className="mt-5"
-        />
+      {summary ? (
+        <DeskSection title={<Trans>Summary</Trans>} className="sticky top-7">
+          {summary}
+        </DeskSection>
       ) : null}
-      {stages ? <StageList stages={stages} className={progress ? "mt-3" : "mt-5"} /> : null}
-      {actions ? <div className="mt-6 space-y-3">{actions}</div> : null}
-    </DeskCanvas>
+    </div>
   );
 }
 
-function StageList({ stages, className }: { stages: PoolDeploymentStage[]; className: string }) {
+function ReceiptHeader({
+  icon,
+  title,
+  message,
+  status,
+}: {
+  icon: ReactNode;
+  title: ReactNode;
+  message: ReactNode;
+  status?: ReactNode;
+}) {
   return (
-    <ul className={`border border-border bg-card px-4 py-1.5 ${className}`}>
-      {stages.map((stage, index) => (
-        <li
-          key={stage.label}
-          className={`grid min-h-11 grid-cols-[1.125rem_minmax(0,1fr)_auto] items-center gap-2.5 py-2 text-sm ${index === stages.length - 1 ? "" : "border-border border-b"}`}
-        >
-          <StageMark state={stage.state} />
-          <span className={stage.state === "idle" ? "text-muted-foreground" : ""}>
-            {stage.label}
-          </span>
-          <span
-            className={`text-xs ${stage.state === "failed" ? "text-destructive" : "text-muted-foreground"}`}
+    <div className="flex min-w-0 items-center gap-3.5">
+      {icon}
+      <div className="grid min-w-0 gap-1">
+        <DeskTitle>{title}</DeskTitle>
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {message}
+          {status}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** The summary from the review step, kept beside the stages while they confirm. */
+function DraftSummary({ draft }: { draft: PoolCreateInput }) {
+  const { t } = useLingui();
+  const pricing =
+    draft.pricing === "relative"
+      ? t`Relative pricing`
+      : draft.pricing === "oracle"
+        ? t`Oracle pricing`
+        : t`Equal value`;
+  const feeAddress = draft.feeAddress.trim();
+  return (
+    <DeskKV
+      rows={[
+        [
+          <Trans key="label">Pool</Trans>,
+          <span key="value" dir="auto" className="font-sans">
+            {draft.name}
+          </span>,
+        ],
+        [<Trans key="label">Symbol</Trans>, draft.symbol],
+        [<Trans key="label">Unit of account</Trans>, draft.unitOfAccount],
+        [
+          <Trans key="label">Pricing</Trans>,
+          <span key="value" className="font-sans">
+            {pricing}
+          </span>,
+        ],
+        [<Trans key="label">Swap fee</Trans>, `${draft.feePolicyDefault}%`],
+        Number(draft.feePolicyDefault) > 0
+          ? [
+              <Trans key="label">Fee recipient</Trans>,
+              feeAddress === "" ? (
+                <span key="value" className="font-sans">
+                  {t`Your wallet`}
+                </span>
+              ) : (
+                <EllipsizedAddress key="value" address={feeAddress} />
+              ),
+            ]
+          : null,
+        draft.location?.locationName
+          ? [
+              <Trans key="label">Location</Trans>,
+              <span key="value" dir="auto" className="font-sans">
+                {draft.location.locationName}
+              </span>,
+            ]
+          : null,
+      ]}
+    />
+  );
+}
+
+function StageList({ stages }: { stages: PoolDeploymentStage[] }) {
+  return (
+    <ol className="grid">
+      {stages.map((stage, index) => {
+        const last = index === stages.length - 1;
+        return (
+          <li
+            key={stage.label}
+            className="grid grid-cols-[24px_minmax(0,1fr)] gap-x-3"
+            aria-current={stage.state === "active" ? "step" : undefined}
           >
-            {stage.status}
-          </span>
-        </li>
-      ))}
-    </ul>
+            <StageMark state={stage.state} index={index + 1} />
+            <div className="min-w-0">
+              <div
+                className={cn(
+                  "text-sm leading-6 font-semibold",
+                  stage.state === "idle" && "font-medium text-muted-foreground",
+                )}
+              >
+                {stage.label}
+              </div>
+              <div
+                className={cn(
+                  "text-xs",
+                  stage.state === "failed" ? "text-destructive" : "text-muted-foreground",
+                )}
+              >
+                {stage.status}
+              </div>
+            </div>
+            {last ? null : (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "mx-auto my-1 block min-h-6 w-0.5",
+                  stage.state === "done" ? "bg-primary" : "bg-foreground/15",
+                )}
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
-function StageMark({ state }: { state: PoolDeploymentStageState }) {
-  const className =
-    state === "done"
-      ? "border-primary bg-primary text-primary-foreground"
-      : state === "failed"
-        ? "border-destructive bg-destructive text-destructive-foreground"
-        : state === "active"
-          ? "border-primary border-dashed text-primary"
-          : "border-border bg-card text-muted-foreground";
+function StageMark({ state, index }: { state: PoolDeploymentStageState; index: number }) {
   return (
-    <span className={`grid size-4 place-items-center border ${className}`}>
+    <span
+      className={cn(
+        "grid size-6 place-items-center rounded-full font-mono text-2xs font-semibold",
+        state === "done" && "bg-primary text-primary-foreground",
+        state === "failed" && "bg-destructive text-white",
+        state === "active" &&
+          "bg-card text-foreground shadow-[inset_0_0_0_2px_var(--color-primary)]",
+        state === "idle" &&
+          "bg-card text-muted-foreground shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--color-foreground)_18%,transparent)]",
+      )}
+    >
       {state === "done" ? <RiCheckLine className="size-3" aria-hidden="true" /> : null}
       {state === "failed" ? <RiCloseLine className="size-3" aria-hidden="true" /> : null}
-      {state === "active" ? <RiTimeLine className="size-3" aria-hidden="true" /> : null}
+      {state === "active" ? <Spinner className="size-3.5" /> : null}
+      {state === "idle" ? index : null}
     </span>
   );
 }

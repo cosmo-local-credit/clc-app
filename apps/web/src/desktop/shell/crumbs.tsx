@@ -203,7 +203,7 @@ export function DeskCrumbs({
           <RiArrowRightSLine className="size-3 text-muted-foreground" aria-hidden="true" />
         ) : null}
         {last ? (
-          <span className="text-foreground">{label}</span>
+          <span className="font-semibold text-foreground">{label}</span>
         ) : (
           <CrumbLink id={id}>{label}</CrumbLink>
         )}
@@ -216,7 +216,7 @@ export function DeskCrumbs({
       {trail ? (
         <span className="inline-flex min-w-0 items-center gap-1.5">
           <RiArrowRightSLine className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="truncate text-foreground">{trail}</span>
+          <span className="truncate font-semibold text-foreground">{trail}</span>
         </span>
       ) : null}
     </nav>

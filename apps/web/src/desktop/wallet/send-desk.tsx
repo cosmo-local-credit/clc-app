@@ -2,15 +2,16 @@ import {
   formatUnitOfAccountDisplayValue,
   formatVoucherUnitValue,
 } from "@clc/core/features/market/logic";
+import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
   formatTokenAmount,
   formatTokenAmountFixed,
   parseTokenAmount,
 } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useCanGoBack, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { RiArrowRightSLine, RiGroupLine } from "react-icons/ri";
+import { RiGroupLine } from "react-icons/ri";
 import { getAddress, isAddress } from "viem";
 import { useConnection } from "wagmi";
 
@@ -22,17 +23,19 @@ import {
   DialogRoot,
   DialogTitle,
 } from "#/components/ui/dialog";
+import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
 import { Spinner } from "#/components/ui/spinner";
 import { TokenLogo, WalletAmountInput, type WalletToken } from "#/components/wallet";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
-import {
-  RecipientAddressInput,
-  type ResolvedRecipientAddress,
-} from "#/components/wallet/recipient-address-input";
+import type { ResolvedRecipientAddress } from "#/components/wallet/recipient-address-input";
 import type { Recipient } from "#/components/wallet/wallet-data";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
+import { DeskKV } from "#/desktop/ui/kv";
+import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
+import { DeskChip } from "#/desktop/ui/segment";
+import { SendRecipientField } from "#/desktop/wallet/send-recipient-field";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import {
@@ -47,11 +50,11 @@ import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { recentSendRecipients } from "#/features/wallet/logic/recent-send-recipients";
 import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import { AddressBookSheet } from "#/features/wallet/ui/address-book-sheet";
-import { RecentRecipientRow } from "#/features/wallet/ui/recent-recipient-row";
-import { RecipientAddressCard } from "#/features/wallet/ui/recipient-address-card";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import { cn } from "#/lib/utils";
 
 function sanitizeAmount(raw: string): string {
   const cleaned = raw.replace(/[^0-9.]/g, "");
@@ -95,6 +98,8 @@ export function SendDesk({
 }) {
   const { i18n, t } = useLingui();
   const navigate = useNavigate();
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
   const locationSearch = useRouterState({ select: (state) => state.location.search });
   const route = readSendLocation(locationSearch);
   const seededTo = to ?? route.to ?? route.recipient;
@@ -230,13 +235,12 @@ export function SendDesk({
     () => [
       {
         id: "token",
-        header: t`Holdings`,
-        sortValue: (row) => row.symbol,
+        header: t`Voucher`,
+        sortValue: (row) => row.name,
         cell: (row) => (
-          <span className="flex min-w-0 items-center gap-2">
+          <span className="flex min-w-0 items-center gap-2.5">
             <TokenLogo token={row} size={20} />
-            <span className="truncate text-sm font-semibold">{row.symbol}</span>
-            <span className="truncate text-xs text-muted-foreground">{row.name}</span>
+            <span className="truncate">{row.name}</span>
           </span>
         ),
       },
@@ -244,7 +248,7 @@ export function SendDesk({
         id: "balance",
         header: t`Balance`,
         align: "end",
-        width: "8rem",
+        width: "10rem",
         sortValue: (row) => Number(row.balance ?? 0),
         cell: (row) => (
           <span className="font-heading font-semibold tracking-tight" dir="ltr">
@@ -271,6 +275,19 @@ export function SendDesk({
     setQuery(next.label);
   }
 
+  function selectToken(id: string) {
+    setMaxAmountRaw(null);
+    setSelectedId(id);
+  }
+
+  function close() {
+    if (canGoBack) {
+      router.history.back();
+      return;
+    }
+    void navigate({ to: "/", search: { tab: "wallet" } });
+  }
+
   async function openReview() {
     if (!recipient || !canSend) return;
     const saved = await upsertRecipient
@@ -289,17 +306,17 @@ export function SendDesk({
       <DeskSplit
         dimmed
         main={
-          <div className="p-6">
+          <DeskCanvas>
+            <DeskTitle>
+              <Trans>Wallet</Trans>
+            </DeskTitle>
             <DeskTable
               label={t`Holdings`}
               rows={tokens}
               columns={columns}
               rowKey={(row) => row.id}
               selectedKey={selectedToken?.id}
-              onSelect={(row) => {
-                setMaxAmountRaw(null);
-                setSelectedId(row.id);
-              }}
+              onSelect={(row) => selectToken(row.id)}
               empty={
                 !address ? (
                   <Trans>No wallet address available.</Trans>
@@ -309,43 +326,22 @@ export function SendDesk({
                     <Trans>Loading tokens…</Trans>
                   </span>
                 ) : tokensQuery.isError ? (
-                  <span className="inline-flex flex-col items-start gap-2">
-                    <Trans>Couldn't load tokens</Trans>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      pending={tokensQuery.isFetching}
-                      onClick={() => void tokensQuery.refetch()}
-                    >
-                      <Trans>Try again</Trans>
-                    </Button>
-                  </span>
+                  <Trans>Couldn't load tokens</Trans>
                 ) : (
                   <Trans>No tokens available</Trans>
                 )
               }
             />
-          </div>
+          </DeskCanvas>
         }
         side={
-          <DeskInspector
-            title={<Trans>Send</Trans>}
-            footer={
-              <Button
-                type="button"
-                className="w-full"
-                disabled={!canSend}
-                pending={upsertRecipient.isPending}
-                onClick={() => void openReview()}
-              >
-                <Trans>Send</Trans>
-              </Button>
-            }
-          >
-            <div className="space-y-3">
-              <RecipientAddressInput
+          <DeskInspector title={<Trans>Send</Trans>} onClose={close}>
+            <div className="grid min-w-0 gap-2">
+              <label htmlFor="send-recipient" className="text-sm font-medium">
+                <Trans>To</Trans>
+              </label>
+              <SendRecipientField
                 id="send-recipient"
-                allowPools
                 value={query}
                 onValueChange={(value) => {
                   setSelectedRecipient(null);
@@ -353,46 +349,83 @@ export function SendDesk({
                 }}
                 onRecipientChange={setResolvedRecipient}
                 ariaLabel={t`Recipient username, pool name, phone or address`}
-                className="font-mono text-sm"
               />
-              {recipient ? (
-                <RecipientAddressCard
-                  label={recipient.name ?? t`Address`}
-                  address={recipient.address}
-                />
-              ) : null}
-              {showRecent && wallet !== undefined ? (
-                <RecentList
-                  recipients={recent}
-                  pending={transfersQuery.isPending}
-                  failed={transfersQuery.isError}
+              {wallet !== undefined ? (
+                <RecentChips
+                  recipients={showRecent ? recent : []}
+                  pending={showRecent && transfersQuery.isPending}
+                  failed={showRecent && transfersQuery.isError}
                   retrying={transfersQuery.isFetching}
                   onRetry={() => void transfersQuery.refetch()}
                   onSelect={handleSelectRecipient}
+                  onAddressBook={() => setAddressBookOpen(true)}
                 />
               ) : null}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-between"
-                onClick={() => setAddressBookOpen(true)}
+            </div>
+            <div className="grid min-w-0 gap-2">
+              <label htmlFor="send-amount" className="text-sm font-medium">
+                <Trans>Amount</Trans>
+              </label>
+              <div
+                className={cn(
+                  "flex h-16 min-w-0 items-center gap-3 border bg-card ps-1.5 pe-3.5",
+                  exceedsMax
+                    ? "border-destructive"
+                    : "border-foreground/25 focus-within:border-foreground",
+                  "[&_input]:h-full [&_input]:border-0 [&_input]:text-start [&_input]:text-xl [&_input]:ring-0 [&_input]:aria-invalid:ring-0",
+                )}
               >
-                <span className="inline-flex items-center gap-2">
-                  <RiGroupLine className="size-4" aria-hidden="true" />
-                  <Trans>Address book</Trans>
-                </span>
-                <RiArrowRightSLine className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-              </Button>
+                <div className="min-w-0 flex-1">
+                  <WalletAmountInput
+                    id="send-amount"
+                    label={t`Amount`}
+                    value={amount}
+                    autoFocus={step === "amount"}
+                    aria-invalid={exceedsMax}
+                    onValueChange={(value) => {
+                      setMaxAmountRaw(null);
+                      setAmount(sanitizeAmount(value));
+                    }}
+                  />
+                </div>
+                <TokenPicker
+                  tokens={tokens}
+                  selected={selectedToken}
+                  loading={loadingTokens}
+                  onSelect={selectToken}
+                />
+              </div>
               {selectedToken ? (
-                <div className="flex items-center gap-2 border border-border bg-card px-3 py-2">
-                  <TokenLogo token={selectedToken} size={20} />
-                  <span className="text-sm font-semibold">{selectedToken.symbol}</span>
-                  <span className="ms-auto font-heading font-semibold tracking-tight" dir="ltr">
-                    {selectedToken.amount}
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <span className="truncate text-xs text-muted-foreground">
+                    <Trans>
+                      Balance <span className="font-mono">{selectedToken.amount}</span>
+                    </Trans>
                   </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (selectedToken.balance) {
+                        setAmount(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
+                        setMaxAmountRaw(selectedToken.balance);
+                        return;
+                      }
+                      setMaxAmountRaw(null);
+                      setAmount(selectedToken.amount.replace(/,/g, ""));
+                    }}
+                  >
+                    <Trans>Max</Trans>
+                  </Button>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p
+                  className={cn(
+                    "text-xs",
+                    tokensQuery.isError ? "text-destructive" : "text-muted-foreground",
+                  )}
+                  role={tokensQuery.isError ? "alert" : undefined}
+                >
                   {loadingTokens ? (
                     <Trans>Loading tokens…</Trans>
                   ) : tokensQuery.isError ? (
@@ -404,60 +437,73 @@ export function SendDesk({
                   )}
                 </p>
               )}
-              <div>
-                <label htmlFor="send-amount" className="mb-1.5 block text-sm font-medium">
-                  <Trans>Amount</Trans>
-                </label>
-                <div className="flex items-center gap-2">
-                  <div className="min-w-0 flex-1">
-                    <WalletAmountInput
-                      id="send-amount"
-                      label={t`Amount`}
-                      value={amount}
-                      autoFocus={step === "amount"}
-                      aria-invalid={exceedsMax}
-                      onValueChange={(value) => {
-                        setMaxAmountRaw(null);
-                        setAmount(sanitizeAmount(value));
-                      }}
-                    />
-                  </div>
-                  {selectedToken ? (
-                    <span className="font-mono text-sm text-muted-foreground">
-                      {selectedToken.symbol}
-                    </span>
-                  ) : null}
-                </div>
-                {unitValueLabel ? (
-                  <p className="mt-1 font-mono text-sm text-muted-foreground" dir="ltr">
-                    ({unitValueLabel})
-                  </p>
-                ) : null}
-                {selectedToken ? (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="mt-2"
-                    onClick={() => {
-                      if (selectedToken.balance) {
-                        setAmount(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
-                        setMaxAmountRaw(selectedToken.balance);
-                        return;
-                      }
-                      setMaxAmountRaw(null);
-                      setAmount(selectedToken.amount.replace(/,/g, ""));
-                    }}
-                  >
-                    <Trans>Use max · {selectedToken.amount}</Trans>
-                  </Button>
-                ) : null}
-                {exceedsMax ? (
-                  <p className="mt-1 text-xs text-destructive" role="alert">
-                    <Trans>Amount exceeds your balance</Trans>
-                  </p>
-                ) : null}
-              </div>
+              {tokensQuery.isError && !selectedToken ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="justify-self-start"
+                  pending={tokensQuery.isFetching}
+                  onClick={() => void tokensQuery.refetch()}
+                >
+                  <Trans>Try again</Trans>
+                </Button>
+              ) : null}
+              {exceedsMax ? (
+                <p className="text-xs text-destructive" role="alert">
+                  <Trans>Amount exceeds your balance</Trans>
+                </p>
+              ) : null}
             </div>
+            <DeskKV
+              rows={[
+                [
+                  t`Recipient`,
+                  recipient ? (
+                    <span key="recipient" className="grid min-w-0" title={recipient.address}>
+                      {recipient.name ? (
+                        <span className="truncate font-sans" dir="auto">
+                          {recipient.name}
+                        </span>
+                      ) : null}
+                      <span className="truncate" dir="ltr">
+                        {formatVoucherAddress(recipient.address)}
+                      </span>
+                    </span>
+                  ) : (
+                    <Dash key="recipient" />
+                  ),
+                ],
+                [
+                  t`Amount`,
+                  exactVoucherAmount !== null && selectedToken ? (
+                    <span key="amount" dir="ltr">
+                      {exactVoucherAmount} {selectedToken.symbol}
+                    </span>
+                  ) : (
+                    <Dash key="amount" />
+                  ),
+                ],
+                [
+                  t`Value`,
+                  unitValueLabel ? (
+                    <span key="value" dir="ltr">
+                      {unitValueLabel}
+                    </span>
+                  ) : (
+                    <Dash key="value" />
+                  ),
+                ],
+              ]}
+            />
+            <Button
+              type="button"
+              className="w-full"
+              disabled={!canSend}
+              pending={upsertRecipient.isPending}
+              onClick={() => void openReview()}
+            >
+              <Trans>Review</Trans>
+            </Button>
             <AddressBookSheet
               open={addressBookOpen}
               onOpenChange={setAddressBookOpen}
@@ -524,13 +570,120 @@ export function SendDesk({
   );
 }
 
-function RecentList({
+function Dash() {
+  return (
+    <span className="text-muted-foreground" dir="ltr">
+      —
+    </span>
+  );
+}
+
+function TokenPicker({
+  tokens,
+  selected,
+  loading,
+  onSelect,
+}: {
+  tokens: readonly WalletToken[];
+  selected: WalletToken | undefined;
+  loading: boolean;
+  onSelect: (id: string) => void;
+}) {
+  const { t } = useLingui();
+  return (
+    <SelectRoot
+      value={selected?.id ?? null}
+      disabled={loading || tokens.length === 0}
+      onValueChange={(value) => {
+        if (typeof value === "string") onSelect(value);
+      }}
+    >
+      <SelectTrigger
+        aria-label={t`Voucher`}
+        className="max-w-36 shrink-0 gap-2 border-foreground/25 px-2.5 text-sm font-semibold"
+      >
+        {selected ? (
+          <>
+            <TokenLogo token={selected} size={20} />
+            <span className="min-w-0 truncate" dir="ltr">
+              {selected.symbol}
+            </span>
+          </>
+        ) : loading ? (
+          <Spinner />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </SelectTrigger>
+      <SelectContent className="max-h-80">
+        {tokens.map((token) => (
+          <SelectItem key={token.id} value={token.id}>
+            <span className="flex min-w-0 items-center gap-2">
+              <TokenLogo token={token} size={20} />
+              <span className="min-w-0 truncate font-semibold" dir="ltr">
+                {token.symbol}
+              </span>
+              <span className="ps-3 font-heading font-semibold tracking-tight" dir="ltr">
+                {token.amount}
+              </span>
+            </span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </SelectRoot>
+  );
+}
+
+function initials(label: string) {
+  if (label.startsWith("0x")) return "0x";
+  return (
+    label
+      .split(/\s+/u)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => Array.from(word)[0] ?? "")
+      .join("")
+      .toUpperCase() || "?"
+  );
+}
+
+function RecentChip({ recipient, onSelect }: { recipient: Recipient; onSelect: () => void }) {
+  const identity = useReverseRecipientResolution(recipient.address ?? null);
+  const named = !recipient.label.startsWith("0x");
+  const label = identity.data
+    ? identity.data.kind === "user"
+      ? identity.data.alias
+      : identity.data.name
+    : named
+      ? recipient.label
+      : recipient.address
+        ? formatVoucherAddress(recipient.address as `0x${string}`)
+        : recipient.label;
+  return (
+    <DeskChip>
+      <button type="button" className="max-w-full min-w-0" onClick={onSelect}>
+        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-secondary font-heading text-2xs font-bold">
+          {initials(label).slice(0, 2)}
+        </span>
+        <span
+          className={cn("min-w-0 truncate", label.startsWith("0x") && "font-mono")}
+          dir={label.startsWith("0x") ? "ltr" : "auto"}
+        >
+          {label}
+        </span>
+      </button>
+    </DeskChip>
+  );
+}
+
+function RecentChips({
   recipients,
   pending,
   failed,
   retrying,
   onRetry,
   onSelect,
+  onAddressBook,
 }: {
   recipients: readonly Recipient[];
   pending: boolean;
@@ -538,21 +691,35 @@ function RecentList({
   retrying: boolean;
   onRetry: () => void;
   onSelect: (recipient: Recipient) => void;
+  onAddressBook: () => void;
 }) {
-  if (!pending && !failed && recipients.length === 0) return null;
+  const { t } = useLingui();
   return (
-    <section className="space-y-1">
-      <p className="text-xs text-muted-foreground">
-        <Trans>Recent recipients</Trans>
-      </p>
+    <div className="grid min-w-0 gap-2">
+      <ul aria-label={t`Recent recipients`} className="flex min-w-0 flex-wrap gap-2">
+        {recipients.slice(0, 6).map((entry) => (
+          <li key={entry.id} className="min-w-0 max-w-full">
+            <RecentChip recipient={entry} onSelect={() => onSelect(entry)} />
+          </li>
+        ))}
+        <li className="min-w-0">
+          <DeskChip>
+            <button type="button" onClick={onAddressBook}>
+              <RiGroupLine aria-hidden="true" />
+              <Trans>Address book</Trans>
+            </button>
+          </DeskChip>
+        </li>
+      </ul>
       {pending ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Spinner />
           <Trans>Loading activity…</Trans>
         </p>
       ) : null}
       {failed ? (
-        <div className="space-y-2">
-          <p role="alert" className="text-sm text-destructive">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <p role="alert" className="text-xs text-destructive">
             <Trans>Couldn't load activity.</Trans>
           </p>
           <Button type="button" variant="outline" pending={retrying} onClick={onRetry}>
@@ -560,16 +727,7 @@ function RecentList({
           </Button>
         </div>
       ) : null}
-      {recipients.length > 0 ? (
-        <ul className="border border-border bg-card">
-          {recipients.map((entry) => (
-            <li key={entry.id} className="border-border border-b last:border-b-0">
-              <RecentRecipientRow recipient={entry} onSelect={() => onSelect(entry)} />
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </section>
+    </div>
   );
 }
 

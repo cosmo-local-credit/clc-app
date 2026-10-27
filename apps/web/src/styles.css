@@ -234,6 +234,11 @@ html {
 	scrollbar-gutter: stable;
 }
 
+/* The desktop shell scrolls inside its own panes; the page never does. */
+html[data-layout="desktop"] {
+	scrollbar-gutter: auto;
+}
+
 body {
 	margin: 0;
 	background: var(--color-background);

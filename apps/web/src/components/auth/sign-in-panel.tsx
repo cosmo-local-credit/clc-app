@@ -5,14 +5,24 @@ import type { FormEvent, ReactNode } from "react";
 import { createContext, lazy, Suspense, useContext, useEffect, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiKey, FiX } from "react-icons/fi";
+import { RiArrowDownSLine } from "react-icons/ri";
 import { TbNfc, TbScan } from "react-icons/tb";
 import { useConnection, useDisconnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
 
 import { NfcCardPrompt, type NfcCardProblem } from "#/components/nfc-card-prompt";
+import { OnboardingTitle } from "#/components/onboarding-screen";
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
+import {
+  DialogBackdrop,
+  DialogContent,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from "#/components/ui/dialog";
+import { Field } from "#/components/ui/field";
 import { Spinner } from "#/components/ui/spinner";
 import { Input } from "#/components/ui/input";
 import {
@@ -24,7 +34,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { Dialog } from "@base-ui/react/dialog";
+import { BackChevron } from "#/components/wallet/wallet-layout";
 import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
@@ -32,6 +42,7 @@ import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
+import { cn } from "#/lib/utils";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
@@ -46,6 +57,9 @@ import { ApprovalPending, ApprovalRejected } from "./auth-states";
 import { sanitizeInternalRedirect } from "./redirect";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
+
+/** The desktop column's Back: a ghost text control flush with the column edge. */
+const DESK_BACK_CLASS = "ms-0 h-9 self-start px-0 font-semibold text-foreground text-xs";
 
 const EncryptedPaperWalletImportForm = lazy(() =>
   import("#/components/encrypted-paper-wallet-import-form").then((module) => ({
@@ -411,25 +425,175 @@ export function SignInPanel({
       {error}
     </p>
   ) : null;
-  const passwordOnRight = hosted && !connecting && encryptedPaperWallet !== null;
-
-  if (passwordOnRight) {
+  if (hosted) {
+    const passwordStep = !connecting && encryptedPaperWallet !== null;
+    if (passwordStep) {
+      return (
+        <div className="flex flex-col gap-3">
+          <BackChevron label={t`Back`} onClick={resumeScanner} className={DESK_BACK_CLASS} />
+          <OnboardingTitle>
+            <Trans>Password-protected paper wallet</Trans>
+          </OnboardingTitle>
+          <Suspense fallback={null}>
+            <EncryptedPaperWalletImportForm
+              encryptedKey={encryptedPaperWallet}
+              onDecrypted={async (key) => {
+                const connected = await connectWithKey(key);
+                if (connected) setEncryptedPaperWallet(null);
+              }}
+              onCancel={resumeScanner}
+              className="border-0 p-0 [&>div:first-child]:hidden"
+            />
+          </Suspense>
+          {errorAlert}
+          <Button variant="ghost" tap className="-ms-3.5 self-start" onClick={closeEncrypted}>
+            <Trans>Cancel</Trans>
+          </Button>
+        </div>
+      );
+    }
     return (
-      <div className="flex flex-1 flex-col gap-3">
-        <Suspense fallback={null}>
-          <EncryptedPaperWalletImportForm
-            encryptedKey={encryptedPaperWallet}
-            onDecrypted={async (key) => {
-              const connected = await connectWithKey(key);
-              if (connected) setEncryptedPaperWallet(null);
-            }}
-            onCancel={resumeScanner}
+      <div className="flex flex-col gap-3">
+        {showScanner ? null : (
+          <BackChevron
+            label={t`Back`}
+            to="/onboarding"
+            search={onboardingSearch("welcome", currentRedirect)}
+            className={DESK_BACK_CLASS}
           />
-        </Suspense>
-        {errorAlert}
-        <Button variant="ghost" tap className="w-full" onClick={closeEncrypted}>
-          <Trans>Cancel</Trans>
-        </Button>
+        )}
+        <OnboardingTitle>
+          <Trans>Welcome back</Trans>
+        </OnboardingTitle>
+        {showScanner || showAdvanced ? null : errorAlert}
+        {connecting ? (
+          <div
+            className="flex h-9 items-center gap-3 border border-border bg-card px-3"
+            aria-live="polite"
+          >
+            <Spinner className="text-muted-foreground" />
+            <span className="font-medium text-sm">
+              {cardRead ? <Trans>Card read — signing in</Trans> : <Trans>Connecting…</Trans>}
+            </span>
+          </div>
+        ) : (
+          <>
+            {available ? (
+              <Button
+                variant={showScanner ? "outline" : "default"}
+                tap
+                className="w-full"
+                onClick={() => {
+                  setShowScanner(false);
+                  void signInWithPasskey();
+                }}
+              >
+                <ProviderIcon className="size-4" aria-hidden="true" />
+                {t`Continue with ${providerLabel}`}
+              </Button>
+            ) : null}
+            <Button
+              variant={showScanner || !available ? "default" : "outline"}
+              tap
+              className="w-full"
+              aria-pressed={showScanner}
+              onClick={openScanner}
+            >
+              <TbScan className="size-4" aria-hidden="true" />
+              <Trans>Continue with Paper Wallet</Trans>
+            </Button>
+            {nfcSupported ? (
+              <Button variant="outline" tap className="w-full" onClick={startNfc}>
+                <TbNfc className="size-4" aria-hidden="true" />
+                <Trans>Tap NFC card</Trans>
+              </Button>
+            ) : null}
+          </>
+        )}
+        {showNfc && !connecting ? (
+          <NfcCardPrompt
+            phase={nfcScan.phase}
+            error={nfcScan.error}
+            readFailed={nfcScan.readFailed}
+            problem={nfcProblem}
+            title={<Trans>Tap your NFC card</Trans>}
+            onRetry={startNfc}
+            onCancel={closeNfc}
+          />
+        ) : null}
+        <div className={cn("mt-2 border-border border-t", showScanner && "border-b")}>
+          <button
+            type="button"
+            className="flex h-11 w-full items-center justify-between gap-3 text-start font-semibold text-sm outline-none focus-visible:outline-2 focus-visible:outline-ring"
+            aria-expanded={showAdvanced}
+            onClick={() => {
+              setShowAdvanced((current) => !current);
+              setShowPkInput(false);
+              setPkInput("");
+              setError(null);
+            }}
+          >
+            <Trans>Advanced options</Trans>
+            <RiArrowDownSLine
+              className={cn("size-4 shrink-0 transition-transform", showAdvanced && "rotate-180")}
+              aria-hidden="true"
+            />
+          </button>
+          {showAdvanced ? (
+            <form onSubmit={handlePkSubmit} className="flex flex-col gap-3 pt-1">
+              <Field label={t`Private key`} htmlFor="desk-private-key">
+                <Input
+                  id="desk-private-key"
+                  type="password"
+                  autoComplete="off"
+                  value={pkInput}
+                  onChange={(e) => setPkInput(e.target.value)}
+                  placeholder="0x..."
+                  className="font-mono"
+                  aria-invalid={!!error}
+                  disabled={connecting}
+                />
+              </Field>
+              {errorAlert}
+              <Button
+                type="submit"
+                variant="outline"
+                tap
+                disabled={!pkInput.trim() || connecting}
+                className="w-full"
+              >
+                <Trans>Sign in with private key</Trans>
+              </Button>
+            </form>
+          ) : null}
+        </div>
+        {showScanner ? (
+          <Button variant="ghost" tap className="-ms-3.5 self-start" onClick={closeScanner}>
+            <Trans>Cancel</Trans>
+          </Button>
+        ) : null}
+        {onCancel ? (
+          <Button variant="ghost" tap className="-ms-3.5 self-start" onClick={onCancel}>
+            <Trans>Cancel</Trans>
+          </Button>
+        ) : null}
+        <p className="mt-2 border-border border-t pt-4 text-muted-foreground text-xs">
+          <Trans>New to CLC?</Trans>{" "}
+          <Link
+            to="/onboarding"
+            search={createAccountSearch}
+            replace={createAccountReplace}
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            <Trans>Create an account</Trans>
+          </Link>
+        </p>
+        {accountNotFoundOpen ? (
+          <AccountNotFoundDialog
+            onCancel={() => setAccountNotFoundOpen(false)}
+            onCreate={routeToSignup}
+          />
+        ) : null}
       </div>
     );
   }
@@ -586,60 +750,19 @@ export function SignInPanel({
           </Button>
 
           {showAdvanced ? (
-            <div className="space-y-3">
-              <div className="border border-border bg-card">
-                <ActionRow
-                  icon={<FiKey className="size-4" aria-hidden="true" />}
-                  label={t`Private key`}
-                  onClick={() => {
-                    setShowPkInput(true);
-                    setError(null);
-                  }}
-                />
-              </div>
-              {hosted && showPkInput ? (
-                <form onSubmit={handlePkSubmit} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">
-                      <Trans>Private key</Trans>
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      tap
-                      aria-label={t`Close private key form`}
-                      onClick={closePrivateKey}
-                    >
-                      <FiX className="size-4" />
-                    </Button>
-                  </div>
-                  <Input
-                    type="password"
-                    autoComplete="off"
-                    value={pkInput}
-                    onChange={(e) => setPkInput(e.target.value)}
-                    placeholder="0x..."
-                    className="font-mono"
-                    aria-invalid={!!error}
-                    aria-label={t`Private key`}
-                  />
-                  {errorAlert}
-                  <Button type="submit" tap disabled={!pkInput.trim()} className="w-full">
-                    <FiKey className="me-2 size-4" />
-                    <Trans>Sign in with private key</Trans>
-                  </Button>
-                </form>
-              ) : null}
+            <div className="border border-border bg-card">
+              <ActionRow
+                icon={<FiKey className="size-4" aria-hidden="true" />}
+                label={t`Private key`}
+                onClick={() => {
+                  setShowPkInput(true);
+                  setError(null);
+                }}
+              />
             </div>
           ) : null}
         </>
       )}
-
-      {hosted && showScanner ? (
-        <Button variant="ghost" tap className="w-full" onClick={closeScanner}>
-          <Trans>Cancel</Trans>
-        </Button>
-      ) : null}
 
       {onCancel ? (
         <Button variant="ghost" tap className="w-full" onClick={onCancel}>
@@ -658,13 +781,6 @@ export function SignInPanel({
           <Trans>Create an account</Trans>
         </Link>
       </p>
-
-      {hosted && accountNotFoundOpen ? (
-        <AccountNotFoundDialog
-          onCancel={() => setAccountNotFoundOpen(false)}
-          onCreate={routeToSignup}
-        />
-      ) : null}
 
       {embedded ? null : (
         <>
@@ -831,22 +947,22 @@ function AccountNotFoundDialog({
   onCreate: () => void;
 }) {
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(next) => {
         if (!next) onCancel();
       }}
     >
-      <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50" />
-        <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 w-[min(24rem,calc(100vw-3rem))] -translate-x-1/2 -translate-y-1/2 border border-border bg-card p-6">
-          <Dialog.Title className="font-heading text-base font-semibold">
+      <DialogPortal>
+        <DialogBackdrop />
+        <DialogContent className="grid w-110 max-w-[calc(100vw-3rem)] gap-3 rounded-none bg-card p-5 shadow-none">
+          <DialogTitle>
             <Trans>Account not found</Trans>
-          </Dialog.Title>
-          <p className="mt-2 text-sm text-muted-foreground">
+          </DialogTitle>
+          <p className="text-muted-foreground text-sm">
             <Trans>No CLC account was found for this sign-in.</Trans>
           </p>
-          <div className="mt-6 grid grid-cols-2 gap-2">
+          <div className="mt-1 grid grid-cols-2 gap-2">
             <Button variant="outline" tap onClick={onCancel}>
               <Trans>Cancel</Trans>
             </Button>
@@ -854,8 +970,8 @@ function AccountNotFoundDialog({
               <Trans>Create an account</Trans>
             </Button>
           </div>
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
   );
 }

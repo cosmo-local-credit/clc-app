@@ -4,13 +4,14 @@ import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useConnection } from "wagmi";
 
-import { Badge } from "#/components/ui/badge";
+import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { Progress, ProgressTrack } from "#/components/ui/progress";
 import { useMarketScreen } from "#/features/home/hooks/use-market-screen";
 import { MarketMap } from "#/features/home/ui/market-map.lazy";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
+import { MarketAvatar, MarketKindBadge } from "#/desktop/market/market-bits";
 import { MarketDeskToolbar } from "#/desktop/market/market-toolbar";
 import { MarketPlacePanel } from "#/desktop/market/place-panel";
 
@@ -71,84 +72,55 @@ export function MarketMapDesk({
 
   return (
     <div className="flex h-full min-h-0 w-full">
-      <div className="flex w-[400px] shrink-0 flex-col border-border border-e bg-background">
-        <MarketDeskToolbar
-          scope={scope}
-          view="map"
-          filter={screen.filter}
-          facets={screen.tagFacets}
-          filtersOpen={screen.filtersOpen}
-          onFiltersOpenChange={(next) => {
-            if (next) screen.setFiltersEverOpened(true);
-            screen.setFiltersOpen(next);
-          }}
-          credit={screen.credit}
-          onCredit={screen.changeCredit}
-          onClearCredit={screen.clearCredit}
-          count={screen.locations.length}
-          searchAttribute
-        />
-        {screen.isFetching ? <MapLoading label={t`Loading marketplace…`} /> : null}
-        {screen.mapNotice ? (
-          <div className="border-border border-b p-3">{screen.mapNotice}</div>
-        ) : null}
-        <div className="relative min-h-0 flex-1">
-          <div
-            ref={listRef}
-            className={cn("h-full overflow-auto", screen.isCardOpen && "invisible")}
-            aria-hidden={screen.isCardOpen}
-          >
-            {screen.locations.map((location) => {
-              const on = location.id === (screen.selectedLocationId ?? hoveredId);
-              return (
-                <button
-                  key={location.id}
-                  type="button"
-                  data-desktop-row=""
-                  data-location-id={location.id}
-                  className={cn(
-                    "flex w-full items-center gap-3 border-s-2 px-4 py-2.5 text-start",
-                    on
-                      ? "border-s-primary bg-primary/[0.07]"
-                      : "border-s-transparent hover:bg-muted",
-                  )}
-                  onMouseEnter={() => {
-                    hoverFromMap.current = false;
-                    setHoveredId(location.id);
-                  }}
-                  onMouseLeave={() =>
-                    setHoveredId((current) => (current === location.id ? null : current))
-                  }
-                  onFocus={(event) => {
-                    hoverFromMap.current = false;
-                    setHoveredId(location.id);
-                    if (!event.currentTarget.matches(":focus-visible") || !screen.isCardOpen)
-                      return;
-                    screen.handleSelectLocation(location.id);
-                  }}
-                  onClick={() => screen.handleSelectLocation(location.id)}
-                >
-                  <span className="flex size-8 shrink-0 items-center justify-center bg-muted font-heading text-xs font-semibold">
-                    {initials(location.name)}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span dir="auto" className="block truncate text-sm font-semibold">
-                      {location.name}
-                    </span>
-                  </span>
-                  <Badge size="sm" variant="outline">
-                    <KindLabel kind={location.resourceKind} />
-                  </Badge>
-                </button>
-              );
-            })}
+      <div className="relative flex w-[400px] shrink-0 flex-col border-border border-e bg-card">
+        <div
+          className={cn("flex min-h-0 flex-1 flex-col", screen.isCardOpen && "invisible")}
+          inert={screen.isCardOpen || undefined}
+        >
+          <MarketDeskToolbar
+            layout="column"
+            scope={scope}
+            filter={screen.filter}
+            facets={screen.tagFacets}
+            filtersOpen={screen.filtersOpen}
+            onFiltersOpenChange={(next) => {
+              if (next) screen.setFiltersEverOpened(true);
+              screen.setFiltersOpen(next);
+            }}
+            credit={screen.credit}
+            onCredit={screen.changeCredit}
+          />
+          {screen.isFetching ? <MapLoading label={t`Loading marketplace…`} /> : null}
+          <div className="shrink-0 border-border border-b px-3.5 py-2.5 text-xs text-muted-foreground">
+            <Trans>{screen.locations.length} results</Trans>
           </div>
-          {screen.isCardOpen ? (
-            <div className="absolute inset-0 overflow-hidden bg-card">
-              <MarketPlacePanel realFix={screen.realFix} />
-            </div>
+          {screen.mapNotice ? (
+            <div className="shrink-0 border-border border-b p-3.5">{screen.mapNotice}</div>
           ) : null}
+          {/* Stays mounted under the place panel, so Back returns to the same scroll position. */}
+          <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto">
+            {screen.locations.map((location) => (
+              <MapResultRow
+                key={location.id}
+                location={location}
+                realFix={screen.realFix}
+                selected={location.id === (screen.selectedLocationId ?? hoveredId)}
+                onHover={(hovering) => {
+                  hoverFromMap.current = false;
+                  setHoveredId((current) =>
+                    hovering ? location.id : current === location.id ? null : current,
+                  );
+                }}
+                onSelect={() => screen.handleSelectLocation(location.id)}
+              />
+            ))}
+          </div>
         </div>
+        {screen.isCardOpen ? (
+          <div className="absolute inset-0 bg-card">
+            <MarketPlacePanel realFix={screen.realFix} />
+          </div>
+        ) : null}
       </div>
       <div className="relative min-h-0 min-w-0 flex-1 bg-card">
         <h1 className="sr-only">
@@ -186,6 +158,52 @@ export function MarketMapDesk({
   );
 }
 
+type MapLocation = ReturnType<typeof useMarketScreen>["locations"][number];
+
+function MapResultRow({
+  location,
+  realFix,
+  selected,
+  onHover,
+  onSelect,
+}: {
+  location: MapLocation;
+  realFix: { lat: number; lng: number } | null;
+  selected: boolean;
+  onHover: (hovering: boolean) => void;
+  onSelect: () => void;
+}) {
+  const distance = useMarketDistanceLabel(realFix, { lat: location.lat, lng: location.lng });
+  return (
+    <button
+      type="button"
+      data-desktop-row=""
+      data-location-id={location.id}
+      className={cn(
+        "flex min-h-[61px] w-full items-center gap-3 border-border border-b px-3.5 py-2.5 text-start",
+        selected
+          ? "bg-primary/[0.07] shadow-[inset_2px_0_0_var(--color-primary)]"
+          : "hover:bg-muted/60",
+      )}
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
+      onFocus={() => onHover(true)}
+      onClick={onSelect}
+    >
+      <MarketAvatar name={location.name} seed={location.resourceId} kind={location.kind} />
+      <span className="min-w-0 flex-1">
+        <span dir="auto" className="block truncate text-sm font-semibold">
+          {location.name}
+        </span>
+        {distance ? (
+          <span className="block truncate text-xs text-muted-foreground">{distance}</span>
+        ) : null}
+      </span>
+      <MarketKindBadge kind={location.kind} />
+    </button>
+  );
+}
+
 function MapLoading({ label }: { label: string }) {
   return (
     <Progress value={null} aria-label={label} className="h-0.5 overflow-hidden bg-card">
@@ -194,23 +212,4 @@ function MapLoading({ label }: { label: string }) {
       </ProgressTrack>
     </Progress>
   );
-}
-
-function initials(name: string) {
-  const letters = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0] ?? "")
-    .join("")
-    .toUpperCase();
-  return letters || "?";
-}
-
-function KindLabel({ kind }: { kind: string }) {
-  if (kind === "want") return <Trans>Wants</Trans>;
-  if (kind === "pool") return <Trans>Pools</Trans>;
-  if (kind === "catalog") return <Trans>Catalogs</Trans>;
-  if (kind === "post") return <Trans>Posts</Trans>;
-  return <Trans>Vouchers</Trans>;
 }

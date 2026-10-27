@@ -6,16 +6,19 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { RiArrowDownSLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Field } from "#/components/ui/field";
 import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
+import { TagBadge } from "#/components/ui/tag-badge";
 import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
-import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
+import { DeskCanvas, DeskEyebrow, DeskTitle } from "#/desktop/ui/page";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
@@ -262,6 +265,15 @@ export function VoucherReceiptDesk({
     </>
   );
 
+  const preview = (
+    <VoucherPreview
+      name={contract.name}
+      symbol={contract.symbol}
+      tags={draft?.tags ?? voucherDetail.data?.tags ?? []}
+      description={draft?.description ?? voucherDetail.data?.description ?? null}
+    />
+  );
+
   if (!minted) {
     const mintOutcome = mintTracking.outcome;
     const trackingUnavailable = activeMintTrackingId !== null && mintTracking.isError;
@@ -301,54 +313,60 @@ export function VoucherReceiptDesk({
     const pendingState = minting || supplyChecking || trackingUnavailable;
 
     return (
-      <DeskCanvas width="read">
-        <div className="flex flex-col items-center text-center">
-          {mintFailed || supplyCheckFailed ? (
-            <FailureCross />
-          ) : pendingState ? (
-            <PendingClock />
-          ) : (
-            <SuccessCheck />
-          )}
-          <DeskTitle>
-            {mintFailed ? (
-              <Trans>Creation failed</Trans>
-            ) : trackingUnavailable ? (
-              <Trans>Checking creation status</Trans>
-            ) : supplyCheckFailed ? (
-              <Trans>Supply check unavailable</Trans>
-            ) : minting ? (
-              <Trans>Creating {contract.symbol}…</Trans>
-            ) : (
-              <Trans>{contract.name} is deployed</Trans>
-            )}
-          </DeskTitle>
-          <p className="mt-2 text-muted-foreground text-sm">
-            {mintError ??
+      <ReceiptLayout
+        preview={preview}
+        header={
+          <ReceiptHeader
+            icon={
+              mintFailed || supplyCheckFailed ? (
+                <FailureCross />
+              ) : pendingState ? (
+                <PendingClock />
+              ) : (
+                <SuccessCheck />
+              )
+            }
+            title={
+              mintFailed ? (
+                <Trans>Creation failed</Trans>
+              ) : trackingUnavailable ? (
+                <Trans>Checking creation status</Trans>
+              ) : supplyCheckFailed ? (
+                <Trans>Supply check unavailable</Trans>
+              ) : minting ? (
+                <Trans>Creating {contract.symbol}…</Trans>
+              ) : (
+                <Trans>{contract.name} is deployed</Trans>
+              )
+            }
+            status={
+              <StatusPill
+                tone={
+                  mintFailed || supplyCheckFailed ? "error" : pendingState ? "pending" : "success"
+                }
+                label={
+                  mintFailed
+                    ? t`Failed`
+                    : pendingState
+                      ? t`Pending`
+                      : supplyCheckFailed
+                        ? t`Unavailable`
+                        : t`Deployed`
+                }
+              />
+            }
+            message={
+              mintError ??
               blockingMessage ??
               (supplyCheckFailed
                 ? t`We couldn't verify whether this voucher already has supply.`
-                : t`Create the first supply to finish publishing this voucher.`)}
-          </p>
-          <div className="mt-3">
-            <StatusPill
-              tone={
-                mintFailed || supplyCheckFailed ? "error" : pendingState ? "pending" : "success"
-              }
-              label={
-                mintFailed
-                  ? t`Failed`
-                  : pendingState
-                    ? t`Pending`
-                    : supplyCheckFailed
-                      ? t`Unavailable`
-                      : t`Deployed`
-              }
-            />
-          </div>
-        </div>
+                : t`Create the first supply to finish publishing this voucher.`)
+            }
+          />
+        }
+      >
         {mintAmount ? (
-          <dl className="mt-6 border border-border bg-card">
+          <dl className="border border-border bg-card">
             <InfoRow label={t`Supply`}>
               {supplyValue
                 ? `${supplyValue.value} ${supplyValue.unit}`
@@ -356,7 +374,7 @@ export function VoucherReceiptDesk({
             </InfoRow>
           </dl>
         ) : (
-          <div className="mt-6">
+          <div>
             <Field label={t`Create vouchers`} htmlFor="desk-voucher-supply" error={supplyError}>
               <Input
                 id="desk-voucher-supply"
@@ -389,11 +407,10 @@ export function VoucherReceiptDesk({
             ) : null}
           </div>
         )}
-        <DeploymentDetails className="mt-3.5">{detailRows}</DeploymentDetails>
-        <div className="mt-6">
+        <DeploymentDetails>{detailRows}</DeploymentDetails>
+        <div className="flex">
           <Button
             tap
-            className="w-full"
             disabled={ownerUnavailable || ownerMismatch || !walletAddress}
             pending={minting || mint.isPending || supplyChecking || walletPreparing}
             onClick={primaryAction}
@@ -415,7 +432,7 @@ export function VoucherReceiptDesk({
             )}
           </Button>
         </div>
-      </DeskCanvas>
+      </ReceiptLayout>
     );
   }
 
@@ -429,18 +446,18 @@ export function VoucherReceiptDesk({
     : null;
 
   return (
-    <DeskCanvas width="read">
-      <div className="flex flex-col items-center text-center">
-        <SuccessCheck />
-        <DeskTitle>
-          <Trans>{contract.name} is live</Trans>
-        </DeskTitle>
-        <div className="mt-3">
-          <StatusPill tone="success" label={t`Published`} />
-        </div>
-      </div>
+    <ReceiptLayout
+      preview={preview}
+      header={
+        <ReceiptHeader
+          icon={<SuccessCheck />}
+          title={<Trans>{contract.name} is live</Trans>}
+          status={<StatusPill tone="success" label={t`Published`} />}
+        />
+      }
+    >
       {publishedSupply ? (
-        <dl className="mt-6 border border-border bg-card">
+        <dl className="border border-border bg-card">
           <InfoRow label={t`Supply`}>
             {publishedSupplyValue
               ? `${publishedSupplyValue.value} ${publishedSupplyValue.unit}`
@@ -448,7 +465,7 @@ export function VoucherReceiptDesk({
           </InfoRow>
         </dl>
       ) : null}
-      <DeploymentDetails className={publishedSupply ? "mt-3.5" : "mt-6"}>
+      <DeploymentDetails>
         {detailRows}
         {deploymentTxHash ? (
           <InfoRow label={t`Deployment transaction`}>
@@ -481,23 +498,119 @@ export function VoucherReceiptDesk({
           </InfoRow>
         ) : null}
       </DeploymentDetails>
-      <div className="mt-6">
-        <Button tap className="w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
+      <div className="flex">
+        <Button tap onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
           <Trans>View voucher</Trans>
         </Button>
       </div>
+    </ReceiptLayout>
+  );
+}
+
+function DeploymentDetails({ children }: { children: ReactNode }) {
+  return (
+    <details className="group border-border border-y">
+      <summary className="flex h-11 cursor-pointer list-none items-center justify-between text-sm font-semibold [&::-webkit-details-marker]:hidden">
+        <Trans>Advanced details</Trans>
+        <RiArrowDownSLine
+          className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <dl className="mb-4 border border-border bg-card">{children}</dl>
+    </details>
+  );
+}
+
+/** `.page.detail` at 1100px: the receipt, and the voucher as the Market will show it. */
+function ReceiptLayout({
+  header,
+  preview,
+  children,
+}: {
+  header: ReactNode;
+  preview?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <DeskCanvas
+      width="read"
+      className="max-w-[1164px] grid-cols-[minmax(0,1fr)_360px] items-start gap-6"
+    >
+      <div className="grid min-w-0 content-start gap-5">
+        {header}
+        {children}
+      </div>
+      {preview ? (
+        <div className="sticky top-7 grid min-w-0 content-start gap-2">{preview}</div>
+      ) : null}
     </DeskCanvas>
   );
 }
 
-function DeploymentDetails({ className, children }: { className: string; children: ReactNode }) {
+function ReceiptHeader({
+  icon,
+  title,
+  status,
+  message,
+}: {
+  icon: ReactNode;
+  title: ReactNode;
+  status: ReactNode;
+  message?: ReactNode;
+}) {
   return (
-    <details className={`${className} border border-border bg-card`}>
-      <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
-        <Trans>Advanced details</Trans>
-      </summary>
-      <dl className="border-border border-t">{children}</dl>
-    </details>
+    <div className="grid gap-3">
+      <div className="flex min-w-0 items-center gap-3.5">
+        <span className="shrink-0">{icon}</span>
+        <div className="grid min-w-0 justify-items-start gap-1.5">
+          <DeskTitle>
+            <span className="[overflow-wrap:anywhere]">{title}</span>
+          </DeskTitle>
+          {status}
+        </div>
+      </div>
+      {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+    </div>
+  );
+}
+
+function VoucherPreview({
+  name,
+  symbol,
+  tags,
+  description,
+}: {
+  name: string;
+  symbol: string;
+  tags: readonly string[];
+  description: string | null;
+}) {
+  return (
+    <>
+      <DeskEyebrow>
+        <Trans>Preview · Market</Trans>
+      </DeskEyebrow>
+      <div className="border border-border bg-card">
+        <div className="h-24 bg-voucher" aria-hidden="true" />
+        <div className="grid gap-1.5 p-4">
+          <p className="truncate font-heading text-base font-semibold">{name}</p>
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="outline" className="font-mono" dir="ltr">
+              {symbol}
+            </Badge>
+            {tags.slice(0, 3).map((tag) => (
+              <TagBadge key={tag} tag={tag} />
+            ))}
+          </div>
+          {description ? (
+            <p dir="auto" className="line-clamp-3 text-xs text-muted-foreground">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -514,26 +627,18 @@ function ReceiptState({
   status: ReactNode;
   showContractRow?: boolean;
 }) {
+  const { t } = useLingui();
   return (
-    <DeskCanvas width="read">
-      <div className="flex flex-col items-center text-center">
-        {icon}
-        <DeskTitle>{title}</DeskTitle>
-        <p className="mt-2 text-muted-foreground text-sm">{message}</p>
-        <div className="mt-3">{status}</div>
-      </div>
+    <ReceiptLayout
+      header={<ReceiptHeader icon={icon} title={title} status={status} message={message} />}
+    >
       {showContractRow ? (
-        <div className="mt-6 border border-border bg-card px-4 py-1.5">
-          <div className="flex min-h-11 items-center justify-between gap-3">
-            <span className="text-sm font-medium">
-              <Trans>Voucher contract</Trans>
-            </span>
-            <span className="text-muted-foreground text-xs">
-              <Trans>In network</Trans>
-            </span>
-          </div>
-        </div>
+        <dl className="border border-border bg-card">
+          <InfoRow label={t`Voucher contract`} muted>
+            <Trans>In network</Trans>
+          </InfoRow>
+        </dl>
       ) : null}
-    </DeskCanvas>
+    </ReceiptLayout>
   );
 }

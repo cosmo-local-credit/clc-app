@@ -11,14 +11,15 @@ import {
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { RiArrowDownSLine, RiCheckLine } from "react-icons/ri";
+import { RiArrowDownSLine, RiArrowUpDownLine, RiCheckLine } from "react-icons/ri";
 import { isAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { TokenLogo, type WalletToken, WalletAmountInput } from "#/components/wallet";
-import { DeskInspector } from "#/desktop/ui/inspector";
+import { DeskKV } from "#/desktop/ui/kv";
 import {
   type PoolSwapQuoteMode,
   usePoolSwapQuote,
@@ -40,7 +41,7 @@ import { cn } from "#/lib/utils";
 import { PoolSwapFeeValue } from "#/features/pools/ui/pool-swap-fee-value";
 
 /**
- * The pool's swap, in the 380px column. Quote, maximum, and confirmation use
+ * The pool's swap, in the detail page's 360px side column. Quote, maximum, and confirmation use
  * the same hooks as the phone swap — this file only changes the layout.
  */
 export function PoolSwapColumn({
@@ -345,8 +346,70 @@ export function PoolSwapColumn({
     });
   };
 
-  let body: ReactNode = null;
-  let footer: ReactNode = null;
+  const flipDirection = () => {
+    if (!selectedFrom || !selectedTo) return;
+    setFromTokenId(selectedTo.id);
+    setToTokenId(selectedFrom.id);
+    setFromMaxAmountRaw(null);
+    // The typed amount stays with its voucher, which is now on the other side.
+    if (quoteMode === "exact-input") {
+      setQuoteMode("exact-output");
+      setToAmount(fromAmount);
+    } else {
+      setQuoteMode("exact-input");
+      setFromAmount(toAmount);
+    }
+  };
+  const fromBalance =
+    selectedFrom && fromDecimals !== null
+      ? formatTokenAmountFixed(selectedFrom.balanceRaw, fromDecimals, 2, locale)
+      : null;
+  const pickerFor = (field: "from" | "to") => {
+    const tokens =
+      field === "to" ? swapTokens.filter((token) => token.id !== selectedFrom?.id) : swapTokens;
+    return (
+      <TokenPicker
+        variant={field}
+        title={field === "from" ? sendLabel : receiveLabel}
+        token={field === "from" ? selectedFrom?.token : selectedTo?.token}
+        tokens={tokens}
+        selectedId={field === "from" ? selectedFrom?.id : selectedTo?.id}
+        isPending={tokensPending}
+        isError={tokensError}
+        locale={locale}
+        open={picker?.field === field}
+        onOpenChange={(open) => setPicker(open ? { field } : null)}
+        onSelect={(token) => {
+          if (field === "from") {
+            setFromMaxAmountRaw(null);
+            if (token.id === selectedTo?.id) setToTokenId(selectedFrom?.id);
+            setFromTokenId(token.id);
+          } else {
+            setToTokenId(token.id);
+          }
+          setPicker(null);
+        }}
+      />
+    );
+  };
+  const feeValue = (
+    part: "pool" | "protocol" | "total",
+    breakdown: typeof displayedFeeBreakdown,
+    pending = false,
+  ) => (
+    <span className="block [&>span]:items-start [&>span>span]:text-start">
+      <PoolSwapFeeValue
+        breakdown={breakdown}
+        part={part}
+        decimals={toDecimals}
+        symbol={receiveSymbol}
+        locale={locale}
+        pending={pending}
+      />
+    </span>
+  );
+
+  let body: ReactNode;
   if (poolQuery.isLoading) {
     body = <p className="text-sm text-muted-foreground">{t`Loading pool…`}</p>;
   } else if (poolQuery.isError) {
@@ -362,191 +425,162 @@ export function PoolSwapColumn({
   } else if (confirmOpen) {
     const error =
       confirmError ?? (swapTransfer.error instanceof Error ? swapTransfer.error.message : null);
+    const confirmedFees = quote.data?.feeBreakdown ?? null;
     body = (
-      <div className="space-y-3">
-        <div className="border border-border">
-          <ConfirmRow label={<Trans>You receive</Trans>}>
-            {localizedQuoteToAmount} {selectedTo?.token.symbol ?? ""}
-            {exactToAmount ? ` (${toUnitValue ?? t`Unavailable`})` : ""}
-          </ConfirmRow>
-          <ConfirmRow label={<Trans>You send</Trans>}>
-            {localizedQuoteFromAmount} {selectedFrom?.token.symbol ?? ""}
-            {exactFromAmount ? ` (${fromUnitValue ?? t`Unavailable`})` : ""}
-          </ConfirmRow>
-          <ConfirmRow label={<Trans>Pool fee</Trans>}>
-            <PoolSwapFeeValue
-              breakdown={quote.data?.feeBreakdown ?? null}
-              part="pool"
-              decimals={toDecimals}
-              symbol={selectedTo?.token.symbol ?? ""}
-              locale={locale}
-            />
-          </ConfirmRow>
-          <ConfirmRow label={<Trans>Protocol fee</Trans>}>
-            <PoolSwapFeeValue
-              breakdown={quote.data?.feeBreakdown ?? null}
-              part="protocol"
-              decimals={toDecimals}
-              symbol={selectedTo?.token.symbol ?? ""}
-              locale={locale}
-            />
-          </ConfirmRow>
-          <ConfirmRow label={<Trans>Total fees</Trans>}>
-            <PoolSwapFeeValue
-              breakdown={quote.data?.feeBreakdown ?? null}
-              part="total"
-              decimals={toDecimals}
-              symbol={selectedTo?.token.symbol ?? ""}
-              locale={locale}
-            />
-          </ConfirmRow>
-          <ConfirmRow label={<Trans>Pool</Trans>} last>
-            {pool.name}
-          </ConfirmRow>
-        </div>
+      <>
+        <DeskKV
+          rows={[
+            [
+              <Trans key="label">You receive</Trans>,
+              <span key="value" dir="ltr">
+                {localizedQuoteToAmount} {selectedTo?.token.symbol ?? ""}
+                {exactToAmount ? ` (${toUnitValue ?? t`Unavailable`})` : ""}
+              </span>,
+            ],
+            [
+              <Trans key="label">You send</Trans>,
+              <span key="value" dir="ltr">
+                {localizedQuoteFromAmount} {selectedFrom?.token.symbol ?? ""}
+                {exactFromAmount ? ` (${fromUnitValue ?? t`Unavailable`})` : ""}
+              </span>,
+            ],
+            [<Trans key="label">Pool fee</Trans>, feeValue("pool", confirmedFees)],
+            [<Trans key="label">Protocol fee</Trans>, feeValue("protocol", confirmedFees)],
+            [<Trans key="label">Total fees</Trans>, feeValue("total", confirmedFees)],
+            [
+              <Trans key="label">Pool</Trans>,
+              <span key="value" dir="auto" className="font-sans">
+                {pool.name}
+              </span>,
+            ],
+          ]}
+        />
         {error ? (
-          <p className="text-destructive text-xs" role="alert">
+          <p className="text-xs text-destructive" role="alert">
             {error}
           </p>
         ) : null}
-      </div>
-    );
-    footer = (
-      <div className="flex flex-col gap-2">
-        <Button
-          tap
-          className="w-full"
-          pending={swapTransfer.isPending}
-          onClick={() => void confirm()}
-        >
-          {swapTransfer.isPending ? <Trans>Swapping…</Trans> : <Trans>Confirm swap</Trans>}
-        </Button>
-        <Button
-          variant="ghost"
-          tap
-          className="w-full"
-          disabled={swapTransfer.isPending}
-          onClick={() => setConfirmOpen(false)}
-        >
-          <Trans>Cancel</Trans>
-        </Button>
-      </div>
-    );
-  } else if (picker) {
-    const variant = picker.field;
-    const tokens =
-      variant === "to" ? swapTokens.filter((token) => token.id !== selectedFrom?.id) : swapTokens;
-    body = (
-      <TokenList
-        variant={variant}
-        title={variant === "from" ? sendLabel : receiveLabel}
-        tokens={tokens}
-        selectedId={variant === "from" ? selectedFrom?.id : selectedTo?.id}
-        isPending={tokensPending}
-        isError={tokensError}
-        locale={locale}
-        onClose={() => setPicker(null)}
-        onSelect={(token) => {
-          if (variant === "from") {
-            setFromMaxAmountRaw(null);
-            if (token.id === selectedTo?.id) setToTokenId(selectedFrom?.id);
-            setFromTokenId(token.id);
-          } else {
-            setToTokenId(token.id);
-          }
-          setPicker(null);
-        }}
-      />
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            disabled={swapTransfer.isPending}
+            onClick={() => setConfirmOpen(false)}
+          >
+            <Trans>Cancel</Trans>
+          </Button>
+          <Button pending={swapTransfer.isPending} onClick={() => void confirm()}>
+            {swapTransfer.isPending ? <Trans>Swapping…</Trans> : <Trans>Confirm swap</Trans>}
+          </Button>
+        </div>
+      </>
     );
   } else {
     body = (
-      <div className="space-y-3">
-        <SwapField
-          id="desk-swap-receive-amount"
-          highlighted
-          label={receiveLabel}
-          token={selectedTo?.token}
-          amount={displayedToAmount}
-          unitValue={exactToAmount ? (toUnitValue ?? t`Unavailable`) : undefined}
-          autoFocus={focused}
-          max={maxReceiveAmount ?? undefined}
-          actionsDisabled={!maxSettled}
-          onFocus={() => setFocusedField("to")}
-          onBlur={() => {
-            if (quoteMode === "exact-output") setToAmount(fixedEnteredAmount(toAmount, toDecimals));
-            setFocusedField((current) => (current === "to" ? null : current));
-          }}
-          onAmountChange={(amount) => {
-            setQuoteMode("exact-output");
-            setFromMaxAmountRaw(null);
-            setToAmount(amount);
-          }}
-          onMax={applyMax}
-          onSelect={() => setPicker({ field: "to" })}
-        />
-        <SwapField
-          id="desk-swap-send-amount"
-          label={sendLabel}
-          token={selectedFrom?.token}
-          amount={displayedFromAmount}
-          unitValue={exactFromAmount ? (fromUnitValue ?? t`Unavailable`) : undefined}
-          max={localizedMaxFromAmount}
-          actionsDisabled={!maxSettled}
-          invalid={exceedsBalance || exceedsDepositCap}
-          onFocus={() => setFocusedField("from")}
-          onBlur={() => {
-            if (quoteMode === "exact-input")
-              setFromAmount(fixedEnteredAmount(fromAmount, fromDecimals));
-            setFocusedField((current) => (current === "from" ? null : current));
-          }}
-          onAmountChange={(amount) => {
-            setQuoteMode("exact-input");
-            setFromMaxAmountRaw(null);
-            setFromAmount(amount);
-          }}
-          onMax={applyMax}
-          onSelect={() => setPicker({ field: "from" })}
-        />
-        <div className="border border-border">
-          <div className="flex items-center justify-between border-border border-b px-3 py-2">
-            <span className="text-muted-foreground text-xs">
-              <Trans>Rate</Trans>
-            </span>
-            <span dir="ltr" className="font-mono text-xs font-semibold">
-              1 {selectedFrom?.token.symbol ?? "—"} = {rate} {selectedTo?.token.symbol ?? "—"}
-            </span>
-          </div>
-          <FeeRow label={<Trans>Pool fee</Trans>} last={false}>
-            <PoolSwapFeeValue
-              breakdown={displayedFeeBreakdown}
-              part="pool"
-              decimals={toDecimals}
-              symbol={receiveSymbol}
-              locale={locale}
-              pending={feesPending}
-            />
-          </FeeRow>
-          <FeeRow label={<Trans>Protocol fee</Trans>} last={false}>
-            <PoolSwapFeeValue
-              breakdown={displayedFeeBreakdown}
-              part="protocol"
-              decimals={toDecimals}
-              symbol={receiveSymbol}
-              locale={locale}
-              pending={feesPending}
-            />
-          </FeeRow>
-          <FeeRow label={<Trans>Total fees</Trans>} last>
-            <PoolSwapFeeValue
-              breakdown={displayedFeeBreakdown}
-              part="total"
-              decimals={toDecimals}
-              symbol={receiveSymbol}
-              locale={locale}
-              pending={feesPending}
-            />
-          </FeeRow>
+      <>
+        <div className="grid gap-1.5">
+          <AmountBox
+            id="desk-swap-send-amount"
+            label={sendLabel}
+            amount={displayedFromAmount}
+            invalid={exceedsBalance || exceedsDepositCap}
+            picker={pickerFor("from")}
+            onFocus={() => setFocusedField("from")}
+            onBlur={() => {
+              if (quoteMode === "exact-input")
+                setFromAmount(fixedEnteredAmount(fromAmount, fromDecimals));
+              setFocusedField((current) => (current === "from" ? null : current));
+            }}
+            onAmountChange={(amount) => {
+              setQuoteMode("exact-input");
+              setFromMaxAmountRaw(null);
+              setFromAmount(amount);
+            }}
+          />
+          <AmountHelp
+            lead={
+              fromBalance !== null ? (
+                <>
+                  <Trans>Balance</Trans>{" "}
+                  <span dir="ltr" className="font-mono">
+                    {fromBalance}
+                  </span>
+                </>
+              ) : null
+            }
+            unitValue={exactFromAmount ? (fromUnitValue ?? t`Unavailable`) : undefined}
+            max={localizedMaxFromAmount}
+            symbol={selectedFrom?.token.symbol}
+            maxDisabled={!maxSettled}
+            onMax={applyMax}
+          />
         </div>
+        <div className="grid place-items-center">
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={t`Reverse swap direction`}
+            disabled={!selectedFrom || !selectedTo || !selectedTo.canSwapIn}
+            onClick={flipDirection}
+          >
+            <RiArrowUpDownLine aria-hidden="true" />
+          </Button>
+        </div>
+        <div className="grid gap-1.5">
+          <AmountBox
+            id="desk-swap-receive-amount"
+            label={receiveLabel}
+            amount={displayedToAmount}
+            highlighted
+            autoFocus={focused}
+            picker={pickerFor("to")}
+            onFocus={() => setFocusedField("to")}
+            onBlur={() => {
+              if (quoteMode === "exact-output")
+                setToAmount(fixedEnteredAmount(toAmount, toDecimals));
+              setFocusedField((current) => (current === "to" ? null : current));
+            }}
+            onAmountChange={(amount) => {
+              setQuoteMode("exact-output");
+              setFromMaxAmountRaw(null);
+              setToAmount(amount);
+            }}
+          />
+          <AmountHelp
+            unitValue={exactToAmount ? (toUnitValue ?? t`Unavailable`) : undefined}
+            max={maxReceiveAmount ?? undefined}
+            symbol={selectedTo?.token.symbol}
+            maxDisabled={!maxSettled}
+            onMax={applyMax}
+          />
+        </div>
+        <DeskKV
+          rows={[
+            [
+              <Trans key="label">Rate</Trans>,
+              rate !== "—" && selectedFrom && selectedTo ? (
+                <span key="value" dir="ltr">
+                  1 {selectedFrom.token.symbol} = {rate} {selectedTo.token.symbol}
+                </span>
+              ) : (
+                <span key="value" className="text-muted-foreground">
+                  —
+                </span>
+              ),
+            ],
+            [
+              <Trans key="label">Pool fee</Trans>,
+              feeValue("pool", displayedFeeBreakdown, feesPending),
+            ],
+            [
+              <Trans key="label">Protocol fee</Trans>,
+              feeValue("protocol", displayedFeeBreakdown, feesPending),
+            ],
+            [
+              <Trans key="label">Total fees</Trans>,
+              feeValue("total", displayedFeeBreakdown, feesPending),
+            ],
+          ]}
+        />
         <SwapNotices
           tokensPending={tokensPending}
           tokensError={tokensError}
@@ -576,32 +610,31 @@ export function PoolSwapColumn({
           toSymbol={selectedTo?.token.symbol}
           nonPositive={sourceAmount.trim() !== "" && Number(sourceAmount) <= 0}
         />
-      </div>
-    );
-    footer = (
-      <Button
-        tap
-        className="w-full"
-        disabled={!isValidAmount || !selectedFrom || !selectedTo}
-        onClick={() => {
-          if (!selectedFrom || !selectedTo || !isValidAmount) return;
-          setConfirmError(null);
-          setConfirmOpen(true);
-        }}
-      >
-        <Trans>Swap</Trans>
-      </Button>
+        <Button
+          className="w-full"
+          disabled={!isValidAmount || !selectedFrom || !selectedTo}
+          onClick={() => {
+            if (!selectedFrom || !selectedTo || !isValidAmount) return;
+            setConfirmError(null);
+            setConfirmOpen(true);
+          }}
+        >
+          <Trans>Swap</Trans>
+        </Button>
+      </>
     );
   }
 
   return (
-    <DeskInspector
-      title={<Trans>Swap</Trans>}
-      footer={footer}
-      className={focused ? "bg-card" : undefined}
+    <section
+      aria-labelledby="desk-swap-title"
+      className="grid min-w-0 gap-3 border border-border bg-card p-4"
     >
+      <SectionHeading as="h2" variant="section" id="desk-swap-title">
+        {confirmOpen ? <Trans>Confirm swap</Trans> : <Trans>Swap</Trans>}
+      </SectionHeading>
       {body}
-    </DeskInspector>
+    </section>
   );
 }
 
@@ -739,215 +772,173 @@ function SwapNotices({
   return null;
 }
 
-function FeeRow({
-  label,
-  last,
-  children,
-}: {
-  label: ReactNode;
-  last: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex min-h-11 items-center justify-between gap-3 px-3 py-2",
-        !last && "border-border border-b",
-      )}
-    >
-      <span className="text-muted-foreground text-xs">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function ConfirmRow({
-  label,
-  last = false,
-  children,
-}: {
-  label: ReactNode;
-  last?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex min-h-11 items-center justify-between gap-3 px-3 py-2.5",
-        !last && "border-border border-b",
-      )}
-    >
-      <span className="text-muted-foreground text-xs">{label}</span>
-      <span dir="ltr" className="min-w-0 break-words text-end font-mono text-xs font-semibold">
-        {children}
-      </span>
-    </div>
-  );
-}
-
-function SwapField({
+/**
+ * The 64px amount box. `WalletAmountInput` keeps its surface, border and
+ * amount type; the token picker sits inside its end edge.
+ */
+function AmountBox({
   id,
-  highlighted = false,
   label,
-  token,
   amount,
-  unitValue,
+  highlighted = false,
   autoFocus = false,
-  max,
-  actionsDisabled = false,
   invalid = false,
+  picker,
   onFocus,
   onBlur,
   onAmountChange,
-  onMax,
-  onSelect,
 }: {
   id: string;
-  highlighted?: boolean;
   label: string;
-  token: WalletToken | undefined;
   amount: string;
-  unitValue?: string;
+  highlighted?: boolean;
   autoFocus?: boolean;
-  max?: string;
-  actionsDisabled?: boolean;
   invalid?: boolean;
+  picker: ReactNode;
   onFocus: () => void;
   onBlur: () => void;
   onAmountChange: (amount: string) => void;
-  onMax?: () => void;
-  onSelect: () => void;
 }) {
-  const symbol = token?.symbol ?? "";
   return (
-    <div role="group" aria-label={label}>
-      <div className="mb-1.5 flex min-h-7 items-center justify-between">
-        <label htmlFor={id} className="font-medium text-sm">
-          {label}
-        </label>
-        {max !== undefined ? (
-          <Button
-            variant="ghost"
-            tap
-            disabled={actionsDisabled}
-            onClick={onMax}
-            className="font-mono font-semibold"
-          >
-            <Trans>
-              Max {max} {symbol}
-            </Trans>
-          </Button>
-        ) : null}
-      </div>
-      <div className="grid grid-cols-[8.5rem_minmax(0,1fr)] items-stretch gap-2">
+    <div role="group" aria-label={label} className="relative">
+      <WalletAmountInput
+        id={id}
+        label={label}
+        highlighted={highlighted}
+        value={amount}
+        style={{ height: "4rem", paddingInlineEnd: "9rem", paddingInlineStart: "0.875rem" }}
+        onValueChange={(value) => {
+          onFocus();
+          onAmountChange(sanitizeAmount(value));
+        }}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        autoFocus={autoFocus}
+        aria-invalid={invalid}
+      />
+      <div className="absolute inset-y-0 end-3 flex items-center">{picker}</div>
+    </div>
+  );
+}
+
+function AmountHelp({
+  lead,
+  unitValue,
+  max,
+  symbol,
+  maxDisabled,
+  onMax,
+}: {
+  lead?: ReactNode;
+  unitValue?: string;
+  max?: string;
+  symbol?: string;
+  maxDisabled: boolean;
+  onMax: () => void;
+}) {
+  if (!lead && !unitValue && max === undefined) return null;
+  return (
+    <div className="flex min-w-0 items-center gap-3 text-xs text-muted-foreground">
+      {lead ? <span className="min-w-0 truncate">{lead}</span> : null}
+      {unitValue ? (
+        <span dir="ltr" className="min-w-0 truncate font-mono" aria-live="polite">
+          ({unitValue})
+        </span>
+      ) : null}
+      {max !== undefined ? (
         <button
           type="button"
-          onClick={onSelect}
-          className="flex min-h-9 items-center gap-1.5 border border-border bg-card px-2"
+          disabled={maxDisabled}
+          onClick={onMax}
+          className="ms-auto shrink-0 font-mono font-semibold text-primary hover:underline disabled:opacity-50"
         >
-          {token ? (
-            <TokenLogo token={token} size={24} />
-          ) : (
-            <span className="size-6 shrink-0 rounded-full bg-muted" />
-          )}
-          <span
-            dir="ltr"
-            className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-start text-sm font-semibold"
-          >
-            {token?.symbol ?? "—"}
-          </span>
-          <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <Trans>
+            Max {max} {symbol}
+          </Trans>
         </button>
-        <WalletAmountInput
-          id={id}
-          label={label}
-          highlighted={highlighted}
-          value={amount}
-          onValueChange={(value) => {
-            onFocus();
-            onAmountChange(sanitizeAmount(value));
-          }}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          autoFocus={autoFocus}
-          aria-invalid={invalid}
-        />
-      </div>
-      {unitValue ? (
-        <p className="mt-1 text-end font-mono text-muted-foreground text-xs" aria-live="polite">
-          ({unitValue})
-        </p>
       ) : null}
     </div>
   );
 }
 
-function TokenList({
+function TokenPicker({
   variant,
   title,
+  token,
   tokens,
   selectedId,
   isPending,
   isError,
   locale,
-  onClose,
+  open,
+  onOpenChange,
   onSelect,
 }: {
   variant: "from" | "to";
   title: string;
+  token: WalletToken | undefined;
   tokens: PoolSwapToken[];
   selectedId?: string;
   isPending: boolean;
   isError: boolean;
   locale: string;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSelect: (token: PoolSwapToken) => void;
 }) {
-  const selectable = (token: PoolSwapToken) =>
-    variant === "from" ? token.canSwapIn : token.canSwapOut;
-  const firstUnheldIndex = variant === "from" ? tokens.findIndex((token) => !token.held) : -1;
+  const selectable = (entry: PoolSwapToken) =>
+    variant === "from" ? entry.canSwapIn : entry.canSwapOut;
+  const firstUnheldIndex = variant === "from" ? tokens.findIndex((entry) => !entry.held) : -1;
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <SectionHeading as="h3" variant="group">
+    <PopoverRoot open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger
+        render={
+          <Button variant="outline" aria-label={title} className="max-w-32 gap-2 px-2.5">
+            {token ? <TokenLogo token={token} size={20} /> : null}
+            <span dir="ltr" className="min-w-0 truncate text-sm font-semibold">
+              {token?.symbol ?? "—"}
+            </span>
+            <RiArrowDownSLine aria-hidden="true" className="text-muted-foreground" />
+          </Button>
+        }
+      />
+      <PopoverContent align="end" className="w-80 p-1">
+        <PopoverTitle className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground">
           {title}
-        </SectionHeading>
-        <Button type="button" variant="ghost" onClick={onClose}>
-          <Trans>Cancel</Trans>
-        </Button>
-      </div>
-      {isPending ? (
-        <p className="text-muted-foreground text-sm">
-          <Trans>Loading vouchers…</Trans>
-        </p>
-      ) : isError ? (
-        <p role="alert" className="text-destructive text-sm">
-          <Trans>Couldn't load this pool's vouchers.</Trans>
-        </p>
-      ) : tokens.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          <Trans>This pool doesn't take any vouchers yet.</Trans>
-        </p>
-      ) : (
-        tokens.map((token, index) => (
-          <div key={token.id}>
-            {index === firstUnheldIndex && index > 0 ? (
-              <SectionHeading variant="group" as="h3" className="pt-2 pb-1">
-                <Trans>Not held</Trans>
-              </SectionHeading>
-            ) : null}
-            <TokenRow
-              token={token}
-              variant={variant}
-              selected={token.id === selectedId}
-              disabled={!selectable(token)}
-              locale={locale}
-              onSelect={() => onSelect(token)}
-            />
-          </div>
-        ))
-      )}
-    </div>
+        </PopoverTitle>
+        {isPending ? (
+          <p className="px-2 py-2 text-sm text-muted-foreground">
+            <Trans>Loading vouchers…</Trans>
+          </p>
+        ) : isError ? (
+          <p role="alert" className="px-2 py-2 text-sm text-destructive">
+            <Trans>Couldn't load this pool's vouchers.</Trans>
+          </p>
+        ) : tokens.length === 0 ? (
+          <p className="px-2 py-2 text-sm text-muted-foreground">
+            <Trans>This pool doesn't take any vouchers yet.</Trans>
+          </p>
+        ) : (
+          tokens.map((entry, index) => (
+            <div key={entry.id}>
+              {index === firstUnheldIndex && index > 0 ? (
+                <SectionHeading variant="group" as="h3" className="px-2 pt-2 pb-1">
+                  <Trans>Not held</Trans>
+                </SectionHeading>
+              ) : null}
+              <TokenRow
+                token={entry}
+                variant={variant}
+                selected={entry.id === selectedId}
+                disabled={!selectable(entry)}
+                locale={locale}
+                onSelect={() => onSelect(entry)}
+              />
+            </div>
+          ))
+        )}
+      </PopoverContent>
+    </PopoverRoot>
   );
 }
 
@@ -974,7 +965,7 @@ function TokenRow({
       type="button"
       disabled={disabled}
       className={cn(
-        "flex w-full items-center gap-3 px-2 py-2 text-start",
+        "flex w-full items-center gap-3 px-2 py-2 text-start hover:bg-muted/60",
         selected && "bg-muted/60",
         disabled && "opacity-45",
       )}
