@@ -89,6 +89,19 @@ export function useRejectUser() {
   });
 }
 
+export function useUpdateUserRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ address, role }: { address: string; role: "ADMIN" | "USER" }) =>
+      clcApi.admin.updateUserRole(address, role),
+    onSuccess: (user) => {
+      queryClient.setQueryData<AdminUser | null>(adminKeys.user(user.ethereumAddress), user);
+      return queryClient.invalidateQueries({ queryKey: [...adminKeys.all, "users"] });
+    },
+  });
+}
+
 export function useUpdateUserProfile() {
   const writeUser = useWriteUserToCache();
   const queryClient = useQueryClient();

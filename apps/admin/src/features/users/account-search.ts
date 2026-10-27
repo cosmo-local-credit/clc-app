@@ -5,6 +5,7 @@ const STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 
 export type AccountSearch = TableSearch & {
   status?: AdminUserStatus;
+  role?: "admins";
 };
 
 /** Table search plus one approval status. An unknown status is dropped. */
@@ -12,5 +13,6 @@ export function parseAccountSearch(search: Record<string, unknown>): AccountSear
   const table = parseTableSearch(search);
   const raw = typeof search.status === "string" ? search.status.trim().toUpperCase() : "";
   const status = STATUSES.find((item) => item === raw);
-  return { ...table, ...(status ? { status } : {}) };
+  const role = search.role === "admins" ? "admins" : undefined;
+  return { ...table, ...(status ? { status } : {}), ...(role ? { role } : {}) };
 }

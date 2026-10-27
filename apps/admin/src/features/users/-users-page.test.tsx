@@ -11,7 +11,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { AdminUser } from "@clc/api/features/admin/client";
-import { parseTableSearch } from "#/lib/table-search";
+import { parseAccountSearch } from "./account-search";
 import { UsersPage } from "./users-page";
 
 const listUsers = vi.hoisted(() => vi.fn());
@@ -66,7 +66,7 @@ function renderUsersRoute(initialEntry = "/users") {
   const usersRoute = createRoute({
     getParentRoute: () => root,
     path: "/users",
-    validateSearch: parseTableSearch,
+    validateSearch: parseAccountSearch,
     component: function UsersRoute() {
       return <UsersPage search={usersRoute.useSearch()} />;
     },
@@ -136,6 +136,22 @@ describe("UsersPage", () => {
     await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "w" }));
     expect(listUsers).not.toHaveBeenCalledWith(
       expect.objectContaining({ q: "w" }),
+      expect.anything(),
+    );
+  });
+
+  it("filters to Admin and Superadmin roles and resets pagination", async () => {
+    listUsers.mockResolvedValue(page(user(4210, { role: "ADMIN" })));
+
+    const router = renderUsersRoute("/users?cursor=99&dir=next");
+    await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
+
+    fireEvent.click(screen.getByRole("button", { name: "Admins" }));
+
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ role: "admins" }));
+    expect(router.state.location.search.cursor).toBeUndefined();
+    expect(listUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ roles: ["ADMIN", "SUPERADMIN"] }),
       expect.anything(),
     );
   });

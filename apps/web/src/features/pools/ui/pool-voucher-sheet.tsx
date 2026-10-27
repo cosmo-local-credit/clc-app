@@ -85,7 +85,7 @@ type SheetVoucher = {
  * nobody chose. The calls are built by `@clc/core/features/pool-admin/logic` and
  * signed with whatever key this wallet holds.
  *
- * Only the pool's own owner reaches this. A superadmin can correct the catalog
+ * Only the pool's own owner reaches this. An administrator can correct the catalog
  * record but is not the on-chain owner, and every call below is `onlyOwner`.
  */
 export function PoolVoucherSheet({

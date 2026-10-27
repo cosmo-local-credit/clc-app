@@ -4,14 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const api = vi.hoisted(() => ({
   listDeployments: vi.fn(),
+  upgradeToken: vi.fn(),
   upgradePool: vi.fn(),
   getDeploymentContract: vi.fn(),
   success: vi.fn(),
   info: vi.fn(),
+  error: vi.fn(),
 }));
 vi.mock("#/lib/api", () => ({ clcApi: { admin: api, deployments: api } }));
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }));
-vi.mock("sonner", () => ({ toast: { success: api.success, info: api.info, error: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: api.success, info: api.info, error: api.error } }));
 
 import { DeploymentsPage } from "./deployments-page";
 
@@ -69,5 +71,52 @@ describe("DeploymentsPage", () => {
       ),
     );
     expect(api.success).not.toHaveBeenCalled();
+  });
+
+  it("queues a token upgrade and reports its tracking id", async () => {
+    api.listDeployments.mockResolvedValue({
+      deployments: [
+        {
+          id: 2,
+          userId: 1,
+          trackingId: "deployment-2",
+          resourceType: "TOKEN",
+          createdAt: "2026-10-25T10:00:00Z",
+          ethereumAddress: ADDRESS,
+          userName: "Owner",
+        },
+      ],
+      first: 2,
+      last: 2,
+      receivedCount: 1,
+    });
+    api.upgradeToken.mockResolvedValue({ trackingId: "upgrade-2", address: ADDRESS });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <DeploymentsPage search={{ perPage: 10 }} />
+      </QueryClientProvider>,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Upgrade" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "Upgrade" }),
+    );
+    await waitFor(() => expect(api.upgradeToken).toHaveBeenCalledWith(ADDRESS));
+    expect(api.success).toHaveBeenCalledWith("Upgrade queued upgrade-2");
+  });
+
+  it("keeps upgrade failures visible to the operator", async () => {
+    api.upgradePool.mockRejectedValue(new Error("upgrade unavailable"));
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <DeploymentsPage search={{ perPage: 10 }} />
+      </QueryClientProvider>,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Upgrade" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "Upgrade" }),
+    );
+    await waitFor(() => expect(api.error).toHaveBeenCalledWith("upgrade unavailable"));
   });
 });

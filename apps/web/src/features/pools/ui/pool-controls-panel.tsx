@@ -65,9 +65,9 @@ type ControlSheet = "details" | "liquidity" | "fees" | "feeSettings" | "ownershi
  * Editing the catalog record rides along rather than sitting above as a button
  * of its own — it is the same kind of settings row, and a lone full-width
  * control stranded over a row group reads as a different class of action than
- * it is. The two are separately gated: a superadmin may correct any pool's
+ * it is. The two are separately gated: an administrator may correct any pool's
  * record, while every on-chain call below is `onlyOwner` on a contract the
- * pool's owner deployed, so a superadmin would only be signing a revert.
+ * pool's owner deployed, so an administrator would only be signing a revert.
  */
 export function PoolControlsPanel({
   pool,
@@ -92,7 +92,7 @@ export function PoolControlsPanel({
   const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
   const indexed = useAllAccountTokens(canManageOnChain ? pool.address : undefined);
   const withdrawalVouchers = poolWithdrawalTokens(vouchers, indexed.tokens, pool.chainId);
-  // Balances are read for the withdraw sheets alone, so a superadmin who can
+  // Balances are read for the withdraw sheets alone, so an administrator who can
   // only edit the record never pays for the calls.
   const treasury = usePoolTreasury(
     pool,

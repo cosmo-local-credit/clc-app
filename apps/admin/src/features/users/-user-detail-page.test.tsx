@@ -64,16 +64,23 @@ const listUsers = vi.hoisted(() => vi.fn());
 const getAccountStats = vi.hoisted(() => vi.fn());
 const updateUserProfile = vi.hoisted(() => vi.fn());
 const updateUserLimits = vi.hoisted(() => vi.fn());
+const updateUserRole = vi.hoisted(() => vi.fn());
+const sessionRole = vi.hoisted(() => ({ value: "SUPERADMIN" }));
 const getLatestAccountTokens = vi.hoisted(() => vi.fn());
 const getAccountTransfers = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
+    auth: {
+      getSession: () =>
+        Promise.resolve({ address: OTHER_ADDRESS, chainId: 100, role: sessionRole.value }),
+    },
     admin: {
       listUsers: (...args: unknown[]) => listUsers(...args),
       getAccountStats: (...args: unknown[]) => getAccountStats(...args),
       updateUserProfile: (...args: unknown[]) => updateUserProfile(...args),
       updateUserLimits: (...args: unknown[]) => updateUserLimits(...args),
+      updateUserRole: (...args: unknown[]) => updateUserRole(...args),
     },
     accounts: {
       getLatestAccountTokens: (...args: unknown[]) => getLatestAccountTokens(...args),
@@ -195,12 +202,14 @@ beforeEach(() => {
     getAccountStats,
     updateUserProfile,
     updateUserLimits,
+    updateUserRole,
     getLatestAccountTokens,
     getAccountTransfers,
     reverseLocation,
   ]) {
     mock.mockReset();
   }
+  sessionRole.value = "SUPERADMIN";
 });
 
 describe("UserDetailPage", () => {
@@ -219,6 +228,82 @@ describe("UserDetailPage", () => {
     expect(screen.getByRole("button", { name: "Edit profile" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Ban user" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /actions/i })).toBeNull();
+  });
+
+  it("lets only a superadmin confirm promotion to Admin", async () => {
+    listUsers.mockResolvedValue({ users: [account()], first: 0, last: 0, receivedCount: 1 });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+    updateUserRole.mockResolvedValue(account({ role: "ADMIN" }));
+
+    renderDetailRoute();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Make admin" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Make admin" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Make admin" }));
+
+    await waitFor(() => expect(updateUserRole).toHaveBeenCalledWith(ADDRESS, "ADMIN"));
+  });
+
+  it("lets a superadmin confirm demotion to User", async () => {
+    listUsers.mockResolvedValue({
+      users: [account({ role: "ADMIN", status: "APPROVED" })],
+      first: 0,
+      last: 0,
+      receivedCount: 1,
+    });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+    updateUserRole.mockResolvedValue(account({ role: "USER", status: "APPROVED" }));
+
+    renderDetailRoute();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Make user" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Make user" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Make user" }));
+
+    await waitFor(() => expect(updateUserRole).toHaveBeenCalledWith(ADDRESS, "USER"));
+  });
+
+  it("never offers to change a Superadmin target", async () => {
+    listUsers.mockResolvedValue({
+      users: [account({ role: "SUPERADMIN", status: "APPROVED" })],
+      first: 0,
+      last: 0,
+      receivedCount: 1,
+    });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+
+    renderDetailRoute();
+    await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
+    expect(screen.queryByRole("button", { name: "Make admin" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Make user" })).toBeNull();
+  });
+
+  it("keeps the confirmation open when role mutation fails", async () => {
+    listUsers.mockResolvedValue({ users: [account()], first: 0, last: 0, receivedCount: 1 });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+    updateUserRole.mockRejectedValue(new Error("Role update failed"));
+
+    renderDetailRoute();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Make admin" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Make admin" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Make admin" }));
+
+    await waitFor(() => expect(updateUserRole).toHaveBeenCalledWith(ADDRESS, "ADMIN"));
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
+  it("hides role controls from an Admin operator", async () => {
+    sessionRole.value = "ADMIN";
+    listUsers.mockResolvedValue({ users: [account()], first: 0, last: 0, receivedCount: 1 });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+
+    renderDetailRoute();
+    await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
+    expect(screen.queryByRole("button", { name: "Make admin" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Make user" })).toBeNull();
   });
 
   it("names an account with no name rather than rendering an empty title", async () => {

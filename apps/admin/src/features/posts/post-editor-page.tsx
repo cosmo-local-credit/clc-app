@@ -62,7 +62,7 @@ export type PostEditorTarget = { mode: "create" } | { mode: "edit"; reportId: st
  * A full page rather than a Sheet: a post carries prose, up to fifty images and
  * twenty attachments, and none of that fits a side panel.
  *
- * A superadmin's create publishes immediately, and a superadmin's edit preserves
+ * An administrator's create publishes immediately, and an administrator's edit preserves
  * whatever status the post holds. Both are the server's decision, stated on
  * screen rather than predicted.
  */

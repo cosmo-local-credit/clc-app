@@ -287,7 +287,7 @@ export function signinErrorMessage(error: unknown): string {
       case "forbidden":
         return /reject/i.test(error.description)
           ? "This account has been rejected and cannot sign in."
-          : "This account is still awaiting approval by a superadmin.";
+          : "This account is still awaiting approval by an administrator.";
       case "validation":
         return "The signature was rejected. Check that this is the right wallet, then try again.";
       default:

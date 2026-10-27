@@ -492,6 +492,17 @@ describe("pair fees", () => {
     ).toThrow(/Remove the pair fee/);
   });
 
+  it("refuses a pair made from the same token", () => {
+    expect(() =>
+      buildSetPairFeeCall({
+        feePolicyAddress: FEE_POLICY,
+        tokenIn: TOKEN,
+        tokenOut: TOKEN,
+        feePpm: "10000",
+      }),
+    ).toThrow(/tokens must be different/);
+  });
+
   it("removes a pair fee", () => {
     const call = buildRemovePairFeeCall({
       feePolicyAddress: FEE_POLICY,

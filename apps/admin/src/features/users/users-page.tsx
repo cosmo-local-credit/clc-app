@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { termFilter } from "#/lib/catalog-filter";
 import { DEFAULT_PAGE_SIZE, filterSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
@@ -112,6 +113,7 @@ export function UsersPage({ search }: { search: AccountSearch }) {
     next: search.dir === undefined ? undefined : search.dir === "next",
     ...(term ? { q: term } : {}),
     ...(search.status ? { status: search.status } : {}),
+    ...(search.role === "admins" ? { roles: ["ADMIN", "SUPERADMIN"] as const } : {}),
   });
 
   const users = usersQuery.data?.users ?? [];
@@ -164,6 +166,31 @@ export function UsersPage({ search }: { search: AccountSearch }) {
                 ))}
               </SelectContent>
             </Select>
+            <ToggleGroup
+              variant="outline"
+              size="sm"
+              spacing={0}
+              value={[search.role ?? "all"]}
+              onValueChange={(values) => {
+                const value = values[0];
+                if (!value) return;
+                void navigate({
+                  to: "/users",
+                  search: filterSearch(search, {
+                    role: value === "admins" ? "admins" : undefined,
+                  }),
+                });
+              }}
+              aria-label="Account roles"
+              className="border-border bg-card h-9 items-center border p-0.5"
+            >
+              <ToggleGroupItem value="all" className="h-full px-2.5 font-mono text-xs uppercase">
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem value="admins" className="h-full px-2.5 font-mono text-xs uppercase">
+                Admins
+              </ToggleGroupItem>
+            </ToggleGroup>
           </>
         }
       />

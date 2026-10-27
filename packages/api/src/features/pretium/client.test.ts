@@ -108,4 +108,42 @@ describe("pretium-client", () => {
     expect(result.offramps[0]?.reference).toBe("OFF-1");
     expect(result.offramps[0]?.status).toBe("SUCCESS");
   });
+
+  it("loads transactions by an encoded phone number", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "",
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({ ok: true, result: { onramps: [], offramps: [], totalCount: 0 } }),
+        ),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.getPretiumTransactionsByPhone("+254 712")).resolves.toMatchObject({
+      address: "+254 712",
+      totalCount: 0,
+    });
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("/api/v2/pretium/transactions/%2B254%20712");
+  });
+
+  it("loads the recent operator transaction stream", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "",
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({ ok: true, result: { onramps: [], offramps: [], totalCount: 0 } }),
+        ),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.getPretiumRecentTransactions()).resolves.toMatchObject({
+      address: "",
+      totalCount: 0,
+    });
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("/api/v2/pretium/transactions-recent");
+  });
 });

@@ -1,8 +1,8 @@
 /**
- * The superadmin-only endpoints under /api/v2/admin.
+ * The administrative endpoints under /api/v2/admin.
  *
- * clc-core gates the whole group behind `requireSuperAdmin`, so every call here
- * fails with 403 for anyone else. That is the authorization boundary; the admin
+ * clc-core gates the group for ADMIN and SUPERADMIN. Role mutation adds a
+ * SUPERADMIN-only check. That is the authorization boundary; the admin
  * console's session gate only decides what to render.
  *
  * **`/admin/users` pages and searches at the backend.** It answers one cursor page
@@ -26,6 +26,7 @@
  */
 
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import { isUserRole, type UserRole } from "@clc/core/features/users/roles";
 import { getAddress } from "viem";
 
 import type { HttpClient } from "../../client/http-client";
@@ -63,7 +64,7 @@ export type AdminUser = {
   email: string;
   phone: string;
   country: string;
-  role: string;
+  role: UserRole;
   status: string;
   maxPools: number;
   maxTokens: number;
@@ -169,6 +170,8 @@ export type AdminUserParams = {
   q?: string;
   /** One approval state. Omitted means every state. */
   status?: AdminUserStatus;
+  /** Any selected roles. Omitted means every role. */
+  roles?: readonly UserRole[];
 };
 
 export type AdminUserPage = {
@@ -518,6 +521,7 @@ export type AdminClient = {
   listUsers(params: AdminUserParams, signal?: AbortSignal): Promise<AdminUserPage>;
   approveUser(address: string): Promise<AdminUser>;
   rejectUser(address: string): Promise<AdminUser>;
+  updateUserRole(address: string, role: "ADMIN" | "USER"): Promise<AdminUser>;
   updateUserLimits(address: string, limits: AdminUserLimits): Promise<AdminUser>;
   updateUserProfile(address: string, profile: AdminUserProfile): Promise<AdminUser>;
   getAccountStats(address: string, signal?: AbortSignal): Promise<AdminAccountStats>;
@@ -569,7 +573,7 @@ export type AdminClient = {
     params: AdminDeploymentParams,
     signal?: AbortSignal,
   ): Promise<AdminDeploymentPage>;
-  /** Queues a proxy upgrade. The session must be a superadmin or a service token. */
+  /** Queues a proxy upgrade. The session must be an administrator or a service token. */
   upgradeToken(address: string): Promise<AdminTokenUpgradeResult>;
   upgradePool(address: string): Promise<AdminPoolUpgradeResult>;
 };
@@ -588,6 +592,7 @@ function normalizeAdminUser(user: BackendAdminUser): AdminUser {
 
   return {
     ...user,
+    role: isUserRole(user.role) ? user.role : "USER",
     preferredCurrency: normalizeText(user.preferredCurrency),
     bio: normalizeText(user.bio),
     website: normalizeText(user.website),
@@ -743,7 +748,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
    */
   async function mutateUser(
     path: string,
-    body?: AdminUserLimits | AdminUserProfile,
+    body?: AdminUserLimits | AdminUserProfile | { role: "ADMIN" | "USER" },
   ): Promise<AdminUser> {
     const result = await http.request<{ user: BackendAdminUser }>(path, {
       method: "PUT",
@@ -761,6 +766,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
       // would have to decide about, and there is nothing to decide.
       if (params.q) query.set("q", params.q);
       if (params.status) query.set("status", params.status);
+      if (params.roles?.length) query.set("roles", params.roles.join(","));
 
       const result = await http.request<{
         users?: Array<BackendAdminUser> | null;
@@ -788,6 +794,10 @@ export function createAdminClient(http: HttpClient): AdminClient {
 
     rejectUser(address) {
       return mutateUser(`/api/v2/admin/users/${encodeURIComponent(address)}/reject`);
+    },
+
+    updateUserRole(address, role) {
+      return mutateUser(`/api/v2/admin/users/${encodeURIComponent(address)}/role`, { role });
     },
 
     updateUserLimits(address, limits) {

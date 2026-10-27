@@ -1,6 +1,6 @@
 import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const api = vi.hoisted(() => ({
@@ -9,12 +9,13 @@ const api = vi.hoisted(() => ({
   getPretiumLinkByAddress: vi.fn(),
   getPretiumTransactionsByAddress: vi.fn(),
   getPretiumTransactionsByPhone: vi.fn(),
+  navigate: vi.fn(),
 }));
 
 vi.mock("#/lib/api", () => ({ clcApi: { pretium: api } }));
-vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("@tanstack/react-router", () => ({ useNavigate: () => api.navigate }));
 
-import { CashPage } from "./cash-page";
+import { CashPage, parseCashSearch } from "./cash-page";
 
 const ADDRESS = "0x0000000000000000000000000000000000000001";
 
@@ -58,6 +59,23 @@ function renderPage() {
 }
 
 describe("CashPage", () => {
+  it("trims a cash search and drops empty input", () => {
+    expect(parseCashSearch({ q: "  wallet  " })).toEqual({ q: "wallet" });
+    expect(parseCashSearch({ q: "  " })).toEqual({});
+    expect(parseCashSearch({ q: 4 })).toEqual({});
+  });
+
+  it("writes the search draft into canonical route state", async () => {
+    api.getPretiumTransactionsByAddress.mockResolvedValue(page());
+    api.getPretiumTransactionsByPhone.mockResolvedValue(page());
+    renderPage();
+    const input = await screen.findByPlaceholderText("Wallet address");
+    fireEvent.change(input, { target: { value: "  wallet  " } });
+    await waitFor(() =>
+      expect(api.navigate).toHaveBeenCalledWith({ to: "/cash", search: { q: "  wallet  " } }),
+    );
+  });
+
   it.each([1, null])(
     "shows overlapping wallet and phone movements once with id %s, preserving both directions",
     async (id) => {
