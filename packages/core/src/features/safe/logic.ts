@@ -5,10 +5,12 @@ import {
   encodePacked,
   hashTypedData,
   isAddressEqual,
+  pad,
   parseAbi,
   size,
   slice,
   toFunctionSelector,
+  toHex,
   zeroAddress,
   type Hex,
 } from "viem";
@@ -83,12 +85,41 @@ const safeTxTypes = {
 
 const safeAbi = parseAbi(["function multiSend(bytes transactions)"]);
 
-/** The reads that identify a Safe and give its signer set and next nonce. */
+/** The reads that identify a Safe and give its signer set, next nonce and version. */
 export const safeReadAbi = parseAbi([
   "function getOwners() view returns (address[])",
   "function getThreshold() view returns (uint256)",
   "function nonce() view returns (uint256)",
+  "function VERSION() view returns (string)",
 ]);
+
+/**
+ * Whether a Safe's `VERSION()` verifies contract (EIP-1271) owner signatures
+ * with `isValidSignature(bytes32,bytes)`, the only form a Calibur passkey
+ * account implements. Safe 1.5.0 does; 1.3.0 and 1.4.1 call the legacy
+ * `isValidSignature(bytes,bytes)`. clc-core applies the same rule.
+ */
+export function safeSupportsContractSignatures(version: string | undefined): boolean {
+  const [major, minor] = (version ?? "").split(".").map((part) => Number.parseInt(part, 10));
+  if (major === undefined || minor === undefined || Number.isNaN(major) || Number.isNaN(minor))
+    return false;
+  return major > 1 || (major === 1 && minor >= 5);
+}
+
+/**
+ * A contract owner's signature on its own, as clc-core and the Transaction
+ * Service take it: `r` the owner, `s` the offset 65 of the data, `v` 0, then
+ * the length-prefixed data its `isValidSignature` receives.
+ */
+export function encodeSafeContractSignature(owner: `0x${string}`, data: Hex): Hex {
+  return concatHex([
+    pad(owner, { size: 32 }),
+    toHex(65n, { size: 32 }),
+    "0x00",
+    toHex(BigInt(size(data)), { size: 32 }),
+    data,
+  ]);
+}
 
 /** Gas parameters clc-core requires: an inner failure reverts and nothing is refunded to the relayer. */
 const ZERO_GAS = {
