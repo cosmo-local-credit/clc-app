@@ -5,6 +5,7 @@ import {
   SafePendingConflictError,
   SafeProposedError,
 } from "../api/safe-transactions";
+import { isPasskeyCancellation, SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 import { useSafeSheet } from "../state/safe-sheet";
 
 /**
@@ -30,6 +31,11 @@ export function useReportWriteError() {
       );
       return true;
     }
+    if (error instanceof SafePasskeyUnsupportedError) {
+      toast.error(t`Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.`);
+      return false;
+    }
+    if (isPasskeyCancellation(error)) return false;
     if (error instanceof SafePendingConflictError) {
       useSafeSheet.getState().show(error.safe);
       toast.error(error.message);

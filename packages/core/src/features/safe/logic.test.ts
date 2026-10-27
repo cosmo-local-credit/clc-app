@@ -16,7 +16,9 @@ import {
   computeSafeTxHash,
   decodeSafeTransactionCalls,
   describeSafeCall,
+  encodeSafeContractSignature,
   safeProposalAction,
+  safeSupportsContractSignatures,
   encodeMultiSend,
   isSigner,
   safeCallName,
@@ -261,5 +263,22 @@ describe("describeSafeCall", () => {
   });
   it("has nothing to say about other calls", () => {
     expect(describeSafeCall({ to: token, value: "0", data: "0x12345678" })).toBeNull();
+  });
+});
+
+describe("contract signatures", () => {
+  it("are verified the bytes32 way from Safe 1.5.0 on", () => {
+    for (const version of ["1.5.0", "1.5.0+L2", "1.6.0", "2.0.0"])
+      expect(safeSupportsContractSignatures(version), version).toBe(true);
+    for (const version of ["1.4.1", "1.3.0", "1.1.1", "", "custom", "1", undefined])
+      expect(safeSupportsContractSignatures(version), String(version)).toBe(false);
+  });
+
+  it("encode as r = owner, s = 65, v = 0 and the length-prefixed data", () => {
+    const owner = A(0xa1);
+    const data = "0x0102030405" as const;
+    expect(encodeSafeContractSignature(owner, data)).toBe(
+      `0x${word(owner)}${word("0x41")}00${word("0x05")}0102030405`,
+    );
   });
 });

@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   confirm: vi.fn(),
   voucher: vi.fn(),
+  version: vi.fn(),
   connectorId: "private-key",
 }));
 vi.mock("#/lib/api/market", () => ({ marketClient: { getMarketVoucher: mocks.voucher } }));
@@ -23,8 +24,11 @@ vi.mock("#/connectors/calibur-webauthn", () => ({
   CALIBUR_WEBAUTHN_CONNECTOR_ID: "calibur-webauthn",
 }));
 vi.mock("wagmi", () => ({
+  useClient: () => ({ chain: { id: 100 } }),
   useConnection: () => ({ address: ME, connector: { id: mocks.connectorId } }),
 }));
+vi.mock("viem/actions", () => ({ readContract: mocks.version }));
+vi.mock("#/lib/chain", () => ({ CHAIN_ID: 100 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: true, session: { address: ME } }),
 }));
@@ -157,13 +161,35 @@ describe("SafePendingSheet", () => {
     expect(within(sheet).queryByText("Execute it in Safe.")).toBeNull();
   });
 
-  it("leaves a passkey session and undecodable calls to Safe", async () => {
+  it("lets a passkey confirm on a Safe 1.5.0", async () => {
     mocks.connectorId = "calibur-webauthn";
+    mocks.version.mockResolvedValue("1.5.0");
+    const tx = proposal();
+    const sheet = await openWith([tx]);
+    fireEvent.click(await within(sheet).findByRole("button", { name: "Confirm" }));
+    expect(mocks.confirm).toHaveBeenCalledWith(tx, expect.anything());
+    expect(mocks.version).toHaveBeenCalledWith(expect.anything(), {
+      address: SAFE,
+      abi: expect.anything(),
+      functionName: "VERSION",
+    });
+  });
+
+  it("points a passkey on an older Safe to the paper wallet", async () => {
+    mocks.connectorId = "calibur-webauthn";
+    mocks.version.mockResolvedValue("1.4.1");
     const sheet = await openWith([proposal()]);
-    expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();
     expect(
-      within(sheet).getByText("Review this transaction in your multisig wallet."),
+      await within(sheet).findByText(
+        "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.",
+      ),
     ).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();
+  });
+
+  it("does not read the Safe version for a paper wallet", async () => {
+    await openWith([proposal()]);
+    expect(mocks.version).not.toHaveBeenCalled();
   });
 
   it("does not offer to confirm a call it cannot decode", async () => {

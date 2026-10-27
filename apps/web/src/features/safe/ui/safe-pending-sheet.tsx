@@ -8,6 +8,7 @@ import {
   safeAppQueueUrl,
   safeCallName,
   safeProposalAction,
+  safeSupportsContractSignatures,
   type SafeCall,
   type SafeCallDetail,
 } from "@clc/core/features/safe/logic";
@@ -16,8 +17,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode } from "react";
 import { RiCheckLine } from "react-icons/ri";
-import { toast } from "sonner";
-import { useConnection } from "wagmi";
+import { useClient, useConnection } from "wagmi";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
@@ -37,7 +37,10 @@ import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
 import { marketClient } from "#/lib/api/market";
 import { safeClient } from "#/lib/api/safe";
+import { CHAIN_ID } from "#/lib/chain";
 import { SAFE_APP_PREFIX, SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
+import { safeVersionQueryOptions } from "../api/sign-safe-transaction";
+import { useReportWriteError } from "../hooks/use-report-write-error";
 import { useSafeConfirm } from "../hooks/use-safe-confirm";
 import { useSafeSheet } from "../state/safe-sheet";
 
@@ -79,14 +82,23 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
     ? (auth.session?.address as `0x${string}` | undefined)
     : undefined;
   const isSigner = useSafeOwnersSignedBy([safe], viewer).has(safe.toLowerCase());
-  // A passkey cannot produce a signature the Safe accepts, and the connected
-  // wallet must be the session's, or the backend would refuse the signature.
+  // A passkey signs as a contract, which a Safe verifies only from 1.5.0 on.
+  const isPasskey = connector?.id === CALIBUR_WEBAUTHN_CONNECTOR_ID;
+  const chain = useClient({ chainId: CHAIN_ID });
+  const version = useQuery(safeVersionQueryOptions(chain, safe, isSigner && isPasskey));
+  const passkeyCanSign =
+    version.isSuccess && safeSupportsContractSignatures(version.data ?? undefined);
+  // The connected wallet must be the session's, or the backend would refuse
+  // the signature.
   const canSign =
     isSigner &&
-    connector?.id !== CALIBUR_WEBAUTHN_CONNECTOR_ID &&
+    (!isPasskey || passkeyCanSign) &&
     !!address &&
     address.toLowerCase() === viewer?.toLowerCase();
+  const passkeyUnsupported = isSigner && isPasskey && version.isSuccess && !passkeyCanSign;
   const confirm = useSafeConfirm();
+  const report = useReportWriteError();
+  const { t } = useLingui();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-4">
@@ -110,6 +122,7 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
                 transaction={transaction}
                 viewer={viewer}
                 canSign={canSign}
+                passkeyUnsupported={passkeyUnsupported}
                 confirming={confirm.isPending}
                 confirmingThis={
                   confirm.isPending && confirm.variables?.safeTxHash === transaction.safeTxHash
@@ -117,7 +130,7 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
                 onConfirm={() =>
                   confirm.mutate(transaction, {
                     onError: (error) => {
-                      toast.error(error.message);
+                      report(error, t`Failed`);
                     },
                   })
                 }
@@ -270,6 +283,7 @@ function Proposal({
   transaction,
   viewer,
   canSign,
+  passkeyUnsupported,
   confirming,
   confirmingThis,
   onConfirm,
@@ -277,6 +291,7 @@ function Proposal({
   transaction: SafeProposal;
   viewer: `0x${string}` | undefined;
   canSign: boolean;
+  passkeyUnsupported: boolean;
   confirming: boolean;
   confirmingThis: boolean;
   onConfirm: () => void;
@@ -348,6 +363,10 @@ function Proposal({
             <Trans>You confirmed</Trans>
           ) : action === "execute" ? (
             <Trans>Execute it in Safe.</Trans>
+          ) : passkeyUnsupported ? (
+            <Trans>
+              Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.
+            </Trans>
           ) : (
             <Trans>Review this transaction in your multisig wallet.</Trans>
           )}

@@ -11,6 +11,7 @@ import {
   SafePendingConflictError,
   SafeProposedError,
 } from "../api/safe-transactions";
+import { isPasskeyCancellation, SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 
 /** Best-effort proposal only. Settlement and quorum stay in the Safe dashboard. */
 export function useSafeWrite() {
@@ -47,7 +48,14 @@ export function useSafeWrite() {
       // completed mint/transfer and must not trigger the caller's success path.
       throw new SafeProposedError(proposal);
     } catch (error) {
-      if (error instanceof SafeProposedError || error instanceof SafePendingConflictError)
+      // A dismissed or unsupported passkey is reported as itself: the dashboard
+      // fallback cannot help a passkey account.
+      if (
+        error instanceof SafeProposedError ||
+        error instanceof SafePendingConflictError ||
+        error instanceof SafePasskeyUnsupportedError ||
+        isPasskeyCancellation(error)
+      )
         throw error;
       throw new SafeDashboardRequiredError(
         input.safe,
