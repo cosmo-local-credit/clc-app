@@ -1,26 +1,10 @@
-import { voucherQueryOptions } from "@clc/api/features/market/queries";
-import type { SafeProposal } from "@clc/api/features/safe/client";
-import { safePendingQueryOptions } from "@clc/api/features/safe/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import {
-  decodeSafeTransactionCalls,
-  describeSafeCall,
-  safeAppQueueUrl,
-  safeCallName,
-  safeProposalAction,
-  type SafeCall,
-  type SafeCallDetail,
-} from "@clc/core/features/safe/logic";
-import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
+import { safeAppQueueUrl, type SafeCall } from "@clc/core/features/safe/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode } from "react";
 import { RiCheckLine } from "react-icons/ri";
-import { toast } from "sonner";
-import { useConnection } from "wagmi";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { Skeleton } from "#/components/ui/skeleton";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { Spinner } from "#/components/ui/spinner";
 import {
@@ -32,14 +16,16 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
-import { marketClient } from "#/lib/api/market";
-import { safeClient } from "#/lib/api/safe";
-import { SAFE_APP_PREFIX, SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
-import { useSafeConfirm } from "../hooks/use-safe-confirm";
+import { SAFE_APP_PREFIX } from "#/lib/safe-config";
+import { type SafePendingProposal, useSafePending } from "../hooks/use-safe-pending";
 import { useSafeSheet } from "../state/safe-sheet";
+import {
+  CallLabel,
+  callGroup,
+  MintAmount,
+  proposalRecipients,
+  proposalTitle,
+} from "./safe-proposal-labels";
 
 /**
  * Queued proposals of one Safe. A signer with a key the Safe accepts confirms
@@ -71,56 +57,29 @@ export function SafePendingSheet() {
 }
 
 function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => void }) {
-  const query = useQuery(safePendingQueryOptions(safeClient, safe));
-  const transactions = query.data ?? [];
-  const auth = useAuthStatus();
-  const { address, connector } = useConnection();
-  const viewer = auth.isAuthenticated
-    ? (auth.session?.address as `0x${string}` | undefined)
-    : undefined;
-  const isSigner = useSafeOwnersSignedBy([safe], viewer).has(safe.toLowerCase());
-  // A passkey cannot produce a signature the Safe accepts, and the connected
-  // wallet must be the session's, or the backend would refuse the signature.
-  const canSign =
-    isSigner &&
-    connector?.id !== CALIBUR_WEBAUTHN_CONNECTOR_ID &&
-    !!address &&
-    address.toLowerCase() === viewer?.toLowerCase();
-  const confirm = useSafeConfirm();
+  const pending = useSafePending(safe);
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-4">
-        {query.isPending ? (
+        {pending.status === "pending" ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             <Trans>Loading…</Trans>
           </p>
-        ) : query.isError ? (
+        ) : pending.status === "error" ? (
           <p className="py-6 text-sm text-muted-foreground">
             <Trans>Proposals are unavailable here. You can still use your multisig wallet.</Trans>
           </p>
-        ) : transactions.length === 0 ? (
+        ) : pending.proposals.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             <Trans>No queued proposals found.</Trans>
           </p>
         ) : (
           <ul className="divide-y divide-border">
-            {transactions.map((transaction) => (
+            {pending.proposals.map((proposal) => (
               <Proposal
-                key={transaction.safeTxHash}
-                transaction={transaction}
-                viewer={viewer}
-                canSign={canSign}
-                confirming={confirm.isPending}
-                confirmingThis={
-                  confirm.isPending && confirm.variables?.safeTxHash === transaction.safeTxHash
-                }
-                onConfirm={() =>
-                  confirm.mutate(transaction, {
-                    onError: (error) => {
-                      toast.error(error.message);
-                    },
-                  })
-                }
+                key={proposal.transaction.safeTxHash}
+                proposal={proposal}
+                busy={pending.confirmBusy}
               />
             ))}
           </ul>
@@ -146,79 +105,9 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
   );
 }
 
-/** The owner action a call performs, in the words its own control uses. */
-function callGroup(call: SafeCall): string {
-  return safeCallName(call.data) ?? "unknown";
-}
-
-function CallLabel({ group }: { group: string }) {
-  switch (group) {
-    case "mintTo":
-      return <Trans>Create vouchers</Trans>;
-    case "transferOwnership":
-      return <Trans>Transfer ownership</Trans>;
-    case "withdrawLiquidity":
-      return <Trans>Withdraw liquidity</Trans>;
-    case "withdraw":
-      return <Trans>Withdraw fees</Trans>;
-    case "setDefaultFee":
-    case "setFeeAddress":
-      return <Trans>Fee % and recipient</Trans>;
-    case "add":
-      return <Trans>Approve voucher</Trans>;
-    case "setLimitFor":
-    case "setPriceIndexValue":
-    case "setOracle":
-      return <Trans>Manage voucher</Trans>;
-    case "remove":
-      return <Trans>Remove</Trans>;
-    case "unknown":
-      return <Trans>Unknown call</Trans>;
-    default:
-      return <span className="font-mono">{group}</span>;
-  }
-}
-
-/** Calls that share a control's label, so a batch reads as one action each. */
-function labelKey(group: string): string {
-  if (group === "setDefaultFee" || group === "setFeeAddress") return "fee";
-  if (group === "setLimitFor" || group === "setPriceIndexValue" || group === "setOracle") {
-    return "manage";
-  }
-  return group;
-}
-
-function proposalTitle(calls: readonly SafeCall[] | null): ReactNode {
-  if (!calls) return <Trans>Unknown call</Trans>;
-  const byLabel = new Map<string, string>();
-  for (const call of calls) byLabel.set(labelKey(callGroup(call)), callGroup(call));
-  // Approving a voucher already sets its limit and rate.
-  if (byLabel.has("add")) byLabel.delete("manage");
-  return [...byLabel.values()].map((group, index) => (
-    <Fragment key={group}>
-      {index > 0 ? ", " : null}
-      <CallLabel group={group} />
-    </Fragment>
-  ));
-}
-
-/**
- * Who receives what, for the calls where that is the decision: each mint's
- * recipient and amount, and the new owner of a handover (one entry for a
- * pool's batch of wiring contracts).
- */
+/** Each mint's recipient and amount, and the new owner of a handover. */
 function ProposalDetails({ calls }: { calls: readonly SafeCall[] | null }) {
-  const details = (calls ?? [])
-    .map(describeSafeCall)
-    .filter((detail): detail is SafeCallDetail => detail !== null);
-  const mints = details.filter((detail) => detail.kind === "mint");
-  const newOwners = [
-    ...new Set(
-      details.flatMap((detail) =>
-        detail.kind === "ownership" ? [detail.newOwner.toLowerCase()] : [],
-      ),
-    ),
-  ];
+  const { mints, newOwners } = proposalRecipients(calls);
   if (mints.length === 0 && newOwners.length === 0) return null;
   return (
     <dl className="space-y-1.5">
@@ -250,47 +139,9 @@ function DetailRow({ label, children }: { label: ReactNode; children: ReactNode 
   );
 }
 
-function MintAmount({ token, amountRaw }: { token: `0x${string}`; amountRaw: string }) {
-  const { i18n } = useLingui();
-  const voucher = useQuery(voucherQueryOptions(marketClient, token));
-  if (voucher.isPending) return <Skeleton className="ms-auto h-3.5 w-16 rounded-none" />;
-  const decimals = voucher.data?.decimals;
-  if (decimals === undefined || decimals === null)
-    return <span className="text-muted-foreground">—</span>;
-  const locale = i18n.locales?.[0] ?? i18n.locale;
-  return (
-    <span className="font-mono font-semibold">
-      {formatTokenAmountFixed(amountRaw, decimals, 2, locale)}{" "}
-      <span dir="ltr">{voucher.data?.symbol}</span>
-    </span>
-  );
-}
-
-function Proposal({
-  transaction,
-  viewer,
-  canSign,
-  confirming,
-  confirmingThis,
-  onConfirm,
-}: {
-  transaction: SafeProposal;
-  viewer: `0x${string}` | undefined;
-  canSign: boolean;
-  confirming: boolean;
-  confirmingThis: boolean;
-  onConfirm: () => void;
-}) {
+function Proposal({ proposal, busy }: { proposal: SafePendingProposal; busy: boolean }) {
   const { t } = useLingui();
-  const calls = decodeSafeTransactionCalls(transaction, SAFE_MULTISEND_CALL_ONLY);
-  const action = safeProposalAction({
-    confirmations: transaction.confirmations,
-    confirmationsRequired: transaction.confirmationsRequired,
-    calls,
-    viewer,
-    canSign,
-    executing: transaction.executing,
-  });
+  const { transaction, calls, action } = proposal;
   return (
     <li className="space-y-2 py-3">
       <div className="flex items-start justify-between gap-3">
@@ -339,8 +190,8 @@ function Proposal({
           <Trans>Executing…</Trans>
         </p>
       ) : action === "confirm" ? (
-        <Button tap pending={confirmingThis} disabled={confirming} onClick={onConfirm}>
-          {confirmingThis ? <Trans>Confirming</Trans> : <Trans>Confirm</Trans>}
+        <Button tap pending={proposal.confirming} disabled={busy} onClick={proposal.confirm}>
+          {proposal.confirming ? <Trans>Confirming</Trans> : <Trans>Confirm</Trans>}
         </Button>
       ) : (
         <p className="text-xs text-muted-foreground">

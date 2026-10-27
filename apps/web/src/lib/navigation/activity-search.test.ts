@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   canonicalActivityRouteSearch,
   clearActivityRouteSearch,
+  parseActivityDeskFilters,
   parseActivitySearch,
   pickActivitySearch,
 } from "./activity-search";
@@ -51,5 +52,22 @@ describe("activity search", () => {
       activityTypes: ["__invalid__"],
     });
     expect(canonicalActivityRouteSearch({ activityTypes: 3 })).not.toBeNull();
+  });
+
+  it("checksums the desktop voucher filter and drops an unknown range", () => {
+    const lower = "0x5c0d0000000000000000000000000000000e7e21";
+    const search = { activityVoucher: lower, activityRange: "1y" };
+    const checksummed = parseActivityDeskFilters(search).voucher;
+    expect(checksummed).toBe("0x5C0d0000000000000000000000000000000E7E21");
+    expect(parseActivityDeskFilters(search).range).toBeUndefined();
+    expect(canonicalActivityRouteSearch(search)).toEqual({
+      activityQ: undefined,
+      activityTypes: undefined,
+      activityVoucher: checksummed,
+      activityRange: undefined,
+    });
+    expect(
+      canonicalActivityRouteSearch({ activityVoucher: checksummed, activityRange: "30d" }),
+    ).toBeNull();
   });
 });

@@ -1,6 +1,11 @@
 import { useLingui } from "@lingui/react/macro";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
+import { PoolActivityDetailSide } from "#/desktop/pools/detail/pool-activity-detail-desk";
+import { PoolControlSide } from "#/desktop/pools/detail/pool-manage-desk";
+import { PoolProfileSide } from "#/desktop/pools/detail/pool-profile-desk";
+import type { PoolSide } from "#/desktop/pools/detail/pool-side-panel";
+import { PoolVoucherEditorSide } from "#/desktop/pools/detail/pool-voucher-editor-desk";
 import { PoolMain, usePoolDeskModel, usePoolDeskReceive } from "#/desktop/pools/pool-main";
 import { PoolSwapColumn } from "#/desktop/pools/pool-swap-column";
 import { DeskCanvas, DeskDetail } from "#/desktop/ui/page";
@@ -16,6 +21,7 @@ export function PoolDesk({
   const receive = usePoolDeskReceive();
   return (
     <PoolDeskFrame
+      key={poolAddress}
       poolAddress={poolAddress}
       side={
         <PoolSwapColumn
@@ -30,7 +36,9 @@ export function PoolDesk({
 
 /**
  * The pool page as a detail page: the pool in the main column, and whatever
- * the caller docks in the 360px side column (the swap, or its receipt).
+ * the caller docks in the 360px side column (the swap, or its receipt). An
+ * owner tool, a voucher's settings or an activity row's details take the side
+ * column's place until closed.
  */
 export function PoolDeskFrame({
   poolAddress,
@@ -44,6 +52,7 @@ export function PoolDeskFrame({
 }) {
   const { t } = useLingui();
   const model = usePoolDeskModel(poolAddress);
+  const [panel, setPanel] = useState<PoolSide | null>(null);
   const pool = model.pool;
   if (model.poolQuery.isPending || model.poolQuery.isError || !pool) {
     return (
@@ -58,7 +67,50 @@ export function PoolDeskFrame({
       </DeskCanvas>
     );
   }
-  const main = <PoolMain model={{ ...model, pool }} />;
+  const close = () => setPanel(null);
+  const main = <PoolMain model={{ ...model, pool }} side={panel} onOpenSide={setPanel} />;
+  let docked: ReactNode = side;
+  if (panel && !dimmed) {
+    switch (panel.kind) {
+      case "details":
+        docked = <PoolProfileSide pool={pool} privateInfo={model.privateInfo} onClose={close} />;
+        break;
+      case "approve":
+      case "voucher":
+        docked = (
+          <PoolVoucherEditorSide
+            key={panel.kind === "voucher" ? panel.voucher.tokenAddress : "approve"}
+            pool={pool}
+            poolVouchers={model.poolVouchers}
+            voucher={panel.kind === "voucher" ? panel.voucher : null}
+            onClose={close}
+          />
+        );
+        break;
+      case "activity":
+        docked = (
+          <PoolActivityDetailSide
+            key={panel.entry.key}
+            poolAddress={pool.address}
+            entry={panel.entry}
+            onClose={close}
+          />
+        );
+        break;
+      default:
+        docked = (
+          <PoolControlSide
+            key={panel.kind}
+            side={panel}
+            pool={pool}
+            vouchers={model.poolVouchers}
+            canManageOnChain={model.canManageOnChain}
+            viewerAddress={model.auth.session?.address}
+            onClose={close}
+          />
+        );
+    }
+  }
   return (
     <DeskDetail
       main={
@@ -70,7 +122,7 @@ export function PoolDeskFrame({
           main
         )
       }
-      side={side}
+      side={docked}
     />
   );
 }

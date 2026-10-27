@@ -2,8 +2,10 @@ import type { MarketMapKind } from "@clc/core/features/market-map/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { RiFocus3Line } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
+import { useViewportScopedSearch } from "#/components/market-viewport-search-notice";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { Progress, ProgressTrack } from "#/components/ui/progress";
 import { useMarketScreen } from "#/features/home/hooks/use-market-screen";
@@ -12,7 +14,9 @@ import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
 import { MarketAvatar, MarketKindBadge } from "#/desktop/market/market-bits";
+import { MarketMapNotice } from "#/desktop/market/market-notices";
 import { MarketDeskToolbar } from "#/desktop/market/market-toolbar";
+import { DeskChip } from "#/desktop/ui/segment";
 import { MarketPlacePanel } from "#/desktop/market/place-panel";
 
 const SCOPE_KINDS: Record<Exclude<MarketListScope, "all">, readonly MarketMapKind[]> = {
@@ -68,6 +72,9 @@ export function MarketMapDesk({
       ?.scrollIntoView({ block: "nearest" });
   }, [hoveredId, screen.isCardOpen]);
 
+  // The map re-runs its bbox query on every settle, so a text search is always
+  // this area's; the chip says so, as the phone list's viewport notice does.
+  const areaScoped = useViewportScopedSearch(screen.filter.term);
   const pinId = screen.selectedLocationId ?? (screen.isCardOpen ? null : hoveredId);
 
   return (
@@ -94,8 +101,15 @@ export function MarketMapDesk({
           <div className="shrink-0 border-border border-b px-3.5 py-2.5 text-xs text-muted-foreground">
             <Trans>{screen.locations.length} results</Trans>
           </div>
-          {screen.mapNotice ? (
-            <div className="shrink-0 border-border border-b p-3.5">{screen.mapNotice}</div>
+          {screen.mapStatus ? (
+            <div className="shrink-0 border-border border-b p-3.5">
+              <MarketMapNotice
+                status={screen.mapStatus}
+                credit={screen.credit}
+                onClearCredit={screen.clearCredit}
+                onClearFilters={screen.filter.clear}
+              />
+            </div>
           ) : null}
           {/* Stays mounted under the place panel, so Back returns to the same scroll position. */}
           <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto">
@@ -150,6 +164,16 @@ export function MarketMapDesk({
             />
           </Suspense>
         )}
+        {areaScoped ? (
+          <div className="pointer-events-none absolute end-4 top-4">
+            <DeskChip>
+              <span role="status">
+                <RiFocus3Line aria-hidden="true" />
+                <Trans>Searching this area</Trans>
+              </span>
+            </DeskChip>
+          </div>
+        ) : null}
         {screen.isCardOpen ? null : (
           <div className="pointer-events-none absolute end-4 bottom-4">{screen.locationButton}</div>
         )}

@@ -1,23 +1,11 @@
-import { ResourceUsage } from "#/components/resource-usage";
-import { useResourceUsage } from "#/hooks/use-resource-usage";
-import type { Offering } from "@clc/api/features/offerings/client";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { useState } from "react";
-import { toast } from "sonner";
+import { Trans } from "@lingui/react/macro";
 
 import { OfferingsPanel } from "#/components/offerings";
+import { ResourceUsage } from "#/components/resource-usage";
 import { Button } from "#/components/ui/button";
-import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import {
-  useManagedVoucherOfferingsInfinite,
-  useVoucherOfferingsInfinite,
-} from "#/features/home/hooks/use-voucher-offerings";
-import { useDeleteVoucherOffering } from "#/features/wallet/hooks/use-offering-mutations";
-import { isStorageConfigured } from "#/lib/api/storage";
+import { useVoucherOfferingsManager } from "#/features/vouchers/hooks/use-voucher-offerings-manager";
 
-import { OfferingEditorSheet, type OfferingEditor } from "./offering-editor-sheet";
+import { OfferingEditorSheet } from "./offering-editor-sheet";
 
 /**
  * One voucher's offerings. No tile names its voucher: every row on this screen
@@ -57,44 +45,16 @@ export function VoucherOfferingsPanel({
   readOnly?: boolean;
   openVoucherPageAction?: "navigate" | "close";
 }) {
-  const { t } = useLingui();
-  const { isAuthenticated, session } = useAuthStatus();
-  const profileQuery = useAuthProfile();
-
-  // The backend session's address, not the wagmi connector's. The write is
-  // authorized against the cookie, so a connector that has moved on from the
-  // session would show controls whose requests then fail with a 403.
-  // A signer of the Safe that owns the voucher may publish for it too.
-  const ownerInfo = useAssetOwnerInfo(voucherAddress ?? "", ownerAddress);
-  const isOwner =
-    !readOnly &&
-    isAuthenticated &&
-    Boolean(session?.address) &&
-    Boolean(ownerAddress) &&
-    ownerInfo.canManage;
-
-  const usage = useResourceUsage(isOwner, voucherAddress);
-
-  const [editor, setEditor] = useState<OfferingEditor | null>(null);
-  const [deletingID, setDeletingID] = useState<string | null>(null);
-  const remove = useDeleteVoucherOffering(voucherAddress ?? "");
-
-  const visitorQuery = useVoucherOfferingsInfinite(isOwner ? undefined : voucherAddress);
-  const ownerQuery = useManagedVoucherOfferingsInfinite(isOwner ? voucherAddress : undefined);
-  const query = isOwner ? ownerQuery : visitorQuery;
-
-  async function requestDelete(offering: Offering) {
-    if (!window.confirm(t`Remove “${offering.name}” from the marketplace?`)) return;
-    setDeletingID(offering.id);
-    try {
-      await remove.mutateAsync(offering.id);
-      toast.success(t`Offering removed.`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`Couldn't remove the offering.`);
-    } finally {
-      setDeletingID(null);
-    }
-  }
+  const {
+    isOwner,
+    query,
+    editor,
+    setEditor,
+    deletingID,
+    requestDelete,
+    canCreate,
+    defaultImageUrl,
+  } = useVoucherOfferingsManager({ voucherAddress, ownerAddress, readOnly });
 
   return (
     <div
@@ -109,7 +69,7 @@ export function VoucherOfferingsPanel({
             tap
             className="mb-3 w-full"
             onClick={() => setEditor({ kind: "create" })}
-            disabled={!voucherAddress || usage.isError || !usage.data?.offers.canCreate}
+            disabled={!canCreate}
           >
             <Trans>Add offering</Trans>
           </Button>
@@ -147,7 +107,7 @@ export function VoucherOfferingsPanel({
           editor={editor}
           voucherAddress={voucherAddress}
           priceCurrency={voucherUoa ?? voucherSymbol}
-          defaultImageUrl={isStorageConfigured ? (profileQuery.data?.avatarUrl ?? null) : null}
+          defaultImageUrl={defaultImageUrl}
           onClose={() => setEditor(null)}
         />
       ) : null}

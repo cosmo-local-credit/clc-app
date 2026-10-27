@@ -1,99 +1,75 @@
 import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
-import {
-  chainHasPretiumRamp,
-  offrampTokenSymbol,
-  pretiumOfframpRecipient,
-} from "@clc/core/features/wallet/pretium";
-import {
-  formatTokenAmount,
-  formatTokenAmountFixed,
-  parseTokenAmount,
-} from "@clc/core/features/wallet/logic";
+import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { parsePhoneNumber } from "react-phone-number-input";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useMemo, useRef, type ReactNode } from "react";
 import { RiArrowRightSLine, RiErrorWarningLine, RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
-import { getAddress, isAddress } from "viem";
-import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { Field } from "#/components/ui/field";
+import { Input } from "#/components/ui/input";
+import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
 import { Spinner } from "#/components/ui/spinner";
 import { EllipsizedAddress, TokenLogo, WalletAmountInput } from "#/components/wallet";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskCanvas, DeskRow, DeskRowList, DeskSection, DeskTitle } from "#/desktop/ui/page";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
-  accountWalletQueryKeys,
-  useAccountTokensInfinite,
-} from "#/features/wallet/hooks/use-account-balances";
-import {
-  pretiumQueryKeys,
-  useCreatePretiumLink,
-  usePretiumLinkByAddress,
-  usePretiumRates,
-  usePretiumTransactionsByAddress,
-  useTriggerPretiumOnramp,
-} from "#/features/wallet/hooks/use-pretium";
-import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
+  useAddStables,
+  useCashAccess,
+  usePretiumWithdraw,
+} from "#/features/wallet/hooks/use-pretium-cash";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
-import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
-import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
-import { cn } from "#/lib/utils";
+import {
+  cashTimestamp,
+  formatHistoryKes,
+  isCompletePretiumStatus,
+  ONRAMP_ASSET_LABEL,
+  shortenIdentifier,
+} from "#/features/wallet/logic/pretium-cash";
+import { CHAIN_INFO } from "#/lib/chain";
 
-const ONRAMP_ASSET = "USDT" as const;
-const ONRAMP_ASSET_LABEL = "USD₮";
-const COMPLETE_PRETIUM_STATUSES = new Set(["COMPLETE", "COMPLETED", "SUCCESS", "SETTLED"]);
-const SAFARICOM_REGEX = /^(?:0|\+?254)(?:11[0-5]|7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89]))[0-9]{6}$/;
+type CashPanel = "add" | "withdraw";
 
-function isSafaricomNumber(phone: string): boolean {
-  return SAFARICOM_REGEX.test(phone.replace(/\s+/g, ""));
+function historyKey(transaction: PretiumCashTransaction): string {
+  return `${transaction.kind}-${transaction.reference}`;
 }
 
-function sanitizeKes(raw: string): string {
-  return (raw.split(".")[0] ?? "").replace(/\D/g, "").replace(/^0+(?=\d)/, "");
-}
-
+/** The two MPESA ramps and the Pretium history; forms and receipts open in the inspector. */
 export function TopUpDesk() {
-  const { t } = useLingui();
-  const { address } = useConnection();
-  const profileQuery = useAuthProfile();
-  const cashAddress = toChecksumAddress(address);
-  const transactionsQuery = usePretiumTransactionsByAddress(cashAddress);
-  const ratesQuery = usePretiumRates(true);
-  const cashTransactions = useMemo(
-    () =>
-      [...(transactionsQuery.data?.onramps ?? []), ...(transactionsQuery.data?.offramps ?? [])]
-        .filter((transaction) => transaction.reference)
-        .sort((left, right) => timestamp(right.createdAt) - timestamp(left.createdAt)),
-    [transactionsQuery.data],
-  );
-  const phone = profileQuery.data?.phone.trim() ?? "";
-  const parsedPhone = phone ? parsePhoneNumber(phone, "KE") : undefined;
-  const normalizedCashPhone = parsedPhone?.country === "KE" ? parsedPhone.number : phone;
-  const hasPhone = phone.length > 0;
-  const hasKenyanPhone = parsedPhone?.country === "KE";
-  const disabledReason = !chainHasPretiumRamp(CHAIN_ID)
-    ? t`Cash services aren't available on ${CHAIN_INFO.name}.`
-    : !cashAddress
-      ? t`Connect your wallet to use MPESA.`
-      : profileQuery.isPending
-        ? t`Loading your profile…`
-        : profileQuery.isError
-          ? t`We couldn't load your profile phone number.`
-          : !hasPhone
-            ? t`Add a phone number to your profile to use MPESA.`
-            : !hasKenyanPhone
-              ? t`MPESA cash services need a Kenyan phone number.`
-              : null;
+  const access = useCashAccess();
+  const { cashAddress, cashTransactions, transactionsQuery, disabledReason } = access;
+  const search = useSearch({ from: "/wallet/top-up" });
+  const navigate = useNavigate({ from: "/wallet/top-up" });
+  const panel: CashPanel | null = search.tx ? null : (search.sheet ?? null);
+  const selectedTx = search.tx
+    ? (cashTransactions.find((transaction) => historyKey(transaction) === search.tx) ?? null)
+    : null;
+  const addStables = useAddStables({ access, ratesEnabled: panel === "add" });
+  // Opening the first inspector pushes history; switching replaces it; closing
+  // pops what this page pushed, or drops the params on a deep link.
+  const pushed = useRef(false);
+  const inspectorOpen = panel !== null || search.tx !== undefined;
 
-  const [panel, setPanel] = useState<Panel | null>({ kind: "add" });
-  const selectedKey = panel?.kind === "tx" ? historyKey(panel.transaction) : null;
+  function open(next: { sheet?: CashPanel; tx?: string }) {
+    if (next.sheet === search.sheet && next.tx === search.tx) return;
+    const replace = inspectorOpen;
+    if (!replace) pushed.current = true;
+    void navigate({ search: next, replace });
+  }
+
+  function close() {
+    if (pushed.current) {
+      pushed.current = false;
+      window.history.back();
+      return;
+    }
+    void navigate({ search: {}, replace: true });
+  }
 
   return (
     <div className="flex h-full min-h-0">
@@ -107,8 +83,8 @@ export function TopUpDesk() {
               <DeskSection title={<Trans>Add stables</Trans>}>
                 <DeskRowList>
                   <RampRow
-                    selected={panel?.kind === "add"}
-                    onOpen={() => setPanel({ kind: "add" })}
+                    selected={panel === "add"}
+                    onOpen={() => open({ sheet: "add" })}
                     subtitle={<Trans>Buy USD₮ with KES.</Trans>}
                   />
                 </DeskRowList>
@@ -116,8 +92,8 @@ export function TopUpDesk() {
               <DeskSection title={<Trans>Withdraw</Trans>}>
                 <DeskRowList>
                   <RampRow
-                    selected={panel?.kind === "withdraw"}
-                    onOpen={() => setPanel({ kind: "withdraw" })}
+                    selected={panel === "withdraw"}
+                    onOpen={() => open({ sheet: "withdraw" })}
                     subtitle="USDm · USDT · USDC"
                   />
                 </DeskRowList>
@@ -135,50 +111,48 @@ export function TopUpDesk() {
               error={!!cashAddress && transactionsQuery.isError}
               fetching={transactionsQuery.isFetching}
               onRetry={() => void transactionsQuery.refetch()}
-              selectedKey={selectedKey}
-              onSelect={(transaction) => setPanel({ kind: "tx", transaction })}
+              selectedKey={search.tx ?? null}
+              onSelect={(transaction) => open({ tx: historyKey(transaction) })}
             />
           </DeskCanvas>
         }
         side={
-          panel ? (
+          inspectorOpen ? (
             <DeskInspector
               title={
-                panel.kind === "add" ? (
+                panel === "add" ? (
                   <Trans>Add stables</Trans>
-                ) : panel.kind === "withdraw" ? (
+                ) : panel === "withdraw" ? (
                   <Trans>Withdraw</Trans>
-                ) : panel.transaction.kind === "onramp" ? (
-                  <Trans>Onramp details</Trans>
-                ) : (
+                ) : selectedTx?.kind === "offramp" ? (
                   <Trans>Offramp details</Trans>
+                ) : (
+                  <Trans>Onramp details</Trans>
                 )
               }
-              onClose={() => setPanel(null)}
+              onClose={close}
             >
-              {panel.kind === "add" ? (
-                <AddStablesForm
-                  address={cashAddress}
-                  phone={normalizedCashPhone}
-                  profilePending={profileQuery.isPending}
-                  disabledReason={disabledReason}
-                  entryDisabled={disabledReason !== null}
-                  sell={ratesQuery.data?.sell}
-                  ratesPending={ratesQuery.isPending}
-                  ratesSuccess={ratesQuery.isSuccess}
-                />
-              ) : panel.kind === "withdraw" ? (
+              {panel === "add" ? (
+                <AddStablesForm form={addStables} access={access} />
+              ) : panel === "withdraw" ? (
                 <WithdrawForm
-                  key={`${cashAddress ?? ""}:${normalizedCashPhone}`}
+                  key={`${cashAddress ?? ""}:${access.phone}`}
                   address={cashAddress}
-                  phone={normalizedCashPhone}
+                  phone={access.phone}
                   disabledReason={disabledReason}
-                  entryDisabled={disabledReason !== null}
-                  buy={ratesQuery.data?.buy}
-                  ratesSuccess={ratesQuery.isSuccess}
+                  entryDisabled={access.entryDisabled}
                 />
+              ) : selectedTx ? (
+                <CashDetail transaction={selectedTx} />
+              ) : transactionsQuery.isPending ? (
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Spinner />
+                  <Trans>Loading cash activity…</Trans>
+                </p>
               ) : (
-                <CashDetail transaction={panel.transaction} />
+                <p role="alert" className="text-sm text-muted-foreground">
+                  <Trans>Couldn't load Pretium history.</Trans>
+                </p>
               )}
             </DeskInspector>
           ) : null
@@ -186,15 +160,6 @@ export function TopUpDesk() {
       />
     </div>
   );
-}
-
-type Panel =
-  | { kind: "add" }
-  | { kind: "withdraw" }
-  | { kind: "tx"; transaction: PretiumCashTransaction };
-
-function historyKey(transaction: PretiumCashTransaction): string {
-  return `${transaction.kind}-${transaction.reference}`;
 }
 
 function RampRow({
@@ -236,96 +201,77 @@ function RampRow({
   );
 }
 
+function Notice({ tone, children }: { tone: "muted" | "warning" | "error"; children: ReactNode }) {
+  return (
+    <p
+      role={tone === "muted" ? undefined : "alert"}
+      className={
+        tone === "error"
+          ? "flex items-start gap-2 text-xs text-destructive"
+          : tone === "warning"
+            ? "flex items-start gap-2 text-xs text-amber-700 dark:text-amber-500"
+            : "flex items-start gap-2 text-xs text-muted-foreground"
+      }
+    >
+      <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      {children}
+    </p>
+  );
+}
+
 function AddStablesForm({
-  address,
-  phone,
-  profilePending,
-  disabledReason,
-  entryDisabled,
-  sell,
-  ratesPending,
-  ratesSuccess,
+  form,
+  access,
 }: {
-  address: `0x${string}` | undefined;
-  phone: string;
-  profilePending: boolean;
-  disabledReason: string | null;
-  entryDisabled: boolean;
-  sell: string | undefined;
-  ratesPending: boolean;
-  ratesSuccess: boolean;
+  form: ReturnType<typeof useAddStables>;
+  access: ReturnType<typeof useCashAccess>;
 }) {
   const { i18n, t } = useLingui();
-  const [amount, setAmount] = useState("");
-  const triggerOnramp = useTriggerPretiumOnramp();
-  const mutationError = triggerOnramp.error instanceof Error ? triggerOnramp.error.message : null;
-  const showSafaricomWarning = !disabledReason && phone.length > 0 && !isSafaricomNumber(phone);
-  const amountValue = Number(amount);
-  const hasValidAmount =
-    amount.trim() !== "" &&
-    Number.isFinite(amountValue) &&
-    amountValue >= 100 &&
-    amountValue <= 250_000;
-  const canContinue = !!address && !entryDisabled && hasValidAmount;
-  const sellRate = Number(sell);
-  const approxUsdt =
-    ratesSuccess && Number.isFinite(sellRate) && sellRate > 0 && hasValidAmount
-      ? amountValue / sellRate
-      : null;
-
-  const onContinue = async () => {
-    if (!address || !canContinue) return;
-    try {
-      const parsed = parsePhoneNumber(phone, "KE");
-      const shortcode = parsed ? `0${parsed.nationalNumber}` : phone;
-      const result = await triggerOnramp.mutateAsync({
-        address,
-        phoneNumber: shortcode,
-        asset: ONRAMP_ASSET,
-        amount: amountValue,
-      });
-      toast.success(t`MPESA prompt sent`, {
-        description: result.message || t`Complete the prompt on your phone.`,
-      });
-      setAmount("");
-    } catch {
-      toast.error(t`Couldn't start MPESA top up`);
-    }
+  const { phone, profilePending, disabledReason, entryDisabled } = access;
+  const submit = async () => {
+    if (await form.submit()) form.setAmount("");
   };
 
   return (
-    <>
-      <div className="grid gap-1.5">
-        <label htmlFor="topup-amount" className="text-sm font-medium">
-          <Trans>Amount</Trans> <span className="font-mono text-xs text-muted-foreground">KES</span>
-        </label>
+    <form
+      className="grid gap-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
+      <Field label={`${t`Amount`} (KES)`} htmlFor="topup-amount">
         <WalletAmountInput
           id="topup-amount"
           label={t`Amount`}
-          value={amount}
+          value={form.amount}
           placeholder="100"
           inputMode="decimal"
           disabled={entryDisabled}
-          aria-invalid={amount !== "" && !hasValidAmount}
-          onValueChange={(value) => setAmount(value.replace(/[^0-9.]/g, ""))}
+          aria-invalid={form.amount !== "" && !form.hasValidAmount}
+          onValueChange={form.setAmount}
         />
-      </div>
+      </Field>
+      <Field label={t`MPESA phone`} htmlFor="topup-phone">
+        <Input
+          id="topup-phone"
+          readOnly
+          dir="ltr"
+          className="font-mono"
+          value={profilePending ? "…" : phone}
+          placeholder="—"
+        />
+      </Field>
       <DeskKV
         labelWidth="120px"
         rows={[
           [
-            <Trans key="label">MPESA phone</Trans>,
-            <span key="value" dir="ltr">
-              {profilePending ? "…" : phone || "—"}
-            </span>,
-          ],
-          [
             <Trans key="label">You'll receive</Trans>,
             <span key="value" dir="ltr">
-              {ratesPending ? (
+              {form.ratesPending ? (
                 <span className="text-muted-foreground">…</span>
-              ) : approxUsdt !== null ? (
-                `≈ ${approxUsdt.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
+              ) : form.approxUsdt !== null ? (
+                `≈ ${form.approxUsdt.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
                   maximumFractionDigits: 2,
                 })} ${ONRAMP_ASSET_LABEL}`
               ) : (
@@ -335,36 +281,17 @@ function AddStablesForm({
           ],
         ]}
       />
-      {showSafaricomWarning ? (
-        <p
-          className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-500"
-          role="alert"
-        >
-          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      {form.showSafaricomWarning ? (
+        <Notice tone="warning">
           <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
-        </p>
+        </Notice>
       ) : null}
-      {disabledReason ? (
-        <p className="flex items-start gap-2 text-xs text-muted-foreground">
-          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          {disabledReason}
-        </p>
-      ) : null}
-      {mutationError ? (
-        <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
-          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          {mutationError}
-        </p>
-      ) : null}
-      <Button
-        type="button"
-        disabled={!canContinue}
-        pending={triggerOnramp.isPending}
-        onClick={() => void onContinue()}
-      >
-        {triggerOnramp.isPending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
+      {disabledReason ? <Notice tone="muted">{disabledReason}</Notice> : null}
+      {form.mutationError ? <Notice tone="error">{form.mutationError}</Notice> : null}
+      <Button type="submit" disabled={!form.canContinue} pending={form.pending}>
+        {form.pending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
       </Button>
-    </>
+    </form>
   );
 }
 
@@ -373,208 +300,111 @@ function WithdrawForm({
   phone,
   disabledReason,
   entryDisabled,
-  buy,
-  ratesSuccess,
 }: {
   address: `0x${string}` | undefined;
   phone: string;
   disabledReason: string | null;
   entryDisabled: boolean;
-  buy: string | undefined;
-  ratesSuccess: boolean;
 }) {
   const { i18n, t } = useLingui();
-  const queryClient = useQueryClient();
-  const offrampRecipient = pretiumOfframpRecipient(CHAIN_ID);
-  const buyRate = Number(buy);
-  const hasRate = ratesSuccess && Number.isFinite(buyRate) && buyRate > 0;
-  const linkEnabled = !entryDisabled;
-  const linkQuery = usePretiumLinkByAddress(address, linkEnabled);
-  const createLink = useCreatePretiumLink();
-  const correctlyLinked = linkQuery.data?.linked === true && linkQuery.data.phoneNumber === phone;
-  const tokensQuery = useAccountTokensInfinite(address, { perPage: 100 });
-  const eligible = useMemo(() => {
-    const all = tokensQuery.data?.pages.flatMap((page) => page.tokens) ?? [];
-    return all.flatMap((token) => {
-      const symbol = offrampTokenSymbol(CHAIN_ID, token.tokenAddress);
-      if (!symbol || BigInt(token.balance) <= 0n) return [];
-      return [{ token, symbol }];
-    });
-  }, [tokensQuery.data]);
-  const delegation = useCaliburDelegation(address);
-  const sendTransfer = useSendVoucherTransfer();
-  const sendError = sendTransfer.error instanceof Error ? sendTransfer.error.message : null;
-  const [selectedAddress, setSelectedAddress] = useState<string | undefined>(undefined);
-  const [amount, setAmount] = useState("");
-  const selected =
-    eligible.find((item) => item.token.tokenAddress === selectedAddress) ?? eligible[0];
-  const decimals = selected?.token.tokenDecimals ?? 2;
-  const balanceRaw = selected?.token.balance ?? "0";
-  const balanceUsd = selected ? Number(formatTokenAmountFixed(balanceRaw, decimals, 6)) : 0;
-  const maxKes = hasRate ? Math.floor(balanceUsd * buyRate) : 0;
-  const kesValue = Number(amount);
-  const hasValidAmount =
-    amount.trim() !== "" &&
-    Number.isFinite(kesValue) &&
-    kesValue > 0 &&
-    hasRate &&
-    kesValue <= maxKes + 1e-9;
-  const tokenToSend = hasValidAmount ? kesValue / buyRate : 0;
-  const linkReady = createLink.isSuccess || (!linkQuery.isFetching && correctlyLinked);
-  const linkPreparing =
-    linkQuery.isPending || (linkQuery.isFetching && !createLink.isSuccess) || createLink.isPending;
-  const linkFailed = linkQuery.isError || createLink.isError;
-  const canWithdraw =
-    linkReady && !!selected && hasValidAmount && delegation !== "checking" && !!address;
-
-  useEffect(() => {
-    if (!linkEnabled || !address || !phone) return;
-    if (!linkQuery.isSuccess || linkQuery.isFetching || correctlyLinked) return;
-    if (createLink.isIdle) createLink.mutate({ publicKey: address, phoneNumber: phone });
-  }, [
-    linkEnabled,
-    address,
-    phone,
-    linkQuery.isSuccess,
-    linkQuery.isFetching,
-    correctlyLinked,
-    createLink.isIdle,
-    createLink,
-  ]);
-
-  const onWithdraw = async () => {
-    if (!address || !selected || !hasValidAmount || !offrampRecipient) return;
-    if (!isAddress(selected.token.tokenAddress)) return;
-    const tokenAmount = (kesValue / buyRate).toFixed(Math.min(decimals, 6));
-    let amountRaw = parseTokenAmount(tokenAmount, decimals);
-    if (BigInt(amountRaw) > BigInt(balanceRaw)) amountRaw = balanceRaw;
-    try {
-      await sendTransfer.mutateAsync({
-        senderAddress: address,
-        tokenAddress: getAddress(selected.token.tokenAddress),
-        recipientAddress: offrampRecipient,
-        amountRaw,
-        includeAuthorization: delegation === "not-delegated",
-      });
-      toast.success(t`Withdrawal submitted`, {
-        description: t`Your MPESA payout will arrive shortly.`,
-      });
-      void queryClient.invalidateQueries({
-        queryKey: pretiumQueryKeys.transactionsByAddress(address),
-      });
-      void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-      setAmount("");
-    } catch {
-      toast.error(t`Couldn't submit withdrawal`);
-    }
+  const form = usePretiumWithdraw({ open: true, address, phone, entryDisabled });
+  const { eligible, selected } = form;
+  const submit = async () => {
+    if (await form.submit()) form.setAmount("");
   };
 
   return (
-    <>
+    <form
+      className="grid gap-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
       {entryDisabled ? (
-        <p className="flex items-start gap-2 text-xs text-muted-foreground">
-          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          {disabledReason}
-        </p>
-      ) : linkFailed ? (
-        <div className="space-y-2">
-          <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
-            <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        <Notice tone="muted">{disabledReason}</Notice>
+      ) : form.linkFailed ? (
+        <div className="grid justify-items-start gap-2">
+          <Notice tone="error">
             <Trans>Couldn't verify your MPESA link.</Trans>
-          </p>
+          </Notice>
           <Button
             type="button"
             variant="outline"
-            pending={linkQuery.isFetching}
-            onClick={() => {
-              if (linkQuery.isError) void linkQuery.refetch();
-              else createLink.reset();
-            }}
+            pending={form.linkRetrying}
+            onClick={form.retryLink}
           >
             <Trans>Try again</Trans>
           </Button>
         </div>
-      ) : !linkReady || linkPreparing ? (
+      ) : !form.linkReady || form.linkPreparing ? (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Spinner />
           <Trans>Preparing your withdrawal…</Trans>
         </p>
-      ) : tokensQuery.isPending ? (
+      ) : form.tokensPending ? (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Spinner />
           <Trans>Loading balances…</Trans>
         </p>
       ) : eligible.length === 0 ? (
-        <p className="flex items-start gap-2 text-xs text-muted-foreground">
-          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        <Notice tone="muted">
           <Trans>No USDm, USDT, or USDC balance available to withdraw.</Trans>
-        </p>
+        </Notice>
       ) : (
         <>
-          <div className="border border-border bg-card">
-            {eligible.map(({ token, symbol }, index, list) => {
-              const active = token.tokenAddress === selected?.token.tokenAddress;
-              const displayToken = {
-                ...accountTokenToWalletToken(token),
-                symbol,
-                kind: "stable" as const,
-              };
-              return (
-                <button
-                  key={token.tokenAddress}
-                  type="button"
-                  onClick={() => {
-                    setSelectedAddress(token.tokenAddress);
-                    setAmount("");
-                  }}
-                  className={cn(
-                    "flex w-full items-center gap-3 px-3 py-2.5 text-start",
-                    index < list.length - 1 && "border-border border-b",
-                    active && "bg-primary/[0.07] shadow-[inset_2px_0_0_var(--color-primary)]",
-                  )}
-                >
-                  <TokenLogo token={displayToken} size={20} />
-                  <span className="text-sm font-semibold">{symbol}</span>
-                  <span className="ms-auto font-heading font-semibold tracking-tight" dir="ltr">
-                    {formatTokenAmount(token.balance, token.tokenDecimals)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <div>
-            <div className="mb-1.5 flex items-center justify-between gap-3">
+          <Field label={t`Token`} htmlFor="withdraw-token">
+            <SelectRoot
+              value={selected?.token.tokenAddress ?? null}
+              onValueChange={(value) => {
+                if (typeof value === "string") form.selectToken(value);
+              }}
+            >
+              <SelectTrigger id="withdraw-token" className="w-full border-foreground/25">
+                {selected ? <StableOption token={selected.token} symbol={selected.symbol} /> : null}
+              </SelectTrigger>
+              <SelectContent>
+                {eligible.map(({ token, symbol }) => (
+                  <SelectItem key={token.tokenAddress} value={token.tokenAddress}>
+                    <StableOption token={token} symbol={symbol} />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </SelectRoot>
+          </Field>
+          <div className="grid gap-1.5">
+            <div className="flex items-center justify-between gap-3">
               <label htmlFor="withdraw-amount" className="text-sm font-medium">
-                <Trans>Amount</Trans>{" "}
-                <span className="font-mono text-xs text-muted-foreground">KES</span>
+                {`${t`Amount`} (KES)`}
               </label>
-              <Button
-                type="button"
-                variant="link"
-                disabled={!hasRate || maxKes <= 0}
-                onClick={() => setAmount(maxKes.toString())}
-              >
+              <Button type="button" variant="link" disabled={!form.canSetMax} onClick={form.setMax}>
                 <Trans>Max</Trans>
               </Button>
             </div>
             <WalletAmountInput
               id="withdraw-amount"
               label={t`Amount`}
-              value={amount}
+              value={form.amount}
               placeholder="0"
               inputMode="numeric"
-              aria-invalid={amount !== "" && !hasValidAmount}
-              onValueChange={(value) => setAmount(sanitizeKes(value))}
+              aria-invalid={form.amount !== "" && !form.hasValidAmount}
+              onValueChange={form.setAmount}
             />
           </div>
           <DeskKV
             labelWidth="120px"
             rows={[
               [
+                <Trans key="label">MPESA phone</Trans>,
+                <span key="value" dir="ltr">
+                  {phone || "—"}
+                </span>,
+              ],
+              [
                 <Trans key="label">You'll send</Trans>,
                 <span key="value" dir="ltr">
-                  {selected && hasValidAmount
-                    ? `≈ ${tokenToSend.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
+                  {selected && form.hasValidAmount
+                    ? `≈ ${form.tokenToSend.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
                         maximumFractionDigits: 4,
                       })} ${selected.symbol}`
                     : "—"}
@@ -584,21 +414,32 @@ function WithdrawForm({
           />
         </>
       )}
-      {sendError ? (
-        <p className="flex items-start gap-2 text-xs text-destructive" role="alert">
-          <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          {sendError}
-        </p>
-      ) : null}
-      <Button
-        type="button"
-        disabled={!canWithdraw}
-        pending={sendTransfer.isPending}
-        onClick={() => void onWithdraw()}
-      >
-        {sendTransfer.isPending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}
+      {form.sendError ? <Notice tone="error">{form.sendError}</Notice> : null}
+      <Button type="submit" disabled={!form.canWithdraw} pending={form.pending}>
+        {form.pending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}
       </Button>
-    </>
+    </form>
+  );
+}
+
+function StableOption({
+  token,
+  symbol,
+}: {
+  token: ReturnType<typeof usePretiumWithdraw>["eligible"][number]["token"];
+  symbol: string;
+}) {
+  return (
+    <span className="flex min-w-0 flex-1 items-center gap-2">
+      <TokenLogo
+        token={{ ...accountTokenToWalletToken(token), symbol, kind: "stable" as const }}
+        size={20}
+      />
+      <span className="min-w-0 truncate text-sm font-semibold">{symbol}</span>
+      <span className="ms-auto ps-3 font-heading font-semibold tracking-tight" dir="ltr">
+        {formatTokenAmount(token.balance, token.tokenDecimals)}
+      </span>
+    </span>
   );
 }
 
@@ -641,10 +482,10 @@ function CashHistory({
         id: "date",
         header: t`Date`,
         width: "minmax(0,1fr)",
-        sortValue: (row) => timestamp(row.createdAt),
+        sortValue: (row) => cashTimestamp(row.createdAt),
         cell: (row) => (
           <time className="font-mono text-xs" dateTime={row.createdAt} dir="ltr">
-            {formatCashDate(row.createdAt, locale)}
+            {formatCashDateTime(row.createdAt, locale)}
           </time>
         ),
       },
@@ -762,7 +603,7 @@ function CashDetail({ transaction }: { transaction: PretiumCashTransaction }) {
           [
             <Trans key="label">Date</Trans>,
             <time key="value" dateTime={transaction.createdAt} dir="ltr">
-              {formatCashDate(transaction.createdAt, locale)}
+              {formatCashDateTime(transaction.createdAt, locale)}
             </time>,
           ],
           [
@@ -806,37 +647,15 @@ function CashDetail({ transaction }: { transaction: PretiumCashTransaction }) {
   );
 }
 
-function toChecksumAddress(address: `0x${string}` | undefined): `0x${string}` | undefined {
-  if (!address) return undefined;
-  try {
-    return getAddress(address);
-  } catch {
-    return undefined;
-  }
-}
-
-function isCompletePretiumStatus(status: string): boolean {
-  return COMPLETE_PRETIUM_STATUSES.has(status.trim().toUpperCase());
-}
-
-function shortenIdentifier(value: string): string {
-  if (value.length <= 14) return value;
-  return `${value.slice(0, 8)}…${value.slice(-6)}`;
-}
-
-function timestamp(date: string): number {
-  const value = Date.parse(date);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function formatHistoryKes(transaction: PretiumCashTransaction): string {
-  if (!transaction.amountKes) return "—";
-  return transaction.amountKes.split(".")[0] || transaction.amountKes;
-}
-
-function formatCashDate(date: string, locale: string): string {
+/** Day and time, as the mock's history rows read: 25 Oct 18:12. */
+function formatCashDateTime(date: string, locale: string): string {
   if (!date) return "—";
   const value = new Date(date);
   if (Number.isNaN(value.getTime())) return "—";
-  return value.toLocaleDateString(locale, { month: "short", day: "numeric" });
+  return value.toLocaleString(locale, {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }

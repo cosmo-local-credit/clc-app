@@ -10,12 +10,13 @@ import {
 } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { RiGroupLine } from "react-icons/ri";
 import { getAddress, isAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
 import {
   DialogBackdrop,
   DialogContent,
@@ -51,9 +52,8 @@ import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token
 import { recentSendRecipients } from "#/features/wallet/logic/recent-send-recipients";
 import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
-import { AddressBookSheet } from "#/features/wallet/ui/address-book-sheet";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
-import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import { GUEST_STORAGE_OWNER, type StorageOwner } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
 
 function sanitizeAmount(raw: string): string {
@@ -139,7 +139,7 @@ export function SendDesk({
       : null,
   );
   const [resolvedRecipient, setResolvedRecipient] = useState<ResolvedRecipientAddress | null>(null);
-  const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const locale = i18n.locales?.[0] ?? i18n.locale;
   const owner = useStorageOwner();
   const upsertRecipient = useUpsertAddressBookRecipient(owner);
   const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
@@ -358,7 +358,9 @@ export function SendDesk({
                   retrying={transfersQuery.isFetching}
                   onRetry={() => void transfersQuery.refetch()}
                   onSelect={handleSelectRecipient}
-                  onAddressBook={() => setAddressBookOpen(true)}
+                  addressBook={
+                    <AddressBookPopover owner={owner} onSelect={handleSelectRecipient} />
+                  }
                 />
               ) : null}
             </div>
@@ -366,34 +368,33 @@ export function SendDesk({
               <label htmlFor="send-amount" className="text-sm font-medium">
                 <Trans>Amount</Trans>
               </label>
-              <div
-                className={cn(
-                  "flex h-16 min-w-0 items-center gap-3 border bg-card ps-1.5 pe-3.5",
-                  exceedsMax
-                    ? "border-destructive"
-                    : "border-foreground/25 focus-within:border-foreground",
-                  "[&_input]:h-full [&_input]:border-0 [&_input]:text-start [&_input]:text-xl [&_input]:ring-0 [&_input]:aria-invalid:ring-0",
-                )}
-              >
-                <div className="min-w-0 flex-1">
-                  <WalletAmountInput
-                    id="send-amount"
-                    label={t`Amount`}
-                    value={amount}
-                    autoFocus={step === "amount"}
-                    aria-invalid={exceedsMax}
-                    onValueChange={(value) => {
-                      setMaxAmountRaw(null);
-                      setAmount(sanitizeAmount(value));
-                    }}
+              {/* The 64px amount box: WalletAmountInput keeps its surface, border
+                  and amount type; the token picker sits inside its end edge. */}
+              <div className="relative min-w-0">
+                <WalletAmountInput
+                  id="send-amount"
+                  label={t`Amount`}
+                  value={amount}
+                  autoFocus={step === "amount"}
+                  aria-invalid={exceedsMax}
+                  style={{
+                    height: "4rem",
+                    paddingInlineEnd: "9rem",
+                    paddingInlineStart: "0.875rem",
+                  }}
+                  onValueChange={(value) => {
+                    setMaxAmountRaw(null);
+                    setAmount(sanitizeAmount(value));
+                  }}
+                />
+                <div className="absolute inset-y-0 end-3 flex items-center">
+                  <TokenPicker
+                    tokens={tokens}
+                    selected={selectedToken}
+                    loading={loadingTokens}
+                    onSelect={selectToken}
                   />
                 </div>
-                <TokenPicker
-                  tokens={tokens}
-                  selected={selectedToken}
-                  loading={loadingTokens}
-                  onSelect={selectToken}
-                />
               </div>
               {selectedToken ? (
                 <div className="flex min-w-0 items-center justify-between gap-3">
@@ -493,6 +494,15 @@ export function SendDesk({
                     <Dash key="value" />
                   ),
                 ],
+                // The relayer submits the transfer and pays its gas: the signed
+                // batch is the ERC-20 transfer alone, with no fee call, so the
+                // sender pays nothing on top of the amount.
+                [
+                  t`Network fee`,
+                  <span key="fee" dir="ltr">
+                    {formatTokenAmountFixed("0", 2, 2, locale)}
+                  </span>,
+                ],
               ]}
             />
             <Button
@@ -504,12 +514,6 @@ export function SendDesk({
             >
               <Trans>Review</Trans>
             </Button>
-            <AddressBookSheet
-              open={addressBookOpen}
-              onOpenChange={setAddressBookOpen}
-              onSelect={handleSelectRecipient}
-              owner={owner}
-            />
             <SendConfirmDialog
               open={confirmOpen}
               onOpenChange={setConfirmOpen}
@@ -683,7 +687,7 @@ function RecentChips({
   retrying,
   onRetry,
   onSelect,
-  onAddressBook,
+  addressBook,
 }: {
   recipients: readonly Recipient[];
   pending: boolean;
@@ -691,7 +695,7 @@ function RecentChips({
   retrying: boolean;
   onRetry: () => void;
   onSelect: (recipient: Recipient) => void;
-  onAddressBook: () => void;
+  addressBook: ReactNode;
 }) {
   const { t } = useLingui();
   return (
@@ -702,14 +706,7 @@ function RecentChips({
             <RecentChip recipient={entry} onSelect={() => onSelect(entry)} />
           </li>
         ))}
-        <li className="min-w-0">
-          <DeskChip>
-            <button type="button" onClick={onAddressBook}>
-              <RiGroupLine aria-hidden="true" />
-              <Trans>Address book</Trans>
-            </button>
-          </DeskChip>
-        </li>
+        <li className="min-w-0">{addressBook}</li>
       </ul>
       {pending ? (
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -728,6 +725,88 @@ function RecentChips({
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** The saved recipients, in a popover anchored to the chip that opens it. */
+function AddressBookPopover({
+  owner,
+  onSelect,
+}: {
+  owner: StorageOwner | null;
+  onSelect: (recipient: Recipient) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const recipientsQuery = useAddressBookRecipients(owner);
+  const recipients = recipientsQuery.data ?? [];
+  return (
+    <PopoverRoot open={open} onOpenChange={setOpen}>
+      <DeskChip on={open}>
+        <PopoverTrigger>
+          <RiGroupLine aria-hidden="true" />
+          <Trans>Address book</Trans>
+        </PopoverTrigger>
+      </DeskChip>
+      <PopoverContent align="start" className="grid w-80 p-0">
+        <PopoverTitle className="border-b border-border px-4 py-3 font-heading text-sm font-semibold">
+          <Trans>Address book</Trans>
+        </PopoverTitle>
+        {recipientsQuery.isPending ? (
+          <p className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
+            <Spinner />
+            <Trans>Loading address book…</Trans>
+          </p>
+        ) : recipients.length === 0 ? (
+          <p className="px-4 py-3 text-sm text-muted-foreground">
+            <Trans>No saved recipients yet.</Trans>
+          </p>
+        ) : (
+          <ul className="max-h-80 overflow-y-auto">
+            {recipients.map((recipient) => (
+              <li key={recipient.id} className="border-t border-border first:border-t-0">
+                <AddressBookEntry
+                  recipient={recipient}
+                  onSelect={() => {
+                    onSelect(recipient);
+                    setOpen(false);
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </PopoverContent>
+    </PopoverRoot>
+  );
+}
+
+function AddressBookEntry({ recipient, onSelect }: { recipient: Recipient; onSelect: () => void }) {
+  const identity = useReverseRecipientResolution(recipient.address ?? null);
+  const named = !recipient.label.startsWith("0x");
+  const title = identity.data
+    ? identity.data.kind === "user"
+      ? identity.data.alias
+      : identity.data.name
+    : named
+      ? recipient.label
+      : null;
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="grid w-full min-w-0 gap-0.5 px-4 py-2.5 text-start hover:bg-muted"
+    >
+      {title ? (
+        <span className="truncate text-sm font-semibold" dir="auto">
+          {title}
+        </span>
+      ) : null}
+      {recipient.address ? (
+        <span className="truncate font-mono text-xs text-muted-foreground" dir="ltr">
+          {formatVoucherAddress(recipient.address as `0x${string}`)}
+        </span>
+      ) : null}
+    </button>
   );
 }
 

@@ -23,6 +23,7 @@ import {
   SuccessCheck,
 } from "#/components/wallet";
 import { SectionHeading } from "#/components/ui/section-heading";
+import { DeskSwapFee } from "#/desktop/pools/detail/desk-swap-fee";
 import { PoolDeskFrame } from "#/desktop/pools/pool-desk";
 import { DeskKV } from "#/desktop/ui/kv";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
@@ -30,7 +31,6 @@ import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { usePoolSwapSettlement } from "#/features/pools/hooks/use-pool-swap-settlement";
 import { swapReceiptSearchSchema } from "#/features/pools/swap-receipt-search";
-import { PoolSwapFeeValue } from "#/features/pools/ui/pool-swap-fee-value";
 import { formatTransferUnitValue } from "#/features/wallet/logic/transfer-display";
 import { CHAIN_INFO } from "#/lib/chain";
 import { RELAYER_URL } from "#/lib/relayer-config";
@@ -198,45 +198,42 @@ function SwapReceiptColumn({
             : null,
           [
             <Trans key="label">Pool fee</Trans>,
-            <FeeCell key="value">
-              <PoolSwapFeeValue
-                breakdown={feeBreakdown}
-                part="pool"
-                decimals={feeDecimals}
-                symbol={details.receiveSymbol}
-                locale={locale}
-                pending={settlement.isFetching}
-                amountRaw={
-                  settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
-                }
-              />
-            </FeeCell>,
+            <DeskSwapFee
+              key="value"
+              breakdown={feeBreakdown}
+              part="pool"
+              decimals={feeDecimals}
+              symbol={details.receiveSymbol}
+              locale={locale}
+              pending={settlement.isFetching}
+              amountRaw={
+                settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
+              }
+            />,
           ],
           [
             <Trans key="label">Protocol fee</Trans>,
-            <FeeCell key="value">
-              <PoolSwapFeeValue
-                breakdown={feeBreakdown}
-                part="protocol"
-                decimals={feeDecimals}
-                symbol={details.receiveSymbol}
-                locale={locale}
-                pending={settlement.isFetching}
-              />
-            </FeeCell>,
+            <DeskSwapFee
+              key="value"
+              breakdown={feeBreakdown}
+              part="protocol"
+              decimals={feeDecimals}
+              symbol={details.receiveSymbol}
+              locale={locale}
+              pending={settlement.isFetching}
+            />,
           ],
           [
             <Trans key="label">Total fees</Trans>,
-            <FeeCell key="value">
-              <PoolSwapFeeValue
-                breakdown={feeBreakdown}
-                part="total"
-                decimals={feeDecimals}
-                symbol={details.receiveSymbol}
-                locale={locale}
-                pending={settlement.isFetching}
-              />
-            </FeeCell>,
+            <DeskSwapFee
+              key="value"
+              breakdown={feeBreakdown}
+              part="total"
+              decimals={feeDecimals}
+              symbol={details.receiveSymbol}
+              locale={locale}
+              pending={settlement.isFetching}
+            />,
           ],
           details.poolName
             ? [
@@ -438,11 +435,6 @@ function ReceiptPanel({
       {children}
     </section>
   );
-}
-
-/** The fee figures stack amount over share; in a KV cell they start-align. */
-function FeeCell({ children }: { children: ReactNode }) {
-  return <span className="block [&>span]:items-start [&>span>span]:text-start">{children}</span>;
 }
 
 function formatSubmittedAt(value: string, locale: string): string {

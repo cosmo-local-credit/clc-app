@@ -16,7 +16,6 @@ import {
 } from "#/components/ui/combobox";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { Toggle } from "#/components/ui/toggle";
-import { BackendApiError } from "@clc/api/client/errors";
 import { useVoucherSearch } from "#/features/home/hooks/use-voucher-search";
 import { usePoolSearch, POOL_SEARCH_MIN_CHARS } from "#/features/catalogs/hooks/use-pool-search";
 import type {
@@ -31,7 +30,7 @@ import {
   formatVoucherAddress,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
-import { FilteredReportsTooLargeError } from "#/features/home/hooks/use-filtered-reports";
+import { useReportFilterNotice } from "#/features/home/hooks/use-report-filter-notice";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
 
 export function ReportFilterSheet({
@@ -278,47 +277,7 @@ export function ReportFilterFeedback({
   onRetry: () => void;
   retrying: boolean;
 }) {
-  const { t } = useLingui();
-
-  const notice = (() => {
-    if (!filter.result.ok) {
-      return {
-        message:
-          filter.result.reason === "invalid-vouchers"
-            ? t`This link contains an invalid voucher filter.`
-            : filter.result.reason === "invalid-pools"
-              ? t`This link contains an invalid pool filter.`
-              : t`This link has too many filters (${filter.result.requested}, maximum ${filter.result.max}).`,
-        actionLabel: t`Clear filters`,
-        onAction: filter.clear,
-      };
-    }
-    if (!error) return null;
-
-    if (error instanceof FilteredReportsTooLargeError) {
-      return {
-        message: t`Too many matches to show. Try a more specific search.`,
-        actionLabel: t`Clear filters`,
-        onAction: filter.clear,
-      };
-    }
-    if (error instanceof BackendApiError && error.kind === "rate-limited") {
-      return { message: t`Too many searches. Try again in a moment.` };
-    }
-    if (error instanceof BackendApiError && error.kind === "validation") {
-      return {
-        message: t`These filters aren't valid.`,
-        actionLabel: t`Clear filters`,
-        onAction: filter.clear,
-      };
-    }
-    return {
-      message: t`Couldn't load posts.`,
-      actionLabel: t`Try again`,
-      onAction: onRetry,
-      actionPending: retrying,
-    };
-  })();
+  const notice = useReportFilterNotice({ filter, error, onRetry, retrying });
 
   if (!notice) return null;
 
@@ -326,12 +285,7 @@ export function ReportFilterFeedback({
     <div className="space-y-3 border border-border bg-card p-4" role="alert">
       <p className="text-muted-foreground text-sm">{notice.message}</p>
       {notice.actionLabel && notice.onAction ? (
-        <Button
-          variant="outline"
-          tap
-          pending={"actionPending" in notice && notice.actionPending}
-          onClick={notice.onAction}
-        >
+        <Button variant="outline" tap pending={notice.actionPending} onClick={notice.onAction}>
           {notice.actionLabel}
         </Button>
       ) : null}

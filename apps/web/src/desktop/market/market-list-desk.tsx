@@ -1,16 +1,21 @@
 import { marketplaceInfiniteQueryOptions } from "@clc/api/features/marketplace/queries";
+import type { Offering } from "@clc/api/features/offerings/client";
+import { offeringsDiscoveryInfiniteQueryOptions } from "@clc/api/features/offerings/queries";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import type { MarketplaceKind, MarketplaceResult } from "@clc/core/features/marketplace/logic";
-import { formatOfferingDisplayValue, formatOfferingPrice } from "@clc/core/features/market/logic";
+import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
-import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
 import { MarketEmptyMessage } from "#/components/market-empty-message";
 import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
+import {
+  resolveOfferingDisplayPrice,
+  useOfferingFrequencyLabel,
+} from "#/components/offerings/offering-display";
 import { Button } from "#/components/ui/button";
 import { Badge } from "#/components/ui/badge";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -20,6 +25,7 @@ import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { marketplaceClient } from "#/lib/api/marketplace";
+import { offeringsClient } from "#/lib/api/offerings";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
@@ -29,6 +35,7 @@ import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { DeskSplit } from "#/desktop/ui/inspector";
 import { DeskCanvas } from "#/desktop/ui/page";
 import { MarketAvatar, MarketKindBadge, marketSeedGradient } from "#/desktop/market/market-bits";
+import { MarketCreditNotice } from "#/desktop/market/market-notices";
 import { MarketDeskToolbar } from "#/desktop/market/market-toolbar";
 import { MarketPlacePanel } from "#/desktop/market/place-panel";
 
@@ -57,6 +64,11 @@ export function MarketListDesk({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const parsed = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
   const kinds = scope === "all" ? undefined : LIST_KINDS[scope];
+  const ready =
+    filter.result.ok &&
+    !filter.isRestoringPreference &&
+    !filter.isDebouncing &&
+    !credit.blocksResults;
   const query = useInfiniteQuery({
     ...marketplaceInfiniteQueryOptions(marketplaceClient, {
       perPage: 20,
@@ -70,30 +82,49 @@ export function MarketListDesk({
       bounds: nearby?.bounds,
       ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
-    enabled:
-      filter.result.ok &&
-      !filter.isRestoringPreference &&
-      !filter.isDebouncing &&
-      !credit.blocksResults,
+    enabled: ready && scope !== "offers",
     ...nearbyQueryPolicy(nearby),
   });
+  // Offers read the phone Offers page's discovery query: its rows carry the
+  // quantity and frequency a tile shows, which the marketplace rows do not.
+  const offersQuery = useInfiniteQuery({
+    ...offeringsDiscoveryInfiniteQueryOptions(offeringsClient, {
+      perPage: 20,
+      q: parsed.term,
+      tags: parsed.tags,
+      tagMatch: parsed.tagMatch,
+      facets: true,
+      nearby: nearby?.nearby === true,
+      scope: nearby?.scope,
+      bounds: nearby?.bounds,
+      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+    }),
+    enabled: ready && scope === "offers",
+    ...nearbyQueryPolicy(nearby),
+  });
+  const active = scope === "offers" ? offersQuery : query;
   const rows = query.data?.pages.flatMap((page) => page.results) ?? [];
-  const facets = query.data?.pages[0]?.tagFacets ?? [];
+  const offerings = offersQuery.data?.pages.flatMap((page) => page.offerings) ?? [];
+  const facets =
+    (scope === "offers"
+      ? offersQuery.data?.pages[0]?.tagFacets
+      : query.data?.pages[0]?.tagFacets) ?? [];
+  const count = scope === "offers" ? offerings.length : rows.length;
   const voucher = useVoucherSheetSelection();
   const want = useWantSheetSelection();
   const open = voucher.voucher !== null || want.want !== null;
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const hasMore = query.hasNextPage && !query.isFetchNextPageError;
+  const hasMore = active.hasNextPage && !active.isFetchNextPageError;
 
   useEffect(() => {
     const target = loadMoreRef.current;
     if (!target || !hasMore || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting && !query.isFetchingNextPage) void query.fetchNextPage();
+      if (entries[0]?.isIntersecting && !active.isFetchingNextPage) void active.fetchNextPage();
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [hasMore, query.fetchNextPage, query.isFetchingNextPage]);
+  }, [hasMore, active.fetchNextPage, active.isFetchingNextPage]);
 
   const changeCredit = (checked: boolean) =>
     void navigate({
@@ -136,24 +167,19 @@ export function MarketListDesk({
               onFiltersOpenChange={setFiltersOpen}
               credit={credit}
               onCredit={changeCredit}
-              count={filtered && query.data ? rows.length : undefined}
+              count={filtered && active.data ? count : undefined}
             />
-            {hasCreditFeedback(credit) ? (
-              <CreditableBrowseControl
-                part="feedback"
-                state={credit}
-                onChange={changeCredit}
-                onClear={clearCredit}
-              />
-            ) : null}
+            <MarketCreditNotice credit={credit} onClear={clearCredit} />
             <div>
               <ListBody
                 scope={scope}
                 rows={rows}
-                pending={query.isPending}
-                error={query.isError && !query.data}
-                fetching={query.isFetching}
-                onRetry={() => void query.refetch()}
+                offerings={offerings}
+                distanceOrigin={distanceOrigin}
+                pending={active.isPending}
+                error={active.isError && !active.data}
+                fetching={active.isFetching}
+                onRetry={() => void active.refetch()}
                 filtered={filtered}
                 onClear={filter.clear}
                 distanceOf={distanceOf}
@@ -169,7 +195,7 @@ export function MarketListDesk({
                 sheetOpen={open}
               />
               <div ref={loadMoreRef} className="h-px" />
-              {query.isFetchingNextPage ? (
+              {active.isFetchingNextPage ? (
                 <p className="py-3 text-center text-xs text-muted-foreground">
                   <Trans>Loading more…</Trans>
                 </p>
@@ -192,6 +218,8 @@ export function MarketListDesk({
 function ListBody({
   scope,
   rows,
+  offerings,
+  distanceOrigin,
   pending,
   error,
   fetching,
@@ -206,6 +234,8 @@ function ListBody({
 }: {
   scope: MarketListScope;
   rows: MarketplaceResult[];
+  offerings: Offering[];
+  distanceOrigin: { lat: number; lng: number } | null;
   pending: boolean;
   error: boolean;
   fetching: boolean;
@@ -234,7 +264,7 @@ function ListBody({
   if (pending) {
     return <p className="text-sm text-muted-foreground">{t`Loading marketplace…`}</p>;
   }
-  if (rows.length === 0) {
+  if ((scope === "offers" ? offerings.length : rows.length) === 0) {
     return (
       <div className="space-y-3 border border-border bg-card p-4">
         <p className="text-sm text-muted-foreground">
@@ -251,16 +281,9 @@ function ListBody({
   if (scope === "offers") {
     return (
       <div className="grid grid-cols-4 gap-4">
-        {rows.map((row) =>
-          row.kind === "offering" && row.voucherAddress ? (
-            <OfferTile
-              key={row.id}
-              row={row}
-              voucherAddress={row.voucherAddress}
-              distance={distanceLabel(distanceOf(row), i18n.locale, t)}
-            />
-          ) : null,
-        )}
+        {offerings.map((offering) => (
+          <OfferTile key={offering.id} offering={offering} distanceOrigin={distanceOrigin} />
+        ))}
       </div>
     );
   }
@@ -471,69 +494,100 @@ function columnsFor(
   return [name, kind, place, distance, tags];
 }
 
-/** An offer as an image tile: the voucher and symbol, the offering, its price and distance. */
+/**
+ * An offer as an image tile: the voucher and symbol, the offering, its price,
+ * then quantity · frequency · distance, as the phone's offering tile reads.
+ */
 function OfferTile({
-  row,
-  voucherAddress,
-  distance,
+  offering,
+  distanceOrigin,
 }: {
-  row: MarketplaceResult;
-  voucherAddress: string;
-  distance: string;
+  offering: Offering;
+  distanceOrigin: { lat: number; lng: number } | null;
 }) {
-  const { i18n } = useLingui();
-  const [failed, setFailed] = useState(false);
-  const raw = formatOfferingPrice(row.priceInUnitOfAccount)?.value;
-  const price = raw ? formatOfferingDisplayValue(raw, i18n.locales?.[0] ?? i18n.locale) : null;
-  const currency = row.voucherUoa?.trim() || row.voucherSymbol || "";
+  const { t, i18n } = useLingui();
+  const locale = i18n.locales?.[0] ?? i18n.locale;
+  const candidateImage = offering.imageUrl ?? offering.voucherImageUrl ?? null;
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const image = candidateImage && failedImage !== candidateImage ? candidateImage : null;
+  const price = resolveOfferingDisplayPrice(offering, null, locale);
+  const hasFixedPrice = formatOfferingPrice(offering.pricePerUnit) !== null;
+  const quantity = formatOfferingQuantity(
+    offering.quantity,
+    offering.unitLabel,
+    offering.sourceId === null,
+  );
+  const quantityNumber = quantity ? Number(quantity.value) : 0;
+  const quantityValue =
+    quantity && quantity.value.length > 6 && Number.isFinite(quantityNumber)
+      ? new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 }).format(
+          quantityNumber,
+        )
+      : quantity?.value;
+  const frequency = useOfferingFrequencyLabel(offering.frequency);
+  const meters =
+    offering.distanceMeters ??
+    (distanceOrigin &&
+    typeof offering.effectiveGeoLat === "number" &&
+    typeof offering.effectiveGeoLng === "number"
+      ? haversineMeters(distanceOrigin, {
+          lat: offering.effectiveGeoLat,
+          lng: offering.effectiveGeoLng,
+        })
+      : null);
+  const meta = [
+    quantityValue ? `${quantityValue}${quantity?.unit ? ` ${quantity.unit}` : ""}` : null,
+    frequency,
+    meters === null ? null : distanceLabel(meters, locale, t),
+  ].filter((part): part is string => Boolean(part));
   return (
     <Link
       to="/vouchers/$voucherAddress"
-      params={{ voucherAddress }}
+      params={{ voucherAddress: offering.voucherAddress }}
       search={{ from: "market" }}
       data-desktop-row=""
       className="flex min-w-0 flex-col border border-border bg-card hover:border-foreground/25"
     >
       <span
         className="relative block aspect-[4/3] overflow-hidden"
-        style={{ background: marketSeedGradient(voucherAddress) }}
+        style={{ background: marketSeedGradient(offering.voucherAddress) }}
       >
-        {row.imageUrl && !failed ? (
+        {image ? (
           <ProgressiveImage
-            src={row.imageUrl}
+            src={image}
             alt=""
             loading="lazy"
-            onError={() => setFailed(true)}
+            onError={() => setFailedImage(image)}
             className="absolute inset-0 size-full object-cover"
           />
         ) : null}
       </span>
       <span className="grid min-w-0 gap-0.5 p-3">
         <span className="truncate text-xs text-muted-foreground">
-          <span dir="auto">{row.voucherName}</span>
-          {row.voucherSymbol ? (
+          <span dir="auto">{offering.voucherName}</span>
+          {offering.voucherSymbol ? (
             <>
-              {" · "}
+              {offering.voucherName ? " · " : null}
               <span dir="ltr" className="font-mono">
-                {row.voucherSymbol}
+                {offering.voucherSymbol}
               </span>
             </>
           ) : null}
         </span>
         <span dir="auto" className="truncate text-sm font-semibold">
-          {row.name}
+          {offering.name}
         </span>
         {price ? (
           <span dir="ltr" className="truncate text-start font-mono text-xs font-semibold">
-            {price} {currency}
-            {row.unit ? ` / ${row.unit}` : ""}
+            {price.value} {price.unit}
+            {offering.unitLabel ? ` / ${offering.unitLabel}` : ""}
           </span>
         ) : (
           <span className="text-xs text-muted-foreground">
-            <Trans>Price on request</Trans>
+            {hasFixedPrice ? <Trans>Price unavailable</Trans> : <Trans>Price on request</Trans>}
           </span>
         )}
-        <span className="min-h-4 truncate text-xs text-muted-foreground">{distance}</span>
+        <span className="min-h-4 truncate text-xs text-muted-foreground">{meta.join(" · ")}</span>
       </span>
     </Link>
   );

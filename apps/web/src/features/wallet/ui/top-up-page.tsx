@@ -1,6 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useMemo, useState } from "react";
-import { parsePhoneNumber } from "react-phone-number-input";
+import { useState } from "react";
 import {
   RiArrowRightSLine,
   RiCheckLine,
@@ -10,8 +9,6 @@ import {
   RiTimeLine,
 } from "react-icons/ri";
 import { toast } from "sonner";
-import { getAddress } from "viem";
-import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -27,80 +24,31 @@ import {
 } from "#/components/ui/sheet";
 import { EllipsizedAddress } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
-import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
+import { useAddStables, useCashAccess } from "#/features/wallet/hooks/use-pretium-cash";
 import {
-  usePretiumTransactionsByAddress,
-  useTriggerPretiumOnramp,
-  usePretiumRates,
-} from "#/features/wallet/hooks/use-pretium";
+  formatCashDate,
+  formatHistoryKes,
+  isCompletePretiumStatus,
+  ONRAMP_ASSET_LABEL,
+  shortenIdentifier,
+} from "#/features/wallet/logic/pretium-cash";
 import { cn } from "#/lib/utils";
-import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
+import { CHAIN_INFO } from "#/lib/chain";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { WithdrawSheet } from "./withdraw-sheet";
 
-// We only onramp Tether. `ONRAMP_ASSET` is the Pretium asset code sent to the
-// backend; `ONRAMP_ASSET_LABEL` is the branded display form (USD₮).
-const ONRAMP_ASSET = "USDT" as const;
-const ONRAMP_ASSET_LABEL = "USD₮";
-const COMPLETE_PRETIUM_STATUSES = new Set(["COMPLETE", "COMPLETED", "SUCCESS", "SETTLED"]);
-
-// Safaricom MSISDN ranges (0/+254/254 prefix). A non-match is a soft signal
-// only: the line may be a ported Safaricom number, so we warn without blocking
-// the top-up. MPESA only settles to Safaricom lines.
-const SAFARICOM_REGEX = /^(?:0|\+?254)(?:11[0-5]|7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89]))[0-9]{6}$/;
-
-function isSafaricomNumber(phone: string): boolean {
-  return SAFARICOM_REGEX.test(phone.replace(/\s+/g, ""));
-}
-
 export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useLingui();
-  const { address } = useConnection();
-  const profileQuery = useAuthProfile();
-  const [amount, setAmount] = useState("");
   const [addStablesOpen, setAddStablesOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [selectedOnramp, setSelectedOnramp] = useState<PretiumCashTransaction | null>(null);
   const [selectedOfframp, setSelectedOfframp] = useState<PretiumCashTransaction | null>(null);
 
-  const cashAddress = toChecksumAddress(address);
-  const transactionsQuery = usePretiumTransactionsByAddress(cashAddress);
-  const cashTransactions = useMemo(
-    () =>
-      [...(transactionsQuery.data?.onramps ?? []), ...(transactionsQuery.data?.offramps ?? [])]
-        .filter((transaction) => transaction.reference)
-        .sort((a, b) => timestamp(b.createdAt) - timestamp(a.createdAt)),
-    [transactionsQuery.data],
-  );
-
-  const phone = profileQuery.data?.phone.trim() ?? "";
-  const parsedPhone = phone ? parsePhoneNumber(phone, "KE") : undefined;
-  const normalizedCashPhone = parsedPhone?.country === "KE" ? parsedPhone.number : phone;
-  const hasPhone = phone.length > 0;
-  const hasKenyanPhone = parsedPhone?.country === "KE";
-  const disabledReason = !chainHasPretiumRamp(CHAIN_ID)
-    ? t`Cash services aren't available on ${CHAIN_INFO.name}.`
-    : !cashAddress
-      ? t`Connect your wallet to use MPESA.`
-      : profileQuery.isPending
-        ? t`Loading your profile…`
-        : profileQuery.isError
-          ? t`We couldn't load your profile phone number.`
-          : !hasPhone
-            ? t`Add a phone number to your profile to use MPESA.`
-            : !hasKenyanPhone
-              ? t`MPESA cash services need a Kenyan phone number.`
-              : null;
-  const amountValue = Number(amount);
-  const hasValidAmount =
-    amount.trim() !== "" &&
-    Number.isFinite(amountValue) &&
-    amountValue >= 100 &&
-    amountValue <= 250_000;
-  const entryDisabled = !!disabledReason;
-  const canContinue = !!cashAddress && hasKenyanPhone && hasValidAmount;
+  const access = useCashAccess();
+  const { cashAddress, cashTransactions, transactionsQuery, disabledReason, entryDisabled } =
+    access;
+  const addStables = useAddStables({ access, ratesEnabled: addStablesOpen });
 
   return (
     <div
@@ -194,23 +142,18 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
       <AddStablesSheet
         open={addStablesOpen}
         onOpenChange={setAddStablesOpen}
-        amount={amount}
-        amountValue={amountValue}
-        onAmountChange={setAmount}
-        address={cashAddress}
-        phone={normalizedCashPhone}
-        profilePending={profileQuery.isPending}
+        form={addStables}
+        phone={access.phone}
+        profilePending={access.profilePending}
         disabledReason={disabledReason}
         entryDisabled={entryDisabled}
-        hasValidAmount={hasValidAmount}
-        canContinue={canContinue}
       />
 
       <WithdrawSheet
         open={withdrawOpen}
         onOpenChange={setWithdrawOpen}
         address={cashAddress}
-        phone={normalizedCashPhone}
+        phone={access.phone}
         disabledReason={disabledReason}
         entryDisabled={entryDisabled}
       />
@@ -237,73 +180,26 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
 function AddStablesSheet({
   open,
   onOpenChange,
-  amount,
-  amountValue,
-  onAmountChange,
-  address,
+  form,
   phone,
   profilePending,
   disabledReason,
   entryDisabled,
-  hasValidAmount,
-  canContinue,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  amount: string;
-  amountValue: number;
-  onAmountChange: (amount: string) => void;
-  address: `0x${string}` | undefined;
+  form: ReturnType<typeof useAddStables>;
   phone: string;
   profilePending: boolean;
   disabledReason: string | null;
   entryDisabled: boolean;
-  hasValidAmount: boolean;
-  canContinue: boolean;
 }) {
-  const { i18n, t } = useLingui();
+  const { i18n } = useLingui();
   const [amountFocused, setAmountFocused] = useState(false);
-  const ratesQuery = usePretiumRates(open);
-  const triggerOnramp = useTriggerPretiumOnramp();
-  const mutationError = triggerOnramp.error instanceof Error ? triggerOnramp.error.message : null;
-
-  // Soft, non-blocking check: only warn once the number clears the hard gates
-  // (present + Kenyan). A ported Safaricom line can still work, so we never
-  // disable Continue on this alone.
-  const showSafaricomWarning = !disabledReason && phone.length > 0 && !isSafaricomNumber(phone);
-
-  // Approximate USD₮ received = KES amount ÷ Pretium sell rate. Shown in place
-  // of the raw buy/sell rate; null while rates load, on error, or bad amount.
-  const sellRate = Number(ratesQuery.data?.sell);
-  const approxUsdt =
-    ratesQuery.isSuccess && Number.isFinite(sellRate) && sellRate > 0 && hasValidAmount
-      ? amountValue / sellRate
-      : null;
+  const { amount, hasValidAmount, approxUsdt, showSafaricomWarning, mutationError } = form;
 
   const onContinue = async () => {
-    if (!address || !canContinue) return;
-
-    try {
-      // Pretium's onramp treats the phone as an MPESA shortcode and requires a
-      // 10-digit local number (0-prefixed). Profiles store E.164 (+254…), so
-      // convert for this call only.
-      const parsed = parsePhoneNumber(phone, "KE");
-      const shortcode = parsed ? `0${parsed.nationalNumber}` : phone;
-
-      const result = await triggerOnramp.mutateAsync({
-        address,
-        phoneNumber: shortcode,
-        asset: ONRAMP_ASSET,
-        amount: amountValue,
-      });
-
-      toast.success(t`MPESA prompt sent`, {
-        description: result.message || t`Complete the prompt on your phone.`,
-      });
-      onOpenChange(false);
-    } catch {
-      toast.error(t`Couldn't start MPESA top up`);
-    }
+    if (await form.submit()) onOpenChange(false);
   };
 
   return (
@@ -343,7 +239,7 @@ function AddStablesSheet({
                     value={amount}
                     onFocus={() => setAmountFocused(true)}
                     onBlur={() => setAmountFocused(false)}
-                    onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
+                    onChange={(event) => form.setAmount(event.target.value)}
                     placeholder="100"
                     size={Math.max(amount.length, 3)}
                     disabled={entryDisabled}
@@ -377,7 +273,7 @@ function AddStablesSheet({
                   <Trans>You'll receive</Trans>
                 </span>
                 <span className="font-mono text-xs font-semibold">
-                  {ratesQuery.isPending ? (
+                  {form.ratesPending ? (
                     <span className="text-muted-foreground">…</span>
                   ) : approxUsdt !== null ? (
                     `≈ ${approxUsdt.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
@@ -419,11 +315,11 @@ function AddStablesSheet({
             <Button
               tap
               className="w-full"
-              disabled={!canContinue}
-              pending={triggerOnramp.isPending}
+              disabled={!form.canContinue}
+              pending={form.pending}
               onClick={() => void onContinue()}
             >
-              {triggerOnramp.isPending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
+              {form.pending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -807,39 +703,4 @@ function PretiumLogo() {
       aria-hidden="true"
     />
   );
-}
-
-function toChecksumAddress(address: `0x${string}` | undefined): `0x${string}` | undefined {
-  if (!address) return undefined;
-  try {
-    return getAddress(address);
-  } catch {
-    return undefined;
-  }
-}
-
-function isCompletePretiumStatus(status: string): boolean {
-  return COMPLETE_PRETIUM_STATUSES.has(status.trim().toUpperCase());
-}
-
-function shortenIdentifier(value: string): string {
-  if (value.length <= 14) return value;
-  return `${value.slice(0, 8)}…${value.slice(-6)}`;
-}
-
-function timestamp(date: string): number {
-  const value = Date.parse(date);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function formatHistoryKes(transaction: PretiumCashTransaction): string {
-  if (!transaction.amountKes) return "—";
-  return transaction.amountKes.split(".")[0] || transaction.amountKes;
-}
-
-function formatCashDate(date: string, locale: string): string {
-  if (!date) return "—";
-  const value = new Date(date);
-  if (Number.isNaN(value.getTime())) return "—";
-  return value.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }

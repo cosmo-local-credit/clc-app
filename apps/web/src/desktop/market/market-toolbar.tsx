@@ -1,12 +1,17 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { RiCloseLine, RiSearchLine } from "react-icons/ri";
+import { CATALOG_MAX_TAGS } from "@clc/core/features/catalog/logic";
+import { RiCheckLine, RiCloseLine, RiFilter3Line, RiSearchLine } from "react-icons/ri";
 
-import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Spinner } from "#/components/ui/spinner";
+import { SelectableTagBadge } from "#/components/ui/tag-badge";
+import { Toggle } from "#/components/ui/toggle";
+import { useCatalogFilterDraft } from "#/components/use-catalog-filter-draft";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";
 import {
@@ -62,6 +67,7 @@ export function MarketDeskToolbar({
   const chips = (
     <>
       <FiltersChip
+        scope={scope}
         filter={filter}
         facets={facets}
         open={filtersOpen}
@@ -185,40 +191,150 @@ function MarketSearchField({
 }
 
 /**
- * The shared filter sheet, its trigger dressed as a chip. The sheet copies the
- * applied filter into its draft when its own trigger opens it, so the trigger
- * stays the sheet's and only its look changes here.
+ * Filters as a popover under its chip. The draft is the phone sheet's: edits
+ * stay local until Apply, which writes one canonical URL.
  */
 function FiltersChip({
+  scope,
   filter,
   facets,
   open,
   onOpenChange,
 }: {
+  scope: MarketListScope;
   filter: MarketFilterControls;
   facets: { tag: string; count: number }[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useLingui();
+  const draft = useCatalogFilterDraft({
+    filter,
+    facets,
+    onOpenChange,
+    onApply: filter.applyFacetFilters,
+  });
+  const searchTerm = draft.searchTerm;
   return (
-    <span
-      className={cn(
-        "contents",
-        "[&>button]:h-[30px] [&>button]:gap-1.5 [&>button]:border-foreground/25 [&>button]:bg-card [&>button]:px-2.5 [&>button]:text-foreground [&>button]:hover:bg-muted",
-        "[&>button>span]:border-transparent [&>button>span]:bg-foreground [&>button>span]:text-background",
-      )}
+    <PopoverRoot
+      open={open}
+      onOpenChange={(next) => (next ? draft.begin() : draft.changeOpen(false))}
     >
-      <CatalogFilterSheet
-        filter={filter}
-        facets={facets}
-        title={<Trans>Filter vouchers</Trans>}
-        facetTitle={<Trans>What they offer</Trans>}
-        showHeader={false}
-        open={open}
-        onOpenChange={onOpenChange}
-        onApply={filter.applyFacetFilters}
-      />
-    </span>
+      <DeskChip on={open}>
+        <PopoverTrigger>
+          <RiFilter3Line aria-hidden="true" />
+          <Trans>Filters</Trans>
+          {draft.appliedCount > 0 ? (
+            <span
+              aria-hidden="true"
+              className={cn(
+                "min-w-4 px-1 text-center font-mono text-2xs font-semibold",
+                open ? "bg-background text-foreground" : "bg-foreground text-background",
+              )}
+            >
+              {draft.appliedCount}
+            </span>
+          ) : null}
+        </PopoverTrigger>
+      </DeskChip>
+      <PopoverContent align="start" className="grid w-96 gap-4 p-0">
+        <div className="flex h-12 items-center justify-between gap-3 border-border border-b px-4">
+          <PopoverTitle className="font-heading text-base font-semibold">
+            {scope === "offers" ? (
+              <Trans>Filter offers</Trans>
+            ) : scope === "wants" ? (
+              <Trans>Filter Wants</Trans>
+            ) : scope === "vouchers" ? (
+              <Trans>Filter vouchers</Trans>
+            ) : scope === "pools" ? (
+              <Trans>Filter pools</Trans>
+            ) : scope === "catalogs" ? (
+              <Trans>Filter catalogs</Trans>
+            ) : (
+              <Trans>Filter marketplace</Trans>
+            )}
+          </PopoverTitle>
+          <span className="text-xs text-muted-foreground">
+            <Trans>
+              {draft.draftTags.length} of {CATALOG_MAX_TAGS}
+            </Trans>
+          </span>
+        </div>
+        <section className="grid gap-3 px-4" aria-label={t`Filter by tag`}>
+          <SectionHeading variant="group" as="h3">
+            {scope === "vouchers" ? <Trans>What they offer</Trans> : <Trans>Tags</Trans>}
+          </SectionHeading>
+          {facets.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              <Trans>No category filters are available.</Trans>
+            </p>
+          ) : draft.hasSelectableFacet ? (
+            <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto" role="group">
+              {facets.map((facet) => {
+                const selected = draft.draftTags.includes(facet.tag);
+                return (
+                  <SelectableTagBadge
+                    key={facet.tag}
+                    tag={facet.tag}
+                    selected={selected}
+                    count={draft.showCounts ? facet.count : undefined}
+                    disabled={!selected && (facet.count === 0 || draft.atTagLimit)}
+                    onClick={() => draft.toggleDraftTag(facet.tag)}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <p className="min-w-0 text-sm text-muted-foreground">
+                {searchTerm !== "" ? (
+                  <Trans>Nothing matching “{searchTerm}” carries a category.</Trans>
+                ) : (
+                  <Trans>No categories are available for the current results.</Trans>
+                )}
+              </p>
+              {draft.searchTerm !== "" ? (
+                <Button variant="outline" onClick={filter.clearTerm}>
+                  <Trans>Clear search</Trans>
+                </Button>
+              ) : null}
+            </div>
+          )}
+        </section>
+        {draft.draftTags.length > 1 ? (
+          <section className="grid gap-3 px-4">
+            <SectionHeading variant="group" as="h3">
+              <Trans>How should categories match?</Trans>
+            </SectionHeading>
+            <div className="grid grid-cols-2 gap-2" role="group" aria-label={t`Match`}>
+              {(["any", "all"] as const).map((match) => (
+                <Toggle
+                  key={match}
+                  variant="outline"
+                  pressed={draft.draftTagMatch === match}
+                  onPressedChange={(pressed) => {
+                    if (pressed) draft.setDraftTagMatch(match);
+                  }}
+                  className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
+                >
+                  {draft.draftTagMatch === match ? <RiCheckLine aria-hidden="true" /> : null}
+                  {match === "any" ? t`Any selected` : t`All selected`}
+                </Toggle>
+              ))}
+            </div>
+          </section>
+        ) : null}
+        <div className="flex justify-end gap-2 border-border border-t px-4 py-3">
+          <Button variant="outline" disabled={!draft.canReset} onClick={draft.reset}>
+            <Trans>Reset</Trans>
+          </Button>
+          <Button onClick={draft.apply}>
+            <RiCheckLine aria-hidden="true" />
+            <Trans>Apply filters</Trans>
+          </Button>
+        </div>
+      </PopoverContent>
+    </PopoverRoot>
   );
 }
 

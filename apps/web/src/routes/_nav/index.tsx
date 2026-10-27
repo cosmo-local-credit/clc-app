@@ -108,7 +108,10 @@ export const Route = createFileRoute("/_nav/")({
     }
     if (
       search.tab !== "activity" &&
-      (search.activityQ !== undefined || search.activityTypes !== undefined)
+      (search.activityQ !== undefined ||
+        search.activityTypes !== undefined ||
+        search.activityVoucher !== undefined ||
+        search.activityRange !== undefined)
     ) {
       throw redirect({
         to: "/",

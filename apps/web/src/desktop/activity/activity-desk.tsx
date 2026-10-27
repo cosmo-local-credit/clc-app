@@ -5,7 +5,13 @@ import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { RiChat1Line, RiCloseLine, RiExternalLinkLine, RiSearchLine } from "react-icons/ri";
+import {
+  RiChat1Line,
+  RiCloseLine,
+  RiDownload2Line,
+  RiExternalLinkLine,
+  RiSearchLine,
+} from "react-icons/ri";
 import { toast } from "sonner";
 
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
@@ -14,6 +20,7 @@ import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Input } from "#/components/ui/input";
 import { LocationMap } from "#/components/ui/location-map.lazy";
+import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
 import { Spinner } from "#/components/ui/spinner";
 import { ShareReceiptButton } from "#/components/wallet";
 import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
@@ -27,11 +34,22 @@ import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import {
+  activityCsv,
+  activityRangeStart,
+  activityVouchers,
+  filterActivityRows,
+} from "#/features/wallet/logic/activity-export";
+import {
   formatTransferDate,
   formatTransferUnitValue,
 } from "#/features/wallet/logic/transfer-display";
 import { CHAIN_INFO } from "#/lib/chain";
-import { ACTIVITY_KIND_ORDER } from "#/lib/navigation/activity-search";
+import {
+  ACTIVITY_KIND_ORDER,
+  ACTIVITY_RANGES,
+  type ActivityRange,
+  parseActivityDeskFilters,
+} from "#/lib/navigation/activity-search";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 import { cn } from "#/lib/utils";
 
@@ -89,6 +107,7 @@ export function ActivityDesk({
   const router = useRouter();
   const locationSearch = useRouterState({ select: (state) => state.location.search });
   const tx = readTx(locationSearch);
+  const filters = parseActivityDeskFilters(locationSearch);
   const [draftQuery, setDraftQuery] = useState(query);
   const term = draftQuery.trim().replace(/\s+/gu, " ");
   const { settled, isPending: isDebouncing } = useDebouncedValue(term);
@@ -100,13 +119,38 @@ export function ActivityDesk({
     types,
     enabled: searchReady,
   });
-  const activity = activityQuery.data?.pages.flatMap((page) => page.activity) ?? [];
+  const loaded = useMemo(
+    () => activityQuery.data?.pages.flatMap((page) => page.activity) ?? [],
+    [activityQuery.data],
+  );
+  const vouchers = useMemo(() => activityVouchers(loaded), [loaded]);
+  // The window is measured from when the range was picked, not every render.
+  const rangeStart = useMemo(() => activityRangeStart(filters.range, Date.now()), [filters.range]);
+  const activity = useMemo(
+    () => filterActivityRows(loaded, { voucher: filters.voucher, start: rangeStart }),
+    [filters.voucher, loaded, rangeStart],
+  );
+  const oldest = loaded.at(-1);
+  // Rows arrive newest first: once a loaded row predates the window, nothing older can match.
+  const pastWindow =
+    rangeStart !== null && oldest !== undefined && (Date.parse(oldest.dateBlock) || 0) < rangeStart;
   const selected = tx
-    ? (activity.find((item) => activityRowKey(item) === tx || item.txHash === tx) ?? null)
+    ? (loaded.find((item) => activityRowKey(item) === tx || item.txHash === tx) ?? null)
     : null;
   const armed = useRef<string | null>(null);
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const isFiltered = settled !== "" || types.length > 0;
+  const isFiltered =
+    settled !== "" || types.length > 0 || filters.voucher !== undefined || rangeStart !== null;
+  const rangeLabels: Record<ActivityRange, string> = {
+    "7d": t`Last 7 days`,
+    "30d": t`Last 30 days`,
+    "90d": t`Last 90 days`,
+  };
+  const voucherOptions =
+    filters.voucher && !vouchers.some((entry) => entry.address === filters.voucher)
+      ? [...vouchers, { address: filters.voucher, symbol: formatVoucherAddress(filters.voucher) }]
+      : vouchers;
+  const voucherLabel = voucherOptions.find((entry) => entry.address === filters.voucher)?.symbol;
   const labels: Record<ActivityKind, string> = {
     creation: t`Created`,
     sent: t`Sent`,
@@ -137,6 +181,20 @@ export function ActivityDesk({
       search: (previous) => activityInspectorSearch(previous, key),
       replace,
     });
+  }
+
+  function setDeskFilter(next: { activityVoucher?: string; activityRange?: ActivityRange }) {
+    void navigate({ search: (previous) => ({ ...previous, ...next }), replace: true });
+  }
+
+  function exportCsv() {
+    const blob = new Blob([activityCsv(activity)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `activity-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   function toggleType(kind: ActivityKind) {
@@ -232,7 +290,20 @@ export function ActivityDesk({
       <DeskSplit
         main={
           <DeskCanvas className="gap-4">
-            <DeskTitleRow title={<Trans>Activity</Trans>} />
+            <DeskTitleRow
+              title={<Trans>Activity</Trans>}
+              actions={
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={activity.length === 0}
+                  onClick={exportCsv}
+                >
+                  <RiDownload2Line aria-hidden="true" />
+                  <Trans>Export CSV</Trans>
+                </Button>
+              }
+            />
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <DeskChip on={types.length === 0}>
                 <button
@@ -256,32 +327,94 @@ export function ActivityDesk({
                   </button>
                 </DeskChip>
               ))}
-              <div className="relative ms-auto w-64 min-w-0">
-                <RiSearchLine
-                  className="pointer-events-none absolute top-1/2 start-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <Input
-                  type="search"
-                  maxLength={66}
-                  value={draftQuery}
-                  onChange={(event) => setDraftQuery(event.target.value)}
-                  aria-label={t`Search activity`}
-                  placeholder={t`Search activity`}
-                  className={cn("ps-8 text-sm", draftQuery && "pe-9")}
-                />
-                {draftQuery ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-0 end-0"
-                    aria-label={t`Clear search`}
-                    onClick={() => setDraftQuery("")}
+              <div className="ms-auto flex min-w-0 items-center gap-2">
+                <SelectRoot
+                  value={filters.voucher ?? ""}
+                  onValueChange={(value) =>
+                    setDeskFilter({
+                      activityVoucher: typeof value === "string" && value ? value : undefined,
+                    })
+                  }
+                >
+                  <SelectTrigger
+                    aria-label={t`Voucher`}
+                    className="max-w-48 border-foreground/25 text-xs font-medium"
                   >
-                    <RiCloseLine aria-hidden="true" />
-                  </Button>
-                ) : null}
+                    <span className="min-w-0 truncate">
+                      {voucherLabel ? (
+                        <Trans>
+                          Voucher: <span dir="ltr">{voucherLabel}</span>
+                        </Trans>
+                      ) : (
+                        <Trans>Voucher: Any</Trans>
+                      )}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-80">
+                    <SelectItem value="">
+                      <Trans>Any voucher</Trans>
+                    </SelectItem>
+                    {voucherOptions.map((entry) => (
+                      <SelectItem key={entry.address} value={entry.address}>
+                        <span className="font-mono text-xs" dir="ltr">
+                          {entry.symbol}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </SelectRoot>
+                <SelectRoot
+                  value={filters.range ?? ""}
+                  onValueChange={(value) =>
+                    setDeskFilter({
+                      activityRange: ACTIVITY_RANGES.find((range) => range === value),
+                    })
+                  }
+                >
+                  <SelectTrigger
+                    aria-label={t`Date range`}
+                    className="border-foreground/25 text-xs font-medium"
+                  >
+                    {filters.range ? rangeLabels[filters.range] : <Trans>All time</Trans>}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">
+                      <Trans>All time</Trans>
+                    </SelectItem>
+                    {ACTIVITY_RANGES.map((range) => (
+                      <SelectItem key={range} value={range}>
+                        {rangeLabels[range]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </SelectRoot>
+                <div className="relative w-56 min-w-0">
+                  <RiSearchLine
+                    className="pointer-events-none absolute top-1/2 start-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <Input
+                    type="search"
+                    maxLength={66}
+                    value={draftQuery}
+                    onChange={(event) => setDraftQuery(event.target.value)}
+                    aria-label={t`Search activity`}
+                    placeholder={t`Search activity`}
+                    className={cn("ps-8 text-sm", draftQuery && "pe-9")}
+                  />
+                  {draftQuery ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-0 end-0"
+                      aria-label={t`Clear search`}
+                      onClick={() => setDraftQuery("")}
+                    >
+                      <RiCloseLine aria-hidden="true" />
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             </div>
             {tooShort ? (
@@ -350,8 +483,15 @@ export function ActivityDesk({
                             variant="outline"
                             onClick={() => {
                               setDraftQuery("");
-                              onQueryChange?.("");
-                              onTypesChange?.([]);
+                              void navigate({
+                                search: (previous) => ({
+                                  ...previous,
+                                  activityQ: undefined,
+                                  activityTypes: undefined,
+                                  activityVoucher: undefined,
+                                  activityRange: undefined,
+                                }),
+                              });
                             }}
                           >
                             <Trans>Clear filters</Trans>
@@ -364,7 +504,7 @@ export function ActivityDesk({
                   />
                 </div>
               )}
-              {activityQuery.hasNextPage ? (
+              {activityQuery.hasNextPage && !pastWindow ? (
                 <Button
                   type="button"
                   variant="outline"

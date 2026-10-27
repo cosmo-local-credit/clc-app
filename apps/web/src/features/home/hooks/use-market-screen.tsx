@@ -37,6 +37,15 @@ import { useMarketDiscoveryArea } from "#/components/nearby-catalog";
 
 type Coordinates = { lat: number; lng: number };
 
+/** What the map's one notice slot says, for a surface that draws its own notice. */
+type MarketMapStatus =
+  | { kind: "no-kinds" }
+  | { kind: "credit" }
+  | { kind: "credit-empty" }
+  | { kind: "notice"; notice: NonNullable<ReturnType<typeof useMarketFilterNotice>> }
+  | { kind: "empty"; filtered: boolean }
+  | null;
+
 /**
  * Map screen state shared by the phone map and the desktop split.
  * `kinds` forces one scope's markers. Absent, the viewer's saved resource
@@ -338,37 +347,55 @@ export function useMarketScreen({
           : { ...previous, tab: "market", view: "map", creditable: false },
     });
 
+  const mapStatus: MarketMapStatus =
+    activeKinds.length === 0
+      ? { kind: "no-kinds" }
+      : hasCreditFeedback(credit)
+        ? { kind: "credit" }
+        : credit.enabled && credit.poolRefs?.length === 0
+          ? { kind: "credit-empty" }
+          : notice
+            ? { kind: "notice", notice }
+            : isEmpty
+              ? { kind: "empty", filtered: filter.isFiltered }
+              : null;
+
   const mapNotice: ReactNode =
-    activeKinds.length === 0 ? (
+    mapStatus?.kind === "no-kinds" ? (
       <div className="border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
         <Trans>Choose a resource type to show it on the map.</Trans>
       </div>
-    ) : hasCreditFeedback(credit) ? (
+    ) : mapStatus?.kind === "credit" ? (
       <CreditableBrowseControl
         part="feedback"
         state={credit}
         onChange={changeCredit}
         onClear={clearCredit}
       />
-    ) : credit.enabled && credit.poolRefs?.length === 0 ? (
+    ) : mapStatus?.kind === "credit-empty" ? (
       <div className="border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
         <Trans>No marketplace results are available through your Credit pools.</Trans>
       </div>
-    ) : notice ? (
+    ) : mapStatus?.kind === "notice" ? (
       <div
         className="flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
         role="alert"
       >
-        <span className="min-w-0 text-sm">{notice.message}</span>
-        {notice.actionLabel && notice.onAction ? (
-          <Button variant="outline" tap pending={notice.actionPending} onClick={notice.onAction}>
-            {notice.actionLabel}
+        <span className="min-w-0 text-sm">{mapStatus.notice.message}</span>
+        {mapStatus.notice.actionLabel && mapStatus.notice.onAction ? (
+          <Button
+            variant="outline"
+            tap
+            pending={mapStatus.notice.actionPending}
+            onClick={mapStatus.notice.onAction}
+          >
+            {mapStatus.notice.actionLabel}
           </Button>
         ) : null}
       </div>
-    ) : isEmpty ? (
+    ) : mapStatus?.kind === "empty" ? (
       <div className="space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
-        {filter.isFiltered ? (
+        {mapStatus.filtered ? (
           <>
             <p>
               <Trans>No marketplace results match this search.</Trans>
@@ -414,6 +441,7 @@ export function useMarketScreen({
     handleViewportSettled,
     locationButton,
     mapNotice,
+    mapStatus,
     changeCredit,
     clearCredit,
   };

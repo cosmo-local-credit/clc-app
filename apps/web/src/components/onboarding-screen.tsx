@@ -4,19 +4,6 @@ import { OnboardingMenu } from "#/components/language-selector";
 import { cn } from "#/lib/utils";
 
 /**
- * The desktop footer row. Notes go to the start; the Back link (the screen's
- * `start`) is drawn as an outline button beside the actions at the end.
- */
-const EMBEDDED_FOOTER = cn(
-  "flex shrink-0 flex-wrap items-center justify-end gap-2 border-border border-t pt-4 *:w-auto",
-  "[&>p]:order-first [&>p]:me-auto [&>p]:text-start",
-  "[&>p_a]:font-semibold [&>p_a]:text-primary [&>p_a]:no-underline [&>p_a]:hover:underline",
-  "[&>a:first-child]:ms-0 [&>a:first-child]:h-9 [&>a:first-child]:border [&>a:first-child]:border-foreground/25",
-  "[&>a:first-child]:bg-card [&>a:first-child]:px-3.5 [&>a:first-child]:font-semibold",
-  "[&>a:first-child]:text-foreground [&>a:first-child]:text-xs",
-);
-
-/**
  * The frame every onboarding screen shares: one top bar (Back or the logo at
  * the start, language and theme at the end), a body that holds the screen's
  * one job, and the actions pinned under it.
@@ -31,7 +18,6 @@ export function OnboardingScreen({
   menu = true,
   footer,
   className,
-  embedded = false,
   children,
 }: {
   start?: ReactNode;
@@ -39,23 +25,8 @@ export function OnboardingScreen({
   menu?: boolean;
   footer?: ReactNode;
   className?: string;
-  /** Drop the phone frame so a desktop column can hold the same body. */
-  embedded?: boolean;
   children: ReactNode;
 }) {
-  if (embedded) {
-    return (
-      <div className={cn("flex min-h-0 flex-1 flex-col gap-5", className)}>
-        {children}
-        {footer ? (
-          <div className={EMBEDDED_FOOTER}>
-            {start}
-            {footer}
-          </div>
-        ) : null}
-      </div>
-    );
-  }
   return (
     <div className="flex h-[calc(100dvh-var(--bottom-nav-offset))] flex-col bg-background">
       <header className="flex min-h-11 shrink-0 items-center justify-between gap-3 px-6 pt-[calc(env(safe-area-inset-top)+0.5rem)]">

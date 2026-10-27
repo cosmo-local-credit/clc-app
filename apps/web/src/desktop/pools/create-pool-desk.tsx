@@ -1,10 +1,20 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
-import { SectionHeading } from "#/components/ui/section-heading";
 import { DeskStep, DeskStepper, type DeskStepState } from "#/desktop/ui/stepper";
-import { CreatePoolFlow, type PoolCreateStep } from "#/features/pools/ui";
+import {
+  PoolExplainerDesk,
+  PoolPreviewDesk,
+  PoolUsageDesk,
+} from "#/desktop/pools/create/create-pool-parts";
+import { PlaceStepDesk } from "#/desktop/pools/create/place-step-desk";
+import { PoolStepDesk } from "#/desktop/pools/create/pool-step-desk";
+import { ReviewStepDesk } from "#/desktop/pools/create/review-step-desk";
+import {
+  type PoolCreateStep,
+  useCreatePoolForm,
+} from "#/features/pools/hooks/use-create-pool-form";
 
 const STEPS: { id: PoolCreateStep; label: ReactNode }[] = [
   { id: "pool", label: <Trans>Create pool</Trans> },
@@ -12,12 +22,20 @@ const STEPS: { id: PoolCreateStep; label: ReactNode }[] = [
   { id: "review", label: <Trans>Confirm & publish</Trans> },
 ];
 
+/**
+ * `.page.wiz`: the stepper and the pool allowance, the step's form at 520px,
+ * and the concept explainer over a live preview of the Pools row.
+ */
 export function CreatePoolDesk({ step }: { step: PoolCreateStep }) {
   const { t } = useLingui();
+  // Desktop has the room, so Advanced starts open.
+  const [advancedOpen, setAdvancedOpen] = useState(true);
+  const pool = useCreatePoolForm({ step, revealAdvanced: () => setAdvancedOpen(true) });
   const current = STEPS.findIndex((entry) => entry.id === step);
+
   return (
     <div className="grid w-full max-w-[1264px] grid-cols-[200px_minmax(0,520px)_minmax(0,1fr)] items-start gap-8 px-8 pt-7 pb-10">
-      <div className="sticky top-7 min-w-0">
+      <div className="sticky top-7 grid min-w-0 gap-4">
         <DeskStepper label={t`Create pool`}>
           {STEPS.map((entry, index) => {
             const state: DeskStepState =
@@ -29,7 +47,7 @@ export function CreatePoolDesk({ step }: { step: PoolCreateStep }) {
                 label={entry.label}
                 state={state}
                 wrap={
-                  state === "complete" || state === "current"
+                  state === "complete"
                     ? (body) => (
                         <Link to="/pools/create/$step" params={{ step: entry.id }}>
                           {body}
@@ -41,31 +59,29 @@ export function CreatePoolDesk({ step }: { step: PoolCreateStep }) {
             );
           })}
         </DeskStepper>
+        <div className="border-border border-t pt-3.5">
+          <PoolUsageDesk />
+        </div>
       </div>
+
       <div className="min-w-0">
-        <CreatePoolFlow step={step} embedded advancedDefaultOpen />
+        {step === "pool" ? (
+          <PoolStepDesk
+            pool={pool}
+            advancedOpen={advancedOpen}
+            onAdvancedOpenChange={setAdvancedOpen}
+          />
+        ) : step === "place" ? (
+          <PlaceStepDesk pool={pool} />
+        ) : (
+          <ReviewStepDesk pool={pool} />
+        )}
       </div>
+
       <aside className="sticky top-7 grid min-w-0 gap-4">
-        <PoolExplainer />
+        <PoolExplainerDesk />
+        <PoolPreviewDesk pool={pool} />
       </aside>
     </div>
-  );
-}
-
-function PoolExplainer() {
-  return (
-    <section
-      className="grid gap-1 border border-border bg-card px-4 py-3.5"
-      aria-labelledby="desk-pool-guidance-title"
-    >
-      <SectionHeading as="h2" variant="group" id="desk-pool-guidance-title">
-        <Trans>What's a pool?</Trans>
-      </SectionHeading>
-      <p className="text-sm text-muted-foreground">
-        <Trans>
-          A pool holds vouchers together so members can swap between them at a published value.
-        </Trans>
-      </p>
-    </section>
   );
 }

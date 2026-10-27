@@ -423,22 +423,21 @@ function VoucherActionRow({
   );
 }
 
-/** Native share when available, with the existing explicit copy fallback. */
-export function ShareVoucherButton({
+/**
+ * Native share when available, with the existing explicit copy fallback: once
+ * the native sheet fails, the control becomes "Copy link".
+ */
+export function useShareVoucher({
   name,
   address,
   destination = "map",
-  className,
 }: {
   name: string;
   address: string;
   destination?: "map" | "detail";
-  className?: string;
 }) {
   const { t } = useLingui();
   const [copyOnly, setCopyOnly] = useState(false);
-  const label = copyOnly ? t`Copy link` : t`Share`;
-  const Icon = copyOnly ? RiFileCopyLine : RiShareLine;
 
   function link() {
     return destination === "detail"
@@ -470,16 +469,37 @@ export function ShareVoucherButton({
     }
   }
 
+  return {
+    label: copyOnly ? t`Copy link` : t`Share`,
+    Icon: copyOnly ? RiFileCopyLine : RiShareLine,
+    run: () => {
+      if (copyOnly) copy();
+      else void share();
+    },
+  };
+}
+
+/** Native share when available, with the existing explicit copy fallback. */
+export function ShareVoucherButton({
+  name,
+  address,
+  destination = "map",
+  className,
+}: {
+  name: string;
+  address: string;
+  destination?: "map" | "detail";
+  className?: string;
+}) {
+  const { label, Icon, run } = useShareVoucher({ name, address, destination });
+
   return (
     <Button
       variant="ghost"
       size="icon-lg"
       className={cn("border-0 text-muted-foreground", className)}
       aria-label={label}
-      onClick={() => {
-        if (copyOnly) copy();
-        else void share();
-      }}
+      onClick={run}
     >
       <Icon className="size-5" aria-hidden="true" />
     </Button>

@@ -7,24 +7,26 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { ProfilePrivacyNotice } from "#/components/profile-privacy-notice";
+import { UsernameInput } from "#/components/profile/username-input";
 import { Button } from "#/components/ui/button";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
-import { PhoneInputField } from "#/components/ui/phone-input";
+import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
+import { DeskPhoneField } from "#/desktop/ui/phone-field";
 import { Textarea } from "#/components/ui/textarea";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { DeskCanvas, DeskTitle, DeskTitleRow } from "#/desktop/ui/page";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
-import { ProfileUsernameSection } from "#/features/auth/ui/profile-username-section";
+import { useCopyUsername, useUsernameForm } from "#/features/auth/hooks/use-username-form";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { preferredCurrencyForCountry } from "#/lib/profile-currency";
 import { translateRecipientError } from "#/lib/recipient-error-i18n";
-import { cn } from "#/lib/utils";
 import { translateValidationError } from "#/lib/validation-i18n";
 
 const PLACEHOLDER_EMAIL_SUFFIX = "@clc.local";
@@ -265,13 +267,12 @@ function ProfileForm({ profile }: { profile: ProfileResult }) {
                   <label htmlFor="desk-profile-phone" className="font-medium text-sm">
                     <Trans>Phone</Trans>
                   </label>
-                  <PhoneInputField
+                  <DeskPhoneField
                     id="desk-profile-phone"
                     defaultCountry={profile.country}
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val)}
-                    aria-invalid={!!err}
-                    aria-label={t`Phone number`}
+                    invalid={!!err}
                   />
                   {fieldError(err)}
                 </div>
@@ -404,38 +405,133 @@ function ProfileForm({ profile }: { profile: ProfileResult }) {
 const FORM_ID = "desk-profile-form";
 
 /**
- * The phone's username row, laid out as a settings row: label, the name, and
- * the action. Its sheet, form and copy button are unchanged.
+ * The username as a settings row — label, name, action — with the editor in a
+ * popover anchored to its action, and copy beside it.
  */
 function UsernameRow({ profile }: { profile: ProfileResult }) {
-  const hasUsername = Boolean(profile.username);
+  const { t } = useLingui();
+  const [open, setOpen] = useState(false);
+  const copy = useCopyUsername();
+  const username = profile.username ?? null;
+
   return (
-    <div className="relative">
-      <div
-        className={cn(
-          "[&>section>div>:first-child]:grid [&>section>div>:first-child]:h-auto",
-          "[&>section>div>:first-child]:min-h-14 [&>section>div>:first-child]:gap-4",
-          "[&>section>div>:first-child]:grid-cols-[220px_minmax(0,1fr)_auto]",
-          "[&>section>div>:first-child]:ps-4 [&>section>div>:first-child]:pe-2.5",
-          "[&>section>div>:first-child]:hover:bg-muted/50",
-          "[&>section>div>:first-child>span:first-child]:hidden",
-          "[&>section>div>:first-child>span:nth-child(2)]:font-semibold",
-          "[&>section>div>:first-child>span:nth-child(3)]:max-w-none",
-          "[&>section>div>:first-child>span:nth-child(3)]:text-foreground",
-          "[&>section>div>:first-child>span[aria-hidden=true]]:hidden",
-        )}
-      >
-        <ProfileUsernameSection profile={profile} />
-      </div>
-      <span
-        aria-hidden="true"
-        className={cn(
-          "pointer-events-none absolute inset-y-0 flex items-center px-3 text-xs font-medium",
-          hasUsername ? "end-14" : "end-2.5",
-        )}
-      >
-        {hasUsername ? <Trans>Change username</Trans> : <Trans>Choose username</Trans>}
+    <section
+      aria-label={t`Username`}
+      className="grid min-h-14 grid-cols-[220px_minmax(0,1fr)_auto] items-center gap-4 border border-border bg-card ps-4 pe-2.5"
+    >
+      <span className="text-sm font-semibold">
+        <Trans>Username</Trans>
       </span>
-    </div>
+      <span className="min-w-0 truncate text-xs">
+        {username ? (
+          <bdi dir="auto" className="font-mono">
+            {username}
+          </bdi>
+        ) : (
+          <span className="text-muted-foreground">{t`Not set`}</span>
+        )}
+      </span>
+      <span className="flex items-center gap-1">
+        <PopoverRoot open={open} onOpenChange={setOpen}>
+          <PopoverTrigger render={<Button variant="ghost" />}>
+            {username ? <Trans>Change username</Trans> : <Trans>Choose username</Trans>}
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-96 p-0">
+            {/* Mounted only while open so each visit starts from the saved name. */}
+            {open ? <UsernameForm profile={profile} onClose={() => setOpen(false)} /> : null}
+          </PopoverContent>
+        </PopoverRoot>
+        {username ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t`Copy wallet username`}
+            onClick={() => copy(username)}
+          >
+            <RiFileCopyLine aria-hidden="true" />
+          </Button>
+        ) : null}
+      </span>
+    </section>
+  );
+}
+
+function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: () => void }) {
+  const { i18n, t } = useLingui();
+  const { form, current, submitError, clearSubmitError, saving } = useUsernameForm({
+    profile,
+    onClose,
+  });
+
+  return (
+    <form
+      aria-label={current ? t`Change username` : t`Choose username`}
+      className="grid gap-3 p-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        void form.handleSubmit();
+      }}
+    >
+      <PopoverTitle className="font-heading text-sm font-semibold">
+        {current ? <Trans>Change username</Trans> : <Trans>Choose username</Trans>}
+      </PopoverTitle>
+      <form.Field name="username">
+        {(field) => {
+          const err = getFieldError(field.state.meta.errors);
+          return (
+            <UsernameInput
+              id="desk-profile-username"
+              value={field.state.value}
+              hint={() => profile.name}
+              onChange={(next) => {
+                clearSubmitError();
+                field.handleChange(next);
+              }}
+              onBlur={field.handleBlur}
+              error={err ? translateValidationError(err, i18n) : null}
+            />
+          );
+        }}
+      </form.Field>
+      {current ? (
+        <p className="text-muted-foreground text-xs">
+          <Trans>
+            Your current username stops working as soon as you save, and someone else can then take
+            it.
+          </Trans>
+        </p>
+      ) : null}
+      {submitError ? (
+        <p className="text-destructive text-xs" role="alert">
+          {submitError}
+        </p>
+      ) : null}
+      <div className="flex justify-end gap-2 pt-1">
+        <Button type="button" variant="outline" disabled={saving} onClick={onClose}>
+          <Trans>Cancel</Trans>
+        </Button>
+        <form.Subscribe
+          selector={(state) => ({
+            canSubmit: state.canSubmit,
+            isSubmitting: state.isSubmitting,
+            username: state.values.username,
+          })}
+        >
+          {({ canSubmit, isSubmitting, username }) => {
+            const normalized = username.trim().normalize("NFC");
+            return (
+              <Button
+                type="submit"
+                disabled={!canSubmit || normalized === "" || normalized === current}
+                pending={isSubmitting}
+              >
+                {isSubmitting ? t`Saving…` : t`Save username`}
+              </Button>
+            );
+          }}
+        </form.Subscribe>
+      </div>
+    </form>
   );
 }

@@ -1,15 +1,6 @@
-import { ResourceUsage } from "#/components/resource-usage";
-import { useResourceUsage } from "#/hooks/use-resource-usage";
-import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
+import { locationSchema } from "@clc/core/features/location/logic";
+import { resolveMarkerStyle } from "@clc/core/features/markers/logic";
 import {
-  type MarkerColor,
-  type MarkerIcon,
-  resolveMarkerStyle,
-} from "@clc/core/features/markers/logic";
-import {
-  toVoucherDeployPayload,
-  type VoucherUnit,
-  voucherCreateSchema,
   voucherDescriptionSchema,
   voucherNameSchema,
   voucherPriceSchema,
@@ -27,17 +18,14 @@ import {
   optionalWebsiteSchema,
   TERMS_TEXT_MAX,
 } from "@clc/core/lib/contact";
-import { profilePrefill } from "@clc/core/features/signup/prefill";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { getAddress } from "viem";
-import { useConnection } from "wagmi";
+import { useRouter } from "@tanstack/react-router";
+import { useRef, useState } from "react";
 
 import { PublicContactWarning } from "#/components/public-contact-warning";
 import { PublicLocationWarning } from "#/components/public-location-warning";
+import { ResourceUsage } from "#/components/resource-usage";
 import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError } from "#/components/ui/field";
@@ -51,311 +39,46 @@ import { StepProgress } from "#/components/ui/step-progress";
 import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
+import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
+import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
-import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
-import { useTokenTags } from "#/hooks/use-deployment";
-import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
-import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
-import { isStorageConfigured } from "#/lib/api/storage";
 import {
-  beginVoucherCreateHistory,
-  exitVoucherCreateHistory,
-} from "#/lib/navigation/voucher-create-history";
+  useCreateVoucherForm,
+  VOUCHER_FORM_DEFAULTS,
+  type VoucherCreateStep,
+} from "#/features/vouchers/hooks/use-create-voucher-form";
+import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { VoucherDetailsRows } from "./voucher-details-rows";
-import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
-import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 
-export type VoucherCreateStep = "voucher" | "place" | "review";
+export type { VoucherCreateStep };
 
-type VoucherFormValues = {
-  name: string;
-  symbol: string;
-  price: string;
-  unitOfAccount: VoucherUnit;
-  description: string;
-  voucherType: "standard";
-  expiryDate: string;
-  decimals: string;
-  supply: string;
-  location: LocationInput | undefined;
-  tags: string[];
-  email: string;
-  website: string;
-  phone: string;
-  terms: string;
-  /** Form-only: whether `terms` is a link or the terms themselves. */
-  termsMode: "url" | "text";
-  iconUrl: string;
-  markerIcon: MarkerIcon | null;
-  markerColor: MarkerColor | null;
-  acceptedTerms: boolean;
-};
-
-const DEFAULT_VALUES: VoucherFormValues = {
-  name: "",
-  symbol: "",
-  price: "1",
-  unitOfAccount: "KES",
-  description: "",
-  voucherType: "standard",
-  expiryDate: "",
-  decimals: "6",
-  supply: "1000",
-  location: undefined,
-  tags: [],
-  email: "",
-  website: "",
-  phone: "",
-  terms: "",
-  termsMode: "url",
-  iconUrl: "",
-  markerIcon: null,
-  markerColor: null,
-  acceptedTerms: false,
-};
-
-/** The text fields a saved profile can seed, all of which default to "". */
-type SeedableTextField = "name" | "email" | "phone" | "website" | "description" | "iconUrl";
-
-const DETAIL_FIELDS = ["name", "symbol", "price", "supply", "description"] as const;
-/** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
-const ADVANCED_FIELDS = ["symbol", "price", "unitOfAccount"] as const;
-const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "iconUrl"] as const;
-
-export function CreateVoucherFlow({
-  step,
-  embedded = false,
-  advancedDefaultOpen = false,
-}: {
-  step: VoucherCreateStep;
-  /** Desktop canvas. Hides the back control, the step count, and the phone padding. */
-  embedded?: boolean;
-  /** Desktop opens Advanced on arrival. The phone leaves it closed. */
-  advancedDefaultOpen?: boolean;
-}) {
+export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const { i18n, t } = useLingui();
-  const navigate = useNavigate();
   const router = useRouter();
-  const { address } = useConnection();
-  const deployVoucher = useDeployVoucher();
-  const usage = useResourceUsage();
-  const tagsQuery = useTokenTags();
-  const profileQuery = useAuthProfile();
-  const draft = useVoucherCreateDraft((state) => state.draft);
-  const setDraft = useVoucherCreateDraft((state) => state.setDraft);
-  const hasPrefilledProfile = useRef(false);
   const advancedRef = useRef<HTMLDetailsElement>(null);
-  const suggestedSymbol = useSuggestedSymbol({
-    kind: "voucher",
-    initialSymbol: draft?.symbol ?? "",
-  });
-  const checkNameAvailable = useNameAvailabilityValidator("voucher");
   const [tagsOpen, setTagsOpen] = useState(false);
-  const [iconBusy, setIconBusy] = useState(false);
-  const [advancing, setAdvancing] = useState(false);
-
-  // Open once per visit to this step. A later render must not force it open
-  // again, or the user cannot close the disclosure.
-  useEffect(() => {
-    if (!advancedDefaultOpen || !advancedRef.current) return;
-    advancedRef.current.open = true;
-  }, [advancedDefaultOpen, step]);
-
-  const defaultValues: VoucherFormValues = draft
-    ? {
-        ...draft,
-        voucherType: "standard",
-        expiryDate: "",
-        decimals: "6",
-        iconUrl: draft.iconUrl ?? "",
-        termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
-      }
-    : DEFAULT_VALUES;
-  const form = useForm({
-    defaultValues,
-    validators: {
-      // A function rather than the schema itself: the form carries `termsMode`,
-      // which the schema neither knows nor needs, so the two types differ.
-      onSubmit: ({ value }) => {
-        const result = voucherCreateSchema.safeParse(value);
-        if (result.success) return undefined;
-        const fields: Record<string, string> = {};
-        for (const issue of result.error.issues) {
-          const key = issue.path.map(String).join(".");
-          if (key !== "" && !(key in fields)) fields[key] = issue.message;
-        }
-        return { fields };
-      },
-    },
-    onSubmit: async ({ value }) => {
-      if (usage.isError || !usage.data?.vouchers.canCreate) return;
-      if (!address) {
-        toast.error(t`Connect your wallet before publishing.`);
-        return;
-      }
-      const check = await suggestedSymbol.confirm(value.name, value.symbol);
-      if (!check.ok) {
-        toast.error(t`That symbol is already in use.`);
-        return;
-      }
-      if (check.symbol !== value.symbol) {
-        form.setFieldValue("symbol", check.symbol);
-        toast.info(t`Symbol was taken, using ${check.symbol} instead.`);
-      }
-      const parsed = voucherCreateSchema.parse({
-        ...value,
-        symbol: check.symbol,
-        voucherType: "standard",
-        expiryDate: "",
-        decimals: "6",
-      });
-      setDraft(parsed);
-      try {
-        const result = await deployVoucher.mutateAsync(
-          toVoucherDeployPayload(parsed, getAddress(address)),
-        );
-        // The opening supply rides along in the URL so the receipt can mint it
-        // as soon as the contract confirms, even after a reload loses the draft.
-        exitVoucherCreateHistory({
-          history: router.history,
-          destination: `/vouchers/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}&mintAmount=${encodeURIComponent(parsed.supply.trim())}`,
-        });
-      } catch (error) {
-        // The availability check is advisory, so a name free when the user left
-        // step 1 can be taken by the time they publish. Say which field is
-        // wrong and put them back in front of it rather than leaving a raw
-        // error code under a review screen they cannot act on.
-        if (error instanceof BackendApiError && error.code === "E11") {
-          toast.error(t`Limit reached. Ask an administrator to increase your allowance.`);
-          return;
-        }
-        if (error instanceof BackendApiError && error.kind === "conflict") {
-          toast.error(t`That voucher name was taken while you were filling this in.`);
-          void navigate({ to: "/vouchers/create/$step", params: { step: "voucher" } });
-          void form.validateField("name", "submit");
-          return;
-        }
-        toast.error(
-          error instanceof BackendApiError
-            ? formatBackendApiError(error)
-            : error instanceof Error
-              ? error.message
-              : t`Couldn't publish your voucher.`,
-        );
-      }
+  const {
+    form,
+    blocked,
+    deployVoucher,
+    tagsQuery,
+    profile,
+    checkNameAvailable,
+    trackSymbol,
+    suggestSymbolFor,
+    fillSuggestedSymbol,
+    iconBusy,
+    setIconBusy,
+    advancing,
+    goToPlace,
+    goToReview,
+  } = useCreateVoucherForm({
+    step,
+    revealAdvanced: () => {
+      if (advancedRef.current) advancedRef.current.open = true;
     },
   });
-
-  // Everything the issuer already told us about themselves during onboarding is
-  // the same thing this form asks for again, so it starts filled in. Only an
-  // untouched field still holding its default is seeded — a retry draft, or a
-  // value the issuer has typed over, always wins.
-  useEffect(() => {
-    const profile = profileQuery.data;
-    if (hasPrefilledProfile.current || !profile || draft) return;
-    hasPrefilledProfile.current = true;
-
-    const prefill = profilePrefill(profile);
-
-    function seedText(name: SeedableTextField, value: string) {
-      if (!value) return;
-      if (form.getFieldMeta(name)?.isTouched) return;
-      if (form.getFieldValue(name) !== "") return;
-      form.setFieldValue(name, value, { dontUpdateMeta: true });
-    }
-
-    seedText("email", prefill.email);
-    seedText("phone", prefill.phone);
-    seedText("website", prefill.website);
-    seedText("name", prefill.name ? `${prefill.name} Voucher` : "");
-    // The bio is free text with no minimum, so it only becomes a description
-    // when it would pass as one.
-    if (voucherDescriptionSchema.safeParse(prefill.description).success) {
-      seedText("description", prefill.description);
-    }
-    // Only where the upload fields are rendered: seeding a hidden field would
-    // attach a photo the issuer was never shown.
-    if (isStorageConfigured) seedText("iconUrl", prefill.imageUrl);
-
-    if (
-      prefill.unitOfAccount &&
-      !form.getFieldMeta("unitOfAccount")?.isTouched &&
-      form.getFieldValue("unitOfAccount") === DEFAULT_VALUES.unitOfAccount
-    ) {
-      form.setFieldValue("unitOfAccount", prefill.unitOfAccount, { dontUpdateMeta: true });
-    }
-
-    if (
-      prefill.location &&
-      !form.getFieldMeta("location")?.isTouched &&
-      form.getFieldValue("location") === undefined
-    ) {
-      form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
-    }
-  }, [draft, form, profileQuery.data]);
-
-  useEffect(() => {
-    if (step === "voucher") beginVoucherCreateHistory(router.history);
-  }, [router.history, step]);
-
-  useEffect(() => {
-    if (step === "voucher") return;
-    if (voucherNameSchema.safeParse(form.getFieldValue("name")).success) return;
-    void navigate({
-      to: "/vouchers/create/$step",
-      params: { step: "voucher" },
-      replace: true,
-    });
-  }, [form, navigate, step]);
-
-  async function fieldsAreValid(fields: readonly (keyof VoucherFormValues)[]) {
-    const results = await Promise.all(
-      fields.map((field) => Promise.resolve(form.validateField(field, "submit"))),
-    );
-    return results.every((errors) => errors.length === 0);
-  }
-
-  /**
-   * Writes the derived symbol into the still-empty field.
-   *
-   * Called both when "Advanced" unfolds and on the way out of the step: the
-   * field is only ever looked at from inside the disclosure, so a suggestion
-   * that arrives at Next is one the user never sees being made.
-   */
-  async function fillSuggestedSymbol() {
-    if (form.getFieldValue("symbol") !== "") return;
-    const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
-    if (symbol) form.setFieldValue("symbol", symbol);
-  }
-
-  async function goToPlace() {
-    // The symbol lookup and the name check reach the backend, so Next waits
-    // visibly rather than looking dead.
-    setAdvancing(true);
-    try {
-      // Blur may not have fired, or its lookup may still be in flight.
-      await fillSuggestedSymbol();
-      if (!(await fieldsAreValid(DETAIL_FIELDS))) {
-        if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
-          if (advancedRef.current) advancedRef.current.open = true;
-        }
-        return;
-      }
-    } finally {
-      setAdvancing(false);
-    }
-    void navigate({ to: "/vouchers/create/$step", params: { step: "place" } });
-  }
-
-  async function goToReview() {
-    if (iconBusy) return;
-    if (!(await fieldsAreValid(PLACE_FIELDS))) return;
-    void navigate({ to: "/vouchers/create/$step", params: { step: "review" } });
-  }
 
   const progressStep = step === "voucher" ? 1 : step === "place" ? 2 : 3;
   const fallbackTo =
@@ -365,14 +88,10 @@ export function CreateVoucherFlow({
         ? "/vouchers/create/voucher"
         : "/wallet/vouchers";
 
-  if (usage.isError || !usage.data?.vouchers.canCreate) {
+  if (blocked) {
     return (
-      <div
-        className={
-          embedded ? "space-y-5" : "min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12"
-        }
-      >
-        {embedded ? null : <BackChevron label={t`Vouchers`} to="/" />}
+      <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12">
+        <BackChevron label={t`Vouchers`} to="/" />
         <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Create voucher</Trans>
         </h1>
@@ -382,23 +101,15 @@ export function CreateVoucherFlow({
   }
 
   return (
-    <div
-      className={
-        embedded
-          ? "flex flex-col"
-          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
-      }
-    >
-      {embedded ? null : (
-        <BackChevron
-          label={step === "voucher" ? t`Vouchers` : t`Back`}
-          to={fallbackTo}
-          onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
-          className="self-start"
-        />
-      )}
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <BackChevron
+        label={step === "voucher" ? t`Vouchers` : t`Back`}
+        to={fallbackTo}
+        onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
+        className="self-start"
+      />
 
-      {embedded ? null : <StepProgress step={progressStep} total={3} />}
+      <StepProgress step={progressStep} total={3} />
       <ResourceUsage resource="vouchers" />
 
       <form
@@ -415,25 +126,23 @@ export function CreateVoucherFlow({
               <Trans>Create voucher</Trans>
             </h1>
 
-            {embedded ? null : (
-              <aside
-                className="mt-3.5 border border-primary/30 bg-card"
-                aria-labelledby="voucher-guidance-title"
+            <aside
+              className="mt-3.5 border border-primary/30 bg-card"
+              aria-labelledby="voucher-guidance-title"
+            >
+              <p
+                id="voucher-guidance-title"
+                className="border-primary/20 border-b bg-primary/[0.08] px-4 py-2.5 font-semibold text-primary text-sm leading-tight"
               >
-                <p
-                  id="voucher-guidance-title"
-                  className="border-primary/20 border-b bg-primary/[0.08] px-4 py-2.5 font-semibold text-primary text-sm leading-tight"
-                >
-                  <Trans>What's a voucher?</Trans>
-                </p>
-                <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
-                  <Trans>
-                    A voucher acts like a gift card for your offers. When someone redeems your
-                    voucher, you are committing to provide them with your offers.
-                  </Trans>
-                </p>
-              </aside>
-            )}
+                <Trans>What's a voucher?</Trans>
+              </p>
+              <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
+                <Trans>
+                  A voucher acts like a gift card for your offers. When someone redeems your
+                  voucher, you are committing to provide them with your offers.
+                </Trans>
+              </p>
+            </aside>
 
             <div className="mt-3.5 space-y-3.5">
               {/*
@@ -466,9 +175,7 @@ export function CreateVoucherFlow({
                       onChange={(event) => field.handleChange(event.target.value)}
                       onBlur={() => {
                         field.handleBlur();
-                        void suggestedSymbol.suggest(field.state.value).then((symbol) => {
-                          if (symbol !== undefined) form.setFieldValue("symbol", symbol);
-                        });
+                        suggestSymbolFor(field.state.value);
                       }}
                       placeholder={t`e.g. Community Market`}
                       aria-invalid={field.state.meta.errors.length > 0}
@@ -480,8 +187,8 @@ export function CreateVoucherFlow({
               <form.Field
                 name="supply"
                 validators={{
-                  onBlur: voucherSupplySchema(DEFAULT_VALUES.decimals),
-                  onSubmit: voucherSupplySchema(DEFAULT_VALUES.decimals),
+                  onBlur: voucherSupplySchema(VOUCHER_FORM_DEFAULTS.decimals),
+                  onSubmit: voucherSupplySchema(VOUCHER_FORM_DEFAULTS.decimals),
                 }}
               >
                 {(field) => (
@@ -581,7 +288,7 @@ export function CreateVoucherFlow({
                           onChange={(event) => {
                             const symbol = event.target.value.toUpperCase();
                             field.handleChange(symbol);
-                            suggestedSymbol.track(symbol);
+                            trackSymbol(symbol);
                           }}
                           onBlur={field.handleBlur}
                           placeholder={t`e.g. MARKET`}
@@ -856,7 +563,7 @@ export function CreateVoucherFlow({
                   >
                     <PhoneInputField
                       id="voucher-phone"
-                      defaultCountry={profileQuery.data?.country}
+                      defaultCountry={profile?.country}
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value)}
                       aria-invalid={field.state.meta.errors.length > 0}
@@ -1019,7 +726,7 @@ export function CreateVoucherFlow({
                     type="submit"
                     tap
                     className="w-full"
-                    disabled={!acceptedTerms || usage.isError || !usage.data?.vouchers.canCreate}
+                    disabled={!acceptedTerms || blocked}
                     pending={isSubmitting || deployVoucher.isPending}
                   >
                     {isSubmitting || deployVoucher.isPending ? (

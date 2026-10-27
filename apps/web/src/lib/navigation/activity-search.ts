@@ -1,10 +1,19 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import { getAddress, isAddress } from "viem";
 
 export const ACTIVITY_KIND_ORDER = ["creation", "sent", "received", "swapped"] as const;
+
+/** Date windows the desktop activity table filters its loaded rows by. */
+export const ACTIVITY_RANGES = ["7d", "30d", "90d"] as const;
+export type ActivityRange = (typeof ACTIVITY_RANGES)[number];
 
 export type ActivityRouteSearch = {
   activityQ?: string | readonly string[];
   activityTypes?: string | readonly string[];
+  /** Desktop only: one voucher's rows, by checksummed token address. */
+  activityVoucher?: string | readonly string[];
+  /** Desktop only: a date window over the loaded rows. */
+  activityRange?: string | readonly string[];
   /** Selected activity row. Opening it pushes history so Back closes the inspector. */
   tx?: string;
 };
@@ -19,10 +28,14 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
   const record = search as Record<string, unknown>;
   const activityQ = pickStringSearchValue(record.activityQ);
   const activityTypes = pickStringSearchValue(record.activityTypes);
+  const activityVoucher = pickStringSearchValue(record.activityVoucher);
+  const activityRange = pickStringSearchValue(record.activityRange);
   const tx = typeof record.tx === "string" && record.tx.length > 0 ? record.tx : undefined;
   return {
     ...(activityQ !== undefined ? { activityQ } : {}),
     ...(activityTypes !== undefined ? { activityTypes } : {}),
+    ...(activityVoucher !== undefined ? { activityVoucher } : {}),
+    ...(activityRange !== undefined ? { activityRange } : {}),
     ...(tx !== undefined ? { tx } : {}),
   };
 }
@@ -46,21 +59,53 @@ export function parseActivitySearch(search: unknown): ActivitySearch {
   return { q, types: ACTIVITY_KIND_ORDER.filter((kind) => selected.has(kind)) };
 }
 
+export function parseActivityDeskFilters(search: unknown): {
+  voucher?: `0x${string}`;
+  range?: ActivityRange;
+} {
+  const raw = pickActivitySearch(search);
+  const voucherValue = toValues(raw.activityVoucher)[0];
+  const rangeValue = toValues(raw.activityRange)[0];
+  return {
+    voucher:
+      voucherValue !== undefined && isAddress(voucherValue, { strict: false })
+        ? getAddress(voucherValue)
+        : undefined,
+    range: (ACTIVITY_RANGES as readonly string[]).includes(rangeValue ?? "")
+      ? (rangeValue as ActivityRange)
+      : undefined,
+  };
+}
+
 export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSearch | null {
   const raw = pickActivitySearch(search);
   const parsed = parseActivitySearch(raw);
+  const desk = parseActivityDeskFilters(raw);
   const canonical: ActivityRouteSearch = {
     activityQ: parsed.q || undefined,
     activityTypes: parsed.types.length ? parsed.types.join(",") : undefined,
+    ...(raw.activityVoucher !== undefined ? { activityVoucher: desk.voucher } : {}),
+    ...(raw.activityRange !== undefined ? { activityRange: desk.range } : {}),
   };
-  if (raw.activityQ === canonical.activityQ && raw.activityTypes === canonical.activityTypes) {
+  if (
+    raw.activityQ === canonical.activityQ &&
+    raw.activityTypes === canonical.activityTypes &&
+    raw.activityVoucher === canonical.activityVoucher &&
+    raw.activityRange === canonical.activityRange
+  ) {
     return null;
   }
   return canonical;
 }
 
 export function clearActivityRouteSearch(): ActivityRouteSearch {
-  return { activityQ: undefined, activityTypes: undefined, tx: undefined };
+  return {
+    activityQ: undefined,
+    activityTypes: undefined,
+    activityVoucher: undefined,
+    activityRange: undefined,
+    tx: undefined,
+  };
 }
 
 function pickStringSearchValue(value: unknown): string | readonly string[] | undefined {

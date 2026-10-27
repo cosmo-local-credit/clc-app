@@ -15,7 +15,7 @@ import { DeskCanvas, DeskTitleRow } from "#/desktop/ui/page";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
-import { ReportFilterFeedback } from "#/features/home/ui/report-filter-ui";
+import { useReportFilterNotice } from "#/features/home/hooks/use-report-filter-notice";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { formatReportDate } from "#/lib/report-display";
@@ -51,6 +51,12 @@ export function PostsDesk() {
     },
     true,
   );
+  const notice = useReportFilterNotice({
+    filter,
+    error: feed.error,
+    onRetry: feed.retry,
+    retrying: feed.retrying,
+  });
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const reports = feed.reports;
   const isRefining = feed.status === "refining" || filter.isDebouncing;
@@ -106,12 +112,24 @@ export function PostsDesk() {
           ) : null}
         </div>
 
-        <ReportFilterFeedback
-          filter={filter}
-          error={feed.error}
-          onRetry={feed.retry}
-          retrying={feed.retrying}
-        />
+        {notice ? (
+          <div
+            role="alert"
+            className="flex min-h-14 items-center gap-3 border border-border bg-card px-4 py-2.5"
+          >
+            <p className="min-w-0 flex-1 text-sm">{notice.message}</p>
+            {notice.actionLabel && notice.onAction ? (
+              <Button
+                variant="outline"
+                className="shrink-0"
+                pending={notice.actionPending}
+                onClick={notice.onAction}
+              >
+                {notice.actionLabel}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
         <MarketViewportSearchNotice query={filter.result.ok ? filter.result.filter.term : ""} />
 
         {feed.status === "loading" ? (

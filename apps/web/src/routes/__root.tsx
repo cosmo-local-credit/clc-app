@@ -45,6 +45,7 @@ import {
 import { AppI18nProvider } from "#/providers/i18n";
 import { DesktopBoundary } from "#/desktop/shell/boundary";
 import { layoutBootstrapScript, useLayout } from "#/desktop/layout";
+import { LayoutSwitch } from "#/desktop/switch";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
@@ -62,6 +63,12 @@ const AppDevtools = import.meta.env.DEV
       })),
     )
   : null;
+
+const SafePendingDesk = lazy(() =>
+  import("#/desktop/safe/safe-pending-desk").then((module) => ({
+    default: module.SafePendingDesk,
+  })),
+);
 
 const EncryptedPaperWalletImportForm = lazy(() =>
   import("#/components/encrypted-paper-wallet-import-form").then((module) => ({
@@ -254,7 +261,7 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
-      <SafePendingSheet />
+      <LayoutSwitch mobile={<SafePendingSheet />} desktop={<SafePendingDesk />} />
       <IntroductionProvider
         desktop={layout === "desktop"}
         suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}

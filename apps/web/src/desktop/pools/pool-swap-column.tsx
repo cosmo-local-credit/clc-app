@@ -19,6 +19,7 @@ import { Button } from "#/components/ui/button";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { TokenLogo, type WalletToken, WalletAmountInput } from "#/components/wallet";
+import { DeskSwapFee } from "#/desktop/pools/detail/desk-swap-fee";
 import { DeskKV } from "#/desktop/ui/kv";
 import {
   type PoolSwapQuoteMode,
@@ -38,7 +39,6 @@ import {
 import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
-import { PoolSwapFeeValue } from "#/features/pools/ui/pool-swap-fee-value";
 
 /**
  * The pool's swap, in the detail page's 360px side column. Quote, maximum, and confirmation use
@@ -397,16 +397,14 @@ export function PoolSwapColumn({
     breakdown: typeof displayedFeeBreakdown,
     pending = false,
   ) => (
-    <span className="block [&>span]:items-start [&>span>span]:text-start">
-      <PoolSwapFeeValue
-        breakdown={breakdown}
-        part={part}
-        decimals={toDecimals}
-        symbol={receiveSymbol}
-        locale={locale}
-        pending={pending}
-      />
-    </span>
+    <DeskSwapFee
+      breakdown={breakdown}
+      part={part}
+      decimals={toDecimals}
+      symbol={receiveSymbol}
+      locale={locale}
+      pending={pending}
+    />
   );
 
   let body: ReactNode;
@@ -806,7 +804,13 @@ function AmountBox({
         label={label}
         highlighted={highlighted}
         value={amount}
-        style={{ height: "4rem", paddingInlineEnd: "9rem", paddingInlineStart: "0.875rem" }}
+        // Start-aligned like the mock; the phone keeps the input's end alignment.
+        style={{
+          height: "4rem",
+          paddingInlineEnd: "9rem",
+          paddingInlineStart: "0.875rem",
+          textAlign: "start",
+        }}
         onValueChange={(value) => {
           onFocus();
           onAmountChange(sanitizeAmount(value));

@@ -1,7 +1,5 @@
-import { catalogDetailQueryOptions } from "@clc/api/features/catalogs/queries";
 import { BackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
@@ -15,8 +13,7 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { BackChevron } from "#/components/wallet";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { catalogsClient } from "#/lib/api/catalogs";
+import { useCatalogDetail } from "../hooks/use-catalog-detail";
 import { CatalogForm } from "./catalog-form";
 import { CatalogMembers } from "./catalog-members";
 import { CatalogShareButton } from "./catalog-share-button";
@@ -24,13 +21,8 @@ import { ListSkeleton } from "#/components/ui/list-skeleton";
 
 export function CatalogDetailPage({ id }: { id: string }) {
   const { t } = useLingui();
-  const auth = useAuthStatus();
-  const query = useQuery({ ...catalogDetailQueryOptions(catalogsClient, id), retry: false });
+  const { query, catalog, owner } = useCatalogDetail(id);
   const [editing, setEditing] = useState(false);
-  const catalog = query.data;
-  const owner =
-    auth.isAuthenticated &&
-    catalog?.ownerAddress.toLowerCase() === auth.session?.address.toLowerCase();
   return (
     <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-bottom-nav">
       <BackChevron label={t`Catalogs`} to="/market" search={{ scope: "catalogs" }} />

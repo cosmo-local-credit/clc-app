@@ -142,3 +142,20 @@ export function useSafeOwnersSignedBy(
   }
   return signed;
 }
+
+/**
+ * One multisig's signers and threshold from the same backend projection, or
+ * undefined until it loads (and while the feature is off).
+ */
+export function useSafeSigners(
+  safe: string,
+): Extract<AssetOwnerInfo, { kind: "safe" }> | undefined {
+  const query = useQuery({
+    queryKey: assetOwnerProjectionKey(safe.toLowerCase()),
+    queryFn: ({ signal }) => safeClient.owner(safe, signal),
+    enabled: SAFE_OWNERSHIP_ENABLED && isAddress(safe),
+    staleTime: 30_000,
+    retry: false,
+  });
+  return query.data?.kind === "safe" ? query.data : undefined;
+}

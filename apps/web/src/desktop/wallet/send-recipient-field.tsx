@@ -32,12 +32,15 @@ export function SendRecipientField({
   onValueChange,
   onRecipientChange,
   ariaLabel,
+  allowPools = true,
 }: {
   id: string;
   value: string;
   onValueChange: (value: string) => void;
   onRecipientChange: (recipient: ResolvedRecipientAddress | null) => void;
   ariaLabel: string;
+  /** Send can pay a pool; a fee recipient must be a wallet, as on the phone. */
+  allowPools?: boolean;
 }) {
   const { t } = useLingui();
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -53,7 +56,7 @@ export function SendRecipientField({
   const directAddress = isAddress(trimmedQuery) ? (trimmedQuery as `0x${string}`) : null;
   const reverseResolution = useReverseRecipientResolution(directAddress);
   const searchTerm = !directAddress && trimmedQuery !== "" ? trimmedQuery : null;
-  const search = useRecipientSearch(searchTerm, true);
+  const search = useRecipientSearch(searchTerm, allowPools);
   const currentSelection = selected?.query === trimmedQuery ? selected.identity : null;
   const recipient: ResolvedRecipientAddress | null = directAddress
     ? {

@@ -4,7 +4,7 @@ import { formatVoucherRate } from "@clc/core/features/market/logic";
 import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { Suspense, useMemo, useState, type ComponentProps, type ReactNode } from "react";
+import { Suspense, useState, type ComponentProps, type ReactNode } from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -30,7 +30,7 @@ import {
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
-import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useVoucherTransfers } from "#/features/wallet/hooks/use-voucher-transfers";
 import {
   formatTransferDate,
   formatTransferUnitValue,
@@ -393,17 +393,9 @@ function VoucherActivityPanel({
   contractAddress: string;
 }) {
   const { i18n } = useLingui();
-  const transfersQuery = useAccountTransfersInfinite(accountAddress, { poll: true });
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
-  const [visibleCount, setVisibleCount] = useState(3);
-  const transfers = useMemo(() => {
-    const allTransfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
-    return allTransfers.filter(
-      (transfer) => transfer.tokenAddress.toLowerCase() === contractAddress.toLowerCase(),
-    );
-  }, [contractAddress, transfersQuery.data]);
-  const visibleTransfers = transfers.slice(0, visibleCount);
-  const hasMoreTransfers = visibleCount < transfers.length || transfersQuery.hasNextPage;
+  const { transfersQuery, transfers, visibleTransfers, hasMoreTransfers, loadMore } =
+    useVoucherTransfers(accountAddress, contractAddress);
 
   return (
     <>
@@ -519,15 +511,7 @@ function VoucherActivityPanel({
           tap
           className="w-full"
           pending={transfersQuery.isFetchingNextPage}
-          onClick={() => {
-            if (visibleCount >= transfers.length && transfersQuery.hasNextPage) {
-              void Promise.resolve(transfersQuery.fetchNextPage()).then(() =>
-                setVisibleCount((current) => current + 3),
-              );
-              return;
-            }
-            setVisibleCount((current) => current + 3);
-          }}
+          onClick={loadMore}
         >
           {transfersQuery.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>

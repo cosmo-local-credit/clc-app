@@ -1,13 +1,15 @@
 import type { ResourceKind, ResourceUsage } from "@clc/api/features/resource-limits/client";
 import type { AccountActivityItem } from "@clc/api/features/accounts/client";
 import { myWantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
+import type { Want } from "@clc/core/features/wants/logic";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic";
 import { offrampTokenSymbol } from "@clc/core/features/wallet/pretium";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { useMemo, useState, type ReactNode } from "react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useMemo, type ReactNode } from "react";
 import { RiBankCardLine, RiDownloadLine, RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
 
@@ -23,10 +25,10 @@ import type { DeskColumn } from "#/desktop/ui/data-table";
 import { DeskTable } from "#/desktop/ui/data-table";
 import {
   DeskCanvas,
+  DeskEyebrow,
   DeskRow,
   DeskRowList,
   DeskSection,
-  DeskTitle,
   deskSectionLinkClass,
 } from "#/desktop/ui/page";
 import { DeskChip } from "#/desktop/ui/segment";
@@ -34,15 +36,16 @@ import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useHoldingPools } from "#/features/wallet/hooks/use-holding-pools";
+import { useWalletValuation } from "#/features/wallet/hooks/use-wallet-valuation";
 import { useWalletVoucherPreview } from "#/features/wallet/hooks/use-wallet-voucher-preview";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { wantsClient } from "#/lib/api/wants";
 import { CHAIN_ID } from "#/lib/chain";
+import type { HoldingsFilter } from "#/lib/navigation/home-tabs";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
-
-type HoldingsFilter = "all" | "vouchers" | "stables";
 
 /**
  * The Wallet tab on a wide screen: one three-column grid. The band spans all
@@ -73,7 +76,16 @@ export function WalletDesk() {
     const owner = pool.ownerAddress?.toLowerCase();
     return !!owner && (owner === account || signedSafes.has(owner));
   });
-  const [filter, setFilter] = useState<HoldingsFilter>("all");
+  const navigate = useNavigate({ from: "/" });
+  const filter: HoldingsFilter | "all" =
+    useSearch({ strict: false, select: (search) => search.holdings }) ?? "all";
+  const setFilter = (next: HoldingsFilter | "all") =>
+    void navigate({
+      to: "/",
+      search: (prev) => ({ ...prev, holdings: next === "all" ? undefined : next }),
+      replace: true,
+    });
+  const valuation = useWalletValuation(address);
 
   // Everything the account holds: other issuers' vouchers, then its own with a
   // balance, each marked Admin as on the All Vouchers screen.
@@ -89,6 +101,14 @@ export function WalletDesk() {
     const stable = isStable(token);
     return filter === "stables" ? stable : !stable;
   });
+  const holdingPools = useHoldingPools(
+    shown.flatMap((token) => {
+      const tokenAddress = parseVoucherAddress(token.contractAddress ?? token.id);
+      return tokenAddress && !isStable(token) ? [tokenAddress] : [];
+    }),
+  );
+  const unitLabel = valuation.unit;
+  const formatValue = (value: string) => formatUnitOfAccountDisplayValue(value, locale) ?? value;
 
   const holdingColumns = useMemo<DeskColumn<WalletToken>[]>(
     () => [
@@ -100,14 +120,7 @@ export function WalletDesk() {
           <span className="flex min-w-0 items-center gap-3">
             <TokenLogo token={row} size={28} />
             <span className="min-w-0">
-              <span className="flex min-w-0 items-center gap-2">
-                <span className="truncate text-sm font-semibold">{row.name}</span>
-                {row.admin ? (
-                  <Badge variant="outline" size="sm" caps>
-                    <Trans>Admin</Trans>
-                  </Badge>
-                ) : null}
-              </span>
+              <span className="block truncate text-sm font-semibold">{row.name}</span>
               <span className="block truncate font-mono text-xs text-muted-foreground" dir="ltr">
                 {row.symbol}
               </span>
@@ -116,10 +129,40 @@ export function WalletDesk() {
         ),
       },
       {
+        id: "pools",
+        header: t`Pools`,
+        width: "10rem",
+        cell: (row) => {
+          if (row.admin) {
+            return (
+              <Badge variant="outline" size="sm" caps>
+                <Trans>Admin</Trans>
+              </Badge>
+            );
+          }
+          const entry = holdingPools.get((row.contractAddress ?? row.id).toLowerCase());
+          if (entry === undefined && !isStable(row)) return <Spinner />;
+          const first = entry?.pools[0];
+          if (!first) return <Dash />;
+          return (
+            <span className="flex min-w-0 items-center gap-1.5">
+              <Badge variant="outline" size="sm" className="min-w-0 truncate">
+                {first.name}
+              </Badge>
+              {entry.pools.length > 1 || entry.more ? (
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  +{entry.more ? `${entry.pools.length - 1}+` : entry.pools.length - 1}
+                </span>
+              ) : null}
+            </span>
+          );
+        },
+      },
+      {
         id: "balance",
         header: t`Balance`,
         align: "end",
-        width: "10rem",
+        width: "7.5rem",
         sortValue: (row) => Number(row.balance ?? 0),
         cell: (row) => (
           <span className="font-heading text-base font-semibold tracking-tight" dir="ltr">
@@ -127,8 +170,30 @@ export function WalletDesk() {
           </span>
         ),
       },
+      {
+        id: "value",
+        header: unitLabel ? t`Value (${unitLabel})` : t`Value`,
+        align: "end",
+        width: "8.5rem",
+        sortValue: (row) => {
+          const value = valuation.values.get((row.contractAddress ?? row.id).toLowerCase());
+          return value?.status === "priced" ? Number(value.value) : -1;
+        },
+        cell: (row) => {
+          const value = valuation.values.get((row.contractAddress ?? row.id).toLowerCase());
+          if (value === undefined || value.status === "pending") {
+            return valuation.isError ? <Dash /> : <Spinner />;
+          }
+          if (value.status === "unpriced") return <Dash />;
+          return (
+            <span className="font-mono text-sm font-semibold" dir="ltr">
+              {formatValue(value.value)}
+            </span>
+          );
+        },
+      },
     ],
-    [t],
+    [t, holdingPools, valuation, unitLabel, formatValue],
   );
 
   const copyAddress = (value: string) => {
@@ -152,9 +217,33 @@ export function WalletDesk() {
         className="col-span-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border border-border bg-card p-5"
       >
         <div className="grid min-w-0 gap-1">
-          <DeskTitle>
+          <h1 className="sr-only">
             <Trans>Wallet</Trans>
-          </DeskTitle>
+          </h1>
+          <DeskEyebrow>
+            <Trans>Total value</Trans>
+          </DeskEyebrow>
+          <p className="flex min-h-11 min-w-0 items-baseline gap-2" aria-live="polite">
+            {valuation.isPending ? (
+              <Spinner />
+            ) : valuation.isError || !unitLabel ? (
+              <span className="font-heading text-[2.25rem] leading-tight font-semibold tracking-tight text-muted-foreground">
+                —
+              </span>
+            ) : (
+              <>
+                <span
+                  className="min-w-0 truncate font-heading text-[2.25rem] leading-tight font-semibold tracking-tight"
+                  dir="ltr"
+                >
+                  {formatValue(valuation.total)}
+                </span>
+                <span className="shrink-0 font-mono text-sm font-semibold text-muted-foreground">
+                  {unitLabel}
+                </span>
+              </>
+            )}
+          </p>
           {address ? (
             <button
               type="button"
@@ -191,7 +280,7 @@ export function WalletDesk() {
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/wallet/top-up">
+            <Link to="/wallet/top-up" search={{ sheet: "add" }}>
               <Trans>Top up</Trans>
             </Link>
           </Button>
@@ -511,6 +600,7 @@ export function WalletDesk() {
                 <DeskRow
                   lead={<WantPicture want={want} />}
                   title={want.name}
+                  subtitle={<WantWhen want={want} locale={locale} />}
                   trail={
                     <Badge variant={want.state === "active" ? "primary" : "outline"} size="sm" caps>
                       {want.state === "scheduled" ? (
@@ -581,6 +671,32 @@ function ActivityAmount({ item }: { item: AccountActivityItem }) {
       <span className="text-2xs text-muted-foreground">{leg.tokenSymbol}</span>
     </span>
   );
+}
+
+function Dash() {
+  return (
+    <span className="text-muted-foreground" dir="ltr">
+      —
+    </span>
+  );
+}
+
+/**
+ * When a Want ends, or began. A Want carries its start and its expiry and no
+ * closing date (`wantSchema` has no `closedAt`/`updatedAt`), so a closed Want
+ * shows its badge alone.
+ */
+function WantWhen({ want, locale }: { want: Want; locale: string }) {
+  const date = (value: string) =>
+    new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(new Date(value));
+  if (want.state === "closed") return null;
+  if (want.state === "scheduled") {
+    const starts = date(want.startsAt);
+    return <Trans>Starts {starts}</Trans>;
+  }
+  if (!want.expiresAt) return <Trans>No ending date</Trans>;
+  const ends = date(want.expiresAt);
+  return want.state === "expired" ? <Trans>Expired {ends}</Trans> : <Trans>Expires {ends}</Trans>;
 }
 
 function SectionActions({ children }: { children: ReactNode }) {

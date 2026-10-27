@@ -11,6 +11,13 @@ const TopUpDesk = lazy(() =>
 
 export const Route = createFileRoute("/wallet/top-up")({
   staticData: { desktop: "fill" },
+  // Desktop inspector state: the open ramp form, or a history row by kind-reference.
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { sheet?: "add" | "withdraw"; tx?: string } => ({
+    sheet: search.sheet === "add" || search.sheet === "withdraw" ? search.sheet : undefined,
+    tx: typeof search.tx === "string" && search.tx.length > 0 ? search.tx : undefined,
+  }),
   component: TopUpRoute,
 });
 

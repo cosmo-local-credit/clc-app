@@ -374,6 +374,13 @@ is no Settings override and no `Sec-CH-Viewport-Width` hint.
 - Code lives in `apps/web/src/desktop/**`. Route files are the only other place
   that may import `#/desktop`. Desktop views are lazy chunks. They import
   feature hooks and `#/components/ui` primitives, never a mobile page component.
+- The desktop view is pure. It never mounts a phone page, flow, sheet, panel or
+  section, and never restyles one with descendant selectors. When a phone
+  component owns state, extract it into a feature hook that both views use.
+  Sheets become a popover, a dialog or the inspector. Where a phone rule and
+  DESKTOP.html disagree inside `desktop/`, the desktop design wins (e.g.
+  `size="tile"` cells on the voucher page); record the exception in the
+  contract test's allowlist.
 - No `md:` / `lg:` / `xl:` classes inside the layer. It only mounts at 1024px.
 - Carry the phone rules that are not about the 360px scaffold: tokens, brand,
   dark mode, the font trio, square corners, flat surfaces, button sizes (the

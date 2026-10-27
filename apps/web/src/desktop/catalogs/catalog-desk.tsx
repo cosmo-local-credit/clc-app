@@ -1,42 +1,42 @@
-import { catalogDetailQueryOptions } from "@clc/api/features/catalogs/queries";
+import type { Catalog, CatalogKind } from "@clc/core/features/catalogs/logic";
 import { BackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { RiPencilLine } from "react-icons/ri";
+import { RiAddLine, RiFileCopyLine, RiShareLine } from "react-icons/ri";
 
-import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { ListSkeleton } from "#/components/ui/list-skeleton";
-import { TagBadge } from "#/components/ui/tag-badge";
+import { ProgressiveImage } from "#/components/ui/progressive-image";
+import { Skeleton } from "#/components/ui/skeleton";
+import { MarketAvatar } from "#/desktop/market/market-bits";
 import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
-import { DeskCanvas, DeskTitle, DeskTitleRow } from "#/desktop/ui/page";
+import { DeskCanvas, DeskRowList, DeskSection, DeskTitle, DeskTitleRow } from "#/desktop/ui/page";
 import { useDeskTrailLabel } from "#/desktop/trail";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { CatalogForm } from "#/features/catalogs/ui/catalog-form";
-import { CatalogMembers } from "#/features/catalogs/ui/catalog-members";
-import { CatalogShareButton } from "#/features/catalogs/ui/catalog-share-button";
-import { catalogsClient } from "#/lib/api/catalogs";
-import { cn } from "#/lib/utils";
+import { useCatalogDetail } from "#/features/catalogs/hooks/use-catalog-detail";
+import { useCatalogForm } from "#/features/catalogs/hooks/use-catalog-form";
+import { useCatalogMembers } from "#/features/catalogs/hooks/use-catalog-members";
+import { useCatalogShare } from "#/features/catalogs/hooks/use-catalog-share";
+import { CatalogFieldsDesk, CatalogMarkDesk } from "./catalog-fields-desk";
+import { CatalogMemberPickerDesk } from "./catalog-member-picker-desk";
 
+/** A catalog: title row, description and tags, then Pools and Vouchers side by side. */
 export function CatalogDesk({ id }: { id: string }) {
   const { t } = useLingui();
-  const auth = useAuthStatus();
-  const query = useQuery({ ...catalogDetailQueryOptions(catalogsClient, id), retry: false });
+  const { query, catalog, owner } = useCatalogDetail(id);
   const [editing, setEditing] = useState(false);
-  const catalog = query.data;
-  const owner =
-    auth.isAuthenticated &&
-    catalog?.ownerAddress.toLowerCase() === auth.session?.address.toLowerCase();
   useDeskTrailLabel(catalog?.name);
 
   const page = (
-    <DeskCanvas width="read" className="max-w-[1164px]">
+    <DeskCanvas className="max-w-[1164px]">
       {query.isPending ? (
-        <ListSkeleton shape="cards" count={1} label={<Trans>Loading…</Trans>} />
+        <div className="grid gap-4" role="status" aria-label={t`Loading…`}>
+          <Skeleton className="h-14 w-96" />
+          <Skeleton className="h-40" />
+        </div>
       ) : query.isError ? (
-        <div className="space-y-3">
+        <div className="grid justify-items-start gap-3">
           <DeskTitle>
             {query.error instanceof BackendApiError && query.error.status === 404 ? (
               <Trans>Catalog not found.</Trans>
@@ -44,21 +44,14 @@ export function CatalogDesk({ id }: { id: string }) {
               <Trans>Couldn't load catalogs.</Trans>
             )}
           </DeskTitle>
-          <Button
-            variant="outline"
-            tap
-            pending={query.isFetching}
-            onClick={() => void query.refetch()}
-          >
+          <Button variant="outline" pending={query.isFetching} onClick={() => void query.refetch()}>
             <Trans>Retry</Trans>
           </Button>
         </div>
       ) : catalog ? (
         <>
           <div className="flex min-w-0 items-center gap-3">
-            <span className="[&>span]:size-14">
-              <CatalogPicture url={catalog.imageUrl} />
-            </span>
+            <CatalogMarkDesk url={catalog.imageUrl} size="lg" />
             <DeskTitleRow
               className="min-w-0 flex-1"
               title={
@@ -75,18 +68,13 @@ export function CatalogDesk({ id }: { id: string }) {
               }
               actions={
                 <>
-                  <CatalogShareButton
-                    id={catalog.id}
-                    name={catalog.name}
-                    className="border border-foreground/25 bg-card text-foreground"
-                  />
+                  <CatalogShareDesk id={catalog.id} name={catalog.name} />
                   {owner ? (
                     <Button
                       variant="outline"
                       aria-expanded={editing}
                       onClick={() => setEditing((open) => !open)}
                     >
-                      <RiPencilLine aria-hidden="true" />
                       <Trans>Edit catalog</Trans>
                     </Button>
                   ) : null}
@@ -104,15 +92,17 @@ export function CatalogDesk({ id }: { id: string }) {
               {catalog.tags.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5" aria-label={t`Tags`}>
                   {catalog.tags.map((tag) => (
-                    <TagBadge key={tag} tag={tag} />
+                    <Badge key={tag} variant="outline" size="sm">
+                      {tag}
+                    </Badge>
                   ))}
                 </div>
               ) : null}
             </div>
           ) : null}
-          <div className={MEMBERS_CLASS}>
-            <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
-            <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
+          <div className="grid grid-cols-2 items-start gap-4">
+            <CatalogMembersDesk catalogId={id} kind="pool" canEdit={owner} />
+            <CatalogMembersDesk catalogId={id} kind="voucher" canEdit={owner} />
           </div>
         </>
       ) : null}
@@ -126,7 +116,7 @@ export function CatalogDesk({ id }: { id: string }) {
         main={page}
         side={
           <DeskInspector title={<Trans>Edit catalog</Trans>} onClose={() => setEditing(false)}>
-            <CatalogForm catalog={catalog} onSaved={() => setEditing(false)} />
+            <CatalogEditDesk catalog={catalog} onSaved={() => setEditing(false)} />
           </DeskInspector>
         }
       />
@@ -134,16 +124,151 @@ export function CatalogDesk({ id }: { id: string }) {
   );
 }
 
-/**
- * Pools and Vouchers side by side, each a 30px header row over one white
- * row list. The members' own rows are separate tiles on the phone; here they
- * join into one tile with rules between them.
- */
-const MEMBERS_CLASS = cn(
-  "grid grid-cols-2 items-start gap-4",
-  "[&>section>div:first-child]:min-h-[30px] [&>section>div:first-child]:flex-nowrap",
-  "[&>section>div.border]:mb-0 [&>section>div.border]:min-h-14 [&>section>div.border]:px-3.5 [&>section>div.border]:py-2.5",
-  "[&>section>div.border+div.border]:border-t-0",
-  "[&>section>div.border_a>span:first-child]:size-9 [&>section>div.border_a>span:first-child_svg]:size-4",
-  "[&>section>div.border_a>span:last-child]:truncate [&>section>div.border_a>span:last-child]:text-sm [&>section>div.border_a>span:last-child]:font-semibold",
-);
+function CatalogEditDesk({ catalog, onSaved }: { catalog: Catalog; onSaved: () => void }) {
+  const model = useCatalogForm({ catalog, onSaved });
+  return <CatalogFieldsDesk model={model} submitLabel={<Trans>Save changes</Trans>} />;
+}
+
+function CatalogShareDesk({ id, name }: { id: string; name: string }) {
+  const share = useCatalogShare({ id, name });
+  const Icon = share.copyOnly ? RiFileCopyLine : RiShareLine;
+  return (
+    <Button variant="outline" size="icon" aria-label={share.label} onClick={share.activate}>
+      <Icon aria-hidden="true" />
+    </Button>
+  );
+}
+
+function CatalogMembersDesk({
+  catalogId,
+  kind,
+  canEdit,
+}: {
+  catalogId: string;
+  kind: CatalogKind;
+  canEdit: boolean;
+}) {
+  const { t } = useLingui();
+  const [adding, setAdding] = useState(false);
+  const { query, items, empty, remove, removeItem } = useCatalogMembers(catalogId, kind);
+  return (
+    <DeskSection
+      title={kind === "pool" ? <Trans>Pools</Trans> : <Trans>Vouchers</Trans>}
+      action={
+        canEdit ? (
+          <Button type="button" variant="outline" onClick={() => setAdding(true)}>
+            <RiAddLine aria-hidden="true" />
+            {kind === "pool" ? <Trans>Add a pool</Trans> : <Trans>Add a voucher</Trans>}
+          </Button>
+        ) : null
+      }
+    >
+      {query.isPending ? (
+        <DeskRowList>
+          {[0, 1].map((index) => (
+            <div key={index} className="flex min-h-14 items-center gap-3 px-3.5 py-2.5">
+              <Skeleton className="size-[34px]" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+          ))}
+        </DeskRowList>
+      ) : query.isError ? (
+        <div className="grid justify-items-start gap-2">
+          <p role="alert" className="text-sm">
+            <Trans>Couldn't load catalog items.</Trans>
+          </p>
+          <Button variant="outline" pending={query.isFetching} onClick={() => void query.refetch()}>
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : empty ? (
+        <p className="text-sm text-muted-foreground">
+          {kind === "pool" ? <Trans>No pools yet.</Trans> : <Trans>No vouchers yet.</Trans>}
+        </p>
+      ) : (
+        <div className="grid gap-2">
+          <DeskRowList>
+            {items.map((item) => {
+              const contents = (
+                <>
+                  {item.imageUrl ? (
+                    <span className="relative flex size-[34px] shrink-0 overflow-hidden border border-border">
+                      <ProgressiveImage
+                        src={item.imageUrl}
+                        alt=""
+                        className="size-full object-cover"
+                      />
+                    </span>
+                  ) : (
+                    <MarketAvatar
+                      name={item.name}
+                      seed={item.address}
+                      kind={kind === "pool" ? "pool" : "voucher"}
+                    />
+                  )}
+                  <span dir="auto" className="min-w-0 flex-1 truncate text-sm font-semibold">
+                    {item.name}
+                  </span>
+                </>
+              );
+              const linkClass = "flex min-w-0 flex-1 items-center gap-3 hover:underline";
+              return (
+                <div
+                  key={item.id}
+                  className="flex min-h-14 min-w-0 items-center gap-3 px-3.5 py-2.5"
+                >
+                  {kind === "pool" ? (
+                    <Link
+                      to="/pools/$poolAddress"
+                      params={{ poolAddress: item.address }}
+                      className={linkClass}
+                    >
+                      {contents}
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/vouchers/$voucherAddress"
+                      params={{ voucherAddress: item.address }}
+                      className={linkClass}
+                    >
+                      {contents}
+                    </Link>
+                  )}
+                  {canEdit ? (
+                    <Button
+                      variant="ghost"
+                      aria-label={t`Remove ${item.name}`}
+                      disabled={remove.isPending}
+                      pending={remove.isPending && remove.variables?.resourceId === item.id}
+                      onClick={() => void removeItem(item.id)}
+                    >
+                      <Trans>Remove</Trans>
+                    </Button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </DeskRowList>
+          {query.hasNextPage ? (
+            <Button
+              variant="outline"
+              className="w-full"
+              pending={query.isFetchingNextPage}
+              onClick={() => void query.fetchNextPage()}
+            >
+              {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
+            </Button>
+          ) : null}
+        </div>
+      )}
+      {canEdit ? (
+        <CatalogMemberPickerDesk
+          catalogId={catalogId}
+          kind={kind}
+          open={adding}
+          onOpenChange={setAdding}
+        />
+      ) : null}
+    </DeskSection>
+  );
+}

@@ -10,7 +10,6 @@ import { RiExternalLinkLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
-import { RedemptionReviewPrompt } from "#/components/reviews/redemption-review-prompt";
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import {
@@ -22,11 +21,11 @@ import {
 } from "#/components/wallet";
 import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import { useDeskTrailLabel } from "#/desktop/trail";
+import { RedemptionReviewDesk, SendShareDesk } from "#/desktop/wallet/send-share-desk";
 import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskCanvas, DeskRow, DeskRowList, DeskTitle } from "#/desktop/ui/page";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
-import { SendSharePanel } from "#/features/wallet/ui/send-receipt-page";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
@@ -265,10 +264,10 @@ export function SendReceiptDesk() {
               ]}
             />
             {outcome.kind === "success" && token && recipient ? (
-              <RedemptionReviewPrompt address={token} recipient={recipient} />
+              <RedemptionReviewDesk address={token} recipient={recipient} />
             ) : null}
             {outcome.kind === "success" && txHash && toAddress ? (
-              <SendSharePanel
+              <SendShareDesk
                 txHash={txHash}
                 recipientAddress={toAddress}
                 tokenAddress={token}

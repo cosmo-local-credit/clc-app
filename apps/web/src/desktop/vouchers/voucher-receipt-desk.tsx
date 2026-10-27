@@ -1,38 +1,29 @@
-import { createRelayerClient } from "@clc/api/features/relayer/client";
-import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
-import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
-import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { RiArrowDownSLine } from "react-icons/ri";
-import { toast } from "sonner";
-import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Field } from "#/components/ui/field";
-import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
 import { TagBadge } from "#/components/ui/tag-badge";
-import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
-import { DeskCanvas, DeskEyebrow, DeskTitle } from "#/desktop/ui/page";
-import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
-import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
-import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
-import { useVoucherSupply } from "#/features/vouchers/hooks/use-voucher-supply";
-import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
-import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
-import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
-import { useDeploymentContract } from "#/hooks/use-deployment";
-import { exitVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
-import { RELAYER_URL } from "#/lib/relayer-config";
+import { hueFromSeed } from "#/components/wallet/wallet-data";
+import { FailureCross, PendingClock, SuccessCheck } from "#/components/wallet";
+import { DeskKV } from "#/desktop/ui/kv";
+import { DeskEyebrow, DeskTitle } from "#/desktop/ui/page";
+import { DeskStep, DeskStepper, type DeskStepState } from "#/desktop/ui/stepper";
+import { useVoucherDeploymentReceipt } from "#/features/vouchers/hooks/use-voucher-deployment-receipt";
+import { cn } from "#/lib/utils";
 
-const relayerClient = createRelayerClient(RELAYER_URL);
+type Receipt = ReturnType<typeof useVoucherDeploymentReceipt>;
 
+/**
+ * `/vouchers/create/receipt` on desktop: the receipt and its two on-chain
+ * stages (the contract, then its first supply) on the left, the voucher as
+ * the Market will show it on the right. Every state comes from the phone
+ * receipt's hook.
+ */
 export function VoucherReceiptDesk({
   trackingId,
   mintTrackingId,
@@ -43,348 +34,170 @@ export function VoucherReceiptDesk({
   mintAmount?: string;
 }) {
   const { t } = useLingui();
-  const router = useRouter();
-  const navigate = useNavigate({ from: "/vouchers/create/receipt" });
-  const queryClient = useQueryClient();
-  const { address: walletAddress } = useConnection();
-  const delegationStatus = useCaliburDelegation(walletAddress as `0x${string}` | undefined);
-  const draft = useVoucherCreateDraft((state) => state.draft);
-  const clearDraft = useVoucherCreateDraft((state) => state.clearDraft);
-  const tracking = useOtxTracking(trackingId ?? null, { queryKey: "voucher-deploy-track" });
-  const contractQuery = useDeploymentContract(
-    trackingId ?? null,
-    "TOKEN",
-    tracking.outcome.kind === "success",
-  );
-  const contract = contractQuery.data;
-  const confirmed = contract?.status === "CONFIRMED" && contract.address !== null;
-  const voucherDetail = useMarketVoucherDetail(
-    confirmed && !draft ? (contract?.address ?? undefined) : undefined,
-  );
-
-  const [supply, setSupply] = useState(mintAmount ?? "");
-  const [supplyError, setSupplyError] = useState<string | null>(null);
-  const [submittedMintTrackingId, setSubmittedMintTrackingId] = useState<string | null>(null);
-  const mintSubmissionInFlight = useRef(false);
-  const activeMintTrackingId = submittedMintTrackingId ?? mintTrackingId ?? null;
-  const mint = useVoucherMint();
-  const mintTracking = useOtxTracking(activeMintTrackingId, {
-    queryKey: "voucher-mint-track",
-    queryFn: async (nextTrackingId) => (await relayerClient.trackRelay(nextTrackingId)).result,
-  });
-  const voucherSupply = useVoucherSupply(
-    confirmed && contract?.address ? contract.address : undefined,
-  );
-  const trackedMinted = mintTracking.outcome.kind === "success";
-  const onChainMinted = voucherSupply.data !== undefined && BigInt(voucherSupply.data) > 0n;
-  const minted = trackedMinted || onChainMinted;
-
-  useEffect(() => {
-    if (activeMintTrackingId && !mintTracking.isError && mintTracking.outcome.kind === "error") {
-      mintSubmissionInFlight.current = false;
-    }
-  }, [activeMintTrackingId, mintTracking.isError, mintTracking.outcome.kind]);
-
-  useEffect(() => {
-    if (!confirmed) return;
-    void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-    void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-  }, [confirmed, queryClient]);
-
-  useEffect(() => {
-    if (!minted) return;
-    void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-    void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-  }, [minted, queryClient]);
-
-  const decimals = contract?.decimals ?? (draft ? Number(draft.decimals) : null);
-  const walletPreparing = delegationStatus === "checking";
-
-  const submitMint = async () => {
-    if (mintSubmissionInFlight.current) return;
-    if (!confirmed || !contract?.address) return;
-    if (decimals === null || !Number.isInteger(decimals)) {
-      toast.error(t`Couldn't read how many decimals this voucher uses.`);
-      return;
-    }
-    if (voucherSupply.data === undefined || BigInt(voucherSupply.data) > 0n) return;
-    const parsed = voucherMintAmountSchema(decimals).safeParse(supply);
-    if (!parsed.success) {
-      setSupplyError(parsed.error.issues[0]?.message ?? "Supply must be greater than zero");
-      return;
-    }
-    if (!walletAddress) {
-      toast.error(t`Connect your wallet to create vouchers.`);
-      return;
-    }
-    if (!contract.admin) {
-      toast.error(t`Couldn't verify who owns this voucher.`);
-      return;
-    }
-    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) {
-      toast.error(t`Reconnect the wallet that published this voucher to create its supply.`);
-      return;
-    }
-    if (walletPreparing) return;
-    setSupplyError(null);
-    mintSubmissionInFlight.current = true;
-
-    const result = await mint
-      .mutateAsync({
-        tokenAddress: contract.address,
-        ownerAddress: contract.admin,
-        amountRaw: parseTokenAmount(parsed.data, decimals),
-        includeAuthorization: delegationStatus === "not-delegated",
-      })
-      .catch((error: unknown) => {
-        toast.error(error instanceof Error ? error.message : t`Couldn't create the first supply.`);
-        return null;
-      });
-    if (!result) {
-      mintSubmissionInFlight.current = false;
-      return;
-    }
-    setSubmittedMintTrackingId(result.trackingId);
-    void navigate({
-      to: "/vouchers/create/receipt",
-      search: { trackingId, mintTrackingId: result.trackingId, mintAmount: parsed.data },
-      replace: true,
-    });
-  };
-
-  const autoMintAttempted = useRef(false);
-  useEffect(() => {
-    if (autoMintAttempted.current) return;
-    if (!mintAmount || activeMintTrackingId !== null) return;
-    if (!confirmed || !contract?.address || !contract.admin || !walletAddress) return;
-    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) return;
-    if (walletPreparing) return;
-    if (voucherSupply.data !== "0") return;
-    autoMintAttempted.current = true;
-    void submitMint();
-  }, [
-    activeMintTrackingId,
-    confirmed,
-    contract,
-    mintAmount,
-    submitMint,
-    voucherSupply.data,
-    walletAddress,
-    walletPreparing,
-  ]);
-
-  const exit = (destination: string) => {
-    clearDraft();
-    exitVoucherCreateHistory({ history: router.history, destination });
-  };
-
-  if (!trackingId) {
-    return (
-      <ReceiptState
-        icon={<FailureCross />}
-        title={t`Publishing unavailable`}
-        message={t`Voucher tracking details are missing.`}
-        status={<StatusPill tone="error" label={t`Unavailable`} />}
+  const receipt = useVoucherDeploymentReceipt({ trackingId, mintTrackingId, mintAmount });
+  const { contract, draft, phase } = receipt;
+  const name = contract?.name ?? draft?.name ?? null;
+  const symbol = contract?.symbol ?? draft?.symbol ?? null;
+  const preview =
+    name && symbol ? (
+      <VoucherPreview
+        name={name}
+        symbol={symbol}
+        seed={contract?.address ?? symbol}
+        tags={draft?.tags ?? receipt.voucherDetail?.tags ?? []}
+        description={draft?.description ?? receipt.voucherDetail?.description ?? null}
       />
+    ) : null;
+
+  if (phase === "missing") {
+    return (
+      <ReceiptLayout preview={preview}>
+        <ReceiptHeader
+          icon={<FailureCross />}
+          title={t`Publishing unavailable`}
+          status={<StatusBadge tone="error">{t`Unavailable`}</StatusBadge>}
+          message={t`Voucher tracking details are missing.`}
+        />
+      </ReceiptLayout>
     );
   }
 
-  if (tracking.outcome.kind === "error" || contractQuery.isError || contract?.status === "FAILED") {
-    const message =
-      tracking.outcome.kind === "error"
-        ? tracking.outcome.error
-        : contractQuery.error instanceof Error
-          ? contractQuery.error.message
-          : t`The voucher could not be published.`;
+  if (phase === "failed") {
     return (
-      <ReceiptState
-        icon={<FailureCross />}
-        title={t`Publishing failed`}
-        message={message}
-        status={<StatusPill tone="error" label={t`Failed`} />}
-      />
+      <ReceiptLayout preview={preview}>
+        <ReceiptHeader
+          icon={<FailureCross />}
+          title={t`Publishing failed`}
+          status={<StatusBadge tone="error">{t`Failed`}</StatusBadge>}
+          message={receipt.failureMessage}
+        />
+        <StagePanel receipt={receipt} />
+      </ReceiptLayout>
     );
   }
 
-  if (!confirmed || !contract?.address) {
+  if (phase === "deploying" || !contract?.address) {
     return (
-      <ReceiptState
-        icon={<PendingClock />}
-        title={t`Publishing your voucher…`}
-        message={t`Waiting for blockchain confirmation…`}
-        status={<StatusPill tone="pending" label={t`Pending`} />}
-        showContractRow
-      />
+      <ReceiptLayout preview={preview}>
+        <ReceiptHeader
+          icon={<PendingClock />}
+          title={t`Publishing your voucher…`}
+          status={<StatusBadge tone="pending">{t`Pending`}</StatusBadge>}
+          message={<span role="status">{t`Waiting for blockchain confirmation…`}</span>}
+        />
+        <StagePanel receipt={receipt} />
+      </ReceiptLayout>
     );
   }
 
   const address = contract.address;
-  const deploymentTxHash = tracking.outcome.kind === "success" ? tracking.outcome.otx.txHash : "";
-  const mintTxHash = mintTracking.outcome.kind === "success" ? mintTracking.outcome.otx.txHash : "";
-  const copyValue = (value: string, successMessage: string, errorMessage: string) => {
-    if (!navigator.clipboard) {
-      toast.error(errorMessage);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(successMessage))
-      .catch(() => toast.error(errorMessage));
-  };
-  const voucherValue = draft?.price ?? voucherDetail.data?.voucherValue ?? null;
-  const voucherUnit = draft?.unitOfAccount ?? voucherDetail.data?.voucherUoa ?? null;
-  const supplyValue = formatOfferingDisplayPrice(
-    supply,
-    voucherValue,
-    voucherUnit,
-    contract.symbol,
-  );
-  const detailRows = (
-    <>
-      <InfoRow label={t`Name`}>{contract.name}</InfoRow>
-      <InfoRow label={t`Symbol`}>{contract.symbol}</InfoRow>
-      {draft ? (
-        <InfoRow label={t`Type`} muted>
-          {draft.voucherType === "expiring" ? t`Expiring` : t`Standard`}
-        </InfoRow>
-      ) : null}
-      {decimals !== null ? (
-        <InfoRow label={t`Decimals`} muted>
-          {decimals}
-        </InfoRow>
-      ) : null}
-      <InfoRow label={t`Contract address`}>
-        <CopyableInfoValue
-          value={address}
-          label={t`Copy contract address`}
-          onCopy={(value) =>
-            copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
+  const { copyValue } = receipt;
+  const detailRows: readonly (readonly [ReactNode, ReactNode] | null)[] = [
+    [t`Name`, <Prose key="name">{contract.name}</Prose>],
+    [t`Symbol`, contract.symbol],
+    draft ? [t`Type`, <Prose key="type">{t`Standard`}</Prose>] : null,
+    receipt.decimals !== null ? [t`Decimals`, String(receipt.decimals)] : null,
+    [
+      t`Contract address`,
+      <CopyableInfoValue
+        key="address"
+        value={address}
+        label={t`Copy contract address`}
+        onCopy={(value) =>
+          copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
+        }
+      />,
+    ],
+  ];
+
+  if (phase === "supply") {
+    const {
+      mintError,
+      mintFailed,
+      minting,
+      trackingUnavailable,
+      supplyChecking,
+      supplyCheckFailed,
+      ownerUnavailable,
+      ownerMismatch,
+      pendingState,
+      supplyValue,
+    } = receipt;
+    return (
+      <ReceiptLayout preview={preview}>
+        <ReceiptHeader
+          icon={
+            mintFailed || supplyCheckFailed ? (
+              <FailureCross />
+            ) : pendingState ? (
+              <PendingClock />
+            ) : (
+              <SuccessCheck />
+            )
+          }
+          title={
+            mintFailed ? (
+              <Trans>Creation failed</Trans>
+            ) : trackingUnavailable ? (
+              <Trans>Checking creation status</Trans>
+            ) : supplyCheckFailed ? (
+              <Trans>Supply check unavailable</Trans>
+            ) : minting ? (
+              <Trans>Creating {contract.symbol}…</Trans>
+            ) : (
+              <Trans>{contract.name} is deployed</Trans>
+            )
+          }
+          status={
+            <StatusBadge
+              tone={
+                mintFailed || supplyCheckFailed ? "error" : pendingState ? "pending" : "success"
+              }
+            >
+              {mintFailed
+                ? t`Failed`
+                : pendingState
+                  ? t`Pending`
+                  : supplyCheckFailed
+                    ? t`Unavailable`
+                    : t`Deployed`}
+            </StatusBadge>
+          }
+          message={
+            mintError ??
+            receipt.blockingMessage ??
+            (supplyCheckFailed
+              ? t`We couldn't verify whether this voucher already has supply.`
+              : t`Create the first supply to finish publishing this voucher.`)
           }
         />
-      </InfoRow>
-    </>
-  );
-
-  const preview = (
-    <VoucherPreview
-      name={contract.name}
-      symbol={contract.symbol}
-      tags={draft?.tags ?? voucherDetail.data?.tags ?? []}
-      description={draft?.description ?? voucherDetail.data?.description ?? null}
-    />
-  );
-
-  if (!minted) {
-    const mintOutcome = mintTracking.outcome;
-    const trackingUnavailable = activeMintTrackingId !== null && mintTracking.isError;
-    const trackingError = trackingUnavailable
-      ? mintTracking.error instanceof Error
-        ? mintTracking.error.message
-        : t`Supply creation status is temporarily unavailable.`
-      : null;
-    const mintError =
-      !trackingUnavailable && mintOutcome.kind === "error" ? mintOutcome.error : null;
-    const mintFailed = mintError !== null;
-    const minting = activeMintTrackingId !== null && !mintFailed && !trackingUnavailable;
-    const supplyChecking = voucherSupply.isPending && activeMintTrackingId === null;
-    const supplyCheckFailed = voucherSupply.isError && activeMintTrackingId === null;
-    const ownerUnavailable = contract.admin === null;
-    const ownerMismatch = Boolean(
-      contract.admin &&
-      walletAddress &&
-      contract.admin.toLowerCase() !== walletAddress.toLowerCase(),
-    );
-    const primaryAction = () => {
-      if (trackingUnavailable) {
-        void mintTracking.refetch();
-        return;
-      }
-      if (supplyCheckFailed) {
-        void voucherSupply.refetch();
-        return;
-      }
-      void submitMint();
-    };
-    const blockingMessage = ownerMismatch
-      ? t`Reconnect the wallet that published this voucher to create its supply.`
-      : ownerUnavailable
-        ? t`Couldn't verify who owns this voucher.`
-        : trackingError;
-    const pendingState = minting || supplyChecking || trackingUnavailable;
-
-    return (
-      <ReceiptLayout
-        preview={preview}
-        header={
-          <ReceiptHeader
-            icon={
-              mintFailed || supplyCheckFailed ? (
-                <FailureCross />
-              ) : pendingState ? (
-                <PendingClock />
-              ) : (
-                <SuccessCheck />
-              )
-            }
-            title={
-              mintFailed ? (
-                <Trans>Creation failed</Trans>
-              ) : trackingUnavailable ? (
-                <Trans>Checking creation status</Trans>
-              ) : supplyCheckFailed ? (
-                <Trans>Supply check unavailable</Trans>
-              ) : minting ? (
-                <Trans>Creating {contract.symbol}…</Trans>
-              ) : (
-                <Trans>{contract.name} is deployed</Trans>
-              )
-            }
-            status={
-              <StatusPill
-                tone={
-                  mintFailed || supplyCheckFailed ? "error" : pendingState ? "pending" : "success"
-                }
-                label={
-                  mintFailed
-                    ? t`Failed`
-                    : pendingState
-                      ? t`Pending`
-                      : supplyCheckFailed
-                        ? t`Unavailable`
-                        : t`Deployed`
-                }
-              />
-            }
-            message={
-              mintError ??
-              blockingMessage ??
-              (supplyCheckFailed
-                ? t`We couldn't verify whether this voucher already has supply.`
-                : t`Create the first supply to finish publishing this voucher.`)
-            }
-          />
-        }
-      >
+        <StagePanel receipt={receipt} />
         {mintAmount ? (
-          <dl className="border border-border bg-card">
-            <InfoRow label={t`Supply`}>
-              {supplyValue
-                ? `${supplyValue.value} ${supplyValue.unit}`
-                : `${supply} ${contract.symbol}`}
-            </InfoRow>
-          </dl>
+          <DeskKV
+            labelWidth="110px"
+            rows={[
+              [
+                t`Supply`,
+                supplyValue
+                  ? `${supplyValue.value} ${supplyValue.unit}`
+                  : `${receipt.supply} ${contract.symbol}`,
+              ],
+            ]}
+          />
         ) : (
-          <div>
-            <Field label={t`Create vouchers`} htmlFor="desk-voucher-supply" error={supplyError}>
+          <div className="grid max-w-80 gap-1">
+            <Field
+              label={t`Create vouchers`}
+              htmlFor="desk-voucher-supply"
+              error={receipt.supplyError}
+            >
               <Input
                 id="desk-voucher-supply"
                 dir="ltr"
                 inputMode="decimal"
-                value={supply}
-                onChange={(event) => {
-                  setSupply(event.target.value);
-                  setSupplyError(null);
-                }}
+                className="font-mono"
+                value={receipt.supply}
+                onChange={(event) => receipt.setSupply(event.target.value)}
                 placeholder="0"
                 disabled={
                   minting ||
@@ -393,13 +206,13 @@ export function VoucherReceiptDesk({
                   trackingUnavailable ||
                   ownerUnavailable ||
                   ownerMismatch ||
-                  walletPreparing
+                  receipt.walletPreparing
                 }
-                aria-invalid={supplyError !== null}
+                aria-invalid={receipt.supplyError !== null}
               />
             </Field>
             {supplyValue ? (
-              <p className="mt-1 font-mono text-muted-foreground text-xs">
+              <p className="font-mono text-xs text-muted-foreground tabular-nums">
                 <Trans>
                   Value: {supplyValue.value} {supplyValue.unit}
                 </Trans>
@@ -407,13 +220,12 @@ export function VoucherReceiptDesk({
             ) : null}
           </div>
         )}
-        <DeploymentDetails>{detailRows}</DeploymentDetails>
+        <AdvancedDetails rows={detailRows} />
         <div className="flex">
           <Button
-            tap
-            disabled={ownerUnavailable || ownerMismatch || !walletAddress}
-            pending={minting || mint.isPending || supplyChecking || walletPreparing}
-            onClick={primaryAction}
+            disabled={ownerUnavailable || ownerMismatch || !receipt.walletAddress}
+            pending={minting || receipt.mintPending || supplyChecking || receipt.walletPreparing}
+            onClick={receipt.primaryAction}
           >
             {trackingUnavailable ? (
               <Trans>Check creation status</Trans>
@@ -423,7 +235,7 @@ export function VoucherReceiptDesk({
               <Trans>Creating…</Trans>
             ) : supplyChecking ? (
               <Trans>Checking supply…</Trans>
-            ) : walletPreparing ? (
+            ) : receipt.walletPreparing ? (
               <Trans>Preparing wallet…</Trans>
             ) : mintFailed ? (
               <Trans>Try again</Trans>
@@ -436,70 +248,66 @@ export function VoucherReceiptDesk({
     );
   }
 
-  const chainSupply =
-    voucherSupply.data && BigInt(voucherSupply.data) > 0n && decimals !== null
-      ? formatTokenAmount(voucherSupply.data, decimals, decimals)
-      : "";
-  const publishedSupply = chainSupply || mintAmount || supply.trim();
-  const publishedSupplyValue = publishedSupply
-    ? formatOfferingDisplayPrice(publishedSupply, voucherValue, voucherUnit, contract.symbol)
-    : null;
-
+  const { publishedSupply, publishedSupplyValue, deploymentTxHash, mintTxHash } = receipt;
   return (
-    <ReceiptLayout
-      preview={preview}
-      header={
-        <ReceiptHeader
-          icon={<SuccessCheck />}
-          title={<Trans>{contract.name} is live</Trans>}
-          status={<StatusPill tone="success" label={t`Published`} />}
+    <ReceiptLayout preview={preview}>
+      <ReceiptHeader
+        icon={<SuccessCheck />}
+        title={<Trans>{contract.name} is live</Trans>}
+        status={<StatusBadge tone="success">{t`Published`}</StatusBadge>}
+      />
+      {publishedSupply || deploymentTxHash || mintTxHash ? (
+        <DeskKV
+          labelWidth="110px"
+          rows={[
+            publishedSupply
+              ? [
+                  t`Supply`,
+                  publishedSupplyValue
+                    ? `${publishedSupplyValue.value} ${publishedSupplyValue.unit}`
+                    : `${publishedSupply} ${contract.symbol}`,
+                ]
+              : null,
+            deploymentTxHash
+              ? [
+                  <Trans key="label">Deployment</Trans>,
+                  <CopyableInfoValue
+                    key="value"
+                    value={deploymentTxHash}
+                    label={t`Copy deployment transaction hash`}
+                    onCopy={(value) =>
+                      copyValue(
+                        value,
+                        t`Deployment transaction hash copied`,
+                        t`Couldn't copy deployment transaction hash`,
+                      )
+                    }
+                  />,
+                ]
+              : null,
+            mintTxHash
+              ? [
+                  <Trans key="label">Supply creation</Trans>,
+                  <CopyableInfoValue
+                    key="value"
+                    value={mintTxHash}
+                    label={t`Copy supply creation transaction hash`}
+                    onCopy={(value) =>
+                      copyValue(
+                        value,
+                        t`Supply creation transaction hash copied`,
+                        t`Couldn't copy supply creation transaction hash`,
+                      )
+                    }
+                  />,
+                ]
+              : null,
+          ]}
         />
-      }
-    >
-      {publishedSupply ? (
-        <dl className="border border-border bg-card">
-          <InfoRow label={t`Supply`}>
-            {publishedSupplyValue
-              ? `${publishedSupplyValue.value} ${publishedSupplyValue.unit}`
-              : `${publishedSupply} ${contract.symbol}`}
-          </InfoRow>
-        </dl>
       ) : null}
-      <DeploymentDetails>
-        {detailRows}
-        {deploymentTxHash ? (
-          <InfoRow label={t`Deployment transaction`}>
-            <CopyableInfoValue
-              value={deploymentTxHash}
-              label={t`Copy deployment transaction hash`}
-              onCopy={(value) =>
-                copyValue(
-                  value,
-                  t`Deployment transaction hash copied`,
-                  t`Couldn't copy deployment transaction hash`,
-                )
-              }
-            />
-          </InfoRow>
-        ) : null}
-        {mintTxHash ? (
-          <InfoRow label={t`Supply creation transaction`}>
-            <CopyableInfoValue
-              value={mintTxHash}
-              label={t`Copy supply creation transaction hash`}
-              onCopy={(value) =>
-                copyValue(
-                  value,
-                  t`Supply creation transaction hash copied`,
-                  t`Couldn't copy supply creation transaction hash`,
-                )
-              }
-            />
-          </InfoRow>
-        ) : null}
-      </DeploymentDetails>
+      <AdvancedDetails rows={detailRows} />
       <div className="flex">
-        <Button tap onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
+        <Button onClick={() => receipt.exit(`/vouchers/${address}?from=vouchers`)}>
           <Trans>View voucher</Trans>
         </Button>
       </div>
@@ -507,7 +315,97 @@ export function VoucherReceiptDesk({
   );
 }
 
-function DeploymentDetails({ children }: { children: ReactNode }) {
+/** Prose in a mono KV cell: sans, and allowed to wrap. */
+function Prose({ children }: { children: ReactNode }) {
+  return (
+    <span dir="auto" className="block font-sans font-normal whitespace-normal break-words">
+      {children}
+    </span>
+  );
+}
+
+function StatusBadge({
+  tone,
+  children,
+}: {
+  tone: "success" | "pending" | "error";
+  children: ReactNode;
+}) {
+  return (
+    <Badge
+      size="sm"
+      caps
+      variant={tone === "success" ? "primary" : tone === "pending" ? "muted" : "outline"}
+      className={cn(tone === "error" && "border-destructive/40 text-destructive")}
+    >
+      {children}
+    </Badge>
+  );
+}
+
+/**
+ * The two transactions behind a voucher, as the pool receipt draws its five:
+ * the contract, then its first supply, each with its status under it.
+ */
+function StagePanel({ receipt }: { receipt: Receipt }) {
+  const { t } = useLingui();
+  const { phase } = receipt;
+  const contractState: DeskStepState =
+    phase === "failed" ? "failed" : phase === "deploying" ? "loading" : "complete";
+  const contractStatus =
+    phase === "failed" ? (
+      <span className="text-destructive">{t`Failed`}</span>
+    ) : phase === "deploying" ? (
+      t`In network`
+    ) : (
+      t`Confirmed`
+    );
+
+  let supplyState: DeskStepState = "upcoming";
+  let supplyStatus: ReactNode = phase === "deploying" ? t`Queued` : undefined;
+  if (phase === "supply") {
+    if (receipt.mintFailed) {
+      supplyState = "failed";
+      supplyStatus = <span className="text-destructive">{t`Failed`}</span>;
+    } else if (receipt.supplyCheckFailed) {
+      supplyState = "failed";
+      supplyStatus = <span className="text-destructive">{t`Unavailable`}</span>;
+    } else if (receipt.minting) {
+      supplyState = "loading";
+      supplyStatus = t`In network`;
+    } else if (receipt.trackingUnavailable) {
+      supplyState = "loading";
+      supplyStatus = t`Checking creation status`;
+    } else if (receipt.supplyChecking) {
+      supplyState = "loading";
+      supplyStatus = t`Checking supply…`;
+    } else {
+      supplyState = "current";
+      supplyStatus = t`Pending`;
+    }
+  }
+
+  return (
+    <div className="border border-border bg-card p-4">
+      <DeskStepper label={t`Publishing your voucher…`}>
+        <DeskStep
+          index={1}
+          label={<Trans>Voucher contract</Trans>}
+          state={contractState}
+          description={contractStatus}
+        />
+        <DeskStep
+          index={2}
+          label={<Trans>Supply</Trans>}
+          state={supplyState}
+          description={supplyStatus}
+        />
+      </DeskStepper>
+    </div>
+  );
+}
+
+function AdvancedDetails({ rows }: { rows: readonly (readonly [ReactNode, ReactNode] | null)[] }) {
   return (
     <details className="group border-border border-y">
       <summary className="flex h-11 cursor-pointer list-none items-center justify-between text-sm font-semibold [&::-webkit-details-marker]:hidden">
@@ -517,34 +415,20 @@ function DeploymentDetails({ children }: { children: ReactNode }) {
           aria-hidden="true"
         />
       </summary>
-      <dl className="mb-4 border border-border bg-card">{children}</dl>
+      <DeskKV labelWidth="140px" rows={rows} className="mb-4" />
     </details>
   );
 }
 
 /** `.page.detail` at 1100px: the receipt, and the voucher as the Market will show it. */
-function ReceiptLayout({
-  header,
-  preview,
-  children,
-}: {
-  header: ReactNode;
-  preview?: ReactNode;
-  children?: ReactNode;
-}) {
+function ReceiptLayout({ preview, children }: { preview: ReactNode; children: ReactNode }) {
   return (
-    <DeskCanvas
-      width="read"
-      className="max-w-[1164px] grid-cols-[minmax(0,1fr)_360px] items-start gap-6"
-    >
-      <div className="grid min-w-0 content-start gap-5">
-        {header}
-        {children}
-      </div>
+    <div className="grid w-full max-w-[1164px] grid-cols-[minmax(0,1fr)_360px] items-start gap-6 px-8 pt-7 pb-10">
+      <div className="grid min-w-0 content-start gap-5">{children}</div>
       {preview ? (
-        <div className="sticky top-7 grid min-w-0 content-start gap-2">{preview}</div>
+        <div className="sticky top-7 grid min-w-0 content-start gap-2.5">{preview}</div>
       ) : null}
-    </DeskCanvas>
+    </div>
   );
 }
 
@@ -560,17 +444,17 @@ function ReceiptHeader({
   message?: ReactNode;
 }) {
   return (
-    <div className="grid gap-3">
-      <div className="flex min-w-0 items-center gap-3.5">
-        <span className="shrink-0">{icon}</span>
-        <div className="grid min-w-0 justify-items-start gap-1.5">
-          <DeskTitle>
-            <span className="[overflow-wrap:anywhere]">{title}</span>
-          </DeskTitle>
+    <div className="flex min-w-0 items-center gap-3.5">
+      <span className="shrink-0">{icon}</span>
+      <div className="grid min-w-0 justify-items-start gap-1">
+        <DeskTitle>
+          <span className="[overflow-wrap:anywhere]">{title}</span>
+        </DeskTitle>
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           {status}
+          {message ? <span className="text-xs text-muted-foreground">{message}</span> : null}
         </div>
       </div>
-      {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
     </div>
   );
 }
@@ -578,25 +462,36 @@ function ReceiptHeader({
 function VoucherPreview({
   name,
   symbol,
+  seed,
   tags,
   description,
 }: {
   name: string;
   symbol: string;
+  seed: string;
   tags: readonly string[];
   description: string | null;
 }) {
+  const hue = hueFromSeed(seed.toLowerCase());
   return (
     <>
       <DeskEyebrow>
         <Trans>Preview · Market</Trans>
       </DeskEyebrow>
       <div className="border border-border bg-card">
-        <div className="h-24 bg-voucher" aria-hidden="true" />
+        <div
+          className="h-24"
+          aria-hidden="true"
+          style={{
+            background: `linear-gradient(135deg, color-mix(in oklch, ${hue} 70%, #000), ${hue})`,
+          }}
+        />
         <div className="grid gap-1.5 p-4">
-          <p className="truncate font-heading text-base font-semibold">{name}</p>
+          <p dir="auto" className="truncate font-heading text-base font-semibold">
+            {name}
+          </p>
           <div className="flex flex-wrap gap-1.5">
-            <Badge variant="outline" className="font-mono" dir="ltr">
+            <Badge size="sm" variant="outline" className="font-mono" dir="ltr">
               {symbol}
             </Badge>
             {tags.slice(0, 3).map((tag) => (
@@ -611,34 +506,5 @@ function VoucherPreview({
         </div>
       </div>
     </>
-  );
-}
-
-function ReceiptState({
-  icon,
-  title,
-  message,
-  status,
-  showContractRow = false,
-}: {
-  icon: ReactNode;
-  title: string;
-  message: ReactNode;
-  status: ReactNode;
-  showContractRow?: boolean;
-}) {
-  const { t } = useLingui();
-  return (
-    <ReceiptLayout
-      header={<ReceiptHeader icon={icon} title={title} status={status} message={message} />}
-    >
-      {showContractRow ? (
-        <dl className="border border-border bg-card">
-          <InfoRow label={t`Voucher contract`} muted>
-            <Trans>In network</Trans>
-          </InfoRow>
-        </dl>
-      ) : null}
-    </ReceiptLayout>
   );
 }
