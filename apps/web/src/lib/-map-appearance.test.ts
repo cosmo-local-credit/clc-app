@@ -5,7 +5,7 @@ import { resolveMapStyleUrl, satelliteMapStyleUrl, standardMapStyleUrl } from ".
 describe("map appearance", () => {
   it.each([
     ["light", "https://tiles.openfreemap.org/styles/liberty"],
-    ["dark", "https://tiles.openfreemap.org/styles/fiord"],
+    ["dark", "/map-styles/liberty-dark.json"],
   ] as const)("resolves the %s standard map without a provider key", (theme, expected) => {
     expect(standardMapStyleUrl(theme)).toBe(expected);
     expect(resolveMapStyleUrl(null, theme, "standard")).toBe(expected);
