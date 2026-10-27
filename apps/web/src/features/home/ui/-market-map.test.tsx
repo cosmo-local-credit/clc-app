@@ -342,7 +342,7 @@ describe("MarketMap lifecycle", () => {
 
     act(() => useThemeStore.getState().setTheme("dark"));
 
-    expect(map.setStyle).toHaveBeenCalledWith("https://tiles.openfreemap.org/styles/fiord");
+    expect(map.setStyle).toHaveBeenCalledWith("/map-styles/liberty-dark.json");
     expect(mapInstances).toHaveLength(1);
     expect(map.getSource(MARKET_SOURCE_ID)).toBeUndefined();
 
