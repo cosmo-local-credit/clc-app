@@ -1,8 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { computeSafeTxHash } from "@clc/core/features/safe/logic";
+import { caliburNestedPersonalSignDigest } from "@clc/core/features/webauthn/index";
+import {
+  ContractFunctionRevertedError,
+  ContractFunctionZeroDataError,
+  decodeAbiParameters,
+  getAddress,
+  hexToBigInt,
+  size,
+  slice,
+} from "viem";
+import { safeReadAbi } from "@clc/core/features/safe/logic";
 
 const mocks = vi.hoisted(() => ({
   nonce: vi.fn(),
+  passkeySign: vi.fn(),
+  credential: vi.fn(),
   relayBatch: vi.fn(),
   waitRelay: vi.fn(),
 }));
@@ -20,8 +33,13 @@ vi.mock("#/lib/safe-config", () => ({
 vi.mock("#/connectors/calibur-webauthn", () => ({
   CALIBUR_WEBAUTHN_CONNECTOR_ID: "calibur-webauthn",
 }));
+vi.mock("#/features/webauthn/api/sign-digest", () => ({
+  signDigestWithPasskey: mocks.passkeySign,
+}));
+vi.mock("#/lib/webauthn-storage", () => ({ getWebAuthnCredential: mocks.credential }));
 
 import { proposeSafeTransaction, SafePendingConflictError } from "./safe-transactions";
+import { readSafeVersion, SafePasskeyUnsupportedError } from "./sign-safe-transaction";
 
 const SAFE = "0x1111111111111111111111111111111111111111";
 const ASSET = "0x2222222222222222222222222222222222222222";
@@ -128,14 +146,116 @@ describe("proposeSafeTransaction", () => {
     expect(client.propose).toHaveBeenCalledOnce();
   });
 
-  it("refuses a passkey before prompting for anything", async () => {
-    const client = safeClient();
-    await expect(
-      proposeSafeTransaction(
-        { chain: {} as never, safe: client as never },
-        { safe: SAFE, signer: { ...signer, connectorId: "calibur-webauthn" }, calls: [call] },
-      ),
-    ).rejects.toThrow(/multisig wallet/);
-    expect(sign).not.toHaveBeenCalled();
+  describe("with a passkey", () => {
+    const chain = { chain: { id: 100 } } as never;
+    const passkeySigner = { ...signer, connectorId: "calibur-webauthn" } as const;
+    const DOMAIN = `0x${"44".repeat(32)}` as const;
+    const KEY_HASH = `0x${"55".repeat(32)}` as const;
+    const AUTH = "0xa11ce0" as const;
+    const reads = (version: string) =>
+      mocks.nonce.mockImplementation(async (_client, { functionName }) => {
+        if (functionName === "VERSION") return version;
+        if (functionName === "domainSeparator") return DOMAIN;
+        return 5n;
+      });
+
+    beforeEach(() => {
+      mocks.credential.mockReturnValue({
+        credentialId: "cred",
+        keyHash: KEY_HASH,
+        publicKeyX: "1",
+        publicKeyY: "2",
+        address: ME,
+        stale: false,
+      });
+      mocks.passkeySign.mockResolvedValue(AUTH);
+    });
+
+    it("refuses a Safe before 1.5.0 without prompting", async () => {
+      reads("1.4.1");
+      const client = safeClient();
+      await expect(
+        proposeSafeTransaction(
+          { chain, safe: client as never },
+          { safe: SAFE, signer: passkeySigner, calls: [call] },
+        ),
+      ).rejects.toBeInstanceOf(SafePasskeyUnsupportedError);
+      expect(mocks.passkeySign).not.toHaveBeenCalled();
+      expect(sign).not.toHaveBeenCalled();
+      expect(client.propose).not.toHaveBeenCalled();
+    });
+
+    it("signs the nested digest as a Calibur contract signature on Safe 1.5.0", async () => {
+      reads("1.5.0");
+      const client = safeClient();
+      await proposeSafeTransaction(
+        { chain, safe: client as never },
+        { safe: SAFE, signer: passkeySigner, calls: [call] },
+      );
+      const sent = client.propose.mock.calls[0]![0];
+      expect(sent.sender).toBe(ME);
+      expect(mocks.passkeySign).toHaveBeenCalledWith(
+        caliburNestedPersonalSignDigest(DOMAIN, sent.safeTxHash),
+        "cred",
+      );
+      expect(sign).not.toHaveBeenCalled();
+      // r = owner, s = 65, v = 0, then the length-prefixed Calibur payload.
+      const signature = sent.signature as `0x${string}`;
+      expect(getAddress(slice(signature, 12, 32))).toBe(getAddress(ME));
+      expect(hexToBigInt(slice(signature, 32, 64))).toBe(65n);
+      expect(slice(signature, 64, 65)).toBe("0x00");
+      const payload = slice(signature, 97);
+      expect(hexToBigInt(slice(signature, 65, 97))).toBe(BigInt(size(payload)));
+      expect(
+        decodeAbiParameters([{ type: "bytes32" }, { type: "bytes" }, { type: "bytes" }], payload),
+      ).toEqual([KEY_HASH, AUTH, "0x"]);
+    });
+
+    it("refuses a stored passkey of another wallet", async () => {
+      reads("1.5.0");
+      mocks.credential.mockReturnValue({
+        credentialId: "cred",
+        keyHash: KEY_HASH,
+        publicKeyX: "1",
+        publicKeyY: "2",
+        address: SAFE,
+        stale: false,
+      });
+      await expect(
+        proposeSafeTransaction(
+          { chain, safe: safeClient() as never },
+          { safe: SAFE, signer: passkeySigner, calls: [call] },
+        ),
+      ).rejects.toThrow(/does not match/);
+      expect(mocks.passkeySign).not.toHaveBeenCalled();
+    });
+  });
+
+  it("signs a paper wallet's SafeTx without reading the Safe version", async () => {
+    mocks.nonce.mockResolvedValue(5n);
+    await proposeSafeTransaction(
+      { chain: {} as never, safe: safeClient() as never },
+      { safe: SAFE, signer, calls: [call] },
+    );
+    expect(sign).toHaveBeenCalledOnce();
+    expect(mocks.nonce.mock.calls.map(([, args]) => args.functionName)).toEqual(["nonce"]);
+  });
+});
+
+describe("readSafeVersion", () => {
+  it("reads no version from a Safe-compatible contract without one", async () => {
+    mocks.nonce.mockRejectedValueOnce(
+      new ContractFunctionZeroDataError({ functionName: "VERSION" }),
+    );
+    await expect(readSafeVersion({} as never, SAFE)).resolves.toBeUndefined();
+    mocks.nonce.mockRejectedValueOnce(
+      new ContractFunctionRevertedError({ abi: safeReadAbi, functionName: "VERSION" }),
+    );
+    await expect(readSafeVersion({} as never, SAFE)).resolves.toBeUndefined();
+  });
+
+  it("throws a transport failure rather than reading it as no version", async () => {
+    mocks.nonce.mockRejectedValueOnce(new Error("fetch failed"));
+    await expect(readSafeVersion({} as never, SAFE)).rejects.toThrow("fetch failed");
   });
 });

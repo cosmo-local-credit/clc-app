@@ -8,6 +8,7 @@ const SAFE = "0x1111111111111111111111111111111111111111";
 const ME = "0x3333333333333333333333333333333333333333";
 const mocks = vi.hoisted(() => ({ confirm: vi.fn(), sign: vi.fn() }));
 vi.mock("wagmi", () => ({
+  useClient: () => ({ chain: { id: 100 } }),
   useConnection: () => ({ address: ME, connector: { id: "private-key" } }),
   useSignTypedData: () => ({ signTypedDataAsync: mocks.sign }),
 }));

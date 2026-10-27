@@ -126,7 +126,10 @@ transaction hashing, signatures and STS indexing, and are best effort.
 The app only proposes transactions, including at threshold one. Confirmation,
 execution and rejection happen in Safe. No local submission store or terminal
 transaction state is promised. Refresh the asset in CLC after execution. Passkey
-sessions can edit metadata; passkey transaction proposals are not supported.
+sessions can edit metadata. On Safe 1.5.0 or later they also propose and confirm,
+signing as their Calibur account (an EIP-1271 contract signature, `v` 0); older
+Safes call the legacy `isValidSignature(bytes,bytes)` Calibur lacks, so the app
+refuses them before any prompt.
 
 ### Quick QA
 
@@ -139,3 +142,5 @@ AccountIndex addition despite repeated inspection; restart the tracker and chang
 a signer again. Queue a small mint with the paper wallet: it must not execute
 until confirmed/executed in Safe. Refresh CLC afterward. With STS disabled or a
 passkey session, metadata must still work and the dashboard link remain usable.
+On a Safe 1.5.0, a passkey-only signer queues and confirms a mint the same way;
+on a 1.4.1 Safe it is told to use the paper wallet, with no passkey prompt.

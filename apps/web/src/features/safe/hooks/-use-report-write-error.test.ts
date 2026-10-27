@@ -9,6 +9,7 @@ import {
   SafePendingConflictError,
   SafeProposedError,
 } from "../api/safe-transactions";
+import { SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 import { useSafeSheet } from "../state/safe-sheet";
 import { useReportWriteError } from "./use-report-write-error";
 
@@ -28,6 +29,23 @@ describe("useReportWriteError", () => {
     const report = renderHook(() => useReportWriteError()).result.current;
     expect(report(error, "fallback")).toBe(true);
     expect(useSafeSheet.getState().safe).toBe(SAFE);
+  });
+
+  it("tells a passkey on an older Safe to use the paper wallet, without the dashboard", () => {
+    const report = renderHook(() => useReportWriteError()).result.current;
+    expect(report(new SafePasskeyUnsupportedError(SAFE), "fallback")).toBe(false);
+    expect(toast.error).toHaveBeenCalledWith(
+      "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.",
+    );
+    expect(useSafeSheet.getState().safe).toBeNull();
+  });
+
+  it("stays quiet when the passkey prompt is dismissed", () => {
+    const report = renderHook(() => useReportWriteError()).result.current;
+    expect(report(new DOMException("cancelled", "NotAllowedError"), "fallback")).toBe(false);
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(toast.info).not.toHaveBeenCalled();
+    expect(useSafeSheet.getState().safe).toBeNull();
   });
 
   it("keeps an ordinary failure on the form so it can be retried", () => {

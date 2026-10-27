@@ -2,7 +2,7 @@ import type { SafeProposal } from "@clc/api/features/safe/client";
 import { safeKeys } from "@clc/api/features/safe/queries";
 import { computeSafeTxHash } from "@clc/core/features/safe/logic";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useConnection, useSignTypedData } from "wagmi";
+import { useClient, useConnection, useSignTypedData } from "wagmi";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { safeClient } from "#/lib/api/safe";
 import { CHAIN_ID } from "#/lib/chain";
@@ -16,6 +16,7 @@ import { signSafeTransaction } from "../api/sign-safe-transaction";
  */
 export function useSafeConfirm() {
   const queryClient = useQueryClient();
+  const chain = useClient({ chainId: CHAIN_ID });
   const { address, connector } = useConnection();
   const auth = useAuthStatus();
   const { signTypedDataAsync } = useSignTypedData();
@@ -39,6 +40,8 @@ export function useSafeConfirm() {
         safeAddress: safe,
         tx: proposal,
         sign: (typed) => signTypedDataAsync(typed),
+        owner: address,
+        chain,
       });
       return safeClient.confirm({
         safeTxHash: proposal.safeTxHash as `0x${string}`,

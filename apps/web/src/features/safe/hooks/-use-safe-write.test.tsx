@@ -30,6 +30,7 @@ vi.mock("../api/safe-transactions", async (original) => ({
 }));
 
 import { SafeDashboardRequiredError, SafeProposedError } from "../api/safe-transactions";
+import { SafePasskeyUnsupportedError } from "../api/sign-safe-transaction";
 import { useSafeWrite } from "./use-safe-write";
 
 const SAFE = "0x1111111111111111111111111111111111111111";
@@ -53,6 +54,15 @@ describe("best-effort Safe proposals", () => {
       SafeProposedError,
     );
     expect(mocks.propose).toHaveBeenCalledOnce();
+  });
+  it("reports a dismissed or unsupported passkey as itself, not as a dashboard handoff", async () => {
+    const { result } = renderHook(() => useSafeWrite(), { wrapper });
+    const unsupported = new SafePasskeyUnsupportedError(SAFE);
+    mocks.propose.mockRejectedValueOnce(unsupported);
+    await expect(result.current.write({ safe: SAFE, calls })).rejects.toBe(unsupported);
+    const cancelled = new DOMException("cancelled", "NotAllowedError");
+    mocks.propose.mockRejectedValueOnce(cancelled);
+    await expect(result.current.write({ safe: SAFE, calls })).rejects.toBe(cancelled);
   });
   it("keeps the dashboard available when the transaction service is unavailable", async () => {
     mocks.propose.mockRejectedValue(new Error("Safe Transaction Service unavailable"));
