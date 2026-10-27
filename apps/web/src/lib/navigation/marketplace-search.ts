@@ -1,9 +1,11 @@
+import { parseCatalogFilter, toCatalogSearchState } from "@clc/core/features/catalog/logic";
 import {
   marketplaceScopeSchema,
   type MarketplaceScope,
 } from "@clc/core/features/marketplace/logic";
 import {
   canonicalPoolRedirectSearch,
+  parsePoolCreditable,
   type PoolRouteSearch,
   pickPoolSearch,
 } from "#/lib/navigation/pool-search";
@@ -79,5 +81,19 @@ export function mapSearchFrom(search: unknown): MarketplaceRouteSearch {
     tags: state.tags,
     tagMatch: state.tagMatch,
     creditable: state.creditable,
+  };
+}
+
+/** Canonical filters that can move safely between the map and every market list. */
+export function marketplaceSharedSearch(search: unknown): MarketplaceRouteSearch {
+  const state = pickPoolSearch(search);
+  const term = parseCatalogFilter({ q: state.q });
+  const tags = parseCatalogFilter({ tags: state.tags, tagMatch: state.tagMatch });
+  const creditable = parsePoolCreditable(state.creditable);
+
+  return {
+    ...(term.ok ? toCatalogSearchState(term.filter) : {}),
+    ...(tags.ok ? toCatalogSearchState(tags.filter) : {}),
+    creditable: creditable.ok ? (creditable.enabled ?? undefined) : undefined,
   };
 }

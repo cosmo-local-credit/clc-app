@@ -26,6 +26,9 @@ const {
     canvas = { style: {} as Record<string, string> };
     loadedValue = false;
     flyTo = vi.fn();
+    setStyle = vi.fn((style: string) => {
+      this.options.style = style;
+    });
     remove = vi.fn();
 
     constructor(options: MockMapOptions) {
@@ -60,6 +63,10 @@ const {
 
     triggerClick(lat: number, lng: number) {
       this.handlers.get("click")?.({ lngLat: { lat, lng } });
+    }
+
+    triggerDragStart() {
+      this.handlers.get("dragstart")?.();
     }
 
     triggerError(error = new Error("tile failed")) {
@@ -137,25 +144,87 @@ vi.mock("maplibre-gl", () => ({
 }));
 
 import { LocationMap } from "./location-map";
+import { useThemeStore } from "#/providers/theme";
 
 beforeEach(() => {
   vi.stubEnv("VITE_MAPTILER_KEY", "test key");
+  window.localStorage.clear();
+  useThemeStore.setState({ theme: "light" });
   mapInstances.length = 0;
   markerInstances.length = 0;
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({} as RenderingContext);
 });
 
 describe("LocationMap", () => {
-  it("creates a MapLibre map with the MapTiler style and navigation control", () => {
+  it("creates a MapLibre map with the keyless light style and navigation control", () => {
     render(<LocationMap />);
 
     expect(mapInstances).toHaveLength(1);
-    expect(mapInstances[0]?.options.style).toBe(
-      "https://api.maptiler.com/maps/base-v4/style.json?key=test%20key",
-    );
-    expect(mapInstances[0]?.options.center).toEqual([36.8219, -1.2921]);
-    expect(mapInstances[0]?.options.zoom).toBe(5);
-    expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual(["bottom-right"]);
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
+    expect(mapInstances[0]?.options.center).toEqual([20, 0]);
+    expect(mapInstances[0]?.options.zoom).toBe(2);
+    expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual([
+      "bottom-right",
+      "bottom-left",
+    ]);
+  });
+
+  it("starts an empty picker at its approximate camera without creating a marker", () => {
+    render(<LocationMap cameraHint={{ lat: -6.7924, lng: 39.2083, zoom: 10 }} interactive />);
+
+    expect(mapInstances[0]?.options.center).toEqual([39.2083, -6.7924]);
+    expect(mapInstances[0]?.options.zoom).toBe(10);
+    mapInstances[0]?.triggerLoad();
+    expect(markerInstances).toHaveLength(0);
+  });
+
+  it("applies a late approximate camera without creating a marker or a second map", () => {
+    const { rerender } = render(<LocationMap interactive />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+
+    rerender(<LocationMap cameraHint={{ lat: 44.7866, lng: 20.4489, zoom: 10 }} interactive />);
+
+    expect(mapInstances).toHaveLength(1);
+    expect(map?.flyTo).toHaveBeenCalledWith({ center: [20.4489, 44.7866], zoom: 10 });
+    expect(markerInstances).toHaveLength(0);
+  });
+
+  it("does not override an empty map after the user has started browsing it", () => {
+    const { rerender } = render(<LocationMap interactive />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+    act(() => map?.triggerDragStart());
+
+    rerender(<LocationMap cameraHint={{ lat: 44.7866, lng: 20.4489, zoom: 10 }} interactive />);
+
+    expect(map?.flyTo).not.toHaveBeenCalled();
+  });
+
+  it("switches the existing map to the dark style when the app theme changes", () => {
+    render(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(mapInstances).toHaveLength(1);
+    expect(map?.setStyle).toHaveBeenCalledWith("/map-styles/liberty-dark.json");
+    expect(map?.remove).not.toHaveBeenCalled();
+    expect(markerInstances).toHaveLength(1);
+  });
+
+  it("removes the map when a theme style cannot be applied", () => {
+    render(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+    const map = mapInstances[0];
+    act(() => map?.triggerLoad());
+    map?.setStyle.mockImplementationOnce(() => {
+      throw new Error("style unavailable");
+    });
+
+    act(() => useThemeStore.getState().setTheme("dark"));
+
+    expect(screen.queryByLabelText("Location map")).toBeNull();
   });
 
   it("places a pending marker after style load and flies to zoom 13", () => {
@@ -214,11 +283,11 @@ describe("LocationMap", () => {
     expect(mapInstances[0]?.remove).toHaveBeenCalled();
   });
 
-  it("renders nothing when VITE_MAPTILER_KEY is absent", () => {
+  it("renders the standard map when VITE_MAPTILER_KEY is absent", () => {
     vi.stubEnv("VITE_MAPTILER_KEY", "");
-    const { container } = render(<LocationMap />);
-    expect(container.firstChild).toBeNull();
-    expect(mapInstances).toHaveLength(0);
+    render(<LocationMap />);
+    expect(screen.getByLabelText("Location map")).toBeTruthy();
+    expect(mapInstances[0]?.options.style).toBe("https://tiles.openfreemap.org/styles/liberty");
   });
 
   it("renders nothing when WebGL is not supported", () => {
@@ -254,7 +323,7 @@ describe("LocationMap", () => {
     });
     const element = markerInstances[0]?.options.element;
     expect(markerInstances[0]?.options.anchor).toBe("bottom");
-    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#2563eb");
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#007A55");
     const glyph = element?.querySelector("svg svg")?.innerHTML;
     mapInstances[0]?.flyTo.mockClear();
 
@@ -267,10 +336,50 @@ describe("LocationMap", () => {
       />,
     );
 
-    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#db2777");
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#007A55");
     expect(element?.querySelector("svg svg")?.innerHTML).not.toBe(glyph);
     expect(mapInstances).toHaveLength(1);
     expect(markerInstances).toHaveLength(1);
     expect(mapInstances[0]?.flyTo).not.toHaveBeenCalled();
+  });
+
+  it("updates a Want icon live while keeping the fixed orange marker", () => {
+    const { rerender } = render(
+      <LocationMap
+        interactive
+        lat={-1.2921}
+        lng={36.8219}
+        markerStyle={{ icon: "question", color: "orange" }}
+      />,
+    );
+    act(() => mapInstances[0]?.triggerLoad());
+    const element = markerInstances[0]?.options.element;
+    const glyph = element?.querySelector("svg svg")?.innerHTML;
+
+    rerender(
+      <LocationMap
+        interactive
+        lat={-1.2921}
+        lng={36.8219}
+        markerStyle={{ icon: "message", color: "cyan" }}
+      />,
+    );
+
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#EA580C");
+    expect(element?.querySelector("svg svg")?.innerHTML).not.toBe(glyph);
+    expect(mapInstances).toHaveLength(1);
+    expect(markerInstances).toHaveLength(1);
+  });
+
+  it.each([
+    ["pool", "#125A98"],
+    ["catalog", "#7C3AED"],
+  ] as const)("previews a %s with its fixed resource colour", (markerResource, fill) => {
+    render(<LocationMap lat={-1.2921} lng={36.8219} markerResource={markerResource} interactive />);
+    act(() => mapInstances[0]?.triggerLoad());
+
+    const element = markerInstances[0]?.options.element;
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe(fill);
+    expect(element?.querySelector("svg svg")).toBeTruthy();
   });
 });

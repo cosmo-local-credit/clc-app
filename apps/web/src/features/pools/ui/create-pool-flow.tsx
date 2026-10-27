@@ -35,6 +35,8 @@ import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
+import { PublicContactWarning } from "#/components/public-contact-warning";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -718,11 +720,13 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       label={t`Pool Location`}
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value)}
+                      markerResource="pool"
                       error={error ? translateValidationError(error, i18n) : undefined}
                     />
                   );
                 }}
               </form.Field>
+              <PublicLocationWarning />
 
               <form.Field name="tags">
                 {(field) => (
@@ -769,6 +773,8 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   </div>
                 )}
               </form.Field>
+
+              <PublicContactWarning />
 
               <form.Field
                 name="email"

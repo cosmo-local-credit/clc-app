@@ -11,8 +11,9 @@ import { errorMessage } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
 import { EditVoucherSheet } from "./ui/edit-voucher-sheet";
 import { OfferingEditorSheet, type OfferingEditor } from "./ui/offering-editor-sheet";
-import { useRestoreVoucher } from "./use-restore-voucher";
 import { VoucherContractSheet } from "./ui/voucher-contract-sheet";
+import { RestoreResourceSheet } from "#/features/retirement/restore-resource-sheet";
+import { RetirementResourceHistory } from "#/features/retirement/retirement-resource-history";
 import { VoucherHeader } from "./ui/voucher-header";
 import { VoucherProfileCard } from "./ui/voucher-profile-card";
 import type { VoucherDetailSearch } from "./voucher-detail-search";
@@ -45,7 +46,7 @@ export function VoucherDetailPage({
   const voucherQuery = useQuery(adminVoucherQueryOptions(clcApi.admin, address));
   const voucherState = useDataState(voucherQuery, () => false);
 
-  const restore = useRestoreVoucher(address);
+  const [restoring, setRestoring] = useState(false);
 
   const [editingVoucher, setEditingVoucher] = useState(false);
   const [contractOpen, setContractOpen] = useState(false);
@@ -72,12 +73,20 @@ export function VoucherDetailPage({
       <VoucherHeader
         voucher={voucher}
         onEdit={() => setEditingVoucher(true)}
-        onRestore={() => restore.mutate()}
         onContract={() => setContractOpen(true)}
-        restoring={restore.isPending}
+        onRestore={() => setRestoring(true)}
+        restoring={false}
       />
 
       <VoucherProfileCard voucher={voucher} />
+      <RetirementResourceHistory type="voucher" address={address} />
+      <RestoreResourceSheet
+        type="voucher"
+        address={address}
+        name={voucher.name}
+        open={restoring}
+        onClose={() => setRestoring(false)}
+      />
 
       <VoucherRecordTabs
         voucher={voucher}

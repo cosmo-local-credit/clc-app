@@ -1,9 +1,10 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { MarketClient, MarketVoucherPage } from "./client";
 import {
   nextMarketCursor,
   voucherCatalogInfiniteQueryOptions,
+  voucherInfoQueryOptions,
   voucherKeys,
   voucherQueryOptions,
   voucherViewportQueryOptions,
@@ -32,6 +33,7 @@ describe("voucherKeys", () => {
       voucherKeys.catalog(500),
       voucherKeys.viewport([BOX], 500),
       voucherKeys.detail(ADDRESS),
+      voucherKeys.info(ADDRESS, ADDRESS),
       voucherKeys.filtered(null, 20),
       voucherKeys.filteredPage({ perPage: 20, filter: FILTER }),
       voucherKeys.facetVocabulary(),
@@ -50,6 +52,15 @@ describe("voucherKeys", () => {
     // navigation lands on data already loaded.
     expect(voucherKeys.detail(ADDRESS)).toEqual(voucherKeys.detail(ADDRESS.toLowerCase()));
     expect(voucherKeys.detail(ADDRESS)).toEqual(voucherKeys.detail(ADDRESS.toUpperCase()));
+  });
+
+  it("isolates authenticated info by resource and wallet", () => {
+    const viewer = `0x${"b".repeat(40)}`;
+    expect(voucherKeys.info(ADDRESS, viewer)).toEqual(
+      voucherKeys.info(ADDRESS.toUpperCase(), viewer.toUpperCase()),
+    );
+    expect(voucherKeys.info(ADDRESS, viewer)).not.toEqual(voucherKeys.info(ADDRESS, ADDRESS));
+    expect(voucherKeys.info(ADDRESS, viewer)).not.toEqual(voucherKeys.detail(ADDRESS));
   });
 
   it("varies the viewport key with the boxes, since panning changes the result", () => {
@@ -125,11 +136,43 @@ describe("scoped options", () => {
   it("stays disabled without an address", () => {
     expect(voucherQueryOptions({} as MarketClient, undefined).enabled).toBe(false);
     expect(voucherQueryOptions({} as MarketClient, ADDRESS).enabled).toBe(true);
+    expect(voucherInfoQueryOptions({} as MarketClient, ADDRESS, undefined).enabled).toBe(false);
+    expect(voucherInfoQueryOptions({} as MarketClient, undefined, ADDRESS).enabled).toBe(false);
+  });
+
+  it("forwards cancellation to authenticated voucher info", async () => {
+    const getVoucherInfo = vi.fn().mockResolvedValue({ address: ADDRESS });
+    const options = voucherInfoQueryOptions(
+      { getVoucherInfo } as unknown as MarketClient,
+      ADDRESS,
+      ADDRESS,
+    );
+    const signal = new AbortController().signal;
+    await options.queryFn?.({ signal } as never);
+    expect(getVoucherInfo).toHaveBeenCalledWith(ADDRESS, signal);
   });
 
   it("stays disabled with no viewport boxes rather than requesting the whole world", () => {
     expect(voucherViewportQueryOptions({} as MarketClient, [], 500).enabled).toBe(false);
     expect(voucherViewportQueryOptions({} as MarketClient, [BOX], 500).enabled).toBe(true);
+  });
+
+  it("forwards viewport bounds and returns only the voucher rows", async () => {
+    const vouchers = [{ id: "7" }];
+    const getMarketVouchers = vi.fn().mockResolvedValue({ vouchers, first: 7, last: 7 });
+    const options = voucherViewportQueryOptions(
+      { getMarketVouchers } as unknown as MarketClient,
+      [BOX],
+      100,
+      { scope: "viewport", nearby: true },
+    );
+    const signal = new AbortController().signal;
+
+    await expect(options.queryFn?.({ signal } as never)).resolves.toBe(vouchers);
+    expect(getMarketVouchers).toHaveBeenCalledWith(
+      { perPage: 100, bounds: [BOX], nearby: true },
+      signal,
+    );
   });
 
   it("starts the catalog with no cursor", () => {

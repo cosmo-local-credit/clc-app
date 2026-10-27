@@ -14,10 +14,14 @@ import {
   REPORT_PARTICIPANTS_MAX,
   REPORT_TIME_TAKEN_MAX,
   REPORT_TITLE_MAX,
+  REPORT_MAX_POOLS,
+  REPORT_MAX_VOUCHERS,
   emptyReportWrite,
   fromDateTimeLocalValue,
   reportToFormValues,
   reportWriteSchema,
+  poolRefKey,
+  voucherRefKey,
   toDateTimeLocalValue,
   type ReportAttachmentWrite,
   type ReportImageWrite,
@@ -31,10 +35,12 @@ import { HiOutlinePlus, HiOutlineTrash } from "react-icons/hi";
 import { toast } from "sonner";
 
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
+import { ReportMarkerStyleField } from "#/components/admin/marker-style-field";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { MarkdownContent } from "#/components/admin/markdown-content";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
+import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { SectionHeading } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -45,6 +51,7 @@ import { Textarea } from "#/components/ui/textarea";
 import { clcApi } from "#/lib/api";
 import { DEFAULT_POST_SEARCH } from "./post-search";
 import { PostGeoField } from "./ui/post-geo-field";
+import { PostResourcePicker } from "./ui/post-resource-picker";
 import { useCreatePost, useUpdatePost } from "./use-post-mutations";
 
 export type PostEditorTarget = { mode: "create" } | { mode: "edit"; reportId: string };
@@ -300,25 +307,44 @@ function PostEditorForm({
 
         <section className="border-border bg-card flex flex-col gap-4 border p-4">
           <SectionHeading>Place</SectionHeading>
+          <PublicDisclosureNote kind="location" />
           {/* reports.location_name was dropped in migration 010, so only the
               coordinates persist. */}
-          <form.Subscribe selector={(state) => [state.values.geoLat, state.values.geoLng] as const}>
-            {([lat, lng]) => (
-              <PostGeoField
-                latitude={lat}
-                longitude={lng}
-                disabled={saving}
-                onChange={(next) => {
-                  form.setFieldValue("geoLat", next ? next.lat : null);
-                  form.setFieldValue("geoLng", next ? next.lng : null);
-                }}
-              />
+          <form.Subscribe
+            selector={(state) =>
+              [
+                state.values.geoLat,
+                state.values.geoLng,
+                state.values.markerIcon,
+                state.values.markerColor,
+              ] as const
+            }
+          >
+            {([lat, lng, markerIcon, markerColor]) => (
+              <div className="flex flex-col gap-4">
+                <PostGeoField
+                  latitude={lat}
+                  longitude={lng}
+                  markerStyle={{ icon: markerIcon, color: markerColor }}
+                  disabled={saving}
+                  onChange={(next) => {
+                    form.setFieldValue("geoLat", next ? next.lat : null);
+                    form.setFieldValue("geoLng", next ? next.lng : null);
+                  }}
+                />
+                <ReportMarkerStyleField
+                  value={markerIcon}
+                  disabled={saving}
+                  onChange={(next) => form.setFieldValue("markerIcon", next)}
+                />
+              </div>
             )}
           </form.Subscribe>
         </section>
 
         <section className="border-border bg-card flex flex-col gap-4 border p-4">
-          <SectionHeading>Tags</SectionHeading>
+          <SectionHeading>Tags and resources</SectionHeading>
+          <p className="text-muted-foreground text-sm">Link at least one voucher or pool.</p>
           <form.Field name="tags">
             {(field) =>
               tagsQuery.data?.length ? (
@@ -338,6 +364,49 @@ function PostEditorForm({
                 </p>
               )
             }
+          </form.Field>
+
+          <form.Field name="vouchers">
+            {(field) => (
+              <div className="flex flex-col gap-1.5">
+                <Label>Related vouchers</Label>
+                <PostResourcePicker
+                  kind="voucher"
+                  value={field.state.value}
+                  linkedNames={
+                    new Map(
+                      (post?.vouchers ?? []).map((voucher) => [
+                        voucherRefKey(voucher),
+                        voucher.name,
+                      ]),
+                    )
+                  }
+                  max={REPORT_MAX_VOUCHERS}
+                  disabled={saving}
+                  onChange={(next) => field.handleChange(next)}
+                />
+                <FieldError message={getFieldError(field.state.meta.errors)} />
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="pools">
+            {(field) => (
+              <div className="flex flex-col gap-1.5">
+                <Label>Related pools</Label>
+                <PostResourcePicker
+                  kind="pool"
+                  value={field.state.value}
+                  linkedNames={
+                    new Map((post?.pools ?? []).map((pool) => [poolRefKey(pool), pool.name]))
+                  }
+                  max={REPORT_MAX_POOLS}
+                  disabled={saving}
+                  onChange={(next) => field.handleChange(next)}
+                />
+                <FieldError message={getFieldError(field.state.meta.errors)} />
+              </div>
+            )}
           </form.Field>
         </section>
 

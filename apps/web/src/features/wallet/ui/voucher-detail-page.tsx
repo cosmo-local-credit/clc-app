@@ -1,6 +1,5 @@
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import { Button } from "#/components/ui/button";
@@ -36,6 +35,7 @@ export function VoucherDetailPage({
   origin = "market",
   poolAddress,
   reportId,
+  wantId,
 }: {
   voucherAddress: string;
   /** A legacy tab URL now identifies the section to focus on first render. */
@@ -43,22 +43,29 @@ export function VoucherDetailPage({
   origin?: VoucherOrigin;
   poolAddress?: string;
   reportId?: string;
+  wantId?: string;
 }) {
   const { t } = useLingui();
-  const navigate = useNavigate();
   const auth = useAuthStatus();
-  const voucherNavigation = resolveVoucherNavigationOwner({ from: origin, poolAddress, reportId });
+  const voucherNavigation = resolveVoucherNavigationOwner({
+    from: origin,
+    poolAddress,
+    reportId,
+    wantId,
+  });
   const back = {
     label:
       voucherNavigation.backDestination === "pool"
         ? t`Pool`
         : voucherNavigation.backDestination === "posts"
           ? t`Posts`
-          : voucherNavigation.backDestination === "wallet"
-            ? t`Wallet`
-            : voucherNavigation.backDestination === "vouchers"
-              ? t`Vouchers`
-              : t`Market`,
+          : voucherNavigation.backDestination === "wants"
+            ? t`Want`
+            : voucherNavigation.backDestination === "wallet"
+              ? t`Wallet`
+              : voucherNavigation.backDestination === "vouchers"
+                ? t`Vouchers`
+                : t`Market`,
     to: voucherNavigation.to,
     search: voucherNavigation.search,
   };
@@ -194,7 +201,7 @@ export function VoucherDetailPage({
         locationName={locationName}
         lat={lat}
         lng={lng}
-        phone={token.phone}
+        phone={detail?.phone ?? token.phone}
         website={detail?.website}
         catalogResourceId={detail?.id}
         catalogAddress={detail?.address}
@@ -224,18 +231,15 @@ export function VoucherDetailPage({
         chainId={detail?.chainId ?? poolVoucher?.chainId ?? null}
         voucherValue={voucherValue}
         voucherUoa={voucherUoa}
-        description={detail?.description ?? poolVoucher?.description ?? null}
-        email={token.email ?? null}
-        website={detail?.website ?? null}
-        phone={token.phone ?? null}
-        terms={detail?.terms ?? null}
-        locationName={locationName}
-        lat={lat}
-        lng={lng}
         dataPending={detailQuery.isPending || supportingDataPending}
-        onRetired={() => {
-          void navigate({ to: back.to, search: back.search, replace: true });
-        }}
+        privateInfo={
+          detailQuery.privateInfo
+            ? {
+                ...detailQuery.privateInfo,
+                retry: () => void detailQuery.privateInfo?.refetch(),
+              }
+            : undefined
+        }
       />
     </div>
   );

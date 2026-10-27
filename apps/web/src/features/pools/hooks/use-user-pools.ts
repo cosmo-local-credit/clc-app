@@ -1,13 +1,10 @@
-import {
-  filterNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-  nearbyQueryPolicy,
-} from "#/components/nearby-catalog";
+import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import {
   poolListInfiniteQueryOptions,
   poolQueryOptions,
-  poolsByOwnerInfiniteQueryOptions,
+  poolInfoQueryOptions,
+  ownedPoolQueryOptions,
+  ownedPoolsInfiniteQueryOptions,
 } from "@clc/api/features/pools/queries";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { poolsClient } from "#/lib/api/pools";
@@ -17,27 +14,42 @@ const DEFAULT_POOLS_PAGE_SIZE = 20;
 
 export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled = true) {
   const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
   const options = poolListInfiniteQueryOptions(poolsClient, perPage, nearby);
   return useInfiniteQuery({
     ...options,
     ...nearbyQueryPolicy(nearby),
     enabled,
-    select: (data) => ({
-      ...data,
-      pages: data.pages.map((page) => ({
-        ...page,
-        pools: filterNearbyCatalog(
-          page.pools.map((pool) => ({ ...pool, lat: pool.geoLat, lng: pool.geoLng })),
-          visibilityFilter,
-        ).map(({ lat: _lat, lng: _lng, ...pool }) => pool),
-      })),
-    }),
   });
 }
 
-export function useUserPoolByAddress(poolAddress: string | undefined) {
-  return useQuery(poolQueryOptions(poolsClient, poolAddress));
+export function useUserPoolByAddress(poolAddress: string | undefined, viewer?: string) {
+  const publicQuery = useQuery({
+    ...poolQueryOptions(poolsClient, poolAddress),
+    staleTime: 0,
+    refetchInterval: 30_000,
+    retry: false,
+  });
+  const ownerQuery = useQuery({
+    ...ownedPoolQueryOptions(poolsClient, poolAddress, viewer),
+    enabled: !!viewer && !!poolAddress && publicQuery.isError,
+  });
+  const infoQuery = useQuery({
+    ...poolInfoQueryOptions(poolsClient, poolAddress, viewer),
+    retry: false,
+  });
+  const baseQuery = publicQuery.isError && viewer ? ownerQuery : publicQuery;
+  return {
+    ...baseQuery,
+    data: infoQuery.data ?? baseQuery.data,
+    privateInfo: viewer
+      ? {
+          isPending: infoQuery.isPending,
+          isError: infoQuery.isError,
+          isFetching: infoQuery.isFetching,
+          refetch: infoQuery.refetch,
+        }
+      : undefined,
+  };
 }
 
 /**
@@ -50,6 +62,6 @@ export function useUserPoolByAddress(poolAddress: string | undefined) {
  */
 export function useOwnedPoolsInfinite(owner: string | undefined) {
   return useInfiniteQuery(
-    poolsByOwnerInfiniteQueryOptions(poolsClient, owner, DEFAULT_POOLS_PAGE_SIZE),
+    ownedPoolsInfiniteQueryOptions(poolsClient, owner, DEFAULT_POOLS_PAGE_SIZE),
   );
 }

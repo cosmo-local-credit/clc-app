@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -42,7 +42,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
 }));
 
-import { MarketBar, type MarketSurface } from "./market-bar";
+import { MarketBar, MarketFeedBar, type MarketSurface } from "./market-bar";
 
 const filter = {
   term: "",
@@ -68,6 +68,46 @@ beforeEach(() => {
 });
 
 describe("MarketBar", () => {
+  it("uses persistent resource toggles instead of list navigation on the map", () => {
+    const toggle = vi.fn();
+    const toggleAll = vi.fn();
+    render(
+      <MarketBar
+        current="map"
+        surface="map"
+        filter={filter}
+        searchLabel="Search the marketplace"
+        filters={<button type="button">Filters</button>}
+        mapResources={{
+          selected: ["voucher", "want"],
+          allSelected: false,
+          toggle,
+          toggleAll,
+        }}
+      />,
+    );
+
+    const resources = screen.getByRole("group", { name: "Resources shown on the map" });
+    expect(
+      within(resources)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["All", "Vouchers", "Wants", "Pools", "Catalogs", "Posts"]);
+    expect(within(resources).queryByText("Activity")).toBeNull();
+    expect(within(resources).queryByText("Map")).toBeNull();
+    expect(
+      within(resources).getByRole("button", { name: "Vouchers" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      within(resources).getByRole("button", { name: "Pools" }).getAttribute("aria-pressed"),
+    ).toBe("false");
+
+    fireEvent.click(within(resources).getByRole("button", { name: "Pools" }));
+    fireEvent.click(within(resources).getByRole("button", { name: "All" }));
+    expect(toggle).toHaveBeenCalledWith("pool");
+    expect(toggleAll).toHaveBeenCalledOnce();
+  });
+
   it("opens each list from its badge, carrying the search, tags and Credit", () => {
     mocks.search = { q: "bike", tags: "Repair", creditable: "true", voucher: "0xabc" };
     renderBar("map");
@@ -76,26 +116,31 @@ describe("MarketBar", () => {
     const links = within(sections).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
       "All",
-      "Pools",
-      "Vouchers",
       "Offers",
+      "Wants",
+      "Vouchers",
+      "Pools",
       "Catalogs",
       "Activity",
       "Posts",
+      "Map",
     ]);
     expect(links[0]?.getAttribute("href")).toBe(
       "/market?q=bike&tags=Repair&creditable=true&scope=all",
     );
     expect(links[1]?.getAttribute("href")).toBe(
-      "/market?q=bike&tags=Repair&creditable=true&scope=pools",
+      "/market?q=bike&tags=Repair&creditable=true&scope=offers",
     );
-    expect(links[5]?.getAttribute("href")).toBe("/?tab=activity");
-    expect(links[6]?.getAttribute("href")).toBe("/?tab=posts");
-    for (const link of links) expect(link.getAttribute("aria-current")).toBeNull();
-    expect(screen.queryByRole("link", { name: "Map" })).toBeNull();
+    expect(links[6]?.getAttribute("href")).toBe("/?tab=activity");
+    expect(links[7]?.getAttribute("href")).toBe("/?tab=posts");
+    expect(links[8]?.getAttribute("href")).toBe(
+      "/market?q=bike&tags=Repair&creditable=true&scope=all",
+    );
+    for (const link of links.slice(0, -1)) expect(link.getAttribute("aria-current")).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBe("page");
   });
 
-  it("returns to the map from the open list's badge and from the Map button", () => {
+  it("returns to the map from the open list's badge and the final Map control", () => {
     mocks.search = { scope: "pools", q: "bike", out_voucher: `0x${"a".repeat(40)}` };
     renderBar("pools");
 
@@ -126,6 +171,7 @@ describe("MarketBar", () => {
     const label = current === "posts" ? "Posts" : "Activity";
     expect(screen.getByRole("link", { name: label }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("link", { name: "Map" })).toBeTruthy();
   });
 
   it("puts Credit at the end of the search row for a member, and offers no Sign in", () => {
@@ -154,4 +200,29 @@ describe("MarketBar", () => {
 
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
   });
+});
+
+describe("MarketFeedBar", () => {
+  it.each(["activity", "posts"] as const)(
+    "places the menu immediately before the %s search controls",
+    (current) => {
+      render(
+        <MarketFeedBar
+          current={current}
+          search={<input aria-label={`Search ${current}`} />}
+          filters={<button type="button">Filters</button>}
+        />,
+      );
+
+      const menu = screen.getByRole("button", { name: "Open menu" });
+      const search = screen.getByRole("textbox", { name: `Search ${current}` });
+      const filters = screen.getByRole("button", { name: "Filters" });
+      const control = search.closest('[data-slot="market-search-control"]');
+      expect(menu.parentElement?.firstElementChild).toBe(menu);
+      expect(menu.nextElementSibling).toBe(control);
+      expect(control?.contains(search)).toBe(true);
+      expect(control?.contains(filters)).toBe(true);
+      expect(control?.className).toContain("h-11");
+    },
+  );
 });

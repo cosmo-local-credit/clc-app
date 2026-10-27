@@ -1,5 +1,7 @@
-import { adminPoolTransactionsQueryOptions } from "@clc/api/features/admin/queries";
-import { poolQueryOptions } from "@clc/api/features/pools/queries";
+import {
+  adminPoolQueryOptions,
+  adminPoolTransactionsQueryOptions,
+} from "@clc/api/features/admin/queries";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -29,6 +31,8 @@ import { PoolOffersChart } from "./ui/pool-offers-chart";
 import { PoolProfileCard } from "./ui/pool-profile-card";
 import { PoolSummaryMetrics } from "./ui/pool-summary-metrics";
 import { type SettlingVoucher, settlingVoucher, usePoolVouchers } from "./use-pool-vouchers";
+import { RestoreResourceSheet } from "#/features/retirement/restore-resource-sheet";
+import { RetirementResourceHistory } from "#/features/retirement/retirement-resource-history";
 
 /**
  * The largest page clc-core serves. The chart buckets over it because there is
@@ -50,7 +54,8 @@ const ACTIVITY_PAGE_SIZE = 100;
  * behaviour rather than disabling it, and inventing one would be the worse error.
  */
 export function PoolDetailPage({ address, search }: { address: string; search: PoolDetailSearch }) {
-  const poolQuery = useQuery(poolQueryOptions(clcApi.pools, address));
+  const poolQuery = useQuery(adminPoolQueryOptions(clcApi.admin, address));
+  const [restoring, setRestoring] = useState(false);
 
   // Set when a voucher has been signed for but not yet projected into the
   // catalog; it makes the voucher read poll until the row lands. See
@@ -109,9 +114,26 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
         onAddVoucher={() => setAddingVoucher(true)}
         onEditProfile={() => setEditingProfile(true)}
         onControls={() => setControlsOpen(true)}
+        onRestore={() => setRestoring(true)}
       />
 
       <PoolAdvisories advisories={poolAdvisories(pool, composition, { vouchersAvailable })} />
+
+      {pool.active === false ? (
+        <p role="status" className="border-border bg-muted/30 border p-4 text-sm">
+          This pool is retired in CLC. New swaps and deposits are disabled. Owner withdrawals,
+          balances and history remain available.
+        </p>
+      ) : null}
+
+      <RetirementResourceHistory type="pool" address={address} />
+      <RestoreResourceSheet
+        type="pool"
+        address={address}
+        name={pool.name}
+        open={restoring}
+        onClose={() => setRestoring(false)}
+      />
 
       {/* Two columns, split by how each half is read. The left is the record —
           profile, fees, dependencies — reference an operator reads once and

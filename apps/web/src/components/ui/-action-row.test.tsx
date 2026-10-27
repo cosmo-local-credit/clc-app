@@ -43,3 +43,21 @@ describe("ActionRow busy", () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 });
+
+it("supports immediate toggle semantics without a navigation chevron", () => {
+  render(
+    <ActionRow
+      icon={<RiLogoutBoxRLine data-testid="row-icon" aria-hidden="true" />}
+      label="Theme"
+      value="Dark"
+      ariaLabel="Dark mode"
+      pressed
+      trailingIcon={false}
+      onClick={() => undefined}
+    />,
+  );
+
+  const row = screen.getByRole("button", { name: "Dark mode" });
+  expect(row.getAttribute("aria-pressed")).toBe("true");
+  expect(row.querySelectorAll("svg")).toHaveLength(1);
+});

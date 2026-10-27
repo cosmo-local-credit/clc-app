@@ -260,6 +260,16 @@ afterEach(() => {
 });
 
 describe("pools list", () => {
+  it("guides an empty unfiltered pool list to Wallet", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse({ pools: [], first: 0, last: 0 }))),
+    );
+    renderWithQueryClient(<PoolsPage />);
+    const message = await screen.findByText(/^No marketplace results to show yet,/);
+    expect(message.textContent).toContain("visit your Wallet");
+  });
+
   it("renders each pool's own voucher count without a per-row request", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
@@ -325,6 +335,8 @@ describe("pools list", () => {
       tagMatch: "any",
       vouchers: [],
       voucherMatch: "any",
+      pools: [],
+      poolMatch: "any",
     });
   });
 

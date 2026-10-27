@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { PageHeader } from "#/components/admin/page-header";
+import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { SectionHeading } from "#/components/admin/section-heading";
 import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 import { LocationField } from "#/components/admin/location-field";
@@ -497,6 +498,7 @@ export function PoolPublishPage() {
           </FormPanel>
 
           <FormPanel title="Directory">
+            <PublicDisclosureNote kind="location" />
             <form.Field name="locationName">
               {(nameField) => (
                 <form.Field name="latitude">
@@ -547,6 +549,7 @@ export function PoolPublishPage() {
           </FormPanel>
 
           <FormPanel title="Contact" className="xl:col-span-2">
+            <PublicDisclosureNote kind="contact" />
             <div className="grid grid-cols-2 gap-3">
               <form.Field name="email">
                 {(field) => (

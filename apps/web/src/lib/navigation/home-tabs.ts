@@ -5,6 +5,8 @@ import {
   parseVoucherSheetSearch,
   type VoucherSheetSearch,
 } from "#/lib/navigation/voucher-sheet-search";
+import { pickActivitySearch, type ActivityRouteSearch } from "#/lib/navigation/activity-search";
+import { parseWantSheetSearch, type WantSheetSearch } from "#/lib/navigation/want-sheet-search";
 
 const privateHomeTabs = ["wallet", "activity", "settings"] as const;
 const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
@@ -12,10 +14,12 @@ const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
 export type HomeTab = (typeof homeTabs)[number];
 export type MarketView = "map" | "list";
 
-export type HomeRouteSearch = VoucherSheetSearch & {
-  tab?: HomeTab;
-  view?: MarketView;
-};
+export type HomeRouteSearch = VoucherSheetSearch &
+  WantSheetSearch &
+  ActivityRouteSearch & {
+    tab?: HomeTab;
+    view?: MarketView;
+  };
 
 export function parseHomeTab(value: unknown): HomeTab {
   return homeTabs.includes(value as HomeTab) ? (value as HomeTab) : "market";
@@ -35,7 +39,9 @@ export function parseHomeSearch(
   return {
     tab: parseHomeTab(search.tab),
     view: parseMarketView(search.view),
+    ...pickActivitySearch(search),
     ...parseVoucherSheetSearch(search),
+    ...parseWantSheetSearch(search),
   };
 }
 
@@ -46,9 +52,9 @@ export function parseHomeSearch(
  */
 export function isAtHomeTabRoot(search: unknown): boolean {
   const record = (search ?? {}) as Record<string, unknown>;
-  const { tab, view, voucher } = parseHomeSearch(record);
+  const { tab, view, voucher, want } = parseHomeSearch(record);
   if (tab !== "market") return true;
-  if (view !== "map" || voucher) return false;
+  if (view !== "map" || voucher || want) return false;
   if (record.creditable !== undefined) return false;
   return !isFilterSearchActive(catalogSearchForScope(search, false));
 }

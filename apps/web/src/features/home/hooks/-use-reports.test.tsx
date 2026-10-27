@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { FilteredReportPage, ReportSummary } from "@clc/api/features/reports/client";
-import { useVoucherReportsInfinite } from "./use-reports";
+import { useReportLocation, useVoucherReportsInfinite } from "./use-reports";
 
 const getFilteredReports = vi.hoisted(() => vi.fn());
+const reverseLocation = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api/reports", () => ({
   reportsClient: {
@@ -16,7 +17,7 @@ vi.mock("#/lib/api/reports", () => ({
 }));
 
 vi.mock("#/lib/geo-client", () => ({
-  reverseLocation: vi.fn(),
+  reverseLocation,
 }));
 
 const VOUCHER: VoucherRef = {
@@ -35,11 +36,13 @@ function report(id: number): ReportSummary {
     lng: null,
     periodFrom: null,
     periodTo: null,
-    authorAddress: null,
     createdAt: null,
     updatedAt: `2026-08-${String(id).padStart(2, "0")}T00:00:00Z`,
+    markerIcon: "post",
+    markerColor: "pink",
     tags: [],
     vouchers: [],
+    pools: [],
   };
 }
 
@@ -49,6 +52,7 @@ function page(ids: number[], next: FilteredReportPage["next"]): FilteredReportPa
     next,
     tagFacets: null,
     voucherFacets: null,
+    poolFacets: null,
   };
 }
 
@@ -64,6 +68,32 @@ function wrapper(client: QueryClient) {
 
 beforeEach(() => {
   getFilteredReports.mockReset();
+  reverseLocation.mockReset();
+  reverseLocation.mockResolvedValue({ locationName: "Nairobi", country: "Kenya" });
+});
+
+describe("useReportLocation", () => {
+  it("requires an allowed complete coordinate pair and uses the default allowance", async () => {
+    const client = newClient();
+    const valid = renderHook(() => useReportLocation(-1.286, 36.817), {
+      wrapper: wrapper(client),
+    });
+    const blocked = renderHook(() => useReportLocation(-1.286, 36.817, false), {
+      wrapper: wrapper(client),
+    });
+    const missingLat = renderHook(() => useReportLocation(undefined, 36.817), {
+      wrapper: wrapper(client),
+    });
+    const missingLng = renderHook(() => useReportLocation(-1.286, undefined), {
+      wrapper: wrapper(client),
+    });
+
+    await waitFor(() => expect(valid.result.current.isSuccess).toBe(true));
+    expect(blocked.result.current.fetchStatus).toBe("idle");
+    expect(missingLat.result.current.fetchStatus).toBe("idle");
+    expect(missingLng.result.current.fetchStatus).toBe("idle");
+    expect(reverseLocation).toHaveBeenCalledOnce();
+  });
 });
 
 describe("useVoucherReportsInfinite", () => {
@@ -89,6 +119,8 @@ describe("useVoucherReportsInfinite", () => {
           tagMatch: "any",
           vouchers: [{ ...VOUCHER, address: VOUCHER.address.toLowerCase() }],
           voucherMatch: "any",
+          pools: [],
+          poolMatch: "any",
         },
       },
       expect.anything(),

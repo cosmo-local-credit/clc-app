@@ -81,6 +81,12 @@ const {
   swapTransferState: { error: null as Error | null, isPending: false },
 }));
 
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => ({ info: undefined, isSafeSigner: false }),
+}));
+vi.mock("#/features/safe/hooks/use-safe-write", () => ({
+  useSafeWrite: () => ({ write: vi.fn() }),
+}));
 vi.mock("@tanstack/react-router", () => ({
   // Router props are dropped, but ARIA and identity props are forwarded: the
   // pool tab strip is built from Links and its roles are part of the contract.
@@ -597,18 +603,22 @@ describe("pool voucher UI", () => {
     const tabs = await screen.findAllByRole("tab");
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "Offerings",
+      "Wants",
       "Vouchers",
       "Holdings",
       "Credit",
       "Activity",
+      "Info",
     ]);
     expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
     expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual([
       "pool-panel-offerings",
+      "pool-panel-wants",
       "pool-panel-vouchers",
       "pool-panel-holdings",
       "pool-panel-credit",
       "pool-panel-activity",
+      "pool-panel-info",
     ]);
     // Only the selected panel is mounted, so every tab's target exists but one
     // panel is on screen.

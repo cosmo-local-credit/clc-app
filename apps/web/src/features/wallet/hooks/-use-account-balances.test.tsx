@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
+  getAccountActivity: vi.fn(),
   getAccountIssuedTokens: vi.fn(),
   getAccountTokens: vi.fn(),
   getAccountTransfers: vi.fn(),
@@ -20,6 +21,7 @@ vi.mock("#/lib/api/accounts", async () => ({
 
 import {
   useAccountTokensInfinite,
+  useAccountActivityInfinite,
   useAccountTransfersInfinite,
   useAllAccountIssuedTokens,
   useAllAccountTokens,
@@ -44,6 +46,7 @@ beforeEach(() => {
   // notifier run on queueMicrotask, which must stay real or nothing settles.
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
   mocks.getAccountTokens.mockReset().mockResolvedValue({ tokens: [] });
+  mocks.getAccountActivity.mockReset().mockResolvedValue({ activity: [] });
   mocks.getAccountTransfers.mockReset().mockResolvedValue({ transfers: [] });
 });
 
@@ -84,6 +87,26 @@ describe("account balance polling", () => {
     renderHook(() => useAccountTransfersInfinite(ADDRESS, { poll: true }), { wrapper: wrapper() });
     await tick(16_000);
     expect(mocks.getAccountTransfers.mock.calls.length).toBeGreaterThan(1);
+  });
+
+  it("keys and polls the logical account feed independently", async () => {
+    renderHook(
+      () =>
+        useAccountActivityInfinite(ADDRESS, {
+          poll: true,
+          q: "market",
+          types: ["sent", "swapped"],
+        }),
+      { wrapper: wrapper() },
+    );
+
+    await tick(0);
+    expect(mocks.getAccountActivity).toHaveBeenCalledWith(
+      expect.objectContaining({ q: "market", types: ["sent", "swapped"] }),
+      expect.any(AbortSignal),
+    );
+    await tick(16_000);
+    expect(mocks.getAccountActivity.mock.calls.length).toBeGreaterThan(1);
   });
 });
 

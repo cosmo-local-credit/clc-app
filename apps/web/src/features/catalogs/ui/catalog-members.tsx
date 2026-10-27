@@ -6,6 +6,8 @@ import type { CatalogKind } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { RiAddLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { Button } from "#/components/ui/button";
@@ -13,6 +15,7 @@ import { SectionHeading } from "#/components/ui/section-heading";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
+import { CatalogMemberPicker } from "./catalog-member-picker";
 
 export function CatalogMembers({
   catalogId,
@@ -25,15 +28,24 @@ export function CatalogMembers({
 }) {
   const { t } = useLingui();
   const auth = useAuthStatus();
+  const [adding, setAdding] = useState(false);
   const query = useInfiniteQuery(catalogMembersQueryOptions(catalogsClient, catalogId, kind));
   const remove = useMutation(
     catalogMemberMutationOptions(catalogsClient, useQueryClient(), auth.session?.address ?? ""),
   );
   return (
     <section className="space-y-3" aria-labelledby={`catalog-${kind}-title`}>
-      <SectionHeading id={`catalog-${kind}-title`}>
-        {kind === "pool" ? <Trans>Pools</Trans> : <Trans>Vouchers</Trans>}
-      </SectionHeading>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <SectionHeading id={`catalog-${kind}-title`}>
+          {kind === "pool" ? <Trans>Pools</Trans> : <Trans>Vouchers</Trans>}
+        </SectionHeading>
+        {canEdit ? (
+          <Button type="button" variant="outline" tap onClick={() => setAdding(true)}>
+            <RiAddLine aria-hidden="true" />
+            {kind === "pool" ? <Trans>Add a pool</Trans> : <Trans>Add a voucher</Trans>}
+          </Button>
+        ) : null}
+      </div>
       {query.isPending ? <ListSkeleton count={3} label={<Trans>Loading…</Trans>} /> : null}
       {query.isError ? (
         <div className="space-y-2">
@@ -52,7 +64,7 @@ export function CatalogMembers({
       ) : null}
       {query.isSuccess && !query.data.pages.some((page) => page.items.length) ? (
         <p className="text-sm text-muted-foreground">
-          <Trans>No items yet. Add pools or vouchers from their detail pages.</Trans>
+          {kind === "pool" ? <Trans>No pools yet.</Trans> : <Trans>No vouchers yet.</Trans>}
         </p>
       ) : null}
       {query.data?.pages
@@ -121,6 +133,14 @@ export function CatalogMembers({
         >
           {query.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
         </Button>
+      ) : null}
+      {canEdit ? (
+        <CatalogMemberPicker
+          catalogId={catalogId}
+          kind={kind}
+          open={adding}
+          onOpenChange={setAdding}
+        />
       ) : null}
     </section>
   );

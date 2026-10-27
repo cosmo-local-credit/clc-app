@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
 import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
+import { ProfilePrivacyNotice } from "#/components/profile-privacy-notice";
 import { UsernameInput } from "#/components/profile/username-input";
 import { ActionRow } from "#/components/ui/action-row";
 import { AvatarPicker } from "#/components/ui/avatar-picker";
@@ -29,6 +30,7 @@ import {
 } from "#/lib/profile-currency";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { useFirstInvalidFieldFocus } from "#/lib/use-first-invalid-field-focus";
+import { useIPCamera } from "#/features/home/hooks/use-ip-camera";
 
 type Props = {
   /** Which third of the profile is on screen; the form and its values span all three. */
@@ -140,6 +142,7 @@ export function OnboardingProfileForm({
   // it has been touched, so a page never opens on errors from another one.
   const [attempted, setAttempted] = useState<ReadonlySet<ProfilePage>>(() => new Set());
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const approximateCamera = useIPCamera().data;
   const { formRef, focusFirstInvalidField } = useFirstInvalidFieldFocus();
   const currencyWasChosenRef = useRef(Boolean(initialValues?.preferredCurrency));
   const currencyWasSuggestedByLocationRef = useRef(
@@ -357,6 +360,7 @@ export function OnboardingProfileForm({
 
         {page === "contact" ? (
           <>
+            <ProfilePrivacyNotice />
             <form.Field name="email">
               {(field) => {
                 const err = shownError("email", field.state.meta.isTouched);
@@ -471,6 +475,7 @@ export function OnboardingProfileForm({
                 <LocationPicker
                   required
                   fill
+                  cameraHint={approximateCamera}
                   value={field.state.value}
                   onChange={(next) => {
                     field.handleChange(next);

@@ -11,11 +11,13 @@ import {
   RiSettings3Line,
 } from "react-icons/ri";
 import { Badge } from "#/components/ui/badge";
+import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useAssetOwner } from "#/features/ownership/hooks/use-asset-owner";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
+import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
@@ -25,18 +27,36 @@ import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolCreditPanel } from "./pool-credit-panel";
 import { PoolHoldingsPanel } from "./pool-holdings-panel";
+import { PoolInfoPanel } from "./pool-info-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
 import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
+import { PoolWantsPanel } from "./pool-wants-panel";
 
-export type PoolDetailTab = "offerings" | "vouchers" | "holdings" | "credit" | "activity";
+export type PoolDetailTab =
+  | "offerings"
+  | "wants"
+  | "vouchers"
+  | "holdings"
+  | "credit"
+  | "activity"
+  | "info";
 
 // Holdings and credit sit side by side because they read the same rows two
 // ways: what the pool is made of, and how much more of each it will take.
-const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers", "holdings", "credit", "activity"];
+const POOL_TABS: PoolDetailTab[] = [
+  "offerings",
+  "wants",
+  "vouchers",
+  "holdings",
+  "credit",
+  "activity",
+  "info",
+];
 
 const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
   offerings: <Trans>Offerings</Trans>,
+  wants: <Trans>Wants</Trans>,
   vouchers: <Trans>Vouchers</Trans>,
   // Its own message rather than the wallet's: a tab has a fifth of a 360px
   // row, and a translation that suits a section heading — Italian's
@@ -44,42 +64,47 @@ const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
   holdings: <Trans context="Pool tab">Holdings</Trans>,
   credit: <Trans>Credit</Trans>,
   activity: <Trans>Activity</Trans>,
+  info: <Trans>Info</Trans>,
 };
 
 export function PoolDetailPage({
   poolAddress,
   activeTab,
+  wantId,
 }: {
   poolAddress: string;
   activeTab: PoolDetailTab;
+  wantId?: string;
 }) {
   const { t } = useLingui();
-  const poolQuery = useUserPoolByAddress(poolAddress);
-  const pool = poolQuery.data;
-  // Retired vouchers are dropped here and not in the hook. `list-pool-vouchers`
-  // deliberately does not filter `active` — pool composition is an operations
-  // view, and the swap picker reads the same list, where a retired voucher must
-  // stay selectable as a *source* so a holder is never left unable to swap out
-  // of one. This is the browse list, where it is only an entry to a page that no
-  // longer resolves.
-  // Approval exclusion needs the complete, unfiltered membership rather than
-  // the first page of active browse rows. The registry remains authoritative;
-  // this catalog set is the fallback for older pools without a registry.
-  const poolVouchersQuery = usePoolVouchersWithStatus(pool, { all: true });
-  const poolVouchers = poolVouchersQuery.vouchers;
-  const vouchers = poolVouchers.filter((voucher) => voucher.active);
-  const voucherTokens = usePoolVoucherTokens(vouchers);
   const auth = useAuthStatus();
+  const poolQuery = useUserPoolByAddress(
+    poolAddress,
+    auth.isAuthenticated ? auth.session?.address : undefined,
+  );
+  const pool = poolQuery.data;
   // The same rule the voucher screen applies: the backend session's address
   // must be the catalog owner, or the session must be a superadmin. clc-core
   // decides for real; this only keeps the button off everyone else's screen.
-  const currentOwner = useAssetOwner(poolAddress, pool?.ownerAddress);
+  // The owner itself, or a signer of the Safe that owns the pool.
+  const ownerInfo = useAssetOwnerInfo(poolAddress, pool?.ownerAddress);
   const isPoolOwner =
     auth.isAuthenticated &&
     !!pool &&
     !!auth.session?.address &&
     !!pool.ownerAddress &&
-    auth.session.address.toLowerCase() === currentOwner?.toLowerCase();
+    ownerInfo.canManage;
+  // Public composition hides retired vouchers. The owner's protected read,
+  // which clc-core also grants a Safe owner's signers, retains them so
+  // withdrawal controls can recover every recorded holding. Browse rows below
+  // still hide retired vouchers whose public page is gone.
+  const poolVouchersQuery = usePoolVouchersWithStatus(pool, {
+    all: true,
+    owner: isPoolOwner ? auth.session?.address : undefined,
+  });
+  const poolVouchers = poolVouchersQuery.vouchers;
+  const vouchers = poolVouchers.filter((voucher) => voucher.active);
+  const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
     auth.isAuthenticated && !!pool && (auth.session?.role === "SUPERADMIN" || isPoolOwner);
   // On-chain management is narrower than editing the record. Every call behind
@@ -90,9 +115,18 @@ export function PoolDetailPage({
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
   const [approving, setApproving] = useState(false);
   const [receiving, setReceiving] = useState(false);
-  const visibleTabs = auth.isAuthenticated
-    ? POOL_TABS
-    : POOL_TABS.filter((tab) => tab === "offerings" || tab === "vouchers");
+  const selectedTab =
+    pool?.active === false && activeTab !== "activity" && activeTab !== "info"
+      ? "holdings"
+      : activeTab;
+  const visibleTabs =
+    pool?.active === false
+      ? POOL_TABS.filter((tab) => tab === "holdings" || tab === "activity" || tab === "info")
+      : auth.isAuthenticated
+        ? POOL_TABS
+        : POOL_TABS.filter(
+            (tab) => tab === "offerings" || tab === "wants" || tab === "vouchers" || tab === "info",
+          );
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -106,7 +140,11 @@ export function PoolDetailPage({
 
   return (
     <div className="space-y-3">
-      <BackChevron label={t`Pools`} to="/market" search={{ scope: "pools" }} />
+      <BackChevron
+        label={wantId ? t`Want` : t`Pools`}
+        to={wantId ? `/wants/${wantId}` : "/market"}
+        search={wantId ? undefined : { scope: "pools" }}
+      />
       <section className="border border-border bg-card p-3">
         <div className="flex items-start gap-3">
           <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
@@ -114,6 +152,7 @@ export function PoolDetailPage({
             <h1 className="truncate font-heading text-[1.75rem] font-bold leading-tight">
               {pool.name}
             </h1>
+            <MultisigOwnerNotice info={ownerInfo.info} />
             <p
               dir="auto"
               className="mt-1 line-clamp-3 overflow-hidden text-muted-foreground text-xs break-words"
@@ -131,10 +170,24 @@ export function PoolDetailPage({
         </div>
       </section>
 
+      {pool.active === false ? (
+        <div role="status" className="space-y-1 border border-border bg-muted p-3 text-sm">
+          <p className="font-semibold">
+            <Trans>Retired pool</Trans>
+          </p>
+          <p>
+            <Trans>
+              This pool is hidden from discovery and does not accept new swaps or deposits in CLC.
+              You can still withdraw funds and view its history.
+            </Trans>
+          </p>
+        </div>
+      ) : null}
+
       {/* The three-up action row the wallet screen already uses, so a pool's
           actions are read the same way as every other screen's: the icon over
           a 12px label, which fits a third of a 360px row in every catalog. */}
-      {auth.isAuthenticated ? (
+      {auth.isAuthenticated && pool.active !== false ? (
         <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
           <Button asChild size="lg" className="flex-col gap-1 px-1 text-xs leading-tight">
             <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
@@ -179,7 +232,7 @@ export function PoolDetailPage({
         </section>
       ) : null}
 
-      {auth.isAuthenticated ? (
+      {auth.isAuthenticated && pool.active !== false ? (
         <>
           <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
           <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} tap />
@@ -187,14 +240,24 @@ export function PoolDetailPage({
       ) : null}
 
       {canEditDetails ? (
-        <PoolControlsPanel pool={pool} vouchers={vouchers} canManageOnChain={canManageOnChain} />
+        <PoolControlsPanel
+          pool={pool}
+          vouchers={poolVouchers}
+          canManageOnChain={canManageOnChain}
+          viewerAddress={auth.session?.address}
+          privateInfo={
+            poolQuery.privateInfo
+              ? {
+                  ...poolQuery.privateInfo,
+                  retry: () => void poolQuery.privateInfo?.refetch(),
+                }
+              : undefined
+          }
+        />
       ) : null}
 
       <div
-        className={[
-          "grid border border-border bg-card p-1",
-          auth.isAuthenticated ? "grid-cols-5" : "grid-cols-2",
-        ].join(" ")}
+        className="flex overflow-x-auto border border-border bg-card p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
         aria-label={t`Pool contents`}
       >
@@ -204,11 +267,11 @@ export function PoolDetailPage({
           // wraps onto a second line centred under the first; a single word
           // has to fit, which is what the tab's own `context` is for.
           const className = [
-            "flex h-10 min-w-0 items-center justify-center px-1 text-center text-2xs leading-tight font-semibold",
-            activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
+            "flex h-10 min-w-20 flex-1 items-center justify-center px-2 text-center text-2xs leading-tight font-semibold",
+            selectedTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
           ].join(" ");
 
-          if (activeTab === tab) {
+          if (selectedTab === tab) {
             return (
               <button
                 key={tab}
@@ -246,11 +309,15 @@ export function PoolDetailPage({
         })}
       </div>
 
-      {activeTab === "offerings" ? (
+      {pool.active !== false && selectedTab === "offerings" ? (
         <PoolOfferingsPanel poolAddress={poolAddress} vouchers={vouchers} />
       ) : null}
 
-      {activeTab === "vouchers" ? (
+      {pool.active !== false && selectedTab === "wants" ? (
+        <PoolWantsPanel poolAddress={poolAddress} />
+      ) : null}
+
+      {pool.active !== false && selectedTab === "vouchers" ? (
         <div
           id="pool-panel-vouchers"
           role="tabpanel"
@@ -287,11 +354,31 @@ export function PoolDetailPage({
         </div>
       ) : null}
 
-      {activeTab === "holdings" ? <PoolHoldingsPanel pool={pool} vouchers={vouchers} /> : null}
+      {selectedTab === "holdings" ? (
+        <PoolHoldingsPanel pool={pool} vouchers={poolVouchers} />
+      ) : null}
 
-      {activeTab === "credit" ? <PoolCreditPanel pool={pool} vouchers={vouchers} /> : null}
+      {pool.active !== false && selectedTab === "credit" ? (
+        <PoolCreditPanel pool={pool} vouchers={vouchers} />
+      ) : null}
 
-      {activeTab === "activity" ? <PoolActivityPanel pool={pool} /> : null}
+      {selectedTab === "activity" ? <PoolActivityPanel pool={pool} /> : null}
+
+      {selectedTab === "info" ? (
+        <AuthenticatedDetailsGate className="border border-border bg-card p-4">
+          <AuthenticatedPoolInfo
+            pool={pool}
+            privateInfo={
+              poolQuery.privateInfo
+                ? {
+                    ...poolQuery.privateInfo,
+                    retry: () => void poolQuery.privateInfo?.refetch(),
+                  }
+                : undefined
+            }
+          />
+        </AuthenticatedDetailsGate>
+      ) : null}
 
       {canManageOnChain ? (
         <PoolVoucherSheet
@@ -314,6 +401,41 @@ export function PoolDetailPage({
       ) : null}
     </div>
   );
+}
+
+function AuthenticatedPoolInfo({
+  pool,
+  privateInfo,
+}: {
+  pool: Parameters<typeof PoolInfoPanel>[0]["pool"];
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
+}) {
+  if (privateInfo?.isPending) {
+    return (
+      <p aria-busy="true" className="text-sm text-muted-foreground">
+        <Trans>Loading pool information…</Trans>
+      </p>
+    );
+  }
+  if (privateInfo?.isError) {
+    return (
+      <div role="alert" className="space-y-3 text-sm">
+        <p>
+          <Trans>Couldn't load pool information.</Trans>
+        </p>
+        <Button variant="outline" tap pending={privateInfo.isFetching} onClick={privateInfo.retry}>
+          <Trans>Retry</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  return <PoolInfoPanel pool={pool} />;
 }
 
 function DetailShell({ message }: { message: string }) {

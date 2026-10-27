@@ -26,16 +26,19 @@ import {
   enqueueNotificationAck,
   getNotificationInboxMessage,
   getOrCreateNotificationDeviceId,
+  isNotificationIdentityCurrent,
   isNotificationStorageAvailable,
   listNotificationInboxMessages,
   listQueuedNotificationAcks,
   listSubscriptionDiagnostics,
   markNotificationInboxMessageActioned,
   markNotificationInboxMessageRead,
+  markNotificationInboxMessageShown,
   type NotificationInboxMessage,
   openNotificationDatabase,
   readNotificationConfig,
   readNotificationDeviceId,
+  readNotificationDisplayState,
   recordSubscriptionDiagnostic,
   removeQueuedNotificationAck,
   resetNotificationDatabaseForTests,
@@ -112,6 +115,31 @@ describe("notification config storage", () => {
       syncCursor: "cursor-2",
       vapidKeyVersion: "vapid-v1",
     });
+  });
+
+  it("reuses a matching identity and rejects stale config writes", async () => {
+    const identity = await beginNotificationIdentity("0xAaA", "user-1");
+    await updateNotificationConfig(
+      { generation: 4, registrationId: "registration-1", userId: "user-1" },
+      identity.identityEpoch,
+    );
+
+    const sameIdentity = await beginNotificationIdentity("0xaaa", "user-1");
+    expect(sameIdentity.identityEpoch).toBe(identity.identityEpoch);
+    expect(await isNotificationIdentityCurrent(identity.identityEpoch)).toBe(true);
+    expect(await isNotificationIdentityCurrent(undefined)).toBe(false);
+
+    const staleEpoch = "epoch-stale";
+    expect(await updateNotificationConfig({ registrationId: "stale" }, staleEpoch)).toMatchObject({
+      registrationId: "registration-1",
+    });
+    expect(await updateNotificationConfig({ generation: 3 })).toMatchObject({ generation: 4 });
+  });
+
+  it("throws when an epoch-guarded write has no current identity", async () => {
+    await expect(
+      updateNotificationConfig({ registrationId: "stale" }, "epoch-stale"),
+    ).rejects.toThrow("Notification identity changed.");
   });
 });
 
@@ -237,6 +265,44 @@ describe("notification inbox storage", () => {
     // user's backlog as already delivered. The rest of config stays.
     expect(await readNotificationConfig()).toMatchObject({ vapidKeyVersion: "v3" });
     expect((await readNotificationConfig())?.syncCursor).toBeUndefined();
+  });
+
+  it("does not clear a newer wallet when an older wallet finishes signing out", async () => {
+    const identity = await beginNotificationIdentity("0xbbb", "user-b");
+    await saveNotificationInboxMessage(inboxMessage({ notificationId: "new-owner" }));
+
+    await clearNotificationIdentityStores("0xaaa");
+
+    expect((await readNotificationConfig())?.identityEpoch).toBe(identity.identityEpoch);
+    expect(await getNotificationInboxMessage("new-owner")).not.toBeNull();
+  });
+
+  it("records shown state and distinguishes a revisioned deletion", async () => {
+    const identity = await beginNotificationIdentity("0xaaa", "user-a");
+    await saveNotificationInboxMessage(inboxMessage({ revision: 1 }), identity.identityEpoch);
+
+    expect(
+      await markNotificationInboxMessageShown(
+        "notification-1",
+        "2026-06-05T12:08:00.000Z",
+        identity.identityEpoch,
+      ),
+    ).toMatchObject({ shownAt: "2026-06-05T12:08:00.000Z" });
+    expect(await readNotificationDisplayState("notification-1")).toMatchObject({
+      deleted: false,
+      message: { notificationId: "notification-1" },
+    });
+
+    await applyNotificationInboxPage(identity.identityEpoch, undefined, {
+      messages: [],
+      deletions: [{ notificationId: "notification-1", revision: 2 }],
+      nextSyncCursor: "page-1",
+    });
+
+    expect(await readNotificationDisplayState("notification-1")).toEqual({
+      deleted: true,
+      message: null,
+    });
   });
 });
 
@@ -438,6 +504,41 @@ describe("notification ownership and feed consistency", () => {
     await saveNotificationInboxMessage(inboxMessage({ revision: 4 }), identity.identityEpoch);
     expect(await getNotificationInboxMessage("notification-1")).toBeNull();
     expect((await readNotificationConfig())?.syncCursor).toBe("page-2");
+  });
+
+  it("resets a feed while preserving newer interaction state", async () => {
+    const identity = await beginNotificationIdentity("0xaaa");
+    await saveNotificationInboxMessage(
+      inboxMessage({
+        actionedAt: "2026-06-05T12:03:00.000Z",
+        readAt: "2026-06-05T12:01:00.000Z",
+        revision: 2,
+        shownAt: "2026-06-05T12:02:00.000Z",
+      }),
+      identity.identityEpoch,
+    );
+
+    expect(
+      await applyNotificationInboxPage(identity.identityEpoch, undefined, {
+        messages: [
+          inboxMessage({
+            body: "Reset body",
+            notificationId: "notification-reset",
+            revision: 3,
+            walletAddressTarget: "0xAbC",
+          }),
+        ],
+        deletions: [{ notificationId: "notification-1", revision: 1 }],
+        nextSyncCursor: "reset-page",
+        resetRequired: true,
+      }),
+    ).toBe(true);
+
+    expect(await getNotificationInboxMessage("notification-1")).toBeNull();
+    expect(await getNotificationInboxMessage("notification-reset")).toMatchObject({
+      body: "Reset body",
+      walletAddressTarget: "0xabc",
+    });
   });
 });
 

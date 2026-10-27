@@ -1,9 +1,14 @@
 import { poolKeys } from "@clc/api/features/pools/queries";
+import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
+import { wantKeys } from "@clc/api/features/wants/queries";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
 import { waitForOwnershipRelay } from "#/features/ownership/api/wait-for-ownership-relay";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
+import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
+import { useSafeWrite } from "#/features/safe/hooks/use-safe-write";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
@@ -53,12 +58,22 @@ export type PoolAdminSubmission = {
   onConfirmed?: (trackingId: string, txHash: string) => void;
 };
 
-export function usePoolAdminRelay() {
+export type PoolAdminAsset = { address: string; ownerAddress?: string | null };
+
+/**
+ * `asset` names the pool being written, which is what lets the same call list go
+ * to a Safe owner's proposal flow instead of a direct relay. Without it the
+ * hook relays as the connected account, as before.
+ */
+export function usePoolAdminRelay(asset?: PoolAdminAsset) {
   const queryClient = useQueryClient();
   const { address, connector } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
+  const owner = useAssetOwnerInfo(asset?.address ?? "", asset?.ownerAddress);
+  const safeWrite = useSafeWrite();
+  const reportError = useReportWriteError();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async (input: CaliburCall[] | PoolAdminSubmission) => {
       const submission: PoolAdminSubmission = Array.isArray(input) ? { calls: input } : input;
       if (submission.trackingId) {
@@ -67,6 +82,12 @@ export function usePoolAdminRelay() {
         return result;
       }
       const calls = submission.calls;
+      if (asset && owner.info?.kind === "safe" && owner.isSafeSigner) {
+        return safeWrite.write({
+          safe: owner.info.owner,
+          calls,
+        });
+      }
       if (!address) throw new Error("Connect your wallet to manage this pool.");
       if (delegationStatus === "checking") {
         throw new Error("Still checking your wallet. Try again in a moment.");
@@ -97,7 +118,10 @@ export function usePoolAdminRelay() {
         // The same batch writes the limiter, and the swap screen reads that cap
         // to decide whether a voucher can still be deposited.
         queryClient.invalidateQueries({ queryKey: poolSwapTokenQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: marketplaceKeys.all }),
+        queryClient.invalidateQueries({ queryKey: wantKeys.all }),
       ]);
     },
   });
+  return { ...mutation, reportError };
 }

@@ -9,7 +9,7 @@ vi.mock("viem/actions", () => ({
   readContract: mocks.read,
 }));
 vi.mock("wagmi", () => ({ useClient: () => ({ chain: { id: 100 } }) }));
-import { useAssetOwner } from "./use-asset-owner";
+import { readConfirmedAssetOwner, useAssetOwner } from "./use-asset-owner";
 import { useOwnershipSubmissions } from "../state/ownership-submissions";
 const A = "0x1111111111111111111111111111111111111111",
   FROM = "0x2222222222222222222222222222222222222222",
@@ -25,6 +25,13 @@ beforeEach(() => {
   mocks.read.mockResolvedValue(TO);
 });
 describe("confirmed owner authority", () => {
+  it("requires a transaction hash before reading confirmed ownership", async () => {
+    await expect(readConfirmedAssetOwner({} as never, A, {})).rejects.toThrow(
+      "awaiting a transaction receipt",
+    );
+    expect(mocks.receipt).not.toHaveBeenCalled();
+  });
+
   it("immediately removes sender authority during catalog lag and refreshes current ownership", async () => {
     const { result } = renderHook(() => useAssetOwner(A, FROM), { wrapper });
     expect(result.current).toBe(FROM);

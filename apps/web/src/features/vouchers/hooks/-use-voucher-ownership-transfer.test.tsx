@@ -12,11 +12,26 @@ const mocks = vi.hoisted(() => ({
   read: vi.fn(),
   catalog: vi.fn(),
   address: "0x1111111111111111111111111111111111111111",
+  client: { chain: { id: 100 } } as { chain: { id: number } } | undefined,
   delegation: "not-delegated",
 }));
 vi.mock("#/features/webauthn/api/relay-calibur-batch", () => ({ relayCaliburBatch: mocks.relay }));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => ({
+    owner: undefined,
+    info: undefined,
+    pending: false,
+    isSafeOwned: false,
+    isSafeSigner: false,
+    unsupportedOwner: false,
+    canManage: false,
+  }),
+}));
+vi.mock("#/features/safe/hooks/use-safe-write", () => ({
+  useSafeWrite: () => ({ write: vi.fn() }),
+}));
 vi.mock("wagmi", () => ({
-  useClient: () => ({ chain: { id: 100 } }),
+  useClient: () => mocks.client,
   useConnection: () => ({ address: mocks.address, connector: { id: "private-key" } }),
 }));
 vi.mock("viem/actions", () => ({
@@ -54,6 +69,7 @@ beforeEach(() => {
   localStorage.clear();
   useOwnershipSubmissions.setState({ submissions: {} });
   mocks.address = OWNER;
+  mocks.client = { chain: { id: 100 } };
   mocks.delegation = "not-delegated";
   mocks.relay.mockResolvedValue({ trackingId: "ownership-1" });
   mocks.track.mockResolvedValue({ result: { otx: [{ status: "SUCCESS", txHash: "0xabc" }] } });
@@ -120,6 +136,76 @@ describe("voucher ownership settlement", () => {
       await expect(result.current.mutateAsync(input)).rejects.toThrow(/current owner wallet/);
     });
     expect(mocks.relay).not.toHaveBeenCalled();
+  });
+  it("does not prepare a transfer without the configured chain client", async () => {
+    mocks.client = undefined;
+    const { result } = renderHook(() => useVoucherOwnershipTransfer(), { wrapper });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync(input)).rejects.toThrow(
+        "The configured chain is unavailable.",
+      );
+    });
+
+    expect(mocks.relay).not.toHaveBeenCalled();
+  });
+
+  it("reconciles a stale confirmed submission before signing a replacement", async () => {
+    useOwnershipSubmissions.getState().save(TOKEN, {
+      trackingId: "ownership-stale",
+      ownerAddress: OWNER,
+      newOwnerAddress: NEW_OWNER,
+      confirmed: true,
+      txHash: "0xdef",
+    });
+    mocks.read
+      .mockReset()
+      .mockResolvedValueOnce(OWNER)
+      .mockResolvedValueOnce(OWNER)
+      .mockResolvedValue(NEW_OWNER);
+    const { result } = renderHook(() => useVoucherOwnershipTransfer(), { wrapper });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync(input)).resolves.toMatchObject({
+        catalogSynced: true,
+      });
+    });
+
+    expect(mocks.relay).toHaveBeenCalledOnce();
+  });
+
+  it("blocks a saved submission created by a different owner", async () => {
+    useOwnershipSubmissions.getState().save(TOKEN, {
+      trackingId: "ownership-other",
+      ownerAddress: NEW_OWNER,
+      newOwnerAddress: OWNER,
+      confirmed: false,
+    });
+    const { result } = renderHook(() => useVoucherOwnershipTransfer(), { wrapper });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync(input)).rejects.toThrow(
+        "must be reconciled before another handover",
+      );
+    });
+
+    expect(mocks.relay).not.toHaveBeenCalled();
+  });
+
+  it("refuses to sign when local storage cannot preserve the relay tracking id", async () => {
+    const storage = vi.spyOn(window.localStorage, "setItem").mockImplementationOnce(() => {
+      throw new Error("storage blocked");
+    });
+    const { result } = renderHook(() => useVoucherOwnershipTransfer(), { wrapper });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync(input)).rejects.toThrow(
+        "This browser is blocking local storage",
+      );
+    });
+
+    expect(mocks.relay).not.toHaveBeenCalled();
+    storage.mockRestore();
   });
   it("clears a definitively reverted submission", async () => {
     mocks.track.mockResolvedValue({ result: { otx: [{ status: "REVERTED" }] } });

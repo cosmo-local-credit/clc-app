@@ -1,5 +1,7 @@
 import { poolKeys } from "@clc/api/features/pools/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
+import { wantKeys } from "@clc/api/features/wants/queries";
 import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
 import type { CaliburCall } from "@clc/core/features/webauthn";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +36,8 @@ export function useOwnershipTransfer(
   kind: "pool" | "voucher",
   submit: SubmitOwnership,
   prepare: (input: OwnershipTransferInput) => Promise<CaliburCall[]>,
+  /** The viewer signs for a Safe that owns the asset, so the Safe stands in for the owner wallet. */
+  isSafeSigner = false,
 ) {
   const client = useClient({ chainId: CHAIN_ID });
   const connection = useConnection();
@@ -46,11 +50,11 @@ export function useOwnershipTransfer(
       const { assetAddress, ownerAddress } = input;
       if (!client || client.chain?.id !== CHAIN_ID)
         throw new Error("The configured chain is unavailable.");
-      if (
-        !auth.isAuthenticated ||
-        auth.session?.address.toLowerCase() !== ownerAddress.toLowerCase() ||
-        connection.address?.toLowerCase() !== ownerAddress.toLowerCase()
-      ) {
+      const connected = connection.address?.toLowerCase();
+      const session = auth.session?.address.toLowerCase();
+      const isOwnerWallet = session === ownerAddress.toLowerCase() && connected === session;
+      const isSigningForSafe = isSafeSigner && !!connected && connected === session;
+      if (!auth.isAuthenticated || !(isOwnerWallet || isSigningForSafe)) {
         throw new Error("Connect and sign in with this asset's current owner wallet.");
       }
       let saved: OwnershipSubmission | undefined =
@@ -157,6 +161,8 @@ export function useOwnershipTransfer(
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: poolKeys.all }),
         queryClient.invalidateQueries({ queryKey: voucherKeys.all }),
+        queryClient.invalidateQueries({ queryKey: marketplaceKeys.all }),
+        queryClient.invalidateQueries({ queryKey: wantKeys.all }),
         queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all }),
       ]);
       if (catalogSynced) useOwnershipSubmissions.getState().remove(assetAddress);

@@ -142,18 +142,15 @@ describe("TransferDetailsSheet receipt sharing", () => {
       `/vouchers/${TRANSFER.tokenAddress}?from=wallet`,
     );
 
-    expect(screen.getByText("From").parentElement?.textContent).toContain(
-      "Sender Updated (sender-new)",
-    );
+    expect(screen.getByText("From").parentElement?.textContent).toContain("sender-new");
+    expect(screen.queryByText("Sender Updated")).toBeNull();
     expect(screen.getByText("From").parentElement?.textContent).toContain(TRANSFER.senderAddress);
     expect(screen.getByText("To").parentElement?.textContent).toContain(TRANSFER.recipientAddress);
 
     fireEvent.click(screen.getByRole("button", { name: "Share receipt" }));
 
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
-    expect(share.mock.calls[0]?.[0].text).toContain(
-      "I received 1 USDC from Sender Updated (sender-new).",
-    );
+    expect(share.mock.calls[0]?.[0].text).toContain("I received 1 USDC from sender-new.");
     expect(share.mock.calls[0]?.[0].text).toContain(`Address: ${TRANSFER.senderAddress}`);
     expect(share.mock.calls[0]?.[0].text).not.toContain("I sent");
   });
@@ -191,15 +188,14 @@ describe("TransferDetailsSheet receipt sharing", () => {
       />,
     );
 
-    expect(screen.getByText("Alice Updated").parentElement?.textContent).toBe(
-      "Alice Updated (alice-new)",
-    );
+    expect(screen.getByText("alice-new")).toBeTruthy();
+    expect(screen.queryByText("Alice Updated")).toBeNull();
     expect(screen.queryByText("Old Alice")).toBeNull();
     expect(screen.getByText("To").parentElement?.textContent).toContain(TRANSFER.recipientAddress);
 
     fireEvent.click(screen.getByRole("button", { name: "Share receipt" }));
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
-    expect(share.mock.calls[0]?.[0].text).toContain("I sent 1 USDC to Alice Updated (alice-new).");
+    expect(share.mock.calls[0]?.[0].text).toContain("I sent 1 USDC to alice-new.");
     expect(share.mock.calls[0]?.[0].text).toContain(`Address: ${TRANSFER.recipientAddress}`);
   });
 

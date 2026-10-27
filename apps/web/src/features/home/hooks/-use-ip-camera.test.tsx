@@ -9,12 +9,6 @@ const resolveIPCamera = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/ip-geolocation-client", () => ({
   resolveIPCamera,
-  NAIROBI_DEFAULT_CAMERA: {
-    lat: -1.2921,
-    lng: 36.8219,
-    zoom: 12,
-    source: "country-default",
-  },
 }));
 
 function wrapper(client: QueryClient) {

@@ -1,105 +1,64 @@
-import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
-import { Trans } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
-import { createContext, type ReactNode, useContext } from "react";
-import { haversineMeters } from "@clc/core/lib/geo/distance";
-
-import { useDiscoveryLocation } from "#/lib/discovery-location";
-import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
-import { Button } from "#/components/ui/button";
-import { cn } from "#/lib/utils";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
-  catalogVisibilityRadiusKm,
-  useHydratedCatalogVisibility,
-  useCatalogVisibilityStore,
-} from "#/features/home/state/catalog-visibility";
+  canonicalMarketBounds,
+  marketBoundsKey,
+  type MarketBoundingBox,
+  type NearbyRequest,
+} from "@clc/core/features/catalog/nearby";
+import { Trans } from "@lingui/react/macro";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-// Only Catalogs, Market, Pools browsing, and Posts opt in. Other consumers of
-// the same catalog hooks (wallet, pickers, and details) retain ordinary reads.
-const PUBLIC_REQUEST: NearbyRequest = { nearby: false };
-const NearbyCatalogContext = createContext<NearbyRequest | undefined>(undefined);
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { removeStorageItem } from "#/lib/storage/local-storage";
+import {
+  readOwnerScoped,
+  removeOwnerScoped,
+  writeOwnerScoped,
+} from "#/lib/storage/owner-scoped-storage";
 
-export type NearbyCatalogFilter = {
-  lat: number;
-  lng: number;
-  radiusKm: number;
+const MARKET_AREA_STORAGE_NAME = "market-discovery-area.v1";
+const OBSOLETE_VISIBILITY_KEY = "clc.catalog-visibility.v1";
+
+export type MarketDiscoveryArea = {
+  owner: string;
+  center: { lat: number; lng: number };
+  zoom: number;
+  boxes: readonly MarketBoundingBox[];
 };
 
-const NearbyCatalogFilterContext = createContext<NearbyCatalogFilter | undefined>(undefined);
+type MarketDiscoveryAreaValue = {
+  area: MarketDiscoveryArea | null;
+  setArea: (area: Omit<MarketDiscoveryArea, "owner">) => void;
+  clearArea: () => void;
+};
 
-// A member chose a distance but has no profile location to measure it from.
-const NearbyCatalogMissingLocationContext = createContext(false);
+const NearbyCatalogContext = createContext<NearbyRequest | undefined>(undefined);
+const MarketDiscoveryAreaContext = createContext<MarketDiscoveryAreaValue | null>(null);
 
 export function useNearbyCatalog() {
   return useContext(NearbyCatalogContext);
 }
 
-export function useNearbyCatalogFilter() {
-  return useContext(NearbyCatalogFilterContext);
-}
-
-export function useNearbyCatalogMissingLocation() {
-  return useContext(NearbyCatalogMissingLocationContext);
-}
-
-/** Where a distance has nothing to start from: one notice, with the way to fix it. */
-export function MissingLocationNotice({ className }: { className?: string }) {
-  if (!useNearbyCatalogMissingLocation()) return null;
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-between gap-3 border border-border bg-card px-4 py-3",
-        className,
-      )}
-      role="status"
-    >
-      <p className="min-w-0 text-sm">
-        <Trans>Choose a location</Trans>
-      </p>
-      <Button asChild variant="outline" tap>
-        <Link to="/settings/profile">
-          <Trans>Edit profile</Trans>
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
-export function isWithinNearbyCatalog(
-  filter: NearbyCatalogFilter | undefined,
-  coordinates: { lat?: number | null; lng?: number | null },
-): boolean {
-  if (!filter) return true;
-  const { lat, lng } = coordinates;
-  if (
-    typeof lat !== "number" ||
-    typeof lng !== "number" ||
-    !Number.isFinite(lat) ||
-    !Number.isFinite(lng)
-  ) {
-    return false;
-  }
-  return haversineMeters(filter, { lat, lng }) <= filter.radiusKm * 1_000;
-}
-
-export function filterNearbyCatalog<T extends { lat?: number | null; lng?: number | null }>(
-  rows: readonly T[],
-  filter: NearbyCatalogFilter | undefined,
-): T[] {
-  return filter ? rows.filter((row) => isWithinNearbyCatalog(filter, row)) : [...rows];
+export function useMarketDiscoveryArea() {
+  const value = useContext(MarketDiscoveryAreaContext);
+  if (!value) throw new Error("NearbyCatalog is required");
+  return value;
 }
 
 export function nearbyQueryKey<T extends readonly unknown[]>(
   key: T,
   scope: NearbyRequest | undefined,
 ) {
-  return scope?.nearby ? ([...key, scope.scope] as const) : key;
+  return scope?.scope ? ([...key, scope.scope] as const) : key;
 }
 
-// Reuse recent nearby snapshots on short return visits. Stale results refresh
-// on entry, focus, or reconnect; account/location changes use separate keys.
 export function nearbyQueryPolicy(scope: NearbyRequest | undefined) {
   return scope
     ? {
@@ -112,26 +71,56 @@ export function nearbyQueryPolicy(scope: NearbyRequest | undefined) {
     : {};
 }
 
-export function NearbyCatalog({
-  children,
-  allowMissingLocation = false,
-}: {
-  children: ReactNode;
-  /**
-   * Browse everywhere, with a notice, rather than block the screen when a
-   * member has a distance but no profile location. The market does; Posts
-   * keeps the block.
-   */
-  allowMissingLocation?: boolean;
-}) {
-  const { visibility, hydrated } = useHydratedCatalogVisibility();
-  const auth = useAuthStatus();
-  const radiusKm = catalogVisibilityRadiusKm(visibility);
-  const profile = useAuthProfile({ enabled: radiusKm !== null && auth.isAuthenticated });
-  const lat = profile.data?.geoLat;
-  const lng = profile.data?.geoLng;
+export function clearMarketDiscoveryArea(owner: string): void {
+  removeOwnerScoped(owner.toLowerCase(), MARKET_AREA_STORAGE_NAME);
+}
 
-  if (!hydrated) {
+export function NearbyCatalog({ children }: { children: ReactNode }) {
+  const owner = useStorageOwner();
+  const [snapshot, setSnapshot] = useState<{
+    owner: string;
+    area: MarketDiscoveryArea | null;
+  } | null>(null);
+
+  useEffect(() => {
+    // A radius cannot be faithfully migrated into a rectangular map view.
+    removeStorageItem(OBSOLETE_VISIBILITY_KEY);
+    if (!owner) return;
+    setSnapshot({ owner, area: readMarketArea(owner) });
+  }, [owner]);
+
+  const setArea = useCallback(
+    (next: Omit<MarketDiscoveryArea, "owner">) => {
+      if (!owner) return;
+      const area = normalizeMarketArea({ ...next, owner });
+      if (!area) return;
+      setSnapshot((current) => {
+        if (current?.owner === owner && equalMarketAreas(current.area, area)) return current;
+        writeOwnerScoped(owner, MARKET_AREA_STORAGE_NAME, JSON.stringify(area));
+        return { owner, area };
+      });
+    },
+    [owner],
+  );
+
+  const clearArea = useCallback(() => {
+    if (!owner) return;
+    removeOwnerScoped(owner, MARKET_AREA_STORAGE_NAME);
+    setSnapshot((current) =>
+      current?.owner === owner && current.area !== null ? { owner, area: null } : current,
+    );
+  }, [owner]);
+
+  const areaValue = useMemo(
+    () => ({
+      area: snapshot && snapshot.owner === owner ? snapshot.area : null,
+      setArea,
+      clearArea,
+    }),
+    [clearArea, owner, setArea, snapshot],
+  );
+
+  if (!owner || snapshot?.owner !== owner) {
     return (
       <p role="status" className="sr-only">
         <Trans>Loading…</Trans>
@@ -139,130 +128,81 @@ export function NearbyCatalog({
     );
   }
 
-  if (radiusKm === null) {
-    return (
-      <NearbyCatalogContext.Provider key="global" value={PUBLIC_REQUEST}>
-        <NearbyCatalogFilterContext.Provider value={undefined}>
-          {children}
-        </NearbyCatalogFilterContext.Provider>
-      </NearbyCatalogContext.Provider>
-    );
-  }
+  const bounds = snapshot.area?.boxes;
+  const scope = `viewport:${owner}:${marketBoundsKey(bounds)}`;
+  const request: NearbyRequest = { nearby: false, scope, ...(bounds ? { bounds } : {}) };
 
-  if (auth.isLoading || (auth.isAuthenticated && profile.isPending)) {
-    return (
-      <p role="status" className="sr-only">
-        <Trans>Loading…</Trans>
-      </p>
-    );
-  }
-  if (
-    (auth.error && auth.state === "sessionCheckError") ||
-    (auth.isAuthenticated && profile.isError)
-  ) {
-    return (
-      <div className="space-y-3 p-6">
-        <p>
-          <Trans>We couldn't load your profile.</Trans>
-        </p>
-        <Button
-          tap
-          pending={auth.retrying || profile.isFetching}
-          onClick={() => {
-            auth.retry();
-            void profile.refetch();
-          }}
-        >
-          <Trans>Try again</Trans>
-        </Button>
-      </div>
-    );
-  }
-  if (!auth.isAuthenticated) {
-    return <GuestNearbyCatalog radiusKm={radiusKm}>{children}</GuestNearbyCatalog>;
-  }
-  if (
-    typeof lat !== "number" ||
-    typeof lng !== "number" ||
-    !Number.isFinite(lat) ||
-    !Number.isFinite(lng) ||
-    Math.abs(lat) > 90 ||
-    Math.abs(lng) > 180
-  ) {
-    if (allowMissingLocation) {
-      return (
-        <NearbyCatalogMissingLocationContext.Provider value>
-          <NearbyCatalogContext.Provider key="missing-location" value={PUBLIC_REQUEST}>
-            <NearbyCatalogFilterContext.Provider value={undefined}>
-              {children}
-            </NearbyCatalogFilterContext.Provider>
-          </NearbyCatalogContext.Provider>
-        </NearbyCatalogMissingLocationContext.Provider>
-      );
-    }
-    return (
-      <div className="space-y-3 p-6">
-        <p>
-          <Trans>Choose a location</Trans>
-        </p>
-        <Button asChild tap>
-          <Link to="/settings/profile">
-            <Trans>Edit profile</Trans>
-          </Link>
-        </Button>
-      </div>
-    );
-  }
-
-  const scope = `nearby:${auth.address?.toLowerCase()}:${auth.chainId}:${lat}:${lng}:${radiusKm}`;
-  const filter = { lat, lng, radiusKm };
-  // Remount on identity/location change so previous-data placeholders and local
-  // selections cannot carry records from the old radius into the new screen.
   return (
-    <NearbyCatalogContext.Provider key={scope} value={{ nearby: true, scope }}>
-      <NearbyCatalogFilterContext.Provider value={filter}>
+    <NearbyCatalogContext.Provider value={request}>
+      <MarketDiscoveryAreaContext.Provider value={areaValue}>
         {children}
-      </NearbyCatalogFilterContext.Provider>
+      </MarketDiscoveryAreaContext.Provider>
     </NearbyCatalogContext.Provider>
   );
 }
 
-/** Guests filter public rows locally; the server nearby mode requires a profile. */
-function GuestNearbyCatalog({ children, radiusKm }: { children: ReactNode; radiusKm: number }) {
-  const { origin, locationStatus, requestLocation, ipPending } =
-    useDiscoveryLocation(GUEST_STORAGE_OWNER);
-  const setVisibility = useCatalogVisibilityStore((state) => state.setVisibility);
-  // A country/default camera is not evidence of the visitor's location.
-
-  if (!origin) {
-    return (
-      <div className="space-y-3 p-6">
-        <p role="status">
-          {ipPending && locationStatus === "idle" ? (
-            <Trans>Loading…</Trans>
-          ) : locationStatus === "denied" ? (
-            <Trans>Location denied</Trans>
-          ) : locationStatus === "unavailable" || locationStatus === "error" ? (
-            <Trans>Location unavailable</Trans>
-          ) : (
-            <Trans>Choose a location</Trans>
-          )}
-        </p>
-        <Button tap pending={locationStatus === "requesting"} onClick={requestLocation}>
-          <Trans>Use my location</Trans>
-        </Button>
-        <Button variant="outline" tap onClick={() => setVisibility("global")}>
-          <Trans>Global</Trans>
-        </Button>
-      </div>
-    );
+function readMarketArea(owner: string): MarketDiscoveryArea | null {
+  const raw = readOwnerScoped(owner, MARKET_AREA_STORAGE_NAME);
+  if (!raw) return null;
+  try {
+    const area = normalizeMarketArea(JSON.parse(raw));
+    if (area?.owner === owner) return area;
+  } catch {
+    // Corrupt or obsolete state is equivalent to never having visited the map.
   }
+  removeOwnerScoped(owner, MARKET_AREA_STORAGE_NAME);
+  return null;
+}
 
+function normalizeMarketArea(value: unknown): MarketDiscoveryArea | null {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Partial<MarketDiscoveryArea>;
+  const owner = typeof candidate.owner === "string" ? candidate.owner.toLowerCase() : "";
+  const center = candidate.center;
+  const zoom = typeof candidate.zoom === "number" ? candidate.zoom : Number.NaN;
+  const rawBoxes = candidate.boxes;
+  const boxes = Array.isArray(rawBoxes) ? canonicalMarketBounds(rawBoxes) : [];
+  if (
+    !owner ||
+    !center ||
+    !Number.isFinite(center.lat) ||
+    !Number.isFinite(center.lng) ||
+    Math.abs(center.lat) > 90 ||
+    Math.abs(center.lng) > 180 ||
+    !Number.isFinite(zoom) ||
+    zoom < 0 ||
+    zoom > 24 ||
+    !Array.isArray(rawBoxes) ||
+    rawBoxes.length === 0 ||
+    rawBoxes.length > 2 ||
+    boxes.length !== rawBoxes.length ||
+    coversWholeWorld(boxes)
+  ) {
+    return null;
+  }
+  return {
+    owner,
+    center: { lat: roundMapValue(center.lat, 6), lng: roundMapValue(center.lng, 6) },
+    zoom: roundMapValue(zoom, 3),
+    boxes,
+  };
+}
+
+function coversWholeWorld(boxes: readonly MarketBoundingBox[]): boolean {
+  return boxes.some((box) => box.minLng === -180 && box.maxLng === 180);
+}
+
+function equalMarketAreas(left: MarketDiscoveryArea | null, right: MarketDiscoveryArea): boolean {
   return (
-    <NearbyCatalogContext.Provider value={PUBLIC_REQUEST}>
-      <NearbyCatalogFilterContext.Provider value={{ lat: origin.lat, lng: origin.lng, radiusKm }}>
-        {children}
-      </NearbyCatalogFilterContext.Provider>
-    </NearbyCatalogContext.Provider>
+    left !== null &&
+    left.owner === right.owner &&
+    left.center.lat === right.center.lat &&
+    left.center.lng === right.center.lng &&
+    left.zoom === right.zoom &&
+    marketBoundsKey(left.boxes) === marketBoundsKey(right.boxes)
   );
+}
+
+function roundMapValue(value: number, precision: number): number {
+  return Number(value.toFixed(precision));
 }

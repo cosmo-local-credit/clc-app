@@ -1,7 +1,10 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { MapMarkerStyle } from "@clc/core/features/markers/logic";
 import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
+import { MarkerPin } from "#/components/admin/marker-style-field";
 import { BRAND_THEME_COLOR } from "#/lib/brand";
 import { cn } from "#/lib/utils";
 
@@ -21,21 +24,23 @@ import { cn } from "#/lib/utils";
  * chunk that `check:bundle` guards, on every screen including the ones with no
  * map.
  *
- * Renders nothing at all when `VITE_MAPTILER_KEY` is absent or WebGL is
- * unavailable: a map that cannot draw tiles is worse than a page without one, and
- * every screen using this keeps its own copy of the location as text.
+ * Uses the keyless OpenFreeMap style so an expired third-party credential cannot
+ * hide location data. It still renders nothing when WebGL is unavailable; every
+ * screen using this keeps its own copy of the location as text.
  */
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const PIN_ZOOM = 13;
 const EMPTY_ZOOM = 5;
 const MARKER_COLOR = BRAND_THEME_COLOR.light;
+const STANDARD_MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 type LocationMapProps = {
   lat?: number | null;
   lng?: number | null;
   interactive?: boolean;
   onLocationChange?: (lat: number, lng: number) => void;
+  markerStyle?: MapMarkerStyle;
   className?: string;
 };
 
@@ -49,6 +54,7 @@ export function LocationMap({
   lng,
   interactive = false,
   onLocationChange,
+  markerStyle,
   className,
 }: LocationMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,12 +63,10 @@ export function LocationMap({
   const onLocationChangeRef = useRef(onLocationChange);
   const initialLocationRef = useRef({ lat, lng });
   const interactiveRef = useRef(interactive);
+  const markerStyleRef = useRef(markerStyle);
+  const [markerElement, setMarkerElement] = useState<HTMLDivElement | null>(null);
   const pendingRef = useRef<{ lat: number; lng: number } | null>(null);
   const [failed, setFailed] = useState(false);
-  const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
-  const maptilerStyle = maptilerKey
-    ? `https://api.maptiler.com/maps/base-v4/style.json?key=${encodeURIComponent(maptilerKey)}`
-    : null;
 
   useEffect(() => {
     onLocationChangeRef.current = onLocationChange;
@@ -72,14 +76,22 @@ export function LocationMap({
     interactiveRef.current = interactive;
   }, [interactive]);
 
+  useEffect(() => {
+    markerStyleRef.current = markerStyle;
+  }, [markerStyle]);
+
   const setMarker = useCallback((map: MapLibreGL.Map, nextLat: number, nextLng: number) => {
     if (markerRef.current) {
       markerRef.current.setLngLat([nextLng, nextLat]);
       return;
     }
 
+    const element = markerStyleRef.current ? document.createElement("div") : null;
+    if (element) setMarkerElement(element);
     markerRef.current = new MapLibreGL.Marker({
-      color: MARKER_COLOR,
+      ...(element
+        ? { element, anchor: "bottom" as const, offset: [0, 4] as [number, number] }
+        : { color: MARKER_COLOR }),
       draggable: interactiveRef.current,
     })
       .setLngLat([nextLng, nextLat])
@@ -92,7 +104,7 @@ export function LocationMap({
   }, []);
 
   useEffect(() => {
-    if (!maptilerStyle || failed || !containerRef.current || mapRef.current) {
+    if (failed || !containerRef.current || mapRef.current) {
       return;
     }
     if (!hasWebGlSupport()) {
@@ -111,7 +123,7 @@ export function LocationMap({
     try {
       map = new MapLibreGL.Map({
         container: containerRef.current,
-        style: maptilerStyle,
+        style: STANDARD_MAP_STYLE_URL,
         center,
         zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
         interactive: isInteractive,
@@ -124,10 +136,12 @@ export function LocationMap({
 
     mapRef.current = map;
     map.addControl(new MapLibreGL.NavigationControl(), "bottom-right");
+    map.addControl(new MapLibreGL.AttributionControl({ compact: true }), "bottom-left");
 
     function removeMap() {
       markerRef.current?.remove();
       markerRef.current = null;
+      setMarkerElement(null);
       if (mapRef.current === map) {
         map.remove();
         mapRef.current = null;
@@ -170,7 +184,7 @@ export function LocationMap({
       map.off("load", handleLoad);
       removeMap();
     };
-  }, [failed, maptilerStyle, setMarker]);
+  }, [failed, setMarker]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -190,15 +204,21 @@ export function LocationMap({
     pendingRef.current = null;
     markerRef.current?.remove();
     markerRef.current = null;
+    setMarkerElement(null);
   }, [lat, lng, setMarker]);
 
-  if (!maptilerStyle || failed) return null;
+  if (failed) return null;
 
   return (
-    <section
-      ref={containerRef}
-      aria-label="Location map"
-      className={cn("border-border bg-card h-48 w-full overflow-hidden border", className)}
-    />
+    <>
+      <section
+        ref={containerRef}
+        aria-label="Location map"
+        className={cn("border-border bg-card h-48 w-full overflow-hidden border", className)}
+      />
+      {markerElement && markerStyle
+        ? createPortal(<MarkerPin style={markerStyle} />, markerElement)
+        : null}
+    </>
   );
 }

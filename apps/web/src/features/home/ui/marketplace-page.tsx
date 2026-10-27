@@ -15,19 +15,16 @@ import { RiArrowRightSLine } from "react-icons/ri";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
-import {
-  isWithinNearbyCatalog,
-  MissingLocationNotice,
-  nearbyQueryPolicy,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-} from "#/components/nearby-catalog";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
+import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { RESOURCE_HUE, RESOURCE_ICON } from "#/components/resource-tone";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
+import { WantPicture } from "#/components/wants/want-row";
 import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
@@ -41,6 +38,7 @@ const ROW_TAG_LIMIT = 3;
 
 const KIND_SCOPE: Record<MarketplaceKind, MarketplaceScope> = {
   offering: "offers",
+  want: "wants",
   voucher: "vouchers",
   pool: "pools",
   catalog: "catalogs",
@@ -58,7 +56,6 @@ export function MarketplacePage({
   const navigate = useNavigate();
   const headingId = useId();
   const nearby = useNearbyCatalog();
-  const visibility = useNearbyCatalogFilter();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
   const credit = useCreditableBrowse(creditableSearch);
   const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
@@ -72,7 +69,8 @@ export function MarketplacePage({
       tagMatch: parsed.tagMatch,
       facets: true,
       nearby: nearby?.nearby === true,
-      scope: nearby?.nearby ? nearby.scope : undefined,
+      scope: nearby?.scope,
+      bounds: nearby?.bounds,
       ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
     enabled:
@@ -82,19 +80,9 @@ export function MarketplacePage({
       !credit.blocksResults,
     ...nearbyQueryPolicy(nearby),
   });
-  const allRows = query.data?.pages.flatMap((page) => page.results) ?? [];
-  const rows = visibility
-    ? allRows.filter((row) =>
-        isWithinNearbyCatalog(visibility, { lat: row.geoLat, lng: row.geoLng }),
-      )
-    : allRows;
-  // A nearby result comes nearest first, so the first row past the radius ends
-  // it; a guest's global result has no such order and keeps paging.
-  const crossedDistanceBoundary =
-    nearby?.nearby === true && visibility !== undefined && rows.length !== allRows.length;
+  const rows = query.data?.pages.flatMap((page) => page.results) ?? [];
   const showResults = filter.result.ok && !credit.blocksResults;
-  const hasMore =
-    showResults && query.hasNextPage && !crossedDistanceBoundary && !query.isFetchNextPageError;
+  const hasMore = showResults && query.hasNextPage && !query.isFetchNextPageError;
   const facets = query.data?.pages[0]?.tagFacets ?? [];
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -109,7 +97,7 @@ export function MarketplacePage({
   }, [hasMore, query.fetchNextPage, query.isFetchingNextPage]);
 
   return (
-    <main className="min-h-[100svh] space-y-3 bg-background px-4 pb-market-list">
+    <main className="min-h-[100svh] space-y-3 bg-background px-4 pb-bottom-nav">
       <h1 id={headingId} className="sr-only">
         <Trans>Marketplace</Trans>
       </h1>
@@ -151,7 +139,6 @@ export function MarketplacePage({
           />
         }
       />
-      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}
@@ -169,6 +156,7 @@ export function MarketplacePage({
           })
         }
       />
+      <MarketViewportSearchNotice query={parsed.term} />
       {!filter.result.ok ? (
         <div className="space-y-3 border border-destructive bg-card p-3" role="alert">
           <p className="text-sm">
@@ -218,10 +206,20 @@ export function MarketplacePage({
                 />
               ))}
             </section>
-          ) : !hasMore && !query.isFetchingNextPage && !query.isFetchNextPageError ? (
+          ) : !hasMore &&
+            !query.isFetching &&
+            !query.isPlaceholderData &&
+            !query.isError &&
+            !filter.isDebouncing &&
+            !filter.isRestoringPreference &&
+            !query.isFetchNextPageError ? (
             <div className="space-y-3 border border-border bg-card p-4">
               <p className="text-sm text-muted-foreground">
-                <Trans>No marketplace results found.</Trans>
+                {filter.isFiltered || credit.enabled ? (
+                  <Trans>No marketplace results found.</Trans>
+                ) : (
+                  <MarketEmptyMessage />
+                )}
               </p>
               {filter.isFiltered ? (
                 <Button variant="outline" tap onClick={filter.clear}>
@@ -347,6 +345,18 @@ function MarketplaceResultRow({
       </Link>
     );
   }
+  if (row.kind === "want") {
+    return (
+      <Link
+        to="/wants/$wantId"
+        params={{ wantId: row.id }}
+        search={{ from: "market" }}
+        className={className}
+      >
+        {content}
+      </Link>
+    );
+  }
   // An offer is bought through its voucher, so it opens the voucher's page.
   return (
     <Link
@@ -375,6 +385,14 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
   if (row.kind === "pool") {
     return <PoolLogo imageUrl={row.imageUrl} name={row.name} seed={row.address} size={44} />;
   }
+  if (row.kind === "want") {
+    return (
+      <WantPicture
+        want={{ imageUrl: row.imageUrl, markerIcon: row.markerIcon, markerColor: row.markerColor }}
+        size="size-11"
+      />
+    );
+  }
   const Icon = RESOURCE_ICON[KIND_SCOPE[row.kind]];
   return (
     <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
@@ -389,6 +407,7 @@ function ResultPicture({ row }: { row: MarketplaceResult }) {
 
 function ResultKind({ kind }: { kind: MarketplaceKind }) {
   if (kind === "offering") return <Trans>Offer</Trans>;
+  if (kind === "want") return <Trans>Want</Trans>;
   if (kind === "voucher") return <Trans>Voucher</Trans>;
   if (kind === "pool") return <Trans>Pool</Trans>;
   return <Trans>Catalog</Trans>;

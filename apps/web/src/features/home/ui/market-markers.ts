@@ -1,35 +1,74 @@
 import {
-  MARKER_COLOR_HEX,
-  type MarkerStyle,
+  RESOURCE_COLOR_HEX,
+  type MarkerIcon,
+  type ReportMarkerIcon,
   resolveMarkerStyle,
 } from "@clc/core/features/markers/logic";
 import type MapLibreGL from "maplibre-gl";
 import type { IconType } from "react-icons";
-import { RiGroupFill } from "react-icons/ri";
+import {
+  RiArticleLine,
+  RiBookOpenFill,
+  RiCalendarEventLine,
+  RiGroupFill,
+  RiMegaphoneLine,
+  RiMessage2Line,
+  RiQuestionLine,
+  RiSpeakLine,
+} from "react-icons/ri";
 
 import { MARKER_GLYPHS } from "#/components/vouchers/marker-glyphs";
+import type { Theme } from "#/providers/theme";
 import type { MarketLocation } from "./market-data";
 
 /** Appended to a pin's image id for the larger variant a selected voucher gets. */
 export const SELECTED_PIN_SUFFIX = "-selected";
 
 /**
- * One image per icon and colour a voucher on the map actually uses, plus its
- * selected variant. Cluster circles and counts are style layers, not images.
+ * One image per voucher icon, plus its selected variant. Resource kind owns
+ * the fill colour; legacy stored colours never create duplicate atlas images.
  */
-export function markerImageId({ icon, color }: MarkerStyle): string {
-  return `market-pin-${icon}-${color}`;
+export function markerImageId({ icon }: { icon: MarkerIcon }): string {
+  return `market-pin-voucher-${icon}`;
 }
 
+const WANT_GLYPHS = {
+  question: RiQuestionLine,
+  message: RiMessage2Line,
+  request: RiSpeakLine,
+} as const;
+
+const REPORT_GLYPHS: Record<ReportMarkerIcon, IconType> = {
+  post: RiArticleLine,
+  event: RiCalendarEventLine,
+  announcement: RiMegaphoneLine,
+};
+
 export const POOL_PIN_IMAGE_ID = "market-pin-pool";
+export const CATALOG_PIN_IMAGE_ID = "market-pin-catalog";
+
+export const MARKET_NETWORK_BADGE_IMAGE_ID: Record<Theme, string> = {
+  light: "market-network-badge-light",
+  dark: "market-network-badge-dark",
+};
+
+/** Fixed sRGB because these surfaces are painted into a Canvas image. */
+export const MARKET_NETWORK_BADGE_COLOR: Record<
+  Theme,
+  { surface: string; ink: string; outline: string }
+> = {
+  light: { surface: "#ffffff", ink: "#18181b", outline: "#18181b" },
+  dark: { surface: "#27272a", ink: "#fafafa", outline: "#ffffff" },
+};
 
 /**
  * The Pools button's `--info` blue, `oklch(0.46 0.12 250)`, in sRGB, and a
  * darker shade of it for the name. The pool pin wears the button's colour and
- * glyph so the two read as one thing; its square body keeps it apart from the
- * round voucher pins, some of which are blue too.
+ * glyph so the two read as one thing; its square body and blue fill keep it
+ * apart from round green voucher pins.
  */
-export const POOL_PIN_HEX = { pin: "#125a98", label: "#054980" } as const;
+export const POOL_PIN_HEX = RESOURCE_COLOR_HEX.pool;
+export const CATALOG_PIN_HEX = RESOURCE_COLOR_HEX.catalog;
 
 type PinShape = { radius: number; tail: number };
 
@@ -54,15 +93,50 @@ export function markerArt(location: MarkerSource): MarkerArt {
       body: "square",
     };
   }
+  if (location.kind === "catalog") {
+    return {
+      image: CATALOG_PIN_IMAGE_ID,
+      fill: CATALOG_PIN_HEX.pin,
+      label: CATALOG_PIN_HEX.label,
+      glyph: RiBookOpenFill,
+      body: "square",
+    };
+  }
+  if (location.kind === "want") {
+    const icon =
+      location.markerIcon === "message" || location.markerIcon === "request"
+        ? location.markerIcon
+        : "question";
+    return {
+      image: `market-pin-want-${icon}`,
+      fill: RESOURCE_COLOR_HEX.want.pin,
+      label: RESOURCE_COLOR_HEX.want.label,
+      glyph: WANT_GLYPHS[icon],
+      body: "disc",
+    };
+  }
+  if (location.kind === "post") {
+    const icon =
+      location.markerIcon === "event" || location.markerIcon === "announcement"
+        ? location.markerIcon
+        : "post";
+    return {
+      image: `market-pin-post-${icon}`,
+      fill: RESOURCE_COLOR_HEX.post.pin,
+      label: RESOURCE_COLOR_HEX.post.label,
+      glyph: REPORT_GLYPHS[icon],
+      body: "disc",
+    };
+  }
   const style = resolveMarkerStyle({
     kind: location.kind,
-    markerIcon: location.markerIcon,
+    markerIcon: location.markerIcon as MarkerIcon | null,
     markerColor: location.markerColor,
   });
   return {
     image: markerImageId(style),
-    fill: MARKER_COLOR_HEX[style.color].pin,
-    label: MARKER_COLOR_HEX[style.color].label,
+    fill: RESOURCE_COLOR_HEX.voucher.pin,
+    label: RESOURCE_COLOR_HEX.voucher.label,
     glyph: MARKER_GLYPHS[style.icon],
     body: "disc",
   };
@@ -114,6 +188,77 @@ export function addMarketMarkerImages(
   }
 }
 
+/**
+ * A neutral group marker: three connected nodes around an opaque count area.
+ * Its opposing outline keeps the shape legible over streets and photography.
+ */
+export function addMarketNetworkBadgeImage(map: MapLibreGL.Map, theme: Theme): void {
+  const imageId = MARKET_NETWORK_BADGE_IMAGE_ID[theme];
+  if (map.hasImage(imageId)) return;
+
+  const image = createNetworkBadgeImage(theme);
+  if (image) map.addImage(imageId, image.data, { pixelRatio: image.pixelRatio });
+}
+
+function createNetworkBadgeImage(theme: Theme): { data: ImageData; pixelRatio: number } | null {
+  const size = 44;
+  const pixelRatio = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(size * pixelRatio);
+  canvas.height = Math.round(size * pixelRatio);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.scale(pixelRatio, pixelRatio);
+  ctx.clearRect(0, 0, size, size);
+
+  const { surface, ink, outline } = MARKET_NETWORK_BADGE_COLOR[theme];
+  const center = { x: size / 2, y: size / 2 };
+  const nodes = [
+    { x: center.x, y: 4.5 },
+    { x: 5.5, y: 34.5 },
+    { x: 38.5, y: 34.5 },
+  ];
+
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  for (const node of nodes) {
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y);
+    ctx.lineTo(node.x, node.y);
+    ctx.stroke();
+  }
+
+  // The contrasting outer disc doubles as a halo over unpredictable imagery.
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 17, 0, Math.PI * 2);
+  ctx.fillStyle = outline;
+  ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+  ctx.shadowBlur = 3 * pixelRatio;
+  ctx.shadowOffsetY = pixelRatio;
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 14.5, 0, Math.PI * 2);
+  ctx.fillStyle = surface;
+  ctx.fill();
+
+  for (const node of nodes) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = outline;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = surface;
+    ctx.fill();
+  }
+
+  return { data: ctx.getImageData(0, 0, canvas.width, canvas.height), pixelRatio };
+}
+
 function addImage(map: MapLibreGL.Map, imageId: string, art: MarkerArt, shape: PinShape): void {
   if (map.hasImage(imageId)) return;
   const image = createMarkerImage(art, shape);
@@ -122,8 +267,8 @@ function addImage(map: MapLibreGL.Map, imageId: string, art: MarkerArt, shape: P
 }
 
 /**
- * Fills are fixed sRGB that stays off `--primary`: the live-location pin owns
- * the brand colour (green on prod, red on staging).
+ * Fills are fixed sRGB resource colours. The live-location marker remains
+ * distinguishable through its taller, glyph-free silhouette.
  */
 function createMarkerImage(
   { fill, glyph, body }: MarkerArt,

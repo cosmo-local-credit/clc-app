@@ -8,20 +8,25 @@ const mocks = vi.hoisted(() => ({
   current: vi.fn(),
   delivery: vi.fn(),
   enqueue: vi.fn(),
+  flush: vi.fn(),
   cue: vi.fn(),
+  readDevice: vi.fn(),
+  display: vi.fn(),
+  markRead: vi.fn(),
+  assign: vi.fn(),
 }));
 vi.mock("sonner", () => ({ toast: mocks.toast }));
 vi.mock("./alert-cue", () => ({ playNotificationCue: mocks.cue }));
 vi.mock("../api/notification-client", () => ({ sendNotificationDeliveryAck: mocks.delivery }));
-vi.mock("../recovery/recovery", () => ({ flushQueuedNotificationAcks: vi.fn() }));
+vi.mock("../recovery/recovery", () => ({ flushQueuedNotificationAcks: mocks.flush }));
 vi.mock("../storage/notification-db", () => ({
   readNotificationConfig: mocks.readConfig,
-  readNotificationDeviceId: async () => "device-1",
+  readNotificationDeviceId: mocks.readDevice,
   isNotificationIdentityCurrent: mocks.current,
   enqueueNotificationAck: mocks.enqueue,
-  markNotificationInboxMessageRead: vi.fn(),
+  markNotificationInboxMessageRead: mocks.markRead,
   markNotificationInboxMessageShown: vi.fn().mockResolvedValue(undefined),
-  readNotificationDisplayState: vi.fn().mockResolvedValue({ message: null, deleted: false }),
+  readNotificationDisplayState: mocks.display,
   saveNotificationInboxMessage: vi.fn().mockResolvedValue(undefined),
 }));
 import { ForegroundNotificationContent, showForegroundNotification } from "./foreground-toast";
@@ -43,11 +48,18 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-10-18T10:30:00Z"));
   mocks.readConfig.mockResolvedValue({
     identityEpoch: "epoch-1",
+    identityWallet: "0xaaa",
     userId: "user-1",
     registrationId: "registration-1",
   });
+  mocks.readDevice.mockResolvedValue("device-1");
+  mocks.display.mockResolvedValue({ message: null, deleted: false });
   mocks.current.mockResolvedValue(true);
   mocks.delivery.mockResolvedValue({ accepted: true });
+  mocks.enqueue.mockResolvedValue(undefined);
+  mocks.markRead.mockResolvedValue(undefined);
+  mocks.flush.mockResolvedValue(undefined);
+  vi.stubGlobal("location", { origin: "http://localhost:3000", assign: mocks.assign });
   vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
 });
 
@@ -117,5 +129,66 @@ describe("foreground notification display receipts", () => {
     );
     unmount();
     expect(onShown).not.toHaveBeenCalled();
+  });
+
+  it("rejects another wallet, an incomplete registration, and an already displayed message", async () => {
+    await showForegroundNotification(
+      { ...payload, walletAddressTarget: "0xbbb" },
+      "epoch-1",
+      "user-1",
+    );
+    mocks.readDevice.mockResolvedValueOnce(null);
+    await showForegroundNotification(payload, "epoch-1", "user-1");
+    mocks.display.mockResolvedValueOnce({
+      deleted: false,
+      message: { ...payload, readAt: "2026-10-18T10:10:00Z" },
+    });
+    await showForegroundNotification(payload, "epoch-1", "user-1");
+
+    expect(mocks.toast).not.toHaveBeenCalled();
+  });
+
+  it("queues a failed display receipt and processes a click before navigation", async () => {
+    mocks.delivery.mockRejectedValueOnce(new Error("offline"));
+    await showForegroundNotification(payload, "epoch-1", "user-1");
+    const content = mocks.toast.mock.calls[0]?.[0] as ReactElement<{
+      onClick: (event: { preventDefault: () => void }) => void;
+      onShown: () => void;
+    }>;
+
+    content.props.onShown();
+    await waitFor(() =>
+      expect(mocks.enqueue).toHaveBeenCalledWith(
+        expect.objectContaining({ error: "Error: offline", kind: "delivery" }),
+      ),
+    );
+
+    const preventDefault = vi.fn();
+    content.props.onClick({ preventDefault });
+    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledOnce());
+    expect(preventDefault).toHaveBeenCalledOnce();
+    expect(mocks.enqueue).toHaveBeenCalledWith(expect.objectContaining({ kind: "click" }));
+    expect(mocks.flush).toHaveBeenCalledOnce();
+    expect(mocks.toast.dismiss).toHaveBeenCalledWith("clc:epoch-1:n1");
+    expect(mocks.assign).toHaveBeenCalledWith("/wallet");
+  });
+
+  it("does not display or act after Sonner dismisses or auto-closes the toast", async () => {
+    await showForegroundNotification(payload, "epoch-1", "user-1");
+    const [content, options] = mocks.toast.mock.calls[0] as [
+      ReactElement<{
+        onClick: (event: { preventDefault: () => void }) => void;
+        onShown: () => void;
+      }>,
+      { onAutoClose: () => void; onDismiss: () => void },
+    ];
+    options.onDismiss();
+    options.onAutoClose();
+    content.props.onShown();
+    content.props.onClick({ preventDefault: vi.fn() });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mocks.delivery).not.toHaveBeenCalled();
+    expect(mocks.markRead).not.toHaveBeenCalled();
   });
 });

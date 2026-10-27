@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { OfferingsPanel } from "#/components/offerings";
 import { Button } from "#/components/ui/button";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
@@ -63,14 +64,16 @@ export function VoucherOfferingsPanel({
   // The backend session's address, not the wagmi connector's. The write is
   // authorized against the cookie, so a connector that has moved on from the
   // session would show controls whose requests then fail with a 403.
+  // A signer of the Safe that owns the voucher may publish for it too.
+  const ownerInfo = useAssetOwnerInfo(voucherAddress ?? "", ownerAddress);
   const isOwner =
     !readOnly &&
     isAuthenticated &&
     Boolean(session?.address) &&
     Boolean(ownerAddress) &&
-    session?.address?.toLowerCase() === ownerAddress?.toLowerCase();
+    ownerInfo.canManage;
 
-  const usage = useResourceUsage(isOwner);
+  const usage = useResourceUsage(isOwner, voucherAddress);
 
   const [editor, setEditor] = useState<OfferingEditor | null>(null);
   const [deletingID, setDeletingID] = useState<string | null>(null);
@@ -101,7 +104,7 @@ export function VoucherOfferingsPanel({
     >
       {isOwner ? (
         <>
-          <ResourceUsage resource="offers" count={false} />
+          <ResourceUsage resource="offers" count={false} voucher={voucherAddress} />
           <Button
             tap
             className="mb-3 w-full"

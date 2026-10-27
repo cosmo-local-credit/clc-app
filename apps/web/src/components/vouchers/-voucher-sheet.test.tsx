@@ -50,10 +50,31 @@ vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
   useVoucherSheetSelection: () => ({ voucher: VOUCHER, open: vi.fn(), close: mocks.close }),
 }));
 
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", async () => {
+  const { useAuthStatus } = await import("#/features/auth/hooks/use-auth-status");
+  return {
+    useAssetOwnerInfo: (_address: string, owner: string | null | undefined) => {
+      const auth = useAuthStatus();
+      return {
+        owner,
+        info: undefined,
+        pending: false,
+        isSafeOwned: false,
+        isSafeSigner: false,
+        unsupportedOwner: false,
+        canManage:
+          !!owner &&
+          !!auth.session?.address &&
+          auth.session.address.toLowerCase() === owner.toLowerCase(),
+      };
+    },
+  };
+});
 vi.mock("wagmi", () => ({
   useConnection: () => ({
     address: mocks.authenticated ? (mocks.sessionAddress as `0x${string}`) : undefined,
   }),
+  useClient: () => undefined,
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
@@ -450,9 +471,12 @@ describe("VoucherSheet summary", () => {
   });
 
   it("does not show a wallet balance to a guest", () => {
-    mocks.detail = detail();
+    mocks.detail = detail({ phone: "+254700000000", website: "https://example.org" });
     renderSheet();
     expect(screen.queryByLabelText("Your Balance")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Directions" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Website" })).toBeNull();
   });
 
   it.each([null, "not-an-address", "0x0000000000000000000000000000000000000000"])(
@@ -468,12 +492,24 @@ describe("VoucherSheet summary", () => {
   );
 
   it("keeps existing Get and Directions behavior", () => {
+    mocks.authenticated = true;
     renderSheet();
     expect(screen.getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
       `/market?scope=pools&out_voucher=${VOUCHER.toLowerCase()}`,
     );
     fireEvent.click(screen.getByRole("button", { name: "Directions" }));
     expect(mocks.maps).toEqual([{ label: "Kilifi", lat: -3.63, lng: 39.85 }]);
+  });
+
+  it("hides Directions for an authenticated voucher without any location", () => {
+    mocks.authenticated = true;
+    mocks.detail = detail({ locationName: null, lat: null, lng: null });
+
+    renderSheet({
+      placeholder: { ...CATALOG, locationName: null, lat: null, lng: null },
+    });
+
+    expect(screen.queryByRole("button", { name: "Directions" })).toBeNull();
   });
 });
 
@@ -492,6 +528,7 @@ describe("VoucherSheet continuous content", () => {
 
   it("has no old tabs, overview, or pool carousel", async () => {
     mocks.detail = detail();
+    mocks.authenticated = true;
     renderSheet({ initialSnap: "full" });
     expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByRole("tab")).toBeNull();
@@ -507,6 +544,35 @@ describe("VoucherSheet continuous content", () => {
     renderSheet({ initialSnap: "half" });
     expect(await screen.findByText("Offerings panel", undefined, { timeout: 5000 })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Open voucher page" })).toBeNull();
+  });
+
+  it("keeps the complete Info section unmounted for a guest", async () => {
+    mocks.detail = detail({
+      email: "issuer@example.org",
+      phone: "+254700000000",
+      website: "https://example.org",
+    });
+    renderSheet({ initialSnap: "full" });
+
+    expect(await screen.findByRole("heading", { name: "Info" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
+    expect(screen.queryByText("Fresh vegetables from the farm.")).toBeNull();
+    expect(screen.queryByText("issuer@example.org")).toBeNull();
+  });
+
+  it("uses the selected voucher identity when private info omits contract metadata", async () => {
+    mocks.authenticated = true;
+    mocks.detail = detail({
+      address: undefined as unknown as `0x${string}`,
+      symbol: undefined as unknown as string,
+      decimals: undefined as unknown as number,
+    });
+    renderSheet({ initialSnap: "full" });
+
+    expect(await screen.findByRole("heading", { name: "Info" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Copy contract address" }).textContent).toContain(
+      "0xAbC0…00123",
+    );
   });
 
   it("advances through snap points from the identity header", async () => {

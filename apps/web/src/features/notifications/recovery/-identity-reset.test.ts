@@ -1,17 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
   session: vi.fn().mockResolvedValue(null),
   isStorageAvailable: vi.fn(() => true),
   readDeviceId: vi.fn(async () => "device-1" as string | null),
+  readConfig: vi.fn(),
   clearStores: vi.fn(async () => {}),
   unlinkWallet: vi.fn(async () => ({ linkedWalletAddresses: [] })),
+  clearBadge: vi.fn(async () => {}),
+  syncBadge: vi.fn(async () => {}),
 }));
 
 vi.mock("#/lib/api/auth", () => ({ authClient: { getSession: mocks.session } }));
 
 vi.mock("../storage/notification-db", () => ({
-  readNotificationConfig: vi.fn().mockResolvedValue({ registrationId: "registration-1" }),
+  readNotificationConfig: mocks.readConfig,
   clearNotificationIdentityStores: mocks.clearStores,
   isNotificationStorageAvailable: mocks.isStorageAvailable,
   readNotificationDeviceId: mocks.readDeviceId,
@@ -20,7 +23,12 @@ vi.mock("../storage/notification-db", () => ({
 vi.mock("../api/notification-client", () => ({
   unlinkNotificationWallet: mocks.unlinkWallet,
 }));
+vi.mock("../realtime/app-badge", () => ({
+  clearNavigatorAppBadge: mocks.clearBadge,
+  syncNavigatorAppBadge: mocks.syncBadge,
+}));
 
+import { BackendApiError } from "@clc/api/client/errors";
 import {
   resetNotificationIdentity,
   resetNotificationIdentityBarrierForTests,
@@ -34,10 +42,20 @@ beforeEach(() => {
   mocks.session.mockResolvedValue(null);
   mocks.isStorageAvailable.mockReturnValue(true);
   mocks.readDeviceId.mockResolvedValue("device-1");
+  mocks.readConfig.mockResolvedValue({
+    registrationId: "registration-1",
+    identityWallet: ALICE,
+  });
   mocks.clearStores.mockClear();
   mocks.clearStores.mockResolvedValue(undefined);
   mocks.unlinkWallet.mockClear();
   mocks.unlinkWallet.mockResolvedValue({ linkedWalletAddresses: [] });
+  mocks.clearBadge.mockClear();
+  mocks.syncBadge.mockClear();
+});
+
+afterEach(() => {
+  Reflect.deleteProperty(navigator, "serviceWorker");
 });
 
 describe("resetNotificationIdentity", () => {
@@ -52,6 +70,7 @@ describe("resetNotificationIdentity", () => {
   });
 
   it("does not unlink when the outgoing owner was a guest", async () => {
+    mocks.readConfig.mockResolvedValue({ registrationId: "registration-1" });
     await resetNotificationIdentity({});
 
     expect(mocks.clearStores).toHaveBeenCalledTimes(1);
@@ -83,6 +102,22 @@ describe("resetNotificationIdentity", () => {
     expect(mocks.unlinkWallet).not.toHaveBeenCalled();
   });
 
+  it("also preserves the inbox when session status cannot be verified", async () => {
+    mocks.session.mockRejectedValue(new Error("offline"));
+
+    await resetNotificationIdentity({ onlyIfSessionEnded: true });
+
+    expect(mocks.clearStores).not.toHaveBeenCalled();
+  });
+
+  it("continues clearing after an explicit unauthenticated session response", async () => {
+    mocks.session.mockRejectedValue(new BackendApiError(401, "Signed out"));
+
+    await resetNotificationIdentity({ onlyIfSessionEnded: true });
+
+    expect(mocks.clearStores).toHaveBeenCalledOnce();
+  });
+
   it("clears persisted residue on a confirmed signed-out page load", async () => {
     await resetNotificationIdentity({ onlyIfSessionEnded: true });
     expect(mocks.clearStores).toHaveBeenCalledOnce();
@@ -95,6 +130,55 @@ describe("resetNotificationIdentity", () => {
 
     expect(mocks.clearStores).not.toHaveBeenCalled();
     expect(mocks.unlinkWallet).not.toHaveBeenCalled();
+    expect(mocks.clearBadge).toHaveBeenCalledOnce();
+  });
+
+  it("ignores failed identity reads and clears local stores without unlinking", async () => {
+    mocks.readDeviceId.mockRejectedValue(new Error("IndexedDB unavailable"));
+    mocks.readConfig.mockRejectedValue(new Error("IndexedDB unavailable"));
+
+    await resetNotificationIdentity({ previousWalletAddress: ALICE });
+
+    expect(mocks.clearStores).toHaveBeenCalledWith(ALICE);
+    expect(mocks.unlinkWallet).not.toHaveBeenCalled();
+  });
+
+  it("does not let a stale sign-out clear a newer wallet identity", async () => {
+    mocks.readConfig.mockResolvedValue({
+      registrationId: "registration-2",
+      identityWallet: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    });
+
+    await resetNotificationIdentity({ previousWalletAddress: ALICE });
+
+    expect(mocks.clearStores).not.toHaveBeenCalled();
+    expect(mocks.unlinkWallet).not.toHaveBeenCalled();
+  });
+
+  it("synchronizes the badge after clearing and clears it when storage cleanup fails", async () => {
+    await resetNotificationIdentity({ previousWalletAddress: ALICE });
+    expect(mocks.syncBadge).toHaveBeenCalledOnce();
+
+    mocks.clearStores.mockRejectedValue(new Error("IndexedDB unavailable"));
+    await resetNotificationIdentity({ previousWalletAddress: ALICE });
+    expect(mocks.clearBadge).toHaveBeenCalledOnce();
+  });
+
+  it("closes only service-worker notifications from the outgoing registration", async () => {
+    const matching = { data: { registrationId: "registration-1" }, close: vi.fn() };
+    const unrelated = { data: { registrationId: "registration-2" }, close: vi.fn() };
+    const getRegistration = vi.fn(async () => ({
+      getNotifications: vi.fn(async () => [matching, unrelated]),
+    }));
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: { getRegistration },
+    });
+
+    await resetNotificationIdentity({ previousWalletAddress: ALICE });
+    await vi.waitFor(() => expect(matching.close).toHaveBeenCalledOnce());
+
+    expect(unrelated.close).not.toHaveBeenCalled();
   });
 });
 

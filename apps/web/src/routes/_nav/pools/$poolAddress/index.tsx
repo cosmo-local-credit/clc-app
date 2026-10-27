@@ -8,10 +8,11 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const searchSchema = z.object({
   tab: z
-    .enum(["offerings", "vouchers", "holdings", "credit", "activity"])
+    .enum(["offerings", "wants", "vouchers", "holdings", "credit", "activity", "info"])
     .optional()
     .catch(undefined),
   voucher: z.string().optional().catch(undefined),
+  wantId: z.string().trim().min(1).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
@@ -41,12 +42,16 @@ export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
 
 function PoolDetailRoute() {
   const { poolAddress } = Route.useParams();
-  const { tab } = Route.useSearch();
+  const { tab, wantId } = Route.useSearch();
   const navigate = Route.useNavigate();
   const auth = useAuthStatus();
   const requested = tab ?? "offerings";
   const activeTab =
-    auth.isAuthenticated || requested === "offerings" || requested === "vouchers"
+    auth.isAuthenticated ||
+    requested === "offerings" ||
+    requested === "wants" ||
+    requested === "vouchers" ||
+    requested === "info"
       ? requested
       : "offerings";
 
@@ -64,7 +69,7 @@ function PoolDetailRoute() {
   return (
     <div className="min-h-[100svh] bg-background text-foreground pb-bottom-nav">
       <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-        <PoolDetailPage poolAddress={poolAddress} activeTab={activeTab} />
+        <PoolDetailPage poolAddress={poolAddress} activeTab={activeTab} wantId={wantId} />
       </main>
     </div>
   );

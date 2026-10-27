@@ -9,12 +9,10 @@ import {
 } from "@clc/core/features/vouchers/logic";
 import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
-import { useState } from "react";
 import { toast } from "sonner";
 import { isAddress, zeroAddress } from "viem";
 import { z } from "zod";
 
-import { ConfirmDialog } from "#/components/admin/confirm-dialog";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -27,10 +25,7 @@ import {
 } from "#/components/ui/sheet";
 import { sameAddress, useOperatorAddress } from "#/features/operator/operator-address";
 import { useOperatorCalls } from "#/features/operator/use-operator-calls";
-import { clcApi } from "#/lib/api";
 import { errorMessage } from "#/lib/data-state";
-import { adminKeys } from "@clc/api/features/admin/queries";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const addressSchema = z
   .string()
@@ -48,10 +43,8 @@ export function VoucherContractSheet({
 }) {
   const operator = useOperatorAddress();
   const calls = useOperatorCalls();
-  const retire = useRetireVoucher(voucher.address);
   const canSign = sameAddress(operator, voucher.ownerAddress);
-  const [retiring, setRetiring] = useState(false);
-  const pending = calls.isPending || retire.isPending;
+  const pending = calls.isPending;
 
   async function send(label: string, call: Parameters<typeof calls.mutateAsync>[0][number]) {
     try {
@@ -232,50 +225,12 @@ export function VoucherContractSheet({
                   Transfer ownership
                 </Button>
               </form>
-
-              {voucher.active ? (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={pending}
-                  onClick={() => setRetiring(true)}
-                >
-                  Retire
-                </Button>
-              ) : null}
             </>
           ) : null}
         </div>
       </SheetContent>
-      <ConfirmDialog
-        open={retiring}
-        title="Retire voucher"
-        description={`${voucher.symbol} leaves the public catalog. The owner can restore it.`}
-        confirmLabel="Retire"
-        destructive
-        pending={retire.isPending}
-        onCancel={() => setRetiring(false)}
-        onConfirm={() => {
-          retire.mutate(undefined, {
-            onSuccess: () => {
-              toast.success("Voucher retired");
-              setRetiring(false);
-              onClose();
-            },
-            onError: (error) => toast.error(errorMessage(error)),
-          });
-        }}
-      />
     </Sheet>
   );
-}
-
-function useRetireVoucher(address: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: () => clcApi.market.retireVoucher(address),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminKeys.all }),
-  });
 }
 
 function FieldError({ message }: { message: string | null }) {

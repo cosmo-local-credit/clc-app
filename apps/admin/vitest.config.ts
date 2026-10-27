@@ -32,12 +32,5 @@ export default defineConfig({
     // ~5.6s that way against Vitest's 5s default while passing on its own, so
     // the suite was failing on scheduling rather than on behaviour.
     testTimeout: 20_000,
-    coverage: {
-      provider: "v8",
-      reporter: ["lcov", "text", "json-summary"],
-      reportsDirectory: "./coverage",
-      include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.d.ts", "src/routeTree.gen.ts"],
-    },
   },
 });

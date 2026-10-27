@@ -592,6 +592,8 @@ function deletionDetails(target: VocabularyTarget): string[] {
     [target.row.pools, "pool"],
     [target.row.posts, "post"],
     [target.row.offerings, "offering"],
+    [target.row.catalogs, "catalog"],
+    [target.row.wants, "want"],
     [target.row.deployedTokens, "voucher deployment"],
     [target.row.deployedPools, "pool deployment"],
   ];

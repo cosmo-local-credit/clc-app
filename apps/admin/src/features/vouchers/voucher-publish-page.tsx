@@ -29,6 +29,7 @@ import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { PageHeader } from "#/components/admin/page-header";
+import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { MarkerStyleField, describeMarker } from "#/components/admin/marker-style-field";
 import { SectionHeading } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
@@ -509,6 +510,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
           </FormPanel>
 
           <FormPanel title="Directory">
+            <PublicDisclosureNote kind="location" />
             <form.Field name="locationName">
               {(nameField) => (
                 <form.Field name="latitude">
@@ -556,19 +558,14 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                 </Field>
               )}
             </form.Field>
-            <form.Subscribe
-              selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
-            >
-              {([icon, color]) => (
+            <form.Subscribe selector={(state) => state.values.markerIcon}>
+              {(icon) => (
                 <Field label="Map marker" error={null}>
                   {/* A new voucher has no offerings, so its default pin is the voucher's. */}
                   <MarkerStyleField
                     kind="voucher"
-                    value={{ icon, color }}
-                    onChange={(next) => {
-                      form.setFieldValue("markerIcon", next.icon);
-                      form.setFieldValue("markerColor", next.color);
-                    }}
+                    value={icon}
+                    onChange={(next) => form.setFieldValue("markerIcon", next)}
                   />
                 </Field>
               )}
@@ -576,6 +573,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
           </FormPanel>
 
           <FormPanel title="Issuer contact" className="xl:col-span-2">
+            <PublicDisclosureNote kind="contact" />
             <div className="grid grid-cols-2 gap-3">
               <form.Field name="email">
                 {(field) => (
@@ -687,10 +685,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                   <BoundRow label="Tags" value={values.tags.join(", ")} />
                   <BoundRow
                     label="Map marker"
-                    value={describeMarker("voucher", {
-                      icon: values.markerIcon,
-                      color: values.markerColor,
-                    })}
+                    value={describeMarker("voucher", values.markerIcon)}
                   />
                   <BoundRow label="Email" value={values.email} optional />
                   <BoundRow label="Phone" value={values.phone} optional />

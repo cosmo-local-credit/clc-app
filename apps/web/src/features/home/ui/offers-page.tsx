@@ -8,14 +8,10 @@ import { useMemo, useState } from "react";
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { MarketBar } from "#/components/market-bar";
+import { MarketEmptyMessage } from "#/components/market-empty-message";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { Button } from "#/components/ui/button";
-import {
-  isWithinNearbyCatalog,
-  MissingLocationNotice,
-  nearbyQueryPolicy,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-} from "#/components/nearby-catalog";
+import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import { OfferingsPanel } from "#/components/offerings";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
@@ -35,7 +31,6 @@ export function OffersPage({
   const { t } = useLingui();
   const navigate = useNavigate();
   const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
   const credit = useCreditableBrowse(creditableSearch);
   const filter = usePersistedCatalogFilter(
@@ -53,7 +48,8 @@ export function OffersPage({
       tagMatch: parsedFilter.tagMatch,
       facets: true,
       nearby: nearby?.nearby === true,
-      scope: nearby?.nearby ? nearby.scope : undefined,
+      scope: nearby?.scope,
+      bounds: nearby?.bounds,
       ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
     enabled:
@@ -63,19 +59,7 @@ export function OffersPage({
       !credit.blocksResults,
     ...nearbyQueryPolicy(nearby),
   });
-  const allOfferings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
-  const visibleOfferings = visibilityFilter
-    ? allOfferings.filter((offering) =>
-        isWithinNearbyCatalog(visibilityFilter, {
-          lat: offering.effectiveGeoLat ?? null,
-          lng: offering.effectiveGeoLng ?? null,
-        }),
-      )
-    : allOfferings;
-  const crossedDistanceBoundary =
-    nearby?.nearby === true &&
-    visibilityFilter !== undefined &&
-    visibleOfferings.length !== allOfferings.length;
+  const visibleOfferings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
   const viewQuery = useMemo(
     () => ({
       ...query,
@@ -90,14 +74,21 @@ export function OffersPage({
             ],
           }
         : undefined,
-      hasNextPage: query.hasNextPage && !crossedDistanceBoundary,
+      hasNextPage: query.hasNextPage,
+      isSuccess:
+        query.isSuccess &&
+        !query.isFetching &&
+        !query.isPlaceholderData &&
+        !query.hasNextPage &&
+        !filter.isDebouncing &&
+        !filter.isRestoringPreference,
     }),
-    [crossedDistanceBoundary, query, visibleOfferings],
+    [query, visibleOfferings, filter.isDebouncing, filter.isRestoringPreference],
   );
   const facets = query.data?.pages[0]?.tagFacets ?? [];
 
   return (
-    <main className="min-h-[100svh] space-y-3 bg-background px-4 pb-market-list">
+    <main className="min-h-[100svh] space-y-3 bg-background px-4 pb-bottom-nav">
       <h1 className="sr-only">
         <Trans>Offers</Trans>
       </h1>
@@ -139,7 +130,6 @@ export function OffersPage({
           />
         }
       />
-      <MissingLocationNotice />
       <CreditableBrowseControl
         part="feedback"
         state={credit}
@@ -157,6 +147,7 @@ export function OffersPage({
           })
         }
       />
+      <MarketViewportSearchNotice query={parsedFilter.term} />
       {!filter.result.ok ? (
         <div className="space-y-3 border border-destructive bg-card p-3" role="alert">
           <p className="text-sm">
@@ -174,7 +165,13 @@ export function OffersPage({
       ) : filter.result.ok && !credit.blocksResults ? (
         <OfferingsPanel
           query={viewQuery}
-          emptyState={<Trans>No offers match this search.</Trans>}
+          emptyState={
+            filter.isFiltered || credit.enabled ? (
+              <Trans>No offers match this search.</Trans>
+            ) : (
+              <MarketEmptyMessage />
+            )
+          }
           showVoucher
           showVoucherName
           showLocation

@@ -23,6 +23,7 @@ import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
 import { Route as ShellTransactionsIndexRouteImport } from './routes/_shell/transactions/index'
+import { Route as ShellRetirementRequestsIndexRouteImport } from './routes/_shell/retirement-requests/index'
 import { Route as ShellPostsIndexRouteImport } from './routes/_shell/posts/index'
 import { Route as ShellPoolsIndexRouteImport } from './routes/_shell/pools/index'
 import { Route as ShellVouchersPublishRouteImport } from './routes/_shell/vouchers/publish'
@@ -31,6 +32,7 @@ import { Route as ShellUsersAddressRouteImport } from './routes/_shell/users/$ad
 import { Route as ShellTransactionsVouchersRouteImport } from './routes/_shell/transactions/vouchers'
 import { Route as ShellTransactionsPoolsRouteImport } from './routes/_shell/transactions/pools'
 import { Route as ShellTransactionsOtxRouteImport } from './routes/_shell/transactions/otx'
+import { Route as ShellRetirementRequestsRequestIdRouteImport } from './routes/_shell/retirement-requests/$requestId'
 import { Route as ShellPostsNewRouteImport } from './routes/_shell/posts/new'
 import { Route as ShellPoolsPublishRouteImport } from './routes/_shell/pools/publish'
 import { Route as ShellPoolsAddressRouteImport } from './routes/_shell/pools/$address'
@@ -106,6 +108,12 @@ const ShellTransactionsIndexRoute = ShellTransactionsIndexRouteImport.update({
   path: '/transactions/',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellRetirementRequestsIndexRoute =
+  ShellRetirementRequestsIndexRouteImport.update({
+    id: '/retirement-requests/',
+    path: '/retirement-requests/',
+    getParentRoute: () => ShellRoute,
+  } as any)
 const ShellPostsIndexRoute = ShellPostsIndexRouteImport.update({
   id: '/posts/',
   path: '/posts/',
@@ -147,6 +155,12 @@ const ShellTransactionsOtxRoute = ShellTransactionsOtxRouteImport.update({
   path: '/transactions/otx',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellRetirementRequestsRequestIdRoute =
+  ShellRetirementRequestsRequestIdRouteImport.update({
+    id: '/retirement-requests/$requestId',
+    path: '/retirement-requests/$requestId',
+    getParentRoute: () => ShellRoute,
+  } as any)
 const ShellPostsNewRoute = ShellPostsNewRouteImport.update({
   id: '/posts/new',
   path: '/posts/new',
@@ -187,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
   '/posts/new': typeof ShellPostsNewRoute
+  '/retirement-requests/$requestId': typeof ShellRetirementRequestsRequestIdRoute
   '/transactions/otx': typeof ShellTransactionsOtxRoute
   '/transactions/pools': typeof ShellTransactionsPoolsRoute
   '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
@@ -195,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/vouchers/publish': typeof ShellVouchersPublishRoute
   '/pools/': typeof ShellPoolsIndexRoute
   '/posts/': typeof ShellPostsIndexRoute
+  '/retirement-requests/': typeof ShellRetirementRequestsIndexRoute
   '/transactions/': typeof ShellTransactionsIndexRoute
   '/users/': typeof ShellUsersIndexRoute
   '/vouchers/': typeof ShellVouchersIndexRoute
@@ -215,6 +231,7 @@ export interface FileRoutesByTo {
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
   '/posts/new': typeof ShellPostsNewRoute
+  '/retirement-requests/$requestId': typeof ShellRetirementRequestsRequestIdRoute
   '/transactions/otx': typeof ShellTransactionsOtxRoute
   '/transactions/pools': typeof ShellTransactionsPoolsRoute
   '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
@@ -223,6 +240,7 @@ export interface FileRoutesByTo {
   '/vouchers/publish': typeof ShellVouchersPublishRoute
   '/pools': typeof ShellPoolsIndexRoute
   '/posts': typeof ShellPostsIndexRoute
+  '/retirement-requests': typeof ShellRetirementRequestsIndexRoute
   '/transactions': typeof ShellTransactionsIndexRoute
   '/users': typeof ShellUsersIndexRoute
   '/vouchers': typeof ShellVouchersIndexRoute
@@ -245,6 +263,7 @@ export interface FileRoutesById {
   '/_shell/pools/$address': typeof ShellPoolsAddressRoute
   '/_shell/pools/publish': typeof ShellPoolsPublishRoute
   '/_shell/posts/new': typeof ShellPostsNewRoute
+  '/_shell/retirement-requests/$requestId': typeof ShellRetirementRequestsRequestIdRoute
   '/_shell/transactions/otx': typeof ShellTransactionsOtxRoute
   '/_shell/transactions/pools': typeof ShellTransactionsPoolsRoute
   '/_shell/transactions/vouchers': typeof ShellTransactionsVouchersRoute
@@ -253,6 +272,7 @@ export interface FileRoutesById {
   '/_shell/vouchers/publish': typeof ShellVouchersPublishRoute
   '/_shell/pools/': typeof ShellPoolsIndexRoute
   '/_shell/posts/': typeof ShellPostsIndexRoute
+  '/_shell/retirement-requests/': typeof ShellRetirementRequestsIndexRoute
   '/_shell/transactions/': typeof ShellTransactionsIndexRoute
   '/_shell/users/': typeof ShellUsersIndexRoute
   '/_shell/vouchers/': typeof ShellVouchersIndexRoute
@@ -275,6 +295,7 @@ export interface FileRouteTypes {
     | '/pools/$address'
     | '/pools/publish'
     | '/posts/new'
+    | '/retirement-requests/$requestId'
     | '/transactions/otx'
     | '/transactions/pools'
     | '/transactions/vouchers'
@@ -283,6 +304,7 @@ export interface FileRouteTypes {
     | '/vouchers/publish'
     | '/pools/'
     | '/posts/'
+    | '/retirement-requests/'
     | '/transactions/'
     | '/users/'
     | '/vouchers/'
@@ -303,6 +325,7 @@ export interface FileRouteTypes {
     | '/pools/$address'
     | '/pools/publish'
     | '/posts/new'
+    | '/retirement-requests/$requestId'
     | '/transactions/otx'
     | '/transactions/pools'
     | '/transactions/vouchers'
@@ -311,6 +334,7 @@ export interface FileRouteTypes {
     | '/vouchers/publish'
     | '/pools'
     | '/posts'
+    | '/retirement-requests'
     | '/transactions'
     | '/users'
     | '/vouchers'
@@ -332,6 +356,7 @@ export interface FileRouteTypes {
     | '/_shell/pools/$address'
     | '/_shell/pools/publish'
     | '/_shell/posts/new'
+    | '/_shell/retirement-requests/$requestId'
     | '/_shell/transactions/otx'
     | '/_shell/transactions/pools'
     | '/_shell/transactions/vouchers'
@@ -340,6 +365,7 @@ export interface FileRouteTypes {
     | '/_shell/vouchers/publish'
     | '/_shell/pools/'
     | '/_shell/posts/'
+    | '/_shell/retirement-requests/'
     | '/_shell/transactions/'
     | '/_shell/users/'
     | '/_shell/vouchers/'
@@ -451,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellTransactionsIndexRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/retirement-requests/': {
+      id: '/_shell/retirement-requests/'
+      path: '/retirement-requests'
+      fullPath: '/retirement-requests/'
+      preLoaderRoute: typeof ShellRetirementRequestsIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/posts/': {
       id: '/_shell/posts/'
       path: '/posts'
@@ -507,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellTransactionsOtxRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/retirement-requests/$requestId': {
+      id: '/_shell/retirement-requests/$requestId'
+      path: '/retirement-requests/$requestId'
+      fullPath: '/retirement-requests/$requestId'
+      preLoaderRoute: typeof ShellRetirementRequestsRequestIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/posts/new': {
       id: '/_shell/posts/new'
       path: '/posts/new'
@@ -559,6 +599,7 @@ interface ShellRouteChildren {
   ShellPoolsAddressRoute: typeof ShellPoolsAddressRoute
   ShellPoolsPublishRoute: typeof ShellPoolsPublishRoute
   ShellPostsNewRoute: typeof ShellPostsNewRoute
+  ShellRetirementRequestsRequestIdRoute: typeof ShellRetirementRequestsRequestIdRoute
   ShellTransactionsOtxRoute: typeof ShellTransactionsOtxRoute
   ShellTransactionsPoolsRoute: typeof ShellTransactionsPoolsRoute
   ShellTransactionsVouchersRoute: typeof ShellTransactionsVouchersRoute
@@ -567,6 +608,7 @@ interface ShellRouteChildren {
   ShellVouchersPublishRoute: typeof ShellVouchersPublishRoute
   ShellPoolsIndexRoute: typeof ShellPoolsIndexRoute
   ShellPostsIndexRoute: typeof ShellPostsIndexRoute
+  ShellRetirementRequestsIndexRoute: typeof ShellRetirementRequestsIndexRoute
   ShellTransactionsIndexRoute: typeof ShellTransactionsIndexRoute
   ShellUsersIndexRoute: typeof ShellUsersIndexRoute
   ShellVouchersIndexRoute: typeof ShellVouchersIndexRoute
@@ -588,6 +630,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellPoolsAddressRoute: ShellPoolsAddressRoute,
   ShellPoolsPublishRoute: ShellPoolsPublishRoute,
   ShellPostsNewRoute: ShellPostsNewRoute,
+  ShellRetirementRequestsRequestIdRoute: ShellRetirementRequestsRequestIdRoute,
   ShellTransactionsOtxRoute: ShellTransactionsOtxRoute,
   ShellTransactionsPoolsRoute: ShellTransactionsPoolsRoute,
   ShellTransactionsVouchersRoute: ShellTransactionsVouchersRoute,
@@ -596,6 +639,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellVouchersPublishRoute: ShellVouchersPublishRoute,
   ShellPoolsIndexRoute: ShellPoolsIndexRoute,
   ShellPostsIndexRoute: ShellPostsIndexRoute,
+  ShellRetirementRequestsIndexRoute: ShellRetirementRequestsIndexRoute,
   ShellTransactionsIndexRoute: ShellTransactionsIndexRoute,
   ShellUsersIndexRoute: ShellUsersIndexRoute,
   ShellVouchersIndexRoute: ShellVouchersIndexRoute,

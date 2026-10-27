@@ -105,6 +105,20 @@ client only. **No serverless**: no TanStack Start server functions
 - `vp test` — vitest across all packages
 - **Do not auto-run** `vp build` — slow, surfaces env-specific issues.
 
+## Cross-repository regression checks
+
+- The Go backend is `../clc-core`, separate from this repo's `packages/core`.
+  Read its guidance and run validation in every repository changed.
+- Reproduce bugs at the failing boundary: real PostgreSQL/driver tests for SQL,
+  real QueryClient lifecycle tests for async UI. Include representative inputs
+  such as fractional coordinates and pending, retained, cluster-only, empty,
+  and failed responses; execution coverage alone does not prove correctness.
+- Backend checks need an isolated `CORE_TEST_DSN`, serial `go test -p 1 ./...`,
+  formatting, lint, and relevant query-plan tests. Confirm regressions ran,
+  rather than skipped. Run app coverage from the workspace root and verify the
+  generated reports. Distinguish fixture-based browser checks from staging
+  checks, and use functional WebGL for map rendering verification.
+
 ## Skill / MCP routing
 
 Trigger conditions are concrete — when the condition holds, invoke the named
@@ -437,40 +451,30 @@ allowlists above name the port.
 ### `develop` vs `master` — staging vs prod, one chain
 
 Both branches settle on **Gnosis** (chain 100). `develop` is staging; `master`
-is prod. The codebase is shared. The two Wrangler files are the only files that
-must differ, because Pages resolves one config per root directory and that
-file's `name` binds it to one project:
+is prod. The two branches carry identical trees, Wrangler files included: one
+Pages project per app builds `master` as its production environment and
+`develop` as its preview environment, and each Wrangler file holds both
+environments' values.
 
-|                            | `master` (prod)             | `develop` (staging)                |
-| -------------------------- | --------------------------- | ---------------------------------- |
-| `wrangler.toml`            | `clc-app`                   | `clc-app-gnosis`                   |
-| `apps/admin/wrangler.toml` | `clc-admin`                 | `clc-admin-gnosis`                 |
-| Web host                   | `app.cosmolocal.credit`     | `test.cosmolocal.credit`           |
-| Admin host                 | `admin.cosmolocal.credit`   | `admin.test.cosmolocal.credit`     |
-| API                        | `api.cosmolocal.credit`     | `gnosis-staging.cosmolocal.credit` |
-| Storage                    | `storage.cosmolocal.credit` | `gnosis-storage.cosmolocal.credit` |
-| `VITE_BRAND`               | `prod` (green)              | `staging` (red)                    |
-| `VITE_FULL_REACT_ERRORS`   | `false`                     | `true`                             |
-| Relying party              | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
+|                          | `master` (prod)             | `develop` (staging)                |
+| ------------------------ | --------------------------- | ---------------------------------- |
+| Pages environment        | production                  | preview, branch `develop`          |
+| Wrangler block           | `[vars]`                    | `[env.preview.vars]`               |
+| Web host                 | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
+| Admin host               | `admin.cosmolocal.credit`   | `admin.test.cosmolocal.credit`     |
+| API                      | `api.cosmolocal.credit`     | `gnosis-staging.cosmolocal.credit` |
+| Storage                  | `storage.cosmolocal.credit` | `gnosis-storage.cosmolocal.credit` |
+| `VITE_BRAND`             | `prod` (green)              | `staging` (red)                    |
+| `VITE_FULL_REACT_ERRORS` | `false`                     | `true`                             |
+| Relying party            | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
+| Paper wallet origin      | `https://cosmolocal.credit` | `https://test.cosmolocal.credit`   |
 
-**The two copies of each Wrangler file differ only in `name` and in their
-"Per environment" blocks.** Every other line, comments included, is identical
-on both branches. Git can retain master's environment values when promoting
-shared changes, provided those edits do not overlap the environment overrides
-or their neighboring lines. Keep it that way:
-
-- A new variable that is the same everywhere goes in the "Shared" block, on
-  develop only. It reaches master with the next promote.
-- A variable whose value differs goes in the "Per environment" block, committed
-  on **both** branches with each branch's own value. Committing it on develop
-  alone makes the next promote conflict — or, worse, take develop's value.
-- Never resolve a Wrangler conflict by merging `master` into `develop` (GitHub's
-  "Resolve conflicts" button does exactly that). It records master as the new
-  merge base, and the next promote then silently carries staging's `name` and
-  URLs onto master. Resolve on the master side, keeping master's lines.
-- Editing comments or whitespace immediately beside environment values can also
-  conflict with master's overrides. Keep that layout identical on both branches;
-  when resolving a promotion, take develop's shared text and master's values.
+**Edit the Wrangler files on `develop` only; a promotion carries them to
+`master` unchanged.** A new variable goes in both blocks — with the same value
+when it is shared, since vars are non-inheritable. A prod value edited on
+`develop` changes nothing until the next promotion, because `develop` builds
+only the preview block. A prod change that cannot wait is committed
+identically on both branches, so the next promotion still merges clean.
 
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
 Green is the product brand (prod); red marks staging.
@@ -487,8 +491,7 @@ build. The palette is one table, `BRAND_PRIMARY_COLOR` in
 staging.
 
 **Both brands' assets ship; the build picks one by path.** `develop` and
-`master` must keep identical trees outside the two Wrangler files, so nothing is
-swapped or patched at build time:
+`master` carry identical trees, so nothing is swapped or patched at build time:
 
 | Surface         | Prod                            | Staging                            |
 | --------------- | ------------------------------- | ---------------------------------- |
@@ -553,28 +556,42 @@ stored URLs rewritten in clc-core.
 
 `VITE_FULL_REACT_ERRORS` is a staging tool. It sets `minify: false` and
 `NODE_ENV=development` for the client build, so a prod deploy with it on ships an
-unminified bundle running development React. It is `true` on `develop` and must
-stay `false` on `master`.
+unminified bundle running development React. It is `true` in
+`[env.preview.vars]` (staging) and must stay `false` in `[vars]` (prod).
 
-### Deployment — four Cloudflare Pages projects
+### Deployment — two Cloudflare Pages projects
 
-|              | Branch    | Project            | Config                     | Host                           |
-| ------------ | --------- | ------------------ | -------------------------- | ------------------------------ |
-| `apps/web`   | `master`  | `clc-app`          | `wrangler.toml` (root)     | `app.cosmolocal.credit`        |
-| `apps/admin` | `master`  | `clc-admin`        | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit`      |
-| `apps/web`   | `develop` | `clc-app-gnosis`   | `wrangler.toml` (root)     | `test.cosmolocal.credit`       |
-| `apps/admin` | `develop` | `clc-admin-gnosis` | `apps/admin/wrangler.toml` | `admin.test.cosmolocal.credit` |
+|              | Project     | Config                     | Production (`master`)     | Preview (`develop`)            |
+| ------------ | ----------- | -------------------------- | ------------------------- | ------------------------------ |
+| `apps/web`   | `clc-app`   | `wrangler.toml` (root)     | `cosmolocal.credit`       | `test.cosmolocal.credit`       |
+| `apps/admin` | `clc-admin` | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit` | `admin.test.cosmolocal.credit` |
 
-Both pairs deploy from Git. The dashboard build settings are **not** symmetric,
-and the asymmetry is load-bearing:
+Both deploy from Git. Branch control builds `master` as production and `develop`
+as the only preview branch; no other branch builds. The staging hosts are custom
+domains on the `develop` branch alias: the proxied CNAME for `test` targets
+`develop.clc-app.pages.dev` and the one for `admin.test` targets
+`develop.clc-admin.pages.dev`. A CNAME aimed at the bare `<project>.pages.dev`
+serves the production build instead.
 
-| Project                          | Root directory | Build command                  | Output dir      |
-| -------------------------------- | -------------- | ------------------------------ | --------------- |
-| `clc-app` / `clc-app-gnosis`     | _(repo root)_  | `pnpm --filter @clc/web build` | `apps/web/dist` |
-| `clc-admin` / `clc-admin-gnosis` | `apps/admin`   | `pnpm build`                   | `dist`          |
+Build watch paths keep a push that touches one app from building the other:
 
-Production branch: `master` on `clc-app` / `clc-admin`, `develop` on
-`clc-app-gnosis` / `clc-admin-gnosis`.
+| Project     | Include                                                                                                                                                        | Exclude                                       |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `clc-app`   | `*`                                                                                                                                                            | `apps/admin/*`, `docs/*`, `.github/*`, `*.md` |
+| `clc-admin` | `apps/admin/*`, `packages/*`, `tooling/*`, `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.npmrc`, `.node-version`, `tsconfig.json`, `release.json` | `*.md`                                        |
+
+Admin's include list mirrors `SHARED_INPUTS` and `APP_INPUTS` in
+`tooling/build-info.ts` plus `release.json`; an input missing from it leaves
+admin on a stale build. A push of 20 or more commits bypasses watch paths and
+builds both, so a promotion always does.
+
+The dashboard build settings are **not** symmetric, and the asymmetry is
+load-bearing:
+
+| Project     | Root directory | Build command                  | Output dir      |
+| ----------- | -------------- | ------------------------------ | --------------- |
+| `clc-app`   | _(repo root)_  | `pnpm --filter @clc/web build` | `apps/web/dist` |
+| `clc-admin` | `apps/admin`   | `pnpm build`                   | `dist`          |
 
 **Admin's root directory must be `apps/admin`.** Two different things read a
 Wrangler config and they resolve it from different places:
@@ -608,10 +625,12 @@ variables it reads (`VITE_API_URL`, `VITE_BRAND`, `VITE_CHAIN_ID`,
 `VITE_RELAYER_URL`, `VITE_RELYING_PARTY_ID`, `VITE_STORAGE_URL`,
 `VITE_MAPTILER_KEY`).
 
-A local build is the exception and can mislead: nothing injects `[vars]` outside
-Cloudflare's build system, so `vp build` / `build:cf` on a laptop reads `.env`
-instead. A value present in `[vars]` and absent from `.env` will be missing from a
-locally built bundle while being correct in production.
+A local build is the exception and can mislead: nothing injects the Wrangler vars
+outside Cloudflare's build system. Admin reads only `apps/admin/.env`. Web reads
+`apps/web/.env` and fills any missing `VITE_` key from `[env.preview.vars]`, so a
+laptop or CI build defaults to staging and never to prod's backend; a prod value
+absent from `.env` is staging's value in a local bundle while being correct in
+production.
 
 Nitro also _generates_ a config from whichever file it resolved, at
 `dist/_worker.js/wrangler.json`, pointing `.wrangler/deploy/config.json` at it; the
@@ -629,40 +648,38 @@ the source of truth for Pages Functions projects":
 | Concern                                          | Owned by        |
 | ------------------------------------------------ | --------------- |
 | Build command, output directory, root directory  | Pages dashboard |
+| Branch control, watch paths, custom domains      | Pages dashboard |
 | Project name, compatibility date/flags, bindings | `wrangler.toml` |
 | Every `VITE_*` value, per environment            | `wrangler.toml` |
 
-The dashboard keeps only the three build settings. Everything else is in the file
-and read-only in the UI while the file exists.
+The dashboard keeps the build, branch and domain settings. Everything else is in
+the file and read-only in the UI while the file exists.
 
-### Keeping `*.pages.dev` branch previews working
+### Previews and relying parties
 
-Each project's Wrangler file carries an `[env.preview.vars]` block. Pages supports
-exactly two environment overrides, `production` and `preview`, and only the relying
-party differs between them:
+Pages supports exactly two environment overrides, `production` and `preview`.
+`develop` is the only preview branch, so `[env.preview.vars]` is staging's config,
+relying party included:
 
-| Project            | `[vars]` (production)    | `[env.preview.vars]`         |
-| ------------------ | ------------------------ | ---------------------------- |
-| `clc-app`          | `cosmolocal.credit`      | `clc-app.pages.dev`          |
-| `clc-admin`        | `cosmolocal.credit`      | `clc-admin.pages.dev`        |
-| `clc-app-gnosis`   | `test.cosmolocal.credit` | `clc-app-gnosis.pages.dev`   |
-| `clc-admin-gnosis` | `test.cosmolocal.credit` | `clc-admin-gnosis.pages.dev` |
+| Project     | `[vars]` (production) | `[env.preview.vars]`     |
+| ----------- | --------------------- | ------------------------ |
+| `clc-app`   | `cosmolocal.credit`   | `test.cosmolocal.credit` |
+| `clc-admin` | `cosmolocal.credit`   | `test.cosmolocal.credit` |
 
-The preview value is the project's own `pages.dev` host on purpose, and it is why
-web's was set that way to begin with: `resolveRelyingPartyId` honours a configured
-value when it is a suffix of the serving host, so every `<branch>.clc-app.pages.dev`
-shares one relying party and one passkey works across branches. Setting preview to
-`cosmolocal.credit` would break that — no preview host is beneath it, so each branch
-would fall back to its own hostname and register its own credentials.
+`resolveRelyingPartyId` honours a configured value only when it is a suffix of
+the serving host, so `test.` and `admin.test.` share staging's passkeys while the
+bare alias `develop.clc-app.pages.dev` falls back to its own hostname. Turning
+feature-branch previews back on gives each `<branch>.clc-app.pages.dev` staging's
+values and its own credentials the same way.
 
 **`vars` is non-inheritable**, so an `[env.preview.vars]` block must restate _every_
 variable, not only the one that differs. Overriding it while omitting the rest fails
 validation at deploy time. That is why the two blocks in each file are near-duplicates
 — resist tidying them into a shared base.
 
-Both preview origins must also be in clc-core's allowlists. `util.OriginAllowed`
-supports a single `*` matching exactly one DNS label, so branch previews are one
-entry each:
+Feature-branch previews would also need their origins in the staging box's
+allowlists. `util.OriginAllowed` supports a single `*` matching exactly one DNS
+label, so branch previews are one entry each:
 
 ```toml
 api.cors                += "https://clc-admin.pages.dev", "https://*.clc-admin.pages.dev"
@@ -702,8 +719,8 @@ the scope of `apps/web`'s service worker.
    The value is normalized with `new URL(value).hostname`, so a scheme is stripped:
    `https://cosmolocal.credit` and `cosmolocal.credit` are equivalent. It is honoured
    only when it is a suffix of the serving host, so a value like
-   `https://clc-app.pages.dev` has no effect on `app.cosmolocal.credit` — that host
-   falls back to itself, and preview deploys keep their own relying party.
+   `test.cosmolocal.credit` has no effect on `develop.clc-app.pages.dev` — that
+   host falls back to itself.
 
    Enforcement is the **browser's**, not the backend's: `relayer.relying_party_id` in
    clc-core is loaded into the relayer and never read, and the assertion check

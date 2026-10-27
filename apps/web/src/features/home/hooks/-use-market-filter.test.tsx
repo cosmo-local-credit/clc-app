@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   current: null as CatalogFilterControls | null,
   setTags: vi.fn(),
   setFacets: vi.fn(),
+  setResourceFacets: vi.fn(),
   clear: vi.fn(),
 }));
 
@@ -34,6 +35,8 @@ function controls(filter: CatalogFilter | null): CatalogFilterControls {
     tagMatch: "any",
     vouchers: [],
     voucherMatch: "any",
+    pools: [],
+    poolMatch: "any",
   };
   return {
     term: effective.term,
@@ -46,10 +49,13 @@ function controls(filter: CatalogFilter | null): CatalogFilterControls {
     tagMatch: effective.tagMatch,
     vouchers: effective.vouchers,
     voucherMatch: effective.voucherMatch,
+    pools: effective.pools ?? [],
+    poolMatch: effective.poolMatch ?? "any",
     toggleTag: vi.fn(),
     setTags: mocks.setTags,
     setTagMatch: vi.fn(),
     setFacets: mocks.setFacets,
+    setResourceFacets: mocks.setResourceFacets,
     isAtTagLimit: false,
     clearTerm: vi.fn(),
     clear: mocks.clear,
@@ -60,6 +66,7 @@ beforeEach(() => {
   window.localStorage.clear();
   mocks.setTags.mockReset();
   mocks.setFacets.mockReset();
+  mocks.setResourceFacets.mockReset();
   mocks.clear.mockReset();
   mocks.current = controls(null);
 });
@@ -73,9 +80,15 @@ describe("useMarketFilter preferences", () => {
 
     const { result, rerender } = renderHook(() => useMarketFilter(OWNER));
 
-    expect(mocks.setFacets).toHaveBeenCalledWith(["Art", "Culture"], "all", [], "any", {
-      replace: true,
-    });
+    expect(mocks.setResourceFacets).toHaveBeenCalledWith(
+      ["Art", "Culture"],
+      "all",
+      [],
+      "any",
+      [],
+      "any",
+      { replace: true },
+    );
     expect(result.current.isRestoringPreference).toBe(true);
 
     mocks.current = controls({
@@ -140,10 +153,19 @@ describe("useMarketFilter preferences", () => {
 
     renderHook(() => useMarketFilter(OWNER));
 
-    expect(mocks.setFacets).toHaveBeenCalledWith(["Art"], "any", [], "any", { replace: true });
+    expect(mocks.setResourceFacets).toHaveBeenCalledWith(["Art"], "any", [], "any", [], "any", {
+      replace: true,
+    });
     expect(
       JSON.parse(window.localStorage.getItem(MARKET_FILTER_PREFERENCES_KEY) ?? "null"),
-    ).toEqual({ tags: ["Art"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+    ).toEqual({
+      tags: ["Art"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+      pools: [],
+      poolMatch: "any",
+    });
   });
 
   it("saves an applied draft and clears storage with the visible clear action", () => {
@@ -154,7 +176,14 @@ describe("useMarketFilter preferences", () => {
     expect(mocks.setFacets).toHaveBeenCalledWith(["Culture", "Art"], "all", [], "any");
     expect(
       JSON.parse(window.localStorage.getItem(MARKET_FILTER_PREFERENCES_KEY) ?? "null"),
-    ).toEqual({ tags: ["Art", "Culture"], tagMatch: "all", vouchers: [], voucherMatch: "any" });
+    ).toEqual({
+      tags: ["Art", "Culture"],
+      tagMatch: "all",
+      vouchers: [],
+      voucherMatch: "any",
+      pools: [],
+      poolMatch: "any",
+    });
 
     act(() => result.current.clear());
 

@@ -14,6 +14,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { PublicContactWarning } from "#/components/public-contact-warning";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
@@ -65,10 +67,17 @@ const profileFormSchema = poolProfileTextSchema.extend({
 export function PoolProfileEditorSheet({
   open,
   pool,
+  privateInfo,
   onClose,
 }: {
   open: boolean;
   pool: UserPool;
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
   onClose: () => void;
 }) {
   return (
@@ -88,7 +97,29 @@ export function PoolProfileEditorSheet({
           </SheetHeader>
           {/* Mounted only while open so each visit reads the current record:
               TanStack Form takes defaultValues once. */}
-          {open ? <PoolProfileForm pool={pool} onClose={onClose} /> : null}
+          {open && privateInfo?.isPending ? (
+            <p aria-busy="true" className="px-4 py-3 text-sm text-muted-foreground">
+              <Trans>Loading pool information…</Trans>
+            </p>
+          ) : null}
+          {open && privateInfo?.isError ? (
+            <div role="alert" className="space-y-3 px-4 py-3 text-sm">
+              <p>
+                <Trans>Couldn't load pool information.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                tap
+                pending={privateInfo.isFetching}
+                onClick={privateInfo.retry}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            </div>
+          ) : null}
+          {open && !privateInfo?.isPending && !privateInfo?.isError ? (
+            <PoolProfileForm pool={pool} onClose={onClose} />
+          ) : null}
         </SheetContent>
       </SheetPortal>
     </SheetRoot>
@@ -122,6 +153,9 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
     validators: { onSubmit: profileFormSchema },
     onSubmit: async ({ value }) => {
       try {
+        const clearContactFields = (["email", "website", "phone"] as const).filter(
+          (field) => Boolean(pool[field]?.trim()) && value[field].trim() === "",
+        );
         await update.mutateAsync({
           // `name` is the effective label, not proof that an override exists, so
           // it is sent only once the owner has changed it. Entering the immutable
@@ -140,6 +174,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
           email: value.email,
           website: value.website,
           phone: value.phone,
+          ...(clearContactFields.length > 0 ? { clearContactFields } : {}),
           terms: value.terms,
           // Preserved on omission by clc-core, so sent only when it changed; ""
           // is how the stored logo is removed.
@@ -255,11 +290,13 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                 label={t`Pool Location`}
                 value={field.state.value}
                 onChange={(value) => field.handleChange(value)}
+                markerResource="pool"
                 error={error ? translateValidationError(error, i18n) : undefined}
               />
             );
           }}
         </form.Field>
+        <PublicLocationWarning />
 
         <form.Field name="tags">
           {(field) => (
@@ -303,6 +340,8 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
             </div>
           )}
         </form.Field>
+
+        <PublicContactWarning />
 
         <form.Field name="email">
           {(field) => (

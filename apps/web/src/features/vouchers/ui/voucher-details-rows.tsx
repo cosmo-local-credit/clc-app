@@ -21,7 +21,6 @@ export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
     markerColor: values.markerColor,
   });
   const pinIcon = markerLabels.icon(pin.icon);
-  const pinColor = markerLabels.color(pin.color);
 
   return (
     <>
@@ -46,9 +45,7 @@ export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
       <InfoRow label={t`Location`}>{values.location?.locationName ?? "—"}</InfoRow>
       <InfoRow label={t`Map pin`}>
         <span className="flex items-center gap-2">
-          {values.markerIcon === null && values.markerColor === null
-            ? t`Default`
-            : t`${pinIcon}, ${pinColor}`}
+          {values.markerIcon === null ? t`Default` : pinIcon}
           <MarkerPin style={pin} size={20} />
         </span>
       </InfoRow>

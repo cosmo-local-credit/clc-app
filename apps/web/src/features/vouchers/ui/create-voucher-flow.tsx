@@ -36,6 +36,8 @@ import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
+import { PublicContactWarning } from "#/components/public-contact-warning";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError } from "#/components/ui/field";
@@ -697,19 +699,15 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   );
                 }}
               </form.Field>
+              <PublicLocationWarning />
 
-              <form.Subscribe
-                selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
-              >
-                {([icon, color]) => (
+              <form.Subscribe selector={(state) => state.values.markerIcon}>
+                {(icon) => (
                   <div className="border border-border bg-card p-4">
                     <MarkerStylePicker
                       kind="voucher"
-                      value={{ icon, color }}
-                      onChange={(next) => {
-                        form.setFieldValue("markerIcon", next.icon);
-                        form.setFieldValue("markerColor", next.color);
-                      }}
+                      value={icon}
+                      onChange={(next) => form.setFieldValue("markerIcon", next)}
                       disabled={deployVoucher.isPending}
                     />
                   </div>
@@ -761,6 +759,8 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   </div>
                 )}
               </form.Field>
+
+              <PublicContactWarning />
 
               <form.Field
                 name="email"

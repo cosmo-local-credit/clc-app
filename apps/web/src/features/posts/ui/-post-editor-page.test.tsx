@@ -31,6 +31,7 @@ const mocks = vi.hoisted(() => ({
     session: undefined as { address: string; chainId: number; role?: string } | undefined,
   },
   voucherResults: [] as { chainId: number; address: string; name: string; symbol: string }[],
+  poolResults: [] as { chainId: number; address: string; name: string; symbol: string }[],
   /** The owner the picker last asked the search to restrict itself to. */
   searchOwner: undefined as string | undefined,
   toastSuccess: vi.fn(),
@@ -85,12 +86,31 @@ vi.mock("#/features/home/hooks/use-voucher-search", () => ({
   },
 }));
 
+vi.mock("#/features/catalogs/hooks/use-pool-search", () => ({
+  POOL_SEARCH_MIN_CHARS: 2,
+  usePoolSearch: (query: string, _setQuery: unknown, _active: boolean, owner?: string) => {
+    mocks.searchOwner = owner;
+    return {
+      query,
+      setQuery: vi.fn(),
+      results: mocks.poolResults,
+      status: mocks.poolResults.length > 0 ? "ready" : "idle",
+      retry: vi.fn(),
+      retrying: false,
+    };
+  },
+}));
+
 vi.mock("#/features/images/use-image-upload", () => ({
   useImageUpload: () => ({ mutateAsync: mocks.upload, reset: vi.fn(), isPending: false }),
 }));
 
 vi.mock("#/components/ui/location-map.lazy", () => ({
-  LocationMap: () => <div data-testid="location-map" />,
+  LocationMap: ({ markerStyle }: { markerStyle?: { icon: string; color: string } }) => (
+    <div data-testid="location-map">
+      {markerStyle ? `${markerStyle.icon}:${markerStyle.color}` : "default"}
+    </div>
+  ),
 }));
 
 // The shell only defers the chunk. These tests want the editor inside it, and
@@ -117,8 +137,19 @@ function saved(overrides: Partial<ManagedReportDetail> = {}): ManagedReportDetai
     authorAddress: "0xAbC0000000000000000000000000000000000123",
     createdAt: "2026-08-20T10:00:00Z",
     updatedAt: "2026-08-20T10:00:00Z",
+    markerIcon: "post",
+    markerColor: "pink",
     tags: [],
-    vouchers: [],
+    vouchers: [
+      {
+        id: "1",
+        chainId: 42220,
+        address: "0x1111111111111111111111111111111111111111",
+        name: "Priscilah Malii",
+        symbol: "MALII",
+      },
+    ],
+    pools: [],
     images: [],
     attachments: [],
     hostName: null,
@@ -148,12 +179,22 @@ beforeEach(() => {
     session: undefined,
   };
   mocks.voucherResults = [];
+  mocks.poolResults = [];
   mocks.searchOwner = undefined;
   window.localStorage.clear();
 });
 
 const VOUCHER = "0x1111111111111111111111111111111111111111";
 const OTHER_VOUCHER = "0x2222222222222222222222222222222222222222";
+
+function renderCreateWithVoucher() {
+  return render(
+    <PostEditorPage
+      mode="create"
+      voucher={{ chainId: 42220, address: VOUCHER, name: "Priscilah Malii" }}
+    />,
+  );
+}
 
 function typeTitle(value: string) {
   fireEvent.change(screen.getByLabelText("Title"), { target: { value } });
@@ -184,10 +225,8 @@ async function typeBody(text: string) {
 }
 
 describe("creating a post", () => {
-  // Title is the only required field: everything else is behind a details
-  // group so a quick post stays quick.
-  it("submits with nothing but a title", async () => {
-    render(<PostEditorPage mode="create" />);
+  it("submits with a title and a linked voucher", async () => {
+    renderCreateWithVoucher();
     typeTitle("August community harvest");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
@@ -197,22 +236,31 @@ describe("creating a post", () => {
       tags: [],
       images: [],
       attachments: [],
-      vouchers: [],
+      vouchers: [{ chainId: 42220, address: VOUCHER }],
     });
   });
 
-  it("refuses a blank title rather than sending it", async () => {
+  it("requires at least one voucher or pool", async () => {
     render(<PostEditorPage mode="create" />);
+    typeTitle("August community harvest");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
-    await waitFor(() => expect(screen.getByRole("alert").textContent).toBeTruthy());
+    expect(await screen.findByText("Link at least one voucher or pool")).toBeTruthy();
+    expect(mocks.createPost).not.toHaveBeenCalled();
+  });
+
+  it("refuses a blank title rather than sending it", async () => {
+    renderCreateWithVoucher();
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+
+    await waitFor(() => expect(screen.getByText("Enter a title for your post")).toBeTruthy());
     expect(mocks.createPost).not.toHaveBeenCalled();
   });
 
   // Posts are auto-approved, so the button and the toast say publish, not
   // submit.
   it("says the post is published and lands on My posts", async () => {
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     typeTitle("August community harvest");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
@@ -224,7 +272,7 @@ describe("creating a post", () => {
   // typed text must survive.
   it("keeps the form after a failed save", async () => {
     mocks.createPost.mockRejectedValue(new Error("Network is down"));
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     typeTitle("August community harvest");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
@@ -238,7 +286,7 @@ describe("creating a post", () => {
   it("disables Save while photos are uploading", async () => {
     // One upload that never settles, so the busy state is observable.
     mocks.upload.mockReturnValue(new Promise(() => {}));
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     typeTitle("August community harvest");
 
     fireEvent.change(screen.getByLabelText("Add photos"), {
@@ -259,7 +307,7 @@ describe("creating a post", () => {
       height: 960,
       byteSize: 245_761,
     });
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
 
     fireEvent.change(screen.getByLabelText("Add photos"), {
       target: { files: [new File(["x"], "first.jpg", { type: "image/jpeg" })] },
@@ -281,7 +329,7 @@ describe("creating a post", () => {
   // Formatting is applied, not typed, so there is nothing to preview and no
   // Markdown cheat sheet to read.
   it("writes the body through the editor instead of a markdown textarea", async () => {
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
 
     expect(screen.queryByRole("button", { name: "Preview" })).toBeNull();
     expect(screen.queryByText(/Markdown: \*\*bold\*\*/)).toBeNull();
@@ -296,7 +344,7 @@ describe("creating a post", () => {
   });
 
   it("submits the body as markdown", async () => {
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     typeTitle("August community harvest");
     await typeBody("It went well");
     await act(async () => {
@@ -347,17 +395,17 @@ describe("creating a post", () => {
     });
   });
 
-  // The host, the place and the moment are what the author already told us:
-  // their profile name and location, and now.
-  it("starts now, hosted by the author, at the place they gave at signup", async () => {
+  // The saved place is shown with its public-pin warning, but the profile name
+  // is not silently copied into the public Host field.
+  it("starts now at the saved place without publishing the profile name", async () => {
     mocks.profile = {
       data: { name: "Wendo Group", geoLat: -1.2864, geoLng: 36.8172 },
       isPending: false,
     };
     const before = Date.now();
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
 
-    expect((screen.getByLabelText("Host") as HTMLInputElement).value).toBe("Wendo Group");
+    expect((screen.getByLabelText("Host") as HTMLInputElement).value).toBe("");
 
     typeTitle("August community harvest");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
@@ -370,7 +418,7 @@ describe("creating a post", () => {
       periodFrom: string;
       periodTo: string;
     };
-    expect(sent.hostName).toBe("Wendo Group");
+    expect(sent.hostName).toBe("");
     expect(sent.geoLat).toBe(-1.2864);
     expect(sent.geoLng).toBe(36.8172);
     // Both ends at the current minute, not the start and end of the day.
@@ -381,7 +429,7 @@ describe("creating a post", () => {
   });
 
   it("asks for a head count as a number and no longer asks for a duration", async () => {
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
 
     const participants = screen.getByLabelText("No. of participants") as HTMLInputElement;
     expect(participants.type).toBe("number");
@@ -399,10 +447,10 @@ describe("creating a post", () => {
     });
   });
 
-  // clc-core refuses a post that links a voucher its author does not own, so
-  // the picker only searches the author's own vouchers — unless the author is
-  // a superadmin, who may link any voucher.
-  it("searches only the author's own vouchers unless they are a superadmin", () => {
+  // clc-core refuses a post that links a resource its author does not own, so
+  // both pickers search only the author's resources — unless the author is a
+  // superadmin, who may link anything in the catalog.
+  it("searches only the author's own resources unless they are a superadmin", () => {
     mocks.auth.session = { address: "0xAbC0000000000000000000000000000000000123", chainId: 42220 };
     const asAuthor = render(<PostEditorPage mode="create" />);
     expect(mocks.searchOwner).toBe("0xAbC0000000000000000000000000000000000123");
@@ -413,7 +461,7 @@ describe("creating a post", () => {
       chainId: 42220,
       role: "SUPERADMIN",
     };
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     expect(mocks.searchOwner).toBeUndefined();
   });
 
@@ -421,7 +469,7 @@ describe("creating a post", () => {
   // not a place.
   it("ignores a profile that holds only one coordinate", async () => {
     mocks.profile = { data: { geoLat: -1.2864, geoLng: null }, isPending: false };
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     typeTitle("August community harvest");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
@@ -430,7 +478,7 @@ describe("creating a post", () => {
   });
 
   it("no longer asks for a summary", async () => {
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
 
     expect(screen.queryByLabelText("Summary")).toBeNull();
 
@@ -483,7 +531,7 @@ describe("creating a post", () => {
 
   // The limit is the schema's, measured on the Markdown that would be stored.
   it("refuses a paste longer than a post may be", async () => {
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     await typeBody("Short enough");
 
     await act(async () => {
@@ -503,7 +551,7 @@ describe("creating a post", () => {
   });
 
   it("drops the parked post once it has been submitted", async () => {
-    render(<PostEditorPage mode="create" />);
+    renderCreateWithVoucher();
     typeTitle("August community harvest");
     await waitFor(() => expect(window.localStorage.getItem("clc_post_draft_v1")).toBeTruthy(), {
       timeout: 2000,
@@ -538,6 +586,54 @@ describe("creating a post", () => {
         { chainId: 42220, address: VOUCHER },
         { chainId: 42220, address: OTHER_VOUCHER },
       ],
+    });
+  });
+
+  it("links pools independently and submits the public location warning", async () => {
+    mocks.poolResults = [
+      {
+        chainId: 100,
+        address: VOUCHER,
+        name: "Kilifi Pool",
+        symbol: "KLF",
+      },
+    ];
+    render(<PostEditorPage mode="create" />);
+    typeTitle("August community harvest");
+
+    fireEvent.focus(screen.getByLabelText("Search pools"));
+    fireEvent.click(screen.getByRole("option", { name: /Kilifi Pool/ }));
+    expect(screen.getByRole("button", { name: "Unlink Kilifi Pool" })).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Place"));
+    expect(
+      screen.getByText(
+        "The exact pin will be public. Choose a safe public meeting place, not a private home.",
+      ),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
+      pools: [{ chainId: 100, address: VOUCHER }],
+    });
+  });
+
+  it("previews and submits a chosen Post marker icon with its legacy wire colour", async () => {
+    renderCreateWithVoucher();
+    fireEvent.click(screen.getByText("Place"));
+
+    expect(screen.getByTestId("location-map").textContent).toBe("post:pink");
+    fireEvent.click(screen.getByRole("radio", { name: "Event" }));
+    expect(screen.queryByRole("radio", { name: "Cyan" })).toBeNull();
+    expect(screen.getByTestId("location-map").textContent).toBe("event:pink");
+
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
+      markerIcon: "event",
+      markerColor: "pink",
     });
   });
 
@@ -602,6 +698,24 @@ describe("editing a post", () => {
     );
   });
 
+  it("opens Place for an existing located post so the public-pin warning is visible", () => {
+    mocks.detail.data = saved({
+      lat: -1.2864,
+      lng: 36.8172,
+      markerIcon: "announcement",
+      markerColor: "purple",
+    });
+
+    render(<PostEditorPage mode="edit" reportId="4633" />);
+
+    expect(
+      screen.getByText(
+        "The exact pin will be public. Choose a safe public meeting place, not a private home.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByTestId("location-map").textContent).toBe("announcement:purple");
+  });
+
   // PUT is assign-all, so an untouched relation has to travel back or it is
   // erased.
   it("resends untouched relations", async () => {
@@ -636,6 +750,16 @@ describe("editing a post", () => {
         ],
       },
     });
+  });
+
+  it("requires a legacy linkless post to add a resource before saving", async () => {
+    mocks.detail.data = saved({ vouchers: [], pools: [] });
+    render(<PostEditorPage mode="edit" reportId="4633" />);
+    typeTitle("Edited title");
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(await screen.findByText("Link at least one voucher or pool")).toBeTruthy();
+    expect(mocks.updatePost).not.toHaveBeenCalled();
   });
 
   it("saves a submitted post without a confirmation", async () => {

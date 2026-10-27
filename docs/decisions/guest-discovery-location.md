@@ -1,99 +1,54 @@
-# Shared guest discovery location and public caches
+# Viewport discovery and guest camera hints
 
-Accepted 2026-10-17. This repairs the first guest visibility implementation.
+Accepted 2026-10-25. This supersedes fixed-radius discovery.
 
-Guests start at 500 km unless they saved another visibility. They can choose
-Global. A device fix takes priority over an approximate IP city. A country or
-fallback map camera is not a filtering origin. Without a usable origin, show
-Use my location and Global. Do not prompt for device permission on entry.
-An already granted permission can supply a fresh fix automatically.
+Marketplace visibility is the exact rectangle last settled on the Marketplace
+map. Lists use that owner-scoped rectangle after it exists and remain Global
+before the map establishes one. Map marker requests use a padded envelope for
+smooth nearby panning, while list and search requests keep the exact visible
+bounds.
 
-## Ownership
+## Camera bootstrap
 
-`DiscoveryLocationProvider` is above the route outlet and radius boundaries.
-It owns one device request stream, the current fix, IP fallback, request status,
-and the explicit recenter sequence. Map cameras and radius filters consume this
-same snapshot. GPS refresh retains the last fix while a request is pending.
+Camera sources resolve by confidence rather than arrival order:
 
-A change of authenticated owner creates a new in-memory location store and
-resets only its device controller. Routed pages and unsaved form state stay
-mounted. Owner resolution uses the existing `useStorageOwner` policy; loading
-and failed session checks do not become the guest persistence tier. Persisted GPS is read
-after mount, scoped to that owner, and expires after 24 hours. Writes are best
-effort. Storage events do not carry live application state. Blocked storage
-must not prevent map and filter updates. IP cities never become precise distance
-labels or a live user marker.
+1. An explicit current-location request.
+2. A selected resource deep link.
+3. The wallet or guest's saved map viewport.
+4. A signed-in profile location.
+5. A live or recent owner-scoped GPS fix.
+6. IP city.
+7. A world camera with Global results when no IP city resolves.
 
-`useMarketCamera` adapts the shared state to camera priority and zoom. Its
-constants and types live outside the map rendering module. Moving a map or
-changing the radius does not create a new location request owner.
+Only an already granted permission may fetch GPS automatically. An IP city never
+becomes a real location, profile value, distance origin, or "you are here"
+marker. Browser and manually selected interface languages are not used to
+position the map.
 
-Map construction uses the already resolved camera's coordinates and zoom. The
-Nairobi fallback applies only when no camera is available. Previously, returning
-from Wallet created a map at Nairobi and applied the known camera after loading,
-causing a visible jump. The constructor reads the current camera through a ref
-so subsequent camera updates do not destroy and rebuild the map. Existing
-camera priority, user-pan protection, and filter framing still apply after load.
+The same inferred camera centres an empty `LocationPicker`, including onboarding,
+without placing a pin or changing the form value. A person still has to search,
+tap the map, or press **Use my location**. A late hint cannot move a picker after
+the person begins browsing it.
 
-## Request policy and cache identity
+## Ownership and persistence
 
-`NearbyRequest` is explicit: public (`nearby: false`) or authenticated nearby
-(`nearby: true`, with an account/chain/location scope). API code does not parse
-scope strings to decide request mode or credentials.
+`DiscoveryLocationProvider` owns one device request stream and approximate-camera
+query. Precise fixes and settled viewports are scoped to the lowercased wallet or
+guest storage tier. Owner changes clear in-memory state immediately, and sign-out
+removes the signed-in viewport without copying it to the guest tier.
 
-Public results are cached by server request inputs. Guest coordinates and radius
-are view inputs and do not create another public cache entry. Query functions
-return raw rows; selectors apply the current radius, including filtered searches
-and pool candidates. This lets 50 → 500 km reveal cached rows without downloading
-the same pages again. Authenticated nearby caches retain identity separation.
-Discovery snapshots stay fresh for 60 seconds and unused for five minutes.
-Consumers outside discovery retain their existing query policies.
+MapLibre reports `moveend` only after gesture inertia. The app debounces that
+settlement, canonicalizes antimeridian bounds, ignores equivalent rectangles,
+and persists only settled camera state. Filter and search changes never fit or
+move the camera.
 
-```mermaid
-flowchart LR
-  GPS[Device request] --> L[Shared location state]
-  IP[IP city] --> L
-  L --> C[Map camera adapter]
-  L --> F[Radius selector]
-  A[Explicit public or account request] --> R[Raw response cache]
-  R --> F
-  F --> V[Visible map and lists]
-```
+## Requests and caches
 
-## Pagination and facets
+Discovery endpoints accept one `bbox=minLng,minLat,maxLng,maxLat`, or two repeated
+boxes for an antimeridian viewport. Bounds are part of query keys and opaque
+cursor isolation. Query functions pass React Query's `AbortSignal`; a newer
+settled viewport cancels obsolete work. Existing markers remain visible while
+the replacement request is pending or retryable.
 
-Suggestion queries inspect all retrieved pages. They automatically retrieve up
-to six pages until the requested suggestion slots are filled or the cursor ends.
-At the budget, Load more allows continuation. A failed page exposes retry and
-retains earlier matches. Public results must not stop at the first distant row.
-The existing complete-map and catalog safety caps remain in force.
-
-Server facets remain search vocabulary. They do not describe the locally filtered
-radius, so the filter sheet hides numeric facet counts while a radius applies.
-Scalable public radius filtering before pagination and accurate local facet
-counts need an explicit Core API extension. They are not implemented here.
-
-## Guest entry
-
-The welcome screen has a Market action. Completion updates the introduction
-provider immediately, including when local persistence is blocked. Account
-creation, sign-in, inline guidance, and Settings replay remain available.
-
-## Verification
-
-Regression coverage includes shared GPS refresh with blocked storage, owner
-reset and an old callback, pending IP without a permission prompt, later-page
-suggestions, page budget and retry, public cache reuse across radii, raw cached
-search rows, and immediate guest entry. See the PR validation for command results.
-
-Final verification: Node 24.16.0; type/lint/format checks pass. The full run
-passed 4,327 tests and found five navigation fixtures missing the new location
-boundary. After correcting those fixtures and adding form-preservation coverage,
-the final focused run passed 106 tests in 13 files. Live browser verification
-remains pending.
-
-Map return regression: three tests first reproduced the Nairobi initialization
-for live, profile, and restored cameras. After the fix, 167 tests across the map,
-market page, and camera hook pass, including initial construction and remount
-before tiles load. `vp check` passes on Node 24.16.0. Real-device visual
-verification remains pending.
+The IP-city lookup is cached for the browser session. Failure is non-blocking and
+falls through directly to Global discovery.

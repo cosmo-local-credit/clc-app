@@ -11,7 +11,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import { PoolsPage } from "#/features/pools/pools-page";
-import { parseTableSearch } from "#/lib/table-search";
+import { parsePoolListSearch } from "#/features/pools/pool-list-search";
 
 /**
  * The table's state lives in the URL so Back returns an operator to the page they
@@ -42,7 +42,7 @@ function pool(id: number) {
 const getFilteredPools = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api", () => ({
-  clcApi: { pools: { getFilteredPools: (...args: unknown[]) => getFilteredPools(...args) } },
+  clcApi: { admin: { listPools: (...args: unknown[]) => getFilteredPools(...args) } },
 }));
 
 function renderPoolsRoute(initialEntry = "/pools") {
@@ -50,7 +50,7 @@ function renderPoolsRoute(initialEntry = "/pools") {
   const poolsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/pools",
-    validateSearch: parseTableSearch,
+    validateSearch: parsePoolListSearch,
     component: function PoolsRoute() {
       return <PoolsPage search={poolsRoute.useSearch()} />;
     },
@@ -218,5 +218,20 @@ describe("pools table navigation", () => {
     expect(screen.queryByRole("columnheader", { name: /swap fee/i })).toBeNull();
     expect(screen.queryByRole("columnheader", { name: /^unit$/i })).toBeNull();
     expect(screen.queryByRole("columnheader", { name: /^tags$/i })).toBeNull();
+  });
+
+  it("requests retired pools from the admin catalog and resets pagination", async () => {
+    getFilteredPools.mockResolvedValue(PAGE_ONE);
+    const router = renderPoolsRoute("/pools?cursor=976&dir=next");
+    await screen.findByText("Pool 1000");
+    fireEvent.click(screen.getByRole("button", { name: "retired" }));
+    await waitFor(() =>
+      expect(getFilteredPools).toHaveBeenCalledWith(
+        expect.objectContaining({ status: "retired" }),
+        expect.anything(),
+      ),
+    );
+    expect(router.state.location.search).toMatchObject({ status: "retired" });
+    expect(router.state.location.search).not.toHaveProperty("cursor");
   });
 });

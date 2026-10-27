@@ -1,4 +1,5 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import {
   type MarketKind,
   type MarkerColor,
@@ -9,6 +10,7 @@ import {
 } from "@clc/core/features/markers/logic";
 
 import type { HttpClient } from "../../client/http-client";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 import {
   type CursorParams,
   type HexAddress,
@@ -88,12 +90,7 @@ export type MarketVoucherDetail = {
   active: boolean;
 } & MarketVoucherMarker;
 
-export type MarketBoundingBox = {
-  minLng: number;
-  minLat: number;
-  maxLng: number;
-  maxLat: number;
-};
+export type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 
 export type MarketVoucherPage = {
   vouchers: MarketVoucher[];
@@ -102,7 +99,10 @@ export type MarketVoucherPage = {
   receivedCount: number;
 };
 
-export type MarketVouchersParams = CursorParams & { bbox?: MarketBoundingBox; nearby?: boolean };
+export type MarketVouchersParams = CursorParams & {
+  bounds?: readonly MarketBoundingBox[];
+  nearby?: boolean;
+};
 
 export type MarketTagFacet = {
   tag: string;
@@ -192,7 +192,11 @@ export type VoucherProfileUpdate = {
   markerIcon?: MarkerIcon | null;
   markerColor?: MarkerColor | null;
   tags: string[];
+  /** Explicit confirmation that these existing contacts should be removed. */
+  clearContactFields?: readonly VoucherContactField[];
 };
+
+export type VoucherContactField = "email" | "phone" | "website";
 
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim();
@@ -225,6 +229,9 @@ export function serializeVoucherProfileUpdate(profile: VoucherProfileUpdate) {
     ...(profile.markerIcon === undefined ? {} : { markerIcon: profile.markerIcon ?? "" }),
     ...(profile.markerColor === undefined ? {} : { markerColor: profile.markerColor ?? "" }),
     tags: profile.tags,
+    ...(profile.clearContactFields === undefined
+      ? {}
+      : { clearContactFields: profile.clearContactFields }),
   };
 }
 
@@ -319,8 +326,18 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
         },
       );
 
-      const voucher = normalizeMarketVoucherDetail(result.voucher);
+      const voucher = normalizePublicMarketVoucherDetail(result.voucher);
       if (!voucher) throw new Error("Voucher response did not include a valid address.");
+      return voucher;
+    },
+
+    async getVoucherInfo(address: string, signal?: AbortSignal): Promise<MarketVoucherDetail> {
+      const result = await http.request<{ voucher?: BackendMarketVoucherDetail | null }>(
+        `/api/v2/vouchers/${encodeURIComponent(address)}/info`,
+        { method: "GET", cache: "no-store", signal },
+      );
+      const voucher = normalizeMarketVoucherDetail(result.voucher);
+      if (!voucher) throw new Error("Voucher info response did not include a valid address.");
       return voucher;
     },
 
@@ -345,26 +362,6 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
       const voucher = normalizeMarketVoucherDetail(result.voucher);
       if (!voucher) throw new Error("Voucher update response did not include a valid address.");
       return voucher;
-    },
-
-    /**
-     * Takes a voucher out of the public catalog.
-     *
-     * Soft: clc-core flips the `active` flag every market, search and offering
-     * statement filters on, so the reports and offerings that reference the
-     * voucher keep their foreign keys and a restore returns it intact.
-     *
-     * Returns nothing on purpose. The other catalog writes answer with the saved
-     * row so a caller can seed its cache; this one cannot, because the row it
-     * wrote is no longer visible to the detail route. Drop the voucher from the
-     * cache instead of re-reading it.
-     */
-    async retireVoucher(address: string, signal?: AbortSignal): Promise<void> {
-      await http.request<unknown>(`/api/v2/vouchers/${encodeURIComponent(address)}`, {
-        method: "DELETE",
-        cache: "no-store",
-        signal,
-      });
     },
 
     async getFilteredMarketVouchers(
@@ -396,15 +393,16 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
   };
 }
 
-function formatMarketQuery({ bbox, nearby, ...cursor }: MarketVouchersParams): string {
+function formatMarketQuery({ bounds, nearby, ...cursor }: MarketVouchersParams): string {
   const query = formatCursorQuery(cursor) + (nearby ? "&nearby=true" : "");
-  if (!bbox) return query;
-  const box = [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat].join(",");
-  return `${query}&bbox=${encodeURIComponent(box)}`;
+  if (!bounds?.length) return query;
+  const search = new URLSearchParams(query);
+  appendMarketBounds(search, bounds);
+  return `?${search.toString()}`;
 }
 
 function formatFilteredMarketQuery({
-  bbox,
+  bounds,
   filter,
   facets,
   owner,
@@ -413,9 +411,7 @@ function formatFilteredMarketQuery({
   ...cursor
 }: FilteredMarketVouchersParams): string {
   const search = new URLSearchParams(formatCursorQuery(cursor));
-  if (bbox) {
-    search.set("bbox", [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat].join(","));
-  }
+  appendMarketBounds(search, bounds);
   if (filter.term !== "") search.set("q", filter.term);
   if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
   if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
@@ -515,6 +511,13 @@ export function normalizeMarketVoucherDetail(
   };
 }
 
+function normalizePublicMarketVoucherDetail(
+  voucher: BackendMarketVoucherDetail | null | undefined,
+): MarketVoucherDetail | null {
+  const normalized = normalizeMarketVoucherDetail(voucher);
+  return normalized ? { ...normalized, email: null, phone: null, website: null } : null;
+}
+
 function normalizeMarker(voucher: BackendMarketVoucher): MarketVoucherMarker {
   return {
     markerIcon: isMarkerIcon(voucher.markerIcon) ? voucher.markerIcon : null,
@@ -546,7 +549,10 @@ export function viewportToBoundingBoxes(viewport: {
   const maxLat = clamp(Math.max(south, north), -90, 90);
 
   if (Math.abs(east - west) >= 360) {
-    return [{ minLng: -180, minLat, maxLng: 180, maxLat }];
+    // A genuine whole-world camera is Global discovery. Sending an all-world
+    // bbox gives it a false local identity and can then be persisted as a
+    // user's chosen area.
+    return [];
   }
 
   const minLng = wrapLongitude(west);

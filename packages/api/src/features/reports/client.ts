@@ -5,14 +5,22 @@ import {
 } from "@clc/core/features/catalog/logic";
 import {
   type ReportAttachmentKind,
+  type ReportMarkerIcon,
   type ReportStatus,
   type ReportWrite,
   isReportStatus,
   reportWriteSchema,
 } from "@clc/core/features/reports/logic";
+import {
+  isMarkerColor,
+  isReportMarkerIcon,
+  type MarkerColor,
+} from "@clc/core/features/markers/logic";
 
 import { BackendApiError, NO_HTTP_STATUS } from "../../client/errors";
 import type { HttpClient } from "../../client/http-client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { appendMarketBounds } from "../../lib/catalog-bounds";
 import {
   type HexAddress,
   isPresent,
@@ -34,6 +42,14 @@ export type { ReportWrite };
  * to guess the chain — which on this branch is not Celo.
  */
 export type ReportVoucher = {
+  id: string;
+  chainId: number;
+  address: HexAddress;
+  name: string;
+  symbol: string;
+};
+
+export type ReportPool = {
   id: string;
   chainId: number;
   address: HexAddress;
@@ -79,11 +95,13 @@ export type ReportSummary = {
   lng: number | null;
   periodFrom: string | null;
   periodTo: string | null;
-  authorAddress: HexAddress | null;
   createdAt: string | null;
   updatedAt: string | null;
+  markerIcon: ReportMarkerIcon;
+  markerColor: MarkerColor;
   tags: string[];
   vouchers: ReportVoucher[];
+  pools: ReportPool[];
 };
 
 export type ReportDetail = ReportSummary & {
@@ -101,9 +119,15 @@ export type ReportDetail = ReportSummary & {
 };
 
 /** A management summary. Status is required: a queue row must say its state. */
-export type ManagedReportSummary = ReportSummary & { status: ReportStatus };
+export type ManagedReportSummary = ReportSummary & {
+  status: ReportStatus;
+  authorAddress: HexAddress;
+};
 
-export type ManagedReportDetail = ReportDetail & { status: ReportStatus };
+export type ManagedReportDetail = ReportDetail & {
+  status: ReportStatus;
+  authorAddress: HexAddress;
+};
 
 export type ReportCursor = {
   updatedAt: string;
@@ -165,19 +189,30 @@ export type ReportVoucherFacet = VoucherRef & {
   placeholder?: boolean;
 };
 
+export type ReportPoolFacet = VoucherRef & {
+  name: string;
+  symbol: string;
+  count: number;
+  placeholder?: boolean;
+};
+
+export type ReportFilter = CatalogFilter;
+
 export type FilteredReportsParams = {
   nearby?: boolean;
+  bounds?: readonly MarketBoundingBox[];
   perPage: number;
   cursor?: ReportCursor;
-  filter: CatalogFilter;
+  filter: ReportFilter;
   facets?: boolean;
-  /** Only reports authored by this address. Compared case-insensitively. */
-  author?: string;
+  /** Posts directly linked to these pools or to vouchers they accept. */
+  creditablePools?: readonly VoucherRef[];
 };
 
 export type FilteredReportPage = ReportPage & {
   tagFacets: ReportTagFacet[] | null;
   voucherFacets: ReportVoucherFacet[] | null;
+  poolFacets: ReportPoolFacet[] | null;
 };
 
 /**
@@ -205,6 +240,7 @@ export class ReportPayloadTooLargeError extends Error {
 type BackendFilteredReportPage = BackendReportPage & {
   tagFacets?: { tag?: unknown; count?: unknown }[] | null;
   voucherFacets?: BackendVoucherFacet[] | null;
+  poolFacets?: BackendVoucherFacet[] | null;
 };
 
 type BackendReportVoucher = Partial<{
@@ -257,11 +293,14 @@ type BackendReport = Partial<{
   updatedAt: string | null;
   tags: string[] | null;
   vouchers: BackendReportVoucher[] | null;
+  pools: BackendReportVoucher[] | null;
   images: BackendReportImage[] | null;
   attachments: BackendReportAttachment[] | null;
   hostName: string | null;
   participants: string | null;
   timeTaken: string | null;
+  markerIcon: string | null;
+  markerColor: string | null;
 }>;
 
 type BackendReportPage = {
@@ -320,11 +359,17 @@ export function createReportsClient(http: HttpClient) {
 
   return {
     async getReports(
-      params: { perPage: number; cursor?: ReportCursor; nearby?: boolean },
+      params: {
+        perPage: number;
+        cursor?: ReportCursor;
+        nearby?: boolean;
+        bounds?: readonly MarketBoundingBox[];
+      },
       signal?: AbortSignal,
     ): Promise<ReportPage> {
       const query = new URLSearchParams({ perPage: String(params.perPage) });
       if (params.nearby) query.set("nearby", "true");
+      appendMarketBounds(query, params.bounds);
       if (params.cursor) {
         query.set("cursorUpdatedAt", params.cursor.updatedAt);
         query.set("cursorId", params.cursor.id);
@@ -343,7 +388,7 @@ export function createReportsClient(http: HttpClient) {
     },
 
     async getFilteredReports(
-      { filter, facets, perPage, cursor, author, nearby }: FilteredReportsParams,
+      { filter, facets, perPage, cursor, nearby, bounds, creditablePools }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
       const query = new URLSearchParams({ perPage: String(perPage) });
@@ -352,9 +397,12 @@ export function createReportsClient(http: HttpClient) {
         query.set("cursorId", cursor.id);
       }
       appendCatalogFilter(query, filter);
-      if (author) query.set("author", author);
       if (facets) query.set("facets", "true");
       if (nearby) query.set("nearby", "true");
+      appendMarketBounds(query, bounds);
+      if (creditablePools?.length) {
+        query.set("creditablePools", creditablePools.map(serializeVoucherRef).join(","));
+      }
 
       const result = await http.request<BackendFilteredReportPage>(
         `/api/v2/reports?${query.toString()}`,
@@ -373,6 +421,9 @@ export function createReportsClient(http: HttpClient) {
           : null,
         voucherFacets: result.voucherFacets
           ? result.voucherFacets.map(normalizeReportVoucherFacet).filter(isPresent)
+          : null,
+        poolFacets: result.poolFacets
+          ? result.poolFacets.map(normalizeReportPoolFacet).filter(isPresent)
           : null,
       };
     },
@@ -476,6 +527,11 @@ function appendCatalogFilter(query: URLSearchParams, filter: CatalogFilter): voi
   if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
     query.set("voucherMatch", "all");
   }
+  const pools = filter.pools ?? [];
+  if (pools.length > 0) {
+    query.set("pools", pools.map(serializeVoucherRef).join(","));
+    if (pools.length > 1 && filter.poolMatch === "all") query.set("poolMatch", "all");
+  }
 }
 
 /**
@@ -522,10 +578,16 @@ export function serializeReportWrite(input: ReportWrite): string {
     hostName: normalized.hostName === "" ? null : normalized.hostName,
     participants: normalized.participants === "" ? null : normalized.participants,
     timeTaken: normalized.timeTaken === "" ? null : normalized.timeTaken,
+    markerIcon: normalized.markerIcon,
+    markerColor: normalized.markerColor,
     tags: normalized.tags,
     vouchers: normalized.vouchers.map((voucher) => ({
       chainId: voucher.chainId,
       address: voucher.address,
+    })),
+    pools: normalized.pools.map((pool) => ({
+      chainId: pool.chainId,
+      address: pool.address,
     })),
     images: normalized.images.map((image) => ({
       url: image.url,
@@ -563,6 +625,10 @@ function normalizeReportVoucherFacet(facet: BackendVoucherFacet): ReportVoucherF
   return { chainId, address, name, symbol, count };
 }
 
+function normalizeReportPoolFacet(facet: BackendVoucherFacet): ReportPoolFacet | null {
+  return normalizeReportVoucherFacet(facet);
+}
+
 function normalizeReportTagFacet(facet: { tag?: unknown; count?: unknown }): ReportTagFacet | null {
   const tag = normalizeText(facet.tag);
   const count = normalizeNumber(facet.count);
@@ -595,11 +661,13 @@ function normalizeReportSummary(report: BackendReport): ReportSummary | null {
     lng: hasLocation ? lng : null,
     periodFrom: normalizeText(report.periodFrom),
     periodTo: normalizeText(report.periodTo),
-    authorAddress: normalizeHex(report.authorAddress),
     createdAt: normalizeText(report.createdAt),
     updatedAt: normalizeText(report.updatedAt),
+    markerIcon: isReportMarkerIcon(report.markerIcon) ? report.markerIcon : "post",
+    markerColor: isMarkerColor(report.markerColor) ? report.markerColor : "pink",
     tags: normalizeStringArray(report.tags),
     vouchers: (report.vouchers ?? []).map(normalizeReportVoucher).filter(isPresent),
+    pools: (report.pools ?? []).map(normalizeReportPool).filter(isPresent),
   };
 }
 
@@ -634,16 +702,18 @@ function normalizeReportDetail(report: BackendReport | null | undefined): Report
  */
 function normalizeManagedReportSummary(report: BackendReport): ManagedReportSummary | null {
   const summary = normalizeReportSummary(report);
-  if (!summary || !isReportStatus(report.status)) return null;
-  return { ...summary, status: report.status };
+  const authorAddress = normalizeHex(report.authorAddress);
+  if (!summary || !authorAddress || !isReportStatus(report.status)) return null;
+  return { ...summary, authorAddress, status: report.status };
 }
 
 function normalizeManagedReportDetail(
   report: BackendReport | null | undefined,
 ): ManagedReportDetail | null {
   const detail = normalizeReportDetail(report);
-  if (!detail || detail.status === null) return null;
-  return { ...detail, status: detail.status };
+  const authorAddress = normalizeHex(report?.authorAddress);
+  if (!detail || !authorAddress || detail.status === null) return null;
+  return { ...detail, authorAddress, status: detail.status };
 }
 
 function normalizeReportVoucher(voucher: BackendReportVoucher): ReportVoucher | null {
@@ -657,6 +727,20 @@ function normalizeReportVoucher(voucher: BackendReportVoucher): ReportVoucher | 
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
     symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+  };
+}
+
+function normalizeReportPool(pool: BackendReportVoucher): ReportPool | null {
+  const address = normalizeHex(pool.address);
+  const id = normalizeID(pool.id);
+  const chainId = normalizeChainId(pool.chainId);
+  if (!address || !id || chainId === null) return null;
+  return {
+    id,
+    chainId,
+    address,
+    name: normalizeText(pool.name) ?? "Community Pool",
+    symbol: normalizeText(pool.symbol) ?? "POOL",
   };
 }
 

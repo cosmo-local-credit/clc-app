@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
+import { ProfilePrivacyNotice } from "#/components/profile-privacy-notice";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
@@ -154,6 +155,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
     // the DOM, but a React submit event would still bubble to this form.
     <>
       <ProfileUsernameSection profile={profile} />
+      <ProfilePrivacyNotice />
 
       <form
         aria-label={t`Edit profile`}

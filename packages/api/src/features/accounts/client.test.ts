@@ -102,6 +102,53 @@ describe("account token balances", () => {
     );
   });
 
+  it("fetches logical activity with canonical type filters and cancellation", async () => {
+    const fetcher = mockFetch({
+      ok: true,
+      result: {
+        activity: [
+          {
+            kind: "swapped",
+            id: 12,
+            txHash: `0x${"22".repeat(32)}`,
+            sent: { tokenSymbol: "ONE", amount: "1" },
+            received: { tokenSymbol: "TWO", amount: "2" },
+            poolAddresses: ["0x1111111111111111111111111111111111111111"],
+          },
+        ],
+      },
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const controller = new AbortController();
+
+    const result = await api.getAccountActivity(
+      {
+        address: LOWERCASE_ACCOUNT,
+        perPage: 20,
+        cursor: 9,
+        next: true,
+        q: "old & voucher",
+        types: ["sent", "swapped"],
+      },
+      controller.signal,
+    );
+
+    expect(result.activity[0]?.kind).toBe("swapped");
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `/api/v2/accounts/${ACCOUNT}/activity?perPage=20&cursor=9&next=true&q=old+%26+voucher&types=sent%2Cswapped`,
+      ),
+      expect.objectContaining({ signal: controller.signal }),
+    );
+  });
+
+  it("normalizes a null logical activity page to an empty list", async () => {
+    vi.stubGlobal("fetch", mockFetch({ ok: true, result: { activity: null } }));
+    await expect(api.getAccountActivity({ address: ACCOUNT, perPage: 20 })).resolves.toMatchObject({
+      activity: [],
+    });
+  });
+
   it("checksums paginated token-balance account paths", async () => {
     const fetcher = mockFetch({ ok: true, result: { tokens: [], first: 10, last: 5 } });
     vi.stubGlobal("fetch", fetcher);

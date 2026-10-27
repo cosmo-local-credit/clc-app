@@ -19,6 +19,7 @@ import { SectionLabel } from "#/components/admin/section-heading";
 import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
+import { PublicDisclosureNote } from "#/components/admin/public-disclosure-note";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -126,12 +127,16 @@ export function EditPoolProfileSheet({
     validators: { onChange: profileSchema, onSubmit: profileSchema },
     onSubmit: async ({ value }) => {
       try {
+        const clearContactFields = (["email", "website", "phone"] as const).filter(
+          (field) => Boolean(pool[field]?.trim()) && value[field].trim() === "",
+        );
         await update.mutateAsync({
           description: value.description,
           unitOfAccount: value.unitOfAccount,
           email: value.email,
           website: value.website,
           phone: value.phone,
+          ...(clearContactFields.length > 0 ? { clearContactFields } : {}),
           terms: value.terms,
           // Unlike every other field here, these preserve on omission — so they
           // are sent only when the operator changed one. "" is how this endpoint
@@ -226,6 +231,7 @@ export function EditPoolProfileSheet({
 
             <div className="flex flex-col gap-4 border-t border-border pt-4">
               <SectionLabel>Contact</SectionLabel>
+              <PublicDisclosureNote kind="contact" />
 
               <form.Field name="email">
                 {(field) => (
@@ -332,6 +338,7 @@ export function EditPoolProfileSheet({
 
             <div className="border-border flex flex-col gap-4 border-t pt-4">
               <SectionLabel>Location</SectionLabel>
+              <PublicDisclosureNote kind="location" />
               <form.Field name="locationName">
                 {(nameField) => (
                   <form.Field name="latitude">

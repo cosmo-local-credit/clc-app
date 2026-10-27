@@ -264,6 +264,7 @@ export function PoolSwapPage({
   };
   const hasSwappableFrom = swapTokens.some((token) => token.canSwapIn);
   const isValidAmount =
+    pool?.active !== false &&
     !!address &&
     delegationStatus !== "checking" &&
     Number(sourceAmount) > 0 &&
@@ -285,6 +286,14 @@ export function PoolSwapPage({
   }
   if (!pool) {
     return <SwapShell fallbackTo={detailFallback} message={t`Pool not found.`} />;
+  }
+  if (pool.active === false) {
+    return (
+      <SwapShell
+        fallbackTo={detailFallback}
+        message={t`This pool is retired. New swaps and deposits are not available.`}
+      />
+    );
   }
 
   return (

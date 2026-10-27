@@ -12,7 +12,15 @@ type MapsEnvironment = {
 /** Opens a location in the platform's default maps handler when one is available. */
 export function openDefaultMaps(target: MapsTarget, environment?: MapsEnvironment): boolean {
   const label = target.label?.trim() || null;
-  const hasCoordinates = typeof target.lat === "number" && typeof target.lng === "number";
+  const hasCoordinates =
+    typeof target.lat === "number" &&
+    Number.isFinite(target.lat) &&
+    target.lat >= -90 &&
+    target.lat <= 90 &&
+    typeof target.lng === "number" &&
+    Number.isFinite(target.lng) &&
+    target.lng >= -180 &&
+    target.lng <= 180;
   if (!label && !hasCoordinates) return false;
 
   const runtime = environment ?? {
@@ -33,7 +41,7 @@ export function openDefaultMaps(target: MapsTarget, environment?: MapsEnvironmen
     const query = coordinates && label ? `${coordinates}(${label})` : (label ?? coordinates ?? "");
     url = `geo:${coordinates ?? "0,0"}?q=${encodeURIComponent(query)}`;
   } else {
-    url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(label ?? coordinates ?? "")}`;
+    url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates ?? label ?? "")}`;
   }
 
   runtime.navigate(url);

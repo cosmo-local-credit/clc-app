@@ -227,6 +227,12 @@ beforeEach(() => {
   );
 });
 
+it("guides an empty Vouchers area to Wallet and the map", () => {
+  render(<MarketListPage />);
+  expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("href")).toBe("/?tab=wallet");
+  expect(screen.getByRole("link", { name: "View this location on the map" })).toBeTruthy();
+});
+
 describe("MarketListPage", () => {
   it("writes and clears Credit from both shell and feedback controls", () => {
     render(<MarketListPage />);
@@ -333,11 +339,11 @@ describe("MarketListPage", () => {
     expect(within(list).getAllByRole("link")).toHaveLength(25);
   });
 
-  it("keeps location controls out of the list view and links to the canonical map", () => {
+  it("keeps location controls out while retaining Map in the shared navigation", () => {
     render(<MarketListPage />);
 
     expect(screen.queryByRole("button", { name: "Use location" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("link", { name: "Map" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
     expect(within(sheet).queryByRole("button", { name: "Use location" })).toBeNull();
@@ -345,7 +351,7 @@ describe("MarketListPage", () => {
     expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
-  it("puts Filters in the search row, Credit and the list badges below, and Map at the end", () => {
+  it("puts Filters in the search row and Credit before the list badges", () => {
     render(<MarketListPage />);
 
     const filters = screen.getByRole("button", { name: "Filters" });
@@ -354,7 +360,8 @@ describe("MarketListPage", () => {
     const vouchers = screen.getByRole("link", { name: "Vouchers" });
     const offers = screen.getByRole("link", { name: "Offers" });
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
-    const map = screen.getByRole("link", { name: "Map" });
+    const wants = screen.getByRole("link", { name: "Wants" });
+    const all = screen.getByRole("link", { name: "All" });
 
     expect(screen.getByRole("button", { name: FIELD }).closest(".border")?.contains(filters)).toBe(
       true,
@@ -367,11 +374,12 @@ describe("MarketListPage", () => {
     expect(vouchers.getAttribute("href")).toBe("/");
     for (const [before, after] of [
       [filters, credit],
-      [credit, pools],
-      [pools, vouchers],
-      [vouchers, offers],
-      [offers, catalogs],
-      [catalogs, map],
+      [credit, all],
+      [all, offers],
+      [offers, wants],
+      [wants, vouchers],
+      [vouchers, pools],
+      [pools, catalogs],
     ] as const) {
       expect(before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
@@ -454,12 +462,12 @@ describe("MarketListPage", () => {
     );
   });
 
-  it("preserves the filter when linking to the map", () => {
+  it("preserves the filter when the active voucher badge links to the map", () => {
     mocks.search = { tab: "market", view: "list", q: "art" };
 
     render(<MarketListPage />);
 
-    const href = screen.getByRole("link", { name: "Map" }).getAttribute("href");
+    const href = screen.getByRole("link", { name: "Vouchers" }).getAttribute("href");
     expect(href).toContain("q=art");
     expect(href).not.toContain("view=map");
   });
@@ -534,14 +542,15 @@ describe("MarketListPage search", () => {
     expect(screen.getByRole("alert").textContent).toContain("Too many matches");
   });
 
-  it("reports a rate limit as its own state, with no retry offered", () => {
+  it("reports a rate limit and offers manual recovery", () => {
     mocks.search = { q: "art" };
     mocks.filtered = { ...mocks.filtered, error: new BackendApiError(429, "rate limit exceeded") };
 
     render(<MarketListPage />);
 
     expect(screen.getByRole("alert").textContent).toContain("Too many searches");
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.filtered.refetch).toHaveBeenCalledOnce();
   });
 
   it("reports an invalid filter generically, never by matching backend prose", () => {
@@ -754,7 +763,14 @@ describe("MarketListPage filter sheet", () => {
     expect(search({})).toMatchObject({ tags: "Art" });
     expect(
       JSON.parse(window.localStorage.getItem(MARKET_FILTER_PREFERENCES_KEY) ?? "null"),
-    ).toEqual({ tags: ["Art"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+    ).toEqual({
+      tags: ["Art"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+      pools: [],
+      poolMatch: "any",
+    });
   });
 
   it("removes a category only after Apply and clears an empty saved preference", () => {
@@ -884,14 +900,15 @@ describe("MarketListPage clear affordances", () => {
     expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
   });
 
-  it("offers no Retry for a 429, where retrying spends the exhausted burst", () => {
+  it("keeps rate-limit recovery separate from clearing filters", () => {
     mocks.search = { q: "art" };
     mocks.filtered = { ...mocks.filtered, error: new BackendApiError(429, "rate limited") };
 
     render(<MarketListPage />);
 
     expect(screen.getByRole("alert").textContent).toContain("Too many searches");
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.filtered.refetch).toHaveBeenCalledOnce();
     expect(screen.queryByRole("button", { name: "Clear filters" })).toBeNull();
   });
 });

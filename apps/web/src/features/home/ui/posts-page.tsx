@@ -1,4 +1,5 @@
 import { MarketFeedBar } from "#/components/market-bar";
+import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -19,7 +20,7 @@ export function PostsPage() {
   const filter = usePersistedCatalogFilter(
     CATALOG_FILTER_PREFERENCE_NAMES.posts,
     useStorageOwner(),
-    { voucherRelationships: true },
+    { voucherRelationships: true, poolRelationships: true },
   );
   const reportsQuery = useReportsInfinite(
     undefined,
@@ -67,27 +68,33 @@ export function PostsPage() {
   }, [feed.hasMore, feed.isLoadingMore, feed.loadMore]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h1 className="sr-only">
         <Trans>Posts</Trans>
       </h1>
-      <MarketFeedBar current="posts">
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
-          </div>
+      <MarketFeedBar
+        current="posts"
+        search={
+          <CatalogSearchField
+            filter={filter}
+            label={t`Search posts by title or description`}
+            embedded
+          />
+        }
+        filters={
           <ReportFilterSheet
             filter={filter}
             facets={feed.tagFacets}
             voucherFacets={feed.voucherFacets}
+            poolFacets={feed.poolFacets}
             open={filtersOpen}
             onOpenChange={(next) => {
               if (next) setFiltersEverOpened(true);
               setFiltersOpen(next);
             }}
           />
-        </div>
-      </MarketFeedBar>
+        }
+      />
 
       {/* Two compact actions rather than a floating button: the feed is
           approved-only, so an author needs somewhere to write and somewhere to
@@ -111,6 +118,7 @@ export function PostsPage() {
         onRetry={feed.retry}
         retrying={feed.retrying}
       />
+      <MarketViewportSearchNotice query={filter.result.ok ? filter.result.filter.term : ""} />
 
       {feed.status === "loading" ? (
         <ListSkeleton avatar="square" label={<Trans>Loading posts…</Trans>} />

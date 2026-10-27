@@ -33,10 +33,6 @@ vi.mock("#/components/theme-selector", () => ({
   ThemeSettingsRow: () => <div data-testid="theme-row" />,
 }));
 
-vi.mock("#/components/visibility-selector", () => ({
-  VisibilitySettingsRow: () => <div data-testid="visibility-row" />,
-}));
-
 vi.mock("./notification-settings-section", () => ({
   NotificationSettingsSection: ({ walletAddress }: { walletAddress?: string }) => (
     <div data-testid="notification-row">{walletAddress}</div>
@@ -92,10 +88,10 @@ describe("SettingsPage", () => {
     expect(within(group("Account")).getByTestId("account-row")).toBeTruthy();
     const preferences = within(group("Preferences"));
     expect(
-      ["theme-row", "language-row", "visibility-row", "notification-row"].map(
+      ["language-row", "theme-row", "notification-row"].map(
         (id) => preferences.getByTestId(id).dataset.testid,
       ),
-    ).toEqual(["theme-row", "language-row", "visibility-row", "notification-row"]);
+    ).toEqual(["language-row", "theme-row", "notification-row"]);
     expect(within(group("Sign-in")).getByTestId("passkey-row")).toBeTruthy();
     expect(within(group("Sign-in")).getByRole("button", { name: /wallet session/i })).toBeTruthy();
   });

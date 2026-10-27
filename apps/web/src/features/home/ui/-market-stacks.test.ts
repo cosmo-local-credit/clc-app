@@ -135,6 +135,11 @@ describe("spiderfyOffsets", () => {
     }
   });
 
+  it("uses a label-friendly page of eight pins", () => {
+    expect(SPIDER_PAGE_SIZE).toBe(8);
+    expect(spiderfyOffsets(20)).toHaveLength(8);
+  });
+
   it("keeps ring neighbours far enough apart not to overlap", () => {
     for (const count of [2, 3, 5, 8]) {
       const offsets = spiderfyOffsets(count);
@@ -149,13 +154,12 @@ describe("spiderfyOffsets", () => {
     }
   });
 
-  it("switches to a spiral for larger stacks so the ring does not become huge", () => {
-    const offsets = spiderfyOffsets(20);
+  it("expands the ring far enough to leave room for outward labels", () => {
+    const offsets = spiderfyOffsets(SPIDER_PAGE_SIZE);
     const radii = offsets.map((offset) => Math.hypot(offset.dx, offset.dy));
 
-    expect(offsets).toHaveLength(20);
-    // A spiral grows outward instead of placing everything on one circle.
-    expect(Math.max(...radii)).toBeGreaterThan(Math.min(...radii) + 20);
+    expect(Math.min(...radii)).toBeGreaterThanOrEqual(70);
+    expect(Math.max(...radii)).toBeLessThan(90);
   });
 
   it("never places two members on the same spot", () => {
@@ -186,13 +190,13 @@ describe("spiderfyOffsets", () => {
     expect(Math.max(...radii)).toBeLessThan(170);
   });
 
-  it("fits the 63-stack inside the same budget", () => {
+  it("limits a 63-stack to one readable page", () => {
     const radii = spiderfyOffsets(63).map((o) => Math.hypot(o.dx, o.dy));
-    expect(radii).toHaveLength(63);
+    expect(radii).toHaveLength(SPIDER_PAGE_SIZE);
     expect(Math.max(...radii)).toBeLessThan(170);
   });
 
-  it("never lets neighbouring spiral legs overlap a 24 px icon", () => {
+  it("never lets neighbouring legs overlap a 24 px icon", () => {
     const offsets = spiderfyOffsets(SPIDER_PAGE_SIZE);
     let closest = Number.POSITIVE_INFINITY;
     for (let i = 0; i < offsets.length; i++) {
@@ -224,9 +228,10 @@ describe("spider paging", () => {
     expect(spiderPageCount(200)).toBe(Math.ceil(200 / SPIDER_PAGE_SIZE));
   });
 
-  it("fans the 63-voucher Nairobi CBD stack in a single page", () => {
-    expect(spiderPageCount(63)).toBe(1);
-    expect(spiderPageMembers(members, 0)).toHaveLength(63);
+  it("pages the 63-voucher Nairobi CBD stack without dropping labels", () => {
+    expect(spiderPageCount(63)).toBe(8);
+    expect(spiderPageMembers(members, 0)).toHaveLength(SPIDER_PAGE_SIZE);
+    expect(spiderPageMembers(members, 7)).toHaveLength(7);
   });
 
   it("has no pages for an empty stack", () => {
@@ -234,9 +239,9 @@ describe("spider paging", () => {
   });
 
   it("returns a full first page and the remainder on the second", () => {
-    const huge = Array.from({ length: SPIDER_PAGE_SIZE + 12 }, (_, i) => at(String(i), 2, 2));
+    const huge = Array.from({ length: SPIDER_PAGE_SIZE + 4 }, (_, i) => at(String(i), 2, 2));
     expect(spiderPageMembers(huge, 0)).toHaveLength(SPIDER_PAGE_SIZE);
-    expect(spiderPageMembers(huge, 1)).toHaveLength(12);
+    expect(spiderPageMembers(huge, 1)).toHaveLength(4);
   });
 
   it("covers every member exactly once across all pages", () => {

@@ -1,10 +1,3 @@
-import {
-  isWithinNearbyCatalog,
-  useNearbyCatalog,
-  useNearbyCatalogFilter,
-  nearbyQueryKey,
-  nearbyQueryPolicy,
-} from "#/components/nearby-catalog";
 import { BackendApiError, isRetryableBackendError } from "@clc/api/client/errors";
 import type { UserPool } from "@clc/api/features/pools/client";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
@@ -63,16 +56,11 @@ type MulticallEntry = { status: "success"; result: unknown } | { status: "failur
 export function usePoolOutputAvailability(
   voucher: VoucherRef | undefined,
 ): PoolOutputAvailabilityResult {
-  const nearby = useNearbyCatalog();
-  const visibilityFilter = useNearbyCatalogFilter();
   const client = useClient();
   const candidates = useQuery({
-    queryKey: nearbyQueryKey(
-      voucher
-        ? poolOutputAvailabilityKeys.candidates(voucher)
-        : ["clc", "pools", "output-voucher-candidates", "none"],
-      nearby,
-    ),
+    queryKey: voucher
+      ? poolOutputAvailabilityKeys.candidates(voucher)
+      : ["clc", "pools", "output-voucher-candidates", "none"],
     queryFn: async ({ signal }) => {
       if (!voucher) throw new Error("The output-voucher candidate query is missing its voucher.");
       try {
@@ -85,7 +73,7 @@ export function usePoolOutputAvailability(
             voucherMatch: "any",
           },
           signal,
-          nearby: nearby?.nearby === true,
+          nearby: false,
         }).then((catalog) => catalog.pools);
       } catch (error) {
         // A syntactically valid deep-link address that is not in the catalog is
@@ -94,24 +82,16 @@ export function usePoolOutputAvailability(
         throw error;
       }
     },
-    select: (pools) =>
-      pools.filter((pool) =>
-        isWithinNearbyCatalog(visibilityFilter, { lat: pool.geoLat, lng: pool.geoLng }),
-      ),
     enabled: voucher !== undefined,
     staleTime: CANDIDATE_STALE_TIME_MS,
-    ...nearbyQueryPolicy(nearby),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 
   const candidatePools = candidates.data ?? [];
   const availability = useQuery({
-    queryKey: nearbyQueryKey(
-      voucher
-        ? poolOutputAvailabilityKeys.availability(voucher, candidatePools)
-        : ["pool-swap-tokens", "output-voucher-availability", "none"],
-      nearby,
-    ),
+    queryKey: voucher
+      ? poolOutputAvailabilityKeys.availability(voucher, candidatePools)
+      : ["pool-swap-tokens", "output-voucher-availability", "none"],
     queryFn: () => {
       if (!client || !voucher) {
         throw new Error("The output-voucher read is missing a chain client or voucher.");

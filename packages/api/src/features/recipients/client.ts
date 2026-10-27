@@ -9,6 +9,7 @@ export type RecipientIdentity = {
 };
 
 export function recipientLabel(recipient: RecipientIdentity): string {
+  if (recipient.kind === "user") return recipient.alias;
   return recipient.name === recipient.alias
     ? recipient.name
     : `${recipient.name} (${recipient.alias})`;
@@ -27,7 +28,7 @@ export function createRecipientsClient(http: HttpClient) {
       if (!isRecord(result) || !Array.isArray(result.recipients)) {
         throw new Error("Invalid recipient search response");
       }
-      return result.recipients.filter(isRecipientIdentity);
+      return result.recipients.filter(isRecipientIdentity).map(minimizeRecipientIdentity);
     },
     async resolve(name: string, signal?: AbortSignal) {
       const result = await http.request<unknown>(
@@ -37,7 +38,7 @@ export function createRecipientsClient(http: HttpClient) {
       if (!isRecord(result) || !isRecipientIdentity(result.recipient)) {
         throw new Error("Invalid recipient response");
       }
-      return result.recipient;
+      return minimizeRecipientIdentity(result.recipient);
     },
     async reverse(address: string, signal?: AbortSignal) {
       const result = await http.request<unknown>(
@@ -47,7 +48,7 @@ export function createRecipientsClient(http: HttpClient) {
       if (!isRecord(result) || !isRecipientIdentity(result.recipient)) {
         throw new Error("Invalid recipient response");
       }
-      return result.recipient;
+      return minimizeRecipientIdentity(result.recipient);
     },
     async suggest(hint: string, signal?: AbortSignal) {
       const result = await http.request<unknown>(
@@ -80,6 +81,10 @@ function isRecipientIdentity(value: unknown): value is RecipientIdentity {
     Number.isSafeInteger(value.chainId) &&
     value.chainId >= 0
   );
+}
+
+function minimizeRecipientIdentity(identity: RecipientIdentity): RecipientIdentity {
+  return identity.kind === "user" ? { ...identity, name: identity.alias } : identity;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

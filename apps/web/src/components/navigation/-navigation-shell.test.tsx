@@ -134,26 +134,37 @@ beforeEach(() => {
 });
 
 describe("NavigationShell", () => {
-  it("owns the unfiltered map as the Market root and every list as beneath it", async () => {
+  it("keeps Market selected while its button toggles between the map and All", async () => {
     const map = await renderShell("/");
     const mapLink = await screen.findByRole("link", { name: "Market" });
-    expect(mapLink.getAttribute("href")).toBe("/");
-    expect(mapLink.getAttribute("aria-current")).toBe("page");
+    expect(mapLink.getAttribute("href")).toBe("/market?scope=all");
+    expect(mapLink.getAttribute("aria-current")).toBe("true");
 
     map.unmount();
     await renderShell("/market?scope=pools");
-    expect((await screen.findByRole("link", { name: "Market" })).getAttribute("aria-current")).toBe(
-      "true",
-    );
+    const listLink = await screen.findByRole("link", { name: "Map" });
+    expect(listLink.getAttribute("href")).toBe("/?tab=market&view=map");
+    expect(listLink.getAttribute("aria-current")).toBe("true");
   });
 
-  it("returns a list to the map", async () => {
+  it("returns a list to the map while preserving shared market filters", async () => {
     const { router } = await renderShell("/market?scope=pools&q=food");
 
-    const market = await screen.findByRole("link", { name: "Market" });
+    const market = await screen.findByRole("link", { name: "Map" });
     fireEvent.click(market);
 
-    await waitFor(() => expect(router.state.location.href).toBe("/"));
+    await waitFor(() => expect(router.state.location.href).toBe("/?q=food&tab=market&view=map"));
+  });
+
+  it("treats filtered and voucher-sheet home states as the map", async () => {
+    const address = `0x${"2".repeat(40)}`;
+    const { router } = await renderShell(`/?tab=market&view=map&q=food&voucher=${address}`);
+
+    const market = await screen.findByRole("link", { name: "Market" });
+    expect(market.getAttribute("href")).toBe("/market?q=food&scope=all");
+    fireEvent.click(market);
+
+    await waitFor(() => expect(router.state.location.href).toBe("/market?q=food&scope=all"));
   });
 
   it("keeps Posts selected on an authenticated report", async () => {
@@ -167,7 +178,7 @@ describe("NavigationShell", () => {
   it.each([
     ["/pools/0x1111111111111111111111111111111111111111", "Wallet"],
     ["/wallet/vouchers", "Wallet"],
-    ["/vouchers/0x2222222222222222222222222222222222222222?from=market", "Market"],
+    ["/vouchers/0x2222222222222222222222222222222222222222?from=market", "Map"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=posts&reportId=report-1", "Posts"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=wallet", "Wallet"],
     [
@@ -180,6 +191,14 @@ describe("NavigationShell", () => {
     expect((await screen.findByRole("link", { name: label })).getAttribute("aria-current")).toBe(
       "true",
     );
+    expect(screen.getByRole("link", { name: "Map" })).toBeTruthy();
+    expect(screen.queryByTestId("clc-logo")).toBeNull();
+  });
+
+  it("keeps the Market logo when a Want sheet is open", async () => {
+    await renderShell("/?tab=market&view=map&want=1");
+    expect(await screen.findByRole("link", { name: "Market" })).toBeTruthy();
+    expect(screen.getByTestId("clc-logo")).toBeTruthy();
   });
 
   it("does not parse a voucher posts tab as the Home Posts tab", async () => {
@@ -188,7 +207,7 @@ describe("NavigationShell", () => {
     expect((await screen.findByRole("link", { name: "Wallet" })).getAttribute("aria-current")).toBe(
       "true",
     );
-    expect(screen.getByRole("link", { name: "Market" }).getAttribute("aria-current")).toBeNull();
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("aria-current")).toBeNull();
   });
 
   it.each(["/", "/vouchers/0x2222222222222222222222222222222222222222"])(
@@ -208,7 +227,7 @@ describe("NavigationShell", () => {
       for (const label of ["Wallet", "Activity", "Settings"]) {
         expect(screen.getByRole("link", { name: label }).querySelectorAll("svg")).toHaveLength(2);
       }
-      for (const label of ["Posts", "Market"]) {
+      for (const label of ["Posts", initialEntry === "/" ? "Market" : "Map"]) {
         expect(screen.getByRole("link", { name: label }).querySelectorAll("svg")).toHaveLength(1);
       }
     },

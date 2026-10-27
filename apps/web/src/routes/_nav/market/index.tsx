@@ -7,6 +7,7 @@ import { MarketListPage } from "#/features/home/ui/market-list-page";
 import { MarketplacePage } from "#/features/home/ui/marketplace-page";
 import { OffersPage } from "#/features/home/ui/offers-page";
 import { PoolsPage } from "#/features/pools/ui";
+import { WantsPage } from "#/features/wants/ui/wants-page";
 import {
   canonicalMarketplaceSearch,
   mapSearchFrom,
@@ -71,8 +72,15 @@ function MarketListRoute() {
   if (scope === "catalogs") {
     return <CatalogsPage creditableSearch={search.creditable} />;
   }
+  if (scope === "wants") {
+    return (
+      <NearbyCatalog>
+        <WantsPage creditableSearch={search.creditable} />
+      </NearbyCatalog>
+    );
+  }
   return (
-    <NearbyCatalog allowMissingLocation>
+    <NearbyCatalog>
       {scope === "offers" ? (
         <OffersPage creditableSearch={search.creditable} locationOwner={owner} />
       ) : scope === "vouchers" ? (
@@ -80,7 +88,7 @@ function MarketListRoute() {
       ) : scope === "all" ? (
         <MarketplacePage creditableSearch={search.creditable} locationOwner={owner} />
       ) : (
-        <div className="min-h-[100svh] bg-background px-4 pb-market-list text-foreground">
+        <div className="min-h-[100svh] bg-background px-4 pb-bottom-nav text-foreground">
           <PoolsPage
             creditableSearch={search.creditable}
             outputVoucherSearch={search.out_voucher}

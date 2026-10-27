@@ -13,6 +13,7 @@ import {
   RiHandCoinLine,
   RiPencilLine,
   RiSafe2Line,
+  RiShieldKeyholeLine,
   RiUserSharedLine,
   RiWalletLine,
 } from "react-icons/ri";
@@ -21,6 +22,7 @@ import { isAddress, zeroAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { ActionRow } from "#/components/ui/action-row";
+import { RetirementControl } from "#/components/retirement/retirement-control";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -34,12 +36,16 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
+import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import {
   type PoolFeeSettings,
   usePoolFeeSettings,
 } from "#/features/pools/hooks/use-pool-fee-settings";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
+import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
+import { poolWithdrawalTokens } from "#/features/pools/logic/pool-withdrawal-tokens";
 
 import { POOL_OWNERSHIP_TRANSFER_ENABLED } from "#/lib/ownership-transfer-config";
 
@@ -67,18 +73,30 @@ export function PoolControlsPanel({
   pool,
   vouchers,
   canManageOnChain,
+  viewerAddress,
+  privateInfo,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   canManageOnChain: boolean;
+  viewerAddress?: string;
+  privateInfo?: {
+    isPending: boolean;
+    isError: boolean;
+    isFetching: boolean;
+    retry: () => void;
+  };
 }) {
   const { t } = useLingui();
   const [sheet, setSheet] = useState<ControlSheet | null>(null);
+  const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
+  const indexed = useAllAccountTokens(canManageOnChain ? pool.address : undefined);
+  const withdrawalVouchers = poolWithdrawalTokens(vouchers, indexed.tokens, pool.chainId);
   // Balances are read for the withdraw sheets alone, so a superadmin who can
   // only edit the record never pays for the calls.
   const treasury = usePoolTreasury(
     pool,
-    vouchers.map((voucher) => voucher.tokenAddress),
+    withdrawalVouchers.map((voucher) => voucher.tokenAddress),
     canManageOnChain,
   );
   const feeSettings = usePoolFeeSettings(pool, canManageOnChain);
@@ -94,6 +112,13 @@ export function PoolControlsPanel({
         />
         {canManageOnChain ? (
           <>
+            {owner.isSafeOwned && owner.owner ? (
+              <ActionRow
+                icon={<RiShieldKeyholeLine className="size-4" aria-hidden="true" />}
+                label={t`Safe transactions`}
+                onClick={() => useSafeSheet.getState().show(owner.owner!)}
+              />
+            ) : null}
             <ActionRow
               icon={<RiSafe2Line className="size-4" aria-hidden="true" />}
               label={t`Withdraw liquidity`}
@@ -125,6 +150,15 @@ export function PoolControlsPanel({
                 onClick={() => setSheet("ownership")}
               />
             ) : null}
+            {pool.ownerAddress ? (
+              <RetirementControl
+                type="pool"
+                address={pool.address}
+                name={pool.name}
+                viewer={viewerAddress ?? pool.ownerAddress}
+                active={pool.active}
+              />
+            ) : null}
           </>
         ) : null}
       </section>
@@ -132,6 +166,7 @@ export function PoolControlsPanel({
       <PoolProfileEditorSheet
         open={sheet === "details"}
         pool={pool}
+        privateInfo={privateInfo}
         onClose={() => setSheet(null)}
       />
 
@@ -140,9 +175,14 @@ export function PoolControlsPanel({
         title={t`Withdraw liquidity`}
         onClose={() => setSheet(null)}
       >
+        <WithdrawalInventoryNotice
+          pending={indexed.isPending}
+          error={indexed.isError}
+          retry={() => void indexed.refetch()}
+        />
         <WithdrawLiquidityForm
           pool={pool}
-          vouchers={vouchers}
+          vouchers={withdrawalVouchers}
           treasury={treasury.data}
           onDone={() => setSheet(null)}
         />
@@ -153,9 +193,14 @@ export function PoolControlsPanel({
         title={t`Withdraw fees`}
         onClose={() => setSheet(null)}
       >
+        <WithdrawalInventoryNotice
+          pending={indexed.isPending}
+          error={indexed.isError}
+          retry={() => void indexed.refetch()}
+        />
         <CollectFeesForm
           pool={pool}
-          vouchers={vouchers}
+          vouchers={withdrawalVouchers}
           treasury={treasury.data}
           feeAddress={fee?.feeAddress ?? null}
           onDone={() => setSheet(null)}
@@ -179,6 +224,31 @@ export function PoolControlsPanel({
       </ControlSheetShell>
     </>
   );
+}
+
+function WithdrawalInventoryNotice({
+  pending,
+  error,
+  retry,
+}: {
+  pending: boolean;
+  error: boolean;
+  retry: () => void;
+}) {
+  return pending ? (
+    <p role="status" className="px-4 pb-3 text-sm text-muted-foreground">
+      <Trans>Loading vouchers…</Trans>
+    </p>
+  ) : error ? (
+    <div role="alert" className="space-y-2 px-4 pb-3">
+      <p className="text-sm">
+        <Trans>Couldn't load vouchers.</Trans>
+      </p>
+      <Button type="button" variant="outline" tap onClick={retry}>
+        <Trans>Try again</Trans>
+      </Button>
+    </div>
+  ) : null;
 }
 
 function ControlSheetShell({
@@ -234,7 +304,8 @@ function WithdrawLiquidityForm({
 }) {
   const { t } = useLingui();
   const { address } = useConnection();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
+  const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
 
@@ -269,14 +340,15 @@ function WithdrawLiquidityForm({
         buildWithdrawPoolLiquidityCalls({
           poolAddress: pool.address,
           tokenAddress: selected.tokenAddress,
-          recipientAddress: address,
+          // A Safe-owned pool pays its owner, the Safe; otherwise the connected owner.
+          recipientAddress: owner.info?.kind === "safe" ? owner.info.owner : address,
           amountRaw,
         }),
       );
       toast.success(t`${amount} ${selected.symbol} withdrawn.`);
       onDone();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onDone();
     }
   };
 
@@ -368,7 +440,7 @@ function CollectFeesForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
 
   const selected = vouchers.find((voucher) => voucher.tokenAddress.toLowerCase() === tokenAddress);
@@ -390,7 +462,7 @@ function CollectFeesForm({
       toast.success(t`${selected.symbol} fees sent to the fee recipient.`);
       onDone();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onDone();
     }
   };
 
@@ -456,7 +528,7 @@ function FeeSettingsForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   const { address } = useConnection();
   const [feePercent, setFeePercent] = useState(settings?.feePercent ?? "");
   // Blank rather than the connected wallet when the pool has none: seeding the
@@ -495,7 +567,7 @@ function FeeSettingsForm({
       toast.success(t`Pool fee updated.`);
       onDone();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onDone();
     }
   };
 

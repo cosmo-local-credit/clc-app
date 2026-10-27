@@ -268,20 +268,21 @@ describe("EditVoucherSheet map marker", () => {
     expect("markerColor" in (profile as object)).toBe(false);
   });
 
-  it("sends a chosen marker, and null to put it back on its default", async () => {
+  it("sends a chosen marker glyph without changing the legacy colour", async () => {
     renderSheet({ markerIcon: "food", markerColor: null });
 
     await waitFor(() => expect(screen.getByLabelText("Description")).toBeTruthy());
     expect(screen.getByRole("button", { name: /Food/ }).getAttribute("aria-pressed")).toBe("true");
-    fireEvent.click(screen.getByRole("button", { name: "Brown" }));
+    fireEvent.click(screen.getByRole("button", { name: /Tools/ }));
+    expect(screen.queryByRole("button", { name: "Brown" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalledTimes(1));
-    expect(updateVoucherProfile.mock.calls[0]![1]).toMatchObject({ markerColor: "brown" });
-    expect("markerIcon" in (updateVoucherProfile.mock.calls[0]![1] as object)).toBe(false);
+    expect(updateVoucherProfile.mock.calls[0]![1]).toMatchObject({ markerIcon: "tools" });
+    expect("markerColor" in (updateVoucherProfile.mock.calls[0]![1] as object)).toBe(false);
   });
 
-  it("resets both halves to the default", async () => {
+  it("resets the glyph to the default while preserving the legacy colour", async () => {
     renderSheet({ markerIcon: "food", markerColor: "pink" });
 
     await waitFor(() => expect(screen.getByLabelText("Description")).toBeTruthy());
@@ -289,9 +290,7 @@ describe("EditVoucherSheet map marker", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalledTimes(1));
-    expect(updateVoucherProfile.mock.calls[0]![1]).toMatchObject({
-      markerIcon: null,
-      markerColor: null,
-    });
+    expect(updateVoucherProfile.mock.calls[0]![1]).toMatchObject({ markerIcon: null });
+    expect("markerColor" in (updateVoucherProfile.mock.calls[0]![1] as object)).toBe(false);
   });
 });

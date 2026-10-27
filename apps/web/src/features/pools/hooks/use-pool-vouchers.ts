@@ -17,8 +17,11 @@ const POOL_VOUCHERS_MAX_PAGE_SIZE = 100;
 export function usePoolVouchersInfinite(
   poolAddress: string | undefined,
   perPage = DEFAULT_POOL_VOUCHERS_PAGE_SIZE,
+  owner?: string,
 ) {
-  return useInfiniteQuery(poolVouchersInfiniteQueryOptions(poolsClient, poolAddress, perPage));
+  return useInfiniteQuery(
+    poolVouchersInfiniteQueryOptions(poolsClient, poolAddress, perPage, owner),
+  );
 }
 
 export type PoolVouchersOptions = {
@@ -30,6 +33,8 @@ export type PoolVouchersOptions = {
    * take my voucher", and there is nothing on screen to tell them otherwise.
    */
   all?: boolean;
+  /** Protected retained composition for the current owner. */
+  owner?: string;
 };
 
 /**
@@ -38,11 +43,12 @@ export type PoolVouchersOptions = {
  */
 export function usePoolVouchersWithStatus(
   pool: UserPool | null | undefined,
-  { all = false }: PoolVouchersOptions = {},
+  { all = false, owner }: PoolVouchersOptions = {},
 ) {
   const query = usePoolVouchersInfinite(
     pool?.address,
     all ? POOL_VOUCHERS_MAX_PAGE_SIZE : DEFAULT_POOL_VOUCHERS_PAGE_SIZE,
+    owner,
   );
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = query;
 

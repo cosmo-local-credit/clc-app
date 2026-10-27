@@ -1,4 +1,3 @@
-import { useNearbyCatalogFilter } from "#/components/nearby-catalog";
 import {
   CATALOG_MAX_TAGS,
   CATALOG_MAX_VOUCHERS,
@@ -43,18 +42,21 @@ import {
   type VoucherSearchControls,
 } from "#/features/home/hooks/use-voucher-search";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { cn } from "#/lib/utils";
 
 export function CatalogSearchField({
   filter,
   label,
+  embedded = false,
 }: {
   filter: CatalogFilterControls;
   label: string;
+  embedded?: boolean;
 }) {
   const { t } = useLingui();
 
   return (
-    <div className="relative">
+    <div className={cn("relative", embedded && "h-full min-w-0 flex-1")}>
       <RiSearchLine
         className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
@@ -65,16 +67,24 @@ export function CatalogSearchField({
         onChange={(event) => filter.setTerm(event.target.value)}
         aria-label={label}
         placeholder={label}
-        className="appearance-none rounded-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+        className={cn(
+          "appearance-none rounded-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden",
+          embedded && "h-full border-0 pe-11 focus-visible:border-transparent",
+        )}
       />
       {filter.term !== "" ? (
         <Button
           variant="ghost"
-          size="icon"
-          tap
+          size={embedded ? "icon-lg" : "icon"}
+          tap={!embedded}
           onClick={filter.clearTerm}
           aria-label={t`Clear search`}
-          className="absolute top-1/2 end-0 -translate-y-1/2 border-0 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
+          className={cn(
+            "absolute top-1/2 end-0 -translate-y-1/2 border-0 text-muted-foreground focus-visible:border-transparent",
+            embedded
+              ? "bg-card hover:bg-muted hover:text-foreground"
+              : "bg-transparent hover:bg-transparent hover:text-foreground focus-visible:bg-transparent",
+          )}
         >
           <RiCloseLine className="size-4" aria-hidden="true" />
         </Button>
@@ -142,6 +152,9 @@ export function CatalogFilterSheet({
   onApply,
   children,
   trigger = "default",
+  additionalAppliedCount = 0,
+  additionalDraftCount = 0,
+  onResetAdditional,
 }: {
   filter: CatalogFilterControls;
   facets: readonly CatalogFacet[];
@@ -163,6 +176,10 @@ export function CatalogFilterSheet({
   children?: ReactNode;
   /** `bar` is the market bar's square, joined to the end of its search field. */
   trigger?: "default" | "bar";
+  additionalAppliedCount?: number;
+  /** Draft selections rendered by `children`, used by the shared Reset control. */
+  additionalDraftCount?: number;
+  onResetAdditional?: () => void;
 }) {
   const { t } = useLingui();
   const categoryHeadingId = useId();
@@ -181,7 +198,7 @@ export function CatalogFilterSheet({
   );
 
   const appliedCount = filter.result.ok
-    ? filter.tags.length + filter.vouchers.length
+    ? filter.tags.length + filter.vouchers.length + additionalAppliedCount
     : "requested" in filter.result
       ? filter.result.requested
       : 0;
@@ -189,9 +206,7 @@ export function CatalogFilterSheet({
   const atVoucherLimit = draftVouchers.length >= CATALOG_MAX_VOUCHERS;
   // Disjunctive counts describe what a chip adds under Any. They ignore the selected tags,
   // so showing them under All would imply a conjunctive count the backend did not compute.
-  // Server facets are a search vocabulary. They do not count the local radius.
-  const visibilityFilter = useNearbyCatalogFilter();
-  const showCounts = draftTagMatch === "any" && visibilityFilter === undefined;
+  const showCounts = draftTagMatch === "any";
   // Counts stay scoped to the search, so a term whose matches carry no tags zeroes every chip.
   const searchTerm = filter.filter?.term ?? "";
   const hasSelectableFacet = facets.some(
@@ -573,12 +588,15 @@ export function CatalogFilterSheet({
                 variant="outline"
                 tap
                 className="w-full border-primary! text-primary hover:bg-primary/10 hover:text-primary"
-                disabled={draftTags.length === 0 && draftVouchers.length === 0}
+                disabled={
+                  draftTags.length === 0 && draftVouchers.length === 0 && additionalDraftCount === 0
+                }
                 onClick={() => {
                   setDraftTags([]);
                   setDraftTagMatch("any");
                   setDraftVouchers([]);
                   setDraftVoucherMatch("any");
+                  onResetAdditional?.();
                 }}
               >
                 <Trans>Reset</Trans>

@@ -6,6 +6,10 @@ const mocks = vi.hoisted(() => ({
   block: vi.fn(),
   bytecode: vi.fn(),
   multicall: vi.fn(),
+  client: vi.fn(),
+  relay: vi.fn(),
+  readConfirmedOwner: vi.fn(),
+  ownershipTransfer: vi.fn(),
 }));
 vi.mock("viem/actions", () => ({
   readContract: mocks.read,
@@ -13,7 +17,33 @@ vi.mock("viem/actions", () => ({
   getBytecode: mocks.bytecode,
   multicall: mocks.multicall,
 }));
-import { preparePoolOwnershipTransfer } from "./use-pool-ownership-transfer";
+vi.mock("wagmi", () => ({ useClient: mocks.client }));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
+  useAssetOwnerInfo: () => ({
+    owner: undefined,
+    info: undefined,
+    pending: false,
+    isSafeOwned: false,
+    isSafeSigner: false,
+    unsupportedOwner: false,
+    canManage: false,
+  }),
+}));
+vi.mock("#/features/safe/hooks/use-safe-write", () => ({
+  useSafeWrite: () => ({ write: vi.fn() }),
+}));
+
+vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
+  readConfirmedAssetOwner: mocks.readConfirmedOwner,
+}));
+vi.mock("#/features/ownership/hooks/use-ownership-transfer", () => ({
+  useOwnershipTransfer: mocks.ownershipTransfer,
+}));
+vi.mock("./use-pool-admin", () => ({ usePoolAdminRelay: () => ({ mutateAsync: mocks.relay }) }));
+import {
+  preparePoolOwnershipTransfer,
+  usePoolOwnershipTransfer,
+} from "./use-pool-ownership-transfer";
 const A = (n: number) => `0x${n.toString(16).padStart(40, "0")}` as `0x${string}`;
 const pool = {
   chainId: 100,
@@ -33,6 +63,10 @@ beforeEach(() => {
   mocks.block.mockResolvedValue(42n);
   mocks.bytecode.mockResolvedValue("0x1234");
   mocks.multicall.mockResolvedValue([{ status: "failure" }]);
+  mocks.client.mockReturnValue(client);
+  mocks.relay.mockResolvedValue({ txHash: A(10) });
+  mocks.readConfirmedOwner.mockResolvedValue(A(8));
+  mocks.ownershipTransfer.mockReturnValue({ mutateAsync: vi.fn() });
   mocks.read.mockImplementation(async (_client, call) => {
     if (call.functionName === "owner") return A(7);
     if (call.functionName === "priceIndex") return 1_000_000n;
@@ -64,6 +98,32 @@ describe("pool ownership preflight", () => {
       preparePoolOwnershipTransfer(client, { ...pool, quoterType: "decimal" }, input),
     ).rejects.toThrow(/decimal quoter has an owner/);
   });
+  it("rejects a decimal quoter without deployed bytecode", async () => {
+    mocks.bytecode.mockResolvedValue("0x");
+
+    await expect(
+      preparePoolOwnershipTransfer(client, { ...pool, quoterType: "decimal" }, input),
+    ).rejects.toThrow(/no contract code/);
+  });
+
+  it("verifies oracle pricing and reports pricing implementation read failures", async () => {
+    await expect(
+      preparePoolOwnershipTransfer(client, { ...pool, quoterType: "oracle" }, input),
+    ).resolves.toHaveLength(5);
+    expect(mocks.read).toHaveBeenCalledWith(
+      client,
+      expect.objectContaining({ functionName: "baseCurrency", blockNumber: 42n }),
+    );
+
+    const normal = mocks.read.getMockImplementation()!;
+    mocks.read.mockImplementation((configuredClient, call) => {
+      if (call.functionName === "priceIndex") throw new Error("RPC unavailable");
+      return normal(configuredClient, call);
+    });
+    await expect(preparePoolOwnershipTransfer(client, pool, input)).rejects.toThrow(
+      /Could not verify the recorded pricing implementation/,
+    );
+  });
   it("rejects catalog wiring drift and divided ownership", async () => {
     const normal = mocks.read.getMockImplementation()!;
     mocks.read.mockImplementation((client, call) =>
@@ -81,6 +141,9 @@ describe("pool ownership preflight", () => {
   });
   it("blocks missing dependencies, unknown pricing, chain and catalog owner mismatches before signing", async () => {
     await expect(
+      preparePoolOwnershipTransfer(client, pool, { ...input, assetAddress: A(99) }),
+    ).rejects.toThrow(/does not match this pool/);
+    await expect(
       preparePoolOwnershipTransfer(client, { ...pool, limiterAddress: null }, input),
     ).rejects.toThrow(/no limiter/);
     await expect(
@@ -92,5 +155,32 @@ describe("pool ownership preflight", () => {
     await expect(
       preparePoolOwnershipTransfer(client, { ...pool, ownerAddress: A(99) }, input),
     ).rejects.toThrow(/catalog owner/);
+  });
+
+  it("submits the relay and verifies every transferred contract at the confirmed block", async () => {
+    usePoolOwnershipTransfer(pool);
+    const [, submit] = mocks.ownershipTransfer.mock.calls[0];
+
+    await expect(submit(input)).resolves.toEqual({ txHash: A(10) });
+
+    expect(mocks.relay).toHaveBeenCalledWith({ ...input, deferCatalogRefresh: true });
+    expect(mocks.readConfirmedOwner).toHaveBeenCalledTimes(5);
+    expect(mocks.readConfirmedOwner).toHaveBeenCalledWith(client, pool.address, { txHash: A(10) });
+  });
+
+  it("allows a settled relay response even if a confirmation read fails", async () => {
+    mocks.readConfirmedOwner.mockRejectedValue(new Error("RPC unavailable"));
+    usePoolOwnershipTransfer(pool);
+    const [, submit] = mocks.ownershipTransfer.mock.calls[0];
+
+    await expect(submit(input)).resolves.toEqual({ txHash: A(10) });
+  });
+
+  it("rejects preflight when the configured chain client is unavailable", async () => {
+    mocks.client.mockReturnValue(undefined);
+    usePoolOwnershipTransfer(pool);
+    const [, , prepare] = mocks.ownershipTransfer.mock.calls[0];
+
+    await expect(prepare(input)).rejects.toThrow("The configured chain is unavailable.");
   });
 });

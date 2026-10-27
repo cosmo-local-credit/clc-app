@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   HiOutlineAdjustments,
+  HiOutlineBell,
   HiOutlineCash,
   HiOutlineCog,
   HiOutlineCollection,
@@ -34,6 +35,7 @@ const pages = [
   { to: "/", label: "Dashboard", icon: HiOutlineHome },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
+  { to: "/retirement-requests", label: "Retirement requests", icon: HiOutlineBell },
   { to: "/reviews", label: "Reviews", icon: HiOutlineFlag },
   { to: "/deployments", label: "Deployments", icon: HiOutlineCube },
   { to: "/protocol", label: "Protocol", icon: HiOutlineAdjustments },

@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 import { Button } from "#/components/ui/button";
+import { PublicLocationWarning } from "#/components/public-location-warning";
 import { Field } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
@@ -173,11 +174,13 @@ export function CatalogForm({
             <LocationPicker
               value={field.state.value}
               onChange={field.handleChange}
+              markerResource="catalog"
               error={error ? translateValidationError(error, i18n) : undefined}
             />
           );
         }}
       </form.Field>
+      <PublicLocationWarning />
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}

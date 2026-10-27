@@ -69,13 +69,22 @@ const mocks = vi.hoisted(() => ({
     isAuthenticated: false,
     address: undefined as `0x${string}` | undefined,
   },
+  owned: {
+    data: undefined as { id: string } | undefined,
+    isPending: false,
+    isError: false,
+  },
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
   useReport: () => mocks.detail,
-  useReportLocation: (lat: number | null | undefined, lng: number | null | undefined) => {
-    mocks.useReportLocation(lat, lng);
-    return typeof lat === "number" && typeof lng === "number"
+  useReportLocation: (
+    lat: number | null | undefined,
+    lng: number | null | undefined,
+    enabled: boolean,
+  ) => {
+    mocks.useReportLocation(lat, lng, enabled);
+    return enabled && typeof lat === "number" && typeof lng === "number"
       ? mocks.location
       : { data: undefined };
   },
@@ -83,6 +92,10 @@ vi.mock("#/features/home/hooks/use-reports", () => ({
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
+}));
+
+vi.mock("#/features/posts/hooks/use-my-posts", () => ({
+  useMyPost: () => mocks.owned,
 }));
 
 vi.mock("#/lib/default-maps", () => ({
@@ -155,9 +168,10 @@ function detail(overrides: Partial<ReportDetail> = {}): ReportDetail {
     lng: 36.82,
     periodFrom: "2026-07-01T00:00:00Z",
     periodTo: "2026-07-02T00:00:00Z",
-    authorAddress: "0x1111111111111111111111111111111111111111",
     createdAt: "2026-07-03T08:00:00Z",
     updatedAt: "2026-07-19T08:14:02.311Z",
+    markerIcon: "post",
+    markerColor: "pink",
     tags: ["Food production"],
     vouchers: [
       {
@@ -168,6 +182,7 @@ function detail(overrides: Partial<ReportDetail> = {}): ReportDetail {
         symbol: "KCH",
       },
     ],
+    pools: [],
     images: [
       reportImage("https://content.example/one.jpg", { width: 800, height: 600 }),
       reportImage("https://content.example/two.jpg"),
@@ -193,6 +208,7 @@ beforeEach(() => {
     },
   };
   mocks.auth = { isAuthenticated: false, address: undefined };
+  mocks.owned = { data: undefined, isPending: false, isError: false };
   mocks.detail = { data: detail(), isPending: false, isError: false, refetch: vi.fn() };
 });
 
@@ -320,6 +336,7 @@ describe("ReportPage", () => {
       isAuthenticated: true,
       address: "0x1111111111111111111111111111111111111111",
     };
+    mocks.owned = { data: { id: "3182" }, isPending: false, isError: false };
     render(<ReportPage reportId="3182" />);
 
     expect(screen.getByRole("link", { name: "Edit" }).getAttribute("href")).toBe(
@@ -346,7 +363,7 @@ describe("ReportPage", () => {
     expect(row("Participants")).toContain("7");
     // Issuer free text, shown verbatim rather than parsed into a duration.
     expect(row("Duration")).toContain("1 Hour");
-    expect(row("Author")).toContain("0x1111");
+    expect(screen.queryByText("Author")).toBeNull();
     expect(row("Created")).toContain("2026");
     expect(row("Updated")).toContain("2026");
     expect(screen.getByRole("heading", { name: "Report details" })).toBeTruthy();
@@ -370,8 +387,7 @@ describe("ReportPage", () => {
     expect(screen.queryByText("Host")).toBeNull();
     expect(screen.queryByText("Participants")).toBeNull();
     expect(screen.queryByText("Duration")).toBeNull();
-    // The author row is unconditional, so the card never renders empty.
-    expect(screen.getByText("Author")).toBeTruthy();
+    expect(screen.queryByText("Author")).toBeNull();
   });
 
   it("links each related voucher to its canonical page with a post fallback", () => {
@@ -384,10 +400,30 @@ describe("ReportPage", () => {
     );
   });
 
-  it("reverse-geocodes the coordinates for the header, location panel, and Maps label", () => {
+  it("links each related pool without exposing pool ownership metadata", () => {
+    mocks.detail.data = detail({
+      pools: [
+        {
+          id: "31",
+          chainId: 100,
+          address: "0x3333333333333333333333333333333333333333",
+          name: "Nyeri Pool",
+          symbol: "NYR",
+        },
+      ],
+    });
     render(<ReportPage reportId="3182" />);
 
-    expect(mocks.useReportLocation).toHaveBeenCalledWith(-1.29, 36.82);
+    const pool = screen.getByRole("link", { name: /Nyeri Pool/ });
+    expect(pool.textContent).toContain("NYR");
+    expect(pool.getAttribute("href")).toBe("/pools/0x3333333333333333333333333333333333333333");
+  });
+
+  it("reverse-geocodes the coordinates for the header, location panel, and Maps label", () => {
+    mocks.auth.isAuthenticated = true;
+    render(<ReportPage reportId="3182" />);
+
+    expect(mocks.useReportLocation).toHaveBeenCalledWith(-1.29, 36.82, true);
     expect(screen.getAllByText("Mathira, Nyeri, Kenya")).toHaveLength(2);
     expect(screen.queryByText("Kitui, KEN")).toBeNull();
     expect(screen.getByRole("heading", { name: "Location" })).toBeTruthy();
@@ -403,10 +439,54 @@ describe("ReportPage", () => {
   });
 
   it("falls back to the backend location name when reverse geocoding fails", () => {
+    mocks.auth.isAuthenticated = true;
     mocks.location = { data: null };
     render(<ReportPage reportId="3182" />);
 
     expect(screen.getAllByText("Kitui, KEN")).toHaveLength(2);
+  });
+
+  it("shows an authenticated location when no updated timestamp is available", () => {
+    mocks.auth.isAuthenticated = true;
+    mocks.detail.data = detail({ updatedAt: null });
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.getAllByText("Mathira, Nyeri, Kenya")).toHaveLength(2);
+    expect(screen.queryByText("Updated")).toBeNull();
+  });
+
+  it("omits the metadata row for a guest when no updated timestamp exists", () => {
+    mocks.detail.data = detail({ updatedAt: null });
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.queryByText("Updated")).toBeNull();
+    expect(screen.queryByText("Mathira, Nyeri, Kenya")).toBeNull();
+  });
+
+  it("renders coordinate-only and label-only protected locations", () => {
+    mocks.auth.isAuthenticated = true;
+    mocks.location = { data: { locationName: "", country: "" } };
+    const coordinateOnly = render(<ReportPage reportId="3182" />);
+    expect(screen.queryByText("Mathira, Nyeri, Kenya")).toBeNull();
+    expect(screen.getByTestId("location-map")).toBeTruthy();
+    coordinateOnly.unmount();
+
+    mocks.location = { data: null };
+    mocks.detail.data = detail({ lat: null, lng: null, locationName: "Kitui, KEN" });
+    render(<ReportPage reportId="3182" />);
+    expect(screen.getAllByText("Kitui, KEN")).toHaveLength(2);
+    expect(screen.queryByTestId("location-map")).toBeNull();
+  });
+
+  it("does not resolve or mount Post location details for a guest", () => {
+    render(<ReportPage reportId="3182" />);
+
+    expect(mocks.useReportLocation).toHaveBeenCalledWith(-1.29, 36.82, false);
+    expect(screen.queryByText("Kitui, KEN")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Location" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeTruthy();
+    expect(screen.queryByTestId("location-map")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Open in Maps/ })).toBeNull();
   });
 
   it("renders no gallery or map when the report has neither", () => {

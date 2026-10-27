@@ -1,5 +1,6 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 import { poolKeys } from "@clc/api/features/pools/queries";
+import { adminKeys } from "@clc/api/features/admin/queries";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -37,10 +38,11 @@ beforeEach(() => {
 });
 
 describe("useUpdatePoolProfile", () => {
-  it("writes the saved image into the query the detail page reads", async () => {
+  it("writes the saved row only into the protected admin detail cache", async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     // What the page is already showing: a pool with no image, hence initials.
     client.setQueryData(poolKeys.detail(ADDRESS), saved({ imageUrl: null }));
+    client.setQueryData(adminKeys.pool(ADDRESS), saved({ imageUrl: null }));
     const listKey = poolKeys.list({ perPage: 20 });
     client.setQueryData(listKey, { pools: [] });
 
@@ -63,15 +65,41 @@ describe("useUpdatePoolProfile", () => {
       tags: [],
     });
 
-    // Seeded from the response, so the header stops showing its placeholder
-    // without waiting for a refetch to land.
+    // The admin page updates immediately without exposing its protected row
+    // through the public cache key.
     await waitFor(() =>
-      expect(client.getQueryData<UserPool>(poolKeys.detail(ADDRESS))?.imageUrl).toBe(
+      expect(client.getQueryData<UserPool>(adminKeys.pool(ADDRESS))?.imageUrl).toBe(
         "https://cdn.test/pool/new_400_ab.webp",
       ),
     );
-    expect(client.getQueryState(poolKeys.detail(ADDRESS))?.isInvalidated).toBe(false);
+    expect(client.getQueryData<UserPool>(poolKeys.detail(ADDRESS))?.imageUrl).toBeNull();
+    expect(client.getQueryState(poolKeys.detail(ADDRESS))?.isInvalidated).toBe(true);
     expect(client.getQueryState(listKey)?.isInvalidated).toBe(true);
+  });
+
+  it("keeps a retired pool only in the protected detail cache", async () => {
+    updatePoolProfile.mockResolvedValue(saved({ active: false }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(poolKeys.detail(ADDRESS), saved());
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useUpdatePoolProfile(ADDRESS), { wrapper });
+    await result.current.mutateAsync({
+      description: "Retained metadata",
+      unitOfAccount: "",
+      email: "",
+      website: "",
+      phone: "",
+      terms: "",
+      locationName: "",
+      geoLat: null,
+      geoLng: null,
+      tags: [],
+    });
+    expect(client.getQueryData<UserPool>(adminKeys.pool(ADDRESS))?.active).toBe(false);
+    expect(client.getQueryData<UserPool>(poolKeys.detail(ADDRESS))?.active).not.toBe(false);
+    expect(client.getQueryState(poolKeys.detail(ADDRESS))?.isInvalidated).toBe(true);
   });
 
   it("seeds the same entry whatever casing the caller used", async () => {
@@ -94,9 +122,9 @@ describe("useUpdatePoolProfile", () => {
       tags: [],
     });
 
-    // The page's key is built from the checksummed URL address.
+    // The page's protected key is built from the checksummed URL address.
     await waitFor(() =>
-      expect(client.getQueryData<UserPool>(poolKeys.detail(ADDRESS))).toBeTruthy(),
+      expect(client.getQueryData<UserPool>(adminKeys.pool(ADDRESS))).toBeTruthy(),
     );
   });
 });

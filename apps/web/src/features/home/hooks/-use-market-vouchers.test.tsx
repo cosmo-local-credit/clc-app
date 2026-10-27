@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { MarketVoucher, MarketVoucherPage } from "@clc/api/features/market/client";
+import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import {
   MARKET_MAP_PAGE_SIZE,
-  MIN_VIEWPORT_BBOX_ZOOM,
   marketVoucherQueryKeys,
   useMarketMapVouchers,
 } from "./use-market-vouchers";
@@ -17,404 +17,162 @@ vi.mock("@clc/api/features/market/client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@clc/api/features/market/client")>();
   return { ...actual, getMarketVouchers };
 });
-
-// The app-owned client is the seam the code now goes through. Build it from
-// the already-mocked resource modules above so their overrides still apply.
 vi.mock("#/lib/api/market", async () => ({
   marketClient: await import("@clc/api/features/market/client"),
 }));
 
-function voucher(id: number, overrides: Partial<MarketVoucher> = {}): MarketVoucher {
+const NAIROBI_BOUNDS: readonly MarketBoundingBox[] = [
+  { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
+];
+
+function voucher(id: number): MarketVoucher {
   return {
     id: String(id),
-    chainId: 42220,
-    address: "0xAbC0000000000000000000000000000000000123",
+    chainId: 100,
+    address: `0x${id.toString(16).padStart(40, "0")}` as `0x${string}`,
     name: `Voucher ${id}`,
-    symbol: "VOUCHER",
+    symbol: `V${id}`,
     iconUrl: null,
-    locationName: null,
+    locationName: "Nairobi",
     lat: -1.29,
     lng: 36.82,
     kind: "voucher",
     markerIcon: null,
     markerColor: null,
-    ...overrides,
   };
 }
 
-function page(ids: number[], last = ids.at(-1) ?? 0): MarketVoucherPage {
+function page(ids: number[], receivedCount = ids.length): MarketVoucherPage {
   return {
-    vouchers: ids.map((id) => voucher(id)),
+    vouchers: ids.map(voucher),
     first: ids[0] ?? 0,
-    last,
-    receivedCount: ids.length,
+    last: ids.at(-1) ?? 0,
+    receivedCount,
   };
 }
 
-/** A full page for the map's page size, so pagination is allowed to continue. */
-function fullPage(startId: number): MarketVoucherPage {
-  const ids = Array.from({ length: MARKET_MAP_PAGE_SIZE }, (_, index) => startId - index);
-  return page(ids);
-}
-
-function newClient() {
+function client() {
   return new QueryClient({
-    defaultOptions: {
-      queries: { staleTime: 60_000, refetchOnWindowFocus: false, retry: 1 },
-    },
+    defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
   });
 }
 
-function wrapper(client: QueryClient) {
+function wrapper(queryClient: QueryClient) {
   return ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
-
-const NAIROBI_VIEWPORT = { west: 36.6, south: -1.5, east: 37.1, north: -1.1, zoom: 12 };
 
 beforeEach(() => {
   getMarketVouchers.mockReset();
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
+afterEach(() => vi.restoreAllMocks());
 
-describe("useMarketMapVouchers pagination", () => {
-  it("stops after a short page", async () => {
-    getMarketVouchers.mockResolvedValue(page([3, 2, 1]));
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null), {
-      wrapper: wrapper(client),
+describe("Global voucher discovery", () => {
+  it("walks cursor pages to completion", async () => {
+    getMarketVouchers.mockResolvedValueOnce(page([3, 2], 2)).mockResolvedValueOnce(page([1], 1));
+    const queryClient = client();
+    const { result } = renderHook(() => useMarketMapVouchers([], 2), {
+      wrapper: wrapper(queryClient),
     });
 
     await waitFor(() => expect(result.current.vouchers).toHaveLength(3));
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    expect(getMarketVouchers).toHaveBeenCalledTimes(1);
-    expect(result.current.isCatalogComplete).toBe(true);
+    expect(result.current.vouchers.map(({ id }) => id)).toEqual(["3", "2", "1"]);
+    expect(getMarketVouchers.mock.calls[1]?.[0]).toMatchObject({ cursor: 2, next: true });
   });
 
-  it("stops when the backend reports last as zero", async () => {
-    getMarketVouchers.mockResolvedValue({ ...fullPage(1000), last: 0 });
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null), {
-      wrapper: wrapper(client),
-    });
-
-    await waitFor(() => expect(result.current.vouchers.length).toBeGreaterThan(0));
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    expect(getMarketVouchers).toHaveBeenCalledTimes(1);
-  });
-
-  it("stops when the last cursor fails to strictly decrease", async () => {
-    // A backend that repeats a cursor would otherwise loop forever.
-    getMarketVouchers
-      .mockResolvedValueOnce(fullPage(1000))
-      .mockResolvedValueOnce({ ...fullPage(500), last: 501 })
-      .mockResolvedValueOnce({ ...fullPage(400), last: 501 });
-    const client = newClient();
-
-    renderHook(() => useMarketMapVouchers(null), { wrapper: wrapper(client) });
-
-    await waitFor(() => expect(getMarketVouchers).toHaveBeenCalledTimes(2));
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    expect(getMarketVouchers).toHaveBeenCalledTimes(2);
-  });
-
-  it("appends and deduplicates across pages", async () => {
-    getMarketVouchers
-      .mockResolvedValueOnce({
-        vouchers: [voucher(3), voucher(2)],
-        first: 3,
-        last: 2,
-        receivedCount: 2,
-      })
-      .mockResolvedValue({ vouchers: [], first: 0, last: 0, receivedCount: 0 });
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null, 2), {
-      wrapper: wrapper(client),
-    });
-
-    await waitFor(() => expect(result.current.vouchers).toHaveLength(2));
-    expect(result.current.vouchers.map((entry) => entry.id)).toEqual(["3", "2"]);
-  });
-
-  it("does not start a next page while a fetch is already in flight", async () => {
-    let releaseFirst: (value: MarketVoucherPage) => void = () => {};
-    getMarketVouchers
-      .mockImplementationOnce(
-        () =>
-          new Promise<MarketVoucherPage>((resolve) => {
-            releaseFirst = resolve;
-          }),
-      )
-      .mockResolvedValue(page([1]));
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null), {
-      wrapper: wrapper(client),
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    // A stale infinite-query refetch already walks every cached page; the
-    // auto-pagination effect must not race it.
-    expect(getMarketVouchers).toHaveBeenCalledTimes(1);
-
-    releaseFirst(page([1]));
-    await waitFor(() => expect(result.current.vouchers).toHaveLength(1));
-  });
-});
-
-describe("useMarketMapVouchers viewport bootstrap", () => {
-  it("drops viewport-only rows when the complete catalog excludes them", async () => {
-    let releaseCatalog: (value: MarketVoucherPage) => void = () => {};
-    getMarketVouchers.mockImplementation((params: { bbox?: unknown }) =>
-      params.bbox
-        ? Promise.resolve(page([7]))
-        : new Promise<MarketVoucherPage>((resolve) => {
-            releaseCatalog = resolve;
-          }),
-    );
-    const client = newClient();
-    const { result } = renderHook(() => useMarketMapVouchers(NAIROBI_VIEWPORT), {
-      wrapper: wrapper(client),
-    });
-
-    await waitFor(() => expect(result.current.vouchers.map((entry) => entry.id)).toEqual(["7"]));
-    expect(result.current.isCatalogComplete).toBe(false);
-
-    await act(async () => releaseCatalog(page([])));
-    await waitFor(() => expect(result.current.isCatalogComplete).toBe(true));
-    expect(result.current.vouchers).toEqual([]);
-  });
-
-  it("does not restore old viewport rows after a catalog exclusion or a later refresh error", async () => {
-    let releaseCatalog: (value: MarketVoucherPage) => void = () => {};
-    getMarketVouchers.mockImplementation((params: { bbox?: unknown }) =>
-      params.bbox
-        ? Promise.resolve(page([7]))
-        : new Promise<MarketVoucherPage>((resolve) => {
-            releaseCatalog = resolve;
-          }),
-    );
-    const client = newClient();
-    client.setDefaultOptions({ queries: { retry: false } });
-    const { result } = renderHook(() => useMarketMapVouchers(NAIROBI_VIEWPORT), {
-      wrapper: wrapper(client),
-    });
-    await waitFor(() => expect(result.current.vouchers).toHaveLength(1));
-    await act(async () => releaseCatalog(page([7])));
-    await waitFor(() => expect(result.current.isCatalogComplete).toBe(true));
-
-    // A fresh server response omits the voucher after it moves out of range.
-    getMarketVouchers.mockResolvedValue(page([]));
-    await act(async () => {
-      await client.invalidateQueries({
-        queryKey: marketVoucherQueryKeys.catalog(MARKET_MAP_PAGE_SIZE),
-      });
-    });
-    await waitFor(() => expect(result.current.vouchers).toEqual([]));
-
-    // Keep the last complete catalog authoritative if a later refresh fails.
-    getMarketVouchers.mockRejectedValue(new Error("network down"));
-    await act(async () => {
-      await client.invalidateQueries({
-        queryKey: marketVoucherQueryKeys.catalog(MARKET_MAP_PAGE_SIZE),
-      });
+  it("surfaces an error and retries", async () => {
+    getMarketVouchers.mockRejectedValueOnce(new Error("offline"));
+    const { result } = renderHook(() => useMarketMapVouchers([]), {
+      wrapper: wrapper(client()),
     });
     await waitFor(() => expect(result.current.error).toBeTruthy());
-    expect(result.current.isCatalogComplete).toBe(true);
-    expect(result.current.vouchers).toEqual([]);
-  });
 
-  it("renders the bbox page before the full catalog and deduplicates it away", async () => {
-    getMarketVouchers.mockImplementation((params: { bbox?: unknown }) =>
-      params.bbox
-        ? Promise.resolve({
-            vouchers: [voucher(7, { name: "bbox copy" })],
-            first: 7,
-            last: 7,
-            receivedCount: 1,
-          })
-        : Promise.resolve({
-            vouchers: [voucher(7, { name: "catalog copy" })],
-            first: 7,
-            last: 7,
-            receivedCount: 1,
-          }),
-    );
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(NAIROBI_VIEWPORT), {
-      wrapper: wrapper(client),
-    });
-
+    getMarketVouchers.mockResolvedValueOnce(page([1]));
+    act(() => result.current.retry());
     await waitFor(() => expect(result.current.vouchers).toHaveLength(1));
-    // The same voucher must appear once, and the catalog record wins.
-    expect(result.current.vouchers[0]?.name).toBe("catalog copy");
+  });
+});
+
+describe("bounded voucher discovery", () => {
+  it("sends one or two canonical boxes in one request", async () => {
+    getMarketVouchers.mockResolvedValue(page([]));
+    const antimeridian: readonly MarketBoundingBox[] = [
+      { minLng: -180, minLat: -2, maxLng: -179, maxLat: 2 },
+      { minLng: 179, minLat: -2, maxLng: 180, maxLat: 2 },
+    ];
+    renderHook(() => useMarketMapVouchers(antimeridian), { wrapper: wrapper(client()) });
+
+    await waitFor(() => expect(getMarketVouchers).toHaveBeenCalled());
+    expect(getMarketVouchers.mock.calls[0]?.[0]).toMatchObject({ bounds: antimeridian });
+    expect(getMarketVouchers).toHaveBeenCalledTimes(1);
   });
 
-  it("requests both halves of an antimeridian-crossing viewport", async () => {
-    getMarketVouchers.mockResolvedValue({ vouchers: [], first: 0, last: 0, receivedCount: 0 });
-    const client = newClient();
-
-    renderHook(
-      () => useMarketMapVouchers({ west: 179, south: -1.5, east: -179, north: -1.1, zoom: 12 }),
-      { wrapper: wrapper(client) },
-    );
-
-    await waitFor(() => {
-      const boxes = getMarketVouchers.mock.calls
-        .map((call) => (call[0] as { bbox?: { minLng: number; maxLng: number } }).bbox)
-        .filter(Boolean);
-      expect(boxes).toHaveLength(2);
+  it("walks bounded pages and passes the AbortSignal through", async () => {
+    getMarketVouchers.mockResolvedValueOnce(page([3, 2], 2)).mockResolvedValueOnce(page([1], 1));
+    const { result } = renderHook(() => useMarketMapVouchers(NAIROBI_BOUNDS, 2), {
+      wrapper: wrapper(client()),
     });
+
+    await waitFor(() => expect(result.current.vouchers).toHaveLength(3));
+    expect(getMarketVouchers.mock.calls[0]?.[0]).toMatchObject({ bounds: NAIROBI_BOUNDS });
+    expect(getMarketVouchers.mock.calls[0]?.[1]).toBeInstanceOf(AbortSignal);
+    expect(getMarketVouchers.mock.calls[1]?.[0]).toMatchObject({ cursor: 2, next: true });
   });
 
-  it("makes no viewport request below the minimum bbox zoom", async () => {
-    getMarketVouchers.mockResolvedValue({ vouchers: [], first: 0, last: 0, receivedCount: 0 });
-    const client = newClient();
-
-    renderHook(
-      () =>
-        useMarketMapVouchers({
-          ...NAIROBI_VIEWPORT,
-          zoom: MIN_VIEWPORT_BBOX_ZOOM - 1,
+  it("cancels obsolete work when the viewport key changes", async () => {
+    const signals: AbortSignal[] = [];
+    getMarketVouchers.mockImplementation(
+      (_params: unknown, signal: AbortSignal) =>
+        new Promise<MarketVoucherPage>(() => {
+          signals.push(signal);
         }),
-      { wrapper: wrapper(client) },
     );
+    const { rerender } = renderHook(
+      ({ bounds }: { bounds: readonly MarketBoundingBox[] }) => useMarketMapVouchers(bounds),
+      { wrapper: wrapper(client()), initialProps: { bounds: NAIROBI_BOUNDS } },
+    );
+    await waitFor(() => expect(signals).toHaveLength(1));
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    const bboxCalls = getMarketVouchers.mock.calls.filter(
-      (call) => (call[0] as { bbox?: unknown }).bbox,
-    );
-    // At country/world zoom the complete background catalog is the right source.
-    expect(bboxCalls).toHaveLength(0);
+    rerender({ bounds: [{ minLng: 10, minLat: 10, maxLng: 11, maxLat: 11 }] });
+    await waitFor(() => expect(signals).toHaveLength(2));
+    expect(signals[0]?.aborted).toBe(true);
   });
 
-  it("makes no viewport request once the full catalog has loaded", async () => {
-    getMarketVouchers.mockResolvedValue({
-      vouchers: [voucher(1)],
-      first: 1,
-      last: 1,
-      receivedCount: 1,
-    });
-    const client = newClient();
-
+  it("retains the last successful rows while a new viewport loads", async () => {
+    getMarketVouchers.mockResolvedValueOnce(page([1]));
     const { result, rerender } = renderHook(
-      ({ viewport }: { viewport: typeof NAIROBI_VIEWPORT | null }) =>
-        useMarketMapVouchers(viewport),
+      ({ bounds }: { bounds: readonly MarketBoundingBox[] }) => useMarketMapVouchers(bounds),
+      { wrapper: wrapper(client()), initialProps: { bounds: NAIROBI_BOUNDS } },
+    );
+    await waitFor(() => expect(result.current.vouchers.map(({ id }) => id)).toEqual(["1"]));
+
+    getMarketVouchers.mockImplementation(() => new Promise(() => {}));
+    rerender({ bounds: [{ minLng: 10, minLat: 10, maxLng: 11, maxLat: 11 }] });
+    expect(result.current.vouchers.map(({ id }) => id)).toEqual(["1"]);
+  });
+
+  it("retains Global rows while the first bounded viewport loads", async () => {
+    getMarketVouchers.mockResolvedValueOnce(page([1]));
+    const { result, rerender } = renderHook(
+      ({ bounds }: { bounds: readonly MarketBoundingBox[] }) => useMarketMapVouchers(bounds),
       {
-        wrapper: wrapper(client),
-        initialProps: { viewport: null as typeof NAIROBI_VIEWPORT | null },
+        wrapper: wrapper(client()),
+        initialProps: { bounds: [] as readonly MarketBoundingBox[] },
       },
     );
+    await waitFor(() => expect(result.current.vouchers.map(({ id }) => id)).toEqual(["1"]));
 
-    await waitFor(() => expect(result.current.isCatalogComplete).toBe(true));
-    getMarketVouchers.mockClear();
+    getMarketVouchers.mockImplementation(() => new Promise(() => {}));
+    rerender({ bounds: NAIROBI_BOUNDS });
 
-    rerender({ viewport: NAIROBI_VIEWPORT });
-    await new Promise((resolve) => setTimeout(resolve, 20));
-
-    expect(getMarketVouchers).not.toHaveBeenCalled();
+    expect(result.current.vouchers.map(({ id }) => id)).toEqual(["1"]);
   });
 
-  it("keeps viewport and catalog under separate query keys", () => {
-    const catalog = marketVoucherQueryKeys.catalog(MARKET_MAP_PAGE_SIZE);
-    const viewport = marketVoucherQueryKeys.viewport(
-      [{ minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 }],
-      MARKET_MAP_PAGE_SIZE,
+  it("isolates Global and viewport query caches", () => {
+    expect(marketVoucherQueryKeys.catalog(MARKET_MAP_PAGE_SIZE)).not.toEqual(
+      marketVoucherQueryKeys.viewport(NAIROBI_BOUNDS, MARKET_MAP_PAGE_SIZE),
     );
-
-    expect(JSON.stringify(catalog)).not.toBe(JSON.stringify(viewport));
-  });
-});
-
-describe("useMarketMapVouchers freshness", () => {
-  it("uses the documented local overrides without touching global defaults", async () => {
-    getMarketVouchers.mockResolvedValue(page([1]));
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null), {
-      wrapper: wrapper(client),
-    });
-    await waitFor(() => expect(result.current.vouchers).toHaveLength(1));
-
-    const [query] = client
-      .getQueryCache()
-      .findAll({ queryKey: marketVoucherQueryKeys.catalog(MARKET_MAP_PAGE_SIZE) });
-    expect(query?.options.gcTime).toBe(30 * 60_000);
-
-    const observer = query?.observers[0];
-    expect(observer?.options.staleTime).toBe(10 * 60_000);
-    expect(observer?.options.refetchOnReconnect).toBe(false);
-
-    // The global client must be untouched.
-    expect(client.getDefaultOptions().queries?.staleTime).toBe(60_000);
-  });
-
-  it("surfaces a load error with a retry", async () => {
-    getMarketVouchers.mockRejectedValue(new Error("network down"));
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null), {
-      wrapper: wrapper(client),
-    });
-
-    // The global default retries once with backoff before surfacing the error.
-    await waitFor(() => expect(result.current.error).toBeTruthy(), { timeout: 5_000 });
-    expect(typeof result.current.retry).toBe("function");
-
-    getMarketVouchers.mockReset();
-    getMarketVouchers.mockResolvedValue(page([1]));
-    result.current.retry();
-
-    await waitFor(() => expect(result.current.vouchers).toHaveLength(1));
-  });
-});
-
-describe("useMarketMapVouchers pagination robustness", () => {
-  it("keeps paging when a full page contains a malformed row", async () => {
-    // 500 raw rows, one of which the client drops: still a full page.
-    const kept = Array.from({ length: MARKET_MAP_PAGE_SIZE - 1 }, (_, i) => voucher(2000 - i));
-    getMarketVouchers
-      .mockResolvedValueOnce({
-        vouchers: kept,
-        first: 2000,
-        last: 1502,
-        receivedCount: MARKET_MAP_PAGE_SIZE,
-      })
-      .mockResolvedValueOnce({ vouchers: [voucher(1)], first: 1, last: 1, receivedCount: 1 });
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null), {
-      wrapper: wrapper(client),
-    });
-
-    // Without the raw count this stops after page 1 and hides every older
-    // voucher in the catalog.
-    await waitFor(() => expect(getMarketVouchers).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(result.current.vouchers).toHaveLength(MARKET_MAP_PAGE_SIZE));
-  });
-
-  it("still stops on a genuinely short page", async () => {
-    getMarketVouchers.mockResolvedValue({
-      vouchers: [voucher(3), voucher(2)],
-      first: 3,
-      last: 2,
-      receivedCount: 2,
-    });
-    const client = newClient();
-
-    const { result } = renderHook(() => useMarketMapVouchers(null), {
-      wrapper: wrapper(client),
-    });
-
-    await waitFor(() => expect(result.current.isCatalogComplete).toBe(true));
-    expect(getMarketVouchers).toHaveBeenCalledTimes(1);
   });
 });

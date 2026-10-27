@@ -14,6 +14,12 @@ import {
   parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
+import { parseWantId } from "#/lib/navigation/want-sheet-search";
+import {
+  canonicalActivityRouteSearch,
+  clearActivityRouteSearch,
+  parseActivitySearch,
+} from "#/lib/navigation/activity-search";
 
 const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
@@ -28,6 +34,26 @@ export const Route = createFileRoute("/_nav/")({
     ...pickMarketplaceSearch(search),
   }),
   beforeLoad: ({ search }) => {
+    const wantId = parseWantId(search.want);
+    const isMarketMap = search.tab === "market" && search.view === "map";
+    if (wantId && !isMarketMap) {
+      throw redirect({
+        to: "/wants/$wantId",
+        params: { wantId },
+        search: { from: search.tab === "wallet" ? "wallet" : "market" },
+        replace: true,
+      });
+    }
+    if (search.want !== undefined && !wantId) {
+      throw redirect({ to: "/", search: { ...search, want: undefined }, replace: true });
+    }
+    if (wantId && search.voucher !== undefined) {
+      throw redirect({
+        to: "/",
+        search: { ...search, voucher: undefined },
+        replace: true,
+      });
+    }
     const voucherAddress = parseVoucherAddress(search.voucher);
     const isMapVoucher = search.tab === "market" && search.view === "map";
     if (voucherAddress && !isMapVoucher) {
@@ -57,7 +83,24 @@ export const Route = createFileRoute("/_nav/")({
     if (search.view === "list") {
       throw redirect({ to: "/", search: { ...search, view: undefined }, replace: true });
     }
-    const next = canonicalRedirectSearch(search, { voucherRelationships: search.tab === "posts" });
+    const activityCanonical = canonicalActivityRouteSearch(search);
+    if (search.tab === "activity" && activityCanonical) {
+      throw redirect({ to: "/", search: { ...search, ...activityCanonical }, replace: true });
+    }
+    if (
+      search.tab !== "activity" &&
+      (search.activityQ !== undefined || search.activityTypes !== undefined)
+    ) {
+      throw redirect({
+        to: "/",
+        search: { ...search, ...clearActivityRouteSearch() },
+        replace: true,
+      });
+    }
+    const next = canonicalRedirectSearch(search, {
+      voucherRelationships: search.tab === "posts",
+      poolRelationships: search.tab === "posts",
+    });
     if (!next) return;
     throw redirect({ to: "/", search: next, replace: true });
   },
@@ -66,7 +109,10 @@ export const Route = createFileRoute("/_nav/")({
 
 function IndexPage() {
   const auth = useAuthStatus();
-  const { tab = "market", creditable } = Route.useSearch();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const { tab = "market", creditable } = search;
+  const activity = parseActivitySearch(search);
 
   if (auth.isLoading) return <HomePageFallback />;
 
@@ -76,6 +122,22 @@ function IndexPage() {
         activeTab={tab}
         isAuthenticated={auth.isAuthenticated}
         creditableSearch={creditable}
+        activityQ={activity.q}
+        activityTypes={activity.types}
+        onActivityQueryChange={(activityQ) =>
+          navigate({
+            search: (previous) => ({ ...previous, activityQ: activityQ || undefined }),
+            replace: true,
+          })
+        }
+        onActivityTypesChange={(activityTypes) =>
+          navigate({
+            search: (previous) => ({
+              ...previous,
+              activityTypes: activityTypes.length ? activityTypes.join(",") : undefined,
+            }),
+          })
+        }
       />
     </Suspense>
   );

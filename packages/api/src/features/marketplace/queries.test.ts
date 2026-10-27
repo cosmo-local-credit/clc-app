@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { MarketplaceClient } from "./client";
 import { marketplaceInfiniteQueryOptions, marketplaceKeys } from "./queries";
+import { BackendApiError } from "../../client/errors";
 
 describe("marketplace cache", () => {
   it("canonicalizes query identity and verified pool references", () => {
@@ -57,5 +58,20 @@ describe("marketplace cache", () => {
     expect(
       options.getNextPageParam?.({ results: [], nextCursor: null }, [], undefined, []),
     ).toBeUndefined();
+  });
+
+  it("recovers Marketplace reads from rate limits and temporary capacity failures", () => {
+    const options = marketplaceInfiniteQueryOptions(
+      { list: vi.fn() } as unknown as MarketplaceClient,
+      {},
+    );
+    const retry = options.retry as (count: number, error: unknown) => boolean;
+
+    expect(retry(0, new BackendApiError(429, "slow", undefined, { retryAfterMs: 1_000 }))).toBe(
+      true,
+    );
+    expect(retry(2, new BackendApiError(503, "busy"))).toBe(true);
+    expect(retry(3, new BackendApiError(503, "busy"))).toBe(false);
+    expect(retry(0, new BackendApiError(400, "invalid"))).toBe(false);
   });
 });

@@ -3,9 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   MARKER_COLORS,
-  MARKER_COLOR_HEX,
   MARKER_ICONS,
-  type MarkerColor,
+  RESOURCE_COLOR_HEX,
   type MarkerIcon,
 } from "@clc/core/features/markers/logic";
 import { RiGroupFill } from "react-icons/ri";
@@ -14,10 +13,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { installCanvasStub, installPath2DStub, type StubbedContext } from "./-market-canvas-stub";
 import type { MarketLocation, MarketLocationKind } from "./market-data";
 import {
+  MARKET_NETWORK_BADGE_COLOR,
+  MARKET_NETWORK_BADGE_IMAGE_ID,
+  CATALOG_PIN_HEX,
+  CATALOG_PIN_IMAGE_ID,
   POOL_PIN_HEX,
   POOL_PIN_IMAGE_ID,
   SELECTED_PIN_SUFFIX,
+  addMarketNetworkBadgeImage,
   addMarketMarkerImages,
+  markerArt,
   markerImageId,
   markerPin,
   resetMarketMarkerCache,
@@ -42,11 +47,75 @@ function fakeMap() {
   };
 }
 
-type VoucherKind = Exclude<MarketLocationKind, "pool">;
+type VoucherKind = Exclude<MarketLocationKind, "pool" | "want" | "catalog" | "post">;
 
 function automatic(kind: MarketLocationKind): MarkerSource {
   return { kind, markerIcon: null, markerColor: null };
 }
+
+describe("Want marker artwork", () => {
+  it.each(["question", "message", "request"] as const)(
+    "keeps the %s glyph distinct from voucher artwork",
+    (markerIcon) => {
+      const id = markerArt({ kind: "want", markerIcon, markerColor: "orange" }).image;
+      expect(id).toBe(`market-pin-want-${markerIcon}`);
+      expect(id).not.toContain("voucher");
+    },
+  );
+
+  it("registers one orange image per Want icon regardless of legacy colour", () => {
+    const map = fakeMap();
+    const icons = ["question", "message", "request"] as const;
+    const wants = icons.flatMap((markerIcon) =>
+      MARKER_COLORS.map((markerColor) => ({ kind: "want" as const, markerIcon, markerColor })),
+    );
+
+    addMarketMarkerImages(map as never, wants);
+
+    for (const { markerIcon } of wants) {
+      const id = `market-pin-want-${markerIcon}`;
+      expect(map.images.has(id)).toBe(true);
+      expect(map.images.has(`${id}-selected`)).toBe(true);
+    }
+    expect(map.images.size).toBe(icons.length * 2);
+  });
+});
+
+describe("Catalog and Post marker artwork", () => {
+  it("gives Catalogs a fixed purple book pin and selected variant", () => {
+    const map = fakeMap();
+    addMarketMarkerImages(map as never, [automatic("catalog")]);
+
+    expect(markerArt(automatic("catalog"))).toMatchObject({
+      image: CATALOG_PIN_IMAGE_ID,
+      fill: CATALOG_PIN_HEX.pin,
+      body: "square",
+    });
+    expect(map.images.has(CATALOG_PIN_IMAGE_ID)).toBe(true);
+    expect(map.images.has(CATALOG_PIN_IMAGE_ID + SELECTED_PIN_SUFFIX)).toBe(true);
+  });
+
+  it.each(["post", "event", "announcement"] as const)(
+    "draws the %s Post style in fixed gray",
+    (markerIcon) => {
+      const source = { kind: "post" as const, markerIcon, markerColor: "cyan" as const };
+      const map = fakeMap();
+      addMarketMarkerImages(map as never, [source]);
+
+      const id = `market-pin-post-${markerIcon}`;
+      expect(markerArt(source)).toMatchObject({ image: id, fill: RESOURCE_COLOR_HEX.post.pin });
+      expect(map.images.has(id)).toBe(true);
+      expect(map.images.has(id + SELECTED_PIN_SUFFIX)).toBe(true);
+    },
+  );
+
+  it("uses the Post glyph and fixed gray for legacy map rows", () => {
+    expect(markerArt(automatic("post"))).toMatchObject({
+      image: "market-pin-post-post",
+      fill: RESOURCE_COLOR_HEX.post.pin,
+    });
+  });
+});
 
 const KINDS: VoucherKind[] = ["goods", "services", "voucher"];
 const AUTOMATIC = KINDS.map(automatic);
@@ -77,12 +146,12 @@ describe("market marker images", () => {
 
     expect([...map.images.keys()].sort()).toEqual(
       [
-        "market-pin-basket-blue",
-        "market-pin-basket-blue-selected",
-        "market-pin-hand-coin-purple",
-        "market-pin-hand-coin-purple-selected",
-        "market-pin-coupon-orange",
-        "market-pin-coupon-orange-selected",
+        "market-pin-voucher-basket",
+        "market-pin-voucher-basket-selected",
+        "market-pin-voucher-hand-coin",
+        "market-pin-voucher-hand-coin-selected",
+        "market-pin-voucher-coupon",
+        "market-pin-voucher-coupon-selected",
       ].sort(),
     );
   });
@@ -94,8 +163,8 @@ describe("market marker images", () => {
     addMarketMarkerImages(map as never, [chosen, chosen, automatic("goods"), chosen]);
 
     expect(map.images.size).toBe(4);
-    expect(map.images.has("market-pin-health-pink")).toBe(true);
-    expect(map.images.has(`market-pin-health-pink${SELECTED_PIN_SUFFIX}`)).toBe(true);
+    expect(map.images.has("market-pin-voucher-health")).toBe(true);
+    expect(map.images.has(`market-pin-voucher-health${SELECTED_PIN_SUFFIX}`)).toBe(true);
     expect(contexts.size).toBe(4);
   });
 
@@ -118,8 +187,8 @@ describe("market marker images", () => {
       { kind: "voucher", markerIcon: null, markerColor: "cyan" },
     ]);
 
-    expect(map.images.has("market-pin-food-purple")).toBe(true);
-    expect(map.images.has("market-pin-coupon-cyan")).toBe(true);
+    expect(map.images.has("market-pin-voucher-food")).toBe(true);
+    expect(map.images.has("market-pin-voucher-coupon")).toBe(true);
   });
 
   it("draws every icon's glyph paths from the react-icons imports", () => {
@@ -190,46 +259,29 @@ function rgbOf(hex: string): [number, number, number] {
   return [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
 }
 
-function hueOf(r: number, g: number, b: number): number {
-  const max = Math.max(r, g, b);
-  const delta = max - Math.min(r, g, b);
-  if (delta === 0) return 0;
-  const sector =
-    max === r ? (g - b) / delta : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
-  return (sector * 60 + 360) % 360;
-}
-
-function paintedImage(map: ReturnType<typeof fakeMap>, icon: MarkerIcon, color: MarkerColor) {
-  const image = map.images.get(markerImageId({ icon, color }));
-  if (!image) throw new Error(`missing image for ${icon} ${color}`);
+function paintedImage(map: ReturnType<typeof fakeMap>, icon: MarkerIcon) {
+  const image = map.images.get(markerImageId({ icon }));
+  if (!image) throw new Error(`missing image for ${icon}`);
   return image;
 }
 
 describe("market marker colours", () => {
-  // Goods is blue, services is purple, and a voucher with no offerings is
-  // orange. None of these may follow the brand primary: that colour belongs
-  // to the live-location pin, and it changes between prod and staging.
-  const EXPECTED: Record<VoucherKind, [number, number, number]> = {
-    goods: rgbOf("#2563eb"),
-    services: rgbOf("#7c3aed"),
-    voucher: rgbOf("#ea580c"),
-  };
+  const EXPECTED = rgbOf(RESOURCE_COLOR_HEX.voucher.pin);
 
-  it("paints each kind's automatic pin in the colour it always had", () => {
+  it("paints every voucher-derived kind green", () => {
     const map = fakeMap();
 
     addMarketMarkerImages(map as never, AUTOMATIC);
 
     const pins = { goods: "basket", services: "hand-coin", voucher: "coupon" } as const;
-    const colors = { goods: "blue", services: "purple", voucher: "orange" } as const;
     for (const kind of KINDS) {
-      const [r, g, b, a] = pixelOf(paintedImage(map, pins[kind], colors[kind]));
-      expect([r, g, b]).toEqual(EXPECTED[kind]);
+      const [r, g, b, a] = pixelOf(paintedImage(map, pins[kind]));
+      expect([r, g, b]).toEqual(EXPECTED);
       expect(a).toBe(255);
     }
   });
 
-  it("paints every palette colour distinctly, and none of them red or green", () => {
+  it("ignores every legacy custom colour", () => {
     const map = fakeMap();
 
     addMarketMarkerImages(
@@ -237,25 +289,19 @@ describe("market marker colours", () => {
       MARKER_COLORS.map((color) => ({ kind: "voucher", markerIcon: "coupon", markerColor: color })),
     );
 
-    const painted = MARKER_COLORS.map((color) => {
-      const [r, g, b, a] = pixelOf(paintedImage(map, "coupon", color));
-      expect([r, g, b]).toEqual(rgbOf(MARKER_COLOR_HEX[color].pin));
-      expect(a).toBe(255);
-      // Red and green are the staging and prod live-location pins.
-      const hue = hueOf(r, g, b);
-      expect(hue > 15 && hue < 345).toBe(true);
-      expect(hue >= 90 && hue <= 170).toBe(false);
-      return [r, g, b].join(",");
-    });
-    expect(new Set(painted).size).toBe(MARKER_COLORS.length);
+    const [r, g, b, a] = pixelOf(paintedImage(map, "coupon"));
+    expect([r, g, b]).toEqual(EXPECTED);
+    expect(a).toBe(255);
+    expect(map.images.size).toBe(2);
   });
 
-  it("names each pin in a darker shade of its colour", () => {
-    for (const color of MARKER_COLORS) {
-      const pin = rgbOf(MARKER_COLOR_HEX[color].pin).reduce((sum, channel) => sum + channel, 0);
-      const label = rgbOf(MARKER_COLOR_HEX[color].label).reduce((sum, channel) => sum + channel, 0);
-      expect(label).toBeLessThan(pin);
-    }
+  it("names vouchers in the fixed darker green", () => {
+    const pin = rgbOf(RESOURCE_COLOR_HEX.voucher.pin).reduce((sum, channel) => sum + channel, 0);
+    const label = rgbOf(RESOURCE_COLOR_HEX.voucher.label).reduce(
+      (sum, channel) => sum + channel,
+      0,
+    );
+    expect(label).toBeLessThan(pin);
   });
 
   it("ignores the brand token even when Canvas can parse oklch", () => {
@@ -266,33 +312,39 @@ describe("market marker colours", () => {
 
     addMarketMarkerImages(map as never, AUTOMATIC);
 
-    expect(pixelOf(paintedImage(map, "basket", "blue")).slice(0, 3)).toEqual(EXPECTED.goods);
+    expect(pixelOf(paintedImage(map, "basket")).slice(0, 3)).toEqual(EXPECTED);
     const fills = [...contexts.values()].flatMap((record) => record.fills);
     expect(fills).not.toContain("oklch(0.72 0.13 178)");
   });
 });
 
-/** The CSS Color 4 OKLCH to sRGB conversion, rounded to 8-bit channels. */
-function oklchToHex(lightness: number, chroma: number, hue: number): string {
-  const a = chroma * Math.cos((hue * Math.PI) / 180);
-  const b = chroma * Math.sin((hue * Math.PI) / 180);
-  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  const linear = [
-    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
-  ];
-  return `#${linear
-    .map((channel) => {
-      const encoded = channel <= 0.0031308 ? 12.92 * channel : 1.055 * channel ** (1 / 2.4) - 0.055;
-      return Math.round(Math.min(1, Math.max(0, encoded)) * 255)
-        .toString(16)
-        .padStart(2, "0");
-    })
-    .join("")}`;
-}
+describe("market network badge", () => {
+  it.each(["light", "dark"] as const)("draws a connected, opaque %s badge once", (theme) => {
+    const map = fakeMap();
+
+    addMarketNetworkBadgeImage(map as never, theme);
+    addMarketNetworkBadgeImage(map as never, theme);
+
+    expect([...map.images.keys()]).toEqual([MARKET_NETWORK_BADGE_IMAGE_ID[theme]]);
+    const [record] = contexts.values();
+    const [canvas] = contexts.keys();
+    expect(record).toBeDefined();
+    expect(canvas?.width).toBe(44);
+    expect(canvas?.height).toBe(44);
+    expect(record?.moves).toHaveLength(3);
+    expect(record?.lines).toHaveLength(3);
+    expect(record?.arcs).toHaveLength(8);
+    expect(record?.fills).toContain(MARKET_NETWORK_BADGE_COLOR[theme].surface);
+    expect(record?.fills).toContain(MARKET_NETWORK_BADGE_COLOR[theme].outline);
+  });
+
+  it("uses opposing surfaces in light and dark themes", () => {
+    expect(MARKET_NETWORK_BADGE_COLOR.light.surface).not.toBe(
+      MARKET_NETWORK_BADGE_COLOR.dark.surface,
+    );
+    expect(MARKET_NETWORK_BADGE_COLOR.light.ink).not.toBe(MARKET_NETWORK_BADGE_COLOR.dark.ink);
+  });
+});
 
 describe("pool marker", () => {
   const POOL = automatic("pool");
@@ -345,16 +397,14 @@ describe("pool marker", () => {
     }
   });
 
-  it("matches the --info token the Pools button is filled with", () => {
+  it("matches the fixed --pool resource token", () => {
     const css = readFileSync(
       path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../styles.css"),
       "utf8",
     );
     const root = /:root\s*\{([^}]*)\}/.exec(css)?.[1] ?? "";
-    const info = /--info:\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)/.exec(root);
-    if (!info) throw new Error("expected --info as oklch in :root");
-
-    expect(POOL_PIN_HEX.pin).toBe(oklchToHex(Number(info[1]), Number(info[2]), Number(info[3])));
+    const pool = /--pool:\s*(#[\da-f]{6})/.exec(root)?.[1];
+    expect(pool).toBe(POOL_PIN_HEX.pin.toLowerCase());
   });
 
   it("names a pool in a darker shade of its pin", () => {

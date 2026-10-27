@@ -66,6 +66,8 @@ export const voucherKeys = {
    * on data that is already there.
    */
   detail: (address: string) => ["clc", "vouchers", "detail", address.toLowerCase()] as const,
+  info: (address: string, viewer: string) =>
+    ["clc", "vouchers", "info", address.toLowerCase(), viewer.toLowerCase()] as const,
 
   filtered: (
     filter: CatalogFilter | null,
@@ -171,7 +173,7 @@ export function voucherCatalogInfiniteQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return infiniteQueryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...voucherKeys.catalog(perPage), nearby.scope] as const)
       : voucherKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>
@@ -181,6 +183,7 @@ export function voucherCatalogInfiniteQueryOptions(
           cursor: pageParam,
           next: pageParam === undefined ? undefined : true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
+          ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
         },
         signal,
       ),
@@ -197,20 +200,20 @@ export function voucherViewportQueryOptions(
   nearby?: NearbyRequest,
 ) {
   return queryOptions({
-    queryKey: nearby?.nearby
+    queryKey: nearby?.scope
       ? ([...voucherKeys.viewport(boxes, perPage), nearby.scope] as const)
       : voucherKeys.viewport(boxes, perPage),
-    queryFn: async ({ signal }) => {
-      const pages = await Promise.all(
-        boxes.map((bbox) =>
-          market.getMarketVouchers(
-            { perPage, bbox, ...(nearby?.nearby === true ? { nearby: true } : {}) },
-            signal,
-          ),
-        ),
-      );
-      return pages.flatMap((entry) => entry.vouchers);
-    },
+    queryFn: ({ signal }) =>
+      market
+        .getMarketVouchers(
+          {
+            perPage,
+            bounds: boxes,
+            ...(nearby?.nearby === true ? { nearby: true } : {}),
+          },
+          signal,
+        )
+        .then((page) => page.vouchers),
     enabled: boxes.length > 0,
   });
 }
@@ -227,6 +230,19 @@ export function voucherQueryOptions(
         ? market.getMarketVoucher(requireAddress(address), signal, overrides)
         : market.getMarketVoucher(requireAddress(address), signal),
     enabled: Boolean(address),
+  });
+}
+
+export function voucherInfoQueryOptions(
+  market: MarketClient,
+  address: string | undefined,
+  viewer: string | undefined,
+) {
+  return queryOptions({
+    queryKey: voucherKeys.info(address ?? "none", viewer ?? "none"),
+    queryFn: ({ signal }) => market.getVoucherInfo(requireAddress(address), signal),
+    enabled: Boolean(address && viewer),
+    staleTime: 0,
   });
 }
 

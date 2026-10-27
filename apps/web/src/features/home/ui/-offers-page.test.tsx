@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
   nearbyScope: undefined as { nearby: boolean; scope?: string } | undefined,
-  nearbyFilter: undefined as { lat: number; lng: number; radiusKm: number } | undefined,
   filter: {
     result: {
       ok: true as boolean,
@@ -13,6 +12,7 @@ const mocks = vi.hoisted(() => ({
       reason: "invalid",
     },
     isRestoringPreference: false,
+    isFiltered: false,
     isDebouncing: false,
     clear: vi.fn(),
     applyFacetFilters: vi.fn(),
@@ -32,6 +32,8 @@ const mocks = vi.hoisted(() => ({
     isPending: false,
     isError: false,
     isSuccess: true,
+    isFetching: false,
+    isPlaceholderData: false,
     hasNextPage: false,
     isFetchingNextPage: false,
     fetchNextPage: vi.fn(),
@@ -63,7 +65,6 @@ vi.mock("#/components/nearby-catalog", async (importOriginal) => {
   return {
     ...actual,
     useNearbyCatalog: () => mocks.nearbyScope,
-    useNearbyCatalogFilter: () => mocks.nearbyFilter,
   };
 });
 vi.mock("#/lib/navigation/use-persisted-catalog-filter", () => ({
@@ -118,6 +119,9 @@ vi.mock("#/components/offerings", () => ({
     return (
       <div data-testid="offerings" data-next={String(query.hasNextPage)}>
         {query.data?.pages.flatMap((page) => page.offerings.map((offering) => offering.name))}
+        {query.isSuccess && !query.data?.pages.some((page) => page.offerings.length > 0)
+          ? (props.emptyState as ReactNode)
+          : null}
       </div>
     );
   },
@@ -159,25 +163,52 @@ function offering(id: string, lat: number): Offering {
 
 beforeEach(() => {
   mocks.nearbyScope = undefined;
-  mocks.nearbyFilter = undefined;
   mocks.filter.result = {
     ok: true,
     filter: { term: "", tags: [], tagMatch: "any" },
     reason: "invalid",
   };
   mocks.filter.isRestoringPreference = false;
+  mocks.filter.isFiltered = false;
   mocks.filter.isDebouncing = false;
   mocks.credit.enabled = false;
   mocks.credit.poolRefs = undefined;
   mocks.credit.blocksResults = false;
   mocks.query.data = { pages: [{ offerings: [offering("1", 0.5)], tagFacets: [] }] };
   mocks.query.hasNextPage = false;
+  mocks.query.isFetching = false;
+  mocks.query.isPlaceholderData = false;
   mocks.queryOptions = undefined;
   mocks.panelProps = undefined;
   mocks.navigate.mockReset();
 });
 
 describe("OffersPage", () => {
+  it("guides an empty unfiltered Offers list to Wallet", () => {
+    mocks.query.data = { pages: [{ offerings: [] }] };
+    render(<OffersPage />);
+    expect(screen.getByText(/^No marketplace results to show yet,/).textContent).toContain(
+      "visit your Wallet",
+    );
+  });
+
+  it.each(["isFetching", "isPlaceholderData", "hasNextPage"] as const)(
+    "does not show empty guidance while Offers has %s",
+    (state) => {
+      mocks.query.data = { pages: [{ offerings: [] }] };
+      mocks.query[state] = true;
+      render(<OffersPage />);
+      expect(screen.queryByText(/No marketplace results/)).toBeNull();
+    },
+  );
+
+  it("retains the filtered Offers message", () => {
+    mocks.query.data = { pages: [{ offerings: [] }] };
+    mocks.filter.isFiltered = true;
+    render(<OffersPage />);
+    expect(screen.getByText("No offers match this search.")).toBeTruthy();
+  });
+
   it("writes and clears Credit from both shell and feedback controls", () => {
     render(<OffersPage />);
 
@@ -214,9 +245,8 @@ describe("OffersPage", () => {
     });
   });
 
-  it("filters a nearest-first result locally and stops pagination at the boundary", () => {
-    mocks.nearbyScope = { nearby: true, scope: "nearby:account:100:0:0:100" };
-    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 100 };
+  it("renders the server-bounded result without filtering it again", () => {
+    mocks.nearbyScope = { nearby: false, scope: "viewport:account:box" };
     mocks.query.data = {
       pages: [{ offerings: [offering("1", 0.5), offering("2", 2)], tagFacets: [] }],
     };
@@ -224,21 +254,20 @@ describe("OffersPage", () => {
 
     render(<OffersPage />);
 
-    expect(screen.getByText("Offer 1")).toBeTruthy();
-    expect(screen.queryByText("Offer 2")).toBeNull();
-    expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("false");
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 1");
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 2");
+    expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("true");
   });
 
-  it("keeps guest pagination available after a distant row", () => {
+  it("keeps Global pagination available before a viewport exists", () => {
     mocks.nearbyScope = { nearby: false };
-    mocks.nearbyFilter = { lat: 0, lng: 0, radiusKm: 500 };
     mocks.query.data = {
       pages: [{ offerings: [offering("1", 0.5), offering("2", 8)], tagFacets: [] }],
     };
     mocks.query.hasNextPage = true;
     render(<OffersPage />);
-    expect(screen.getByText("Offer 1")).toBeTruthy();
-    expect(screen.queryByText("Offer 2")).toBeNull();
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 1");
+    expect(screen.getByTestId("offerings").textContent).toContain("Offer 2");
     expect(screen.getByTestId("offerings").getAttribute("data-next")).toBe("true");
   });
 

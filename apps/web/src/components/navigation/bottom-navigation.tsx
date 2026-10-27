@@ -4,6 +4,7 @@ import type { MouseEvent, ReactNode } from "react";
 import {
   RiArticleLine,
   RiLockLine,
+  RiMap2Line,
   RiNotification3Line,
   RiSettings3Line,
   RiWallet3Line,
@@ -11,15 +12,21 @@ import {
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 import type { HomeTab } from "#/lib/navigation/home-tabs";
+import {
+  marketplaceSearchForScope,
+  marketplaceSharedSearch,
+} from "#/lib/navigation/marketplace-search";
 import { cn } from "#/lib/utils";
 
 export function BottomNavigation({
   activeTab,
   atActiveTabRoot,
+  isMarketMap,
   locked = false,
 }: {
   activeTab: HomeTab;
   atActiveTabRoot: boolean;
+  isMarketMap: boolean;
   /** A guest: the private tabs carry a lock and open the sign-in screen. */
   locked?: boolean;
 }) {
@@ -46,7 +53,11 @@ export function BottomNavigation({
           atActiveTabRoot={atActiveTabRoot}
           icon={<RiNotification3Line />}
         />
-        <MarketNavLink label={t`Market`} activeTab={activeTab} atActiveTabRoot={atActiveTabRoot} />
+        <MarketNavLink
+          label={isMarketMap ? t`Market` : t`Map`}
+          activeTab={activeTab}
+          isMarketMap={isMarketMap}
+        />
         <NavLink
           tab="posts"
           label={t`Posts`}
@@ -112,33 +123,56 @@ function NavLink({
 function MarketNavLink({
   label,
   activeTab,
-  atActiveTabRoot,
+  isMarketMap,
 }: {
   label: string;
   activeTab: HomeTab;
-  atActiveTabRoot: boolean;
+  isMarketMap: boolean;
 }) {
   const active = activeTab === "market";
-  return (
-    <Link
-      to="/"
-      search={{}}
-      activeOptions={{ exact: true, explicitUndefined: true }}
-      aria-current={active ? (atActiveTabRoot ? "page" : "true") : undefined}
-      className="relative flex h-full flex-col items-center justify-end gap-0.5 pb-1 text-muted-foreground transition-colors active:bg-muted"
-      onClick={(event) => preventActiveNavigation(event, active && atActiveTabRoot)}
-    >
+  const content = (
+    <>
       <span
         className={cn(
           "absolute -top-3 flex size-12 items-center justify-center rounded-full border border-border bg-primary p-1.5",
           active && "ring-2 ring-foreground/10",
         )}
       >
-        <CLCLogo className="size-8" />
+        {isMarketMap ? (
+          <CLCLogo className="size-8" />
+        ) : (
+          <RiMap2Line className="size-8 text-primary-foreground" aria-hidden="true" />
+        )}
       </span>
       <span className={cn("font-medium text-2xs", active && "font-semibold text-foreground")}>
         {label}
       </span>
+    </>
+  );
+  const className =
+    "relative flex h-full flex-col items-center justify-end gap-0.5 pb-1 text-muted-foreground transition-colors active:bg-muted";
+
+  return isMarketMap ? (
+    <Link
+      to="/market"
+      search={(previous) => marketplaceSearchForScope(marketplaceSharedSearch(previous), "all")}
+      aria-current={active ? "true" : undefined}
+      className={className}
+    >
+      {content}
+    </Link>
+  ) : (
+    <Link
+      to="/"
+      search={(previous) => ({
+        ...marketplaceSharedSearch(previous),
+        tab: "market",
+        view: "map",
+      })}
+      aria-current={active ? "true" : undefined}
+      className={className}
+    >
+      {content}
     </Link>
   );
 }

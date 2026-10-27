@@ -1,12 +1,13 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
-import type { MarkerStyle } from "@clc/core/features/markers/logic";
+import type { MapMarkerStyle } from "@clc/core/features/markers/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { TbCurrentLocation } from "react-icons/tb";
 
 import { Input } from "#/components/ui/input";
 import { Spinner } from "#/components/ui/spinner";
+import type { FixedResourceMarkerKind } from "#/components/vouchers/marker-style-picker";
 import type { GeocodeSuggestion } from "#/lib/geo-client";
 import { reverseLocation, searchLocations } from "#/lib/geo-client";
 import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
@@ -20,7 +21,9 @@ type LocationPickerProps = {
   onChange: (value: LocationInput | undefined) => void;
   error?: string;
   label?: string;
-  markerStyle?: MarkerStyle;
+  markerStyle?: MapMarkerStyle;
+  markerResource?: FixedResourceMarkerKind;
+  cameraHint?: { lat: number; lng: number; zoom: number } | null;
   required?: boolean;
   /**
    * The screen is about the location alone and already says so: the label is
@@ -42,6 +45,8 @@ export function LocationPicker({
   error,
   label,
   markerStyle,
+  markerResource,
+  cameraHint,
   required,
   fill = false,
 }: LocationPickerProps) {
@@ -288,9 +293,11 @@ export function LocationPicker({
           <LocationMap
             lat={pin?.lat ?? null}
             lng={pin?.lng ?? null}
+            cameraHint={cameraHint}
             interactive
             onLocationChange={placePin}
             markerStyle={markerStyle}
+            markerResource={markerResource}
             className={fill ? mapHeight : undefined}
           />
         </Suspense>

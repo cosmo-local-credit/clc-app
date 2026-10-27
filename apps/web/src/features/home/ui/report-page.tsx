@@ -6,6 +6,7 @@ import { RiArrowRightSLine, RiCloseLine, RiNavigationLine } from "react-icons/ri
 import { formatByteSize } from "@clc/core/features/reports/logic";
 import { getLocaleDirection, type SupportedLocale } from "@clc/i18n/locales";
 import { Badge } from "#/components/ui/badge";
+import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
 import {
   Carousel,
@@ -30,9 +31,10 @@ import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagBadge } from "#/components/ui/tag-badge";
-import { BackChevron, EllipsizedAddress } from "#/components/wallet";
+import { BackChevron } from "#/components/wallet";
 import type { ReportAttachment, ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 import { useReport, useReportLocation } from "#/features/home/hooks/use-reports";
+import { useMyPost } from "#/features/posts/hooks/use-my-posts";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { formatReportDate, formatReportPeriod } from "#/lib/report-display";
@@ -41,8 +43,9 @@ export function ReportPage({ reportId }: { reportId: string }) {
   const { t, i18n } = useLingui();
   const auth = useAuthStatus();
   const reportQuery = useReport(reportId);
+  const ownedReportQuery = useMyPost(reportId);
   const report = reportQuery.data;
-  const locationQuery = useReportLocation(report?.lat, report?.lng);
+  const locationQuery = useReportLocation(report?.lat, report?.lng, auth.isAuthenticated);
 
   if (reportQuery.isPending) return <ReportLoadingShell />;
   if (reportQuery.isError) {
@@ -65,11 +68,10 @@ export function ReportPage({ reportId }: { reportId: string }) {
   const hasCoordinates = typeof report.lat === "number" && typeof report.lng === "number";
   const coordinateLabel = hasCoordinates ? `${report.lat}, ${report.lng}` : null;
   const locationLabel = locationQuery.data?.locationName ?? report.locationName ?? coordinateLabel;
-  const isAuthor =
-    auth.isAuthenticated &&
-    !!auth.address &&
-    !!report.authorAddress &&
-    auth.address.toLowerCase() === report.authorAddress.toLowerCase();
+  // Public Post data deliberately contains no author address. The private
+  // owner endpoint is the authorization-aware source for showing Edit; its
+  // expected 404 for another person's Post stays invisible on this page.
+  const isAuthor = ownedReportQuery.data?.id === report.id;
 
   return (
     <div className="space-y-3">
@@ -90,7 +92,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
             ) : null}
           </div>
 
-          {updated || locationLabel ? (
+          {updated || (auth.isAuthenticated && locationLabel) ? (
             <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground text-xs leading-5">
               {updated && report.updatedAt ? (
                 <span className="inline-flex items-center gap-1">
@@ -98,8 +100,10 @@ export function ReportPage({ reportId }: { reportId: string }) {
                   <time dateTime={report.updatedAt}>{updated}</time>
                 </span>
               ) : null}
-              {updated && locationLabel ? <span aria-hidden="true">·</span> : null}
-              {locationLabel ? <span>{locationLabel}</span> : null}
+              {updated && auth.isAuthenticated && locationLabel ? (
+                <span aria-hidden="true">·</span>
+              ) : null}
+              {auth.isAuthenticated && locationLabel ? <span>{locationLabel}</span> : null}
             </p>
           ) : null}
 
@@ -135,6 +139,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
         <ReportAttachments report={report} />
         <ReportLocation report={report} label={locationLabel} />
         <RelatedVouchers report={report} />
+        <RelatedPools report={report} />
         <ReportProvenance report={report} />
       </article>
     </div>
@@ -515,9 +520,43 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
   );
 }
 
+function RelatedPools({ report }: { report: ReportDetail }) {
+  if (report.pools.length === 0) return null;
+
+  return (
+    <section aria-labelledby="related-pools-heading">
+      <SectionHeading id="related-pools-heading">
+        <Trans>Related pools</Trans>
+      </SectionHeading>
+      <div className="mt-2 border border-border bg-card">
+        {report.pools.map((pool) => (
+          <Link
+            key={`${pool.chainId}:${pool.address}`}
+            to="/pools/$poolAddress"
+            params={{ poolAddress: pool.address }}
+            search={{}}
+            className="flex min-h-12 w-full items-center gap-2 border-b border-border px-3 py-2 text-start last:border-b-0 active:bg-muted"
+          >
+            <span className="min-w-0 flex-1 truncate text-sm">{pool.name}</span>
+            <Badge variant="outline" size="sm" className="max-w-20 truncate font-mono text-info">
+              {pool.symbol}
+            </Badge>
+            <RiArrowRightSLine
+              className="rtl:-scale-x-100 size-4 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ReportProvenance({ report }: { report: ReportDetail }) {
   const { t, i18n } = useLingui();
   const created = formatReportDate(report.createdAt, i18n.locales?.[0] ?? i18n.locale);
+
+  if (!created) return null;
 
   return (
     <section aria-labelledby="report-provenance-heading">
@@ -525,14 +564,9 @@ function ReportProvenance({ report }: { report: ReportDetail }) {
         <Trans>Report provenance</Trans>
       </SectionHeading>
       <dl className="mt-2 border border-border bg-card">
-        <InfoRow label={t`Author`}>
-          {report.authorAddress ? <EllipsizedAddress address={report.authorAddress} /> : "—"}
+        <InfoRow label={t`Created`}>
+          <time dateTime={report.createdAt ?? undefined}>{created}</time>
         </InfoRow>
-        {created ? (
-          <InfoRow label={t`Created`}>
-            <time dateTime={report.createdAt ?? undefined}>{created}</time>
-          </InfoRow>
-        ) : null}
       </dl>
     </section>
   );
@@ -540,7 +574,8 @@ function ReportProvenance({ report }: { report: ReportDetail }) {
 
 function ReportLocation({ report, label }: { report: ReportDetail; label: string | null }) {
   const hasCoordinates = typeof report.lat === "number" && typeof report.lng === "number";
-  if (!label) return null;
+  const hasLocation = hasCoordinates || Boolean(report.locationName);
+  if (!hasLocation) return null;
 
   return (
     <section aria-labelledby="report-location-heading">
@@ -548,27 +583,29 @@ function ReportLocation({ report, label }: { report: ReportDetail; label: string
         <Trans>Location</Trans>
       </SectionHeading>
       <div className="mt-2 border border-border bg-card p-4">
-        <p className="text-sm font-semibold leading-snug">{label}</p>
-        {hasCoordinates && report.lat !== null && report.lng !== null ? (
-          <>
-            <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>
-              <LocationMap
-                lat={report.lat}
-                lng={report.lng}
-                className="mt-3 h-36 rounded-none border-0"
-              />
-            </Suspense>
-            <Button
-              variant="outline"
-              tap
-              className="mt-3 w-full"
-              onClick={() => openDefaultMaps({ label, lat: report.lat, lng: report.lng })}
-            >
-              <RiNavigationLine className="size-4" aria-hidden="true" />
-              <Trans>Open in Maps</Trans>
-            </Button>
-          </>
-        ) : null}
+        <AuthenticatedDetailsGate>
+          {label ? <p className="text-sm font-semibold leading-snug">{label}</p> : null}
+          {hasCoordinates && report.lat !== null && report.lng !== null ? (
+            <>
+              <Suspense fallback={<Skeleton className="mt-3 h-36 w-full rounded-none" />}>
+                <LocationMap
+                  lat={report.lat}
+                  lng={report.lng}
+                  className="mt-3 h-36 rounded-none border-0"
+                />
+              </Suspense>
+              <Button
+                variant="outline"
+                tap
+                className="mt-3 w-full"
+                onClick={() => openDefaultMaps({ label, lat: report.lat, lng: report.lng })}
+              >
+                <RiNavigationLine className="size-4" aria-hidden="true" />
+                <Trans>Open in Maps</Trans>
+              </Button>
+            </>
+          ) : null}
+        </AuthenticatedDetailsGate>
       </div>
     </section>
   );

@@ -50,6 +50,23 @@ describe("resolveVoucherNavigationOwner", () => {
     });
   });
 
+  it("keeps a Want-related voucher Market-owned and returns to its source Want", () => {
+    expect(resolveVoucherNavigationOwner({ from: "wants", wantId: "7" })).toEqual({
+      activeTab: "market",
+      backDestination: "wants",
+      to: "/wants/7",
+    });
+  });
+
+  it("falls back to the Wants scope when a Want origin has no id", () => {
+    expect(resolveVoucherNavigationOwner({ from: "wants" })).toEqual({
+      activeTab: "market",
+      backDestination: "wants",
+      to: "/market",
+      search: { scope: "wants" },
+    });
+  });
+
   it.each([undefined, "market"] as const)("defaults %s origins to Market", (from) => {
     expect(resolveVoucherNavigationOwner({ from })).toEqual({
       activeTab: "market",
