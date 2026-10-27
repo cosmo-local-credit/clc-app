@@ -22,6 +22,7 @@ import {
   encodeMultiSend,
   isSigner,
   safeCallName,
+  safeOwnerChange,
   type SafeCall,
 } from "./logic";
 
@@ -180,9 +181,132 @@ describe("decodeSafeTransactionCalls", () => {
     expect(decodeSafeTransactionCalls(tx, [A(9)])).toBeNull();
   });
   it("names allowed owner actions and nothing else", () => {
-    expect(safeCallName("0xf2fde38b0000")).toBe("transferOwnership");
-    expect(safeCallName("0xdeadbeef")).toBeNull();
-    expect(safeCallName("0x12")).toBeNull();
+    const on = (data: Hex): SafeCall => ({ to: A(1), value: "0", data });
+    expect(safeCallName(on("0xf2fde38b0000"), safe)).toBe("transferOwnership");
+    expect(safeCallName(on("0xdeadbeef"), safe)).toBeNull();
+    expect(safeCallName(on("0x12"), safe)).toBeNull();
+  });
+});
+
+describe("safeOwnerChange", () => {
+  const signer = A(0x5151);
+  const other = A(0x6262);
+  const sentinel = A(1);
+  const ownerAbi = parseAbi([
+    "function addOwnerWithThreshold(address,uint256)",
+    "function removeOwner(address,address,uint256)",
+    "function swapOwner(address,address,address)",
+    "function changeThreshold(uint256)",
+    "function enableModule(address)",
+    "function setGuard(address)",
+    "function setFallbackHandler(address)",
+  ]);
+  const self = (data: Hex): SafeCall => ({ to: safe, value: "0", data });
+  const add = (o: `0x${string}`, n: bigint) =>
+    encodeFunctionData({ abi: ownerAbi, functionName: "addOwnerWithThreshold", args: [o, n] });
+  const remove = (prev: `0x${string}`, o: `0x${string}`, n: bigint) =>
+    encodeFunctionData({ abi: ownerAbi, functionName: "removeOwner", args: [prev, o, n] });
+  const swap = (prev: `0x${string}`, from: `0x${string}`, to: `0x${string}`) =>
+    encodeFunctionData({ abi: ownerAbi, functionName: "swapOwner", args: [prev, from, to] });
+  const threshold = (n: bigint) =>
+    encodeFunctionData({ abi: ownerAbi, functionName: "changeThreshold", args: [n] });
+
+  it("reads each signer change the Safe makes on itself", () => {
+    expect(safeOwnerChange(self(add(signer, 2n)), safe)).toEqual({
+      kind: "addSigner",
+      signer,
+      threshold: 2,
+    });
+    expect(safeOwnerChange(self(remove(sentinel, signer, 1n)), safe)).toEqual({
+      kind: "removeSigner",
+      signer,
+      threshold: 1,
+    });
+    expect(safeOwnerChange(self(swap(other, signer, A(0x7373))), safe)).toEqual({
+      kind: "replaceSigner",
+      oldSigner: signer,
+      newSigner: A(0x7373),
+    });
+    expect(safeOwnerChange(self(threshold(3n)), safe)).toEqual({
+      kind: "changeThreshold",
+      threshold: 3,
+    });
+  });
+
+  it("names them as allowed, and only on the Safe itself", () => {
+    expect(safeCallName(self(add(signer, 2n)), safe)).toBe("addSigner");
+    expect(safeCallName({ to: A(1), value: "0", data: add(signer, 2n) }, safe)).toBeNull();
+    expect(safeOwnerChange({ to: A(1), value: "0", data: threshold(1n) }, safe)).toBeNull();
+  });
+
+  it("refuses the changes clc-core refuses", () => {
+    const dirty = `${add(signer, 1n).slice(0, 10)}ff${add(signer, 1n).slice(12)}` as Hex;
+    const refused: Record<string, Hex> = {
+      "the zero address": add(zeroAddress, 1n),
+      "the sentinel": add(sentinel, 1n),
+      "the Safe itself": add(safe, 1n),
+      "a zero threshold": add(signer, 0n),
+      "removing the sentinel": remove(signer, sentinel, 1n),
+      "removing to a zero threshold": remove(sentinel, signer, 0n),
+      "swapping in the zero address": swap(sentinel, signer, zeroAddress),
+      "swapping a signer for itself": swap(sentinel, signer, signer),
+      "a zero threshold change": threshold(0n),
+      "trailing bytes": `${threshold(1n)}00`,
+      "a dirty address word": dirty,
+      "enabling a module": encodeFunctionData({
+        abi: ownerAbi,
+        functionName: "enableModule",
+        args: [signer],
+      }),
+      "setting a guard": encodeFunctionData({
+        abi: ownerAbi,
+        functionName: "setGuard",
+        args: [signer],
+      }),
+      "setting the fallback handler": encodeFunctionData({
+        abi: ownerAbi,
+        functionName: "setFallbackHandler",
+        args: [signer],
+      }),
+    };
+    for (const [name, data] of Object.entries(refused)) {
+      expect(safeOwnerChange(self(data), safe), name).toBeNull();
+      expect(safeCallName(self(data), safe), name).toBeNull();
+    }
+  });
+
+  it("lets a signer confirm an owner change, and leaves a refused one to Safe", () => {
+    const base = {
+      safe,
+      confirmations: [{ owner: other }],
+      confirmationsRequired: 2,
+      viewer: signer,
+      canSign: true,
+    };
+    expect(safeProposalAction({ ...base, calls: [self(add(A(0x8888), 2n))] })).toBe("confirm");
+    expect(
+      safeProposalAction({
+        ...base,
+        calls: [self(add(A(0x8888), 2n)), self(threshold(3n))],
+      }),
+    ).toBe("confirm");
+    expect(safeProposalAction({ ...base, calls: [self(add(sentinel, 2n))] })).toBe("review");
+    expect(
+      safeProposalAction({
+        ...base,
+        calls: [
+          self(encodeFunctionData({ abi: ownerAbi, functionName: "setGuard", args: [signer] })),
+        ],
+      }),
+    ).toBe("review");
+  });
+
+  it("describes an owner change for the confirming signer", () => {
+    expect(describeSafeCall(self(swap(sentinel, signer, other)), safe)).toEqual({
+      kind: "replaceSigner",
+      oldSigner: signer,
+      newSigner: other,
+    });
   });
 });
 
@@ -198,7 +322,7 @@ describe("safeProposalAction", () => {
       args: [other, 1n],
     }),
   } as const;
-  const base = { confirmationsRequired: 2, calls: [mint], viewer, canSign: true } as const;
+  const base = { safe, confirmationsRequired: 2, calls: [mint], viewer, canSign: true } as const;
 
   it("offers a signer the confirmation of an allowed call", () => {
     expect(safeProposalAction({ ...base, confirmations: [{ owner: other }] })).toBe("confirm");
@@ -242,7 +366,7 @@ describe("describeSafeCall", () => {
       functionName: "mintTo",
       args: [person, 1_500_000n],
     });
-    expect(describeSafeCall({ to: token, value: "0", data })).toEqual({
+    expect(describeSafeCall({ to: token, value: "0", data }, safe)).toEqual({
       kind: "mint",
       token,
       recipient: person,
@@ -255,14 +379,14 @@ describe("describeSafeCall", () => {
       functionName: "transferOwnership",
       args: [person],
     });
-    expect(describeSafeCall({ to: token, value: "0", data })).toEqual({
+    expect(describeSafeCall({ to: token, value: "0", data }, safe)).toEqual({
       kind: "ownership",
       asset: token,
       newOwner: person,
     });
   });
   it("has nothing to say about other calls", () => {
-    expect(describeSafeCall({ to: token, value: "0", data: "0x12345678" })).toBeNull();
+    expect(describeSafeCall({ to: token, value: "0", data: "0x12345678" }, safe)).toBeNull();
   });
 });
 

@@ -192,6 +192,68 @@ describe("SafePendingSheet", () => {
     expect(mocks.version).not.toHaveBeenCalled();
   });
 
+  describe("signer changes queued in Safe", () => {
+    const NEWCOMER = "0x00000000000000000000000000000000000000c3";
+    const ownerAbi = parseAbi([
+      "function addOwnerWithThreshold(address,uint256)",
+      "function swapOwner(address,address,address)",
+      "function enableModule(address)",
+    ]);
+    const addSigner = proposal({
+      to: SAFE,
+      data: encodeFunctionData({
+        abi: ownerAbi,
+        functionName: "addOwnerWithThreshold",
+        args: [NEWCOMER, 2n],
+      }),
+    });
+
+    it("names an added signer and the approvals it leaves, and lets a signer confirm", async () => {
+      const sheet = await openWith([addSigner]);
+      expect(within(sheet).getByText("Add signer")).toBeTruthy();
+      expect(within(sheet).getByText("New signer")).toBeTruthy();
+      expect(within(sheet).getByText("Approvals required")).toBeTruthy();
+      expect(within(sheet).getByText("2")).toBeTruthy();
+      fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
+      expect(mocks.confirm).toHaveBeenCalledWith(addSigner, expect.anything());
+    });
+
+    it("lets a passkey confirm it on a Safe 1.5.0", async () => {
+      mocks.connectorId = "calibur-webauthn";
+      mocks.version.mockResolvedValue("1.5.0");
+      const sheet = await openWith([addSigner]);
+      fireEvent.click(await within(sheet).findByRole("button", { name: "Confirm" }));
+      expect(mocks.confirm).toHaveBeenCalledWith(addSigner, expect.anything());
+    });
+
+    it("shows who leaves and who joins when a signer is replaced", async () => {
+      const sheet = await openWith([
+        proposal({
+          to: SAFE,
+          data: encodeFunctionData({
+            abi: ownerAbi,
+            functionName: "swapOwner",
+            args: ["0x0000000000000000000000000000000000000001", OTHER, NEWCOMER],
+          }),
+        }),
+      ]);
+      expect(within(sheet).getByText("Replace signer")).toBeTruthy();
+      expect(within(sheet).getByText("Removed signer")).toBeTruthy();
+      expect(within(sheet).getByText("New signer")).toBeTruthy();
+    });
+
+    it("leaves any other change to the Safe itself unknown", async () => {
+      const sheet = await openWith([
+        proposal({
+          to: SAFE,
+          data: encodeFunctionData({ abi: ownerAbi, functionName: "enableModule", args: [OTHER] }),
+        }),
+      ]);
+      expect(within(sheet).getByText("Unknown call")).toBeTruthy();
+      expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();
+    });
+  });
+
   it("does not offer to confirm a call it cannot decode", async () => {
     const sheet = await openWith([proposal({ data: "0x12345678" })]);
     expect(within(sheet).getByText("Unknown call")).toBeTruthy();
