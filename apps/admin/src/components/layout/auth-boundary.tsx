@@ -1,7 +1,11 @@
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { lazy, type ReactNode, Suspense } from "react";
 import { LoadingBlock } from "#/components/admin/loading-block";
-import { type AdminSession, SUPERADMIN_ROLE, useAdminSession } from "#/features/auth/admin-session";
+import {
+  ADMIN_ROLE_LABEL,
+  type AdminSession,
+  useAdminSession,
+} from "#/features/auth/admin-session";
 import type { SignInNotice } from "#/features/auth/ui/sign-in-panel";
 
 /**
@@ -15,7 +19,7 @@ const SignInPanel = lazy(() =>
 );
 
 /**
- * This is a UX gate only. clc-core enforces `requireSuperAdmin` on every admin
+ * This is a UX gate only. clc-core enforces administrative access on every admin
  * endpoint and remains the security authority, regardless of what renders here.
  */
 export function AuthBoundary({ children }: { children: ReactNode }) {
@@ -60,7 +64,7 @@ function noticeFor(
         title: "Not authorized",
         description:
           `${formatVoucherAddress(session.operator.address as `0x${string}`)} is ` +
-          `${session.operator.role}. Requires ${SUPERADMIN_ROLE}.`,
+          `${session.operator.role}. Requires ${ADMIN_ROLE_LABEL}.`,
         // A stale session cookie is still set, so offer the way out of it.
         signedIn: true,
       };

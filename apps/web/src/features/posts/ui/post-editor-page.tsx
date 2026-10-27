@@ -25,6 +25,7 @@ import {
   type ReportWrite,
 } from "@clc/core/features/reports/logic";
 import { getFieldError, useForm, useStore } from "@clc/core/lib/forms";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -284,11 +285,12 @@ function PostEditorForm({
   const [confirmLeave, setConfirmLeave] = useState(false);
 
   const saving = create.isPending || update.isPending;
-  // A post may only link vouchers its author owns, unless the author is a
-  // superadmin. A session with no role is treated as unprivileged: the picker
+  // A post may only link vouchers its author owns, unless the author has an
+  // administrative role. A session with no role is treated as unprivileged: the picker
   // then offers less than the backend might allow, never more than it accepts.
-  const voucherOwner =
-    auth.session?.role === "SUPERADMIN" ? undefined : (auth.session?.address ?? auth.address);
+  const voucherOwner = isAdminRole(auth.session?.role)
+    ? undefined
+    : (auth.session?.address ?? auth.address);
 
   const form = useForm({
     defaultValues: initial,

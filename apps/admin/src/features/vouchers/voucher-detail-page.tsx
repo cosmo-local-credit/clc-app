@@ -11,6 +11,7 @@ import { errorMessage } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
 import { EditVoucherSheet } from "./ui/edit-voucher-sheet";
 import { OfferingEditorSheet, type OfferingEditor } from "./ui/offering-editor-sheet";
+import { VoucherContractSheet } from "./ui/voucher-contract-sheet";
 import { RestoreResourceSheet } from "#/features/retirement/restore-resource-sheet";
 import { RetirementResourceHistory } from "#/features/retirement/retirement-resource-history";
 import { VoucherHeader } from "./ui/voucher-header";
@@ -48,6 +49,7 @@ export function VoucherDetailPage({
   const [restoring, setRestoring] = useState(false);
 
   const [editingVoucher, setEditingVoucher] = useState(false);
+  const [contractOpen, setContractOpen] = useState(false);
   const [offeringEditor, setOfferingEditor] = useState<OfferingEditor | null>(null);
 
   if (voucherState.kind === "pending") return <LoadingBlock rows={8} />;
@@ -71,6 +73,7 @@ export function VoucherDetailPage({
       <VoucherHeader
         voucher={voucher}
         onEdit={() => setEditingVoucher(true)}
+        onContract={() => setContractOpen(true)}
         onRestore={() => setRestoring(true)}
         restoring={false}
       />
@@ -96,6 +99,12 @@ export function VoucherDetailPage({
         open={editingVoucher}
         voucher={voucher}
         onClose={() => setEditingVoucher(false)}
+      />
+
+      <VoucherContractSheet
+        voucher={voucher}
+        open={contractOpen}
+        onClose={() => setContractOpen(false)}
       />
 
       <OfferingEditorSheet

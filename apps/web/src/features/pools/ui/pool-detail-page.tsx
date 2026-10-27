@@ -23,6 +23,7 @@ import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-to
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolCreditPanel } from "./pool-credit-panel";
@@ -84,7 +85,7 @@ export function PoolDetailPage({
   );
   const pool = poolQuery.data;
   // The same rule the voucher screen applies: the backend session's address
-  // must be the catalog owner, or the session must be a superadmin. clc-core
+  // must be the catalog owner, or the session must have an administrative role. clc-core
   // decides for real; this only keeps the button off everyone else's screen.
   // The owner itself, or a signer of the Safe that owns the pool.
   const ownerInfo = useAssetOwnerInfo(poolAddress, pool?.ownerAddress);
@@ -106,9 +107,9 @@ export function PoolDetailPage({
   const vouchers = poolVouchers.filter((voucher) => voucher.active);
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
-    auth.isAuthenticated && !!pool && (auth.session?.role === "SUPERADMIN" || isPoolOwner);
+    auth.isAuthenticated && !!pool && (isAdminRole(auth.session?.role) || isPoolOwner);
   // On-chain management is narrower than editing the record. Every call behind
-  // it is `onlyOwner` on a contract the pool's owner deployed, so a superadmin —
+  // it is `onlyOwner` on a contract the pool's owner deployed, so an administrator —
   // who may correct the catalog for anyone — would only be signing a revert.
   const canManageOnChain = isPoolOwner;
   const rates = usePoolVoucherRates(pool, vouchers, canManageOnChain);

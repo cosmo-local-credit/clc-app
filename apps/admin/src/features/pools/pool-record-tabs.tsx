@@ -20,6 +20,11 @@ import {
 import { PoolProtocolFee } from "#/components/admin/pool-protocol-fee";
 import { Button } from "#/components/ui/button";
 import { PoolPricingPanel } from "./ui/pool-pricing-panel";
+import {
+  PoolFeedPolicy,
+  PoolFeedRowActions,
+  PoolVoucherChainActions,
+} from "./ui/pool-chain-actions";
 import { PoolHoldingsPanel, type PoolVoucherEdit } from "./ui/pool-holdings-panel";
 import { usePoolRates } from "./use-pool-pricing";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
@@ -247,22 +252,25 @@ function VouchersPanel({
                     {formatDateTime(voucher.syncedAt)}
                   </TableCell>
                   <TableCell>
-                    {pool.quoterType !== "decimal" || pool.limiterAddress !== null ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        aria-label={`Configure ${voucher.symbol}`}
-                        onClick={() =>
-                          onConfigure({
-                            voucher,
-                            ratePpm: rates.data?.[voucher.tokenAddress.toLowerCase()] ?? null,
-                            capRaw: voucher.tokenLimit,
-                          })
-                        }
-                      >
-                        Configure
-                      </Button>
-                    ) : null}
+                    <div className="flex flex-wrap justify-end gap-2">
+                      {pool.quoterType !== "decimal" || pool.limiterAddress !== null ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label={`Configure ${voucher.symbol}`}
+                          onClick={() =>
+                            onConfigure({
+                              voucher,
+                              ratePpm: rates.data?.[voucher.tokenAddress.toLowerCase()] ?? null,
+                              capRaw: voucher.tokenLimit,
+                            })
+                          }
+                        >
+                          Configure
+                        </Button>
+                      ) : null}
+                      <PoolVoucherChainActions pool={pool} voucher={voucher} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -369,7 +377,10 @@ function FeedsPanel({
         <span className="text-muted-foreground font-mono text-xs tracking-[0.14em] uppercase">
           Quoter
         </span>
-        <ContractAddress address={pool.quoterAddress} label="Copy quoter address" />
+        <span className="flex flex-wrap items-center gap-3">
+          <PoolFeedPolicy pool={pool} />
+          <ContractAddress address={pool.quoterAddress} label="Copy quoter address" />
+        </span>
       </div>
 
       <RecordPanel state={state}>
@@ -393,13 +404,18 @@ function FeedsPanel({
                 {groups.map((group) => (
                   <TableRow key={group.key}>
                     <TableCell>
-                      {group.key === "unpriced" ? (
-                        <span className="text-destructive font-mono text-xs uppercase">
-                          No feed
-                        </span>
-                      ) : (
-                        <span className="text-sm font-medium">{group.name ?? "Unnamed feed"}</span>
-                      )}
+                      <div className="flex flex-col gap-2">
+                        {group.key === "unpriced" ? (
+                          <span className="text-destructive font-mono text-xs uppercase">
+                            No feed
+                          </span>
+                        ) : (
+                          <span className="text-sm font-medium">
+                            {group.name ?? "Unnamed feed"}
+                          </span>
+                        )}
+                        <PoolFeedRowActions pool={pool} group={group} />
+                      </div>
                     </TableCell>
                     <TableCell>
                       <ContractAddress address={group.address} label="Copy aggregator address" />

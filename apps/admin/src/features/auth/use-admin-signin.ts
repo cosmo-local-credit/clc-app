@@ -5,7 +5,7 @@
  * assertion the backend verifies against the stored credential. Either way
  * clc-core issues the same session cookie and the console re-reads
  * /auth/session — the role gate lives there, not here, so signing in with a
- * non-superadmin account lands on the `unauthorized` screen rather than failing
+ * non-administrative account lands on the `unauthorized` screen rather than failing
  * at the sign-in step.
  */
 

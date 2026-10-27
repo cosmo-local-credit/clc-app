@@ -1,9 +1,12 @@
 import type { AdminUser } from "@clc/api/features/admin/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import { isSuperAdminRole } from "@clc/core/features/users/roles";
 import { HiOutlineExternalLink, HiOutlinePencil } from "react-icons/hi";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
+import { ConfirmDialog } from "#/components/admin/confirm-dialog";
 import { CopyButton } from "#/components/admin/copy-button";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
@@ -12,7 +15,8 @@ import { Button, buttonVariants } from "#/components/ui/button";
 import { addressUrl } from "#/lib/explorer";
 import { formatDateTime, initials } from "#/lib/format";
 import { cn } from "#/lib/utils";
-import { useApproveUser, useRejectUser } from "../use-admin-users";
+import { useAdminSession } from "#/features/auth/admin-session";
+import { useApproveUser, useRejectUser, useUpdateUserRole } from "../use-admin-users";
 
 /** Shown when an account has no name, so the title is never an empty line. */
 const UNNAMED = "Unnamed account";
@@ -52,7 +56,12 @@ export function AccountHeader({
 }) {
   const approve = useApproveUser();
   const reject = useRejectUser();
-  const busy = approve.isPending || reject.isPending;
+  const updateRole = useUpdateUserRole();
+  const session = useAdminSession();
+  const [roleTarget, setRoleTarget] = useState<"ADMIN" | "USER" | null>(null);
+  const busy = approve.isPending || reject.isPending || updateRole.isPending;
+  const canManageRoles =
+    session.status === "authenticated" && isSuperAdminRole(session.operator.role);
 
   const name = account?.name?.trim() ? account.name : UNNAMED;
 
@@ -156,6 +165,27 @@ export function AccountHeader({
                 Edit profile
               </Button>
 
+              {canManageRoles && account.role === "USER" ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => setRoleTarget("ADMIN")}
+                >
+                  Make admin
+                </Button>
+              ) : null}
+              {canManageRoles && account.role === "ADMIN" ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => setRoleTarget("USER")}
+                >
+                  Make user
+                </Button>
+              ) : null}
+
               {account.status !== "REJECTED" ? (
                 // "Ban user" over "Reject": the same endpoint serves both a
                 // never-approved signup and an account being shut out later, and only
@@ -176,6 +206,32 @@ export function AccountHeader({
           ) : null}
         </div>
       </div>
+
+      {account && roleTarget ? (
+        <ConfirmDialog
+          open
+          title={roleTarget === "ADMIN" ? "Make this user an admin?" : "Remove admin access?"}
+          description={
+            roleTarget === "ADMIN"
+              ? "This account will gain access to the Admin console and all administrative operations except role management."
+              : "This account will immediately lose administrative access."
+          }
+          confirmLabel={roleTarget === "ADMIN" ? "Make admin" : "Make user"}
+          destructive={roleTarget === "USER"}
+          pending={updateRole.isPending}
+          onCancel={() => setRoleTarget(null)}
+          onConfirm={() =>
+            void run(roleTarget === "ADMIN" ? "User made admin." : "Admin made user.", () =>
+              updateRole
+                .mutateAsync({ address: account.ethereumAddress, role: roleTarget })
+                .then((user) => {
+                  setRoleTarget(null);
+                  return user;
+                }),
+            )
+          }
+        />
+      ) : null}
     </div>
   );
 }

@@ -472,7 +472,7 @@ export function createReportsClient(http: HttpClient) {
     },
 
     /**
-     * Creates a post. A normal user's is `SUBMITTED`, a superadmin's `APPROVED`;
+     * Creates a post. A normal user's is `SUBMITTED`, an administrator's `APPROVED`;
      * the response says which, so nothing here predicts it.
      */
     async createReport(input: ReportWrite, signal?: AbortSignal): Promise<ManagedReportDetail> {
@@ -484,7 +484,7 @@ export function createReportsClient(http: HttpClient) {
      * so a cleared field and a forgotten one cannot be confused.
      *
      * A normal author's edit returns the post as `SUBMITTED` — it leaves the
-     * public feed until reapproved. A superadmin's preserves the status.
+     * public feed until reapproved. An administrator's preserves the status.
      */
     async updateReport(
       id: string,

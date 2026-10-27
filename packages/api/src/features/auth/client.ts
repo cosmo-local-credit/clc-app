@@ -47,12 +47,12 @@ export type SessionResult = {
   address: string;
   chainId: number;
   /**
-   * The signed-in user's role, e.g. "USER" or "SUPERADMIN".
+   * The signed-in user's role, e.g. "USER", "ADMIN", or "SUPERADMIN".
    *
    * Optional because a backend older than the change that added it omits the
    * field entirely. A client that authorizes on role must treat `undefined` as
    * "cannot determine" rather than "not privileged" — silently denying a real
-   * superadmin is the worse failure.
+   * administrator is the worse failure.
    */
   role?: string;
 };
@@ -77,6 +77,11 @@ export type WebAuthnCredentialSummary = {
 };
 
 /** `GET /auth/webauthn/credentials` — scoped by clc-core to the session's wallet. */
+export type SystemInfo = {
+  systemSigner: string;
+  build: string;
+};
+
 export type WebAuthnCredentialsResult = {
   address: string;
   credentials: WebAuthnCredentialSummary[];
@@ -261,6 +266,8 @@ export type AuthClient = {
   logout(): Promise<void>;
   getSession(): Promise<SessionResult | null>;
   getWebAuthnCredentials(): Promise<WebAuthnCredentialsResult>;
+  /** `GET /api/v2/system` — the platform signer, for any signed-in caller. */
+  getSystem(): Promise<SystemInfo>;
   submitProfile(payload: ProfilePayload): Promise<SavedProfile>;
   getProfile(): Promise<ProfileResult>;
   getStorageToken(): Promise<StorageTokenResult>;
@@ -337,6 +344,10 @@ export function createAuthClient(http: HttpClient): AuthClient {
       return http.request<WebAuthnCredentialsResult>("/auth/webauthn/credentials", {
         method: "GET",
       });
+    },
+
+    async getSystem(): Promise<SystemInfo> {
+      return http.request<SystemInfo>("/api/v2/system", { method: "GET" });
     },
 
     // Returns the saved row rather than discarding it, so a caller can seed the

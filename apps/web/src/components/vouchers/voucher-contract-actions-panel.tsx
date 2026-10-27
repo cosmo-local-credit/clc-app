@@ -52,7 +52,7 @@ type VoucherControlSheet = "details" | "mint" | "ownership";
 /**
  * Everything the issuer can change about one voucher, in a single group.
  *
- * Contract calls and the catalog record are gated differently — a superadmin may
+ * Contract calls and the catalog record are gated differently — an administrator may
  * correct any voucher's record, while `mint` and `transferOwnership` are signed
  * by the active owner and submitted through Calibur — but they read as one list
  * of settings, so they share one group rather than a button above a titled card.

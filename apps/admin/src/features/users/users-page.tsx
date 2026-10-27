@@ -2,7 +2,7 @@ import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import type { AdminUser } from "@clc/api/features/admin/client";
+import type { AdminUser, AdminUserStatus } from "@clc/api/features/admin/client";
 import { DataTable } from "#/components/admin/data-table";
 import { EmptyState } from "#/components/admin/empty-state";
 import { ListToolbar } from "#/components/admin/list-toolbar";
@@ -11,19 +11,33 @@ import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
 import { TablePagination } from "#/components/admin/table-pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "#/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { termFilter } from "#/lib/catalog-filter";
-import { DEFAULT_PAGE_SIZE, filterSearch, type TableSearch } from "#/lib/table-search";
+import { DEFAULT_PAGE_SIZE, filterSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
+import type { AccountSearch } from "./account-search";
 import { useAdminUsers } from "./use-admin-users";
 
+const STATUS_OPTIONS: Array<{ value: "ALL" | AdminUserStatus; label: string }> = [
+  { value: "ALL", label: "All" },
+  { value: "PENDING", label: "Pending" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "REJECTED", label: "Rejected" },
+];
+
 /**
- * The directory columns are identity and contact only.
+ * Identity, contact, and approval status.
  *
- * Approval state, per-account limits and the join date are deliberately absent:
- * they belong to one account rather than to a scan across accounts, and the
- * account screen shows all three next to the controls that change them. A row
- * here answers "who is this and how do we reach them".
+ * Per-account limits and the join date stay on the account screen, next to the
+ * controls that change them.
  */
 const columns: Array<ColumnDef<AdminUser>> = [
   {
@@ -79,9 +93,14 @@ const columns: Array<ColumnDef<AdminUser>> = [
     header: "Role",
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.role}</span>,
   },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => <span className="font-mono text-xs uppercase">{row.original.status}</span>,
+  },
 ];
 
-export function UsersPage({ search }: { search: TableSearch }) {
+export function UsersPage({ search }: { search: AccountSearch }) {
   const navigate = useNavigate();
   // The term goes to the endpoint, so a search covers the whole directory rather
   // than the page in hand. `searched` is read back off the normalized term
@@ -93,6 +112,8 @@ export function UsersPage({ search }: { search: TableSearch }) {
     cursor: search.cursor,
     next: search.dir === undefined ? undefined : search.dir === "next",
     ...(term ? { q: term } : {}),
+    ...(search.status ? { status: search.status } : {}),
+    ...(search.role === "admins" ? { roles: ["ADMIN", "SUPERADMIN"] as const } : {}),
   });
 
   const users = usersQuery.data?.users ?? [];
@@ -108,16 +129,69 @@ export function UsersPage({ search }: { search: TableSearch }) {
       <PageHeader
         title="Accounts"
         actions={
-          <ListToolbar
-            search={search.q}
-            onSearchChange={(value) =>
-              void navigate({
-                to: "/users",
-                search: filterSearch(search, { q: value || undefined }),
-              })
-            }
-            searchPlaceholder="Name, email, phone, address"
-          />
+          <>
+            <ListToolbar
+              search={search.q}
+              onSearchChange={(value) =>
+                void navigate({
+                  to: "/users",
+                  search: filterSearch(search, { q: value || undefined }),
+                })
+              }
+              searchPlaceholder="Name, email, phone, address"
+            />
+            <Select
+              items={STATUS_OPTIONS}
+              value={search.status ?? "ALL"}
+              onValueChange={(value) =>
+                void navigate({
+                  to: "/users",
+                  search: filterSearch(search, {
+                    status:
+                      value === "PENDING" || value === "APPROVED" || value === "REJECTED"
+                        ? value
+                        : undefined,
+                  }),
+                })
+              }
+            >
+              <SelectTrigger size="default" className="w-40 px-2.5" aria-label="Status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <ToggleGroup
+              variant="outline"
+              size="sm"
+              spacing={0}
+              value={[search.role ?? "all"]}
+              onValueChange={(values) => {
+                const value = values[0];
+                if (!value) return;
+                void navigate({
+                  to: "/users",
+                  search: filterSearch(search, {
+                    role: value === "admins" ? "admins" : undefined,
+                  }),
+                });
+              }}
+              aria-label="Account roles"
+              className="border-border bg-card h-9 items-center border p-0.5"
+            >
+              <ToggleGroupItem value="all" className="h-full px-2.5 font-mono text-xs uppercase">
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem value="admins" className="h-full px-2.5 font-mono text-xs uppercase">
+                Admins
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </>
         }
       />
 

@@ -40,7 +40,7 @@ export type VoucherSearchControls = {
  * per-voucher match count, and the endpoint only sees active, geolocated vouchers.
  *
  * `owner` restricts the lookup to vouchers one address owns — the post editor's rule for anyone
- * who is not a superadmin. The backend enforces the same rule on the write; this keeps the picker
+ * without an administrative role. The backend enforces the same rule on the write; this keeps the picker
  * from offering what the write would refuse.
  */
 export function useVoucherSearch(
