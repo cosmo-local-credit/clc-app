@@ -17,7 +17,7 @@ export function assemblePaperWalletPdf(cards: readonly PreparedCard[], hairlines
     ...card,
     qr: QRCode.create(qrUrl).modules,
   }));
-  return new Blob(buildPaperWalletSheetPdf(printable, { hairlines, title: "CLC paper wallets" }), {
+  return new Blob(buildPaperWalletSheetPdf(printable, { hairlines, title: "CLC sign-in cards" }), {
     type: "application/pdf",
   });
 }

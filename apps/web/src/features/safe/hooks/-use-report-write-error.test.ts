@@ -35,7 +35,7 @@ describe("useReportWriteError", () => {
     const report = renderHook(() => useReportWriteError()).result.current;
     expect(report(new SafePasskeyUnsupportedError(SAFE), "fallback")).toBe(false);
     expect(toast.error).toHaveBeenCalledWith(
-      "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.",
+      "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.",
     );
     expect(useSafeSheet.getState().safe).toBeNull();
   });

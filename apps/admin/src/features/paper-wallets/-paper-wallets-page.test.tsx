@@ -56,7 +56,8 @@ describe("PaperWalletsPage", () => {
 
   it("requires a confirmed batch password before generating", () => {
     render(<PaperWalletsPage search={{ source: "blank" }} />);
-    const generate = screen.getByRole("button", { name: "Generate 10 wallets" });
+    expect(screen.getByRole("heading", { name: "Sign-in cards" })).toBeTruthy();
+    const generate = screen.getByRole("button", { name: "Generate 10 sign-in cards" });
     expect(generate.hasAttribute("disabled")).toBe(true);
 
     fireEvent.change(screen.getByLabelText("Password"), { target: { value: "sunflower" } });
@@ -81,7 +82,7 @@ describe("PaperWalletsPage", () => {
       );
       fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
 
-      const generate = await screen.findByRole("button", { name: "Generate 2 wallets" });
+      const generate = await screen.findByRole("button", { name: "Generate 2 sign-in cards" });
       expect(screen.getByText(/with issues, skipped/)).toBeTruthy();
       fireEvent.click(generate);
 
@@ -134,6 +135,7 @@ describe("PaperWalletsPage", () => {
 
     await act(async () => finish(new Blob(["%PDF-1.4"], { type: "application/pdf" })));
     expect(mocks.downloadBlob).toHaveBeenCalledTimes(1);
+    expect(mocks.downloadBlob.mock.calls[0]?.[1]).toMatch(/^clc-sign-in-cards-.*\.pdf$/);
     expect(screen.queryByRole("progressbar", { name: "PDF generation" })).toBeNull();
   });
 
@@ -159,6 +161,6 @@ describe("PaperWalletsPage", () => {
     vi.stubGlobal("NDEFReader", createFakeNfc().Reader);
     render(<PaperWalletsPage search={{ source: "blank" }} />);
     expect(screen.queryByText("Write NFC cards")).toBeNull();
-    expect(screen.getByRole("button", { name: "Generate 10 wallets" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Generate 10 sign-in cards" })).toBeTruthy();
   });
 });

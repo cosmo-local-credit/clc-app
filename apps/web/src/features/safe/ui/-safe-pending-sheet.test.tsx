@@ -188,7 +188,7 @@ describe("SafePendingSheet", () => {
     const sheet = await openWith([proposal()]);
     expect(
       await within(sheet).findByText(
-        "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.",
+        "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.",
       ),
     ).toBeTruthy();
     expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();

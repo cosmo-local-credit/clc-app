@@ -75,7 +75,7 @@ const navItems: Array<{
 }> = [
   { to: "/", label: "Dashboard", icon: HiOutlineHome, exact: true },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
-  { to: "/paper-wallets", label: "Paper wallets", icon: HiOutlineQrcode },
+  { to: "/paper-wallets", label: "Sign-in cards", icon: HiOutlineQrcode },
   { to: "/nfc-cards", label: "NFC cards", icon: MdOutlineNfc },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },

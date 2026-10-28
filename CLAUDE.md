@@ -12,6 +12,11 @@ or seed pools).
 **Core flows:** signup + wallet onboarding → on-ramp → join/create pool →
 create voucher → send/swap/redeem → marketplace → off-ramp.
 
+**Credential terminology:** user-facing copy calls the QR credential a
+**Sign-in card**. Legacy internal identifiers such as `paperWallet` and the
+`/paper-wallets` route remain for compatibility and must not appear as product
+copy.
+
 ## Stack
 
 TanStack Start (Vite + Nitro 3), Serwist PWA, shadcn on **Base UI** (not Radix),

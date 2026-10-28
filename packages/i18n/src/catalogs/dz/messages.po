@@ -379,13 +379,13 @@ msgid "A new version is available"
 msgstr "ཐོན་རིམ་གསརཔ་ཐོབ་ཚུགས།"
 
 #: apps/web/src/routes/__root.tsx:302
-msgid "A paper wallet link was opened. Sign in with this address?"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་འབྲེལ་ལམ་ཁ་ཕྱེ་ཡོད། "
-"ཁ་བྱང་འདི་གིས་ནང་འཛུལ་འབད་ནི་ཨིན་ན?"
+#~ msgid "A paper wallet link was opened. Sign in with this address?"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་འབྲེལ་ལམ་ཁ་ཕྱེ་ཡོད། "
+#~ "ཁ་བྱང་འདི་གིས་ནང་འཛུལ་འབད་ནི་ཨིན་ན?"
 
 #: apps/web/src/routes/__root.tsx:300
-msgid "A paper wallet QR was scanned. Import this address?"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་ QR བཤེར་ཡོད། ཁ་བྱང་འདི་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
+#~ msgid "A paper wallet QR was scanned. Import this address?"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་ QR བཤེར་ཡོད། ཁ་བྱང་འདི་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
 
 #: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:369
@@ -397,6 +397,16 @@ msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཅིག་
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:286
 #~ msgid "A service"
 #~ msgstr "ཞབས་ཏོག་ཅིག"
+
+#: apps/web/src/routes/__root.tsx:302
+msgid "A sign-in card link was opened. Sign in to this wallet?"
+msgstr "དེ་ལས་ འགྲུལ་འཕྲིན་གྱི་ལྡེ་མིག་ཅིག་ཕྱེ་ཡི། ཁྱོད་ཀྱིས་ཁུ་བ་འདི་ "
+"ག་ཅི་འབད་འབདཝ་ཨིན་ན་?"
+
+#: apps/web/src/routes/__root.tsx:300
+msgid "A sign-in card was scanned. Switch to this wallet?"
+msgstr "ཨེགསི་ཨེམ་ཌི་གི་ལག་ཁྱེར་འདི་ ཨེགསི་ཨེམ་ཌི་གི་ལག་ཁྱེར་ཨིན། "
+"ཁྱོད་ཀྱིས་ཁུ་བ་འདི་ ག་ཅི་འབད་འབདཝ་སྨོ་ཟེར་དྲིས་ནུག"
 
 #: apps/web/src/components/profile-privacy-notice.tsx:6
 msgid "A signed-in person can find your username and wallet only by entering "
@@ -460,8 +470,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་ཁྱབ་བསྒྲགས་འབད་ནིའི་དོན་ལུ་ཁ་ཚིག་ཚུ་དང་ལེན་འབད།"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:56
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 msgid "Account"
 msgstr "རྩིས་ཐོ།"
 
@@ -604,7 +614,7 @@ msgstr "པར་ཚུ་ཁ་སྐོང་རྐྱབ།"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
 msgid "Add signer"
 msgstr "མཚན་རྟགས་བཀོད་མི་ ཁ་སྐོང་།"
 
@@ -736,7 +746,7 @@ msgstr "གཏང་བའི་ཧེ་མར་ ཊོ་ཀེན་དང�
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:269
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -811,9 +821,17 @@ msgstr "ལག་ལེན་འཐབ།"
 msgid "Apply filters"
 msgstr "ཚགས་མ་ལག་ལེན་འཐབ།"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
+msgid "Apply password"
+msgstr "གསང་བཤེར་བཀོལ་བ།"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
+msgid "Applying password…"
+msgstr "གསང་ཡིག་ལག་ལེན་འཐབ་ནི་..."
+
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:299
 msgid "Approvals required"
 msgstr "དགོས་པའི་ཆ་འཇོག"
 
@@ -821,7 +839,7 @@ msgstr "དགོས་པའི་ཆ་འཇོག"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:191
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
 msgid "Approve voucher"
 msgstr "འཛིན་ཤོག་ཆ་འཇོག་འབད།"
 
@@ -870,8 +888,8 @@ msgstr "ཆ་འཇོག་བསྒུག་པའི་སྒང་།"
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:524
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:609
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:22
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:335
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:366
@@ -1097,7 +1115,7 @@ msgid "Change"
 msgstr "བསྒྱུར།"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
 msgid "Change approvals required"
 msgstr "དགོས་པའི་ཆ་འཇོག་ བསྒྱུར་བཅོས།"
 
@@ -1348,8 +1366,8 @@ msgstr "པར་ཚུ་ནང་ལས་གདམ་ཁ་རྐྱབ།"
 #~ msgstr "ཁྲོམ་རའི་གྲུབ་འབྲས་ཚུ་ཐག་རིང་ཚད་ག་དེ་སྦེ་མཐོང་ནི་ཨིན་ན་གདམ་ཁ་རྐྱབ།"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:215
-msgid "Choose Image"
-msgstr "པར་གདམ་ཁ་རྐྱབ།"
+#~ msgid "Choose Image"
+#~ msgstr "པར་གདམ་ཁ་རྐྱབ།"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:85
 #~ msgid "Choose one so people can send you vouchers without your wallet address."
@@ -1437,9 +1455,13 @@ msgstr "འཚོལ་ཞིབ་བསལ།"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
 msgid "Close"
 msgstr "ཁ་བསྡམ།"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:69
+msgid "Close card password form"
+msgstr "ཏ་སེའི་ལྡེ་མིག་གི་རྣམ་ཐར།"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:93
 #: apps/web/src/components/catalog-filter-controls.tsx:298
@@ -1452,16 +1474,20 @@ msgid "Close menu"
 msgstr "དཀར་ཆག་ཁ་བསྡམ།"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:126
-msgid "Close paper wallet scanner"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་བཤེར་ཆས་ཁ་བསྡམ།"
+#~ msgid "Close paper wallet scanner"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་བཤེར་ཆས་ཁ་བསྡམ།"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:69
-msgid "Close password-protected wallet import"
-msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་དངུལ་ཁུག་ནང་འདྲེན་ཁ་བསྡམ།"
+#~ msgid "Close password-protected wallet import"
+#~ msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་དངུལ་ཁུག་ནང་འདྲེན་ཁ་བསྡམ།"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:493
 msgid "Close private key form"
 msgstr "སྒེར་ལྡེའི་འབྲི་ཤོག་ཁ་བསྡམ།"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:126
+msgid "Close sign-in card scanner"
+msgstr "སྒྱུད་རྡོག་གཅིག་ སྒྱུད་རྡོག་གཅིག་"
 
 #: apps/web/src/features/wants/ui/want-form-page.tsx:393
 msgid "Close Want"
@@ -1546,7 +1572,7 @@ msgstr "ཁྱོད་ཀྱི་ཁ་པར་གུ་ཞུ་ཡིག་
 msgid "Complete your profile"
 msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མཇུག་བསྡུ།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
 msgid "Confirm"
 msgstr "ངེས་གཏན་བཟོ།"
 
@@ -1592,15 +1618,15 @@ msgstr "བརྗེ་ལེན་ངེས་གཏན་བཟོ།"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:409
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:421
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
 msgstr "ངེས་གཏན་གྲུབ།"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
 msgid "Confirming"
 msgstr "ངེས་གཏན་བཟོ་དོ།"
 
@@ -1719,7 +1745,7 @@ msgstr "འབྲེལ་བའི་ཡོངས་འབྲེལ་ས་ཚ
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:269
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:538
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1734,7 +1760,7 @@ msgstr "བརྡ་འཚོལ་མཉེན་ཆས་ནང་འཕྲོ
 msgid "Continue to CLC"
 msgstr "CLC ལུ་འཕྲོ་མཐུད།"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:550
 msgid "Continue to wallet"
 msgstr "དངུལ་ཁུག་ལུ་འཕྲོ་མཐུད།"
 
@@ -1743,13 +1769,18 @@ msgid "Continue with {providerLabel}"
 msgstr "{providerLabel} དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
-msgid "Continue with paper wallet"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
+#~ msgid "Continue with paper wallet"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:370
 #: apps/web/src/components/auth/sign-in-panel.tsx:379
-msgid "Continue with Paper Wallet"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
+#~ msgid "Continue with Paper Wallet"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:635
+msgid "Continue with sign-in card"
+msgstr "ཁྱོད་ཀྱིས་ ཐོ་བཀོད་འབད་ཡོད་པའི་ཤོག་ལེབ་ཚུ་ "
+"ད་ལྟོའི་བར་ན་ཡང་ལག་ལེན་འཐབ་དགོ།"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:66
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:183
@@ -1852,8 +1883,8 @@ msgid "Could not check balances. Try again before submitting your request."
 msgstr "Could not check balances. Try again before submitting your request."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
-msgid "Could not import this paper wallet."
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་འདི་ནང་འདྲེན་འབད་མ་ཚུགས།"
+#~ msgid "Could not import this paper wallet."
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་འདི་ནང་འདྲེན་འབད་མ་ཚུགས།"
 
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:21
 #: apps/web/src/components/retirement/retirement-control.tsx:72
@@ -1865,20 +1896,37 @@ msgid "Could not load vouchers."
 msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
-msgid "Could not protect this paper wallet."
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་འདི་སྲུང་མ་ཚུགས།"
+#~ msgid "Could not protect this paper wallet."
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་འདི་སྲུང་མ་ཚུགས།"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+msgid "Could not protect this sign-in card."
+msgstr "ཡིག་རྟགས་འདི་ སྲུང་སྐྱོབ་འབད་མ་ཚུགས་པས།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
-msgid "Could not save the paper wallet. Try again."
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་མ་ཚུགས། ལོག་སྟེ་འབད།"
+#~ msgid "Could not save the paper wallet. Try again."
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "དཔར་བཏབ་ཆོག་པའི་ཤོག་གུ་སྲུང་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+msgid "Could not save the sign-in card. Try again."
+msgstr "ནང་འཛུལ་ཤོག་གསོག་འཇོག་འབད་མ་ཚུགས། ཡང་བསྐྱར་ཚོད་བལྟ་གནང་།"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
-msgid "Could not share the paper wallet. Try downloading it instead."
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་རུབ་སྤྱོད་འབད་མ་ཚུགས། ཚབ་ལུ་ཕབ་ལེན་འབད་བལྟ།"
+#~ msgid "Could not share the paper wallet. Try downloading it instead."
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་རུབ་སྤྱོད་འབད་མ་ཚུགས། ཚབ་ལུ་ཕབ་ལེན་འབད་བལྟ།"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+msgid "Could not share the sign-in card. Try downloading it instead."
+msgstr "ཁ་བྱང་འདི་བགོ་བཤའ་རྐྱབ་མི་ཚུགས་པས། འདི་གི་དོན་ལུ་ "
+"ཁྱོད་ཀྱིས་མར་ཕབ་འབད་ནིའི་ དཔའ་བཅམ་དགོ།"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
+msgid "Could not unlock this sign-in card."
+msgstr "ཁ་བྱང་འདི་ ཁ་ཕྱེ་མི་ཚུགས་པས།"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:103
 msgid "Could not upload your photo. Please try again."
@@ -2418,7 +2466,7 @@ msgstr "འཛིན་ཤོག་གསར་བཟོ།"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:180
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2510,8 +2558,8 @@ msgid "Custom units have no price feed. Relative pricing is used instead."
 msgstr "རང་བཟོའི་ཆ་ཚན་ལུ་གོང་ཚད་གནས་ཚུལ་མེད། "
 "དེའི་ཚབ་ལུ་བསྡུར་ཚད་གོང་ཚད་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:570
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:593
 msgid "Customize"
 msgstr "སྒེར་མོས་བཟོ།"
 
@@ -2645,8 +2693,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "སྟོན་མིང་ཡིག་འབྲུ་ ༡༢༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:596
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:719
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2665,8 +2713,8 @@ msgid "Download card"
 msgstr "ཤོག་བྱང་ཕབ་ལེན།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
-msgid "Download your paper wallet before continuing."
-msgstr "འཕྲོ་མཐུད་མ་འབད་བའི་ཧེ་མ་ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ཕབ་ལེན་འབད།"
+#~ msgid "Download your paper wallet before continuing."
+#~ msgstr "འཕྲོ་མཐུད་མ་འབད་བའི་ཧེ་མ་ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ཕབ་ལེན་འབད།"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:69
 msgid "Dozen"
@@ -2846,6 +2894,10 @@ msgstr "གླ་ཡོན་ ༠ ལས་ ༡༠༠ ཚུན་བཙུག�
 msgid "Enter a link starting with http:// or https://"
 msgstr "http:// ཡང་ན་ https:// གིས་འགོ་བཙུགས་མི་འབྲེལ་ལམ་ཅིག་བཙུགས།"
 
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+msgid "Enter a password before saving."
+msgstr "ཁྱོད་ཀྱིས་མ་དངུལ་མ་བསྡུ་བའི་ཧེ་མ་ ཁྱོད་ཀྱིས་ལྡེ་མིག་ཅིག་བཙུགས་དགོ།"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:245
 msgid "Enter a title for your post"
@@ -2862,8 +2914,13 @@ msgid "Enter a valid date and time"
 msgstr "ཆ་གནས་ཅན་གྱི་ཚེས་གྲངས་དང་ཆུ་ཚོད་བཙུགས།"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:283
-msgid "Enter a valid private key or paper wallet."
-msgstr "ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་ཡང་ན་ཤོག་གུའི་དངུལ་ཁུག་བཙུགས།"
+#~ msgid "Enter a valid private key or paper wallet."
+#~ msgstr "ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་ཡང་ན་ཤོག་གུའི་དངུལ་ཁུག་བཙུགས།"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:283
+msgid "Enter a valid private key or sign-in card."
+msgstr "འོས་འབབ་ཅན་གྱི་ སྒེར་གྱི་ལྡེ་མིག་ "
+"ཡང་ན་འཛུལ་སྒོ་གི་ལག་ཁྱེར་ཅིག་བཙུགས་དགོ།"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:6
@@ -2909,8 +2966,14 @@ msgid "Enter an exchange rate greater than zero"
 msgstr "ཀླད་ཀོར་ལས་སྦོམ་པའི་བརྗེ་སྤོར་ཚད་བཙུགས།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
-msgid "Enter and apply a password before downloading this card."
-msgstr "ཤོག་བྱང་འདི་ཕབ་ལེན་མ་འབད་བའི་ཧེ་མ་གསང་ཚིག་བཙུགས་ཏེ་ལག་ལེན་འཐབ།"
+#~ msgid "Enter and apply a password before downloading this card."
+#~ msgstr "ཤོག་བྱང་འདི་ཕབ་ལེན་མ་འབད་བའི་ཧེ་མ་གསང་ཚིག་བཙུགས་ཏེ་ལག་ལེན་འཐབ།"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:462
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
+#: apps/web/src/routes/__root.tsx:271
+msgid "Enter card password"
+msgstr "ཏ་སེ་ལྡེ་ལྡེ་ཚད།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:404
 msgid "Enter pool name"
@@ -2959,10 +3022,17 @@ msgid "Event details"
 msgstr "ལས་རིམ་ཁ་གསལ།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
-msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+#~ msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+#~ "way to sign in."
+#~ msgstr "རྩིས་ཐོ་རེ་རེ་ལུ་ཤོག་གུའི་དངུལ་ཁུག་ཅིག་ཐོབ། {providerLabel} "
+#~ "འབྲེལ་མཐུད་འབད་བ་ཅིན་ནང་འཛུལ་གྱི་ཐབས་ལམ་གཞན་ཅིག་ཁ་སྐོང་འགྱོ།"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:643
+msgid "Every account has a sign-in card. Linking {providerLabel} adds another "
 "way to sign in."
-msgstr "རྩིས་ཐོ་རེ་རེ་ལུ་ཤོག་གུའི་དངུལ་ཁུག་ཅིག་ཐོབ། {providerLabel} "
-"འབྲེལ་མཐུད་འབད་བ་ཅིན་ནང་འཛུལ་གྱི་ཐབས་ལམ་གཞན་ཅིག་ཁ་སྐོང་འགྱོ།"
+msgstr "ཐོ་བཀོད་ཆ་མཉམ་ལུ་ ཐོ་བཀོད་འབད་ཡོད་པའི་ཤོག་ལེབ་ཅིག་ཡོདཔ་ཨིན། "
+"{providerLabel} འབྲེལ་མཐུད་འབད་མི་དེ་གིས་ ཐོ་བཀོད་འབད་ནིའི་ "
+"ཐབས་ལམ་གཞན་ཅིག་ཡང་ བྱིན་དོ་ཡོདཔ་ཨིན།"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:500
 msgid "Exchange rate"
@@ -2972,11 +3042,11 @@ msgstr "བརྗེ་སྤོར་ཚད།"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "སྔོན་སྒྲིག་འཛིན་ཤོག་ ({unitSymbol}) དང་བསྡུར་བའི་བརྗེ་སྤོར་ཚད།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:437
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:449
 msgid "Execute it in Safe."
 msgstr "Safe ནང་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:426
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:438
 msgid "Executing…"
 msgstr "ལག་ལེན་འཐབ་དོ…"
 
@@ -3012,7 +3082,7 @@ msgstr "དུས་ཡོལ་འགྱོ་དོ།"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -3033,7 +3103,7 @@ msgstr "སོ་ནམ།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:189
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:201
 msgid "Fee % and recipient"
 msgstr "གླ་ཡོན་ % དང་ལེན་མི།"
 
@@ -3344,9 +3414,9 @@ msgstr "ང་གིས་ {amountLabel} གསར་བཏོན་འབད་
 #~ msgstr "ང་གིས་ལྡེ་མིག་འདི་སྲུང་ཡོད།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
-msgid "I have saved this key. If lost, my wallet cannot be recovered."
-msgstr "ང་གིས་ལྡེ་མིག་འདི་སྲུང་ཡོད། "
-"བྱང་སྟོར་ཤོར་བ་ཅིན་ངའི་དངུལ་ཁུག་སླར་གསོ་འབད་མི་ཚུགས།"
+#~ msgid "I have saved this key. If lost, my wallet cannot be recovered."
+#~ msgstr "ང་གིས་ལྡེ་མིག་འདི་སྲུང་ཡོད། "
+#~ "བྱང་སྟོར་ཤོར་བ་ཅིན་ངའི་དངུལ་ཁུག་སླར་གསོ་འབད་མི་ཚུགས།"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:289
 msgid "I made a swap."
@@ -3359,6 +3429,11 @@ msgstr "ང་གིས་ {senderLabel} ལས་ {amountLabel} ཐོབ་ཅ
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:140
 #~ msgid "I received {amountLabel}."
 #~ msgstr "ང་གིས་ {amountLabel} ཐོབ་ཡོད།"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:581
+msgid "I saved my sign-in card. If I lose it, I may lose access to my wallet."
+msgstr "ང་གིས་ངེ་གི་འཛུལ་སྒོ་གི་ལག་ཁྱེར་འདི་བཞག་ཅི། གལ་སྲིད་ང་འདི་འབྱང་ད་ "
+"ང་དངུལ་ཁུག་ནང་འཛུལ་ནི་འབྱང་ད་ཚུགས།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:196
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:252
@@ -3388,12 +3463,12 @@ msgstr "སྟོན་པ་ཅིན་ ཡོངས་འབྲེལ་ལ�
 "ཁ་སྐོང་ལུ་ཨེབ།"
 
 #: apps/web/src/routes/__root.tsx:296
-msgid "Import paper wallet?"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
+#~ msgid "Import paper wallet?"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
 
 #: apps/web/src/routes/__root.tsx:308
-msgid "Import wallet"
-msgstr "དངུལ་ཁུག་ནང་འདྲེན།"
+#~ msgid "Import wallet"
+#~ msgstr "དངུལ་ཁུག་ནང་འདྲེན།"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:52
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:559
@@ -3578,7 +3653,7 @@ msgstr "{0} ཡིག་ཆའི་མིང་འབྲེལ་མཐུད�
 #~ msgid "Link {providerLabel}"
 #~ msgstr "{providerLabel} འབྲེལ་མཐུད།"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Link {providerLabel}?"
 msgstr "{providerLabel} འབྲེལ་མཐུད་འབད་ནི་ཨིན་ན?"
 
@@ -3624,7 +3699,7 @@ msgstr "འབྲེལ་ལམ་འདྲ་བཤུས་གྲུབ།"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "འཛིན་ཤོག་འདི་ལུ་ཆ་འཇོག་འབད་མི་ཁ་ཚིག་གི་འབྲེལ་ལམ།"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:625
 msgid "Link wallet to {providerLabel}"
 msgstr "དངུལ་ཁུག་ {providerLabel} ལུ་འབྲེལ་མཐུད།"
 
@@ -3646,11 +3721,18 @@ msgid "Linked vouchers"
 msgstr "འབྲེལ་མཐུད་འབད་མི་འཛིན་ཤོག"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:63
+#~ msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
+#~ "Android. Your paper wallet keeps working here."
+#~ msgstr "ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་འདི་ iPhone གུ་ Safari ཡང་ན་ Chrome དང་ "
+#~ "Android གུ་ Chrome ནང་ལཱ་འབདཝ་ཨིན། "
+#~ "ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ནཱ་ལུ་ལཱ་འབད་དེ་སྡོད་འོང་།"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:63
 msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
-"Android. Your paper wallet keeps working here."
-msgstr "ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་འདི་ iPhone གུ་ Safari ཡང་ན་ Chrome དང་ "
-"Android གུ་ Chrome ནང་ལཱ་འབདཝ་ཨིན། "
-"ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ནཱ་ལུ་ལཱ་འབད་དེ་སྡོད་འོང་།"
+"Android. Your sign-in card keeps working here."
+msgstr "འདི་ཡང་ iPhone ལུ་ Safari ཡང་ན་ Chrome ལུ་དང་ Android ལུ་ Chrome "
+"ལུ་ལཱ་འབདཝ་ཨིན། ཁྱོད་ཀྱི་འཛུལ་སྒོ་གི་ལག་ཁྱེར་འདི་ "
+"ད་ལྟོ་ཡང་ནཱ་ལུ་ལཱ་འབད་དོ་ཡོདཔ་ཨིན།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
 #~ msgid "Linking passkey..."
@@ -3662,9 +3744,14 @@ msgid "Linking passkey…"
 msgstr "ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་འབད་དོ…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:106
-msgid "Linking the passkey failed. Your paper wallet is unchanged."
-msgstr "ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་མ་འགྲུབ། "
-"ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་བསྒྱུར་བ་མེད།"
+#~ msgid "Linking the passkey failed. Your paper wallet is unchanged."
+#~ msgstr "ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་མ་འགྲུབ། "
+#~ "ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་བསྒྱུར་བ་མེད།"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:106
+msgid "Linking the passkey failed. Your sign-in card is unchanged."
+msgstr "སྦྲེལ་མཐུད་འབད་ཐངས་དེ་མ་གྲུབ་པར་འགྱོ་ནུག "
+"ཁྱོད་ཀྱི་འཛུལ་སྒོ་གི་ལག་ཁྱེར་འདི་ བསྒྱུར་བཅོས་འབད་མ་ཚུགསཔ་ཨིན།"
 
 #: apps/web/src/features/home/ui/report-page.tsx:444
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:681
@@ -3864,7 +3951,7 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:108
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:120
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3921,7 +4008,7 @@ msgid "Manage {0}"
 msgstr "{0} འཛིན་སྐྱོང་།"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:195
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
 msgid "Manage voucher"
 msgstr "འཛིན་ཤོག་འཛིན་སྐྱོང་།"
 
@@ -4131,7 +4218,7 @@ msgid "Multisig owned · {0} signers"
 msgstr "མཚན་རྟགས་མང་པོའི་བདག་དབང་ · མཚན་རྟགས་བཀོད་མི་ {0}"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:68
 msgid "Multisig transactions"
 msgstr "མཚན་རྟགས་མང་པོའི་སྤྲོད་ལེན"
 
@@ -4208,8 +4295,12 @@ msgid "Name must be 80 characters or fewer"
 msgstr "མིང་ཡིག་འབྲུ་ ༨༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
-msgid "Name on wallet"
-msgstr "དངུལ་ཁུག་གུ་མིང་།"
+msgid "Name on card"
+msgstr "ས་ཁྲ་གི་མིང་"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#~ msgid "Name on wallet"
+#~ msgstr "དངུལ་ཁུག་གུ་མིང་།"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:293
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:888
@@ -4220,15 +4311,15 @@ msgstr "མིང་ མཚོན་རྟགས་ ཡང་ན་ཁ་བྱ�
 msgid "Natural building"
 msgstr "རང་བཞིན་བཟོ་སྐྲུན།"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
 msgid "Network"
 msgstr "ཡོངས་འབྲེལ།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:275
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 msgid "New owner"
 msgstr "བདག་པོ་གསར་པ།"
 
@@ -4257,8 +4348,8 @@ msgstr "གསལ་བསྒྲགས་གསརཔ།"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:307
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:328
 msgid "New signer"
 msgstr "མཚན་རྟགས་བཀོད་མི་ གསར་པ།"
 
@@ -4509,7 +4600,7 @@ msgstr "ད་ཚུན་གསལ་བསྒྲགས་མེད།"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "QR ཨང་རྟགས་མ་ཐོབ། པར་གསལ་ཏོག་ཏོ་ཅིག་གིས་ལོག་འབད།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:116
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:128
 msgid "No queued proposals found."
 msgstr "གྲལ་རིམ་ནང་གྲོས་འཆར་མ་ཐོབ།"
 
@@ -4616,7 +4707,7 @@ msgid "No. of participants"
 msgstr "བཅའ་མར་གཏོགས་མིའི་གྱངས་ཁ།"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:393
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:405
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4652,6 +4743,11 @@ msgstr "བཟུང་བཞག་མེད།"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:64
 msgid "Not linked"
 msgstr "འབྲེལ་མཐུད་མ་འབད།"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+msgid "Not protected. Anyone who scans this card can access your wallet."
+msgstr "མི་ག་གིས་རང་འབད་རུང་ འ་ནི་ལག་ཁྱེར་འདི་ ཨིས་ཀེན་འབད་བ་ཅིན་ "
+"ཁྱེད་ཀྱི་དངུལ་ཁུག་གུ་འཛུལ་ཚུགས།"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:56
 msgid "Not sent"
@@ -4797,7 +4893,7 @@ msgid "Open in Maps"
 msgstr "ས་ཁྲ་ནང་ཁ་ཕྱེ།"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
 msgid "Open in Safe"
 msgstr "Safe ནང་ཁ་ཕྱེ།"
 
@@ -4854,8 +4950,12 @@ msgstr "འཛིན་ཤོག་གི་ཤོག་ལེབ་ཁ་ཕྱ
 #~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་ཁ་ཕྱེ་དོ..."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
-msgid "Opening paper wallet…"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་ཁ་ཕྱེ་དོ…"
+#~ msgid "Opening paper wallet…"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་ཁ་ཕྱེ་དོ…"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
+msgid "Opening sign-in card…"
+msgstr "ཐོ་བཀོད་འབད་སའི་ ས་ཁྲ་འདི་ཕྱེ་སྟེ་..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:339
@@ -4947,21 +5047,21 @@ msgstr "སྤྲོད་ཚར།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-msgid "Paper wallet"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག"
+#~ msgid "Paper wallet"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
-msgid "Paper Wallet"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག"
+#~ msgid "Paper Wallet"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
-msgid "Paper wallet card"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་ཤོག་བྱང་།"
+#~ msgid "Paper wallet card"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་ཤོག་བྱང་།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
-msgid "Paper wallet is protected. Keep the password separate from the card."
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ་འབད་ཡོད། གསང་ཚིག་འདི་ཤོག་བྱང་ལས་སོ་སོར་བཞག"
+#~ msgid "Paper wallet is protected. Keep the password separate from the card."
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ་འབད་ཡོད། གསང་ཚིག་འདི་ཤོག་བྱང་ལས་སོ་སོར་བཞག"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
 #~ msgid "Paper wallet only"
@@ -4978,14 +5078,19 @@ msgstr "བཅའ་མར་གཏོགས་མིའི་ཡིག་འབ
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
 msgid "Passkey"
 msgstr "ནང་འཛུལ་ལྡེ་མིག"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
-msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
-msgstr "ནང་འཛུལ་ལྡེ་མིག་གསར་བཟོ་ཆ་མེད་བཏང་ཡོད། "
-"ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་བསྒྱུར་བ་མེད།"
+#~ msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
+#~ msgstr "ནང་འཛུལ་ལྡེ་མིག་གསར་བཟོ་ཆ་མེད་བཏང་ཡོད། "
+#~ "ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་བསྒྱུར་བ་མེད།"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
+msgid "Passkey creation was cancelled. Your sign-in card is unchanged."
+msgstr "Passkey གི་བཟོ་བཀོད་འདི་ ཆ་མེད་བཏང་ཡོདཔ་ཨིན། "
+"ཁྱོད་ཀྱི་འཛུལ་སྒོ་གི་ལག་ཁྱེར་འདི་ བསྒྱུར་བཅོས་འབད་མ་ཚུགསཔ་ཨིན།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
@@ -5009,11 +5114,19 @@ msgstr "ནང་འཛུལ་ལྡེ་མིག་གནས་ཚད་ཞ
 
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:439
-msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper "
-"wallet."
-msgstr "ནང་འཛུལ་ལྡེ་མིག་གིས་ Safe 1.5 "
-"དང་དེ་ལས་གསར་བའི་མཚན་རྟགས་མང་པོའི་དངུལ་ཁུག་ལུ་མཚན་རྟགས་བཀོད་ཚུགས། "
-"ཁྱོད་རའི་ཤོག་གུའི་དངུལ་ཁུག་ལག་ལེན་འཐབ།"
+#~ msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper "
+#~ "wallet."
+#~ msgstr "ནང་འཛུལ་ལྡེ་མིག་གིས་ Safe 1.5 "
+#~ "དང་དེ་ལས་གསར་བའི་མཚན་རྟགས་མང་པོའི་དངུལ་ཁུག་ལུ་མཚན་རྟགས་བཀོད་ཚུགས། "
+#~ "ཁྱོད་རའི་ཤོག་གུའི་དངུལ་ཁུག་ལག་ལེན་འཐབ།"
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:451
+msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
+"card."
+msgstr "Passkeys གིས་ Safe 1.5 ཡང་ན་ཤུལ་ལས་ multisigsགི་དོན་ལུ་ "
+"ཐོ་བཀོད་འབད་ཚུགས། ཁྱོད་ཀྱིས་ "
+"ཁྱོད་ཀྱི་ངོ་སྤྲོད་ཡིག་ཆ་འདི་ལག་ལེན་འཐབ་དགོ།"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
@@ -5027,8 +5140,8 @@ msgstr "གསང་ཚིག་སྟོངམ་བཞག་མི་ཆོག
 #: apps/web/src/components/auth/sign-in-panel.tsx:462
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
 #: apps/web/src/routes/__root.tsx:271
-msgid "Password-protected paper wallet"
-msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་ཤོག་གུའི་དངུལ་ཁུག"
+#~ msgid "Password-protected paper wallet"
+#~ msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་ཤོག་གུའི་དངུལ་ཁུག"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
@@ -5063,7 +5176,7 @@ msgstr "སྐྱེལ་འབབ་ཀྱི་འབྱོར་ཡིག"
 msgid "Payment status unknown"
 msgstr "སྤྲོད་ལེན་གྱི་གནས་ཚད་མ་ཤེས།"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
@@ -5585,7 +5698,7 @@ msgstr "གསལ་སྡུད་དུས་མཐུན་བཟོ་ཡོ
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "གྲོས་འཆར་གྲལ་རིམ་ནང་བཙུགས་ཡོད། Safe ནང་ངེས་དཔྱད་དང་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:112
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "ནཱ་ལུ་གྲོས་འཆར་མི་འཐོབ། "
 "ཁྱོད་རའི་མཚན་རྟགས་མང་པོའི་དངུལ་ཁུག་ལག་ལེན་འཐབ་ཚུགས།"
@@ -5599,20 +5712,28 @@ msgid "Proposing…"
 msgstr "གྲོས་འཆར་བཀོད་དོ…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
-msgid "Protect paper wallet"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ།"
+#~ msgid "Protect paper wallet"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
-msgid "Protect paper wallet with a password"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་གསང་ཚིག་གིས་སྲུང་སྐྱོབ་འབད།"
+#~ msgid "Protect paper wallet with a password"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་གསང་ཚིག་གིས་སྲུང་སྐྱོབ་འབད།"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+msgid "Protect with a password"
+msgstr "Password འཚོལ་བཤེར་འབད་"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+msgid "Protected. Keep the password separate from the card."
+msgstr "སྲུང་སྐྱོབ་འབད་... ལྡེ་མིག་འདི་ ཏ་སེ་ལས་སོ་སོ་སྦེ་བཞག་།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:156
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ་འབད་དོ..."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
-msgid "Protecting paper wallet…"
-msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ་འབད་དོ…"
+#~ msgid "Protecting paper wallet…"
+#~ msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ་འབད་དོ…"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
@@ -5683,8 +5804,8 @@ msgstr "ཁྱབ་བསྒྲགས་འབད་དོ…"
 #~ msgstr "སྨུག་པོ།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
-msgid "QR currently contains the raw private key."
-msgstr "ད་ལྟོ་ QR ནང་མ་བསྒྱུར་བའི་སྒེར་ལྡེ་ཡོད།"
+#~ msgid "QR currently contains the raw private key."
+#~ msgstr "ད་ལྟོ་ QR ནང་མ་བསྒྱུར་བའི་སྒེར་ལྡེ་ཡོད།"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:444
 #~ msgid "Quantity"
@@ -5806,7 +5927,7 @@ msgstr "ཉེ་ཆར་གྱི་ལེན་མི།"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:266
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5905,7 +6026,7 @@ msgstr "བསྡུར་བའི་གནས་གོང་།"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:197
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
 msgid "Remove"
 msgstr "བཏོན།"
 
@@ -5949,12 +6070,12 @@ msgstr "པར་ {0} བཏོན།"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
 msgid "Remove signer"
 msgstr "མཚན་རྟགས་བཀོད་མི་ བཏོན།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:304
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:313
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:325
 msgid "Removed signer"
 msgstr "བཏོན་ཡོད་པའི་ མཚན་རྟགས་བཀོད་མི།"
 
@@ -5969,7 +6090,7 @@ msgstr "{0} བཏོན་པ་ཅིན་དངུལ་ཁུངས་འ�
 msgid "Removing…"
 msgstr "བཏོན་དོ…"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
 msgid "Replace signer"
 msgstr "མཚན་རྟགས་བཀོད་མི་ ཚབ་བཙུགས།"
 
@@ -6164,7 +6285,7 @@ msgstr "མཚམས་སྡོད།"
 msgid "Retry"
 msgstr "ལོག་འབད།"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:624
 msgid "Retry {providerLabel} connection"
 msgstr "{providerLabel} མཐུད་ལམ་ལོག་འབད།"
 
@@ -6182,7 +6303,7 @@ msgstr "མཐུད་ལམ་ལོག་འབད།"
 msgid "Reverted"
 msgstr "ལོག་བཏང་ཡོད།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:443
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
 msgid "Review this transaction in your multisig wallet."
 msgstr "སྤྲོད་ལེན་འདི་ཁྱོད་རའི་མཚན་རྟགས་མང་པོའི་དངུལ་ཁུག་ནང་བསྐྱར་ཞིབ་འབད།"
 
@@ -6230,11 +6351,11 @@ msgid "Save printable A4 sheet"
 msgstr "དཔར་བཏབ་ཆོག་པའི་ A4 ཤོག་གུ་སྲུང་བཞག"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
-msgid "Save this card securely. If you use a password, keep it separately. "
-"Anyone with an unprotected QR code can access the wallet."
-msgstr "ཤོག་བྱང་འདི་ཉེན་སྲུང་ཐོག་སྲུང་བཞག "
-"གསང་ཚིག་ལག་ལེན་འཐབ་པ་ཅིན་དེ་སོ་སོར་བཞག སྲུང་སྐྱོབ་མེད་པའི་ QR "
-"ཨང་རྟགས་ཡོད་མི་ག་གིས་ཡང་དངུལ་ཁུག་ནང་འཛུལ་ཚུགས།"
+#~ msgid "Save this card securely. If you use a password, keep it separately. "
+#~ "Anyone with an unprotected QR code can access the wallet."
+#~ msgstr "ཤོག་བྱང་འདི་ཉེན་སྲུང་ཐོག་སྲུང་བཞག "
+#~ "གསང་ཚིག་ལག་ལེན་འཐབ་པ་ཅིན་དེ་སོ་སོར་བཞག སྲུང་སྐྱོབ་མེད་པའི་ QR "
+#~ "ཨང་རྟགས་ཡོད་མི་ག་གིས་ཡང་དངུལ་ཁུག་ནང་འཛུལ་ཚུགས།"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
@@ -6245,8 +6366,16 @@ msgid "Save Want"
 msgstr "حفظ الطلب"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
-msgid "Save your card"
-msgstr "ཁྱོད་ཀྱི་ཤོག་བྱང་ཉར་ཚགས་འབད།"
+#~ msgid "Save your card"
+#~ msgstr "ཁྱོད་ཀྱི་ཤོག་བྱང་ཉར་ཚགས་འབད།"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:560
+msgid "Save your sign-in card"
+msgstr "ཁྱོད་ཀྱི་ལྡེ་མིག་གི་ཨེབ་གནང།"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:533
+msgid "Save your sign-in card before continuing."
+msgstr "ཁྱོད་ཀྱིས་མ་འགྱོ་པའི་ཧེ་མ་ ཁྱོད་ཀྱི་ལྡེ་མིག་གི་ལྡེ་མིག་གི་ལྡེ་མིག་གི་ལྡ"
 
 #~ msgid "Saved location unavailable"
 #~ msgstr "སྲུང་བཞག་པའི་ས་གནས་མི་འཐོབ།"
@@ -6612,7 +6741,7 @@ msgstr "བསྡུ་ལེན་མ་འབད་བའི་ཧེ་མ་
 #~ msgid "Setting up your wallet..."
 #~ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་སྒྲིག་དོ..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:680
 msgid "Setting up your wallet…"
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་སྒྲིག་དོ…"
 
@@ -6734,6 +6863,7 @@ msgstr "དངུལ་ཁུངས་འདི་ལག་ལེན་འཐབ
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
 #: apps/web/src/components/market-bar.tsx:140
+#: apps/web/src/routes/__root.tsx:308
 msgid "Sign in"
 msgstr "ནང་འཛུལ།"
 
@@ -6767,6 +6897,15 @@ msgstr "གསལ་བསྒྲགས་བལྟ་ནིའི་དོན་
 msgid "Sign in with private key"
 msgstr "སྒེར་ལྡེ་གིས་ནང་འཛུལ།"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:370
+#: apps/web/src/components/auth/sign-in-panel.tsx:379
+msgid "Sign in with QR card"
+msgstr "QR Card ཚུ་དང་གཅིག་ཁར་ ཐོ་བཀོད་འབད་"
+
+#: apps/web/src/routes/__root.tsx:296
+msgid "Sign in with this card?"
+msgstr "ཁྱོད་ཀྱིས་ཤོག་ལེབ་འདི་མཐོང་ཡོདཔ་ཨིན་ན་?"
+
 #~ msgid "Sign in with your device's screen lock instead of your paper card. Your "
 #~ "device will ask through {platformLabel}."
 #~ msgstr "ཁྱོད་ཀྱི་ཤོག་བྱང་གི་ཚབ་ལུ་ཐབས་འཕྲུལ་གྱི་གསལ་ངོས་སྒོ་ལྕགས་ཀྱིས་ནང་འཛུལ་འ"
@@ -6784,6 +6923,14 @@ msgstr "ཕྱིར་འཐོན་འབད་ནི་ཨིན་ན?"
 #: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Sign-in"
 msgstr "ནང་འཛུལ།"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:440
+#: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+msgid "Sign-in card"
+msgstr "ནང་འཛུལ་ཤོག་བྱང"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
 #~ msgid "Sign-in method"
@@ -7456,11 +7603,17 @@ msgstr "འདི་གིས་ད་ལྟོའི་ཁྱེད་ཀྱི
 "ཤུལ་ལས་གསལ་སྡུད་བསྒྱུར་བཅོས་ཀྱིས་ Want འདི་དུས་མཐུན་མི་བཟོ།"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
-msgid "This device does not have your paper wallet key. Sign in with or import "
-"your paper wallet here, then link a passkey."
-msgstr "ཐབས་འཕྲུལ་འདི་གུ་ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ལྡེ་མིག་མེད། "
-"ནཱ་ལུ་ཤོག་གུའི་དངུལ་ཁུག་གིས་ནང་འཛུལ་ཡང་ན་ནང་འདྲེན་འབད་ཞིནམ་ལས་ནང་འཛུལ་ལ"
-"ྡེ་མིག་འབྲེལ་མཐུད།"
+msgid "This device does not have the key from your sign-in card. Sign in with "
+"your card here, then link a passkey."
+msgstr "ཨ་ནི་འཕྲུལ་ཆས་འདི་གིས་ ཁྱོད་ཀྱི་འཛུལ་སྒོ་གི་ལྡེ་མིག་འདི་མི་ཐོབ་པས། "
+"ཁྱོད་ཀྱིས་ཤོག་ལེབ་འདི་གུ་ཨེབ་གཏང་ཞིནམ་ད་ ཤོག་ལེབ་འདི་གུ་ཨེབ་གཏང་འབད།"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
+#~ msgid "This device does not have your paper wallet key. Sign in with or import "
+#~ "your paper wallet here, then link a passkey."
+#~ msgstr "ཐབས་འཕྲུལ་འདི་གུ་ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ལྡེ་མིག་མེད། "
+#~ "ནཱ་ལུ་ཤོག་གུའི་དངུལ་ཁུག་གིས་ནང་འཛུལ་ཡང་ན་ནང་འདྲེན་འབད་ཞིནམ་ལས་ནང་འཛུལ་ལ"
+#~ "ྡེ་མིག་འབྲེལ་མཐུད།"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:189
 #~ msgid "This device is subscribed to wallet notifications."
@@ -7716,7 +7869,7 @@ msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས་གྲུབ
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
 msgid "Transfer ownership"
 msgstr "བདག་དབང་སྤོ་བཤུད།"
 
@@ -7848,8 +8001,8 @@ msgstr "རྩིས་ཀྱི་ཆ་ཕྲན།"
 msgid "Unknown"
 msgstr "མ་ཤེས།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:199
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:215
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:211
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
 msgid "Unknown call"
 msgstr "ཁྱད་མེད་ཀྱི་འབོད་བརྡ།"
 
@@ -7860,8 +8013,12 @@ msgid "Unlink {0}"
 msgstr "{0} འབྲེལ་མཐུད་བཏོན།"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:107
-msgid "Unlock and import"
-msgstr "ཁ་ཕྱེ་སྟེ་ནང་འདྲེན།"
+#~ msgid "Unlock and import"
+#~ msgstr "ཁ་ཕྱེ་སྟེ་ནང་འདྲེན།"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:107
+msgid "Unlock and sign in"
+msgstr "འཚུབ་/འཚུབས་/འཚུབ་"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:105
 #~ msgid "Unlocking..."
@@ -7905,20 +8062,30 @@ msgid "Updating…"
 msgstr "དུས་མཐུན་བཟོ་དོ…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:149
-msgid "Upload Image"
-msgstr "པར་ཡར་བཙུགས།"
+#: apps/web/src/components/paper-wallet-scanner.tsx:206
+#: apps/web/src/components/paper-wallet-scanner.tsx:215
+msgid "Upload card image"
+msgstr "ཏ་སེའི་རྣམ་པར་ཨེབ་གཏང་འབད།"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:189
-msgid "Upload Image Instead"
-msgstr "ཚབ་ལུ་པར་ཡར་བཙུགས།"
+msgid "Upload card image instead"
+msgstr "ཏ་སེའི་པར་གཞི་འདི་ དེ་གི་ཚབ་ལུ་ཕབ་ལེ"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:149
+#~ msgid "Upload Image"
+#~ msgstr "པར་ཡར་བཙུགས།"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:189
+#~ msgid "Upload Image Instead"
+#~ msgstr "ཚབ་ལུ་པར་ཡར་བཙུགས།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "ལས་རྟགས་ཡར་བཙུགས།"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:206
-msgid "Upload QR code image"
-msgstr "QR ཨང་རྟགས་པར་ཡར་བཙུགས།"
+#~ msgid "Upload QR code image"
+#~ msgstr "QR ཨང་རྟགས་པར་ཡར་བཙུགས།"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:356
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
@@ -7987,6 +8154,16 @@ msgstr "པར་ལག་ལེན་འཐབ།"
 #: apps/web/src/features/wants/ui/want-form-page.tsx:305
 msgid "Use profile image"
 msgstr "استخدام صورة الملف الشخصي"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:505
+msgid "Use this QR card to sign in to your wallet. Save it securely. If you add "
+"a password, keep it separately. Without a password, anyone who scans the "
+"card can access your wallet."
+msgstr "ཁྱོད་རའི་དངུལ་ཁུག་ནང་ནང་འཛུལ་འབད་ནིའི་དོན་ལུ་ QR "
+"ཤོག་བྱང་འདི་ལག་ལེན་འཐབ། ཉེན་སྲུང་ཐོག་བཞག། "
+"གསང་ཚིག་བཙུགས་པ་ཅིན་སོ་སོར་བཞག། "
+"གསང་ཚིག་མེད་པ་ཅིན་ཤོག་བྱང་འདི་ཞིབ་ལྟ་འབད་མི་ག་ར་གིས་ཁྱོད་རའི་དངུལ་ཁུག་ན"
+"ང་འཛུལ་ཚུགས།"
 
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
@@ -8248,7 +8425,7 @@ msgstr "ཁྱོད་ཀྱིས་གསར་བཏོན་འབད་མ
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "བཀག་ཐག་ངེས་གཏན་བསྒུག་དོ..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:731
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:217
 msgid "Waiting for blockchain confirmation…"
@@ -8276,8 +8453,8 @@ msgstr "བཀག་ཐག་བསྒུག་དོ…"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:196
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:124
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -8432,13 +8609,13 @@ msgstr "ཕྱིར་བཏོན།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
 msgid "Withdraw fees"
 msgstr "གླ་ཡོན་ཕྱིར་བཏོན།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
 msgid "Withdraw liquidity"
 msgstr "དངུལ་རྒྱུན་ཕྱིར་བཏོན།"
 
@@ -8520,7 +8697,7 @@ msgstr "You can still withdraw funds after the pool is retired."
 msgid "You can write or edit your review until {0}."
 msgstr "{0} ཚུན་ཁྱོད་ཀྱིས་བསྐྱར་ཞིབ་བྲིས་ཡང་ན་ཞུན་དག་འབད་ཚུགས།"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:435
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:447
 msgid "You confirmed"
 msgstr "ཁྱོད་ཀྱིས་ངེས་གཏན་བཟོ་ཡི།"
 
@@ -8574,9 +8751,14 @@ msgstr "ཁྱོད་ཀྱིས་གཏང་མི།"
 #~ msgstr "ཁྱོད་ཀྱིས་ Face ID, མཛུབ་རིས་ ཡང་ན་ PIN གྱིས་ངེས་གཏན་བཟོ་དགོ"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:158
-msgid "You’ll need your paper card or passkey to sign back in."
-msgstr "ལོག་སྟེ་ནང་འཛུལ་འབད་ནིའི་དོན་ལུ་ ཁྱོད་ཀྱི་ཤོག་གུའི་ཤོག་བྱང་ ཡང་ན་ "
-"ནང་འཛུལ་ལྡེ་མིག་དགོ།"
+#~ msgid "You’ll need your paper card or passkey to sign back in."
+#~ msgstr "ལོག་སྟེ་ནང་འཛུལ་འབད་ནིའི་དོན་ལུ་ ཁྱོད་ཀྱི་ཤོག་གུའི་ཤོག་བྱང་ ཡང་ན་ "
+#~ "ནང་འཛུལ་ལྡེ་མིག་དགོ།"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:158
+msgid "You’ll need your sign-in card or passkey to sign back in."
+msgstr "ཁྱོད་ཀྱིས་ལོག་འཛུལ་ནིའི་དོན་ལུ་ ཁྱོད་ཀྱི་འཛུལ་སྒོ་གི་ལག་ཁྱེར་དང་ "
+"passkey དགོཔ་ཨིན།"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:363
 msgid "You'll receive"
@@ -8587,11 +8769,19 @@ msgid "You'll send"
 msgstr "ཁྱོད་ཀྱིས་གཏང་འོང་།"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:47
-msgid "Your account has a passkey, but it is not on this device. Your paper "
+#~ msgid "Your account has a passkey, but it is not on this device. Your paper "
+#~ "card still works here. Adding another passkey is not available yet."
+#~ msgstr "ཁྱོད་ཀྱི་རྩིས་ཐོ་ལུ་ནང་འཛུལ་ལྡེ་མིག་ཡོད་རུང་ ཐབས་འཕྲུལ་འདི་གུ་མེད། "
+#~ "ཁྱོད་ཀྱི་ཤོག་བྱང་ནཱ་ལུ་ལཱ་འབད་དེ་སྡོད་འོང་། "
+#~ "ནང་འཛུལ་ལྡེ་མིག་གཞན་ཅིག་ཁ་སྐོང་རྐྱབ་ནི་ད་ཚུན་མི་འཐོབ།"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:47
+msgid "Your account has a passkey, but it is not on this device. Your sign-in "
 "card still works here. Adding another passkey is not available yet."
-msgstr "ཁྱོད་ཀྱི་རྩིས་ཐོ་ལུ་ནང་འཛུལ་ལྡེ་མིག་ཡོད་རུང་ ཐབས་འཕྲུལ་འདི་གུ་མེད། "
-"ཁྱོད་ཀྱི་ཤོག་བྱང་ནཱ་ལུ་ལཱ་འབད་དེ་སྡོད་འོང་། "
-"ནང་འཛུལ་ལྡེ་མིག་གཞན་ཅིག་ཁ་སྐོང་རྐྱབ་ནི་ད་ཚུན་མི་འཐོབ།"
+msgstr "ཁྱོད་ཀྱི་རྩིས་ཁྲ་ནང་ passkey ཡོད་རུང་ འདི་འདི་ནང་མེད་ "
+"ཁྱོད་ཀྱི་ལག་ཁྱེར་འདི་ ད་ལྟོ་ཡང་ནཱ་ལུ་ལཱ་འབད་དོ་ཡོདཔ་ཨིན། ད་རུང་ "
+"བུམ་ཐང་གི་ས་ཆ་དེ་ནང་ བུམ་ཐང་གི་ས་ཆ་དེ་ཡང་མེདཔ་ལས་ "
+"བུམ་ཐང་གི་ས་ཆ་དེ་ཡང་མེདཔ་ཨིན་པས།"
 
 #: apps/web/src/components/auth/auth-states.tsx:14
 msgid "Your account is awaiting approval. You will be able to continue once it "
@@ -8627,25 +8817,39 @@ msgstr "ཁྱོད་ཀྱི་མིང་དང་དངུལ་ཁུག
 "བསམ་འཆར་ནང་སྒེར་གྱི་ཁ་གསལ་མ་བཙུགས།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
-msgid "Your paper wallet"
-msgstr "ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག"
+#~ msgid "Your paper wallet"
+#~ msgstr "ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:55
 msgid "Your passkey is being verified."
 msgstr "ཁྱོད་ཀྱི་ནང་འཛུལ་ལྡེ་མིག་བདེན་དཔྱད་འབད་དོ།"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
-msgid "Your passkey is linked, but the app could not switch to it. Your paper "
-"wallet is still connected."
-msgstr "ཁྱོད་ཀྱི་ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་གྲུབ་རུང་ "
-"ལས་རིམ་གྱིས་དེ་ལུ་བསྒྱུར་མ་ཚུགས། "
-"ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ད་རུང་མཐུད་ཡོད།"
+#~ msgid "Your passkey is linked, but the app could not switch to it. Your paper "
+#~ "wallet is still connected."
+#~ msgstr "ཁྱོད་ཀྱི་ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་གྲུབ་རུང་ "
+#~ "ལས་རིམ་གྱིས་དེ་ལུ་བསྒྱུར་མ་ཚུགས། "
+#~ "ཁྱོད་ཀྱི་ཤོག་གུའི་དངུལ་ཁུག་ད་རུང་མཐུད་ཡོད།"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
+msgid "Your passkey is linked, but the app could not switch to it. Your sign-in "
+"card is still connected."
+msgstr "ཁྱོད་ཀྱི་པཱསི་ཀི་དེ་ འབྲེལ་མཐུད་འབད་ཡོདཔ་ཨིན་རུང་ ཌའི་ལོག་འདི་གིས་ "
+"བསྒྱུར་བཅོས་འབད་མ་ཚུགསཔ་ཨིན། ཁྱོད་ཀྱི་འཛུལ་སྒོ་གི་ལག་ཁྱེར་འདི་ "
+"ད་ལྟོ་ཡང་མཐུད་སྦྲེལ་འབད་ཡོདཔ་ཨིན།"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
-msgid "Your passkey is still confirming. You can keep using your paper wallet "
+#~ msgid "Your passkey is still confirming. You can keep using your paper wallet "
+#~ "meanwhile."
+#~ msgstr "ཁྱོད་ཀྱི་ནང་འཛུལ་ལྡེ་མིག་ད་རུང་ངེས་གཏན་བཟོ་དོ། "
+#~ "དེའི་བར་ན་ཁྱོད་ཀྱིས་ཤོག་གུའི་དངུལ་ཁུག་ལག་ལེན་འཐབ་སྟེ་བཞག་ཚུགས།"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
+msgid "Your passkey is still confirming. You can keep using your sign-in card "
 "meanwhile."
-msgstr "ཁྱོད་ཀྱི་ནང་འཛུལ་ལྡེ་མིག་ད་རུང་ངེས་གཏན་བཟོ་དོ། "
-"དེའི་བར་ན་ཁྱོད་ཀྱིས་ཤོག་གུའི་དངུལ་ཁུག་ལག་ལེན་འཐབ་སྟེ་བཞག་ཚུགས།"
+msgstr "འདི་ཡང་ བདེན་ཁུངས་བཀལ་ཚུགས་པའི་ གནད་དོན་ཅིག་ཨིན་མས། ཁྱོད་ཀྱིས་ "
+"ད་ལྟོའི་བར་ན་ཡང་ ཁྱོད་ཀྱི་འཛུལ་སྒོ་གི་ལག་ཁྱེར་ལག་ལེན་འཐབ་ནི་དེ་ "
+"འཕྲོ་མཐུད་འབད་ཚུགས།"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:270
 #~ msgid "Your Pools"
@@ -8684,6 +8888,10 @@ msgid "Your review will be available once this redemption is processed. You can 
 "also find it later in the voucher’s Reviews tab."
 msgstr "བསྐྱར་ཉོ་འདི་བཟོ་སྦྱོར་འབད་ཚར་ཞིནམ་ལས་ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་ཐོབ་འོང་། "
 "ཤུལ་ལས་འཛིན་ཤོག་གི་བསྐྱར་ཞིབ་མཆོང་ལྡེ་ནང་ཡང་འཚོལ་ཚུགས།"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
+msgid "Your sign-in card"
+msgstr "ཁྱོད་ཀྱི་ནང་འཛུལ་ཤོག་བྱང"
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:719
 msgid "Your unsaved changes to this post will be lost."

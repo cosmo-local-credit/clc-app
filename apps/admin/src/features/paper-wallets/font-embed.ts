@@ -59,14 +59,14 @@ async function fontDataUrl(url: string): Promise<string> {
   if (!cached) {
     cached = (async () => {
       const response = await fetch(url);
-      if (!response.ok) throw new Error("The paper wallet print font could not be loaded");
+      if (!response.ok) throw new Error("The sign-in card print font could not be loaded");
       const blob = await response.blob();
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () =>
           typeof reader.result === "string"
             ? resolve(reader.result)
-            : reject(new Error("The paper wallet print font could not be read"));
+            : reject(new Error("The sign-in card print font could not be read"));
         reader.onerror = () =>
           reject(reader.error ?? new Error("The print font could not be read"));
         reader.readAsDataURL(blob);

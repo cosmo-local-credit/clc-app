@@ -33,7 +33,7 @@ export async function exportPaperWallet(card: HTMLDivElement, qrUrl: string): Pr
   baseImage.src = baseUrl;
   await baseImage.decode();
   if (!baseImage.naturalWidth || !baseImage.naturalHeight) {
-    throw new Error("Paper wallet image could not be decoded");
+    throw new Error("Sign-in card image could not be decoded");
   }
 
   const qrCanvas = document.createElement("canvas");
@@ -43,14 +43,14 @@ export async function exportPaperWallet(card: HTMLDivElement, qrUrl: string): Pr
     color: { dark: "#000000", light: "#ffffff" },
   });
   if (qrCanvas.width === 0 || qrCanvas.height === 0) {
-    throw new Error("Paper wallet QR code could not be rendered");
+    throw new Error("Sign-in card QR code could not be rendered");
   }
 
   const canvas = document.createElement("canvas");
   canvas.width = PAPER_WALLET_WIDTH * pixelRatio;
   canvas.height = PAPER_WALLET_HEIGHT * pixelRatio;
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("Paper wallet image could not be rendered");
+  if (!context) throw new Error("Sign-in card image could not be rendered");
   context.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
   context.imageSmoothingEnabled = false;
   context.drawImage(
@@ -64,7 +64,7 @@ export async function exportPaperWallet(card: HTMLDivElement, qrUrl: string): Pr
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
-      else reject(new Error("Paper wallet PNG could not be created"));
+      else reject(new Error("Sign-in card PNG could not be created"));
     }, "image/png");
   });
 }
@@ -88,7 +88,7 @@ export async function exportPaperWalletSheet(card: HTMLDivElement, qrUrl: string
   });
   const pdf = buildPaperWalletSheetPdf(
     [{ jpeg: dataUrlBytes(jpegUrl), qr: QRCode.create(qrUrl).modules }],
-    { hairlines: true, title: "CLC paper wallet" },
+    { hairlines: true, title: "CLC sign-in card" },
   );
   return new Blob(pdf, { type: "application/pdf" });
 }

@@ -280,7 +280,7 @@ export function SignInPanel({
       setEncryptedPaperWallet(result.encryptedKey);
       return;
     }
-    setError(t`Enter a valid private key or paper wallet.`);
+    setError(t`Enter a valid private key or sign-in card.`);
   }
 
   function handleKeyScanned(raw: string) {
@@ -367,7 +367,7 @@ export function SignInPanel({
           ) : (
             <Button tap className="w-full" onClick={openScanner}>
               <TbScan className="me-2 size-4" />
-              <Trans>Continue with Paper Wallet</Trans>
+              <Trans>Sign in with QR card</Trans>
             </Button>
           )}
 
@@ -376,7 +376,7 @@ export function SignInPanel({
               {available ? (
                 <ActionRow
                   icon={<TbScan className="size-4" aria-hidden="true" />}
-                  label={t`Continue with Paper Wallet`}
+                  label={t`Sign in with QR card`}
                   onClick={openScanner}
                 />
               ) : null}
@@ -437,7 +437,7 @@ export function SignInPanel({
         </Link>
       </p>
 
-      <MethodSheet open={showScanner && !connecting} onClose={closeScanner} title={t`Paper Wallet`}>
+      <MethodSheet open={showScanner && !connecting} onClose={closeScanner} title={t`Sign-in card`}>
         <div className="space-y-3">
           <PaperWalletScanner onKeyDecoded={handleKeyScanned} onCancel={closeScanner} />
           {errorAlert}
@@ -459,7 +459,7 @@ export function SignInPanel({
       <MethodSheet
         open={!!encryptedPaperWallet && !connecting}
         onClose={closeEncrypted}
-        title={t`Password-protected paper wallet`}
+        title={t`Enter card password`}
       >
         {encryptedPaperWallet ? (
           <Suspense fallback={null}>

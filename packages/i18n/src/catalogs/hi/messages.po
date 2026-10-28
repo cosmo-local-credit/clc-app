@@ -380,12 +380,12 @@ msgid "A new version is available"
 msgstr "एक नया संस्करण उपलब्ध है"
 
 #: apps/web/src/routes/__root.tsx:302
-msgid "A paper wallet link was opened. Sign in with this address?"
-msgstr "एक पेपर वॉलेट लिंक खोला गया. इस पते से साइन इन करें?"
+#~ msgid "A paper wallet link was opened. Sign in with this address?"
+#~ msgstr "एक पेपर वॉलेट लिंक खोला गया. इस पते से साइन इन करें?"
 
 #: apps/web/src/routes/__root.tsx:300
-msgid "A paper wallet QR was scanned. Import this address?"
-msgstr "एक पेपर वॉलेट QR स्कैन किया गया था। यह पता आयात करें?"
+#~ msgid "A paper wallet QR was scanned. Import this address?"
+#~ msgstr "एक पेपर वॉलेट QR स्कैन किया गया था। यह पता आयात करें?"
 
 #: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:369
@@ -397,6 +397,14 @@ msgstr "एक पूल वाउचर को एक साथ रखता �
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:286
 #~ msgid "A service"
 #~ msgstr "एक सेवा"
+
+#: apps/web/src/routes/__root.tsx:302
+msgid "A sign-in card link was opened. Sign in to this wallet?"
+msgstr "एक साइन-इन कार्ड लिंक खोला गया. इस पते से साइन इन करें?"
+
+#: apps/web/src/routes/__root.tsx:300
+msgid "A sign-in card was scanned. Switch to this wallet?"
+msgstr "साइन-इन कार्ड स्कैन किया गया। इस वॉलेट पर स्विच करें?"
 
 #: apps/web/src/components/profile-privacy-notice.tsx:6
 msgid "A signed-in person can find your username and wallet only by entering "
@@ -459,8 +467,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "अपना वाउचर प्रकाशित करने के लिए शर्तें स्वीकार करें"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:56
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 msgid "Account"
 msgstr "खाता"
 
@@ -603,7 +611,7 @@ msgstr "फ़ोटो जोड़ें"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
 msgid "Add signer"
 msgstr "हस्ताक्षरकर्ता जोड़ें"
 
@@ -736,7 +744,7 @@ msgstr "भेजने से पहले हमेशा पुष्टि �
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:269
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -812,9 +820,17 @@ msgstr "आवेदन करें"
 msgid "Apply filters"
 msgstr "फ़िल्टर लागू करें"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
+msgid "Apply password"
+msgstr "पासवर्ड लागू करें"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
+msgid "Applying password…"
+msgstr "पासवर्ड लागू किया जा रहा है…"
+
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:299
 msgid "Approvals required"
 msgstr "आवश्यक स्वीकृतियाँ"
 
@@ -822,7 +838,7 @@ msgstr "आवश्यक स्वीकृतियाँ"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:191
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
 msgid "Approve voucher"
 msgstr "वाउचर स्वीकृत करें"
 
@@ -871,8 +887,8 @@ msgstr "अनुमोदन की प्रतीक्षा है"
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:524
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:609
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:22
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:335
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:366
@@ -1098,7 +1114,7 @@ msgid "Change"
 msgstr "परिवर्तन"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
 msgid "Change approvals required"
 msgstr "आवश्यक स्वीकृतियाँ बदलें"
 
@@ -1346,8 +1362,8 @@ msgstr "फ़ोटो में से चुनें"
 #~ msgstr "चुनें कि बाज़ार के परिणाम कितने दूर हो सकते हैं।"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:215
-msgid "Choose Image"
-msgstr "छवि चुनें"
+#~ msgid "Choose Image"
+#~ msgstr "छवि चुनें"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:85
 #~ msgid "Choose one so people can send you vouchers without your wallet address."
@@ -1434,9 +1450,13 @@ msgstr "स्पष्ट खोज"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
 msgid "Close"
 msgstr "बंद करें"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:69
+msgid "Close card password form"
+msgstr "पासवर्ड से सुरक्षित वॉलेट आयात बंद करें"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:93
 #: apps/web/src/components/catalog-filter-controls.tsx:298
@@ -1449,16 +1469,20 @@ msgid "Close menu"
 msgstr "मेनू बंद करें"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:126
-msgid "Close paper wallet scanner"
-msgstr "पेपर वॉलेट स्कैनर बंद करें"
+#~ msgid "Close paper wallet scanner"
+#~ msgstr "पेपर वॉलेट स्कैनर बंद करें"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:69
-msgid "Close password-protected wallet import"
-msgstr "पासवर्ड से सुरक्षित वॉलेट आयात बंद करें"
+#~ msgid "Close password-protected wallet import"
+#~ msgstr "पासवर्ड से सुरक्षित वॉलेट आयात बंद करें"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:493
 msgid "Close private key form"
 msgstr "निजी कुंजी प्रपत्र बंद करें"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:126
+msgid "Close sign-in card scanner"
+msgstr "साइन-इन कार्ड स्कैनर बंद करें"
 
 #: apps/web/src/features/wants/ui/want-form-page.tsx:393
 msgid "Close Want"
@@ -1543,7 +1567,7 @@ msgstr "अपने फ़ोन पर संकेत पूरा करे�
 msgid "Complete your profile"
 msgstr "अपना प्रोफ़ाइल पूरा करें"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
 msgid "Confirm"
 msgstr "पुष्टि करें"
 
@@ -1589,15 +1613,15 @@ msgstr "अदला-बदली की पुष्टि करें"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:409
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:421
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
 msgstr "पुष्टि की गई"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
 msgid "Confirming"
 msgstr "पुष्टि कर रहा है"
 
@@ -1715,7 +1739,7 @@ msgstr "वेबसाइट से संपर्क करें"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:269
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:538
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1730,7 +1754,7 @@ msgstr "ब्राउज़र में जारी रखें"
 msgid "Continue to CLC"
 msgstr "CLC पर जारी रखें"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:550
 msgid "Continue to wallet"
 msgstr "वॉलेट पर जाएँ"
 
@@ -1739,13 +1763,17 @@ msgid "Continue with {providerLabel}"
 msgstr "{providerLabel} के साथ जारी रखें"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
-msgid "Continue with paper wallet"
-msgstr "पेपर वॉलेट के साथ जारी रखें"
+#~ msgid "Continue with paper wallet"
+#~ msgstr "पेपर वॉलेट के साथ जारी रखें"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:370
 #: apps/web/src/components/auth/sign-in-panel.tsx:379
-msgid "Continue with Paper Wallet"
-msgstr "पेपर वॉलेट के साथ जारी रखें"
+#~ msgid "Continue with Paper Wallet"
+#~ msgstr "पेपर वॉलेट के साथ जारी रखें"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:635
+msgid "Continue with sign-in card"
+msgstr "साइन-इन कार्ड के साथ जारी रखें"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:66
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:183
@@ -1847,8 +1875,8 @@ msgid "Could not check balances. Try again before submitting your request."
 msgstr "शेष राशि की जाँच नहीं हो सकी। अनुरोध भेजने से पहले दोबारा प्रयास करें।"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
-msgid "Could not import this paper wallet."
-msgstr "इस पेपर वॉलेट को आयात नहीं किया जा सका."
+#~ msgid "Could not import this paper wallet."
+#~ msgstr "इस पेपर वॉलेट को आयात नहीं किया जा सका."
 
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:21
 #: apps/web/src/components/retirement/retirement-control.tsx:72
@@ -1860,21 +1888,38 @@ msgid "Could not load vouchers."
 msgstr "वाउचर लोड नहीं किये जा सके."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
-msgid "Could not protect this paper wallet."
-msgstr "इस पेपर वॉलेट को सुरक्षित नहीं किया जा सका।"
+#~ msgid "Could not protect this paper wallet."
+#~ msgstr "इस पेपर वॉलेट को सुरक्षित नहीं किया जा सका।"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+msgid "Could not protect this sign-in card."
+msgstr "इस साइन-इन कार्ड को सुरक्षित नहीं किया जा सका।"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
-msgid "Could not save the paper wallet. Try again."
-msgstr "पेपर वॉलेट सहेजा नहीं जा सका. पुनः प्रयास करें।"
+#~ msgid "Could not save the paper wallet. Try again."
+#~ msgstr "पेपर वॉलेट सहेजा नहीं जा सका. पुनः प्रयास करें।"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "मुद्रण योग्य शीट सहेजी नहीं जा सकी. पुनः प्रयास करें।"
 
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+msgid "Could not save the sign-in card. Try again."
+msgstr "साइन-इन कार्ड सहेजा नहीं जा सका. पुनः प्रयास करें।"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
-msgid "Could not share the paper wallet. Try downloading it instead."
-msgstr "पेपर वॉलेट साझा नहीं किया जा सका. इसके बजाय इसे डाउनलोड करने का प्रयास "
-"करें."
+#~ msgid "Could not share the paper wallet. Try downloading it instead."
+#~ msgstr "पेपर वॉलेट साझा नहीं किया जा सका. इसके बजाय इसे डाउनलोड करने का प्रयास "
+#~ "करें."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+msgid "Could not share the sign-in card. Try downloading it instead."
+msgstr "साइन-इन कार्ड साझा नहीं किया जा सका. इसके बजाय इसे डाउनलोड करने का "
+"प्रयास करें."
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
+msgid "Could not unlock this sign-in card."
+msgstr "इस साइन-इन कार्ड को अनलॉक नहीं किया जा सका."
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:103
 msgid "Could not upload your photo. Please try again."
@@ -2414,7 +2459,7 @@ msgstr "वाउचर जारी करें"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:180
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2506,8 +2551,8 @@ msgid "Custom units have no price feed. Relative pricing is used instead."
 msgstr "कस्टम इकाइयों के लिए मूल्य फ़ीड उपलब्ध नहीं है। इसके बजाय सापेक्ष मूल्य "
 "निर्धारण का उपयोग किया जाएगा।"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:570
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:593
 msgid "Customize"
 msgstr "अनुकूलित करें"
 
@@ -2641,8 +2686,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "प्रदर्शन नाम 120 अक्षर या उससे कम होना चाहिए"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:596
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:719
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2661,8 +2706,8 @@ msgid "Download card"
 msgstr "कार्ड डाउनलोड करें"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
-msgid "Download your paper wallet before continuing."
-msgstr "जारी रखने से पहले अपना पेपर वॉलेट डाउनलोड करें।"
+#~ msgid "Download your paper wallet before continuing."
+#~ msgstr "जारी रखने से पहले अपना पेपर वॉलेट डाउनलोड करें।"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:69
 msgid "Dozen"
@@ -2842,6 +2887,10 @@ msgstr "0 से 100 तक शुल्क दर्ज करें"
 msgid "Enter a link starting with http:// or https://"
 msgstr "http:// या https:// से शुरू होने वाला लिंक दर्ज करें"
 
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+msgid "Enter a password before saving."
+msgstr "इस कार्ड को डाउनलोड करने से पहले एक पासवर्ड दर्ज करें और लागू करें।"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:245
 msgid "Enter a title for your post"
@@ -2857,8 +2906,12 @@ msgid "Enter a valid date and time"
 msgstr "एक वैध दिनांक और समय दर्ज करें"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:283
-msgid "Enter a valid private key or paper wallet."
-msgstr "एक वैध निजी कुंजी या पेपर वॉलेट दर्ज करें।"
+#~ msgid "Enter a valid private key or paper wallet."
+#~ msgstr "एक वैध निजी कुंजी या पेपर वॉलेट दर्ज करें।"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:283
+msgid "Enter a valid private key or sign-in card."
+msgstr "एक वैध निजी कुंजी या साइन-इन कार्ड दर्ज करें।"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:6
@@ -2904,8 +2957,14 @@ msgid "Enter an exchange rate greater than zero"
 msgstr "शून्य से अधिक विनिमय दर दर्ज करें"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
-msgid "Enter and apply a password before downloading this card."
-msgstr "इस कार्ड को डाउनलोड करने से पहले एक पासवर्ड दर्ज करें और लागू करें।"
+#~ msgid "Enter and apply a password before downloading this card."
+#~ msgstr "इस कार्ड को डाउनलोड करने से पहले एक पासवर्ड दर्ज करें और लागू करें।"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:462
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
+#: apps/web/src/routes/__root.tsx:271
+msgid "Enter card password"
+msgstr "कार्ड का पासवर्ड दर्ज करें"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:404
 msgid "Enter pool name"
@@ -2954,10 +3013,16 @@ msgid "Event details"
 msgstr "घटना विवरण"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
-msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+#~ msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+#~ "way to sign in."
+#~ msgstr "प्रत्येक खाते को एक पेपर वॉलेट मिलता है। {providerLabel} को लिंक करने "
+#~ "से साइन इन करने का एक और तरीका जुड़ जाता है।"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:643
+msgid "Every account has a sign-in card. Linking {providerLabel} adds another "
 "way to sign in."
-msgstr "प्रत्येक खाते को एक पेपर वॉलेट मिलता है। {providerLabel} को लिंक करने "
-"से साइन इन करने का एक और तरीका जुड़ जाता है।"
+msgstr "प्रत्येक खाते को एक साइन-इन कार्ड मिलता है। {providerLabel} को लिंक "
+"करने से साइन इन करने का एक और तरीका जुड़ जाता है।"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:500
 msgid "Exchange rate"
@@ -2967,11 +3032,11 @@ msgstr "विनिमय दर"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "डिफ़ॉल्ट वाउचर के सापेक्ष विनिमय दर ({unitSymbol})"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:437
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:449
 msgid "Execute it in Safe."
 msgstr "Safe में इसे निष्पादित करें।"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:426
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:438
 msgid "Executing…"
 msgstr "निष्पादित हो रहा है…"
 
@@ -3007,7 +3072,7 @@ msgstr "समाप्त हो रहा है"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -3028,7 +3093,7 @@ msgstr "खेती"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:189
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:201
 msgid "Fee % and recipient"
 msgstr "शुल्क % और प्राप्तकर्ता"
 
@@ -3343,9 +3408,9 @@ msgstr "मैंने {amountLabel} बनाया।"
 #~ msgstr "मैंने यह कुंजी सहेज ली है"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
-msgid "I have saved this key. If lost, my wallet cannot be recovered."
-msgstr "मैंने यह कुंजी सहेज ली है. यदि मेरा वॉलेट खो गया तो उसे वापस नहीं पाया "
-"जा सकेगा।"
+#~ msgid "I have saved this key. If lost, my wallet cannot be recovered."
+#~ msgstr "मैंने यह कुंजी सहेज ली है. यदि मेरा वॉलेट खो गया तो उसे वापस नहीं पाया "
+#~ "जा सकेगा।"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:289
 msgid "I made a swap."
@@ -3358,6 +3423,11 @@ msgstr "मुझे {senderLabel} से {amountLabel} प्राप्त �
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:140
 #~ msgid "I received {amountLabel}."
 #~ msgstr "मुझे {amountLabel} प्राप्त हुआ।"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:581
+msgid "I saved my sign-in card. If I lose it, I may lose access to my wallet."
+msgstr "मैंने यह कुंजी सहेज ली है. यदि मेरा वॉलेट खो गया तो उसे वापस नहीं पाया "
+"जा सकेगा।"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:196
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:252
@@ -3386,12 +3456,12 @@ msgstr "यदि दिखाया गया है, तो वेब ऐप �
 "पर टैप करें।"
 
 #: apps/web/src/routes/__root.tsx:296
-msgid "Import paper wallet?"
-msgstr "पेपर वॉलेट आयात करें?"
+#~ msgid "Import paper wallet?"
+#~ msgstr "पेपर वॉलेट आयात करें?"
 
 #: apps/web/src/routes/__root.tsx:308
-msgid "Import wallet"
-msgstr "वॉलेट आयात करें"
+#~ msgid "Import wallet"
+#~ msgstr "वॉलेट आयात करें"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:52
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:559
@@ -3577,7 +3647,7 @@ msgstr "{0} फ़ाइल नाम लिंक करें"
 #~ msgid "Link {providerLabel}"
 #~ msgstr "लिंक {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Link {providerLabel}?"
 msgstr "लिंक {providerLabel}?"
 
@@ -3623,7 +3693,7 @@ msgstr "लिंक कॉपी किया गया"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "इस वाउचर पर लागू होने वाली शर्तों से लिंक करें"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:625
 msgid "Link wallet to {providerLabel}"
 msgstr "वॉलेट को {providerLabel} से लिंक करें"
 
@@ -3645,10 +3715,16 @@ msgid "Linked vouchers"
 msgstr "जुड़े हुए वाउचर"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:63
+#~ msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
+#~ "Android. Your paper wallet keeps working here."
+#~ msgstr "पासकी को लिंक करना iPhone पर Safari या Chrome और Android पर Chrome में "
+#~ "काम करता है। आपका पेपर वॉलेट यहां काम करता रहता है।"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:63
 msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
-"Android. Your paper wallet keeps working here."
+"Android. Your sign-in card keeps working here."
 msgstr "पासकी को लिंक करना iPhone पर Safari या Chrome और Android पर Chrome में "
-"काम करता है। आपका पेपर वॉलेट यहां काम करता रहता है।"
+"काम करता है। आपका साइन-इन कार्ड यहां काम करता रहता है।"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
 #~ msgid "Linking passkey..."
@@ -3660,8 +3736,12 @@ msgid "Linking passkey…"
 msgstr "पासकी लिंक किया जा रहा है..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:106
-msgid "Linking the passkey failed. Your paper wallet is unchanged."
-msgstr "पासकी को लिंक करना विफल रहा. आपका पेपर वॉलेट अपरिवर्तित है."
+#~ msgid "Linking the passkey failed. Your paper wallet is unchanged."
+#~ msgstr "पासकी को लिंक करना विफल रहा. आपका पेपर वॉलेट अपरिवर्तित है."
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:106
+msgid "Linking the passkey failed. Your sign-in card is unchanged."
+msgstr "पासकी को लिंक करना विफल रहा. आपका साइन-इन कार्ड अपरिवर्तित है."
 
 #: apps/web/src/features/home/ui/report-page.tsx:444
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:681
@@ -3861,7 +3941,7 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:108
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:120
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3918,7 +3998,7 @@ msgid "Manage {0}"
 msgstr "{0} प्रबंधित करें"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:195
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
 msgid "Manage voucher"
 msgstr "वाउचर प्रबंधित करें"
 
@@ -4127,7 +4207,7 @@ msgid "Multisig owned · {0} signers"
 msgstr "मल्टीसिग के स्वामित्व में · {0} हस्ताक्षरकर्ता"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:68
 msgid "Multisig transactions"
 msgstr "मल्टीसिग लेनदेन"
 
@@ -4204,8 +4284,12 @@ msgid "Name must be 80 characters or fewer"
 msgstr "नाम 80 अक्षर या उससे कम होना चाहिए"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
-msgid "Name on wallet"
+msgid "Name on card"
 msgstr "वॉलेट पर नाम"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#~ msgid "Name on wallet"
+#~ msgstr "वॉलेट पर नाम"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:293
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:888
@@ -4216,15 +4300,15 @@ msgstr "नाम, चिन्ह या पता"
 msgid "Natural building"
 msgstr "प्राकृतिक निर्माण"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
 msgid "Network"
 msgstr "नेटवर्क"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:275
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 msgid "New owner"
 msgstr "नया मालिक"
 
@@ -4253,8 +4337,8 @@ msgstr "नई पोस्ट"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:307
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:328
 msgid "New signer"
 msgstr "नया हस्ताक्षरकर्ता"
 
@@ -4500,7 +4584,7 @@ msgstr "अभी तक कोई पोस्ट नहीं."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "कोई QR कोड नहीं मिला. स्पष्ट छवि के साथ पुनः प्रयास करें."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:116
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:128
 msgid "No queued proposals found."
 msgstr "कतार में कोई प्रस्ताव नहीं मिला।"
 
@@ -4607,7 +4691,7 @@ msgid "No. of participants"
 msgstr "प्रतिभागियों की संख्या"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:393
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:405
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4642,6 +4726,11 @@ msgstr "आयोजित नहीं किया गया"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:64
 msgid "Not linked"
 msgstr "लिंक नहीं किया गया"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+msgid "Not protected. Anyone who scans this card can access your wallet."
+msgstr "सुरक्षित नहीं है। इस कार्ड को स्कैन करने वाला कोई भी व्यक्ति आपके वॉलेट "
+"तक पहुँच सकता है।"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:56
 msgid "Not sent"
@@ -4786,7 +4875,7 @@ msgid "Open in Maps"
 msgstr "मानचित्र में खोलें"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
 msgid "Open in Safe"
 msgstr "Safe में खोलें"
 
@@ -4842,8 +4931,12 @@ msgstr "वाउचर पेज खोलें"
 #~ msgstr "पेपर वॉलेट खोला जा रहा है…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
-msgid "Opening paper wallet…"
-msgstr "पेपर वॉलेट खोला जा रहा है…"
+#~ msgid "Opening paper wallet…"
+#~ msgstr "पेपर वॉलेट खोला जा रहा है…"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
+msgid "Opening sign-in card…"
+msgstr "साइन-इन कार्ड खोला जा रहा है…"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:339
@@ -4935,21 +5028,21 @@ msgstr "भुगतान कर दिया गया"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-msgid "Paper wallet"
-msgstr "पेपर वॉलेट"
+#~ msgid "Paper wallet"
+#~ msgstr "पेपर वॉलेट"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
-msgid "Paper Wallet"
-msgstr "पेपर वॉलेट"
+#~ msgid "Paper Wallet"
+#~ msgstr "पेपर वॉलेट"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
-msgid "Paper wallet card"
-msgstr "पेपर वॉलेट कार्ड"
+#~ msgid "Paper wallet card"
+#~ msgstr "पेपर वॉलेट कार्ड"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
-msgid "Paper wallet is protected. Keep the password separate from the card."
-msgstr "पेपर वॉलेट सुरक्षित है. पासवर्ड को कार्ड से अलग रखें."
+#~ msgid "Paper wallet is protected. Keep the password separate from the card."
+#~ msgstr "पेपर वॉलेट सुरक्षित है. पासवर्ड को कार्ड से अलग रखें."
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
 #~ msgid "Paper wallet only"
@@ -4966,13 +5059,17 @@ msgstr "प्रतिभागियों को 100 अक्षर या �
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
 msgid "Passkey"
 msgstr "पासकी"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
-msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
-msgstr "पासकी निर्माण रद्द कर दिया गया. आपका पेपर वॉलेट अपरिवर्तित है."
+#~ msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
+#~ msgstr "पासकी निर्माण रद्द कर दिया गया. आपका पेपर वॉलेट अपरिवर्तित है."
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
+msgid "Passkey creation was cancelled. Your sign-in card is unchanged."
+msgstr "पासकी निर्माण रद्द कर दिया गया. आपका साइन-इन कार्ड अपरिवर्तित है."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
@@ -4996,10 +5093,17 @@ msgstr "पासकी स्थिति की जाँच नहीं क�
 
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:439
-msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper "
-"wallet."
+#~ msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper "
+#~ "wallet."
+#~ msgstr "पासकी Safe 1.5 या उसके बाद के मल्टीसिग वॉलेट के लिए हस्ताक्षर कर सकती "
+#~ "हैं। अपने पेपर वॉलेट का उपयोग करें।"
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:451
+msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
+"card."
 msgstr "पासकी Safe 1.5 या उसके बाद के मल्टीसिग वॉलेट के लिए हस्ताक्षर कर सकती "
-"हैं। अपने पेपर वॉलेट का उपयोग करें।"
+"हैं। अपने साइन-इन कार्ड का उपयोग करें।"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
@@ -5013,8 +5117,8 @@ msgstr "पासवर्ड खाली नहीं हो सकता."
 #: apps/web/src/components/auth/sign-in-panel.tsx:462
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
 #: apps/web/src/routes/__root.tsx:271
-msgid "Password-protected paper wallet"
-msgstr "पासवर्ड से सुरक्षित पेपर वॉलेट"
+#~ msgid "Password-protected paper wallet"
+#~ msgstr "पासवर्ड से सुरक्षित पेपर वॉलेट"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
@@ -5049,7 +5153,7 @@ msgstr "भुगतान रसीद"
 msgid "Payment status unknown"
 msgstr "भुगतान स्थिति अज्ञात"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
@@ -5571,7 +5675,7 @@ msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "प्रस्ताव कतार में जोड़ा गया। Safe में इसकी पुष्टि करें और इसे निष्पादित "
 "करें।"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:112
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "यहाँ प्रस्ताव उपलब्ध नहीं हैं। आप अभी भी अपने मल्टीसिग वॉलेट का उपयोग "
 "कर सकते हैं।"
@@ -5585,20 +5689,28 @@ msgid "Proposing…"
 msgstr "प्रस्तावित किया जा रहा है…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
-msgid "Protect paper wallet"
-msgstr "पेपर वॉलेट सुरक्षित करें"
+#~ msgid "Protect paper wallet"
+#~ msgstr "पेपर वॉलेट सुरक्षित करें"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
-msgid "Protect paper wallet with a password"
-msgstr "पेपर वॉलेट को पासवर्ड से सुरक्षित रखें"
+#~ msgid "Protect paper wallet with a password"
+#~ msgstr "पेपर वॉलेट को पासवर्ड से सुरक्षित रखें"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+msgid "Protect with a password"
+msgstr "साइन-इन कार्ड को पासवर्ड से सुरक्षित रखें"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+msgid "Protected. Keep the password separate from the card."
+msgstr "साइन-इन कार्ड सुरक्षित है. पासवर्ड को कार्ड से अलग रखें."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:156
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "पेपर वॉलेट सुरक्षित किया जा रहा है…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
-msgid "Protecting paper wallet…"
-msgstr "पेपर वॉलेट सुरक्षित किया जा रहा है…"
+#~ msgid "Protecting paper wallet…"
+#~ msgstr "पेपर वॉलेट सुरक्षित किया जा रहा है…"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
@@ -5669,8 +5781,8 @@ msgstr "प्रकाशन..."
 #~ msgstr "बैंगनी"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
-msgid "QR currently contains the raw private key."
-msgstr "QR में वर्तमान में कच्ची निजी कुंजी शामिल है।"
+#~ msgid "QR currently contains the raw private key."
+#~ msgstr "QR में वर्तमान में कच्ची निजी कुंजी शामिल है।"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:444
 #~ msgid "Quantity"
@@ -5791,7 +5903,7 @@ msgstr "हाल के प्राप्तकर्ता"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:266
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5886,7 +5998,7 @@ msgstr "सापेक्ष मूल्य निर्धारण"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:197
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
 msgid "Remove"
 msgstr "हटाएँ"
 
@@ -5930,12 +6042,12 @@ msgstr "फ़ोटो {0} हटाएँ"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
 msgid "Remove signer"
 msgstr "हस्ताक्षरकर्ता हटाएँ"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:304
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:313
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:325
 msgid "Removed signer"
 msgstr "हटाया गया हस्ताक्षरकर्ता"
 
@@ -5950,7 +6062,7 @@ msgstr "{0} को हटाने से इस पूल के अंदर �
 msgid "Removing…"
 msgstr "हटाया जा रहा है..."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
 msgid "Replace signer"
 msgstr "हस्ताक्षरकर्ता बदलें"
 
@@ -6145,7 +6257,7 @@ msgstr "एकांत विश्राम"
 msgid "Retry"
 msgstr "पुनः प्रयास करें"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:624
 msgid "Retry {providerLabel} connection"
 msgstr "{providerLabel} कनेक्शन पुनः प्रयास करें"
 
@@ -6164,7 +6276,7 @@ msgstr "कनेक्शन पुनः प्रयास करें"
 msgid "Reverted"
 msgstr "वापस किया गया"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:443
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
 msgid "Review this transaction in your multisig wallet."
 msgstr "अपने मल्टीसिग वॉलेट में इस लेनदेन की समीक्षा करें।"
 
@@ -6213,11 +6325,11 @@ msgid "Save printable A4 sheet"
 msgstr "मुद्रण योग्य A4 शीट सहेजें"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
-msgid "Save this card securely. If you use a password, keep it separately. "
-"Anyone with an unprotected QR code can access the wallet."
-msgstr "इस कार्ड को सुरक्षित रूप से सहेजें. यदि आप पासवर्ड का उपयोग करते हैं तो "
-"उसे अलग रखें। असुरक्षित QR कोड वाला कोई भी व्यक्ति वॉलेट तक पहुंच सकता "
-"है।"
+#~ msgid "Save this card securely. If you use a password, keep it separately. "
+#~ "Anyone with an unprotected QR code can access the wallet."
+#~ msgstr "इस कार्ड को सुरक्षित रूप से सहेजें. यदि आप पासवर्ड का उपयोग करते हैं तो "
+#~ "उसे अलग रखें। असुरक्षित QR कोड वाला कोई भी व्यक्ति वॉलेट तक पहुंच सकता "
+#~ "है।"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
@@ -6228,8 +6340,16 @@ msgid "Save Want"
 msgstr "ज़रूरत सहेजें"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
-msgid "Save your card"
+#~ msgid "Save your card"
+#~ msgstr "अपना कार्ड सहेजें"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:560
+msgid "Save your sign-in card"
 msgstr "अपना कार्ड सहेजें"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:533
+msgid "Save your sign-in card before continuing."
+msgstr "जारी रखने से पहले अपना साइन-इन कार्ड डाउनलोड करें।"
 
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
@@ -6596,7 +6716,7 @@ msgstr "एकत्र करने से पहले शुल्क प्�
 #~ msgid "Setting up your wallet..."
 #~ msgstr "आपका वॉलेट सेट किया जा रहा है…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:680
 msgid "Setting up your wallet…"
 msgstr "आपका वॉलेट सेट किया जा रहा है…"
 
@@ -6718,6 +6838,7 @@ msgstr "इस पूल का उपयोग करने वाले कि
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
 #: apps/web/src/components/market-bar.tsx:140
+#: apps/web/src/routes/__root.tsx:308
 msgid "Sign in"
 msgstr "साइन इन करें"
 
@@ -6749,6 +6870,15 @@ msgstr "पोस्ट देखने के लिए साइन इन क
 msgid "Sign in with private key"
 msgstr "निजी कुंजी से साइन इन करें"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:370
+#: apps/web/src/components/auth/sign-in-panel.tsx:379
+msgid "Sign in with QR card"
+msgstr "QR कार्ड से साइन इन करें"
+
+#: apps/web/src/routes/__root.tsx:296
+msgid "Sign in with this card?"
+msgstr "इस कार्ड से साइन इन करें?"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:60
 #~ msgid "Sign in with your device's screen lock instead of your paper card. Your "
 #~ "device will ask through {platformLabel}."
@@ -6767,6 +6897,14 @@ msgstr "साइन आउट करें?"
 #: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Sign-in"
 msgstr "साइन इन"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:440
+#: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+msgid "Sign-in card"
+msgstr "साइन-इन कार्ड"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
 #~ msgid "Sign-in method"
@@ -7431,10 +7569,16 @@ msgstr "यह आपकी मौजूदा प्रोफ़ाइल त�
 "प्रोफ़ाइल में किए गए बदलाव इस वांट को अपडेट नहीं करेंगे।"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
-msgid "This device does not have your paper wallet key. Sign in with or import "
-"your paper wallet here, then link a passkey."
-msgstr "इस डिवाइस में आपकी पेपर वॉलेट कुंजी नहीं है. यहां साइन इन करें या अपना "
-"पेपर वॉलेट आयात करें, फिर एक पासकी लिंक करें।"
+msgid "This device does not have the key from your sign-in card. Sign in with "
+"your card here, then link a passkey."
+msgstr "इस डिवाइस में आपकी साइन-इन कार्ड कुंजी नहीं है. यहां साइन इन करें या "
+"अपना साइन-इन कार्ड आयात करें, फिर एक पासकी लिंक करें।"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
+#~ msgid "This device does not have your paper wallet key. Sign in with or import "
+#~ "your paper wallet here, then link a passkey."
+#~ msgstr "इस डिवाइस में आपकी पेपर वॉलेट कुंजी नहीं है. यहां साइन इन करें या अपना "
+#~ "पेपर वॉलेट आयात करें, फिर एक पासकी लिंक करें।"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:189
 #~ msgid "This device is subscribed to wallet notifications."
@@ -7690,7 +7834,7 @@ msgstr "लेन-देन हैश कॉपी किया गया"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
 msgid "Transfer ownership"
 msgstr "स्वामित्व स्थानांतरित करें"
 
@@ -7821,8 +7965,8 @@ msgstr "खाते की इकाई"
 msgid "Unknown"
 msgstr "अज्ञात"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:199
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:215
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:211
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
 msgid "Unknown call"
 msgstr "अज्ञात कॉल"
 
@@ -7833,8 +7977,12 @@ msgid "Unlink {0}"
 msgstr "{0} को अनलिंक करें"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:107
-msgid "Unlock and import"
-msgstr "अनलॉक करें और आयात करें"
+#~ msgid "Unlock and import"
+#~ msgstr "अनलॉक करें और आयात करें"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:107
+msgid "Unlock and sign in"
+msgstr "अनलॉक करके साइन इन करें"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:105
 #~ msgid "Unlocking..."
@@ -7878,20 +8026,30 @@ msgid "Updating…"
 msgstr "अपडेट हो रहा है..."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:149
-msgid "Upload Image"
+#: apps/web/src/components/paper-wallet-scanner.tsx:206
+#: apps/web/src/components/paper-wallet-scanner.tsx:215
+msgid "Upload card image"
 msgstr "छवि अपलोड करें"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:189
-msgid "Upload Image Instead"
+msgid "Upload card image instead"
 msgstr "इसके बजाय छवि अपलोड करें"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:149
+#~ msgid "Upload Image"
+#~ msgstr "छवि अपलोड करें"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:189
+#~ msgid "Upload Image Instead"
+#~ msgstr "इसके बजाय छवि अपलोड करें"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "लोगो अपलोड करें"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:206
-msgid "Upload QR code image"
-msgstr "QR कोड छवि अपलोड करें"
+#~ msgid "Upload QR code image"
+#~ msgstr "QR कोड छवि अपलोड करें"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:356
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
@@ -7960,6 +8118,15 @@ msgstr "फोटो का प्रयोग करें"
 #: apps/web/src/features/wants/ui/want-form-page.tsx:305
 msgid "Use profile image"
 msgstr "प्रोफ़ाइल तस्वीर उपयोग करें"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:505
+msgid "Use this QR card to sign in to your wallet. Save it securely. If you add "
+"a password, keep it separately. Without a password, anyone who scans the "
+"card can access your wallet."
+msgstr "अपने वॉलेट में साइन इन करने के लिए इस QR कार्ड का उपयोग करें। इसे "
+"सुरक्षित रखें। यदि आप पासवर्ड जोड़ते हैं, तो उसे अलग रखें। पासवर्ड के "
+"बिना, इस कार्ड को स्कैन करने वाला कोई भी व्यक्ति आपके वॉलेट तक पहुँच "
+"सकता है।"
 
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
@@ -8221,7 +8388,7 @@ msgstr "आपके द्वारा जारी किए गए वाउ�
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "ब्लॉकचेन पुष्टिकरण की प्रतीक्षा में..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:731
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:217
 msgid "Waiting for blockchain confirmation…"
@@ -8249,8 +8416,8 @@ msgstr "श्रृंखला की प्रतीक्षा में...
 #: apps/web/src/components/wallet/recipient-address-input.tsx:196
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:124
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -8404,13 +8571,13 @@ msgstr "वापस लेना"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
 msgid "Withdraw fees"
 msgstr "फीस वापस लें"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
 msgid "Withdraw liquidity"
 msgstr "तरलता निकालें"
 
@@ -8493,7 +8660,7 @@ msgstr "पूल को उपयोग से हटाए जाने के
 msgid "You can write or edit your review until {0}."
 msgstr "आप {0} तक अपनी समीक्षा लिख या संपादित कर सकते हैं।"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:435
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:447
 msgid "You confirmed"
 msgstr "आपने पुष्टि की"
 
@@ -8547,8 +8714,13 @@ msgstr "आप भेजिए"
 #~ msgstr "आप Face ID, फ़िंगरप्रिंट या PIN से पुष्टि करेंगे"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:158
-msgid "You’ll need your paper card or passkey to sign back in."
-msgstr "फिर से साइन इन करने के लिए आपको अपने पेपर कार्ड या पासकी की ज़रूरत "
+#~ msgid "You’ll need your paper card or passkey to sign back in."
+#~ msgstr "फिर से साइन इन करने के लिए आपको अपने पेपर कार्ड या पासकी की ज़रूरत "
+#~ "होगी."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:158
+msgid "You’ll need your sign-in card or passkey to sign back in."
+msgstr "फिर से साइन इन करने के लिए आपको अपने साइन-इन कार्ड या पासकी की ज़रूरत "
 "होगी."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:363
@@ -8560,9 +8732,15 @@ msgid "You'll send"
 msgstr "आप भेज दीजिएगा"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:47
-msgid "Your account has a passkey, but it is not on this device. Your paper "
+#~ msgid "Your account has a passkey, but it is not on this device. Your paper "
+#~ "card still works here. Adding another passkey is not available yet."
+#~ msgstr "आपके खाते में एक पासकी है, लेकिन यह इस डिवाइस पर नहीं है। आपका पेपर "
+#~ "कार्ड अभी भी यहां काम करता है। दूसरी पासकी जोड़ना अभी उपलब्ध नहीं है."
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:47
+msgid "Your account has a passkey, but it is not on this device. Your sign-in "
 "card still works here. Adding another passkey is not available yet."
-msgstr "आपके खाते में एक पासकी है, लेकिन यह इस डिवाइस पर नहीं है। आपका पेपर "
+msgstr "आपके खाते में एक पासकी है, लेकिन यह इस डिवाइस पर नहीं है। आपका साइन-इन "
 "कार्ड अभी भी यहां काम करता है। दूसरी पासकी जोड़ना अभी उपलब्ध नहीं है."
 
 #: apps/web/src/components/auth/auth-states.tsx:14
@@ -8598,24 +8776,36 @@ msgstr "आपका नाम और वॉलेट पता नहीं द
 "विवरण शामिल करने से बचें।"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
-msgid "Your paper wallet"
-msgstr "आपका पेपर वॉलेट"
+#~ msgid "Your paper wallet"
+#~ msgstr "आपका पेपर वॉलेट"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:55
 msgid "Your passkey is being verified."
 msgstr "आपकी पासकी सत्यापित की जा रही है."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
-msgid "Your passkey is linked, but the app could not switch to it. Your paper "
-"wallet is still connected."
-msgstr "आपकी पासकी लिंक है, लेकिन ऐप उस पर स्विच नहीं कर सका। आपका पेपर वॉलेट "
-"अभी भी जुड़ा हुआ है."
+#~ msgid "Your passkey is linked, but the app could not switch to it. Your paper "
+#~ "wallet is still connected."
+#~ msgstr "आपकी पासकी लिंक है, लेकिन ऐप उस पर स्विच नहीं कर सका। आपका पेपर वॉलेट "
+#~ "अभी भी जुड़ा हुआ है."
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
+msgid "Your passkey is linked, but the app could not switch to it. Your sign-in "
+"card is still connected."
+msgstr "आपकी पासकी लिंक है, लेकिन ऐप उस पर स्विच नहीं कर सका। आपका साइन-इन "
+"कार्ड अभी भी जुड़ा हुआ है."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
-msgid "Your passkey is still confirming. You can keep using your paper wallet "
+#~ msgid "Your passkey is still confirming. You can keep using your paper wallet "
+#~ "meanwhile."
+#~ msgstr "आपकी पासकी अभी भी पुष्टि कर रही है. इस बीच आप अपने पेपर वॉलेट का उपयोग "
+#~ "जारी रख सकते हैं।"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
+msgid "Your passkey is still confirming. You can keep using your sign-in card "
 "meanwhile."
-msgstr "आपकी पासकी अभी भी पुष्टि कर रही है. इस बीच आप अपने पेपर वॉलेट का उपयोग "
-"जारी रख सकते हैं।"
+msgstr "आपकी पासकी अभी भी पुष्टि कर रही है. इस बीच आप अपने साइन-इन कार्ड का "
+"उपयोग जारी रख सकते हैं।"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:270
 #~ msgid "Your Pools"
@@ -8654,6 +8844,10 @@ msgid "Your review will be available once this redemption is processed. You can 
 "also find it later in the voucher’s Reviews tab."
 msgstr "वाउचर भुनाने की प्रक्रिया पूरी होते ही आपकी समीक्षा उपलब्ध होगी। आप इसे "
 "बाद में वाउचर के समीक्षा टैब में भी देख सकते हैं।"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
+msgid "Your sign-in card"
+msgstr "आपका साइन-इन कार्ड"
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:719
 msgid "Your unsaved changes to this post will be lost."

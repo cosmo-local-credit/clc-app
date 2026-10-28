@@ -66,7 +66,7 @@ export async function renderPaperWalletSheet(
   },
 ): Promise<Blob> {
   const context = document.createElement("canvas").getContext("2d");
-  if (!context) throw new Error("This browser cannot draw the paper wallet sheet");
+  if (!context) throw new Error("This browser cannot draw the sign-in card sheet");
 
   const host = document.createElement("div");
   host.setAttribute("aria-hidden", "true");
@@ -106,7 +106,7 @@ export async function renderPaperWalletSheet(
       );
     });
     const card = host.firstElementChild;
-    if (!(card instanceof HTMLElement)) throw new Error("Paper wallet card did not render");
+    if (!(card instanceof HTMLElement)) throw new Error("Sign-in card did not render");
     await Promise.all(
       Array.from(card.querySelectorAll("img"), (img) => img.decode().catch(() => undefined)),
     );
@@ -119,7 +119,7 @@ export async function renderPaperWalletSheet(
     const origin = card.getBoundingClientRect();
     const boxOf = (slot: string): Box => {
       const rect = card.querySelector(`[data-slot="${slot}"]`)?.getBoundingClientRect();
-      if (!rect) throw new Error(`Paper wallet card has no ${slot}`);
+      if (!rect) throw new Error(`Sign-in card has no ${slot}`);
       return {
         x: rect.left - origin.left,
         y: rect.top - origin.top,
