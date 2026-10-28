@@ -3,7 +3,7 @@ import { FiLock, FiUnlock } from "react-icons/fi";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
-import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { Switch } from "#/components/ui/switch";
 import { encryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
 import { buildPaperWalletUrl } from "#/lib/paper-wallet";
@@ -122,9 +122,8 @@ export function usePaperWalletProtection({
             <label htmlFor="pw-passphrase" className="font-medium text-foreground text-sm">
               <Trans>Password</Trans>
             </label>
-            <Input
+            <PasswordInput
               id="pw-passphrase"
-              type="password"
               autoComplete="new-password"
               value={passphrase}
               onChange={(event) => handlePassphraseChange(event.target.value)}
@@ -136,9 +135,8 @@ export function usePaperWalletProtection({
             <label htmlFor="pw-passphrase-confirm" className="font-medium text-foreground text-sm">
               <Trans>Confirm password</Trans>
             </label>
-            <Input
+            <PasswordInput
               id="pw-passphrase-confirm"
-              type="password"
               autoComplete="new-password"
               value={confirmPassphrase}
               onChange={(event) => handleConfirmPassphraseChange(event.target.value)}

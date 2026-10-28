@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { decryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
 import { cn } from "#/lib/utils";
 
@@ -78,9 +78,8 @@ export function EncryptedPaperWalletImportForm({
         <label htmlFor="encrypted-paper-wallet-password" className="text-sm font-medium">
           <Trans>Password</Trans>
         </label>
-        <Input
+        <PasswordInput
           id="encrypted-paper-wallet-password"
-          type="password"
           autoComplete="current-password"
           value={passphrase}
           onChange={(event) => {
