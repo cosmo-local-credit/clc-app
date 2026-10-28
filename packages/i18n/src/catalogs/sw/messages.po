@@ -267,6 +267,10 @@ msgstr "{count, plural, one {Kikundi chako kina aina # inayojulikana ya vocha "
 "yenye salio chanya.} other {Kikundi chako kina aina # zinazojulikana za "
 "vocha zenye salio chanya.}}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:330
+msgid "{count} of {signers}"
+msgstr "{count} kati ya {signers}"
+
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:215
 #: apps/web/src/features/home/ui/report-page.tsx:346
@@ -435,7 +439,7 @@ msgid "About"
 msgstr "Kuhusu"
 
 #: apps/web/src/components/introduction/introduction.tsx:92
-#: apps/web/src/features/home/ui/settings-page.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:92
 msgid "About Cosmo-Local Credit"
 msgstr "Kuhusu Cosmo-Local Credit"
 
@@ -453,7 +457,7 @@ msgstr "Kubali masharti ili kuchapisha puli yako"
 msgid "Accept the terms to publish your voucher"
 msgstr "Kubali masharti ili kuchapisha vocha yako"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:53
+#: apps/web/src/features/home/ui/settings-page.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
@@ -491,7 +495,7 @@ msgstr "Inawezesha kwenye mtandao…"
 msgid "Activating smart wallet…"
 msgstr "Inawezesha mkoba mahiri…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 #: apps/web/src/features/home/ui/wallet-page.tsx:354
 msgid "Active"
 msgstr "Imewashwa"
@@ -596,6 +600,8 @@ msgstr "Ongeza picha"
 msgid "Add photos"
 msgstr "Ongeza picha"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
 msgid "Add signer"
 msgstr "Ongeza mtia sahihi"
@@ -647,7 +653,7 @@ msgstr "Anwani"
 msgid "Address book"
 msgstr "Kitabu cha anwani"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:189
+#: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -778,7 +784,7 @@ msgstr "Usomaji mwingine wa kadi tayari unaendelea. Jaribu tena."
 msgid "Any selected"
 msgstr "Yoyote iliyochaguliwa"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:77
 msgid "App"
 msgstr "Programu"
 
@@ -791,7 +797,7 @@ msgstr "Usakinishaji wa programu"
 msgid "App menu"
 msgstr "Menyu ya programu"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:99
 msgid "App version"
 msgstr "Toleo la programu"
 
@@ -804,6 +810,8 @@ msgstr "Tumia"
 msgid "Apply filters"
 msgstr "Tumia vichujio"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 msgid "Approvals required"
 msgstr "Idhini zinazohitajika"
@@ -857,6 +865,7 @@ msgstr "Inasubiri idhini"
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:122
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
@@ -981,7 +990,7 @@ msgstr "Ruhusa ya kamera imekataliwa."
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:373
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:527
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
-#: apps/web/src/features/home/ui/settings-page.tsx:143
+#: apps/web/src/features/home/ui/settings-page.tsx:152
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:515
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:756
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
@@ -1086,6 +1095,7 @@ msgstr "Sherehe"
 msgid "Change"
 msgstr "Badilisha"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
 msgid "Change approvals required"
 msgstr "Badilisha idhini zinazohitajika"
@@ -1229,7 +1239,7 @@ msgstr "Inakagua kipindi chako…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Checking…"
 msgstr "Inakagua…"
 
@@ -1616,7 +1626,7 @@ msgstr "Unganisha pochi yako ili kuunda vocha."
 msgid "Connect your wallet to use MPESA."
 msgstr "Unganisha mkoba wako ili kutumia MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:215
 msgid "Connected address"
 msgstr "Anwani iliyounganishwa"
 
@@ -1748,7 +1758,7 @@ msgstr "Anwani ya mkataba imenakiliwa"
 msgid "Copy"
 msgstr "Nakili"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:225
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 #: apps/web/src/features/wallet/ui/cash-page.tsx:51
 msgid "Copy address"
 msgstr "Nakili anwani"
@@ -1891,8 +1901,8 @@ msgstr "Imeshindwa kuangalia vocha ambazo kikundi hiki kinakubali."
 msgid "Couldn't check your review access."
 msgstr "Imeshindwa kukagua ruhusa yako ya kutoa maoni."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:184
-#: apps/web/src/features/home/ui/settings-page.tsx:190
+#: apps/web/src/features/home/ui/settings-page.tsx:193
+#: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
@@ -2546,7 +2556,7 @@ msgstr "Punguza kiasi cha {0}"
 msgid "Default"
 msgstr "Chaguo-msingi"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:234
+#: apps/web/src/features/home/ui/settings-page.tsx:243
 msgid "Delegated to Calibur"
 msgstr "Imekabidhiwa kwa Calibur"
 
@@ -2985,6 +2995,7 @@ msgstr "Inaisha muda"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:67
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
@@ -3373,7 +3384,7 @@ msgstr "Kwenye mtandao"
 #~ msgid "In this pool"
 #~ msgstr "Katika kikundi hiki"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Inactive"
 msgstr "Haijawashwa"
 
@@ -3394,7 +3405,7 @@ msgstr "Maelezo"
 #: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:19
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "Sakinisha CLC"
@@ -4084,6 +4095,11 @@ msgstr "Ombi la MPESA limetumwa"
 msgid "MPESA via Pretium"
 msgstr "MPESA kupitia Pretium"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:72
+msgid "Multisig"
+msgstr "Sahihi nyingi"
+
 #. placeholder {0}: info.threshold
 #. placeholder {1}: info.signers.length
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:18
@@ -4095,6 +4111,7 @@ msgstr "Inamilikiwa na pochi ya sahihi nyingi · watia sahihi {0} kati ya {1}"
 msgid "Multisig owned · {0} signers"
 msgstr "Inamilikiwa na pochi ya sahihi nyingi · watia sahihi {0}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
 msgid "Multisig transactions"
 msgstr "Miamala ya sahihi nyingi"
@@ -4219,6 +4236,8 @@ msgstr "Mmiliki mpya hawezi kuwa mmoja wa mikataba ya mali hii"
 msgid "New post"
 msgstr "Chapisho jipya"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
 msgid "New signer"
@@ -4283,7 +4302,7 @@ msgstr "Hakuna shughuli inayolingana na vichujio hivi."
 msgid "No activity yet."
 msgstr "Bado hakuna shughuli."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:216
+#: apps/web/src/features/home/ui/settings-page.tsx:225
 msgid "No address available"
 msgstr "Hakuna anwani inayopatikana"
 
@@ -5378,7 +5397,7 @@ msgstr "Machapisho"
 msgid "Posts aren't available for this voucher."
 msgstr "Machapisho hayapatikani kwa vocha hii."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:60
 msgid "Preferences"
 msgstr "Mapendeleo"
 
@@ -5543,6 +5562,14 @@ msgstr "Pendekezo limewekwa kwenye foleni. Lithibitishe na ulitekeleze katika "
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Mapendekezo hayapatikani hapa. Bado unaweza kutumia pochi yako ya "
 "sahihi nyingi."
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Propose"
+msgstr "Pendekeza"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Proposing…"
+msgstr "Inapendekeza…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
@@ -5890,6 +5917,8 @@ msgstr "Ondoa kiungo {0}"
 msgid "Remove photo {0}"
 msgstr "Ondoa picha {0}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
 msgid "Remove signer"
 msgstr "Ondoa mtia sahihi"
@@ -6531,7 +6560,7 @@ msgid "Serving"
 msgstr "Sehemu ya chakula"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:75
-#: apps/web/src/features/home/ui/settings-page.tsx:100
+#: apps/web/src/features/home/ui/settings-page.tsx:109
 msgid "Session"
 msgstr "Kipindi"
 
@@ -6562,7 +6591,7 @@ msgstr "Inaandaa pochi yako…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:71
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/home/ui/settings-page.tsx:50
+#: apps/web/src/features/home/ui/settings-page.tsx:53
 #: apps/web/src/features/install/ui/install-page.tsx:64
 msgid "Settings"
 msgstr "Mipangilio"
@@ -6580,7 +6609,7 @@ msgid "Share card"
 msgstr "Shiriki kadi"
 
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
 msgstr "Shiriki CLC"
@@ -6707,16 +6736,16 @@ msgstr "Ingia kwa ufunguo binafsi"
 #~ msgstr "Ingia kwa kufuli ya skrini ya kifaa chako badala ya kadi yako ya "
 #~ "karatasi. Kifaa chako kitauliza kupitia {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
-#: apps/web/src/features/home/ui/settings-page.tsx:140
+#: apps/web/src/features/home/ui/settings-page.tsx:130
+#: apps/web/src/features/home/ui/settings-page.tsx:149
 msgid "Sign out"
 msgstr "Ondoka"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:127
+#: apps/web/src/features/home/ui/settings-page.tsx:136
 msgid "Sign out?"
 msgstr "Ondoka?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Sign-in"
 msgstr "Kuingia"
 
@@ -6728,11 +6757,19 @@ msgstr "Kuingia"
 #~ msgid "Sign-in methods"
 #~ msgstr "Njia za kuingia"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:257
+msgid "Signers"
+msgstr "Watia sahihi"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:180
+msgid "Signers and approvals"
+msgstr "Watia sahihi na idhini"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:119
 #~ msgid "Signing out..."
 #~ msgstr "Inaondoka..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
+#: apps/web/src/features/home/ui/settings-page.tsx:130
 msgid "Signing out…"
 msgstr "Inaondoka…"
 
@@ -7309,6 +7346,14 @@ msgid "This account cannot be approved. Contact support if you think this is a "
 msgstr "Akaunti hii haiwezi kuidhinishwa. Wasiliana na usaidizi ikiwa unaamini "
 "hili ni kosa."
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:107
+msgid "This address can't be a signer."
+msgstr "Anwani hii haiwezi kuwa mtia sahihi."
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:110
+msgid "This address is already a signer."
+msgstr "Anwani hii tayari ni mtia sahihi."
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:283
 msgid "This browser cannot store notification registration safely."
 msgstr "Kivinjari hiki hakiwezi kuhifadhi usajili wa arifa kwa usalama."
@@ -7412,6 +7457,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Orodha hii iliingizwa na kipimo “{legacyUnit}”. Chagua kimoja hapa "
 "chini ili kuhifadhi mabadiliko yako."
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:190
+msgid "This multisig's signers could not be read."
+msgstr "Watia sahihi wa pochi hii ya sahihi nyingi hawakuweza kusomwa."
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:88
 msgid "This order is shared as a private message. It does not change the "
@@ -7651,6 +7700,7 @@ msgstr "Safari"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:433
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:61
 #: apps/web/src/features/home/ui/activity-page.tsx:194
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:144
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:219
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:317
@@ -8203,8 +8253,8 @@ msgstr "Vitendo vya mkoba"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "Vitendo vya mkoba vinapatikana baada ya kujisajili au kuingia."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:197
-#: apps/web/src/features/home/ui/settings-page.tsx:201
+#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:210
 msgid "Wallet session"
 msgstr "Kikao cha mkoba"
 
@@ -8479,7 +8529,7 @@ msgstr "Unatuma"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "Utathibitisha kwa Face ID, alama ya kidole au PIN"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:149
+#: apps/web/src/features/home/ui/settings-page.tsx:158
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "Utahitaji kadi yako ya karatasi au passkey ili kuingia tena."
 

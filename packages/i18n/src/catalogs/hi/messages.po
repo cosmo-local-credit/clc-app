@@ -268,6 +268,10 @@ msgstr "{count, plural, one {आपके पूल में सकारात
 "वाउचर है।} other {आपके पूल में सकारात्मक शेष वाले # ज्ञात प्रकार के "
 "वाउचर हैं।}}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:330
+msgid "{count} of {signers}"
+msgstr "{signers} में से {count}"
+
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:215
 #: apps/web/src/features/home/ui/report-page.tsx:346
@@ -435,7 +439,7 @@ msgid "About"
 msgstr "के बारे में"
 
 #: apps/web/src/components/introduction/introduction.tsx:92
-#: apps/web/src/features/home/ui/settings-page.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:92
 msgid "About Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit के बारे में"
 
@@ -453,7 +457,7 @@ msgstr "अपना पूल प्रकाशित करने के ल�
 msgid "Accept the terms to publish your voucher"
 msgstr "अपना वाउचर प्रकाशित करने के लिए शर्तें स्वीकार करें"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:53
+#: apps/web/src/features/home/ui/settings-page.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
@@ -491,7 +495,7 @@ msgstr "श्रृंखला पर सक्रिय किया जा �
 msgid "Activating smart wallet…"
 msgstr "स्मार्ट वॉलेट सक्रिय किया जा रहा है…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 #: apps/web/src/features/home/ui/wallet-page.tsx:354
 msgid "Active"
 msgstr "सक्रिय"
@@ -596,6 +600,8 @@ msgstr "फ़ोटो जोड़ें"
 msgid "Add photos"
 msgstr "फ़ोटो जोड़ें"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
 msgid "Add signer"
 msgstr "हस्ताक्षरकर्ता जोड़ें"
@@ -648,7 +654,7 @@ msgstr "पता"
 msgid "Address book"
 msgstr "पता पुस्तिका"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:189
+#: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -779,7 +785,7 @@ msgstr "दूसरा कार्ड स्कैन पहले से ह�
 msgid "Any selected"
 msgstr "कोई भी चयनित"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:77
 msgid "App"
 msgstr "ऐप"
 
@@ -792,7 +798,7 @@ msgstr "ऐप इंस्टालेशन"
 msgid "App menu"
 msgstr "ऐप मेनू"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:99
 msgid "App version"
 msgstr "ऐप संस्करण"
 
@@ -805,6 +811,8 @@ msgstr "आवेदन करें"
 msgid "Apply filters"
 msgstr "फ़िल्टर लागू करें"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 msgid "Approvals required"
 msgstr "आवश्यक स्वीकृतियाँ"
@@ -858,6 +866,7 @@ msgstr "अनुमोदन की प्रतीक्षा है"
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:122
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
@@ -982,7 +991,7 @@ msgstr "कैमरा पहुंच अस्वीकृत."
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:373
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:527
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
-#: apps/web/src/features/home/ui/settings-page.tsx:143
+#: apps/web/src/features/home/ui/settings-page.tsx:152
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:515
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:756
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
@@ -1087,6 +1096,7 @@ msgstr "उत्सव"
 msgid "Change"
 msgstr "परिवर्तन"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
 msgid "Change approvals required"
 msgstr "आवश्यक स्वीकृतियाँ बदलें"
@@ -1228,7 +1238,7 @@ msgstr "आपका सत्र जाँचा जा रहा है…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Checking…"
 msgstr "जाँच हो रही है..."
 
@@ -1615,7 +1625,7 @@ msgstr "वाउचर जारी करने के लिए अपना 
 msgid "Connect your wallet to use MPESA."
 msgstr "MPESA का उपयोग करने के लिए अपने वॉलेट को कनेक्ट करें।"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:215
 msgid "Connected address"
 msgstr "जुड़ा हुआ पता"
 
@@ -1746,7 +1756,7 @@ msgstr "अनुबंध का पता कॉपी किया गया"
 msgid "Copy"
 msgstr "प्रतिलिपि"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:225
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 #: apps/web/src/features/wallet/ui/cash-page.tsx:51
 msgid "Copy address"
 msgstr "पता कॉपी करें"
@@ -1890,8 +1900,8 @@ msgstr "यह जाँच नहीं कर सका कि यह पू�
 msgid "Couldn't check your review access."
 msgstr "आपकी समीक्षा पहुंच की जांच नहीं की जा सकी."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:184
-#: apps/web/src/features/home/ui/settings-page.tsx:190
+#: apps/web/src/features/home/ui/settings-page.tsx:193
+#: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
@@ -2545,7 +2555,7 @@ msgstr "{0} मात्रा कम करें"
 msgid "Default"
 msgstr "डिफ़ॉल्ट"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:234
+#: apps/web/src/features/home/ui/settings-page.tsx:243
 msgid "Delegated to Calibur"
 msgstr "Calibur को सौंपा गया"
 
@@ -2984,6 +2994,7 @@ msgstr "समाप्त हो रहा है"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:67
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
@@ -3374,7 +3385,7 @@ msgstr "नेटवर्क में"
 #~ msgid "In this pool"
 #~ msgstr "इस पूल में"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Inactive"
 msgstr "निष्क्रिय"
 
@@ -3395,7 +3406,7 @@ msgstr "जानकारी"
 #: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:19
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "CLC स्थापित करें"
@@ -4082,6 +4093,11 @@ msgstr "MPESA प्रॉम्प्ट भेजा गया"
 msgid "MPESA via Pretium"
 msgstr "Pretium के माध्यम से MPESA"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:72
+msgid "Multisig"
+msgstr "मल्टीसिग"
+
 #. placeholder {0}: info.threshold
 #. placeholder {1}: info.signers.length
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:18
@@ -4093,6 +4109,7 @@ msgstr "मल्टीसिग के स्वामित्व में ·
 msgid "Multisig owned · {0} signers"
 msgstr "मल्टीसिग के स्वामित्व में · {0} हस्ताक्षरकर्ता"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
 msgid "Multisig transactions"
 msgstr "मल्टीसिग लेनदेन"
@@ -4217,6 +4234,8 @@ msgstr "नया मालिक इस एसेट के अनुबंध�
 msgid "New post"
 msgstr "नई पोस्ट"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
 msgid "New signer"
@@ -4281,7 +4300,7 @@ msgstr "कोई गतिविधि इन फ़िल्टर से म�
 msgid "No activity yet."
 msgstr "अभी तक कोई गतिविधि नहीं."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:216
+#: apps/web/src/features/home/ui/settings-page.tsx:225
 msgid "No address available"
 msgstr "कोई पता उपलब्ध नहीं है"
 
@@ -5371,7 +5390,7 @@ msgstr "पोस्ट"
 msgid "Posts aren't available for this voucher."
 msgstr "इस वाउचर के लिए पोस्ट उपलब्ध नहीं हैं."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:60
 msgid "Preferences"
 msgstr "प्राथमिकताएँ"
 
@@ -5535,6 +5554,14 @@ msgstr "प्रस्ताव कतार में जोड़ा गय�
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "यहाँ प्रस्ताव उपलब्ध नहीं हैं। आप अभी भी अपने मल्टीसिग वॉलेट का उपयोग "
 "कर सकते हैं।"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Propose"
+msgstr "प्रस्तावित करें"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Proposing…"
+msgstr "प्रस्तावित किया जा रहा है…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
@@ -5880,6 +5907,8 @@ msgstr "लिंक {0} हटाएँ"
 msgid "Remove photo {0}"
 msgstr "फ़ोटो {0} हटाएँ"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
 msgid "Remove signer"
 msgstr "हस्ताक्षरकर्ता हटाएँ"
@@ -6521,7 +6550,7 @@ msgid "Serving"
 msgstr "सेवा करना"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:75
-#: apps/web/src/features/home/ui/settings-page.tsx:100
+#: apps/web/src/features/home/ui/settings-page.tsx:109
 msgid "Session"
 msgstr "सत्र"
 
@@ -6552,7 +6581,7 @@ msgstr "आपका वॉलेट सेट किया जा रहा ह
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:71
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/home/ui/settings-page.tsx:50
+#: apps/web/src/features/home/ui/settings-page.tsx:53
 #: apps/web/src/features/install/ui/install-page.tsx:64
 msgid "Settings"
 msgstr "सेटिंग्स"
@@ -6570,7 +6599,7 @@ msgid "Share card"
 msgstr "कार्ड साझा करें"
 
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
 msgstr "CLC साझा करें"
@@ -6697,16 +6726,16 @@ msgstr "निजी कुंजी से साइन इन करें"
 #~ msgstr "अपने पेपर कार्ड के बजाय अपने डिवाइस के स्क्रीन लॉक से साइन इन करें। "
 #~ "आपका डिवाइस {platformLabel} के माध्यम से पूछेगा।"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
-#: apps/web/src/features/home/ui/settings-page.tsx:140
+#: apps/web/src/features/home/ui/settings-page.tsx:130
+#: apps/web/src/features/home/ui/settings-page.tsx:149
 msgid "Sign out"
 msgstr "साइन आउट करें"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:127
+#: apps/web/src/features/home/ui/settings-page.tsx:136
 msgid "Sign out?"
 msgstr "साइन आउट करें?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Sign-in"
 msgstr "साइन इन"
 
@@ -6718,11 +6747,19 @@ msgstr "साइन इन"
 #~ msgid "Sign-in methods"
 #~ msgstr "साइन-इन विधियाँ"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:257
+msgid "Signers"
+msgstr "हस्ताक्षरकर्ता"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:180
+msgid "Signers and approvals"
+msgstr "हस्ताक्षरकर्ता और स्वीकृतियाँ"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:119
 #~ msgid "Signing out..."
 #~ msgstr "साइन आउट हो रहा है..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
+#: apps/web/src/features/home/ui/settings-page.tsx:130
 msgid "Signing out…"
 msgstr "साइन आउट हो रहा है…"
 
@@ -7295,6 +7332,14 @@ msgid "This account cannot be approved. Contact support if you think this is a "
 msgstr "इस खाते को मंजूरी नहीं दी जा सकती. यदि आपको लगता है कि यह एक गलती है तो "
 "सहायता से संपर्क करें।"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:107
+msgid "This address can't be a signer."
+msgstr "यह पता हस्ताक्षरकर्ता नहीं हो सकता।"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:110
+msgid "This address is already a signer."
+msgstr "यह पता पहले से हस्ताक्षरकर्ता है।"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:283
 msgid "This browser cannot store notification registration safely."
 msgstr "यह ब्राउज़र अधिसूचना पंजीकरण को सुरक्षित रूप से संग्रहीत नहीं कर सकता."
@@ -7399,6 +7444,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "यह सूची \"{legacyUnit}\" इकाई के साथ आयात की गई थी। अपने परिवर्तनों को "
 "सहेजने के लिए नीचे से एक चुनें।"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:190
+msgid "This multisig's signers could not be read."
+msgstr "इस मल्टीसिग के हस्ताक्षरकर्ता पढ़े नहीं जा सके।"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:88
 msgid "This order is shared as a private message. It does not change the "
@@ -7639,6 +7688,7 @@ msgstr "यात्रा"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:433
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:61
 #: apps/web/src/features/home/ui/activity-page.tsx:194
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:144
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:219
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:317
@@ -8191,8 +8241,8 @@ msgstr "वॉलेट क्रियाएँ"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "आपके साइन अप या साइन इन करने के बाद वॉलेट क्रियाएं उपलब्ध होती हैं।"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:197
-#: apps/web/src/features/home/ui/settings-page.tsx:201
+#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:210
 msgid "Wallet session"
 msgstr "वॉलेट सत्र"
 
@@ -8467,7 +8517,7 @@ msgstr "आप भेजिए"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "आप Face ID, फ़िंगरप्रिंट या PIN से पुष्टि करेंगे"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:149
+#: apps/web/src/features/home/ui/settings-page.tsx:158
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "फिर से साइन इन करने के लिए आपको अपने पेपर कार्ड या पासकी की ज़रूरत "
 "होगी."

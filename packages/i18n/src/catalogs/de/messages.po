@@ -265,6 +265,10 @@ msgstr "{count, plural, one {Ihr Fonds enthält # bekannte Gutscheinart mit "
 "positivem Guthaben.} other {Ihr Fonds enthält # bekannte Gutscheinarten "
 "mit positivem Guthaben.}}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:330
+msgid "{count} of {signers}"
+msgstr "{count} von {signers}"
+
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:215
 #: apps/web/src/features/home/ui/report-page.tsx:346
@@ -434,7 +438,7 @@ msgid "About"
 msgstr "Über:"
 
 #: apps/web/src/components/introduction/introduction.tsx:92
-#: apps/web/src/features/home/ui/settings-page.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:92
 msgid "About Cosmo-Local Credit"
 msgstr "Über Cosmo-Local Credit"
 
@@ -452,7 +456,7 @@ msgstr "Akzeptieren Sie die Bedingungen, um Ihren Fonds zu veröffentlichen"
 msgid "Accept the terms to publish your voucher"
 msgstr "Akzeptieren Sie die Bedingungen, um Ihren Gutschein zu veröffentlichen"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:53
+#: apps/web/src/features/home/ui/settings-page.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
@@ -490,7 +494,7 @@ msgstr "Aktivierung in der Kette…"
 msgid "Activating smart wallet…"
 msgstr "Smart-Wallet wird aktiviert…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 #: apps/web/src/features/home/ui/wallet-page.tsx:354
 msgid "Active"
 msgstr "Aktiv"
@@ -595,6 +599,8 @@ msgstr "Foto hinzufügen"
 msgid "Add photos"
 msgstr "Fotos hinzufügen"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
 msgid "Add signer"
 msgstr "Unterzeichnende hinzufügen"
@@ -647,7 +653,7 @@ msgstr "Anschrift"
 msgid "Address book"
 msgstr "Adressbuch"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:189
+#: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -778,7 +784,7 @@ msgstr "Es läuft bereits ein anderer Kartenscan. Versuchen Sie es erneut."
 msgid "Any selected"
 msgstr "Jede ausgewählte"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:77
 msgid "App"
 msgstr "App"
 
@@ -791,7 +797,7 @@ msgstr "App Installation"
 msgid "App menu"
 msgstr "App-Menü"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:99
 msgid "App version"
 msgstr "App Version"
 
@@ -804,6 +810,8 @@ msgstr "Beantragen"
 msgid "Apply filters"
 msgstr "Filter anwenden"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 msgid "Approvals required"
 msgstr "Erforderliche Zustimmungen"
@@ -857,6 +865,7 @@ msgstr "Warten auf die Genehmigung"
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:122
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
@@ -981,7 +990,7 @@ msgstr "Kamerazugriff verweigert."
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:373
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:527
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
-#: apps/web/src/features/home/ui/settings-page.tsx:143
+#: apps/web/src/features/home/ui/settings-page.tsx:152
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:515
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:756
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
@@ -1087,6 +1096,7 @@ msgstr "Feier"
 msgid "Change"
 msgstr "Änderung"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
 msgid "Change approvals required"
 msgstr "Erforderliche Zustimmungen ändern"
@@ -1228,7 +1238,7 @@ msgstr "Sitzung wird überprüft…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Checking…"
 msgstr "Wird geprüft…"
 
@@ -1617,7 +1627,7 @@ msgstr "Verbinden Sie Ihre Geldbörse, um Gutscheine auszugeben."
 msgid "Connect your wallet to use MPESA."
 msgstr "Verbinden Sie Ihre Geldbörse mit MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:215
 msgid "Connected address"
 msgstr "Angeschlossene Anschrift"
 
@@ -1749,7 +1759,7 @@ msgstr "Vertragsanschrift kopiert"
 msgid "Copy"
 msgstr "Kopie"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:225
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 #: apps/web/src/features/wallet/ui/cash-page.tsx:51
 msgid "Copy address"
 msgstr "Adresse kopieren"
@@ -1896,8 +1906,8 @@ msgstr "Die von diesem Fonds akzeptierten Gutscheine konnten nicht geprüft "
 msgid "Couldn't check your review access."
 msgstr "Ihr Zugriff auf Bewertungen konnte nicht geprüft werden."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:184
-#: apps/web/src/features/home/ui/settings-page.tsx:190
+#: apps/web/src/features/home/ui/settings-page.tsx:193
+#: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
@@ -2558,7 +2568,7 @@ msgstr "Menge von {0} verringern"
 msgid "Default"
 msgstr "Ausfall"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:234
+#: apps/web/src/features/home/ui/settings-page.tsx:243
 msgid "Delegated to Calibur"
 msgstr "Nach Calibur delegiert"
 
@@ -3000,6 +3010,7 @@ msgstr "Ablaufend"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:67
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
@@ -3384,7 +3395,7 @@ msgstr "im Netz"
 #~ msgid "In this pool"
 #~ msgstr "In diesem Fonds"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Inactive"
 msgstr "inaktiv"
 
@@ -3405,7 +3416,7 @@ msgstr "Infos"
 #: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:19
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "CLC installieren"
@@ -4079,6 +4090,11 @@ msgstr "MPESA prompt gesendet"
 msgid "MPESA via Pretium"
 msgstr "MPESA über Pretium"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:72
+msgid "Multisig"
+msgstr "Multisig"
+
 #. placeholder {0}: info.threshold
 #. placeholder {1}: info.signers.length
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:18
@@ -4090,6 +4106,7 @@ msgstr "Im Besitz einer Multisig · {0} von {1} Unterzeichnenden"
 msgid "Multisig owned · {0} signers"
 msgstr "Im Besitz einer Multisig · {0} Unterzeichnende"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
 msgid "Multisig transactions"
 msgstr "Multisig-Transaktionen"
@@ -4213,6 +4230,8 @@ msgstr "Der neue Eigentümer darf keiner der Verträge dieses Vermögenswerts se
 msgid "New post"
 msgstr "Neuer Beitrag"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
 msgid "New signer"
@@ -4277,7 +4296,7 @@ msgstr "Keine Aktivitäten entsprechen diesen Filtern."
 msgid "No activity yet."
 msgstr "Noch keine Aktivität."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:216
+#: apps/web/src/features/home/ui/settings-page.tsx:225
 msgid "No address available"
 msgstr "Keine Adresse verfügbar"
 
@@ -5370,7 +5389,7 @@ msgstr "Stellen"
 msgid "Posts aren't available for this voucher."
 msgstr "Beiträge sind für diesen Gutschein nicht verfügbar."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:60
 msgid "Preferences"
 msgstr "Präferenzen"
 
@@ -5527,6 +5546,14 @@ msgstr "Vorschlag eingereiht. Bestätige ihn und führe ihn in Safe aus."
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Vorschläge sind hier nicht verfügbar. Du kannst weiterhin deine "
 "Multisig-Wallet verwenden."
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Propose"
+msgstr "Vorschlagen"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Proposing…"
+msgstr "Wird vorgeschlagen…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
@@ -5874,6 +5901,8 @@ msgstr "Link {0} entfernen"
 msgid "Remove photo {0}"
 msgstr "Foto entfernen {0}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
 msgid "Remove signer"
 msgstr "Unterzeichnende entfernen"
@@ -6514,7 +6543,7 @@ msgid "Serving"
 msgstr "Bedienung"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:75
-#: apps/web/src/features/home/ui/settings-page.tsx:100
+#: apps/web/src/features/home/ui/settings-page.tsx:109
 msgid "Session"
 msgstr "Sitzung"
 
@@ -6544,7 +6573,7 @@ msgstr "Ihre Geldbörse wird eingerichtet…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:71
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/home/ui/settings-page.tsx:50
+#: apps/web/src/features/home/ui/settings-page.tsx:53
 #: apps/web/src/features/install/ui/install-page.tsx:64
 msgid "Settings"
 msgstr "Einstellungen"
@@ -6562,7 +6591,7 @@ msgid "Share card"
 msgstr "Aktienkarte"
 
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
 msgstr "Anteil CLC"
@@ -6688,16 +6717,16 @@ msgstr "Melden Sie sich mit privatem Schlüssel an"
 #~ msgstr "Melden Sie sich mit der Bildschirmsperre Ihres Geräts statt mit Ihrer "
 #~ "Papierkarte an. Ihr Gerät fragt über {platformLabel} nach."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
-#: apps/web/src/features/home/ui/settings-page.tsx:140
+#: apps/web/src/features/home/ui/settings-page.tsx:130
+#: apps/web/src/features/home/ui/settings-page.tsx:149
 msgid "Sign out"
 msgstr "Abmelden"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:127
+#: apps/web/src/features/home/ui/settings-page.tsx:136
 msgid "Sign out?"
 msgstr "Abmelden?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Sign-in"
 msgstr "Anmeldung"
 
@@ -6709,11 +6738,19 @@ msgstr "Anmeldung"
 #~ msgid "Sign-in methods"
 #~ msgstr "Anmeldemethoden"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:257
+msgid "Signers"
+msgstr "Unterzeichnende"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:180
+msgid "Signers and approvals"
+msgstr "Unterzeichnende und Zustimmungen"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:119
 #~ msgid "Signing out..."
 #~ msgstr "Abmelden..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
+#: apps/web/src/features/home/ui/settings-page.tsx:130
 msgid "Signing out…"
 msgstr "Wird abgemeldet…"
 
@@ -7300,6 +7337,14 @@ msgid "This account cannot be approved. Contact support if you think this is a "
 msgstr "Dieses Konto kann nicht genehmigt werden. Wenden Sie sich an den "
 "Support, wenn Sie dies für einen Fehler halten."
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:107
+msgid "This address can't be a signer."
+msgstr "Diese Adresse kann nicht unterzeichnen."
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:110
+msgid "This address is already a signer."
+msgstr "Diese Adresse unterzeichnet bereits."
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:283
 msgid "This browser cannot store notification registration safely."
 msgstr "Dieser Browser kann die Benachrichtigungsregistrierung nicht sicher "
@@ -7409,6 +7454,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Diese Auflistung wurde mit der Einheit \"{legacyUnit}\" importiert. "
 "Wählen Sie eine unten, um Ihre Änderungen zu speichern."
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:190
+msgid "This multisig's signers could not be read."
+msgstr "Die Unterzeichnenden dieser Multisig konnten nicht gelesen werden."
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:88
 msgid "This order is shared as a private message. It does not change the "
@@ -7652,6 +7701,7 @@ msgstr "Reise"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:433
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:61
 #: apps/web/src/features/home/ui/activity-page.tsx:194
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:144
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:219
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:317
@@ -8208,8 +8258,8 @@ msgstr "Geldbörsenaktionen"
 #~ msgstr "Geldbörsenaktionen sind verfügbar, nachdem Sie ein Konto erstellt oder "
 #~ "sich angemeldet haben."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:197
-#: apps/web/src/features/home/ui/settings-page.tsx:201
+#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:210
 msgid "Wallet session"
 msgstr "Geldbörsensitzung"
 
@@ -8486,7 +8536,7 @@ msgstr "Sie senden"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "Sie werden mit Face ID, Fingerabdruck oder PIN bestätigen"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:149
+#: apps/web/src/features/home/ui/settings-page.tsx:158
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "Um sich wieder anzumelden, benötigen Sie Ihre Papierkarte oder Ihren "
 "Passkey."

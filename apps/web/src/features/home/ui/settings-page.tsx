@@ -24,9 +24,11 @@ import { SettingsSheet } from "#/components/ui/settings-sheet";
 import { EllipsizedAddress, HighlightAddress } from "#/components/wallet";
 import { BUILD_INFO } from "#/features/app-updates/build-info";
 import { useInstallStore } from "#/features/install/install-store";
+import { useMySafes } from "#/features/safe/hooks/use-safe-signers";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 import { AccountSettingsSection } from "./account-settings-section";
+import { MultisigSettingsRows } from "./multisig-settings-section";
 import { NotificationSettingsSection } from "./notification-settings-section";
 import { PasskeySettingsSection } from "./passkey-settings-section";
 
@@ -43,6 +45,7 @@ export function SettingsPage({
 }) {
   const { t } = useLingui();
   const installed = useInstallStore((state) => state.installed);
+  const mySafes = useMySafes();
 
   return (
     <div className="space-y-6">
@@ -64,6 +67,12 @@ export function SettingsPage({
         <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />
         <WalletSessionRow address={address} delegationStatus={delegationStatus} />
       </SettingsGroup>
+
+      {mySafes.data && mySafes.data.length > 0 ? (
+        <SettingsGroup label={t`Multisig`}>
+          <MultisigSettingsRows safes={mySafes.data} />
+        </SettingsGroup>
+      ) : null}
 
       <SettingsGroup label={t`App`}>
         <IntroductionReplayButton />

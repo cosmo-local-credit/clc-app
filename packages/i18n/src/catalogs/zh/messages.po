@@ -262,6 +262,10 @@ msgid "{count, plural, one {Your pool holds # known voucher type with a "
 "positive balances.}}"
 msgstr "{count, plural, other {您的资金池持有 # 种已知的余额为正的代金券。}}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:330
+msgid "{count} of {signers}"
+msgstr "{signers} 位中需 {count} 位"
+
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:215
 #: apps/web/src/features/home/ui/report-page.tsx:346
@@ -418,7 +422,7 @@ msgid "About"
 msgstr "关于"
 
 #: apps/web/src/components/introduction/introduction.tsx:92
-#: apps/web/src/features/home/ui/settings-page.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:92
 msgid "About Cosmo-Local Credit"
 msgstr "关于 Cosmo-Local Credit"
 
@@ -436,7 +440,7 @@ msgstr "接受条款以发布您的资金池"
 msgid "Accept the terms to publish your voucher"
 msgstr "接受条款以发布您的代金券"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:53
+#: apps/web/src/features/home/ui/settings-page.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 msgid "Account"
@@ -474,7 +478,7 @@ msgstr "正在链上激活…"
 msgid "Activating smart wallet…"
 msgstr "正在激活智能钱包…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 #: apps/web/src/features/home/ui/wallet-page.tsx:354
 msgid "Active"
 msgstr "启用"
@@ -578,6 +582,8 @@ msgstr "添加照片"
 msgid "Add photos"
 msgstr "添加照片"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
 msgid "Add signer"
 msgstr "添加签名者"
@@ -629,7 +635,7 @@ msgstr "地址"
 msgid "Address book"
 msgstr "地址簿"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:189
+#: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:31
@@ -756,7 +762,7 @@ msgstr "另一项卡片扫描正在进行。请重试。"
 msgid "Any selected"
 msgstr "任意选择"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:77
 msgid "App"
 msgstr "应用程序"
 
@@ -769,7 +775,7 @@ msgstr "应用程序安装"
 msgid "App menu"
 msgstr "应用程序菜单"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:99
 msgid "App version"
 msgstr "应用程序版本"
 
@@ -782,6 +788,8 @@ msgstr "应用"
 msgid "Apply filters"
 msgstr "应用筛选条件"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 msgid "Approvals required"
 msgstr "所需批准数"
@@ -835,6 +843,7 @@ msgstr "等待批准"
 #: apps/web/src/components/market-search.tsx:159
 #: apps/web/src/components/paper-wallet-scanner.tsx:195
 #: apps/web/src/components/paper-wallet-scanner.tsx:219
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:122
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
@@ -959,7 +968,7 @@ msgstr "相机访问被拒绝。"
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:373
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:527
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
-#: apps/web/src/features/home/ui/settings-page.tsx:143
+#: apps/web/src/features/home/ui/settings-page.tsx:152
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:515
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:756
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
@@ -1063,6 +1072,7 @@ msgstr "庆祝"
 msgid "Change"
 msgstr "更改"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
 msgid "Change approvals required"
 msgstr "更改所需批准数"
@@ -1204,7 +1214,7 @@ msgstr "正在检查您的会话…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Checking…"
 msgstr "检查…"
 
@@ -1586,7 +1596,7 @@ msgstr "请连接钱包以发行代金券。"
 msgid "Connect your wallet to use MPESA."
 msgstr "连接钱包以使用 MPESA。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:215
 msgid "Connected address"
 msgstr "连接地址"
 
@@ -1713,7 +1723,7 @@ msgstr "合约地址已复制"
 msgid "Copy"
 msgstr "复制"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:225
+#: apps/web/src/features/home/ui/settings-page.tsx:234
 #: apps/web/src/features/wallet/ui/cash-page.tsx:51
 msgid "Copy address"
 msgstr "复制地址"
@@ -1855,8 +1865,8 @@ msgstr "无法检查此资金池接受哪些代金券。"
 msgid "Couldn't check your review access."
 msgstr "无法检查您的评价访问权限。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:184
-#: apps/web/src/features/home/ui/settings-page.tsx:190
+#: apps/web/src/features/home/ui/settings-page.tsx:193
+#: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
@@ -2502,7 +2512,7 @@ msgstr "减少{0}数量"
 msgid "Default"
 msgstr "默认"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:234
+#: apps/web/src/features/home/ui/settings-page.tsx:243
 msgid "Delegated to Calibur"
 msgstr "委托给 Calibur"
 
@@ -2938,6 +2948,7 @@ msgstr "即将到期"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:63
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:67
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
@@ -3324,7 +3335,7 @@ msgstr "网络内"
 #~ msgid "In this pool"
 #~ msgstr "在这个资金池中"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:248
+#: apps/web/src/features/home/ui/settings-page.tsx:257
 msgid "Inactive"
 msgstr "未启用"
 
@@ -3345,7 +3356,7 @@ msgstr "信息"
 #: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:19
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "安装 CLC"
@@ -4026,6 +4037,11 @@ msgstr "MPESA 提示已发送"
 msgid "MPESA via Pretium"
 msgstr "MPESA 通过 Pretium"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:83
+#: apps/web/src/features/home/ui/settings-page.tsx:72
+msgid "Multisig"
+msgstr "多签"
+
 #. placeholder {0}: info.threshold
 #. placeholder {1}: info.signers.length
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:18
@@ -4037,6 +4053,7 @@ msgstr "由多签钱包持有 · {1} 位签名者中需 {0} 位签名"
 msgid "Multisig owned · {0} signers"
 msgstr "由多签钱包持有 · {0} 位签名者"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
 msgid "Multisig transactions"
 msgstr "多签交易"
@@ -4161,6 +4178,8 @@ msgstr "新所有者不能是此资产的任何合约"
 msgid "New post"
 msgstr "新帖子"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
 msgid "New signer"
@@ -4223,7 +4242,7 @@ msgstr "没有符合这些筛选条件的活动。"
 msgid "No activity yet."
 msgstr "还没有活动。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:216
+#: apps/web/src/features/home/ui/settings-page.tsx:225
 msgid "No address available"
 msgstr "无可用地址"
 
@@ -5301,7 +5320,7 @@ msgstr "帖子"
 msgid "Posts aren't available for this voucher."
 msgstr "帖子不适用于此代金券。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:60
 msgid "Preferences"
 msgstr "偏好设置"
 
@@ -5463,6 +5482,14 @@ msgstr "提案已加入队列。请在 Safe 中确认并执行。"
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:112
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "此处暂时无法使用提案。你仍可使用多签钱包。"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Propose"
+msgstr "提议"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:136
+msgid "Proposing…"
+msgstr "正在提议…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Protect paper wallet"
@@ -5807,6 +5834,8 @@ msgstr "删除链接 {0}"
 msgid "Remove photo {0}"
 msgstr "删除照片 {0}"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
 msgid "Remove signer"
 msgstr "移除签名者"
@@ -6442,7 +6471,7 @@ msgid "Serving"
 msgstr "份"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:75
-#: apps/web/src/features/home/ui/settings-page.tsx:100
+#: apps/web/src/features/home/ui/settings-page.tsx:109
 msgid "Session"
 msgstr "会话"
 
@@ -6472,7 +6501,7 @@ msgstr "正在设置您的钱包…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:71
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/home/ui/settings-page.tsx:50
+#: apps/web/src/features/home/ui/settings-page.tsx:53
 #: apps/web/src/features/install/ui/install-page.tsx:64
 msgid "Settings"
 msgstr "设置"
@@ -6490,7 +6519,7 @@ msgid "Share card"
 msgstr "分享卡片"
 
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:78
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
 msgstr "分享 CLC"
@@ -6614,16 +6643,16 @@ msgstr "使用私钥登录"
 #~ "device will ask through {platformLabel}."
 #~ msgstr "使用设备的屏幕锁而不是纸卡登录。您的设备将通过 {platformLabel} 询问。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
-#: apps/web/src/features/home/ui/settings-page.tsx:140
+#: apps/web/src/features/home/ui/settings-page.tsx:130
+#: apps/web/src/features/home/ui/settings-page.tsx:149
 msgid "Sign out"
 msgstr "退出登录"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:127
+#: apps/web/src/features/home/ui/settings-page.tsx:136
 msgid "Sign out?"
 msgstr "退出登录？"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Sign-in"
 msgstr "登录"
 
@@ -6635,11 +6664,19 @@ msgstr "登录"
 #~ msgid "Sign-in methods"
 #~ msgstr "登录方式"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:257
+msgid "Signers"
+msgstr "签名者"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:180
+msgid "Signers and approvals"
+msgstr "签名者和批准"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:119
 #~ msgid "Signing out..."
 #~ msgstr "正在退出…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:121
+#: apps/web/src/features/home/ui/settings-page.tsx:130
 msgid "Signing out…"
 msgstr "正在退出…"
 
@@ -7203,6 +7240,14 @@ msgid "This account cannot be approved. Contact support if you think this is a "
 "mistake."
 msgstr "此账户无法获得批准。如果您认为有误，请联系支持人员。"
 
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:107
+msgid "This address can't be a signer."
+msgstr "此地址不能成为签名者。"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:110
+msgid "This address is already a signer."
+msgstr "此地址已是签名者。"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:283
 msgid "This browser cannot store notification registration safely."
 msgstr "此浏览器无法安全地存储通知注册。"
@@ -7300,6 +7345,10 @@ msgstr "此链接包含过多筛选条件（{0} 个，最多 {1} 个）。"
 msgid "This listing was imported with the unit “{legacyUnit}”. Pick one below "
 "to save your changes."
 msgstr "此列表是使用单位“{legacyUnit}”导入的。选择下面的一项来保存您的更改。"
+
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:190
+msgid "This multisig's signers could not be read."
+msgstr "无法读取此多签钱包的签名者。"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:88
 msgid "This order is shared as a private message. It does not change the "
@@ -7530,6 +7579,7 @@ msgstr "旅行"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:433
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:61
 #: apps/web/src/features/home/ui/activity-page.tsx:194
+#: apps/web/src/features/home/ui/multisig-settings-section.tsx:144
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:147
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:219
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:317
@@ -8081,8 +8131,8 @@ msgstr "钱包操作"
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "注册或登录后即可执行钱包操作。"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:197
-#: apps/web/src/features/home/ui/settings-page.tsx:201
+#: apps/web/src/features/home/ui/settings-page.tsx:206
+#: apps/web/src/features/home/ui/settings-page.tsx:210
 msgid "Wallet session"
 msgstr "钱包会话"
 
@@ -8353,7 +8403,7 @@ msgstr "您发送"
 #~ msgid "You'll confirm with Face ID, fingerprint or PIN"
 #~ msgstr "您将使用 Face ID、指纹或 PIN 进行确认"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:149
+#: apps/web/src/features/home/ui/settings-page.tsx:158
 msgid "You’ll need your paper card or passkey to sign back in."
 msgstr "重新登录需要您的纸质卡片或通行密钥。"
 
