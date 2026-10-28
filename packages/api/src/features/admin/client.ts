@@ -447,7 +447,11 @@ type AdminReviewAction = "hide" | "dismiss";
 export type AdminReviewFlag = {
   id: number;
   reviewId: number;
-  voucherAddress: string;
+  resourceKind: "voucher" | "pool";
+  resourceAddress: string;
+  /** Retained by clc-core for older admin clients. */
+  voucherAddress?: string;
+  poolAddress?: string;
   reason: string;
   stars: number;
   comment: string;
@@ -455,6 +459,18 @@ export type AdminReviewFlag = {
   reportedComment: string;
   createdAt: string;
 };
+
+type BackendAdminReviewFlag = Omit<AdminReviewFlag, "resourceKind" | "resourceAddress"> &
+  Partial<Pick<AdminReviewFlag, "resourceKind" | "resourceAddress">>;
+
+function normalizeAdminReviewFlag(flag: BackendAdminReviewFlag): AdminReviewFlag {
+  const resourceKind = flag.resourceKind ?? (flag.poolAddress ? "pool" : "voucher");
+  const resourceAddress =
+    flag.resourceAddress ??
+    (resourceKind === "pool" ? flag.poolAddress : flag.voucherAddress) ??
+    "";
+  return { ...flag, resourceKind, resourceAddress };
+}
 
 export type AdminReviewParams = {
   /** Flags with an id below this one. Absent on the first page. */
@@ -1039,11 +1055,11 @@ export function createAdminClient(http: HttpClient): AdminClient {
       if (params.before) query.set("before", String(params.before));
       const suffix = query.size > 0 ? `?${query.toString()}` : "";
       const result = await http.request<{
-        notifications?: Array<AdminReviewFlag> | null;
+        notifications?: Array<BackendAdminReviewFlag> | null;
         next?: number | null;
       }>(`/api/v2/admin/review-notifications${suffix}`, { method: "GET", signal });
       return {
-        notifications: result.notifications ?? [],
+        notifications: (result.notifications ?? []).map(normalizeAdminReviewFlag),
         next: typeof result.next === "number" ? result.next : null,
       };
     },

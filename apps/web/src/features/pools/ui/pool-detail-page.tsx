@@ -12,7 +12,10 @@ import {
 } from "react-icons/ri";
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
+import { PoolReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
+import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -159,6 +162,9 @@ export function PoolDetailPage({
               className="mt-1 line-clamp-3 overflow-hidden text-muted-foreground text-xs break-words"
             >
               {pool.description}
+            </p>
+            <p className="mt-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-muted-foreground text-xs">
+              <ReviewSummaryContent kind="pool" address={pool.address} />
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {pool.tags.map((tag) => (
@@ -380,6 +386,13 @@ export function PoolDetailPage({
           />
         </AuthenticatedDetailsGate>
       ) : null}
+
+      <section id="pool-reviews" className="space-y-3" aria-labelledby="pool-reviews-title">
+        <SectionHeading id="pool-reviews-title" as="h2">
+          <Trans>Reviews</Trans>
+        </SectionHeading>
+        <PoolReviewsPanel key={poolAddress} address={poolAddress} presentation="section" />
+      </section>
 
       {canManageOnChain ? (
         <PoolVoucherSheet

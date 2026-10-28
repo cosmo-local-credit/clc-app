@@ -160,7 +160,7 @@ vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
 }));
 
 vi.mock("#/features/reviews/hooks/use-voucher-reviews", () => ({
-  useVoucherReviewSummary: () => ({ summary: mocks.reviewSummary }),
+  useReviewSummary: () => ({ summary: mocks.reviewSummary }),
 }));
 
 vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({

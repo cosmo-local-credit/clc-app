@@ -1,24 +1,31 @@
-import { canWriteReview, REVIEW_STARS, type VoucherReview } from "@clc/core/features/reviews/logic";
+import {
+  canWriteReview,
+  type Review,
+  type ReviewResourceKind,
+  REVIEW_STARS,
+} from "@clc/core/features/reviews/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
-import { useVoucherReviews } from "#/features/reviews/hooks/use-voucher-reviews";
+import { useResourceReviews } from "#/features/reviews/hooks/use-voucher-reviews";
 import { ReviewEditor, ReviewStars } from "./review-editor";
 
-type Editor = { kind: "review" } | { kind: "reply" | "flag"; review: VoucherReview };
+type Editor = { kind: "review" } | { kind: "reply" | "flag"; review: Review };
 
-export function VoucherReviewsPanel({
+export function ResourceReviewsPanel({
+  kind,
   address,
   presentation = "tabpanel",
 }: {
+  kind: ReviewResourceKind;
   address: string;
   presentation?: "tabpanel" | "section";
 }) {
   const { t } = useLingui();
   const [filter, setFilter] = useState<number>();
   const [editor, setEditor] = useState<Editor | null>(null);
-  const { auth, access, reviews, mutation } = useVoucherReviews(address, filter);
+  const { auth, access, reviews, mutation } = useResourceReviews({ kind, address }, filter);
   const viewer = auth.isAuthenticated ? access.data : undefined;
   const canWrite = viewer ? canWriteReview(viewer) : false;
   useEffect(() => {
@@ -62,9 +69,9 @@ export function VoucherReviewsPanel({
 
   return (
     <section
-      id={presentation === "tabpanel" ? "voucher-panel-reviews" : undefined}
+      id={presentation === "tabpanel" ? `${kind}-panel-reviews` : undefined}
       role={presentation === "tabpanel" ? "tabpanel" : undefined}
-      aria-labelledby={presentation === "tabpanel" ? "voucher-tab-reviews" : undefined}
+      aria-labelledby={presentation === "tabpanel" ? `${kind}-tab-reviews` : undefined}
       className="space-y-3"
     >
       {reviews.isPending ? (
@@ -134,7 +141,11 @@ export function VoucherReviewsPanel({
         <div className="space-y-3 border border-border bg-card p-4">
           {!auth.isAuthenticated ? (
             <p className="text-sm text-muted-foreground">
-              <Trans>Sign in after redeeming this voucher to leave a review.</Trans>
+              {kind === "voucher" ? (
+                <Trans>Sign in after redeeming this voucher to leave a review.</Trans>
+              ) : (
+                <Trans>Sign in after swapping in this pool to leave a review.</Trans>
+              )}
             </p>
           ) : access.isPending ? (
             <p className="text-sm text-muted-foreground">
@@ -188,8 +199,12 @@ export function VoucherReviewsPanel({
               ) : (
                 <p className="text-sm text-muted-foreground">
                   {viewer?.review
-                    ? t`Redeem this voucher again to update your review.`
-                    : t`Redeem this voucher to leave a review within seven days.`}
+                    ? kind === "voucher"
+                      ? t`Redeem this voucher again to update your review.`
+                      : t`Swap in this pool again to update your review.`
+                    : kind === "voucher"
+                      ? t`Redeem this voucher to leave a review within seven days.`
+                      : t`Swap in this pool to leave a review within seven days.`}
                 </p>
               )}
             </>
@@ -215,7 +230,7 @@ export function VoucherReviewsPanel({
             <article
               key={review.id}
               className="space-y-3 border border-border bg-card p-4"
-              aria-label={t`Voucher review`}
+              aria-label={kind === "voucher" ? t`Voucher review` : t`Pool review`}
             >
               <ReviewStars stars={review.stars} />
               {review.comment ? (
@@ -271,4 +286,14 @@ export function VoucherReviewsPanel({
       ) : null}
     </section>
   );
+}
+
+export function VoucherReviewsPanel(
+  props: Omit<Parameters<typeof ResourceReviewsPanel>[0], "kind">,
+) {
+  return <ResourceReviewsPanel {...props} kind="voucher" />;
+}
+
+export function PoolReviewsPanel(props: Omit<Parameters<typeof ResourceReviewsPanel>[0], "kind">) {
+  return <ResourceReviewsPanel {...props} kind="pool" />;
 }

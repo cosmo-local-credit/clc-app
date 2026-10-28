@@ -855,6 +855,10 @@ describe("operator desk administration", () => {
     expect(lastCall().init.signal).toBe(controller.signal);
     expect(page).toMatchObject({ next: 6 });
     expect(page.notifications).toHaveLength(1);
+    expect(page.notifications[0]).toMatchObject({
+      resourceKind: "voucher",
+      resourceAddress: ADDRESS,
+    });
 
     await client().resolveReviewFlag(7, "hide");
     expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/review-notifications/7`);

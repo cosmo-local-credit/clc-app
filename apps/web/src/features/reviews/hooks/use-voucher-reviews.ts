@@ -1,40 +1,32 @@
+import {
+  reviewAccessQueryOptions,
+  reviewKeys,
+  reviewsInfiniteQueryOptions,
+} from "@clc/api/features/reviews/queries";
+import type { ReviewTarget } from "@clc/core/features/reviews/logic";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import {
-  flagReview,
-  getReviewAccess,
-  getReviews,
-  saveReview,
-  saveReviewReply,
-} from "../api/reviews-client";
-
-function publicReviewsQuery(address: string, stars?: number) {
-  const key = ["voucher-reviews", address.toLowerCase()] as const;
-  return {
-    queryKey: [...key, "public", stars] as const,
-    queryFn: ({ pageParam, signal }: { pageParam: number | undefined; signal: AbortSignal }) =>
-      getReviews(address, stars, pageParam, signal),
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: (page: Awaited<ReturnType<typeof getReviews>>) => page.next ?? undefined,
-  };
-}
+import { reviewsClient } from "#/lib/api/reviews";
 
 /** The header and full panel share this exact public cache entry. */
-export function useVoucherReviewSummary(address: string) {
-  const reviews = useInfiniteQuery(publicReviewsQuery(address));
+export function useReviewSummary(target: ReviewTarget) {
+  const reviews = useInfiniteQuery(reviewsInfiniteQueryOptions(reviewsClient, target));
   return { ...reviews, summary: reviews.data?.pages[0] };
 }
 
-export function useReviewAccess(address: string, poll = false) {
+export function useResourceReviewAccess(target: ReviewTarget, poll = false) {
   const auth = useAuthStatus();
-  const key = ["voucher-reviews", address.toLowerCase()] as const;
+  const viewer = auth.address ?? "";
   const access = useQuery({
-    queryKey: [...key, "access", auth.address?.toLowerCase(), auth.isAuthenticated],
-    queryFn: ({ signal }) => getReviewAccess(address, signal),
+    ...reviewAccessQueryOptions(reviewsClient, target, viewer),
     enabled: auth.isAuthenticated,
-    staleTime: 0,
-    refetchInterval: poll ? 3000 : 30000,
+    refetchInterval: poll
+      ? (query) => {
+          const current = query.state.data;
+          return current?.editableUntil || current?.isOwner || current?.hidden ? false : 3000;
+        }
+      : 30000,
   });
   const [, tick] = useState(0);
   useEffect(() => {
@@ -47,20 +39,20 @@ export function useReviewAccess(address: string, poll = false) {
   return { auth, access };
 }
 
-export function useVoucherReviews(address: string, stars?: number) {
+export function useResourceReviews(target: ReviewTarget, stars?: number) {
   const client = useQueryClient();
-  const key = ["voucher-reviews", address.toLowerCase()] as const;
-  const { auth, access } = useReviewAccess(address);
-  const reviews = useInfiniteQuery(publicReviewsQuery(address, stars));
+  const key = reviewKeys.resource(target);
+  const { auth, access } = useResourceReviewAccess(target);
+  const reviews = useInfiniteQuery(reviewsInfiniteQueryOptions(reviewsClient, target, stars));
   const mutation = useMutation({
     mutationFn: (
       action:
         | { kind: "review"; stars: number; text: string }
         | { kind: "reply" | "flag"; id: number; text: string },
     ) => {
-      if (action.kind === "review") return saveReview(address, action.stars, action.text);
-      if (action.kind === "reply") return saveReviewReply(address, action.id, action.text);
-      return flagReview(address, action.id, action.text);
+      if (action.kind === "review") return reviewsClient.save(target, action.stars, action.text);
+      if (action.kind === "reply") return reviewsClient.reply(target, action.id, action.text);
+      return reviewsClient.flag(target, action.id, action.text);
     },
     onSettled: () => client.invalidateQueries({ queryKey: key }),
   });
