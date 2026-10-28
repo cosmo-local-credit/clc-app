@@ -62,6 +62,10 @@ export function buildPaperWalletUrl(origin: string, payload: string): string {
  * Signup requires a name and a unique email, but a paper wallet can be issued
  * before its holder has given either. These stand in until the holder edits
  * their profile, and `profileGaps` treats both as missing.
+ *
+ * clc-core registers a wallet that signs in without an account under the same
+ * two values (`paperWalletPlaceholderName`, `pendingSIWEEmail`), so a change
+ * here needs the matching change there.
  */
 export const PAPER_WALLET_PLACEHOLDER_NAME = "Sign-in card";
 export const LEGACY_PAPER_WALLET_PLACEHOLDER_NAME = "Paper wallet";

@@ -80,10 +80,12 @@ export async function signSiweMessage(
 /**
  * Signs in and establishes the session cookie.
  *
- * Throws `BackendApiError`: 404 when the address is not registered, 403 when the
- * account is PENDING or REJECTED, 400 when the signature or nonce is rejected.
- * Callers are expected to distinguish those — "not registered" and "awaiting
- * approval" need different screens.
+ * An address with no account is registered first, under the paper-wallet
+ * placeholders, so any key signs in; the holder fills in their profile later.
+ *
+ * Throws `BackendApiError`: 403 when the account is PENDING or REJECTED, 400 when
+ * the signature or nonce is rejected, 409 (E17) when another account holds the
+ * new address's placeholder email.
  */
 export async function signInWithSiwe(
   auth: AuthClient,

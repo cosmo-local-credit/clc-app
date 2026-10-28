@@ -302,7 +302,8 @@ export function createAuthClient(http: HttpClient): AuthClient {
         // 409 means the *address* is already registered only when the backend
         // says so explicitly (code E17 = email conflict, a different identity
         // entirely). Swallowing an email conflict here would make the caller
-        // sign in as this (never-persisted) address, which 404s.
+        // sign in as this never-persisted address, which clc-core then
+        // registers under placeholders rather than the email the user typed.
         if (err instanceof BackendApiError && err.status === 409 && err.code !== "E17") {
           return { userId: null, status: "REGISTERED", role: "USER", alreadyRegistered: true };
         }

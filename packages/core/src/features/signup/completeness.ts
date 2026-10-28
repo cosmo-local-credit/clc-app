@@ -15,7 +15,8 @@ export type ProfileGaps = { avatar: boolean; name: boolean; contact: boolean };
 
 /**
  * What an account still lacks for a complete profile. Web onboarding collects
- * everything up front; an account issued in bulk as a paper wallet starts with
+ * everything up front; an account issued in bulk as a paper wallet, or
+ * registered by clc-core when a wallet with no account signs in, starts with
  * placeholders, and this is how the app notices and asks the holder to finish.
  */
 export function profileGaps(profile: ProfileCompletenessInput): ProfileGaps {
