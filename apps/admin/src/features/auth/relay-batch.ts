@@ -59,7 +59,7 @@ export async function relayOperatorBatch(
   const key = getOperatorKey();
   if (!key) {
     throw new Error(
-      "No signing key in this session. Sign in again with your paper wallet or passkey to sign.",
+      "No signing key in this session. Sign in again with your sign-in card or passkey to sign.",
     );
   }
 

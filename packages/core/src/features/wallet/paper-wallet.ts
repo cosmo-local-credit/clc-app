@@ -23,7 +23,7 @@ export function parsePaperWalletImportPayload(raw: string): PaperWalletImportPay
     return { type: "encrypted", encryptedKey: trimmedPayload };
   }
 
-  return { type: "invalid", error: "This QR code does not contain a valid paper wallet." };
+  return { type: "invalid", error: "This QR code does not contain a valid sign-in card." };
 }
 
 function extractPaperWalletPayload(
@@ -31,7 +31,7 @@ function extractPaperWalletPayload(
 ): { ok: true; payload: string } | { ok: false; error: string } {
   const trimmed = raw.trim();
   if (!trimmed) {
-    return { ok: false, error: "Paper wallet payload is empty." };
+    return { ok: false, error: "Sign-in card payload is empty." };
   }
 
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
@@ -41,12 +41,12 @@ function extractPaperWalletPayload(
       if (!payload) {
         return {
           ok: false,
-          error: "URL does not contain a paper wallet payload (?w= parameter missing).",
+          error: "URL does not contain a sign-in card payload (?w= parameter missing).",
         };
       }
       return { ok: true, payload };
     } catch {
-      return { ok: false, error: "Invalid paper wallet URL." };
+      return { ok: false, error: "Invalid sign-in card URL." };
     }
   }
 
@@ -63,7 +63,8 @@ export function buildPaperWalletUrl(origin: string, payload: string): string {
  * before its holder has given either. These stand in until the holder edits
  * their profile, and `profileGaps` treats both as missing.
  */
-export const PAPER_WALLET_PLACEHOLDER_NAME = "Paper wallet";
+export const PAPER_WALLET_PLACEHOLDER_NAME = "Sign-in card";
+export const LEGACY_PAPER_WALLET_PLACEHOLDER_NAME = "Paper wallet";
 
 const PLACEHOLDER_EMAIL_DOMAIN = "@clc.local";
 

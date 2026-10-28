@@ -23,7 +23,7 @@ function cameraOptions(call = 0) {
 }
 
 function upload(file = new File(["image"], "qr.png", { type: "image/png" })) {
-  fireEvent.change(screen.getByLabelText(/upload qr code image/i), { target: { files: [file] } });
+  fireEvent.change(screen.getByLabelText(/upload card image/i), { target: { files: [file] } });
 }
 
 describe("PaperWalletScanner", () => {
@@ -41,13 +41,15 @@ describe("PaperWalletScanner", () => {
   it("returns to choose mode when Back is clicked", () => {
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
-    expect(screen.getByRole("button", { name: /choose image/i })).toBeTruthy();
+    expect(screen.getByText("Sign-in card")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Close sign-in card scanner" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^upload card image$/i }));
+    expect(screen.getAllByRole("button", { name: /upload card image/i })).toHaveLength(1);
 
     fireEvent.click(screen.getByRole("button", { name: /back/i }));
 
     expect(screen.getByRole("button", { name: /scan qr code/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /upload image/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^upload card image$/i })).toBeTruthy();
   });
 
   it("starts the rear camera", async () => {
@@ -96,8 +98,8 @@ describe("PaperWalletScanner", () => {
     fireEvent.click(screen.getByRole("button", { name: /scan qr code/i }));
 
     expect(await screen.findByText("Camera access denied.")).toBeTruthy();
-    fireEvent.click(await screen.findByRole("button", { name: /upload image instead/i }));
-    expect(screen.getByRole("button", { name: /choose image/i })).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { name: /upload card image instead/i }));
+    expect(screen.getByRole("button", { name: /^upload card image$/i })).toBeTruthy();
   });
 
   it("says so when there is no camera", async () => {
@@ -107,7 +109,7 @@ describe("PaperWalletScanner", () => {
     fireEvent.click(screen.getByRole("button", { name: /scan qr code/i }));
 
     expect(await screen.findByText("No camera found on this device.")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /upload image instead/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /upload card image instead/i })).toBeNull();
   });
 
   it("says so when the camera fails to start", async () => {
@@ -123,7 +125,7 @@ describe("PaperWalletScanner", () => {
     mockDecodeQrImageFile.mockResolvedValue("0xaCB673ea3B8B868cAb37c1bEb59E66Af31dE2e87");
 
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
-    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^upload card image$/i }));
     const file = new File(["image"], "wallet.png", { type: "image/png" });
     upload(file);
 
@@ -137,7 +139,7 @@ describe("PaperWalletScanner", () => {
     mockDecodeQrImageFile.mockResolvedValue(null);
 
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
-    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^upload card image$/i }));
     upload();
 
     expect(
@@ -150,7 +152,7 @@ describe("PaperWalletScanner", () => {
     mockDecodeQrImageFile.mockRejectedValue(new DOMException("bad image", "InvalidStateError"));
 
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
-    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^upload card image$/i }));
     upload(new File(["not-an-image"], "blank.png", { type: "image/png" }));
 
     expect(
@@ -163,7 +165,7 @@ describe("PaperWalletScanner", () => {
     mockDecodeQrImageFile.mockResolvedValueOnce(null).mockResolvedValueOnce("0xretrykey");
 
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
-    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^upload card image$/i }));
 
     upload();
     expect(
@@ -179,7 +181,7 @@ describe("PaperWalletScanner", () => {
     mockDecodeQrImageFile.mockReturnValue(new Promise((resolve) => (resolveDecode = resolve)));
 
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
-    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^upload card image$/i }));
     upload();
 
     fireEvent.click(screen.getByRole("button", { name: /back/i }));

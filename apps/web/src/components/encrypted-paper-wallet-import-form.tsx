@@ -44,7 +44,7 @@ export function EncryptedPaperWalletImportForm({
       if (isMounted.current) setPassphrase("");
     } catch (err) {
       if (isMounted.current) {
-        setError(err instanceof Error ? err.message : t`Could not import this paper wallet.`);
+        setError(err instanceof Error ? err.message : t`Could not unlock this sign-in card.`);
       }
     } finally {
       if (isMounted.current) setDecrypting(false);
@@ -59,14 +59,14 @@ export function EncryptedPaperWalletImportForm({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-foreground text-sm font-medium">
-            <Trans>Password-protected paper wallet</Trans>
+            <Trans>Enter card password</Trans>
           </p>
         </div>
         <Button
           variant="ghost"
           size="icon"
           tap
-          aria-label={t`Close password-protected wallet import`}
+          aria-label={t`Close card password form`}
           onClick={onCancel}
           disabled={decrypting}
         >
@@ -104,7 +104,7 @@ export function EncryptedPaperWalletImportForm({
         className="w-full"
       >
         <FiLock className="size-4" />
-        {decrypting ? t`Unlocking…` : t`Unlock and import`}
+        {decrypting ? t`Unlocking…` : t`Unlock and sign in`}
       </Button>
     </form>
   );

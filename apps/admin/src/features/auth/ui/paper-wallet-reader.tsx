@@ -152,7 +152,7 @@ export function PaperWalletReader({
             </div>
           ) : (
             <p className="text-muted-foreground text-center text-sm">
-              Hold the paper wallet's QR code up to the camera.
+              Hold the sign-in card’s QR code up to the camera.
             </p>
           )}
           <Button variant="ghost" className="w-full" onClick={stopCamera}>
@@ -167,7 +167,7 @@ export function PaperWalletReader({
             accept="image/*"
             onChange={(event) => void handleUpload(event)}
             className="hidden"
-            aria-label="Upload a paper wallet image"
+            aria-label="Upload sign-in card image"
           />
           <Button
             className="w-full"
@@ -175,7 +175,7 @@ export function PaperWalletReader({
             onClick={() => fileInputRef.current?.click()}
           >
             <FiUpload />
-            Upload paper wallet image
+            Upload sign-in card image
           </Button>
           <Button variant="outline" className="w-full" disabled={disabled} onClick={handleCamera}>
             <FiCamera />

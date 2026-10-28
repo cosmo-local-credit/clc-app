@@ -276,7 +276,9 @@ describe("SettingsPage", () => {
     fireEvent.click(within(group("Session")).getByRole("button", { name: "Sign out" }));
     const sheet = within(await screen.findByRole("dialog", { name: "Sign out?" }));
     expect(onSignOut).not.toHaveBeenCalled();
-    expect(sheet.getByText("You’ll need your paper card or passkey to sign back in.")).toBeTruthy();
+    expect(
+      sheet.getByText("You’ll need your sign-in card or passkey to sign back in."),
+    ).toBeTruthy();
 
     const confirm = sheet.getByRole("button", { name: "Sign out" });
     expect(confirm.className).toContain("text-destructive");

@@ -37,7 +37,7 @@ import {
 import { type BatchEntry, usePaperWalletBatch } from "./use-paper-wallet-batch";
 
 const SOURCE_LABELS: Record<PaperWalletSource, string> = {
-  blank: "Blank wallets",
+  blank: "Blank sign-in cards",
   csv: "From CSV",
 };
 
@@ -146,7 +146,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
           onAssembling: () => setRenderStage("assembling"),
         },
       );
-      downloadBlob(blob, `clc-paper-wallets-${new Date().toISOString().slice(0, 10)}.pdf`);
+      downloadBlob(blob, `clc-sign-in-cards-${new Date().toISOString().slice(0, 10)}.pdf`);
       setPdfDownloaded(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "The PDF could not be created.");
@@ -187,12 +187,12 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
         ],
         { type: "text/csv" },
       ),
-      `clc-paper-wallets-${new Date().toISOString().slice(0, 10)}.csv`,
+      `clc-sign-in-cards-${new Date().toISOString().slice(0, 10)}.csv`,
     );
   }
 
   function reset() {
-    if (unprinted && !window.confirm("The PDF has not been downloaded. Discard these wallets?"))
+    if (unprinted && !window.confirm("The PDF has not been downloaded. Discard these cards?"))
       return;
     batch.reset();
     setPdfDownloaded(false);
@@ -200,7 +200,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Paper wallets" />
+      <PageHeader title="Sign-in cards" />
 
       {batch.phase !== "idle" ? (
         <div className="flex flex-col gap-4">
@@ -259,10 +259,10 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
             <section className="space-y-4 border border-border bg-card p-4">
               {search.source === "blank" ? (
                 <>
-                  <SectionLabel>Wallets</SectionLabel>
+                  <SectionLabel>Sign-in cards</SectionLabel>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="paper-wallet-count">Number of wallets</Label>
+                      <Label htmlFor="paper-wallet-count">Number of cards</Label>
                       <Input
                         id="paper-wallet-count"
                         type="number"
@@ -325,7 +325,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
                   <p className="text-destructive text-xs">{passwordError}</p>
                 ) : null}
                 <Button type="button" disabled={!canStart} onClick={start}>
-                  Generate {entries.length || ""} wallet
+                  Generate {entries.length || ""} sign-in card
                   {entries.length === 1 ? "" : "s"}
                 </Button>
               </div>

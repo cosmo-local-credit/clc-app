@@ -41,7 +41,7 @@ const pages = [
   { to: "/protocol", label: "Protocol", icon: HiOutlineAdjustments },
   { to: "/cash", label: "Cash", icon: HiOutlineCash },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
-  { to: "/paper-wallets", label: "Paper wallets", icon: HiOutlineQrcode },
+  { to: "/paper-wallets", label: "Sign-in cards", icon: HiOutlineQrcode },
   { to: "/nfc-cards", label: "NFC cards", icon: MdOutlineNfc },
   { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },
   { to: "/vocabulary", label: "Vocabulary", icon: HiOutlineTag },

@@ -449,7 +449,7 @@ function Proposal({
             <Trans>Execute it in Safe.</Trans>
           ) : passkeyUnsupported ? (
             <Trans>
-              Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.
+              Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.
             </Trans>
           ) : (
             <Trans>Review this transaction in your multisig wallet.</Trans>

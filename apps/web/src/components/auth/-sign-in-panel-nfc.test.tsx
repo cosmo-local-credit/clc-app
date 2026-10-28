@@ -90,7 +90,7 @@ describe("NFC card sign-in", () => {
     mocks.nfc = null;
     renderPanel();
     expect(screen.queryByRole("button", { name: /tap nfc card/i })).toBeNull();
-    expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /sign in with qr card/i })).toBeTruthy();
   });
 
   it("signs a raw card in through the existing SIWE path without a confirmation", async () => {
@@ -122,7 +122,7 @@ describe("NFC card sign-in", () => {
     const reader = await tapToSignIn();
     act(() => reader?.emit([urlRecord(`https://cosmolocal.credit/?w=${ENCRYPTED}`)]));
 
-    expect(await screen.findByText(/password-protected paper wallet/i)).toBeTruthy();
+    expect(await screen.findByText(/enter card password/i)).toBeTruthy();
     expect(mocks.backendSignin).not.toHaveBeenCalled();
     expect(reader?.signal?.aborted).toBe(true);
   });
