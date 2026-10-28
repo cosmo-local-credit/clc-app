@@ -1459,7 +1459,42 @@ describe("MarketPage viewport", () => {
     const narrow = mapRequests.unifiedBounds.at(-1) as Array<{ minLng: number; maxLng: number }>;
     expect(narrow).not.toEqual(broad);
     expect(narrow[0]!.maxLng - narrow[0]!.minLng).toBeLessThan(0.1);
-    expect(mapRequests.unifiedZoom.at(-1)).toBe(16);
+    expect(mapRequests.unifiedZoom.at(-1)).toBe(16.5);
+  });
+
+  it("refreshes at quarter-zoom boundaries without refetching inside a bucket", () => {
+    discoveryArea.current = {
+      owner: "guest",
+      center: { lat: -3.689, lng: 39.83 },
+      zoom: 14.5,
+      boxes: [{ minLng: 39.82, minLat: -3.7, maxLng: 39.84, maxLat: -3.67 }],
+    };
+    renderPage();
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: -3.689, lng: 39.83 },
+        zoom: 14.74,
+        west: 39.82,
+        south: -3.7,
+        east: 39.84,
+        north: -3.67,
+        userInitiated: true,
+      }),
+    );
+    expect(mapRequests.unifiedZoom.at(-1)).toBe(14.5);
+
+    act(() =>
+      lastMapProps.current?.onViewportSettled?.({
+        center: { lat: -3.689, lng: 39.83 },
+        zoom: 14.75,
+        west: 39.82,
+        south: -3.7,
+        east: 39.84,
+        north: -3.67,
+        userInitiated: true,
+      }),
+    );
+    expect(mapRequests.unifiedZoom.at(-1)).toBe(14.75);
   });
 
   it.each([false, true])(

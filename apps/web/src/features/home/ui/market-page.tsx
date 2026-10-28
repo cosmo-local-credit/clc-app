@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useQuery } from "@tanstack/react-query";
 import { RiFocus3Line } from "react-icons/ri";
 import { canonicalMarketBounds, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { canonicalMarketMapZoom } from "@clc/core/features/market-map/logic";
 import { viewportToBoundingBoxes } from "@clc/api/features/market/client";
 
 import { CreditableBrowseControl, hasCreditFeedback } from "#/components/creditable-browse-control";
@@ -63,15 +64,15 @@ export function MarketPage({
   const [fetchBounds, setFetchBounds] = useState<readonly MarketBoundingBox[]>(() =>
     bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2),
   );
-  const [fetchZoom, setFetchZoom] = useState(() => Math.floor(area?.zoom ?? 2));
+  const [fetchZoom, setFetchZoom] = useState(() => canonicalMarketMapZoom(area?.zoom ?? 2));
   const fetchZoomRef = useRef(fetchZoom);
   const areaOwnerRef = useRef(locationOwner);
   useEffect(() => {
     if (areaOwnerRef.current === locationOwner) return;
     areaOwnerRef.current = locationOwner;
     setFetchBounds(bufferedTileBounds(area?.boxes ?? [], area?.zoom ?? 2));
-    setFetchZoom(Math.floor(area?.zoom ?? 2));
-    fetchZoomRef.current = Math.floor(area?.zoom ?? 2);
+    setFetchZoom(canonicalMarketMapZoom(area?.zoom ?? 2));
+    fetchZoomRef.current = canonicalMarketMapZoom(area?.zoom ?? 2);
   }, [area, locationOwner]);
   const voucherSelection = useVoucherSheetSelection();
   const wantSelection = useWantSheetSelection();
@@ -274,7 +275,7 @@ export function MarketPage({
       if (!area && !settled.userInitiated && !camera) return;
 
       const boxes = canonicalMarketBounds(viewportToBoundingBoxes(settled));
-      const zoom = Math.floor(settled.zoom);
+      const zoom = canonicalMarketMapZoom(settled.zoom);
       const zoomChanged = fetchZoomRef.current !== zoom;
       fetchZoomRef.current = zoom;
       if (boxes.length === 0) {
