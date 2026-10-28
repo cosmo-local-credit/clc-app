@@ -8,6 +8,8 @@ import {
   formatBackendApiError,
   isRetryableBackendError,
   parseRetryAfterMs,
+  retryTransientBackendRead,
+  transientBackendReadRetryDelayMs,
 } from "./errors";
 
 describe("BackendApiError", () => {
@@ -124,6 +126,39 @@ describe("backendRetryDelayMs", () => {
     expect(backendRetryDelayMs(err, 0)).toBe(1_000);
     expect(backendRetryDelayMs(err, 1)).toBe(2_000);
     expect(backendRetryDelayMs(err, 2)).toBe(4_000);
+  });
+});
+
+describe("transient backend read recovery", () => {
+  it("retries network, rate-limit, and server failures at most twice", () => {
+    const failures = [
+      new BackendApiError(NO_HTTP_STATUS, "offline", undefined, { kind: "network" }),
+      new BackendApiError(429, "slow down"),
+      new BackendApiError(503, "unavailable"),
+    ];
+    for (const failure of failures) {
+      expect(retryTransientBackendRead(0, failure)).toBe(true);
+      expect(retryTransientBackendRead(1, failure)).toBe(true);
+      expect(retryTransientBackendRead(2, failure)).toBe(false);
+    }
+  });
+
+  it("does not retry caller, authentication, or local-code failures", () => {
+    for (const status of [400, 401, 403, 404, 409, 422]) {
+      expect(retryTransientBackendRead(0, new BackendApiError(status, "no"))).toBe(false);
+    }
+    expect(retryTransientBackendRead(0, new Error("bug"))).toBe(false);
+  });
+
+  it("honours Retry-After and adds bounded jitter to every delay", () => {
+    const limited = new BackendApiError(429, "slow", undefined, { retryAfterMs: 7_500 });
+    expect(transientBackendReadRetryDelayMs(limited, 0, () => 0.5)).toBe(7_625);
+    expect(transientBackendReadRetryDelayMs(new BackendApiError(503, "busy"), 1, () => -1)).toBe(
+      2_000,
+    );
+    expect(transientBackendReadRetryDelayMs(new BackendApiError(503, "busy"), 0, () => 2)).toBe(
+      1_250,
+    );
   });
 });
 

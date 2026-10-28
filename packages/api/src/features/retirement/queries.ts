@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import type { AdminRetirementListParams, RetirementClient, RetirementResourceType } from "./client";
+import { transientBackendReadQueryPolicy } from "../../client/errors";
 
 export const retirementKeys = {
   all: ["clc", "retirement"] as const,
@@ -51,7 +52,9 @@ export function myRetirementRequestsQueryOptions(client: RetirementClient, viewe
     queryKey: retirementKeys.mine(viewer),
     queryFn: ({ signal }) => client.listMine(signal),
     enabled: !!viewer,
-    ...refreshPolicy,
+    staleTime: 0,
+    refetchInterval: 30_000,
+    ...transientBackendReadQueryPolicy,
   });
 }
 

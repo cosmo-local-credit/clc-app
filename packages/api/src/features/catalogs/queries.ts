@@ -3,6 +3,7 @@ import type { CatalogKind, CatalogWrite } from "@clc/core/features/catalogs/logi
 import { infiniteQueryOptions, mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { CatalogsClient } from "./client";
+import { transientBackendReadQueryPolicy } from "../../client/errors";
 
 export const catalogKeys = {
   all: ["clc", "catalogs"] as const,
@@ -82,6 +83,7 @@ export function myCatalogsQueryOptions(client: CatalogsClient, address: string) 
     queryKey: catalogKeys.mine(address),
     queryFn: ({ signal }) => client.mine(signal),
     enabled: !!address,
+    ...transientBackendReadQueryPolicy,
   });
 }
 export function catalogDetailQueryOptions(client: CatalogsClient, id: string) {
