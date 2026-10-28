@@ -36,7 +36,7 @@ import { decryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wa
 import { SectionLabel } from "#/components/admin/section-heading";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { useAdminSignOut } from "../admin-session";
 import { type PasskeyUnsupportedReason, usePasskeySupport } from "../passkey-support";
 import { useAdminPasskeySignin, useAdminPrivateKeySignin } from "../use-admin-signin";
@@ -166,8 +166,7 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
             {encryptedKey ? (
               <form onSubmit={(event) => void handleDecrypt(event)} className="space-y-3">
                 <SectionLabel>Wallet password</SectionLabel>
-                <Input
-                  type="password"
+                <PasswordInput
                   autoComplete="off"
                   autoFocus
                   value={passphrase}
