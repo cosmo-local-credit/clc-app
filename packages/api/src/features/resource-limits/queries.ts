@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import type { createResourceLimitsClient } from "./client";
+import { transientBackendReadQueryPolicy } from "../../client/errors";
 
 export const resourceLimitKeys = {
   all: ["clc", "resource-limits"] as const,
@@ -17,6 +18,6 @@ export function resourceUsageQueryOptions(
     queryFn: ({ signal }) => client.usage({ voucher }, signal),
     enabled: !!address,
     staleTime: 0,
-    retry: false,
+    ...transientBackendReadQueryPolicy,
   });
 }

@@ -4,6 +4,7 @@ import { marketplaceKeys } from "../marketplace/queries";
 import { resourceLimitKeys } from "../resource-limits/queries";
 import type { WantWrite } from "@clc/core/features/wants/logic";
 import type { WantsClient, WantsParams } from "./client";
+import { transientBackendReadQueryPolicy } from "../../client/errors";
 
 export const wantKeys = {
   all: ["clc", "wants"] as const,
@@ -38,6 +39,7 @@ export function myWantsInfiniteQueryOptions(client: WantsClient, address: string
     initialPageParam: undefined as number | undefined,
     queryFn: ({ pageParam, signal }) => client.mine({ perPage: 20, cursor: pageParam }, signal),
     getNextPageParam: (page) => (page.wants.length >= 20 && page.last > 0 ? page.last : undefined),
+    ...transientBackendReadQueryPolicy,
   });
 }
 

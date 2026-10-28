@@ -1,6 +1,7 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { describe, expect, it, vi } from "vite-plus/test";
 import type { PoolsClient, UserPoolPage } from "./client";
+import { retryTransientBackendRead } from "../../client/errors";
 import {
   ownedPoolQueryOptions,
   ownedPoolsInfiniteQueryOptions,
@@ -146,6 +147,7 @@ describe("address-scoped options", () => {
 
     expect(missing.enabled).toBe(false);
     expect(missing.queryKey).not.toEqual(options.queryKey);
+    expect(options.retry).toBe(retryTransientBackendRead);
     await options.queryFn?.({ pageParam: undefined, signal } as never);
     await options.queryFn?.({ pageParam: 500, signal } as never);
 
