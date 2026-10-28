@@ -118,12 +118,12 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="font-medium text-sm">{title ?? <Trans>Paper Wallet</Trans>}</p>
+        <p className="font-medium text-sm">{title ?? <Trans>Sign-in card</Trans>}</p>
         <Button
           variant="ghost"
           size="icon"
           tap
-          aria-label={t`Close paper wallet scanner`}
+          aria-label={t`Close sign-in card scanner`}
           onClick={onCancel}
         >
           <RiCloseLine className="size-4" />
@@ -146,7 +146,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
             }}
           >
             <RiUploadLine className="me-2 size-4" />
-            <Trans>Upload Image</Trans>
+            <Trans>Upload card image</Trans>
           </Button>
         </div>
       ) : mode === "camera" ? (
@@ -186,7 +186,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
                   }}
                 >
                   <RiUploadLine className="me-2 size-4" />
-                  <Trans>Upload Image Instead</Trans>
+                  <Trans>Upload card image instead</Trans>
                 </Button>
               ) : null}
             </div>
@@ -203,7 +203,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
             accept="image/*"
             onChange={handleFileUpload}
             className="hidden"
-            aria-label={t`Upload QR code image`}
+            aria-label={t`Upload card image`}
           />
           <Button
             variant="outline"
@@ -212,7 +212,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
             onClick={() => fileInputRef.current?.click()}
           >
             <RiUploadLine className="me-2 size-4" />
-            <Trans>Choose Image</Trans>
+            <Trans>Upload card image</Trans>
           </Button>
           {error ? <p className="text-destructive text-xs">{error.message}</p> : null}
           <Button variant="ghost" tap className="w-full" onClick={handleCancel}>

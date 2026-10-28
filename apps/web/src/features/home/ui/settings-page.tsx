@@ -155,7 +155,7 @@ function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSign
         }
       >
         <p className="text-sm">
-          <Trans>You’ll need your paper card or passkey to sign back in.</Trans>
+          <Trans>You’ll need your sign-in card or passkey to sign back in.</Trans>
         </p>
       </SettingsSheet>
     </>

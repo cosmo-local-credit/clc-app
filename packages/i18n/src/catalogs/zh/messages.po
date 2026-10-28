@@ -372,12 +372,12 @@ msgid "A new version is available"
 msgstr "有新版本可用"
 
 #: apps/web/src/routes/__root.tsx:302
-msgid "A paper wallet link was opened. Sign in with this address?"
-msgstr "纸钱包链接已打开。用这个地址登录？"
+#~ msgid "A paper wallet link was opened. Sign in with this address?"
+#~ msgstr "纸钱包链接已打开。用这个地址登录？"
 
 #: apps/web/src/routes/__root.tsx:300
-msgid "A paper wallet QR was scanned. Import this address?"
-msgstr "扫描了纸钱包 QR。导入这个地址？"
+#~ msgid "A paper wallet QR was scanned. Import this address?"
+#~ msgstr "扫描了纸钱包 QR。导入这个地址？"
 
 #: apps/web/src/components/introduction/introduction-content.ts:46
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:369
@@ -388,6 +388,14 @@ msgstr "资金池将代金券结合在一起，因此成员可以按已发布的
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:286
 #~ msgid "A service"
 #~ msgstr "服务"
+
+#: apps/web/src/routes/__root.tsx:302
+msgid "A sign-in card link was opened. Sign in to this wallet?"
+msgstr "登录卡链接已打开。用这个地址登录？"
+
+#: apps/web/src/routes/__root.tsx:300
+msgid "A sign-in card was scanned. Switch to this wallet?"
+msgstr "已扫描登录卡。切换到此钱包？"
 
 #: apps/web/src/components/profile-privacy-notice.tsx:6
 msgid "A signed-in person can find your username and wallet only by entering "
@@ -441,8 +449,8 @@ msgid "Accept the terms to publish your voucher"
 msgstr "接受条款以发布您的代金券"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:56
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 msgid "Account"
 msgstr "账户"
 
@@ -584,7 +592,7 @@ msgstr "添加照片"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
 msgid "Add signer"
 msgstr "添加签名者"
 
@@ -714,7 +722,7 @@ msgstr "发送前请务必确认代币和网络相符。"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:269
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -788,9 +796,17 @@ msgstr "应用"
 msgid "Apply filters"
 msgstr "应用筛选条件"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
+msgid "Apply password"
+msgstr "应用密码"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
+msgid "Applying password…"
+msgstr "正在应用密码…"
+
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:299
 msgid "Approvals required"
 msgstr "所需批准数"
 
@@ -798,7 +814,7 @@ msgstr "所需批准数"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:191
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
 msgid "Approve voucher"
 msgstr "批准代金券"
 
@@ -847,8 +863,8 @@ msgstr "等待批准"
 #: apps/web/src/features/install/ui/install-page.tsx:75
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:255
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:471
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:522
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:607
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:524
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:609
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:22
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:335
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:366
@@ -1073,7 +1089,7 @@ msgid "Change"
 msgstr "更改"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
 msgid "Change approvals required"
 msgstr "更改所需批准数"
 
@@ -1319,8 +1335,8 @@ msgstr "从照片中选择"
 #~ msgstr "选择市场结果可以有多远。"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:215
-msgid "Choose Image"
-msgstr "选择图片"
+#~ msgid "Choose Image"
+#~ msgstr "选择图片"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:85
 #~ msgid "Choose one so people can send you vouchers without your wallet address."
@@ -1406,9 +1422,13 @@ msgstr "清除搜索"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
 msgid "Close"
 msgstr "关闭"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:69
+msgid "Close card password form"
+msgstr "关闭受密码保护的钱包导入"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:93
 #: apps/web/src/components/catalog-filter-controls.tsx:298
@@ -1421,16 +1441,20 @@ msgid "Close menu"
 msgstr "关闭菜单"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:126
-msgid "Close paper wallet scanner"
-msgstr "关闭纸钱包扫描器"
+#~ msgid "Close paper wallet scanner"
+#~ msgstr "关闭纸钱包扫描器"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:69
-msgid "Close password-protected wallet import"
-msgstr "关闭受密码保护的钱包导入"
+#~ msgid "Close password-protected wallet import"
+#~ msgstr "关闭受密码保护的钱包导入"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:493
 msgid "Close private key form"
 msgstr "关闭私钥表格"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:126
+msgid "Close sign-in card scanner"
+msgstr "关闭登录卡扫描器"
 
 #: apps/web/src/features/wants/ui/want-form-page.tsx:393
 msgid "Close Want"
@@ -1514,7 +1538,7 @@ msgstr "完成手机上的提示。"
 msgid "Complete your profile"
 msgstr "完成您的个人资料"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
 msgid "Confirm"
 msgstr "确认"
 
@@ -1559,15 +1583,15 @@ msgstr "确认兑换"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:409
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:421
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
 msgstr "已确认"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
 msgid "Confirming"
 msgstr "正在确认"
 
@@ -1679,7 +1703,7 @@ msgstr "联系网站"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:269
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:536
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:538
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:412
 msgid "Continue"
@@ -1694,7 +1718,7 @@ msgstr "在浏览器中继续"
 msgid "Continue to CLC"
 msgstr "继续CLC"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:548
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:550
 msgid "Continue to wallet"
 msgstr "继续前往钱包"
 
@@ -1703,13 +1727,17 @@ msgid "Continue with {providerLabel}"
 msgstr "继续{providerLabel}"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:633
-msgid "Continue with paper wallet"
-msgstr "使用纸钱包继续"
+#~ msgid "Continue with paper wallet"
+#~ msgstr "使用纸钱包继续"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:370
 #: apps/web/src/components/auth/sign-in-panel.tsx:379
-msgid "Continue with Paper Wallet"
-msgstr "使用纸钱包继续"
+#~ msgid "Continue with Paper Wallet"
+#~ msgstr "使用纸钱包继续"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:635
+msgid "Continue with sign-in card"
+msgstr "使用登录卡继续"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:66
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:183
@@ -1810,8 +1838,8 @@ msgid "Could not check balances. Try again before submitting your request."
 msgstr "无法检查余额。请重试后再提交申请。"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
-msgid "Could not import this paper wallet."
-msgstr "无法导入纸钱包。"
+#~ msgid "Could not import this paper wallet."
+#~ msgstr "无法导入纸钱包。"
 
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:21
 #: apps/web/src/components/retirement/retirement-control.tsx:72
@@ -1823,20 +1851,36 @@ msgid "Could not load vouchers."
 msgstr "无法加载代金券。"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
-msgid "Could not protect this paper wallet."
-msgstr "无法保护纸钱包。"
+#~ msgid "Could not protect this paper wallet."
+#~ msgstr "无法保护纸钱包。"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+msgid "Could not protect this sign-in card."
+msgstr "无法保护登录卡。"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
-msgid "Could not save the paper wallet. Try again."
-msgstr "无法保存纸钱包。再试一次。"
+#~ msgid "Could not save the paper wallet. Try again."
+#~ msgstr "无法保存纸钱包。再试一次。"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not save the printable sheet. Try again."
 msgstr "无法保存可打印工作表。再试一次。"
 
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+msgid "Could not save the sign-in card. Try again."
+msgstr "无法保存登录卡。再试一次。"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
-msgid "Could not share the paper wallet. Try downloading it instead."
-msgstr "无法共享纸钱包。尝试下载它。"
+#~ msgid "Could not share the paper wallet. Try downloading it instead."
+#~ msgstr "无法共享纸钱包。尝试下载它。"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+msgid "Could not share the sign-in card. Try downloading it instead."
+msgstr "无法共享登录卡。尝试下载它。"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
+msgid "Could not unlock this sign-in card."
+msgstr "无法解锁此登录卡。"
 
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:103
 msgid "Could not upload your photo. Please try again."
@@ -2369,7 +2413,7 @@ msgstr "创建代金券"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:180
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2460,8 +2504,8 @@ msgstr "文化"
 msgid "Custom units have no price feed. Relative pricing is used instead."
 msgstr "自定义单位没有价格数据源，将改用相对定价。"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:568
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:591
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:570
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:593
 msgid "Customize"
 msgstr "定制"
 
@@ -2595,8 +2639,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "显示名称不得超过 120 个字符"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:594
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:717
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:596
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:719
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:338
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:388
@@ -2615,8 +2659,8 @@ msgid "Download card"
 msgstr "下载卡"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:531
-msgid "Download your paper wallet before continuing."
-msgstr "请先下载纸钱包，再继续。"
+#~ msgid "Download your paper wallet before continuing."
+#~ msgstr "请先下载纸钱包，再继续。"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:69
 msgid "Dozen"
@@ -2795,6 +2839,10 @@ msgstr "输入 0 到 100 之间的费用"
 msgid "Enter a link starting with http:// or https://"
 msgstr "输入以 http:// 或 https:// 开头的链接"
 
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+msgid "Enter a password before saving."
+msgstr "下载此卡之前输入并应用密码。"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:245
 msgid "Enter a title for your post"
@@ -2810,8 +2858,12 @@ msgid "Enter a valid date and time"
 msgstr "输入有效的日期和时间"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:283
-msgid "Enter a valid private key or paper wallet."
-msgstr "输入有效的私钥或纸钱包。"
+#~ msgid "Enter a valid private key or paper wallet."
+#~ msgstr "输入有效的私钥或纸钱包。"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:283
+msgid "Enter a valid private key or sign-in card."
+msgstr "输入有效的私钥或登录卡。"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:6
@@ -2856,8 +2908,14 @@ msgid "Enter an exchange rate greater than zero"
 msgstr "输入大于零的汇率"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
-msgid "Enter and apply a password before downloading this card."
-msgstr "下载此卡之前输入并应用密码。"
+#~ msgid "Enter and apply a password before downloading this card."
+#~ msgstr "下载此卡之前输入并应用密码。"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:462
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
+#: apps/web/src/routes/__root.tsx:271
+msgid "Enter card password"
+msgstr "输入卡片密码"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:404
 msgid "Enter pool name"
@@ -2906,9 +2964,14 @@ msgid "Event details"
 msgstr "事件详情"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
-msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+#~ msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+#~ "way to sign in."
+#~ msgstr "每个账户都会获得一个纸钱包。关联 {providerLabel} 可添加另一种登录方式。"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:643
+msgid "Every account has a sign-in card. Linking {providerLabel} adds another "
 "way to sign in."
-msgstr "每个账户都会获得一个纸钱包。关联 {providerLabel} 可添加另一种登录方式。"
+msgstr "每个账户都会获得一个登录卡。关联 {providerLabel} 可添加另一种登录方式。"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:500
 msgid "Exchange rate"
@@ -2918,11 +2981,11 @@ msgstr "汇率"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "相对于默认代金券 ({unitSymbol}) 的汇率"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:437
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:449
 msgid "Execute it in Safe."
 msgstr "请在 Safe 中执行。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:426
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:438
 msgid "Executing…"
 msgstr "执行中…"
 
@@ -2958,7 +3021,7 @@ msgstr "即将到期"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -2979,7 +3042,7 @@ msgstr "农业"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:189
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:201
 msgid "Fee % and recipient"
 msgstr "费率和费用接收方"
 
@@ -3292,8 +3355,8 @@ msgstr "我增发了 {amountLabel}。"
 #~ msgstr "我已经保存了这个密钥"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:579
-msgid "I have saved this key. If lost, my wallet cannot be recovered."
-msgstr "我已经保存了这个密钥。如果丢失，我的钱包将无法恢复。"
+#~ msgid "I have saved this key. If lost, my wallet cannot be recovered."
+#~ msgstr "我已经保存了这个密钥。如果丢失，我的钱包将无法恢复。"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:289
 msgid "I made a swap."
@@ -3306,6 +3369,10 @@ msgstr "我从 {senderLabel} 收到了 {amountLabel}。"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:140
 #~ msgid "I received {amountLabel}."
 #~ msgstr "我收到了 {amountLabel}。"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:581
+msgid "I saved my sign-in card. If I lose it, I may lose access to my wallet."
+msgstr "我已经保存了这个密钥。如果丢失，我的钱包将无法恢复。"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:196
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:252
@@ -3333,12 +3400,12 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "如果出现该选项，请保持“作为 Web App 打开”处于开启状态，然后轻触“添加”。"
 
 #: apps/web/src/routes/__root.tsx:296
-msgid "Import paper wallet?"
-msgstr "导入纸钱包？"
+#~ msgid "Import paper wallet?"
+#~ msgstr "导入纸钱包？"
 
 #: apps/web/src/routes/__root.tsx:308
-msgid "Import wallet"
-msgstr "导入钱包"
+#~ msgid "Import wallet"
+#~ msgstr "导入钱包"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:52
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:559
@@ -3520,7 +3587,7 @@ msgstr "链接{0}文件名"
 #~ msgid "Link {providerLabel}"
 #~ msgstr "链接{providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:639
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:641
 msgid "Link {providerLabel}?"
 msgstr "链接{providerLabel}？"
 
@@ -3566,7 +3633,7 @@ msgstr "链接已复制"
 #~ msgid "Link to the terms that apply to this voucher"
 #~ msgstr "适用于此代金券的条款的链接"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:623
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:625
 msgid "Link wallet to {providerLabel}"
 msgstr "将钱包链接到 {providerLabel}"
 
@@ -3588,9 +3655,14 @@ msgid "Linked vouchers"
 msgstr "已链接代金券"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:63
+#~ msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
+#~ "Android. Your paper wallet keeps working here."
+#~ msgstr "可在 iPhone 的 Safari 或 Chrome，以及 Android 的 Chrome 中关联通行密钥。您的纸钱包仍可继续使用。"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:63
 msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
-"Android. Your paper wallet keeps working here."
-msgstr "可在 iPhone 的 Safari 或 Chrome，以及 Android 的 Chrome 中关联通行密钥。您的纸钱包仍可继续使用。"
+"Android. Your sign-in card keeps working here."
+msgstr "可在 iPhone 的 Safari 或 Chrome，以及 Android 的 Chrome 中关联通行密钥。您的登录卡仍可继续使用。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:139
 #~ msgid "Linking passkey..."
@@ -3602,8 +3674,12 @@ msgid "Linking passkey…"
 msgstr "正在关联通行密钥…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:106
-msgid "Linking the passkey failed. Your paper wallet is unchanged."
-msgstr "链接通行密钥失败。您的纸钱包未更改。"
+#~ msgid "Linking the passkey failed. Your paper wallet is unchanged."
+#~ msgstr "链接通行密钥失败。您的纸钱包未更改。"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:106
+msgid "Linking the passkey failed. Your sign-in card is unchanged."
+msgstr "链接通行密钥失败。您的登录卡未更改。"
 
 #: apps/web/src/features/home/ui/report-page.tsx:444
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:681
@@ -3803,7 +3879,7 @@ msgstr "正在加载您的个人资料…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:108
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:120
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3859,7 +3935,7 @@ msgid "Manage {0}"
 msgstr "管理 {0}"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:195
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
 msgid "Manage voucher"
 msgstr "管理代金券"
 
@@ -4068,7 +4144,7 @@ msgid "Multisig owned · {0} signers"
 msgstr "由多签钱包持有 · {0} 位签名者"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:68
 msgid "Multisig transactions"
 msgstr "多签交易"
 
@@ -4145,8 +4221,12 @@ msgid "Name must be 80 characters or fewer"
 msgstr "名称不得超过 80 个字符"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
-msgid "Name on wallet"
+msgid "Name on card"
 msgstr "钱包上的姓名"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#~ msgid "Name on wallet"
+#~ msgstr "钱包上的姓名"
 
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:293
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:888
@@ -4157,15 +4237,15 @@ msgstr "名称、符号或地址"
 msgid "Natural building"
 msgstr "自然建筑"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:698
 msgid "Network"
 msgstr "网络"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:275
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 msgid "New owner"
 msgstr "新所有者"
 
@@ -4194,8 +4274,8 @@ msgstr "新帖子"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:307
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:328
 msgid "New signer"
 msgstr "新签名者"
 
@@ -4437,7 +4517,7 @@ msgstr "还没有帖子。"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "未找到二维码。请使用更清晰的图片重试。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:116
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:128
 msgid "No queued proposals found."
 msgstr "未找到排队中的提案。"
 
@@ -4544,7 +4624,7 @@ msgid "No. of participants"
 msgstr "参加人数"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:393
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:405
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4579,6 +4659,10 @@ msgstr "未持有"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:64
 msgid "Not linked"
 msgstr "未链接"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+msgid "Not protected. Anyone who scans this card can access your wallet."
+msgstr "未受保护。任何扫描此卡的人都可以访问您的钱包。"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:56
 msgid "Not sent"
@@ -4720,7 +4804,7 @@ msgid "Open in Maps"
 msgstr "在地图中打开"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
 msgid "Open in Safe"
 msgstr "在 Safe 中打开"
 
@@ -4774,8 +4858,12 @@ msgstr "打开代金券页面"
 #~ msgstr "正在打开纸钱包…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
-msgid "Opening paper wallet…"
-msgstr "正在打开纸钱包…"
+#~ msgid "Opening paper wallet…"
+#~ msgstr "正在打开纸钱包…"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:176
+msgid "Opening sign-in card…"
+msgstr "正在打开登录卡…"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:136
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:339
@@ -4866,21 +4954,21 @@ msgstr "已支付"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-msgid "Paper wallet"
-msgstr "纸钱包"
+#~ msgid "Paper wallet"
+#~ msgstr "纸钱包"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
-msgid "Paper Wallet"
-msgstr "纸钱包"
+#~ msgid "Paper Wallet"
+#~ msgstr "纸钱包"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
-msgid "Paper wallet card"
-msgstr "纸钱包卡片"
+#~ msgid "Paper wallet card"
+#~ msgstr "纸钱包卡片"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
-msgid "Paper wallet is protected. Keep the password separate from the card."
-msgstr "纸钱包受到保护。将密码与卡分开保存。"
+#~ msgid "Paper wallet is protected. Keep the password separate from the card."
+#~ msgstr "纸钱包受到保护。将密码与卡分开保存。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:102
 #~ msgid "Paper wallet only"
@@ -4897,13 +4985,17 @@ msgstr "参与者不得超过 100 个字符"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:127
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:135
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
 msgid "Passkey"
 msgstr "通行密钥"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
-msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
-msgstr "通行密钥创建已取消。您的纸钱包未更改。"
+#~ msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
+#~ msgstr "通行密钥创建已取消。您的纸钱包未更改。"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
+msgid "Passkey creation was cancelled. Your sign-in card is unchanged."
+msgstr "通行密钥创建已取消。您的登录卡未更改。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:170
 msgid "Passkey linked"
@@ -4927,9 +5019,15 @@ msgstr "无法检查通行密钥状态。"
 
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:439
-msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper "
-"wallet."
-msgstr "通行密钥可为 Safe 1.5 及更高版本的多签钱包签名。请使用您的纸钱包。"
+#~ msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper "
+#~ "wallet."
+#~ msgstr "通行密钥可为 Safe 1.5 及更高版本的多签钱包签名。请使用您的纸钱包。"
+
+#: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:451
+msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
+"card."
+msgstr "通行密钥可为 Safe 1.5 及更高版本的多签钱包签名。请使用您的登录卡。"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
@@ -4943,8 +5041,8 @@ msgstr "密码不能为空。"
 #: apps/web/src/components/auth/sign-in-panel.tsx:462
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
 #: apps/web/src/routes/__root.tsx:271
-msgid "Password-protected paper wallet"
-msgstr "受密码保护的纸钱包"
+#~ msgid "Password-protected paper wallet"
+#~ msgstr "受密码保护的纸钱包"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
@@ -4979,7 +5077,7 @@ msgstr "付款收据"
 msgid "Payment status unknown"
 msgstr "付款状态未知"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:132
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:154
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
@@ -5497,7 +5595,7 @@ msgstr "个人资料已更新"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "提案已加入队列。请在 Safe 中确认并执行。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:112
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "此处暂时无法使用提案。你仍可使用多签钱包。"
 
@@ -5510,20 +5608,28 @@ msgid "Proposing…"
 msgstr "正在提议…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
-msgid "Protect paper wallet"
-msgstr "保护纸钱包"
+#~ msgid "Protect paper wallet"
+#~ msgstr "保护纸钱包"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
-msgid "Protect paper wallet with a password"
-msgstr "使用密码保护纸钱包"
+#~ msgid "Protect paper wallet with a password"
+#~ msgstr "使用密码保护纸钱包"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+msgid "Protect with a password"
+msgstr "使用密码保护登录卡"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+msgid "Protected. Keep the password separate from the card."
+msgstr "登录卡受到保护。将密码与卡分开保存。"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:156
 #~ msgid "Protecting paper wallet..."
 #~ msgstr "正在保护纸钱包…"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
-msgid "Protecting paper wallet…"
-msgstr "正在保护纸钱包…"
+#~ msgid "Protecting paper wallet…"
+#~ msgstr "正在保护纸钱包…"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
@@ -5594,8 +5700,8 @@ msgstr "正在发布…"
 #~ msgstr "紫色"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
-msgid "QR currently contains the raw private key."
-msgstr "QR 当前包含原始私钥。"
+#~ msgid "QR currently contains the raw private key."
+#~ msgstr "QR 当前包含原始私钥。"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:444
 #~ msgid "Quantity"
@@ -5716,7 +5822,7 @@ msgstr "最近的接收方"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:266
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5810,7 +5916,7 @@ msgstr "相对定价"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:197
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
 msgid "Remove"
 msgstr "删除"
 
@@ -5854,12 +5960,12 @@ msgstr "删除照片 {0}"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
 msgid "Remove signer"
 msgstr "移除签名者"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:304
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:313
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:325
 msgid "Removed signer"
 msgstr "已移除的签名者"
 
@@ -5873,7 +5979,7 @@ msgstr "删除 {0} 后，将无法再将其兑入或兑出此资金池。其汇�
 msgid "Removing…"
 msgstr "正在删除…"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
 msgid "Replace signer"
 msgstr "替换签名者"
 
@@ -6066,7 +6172,7 @@ msgstr "静修"
 msgid "Retry"
 msgstr "重试"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:622
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:624
 msgid "Retry {providerLabel} connection"
 msgstr "重试 {providerLabel} 连接"
 
@@ -6085,7 +6191,7 @@ msgstr "重试连接"
 msgid "Reverted"
 msgstr "已回滚"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:443
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
 msgid "Review this transaction in your multisig wallet."
 msgstr "请在多签钱包中查看此交易。"
 
@@ -6134,9 +6240,9 @@ msgid "Save printable A4 sheet"
 msgstr "保存可打印的 A4 纸"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
-msgid "Save this card securely. If you use a password, keep it separately. "
-"Anyone with an unprotected QR code can access the wallet."
-msgstr "妥善保存此卡。如果您使用密码，请将其单独保存。任何拥有不受保护的 QR 代码的人都可以访问钱包。"
+#~ msgid "Save this card securely. If you use a password, keep it separately. "
+#~ "Anyone with an unprotected QR code can access the wallet."
+#~ msgstr "妥善保存此卡。如果您使用密码，请将其单独保存。任何拥有不受保护的 QR 代码的人都可以访问钱包。"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:213
 msgid "Save username"
@@ -6147,8 +6253,16 @@ msgid "Save Want"
 msgstr "保存需求"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
-msgid "Save your card"
+#~ msgid "Save your card"
+#~ msgstr "保存您的卡片"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:560
+msgid "Save your sign-in card"
 msgstr "保存您的卡片"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:533
+msgid "Save your sign-in card before continuing."
+msgstr "请先下载登录卡，再继续。"
 
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
@@ -6513,7 +6627,7 @@ msgstr "提取费用前请先设置费用接收方，否则资金池无法支付
 #~ msgid "Setting up your wallet..."
 #~ msgstr "正在设置您的钱包…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:678
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:680
 msgid "Setting up your wallet…"
 msgstr "正在设置您的钱包…"
 
@@ -6633,6 +6747,7 @@ msgstr "向任何使用此资金池的人展示"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
 #: apps/web/src/components/market-bar.tsx:140
+#: apps/web/src/routes/__root.tsx:308
 msgid "Sign in"
 msgstr "登录"
 
@@ -6664,6 +6779,15 @@ msgstr "登录查看帖子。"
 msgid "Sign in with private key"
 msgstr "使用私钥登录"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:370
+#: apps/web/src/components/auth/sign-in-panel.tsx:379
+msgid "Sign in with QR card"
+msgstr "使用二维码卡登录"
+
+#: apps/web/src/routes/__root.tsx:296
+msgid "Sign in with this card?"
+msgstr "使用此卡登录？"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:60
 #~ msgid "Sign in with your device's screen lock instead of your paper card. Your "
 #~ "device will ask through {platformLabel}."
@@ -6681,6 +6805,14 @@ msgstr "退出登录？"
 #: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Sign-in"
 msgstr "登录"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:440
+#: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+msgid "Sign-in card"
+msgstr "登录卡"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
 #~ msgid "Sign-in method"
@@ -7346,9 +7478,14 @@ msgid "This copies your current profile image. Later profile changes won't "
 msgstr "这会复制您当前的个人资料图片。之后更改个人资料不会更新此需求。"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
-msgid "This device does not have your paper wallet key. Sign in with or import "
-"your paper wallet here, then link a passkey."
-msgstr "此设备没有您的纸钱包密钥。请在此使用纸钱包登录或导入纸钱包，然后关联通行密钥。"
+msgid "This device does not have the key from your sign-in card. Sign in with "
+"your card here, then link a passkey."
+msgstr "此设备没有您的登录卡密钥。请在此使用登录卡登录或导入登录卡，然后关联通行密钥。"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
+#~ msgid "This device does not have your paper wallet key. Sign in with or import "
+#~ "your paper wallet here, then link a passkey."
+#~ msgstr "此设备没有您的纸钱包密钥。请在此使用纸钱包登录或导入纸钱包，然后关联通行密钥。"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:189
 #~ msgid "This device is subscribed to wallet notifications."
@@ -7593,7 +7730,7 @@ msgstr "交易哈希已复制"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
 msgid "Transfer ownership"
 msgstr "转让所有权"
 
@@ -7724,8 +7861,8 @@ msgstr "记账单位"
 msgid "Unknown"
 msgstr "未知"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:199
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:215
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:211
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
 msgid "Unknown call"
 msgstr "未知调用"
 
@@ -7736,8 +7873,12 @@ msgid "Unlink {0}"
 msgstr "取消链接 {0}"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:107
-msgid "Unlock and import"
-msgstr "解锁并导入"
+#~ msgid "Unlock and import"
+#~ msgstr "解锁并导入"
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:107
+msgid "Unlock and sign in"
+msgstr "解锁并登录"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:105
 #~ msgid "Unlocking..."
@@ -7781,20 +7922,30 @@ msgid "Updating…"
 msgstr "正在更新…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:149
-msgid "Upload Image"
+#: apps/web/src/components/paper-wallet-scanner.tsx:206
+#: apps/web/src/components/paper-wallet-scanner.tsx:215
+msgid "Upload card image"
 msgstr "上传图片"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:189
-msgid "Upload Image Instead"
+msgid "Upload card image instead"
 msgstr "改为上传图片"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:149
+#~ msgid "Upload Image"
+#~ msgstr "上传图片"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:189
+#~ msgid "Upload Image Instead"
+#~ msgstr "改为上传图片"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "上传徽标"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:206
-msgid "Upload QR code image"
-msgstr "上传二维码图片"
+#~ msgid "Upload QR code image"
+#~ msgstr "上传二维码图片"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:356
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:429
@@ -7862,6 +8013,12 @@ msgstr "使用照片"
 #: apps/web/src/features/wants/ui/want-form-page.tsx:305
 msgid "Use profile image"
 msgstr "使用个人资料图片"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:505
+msgid "Use this QR card to sign in to your wallet. Save it securely. If you add "
+"a password, keep it separately. Without a password, anyone who scans the "
+"card can access your wallet."
+msgstr "使用此二维码卡登录您的钱包。请妥善保管。如果设置了密码，请将密码与卡片分开保存。没有密码时，任何扫描此卡的人都可以访问您的钱包。"
 
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
@@ -8123,7 +8280,7 @@ msgstr "您发行的代金券"
 #~ msgid "Waiting for blockchain confirmation..."
 #~ msgstr "正在等待区块链确认…"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:729
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:731
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:217
 msgid "Waiting for blockchain confirmation…"
@@ -8151,8 +8308,8 @@ msgstr "正在等待链上确认…"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:196
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:124
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:672
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:673
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
 #: apps/web/src/features/wallet/ui/receive-page.tsx:56
@@ -8304,13 +8461,13 @@ msgstr "提取"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
 msgid "Withdraw fees"
 msgstr "提取费用"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
 msgid "Withdraw liquidity"
 msgstr "提取流动性"
 
@@ -8392,7 +8549,7 @@ msgstr "资金池停用后，您仍可提取资金。"
 msgid "You can write or edit your review until {0}."
 msgstr "您可以在 {0} 之前撰写或编辑您的评价。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:435
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:447
 msgid "You confirmed"
 msgstr "您已确认"
 
@@ -8445,7 +8602,11 @@ msgstr "您发送"
 #~ msgstr "您将使用 Face ID、指纹或 PIN 进行确认"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:158
-msgid "You’ll need your paper card or passkey to sign back in."
+#~ msgid "You’ll need your paper card or passkey to sign back in."
+#~ msgstr "重新登录需要您的纸质卡片或通行密钥。"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:158
+msgid "You’ll need your sign-in card or passkey to sign back in."
 msgstr "重新登录需要您的纸质卡片或通行密钥。"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:363
@@ -8457,9 +8618,14 @@ msgid "You'll send"
 msgstr "您将发送"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:47
-msgid "Your account has a passkey, but it is not on this device. Your paper "
+#~ msgid "Your account has a passkey, but it is not on this device. Your paper "
+#~ "card still works here. Adding another passkey is not available yet."
+#~ msgstr "您的账户已有通行密钥，但该密钥不在此设备上。您的纸钱包卡片仍可使用。暂时无法添加其他通行密钥。"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:47
+msgid "Your account has a passkey, but it is not on this device. Your sign-in "
 "card still works here. Adding another passkey is not available yet."
-msgstr "您的账户已有通行密钥，但该密钥不在此设备上。您的纸钱包卡片仍可使用。暂时无法添加其他通行密钥。"
+msgstr "您的账户已有通行密钥，但该密钥不在此设备上。您的登录卡卡片仍可使用。暂时无法添加其他通行密钥。"
 
 #: apps/web/src/components/auth/auth-states.tsx:14
 msgid "Your account is awaiting approval. You will be able to continue once it "
@@ -8491,22 +8657,32 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 msgstr "您的姓名和钱包地址不会显示。请勿在评语中包含个人信息。"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
-msgid "Your paper wallet"
-msgstr "您的纸钱包"
+#~ msgid "Your paper wallet"
+#~ msgstr "您的纸钱包"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:55
 msgid "Your passkey is being verified."
 msgstr "正在验证您的通行密钥。"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
-msgid "Your passkey is linked, but the app could not switch to it. Your paper "
-"wallet is still connected."
-msgstr "您的通行密钥已链接，但应用程序无法切换到它。您的纸钱包仍处于连接状态。"
+#~ msgid "Your passkey is linked, but the app could not switch to it. Your paper "
+#~ "wallet is still connected."
+#~ msgstr "您的通行密钥已链接，但应用程序无法切换到它。您的纸钱包仍处于连接状态。"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
+msgid "Your passkey is linked, but the app could not switch to it. Your sign-in "
+"card is still connected."
+msgstr "您的通行密钥已链接，但应用程序无法切换到它。您的登录卡仍处于连接状态。"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
-msgid "Your passkey is still confirming. You can keep using your paper wallet "
+#~ msgid "Your passkey is still confirming. You can keep using your paper wallet "
+#~ "meanwhile."
+#~ msgstr "您的通行密钥仍在确认中。同时您可以继续使用您的纸钱包。"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
+msgid "Your passkey is still confirming. You can keep using your sign-in card "
 "meanwhile."
-msgstr "您的通行密钥仍在确认中。同时您可以继续使用您的纸钱包。"
+msgstr "您的通行密钥仍在确认中。同时您可以继续使用您的登录卡。"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:270
 #~ msgid "Your Pools"
@@ -8544,6 +8720,10 @@ msgstr "您的评价已被管理员隐藏。"
 msgid "Your review will be available once this redemption is processed. You can "
 "also find it later in the voucher’s Reviews tab."
 msgstr "此次兑付处理完成后即可进行评价。您也可以稍后在代金券的“评价”标签页中找到它。"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
+msgid "Your sign-in card"
+msgstr "您的登录卡"
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:719
 msgid "Your unsaved changes to this post will be lost."

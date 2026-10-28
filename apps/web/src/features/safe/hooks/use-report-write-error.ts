@@ -32,7 +32,7 @@ export function useReportWriteError() {
       return true;
     }
     if (error instanceof SafePasskeyUnsupportedError) {
-      toast.error(t`Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper wallet.`);
+      toast.error(t`Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.`);
       return false;
     }
     if (isPasskeyCancellation(error)) return false;

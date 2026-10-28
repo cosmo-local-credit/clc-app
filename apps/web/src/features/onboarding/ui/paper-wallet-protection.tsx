@@ -78,7 +78,7 @@ export function usePaperWalletProtection({
       const encrypted = await encryptPaperWalletPrivateKey(privateKey, passphrase);
       setEncryptedPayload(encrypted);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not protect this paper wallet.`);
+      setError(err instanceof Error ? err.message : t`Could not protect this sign-in card.`);
     } finally {
       setEncrypting(false);
     }
@@ -94,7 +94,7 @@ export function usePaperWalletProtection({
         )}
         <span className="min-w-0 flex-1">
           <span className="block font-medium text-foreground text-sm">
-            <Trans>Protect paper wallet with a password</Trans>
+            <Trans>Protect with a password</Trans>
           </span>
           <span
             className={cn(
@@ -104,12 +104,12 @@ export function usePaperWalletProtection({
           >
             {enabled ? (
               encryptedPayload ? (
-                <Trans>Paper wallet is protected. Keep the password separate from the card.</Trans>
+                <Trans>Protected. Keep the password separate from the card.</Trans>
               ) : (
-                <Trans>Enter and apply a password before downloading this card.</Trans>
+                <Trans>Enter a password before saving.</Trans>
               )
             ) : (
-              <Trans>QR currently contains the raw private key.</Trans>
+              <Trans>Not protected. Anyone who scans this card can access your wallet.</Trans>
             )}
           </span>
         </span>

@@ -212,14 +212,14 @@ describe("sign-in method layout", () => {
     renderPanel();
     const buttons = screen.getAllByRole("button").map((button) => button.textContent);
     expect(buttons[0]).toContain("Continue with Google");
-    expect(buttons[1]).toContain("Continue with Paper Wallet");
+    expect(buttons[1]).toContain("Sign in with QR card");
     expect(screen.queryByRole("button", { name: /^private key$/i })).toBeNull();
   });
 
   it("opens the paper wallet scanner in a sheet over the methods", async () => {
     renderPanel();
-    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
-    const sheet = await screen.findByRole("dialog", { name: "Paper Wallet" });
+    fireEvent.click(screen.getByRole("button", { name: /sign in with qr card/i }));
+    const sheet = await screen.findByRole("dialog", { name: "Sign-in card" });
     expect(within(sheet).getByText("Scanner")).toBeTruthy();
     // Still on the page behind the sheet, hidden from the accessibility tree while it is open.
     expect(

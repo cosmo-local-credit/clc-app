@@ -77,7 +77,7 @@ export function usePaperWalletSetup({
   const [downloadError, setDownloadError] = useState<string | null>(null);
   /** The rendered PNG, shown for long-press saving in an installed iOS PWA. */
   const [savedCardUrl, setSavedCardUrl] = useState<string | null>(null);
-  const fallbackName = defaultName.trim() || t`Paper wallet`;
+  const fallbackName = defaultName.trim() || t`Sign-in card`;
   const normalizedCustomization = useMemo<PaperWalletCustomization>(
     () => ({
       name: customization.name.trim() || fallbackName,
@@ -137,7 +137,7 @@ export function usePaperWalletSetup({
   }, []);
 
   async function prepareCard(): Promise<{ file: File; fileName: string }> {
-    if (!cardRef.current) throw new Error("Paper wallet card is missing");
+    if (!cardRef.current) throw new Error("Sign-in card is missing");
     const content = contentRef.current;
     const prepared = preparedRef.current;
     if (prepared?.qrUrl === content.qrUrl && prepared.customization === content.customization) {
@@ -149,7 +149,7 @@ export function usePaperWalletSetup({
       contentRef.current.qrUrl !== content.qrUrl ||
       contentRef.current.customization !== content.customization
     ) {
-      throw new Error("Paper wallet changed while exporting");
+      throw new Error("Sign-in card changed while exporting");
     }
     const result = { file: new File([blob], fileName, { type: "image/png" }), fileName };
     preparedRef.current = { ...result, ...content };
@@ -180,7 +180,7 @@ export function usePaperWalletSetup({
       window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
       onDownloaded?.();
     } catch {
-      setDownloadError(t`Could not save the paper wallet. Try again.`);
+      setDownloadError(t`Could not save the sign-in card. Try again.`);
     } finally {
       setDownloading(false);
     }
@@ -238,7 +238,7 @@ export function usePaperWalletSetup({
       onDownloaded?.();
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
-        setDownloadError(t`Could not share the paper wallet. Try downloading it instead.`);
+        setDownloadError(t`Could not share the sign-in card. Try downloading it instead.`);
       }
     } finally {
       setSharing(false);
@@ -333,7 +333,7 @@ export function usePaperWalletSetup({
           <p className="text-muted-foreground text-xs">
             {t`Press and hold the image below, then choose Save Image.`}
           </p>
-          <img src={savedCardUrl} alt={t`Paper wallet card`} className="w-full" />
+          <img src={savedCardUrl} alt={t`Sign-in card`} className="w-full" />
         </div>
       ) : null}
     </div>

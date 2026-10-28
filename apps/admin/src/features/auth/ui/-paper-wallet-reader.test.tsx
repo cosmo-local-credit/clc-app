@@ -24,7 +24,7 @@ function cameraOptions(call = 0) {
 }
 
 function upload(file = new File(["image"], "wallet.png", { type: "image/png" })) {
-  fireEvent.change(screen.getByLabelText("Upload a paper wallet image"), {
+  fireEvent.change(screen.getByLabelText("Upload sign-in card image"), {
     target: { files: [file] },
   });
 }
@@ -85,7 +85,7 @@ describe("PaperWalletReader", () => {
     act(() => cameraOptions().onDecoded("0xcamerakey"));
 
     expect(onDecoded).toHaveBeenCalledExactlyOnceWith("0xcamerakey");
-    expect(screen.getByRole("button", { name: "Upload paper wallet image" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Upload sign-in card image" })).toBeTruthy();
   });
 
   it("releases the camera on Cancel", async () => {
@@ -110,7 +110,7 @@ describe("PaperWalletReader", () => {
     fireEvent.click(screen.getByRole("button", { name: "Scan with camera" }));
 
     expect((await screen.findByRole("alert")).textContent).toBe(message);
-    expect(screen.getByRole("button", { name: "Upload paper wallet image" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Upload sign-in card image" })).toBeTruthy();
   });
 
   it("ignores an upload that decodes after the camera was opened", async () => {

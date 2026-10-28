@@ -53,11 +53,24 @@ describe("parsePaperWalletImportPayload", () => {
   });
 
   it("returns invalid for a URL without w", () => {
-    expect(parsePaperWalletImportPayload("https://cosmolocal.credit/login").type).toBe("invalid");
+    expect(parsePaperWalletImportPayload("https://cosmolocal.credit/login")).toEqual({
+      type: "invalid",
+      error: "URL does not contain a sign-in card payload (?w= parameter missing).",
+    });
   });
 
   it("returns invalid for random text", () => {
-    expect(parsePaperWalletImportPayload("not-a-paper-wallet").type).toBe("invalid");
+    expect(parsePaperWalletImportPayload("not-a-paper-wallet")).toEqual({
+      type: "invalid",
+      error: "This QR code does not contain a valid sign-in card.",
+    });
+  });
+
+  it("describes an empty credential with the user-facing product term", () => {
+    expect(parsePaperWalletImportPayload(" ")).toEqual({
+      type: "invalid",
+      error: "Sign-in card payload is empty.",
+    });
   });
 });
 

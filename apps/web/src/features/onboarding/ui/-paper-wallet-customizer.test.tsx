@@ -17,7 +17,7 @@ describe("PaperWalletCustomizer", () => {
   it("shows its fields straight away, for the sheet that holds them", () => {
     render(<PaperWalletCustomizer value={defaults()} onChange={vi.fn()} />);
     expect(document.querySelector("details")).toBeNull();
-    expect(screen.getByLabelText("Name on wallet")).toBeTruthy();
+    expect(screen.getByLabelText("Name on card")).toBeTruthy();
     expect(screen.getByLabelText("Website")).toBeTruthy();
     expect(screen.getByLabelText("Description")).toBeTruthy();
   });
@@ -25,7 +25,7 @@ describe("PaperWalletCustomizer", () => {
   it("name input has maxLength of 32 and reflects the value", () => {
     const onChange = vi.fn();
     render(<PaperWalletCustomizer value={defaults({ name: "Alice" })} onChange={onChange} />);
-    const input = screen.getByLabelText("Name on wallet");
+    const input = screen.getByLabelText("Name on card");
     expect(input).toHaveProperty("maxLength", 32);
     expect(input).toHaveProperty("value", "Alice");
   });
@@ -54,7 +54,7 @@ describe("PaperWalletCustomizer", () => {
   it("calls onChange with updated name when user types", () => {
     const onChange = vi.fn();
     render(<PaperWalletCustomizer value={defaults()} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText("Name on wallet"), {
+    fireEvent.change(screen.getByLabelText("Name on card"), {
       target: { value: "New Name" },
     });
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ name: "New Name" }));

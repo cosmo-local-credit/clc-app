@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { placeholderSignupEmail } from "../wallet/paper-wallet";
+import { PAPER_WALLET_PLACEHOLDER_NAME, placeholderSignupEmail } from "../wallet/paper-wallet";
 import { hasProfileGaps, profileGaps } from "./completeness";
 
 const ADDRESS = "0xAbCdEf0000000000000000000000000000000001";
@@ -7,13 +7,24 @@ const ADDRESS = "0xAbCdEf0000000000000000000000000000000001";
 describe("profileGaps", () => {
   it("treats a bulk-issued account's placeholders as missing", () => {
     const gaps = profileGaps({
-      name: "Paper wallet",
+      name: PAPER_WALLET_PLACEHOLDER_NAME,
       email: placeholderSignupEmail(ADDRESS),
       phone: "",
       avatarUrl: null,
     });
     expect(gaps).toEqual({ avatar: true, name: true, contact: true });
     expect(hasProfileGaps(gaps)).toBe(true);
+  });
+
+  it("keeps recognizing the legacy bulk-issued account name", () => {
+    expect(
+      profileGaps({
+        name: "Paper wallet",
+        email: placeholderSignupEmail(ADDRESS),
+        phone: "",
+        avatarUrl: null,
+      }).name,
+    ).toBe(true);
   });
 
   it("accepts a phone in place of an email", () => {
