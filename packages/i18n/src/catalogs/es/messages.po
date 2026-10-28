@@ -603,6 +603,10 @@ msgstr "Añadir foto"
 msgid "Add photos"
 msgstr "Añadir fotos"
 
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
+msgid "Add signer"
+msgstr "Añadir firmante"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:117
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:305
 msgid "Add stables"
@@ -732,7 +736,7 @@ msgstr "Confirme siempre que el token y la red coincidan antes de enviar."
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:243
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:269
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -808,11 +812,15 @@ msgstr "Aplicar"
 msgid "Apply filters"
 msgstr "Aplicar filtros"
 
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
+msgid "Approvals required"
+msgstr "Aprobaciones requeridas"
+
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:331
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:181
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:191
 msgid "Approve voucher"
 msgstr "Aprobar vale"
 
@@ -1085,6 +1093,10 @@ msgstr "Celebración"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:783
 msgid "Change"
 msgstr "Cambiar"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:178
+msgid "Change approvals required"
+msgstr "Cambiar aprobaciones requeridas"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:101
 msgid "Change photo"
@@ -1421,7 +1433,7 @@ msgstr "Borrar búsqueda"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:155
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
 msgid "Close"
 msgstr "Cerrar"
 
@@ -1531,7 +1543,7 @@ msgstr "Complete la solicitud en su teléfono."
 msgid "Complete your profile"
 msgstr "Complete su perfil"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:358
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
 msgid "Confirm"
 msgstr "Confirmar"
 
@@ -1577,7 +1589,7 @@ msgstr "Confirmar intercambio"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:337
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:409
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1585,7 +1597,7 @@ msgstr "Confirmado"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:721
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:358
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:430
 msgid "Confirming"
 msgstr "Confirmando"
 
@@ -2405,7 +2417,7 @@ msgstr "Crear vale"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:170
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:180
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2959,11 +2971,11 @@ msgstr "Tipo de cambio"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Tipo de cambio respecto al vale predeterminado ({unitSymbol})"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:365
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:437
 msgid "Execute it in Safe."
 msgstr "Ejecútala en Safe."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:354
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:426
 msgid "Executing…"
 msgstr "Ejecutando…"
 
@@ -2998,7 +3010,7 @@ msgstr "Con vencimiento"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:133
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:135
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -3019,7 +3031,7 @@ msgstr "Agricultura"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:179
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:189
 msgid "Fee % and recipient"
 msgstr "Porcentaje de comisión y destinatario"
 
@@ -3853,7 +3865,7 @@ msgstr "Cargando su perfil…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:107
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:108
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3910,7 +3922,7 @@ msgid "Manage {0}"
 msgstr "Administrar {0}"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:185
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:195
 msgid "Manage voucher"
 msgstr "Administrar vale"
 
@@ -4115,7 +4127,7 @@ msgstr "Propiedad de una multifirma · {0} de {1} firmantes"
 msgid "Multisig owned · {0} signers"
 msgstr "Propiedad de una multifirma · {0} firmantes"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:66
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:67
 msgid "Multisig transactions"
 msgstr "Transacciones multifirma"
 
@@ -4212,7 +4224,7 @@ msgstr "Construcción natural"
 msgid "Network"
 msgstr "Red"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:249
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:275
 msgid "New owner"
 msgstr "Nuevo propietario"
 
@@ -4238,6 +4250,11 @@ msgstr "El nuevo propietario no puede ser uno de los contratos de este activo"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:359
 msgid "New post"
 msgstr "Nueva publicación"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:295
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
+msgid "New signer"
+msgstr "Nuevo firmante"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:488
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:160
@@ -4486,7 +4503,7 @@ msgid "No QR code found. Try again with a clearer image."
 msgstr "No se encontró ningún código QR. Inténtelo de nuevo con una imagen más "
 "nítida."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:115
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:116
 msgid "No queued proposals found."
 msgstr "No se encontraron propuestas en cola."
 
@@ -4593,7 +4610,7 @@ msgid "No. of participants"
 msgstr "Número de participantes"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:321
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:393
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4774,7 +4791,7 @@ msgid "Open in Maps"
 msgstr "Abrir en Maps"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:150
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:152
 msgid "Open in Safe"
 msgstr "Abrir en Safe"
 
@@ -4987,7 +5004,7 @@ msgid "Passkey status could not be checked."
 msgstr "No se pudo comprobar el estado de la clave de acceso."
 
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:367
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:439
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your paper "
 "wallet."
 msgstr "Las claves de acceso pueden firmar en carteras multifirma con Safe 1.5 "
@@ -5565,7 +5582,7 @@ msgstr "Perfil actualizado"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "Propuesta en cola. Confírmala y ejecútala en Safe."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:111
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:112
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Las propuestas no están disponibles aquí. Puedes seguir usando tu "
 "cartera multifirma."
@@ -5778,7 +5795,7 @@ msgstr "Destinatarios recientes"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:240
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:266
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5874,7 +5891,7 @@ msgstr "Precios relativos"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:187
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:197
 msgid "Remove"
 msgstr "Eliminar"
 
@@ -5916,6 +5933,15 @@ msgstr "Eliminar el enlace {0}"
 msgid "Remove photo {0}"
 msgstr "Eliminar la foto {0}"
 
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
+msgid "Remove signer"
+msgstr "Eliminar firmante"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:304
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:313
+msgid "Removed signer"
+msgstr "Firmante eliminado"
+
 #. placeholder {0}: voucher.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:546
 msgid "Removing {0} stops it being swapped in or out of this pool. Its rate and "
@@ -5926,6 +5952,10 @@ msgstr "Si elimina {0}, ya no se podrá intercambiar hacia o desde este fondo. "
 #: apps/web/src/components/offerings/offerings-panel.tsx:405
 msgid "Removing…"
 msgstr "Eliminando…"
+
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+msgid "Replace signer"
+msgstr "Sustituir firmante"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:236
 msgid "Reply"
@@ -6137,7 +6167,7 @@ msgstr "Reintentar la conexión"
 msgid "Reverted"
 msgstr "Revertido"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:371
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:443
 msgid "Review this transaction in your multisig wallet."
 msgstr "Revisa esta transacción en tu cartera multifirma."
 
@@ -7659,7 +7689,7 @@ msgstr "Hash de la transacción copiado"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:172
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:182
 msgid "Transfer ownership"
 msgstr "Transferir la titularidad"
 
@@ -7790,8 +7820,8 @@ msgstr "Unidad de cuenta"
 msgid "Unknown"
 msgstr "Desconocido"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:189
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:205
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:199
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:215
 msgid "Unknown call"
 msgstr "Llamada desconocida"
 
@@ -8375,13 +8405,13 @@ msgstr "Retirar"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:176
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
 msgid "Withdraw fees"
 msgstr "Retirar comisiones"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:174
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
 msgid "Withdraw liquidity"
 msgstr "Retirar liquidez"
 
@@ -8465,7 +8495,7 @@ msgstr "Puede seguir retirando fondos después del retiro del fondo."
 msgid "You can write or edit your review until {0}."
 msgstr "Puedes escribir o editar tu reseña hasta {0}."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:363
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:435
 msgid "You confirmed"
 msgstr "Confirmaste"
 

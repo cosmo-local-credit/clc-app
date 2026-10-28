@@ -11,6 +11,7 @@ import {
   safeSupportsContractSignatures,
   type SafeCall,
   type SafeCallDetail,
+  type SafeOwnerChange,
 } from "@clc/core/features/safe/logic";
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -119,6 +120,7 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
             {transactions.map((transaction) => (
               <Proposal
                 key={transaction.safeTxHash}
+                safe={safe}
                 transaction={transaction}
                 viewer={viewer}
                 canSign={canSign}
@@ -160,12 +162,20 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
 }
 
 /** The owner action a call performs, in the words its own control uses. */
-function callGroup(call: SafeCall): string {
-  return safeCallName(call.data) ?? "unknown";
+function callGroup(call: SafeCall, safe: `0x${string}`): string {
+  return safeCallName(call, safe) ?? "unknown";
 }
 
 function CallLabel({ group }: { group: string }) {
   switch (group) {
+    case "addSigner":
+      return <Trans>Add signer</Trans>;
+    case "removeSigner":
+      return <Trans>Remove signer</Trans>;
+    case "replaceSigner":
+      return <Trans>Replace signer</Trans>;
+    case "changeThreshold":
+      return <Trans>Change approvals required</Trans>;
     case "mintTo":
       return <Trans>Create vouchers</Trans>;
     case "transferOwnership":
@@ -201,10 +211,10 @@ function labelKey(group: string): string {
   return group;
 }
 
-function proposalTitle(calls: readonly SafeCall[] | null): ReactNode {
+function proposalTitle(calls: readonly SafeCall[] | null, safe: `0x${string}`): ReactNode {
   if (!calls) return <Trans>Unknown call</Trans>;
   const byLabel = new Map<string, string>();
-  for (const call of calls) byLabel.set(labelKey(callGroup(call)), callGroup(call));
+  for (const call of calls) byLabel.set(labelKey(callGroup(call, safe)), callGroup(call, safe));
   // Approving a voucher already sets its limit and rate.
   if (byLabel.has("add")) byLabel.delete("manage");
   return [...byLabel.values()].map((group, index) => (
@@ -217,12 +227,18 @@ function proposalTitle(calls: readonly SafeCall[] | null): ReactNode {
 
 /**
  * Who receives what, for the calls where that is the decision: each mint's
- * recipient and amount, and the new owner of a handover (one entry for a
- * pool's batch of wiring contracts).
+ * recipient and amount, the new owner of a handover (one entry for a pool's
+ * batch of wiring contracts), and who signs for the multisig afterwards.
  */
-function ProposalDetails({ calls }: { calls: readonly SafeCall[] | null }) {
+function ProposalDetails({
+  calls,
+  safe,
+}: {
+  calls: readonly SafeCall[] | null;
+  safe: `0x${string}`;
+}) {
   const details = (calls ?? [])
-    .map(describeSafeCall)
+    .map((call) => describeSafeCall(call, safe))
     .filter((detail): detail is SafeCallDetail => detail !== null);
   const mints = details.filter((detail) => detail.kind === "mint");
   const newOwners = [
@@ -232,9 +248,19 @@ function ProposalDetails({ calls }: { calls: readonly SafeCall[] | null }) {
       ),
     ),
   ];
-  if (mints.length === 0 && newOwners.length === 0) return null;
+  const signerChanges = details.filter(
+    (detail): detail is SafeOwnerChange =>
+      detail.kind === "addSigner" ||
+      detail.kind === "removeSigner" ||
+      detail.kind === "replaceSigner" ||
+      detail.kind === "changeThreshold",
+  );
+  if (mints.length === 0 && newOwners.length === 0 && signerChanges.length === 0) return null;
   return (
     <dl className="space-y-1.5">
+      {signerChanges.map((change, index) => (
+        <SignerChangeRows key={index} change={change} />
+      ))}
       {mints.map((mint, index) => (
         <Fragment key={index}>
           <DetailRow label={<Trans>Recipient</Trans>}>
@@ -252,6 +278,49 @@ function ProposalDetails({ calls }: { calls: readonly SafeCall[] | null }) {
       ))}
     </dl>
   );
+}
+
+function SignerChangeRows({ change }: { change: SafeOwnerChange }) {
+  const { i18n } = useLingui();
+  const approvals =
+    "threshold" in change ? (
+      <DetailRow label={<Trans>Approvals required</Trans>}>
+        {new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(change.threshold)}
+      </DetailRow>
+    ) : null;
+  switch (change.kind) {
+    case "addSigner":
+      return (
+        <>
+          <DetailRow label={<Trans>New signer</Trans>}>
+            <RecipientIdentityLabel address={change.signer} showAddress />
+          </DetailRow>
+          {approvals}
+        </>
+      );
+    case "removeSigner":
+      return (
+        <>
+          <DetailRow label={<Trans>Removed signer</Trans>}>
+            <RecipientIdentityLabel address={change.signer} showAddress />
+          </DetailRow>
+          {approvals}
+        </>
+      );
+    case "replaceSigner":
+      return (
+        <>
+          <DetailRow label={<Trans>Removed signer</Trans>}>
+            <RecipientIdentityLabel address={change.oldSigner} showAddress />
+          </DetailRow>
+          <DetailRow label={<Trans>New signer</Trans>}>
+            <RecipientIdentityLabel address={change.newSigner} showAddress />
+          </DetailRow>
+        </>
+      );
+    case "changeThreshold":
+      return approvals;
+  }
 }
 
 function DetailRow({ label, children }: { label: ReactNode; children: ReactNode }) {
@@ -280,6 +349,7 @@ function MintAmount({ token, amountRaw }: { token: `0x${string}`; amountRaw: str
 }
 
 function Proposal({
+  safe,
   transaction,
   viewer,
   canSign,
@@ -288,6 +358,7 @@ function Proposal({
   confirmingThis,
   onConfirm,
 }: {
+  safe: `0x${string}`;
   transaction: SafeProposal;
   viewer: `0x${string}` | undefined;
   canSign: boolean;
@@ -299,6 +370,7 @@ function Proposal({
   const { t } = useLingui();
   const calls = decodeSafeTransactionCalls(transaction, SAFE_MULTISEND_CALL_ONLY);
   const action = safeProposalAction({
+    safe,
     confirmations: transaction.confirmations,
     confirmationsRequired: transaction.confirmationsRequired,
     calls,
@@ -309,7 +381,7 @@ function Proposal({
   return (
     <li className="space-y-2 py-3">
       <div className="flex items-start justify-between gap-3">
-        <span className="min-w-0 text-sm font-semibold">{proposalTitle(calls)}</span>
+        <span className="min-w-0 text-sm font-semibold">{proposalTitle(calls, safe)}</span>
         <Badge
           size="sm"
           variant={action === "execute" || action === "executing" ? "primary" : "muted"}
@@ -320,12 +392,12 @@ function Proposal({
       <p className="text-xs text-muted-foreground">
         <Trans>Nonce {transaction.nonce}</Trans>
       </p>
-      <ProposalDetails calls={calls} />
+      <ProposalDetails calls={calls} safe={safe} />
       {calls && calls.length > 1 ? (
         <ul className="space-y-1">
           {calls.map((call, index) => (
             <li key={index} className="flex items-baseline justify-between gap-2 text-xs">
-              <CallLabel group={callGroup(call)} />
+              <CallLabel group={callGroup(call, safe)} />
               <span dir="ltr" className="font-mono text-muted-foreground">
                 {formatVoucherAddress(call.to)}
               </span>

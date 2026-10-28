@@ -255,10 +255,86 @@ const SAFE_CALL_NAMES = new Map<string, string>(
   ]),
 );
 
-/** The function name of an allowed owner action, or null for anything else. */
-export function safeCallName(data: Hex): string | null {
-  if (size(data) < 4) return null;
-  return SAFE_CALL_NAMES.get(slice(data, 0, 4)) ?? null;
+/**
+ * The owner management a Safe performs on itself, the only call it may make to
+ * itself. Mirrors `checkOwnerChange` in clc-core's `internal/safe`: modules,
+ * guards and the fallback handler on the Safe stay unknown.
+ */
+const safeOwnerAbi = parseAbi([
+  "function addOwnerWithThreshold(address owner, uint256 threshold)",
+  "function removeOwner(address prevOwner, address owner, uint256 threshold)",
+  "function swapOwner(address prevOwner, address oldOwner, address newOwner)",
+  "function changeThreshold(uint256 threshold)",
+]);
+
+/** Heads a Safe's owner list: valid as a prevOwner, never as an owner. */
+const SENTINEL_OWNER = "0x0000000000000000000000000000000000000001";
+
+export type SafeOwnerChange =
+  | { kind: "addSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "removeSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "replaceSigner"; oldSigner: `0x${string}`; newSigner: `0x${string}` }
+  | { kind: "changeThreshold"; threshold: number };
+
+/**
+ * A signer or threshold change the Safe makes on itself, or null for anything
+ * clc-core would refuse: another target, calldata that is not exactly the
+ * call's arguments, an owner that is the zero address, the sentinel or the
+ * Safe, a zero threshold, or a signer replaced by itself. Membership and the
+ * threshold's upper bound are the Safe's own checks.
+ */
+export function safeOwnerChange(call: SafeCall, safe: `0x${string}`): SafeOwnerChange | null {
+  if (!isAddressEqual(call.to, safe)) return null;
+  let decoded;
+  try {
+    decoded = decodeFunctionData({ abi: safeOwnerAbi, data: call.data });
+  } catch {
+    return null;
+  }
+  // Re-encoding rejects trailing bytes and address words with stray high bits.
+  if (
+    encodeFunctionData({ abi: safeOwnerAbi, ...decoded }).toLowerCase() !== call.data.toLowerCase()
+  )
+    return null;
+  const owner = (address: `0x${string}`) =>
+    !isAddressEqual(address, zeroAddress) &&
+    !isAddressEqual(address, SENTINEL_OWNER) &&
+    !isAddressEqual(address, safe);
+  const threshold = (value: bigint) =>
+    value >= 1n && value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
+
+  switch (decoded.functionName) {
+    case "addOwnerWithThreshold": {
+      const [signer, required] = decoded.args;
+      const n = threshold(required);
+      return owner(signer) && n !== null ? { kind: "addSigner", signer, threshold: n } : null;
+    }
+    case "removeOwner": {
+      const [, signer, required] = decoded.args;
+      const n = threshold(required);
+      return owner(signer) && n !== null ? { kind: "removeSigner", signer, threshold: n } : null;
+    }
+    case "swapOwner": {
+      const [, oldSigner, newSigner] = decoded.args;
+      return owner(oldSigner) && owner(newSigner) && !isAddressEqual(oldSigner, newSigner)
+        ? { kind: "replaceSigner", oldSigner, newSigner }
+        : null;
+    }
+    case "changeThreshold": {
+      const n = threshold(decoded.args[0]);
+      return n !== null ? { kind: "changeThreshold", threshold: n } : null;
+    }
+  }
+}
+
+/**
+ * The name of an allowed owner action, or null for anything else. A call to
+ * the Safe itself is named by its owner change; any other by its function.
+ */
+export function safeCallName(call: SafeCall, safe: `0x${string}`): string | null {
+  if (isAddressEqual(call.to, safe)) return safeOwnerChange(call, safe)?.kind ?? null;
+  if (size(call.data) < 4) return null;
+  return SAFE_CALL_NAMES.get(slice(call.data, 0, 4)) ?? null;
 }
 
 /**
@@ -313,6 +389,7 @@ export function decodeSafeTransactionCalls(
 export type SafeProposalAction = "executing" | "execute" | "confirmed" | "confirm" | "review";
 
 export function safeProposalAction(input: {
+  safe: `0x${string}`;
   confirmations: readonly { owner: string }[];
   confirmationsRequired: number;
   calls: readonly SafeCall[] | null;
@@ -331,7 +408,7 @@ export function safeProposalAction(input: {
   const allowed =
     input.calls !== null &&
     input.calls.length > 0 &&
-    input.calls.every((call) => safeCallName(call.data) !== null);
+    input.calls.every((call) => safeCallName(call, input.safe) !== null);
   return input.canSign && allowed ? "confirm" : "review";
 }
 
@@ -340,12 +417,14 @@ const describeAbi = parseAbi([
   "function transferOwnership(address newOwner)",
 ]);
 
-/** What a confirming signer needs to see in a call: who receives what. */
+/** What a confirming signer needs to see in a call: who receives what, or who signs. */
 export type SafeCallDetail =
   | { kind: "mint"; token: `0x${string}`; recipient: `0x${string}`; amountRaw: string }
-  | { kind: "ownership"; asset: `0x${string}`; newOwner: `0x${string}` };
+  | { kind: "ownership"; asset: `0x${string}`; newOwner: `0x${string}` }
+  | SafeOwnerChange;
 
-export function describeSafeCall(call: SafeCall): SafeCallDetail | null {
+export function describeSafeCall(call: SafeCall, safe: `0x${string}`): SafeCallDetail | null {
+  if (isAddressEqual(call.to, safe)) return safeOwnerChange(call, safe);
   try {
     const decoded = decodeFunctionData({ abi: describeAbi, data: call.data });
     if (decoded.functionName === "mintTo") {
