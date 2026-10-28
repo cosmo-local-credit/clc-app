@@ -27,15 +27,18 @@ const hexSchema = z.custom<Hex>(
 const decimalSchema = z.string().regex(/^\d+$/);
 
 /** Persisted ownership capabilities. A custom multisig may omit a threshold getter. */
+export const safeOwnerInfoSchema = z.object({
+  kind: z.literal("safe"),
+  owner: addressSchema,
+  signers: z.array(addressSchema).min(1),
+  threshold: z.number().int().min(1).nullable(),
+});
+export type SafeOwnerInfo = z.infer<typeof safeOwnerInfoSchema>;
+
 export const assetOwnerInfoSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("eoa"), owner: addressSchema }),
   z.object({ kind: z.literal("unsupported"), owner: addressSchema }),
-  z.object({
-    kind: z.literal("safe"),
-    owner: addressSchema,
-    signers: z.array(addressSchema).min(1),
-    threshold: z.number().int().min(1).nullable(),
-  }),
+  safeOwnerInfoSchema,
 ]);
 export type AssetOwnerInfo = z.infer<typeof assetOwnerInfoSchema>;
 
@@ -325,6 +328,104 @@ export function safeOwnerChange(call: SafeCall, safe: `0x${string}`): SafeOwnerC
       return n !== null ? { kind: "changeThreshold", threshold: n } : null;
     }
   }
+}
+
+/** A signer or threshold change a signer proposes for their own Safe. */
+export type SafeSignerChangeRequest =
+  | { kind: "addSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "removeSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "changeThreshold"; threshold: number };
+
+/** Why a requested change cannot execute against the Safe's current signers. */
+export type SafeSignerChangeProblem =
+  | "not-a-signer-address"
+  | "already-signer"
+  | "not-signer"
+  | "last-signer"
+  | "threshold-out-of-range"
+  | "unchanged";
+
+/** The Safe as read from chain just before proposing: owners in `getOwners` order. */
+export type SafeSignerState = {
+  safe: `0x${string}`;
+  owners: readonly `0x${string}`[];
+  threshold: number;
+};
+
+/**
+ * The Safe's own checks on a change, run before anyone signs it: a new signer
+ * cannot be the zero address, the sentinel, the Safe or an existing signer;
+ * a removed one must be a signer and not the last; and the approvals required
+ * must stay between one and the signer count the change leaves.
+ */
+export function safeSignerChangeProblem(
+  state: SafeSignerState,
+  change: SafeSignerChangeRequest,
+): SafeSignerChangeProblem | null {
+  const count = state.owners.length;
+  const isOwner = (address: `0x${string}`) =>
+    state.owners.some((owner) => isAddressEqual(owner, address));
+  const inRange = (threshold: number, max: number) =>
+    Number.isInteger(threshold) && threshold >= 1 && threshold <= max;
+  switch (change.kind) {
+    case "addSigner":
+      if (
+        ([zeroAddress, SENTINEL_OWNER, state.safe] as const).some((a) =>
+          isAddressEqual(a, change.signer),
+        )
+      )
+        return "not-a-signer-address";
+      if (isOwner(change.signer)) return "already-signer";
+      return inRange(change.threshold, count + 1) ? null : "threshold-out-of-range";
+    case "removeSigner":
+      if (!isOwner(change.signer)) return "not-signer";
+      if (count === 1) return "last-signer";
+      return inRange(change.threshold, count - 1) ? null : "threshold-out-of-range";
+    case "changeThreshold":
+      if (!inRange(change.threshold, count)) return "threshold-out-of-range";
+      return change.threshold === state.threshold ? "unchanged" : null;
+  }
+}
+
+/**
+ * The call that makes a change. A removal names the signer's predecessor in
+ * the Safe's linked owner list, which `getOwners` returns in order; the first
+ * owner follows the sentinel. Throws for a change the Safe would refuse.
+ */
+export function buildSafeSignerChangeCall(
+  state: SafeSignerState,
+  change: SafeSignerChangeRequest,
+): SafeCall {
+  const problem = safeSignerChangeProblem(state, change);
+  if (problem) throw new Error(`The signer change cannot execute: ${problem}`);
+  const threshold = BigInt(change.threshold);
+  let data: Hex;
+  switch (change.kind) {
+    case "addSigner":
+      data = encodeFunctionData({
+        abi: safeOwnerAbi,
+        functionName: "addOwnerWithThreshold",
+        args: [change.signer, threshold],
+      });
+      break;
+    case "removeSigner": {
+      const index = state.owners.findIndex((owner) => isAddressEqual(owner, change.signer));
+      data = encodeFunctionData({
+        abi: safeOwnerAbi,
+        functionName: "removeOwner",
+        args: [index === 0 ? SENTINEL_OWNER : state.owners[index - 1]!, change.signer, threshold],
+      });
+      break;
+    }
+    case "changeThreshold":
+      data = encodeFunctionData({
+        abi: safeOwnerAbi,
+        functionName: "changeThreshold",
+        args: [threshold],
+      });
+      break;
+  }
+  return { to: state.safe, value: "0", data };
 }
 
 /**

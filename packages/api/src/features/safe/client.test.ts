@@ -89,6 +89,21 @@ describe("safe client", () => {
     );
   });
 
+  it("lists the multisigs the signed-in account signs for", async () => {
+    const safes = [{ kind: "safe", owner: A(1), signers: [A(5), A(6)], threshold: 2 }];
+    const { spy, safe } = client({ safes });
+    await expect(safe.mine()).resolves.toEqual(safes);
+    expect(spy).toHaveBeenCalledWith(
+      "https://api.example/api/v2/users/me/safes",
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
+  });
+
+  it("refuses a listed multisig that is not a Safe", async () => {
+    const { safe } = client({ safes: [{ kind: "eoa", owner: A(1) }] });
+    await expect(safe.mine()).rejects.toThrow();
+  });
+
   it("rejects a malformed response", async () => {
     const { safe } = client({ results: [{ ...proposal, confirmationsRequired: 0 }] });
     await expect(safe.pending(A(1))).rejects.toThrow();

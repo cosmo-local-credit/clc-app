@@ -16,7 +16,7 @@ import {
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, type ReactNode, useEffect, useRef } from "react";
 import { RiCheckLine } from "react-icons/ri";
 import { useClient, useConnection } from "wagmi";
 import { Badge } from "#/components/ui/badge";
@@ -43,6 +43,7 @@ import { SAFE_APP_PREFIX, SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
 import { safeVersionQueryOptions } from "../api/sign-safe-transaction";
 import { useReportWriteError } from "../hooks/use-report-write-error";
 import { useSafeConfirm } from "../hooks/use-safe-confirm";
+import { useRefreshSafeSigners } from "../hooks/use-safe-signers";
 import { useSafeSheet } from "../state/safe-sheet";
 
 /**
@@ -67,7 +68,7 @@ export function SafePendingSheet() {
               <Trans>Multisig transactions</Trans>
             </SheetTitle>
           </SheetHeader>
-          {safe ? <PendingList safe={safe} onClose={close} /> : null}
+          {safe ? <PendingList key={safe} safe={safe} onClose={close} /> : null}
         </SheetContent>
       </SheetPortal>
     </SheetRoot>
@@ -76,6 +77,17 @@ export function SafePendingSheet() {
 
 function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => void }) {
   const query = useQuery(safePendingQueryOptions(safeClient, safe));
+  const refreshSigners = useRefreshSafeSigners();
+  const queued = useRef<ReadonlySet<string> | null>(null);
+  // A transaction leaving the queue executed, or another took its nonce. An
+  // executed signer change moves who signs, so what depends on that is re-read.
+  useEffect(() => {
+    if (!query.data) return;
+    const current = new Set(query.data.map((transaction) => transaction.safeTxHash));
+    const previous = queued.current;
+    queued.current = current;
+    if (previous && [...previous].some((hash) => !current.has(hash))) void refreshSigners(safe);
+  }, [query.data, refreshSigners, safe]);
   const transactions = query.data ?? [];
   const auth = useAuthStatus();
   const { address, connector } = useConnection();

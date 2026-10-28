@@ -11,6 +11,7 @@ import {
   type Hex,
 } from "viem";
 import {
+  buildSafeSignerChangeCall,
   buildSafeTransaction,
   classifyOwnerCode,
   computeSafeTxHash,
@@ -23,6 +24,7 @@ import {
   isSigner,
   safeCallName,
   safeOwnerChange,
+  safeSignerChangeProblem,
   type SafeCall,
 } from "./logic";
 
@@ -404,5 +406,82 @@ describe("contract signatures", () => {
     expect(encodeSafeContractSignature(owner, data)).toBe(
       `0x${word(owner)}${word("0x41")}00${word("0x05")}0102030405`,
     );
+  });
+});
+
+describe("signer change proposals", () => {
+  const [first, second, third, newcomer] = [A(0x11), A(0x22), A(0x33), A(0x44)];
+  // getOwners order, which is not address order.
+  const state = { safe, owners: [third, first, second], threshold: 2 };
+  const ownerAbi = parseAbi([
+    "function addOwnerWithThreshold(address,uint256)",
+    "function removeOwner(address,address,uint256)",
+    "function changeThreshold(uint256)",
+  ]);
+
+  it("names the removed signer's predecessor in the Safe's own order", () => {
+    const decoded = (signer: `0x${string}`) =>
+      decodeFunctionData({
+        abi: ownerAbi,
+        data: buildSafeSignerChangeCall(state, { kind: "removeSigner", signer, threshold: 1 }).data,
+      }).args;
+    expect(decoded(third)).toEqual([A(1), third, 1n]);
+    expect(decoded(first)).toEqual([third, first, 1n]);
+    expect(decoded(second)).toEqual([first, second, 1n]);
+  });
+
+  it("builds calls clc-app itself reads back as the same change", () => {
+    const add = buildSafeSignerChangeCall(state, {
+      kind: "addSigner",
+      signer: newcomer,
+      threshold: 3,
+    });
+    expect(add.to).toBe(safe);
+    expect(add.value).toBe("0");
+    expect(safeOwnerChange(add, safe)).toEqual({
+      kind: "addSigner",
+      signer: newcomer,
+      threshold: 3,
+    });
+    const threshold = buildSafeSignerChangeCall(state, { kind: "changeThreshold", threshold: 3 });
+    expect(safeOwnerChange(threshold, safe)).toEqual({ kind: "changeThreshold", threshold: 3 });
+    const remove = buildSafeSignerChangeCall(state, {
+      kind: "removeSigner",
+      signer: first,
+      threshold: 2,
+    });
+    expect(safeOwnerChange(remove, safe)).toEqual({
+      kind: "removeSigner",
+      signer: first,
+      threshold: 2,
+    });
+  });
+
+  it("refuses the changes the Safe would refuse", () => {
+    const cases: [Parameters<typeof safeSignerChangeProblem>[1], string][] = [
+      [{ kind: "addSigner", signer: zeroAddress, threshold: 1 }, "not-a-signer-address"],
+      [{ kind: "addSigner", signer: A(1), threshold: 1 }, "not-a-signer-address"],
+      [{ kind: "addSigner", signer: safe, threshold: 1 }, "not-a-signer-address"],
+      [{ kind: "addSigner", signer: first, threshold: 1 }, "already-signer"],
+      [{ kind: "addSigner", signer: newcomer, threshold: 5 }, "threshold-out-of-range"],
+      [{ kind: "addSigner", signer: newcomer, threshold: 0 }, "threshold-out-of-range"],
+      [{ kind: "removeSigner", signer: newcomer, threshold: 1 }, "not-signer"],
+      [{ kind: "removeSigner", signer: first, threshold: 3 }, "threshold-out-of-range"],
+      [{ kind: "changeThreshold", threshold: 4 }, "threshold-out-of-range"],
+      [{ kind: "changeThreshold", threshold: 2 }, "unchanged"],
+    ];
+    for (const [change, problem] of cases) {
+      expect(safeSignerChangeProblem(state, change), JSON.stringify(change)).toBe(problem);
+      expect(() => buildSafeSignerChangeCall(state, change)).toThrow(problem);
+    }
+    expect(
+      safeSignerChangeProblem(
+        { safe, owners: [first], threshold: 1 },
+        { kind: "removeSigner", signer: first, threshold: 1 },
+      ),
+    ).toBe("last-signer");
+    expect(
+      safeSignerChangeProblem(state, { kind: "addSigner", signer: newcomer, threshold: 4 }),
+    ).toBeNull();
   });
 });
