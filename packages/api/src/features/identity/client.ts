@@ -20,7 +20,9 @@ export type IdentityAvailabilityQuery = {
 /**
  * Advisory occupancy for an email, phone, or username. Nothing is reserved —
  * signup and profile save repeat the check. An answer that cannot be read is
- * not reported as taken.
+ * not reported as taken. The session cookie goes with it: identities the
+ * signed-in account already holds are available, so onboarding can go back
+ * to the profile after signup has created the account.
  */
 export function createIdentityClient(http: HttpClient) {
   return {

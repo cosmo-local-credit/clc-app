@@ -45,6 +45,15 @@ describe("identity client", () => {
     expect(url).not.toContain("phone=");
   });
 
+  it("sends the session cookie, so the account onboarding created is not its own conflict", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(response({ email: { available: true } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.getAvailability({ email: "a@example.com" });
+
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: "include" });
+  });
+
   it("reads an unusable answer as available", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response({ email: {} })));
     await expect(api.getAvailability({ email: "a@example.com" })).resolves.toEqual({
