@@ -39,6 +39,21 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Invalid phone number",
         message: "Invalid phone number",
       });
+    case "That email is already linked to an account":
+      return i18n._({
+        id: "That email is already linked to an account",
+        message: "That email is already linked to an account",
+      });
+    case "That phone number is already linked to an account":
+      return i18n._({
+        id: "That phone number is already linked to an account",
+        message: "That phone number is already linked to an account",
+      });
+    case "That username is already taken":
+      return i18n._({
+        id: "That username is already taken",
+        message: "That username is already taken",
+      });
     case "Provide an email or phone number":
       return i18n._({
         id: "Provide an email or phone number",

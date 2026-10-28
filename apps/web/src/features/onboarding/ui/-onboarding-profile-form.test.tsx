@@ -2,13 +2,16 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate, mockResolveProfileCountry, mockIPCamera } = vi.hoisted(() => ({
-  mockNavigate: vi.fn(),
-  mockResolveProfileCountry: vi.fn(),
-  mockIPCamera: {
-    current: { lat: -6.7924, lng: 39.2083, zoom: 11, source: "ip-city" as const },
-  },
-}));
+const { mockNavigate, mockResolveProfileCountry, mockIPCamera, mockGetAvailability } = vi.hoisted(
+  () => ({
+    mockNavigate: vi.fn(),
+    mockResolveProfileCountry: vi.fn(),
+    mockIPCamera: {
+      current: { lat: -6.7924, lng: 39.2083, zoom: 11, source: "ip-city" as const },
+    },
+    mockGetAvailability: vi.fn(),
+  }),
+);
 
 vi.mock("#/features/home/hooks/use-ip-camera", () => ({
   useIPCamera: () => ({ data: mockIPCamera.current }),
@@ -19,6 +22,10 @@ vi.mock("#/features/home/hooks/use-ip-camera", () => ({
 vi.mock("#/lib/api/storage", () => ({
   isStorageConfigured: true,
   storageClient: () => ({ upload: vi.fn() }),
+}));
+
+vi.mock("#/lib/api/identity", () => ({
+  identityClient: { getAvailability: mockGetAvailability },
 }));
 
 vi.mock("#/lib/profile-currency", async (importOriginal) => {
@@ -206,6 +213,14 @@ function renderForm(
 const page = () => screen.getByTestId("page").textContent;
 
 async function pressContinue() {
+  await waitFor(
+    () => {
+      expect(
+        (screen.getByRole("button", { name: /continue/i }) as HTMLButtonElement).disabled,
+      ).toBe(false);
+    },
+    { timeout: 2000 },
+  );
   await act(async () => {
     fireEvent.submit(screen.getByRole("form"));
   });
@@ -248,6 +263,12 @@ beforeEach(() => {
   mockNavigate.mockClear();
   mockResolveProfileCountry.mockReset();
   mockResolveProfileCountry.mockResolvedValue("US");
+  mockGetAvailability.mockReset();
+  mockGetAvailability.mockResolvedValue({
+    email: { available: true },
+    phone: { available: true },
+    username: { available: true },
+  });
 });
 
 describe("OnboardingProfileForm pages", () => {
@@ -469,12 +490,97 @@ describe("OnboardingProfileForm Continue", () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
     await completeProfilePage();
+    expect(mockGetAvailability).not.toHaveBeenCalled();
     await completeContactPage();
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
     await pressContinue();
 
     const submitted = mockOnNext.mock.calls[0]?.[0] as ProfileInput;
     expect(submitted).not.toHaveProperty("username");
+  });
+
+  it("disables Continue when the email is already linked to an account", async () => {
+    mockGetAvailability.mockResolvedValue({ email: { available: false } });
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+    await completeProfilePage();
+    fireEvent.change(textbox(/email/i), { target: { value: "odeaperonne@gmail.com" } });
+
+    expect(await screen.findByText("That email is already linked to an account")).toBeTruthy();
+    expect((screen.getByRole("button", { name: /continue/i }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(page()).toBe("contact");
+    expect(mockOnNext).not.toHaveBeenCalled();
+    expect(mockGetAvailability).toHaveBeenCalledWith(
+      { email: "odeaperonne@gmail.com" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it("disables Continue when the username is already taken", async () => {
+    mockGetAvailability.mockResolvedValue({ username: { available: false } });
+    renderForm(vi.fn(), undefined, PHOTO);
+    fireEvent.change(textbox(/^username$/i), { target: { value: "Aude-Péronne" } });
+
+    expect(await screen.findByText("That username is already taken")).toBeTruthy();
+    expect((screen.getByRole("button", { name: /continue/i }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+    expect(page()).toBe("profile");
+  });
+
+  it("disables Continue when the phone number is already linked to an account", async () => {
+    mockGetAvailability.mockResolvedValue({ phone: { available: false } });
+    renderForm(vi.fn(), undefined, PHOTO);
+    await completeProfilePage();
+    fireEvent.change(screen.getByTestId("phone-input"), { target: { value: "+254700009184" } });
+
+    expect(
+      await screen.findByText("That phone number is already linked to an account"),
+    ).toBeTruthy();
+    expect((screen.getByRole("button", { name: /continue/i }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+  });
+
+  it("does not check an invalid phone, and a failed lookup does not block Continue", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+    await completeProfilePage();
+    fireEvent.change(screen.getByTestId("phone-input"), { target: { value: "0112283384" } });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    });
+    expect(mockGetAvailability).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByTestId("phone-input"), { target: { value: "" } });
+    mockGetAvailability.mockRejectedValue(new Error("offline"));
+    fireEvent.change(textbox(/email/i), { target: { value: "alice@example.com" } });
+    await pressContinue();
+    expect(page()).toBe("location");
+    expect(screen.queryByText(/already linked/i)).toBeNull();
+  });
+
+  it("keeps Location from continuing when an earlier email is taken", async () => {
+    mockGetAvailability.mockResolvedValue({ email: { available: false } });
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, PROFILE, PHOTO, { startPage: "location" });
+
+    expect(await screen.findByText("That email is already linked to an account")).toBeTruthy();
+    expect((screen.getByRole("button", { name: /continue/i }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+    expect(mockOnNext).not.toHaveBeenCalled();
   });
 });
 

@@ -25,8 +25,7 @@ import { useSafeWrite } from "./use-safe-write";
  */
 const SIGNER_SET_POLL_MS = 15_000;
 
-export const safeSignersKey = (safe: string) =>
-  ["safe-signers", CHAIN_ID, safe.toLowerCase()] as const;
+const safeSignersKey = (safe: string) => ["safe-signers", CHAIN_ID, safe.toLowerCase()] as const;
 
 /** The multisigs the signed-in account signs for. Empty while the feature is off. */
 export function useMySafes() {
