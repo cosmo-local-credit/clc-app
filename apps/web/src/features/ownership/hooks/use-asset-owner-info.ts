@@ -19,7 +19,7 @@ export type { AssetOwnerInfo } from "@clc/core/features/safe/logic";
 export const assetOwnerInfoKey = (owner: string) =>
   ["asset-owner-info", CHAIN_ID, owner.toLowerCase()] as const;
 
-const assetOwnerProjectionKey = (owner: string) =>
+export const assetOwnerProjectionKey = (owner: string) =>
   ["asset-owner-projection", CHAIN_ID, owner.toLowerCase()] as const;
 
 /**

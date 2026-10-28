@@ -21,10 +21,13 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
   readAssetOwnerInfo: mocks.read,
+  assetOwnerInfoKey: (owner: string) => ["asset-owner-info", 100, owner.toLowerCase()],
+  assetOwnerProjectionKey: (owner: string) => ["asset-owner-projection", 100, owner.toLowerCase()],
 }));
 vi.mock("./use-safe-write", () => ({ useSafeWrite: () => ({ write: mocks.write }) }));
 
-const { useMySafes, useProposeSignerChange, useSafeSigners } = await import("./use-safe-signers");
+const { useMySafes, useProposeSignerChange, useRefreshSafeSigners, useSafeSigners } =
+  await import("./use-safe-signers");
 
 const ownerAbi = parseAbi([
   "function removeOwner(address,address,uint256)",
@@ -127,5 +130,37 @@ describe("useMySafes", () => {
     mocks.mine.mockResolvedValue(safes);
     const { result } = renderHook(() => useMySafes(), { wrapper });
     await waitFor(() => expect(result.current.data).toEqual(safes));
+  });
+});
+
+describe("signer set freshness", () => {
+  it("re-lists the account's multisigs while shown, since a change can execute in Safe", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      mocks.mine.mockResolvedValue([]);
+      renderHook(() => useMySafes(), { wrapper });
+      await waitFor(() => expect(mocks.mine).toHaveBeenCalledTimes(1));
+      await act(() => vi.advanceTimersByTimeAsync(15_000));
+      await waitFor(() => expect(mocks.mine).toHaveBeenCalledTimes(2));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("refreshes the multisig list, the signers and who may sign for the Safe", async () => {
+    const client = new QueryClient();
+    const invalidate = vi.spyOn(client, "invalidateQueries");
+    const { result } = renderHook(() => useRefreshSafeSigners(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      ),
+    });
+    await act(() => result.current(SAFE.toUpperCase()));
+    expect(invalidate.mock.calls.map(([filters]) => filters?.queryKey)).toEqual([
+      ["clc", "safe", "mine"],
+      ["safe-signers", 100, SAFE],
+      ["asset-owner-info", 100, SAFE],
+      ["asset-owner-projection", 100, SAFE],
+    ]);
   });
 });

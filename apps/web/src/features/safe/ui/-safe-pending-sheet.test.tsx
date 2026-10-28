@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { encodeFunctionData, parseAbi } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   voucher: vi.fn(),
   version: vi.fn(),
   connectorId: "private-key",
+  refreshSigners: vi.fn(),
 }));
 vi.mock("#/lib/api/market", () => ({ marketClient: { getMarketVoucher: mocks.voucher } }));
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
@@ -34,6 +35,9 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 }));
 vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
   useSafeOwnersSignedBy: () => new Set([SAFE]),
+}));
+vi.mock("../hooks/use-safe-signers", () => ({
+  useRefreshSafeSigners: () => mocks.refreshSigners,
 }));
 vi.mock("../hooks/use-safe-confirm", () => ({
   useSafeConfirm: () => ({ mutate: mocks.confirm, isPending: false, variables: undefined }),
@@ -71,10 +75,13 @@ function proposal(overrides: Record<string, unknown> = {}) {
   };
 }
 
+let queryClient: QueryClient;
+
 async function openWith(transactions: unknown[]) {
   mocks.pending.mockResolvedValue(transactions);
+  queryClient = new QueryClient();
   render(
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <SafePendingSheet />
     </QueryClientProvider>,
   );
@@ -252,6 +259,20 @@ describe("SafePendingSheet", () => {
       expect(within(sheet).getByText("Unknown call")).toBeTruthy();
       expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();
     });
+  });
+
+  it("re-reads signer-derived state when a transaction leaves the queue", async () => {
+    const executed = proposal();
+    const next = proposal({ safeTxHash: `0x${"cd".repeat(32)}`, nonce: "2" });
+    await openWith([executed, next]);
+    mocks.pending.mockResolvedValue([executed, next]);
+    await act(() => queryClient.refetchQueries());
+    expect(mocks.refreshSigners).not.toHaveBeenCalled();
+
+    mocks.pending.mockResolvedValue([next]);
+    await act(() => queryClient.refetchQueries());
+    await waitFor(() => expect(mocks.refreshSigners).toHaveBeenCalledWith(SAFE));
+    expect(screen.queryByText("Nonce 1")).toBeNull();
   });
 
   it("does not offer to confirm a call it cannot decode", async () => {
