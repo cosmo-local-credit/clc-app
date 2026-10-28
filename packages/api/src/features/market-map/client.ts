@@ -1,6 +1,7 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import {
+  canonicalMarketMapZoom,
   marketMapResponseSchema,
   type MarketMapKind,
   type MarketMapResponse,
@@ -26,7 +27,7 @@ export function createMarketMapClient(http: HttpClient) {
     async list(params: MarketMapParams, signal?: AbortSignal): Promise<MarketMapResponse> {
       const query = new URLSearchParams();
       appendMarketBounds(query, params.bounds);
-      query.set("zoom", String(Math.floor(params.zoom)));
+      query.set("zoom", String(canonicalMarketMapZoom(params.zoom)));
       for (const kind of params.kinds) query.append("kinds", kind);
       if (params.filter.term) query.set("q", params.filter.term);
       for (const tag of params.filter.tags) query.append("tags", tag);

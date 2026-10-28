@@ -1,5 +1,22 @@
 import { describe, expect, it } from "vite-plus/test";
-import { marketMapResponseSchema } from "./logic";
+import { canonicalMarketMapZoom, marketMapResponseSchema } from "./logic";
+
+describe("market map zoom", () => {
+  it.each([
+    [5.8, 5.75],
+    [14.74, 14.5],
+    [14.75, 14.75],
+    [20.99, 20.75],
+  ])("canonicalizes %s to the quarter bucket %s", (input, expected) => {
+    expect(canonicalMarketMapZoom(input)).toBe(expected);
+  });
+
+  it("clamps invalid and out-of-range values", () => {
+    expect(canonicalMarketMapZoom(Number.NaN)).toBe(0);
+    expect(canonicalMarketMapZoom(-1)).toBe(0);
+    expect(canonicalMarketMapZoom(30)).toBe(22);
+  });
+});
 
 describe("market map response schema", () => {
   it("accepts lightweight markers and server clusters", () => {
