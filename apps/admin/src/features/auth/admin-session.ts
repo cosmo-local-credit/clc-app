@@ -3,14 +3,14 @@
  *
  * Operators sign in with the same credentials they use on apps/web — a paper
  * wallet (SIWE over a private key) or a passkey — and the console is gated on the
- * role clc-core reports for that account. `SUPERADMIN` is the gate; nothing
- * finer-grained exists on the backend, so nothing finer-grained is modelled here.
+ * role clc-core reports for that account. ADMIN and SUPERADMIN may enter;
+ * role-management controls remain reserved for SUPERADMIN.
  *
  * This module is the only place the gate is decided. The route guard
  * (components/layout/auth-boundary.tsx), the shell and every surface read through
  * `useAdminSession`, so a change to the rule lands in one place.
  *
- * This is a UX gate only. clc-core enforces `requireSuperAdmin` on every
+ * This is a UX gate only. clc-core enforces its administrative guard on every
  * /api/v2/admin endpoint and remains the security authority — what renders here
  * cannot grant access the backend withholds.
  */
@@ -19,12 +19,13 @@ import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tansta
 
 import { BackendApiError } from "@clc/api/client/errors";
 import type { SessionResult } from "@clc/api/features/auth/client";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { clcApi } from "#/lib/api";
 import { useOperatorKeyStore } from "./operator-key";
 import { errorMessage } from "#/lib/data-state";
 
-/** The one role that may use this console. */
-export const SUPERADMIN_ROLE = "SUPERADMIN";
+/** Human-readable description of the roles that may use this console. */
+export const ADMIN_ROLE_LABEL = "ADMIN or SUPERADMIN";
 
 /** Reached through `AdminSession`, so consumers never need the name. */
 type AdminOperator = {
@@ -77,7 +78,7 @@ export function clearProtectedQueries(queryClient: QueryClient): void {
  * again would be a dead end.
  *
  * A session whose role the backend does not report is `unavailable`, not
- * `unauthorized`. Older deployments omit the field, and denying a real superadmin
+ * `unauthorized`. Older deployments omit the field, and denying a real administrator
  * with "not authorized" would send them looking for a permission problem that
  * does not exist.
  */
@@ -108,7 +109,7 @@ export function resolveSession(query: {
   }
 
   const operator: AdminOperator = { address, role };
-  return role === SUPERADMIN_ROLE
+  return isAdminRole(role)
     ? { status: "authenticated", operator }
     : { status: "unauthorized", operator };
 }

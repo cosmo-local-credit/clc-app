@@ -1,4 +1,4 @@
-import { encodeFunctionData, parseAbi } from "viem";
+import { encodeFunctionData, isAddress, parseAbi, zeroAddress } from "viem";
 import { z } from "zod";
 import {
   optionalEmailSchema,
@@ -251,8 +251,10 @@ export const giftableTokenTotalSupplyAbi = parseAbi([
 
 export type BuildVoucherMintCallInput = {
   tokenAddress: `0x${string}`;
-  /** Always the issuer's own wallet — the voucher owner mints to themselves. */
+  /** The issuer's own wallet, or the multisig that owns the voucher. */
   ownerAddress: `0x${string}`;
+  /** Where the supply lands; the owner unless a multisig mints to someone else. */
+  recipientAddress?: `0x${string}`;
   amountRaw: string;
 };
 
@@ -269,7 +271,7 @@ export function buildVoucherMintCall(input: BuildVoucherMintCallInput): CaliburC
     data: encodeFunctionData({
       abi: giftableTokenMintToAbi,
       functionName: "mintTo",
-      args: [input.ownerAddress, amount],
+      args: [input.recipientAddress ?? input.ownerAddress, amount],
     }),
   };
 }
@@ -294,6 +296,57 @@ export function buildVoucherOwnershipTransferCall(
       abi: giftableTokenOwnershipAbi,
       functionName: "transferOwnership",
       args: [input.newOwnerAddress],
+    }),
+  };
+}
+
+/**
+ * Writers may call `mintTo`. The owner is always a writer (`isWriter` returns
+ * true for `owner()`), so deleting the owner does not remove their mint right.
+ * Adding or deleting a writer is `onlyOwner`.
+ */
+export const giftableTokenWriterAbi = parseAbi([
+  "function addWriter(address minter) returns (bool)",
+  "function deleteWriter(address minter) returns (bool)",
+  "function isWriter(address minter) view returns (bool)",
+]);
+
+function assertVoucherParty(address: `0x${string}`, label: string): void {
+  if (!isAddress(address) || address.toLowerCase() === zeroAddress) {
+    throw new Error(`Voucher ${label} must be a non-zero address.`);
+  }
+}
+
+export function buildAddVoucherWriterCall(input: {
+  tokenAddress: `0x${string}`;
+  writerAddress: `0x${string}`;
+}): CaliburCall {
+  assertVoucherParty(input.tokenAddress, "token");
+  assertVoucherParty(input.writerAddress, "writer");
+  return {
+    to: input.tokenAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: giftableTokenWriterAbi,
+      functionName: "addWriter",
+      args: [input.writerAddress],
+    }),
+  };
+}
+
+export function buildDeleteVoucherWriterCall(input: {
+  tokenAddress: `0x${string}`;
+  writerAddress: `0x${string}`;
+}): CaliburCall {
+  assertVoucherParty(input.tokenAddress, "token");
+  assertVoucherParty(input.writerAddress, "writer");
+  return {
+    to: input.tokenAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: giftableTokenWriterAbi,
+      functionName: "deleteWriter",
+      args: [input.writerAddress],
     }),
   };
 }

@@ -85,7 +85,7 @@ type SheetVoucher = {
  * nobody chose. The calls are built by `@clc/core/features/pool-admin/logic` and
  * signed with whatever key this wallet holds.
  *
- * Only the pool's own owner reaches this. A superadmin can correct the catalog
+ * Only the pool's own owner reaches this. An administrator can correct the catalog
  * record but is not the on-chain owner, and every call below is `onlyOwner`.
  */
 export function PoolVoucherSheet({
@@ -391,7 +391,7 @@ function PoolVoucherConfigurationForm({
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const relay = usePoolAdminRelay();
+  const relay = usePoolAdminRelay(pool);
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
   // Save and Remove share one relay; this says which of the two is waiting.
   const [removing, setRemoving] = useState(false);
@@ -443,7 +443,7 @@ function PoolVoucherConfigurationForm({
         );
         onClose();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+        if (relay.reportError(error, t`The transaction failed.`)) onClose();
       }
     },
   });
@@ -461,7 +461,7 @@ function PoolVoucherConfigurationForm({
       toast.success(t`${voucher.symbol} removed from ${pool.name}.`);
       onClose();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
+      if (relay.reportError(error, t`The transaction failed.`)) onClose();
     } finally {
       setRemoving(false);
     }

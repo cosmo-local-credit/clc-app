@@ -25,7 +25,7 @@ import { clcApi } from "#/lib/api";
 type ResourceRef = ReportVoucherRef | ReportPoolRef;
 type ResourceOption = { value: string; label: string; symbol?: string; ref: ResourceRef };
 
-/** Global catalog picker used by the SUPERADMIN Post editor. */
+/** Global catalog picker used by an administrative Post editor. */
 export function PostResourcePicker({
   kind,
   value,

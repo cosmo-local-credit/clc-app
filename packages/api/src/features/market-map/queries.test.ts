@@ -31,6 +31,15 @@ describe("market map query", () => {
     ]);
   });
 
+  it("shares query identity within a quarter zoom bucket", () => {
+    const first = marketMapKeys.list({ ...params, zoom: 14.51 });
+    const sameBucket = marketMapKeys.list({ ...params, zoom: 14.74 });
+    const nextBucket = marketMapKeys.list({ ...params, zoom: 14.75 });
+
+    expect(first).toEqual(sameBucket);
+    expect(nextBucket).not.toEqual(first);
+  });
+
   it("forwards AbortSignal and applies the discovery retry policy", async () => {
     const list = vi.fn().mockResolvedValue({ features: [] });
     const options = marketMapQueryOptions({ list } as unknown as MarketMapClient, params);

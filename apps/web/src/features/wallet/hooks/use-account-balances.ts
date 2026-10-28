@@ -8,6 +8,7 @@ import {
   accountTransfersInfiniteQueryOptions,
 } from "@clc/api/features/accounts/queries";
 import type { ActivityKind } from "@clc/api/features/accounts/client";
+import { transientBackendReadQueryPolicy } from "@clc/api/client/errors";
 import { accountsClient } from "#/lib/api/accounts";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -59,6 +60,7 @@ export function useAccountTokensInfinite(
     ...accountTokensInfiniteQueryOptions(accountsClient, address, perPage),
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
+    ...transientBackendReadQueryPolicy,
   });
 }
 
@@ -97,6 +99,7 @@ export function useAllAccountIssuedTokens(address: string | undefined) {
     ...accountIssuedTokensInfiniteQueryOptions(accountsClient, address, 100),
     ...walletAccountQueryFreshness,
     ...pollOptions(true),
+    ...transientBackendReadQueryPolicy,
   });
   const { fetchNextPage, hasNextPage, isError, isFetchingNextPage } = query;
 

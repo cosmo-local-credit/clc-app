@@ -1,12 +1,14 @@
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vite-plus/test";
 import type { CatalogsClient } from "./client";
+import { retryTransientBackendRead } from "../../client/errors";
 import {
   catalogCompleteMembersQueryOptions,
   catalogKeys,
   catalogMembershipQueryOptions,
   catalogMemberMutationOptions,
   catalogsInfiniteQueryOptions,
+  myCatalogsQueryOptions,
   saveCatalogMutationOptions,
 } from "./queries";
 
@@ -26,6 +28,7 @@ describe("catalog cache", () => {
     const client = {} as CatalogsClient;
     expect(catalogMembershipQueryOptions(client, "", "1", "pool", "2").enabled).toBe(false);
     expect(catalogMembershipQueryOptions(client, "A", "", "pool", "2").enabled).toBe(false);
+    expect(myCatalogsQueryOptions(client, "A").retry).toBe(retryTransientBackendRead);
   });
   it("passes the backend cursor unchanged and stops at null", () => {
     const options = catalogsInfiniteQueryOptions({} as CatalogsClient);

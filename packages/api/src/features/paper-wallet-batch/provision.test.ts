@@ -40,7 +40,7 @@ describe("provisionPaperWallet", () => {
     expect(result).toEqual({ address: ADDRESS });
     const [payload, options] = auth.signupWithSiwe.mock.calls[0] ?? [];
     expect(payload).toMatchObject({
-      name: "Paper wallet",
+      name: "Sign-in card",
       email: `pending+${ADDRESS.slice(2).toLowerCase()}@clc.local`,
     });
     expect(payload.message).toContain(ADDRESS);

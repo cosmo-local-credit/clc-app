@@ -6,16 +6,28 @@ import type { ReviewAccess } from "@clc/core/features/reviews/logic";
 const mocks = vi.hoisted(() => ({
   owner: "0x11111111111111111111111111111111111111111",
   access: undefined as ReviewAccess | undefined,
+  accessError: false,
+  refetch: vi.fn(),
   saveReview: vi.fn(),
 }));
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   useMarketVoucherDetail: () => ({ data: { ownerAddress: mocks.owner } }),
 }));
 vi.mock("#/features/reviews/hooks/use-voucher-reviews", () => ({
-  useReviewAccess: () => ({ auth: { isAuthenticated: true }, access: { data: mocks.access } }),
+  useResourceReviewAccess: () => ({
+    auth: { isAuthenticated: true },
+    access: {
+      data: mocks.access,
+      isError: mocks.accessError,
+      isFetching: false,
+      refetch: mocks.refetch,
+    },
+  }),
 }));
-vi.mock("#/features/reviews/api/reviews-client", () => ({ saveReview: mocks.saveReview }));
-import { RedemptionReviewPrompt } from "./redemption-review-prompt";
+vi.mock("#/lib/api/reviews", () => ({
+  reviewsClient: { save: mocks.saveReview },
+}));
+import { PoolSwapReviewPrompt, RedemptionReviewPrompt } from "./redemption-review-prompt";
 
 const voucher = "0x2222222222222222222222222222222222222222";
 function mount(recipient = mocks.owner) {
@@ -37,6 +49,8 @@ beforeEach(() => {
     flaggedReviewIds: [],
   };
   mocks.saveReview.mockReset().mockResolvedValue({ saved: true });
+  mocks.accessError = false;
+  mocks.refetch.mockReset();
 });
 
 describe("redemption review prompt", () => {
@@ -65,8 +79,39 @@ describe("redemption review prompt", () => {
     fireEvent.click(screen.getByRole("radio", { name: "5 stars" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
-      expect(mocks.saveReview).toHaveBeenCalledWith(voucher, 5, "Previous experience"),
+      expect(mocks.saveReview).toHaveBeenCalledWith(
+        { kind: "voucher", address: voucher },
+        5,
+        "Previous experience",
+      ),
     );
     expect(await screen.findByRole("status")).toBeTruthy();
+  });
+
+  it("uses swap-specific processing and timing copy for Pools", () => {
+    mocks.access!.editableUntil = null;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <PoolSwapReviewPrompt address={voucher} />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByText(/once this swap is processed/)).toBeTruthy();
+  });
+
+  it("retries a failed Pool access check", () => {
+    mocks.access = undefined;
+    mocks.accessError = true;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <PoolSwapReviewPrompt address={voucher} />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByRole("alert").textContent).toContain("Couldn't check your review access.");
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(mocks.refetch).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "Later" }));
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });

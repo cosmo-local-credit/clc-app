@@ -49,12 +49,21 @@ vi.mock("./account-settings-section", () => ({
   AccountSettingsSection: () => <div data-testid="account-row" />,
 }));
 
+const { mySafes } = vi.hoisted(() => ({ mySafes: { data: undefined as unknown[] | undefined } }));
+vi.mock("#/features/safe/hooks/use-safe-signers", () => ({ useMySafes: () => mySafes }));
+vi.mock("./multisig-settings-section", () => ({
+  MultisigSettingsRows: ({ safes }: { safes: unknown[] }) => (
+    <div data-testid="multisig-rows">{safes.length}</div>
+  ),
+}));
+
 const { SettingsPage } = await import("./settings-page");
 
 const ADDRESS = "0xabcdef1234567890abcdef1234567890abcdef12" as const;
 
 beforeEach(() => {
   useInstallStore.setState(useInstallStore.getInitialState(), true);
+  mySafes.data = undefined;
 });
 
 afterEach(() => {
@@ -68,6 +77,21 @@ function group(name: string) {
 }
 
 describe("SettingsPage", () => {
+  it("adds Multisig after Sign-in only for someone who signs for a multisig", () => {
+    mySafes.data = [{ kind: "safe", owner: ADDRESS, signers: [ADDRESS], threshold: 1 }];
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(["Account", "Preferences", "Sign-in", "Multisig", "App", "Session"]);
+    expect(within(group("Multisig")).getByTestId("multisig-rows").textContent).toBe("1");
+  });
+
+  it("leaves Multisig out for someone who signs for none", () => {
+    mySafes.data = [];
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+    expect(screen.queryByRole("region", { name: "Multisig" })).toBeNull();
+  });
+
   it("groups the rows under Account, Preferences, Sign-in, App and Session, in that order", () => {
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
 
@@ -252,7 +276,9 @@ describe("SettingsPage", () => {
     fireEvent.click(within(group("Session")).getByRole("button", { name: "Sign out" }));
     const sheet = within(await screen.findByRole("dialog", { name: "Sign out?" }));
     expect(onSignOut).not.toHaveBeenCalled();
-    expect(sheet.getByText("You’ll need your paper card or passkey to sign back in.")).toBeTruthy();
+    expect(
+      sheet.getByText("You’ll need your sign-in card or passkey to sign back in."),
+    ).toBeTruthy();
 
     const confirm = sheet.getByRole("button", { name: "Sign out" });
     expect(confirm.className).toContain("text-destructive");

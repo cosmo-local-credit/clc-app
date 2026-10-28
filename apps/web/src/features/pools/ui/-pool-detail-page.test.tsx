@@ -28,6 +28,12 @@ const OWNER = "0xDeF0000000000000000000000000000000000456";
 const OTHER = "0x9999999999999999999999999999999999999999";
 const ADDRESS = "0xAbC0000000000000000000000000000000000123";
 vi.mock("#/components/catalogs/add-to-catalog-button", () => ({ AddToCatalogButton: () => null }));
+vi.mock("#/components/reviews/review-summary", () => ({
+  ReviewSummaryContent: () => <div data-testid="pool-review-summary" />,
+}));
+vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
+  PoolReviewsPanel: () => <div data-testid="pool-reviews-panel" />,
+}));
 
 const mocks = vi.hoisted(() => ({
   auth: {
@@ -151,8 +157,29 @@ vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
   usePoolAdminRelay: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", async () => {
+  const { useAuthStatus } = await import("#/features/auth/hooks/use-auth-status");
+  return {
+    useAssetOwnerInfo: (_address: string, owner: string | null | undefined) => {
+      const auth = useAuthStatus();
+      return {
+        owner,
+        info: undefined,
+        pending: false,
+        isSafeOwned: false,
+        isSafeSigner: false,
+        unsupportedOwner: false,
+        canManage:
+          !!owner &&
+          !!auth.session?.address &&
+          auth.session.address.toLowerCase() === owner.toLowerCase(),
+      };
+    },
+  };
+});
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: OWNER }),
+  useClient: () => undefined,
 }));
 
 vi.mock("./pool-voucher-sheet", () => ({
@@ -268,6 +295,14 @@ describe("PoolDetailPage pool details editor", () => {
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
 
     expect(screen.getByTestId("offerings-panel")).toBeTruthy();
+    expect(screen.getByTestId("pool-review-summary")).toBeTruthy();
+    expect(screen.getByTestId("pool-reviews-panel")).toBeTruthy();
+    expect(
+      screen
+        .getByTestId("offerings-panel")
+        .compareDocumentPosition(screen.getByTestId("pool-reviews-panel")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
       "Wants",

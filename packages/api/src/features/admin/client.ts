@@ -1,8 +1,8 @@
 /**
- * The superadmin-only endpoints under /api/v2/admin.
+ * The administrative endpoints under /api/v2/admin.
  *
- * clc-core gates the whole group behind `requireSuperAdmin`, so every call here
- * fails with 403 for anyone else. That is the authorization boundary; the admin
+ * clc-core gates the group for ADMIN and SUPERADMIN. Role mutation adds a
+ * SUPERADMIN-only check. That is the authorization boundary; the admin
  * console's session gate only decides what to render.
  *
  * **`/admin/users` pages and searches at the backend.** It answers one cursor page
@@ -14,18 +14,20 @@
  * or over sixty-four is a 400, not an unfiltered list. Normalize with
  * `parseCatalogFilter` from @clc/core before sending, as the catalog surfaces do.
  *
- * The endpoint also accepts `?status=` for one approval state. It is absent here
- * because no surface filters by approval state — adding a parameter with no caller
- * is how a client grows dead code.
+ * `?status=` is one of PENDING, APPROVED or REJECTED. It is sent only when set.
  *
- * `/admin/tokens`, `/admin/pools` and `/admin/deployments` also exist and are
- * unpaginated. They are deliberately absent here for the same reason.
+ * `/admin/tokens` and `/admin/pools` stay unpaginated and are not called here.
+ * `/admin/deployments` is called with `perPage`. A server that already pages
+ * answers `first`/`last`; a server that still returns the whole history is paged
+ * here, so the console never renders the dump as one table.
  *
  * Dashboard aggregates live under `/admin/dashboard`, a separate group from
  * the user/token mutations. Transaction pages live under `/admin/transactions`.
  */
 
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import { isUserRole, type UserRole } from "@clc/core/features/users/roles";
+import { getAddress } from "viem";
 
 import type { HttpClient } from "../../client/http-client";
 import type { CursorParams, HexAddress } from "../../lib/api-normalize";
@@ -62,7 +64,7 @@ export type AdminUser = {
   email: string;
   phone: string;
   country: string;
-  role: string;
+  role: UserRole;
   status: string;
   maxPools: number;
   maxTokens: number;
@@ -158,12 +160,18 @@ export type AdminUserProfile = {
   clearAvatar?: boolean;
 };
 
+export type AdminUserStatus = "PENDING" | "APPROVED" | "REJECTED";
+
 export type AdminUserParams = {
   perPage: number;
   cursor?: number;
   next?: boolean;
   /** Matched by the backend against name, email, phone and address. */
   q?: string;
+  /** One approval state. Omitted means every state. */
+  status?: AdminUserStatus;
+  /** Any selected roles. Omitted means every role. */
+  roles?: readonly UserRole[];
 };
 
 export type AdminUserPage = {
@@ -434,6 +442,81 @@ type AdminVoucherPage = {
 /** Which side of the visibility gate to list. `all` is the backend default. */
 type AdminVoucherStatus = "all" | "active" | "retired";
 
+type AdminReviewAction = "hide" | "dismiss";
+
+export type AdminReviewFlag = {
+  id: number;
+  reviewId: number;
+  resourceKind: "voucher" | "pool";
+  resourceAddress: string;
+  /** Retained by clc-core for older admin clients. */
+  voucherAddress?: string;
+  poolAddress?: string;
+  reason: string;
+  stars: number;
+  comment: string;
+  reportedStars: number;
+  reportedComment: string;
+  createdAt: string;
+};
+
+type BackendAdminReviewFlag = Omit<AdminReviewFlag, "resourceKind" | "resourceAddress"> &
+  Partial<Pick<AdminReviewFlag, "resourceKind" | "resourceAddress">>;
+
+function normalizeAdminReviewFlag(flag: BackendAdminReviewFlag): AdminReviewFlag {
+  const resourceKind = flag.resourceKind ?? (flag.poolAddress ? "pool" : "voucher");
+  const resourceAddress =
+    flag.resourceAddress ??
+    (resourceKind === "pool" ? flag.poolAddress : flag.voucherAddress) ??
+    "";
+  return { ...flag, resourceKind, resourceAddress };
+}
+
+export type AdminReviewParams = {
+  /** Flags with an id below this one. Absent on the first page. */
+  before?: number;
+};
+
+type AdminReviewPage = {
+  notifications: Array<AdminReviewFlag>;
+  next: number | null;
+};
+
+export type AdminDeployment = {
+  id: number;
+  userId: number;
+  trackingId: string;
+  resourceType: string;
+  createdAt: string;
+  ethereumAddress: string;
+  userName: string;
+};
+
+export type AdminDeploymentParams = {
+  perPage: number;
+  cursor?: number;
+  next?: boolean;
+};
+
+type AdminDeploymentPage = {
+  deployments: Array<AdminDeployment>;
+  first: number;
+  last: number;
+  receivedCount: number;
+};
+
+type AdminTokenUpgradeResult = {
+  trackingId: string;
+  address: string;
+};
+
+type AdminPoolUpgradeResult = {
+  /** Absent when every contract is already current, or no implementation is available. */
+  trackingId?: string;
+  upgrades: Array<{ type: string; address: string }>;
+  skipped: Array<{ type: string; address: string; reason: string }>;
+};
+
 export type AdminVoucherParams = CursorParams & {
   filter: CatalogFilter;
   status?: AdminVoucherStatus;
@@ -454,6 +537,7 @@ export type AdminClient = {
   listUsers(params: AdminUserParams, signal?: AbortSignal): Promise<AdminUserPage>;
   approveUser(address: string): Promise<AdminUser>;
   rejectUser(address: string): Promise<AdminUser>;
+  updateUserRole(address: string, role: "ADMIN" | "USER"): Promise<AdminUser>;
   updateUserLimits(address: string, limits: AdminUserLimits): Promise<AdminUser>;
   updateUserProfile(address: string, profile: AdminUserProfile): Promise<AdminUser>;
   getAccountStats(address: string, signal?: AbortSignal): Promise<AdminAccountStats>;
@@ -491,6 +575,23 @@ export type AdminClient = {
   ): Promise<AdminPoolTransactionPage>;
   /** Origin transactions this service signed, newest first. */
   listOTX(params: AdminOTXParams, signal?: AbortSignal): Promise<AdminOTXPage>;
+  /** One page of unresolved review flags, older than `before` when set. */
+  listReviewNotifications(
+    params: AdminReviewParams,
+    signal?: AbortSignal,
+  ): Promise<AdminReviewPage>;
+  resolveReviewFlag(id: number, action: AdminReviewAction): Promise<void>;
+  /**
+   * Deployment history. Prefers the server cursor. Falls back to paging the
+   * full list when the server has not grown a cursor yet.
+   */
+  listDeployments(
+    params: AdminDeploymentParams,
+    signal?: AbortSignal,
+  ): Promise<AdminDeploymentPage>;
+  /** Queues a proxy upgrade. The session must be an administrator or a service token. */
+  upgradeToken(address: string): Promise<AdminTokenUpgradeResult>;
+  upgradePool(address: string): Promise<AdminPoolUpgradeResult>;
 };
 
 /**
@@ -507,6 +608,7 @@ function normalizeAdminUser(user: BackendAdminUser): AdminUser {
 
   return {
     ...user,
+    role: isUserRole(user.role) ? user.role : "USER",
     preferredCurrency: normalizeText(user.preferredCurrency),
     bio: normalizeText(user.bio),
     website: normalizeText(user.website),
@@ -662,7 +764,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
    */
   async function mutateUser(
     path: string,
-    body?: AdminUserLimits | AdminUserProfile,
+    body?: AdminUserLimits | AdminUserProfile | { role: "ADMIN" | "USER" },
   ): Promise<AdminUser> {
     const result = await http.request<{ user: BackendAdminUser }>(path, {
       method: "PUT",
@@ -679,6 +781,8 @@ export function createAdminClient(http: HttpClient): AdminClient {
       // Only sent when there is a term: an empty `q` is a request the backend
       // would have to decide about, and there is nothing to decide.
       if (params.q) query.set("q", params.q);
+      if (params.status) query.set("status", params.status);
+      if (params.roles?.length) query.set("roles", params.roles.join(","));
 
       const result = await http.request<{
         users?: Array<BackendAdminUser> | null;
@@ -706,6 +810,10 @@ export function createAdminClient(http: HttpClient): AdminClient {
 
     rejectUser(address) {
       return mutateUser(`/api/v2/admin/users/${encodeURIComponent(address)}/reject`);
+    },
+
+    updateUserRole(address, role) {
+      return mutateUser(`/api/v2/admin/users/${encodeURIComponent(address)}/role`, { role });
     },
 
     updateUserLimits(address, limits) {
@@ -941,5 +1049,104 @@ export function createAdminClient(http: HttpClient): AdminClient {
         receivedCount: received.length,
       };
     },
+
+    async listReviewNotifications(params, signal) {
+      const query = new URLSearchParams();
+      if (params.before) query.set("before", String(params.before));
+      const suffix = query.size > 0 ? `?${query.toString()}` : "";
+      const result = await http.request<{
+        notifications?: Array<BackendAdminReviewFlag> | null;
+        next?: number | null;
+      }>(`/api/v2/admin/review-notifications${suffix}`, { method: "GET", signal });
+      return {
+        notifications: (result.notifications ?? []).map(normalizeAdminReviewFlag),
+        next: typeof result.next === "number" ? result.next : null,
+      };
+    },
+
+    async resolveReviewFlag(id, action) {
+      await http.request(`/api/v2/admin/review-notifications/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ action }),
+      });
+    },
+
+    async listDeployments(params, signal) {
+      const query = new URLSearchParams(formatCursorQuery(params).replace(/^\?/, ""));
+      const result = await http.request<{
+        deployments?: Array<AdminDeployment> | null;
+        first?: number;
+        last?: number;
+      }>(`/api/v2/admin/deployments?${query.toString()}`, { method: "GET", signal });
+      const rows = result.deployments ?? [];
+      if (typeof result.first === "number" && typeof result.last === "number") {
+        return {
+          deployments: rows,
+          first: result.first,
+          last: result.last,
+          receivedCount: rows.length,
+        };
+      }
+      return pageDeployments(rows, params);
+    },
+
+    upgradeToken(address) {
+      return requestUpgrade<AdminTokenUpgradeResult>(
+        http,
+        "/api/v2/contracts/upgrade/token",
+        address,
+      );
+    },
+
+    upgradePool(address) {
+      return requestUpgrade<AdminPoolUpgradeResult>(
+        http,
+        "/api/v2/contracts/upgrade/pool",
+        address,
+      );
+    },
+  };
+}
+
+function requestUpgrade<TResult>(
+  http: HttpClient,
+  path: string,
+  address: string,
+): Promise<TResult> {
+  return http.request<TResult>(path, {
+    method: "POST",
+    body: JSON.stringify({ address: getAddress(address) }),
+  });
+}
+
+/**
+ * Pages a newest-first dump by id when the server ignored the cursor.
+ *
+ * `next: false` is the window immediately newer than the cursor, still shown
+ * newest first. Taking the head of `id > cursor` would skip to the newest rows
+ * in the table instead.
+ */
+function pageDeployments(
+  rows: Array<AdminDeployment>,
+  params: AdminDeploymentParams,
+): AdminDeploymentPage {
+  const ordered = [...rows].sort((left, right) => right.id - left.id);
+  let window = ordered;
+  if (params.cursor && params.next === false) {
+    window = ordered
+      .filter((row) => row.id > (params.cursor as number))
+      .sort((left, right) => left.id - right.id)
+      .slice(0, params.perPage)
+      .sort((left, right) => right.id - left.id);
+  } else if (params.cursor) {
+    window = ordered.filter((row) => row.id < (params.cursor as number)).slice(0, params.perPage);
+  } else {
+    window = ordered.slice(0, params.perPage);
+  }
+  return {
+    deployments: window,
+    first: window[0]?.id ?? 0,
+    last: window.at(-1)?.id ?? 0,
+    receivedCount: window.length,
   };
 }

@@ -14,6 +14,7 @@ import { Button } from "#/components/ui/button";
 import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
 import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
+import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
 import { useWalletVoucherPreview } from "#/features/wallet/hooks/use-wallet-voucher-preview";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { CompleteProfileBanner } from "./complete-profile-banner";
@@ -88,11 +89,23 @@ export function WalletPage({ address }: { address?: string }) {
   const wantsQuery = useInfiniteQuery(myWantsInfiniteQueryOptions(wantsClient, address ?? ""));
   const wants = wantsQuery.data?.pages.flatMap((page) => page.wants) ?? [];
   // The protected list keeps retired pools reachable for withdrawals. It is
-  // paginated here because public "All pools" intentionally hides them.
+  // paginated here because public "All pools" intentionally hides them. Rows are
+  // still re-checked: this account's pools, or those of a Safe it signs for,
+  // which clc-core lists too. Anything else is a response that ignored the
+  // session's scope and is not "your pools".
   const ownedPoolsQuery = useOwnedPoolsInfinite(address);
-  const ownedPools = (ownedPoolsQuery.data?.pages.flatMap((page) => page.pools) ?? []).filter(
-    (pool) => pool.ownerAddress?.toLowerCase() === address?.toLowerCase(),
+  const ownedPoolRows = ownedPoolsQuery.data?.pages.flatMap((page) => page.pools) ?? [];
+  const account = address?.toLowerCase();
+  const signedSafes = useSafeOwnersSignedBy(
+    ownedPoolRows.flatMap((pool) =>
+      pool.ownerAddress && pool.ownerAddress.toLowerCase() !== account ? [pool.ownerAddress] : [],
+    ),
+    address,
   );
+  const ownedPools = ownedPoolRows.filter((pool) => {
+    const owner = pool.ownerAddress?.toLowerCase();
+    return !!owner && (owner === account || signedSafes.has(owner));
+  });
   const myVouchersTitle = (
     <ResourceQuotaTitle
       quota={usage.data?.vouchers}

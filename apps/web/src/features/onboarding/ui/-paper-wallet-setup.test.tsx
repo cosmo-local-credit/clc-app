@@ -174,7 +174,7 @@ describe("usePaperWalletSetup", () => {
       <HookRenderer
         address={FAKE_ADDRESS}
         qrUrl="https://cosmolocal.credit/?w=0xabc"
-        defaultName="Paper wallet"
+        defaultName="Sign-in card"
         render={(s) => (
           <>
             {s.card}
@@ -184,14 +184,14 @@ describe("usePaperWalletSetup", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("Name on wallet"), {
+    fireEvent.change(screen.getByLabelText("Name on card"), {
       target: { value: "   " },
     });
     fireEvent.change(screen.getByLabelText("Website"), {
       target: { value: " example.org " },
     });
 
-    expect(screen.getByText("Paper wallet")).toBeTruthy();
+    expect(screen.getByText("Sign-in card")).toBeTruthy();
     expect(screen.getByText("example.org")).toBeTruthy();
   });
 
@@ -300,7 +300,7 @@ describe("usePaperWalletSetup", () => {
       fireEvent.click(screen.getByRole("button", { name: /download/i }));
     });
 
-    expect(screen.getByRole("img", { name: /paper wallet card/i }).getAttribute("src")).toBe(
+    expect(screen.getByRole("img", { name: /sign-in card/i }).getAttribute("src")).toBe(
       "blob:paper-wallet",
     );
     expect(mockAnchorClick).not.toHaveBeenCalled();
@@ -328,7 +328,7 @@ describe("usePaperWalletSetup", () => {
       fireEvent.click(screen.getByRole("button", { name: /download/i }));
     });
 
-    expect(screen.getByText(/could not save the paper wallet/i)).toBeTruthy();
+    expect(screen.getByText(/could not save the sign-in card/i)).toBeTruthy();
     expect(mockAnchorClick).not.toHaveBeenCalled();
     expect(onDownloaded).not.toHaveBeenCalled();
   });
@@ -385,6 +385,6 @@ describe("usePaperWalletSetup", () => {
         render={(s) => s.controls}
       />,
     );
-    expect(screen.getByLabelText("Name on wallet")).toBeTruthy();
+    expect(screen.getByLabelText("Name on card")).toBeTruthy();
   });
 });

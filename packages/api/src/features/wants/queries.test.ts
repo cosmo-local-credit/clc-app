@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import type { WantWrite } from "@clc/core/features/wants/logic";
 import { describe, expect, it, vi } from "vite-plus/test";
 import type { WantsClient } from "./client";
+import { retryTransientBackendRead } from "../../client/errors";
 import {
   myWantQueryOptions,
   myWantsInfiniteQueryOptions,
@@ -77,6 +78,7 @@ describe("Want infinite query options", () => {
     expect(myWantsInfiniteQueryOptions(client, "").enabled).toBe(false);
     expect(poolWantsInfiniteQueryOptions(client, "").enabled).toBe(false);
     expect(wantDetailQueryOptions(client, "").enabled).toBe(false);
+    expect(mineOptions.retry).toBe(retryTransientBackendRead);
     await mineOptions.queryFn?.({ pageParam: 4, signal: SIGNAL } as never);
     await poolOptions.queryFn?.({ pageParam: 5, signal: SIGNAL } as never);
     await detailOptions.queryFn?.({ signal: SIGNAL } as never);

@@ -8,7 +8,7 @@ import { reportKeys } from "./queries";
  * What a post write does to the cache once the server has accepted it.
  *
  * Nothing here is optimistic. Status is the server's answer — a normal author's
- * edit resubmits, a superadmin's preserves — so predicting it locally would show
+ * edit resubmits, an administrator's preserves — so predicting it locally would show
  * a post as published that is queued for review, or the reverse.
  *
  * Details are seeded from the mutation response; lists are invalidated. A list's
@@ -111,7 +111,7 @@ function asPublicReportDetail(report: ManagedReportDetail): ReportDetail {
  *
  * A normal user's is `SUBMITTED` and touches no public list, so the feed is left
  * alone — invalidating it would refetch the whole catalog for a row nobody can
- * see. A superadmin's is `APPROVED` and does.
+ * see. An administrator's is `APPROVED` and does.
  */
 export function settleReportCreate(
   queryClient: QueryClient,

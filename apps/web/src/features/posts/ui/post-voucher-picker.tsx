@@ -43,7 +43,7 @@ type VoucherOption = { value: string; label: string; ref: ReportVoucherRef };
  * regardless of the search.
  *
  * With `owner` set the search only returns that address's vouchers: an author
- * who is not a superadmin may only write about vouchers they issue, and clc-core
+ * without an administrative role may only write about vouchers they issue, and clc-core
  * refuses the write otherwise.
  */
 export function PostVoucherPicker({

@@ -22,6 +22,7 @@ export type GuideArtName =
   | "pool"
   | "send"
   | "receive"
+  | "sign-in-card"
   | "wallet"
   | "link";
 
@@ -226,6 +227,16 @@ const ART: Record<GuideArtName, () => ReactElement> = {
       <Node x={222} y={48} icon={RiWallet3Line} size={44} primary />
     </>
   ),
+  "sign-in-card": () => (
+    <>
+      <rect x={22} y={12} width={256} height={136} className={cn(CARD, "[stroke-dasharray:6_4]")} />
+      <Logo x={38} y={32} size={48} />
+      <rect x={38} y={105} width={90} height={8} className="fill-border" />
+      <rect x={38} y={123} width={58} height={8} className="fill-border" />
+      <rect x={174} y={28} width={82} height={82} className={CARD} />
+      <Qr x={180} y={34} size={70} seed={17} />
+    </>
+  ),
   wallet: () => (
     <>
       <rect x={22} y={30} width={160} height={100} className={cn(CARD, "[stroke-dasharray:4_3]")} />
@@ -266,6 +277,7 @@ export function GuideArt({ name, className }: { name: GuideArtName; className?: 
       className={cn("relative border border-border bg-card", className)}
       dir="ltr"
       aria-hidden="true"
+      data-art={name}
     >
       <svg
         viewBox="0 0 300 160"

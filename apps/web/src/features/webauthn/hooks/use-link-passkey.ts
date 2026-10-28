@@ -204,7 +204,7 @@ export function useLinkPasskey(address: `0x${string}` | undefined) {
     if (paperConnection.connector?.id !== PRIVATE_KEY_CONNECTOR_ID) {
       throw new LinkPasskeyError(
         "identity-mismatch",
-        "This wallet is not signed in with its paper wallet.",
+        "This wallet is not signed in with its sign-in card.",
       );
     }
     const paperConnector = paperConnection.connector;
@@ -269,17 +269,20 @@ export function useLinkPasskey(address: `0x${string}` | undefined) {
         if (!isPaperSession) {
           throw new LinkPasskeyError(
             "identity-mismatch",
-            "Sign in with your paper wallet to link a passkey.",
+            "Sign in with your sign-in card to link a passkey.",
           );
         }
         const privateKey = getStoredKey();
         if (!privateKey) {
-          throw new LinkPasskeyError("missing-key", "The paper wallet key is not on this device.");
+          throw new LinkPasskeyError(
+            "missing-key",
+            "The key from the sign-in card is not on this device.",
+          );
         }
         if (privateKeyToAccount(privateKey).address.toLowerCase() !== expected.toLowerCase()) {
           throw new LinkPasskeyError(
             "identity-mismatch",
-            "The stored paper wallet is a different wallet.",
+            "The stored sign-in card belongs to a different wallet.",
           );
         }
         if (getConnection(wagmiConfig).address?.toLowerCase() !== expected.toLowerCase()) {

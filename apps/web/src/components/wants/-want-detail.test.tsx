@@ -162,7 +162,7 @@ describe("Want detail", () => {
     api.contact.mockResolvedValueOnce(null);
     renderWant(<WantDetail want={WANT} />);
 
-    expect(await screen.findByText("No contact details available.")).toBeTruthy();
+    expect(await screen.findByText("No contact information given")).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Email" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
   });
@@ -171,7 +171,7 @@ describe("Want detail", () => {
     api.contact.mockResolvedValueOnce({});
     renderWant(<WantDetail want={WANT} />);
 
-    expect(await screen.findByText("No contact details available.")).toBeTruthy();
+    expect(await screen.findByText("No contact information given")).toBeTruthy();
     expect(screen.queryByText("Meet near the market")).toBeNull();
     expect(screen.queryByRole("link", { name: "Email" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Call" })).toBeNull();

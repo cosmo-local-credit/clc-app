@@ -2,6 +2,7 @@ import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { PoolsClient, UserPoolPage } from "./client";
+import { transientBackendReadQueryPolicy } from "../../client/errors";
 
 /**
  * Canonical query identity and base options for pool resources.
@@ -214,6 +215,7 @@ export function ownedPoolsInfiniteQueryOptions(
     getNextPageParam: (page) => nextPoolCursor(page, perPage),
     staleTime: 0,
     refetchInterval: 30_000,
+    ...transientBackendReadQueryPolicy,
   });
 }
 

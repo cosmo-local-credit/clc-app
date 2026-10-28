@@ -63,8 +63,8 @@ export async function completeProfileStep(page: Page): Promise<void> {
 
   await page.getByRole("button", { name: "Continue" }).click();
 
-  const walletHeading = page.getByRole("heading", { name: "Your paper wallet" });
-  const paperOnly = page.getByRole("radio", { name: "Paper wallet only" });
+  const walletHeading = page.getByRole("heading", { name: "Your sign-in card" });
+  const paperOnly = page.getByRole("radio", { name: "Sign-in card only" });
   const nextStep = await Promise.race([
     walletHeading.waitFor({ state: "visible", timeout: 15_000 }).then(() => "wallet" as const),
     paperOnly.waitFor({ state: "visible", timeout: 15_000 }).then(() => "method" as const),
@@ -78,7 +78,7 @@ export async function completeProfileStep(page: Page): Promise<void> {
 
 /** Disable optional QR encryption and download the card so wallet continuation can unlock. */
 export async function downloadPaperWallet(page: Page): Promise<void> {
-  const protection = page.getByLabel("Protect paper wallet with a password");
+  const protection = page.getByLabel(/Protect with a password/);
   if (await protection.isChecked()) await protection.uncheck();
 
   await Promise.all([
@@ -102,7 +102,7 @@ export async function connectViaOnboarding(page: Page): Promise<void> {
 
   // Click the paper-wallet-only continue button
   const continueButton = page.getByRole("button", {
-    name: /Continue with paper wallet only|Continue to wallet/,
+    name: /Continue with sign-in card|Continue to wallet/,
   });
   await continueButton.click();
 

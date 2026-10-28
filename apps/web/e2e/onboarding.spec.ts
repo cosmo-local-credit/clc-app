@@ -13,7 +13,7 @@ test.describe("onboarding profile", () => {
 
     // Still on the profile step — validation blocked the submit.
     await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Your paper wallet" })).toBeHidden();
+    await expect(page.getByRole("heading", { name: "Your sign-in card" })).toBeHidden();
     const photoButton = page.getByRole("button", { name: "Add a photo" });
     await expect(photoButton).toBeFocused();
     await expect(photoButton).toBeInViewport();
@@ -25,7 +25,7 @@ test.describe("onboarding profile", () => {
   test("completes the profile and reaches the paper wallet step", async ({ page }) => {
     await completeProfileStep(page);
 
-    await expect(page.getByRole("heading", { name: "Your paper wallet" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your sign-in card" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Download card" })).toBeVisible();
   });
 

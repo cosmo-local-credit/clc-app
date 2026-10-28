@@ -33,13 +33,13 @@ describe("paper wallet encryption", () => {
   it("rejects a wrong passphrase without exposing low-level details", async () => {
     await expect(
       decryptPaperWalletPrivateKey(SARAFU_DEFAULT_FIXTURE, "wrong passphrase"),
-    ).rejects.toThrow("Unable to decrypt paper wallet");
+    ).rejects.toThrow("Unable to unlock sign-in card");
   }, 15_000);
 
   it("rejects encrypted payloads created with unsupported scrypt params", async () => {
     await expect(
       decryptPaperWalletPrivateKey(UNSUPPORTED_SCRYPT_PARAMS_FIXTURE, PASSPHRASE),
-    ).rejects.toThrow("Unable to decrypt paper wallet");
+    ).rejects.toThrow("Unable to unlock sign-in card");
   }, 15_000);
 
   it("normalizes decrypted private keys to lowercase 0x hex", async () => {

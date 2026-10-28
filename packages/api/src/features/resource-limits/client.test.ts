@@ -3,6 +3,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { createHttpClient } from "../../client/http-client";
 import { createResourceLimitsClient } from "./client";
 import { resourceUsageQueryOptions } from "./queries";
+import { retryTransientBackendRead } from "../../client/errors";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -38,6 +39,7 @@ describe("resource allowances", () => {
     });
     expect(cache.getQueryData(bob.queryKey)).toBeUndefined();
     expect(resourceUsageQueryOptions(client, "").enabled).toBe(false);
+    expect(alice.retry).toBe(retryTransientBackendRead);
   });
 
   it("scopes offering usage and its cache identity to a canonical voucher address", async () => {

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
 import { BackendApiError } from "@clc/api/client/errors";
 import type { SessionResult } from "@clc/api/features/auth/client";
-import { resolveSession, SUPERADMIN_ROLE } from "./admin-session";
+import { resolveSession } from "./admin-session";
+
+const SUPERADMIN_ROLE = "SUPERADMIN";
 
 const ADDRESS = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
 
@@ -27,11 +29,18 @@ describe("resolveSession", () => {
     });
   });
 
+  it("reports authenticated for an admin session", () => {
+    expect(resolveSession(query({ data: session("ADMIN") }))).toEqual({
+      status: "authenticated",
+      operator: { address: ADDRESS, role: "ADMIN" },
+    });
+  });
+
   it("reports unauthenticated when there is no session", () => {
     expect(resolveSession(query({ data: null }))).toEqual({ status: "unauthenticated" });
   });
 
-  it("reports unauthorized, not unauthenticated, for a signed-in non-superadmin", () => {
+  it("reports unauthorized, not unauthenticated, for a signed-in user", () => {
     // Telling a signed-in operator to sign in again is a dead end; the two states
     // must stay distinct.
     expect(resolveSession(query({ data: session("USER") }))).toEqual({

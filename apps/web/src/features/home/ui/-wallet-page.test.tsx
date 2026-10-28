@@ -52,6 +52,11 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 // The profile nudge reads the connected wallet; it has its own test.
+const safeOwners = vi.hoisted(() => ({ signed: new Set<string>() }));
+vi.mock("#/features/ownership/hooks/use-asset-owner-info", async (original) => ({
+  ...(await original<typeof import("#/features/ownership/hooks/use-asset-owner-info")>()),
+  useSafeOwnersSignedBy: () => safeOwners.signed,
+}));
 vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
 vi.mock("#/components/catalogs/my-catalog-section", () => ({
   MyCatalogSection: () => <section aria-label="My Catalogs">My Catalogs</section>,
@@ -271,6 +276,8 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  vi.spyOn(Math, "random").mockReturnValue(0);
+  safeOwners.signed = new Set();
   mocks.navigate.mockReset();
   mocks.usage.isError = false;
   mocks.usage.isFetching = false;
@@ -375,21 +382,20 @@ describe("WalletPage", () => {
     );
   });
 
-  it("keeps verified preview rows when a later page fails and retries that page", async () => {
+  it("keeps verified preview rows while automatically retrying a later page", async () => {
     const issued = Array.from({ length: 19 }, (_, index) => previewToken(220 - index, "I"));
     const holdings = [201, 200, 199, 198, 197].map((id) => previewToken(id, "H"));
     mockVoucherPreview({ balances: [...issued, ...holdings], issued, failNextPageOnce: true });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    expect(await screen.findByText("Couldn't load vouchers.")).toBeTruthy();
-    const partialHoldings = within(screen.getByRole("region", { name: "Holdings" }));
-    expect(partialHoldings.getByText("H201")).toBeTruthy();
-    expect(partialHoldings.queryByText("H200")).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
-    const completeHoldings = within(await screen.findByRole("region", { name: "Holdings" }));
-    await waitFor(() => expect(completeHoldings.getAllByRole("link")).toHaveLength(5));
+    const completeHoldings = within(
+      await screen.findByRole("region", { name: "Holdings" }, { timeout: 2_000 }),
+    );
+    await waitFor(() => expect(completeHoldings.getAllByRole("link")).toHaveLength(5), {
+      timeout: 2_000,
+    });
     expect(completeHoldings.getByText("H197")).toBeTruthy();
+    expect(screen.queryByText("Couldn't load vouchers.")).toBeNull();
   });
 
   it("limits both Wallet voucher groups to five rows", async () => {
@@ -468,7 +474,9 @@ describe("WalletPage", () => {
     mockLatestTokens({ issuedStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    expect(await screen.findByText("Couldn't load vouchers.")).toBeTruthy();
+    expect(
+      await screen.findByText("Couldn't load vouchers.", undefined, { timeout: 4_000 }),
+    ).toBeTruthy();
     expect(screen.queryByText("USD₮")).toBeNull();
     expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });
@@ -497,8 +505,8 @@ describe("WalletPage", () => {
     });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    expect(await screen.findByText("WLLR")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("WLLR", undefined, { timeout: 4_000 })).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }, { timeout: 4_000 }));
     await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
 
@@ -560,6 +568,23 @@ describe("WalletPage", () => {
     expect(screen.queryByText("Someone Else's")).toBeNull();
   });
 
+  it("lists a pool owned by a Safe this account signs for", async () => {
+    const safe = "0x5afe00000000000000000000000000000000a5a1";
+    safeOwners.signed = new Set([safe]);
+    mockEndpoints({
+      pools: [
+        OWNED_POOL,
+        { ...OWNED_POOL, id: 9, name: "Multisig Pool", ownerAddress: safe },
+        { ...OWNED_POOL, id: 8, name: "Someone Else's", ownerAddress: OTHER },
+      ],
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("Multisig Pool")).toBeTruthy();
+    expect(screen.getByText("Kilifi Mkulima")).toBeTruthy();
+    expect(screen.queryByText("Someone Else's")).toBeNull();
+  });
+
   it("offers pool creation when this address owns none", async () => {
     mockEndpoints({ pools: [] });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
@@ -574,7 +599,7 @@ describe("WalletPage", () => {
     mockEndpoints({ pools: [], poolStatus: 500 });
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }, { timeout: 4_000 }));
     await waitFor(() => expect(fetch).toHaveBeenCalled());
   });
 

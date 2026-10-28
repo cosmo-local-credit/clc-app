@@ -10,6 +10,19 @@ const MARKET_MAP_KINDS = ["voucher", "want", "pool", "catalog", "post"] as const
 const marketMapKindSchema = z.enum(MARKET_MAP_KINDS);
 export type MarketMapKind = z.infer<typeof marketMapKindSchema>;
 
+const MARKET_MAP_ZOOM_STEP = 0.25;
+
+/**
+ * Shares useful cluster responses without evaluating a nearly-complete zoom
+ * level at the previous integer scale. Flooring keeps clustering conservative:
+ * a pin is never separated using a scale the user has not reached yet.
+ */
+export function canonicalMarketMapZoom(zoom: number): number {
+  if (!Number.isFinite(zoom)) return 0;
+  const clamped = Math.max(0, Math.min(22, zoom));
+  return Math.floor((clamped + Number.EPSILON) / MARKET_MAP_ZOOM_STEP) * MARKET_MAP_ZOOM_STEP;
+}
+
 const mapMarkerIconSchema = z.union([
   markerIconSchema,
   wantMarkerIconSchema,

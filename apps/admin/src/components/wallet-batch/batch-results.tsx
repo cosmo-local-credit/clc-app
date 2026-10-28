@@ -133,7 +133,7 @@ export function BatchResults(props: BatchResultsProps) {
   const progress =
     phase === "preparing"
       ? toEncrypt > 0
-        ? `Preparing wallets… ${encrypted} / ${toEncrypt} encrypted · ${ready + failed} / ${wallets.length} registered`
+        ? `Preparing cards… ${encrypted} / ${toEncrypt} encrypted · ${ready + failed} / ${wallets.length} registered`
         : `Registering accounts… ${ready + failed} / ${wallets.length}`
       : renderStage === "preparing"
         ? "Preparing card design…"

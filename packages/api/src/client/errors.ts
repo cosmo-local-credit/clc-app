@@ -128,6 +128,34 @@ export function backendRetryDelayMs(error: unknown, attempt: number, baseMs = 1_
   return baseMs * 2 ** Math.max(0, attempt);
 }
 
+const TRANSIENT_READ_MAX_RETRIES = 2;
+const TRANSIENT_READ_MAX_JITTER_MS = 250;
+
+/** Bounded recovery for idempotent reads after short transport interruptions. */
+export function retryTransientBackendRead(failureCount: number, error: unknown): boolean {
+  if (failureCount >= TRANSIENT_READ_MAX_RETRIES || !(error instanceof BackendApiError)) {
+    return false;
+  }
+  return error.kind === "network" || error.kind === "server" || error.kind === "rate-limited";
+}
+
+/** Exponential retry delay with Retry-After support and stampede-resistant jitter. */
+export function transientBackendReadRetryDelayMs(
+  error: unknown,
+  attempt: number,
+  random: () => number = Math.random,
+): number {
+  return (
+    backendRetryDelayMs(error, attempt) +
+    Math.floor(Math.max(0, Math.min(1, random())) * TRANSIENT_READ_MAX_JITTER_MS)
+  );
+}
+
+export const transientBackendReadQueryPolicy = {
+  retry: retryTransientBackendRead,
+  retryDelay: (attempt: number, error: unknown) => transientBackendReadRetryDelayMs(error, attempt),
+} as const;
+
 /**
  * Parses a `Retry-After` header, which may be seconds or an HTTP date.
  *

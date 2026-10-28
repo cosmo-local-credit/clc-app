@@ -48,7 +48,7 @@ describe("market map HTTP contract", () => {
 
     const url = new URL(fetcher.mock.calls[0]?.[0]);
     expect(url.searchParams.getAll("bbox")).toEqual(["170,-10,180,10", "-180,-10,-170,10"]);
-    expect(url.searchParams.get("zoom")).toBe("5");
+    expect(url.searchParams.get("zoom")).toBe("5.75");
     expect(url.searchParams.getAll("kinds")).toEqual(["voucher", "want", "post"]);
     expect(url.searchParams.getAll("tags")).toEqual(["Food", "Local"]);
     expect(url.searchParams.get("tagMatch")).toBe("all");

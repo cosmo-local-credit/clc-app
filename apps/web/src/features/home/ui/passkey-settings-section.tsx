@@ -44,7 +44,7 @@ export function PasskeySettingsSection({
       badge = { label: t`Linked`, linked: true };
       break;
     case "linked-elsewhere":
-      description = t`Your account has a passkey, but it is not on this device. Your paper card still works here. Adding another passkey is not available yet.`;
+      description = t`Your account has a passkey, but it is not on this device. Your sign-in card still works here. Adding another passkey is not available yet.`;
       badge = { label: t`Linked`, linked: true };
       break;
     case "pending":
@@ -60,7 +60,7 @@ export function PasskeySettingsSection({
         ? null
         : passkey.supported
           ? t`Link your passkey (${platformLabel})`
-          : t`Linking a passkey works in Safari or Chrome on iPhone and Chrome on Android. Your paper wallet keeps working here.`;
+          : t`Linking a passkey works in Safari or Chrome on iPhone and Chrome on Android. Your sign-in card keeps working here.`;
       badge = { label: t`Not linked`, linked: false };
       break;
   }
@@ -88,22 +88,22 @@ export function PasskeySettingsSection({
   let errorText: string | null = null;
   switch (passkey.error?.kind) {
     case "missing-key":
-      errorText = t`This device does not have your paper wallet key. Sign in with or import your paper wallet here, then link a passkey.`;
+      errorText = t`This device does not have the key from your sign-in card. Sign in with your card here, then link a passkey.`;
       break;
     case "identity-mismatch":
       errorText = t`Your wallet or session changed. Sign in again, then retry.`;
       break;
     case "cancelled":
-      errorText = t`Passkey creation was cancelled. Your paper wallet is unchanged.`;
+      errorText = t`Passkey creation was cancelled. Your sign-in card is unchanged.`;
       break;
     case "unconfirmed":
-      errorText = t`Your passkey is still confirming. You can keep using your paper wallet meanwhile.`;
+      errorText = t`Your passkey is still confirming. You can keep using your sign-in card meanwhile.`;
       break;
     case "connection-failed":
-      errorText = t`Your passkey is linked, but the app could not switch to it. Your paper wallet is still connected.`;
+      errorText = t`Your passkey is linked, but the app could not switch to it. Your sign-in card is still connected.`;
       break;
     case "failed":
-      errorText = t`Linking the passkey failed. Your paper wallet is unchanged.`;
+      errorText = t`Linking the passkey failed. Your sign-in card is unchanged.`;
       break;
   }
 

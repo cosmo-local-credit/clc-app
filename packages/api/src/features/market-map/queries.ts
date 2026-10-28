@@ -1,4 +1,5 @@
 import { backendRetryDelayMs, BackendApiError } from "../../client/errors";
+import { canonicalMarketMapZoom } from "@clc/core/features/market-map/logic";
 import { queryOptions } from "@tanstack/react-query";
 import type { MarketMapClient, MarketMapParams } from "./client";
 
@@ -10,6 +11,7 @@ export const marketMapKeys = {
       "market-map",
       {
         ...params,
+        zoom: canonicalMarketMapZoom(params.zoom),
         bounds: params.bounds.map((box) => [box.minLng, box.minLat, box.maxLng, box.maxLat]),
         kinds: [...params.kinds],
         filter: {

@@ -1,10 +1,13 @@
 import { decodeFunctionData } from "viem";
 import { describe, expect, it, vi } from "vite-plus/test";
 import {
+  buildAddVoucherWriterCall,
+  buildDeleteVoucherWriterCall,
   buildVoucherMintCall,
   buildVoucherOwnershipTransferCall,
   giftableTokenMintToAbi,
   giftableTokenOwnershipAbi,
+  giftableTokenWriterAbi,
   toVoucherDeployPayload,
   voucherCreateSchema,
   voucherMintAmountSchema,
@@ -275,6 +278,21 @@ describe("buildVoucherMintCall", () => {
     });
   });
 
+  it("mints to another account when a multisig owner names one", () => {
+    const recipientAddress = "0x9999999999999999999999999999999999999999" as const;
+    const call = buildVoucherMintCall({
+      tokenAddress,
+      ownerAddress,
+      recipientAddress,
+      amountRaw: "1",
+    });
+
+    expect(decodeFunctionData({ abi: giftableTokenMintToAbi, data: call.data })).toEqual({
+      functionName: "mintTo",
+      args: [recipientAddress, 1n],
+    });
+  });
+
   it("rejects a non-integer or non-positive raw amount", () => {
     for (const amountRaw of ["0", "-1", "1.5", "", "1e6"]) {
       expect(() => buildVoucherMintCall({ tokenAddress, ownerAddress, amountRaw })).toThrow();
@@ -295,5 +313,31 @@ describe("buildVoucherOwnershipTransferCall", () => {
       functionName: "transferOwnership",
       args: [newOwnerAddress],
     });
+  });
+});
+
+describe("voucher writers", () => {
+  const tokenAddress = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
+  const writerAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" as const;
+
+  it("adds and deletes a writer on the voucher", () => {
+    const added = buildAddVoucherWriterCall({ tokenAddress, writerAddress });
+    expect(decodeFunctionData({ abi: giftableTokenWriterAbi, data: added.data })).toEqual({
+      functionName: "addWriter",
+      args: [writerAddress],
+    });
+    const removed = buildDeleteVoucherWriterCall({ tokenAddress, writerAddress });
+    expect(
+      decodeFunctionData({ abi: giftableTokenWriterAbi, data: removed.data }).functionName,
+    ).toBe("deleteWriter");
+  });
+
+  it("refuses the zero address", () => {
+    expect(() =>
+      buildAddVoucherWriterCall({
+        tokenAddress,
+        writerAddress: "0x0000000000000000000000000000000000000000",
+      }),
+    ).toThrow(/writer must be a non-zero address/);
   });
 });

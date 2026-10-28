@@ -36,7 +36,7 @@ import { decryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wa
 import { SectionLabel } from "#/components/admin/section-heading";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { useAdminSignOut } from "../admin-session";
 import { type PasskeyUnsupportedReason, usePasskeySupport } from "../passkey-support";
 import { useAdminPasskeySignin, useAdminPrivateKeySignin } from "../use-admin-signin";
@@ -109,7 +109,7 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
       setEncryptedKey(null);
       await signInWithKey(key);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not decrypt this paper wallet.");
+      setError(err instanceof Error ? err.message : "Could not unlock this sign-in card.");
     }
   }
 
@@ -165,14 +165,13 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
 
             {encryptedKey ? (
               <form onSubmit={(event) => void handleDecrypt(event)} className="space-y-3">
-                <SectionLabel>Wallet password</SectionLabel>
-                <Input
-                  type="password"
+                <SectionLabel>Card password</SectionLabel>
+                <PasswordInput
                   autoComplete="off"
                   autoFocus
                   value={passphrase}
                   onChange={(event) => setPassphrase(event.target.value)}
-                  aria-label="Paper wallet password"
+                  aria-label="Sign-in card password"
                   aria-invalid={!!error}
                 />
                 <Button type="submit" className="w-full" disabled={!passphrase || busy}>
@@ -216,12 +215,12 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
                   <div className="flex items-center gap-3">
                     <span className="bg-border h-px flex-1" />
                     <span className="text-muted-foreground font-mono text-[0.6875rem] tracking-[0.14em] uppercase">
-                      or paper wallet
+                      or sign-in card
                     </span>
                     <span className="bg-border h-px flex-1" />
                   </div>
                 ) : (
-                  <SectionLabel>Paper wallet</SectionLabel>
+                  <SectionLabel>Sign-in card</SectionLabel>
                 )}
 
                 <PaperWalletReader onDecoded={consumePayload} disabled={busy} />
@@ -287,7 +286,7 @@ export function signinErrorMessage(error: unknown): string {
       case "forbidden":
         return /reject/i.test(error.description)
           ? "This account has been rejected and cannot sign in."
-          : "This account is still awaiting approval by a superadmin.";
+          : "This account is still awaiting approval by an administrator.";
       case "validation":
         return "The signature was rejected. Check that this is the right wallet, then try again.";
       default:

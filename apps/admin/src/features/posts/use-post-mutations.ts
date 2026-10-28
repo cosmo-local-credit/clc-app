@@ -16,7 +16,7 @@ import { clcApi } from "#/lib/api";
  *
  * All four go through `@clc/api`'s settlement helpers, so the invalidation
  * matrix is decided in one place for both apps rather than twice. Nothing is
- * optimistic: a superadmin's edit preserves status and a create publishes
+ * optimistic: an administrator's edit preserves status and a create publishes
  * immediately, and both facts come back in the response.
  *
  * `previousStatus` is what the screen loaded, and it decides whether the public

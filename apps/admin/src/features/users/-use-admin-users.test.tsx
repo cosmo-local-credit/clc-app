@@ -7,11 +7,13 @@ import type { AdminUser, AdminUserPage } from "@clc/api/features/admin/client";
 import { adminKeys } from "@clc/api/features/admin/queries";
 
 const approveUser = vi.fn();
+const updateUserRole = vi.fn();
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
     admin: {
       approveUser: (address: string) => approveUser(address),
+      updateUserRole: (address: string, role: string) => updateUserRole(address, role),
       rejectUser: vi.fn(),
       updateUserLimits: vi.fn(),
       listUsers: vi.fn(),
@@ -19,7 +21,7 @@ vi.mock("#/lib/api", () => ({
   },
 }));
 
-const { useApproveUser } = await import("./use-admin-users");
+const { useApproveUser, useUpdateUserRole } = await import("./use-admin-users");
 
 const PENDING_ADDRESS = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
 const OTHER_ADDRESS = "0x4D478F0e1c1b0b3d0F5b8d2cbde4581dB6369abc";
@@ -64,8 +66,33 @@ function wrapper({ children }: { children: ReactNode }) {
 
 beforeEach(() => {
   approveUser.mockReset();
+  updateUserRole.mockReset();
   queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+});
+
+describe("useUpdateUserRole cache writes", () => {
+  it("updates detail and invalidates every role-filtered account page", async () => {
+    const existing = user(PENDING_ADDRESS, "APPROVED");
+    const promoted = { ...existing, role: "ADMIN" as const };
+    queryClient.setQueryData(adminKeys.user(PENDING_ADDRESS), existing);
+    queryClient.setQueryData(
+      adminKeys.users({ perPage: 25, roles: ["ADMIN", "SUPERADMIN"] }),
+      page(),
+    );
+    updateUserRole.mockResolvedValue(promoted);
+
+    const { result } = renderHook(() => useUpdateUserRole(), { wrapper });
+    result.current.mutate({ address: PENDING_ADDRESS, role: "ADMIN" });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(updateUserRole).toHaveBeenCalledWith(PENDING_ADDRESS, "ADMIN");
+    expect(queryClient.getQueryData(adminKeys.user(PENDING_ADDRESS))).toEqual(promoted);
+    expect(
+      queryClient.getQueryState(adminKeys.users({ perPage: 25, roles: ["ADMIN", "SUPERADMIN"] }))
+        ?.isInvalidated,
+    ).toBe(true);
   });
 });
 

@@ -679,3 +679,193 @@ export function buildTransferPoolOwnershipCalls(
     }),
   }));
 }
+
+/**
+ * SwapPool seal bits. Each one locks the matching setter. `seal` ORs them into
+ * `sealState`, so a bit already set reverts `AlreadyLocked`.
+ *
+ * Fee-address seal also reverts when `feeAddress` is still zero. The builder
+ * cannot see that, so the caller reads `feeAddress` before offering the bit.
+ */
+export const POOL_SEAL_FEE = 1;
+export const POOL_SEAL_FEE_ADDRESS = 2;
+export const POOL_SEAL_QUOTER = 4;
+export const POOL_SEAL_REGISTRY = 8;
+export const POOL_SEAL_LIMITER = 16;
+const POOL_SEAL_MAX = 31;
+
+export const swapPoolSealAbi = parseAbi([
+  "function seal(uint8 state) returns (uint8)",
+  "function sealState() view returns (uint8)",
+  "function isSealed(uint8 state) view returns (bool)",
+]);
+
+export function buildSealPoolCall(input: {
+  poolAddress: `0x${string}`;
+  state: number;
+}): CaliburCall {
+  assertContractAddress(input.poolAddress, "pool");
+  if (!Number.isInteger(input.state) || input.state < 1 || input.state > POOL_SEAL_MAX) {
+    throw new Error("Pool seal state must be an integer from 1 to 31.");
+  }
+  return {
+    to: input.poolAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: swapPoolSealAbi,
+      functionName: "seal",
+      args: [input.state],
+    }),
+  };
+}
+
+/**
+ * Pair fees live in a private mapping. `getFee` returns the override when it is
+ * non-zero and the default otherwise, so storing zero does not create an
+ * override. A steward who wants the default calls `removePairFee`.
+ */
+export const feePolicyPairFeeAbi = parseAbi([
+  "function setPairFee(address tokenIn, address tokenOut, uint256 fee)",
+  "function removePairFee(address tokenIn, address tokenOut)",
+  "function getFee(address tokenIn, address tokenOut) view returns (uint256)",
+]);
+
+export function buildSetPairFeeCall(input: {
+  feePolicyAddress: `0x${string}`;
+  tokenIn: `0x${string}`;
+  tokenOut: `0x${string}`;
+  feePpm: string;
+}): CaliburCall {
+  assertContractAddress(input.feePolicyAddress, "fee policy");
+  assertContractAddress(input.tokenIn, "token in");
+  assertContractAddress(input.tokenOut, "token out");
+  if (input.tokenIn.toLowerCase() === input.tokenOut.toLowerCase()) {
+    throw new Error("Pair fee tokens must be different.");
+  }
+  const fee = parseAmount(input.feePpm);
+  if (fee <= 0n) {
+    throw new Error("A pair fee of zero is the default. Remove the pair fee instead.");
+  }
+  if (fee > BigInt(POOL_FEE_PPM_MAX)) throw new Error("Pair fee cannot exceed 100%.");
+  return {
+    to: input.feePolicyAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: feePolicyPairFeeAbi,
+      functionName: "setPairFee",
+      args: [input.tokenIn, input.tokenOut, fee],
+    }),
+  };
+}
+
+export function buildRemovePairFeeCall(input: {
+  feePolicyAddress: `0x${string}`;
+  tokenIn: `0x${string}`;
+  tokenOut: `0x${string}`;
+}): CaliburCall {
+  assertContractAddress(input.feePolicyAddress, "fee policy");
+  assertContractAddress(input.tokenIn, "token in");
+  assertContractAddress(input.tokenOut, "token out");
+  return {
+    to: input.feePolicyAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: feePolicyPairFeeAbi,
+      functionName: "removePairFee",
+      args: [input.tokenIn, input.tokenOut],
+    }),
+  };
+}
+
+/** OracleQuoter.MIN_MULTIPLIER / MAX_MULTIPLIER. 900_000 is 0.9x; parity is the ceiling. */
+export const ORACLE_MIN_MULTIPLIER = 900_000;
+export const ORACLE_MAX_MULTIPLIER = POOL_FEE_PPM_MAX;
+
+export const oracleQuoterPolicyAbi = parseAbi([
+  "function setMaxStaleness(uint256 maxStaleness)",
+  "function setMultiplier(uint256 multiplier)",
+  "function removeOracle(address token)",
+  "function maxStaleness() view returns (uint256)",
+  "function multiplier() view returns (uint256)",
+  "function oracleMaxStaleness(address token) view returns (uint256)",
+  "function oracles(address token) view returns (address)",
+]);
+
+/** Zero is the contract's "no extra bound" and is stored as written. */
+export function buildSetOracleMaxStalenessCall(input: {
+  quoterAddress: `0x${string}`;
+  maxStalenessSeconds: string;
+}): CaliburCall {
+  assertContractAddress(input.quoterAddress, "quoter");
+  return {
+    to: input.quoterAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: oracleQuoterPolicyAbi,
+      functionName: "setMaxStaleness",
+      args: [parseAmount(input.maxStalenessSeconds)],
+    }),
+  };
+}
+
+export function buildSetOracleMultiplierCall(input: {
+  quoterAddress: `0x${string}`;
+  multiplierPpm: string;
+}): CaliburCall {
+  assertContractAddress(input.quoterAddress, "quoter");
+  const multiplier = parseAmount(input.multiplierPpm);
+  if (multiplier < BigInt(ORACLE_MIN_MULTIPLIER) || multiplier > BigInt(ORACLE_MAX_MULTIPLIER)) {
+    throw new Error("Oracle multiplier must be between 0.9x and 1x.");
+  }
+  return {
+    to: input.quoterAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: oracleQuoterPolicyAbi,
+      functionName: "setMultiplier",
+      args: [multiplier],
+    }),
+  };
+}
+
+export function buildRemoveOracleCall(input: {
+  quoterAddress: `0x${string}`;
+  tokenAddress: `0x${string}`;
+}): CaliburCall {
+  assertContractAddress(input.quoterAddress, "quoter");
+  assertContractAddress(input.tokenAddress, "token");
+  return {
+    to: input.quoterAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: oracleQuoterPolicyAbi,
+      functionName: "removeOracle",
+      args: [input.tokenAddress],
+    }),
+  };
+}
+
+/**
+ * A holder cap on the limiter. Zero is a real cap: the limiter then accepts no
+ * further balance for that holder. Distinct from the pool's own deposit cap,
+ * which passes the pool as the holder.
+ */
+export function buildSetHolderLimitCall(input: {
+  limiterAddress: `0x${string}`;
+  tokenAddress: `0x${string}`;
+  holderAddress: `0x${string}`;
+  limitRaw: string;
+}): CaliburCall {
+  assertContractAddress(input.limiterAddress, "limiter");
+  assertContractAddress(input.tokenAddress, "token");
+  assertContractAddress(input.holderAddress, "holder");
+  return {
+    to: input.limiterAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: limiterSetLimitForAbi,
+      functionName: "setLimitFor",
+      args: [input.tokenAddress, input.holderAddress, parseAmount(input.limitRaw)],
+    }),
+  };
+}

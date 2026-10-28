@@ -220,9 +220,9 @@ describe("AllVouchersPage", () => {
     renderPage();
 
     expect(await screen.findByText("Voucher 5")).toBeTruthy();
+    await waitFor(() => expect(tokenCalls).toBe(2), { timeout: 2_000 });
     expect(screen.getByText("12.34")).toBeTruthy();
-    fireEvent.click(within(screen.getByRole("alert")).getByRole("button", { name: /try again/i }));
-    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("retries an issued-list failure without filing any balance", async () => {
@@ -239,11 +239,12 @@ describe("AllVouchersPage", () => {
     vi.stubGlobal("fetch", fetcher);
     renderPage();
 
-    expect(await screen.findByText("Couldn't load vouchers.")).toBeTruthy();
-    expect(screen.queryByText("Voucher 6")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
-    const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
+    const holdings = within(
+      await screen.findByRole("region", { name: "Holdings" }, { timeout: 2_000 }),
+    );
     expect(holdings.getByText("Voucher 6")).toBeTruthy();
+    expect(issuedCalls).toBe(2);
+    expect(screen.queryByText("Couldn't load vouchers.")).toBeNull();
   });
 
   it("drains every issued page before filing balances", async () => {
