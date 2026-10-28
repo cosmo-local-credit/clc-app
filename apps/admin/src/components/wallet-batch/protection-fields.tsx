@@ -1,6 +1,6 @@
 import { SectionLabel } from "#/components/admin/section-heading";
-import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
+import { PasswordInput } from "#/components/ui/password-input";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 
 export type ProtectionDraft = {
@@ -57,9 +57,8 @@ export function ProtectionFields({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="paper-wallet-passphrase">Password</Label>
-              <Input
+              <PasswordInput
                 id="paper-wallet-passphrase"
-                type="password"
                 autoComplete="new-password"
                 value={value.passphrase}
                 onChange={(event) => onChange({ ...value, passphrase: event.target.value })}
@@ -67,9 +66,8 @@ export function ProtectionFields({
             </div>
             <div className="space-y-2">
               <Label htmlFor="paper-wallet-confirmation">Confirm password</Label>
-              <Input
+              <PasswordInput
                 id="paper-wallet-confirmation"
-                type="password"
                 autoComplete="new-password"
                 value={value.confirmation}
                 onChange={(event) => onChange({ ...value, confirmation: event.target.value })}
