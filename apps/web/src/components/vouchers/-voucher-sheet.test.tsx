@@ -86,7 +86,7 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
 }));
 
 vi.mock("#/features/reviews/hooks/use-voucher-reviews", () => ({
-  useVoucherReviewSummary: () => ({ summary: mocks.reviewSummary }),
+  useReviewSummary: () => ({ summary: mocks.reviewSummary }),
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({

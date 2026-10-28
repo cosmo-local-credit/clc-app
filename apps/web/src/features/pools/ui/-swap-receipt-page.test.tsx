@@ -31,6 +31,11 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({ useOtxTracking }));
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({ useMarketVoucherDetail }));
 vi.mock("#/features/pools/hooks/use-pool-swap-settlement", () => ({ usePoolSwapSettlement }));
+vi.mock("#/components/reviews/redemption-review-prompt", () => ({
+  PoolSwapReviewPrompt: ({ address }: { address: string }) => (
+    <div data-testid="pool-swap-review-prompt">{address}</div>
+  ),
+}));
 
 vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => ({ trackRelay }),
@@ -95,6 +100,17 @@ afterEach(() => {
 });
 
 describe("SwapReceiptPage", () => {
+  it("offers a Pool review only on a confirmed receipt", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+    const view = render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+    expect(screen.getByTestId("pool-swap-review-prompt").textContent).toBe(POOL_ADDRESS);
+    view.unmount();
+
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+    expect(screen.queryByTestId("pool-swap-review-prompt")).toBeNull();
+  });
+
   it("shares the swap summary with the pool name and explorer link", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "share", { configurable: true, value: share });

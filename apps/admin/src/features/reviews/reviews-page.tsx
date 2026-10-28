@@ -15,6 +15,7 @@ import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
 import { Button } from "#/components/ui/button";
+import { Badge } from "#/components/ui/badge";
 import { clcApi } from "#/lib/api";
 import { errorMessage } from "#/lib/data-state";
 import { formatDateTime } from "#/lib/format";
@@ -51,18 +52,38 @@ export function ReviewsPage({ search }: { search: ReviewSearch }) {
 
   const columns: Array<ColumnDef<AdminReviewFlag>> = [
     {
-      id: "voucher",
-      header: "Voucher",
-      cell: ({ row }) => (
-        <Link
-          to="/vouchers/$address"
-          params={{ address: row.original.voucherAddress }}
-          search={{ tab: "offerings" }}
-          className="font-data text-xs underline-offset-4 hover:underline"
-        >
-          {formatVoucherAddress(row.original.voucherAddress as `0x${string}`)}
-        </Link>
-      ),
+      id: "resource",
+      header: "Resource",
+      cell: ({ row }) => {
+        const flag = row.original;
+        const address = flag.resourceAddress as `0x${string}`;
+        return (
+          <span className="flex items-center gap-2">
+            <Badge variant="outline" className="uppercase">
+              {flag.resourceKind}
+            </Badge>
+            {flag.resourceKind === "pool" ? (
+              <Link
+                to="/pools/$address"
+                params={{ address }}
+                search={{ tab: "vouchers" }}
+                className="font-data text-xs underline-offset-4 hover:underline"
+              >
+                {formatVoucherAddress(address)}
+              </Link>
+            ) : (
+              <Link
+                to="/vouchers/$address"
+                params={{ address }}
+                search={{ tab: "offerings" }}
+                className="font-data text-xs underline-offset-4 hover:underline"
+              >
+                {formatVoucherAddress(address)}
+              </Link>
+            )}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "reason",

@@ -13,7 +13,9 @@ const api = state;
 vi.mock("#/lib/api", () => ({ clcApi: { admin: state } }));
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => state.navigate,
-  Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <span data-to={to}>{children}</span>
+  ),
 }));
 vi.mock("sonner", () => ({ toast: { success: state.success, error: state.error } }));
 
@@ -26,6 +28,8 @@ beforeEach(() => {
       {
         id: 7,
         reviewId: 3,
+        resourceKind: "voucher",
+        resourceAddress: "0x0000000000000000000000000000000000000001",
         voucherAddress: "0x0000000000000000000000000000000000000001",
         reason: "Abusive language",
         stars: 4,
@@ -83,12 +87,45 @@ describe("ReviewsPage", () => {
     await waitFor(() => expect(state.error).toHaveBeenCalledWith("moderation unavailable"));
   });
 
+  it("identifies Pool reports and links to the Pool resource", async () => {
+    api.listReviewNotifications.mockResolvedValue({
+      notifications: [
+        {
+          id: 9,
+          reviewId: 4,
+          resourceKind: "pool",
+          resourceAddress: "0x0000000000000000000000000000000000000002",
+          poolAddress: "0x0000000000000000000000000000000000000002",
+          reason: "Spam",
+          stars: 2,
+          comment: "Current",
+          reportedStars: 1,
+          reportedComment: "Reported",
+          createdAt: "2026-10-25T10:00:00Z",
+        },
+      ],
+      next: null,
+    });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ReviewsPage search={{}} />
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByText("pool")).toBeTruthy();
+    expect(screen.getByText("0x000000…000002").closest("[data-to]")?.getAttribute("data-to")).toBe(
+      "/pools/$address",
+    );
+  });
+
   it("navigates between the first and older review pages", async () => {
     api.listReviewNotifications.mockResolvedValue({
       notifications: [
         {
           id: 7,
           reviewId: 3,
+          resourceKind: "voucher",
+          resourceAddress: "0x0000000000000000000000000000000000000001",
           voucherAddress: "0x0000000000000000000000000000000000000001",
           reason: "Spam",
           stars: 4,
