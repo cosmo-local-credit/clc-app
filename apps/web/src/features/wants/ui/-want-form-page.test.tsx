@@ -166,7 +166,7 @@ beforeEach(() => {
 });
 
 describe("Want form", () => {
-  it("prefills the complete saved profile location and requires a public contact method", async () => {
+  it("prefills the complete saved profile location and saves without contact information", async () => {
     renderForm();
 
     expect(screen.getByTestId("location").textContent).toBe("Nairobi Market");
@@ -181,8 +181,18 @@ describe("Want form", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
 
-    expect((await screen.findByRole("alert")).textContent).toBe("Check the Want details.");
-    expect(mocks.create).not.toHaveBeenCalled();
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+    expect(mocks.create.mock.calls[0]?.[0]).toMatchObject({
+      contactText: null,
+      shareEmail: false,
+      sharePhone: false,
+    });
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(
+      screen.getByText(
+        "Contact information is optional. Any contact details you select are visible to signed-in users. The Want's map pin and exact coordinates stay public.",
+      ),
+    ).toBeTruthy();
   });
 
   it("saves the selected location, profile contact permission, and default marker", async () => {

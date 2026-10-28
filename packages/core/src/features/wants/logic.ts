@@ -62,13 +62,6 @@ export const wantWriteSchema = z
     tags: z.array(z.string().trim().min(1)).max(12),
   })
   .superRefine((value, context) => {
-    if (!value.shareEmail && !value.sharePhone && !value.contactText?.trim()) {
-      context.addIssue({
-        code: "custom",
-        path: ["contactText"],
-        message: "Choose email, phone, or enter contact instructions.",
-      });
-    }
     if (value.expiresAt && new Date(value.expiresAt) <= new Date(value.startsAt)) {
       context.addIssue({
         code: "custom",
