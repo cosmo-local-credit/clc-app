@@ -14,15 +14,19 @@ import {
 } from "#/components/ui/sheet";
 import { BackChevron } from "#/components/wallet";
 import { useCatalogDetail } from "../hooks/use-catalog-detail";
+import type { CatalogEditor } from "../hooks/use-catalog-editor";
 import { CatalogForm } from "./catalog-form";
 import { CatalogMembers } from "./catalog-members";
 import { CatalogShareButton } from "./catalog-share-button";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 
-export function CatalogDetailPage({ id }: { id: string }) {
+export function CatalogDetailPage({ id, editor }: { id: string; editor?: CatalogEditor }) {
   const { t } = useLingui();
   const { query, catalog, owner } = useCatalogDetail(id);
-  const [editing, setEditing] = useState(false);
+  const [localEditing, setLocalEditing] = useState(false);
+  const editing = editor?.editing ?? localEditing;
+  const openEditor = editor?.open ?? (() => setLocalEditing(true));
+  const closeEditor = editor?.close ?? (() => setLocalEditing(false));
   return (
     <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-bottom-nav">
       <BackChevron label={t`Catalogs`} to="/market" search={{ scope: "catalogs" }} />
@@ -83,7 +87,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
           ) : null}
           {owner ? (
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" tap onClick={() => setEditing(true)}>
+              <Button variant="outline" tap onClick={openEditor}>
                 <Trans>Edit catalog</Trans>
               </Button>
             </div>
@@ -91,7 +95,10 @@ export function CatalogDetailPage({ id }: { id: string }) {
           <CatalogMembers catalogId={id} kind="pool" canEdit={owner} />
           <CatalogMembers catalogId={id} kind="voucher" canEdit={owner} />
           {owner ? (
-            <SheetRoot open={editing} onOpenChange={setEditing}>
+            <SheetRoot
+              open={editing}
+              onOpenChange={(open) => (open ? openEditor() : closeEditor())}
+            >
               <SheetPortal>
                 <SheetBackdrop />
                 <SheetContent>
@@ -101,9 +108,7 @@ export function CatalogDetailPage({ id }: { id: string }) {
                     </SheetTitle>
                   </SheetHeader>
                   <div className="overflow-y-auto px-6 pb-8">
-                    {editing ? (
-                      <CatalogForm catalog={catalog} onSaved={() => setEditing(false)} />
-                    ) : null}
+                    {editing ? <CatalogForm catalog={catalog} onSaved={closeEditor} /> : null}
                   </div>
                 </SheetContent>
               </SheetPortal>

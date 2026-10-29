@@ -1,8 +1,8 @@
 import type { Catalog, CatalogKind } from "@clc/core/features/catalogs/logic";
 import { BackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { RiAddLine, RiFileCopyLine, RiShareLine } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
@@ -15,6 +15,7 @@ import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskCanvas, DeskRowList, DeskSection, DeskTitle, DeskTitleRow } from "#/desktop/ui/page";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { useCatalogDetail } from "#/features/catalogs/hooks/use-catalog-detail";
+import { type CatalogEditor, useCatalogEditor } from "#/features/catalogs/hooks/use-catalog-editor";
 import { useCatalogForm } from "#/features/catalogs/hooks/use-catalog-form";
 import { useCatalogMembers } from "#/features/catalogs/hooks/use-catalog-members";
 import { useCatalogShare } from "#/features/catalogs/hooks/use-catalog-share";
@@ -27,42 +28,12 @@ import { CatalogMemberPickerDesk } from "./catalog-member-picker-desk";
  * link to it opens it; closing a link that arrived with it open drops the param
  * and lands on the catalog itself.
  */
-export function CatalogDesk({ id }: { id: string }) {
+export function CatalogDesk({ id, editor }: { id: string; editor?: CatalogEditor }) {
   const { t } = useLingui();
   const { query, catalog, owner } = useCatalogDetail(id);
-  const navigate = useNavigate();
-  const router = useRouter();
-  const search = useSearch({ strict: false }) as { edit?: unknown };
-  const editing = search.edit === true;
-  // Opening pushes one history entry; close pops it, or on a direct link replaces it.
-  const pushed = useRef(false);
-  useEffect(() => {
-    if (!editing) pushed.current = false;
-  }, [editing]);
+  const localEditor = useCatalogEditor();
+  const { editing, open: openEditor, close: closeEditor } = editor ?? localEditor;
   useDeskTrailLabel(catalog?.name);
-
-  function openEditor() {
-    pushed.current = true;
-    void navigate({
-      to: ".",
-      search: (previous) => ({ ...previous, edit: true }),
-      resetScroll: false,
-    });
-  }
-
-  function closeEditor() {
-    if (pushed.current) {
-      pushed.current = false;
-      router.history.back();
-      return;
-    }
-    void navigate({
-      to: ".",
-      search: (previous) => ({ ...previous, edit: undefined }),
-      replace: true,
-      resetScroll: false,
-    });
-  }
 
   const page = (
     <DeskCanvas className="max-w-[1164px]">

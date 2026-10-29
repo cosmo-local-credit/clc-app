@@ -2,6 +2,7 @@ import { BackendApiError } from "@clc/api/client/errors";
 import { saveCatalogMutationOptions } from "@clc/api/features/catalogs/queries";
 import { catalogWriteSchema, type Catalog } from "@clc/core/features/catalogs/logic";
 import type { LocationInput } from "@clc/core/features/location/logic";
+import { isHttpUrl } from "@clc/core/lib/contact";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,15 +34,17 @@ const formSchema = z.object({
 type CatalogFormValues = z.input<typeof formSchema>;
 
 /**
- * What the catalog form keeps across a phone/desktop view swap: the typed
- * fields. Not the picture, which is a file in flight or a copied image the
- * person can choose again.
+ * Keep completed image URLs and removals along with the written fields. Local
+ * upload previews never leave the view that owns the upload.
  */
-type CatalogDraft = Omit<CatalogFormValues, "imageUrl">;
+type CatalogDraft = Omit<CatalogFormValues, "imageUrl"> &
+  Pick<Partial<CatalogFormValues>, "imageUrl">;
 
 function catalogDraftOf(values: CatalogFormValues): CatalogDraft {
-  const { imageUrl: _imageUrl, ...fields } = values;
-  return fields;
+  const { imageUrl, ...fields } = values;
+  return imageUrl == null || imageUrl === "" || isHttpUrl(imageUrl)
+    ? { ...fields, imageUrl }
+    : fields;
 }
 
 /** Form state and save for creating or editing a catalog. */
@@ -61,12 +64,9 @@ export function useCatalogForm({
   const [error, setError] = useState<string | null>(null);
   const tagsQuery = useTokenTags();
   const { address: account } = useAuthStatus();
-  // Create only. An edit opens inside a sheet (phone) or behind `?edit`
-  // (desktop), and neither view's open state follows the other across a swap,
-  // so there is no editor on the far side to hand a draft to.
   const viewDraft = useViewDraft<CatalogDraft>({
-    scope: "catalog-create",
-    account: catalog ? undefined : account,
+    scope: catalog ? `catalog-edit:${catalog.id}` : "catalog-create",
+    account,
   });
   const restored = viewDraft.restored;
   const defaultValues: CatalogFormValues = {
