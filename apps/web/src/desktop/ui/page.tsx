@@ -1,7 +1,15 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 import { SectionHeading } from "#/components/ui/section-heading";
 import { cn } from "#/lib/utils";
+
+/**
+ * The 2px primary edge on the start side of a selected row, flipped in RTL.
+ * `DESK_SELECTED` adds the 7% tint; the sidebar supplies its own fill.
+ */
+export const DESK_SELECTED_EDGE =
+  "shadow-[inset_2px_0_0_var(--color-primary)] rtl:shadow-[inset_-2px_0_0_var(--color-primary)]";
+export const DESK_SELECTED = `bg-primary/[0.07] ${DESK_SELECTED_EDGE}`;
 
 /** Page title. The same 1.75rem lock as the phone. */
 export function DeskTitle({ children }: { children: ReactNode }) {
@@ -41,19 +49,36 @@ export function DeskTitleRow({
   title,
   meta,
   actions,
+  wrap = false,
   className,
 }: {
   title: ReactNode;
   /** One line under the title: an address, a place, a count. */
   meta?: ReactNode;
   actions?: ReactNode;
+  /**
+   * Detail pages: let a long name and its meta line wrap, so the value a
+   * person opened the page to verify is never cut. Browsing rows truncate.
+   */
+  wrap?: boolean;
   className?: string;
 }) {
   return (
     <div className={cn("flex min-w-0 items-center gap-3", className)}>
       <div className="flex min-w-0 flex-col gap-1">
-        <DeskTitle>{title}</DeskTitle>
-        {meta ? <div className="truncate text-xs text-muted-foreground">{meta}</div> : null}
+        <div className={cn("min-w-0", wrap && "[overflow-wrap:anywhere]")}>
+          <DeskTitle>{title}</DeskTitle>
+        </div>
+        {meta ? (
+          <div
+            className={cn(
+              "text-xs text-muted-foreground",
+              wrap ? "[overflow-wrap:anywhere]" : "truncate",
+            )}
+          >
+            {meta}
+          </div>
+        ) : null}
       </div>
       {actions ? <div className="ms-auto flex shrink-0 items-center gap-2">{actions}</div> : null}
     </div>
@@ -65,7 +90,11 @@ export function deskSectionLinkClass(className?: string) {
   return cn("text-xs font-semibold text-primary hover:underline", className);
 }
 
-/** Reading pages stop at 1200px. Tables and the market pass `full`. */
+/**
+ * Reading pages stop at 1200px. Tables and the market pass `full`. Gutters are
+ * 24px while the canvas is under 56rem wide and 32px once it is ampler. The
+ * desktop shell and `DeskSplit` are the size containers these queries read.
+ */
 export function DeskCanvas({
   children,
   width = "read",
@@ -78,7 +107,7 @@ export function DeskCanvas({
   return (
     <div
       className={cn(
-        "grid min-w-0 content-start gap-6 px-8 pt-7 pb-10",
+        "grid min-w-0 content-start gap-6 px-6 pt-7 pb-10 @4xl:px-8",
         width === "read" && "w-full max-w-[1264px]",
         className,
       )}
@@ -92,29 +121,74 @@ export function DeskPanel({ children, className }: { children: ReactNode; classN
   return <div className={cn("border border-border bg-card p-4", className)}>{children}</div>;
 }
 
+/** The canvas width, in rem, at which the side column docks. Keep in step with `@min-[63rem]` below. */
+const DETAIL_DOCK_REM = 63;
+
 /**
  * A detail page: the main column, and a 360px column for the panel that
- * sits beside it (swap, publish, a summary). The side column sticks.
+ * sits beside it (swap, publish, a summary). The side column docks and sticks
+ * only when the canvas is at least 63rem wide, which leaves the main column
+ * 560px or more; below that the side panel stacks under (or, with
+ * `stacked="side-first"`, over) the main column at full width.
+ *
+ * Stacked, the DOM order is the visual order, so keyboard and screen-reader
+ * order match what is on screen. The columns are keyed, so a resize that
+ * flips the order moves them without remounting their state.
  */
 export function DeskDetail({
   main,
   side,
+  stacked = "main-first",
   className,
 }: {
   main: ReactNode;
   side: ReactNode;
+  /** Where the side panel goes when there is no room to dock it. */
+  stacked?: "main-first" | "side-first";
   className?: string;
 }) {
+  const frame = useRef<HTMLDivElement>(null);
+  const [docked, setDocked] = useState(true);
+
+  useLayoutEffect(() => {
+    const element = frame.current;
+    if (!element) return;
+    const measure = () => {
+      const width = element.clientWidth;
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      // A width of 0 means not laid out (hidden, or jsdom): keep the docked order.
+      setDocked(width === 0 || width >= DETAIL_DOCK_REM * rem);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const mainColumn = (
+    <div key="main" className="grid min-w-0 content-start gap-6">
+      {main}
+    </div>
+  );
+  const sideColumn = (
+    <div
+      key="side"
+      className="grid min-w-0 content-start gap-4 @min-[63rem]:sticky @min-[63rem]:top-7"
+    >
+      {side}
+    </div>
+  );
+
   return (
     <div
+      ref={frame}
       className={cn(
-        "grid min-w-0 grid-cols-[minmax(0,1fr)_360px] items-start gap-6 px-8 pt-7 pb-10",
+        "grid min-w-0 grid-cols-1 items-start gap-6 px-6 pt-7 pb-10 @4xl:px-8 @min-[63rem]:grid-cols-[minmax(0,1fr)_360px]",
         "w-full max-w-[1324px]",
         className,
       )}
     >
-      <div className="grid min-w-0 content-start gap-6">{main}</div>
-      <div className="sticky top-7 grid min-w-0 content-start gap-4">{side}</div>
+      {stacked === "side-first" && !docked ? [sideColumn, mainColumn] : [mainColumn, sideColumn]}
     </div>
   );
 }
@@ -153,7 +227,7 @@ export function DeskRow({
     <div
       className={cn(
         "flex min-h-14 min-w-0 items-center gap-3 px-3.5 py-2.5",
-        selected && "bg-primary/[0.07] shadow-[inset_2px_0_0_var(--color-primary)]",
+        selected && DESK_SELECTED,
         className,
       )}
     >
