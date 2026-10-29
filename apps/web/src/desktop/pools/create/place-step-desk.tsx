@@ -15,9 +15,14 @@ import { DeskPhoneField } from "#/desktop/ui/phone-field";
 import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { DeskTitle } from "#/desktop/ui/page";
+import { cn } from "#/lib/utils";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
-import { CreatePoolFormFoot, type CreatePoolController } from "./create-pool-parts";
+import {
+  CreatePoolFormFoot,
+  type CreatePoolController,
+  FIELDS_CLEAR_OF_FOOT,
+} from "./create-pool-parts";
 
 /** Step 2: logo, location, tags, contact and terms. */
 export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
@@ -25,9 +30,9 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
   const { form, validators, tagsQuery } = pool;
 
   return (
-    <div className="grid min-w-0 content-start gap-[18px]">
+    <div className={cn("@container grid min-w-0 content-start gap-[18px]", FIELDS_CLEAR_OF_FOOT)}>
       <DeskTitle>
-        <Trans>Where and what for</Trans>
+        <Trans>Location and tags</Trans>
       </DeskTitle>
 
       {isStorageConfigured ? (
@@ -52,7 +57,7 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
             const error = getFieldError(field.state.meta.errors);
             return (
               <LocationPicker
-                label={t`Pool Location`}
+                label={t`Location`}
                 value={field.state.value}
                 onChange={(value) => field.handleChange(value)}
                 markerResource="pool"
@@ -68,7 +73,7 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
         {(field) => (
           <div className="grid gap-1.5">
             <span className="font-medium text-sm">
-              <Trans>Pool Tags</Trans>
+              <Trans>Tags</Trans>
             </span>
             {tagsQuery.isPending ? (
               <p className="text-muted-foreground text-xs">
@@ -108,11 +113,11 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
 
       <PublicContactWarning />
 
-      <div className="grid grid-cols-2 items-start gap-4">
+      <div className="grid grid-cols-1 items-start gap-[18px] @min-[30rem]:grid-cols-2 @min-[30rem]:gap-4">
         <form.Field name="email" validators={validators.email}>
           {(field) => (
             <Field
-              label={t`Contact Email`}
+              label={t`Contact email`}
               htmlFor="pool-email"
               error={getFieldError(field.state.meta.errors)}
             >
@@ -134,7 +139,7 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
         <form.Field name="phone" validators={validators.phone}>
           {(field) => (
             <Field
-              label={t`Contact Phone`}
+              label={t`Contact phone`}
               htmlFor="pool-phone"
               error={getFieldError(field.state.meta.errors)}
             >
@@ -152,7 +157,7 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
       <form.Field name="website" validators={validators.website}>
         {(field) => (
           <Field
-            label={t`Contact Website`}
+            label={t`Contact website`}
             htmlFor="pool-website"
             error={getFieldError(field.state.meta.errors)}
           >

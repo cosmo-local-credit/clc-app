@@ -15,6 +15,7 @@ import { Button } from "#/components/ui/button";
 import { FieldError } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { SectionHeading } from "#/components/ui/section-heading";
+import { copyValue, FullValue } from "#/desktop/ui/full-value";
 import { PoolSidePanel } from "#/desktop/pools/detail/pool-side-panel";
 import { DeskKV } from "#/desktop/ui/kv";
 import {
@@ -399,24 +400,32 @@ function SelectedVoucher({
   loadingDecimals: boolean;
   onChange?: () => void;
 }) {
+  const { t } = useLingui();
   const { amount, unitValue } = usePoolVoucherFigures(voucher, balance, exchangeRate);
   const reading = <Trans>Reading…</Trans>;
   const unavailable = <Trans>Unavailable</Trans>;
   return (
     <div className="grid gap-3">
       <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p dir="auto" className="truncate text-sm font-semibold">
+        <div className="grid min-w-0 gap-1">
+          <p dir="auto" className="text-sm font-semibold [overflow-wrap:anywhere]">
             {voucher.name}
           </p>
-          <p dir="ltr" className="truncate font-mono text-xs text-muted-foreground">
-            {voucher.symbol} · {formatVoucherAddress(voucher.address)}
+          <p dir="ltr" className="font-mono text-xs text-muted-foreground">
+            {voucher.symbol}
             {loadingDecimals
               ? " · …"
               : voucher.decimals === null
                 ? ""
                 : ` · ${voucher.decimals} dp`}
           </p>
+          <FullValue
+            value={voucher.address}
+            copyLabel={t`Copy contract address`}
+            onCopy={(value) =>
+              copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
+            }
+          />
         </div>
         {onChange ? (
           <Button type="button" variant="outline" onClick={onChange}>

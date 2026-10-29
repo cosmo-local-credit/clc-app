@@ -43,6 +43,7 @@ import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { CHAIN_ID } from "#/lib/chain";
+import { useViewDraft } from "#/lib/view-drafts";
 import {
   beginPoolCreateHistory,
   exitPoolCreateHistory,
@@ -76,6 +77,18 @@ const DEFAULT_VALUES: PoolFormValues = {
   imageUrl: "",
   acceptedTerms: false,
 };
+
+/**
+ * What the pool form keeps across a phone/desktop view swap: the typed fields.
+ * Not the logo (a file in flight or a copied profile image, to be chosen
+ * again) and not the terms acceptance, which the review step asks for afresh.
+ */
+type PoolFormDraft = Omit<PoolFormValues, "imageUrl" | "acceptedTerms">;
+
+function poolDraftOf(values: PoolFormValues): PoolFormDraft {
+  const { imageUrl: _imageUrl, acceptedTerms: _acceptedTerms, ...fields } = values;
+  return fields;
+}
 
 /** The text fields a saved profile can seed, all of which default to "". */
 type SeedableTextField = "name" | "email" | "phone" | "website" | "description" | "imageUrl";
@@ -122,21 +135,31 @@ export function useCreatePoolForm({
   const profileQuery = useAuthProfile();
   const draft = usePoolCreateDraft((state) => state.draft);
   const setDraft = usePoolCreateDraft((state) => state.setDraft);
+  const viewDraft = useViewDraft<PoolFormDraft>({ scope: "pool-create", account: address });
+  const restored = viewDraft.restored;
   const hasPrefilledProfile = useRef(false);
-  const suggestedSymbol = useSuggestedSymbol({ kind: "pool", initialSymbol: draft?.symbol ?? "" });
+  const suggestedSymbol = useSuggestedSymbol({
+    kind: "pool",
+    initialSymbol: restored?.symbol ?? draft?.symbol ?? "",
+  });
   const checkNameAvailable = useNameAvailabilityValidator("pool");
   const [logoBusy, setLogoBusy] = useState(false);
   const [advancing, setAdvancing] = useState(false);
 
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
-  const form = useForm({
-    defaultValues: draft
+  const [pristine] = useState<PoolFormValues>(() =>
+    draft
       ? {
           ...draft,
           termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
         }
       : { ...DEFAULT_VALUES, pricing: defaultPricing },
+  );
+  const form = useForm({
+    // A draft carried over a view swap is newer than a retry snapshot: it holds
+    // what was typed since, so it goes on top.
+    defaultValues: restored ? { ...pristine, ...restored } : pristine,
     validators: {
       // The form-only terms mode is deliberately absent from the persisted
       // create input, so translate the Standard Schema issues by field.
@@ -172,6 +195,7 @@ export function useCreatePoolForm({
         const result = await deployPool.mutateAsync(
           toPoolDeployPayload(parsed, getAddress(address), chainId),
         );
+        viewDraft.clear();
         exitPoolCreateHistory({
           history: router.history,
           destination: `/pools/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}`,
@@ -207,7 +231,8 @@ export function useCreatePoolForm({
   // retry draft, or anything typed over, always wins.
   useEffect(() => {
     const profile = profileQuery.data;
-    if (hasPrefilledProfile.current || !profile || draft) return;
+    // A draft from the other view already holds what was typed, or left empty.
+    if (hasPrefilledProfile.current || !profile || draft || restored) return;
     hasPrefilledProfile.current = true;
 
     const prefill = profilePrefill(profile);
@@ -254,7 +279,35 @@ export function useCreatePoolForm({
     ) {
       form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
     }
-  }, [activeChainId, draft, form, profileQuery.data]);
+  }, [activeChainId, draft, form, profileQuery.data, restored]);
+
+  // Keep the typed fields for a phone/desktop view swap while they differ from
+  // how the form opened; forget them when they are back to that.
+  const { save: saveViewDraft, clear: clearViewDraft } = viewDraft;
+  useEffect(() => {
+    const opened = JSON.stringify(poolDraftOf(pristine));
+    let seen: unknown;
+    const sync = () => {
+      const { values } = form.store.state;
+      // Submitting and validating also touch the store; only a changed value
+      // may write, or a cleared draft would come straight back.
+      if (values === seen) return;
+      seen = values;
+      const fields = poolDraftOf(values);
+      if (JSON.stringify(fields) === opened) clearViewDraft();
+      else saveViewDraft(fields);
+    };
+    sync();
+    const subscription = form.store.subscribe(sync);
+    return () => subscription.unsubscribe();
+  }, [clearViewDraft, form, pristine, saveViewDraft]);
+
+  useEffect(() => {
+    // Advanced is a fold each view keeps for itself; a draft carried over a view
+    // swap may hold values inside it, so open it, once, on arrival.
+    if (restored) revealAdvanced();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
 
   useEffect(() => {
     if (step === "pool") beginPoolCreateHistory(router.history);

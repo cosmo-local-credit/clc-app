@@ -8,9 +8,11 @@ import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
 import { Button } from "#/components/ui/button";
 import { MarkdownContent } from "#/components/ui/markdown-content";
 import { DeskPanel, DeskSection, DeskTitle } from "#/desktop/ui/page";
+import { cn } from "#/lib/utils";
 import {
   CreatePoolFormFoot,
   type CreatePoolController,
+  FIELDS_CLEAR_OF_FOOT,
   PoolSummaryDesk,
 } from "./create-pool-parts";
 
@@ -20,7 +22,7 @@ export function ReviewStepDesk({ pool }: { pool: CreatePoolController }) {
 
   return (
     <form
-      className="grid min-w-0 content-start gap-[18px]"
+      className={cn("grid min-w-0 content-start gap-[18px]", FIELDS_CLEAR_OF_FOOT)}
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -28,7 +30,7 @@ export function ReviewStepDesk({ pool }: { pool: CreatePoolController }) {
       }}
     >
       <DeskTitle>
-        <Trans>Confirm &amp; publish</Trans>
+        <Trans>Confirm and publish</Trans>
       </DeskTitle>
 
       <form.Subscribe selector={(state) => state.values}>
@@ -79,7 +81,7 @@ export function ReviewStepDesk({ pool }: { pool: CreatePoolController }) {
                 disabled={!acceptedTerms || !pool.canPublish}
                 pending={publishing}
               >
-                {publishing ? <Trans>Publishing…</Trans> : <Trans>Confirm &amp; Publish</Trans>}
+                {publishing ? <Trans>Publishing…</Trans> : <Trans>Confirm and publish</Trans>}
               </Button>
             </CreatePoolFormFoot>
           );

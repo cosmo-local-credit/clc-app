@@ -23,6 +23,7 @@ import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { PopoverContent, PopoverRoot, PopoverTrigger } from "#/components/ui/popover";
 import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
+import { copyValue, FullValue } from "#/desktop/ui/full-value";
 import { PoolSidePanel, type PoolSide } from "#/desktop/pools/detail/pool-side-panel";
 import { DeskKV } from "#/desktop/ui/kv";
 import {
@@ -38,6 +39,7 @@ import { retirementClient } from "#/lib/api/retirement";
 import { POOL_OWNERSHIP_TRANSFER_ENABLED } from "#/lib/ownership-transfer-config";
 import { cn } from "#/lib/utils";
 import { getFieldError } from "@clc/core/lib/forms";
+import { DESK_SELECTED } from "#/desktop/ui/page";
 
 function useRetirement(pool: UserPool, viewer: string) {
   const { t } = useLingui();
@@ -332,7 +334,7 @@ function TokenChoice({
               aria-pressed={selected}
               className={cn(
                 "flex w-full min-w-0 items-center gap-3 px-3 py-2.5 text-start hover:bg-muted/60",
-                selected && "bg-primary/[0.07] shadow-[inset_2px_0_0_var(--color-primary)]",
+                selected && DESK_SELECTED,
               )}
             >
               <span className="min-w-0 flex-1">
@@ -438,6 +440,7 @@ function CollectFeesSide({
   inventory: ReactNode;
   onClose: () => void;
 }) {
+  const { t } = useLingui();
   const form = usePoolCollectFeesForm({ pool, vouchers, treasury, onDone: onClose });
   return (
     <PoolSidePanel
@@ -459,9 +462,22 @@ function CollectFeesSide({
       }
     >
       {feeAddress ? (
-        <p className="text-xs text-muted-foreground">
-          <Trans>Fees are paid to {formatVoucherAddress(feeAddress)}.</Trans>
-        </p>
+        <DeskKV
+          labelWidth="130px"
+          rows={[
+            [
+              <Trans key="label">Fee recipient</Trans>,
+              <FullValue
+                key="value"
+                value={feeAddress}
+                copyLabel={t`Copy fee recipient`}
+                onCopy={(value) =>
+                  copyValue(value, t`Fee recipient copied`, t`Couldn't copy fee recipient`)
+                }
+              />,
+            ],
+          ]}
+        />
       ) : (
         <p role="alert" className="text-sm text-destructive">
           <Trans>Set a fee recipient before collecting, or the pool has nowhere to pay.</Trans>
@@ -586,9 +602,20 @@ function OwnershipSide({
         rows={[
           [
             <Trans key="label">Existing fee recipient</Trans>,
-            <span key="value" dir="ltr" className="block truncate">
-              {settings ? (settings.feeAddress ?? t`Not set`) : t`Reading…`}
-            </span>,
+            settings?.feeAddress ? (
+              <FullValue
+                key="value"
+                value={settings.feeAddress}
+                copyLabel={t`Copy fee recipient`}
+                onCopy={(value) =>
+                  copyValue(value, t`Fee recipient copied`, t`Couldn't copy fee recipient`)
+                }
+              />
+            ) : (
+              <span key="value" className="font-sans">
+                {settings ? t`Not set` : t`Reading…`}
+              </span>
+            ),
           ],
         ]}
       />

@@ -121,14 +121,25 @@ function Proposal({
   const signerRows = signers ?? transaction.confirmations.map((c) => c.owner);
   const rows: [ReactNode, ReactNode][] = [];
   for (const mint of mints) {
-    rows.push([<Trans>Recipient</Trans>, <RecipientIdentityLabel address={mint.recipient} />]);
+    // A signer checks who is being paid, so the address is shown in full.
+    rows.push([
+      <Trans>Recipient</Trans>,
+      <RecipientIdentityLabel
+        address={mint.recipient}
+        showAddress
+        className="items-start text-start"
+      />,
+    ]);
     rows.push([
       <Trans>Amount</Trans>,
       <MintAmount token={mint.token} amountRaw={mint.amountRaw} />,
     ]);
   }
   for (const owner of newOwners) {
-    rows.push([<Trans>New owner</Trans>, <RecipientIdentityLabel address={owner} />]);
+    rows.push([
+      <Trans>New owner</Trans>,
+      <RecipientIdentityLabel address={owner} showAddress className="items-start text-start" />,
+    ]);
   }
   if (calls && calls.length > 1) {
     for (const call of calls) {

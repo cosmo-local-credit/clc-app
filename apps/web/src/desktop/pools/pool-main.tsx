@@ -26,10 +26,10 @@ import {
   PoolVouchersTable,
   PoolWantsTable,
 } from "#/desktop/pools/detail/pool-tab-bodies";
+import type { PoolActivityFeed } from "#/desktop/pools/pool-activity-feed";
 import { useDeskTrailLabel } from "#/desktop/trail";
-import { DeskStats } from "#/desktop/ui/kv";
 import { DeskTitleRow } from "#/desktop/ui/page";
-import { DeskTab, DeskTabs } from "#/desktop/ui/tabs";
+import { DeskTab, DeskTabPanel, DeskTabs } from "#/desktop/ui/tabs";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { usePoolFeeSettings } from "#/features/pools/hooks/use-pool-fee-settings";
@@ -37,6 +37,7 @@ import { usePoolHoldings } from "#/features/pools/hooks/use-pool-holdings";
 import { usePoolRecentSwaps } from "#/features/pools/hooks/use-pool-recent-swaps";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
+import { cn } from "#/lib/utils";
 
 const POOL_TABS = [
   "offerings",
@@ -59,7 +60,7 @@ export function usePoolDeskReceive(): string | undefined {
   return typeof search.receive === "string" ? search.receive.toLowerCase() : undefined;
 }
 
-function usePoolDeskTab(): PoolTab | undefined {
+export function usePoolDeskRequestedTab(): PoolTab | undefined {
   const search = useSearch({ strict: false }) as { tab?: unknown };
   return typeof search.tab === "string" && isPoolTab(search.tab) ? search.tab : undefined;
 }
@@ -107,96 +108,102 @@ export function usePoolDeskModel(poolAddress: string) {
 type PoolDeskModel = ReturnType<typeof usePoolDeskModel>;
 type LoadedPoolDeskModel = PoolDeskModel & { pool: UserPool };
 
-/** The pool's header, figures, owner tools and tabs: the main column of the pool page. */
+/**
+ * The pool's header, figures, owner tools and tabs: the main column of the pool
+ * page. The column is a size container, so what sits beside what is decided by
+ * the width it really has: 560px when the swap column docks beside it, and the
+ * full canvas when the swap stacks.
+ */
 export function PoolMain({
   model,
   side,
   onOpenSide,
+  activity,
 }: {
   model: LoadedPoolDeskModel;
   /** What the side column shows, so the row it describes reads as selected. */
   side: PoolSide | null;
   onOpenSide: (side: PoolSide) => void;
+  activity: PoolActivityFeed;
 }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const { auth, pool, poolAddress, poolVouchers, vouchers, canManageOnChain } = model;
-  const requested = usePoolDeskTab() ?? "offerings";
+  const requested = usePoolDeskRequestedTab() ?? "offerings";
   const receive = usePoolDeskReceive();
   const retired = pool.active === false;
-  const selectedTab =
-    retired && requested !== "activity" && requested !== "info" ? "holdings" : requested;
-  const visibleTabs = retired
+  const visibleTabs: readonly PoolTab[] = retired
     ? POOL_TABS.filter((tab) => tab === "holdings" || tab === "activity" || tab === "info")
     : auth.isAuthenticated
       ? POOL_TABS
       : POOL_TABS.filter(
           (tab) => tab === "offerings" || tab === "wants" || tab === "vouchers" || tab === "info",
         );
+  // A tab this viewer cannot see falls back to the first they can.
+  const selectedTab = visibleTabs.includes(requested) ? requested : (visibleTabs[0] ?? requested);
   const canAct = auth.isAuthenticated && !retired;
   const managedVoucher =
     side?.kind === "voucher" ? side.voucher.tokenAddress.toLowerCase() : undefined;
 
   return (
-    <>
-      <div className="flex min-w-0 items-center gap-3">
-        <PoolLogo
-          imageUrl={pool.imageUrl}
-          name={pool.name}
-          seed={pool.address}
-          size={56}
-          className="rounded-none"
-        />
-        <DeskTitleRow
-          className="min-w-0 flex-1"
-          title={<span className="block truncate">{pool.name}</span>}
-          meta={
-            <span className="flex min-w-0 items-center gap-1">
-              {pool.locationName ? (
-                <>
-                  <span dir="auto" className="min-w-0 truncate">
-                    {pool.locationName}
-                  </span>
-                  <span aria-hidden="true">·</span>
-                </>
-              ) : null}
-              <span dir="ltr" className="shrink-0 font-mono">
-                {formatVoucherAddress(pool.address)}
-              </span>
-            </span>
-          }
-          actions={
+    <div className="@container grid min-w-0 content-start gap-6">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-3">
+        <div className="flex min-w-0 flex-1 basis-72 items-center gap-3">
+          <PoolLogo
+            imageUrl={pool.imageUrl}
+            name={pool.name}
+            seed={pool.address}
+            size={56}
+            className="rounded-none"
+          />
+          <DeskTitleRow
+            className="min-w-0 flex-1"
+            wrap
+            title={<span dir="auto">{pool.name}</span>}
+            meta={
+              <>
+                {pool.locationName ? (
+                  <>
+                    <span dir="auto">{pool.locationName}</span>
+                    <span aria-hidden="true"> · </span>
+                  </>
+                ) : null}
+                <span dir="ltr" className="font-mono">
+                  {formatVoucherAddress(pool.address)}
+                </span>
+              </>
+            }
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 @min-[46rem]:ms-auto">
+          {canAct ? (
             <>
-              {canAct ? (
-                <>
-                  <Button asChild variant="outline">
-                    <Link
-                      to="/wallet/send/amount"
-                      search={{
-                        recipient: pool.address,
-                        recipientLabel: pool.name,
-                        returnPool: pool.address,
-                      }}
-                    >
-                      <Trans>Deposit</Trans>
-                    </Link>
-                  </Button>
-                  <PoolReceivePopover pool={pool} />
-                  <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
-                </>
-              ) : null}
-              {model.canEditDetails ? (
-                <PoolManageMenu
-                  pool={pool}
-                  vouchers={poolVouchers}
-                  canManageOnChain={canManageOnChain}
-                  viewerAddress={auth.session?.address}
-                  onOpen={onOpenSide}
-                />
-              ) : null}
+              <Button asChild variant="outline">
+                <Link
+                  to="/wallet/send/amount"
+                  search={{
+                    recipient: pool.address,
+                    recipientLabel: pool.name,
+                    returnPool: pool.address,
+                  }}
+                >
+                  <Trans>Deposit</Trans>
+                </Link>
+              </Button>
+              <PoolReceivePopover pool={pool} />
+              <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
             </>
-          }
-        />
+          ) : null}
+          {model.canEditDetails ? (
+            <PoolManageMenu
+              pool={pool}
+              vouchers={poolVouchers}
+              canManageOnChain={canManageOnChain}
+              viewerAddress={auth.session?.address}
+              onOpen={onOpenSide}
+            />
+          ) : null}
+        </div>
       </div>
 
       {model.ownerInfo.info?.kind === "safe" || pool.tags.length > 0 ? (
@@ -233,63 +240,75 @@ export function PoolMain({
       />
 
       <div className="grid min-w-0 gap-4">
-        <DeskTabs label={t`Pool contents`}>
+        {/*
+          The tabs are local content: one page, one URL, a search param that
+          remembers the choice so a link and Back keep it. So they are a
+          tablist with arrow keys, and every tab is the same link in every
+          state, which keeps focus on the tab that was just chosen.
+        */}
+        <DeskTabs kind="tabs" label={t`Pool contents`}>
           {visibleTabs.map((tab) => (
-            <DeskTab key={tab} active={selectedTab === tab}>
-              {selectedTab === tab ? (
-                <button type="button" id={`pool-tab-${tab}`}>
-                  {tabLabel(tab)}
-                </button>
-              ) : (
-                <Link
-                  id={`pool-tab-${tab}`}
-                  to="/pools/$poolAddress"
-                  params={{ poolAddress }}
-                  search={{ tab: tab === "offerings" ? undefined : tab }}
-                  replace
-                  resetScroll={false}
-                >
-                  {tabLabel(tab)}
-                </Link>
-              )}
+            <DeskTab
+              key={tab}
+              active={selectedTab === tab}
+              id={`pool-tab-${tab}`}
+              controls={`pool-panel-${tab}`}
+            >
+              <Link
+                to="/pools/$poolAddress"
+                params={{ poolAddress }}
+                search={(previous) => ({ ...previous, tab: tab === "offerings" ? undefined : tab })}
+                replace
+                resetScroll={false}
+              >
+                {tabLabel(tab)}
+              </Link>
             </DeskTab>
           ))}
         </DeskTabs>
 
-        {!retired && selectedTab === "offerings" ? (
-          <PoolOfferingsGrid poolAddress={poolAddress} vouchers={vouchers} />
-        ) : null}
-        {!retired && selectedTab === "wants" ? <PoolWantsTable poolAddress={poolAddress} /> : null}
-        {!retired && selectedTab === "vouchers" ? (
-          <PoolVouchersTable
-            pool={pool}
-            poolVouchers={poolVouchers}
-            vouchers={vouchers}
-            selectedKey={managedVoucher ?? receive}
-            onManage={
-              canManageOnChain ? (voucher) => onOpenSide({ kind: "voucher", voucher }) : undefined
-            }
-            onApprove={canManageOnChain ? () => onOpenSide({ kind: "approve" }) : undefined}
-          />
-        ) : null}
-        {selectedTab === "holdings" ? (
-          <PoolHoldingsTable pool={pool} vouchers={poolVouchers} />
-        ) : null}
-        {!retired && selectedTab === "credit" ? (
-          <PoolCreditTable pool={pool} vouchers={vouchers} />
-        ) : null}
-        {selectedTab === "activity" ? (
-          <PoolActivityTable
-            pool={pool}
-            selectedKey={side?.kind === "activity" ? side.entry.key : undefined}
-            onOpen={(entry) => onOpenSide({ kind: "activity", entry })}
-          />
-        ) : null}
-        {selectedTab === "info" ? (
-          <PoolInfoDesk pool={pool} privateInfo={model.privateInfo} />
-        ) : null}
+        <DeskTabPanel
+          id={`pool-panel-${selectedTab}`}
+          tabId={`pool-tab-${selectedTab}`}
+          className="grid min-w-0 gap-4 outline-none"
+        >
+          {!retired && selectedTab === "offerings" ? (
+            <PoolOfferingsGrid poolAddress={poolAddress} vouchers={vouchers} />
+          ) : null}
+          {!retired && selectedTab === "wants" ? (
+            <PoolWantsTable poolAddress={poolAddress} />
+          ) : null}
+          {!retired && selectedTab === "vouchers" ? (
+            <PoolVouchersTable
+              pool={pool}
+              poolVouchers={poolVouchers}
+              vouchers={vouchers}
+              selectedKey={managedVoucher ?? receive}
+              onManage={
+                canManageOnChain ? (voucher) => onOpenSide({ kind: "voucher", voucher }) : undefined
+              }
+              onApprove={canManageOnChain ? () => onOpenSide({ kind: "approve" }) : undefined}
+            />
+          ) : null}
+          {selectedTab === "holdings" ? (
+            <PoolHoldingsTable pool={pool} vouchers={poolVouchers} />
+          ) : null}
+          {!retired && selectedTab === "credit" ? (
+            <PoolCreditTable pool={pool} vouchers={vouchers} />
+          ) : null}
+          {selectedTab === "activity" ? (
+            <PoolActivityTable
+              feed={activity}
+              selectedKey={side?.kind === "activity" ? side.entry.key : undefined}
+              onOpen={(entry) => onOpenSide({ kind: "activity", entry })}
+            />
+          ) : null}
+          {selectedTab === "info" ? (
+            <PoolInfoDesk pool={pool} privateInfo={model.privateInfo} />
+          ) : null}
+        </DeskTabPanel>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -328,7 +347,7 @@ function PoolStats({
     liquidity = formatTokenAmountFixed(total.toString(), POOL_PRICE_INDEX_DECIMALS, 2, locale);
   }
   return (
-    <DeskStats
+    <PoolFigures
       items={[
         { label: <Trans>Vouchers</Trans>, value: count.toLocaleString(locale) },
         ...(liquidity
@@ -375,4 +394,43 @@ function tabLabel(tab: PoolTab): ReactNode {
     case "info":
       return <Trans>Info</Trans>;
   }
+}
+
+/**
+ * The figures under the title. Each is a cell that wraps rather than clips, so
+ * a large liquidity keeps every digit: four across when the column has the
+ * room, two by two when it does not.
+ */
+function PoolFigures({
+  items,
+}: {
+  items: readonly { label: ReactNode; value: ReactNode; detail?: ReactNode }[];
+}) {
+  const columns =
+    items.length >= 4
+      ? "grid-cols-2 @min-[44rem]:grid-cols-4"
+      : items.length === 3
+        ? "grid-cols-3"
+        : items.length === 2
+          ? "grid-cols-2"
+          : "grid-cols-1";
+  return (
+    <div className={cn("grid gap-px border border-border bg-border", columns)}>
+      {items.map((item, index) => (
+        <div key={index} className="min-w-0 bg-card px-4 py-3.5">
+          <div className="font-mono text-2xs tracking-[0.12em] text-muted-foreground uppercase">
+            {item.label}
+          </div>
+          <div className="mt-1 font-mono text-lg font-semibold [overflow-wrap:anywhere]">
+            {item.value}
+          </div>
+          {item.detail ? (
+            <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]">
+              {item.detail}
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
 }

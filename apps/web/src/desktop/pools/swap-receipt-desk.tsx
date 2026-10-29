@@ -13,7 +13,6 @@ import type { z } from "zod";
 import { isAddress } from "viem";
 
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import {
   FailureCross,
   PendingClock,
@@ -23,6 +22,7 @@ import {
   SuccessCheck,
 } from "#/components/wallet";
 import { SectionHeading } from "#/components/ui/section-heading";
+import { FullValue } from "#/desktop/ui/full-value";
 import { DeskSwapFee } from "#/desktop/pools/detail/desk-swap-fee";
 import { PoolDeskFrame } from "#/desktop/pools/pool-desk";
 import { DeskKV } from "#/desktop/ui/kv";
@@ -246,10 +246,10 @@ function SwapReceiptColumn({
           txHash
             ? [
                 <Trans key="label">Transaction</Trans>,
-                <CopyableInfoValue
+                <FullValue
                   key="value"
                   value={txHash}
-                  label={t`Copy transaction hash`}
+                  copyLabel={t`Copy transaction hash`}
                   onCopy={copy}
                 />,
               ]

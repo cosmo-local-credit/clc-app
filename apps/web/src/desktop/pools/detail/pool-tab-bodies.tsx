@@ -21,7 +21,6 @@ import {
   RiSettings3Line,
   RiSparkling2Line,
 } from "react-icons/ri";
-import { getAddress, isAddress } from "viem";
 
 import { SwapActivityTitle, formatActivityLegAmount } from "#/components/activity/swap-activity";
 import { Button } from "#/components/ui/button";
@@ -29,13 +28,13 @@ import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { TokenLogo, EllipsizedAddress, SignedAmount } from "#/components/wallet";
 import { WantPicture } from "#/components/wants/want-row";
+import type { PoolActivityFeed } from "#/desktop/pools/pool-activity-feed";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { usePoolOfferingsInfinite } from "#/features/home/hooks/use-voucher-offerings";
 import { usePoolHoldings } from "#/features/pools/hooks/use-pool-holdings";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
-import { type PoolActivityEntry, buildPoolActivity } from "#/features/pools/logic/pool-activity";
+import type { PoolActivityEntry } from "#/features/pools/logic/pool-activity";
 import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
-import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { wantsClient } from "#/lib/api/wants";
@@ -115,7 +114,7 @@ function VoucherCell({ logo, name, symbol }: { logo: ReactNode; name: string; sy
 
 function Figure({ children }: { children: ReactNode }) {
   return (
-    <span dir="ltr" className="font-mono font-semibold">
+    <span dir="ltr" className="font-mono font-semibold whitespace-normal">
       {children}
     </span>
   );
@@ -158,7 +157,7 @@ export function PoolOfferingsGrid({
     );
   } else {
     body = (
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-4">
         {offerings.map((offering) => (
           <OfferingTile
             key={offering.id}
@@ -174,12 +173,7 @@ export function PoolOfferingsGrid({
     );
   }
   return (
-    <div
-      id="pool-panel-offerings"
-      role="tabpanel"
-      aria-labelledby="pool-tab-offerings"
-      className="grid gap-4"
-    >
+    <div className="grid gap-4">
       {body}
       {query.hasNextPage ? (
         <LoadMore pending={query.isFetchingNextPage} onLoad={() => void query.fetchNextPage()} />
@@ -325,12 +319,7 @@ export function PoolWantsTable({ poolAddress }: { poolAddress: string }) {
     },
   ];
   return (
-    <div
-      id="pool-panel-wants"
-      role="tabpanel"
-      aria-labelledby="pool-tab-wants"
-      className="grid gap-4"
-    >
+    <div className="grid gap-4">
       {query.isPending ? (
         <TabNotice>
           <Trans>Loading Wants…</Trans>
@@ -342,6 +331,7 @@ export function PoolWantsTable({ poolAddress }: { poolAddress: string }) {
       ) : (
         <DeskTable
           label={t`Wants`}
+          partial={query.hasNextPage}
           rows={wants}
           columns={columns}
           rowKey={(want) => want.id}
@@ -414,7 +404,7 @@ export function PoolVouchersTable({
     {
       id: "voucher",
       header: <Trans>Voucher</Trans>,
-      width: "minmax(0,1.8fr)",
+      width: "minmax(8rem,1.6fr)",
       sortValue: (row) => row.voucher.name,
       cell: (row) => (
         <VoucherCell
@@ -428,6 +418,7 @@ export function PoolVouchersTable({
       id: "in-pool",
       header: <Trans>In pool</Trans>,
       align: "end",
+      width: "minmax(7rem,1fr)",
       sortValue: (row) => sortable(row.holding?.liquidityRaw, row.holding?.decimals),
       cell: (row) => figure(row.holding?.liquidityRaw, row.holding?.decimals ?? null),
     },
@@ -435,6 +426,7 @@ export function PoolVouchersTable({
       id: "limit",
       header: <Trans>Limit</Trans>,
       align: "end",
+      width: "minmax(7rem,1fr)",
       sortValue: (row) => sortable(limitRaw(row), row.holding?.decimals),
       cell: (row) => figure(limitRaw(row), row.holding?.decimals ?? null),
     },
@@ -442,6 +434,7 @@ export function PoolVouchersTable({
       id: "rate",
       header: <Trans>Rate</Trans>,
       align: "end",
+      width: "minmax(5.5rem,1fr)",
       sortValue: (row) => sortable(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
       cell: (row) => figure(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
     },
@@ -458,12 +451,7 @@ export function PoolVouchersTable({
   ];
 
   return (
-    <div
-      id="pool-panel-vouchers"
-      role="tabpanel"
-      aria-labelledby="pool-tab-vouchers"
-      className="grid gap-3"
-    >
+    <div className="grid gap-3">
       {onApprove ? (
         <div className="flex justify-end">
           <Button variant="outline" onClick={onApprove}>
@@ -561,7 +549,7 @@ export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers
     {
       id: "voucher",
       header: <Trans>Voucher</Trans>,
-      width: "minmax(0,1.6fr)",
+      width: "minmax(8rem,1.6fr)",
       sortValue: (holding) => holding.name,
       cell: (holding) => (
         <VoucherCell
@@ -575,6 +563,7 @@ export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers
       id: "in-pool",
       header: <Trans>In pool</Trans>,
       align: "end",
+      width: "minmax(7rem,1fr)",
       sortValue: (holding) => sortable(holding.liquidityRaw, holding.decimals),
       cell: (holding) =>
         holding.liquidityRaw === null || holding.decimals === null ? (
@@ -589,6 +578,7 @@ export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers
       id: "rate",
       header: <Trans>Rate</Trans>,
       align: "end",
+      width: "minmax(5.5rem,1fr)",
       sortValue: (holding) => sortable(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS),
       cell: (holding) =>
         holding.ratePpm === null ? (
@@ -601,6 +591,7 @@ export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers
       id: "value",
       header: <Trans>Value in {unitSymbol}</Trans>,
       align: "end",
+      width: "minmax(8rem,1fr)",
       sortValue: (holding) => sortable(holding.unitValueRaw, POOL_PRICE_INDEX_DECIMALS),
       cell: (holding) =>
         holding.unitValueRaw === null ? (
@@ -614,7 +605,7 @@ export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers
     {
       id: "share",
       header: <Trans>Share</Trans>,
-      width: "8rem",
+      width: "5rem",
       sortValue: (holding) => holding.percentOfLargest ?? -1,
       // Measured against the largest holding, not a cap: no track, so the
       // largest bar never reads as a full gauge. Unpriced rows draw nothing.
@@ -630,12 +621,7 @@ export function PoolHoldingsTable({ pool, vouchers }: { pool: UserPool; vouchers
     },
   ];
   return (
-    <div
-      id="pool-panel-holdings"
-      role="tabpanel"
-      aria-labelledby="pool-tab-holdings"
-      className="grid gap-3"
-    >
+    <div className="grid gap-3">
       {holdingStates(state, {
         loading: <Trans>Loading holdings…</Trans>,
         error: <Trans>Couldn't load holdings.</Trans>,
@@ -692,7 +678,7 @@ export function PoolCreditTable({ pool, vouchers }: { pool: UserPool; vouchers: 
     {
       id: "voucher",
       header: <Trans>Voucher</Trans>,
-      width: "minmax(0,1.6fr)",
+      width: "minmax(8rem,1.4fr)",
       sortValue: (holding) => holding.name,
       cell: (holding) => (
         <VoucherCell
@@ -706,6 +692,7 @@ export function PoolCreditTable({ pool, vouchers }: { pool: UserPool; vouchers: 
       id: "limit",
       header: <Trans>Credit limit</Trans>,
       align: "end",
+      width: "minmax(9rem,1fr)",
       sortValue: (holding) => sortable(holding.capUnitValueRaw, POOL_PRICE_INDEX_DECIMALS),
       cell: (holding) => {
         const line = credit(holding);
@@ -722,6 +709,7 @@ export function PoolCreditTable({ pool, vouchers }: { pool: UserPool; vouchers: 
       id: "available",
       header: <Trans>Available</Trans>,
       align: "end",
+      width: "minmax(9rem,1fr)",
       sortValue: (holding) => sortable(holding.headroomUnitValueRaw, POOL_PRICE_INDEX_DECIMALS),
       cell: (holding) => {
         const line = credit(holding);
@@ -749,7 +737,7 @@ export function PoolCreditTable({ pool, vouchers }: { pool: UserPool; vouchers: 
     {
       id: "bar",
       header: <span className="sr-only">{t`Available credit`}</span>,
-      width: "8rem",
+      width: "5rem",
       cell: (holding) => {
         const line = credit(holding);
         return line ? (
@@ -772,12 +760,7 @@ export function PoolCreditTable({ pool, vouchers }: { pool: UserPool; vouchers: 
   ];
   const loading = state.isPending || state.capsPending;
   return (
-    <div
-      id="pool-panel-credit"
-      role="tabpanel"
-      aria-labelledby="pool-tab-credit"
-      className="grid gap-3"
-    >
+    <div className="grid gap-3">
       {holdingStates(
         { ...state, isPending: loading },
         {
@@ -810,27 +793,22 @@ export function PoolCreditTable({ pool, vouchers }: { pool: UserPool; vouchers: 
 
 /** Everything that has moved through the pool; a row opens its details beside the pool. */
 export function PoolActivityTable({
-  pool,
+  feed,
   selectedKey,
   onOpen,
 }: {
-  pool: UserPool;
+  feed: PoolActivityFeed;
   selectedKey: string | undefined;
   onOpen: (entry: PoolActivityEntry) => void;
 }) {
   const { t } = useLingui();
   const locale = useLocale();
-  // clc-core validates the path parameter as a checksummed address.
-  const query = useAccountTransfersInfinite(
-    isAddress(pool.address) ? getAddress(pool.address) : undefined,
-    { poll: true },
-  );
-  const entries = buildPoolActivity(query.data?.pages.flatMap((page) => page.transfers) ?? []);
+  const { query, entries } = feed;
   const columns: DeskColumn<PoolActivityEntry>[] = [
     {
       id: "event",
       header: <Trans>Activity</Trans>,
-      width: "minmax(0,1.7fr)",
+      width: "minmax(8.5rem,1.5fr)",
       cell: (entry) => (
         <span className="flex min-w-0 items-center gap-2.5">
           <span
@@ -854,7 +832,7 @@ export function PoolActivityTable({
     {
       id: "party",
       header: <Trans>Counterparty</Trans>,
-      width: "8rem",
+      width: "7.75rem",
       cell: (entry) =>
         entry.kind === "mint" ? (
           <span className="text-muted-foreground">
@@ -868,7 +846,7 @@ export function PoolActivityTable({
       id: "amount",
       header: <Trans>Amount</Trans>,
       align: "end",
-      width: "minmax(0,1.4fr)",
+      width: "minmax(9rem,1.4fr)",
       cell: (entry) =>
         entry.kind === "swap" ? (
           <span className="grid justify-items-end gap-0.5">
@@ -886,7 +864,7 @@ export function PoolActivityTable({
       id: "date",
       header: <Trans>Date</Trans>,
       align: "end",
-      width: "10rem",
+      width: "9rem",
       sortValue: (entry) => new Date(entry.dateBlock).getTime(),
       cell: (entry) => (
         <time dateTime={entry.dateBlock} className="font-mono text-xs">
@@ -896,12 +874,7 @@ export function PoolActivityTable({
     },
   ];
   return (
-    <div
-      id="pool-panel-activity"
-      role="tabpanel"
-      aria-labelledby="pool-tab-activity"
-      className="grid gap-4"
-    >
+    <div className="grid gap-4">
       {query.isPending ? (
         <TabNotice>
           <Trans>Loading activity…</Trans>
@@ -913,12 +886,25 @@ export function PoolActivityTable({
       ) : (
         <DeskTable
           label={t`Pool activity`}
+          partial={query.hasNextPage}
           rows={entries}
           columns={columns}
           rowKey={(entry) => entry.key}
           selectedKey={selectedKey}
-          onSelect={onOpen}
           empty={<Trans>Nothing has moved through this pool yet.</Trans>}
+          // A row opens its details on click or Enter, not on focus: where the
+          // page stacks the panel above the list, following focus would pull
+          // the person away from the row they are tabbing through.
+          renderRow={(entry, props, cells) => (
+            <button
+              type="button"
+              aria-current={selectedKey === entry.key ? "true" : undefined}
+              onClick={() => onOpen(entry)}
+              {...props}
+            >
+              {cells}
+            </button>
+          )}
         />
       )}
       {query.hasNextPage ? (

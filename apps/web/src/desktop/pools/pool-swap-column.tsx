@@ -411,7 +411,19 @@ export function PoolSwapColumn({
   if (poolQuery.isLoading) {
     body = <p className="text-sm text-muted-foreground">{t`Loading pool…`}</p>;
   } else if (poolQuery.isError) {
-    body = <p className="text-sm text-muted-foreground">{t`Couldn't load this pool.`}</p>;
+    body = (
+      <div className="grid justify-items-start gap-2">
+        <p className="text-sm text-muted-foreground">{t`Couldn't load this pool.`}</p>
+        <Button
+          variant="outline"
+          tap
+          pending={poolQuery.isFetching}
+          onClick={() => void poolQuery.refetch()}
+        >
+          {t`Retry`}
+        </Button>
+      </div>
+    );
   } else if (!pool) {
     body = <p className="text-sm text-muted-foreground">{t`Pool not found.`}</p>;
   } else if (pool.active === false) {

@@ -53,8 +53,8 @@ export function DeskSwapFee({
       })
     : null;
   return (
-    <span dir="ltr" className="flex min-w-0 items-baseline gap-2">
-      <span className="truncate">
+    <span dir="ltr" className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+      <span>
         {formatPoolSwapFee(feeRaw, decimals, locale)} {symbol}
       </span>
       {percentage ? (

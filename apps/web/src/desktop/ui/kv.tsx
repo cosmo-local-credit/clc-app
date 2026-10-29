@@ -52,34 +52,3 @@ export function DeskKV({
     </dl>
   );
 }
-
-/** A strip of figures under a page title: VOUCHERS 6 · LIQUIDITY 48,200.00. */
-export function DeskStats({
-  items,
-  className,
-}: {
-  items: readonly { label: ReactNode; value: ReactNode; detail?: ReactNode }[];
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn("grid border border-border bg-card", className)}
-      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}
-    >
-      {items.map((item, index) => (
-        <div
-          key={index}
-          className={cn("min-w-0 px-4 py-3.5", index > 0 && "border-border border-s")}
-        >
-          <div className="font-mono text-2xs tracking-[0.12em] text-muted-foreground uppercase">
-            {item.label}
-          </div>
-          <div className="mt-1 truncate font-mono text-lg font-semibold">{item.value}</div>
-          {item.detail ? (
-            <div className="truncate text-xs text-muted-foreground">{item.detail}</div>
-          ) : null}
-        </div>
-      ))}
-    </div>
-  );
-}

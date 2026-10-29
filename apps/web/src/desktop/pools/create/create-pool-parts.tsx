@@ -1,33 +1,53 @@
 import type { PoolCreateInput } from "@clc/core/features/pools/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { RiCheckLine, RiQuestionLine } from "react-icons/ri";
+import { toast } from "sonner";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
-import { SectionHeading } from "#/components/ui/section-heading";
-import { EllipsizedAddress } from "#/components/wallet";
+import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
+import { Progress } from "#/components/ui/progress";
 import { MarketAvatar } from "#/desktop/market/market-bits";
+import { FullValue } from "#/desktop/ui/full-value";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskEyebrow, DeskRow, DeskRowList } from "#/desktop/ui/page";
-import type { useCreatePoolForm } from "#/features/pools/hooks/use-create-pool-form";
+import type {
+  PoolCreateStep,
+  useCreatePoolForm,
+} from "#/features/pools/hooks/use-create-pool-form";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
+import { cn } from "#/lib/utils";
 
 export type CreatePoolController = ReturnType<typeof useCreatePoolForm>;
 
-/** `.form-foot`: a rule, then the step's actions at the end. */
+/**
+ * `.form-foot`: a rule, then the step's actions at the end. The foot sticks to
+ * the bottom of the scrolling canvas, so Next and Publish stay in reach on a
+ * long step at 768px of height. The step's fields keep a scroll margin under
+ * it, so focusing one never leaves it behind the foot.
+ */
 export function CreatePoolFormFoot({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-end gap-2 border-border border-t pt-4">
+    <div className="sticky bottom-0 z-10 flex items-center justify-end gap-2 border-border border-t bg-background pt-4 pb-4">
       {children}
     </div>
   );
 }
 
-/** The pool allowance under the stepper: "1 used · Unlimited" over a meter. */
+/** Applied to a step's root: a focused field scrolls clear of the sticky foot. */
+export const FIELDS_CLEAR_OF_FOOT =
+  "[&_:is(input,textarea,select,button,[contenteditable=true],[role=combobox])]:scroll-mb-24";
+
+/**
+ * The pool allowance beside the steps. A finite allowance reads "2 of 10 used"
+ * over a determinate meter. An unlimited one has no denominator, so it is plain
+ * metadata, "3 used · Unlimited", with no bar even at zero.
+ */
 export function PoolUsageDesk() {
-  const { i18n } = useLingui();
+  const { t, i18n } = useLingui();
   const query = useResourceUsage();
   const quota = query.data?.pools;
   const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
@@ -53,7 +73,6 @@ export function PoolUsageDesk() {
   }
   const used = digits.format(quota.used);
   const limit = digits.format(quota.limit);
-  const ratio = quota.unlimited || quota.limit <= 0 ? 0 : Math.min(1, quota.used / quota.limit);
   return (
     <div className="grid gap-1.5" aria-live="polite">
       <p className="text-muted-foreground text-xs">
@@ -65,37 +84,145 @@ export function PoolUsageDesk() {
           </Trans>
         )}
       </p>
-      <div className="h-1 overflow-hidden rounded-full bg-foreground/12" aria-hidden="true">
-        <div
-          className="h-full bg-primary"
-          style={{ width: quota.unlimited ? "8%" : `${ratio * 100}%` }}
+      {!quota.unlimited && quota.limit > 0 ? (
+        <Progress
+          value={Math.min(quota.used, quota.limit)}
+          max={quota.limit}
+          aria-label={t`Pools`}
+          getAriaValueText={() => t`${used} of ${limit} used`}
+          className={cn(
+            "h-1 bg-foreground/12",
+            !quota.canCreate && "[&_[data-slot=progress-indicator]]:bg-destructive",
+          )}
         />
-      </div>
+      ) : null}
       {quota.canCreate ? null : (
         <p className="text-destructive text-xs">
-          <Trans>Limit reached. Ask an administrator to increase your allowance.</Trans>
+          <Trans>Limit reached</Trans>
         </p>
       )}
     </div>
   );
 }
 
-/** The one concept explainer this flow carries. */
-export function PoolExplainerDesk() {
+const STEPS: { id: PoolCreateStep; label: ReactNode }[] = [
+  { id: "pool", label: <Trans>Create pool</Trans> },
+  { id: "place", label: <Trans>Location and tags</Trans> },
+  { id: "review", label: <Trans>Confirm and publish</Trans> },
+];
+
+type StepState = "complete" | "current" | "upcoming";
+
+/**
+ * The wizard's steps, in the shape the room allows. From 43rem of canvas they
+ * are a vertical list beside the form; under that they are one compact row of
+ * numbered markers above it that names only the current step. One list, so
+ * there is one set of links and one place for assistive technology to read; the
+ * container query only changes how it is laid out.
+ */
+export function PoolWizardSteps({ step }: { step: PoolCreateStep }) {
+  const { t } = useLingui();
+  const current = STEPS.findIndex((entry) => entry.id === step);
   return (
-    <section
-      className="grid gap-1 border border-border bg-card px-4 py-3.5"
-      aria-labelledby="desk-pool-guidance-title"
+    <ol
+      aria-label={t`Create pool`}
+      className="flex items-center gap-2 @min-[43rem]:flex-col @min-[43rem]:items-stretch @min-[43rem]:gap-0"
     >
-      <SectionHeading as="h2" variant="group" id="desk-pool-guidance-title">
+      {STEPS.map((entry, index) => {
+        const state: StepState =
+          index < current ? "complete" : index === current ? "current" : "upcoming";
+        const last = index === STEPS.length - 1;
+        const body = (
+          <>
+            <span
+              aria-hidden="true"
+              className={cn(
+                "flex size-6 shrink-0 items-center justify-center rounded-full bg-card font-mono text-2xs font-semibold",
+                state === "complete" && "bg-primary text-primary-foreground",
+                state === "current" &&
+                  "text-foreground shadow-[inset_0_0_0_2px_var(--color-primary)]",
+                state === "upcoming" &&
+                  "text-muted-foreground shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--color-foreground)_18%,transparent)]",
+              )}
+            >
+              {state === "complete" ? <RiCheckLine className="size-3" /> : index + 1}
+            </span>
+            <span
+              className={cn(
+                "min-w-0 text-sm leading-6",
+                state === "current" ? "font-semibold" : "font-medium text-muted-foreground",
+                // Compact: only the current step has room for its name.
+                state !== "current" && "sr-only @min-[43rem]:not-sr-only",
+              )}
+            >
+              {entry.label}
+            </span>
+          </>
+        );
+        return (
+          <li
+            key={entry.id}
+            aria-current={state === "current" ? "step" : undefined}
+            className={cn(
+              "relative flex items-center gap-2 @min-[43rem]:block @min-[43rem]:pb-8 @min-[43rem]:last:pb-0",
+              state === "current" ? "min-w-0 flex-1 @min-[43rem]:flex-none" : "shrink-0",
+            )}
+          >
+            {state === "complete" ? (
+              <Link
+                to="/pools/create/$step"
+                params={{ step: entry.id }}
+                className="flex min-w-0 items-center gap-2 @min-[43rem]:gap-3"
+              >
+                {body}
+              </Link>
+            ) : (
+              <span className="flex min-w-0 items-center gap-2 @min-[43rem]:gap-3">{body}</span>
+            )}
+            {last ? null : (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="h-px w-4 shrink-0 bg-foreground/20 @min-[43rem]:hidden"
+                />
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute start-[11px] top-7 bottom-1 hidden w-0.5 @min-[43rem]:block",
+                    state === "complete" ? "bg-primary" : "bg-foreground/15",
+                  )}
+                />
+              </>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/**
+ * "What's a pool?" on request, in the first step only. The explanation used
+ * to sit beside every step; it is the same words, shown to someone who asks.
+ */
+export function PoolHelpDesk() {
+  return (
+    <PopoverRoot>
+      <PopoverTrigger render={<Button variant="ghost" />}>
+        <RiQuestionLine aria-hidden="true" />
         <Trans>What's a pool?</Trans>
-      </SectionHeading>
-      <p className="text-muted-foreground text-sm">
-        <Trans>
-          A pool holds vouchers together so members can swap between them at a published value.
-        </Trans>
-      </p>
-    </section>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="grid w-80 gap-2">
+        <PopoverTitle className="font-heading text-sm font-semibold">
+          <Trans>What's a pool?</Trans>
+        </PopoverTitle>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          <Trans>
+            A pool holds vouchers together so members can swap between them at a published value.
+          </Trans>
+        </p>
+      </PopoverContent>
+    </PopoverRoot>
   );
 }
 
@@ -160,6 +287,8 @@ type PoolSummaryValues = Omit<PoolCreateInput, "location" | "acceptedTerms"> & {
 /**
  * What is being published, as one label/value grid. `full` adds the place and
  * contact rows the review step shows; the publishing screen keeps the core set.
+ * The fee recipient is an address a person checks before publishing, so it
+ * shows in full on request and copies at any stage.
  */
 export function PoolSummaryDesk({
   values,
@@ -168,7 +297,7 @@ export function PoolSummaryDesk({
 }: {
   values: PoolSummaryValues;
   full?: boolean;
-  /** Makes the fee recipient copyable once the pool is on chain. */
+  /** Overrides how Copy reports back; the default copies and toasts. */
   onCopyFeeAddress?: (value: string) => void;
 }) {
   const { t } = useLingui();
@@ -180,6 +309,16 @@ export function PoolSummaryDesk({
         : t`Equal value`;
   const feeAddress = values.feeAddress.trim();
   const hasFee = Number(values.feePolicyDefault) > 0;
+  const copyFeeAddress = (value: string) => {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy fee recipient`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(t`Fee recipient copied`))
+      .catch(() => toast.error(t`Couldn't copy fee recipient`));
+  };
   const sans = (key: string, value: ReactNode) => (
     <span key={key} dir="auto" className="font-sans">
       {value}
@@ -217,15 +356,13 @@ export function PoolSummaryDesk({
               <Trans key="label">Fee recipient</Trans>,
               feeAddress === "" ? (
                 sans("value", t`Your wallet`)
-              ) : onCopyFeeAddress ? (
-                <CopyableInfoValue
+              ) : (
+                <FullValue
                   key="value"
                   value={feeAddress}
-                  label={t`Copy fee recipient`}
-                  onCopy={onCopyFeeAddress}
+                  copyLabel={t`Copy fee recipient`}
+                  onCopy={onCopyFeeAddress ?? copyFeeAddress}
                 />
-              ) : (
-                <EllipsizedAddress key="value" address={feeAddress} />
               ),
             ]
           : null,

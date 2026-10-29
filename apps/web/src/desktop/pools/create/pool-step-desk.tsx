@@ -1,4 +1,3 @@
-import { Collapsible } from "@base-ui/react/collapsible";
 import { hasPoolOracleBaseCurrency, type PoolPricing } from "@clc/core/features/pools/logic";
 import { getFieldError } from "@clc/core/lib/forms";
 import { findUnitOfAccountOption } from "@clc/core/lib/currencies";
@@ -15,10 +14,39 @@ import { RadioGroup, RadioGroupItem } from "#/components/ui/radio-group";
 import { Textarea } from "#/components/ui/textarea";
 import { SendRecipientField } from "#/desktop/wallet/send-recipient-field";
 import { DeskTitle } from "#/desktop/ui/page";
-import { CreatePoolFormFoot, type CreatePoolController } from "./create-pool-parts";
+import { cn } from "#/lib/utils";
+import {
+  CreatePoolFormFoot,
+  type CreatePoolController,
+  FIELDS_CLEAR_OF_FOOT,
+  PoolHelpDesk,
+} from "./create-pool-parts";
 import { UnitComboboxDesk } from "./unit-combobox-desk";
 
-/** Step 1: name, unit, description, and the Advanced settings, open on arrival. */
+/**
+ * Whether a value in Advanced is not the default, so the section has to be
+ * open for it to be seen. The symbol does not count: it is derived from the
+ * name, and a person who has not looked at it has not chosen it.
+ */
+function advancedHoldsNonDefault(values: {
+  pricing: PoolPricing;
+  feePolicyDefault: string;
+  feesDecoupled: boolean;
+  feeAddress: string;
+}) {
+  return (
+    values.pricing !== "relative" ||
+    Number(values.feePolicyDefault) > 0 ||
+    values.feesDecoupled ||
+    values.feeAddress.trim() !== ""
+  );
+}
+
+/**
+ * Step 1: name, unit, description, then Advanced. Advanced starts folded and
+ * says what it holds while it is; it opens for a restored draft, for a value
+ * that is not the default, and when Next is refused for a field inside it.
+ */
 export function PoolStepDesk({
   pool,
   advancedOpen,
@@ -31,23 +59,35 @@ export function PoolStepDesk({
   const { t } = useLingui();
   const { form, validators, activeChainId, hasOracle, fillSuggestedSymbol } = pool;
 
-  // Advanced is open on arrival, so the symbol it shows is filled once the
-  // name is known, the way unfolding it does on the phone.
   useEffect(() => {
-    void fillSuggestedSymbol();
+    // Back from a later step: a value set in Advanced is shown, not hidden.
+    if (advancedHoldsNonDefault(form.state.values)) onAdvancedOpenChange(true);
+    // The symbol is filled once the name is known; open on arrival, it is
+    // visible, so fill it now rather than on Next.
+    if (advancedOpen) void fillSuggestedSymbol();
     // Once per visit to the step.
   }, []);
 
+  const pricingLabel = (pricing: PoolPricing) =>
+    pricing === "relative"
+      ? t`Relative pricing`
+      : pricing === "oracle"
+        ? t`Oracle pricing`
+        : t`Equal value`;
+
   return (
-    <div className="grid min-w-0 content-start gap-[18px]">
-      <DeskTitle>
-        <Trans>Create pool</Trans>
-      </DeskTitle>
+    <div className={cn("grid min-w-0 content-start gap-[18px]", FIELDS_CLEAR_OF_FOOT)}>
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <DeskTitle>
+          <Trans>Create pool</Trans>
+        </DeskTitle>
+        <PoolHelpDesk />
+      </div>
 
       <form.Field name="name" asyncDebounceMs={400} validators={validators.name}>
         {(field) => (
           <Field
-            label={t`Pool Name`}
+            label={t`Name`}
             htmlFor="pool-name"
             error={getFieldError(field.state.meta.errors)}
             hint={field.state.meta.isValidating ? t`Checking availability…` : undefined}
@@ -72,7 +112,7 @@ export function PoolStepDesk({
           <form.Field name="unitOfAccount" validators={validators.unitOfAccount(pricing)}>
             {(field) => (
               <Field
-                label={t`Unit of Account`}
+                label={t`Unit of account`}
                 htmlFor="pool-unit"
                 error={getFieldError(field.state.meta.errors)}
               >
@@ -95,7 +135,7 @@ export function PoolStepDesk({
       <form.Field name="description" validators={validators.description}>
         {(field) => (
           <Field
-            label={t`Pool Description`}
+            label={t`Description`}
             htmlFor="pool-description"
             error={getFieldError(field.state.meta.errors)}
           >
@@ -112,26 +152,51 @@ export function PoolStepDesk({
         )}
       </form.Field>
 
-      <Collapsible.Root
+      <details
         open={advancedOpen}
-        onOpenChange={(open) => {
-          onAdvancedOpenChange(open);
-          if (open) void fillSuggestedSymbol();
+        className="group border-border border-t"
+        onToggle={(event) => {
+          onAdvancedOpenChange(event.currentTarget.open);
+          if (event.currentTarget.open) void fillSuggestedSymbol();
         }}
-        className="grid gap-[18px]"
       >
-        <Collapsible.Trigger className="group flex h-11 items-center justify-between border-border border-t text-start font-semibold text-sm outline-none focus-visible:underline">
+        <summary className="flex h-11 cursor-pointer list-none items-center gap-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
           <Trans>Advanced</Trans>
+          {/* Closed, the section says what it currently holds. */}
+          <form.Subscribe
+            selector={(state) =>
+              [state.values.symbol, state.values.pricing, state.values.feePolicyDefault] as const
+            }
+          >
+            {([symbol, pricing, fee]) => (
+              <span className="min-w-0 flex-1 truncate text-end text-xs font-normal text-muted-foreground group-open:hidden">
+                {symbol ? (
+                  <>
+                    <span dir="ltr" className="font-mono">
+                      {symbol}
+                    </span>
+                    {" · "}
+                  </>
+                ) : null}
+                {pricingLabel(pricing)}
+                {" · "}
+                <Trans>Swap fee</Trans>{" "}
+                <span dir="ltr" className="font-mono">
+                  {`${fee.trim() || "0"}%`}
+                </span>
+              </span>
+            )}
+          </form.Subscribe>
           <RiArrowDownSLine
-            className="size-4 transition-transform group-data-[panel-open]:rotate-180"
             aria-hidden="true"
+            className="ms-auto size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
           />
-        </Collapsible.Trigger>
-        <Collapsible.Panel id="pool-advanced" className="grid gap-[18px]">
+        </summary>
+        <div id="pool-advanced" className="grid gap-[18px] pt-1">
           <form.Field name="symbol" validators={validators.symbol}>
             {(field) => (
               <Field
-                label={t`Pool symbol`}
+                label={t`Symbol`}
                 htmlFor="pool-symbol"
                 error={getFieldError(field.state.meta.errors)}
               >
@@ -205,7 +270,7 @@ export function PoolStepDesk({
             <form.Field name="feePolicyDefault" validators={validators.feePolicyDefault}>
               {(field) => (
                 <Field
-                  label={t`Swap Fee (%)`}
+                  label={t`Swap fee (%)`}
                   htmlFor="pool-swap-fee"
                   error={getFieldError(field.state.meta.errors)}
                 >
@@ -258,7 +323,7 @@ export function PoolStepDesk({
                     <Field
                       label={t`Fee recipient`}
                       htmlFor="pool-fee-address"
-                      hint={t`Your wallet by default. Enter another address to send the swap fees there.`}
+                      hint={t`Defaults to your wallet.`}
                       error={getFieldError(field.state.meta.errors)}
                     >
                       <FeeRecipientDesk
@@ -271,8 +336,8 @@ export function PoolStepDesk({
               ) : null
             }
           </form.Subscribe>
-        </Collapsible.Panel>
-      </Collapsible.Root>
+        </div>
+      </details>
 
       <CreatePoolFormFoot>
         <Button type="button" pending={pool.advancing} onClick={() => void pool.goToPlace()}>

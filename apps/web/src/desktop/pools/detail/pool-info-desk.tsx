@@ -7,10 +7,10 @@ import { toast } from "sonner";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { MarkdownContent } from "#/components/ui/markdown-content";
 import { Skeleton } from "#/components/ui/skeleton";
+import { FullValue } from "#/desktop/ui/full-value";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskPanel, DeskSection, deskSectionLinkClass } from "#/desktop/ui/page";
 import { openDefaultMaps } from "#/lib/default-maps";
@@ -22,7 +22,9 @@ export type PoolPrivateInfo = {
   retry: () => void;
 };
 
-const linkClass = "block truncate font-sans font-normal underline underline-offset-2";
+/** Contacts and terms are read to be used, so a long one wraps rather than being cut. */
+const linkClass =
+  "block font-sans font-normal underline underline-offset-2 [overflow-wrap:anywhere]";
 
 /** The pool's record: about, contacts, terms and where it is. */
 export function PoolInfoDesk({
@@ -33,7 +35,7 @@ export function PoolInfoDesk({
   privateInfo?: PoolPrivateInfo;
 }) {
   return (
-    <div id="pool-panel-info" role="tabpanel" aria-labelledby="pool-tab-info">
+    <div>
       <AuthenticatedDetailsGate className="border border-border bg-card p-4">
         {privateInfo?.isPending ? (
           <p aria-busy="true" className="text-sm text-muted-foreground">
@@ -74,12 +76,15 @@ function PoolInfoBody({ pool }: { pool: UserPool }) {
   const termsUrl = pool.terms && isHttpUrl(pool.terms) ? pool.terms : null;
 
   return (
-    <div className="grid grid-cols-2 items-start gap-6">
+    <div className="grid grid-cols-1 items-start gap-6 @min-[44rem]:grid-cols-2">
       <div className="grid min-w-0 gap-6">
         {pool.description ? (
           <DeskSection title={<Trans>About</Trans>}>
             <DeskPanel>
-              <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed">
+              <p
+                dir="auto"
+                className="whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]"
+              >
                 {pool.description}
               </p>
             </DeskPanel>
@@ -91,10 +96,10 @@ function PoolInfoBody({ pool }: { pool: UserPool }) {
             rows={[
               [
                 <Trans key="label">Contract address</Trans>,
-                <CopyableInfoValue
+                <FullValue
                   key="value"
                   value={pool.address}
-                  label={t`Copy contract address`}
+                  copyLabel={t`Copy contract address`}
                   onCopy={copyAddress}
                 />,
               ],
@@ -171,7 +176,7 @@ function PoolInfoBody({ pool }: { pool: UserPool }) {
           }
         >
           <DeskPanel className="grid gap-3">
-            <p dir="auto" className="truncate text-sm font-semibold">
+            <p dir="auto" className="text-sm font-semibold [overflow-wrap:anywhere]">
               {locationLabel}
             </p>
             {hasCoordinates && pool.geoLat !== null && pool.geoLng !== null ? (

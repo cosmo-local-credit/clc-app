@@ -4,12 +4,12 @@ import type { ReactNode } from "react";
 import { RiRefreshLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Spinner } from "#/components/ui/spinner";
 import { FailureCross, StatusPill, SuccessCheck } from "#/components/wallet";
 import { PoolSummaryDesk } from "#/desktop/pools/create/create-pool-parts";
+import { FullValue } from "#/desktop/ui/full-value";
 import { DeskKV } from "#/desktop/ui/kv";
-import { DeskSection, DeskTitle } from "#/desktop/ui/page";
+import { DeskDetail, DeskSection, DeskTitle } from "#/desktop/ui/page";
 import { DeskStep, DeskStepper, type DeskStepState } from "#/desktop/ui/stepper";
 import { usePoolDeploymentReceipt } from "#/features/pools/hooks/use-pool-deployment-receipt";
 
@@ -107,10 +107,10 @@ export function PoolReceiptDesk({ trackingId }: { trackingId?: string }) {
             rows={[
               [
                 <Trans key="label">Contract address</Trans>,
-                <CopyableInfoValue
+                <FullValue
                   key="value"
                   value={address}
-                  label={t`Copy contract address`}
+                  copyLabel={t`Copy contract address`}
                   onCopy={(value) =>
                     copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
                   }
@@ -119,10 +119,10 @@ export function PoolReceiptDesk({ trackingId }: { trackingId?: string }) {
               txHash
                 ? [
                     <Trans key="label">Transaction hash</Trans>,
-                    <CopyableInfoValue
+                    <FullValue
                       key="value"
                       value={txHash}
-                      label={t`Copy transaction hash`}
+                      copyLabel={t`Copy transaction hash`}
                       onCopy={(value) =>
                         copyValue(
                           value,
@@ -205,7 +205,11 @@ function ReceiptState({
   );
 }
 
-/** The publish screen: stages in the main column, what was sent in the side column. */
+/**
+ * The publish screen: stages in the main column, what was sent in the side
+ * column. Beside each other only where the canvas can dock a 360px column
+ * and keep the stages a comfortable width; under that the summary follows them.
+ */
 function ReceiptLayout({
   header,
   main,
@@ -216,17 +220,16 @@ function ReceiptLayout({
   summary?: ReactNode;
 }) {
   return (
-    <div className="grid w-full max-w-[1100px] grid-cols-[minmax(0,1fr)_360px] items-start gap-6 px-8 pt-7 pb-10">
-      <div className="grid min-w-0 content-start gap-5">
-        {header}
-        {main}
-      </div>
-      {summary ? (
-        <DeskSection title={<Trans>Summary</Trans>} className="sticky top-7">
-          {summary}
-        </DeskSection>
-      ) : null}
-    </div>
+    <DeskDetail
+      className="max-w-[1100px]"
+      main={
+        <>
+          {header}
+          {main}
+        </>
+      }
+      side={summary ? <DeskSection title={<Trans>Summary</Trans>}>{summary}</DeskSection> : null}
+    />
   );
 }
 

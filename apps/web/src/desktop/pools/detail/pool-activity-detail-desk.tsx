@@ -2,8 +2,8 @@ import { Trans, useLingui } from "@lingui/react/macro";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
-import { EllipsizedAddress, SignedAmount } from "#/components/wallet";
+import { SignedAmount } from "#/components/wallet";
+import { copyValue, FullValue } from "#/desktop/ui/full-value";
 import { DeskSwapFee } from "#/desktop/pools/detail/desk-swap-fee";
 import { PoolSidePanel } from "#/desktop/pools/detail/pool-side-panel";
 import { DeskKV } from "#/desktop/ui/kv";
@@ -31,6 +31,8 @@ export function PoolActivityDetailSide({
     open: true,
   });
   const swap = entry.kind === "swap" ? entry : null;
+  const copyAddress = (value: string) =>
+    copyValue(value, t`Address copied`, t`Couldn't copy address`);
   const fee = (part: "pool" | "protocol" | "total", pending: boolean, amountRaw?: string | null) =>
     swap ? (
       <DeskSwapFee
@@ -47,6 +49,7 @@ export function PoolActivityDetailSide({
     <PoolSidePanel
       title={kind}
       onClose={onClose}
+      focus="offscreen"
       footer={
         <Button asChild>
           <a href={explorerUrl} target="_blank" rel="noreferrer">
@@ -133,12 +136,22 @@ export function PoolActivityDetailSide({
                 <Trans>New supply</Trans>
               </span>
             ) : (
-              <EllipsizedAddress key="value" address={entry.detail.senderAddress} />
+              <FullValue
+                key="value"
+                value={entry.detail.senderAddress}
+                copyLabel={t`Copy sender address`}
+                onCopy={copyAddress}
+              />
             ),
           ],
           [
             <Trans key="label">To</Trans>,
-            <EllipsizedAddress key="value" address={entry.detail.recipientAddress} />,
+            <FullValue
+              key="value"
+              value={entry.detail.recipientAddress}
+              copyLabel={t`Copy recipient address`}
+              onCopy={copyAddress}
+            />,
           ],
           [
             <Trans key="label">Date</Trans>,
@@ -148,10 +161,10 @@ export function PoolActivityDetailSide({
           ],
           [
             <Trans key="label">Transaction</Trans>,
-            <CopyableInfoValue
+            <FullValue
               key="value"
               value={entry.txHash}
-              label={t`Copy transaction hash`}
+              copyLabel={t`Copy transaction hash`}
               onCopy={copy}
             />,
           ],
@@ -177,6 +190,27 @@ export function PoolActivityDetailSide({
           ) : null}
         </div>
       ) : null}
+    </PoolSidePanel>
+  );
+}
+
+/**
+ * The row the URL names has not loaded, or is not in the feed. While older
+ * pages may still hold it the page keeps loading them; past the last page it
+ * says so.
+ */
+export function PoolActivityMissingSide({
+  loading,
+  onClose,
+}: {
+  loading: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <PoolSidePanel title={<Trans>Activity</Trans>} onClose={onClose} focus="offscreen">
+      <p role="status" className="text-sm text-muted-foreground">
+        {loading ? <Trans>Loading activity…</Trans> : <Trans>Activity not found.</Trans>}
+      </p>
     </PoolSidePanel>
   );
 }
