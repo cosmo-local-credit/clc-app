@@ -10,11 +10,12 @@ import { useConnection } from "wagmi";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { MarkdownContent } from "#/components/ui/markdown-content";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
-import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { FullValue } from "#/desktop/ui/full-value";
+import { IdentifiedAddress } from "#/desktop/activity/identified-address";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskPanel } from "#/desktop/ui/page";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -129,7 +130,9 @@ function VoucherInfoBody({
   const hasCoordinates = typeof lat === "number" && typeof lng === "number";
   const locationLabel = detail.locationName ?? (hasCoordinates ? `${lat}, ${lng}` : null);
   const terms = detail.terms;
-  const link = "max-w-full truncate underline-offset-2 hover:underline";
+  // Contact details and links are what a person opens this panel to check:
+  // they wrap instead of being cut.
+  const link = "[overflow-wrap:anywhere] underline-offset-2 hover:underline";
 
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -165,10 +168,10 @@ function VoucherInfoBody({
         rows={[
           [
             t`Contract`,
-            <CopyableInfoValue
+            <FullValue
               key="contract"
               value={contractAddress}
-              label={t`Copy contract address`}
+              copyLabel={t`Copy contract address`}
               onCopy={copy}
             />,
           ],
@@ -221,10 +224,8 @@ function VoucherInfoBody({
           [
             t`Issuer`,
             issuer ? (
-              <span key="issuer" className="grid min-w-0 gap-0.5">
-                <span className="truncate">
-                  <RecipientIdentityLabel address={issuer} />
-                </span>
+              <span key="issuer" className="grid min-w-0 gap-1">
+                <IdentifiedAddress address={issuer} />
                 <span className="font-sans font-normal">
                   <MultisigOwnerNotice info={ownerInfo} />
                 </span>
@@ -238,9 +239,9 @@ function VoucherInfoBody({
 
       {terms && !isHttpUrl(terms) ? (
         <DeskPanel>
-          <p className="text-sm font-semibold">
+          <SectionHeading as="h3" variant="group">
             <Trans>Terms</Trans>
-          </p>
+          </SectionHeading>
           <MarkdownContent className="mt-2">{terms}</MarkdownContent>
         </DeskPanel>
       ) : null}
@@ -253,7 +254,7 @@ function VoucherInfoBody({
             </Suspense>
           ) : null}
           <div className="flex min-w-0 items-center justify-between gap-3 border-border border-t px-3.5 py-2.5 first:border-t-0">
-            <span dir="auto" className="min-w-0 truncate text-xs">
+            <span dir="auto" className="min-w-0 text-xs [overflow-wrap:anywhere]">
               {locationLabel}
             </span>
             <Button

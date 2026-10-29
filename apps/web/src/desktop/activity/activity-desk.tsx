@@ -12,12 +12,10 @@ import {
   RiExternalLinkLine,
   RiSearchLine,
 } from "react-icons/ri";
-import { toast } from "sonner";
 
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Input } from "#/components/ui/input";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
@@ -53,6 +51,9 @@ import {
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 import { cn } from "#/lib/utils";
 
+import { copyValue, FullValue } from "#/desktop/ui/full-value";
+import { IdentifiedAddress } from "#/desktop/activity/identified-address";
+
 /** Search for an open activity inspector. The first open pushes; Back drops `tx`. */
 export function activityInspectorSearch<Search extends { tx?: string }>(
   previous: Search,
@@ -81,6 +82,18 @@ function rowAmount(item: AccountActivityItem) {
     value: formatTokenAmount(leg.amount, leg.tokenDecimals),
     symbol: leg.tokenSymbol,
   };
+}
+
+/**
+ * What the Amount column orders by: the figure it shows, with the token's own
+ * decimals applied (1,000,500 raw units of a 6-decimal token is 1.0005, not a
+ * million), and the sign dropped so the biggest movement in either direction
+ * ranks together. Different vouchers are not economically comparable, so this
+ * is an ordering of the displayed numbers only; the symbol stays beside every
+ * figure in its cell.
+ */
+export function activityAmountSortValue(item: AccountActivityItem): number {
+  return Number(rowAmount(item).value);
 }
 
 function counterparty(item: AccountActivityItem): string | null {
@@ -138,6 +151,11 @@ export function ActivityDesk({
     ? (loaded.find((item) => activityRowKey(item) === tx || item.txHash === tx) ?? null)
     : null;
   const armed = useRef<string | null>(null);
+  // Whether this page pushed the inspector's history entry, so Close can pop
+  // exactly that entry. A direct link has nothing of ours to pop.
+  const pushed = useRef(false);
+  // The `tx` the last commit showed; tells a close commit from a plain render.
+  const committedTx = useRef(tx);
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const isFiltered =
     settled !== "" || types.length > 0 || filters.voucher !== undefined || rangeStart !== null;
@@ -170,12 +188,18 @@ export function ActivityDesk({
   }, [isDebouncing, onQueryChange, query, settled]);
   useEffect(() => {
     if (tx) armed.current = null;
+    else pushed.current = false;
+    committedTx.current = tx;
   }, [tx]);
 
   function openInspector(item: AccountActivityItem) {
     const key = activityRowKey(item);
+    // The inspector gives focus back to the row it opened from as it closes.
+    // That focus is not a request to open the row again.
+    if (tx === undefined && committedTx.current !== undefined) return;
     if (key === tx || key === armed.current) return;
     const replace = tx != null || armed.current != null;
+    if (!replace) pushed.current = true;
     armed.current = key;
     void navigate({
       search: (previous) => activityInspectorSearch(previous, key),
@@ -183,9 +207,26 @@ export function ActivityDesk({
     });
   }
 
+  // The inspector's parent is the Activity list with its filters. Back goes
+  // there only when this page pushed the entry; a direct link (or a link from
+  // another page) drops `tx` in place instead of leaving the app.
+  function closeInspector() {
+    if (pushed.current) {
+      pushed.current = false;
+      router.history.back();
+      return;
+    }
+    void navigate({ search: (previous) => ({ ...previous, tx: undefined }), replace: true });
+  }
+
   function setDeskFilter(next: { activityVoucher?: string; activityRange?: ActivityRange }) {
     void navigate({ search: (previous) => ({ ...previous, ...next }), replace: true });
   }
+
+  // The CSV is the filtered rows that have loaded. It says so, with the count,
+  // because older pages may not have been fetched yet. Amounts are written at
+  // full precision with their own decimals, not the two-digit display.
+  const exportCount = activity.length;
 
   function exportCsv() {
     const blob = new Blob([activityCsv(activity)], { type: "text/csv;charset=utf-8" });
@@ -247,8 +288,7 @@ export function ActivityDesk({
         header: t`Amount`,
         align: "end",
         width: "minmax(0,1.2fr)",
-        sortValue: (row) =>
-          Number(row.kind === "swapped" ? row.received.amount : row.transfer.amount),
+        sortValue: activityAmountSortValue,
         cell: (row) => {
           const amount = rowAmount(row);
           return (
@@ -288,6 +328,7 @@ export function ActivityDesk({
   return (
     <div className="flex h-full min-h-0">
       <DeskSplit
+        onDismiss={tx ? closeInspector : undefined}
         main={
           <DeskCanvas className="gap-4">
             <DeskTitleRow
@@ -300,7 +341,7 @@ export function ActivityDesk({
                   onClick={exportCsv}
                 >
                   <RiDownload2Line aria-hidden="true" />
-                  <Trans>Export CSV</Trans>
+                  <Trans>Export loaded rows ({exportCount})</Trans>
                 </Button>
               }
             />
@@ -469,6 +510,7 @@ export function ActivityDesk({
                 <div className="w-full min-w-0">
                   <DeskTable
                     label={t`Activity`}
+                    partial={activityQuery.hasNextPage && !pastWindow}
                     rows={activity}
                     columns={columns}
                     rowKey={activityRowKey}
@@ -522,7 +564,7 @@ export function ActivityDesk({
             <ActivityInspector
               item={selected}
               missing={!activityQuery.isPending && !selected}
-              onClose={() => router.history.back()}
+              onClose={closeInspector}
             />
           ) : null
         }
@@ -616,17 +658,17 @@ function AmountHead({
   return (
     <div className="grid min-w-0 gap-1">
       <DeskEyebrow>{eyebrow}</DeskEyebrow>
-      <div className="flex min-w-0 items-baseline gap-1.5" dir="ltr">
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5" dir="ltr">
         <span
           className={cn(
-            "truncate font-mono text-2xl font-semibold",
+            "font-mono text-2xl font-semibold [overflow-wrap:anywhere]",
             incoming && "text-success-ink",
           )}
         >
           {incoming ? "+" : "−"}
           {value}
         </span>
-        <span className="shrink-0 font-mono text-sm text-muted-foreground">{symbol}</span>
+        <span className="font-mono text-sm text-muted-foreground">{symbol}</span>
       </div>
       {detail ? (
         <span className="font-mono text-xs text-muted-foreground" dir="ltr">
@@ -639,16 +681,8 @@ function AmountHead({
 
 function useCopyTxHash() {
   const { t } = useLingui();
-  return (value: string) => {
-    if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy transaction hash`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(t`Transaction hash copied`))
-      .catch(() => toast.error(t`Couldn't copy transaction hash`));
-  };
+  return (value: string) =>
+    copyValue(value, t`Transaction hash copied`, t`Couldn't copy transaction hash`);
 }
 
 function ExplorerButton({ txHash }: { txHash: string }) {
@@ -662,21 +696,10 @@ function ExplorerButton({ txHash }: { txHash: string }) {
   );
 }
 
-function AddressValue({ address }: { address: string }) {
-  const identity = useReverseRecipientResolution(address);
-  return (
-    <span className="grid min-w-0" title={address}>
-      {identity.data ? (
-        <RecipientIdentityText
-          identity={identity.data}
-          className="truncate font-sans font-semibold"
-        />
-      ) : null}
-      <span className="truncate" dir="ltr">
-        {formatVoucherAddress(address as `0x${string}`)}
-      </span>
-    </span>
-  );
+function TransactionValue({ txHash }: { txHash: string }) {
+  const { t } = useLingui();
+  const copy = useCopyTxHash();
+  return <FullValue value={txHash} copyLabel={t`Copy transaction hash`} onCopy={copy} />;
 }
 
 function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind: "swapped" }> }) {
@@ -689,7 +712,6 @@ function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind
   const amountLabel = uoaLabel ? `${tokenAmount} (${uoaLabel})` : tokenAmount;
   const explorerUrl = explorerTxUrl(CHAIN_INFO, item.txHash);
   const shareQuery = useSendShare(item.txHash, item.success && !created);
-  const copy = useCopyTxHash();
 
   return (
     <>
@@ -735,19 +757,11 @@ function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind
                 <Trans>New supply</Trans>
               </span>
             ) : (
-              <AddressValue key="from" address={item.senderAddress} />
+              <IdentifiedAddress key="from" address={item.senderAddress} />
             ),
           ],
-          [t`To`, <AddressValue key="to" address={item.recipientAddress} />],
-          [
-            t`Transaction`,
-            <CopyableInfoValue
-              key="tx"
-              value={item.txHash}
-              label={t`Copy transaction hash`}
-              onCopy={copy}
-            />,
-          ],
+          [t`To`, <IdentifiedAddress key="to" address={item.recipientAddress} />],
+          [t`Transaction`, <TransactionValue key="tx" txHash={item.txHash} />],
         ]}
       />
       <PrivateAttachment query={shareQuery} />
@@ -776,7 +790,6 @@ function TransferInspector({ item }: { item: Exclude<AccountActivityItem, { kind
 function SwapInspector({ item }: { item: Extract<AccountActivityItem, { kind: "swapped" }> }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const copy = useCopyTxHash();
   return (
     <>
       <AmountHead
@@ -821,11 +834,14 @@ function SwapInspector({ item }: { item: Extract<AccountActivityItem, { kind: "s
             : null,
           [
             item.poolAddresses.length > 1 ? t`Pools` : t`Pool`,
-            <span key="pools" className="grid min-w-0">
+            <span key="pools" className="grid min-w-0 gap-1.5">
               {item.poolAddresses.map((address) => (
-                <span key={address} className="truncate" dir="ltr">
-                  {formatVoucherAddress(address as `0x${string}`)}
-                </span>
+                <FullValue
+                  key={address}
+                  value={address}
+                  copyLabel={t`Copy pool address`}
+                  onCopy={(value) => copyValue(value, t`Address copied`, t`Couldn't copy address`)}
+                />
               ))}
             </span>,
           ],
@@ -835,15 +851,7 @@ function SwapInspector({ item }: { item: Extract<AccountActivityItem, { kind: "s
               {formatTransferDate(item.dateBlock, locale)}
             </time>,
           ],
-          [
-            t`Transaction`,
-            <CopyableInfoValue
-              key="tx"
-              value={item.txHash}
-              label={t`Copy transaction hash`}
-              onCopy={copy}
-            />,
-          ],
+          [t`Transaction`, <TransactionValue key="tx" txHash={item.txHash} />],
         ]}
       />
       <ExplorerButton txHash={item.txHash} />
@@ -852,6 +860,7 @@ function SwapInspector({ item }: { item: Extract<AccountActivityItem, { kind: "s
 }
 
 function PrivateAttachment({ query }: { query: ReturnType<typeof useSendShare> }) {
+  const { t } = useLingui();
   const share = query.data;
   if (query.isPending && query.fetchStatus !== "idle") {
     return (
@@ -869,7 +878,10 @@ function PrivateAttachment({ query }: { query: ReturnType<typeof useSendShare> }
   }
   if (!share) return null;
   return (
-    <section className="space-y-3 border border-border bg-card p-3" aria-label="Private attachment">
+    <section
+      className="space-y-3 border border-border bg-card p-3"
+      aria-label={t`Private attachment`}
+    >
       <div>
         <p className="font-semibold text-sm">
           <Trans>Private attachment</Trans>
@@ -887,7 +899,7 @@ function PrivateAttachment({ query }: { query: ReturnType<typeof useSendShare> }
         </p>
       ) : null}
       {share.sharedBy.email ? (
-        <p className="text-xs">
+        <p className="text-xs [overflow-wrap:anywhere]">
           <span className="text-muted-foreground">
             <Trans>Email</Trans>
           </span>{" "}
@@ -897,7 +909,7 @@ function PrivateAttachment({ query }: { query: ReturnType<typeof useSendShare> }
         </p>
       ) : null}
       {share.sharedBy.phone ? (
-        <p className="font-mono text-xs">
+        <p className="font-mono text-xs [overflow-wrap:anywhere]">
           <span className="font-sans text-muted-foreground">
             <Trans>Phone</Trans>
           </span>{" "}

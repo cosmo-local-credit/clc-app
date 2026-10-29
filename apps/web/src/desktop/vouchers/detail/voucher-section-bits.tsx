@@ -3,7 +3,7 @@ import type {
   ResourceUsage as ResourceUsageData,
 } from "@clc/api/features/resource-limits/client";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { ReactNode } from "react";
+import { useEffect } from "react";
 
 import { Button } from "#/components/ui/button";
 import { ReviewStars } from "#/components/reviews/review-editor";
@@ -13,14 +13,12 @@ import { cn } from "#/lib/utils";
 
 type Quota = ResourceUsageData[ResourceKind];
 
-/** A section title with the owner's allowance beside it: "Offerings · 1 of 3 used". */
-export function QuotaLabel({
-  children,
+/** The owner's allowance as a small status: "1 of 3 used". It sits beside a heading, never inside it. */
+export function QuotaStatus({
   quota,
   pending,
   error,
 }: {
-  children: ReactNode;
   quota: Quota | undefined;
   pending: boolean;
   error: boolean;
@@ -30,29 +28,41 @@ export function QuotaLabel({
   const used = quota ? digits.format(quota.used) : "";
   const limit = quota ? digits.format(quota.limit) : "";
   return (
-    <span className="flex min-w-0 items-baseline gap-2">
-      <span>{children}</span>
-      <span
-        aria-live="polite"
-        className={cn(
-          "font-sans text-xs font-normal",
-          quota && !quota.canCreate ? "text-destructive" : "text-muted-foreground",
-        )}
-      >
-        {error ? (
-          <Trans>Unavailable</Trans>
-        ) : pending || !quota ? (
-          <Trans>Loading…</Trans>
-        ) : quota.unlimited ? (
-          <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-        ) : (
-          <Trans id="{used} of {limit} used">
-            {used} of {limit} used
-          </Trans>
-        )}
-      </span>
+    <span
+      aria-live="polite"
+      className={cn(
+        "font-sans text-xs font-normal",
+        quota && !quota.canCreate ? "text-destructive" : "text-muted-foreground",
+      )}
+    >
+      {error ? (
+        <Trans>Unavailable</Trans>
+      ) : pending || !quota ? (
+        <Trans>Loading…</Trans>
+      ) : quota.unlimited ? (
+        <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
+      ) : (
+        <Trans id="{used} of {limit} used">
+          {used} of {limit} used
+        </Trans>
+      )}
     </span>
   );
+}
+
+/**
+ * Tells the voucher page's section navigation how many items a section holds,
+ * once that is known for certain: a partial first page is not a count. Pass
+ * `undefined` until then; the section withdraws its count when it unmounts.
+ */
+export function useReportSectionCount(
+  onCount: ((count: number | undefined) => void) | undefined,
+  count: number | undefined,
+) {
+  useEffect(() => {
+    onCount?.(count);
+  }, [count, onCount]);
+  useEffect(() => () => onCount?.(undefined), [onCount]);
 }
 
 /** "Your Balance 3,200.00 KFP (3,200 KES)", or nothing for a visitor. */
@@ -73,11 +83,16 @@ export function VoucherBalanceLine({ balance }: { balance: VoucherBalanceSummary
           </Button>
         </>
       ) : (
-        <span dir="ltr" className="truncate font-mono font-semibold text-foreground">
-          {balance.amount} {balance.symbol}
+        // The figure and its unit stay whole; the line wraps around them.
+        <span
+          dir="ltr"
+          className="inline-flex flex-wrap gap-x-1.5 font-mono font-semibold text-foreground"
+        >
+          <span className="whitespace-nowrap">
+            {balance.amount} {balance.symbol}
+          </span>
           {balance.unitValue ? (
-            <span className="text-muted-foreground">
-              {" "}
+            <span className="whitespace-nowrap text-muted-foreground">
               ({balance.unitValue.value} {balance.unitValue.unit})
             </span>
           ) : null}
@@ -92,11 +107,14 @@ export function VoucherRatingLine({
   address,
   place,
   stars = true,
+  wrapPlace = false,
 }: {
   address: string;
   place?: string | null;
   /** The page title row shows one star glyph; the place panel shows five. */
   stars?: boolean;
+  /** The voucher page lets a long place name wrap; a compact row truncates it. */
+  wrapPlace?: boolean;
 }) {
   const { i18n } = useLingui();
   const review = useVoucherReviewSummary(address);
@@ -113,7 +131,10 @@ export function VoucherRatingLine({
       {place ? (
         <>
           <span aria-hidden="true">·</span>
-          <span dir="auto" className="min-w-0 truncate">
+          <span
+            dir="auto"
+            className={cn("min-w-0", wrapPlace ? "[overflow-wrap:anywhere]" : "truncate")}
+          >
             {place}
           </span>
         </>

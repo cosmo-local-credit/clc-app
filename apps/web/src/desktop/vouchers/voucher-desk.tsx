@@ -1,15 +1,17 @@
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { useLingui } from "@lingui/react/macro";
 import { useSearch } from "@tanstack/react-router";
+import { useId } from "react";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { useVoucherBalanceSummary } from "#/components/vouchers/voucher-summary";
 import { VoucherAvatar, WALLET_TOKEN_BY_ID, type WalletToken } from "#/components/wallet";
 import { useDeskTrailLabel } from "#/desktop/trail";
-import { DeskCanvas, DeskDetail, DeskTitle } from "#/desktop/ui/page";
+import { DeskCanvas, DeskDetail, DeskTitleRow } from "#/desktop/ui/page";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
@@ -28,6 +30,11 @@ import { VoucherOfferingsDesk } from "./detail/voucher-offerings";
 import { VoucherPostsDesk } from "./detail/voucher-posts";
 import { VoucherReviewsDesk } from "./detail/voucher-reviews";
 import {
+  useVoucherSectionCounts,
+  VoucherSectionNav,
+  VoucherSectionRegion,
+} from "./detail/voucher-section-nav";
+import {
   VoucherBalanceLine,
   VoucherRatingLine,
   VoucherShareButton,
@@ -36,9 +43,13 @@ import {
 /**
  * `.page.detail`: the summary, the action strip and Offerings, Reviews, Posts
  * and Activity in the main column; Info in the sticky 360px column beside it.
+ * The one page heading is the voucher's name; each section brings its own
+ * `SectionHeading`, and a sticky row of links jumps between them.
  */
 export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` }) {
   const { t } = useLingui();
+  const infoHeadingId = useId();
+  const sectionCounts = useVoucherSectionCounts();
   const search = useSearch({ strict: false }) as { poolAddress?: unknown };
   const poolAddress = typeof search.poolAddress === "string" ? search.poolAddress : undefined;
   const auth = useAuthStatus();
@@ -169,37 +180,42 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                 iconUrl={token.iconUrl ?? null}
                 size={56}
               />
-              <div className="grid min-w-0 flex-1 gap-1">
-                <DeskTitle>
-                  <span className="[overflow-wrap:anywhere]">{token.name}</span>
-                </DeskTitle>
-                <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
-                  {balance.status === "hidden" ? null : (
-                    <>
-                      <VoucherBalanceLine balance={balance} />
-                      <span aria-hidden="true">·</span>
-                    </>
-                  )}
-                  <VoucherRatingLine address={address} place={place} stars={false} />
-                  {detail?.tags?.length
-                    ? detail.tags
-                        .slice(0, 3)
-                        .map((tag) => <TagBadge key={tag} tag={tag} size="sm" />)
-                    : null}
-                </div>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                {detail?.id && detail.address ? (
-                  <VoucherCatalogButton resourceId={detail.id} address={detail.address} />
-                ) : null}
-                <VoucherShareButton name={token.name} address={address} />
-              </div>
+              <DeskTitleRow
+                wrap
+                className="flex-1"
+                title={token.name}
+                meta={
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+                    {balance.status === "hidden" ? null : (
+                      <>
+                        <VoucherBalanceLine balance={balance} />
+                        <span aria-hidden="true">·</span>
+                      </>
+                    )}
+                    <VoucherRatingLine address={address} place={place} stars={false} wrapPlace />
+                    {detail?.tags?.length
+                      ? detail.tags
+                          .slice(0, 3)
+                          .map((tag) => <TagBadge key={tag} tag={tag} size="sm" />)
+                      : null}
+                  </div>
+                }
+                actions={
+                  <>
+                    {detail?.id && detail.address ? (
+                      <VoucherCatalogButton resourceId={detail.id} address={detail.address} />
+                    ) : null}
+                    <VoucherShareButton name={token.name} address={address} />
+                  </>
+                }
+              />
             </div>
             <VoucherActionCells
               address={address}
               name={token.name}
               ownerAddress={detail?.ownerAddress}
               hasPositiveBalance={balance.hasPositiveBalance}
+              balanceStatus={balance.status}
               locationName={locationName}
               lat={lat}
               lng={lng}
@@ -207,32 +223,57 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
               website={detail?.website}
             />
           </div>
-          <VoucherOfferingsDesk
-            key={address}
-            address={address}
-            symbol={token.symbol}
-            voucherValue={resolvedVoucherValue}
-            voucherUoa={resolvedVoucherUoa}
-            ownerAddress={ownerForControls}
-            layout="page"
-          />
-          <VoucherReviewsDesk key={`reviews-${address}`} address={address} layout="page" />
-          <VoucherPostsDesk
-            voucher={reportVoucher}
-            voucherName={token.name}
-            voucherDataPending={detailQuery.isPending || supportingDataPending}
-            canWritePost={canEdit}
-            layout="page"
-          />
-          <VoucherActivityDesk
-            accountAddress={walletAddress}
-            contractAddress={address}
-            layout="page"
-          />
+          <div className="flex min-w-0 flex-col gap-6 [&_:focus-visible]:scroll-mt-16">
+            <VoucherSectionNav counts={sectionCounts.counts} />
+            <VoucherSectionRegion id="offerings">
+              <VoucherOfferingsDesk
+                key={address}
+                address={address}
+                symbol={token.symbol}
+                voucherValue={resolvedVoucherValue}
+                voucherUoa={resolvedVoucherUoa}
+                ownerAddress={ownerForControls}
+                layout="page"
+                onCount={sectionCounts.report.offerings}
+              />
+            </VoucherSectionRegion>
+            <VoucherSectionRegion id="reviews">
+              <VoucherReviewsDesk
+                key={`reviews-${address}`}
+                address={address}
+                layout="page"
+                onCount={sectionCounts.report.reviews}
+              />
+            </VoucherSectionRegion>
+            <VoucherSectionRegion id="posts">
+              <VoucherPostsDesk
+                voucher={reportVoucher}
+                voucherName={token.name}
+                voucherDataPending={detailQuery.isPending || supportingDataPending}
+                canWritePost={canEdit}
+                layout="page"
+                onCount={sectionCounts.report.posts}
+              />
+            </VoucherSectionRegion>
+            <VoucherSectionRegion id="activity">
+              <VoucherActivityDesk
+                accountAddress={walletAddress}
+                contractAddress={address}
+                layout="page"
+                onCount={sectionCounts.report.activity}
+              />
+            </VoucherSectionRegion>
+          </div>
         </>
       }
       side={
-        <section aria-label={t`Info`} className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
+        <section
+          aria-labelledby={infoHeadingId}
+          className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4"
+        >
+          <SectionHeading as="h2" id={infoHeadingId} className="sr-only">
+            {t`Info`}
+          </SectionHeading>
           <VoucherInfoDesk
             address={address}
             symbol={token.symbol}

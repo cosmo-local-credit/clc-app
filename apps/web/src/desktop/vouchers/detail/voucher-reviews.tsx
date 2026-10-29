@@ -14,6 +14,7 @@ import {
 import { cn } from "#/lib/utils";
 
 import { VoucherDialog } from "./voucher-dialog";
+import { useReportSectionCount } from "./voucher-section-bits";
 
 /**
  * Reviews: the average beside the list, as the mock lays it out, with the
@@ -23,9 +24,12 @@ import { VoucherDialog } from "./voucher-dialog";
 export function VoucherReviewsDesk({
   address,
   layout,
+  onCount,
 }: {
   address: string;
   layout: "page" | "panel";
+  /** Reports the review total once the summary has loaded. */
+  onCount?: (count: number | undefined) => void;
 }) {
   const { t, i18n } = useLingui();
   const panel = useVoucherReviewsPanel(address);
@@ -48,6 +52,7 @@ export function VoucherReviewsDesk({
     items,
   } = panel;
   const locale = i18n.locales?.[0] ?? i18n.locale;
+  useReportSectionCount(onCount, summary ? summaryTotal : undefined);
 
   const write = canWrite ? (
     <button

@@ -4,12 +4,12 @@ import { RiArrowDownSLine } from "react-icons/ri";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
 import { FailureCross, PendingClock, SuccessCheck } from "#/components/wallet";
+import { FullValue } from "#/desktop/ui/full-value";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskEyebrow, DeskTitle } from "#/desktop/ui/page";
 import { DeskStep, DeskStepper, type DeskStepState } from "#/desktop/ui/stepper";
@@ -99,10 +99,10 @@ export function VoucherReceiptDesk({
     receipt.decimals !== null ? [t`Decimals`, String(receipt.decimals)] : null,
     [
       t`Contract address`,
-      <CopyableInfoValue
+      <FullValue
         key="address"
         value={address}
-        label={t`Copy contract address`}
+        copyLabel={t`Copy contract address`}
         onCopy={(value) =>
           copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
         }
@@ -271,10 +271,10 @@ export function VoucherReceiptDesk({
             deploymentTxHash
               ? [
                   <Trans key="label">Deployment</Trans>,
-                  <CopyableInfoValue
+                  <FullValue
                     key="value"
                     value={deploymentTxHash}
-                    label={t`Copy deployment transaction hash`}
+                    copyLabel={t`Copy deployment transaction hash`}
                     onCopy={(value) =>
                       copyValue(
                         value,
@@ -288,10 +288,10 @@ export function VoucherReceiptDesk({
             mintTxHash
               ? [
                   <Trans key="label">Supply creation</Trans>,
-                  <CopyableInfoValue
+                  <FullValue
                     key="value"
                     value={mintTxHash}
-                    label={t`Copy supply creation transaction hash`}
+                    copyLabel={t`Copy supply creation transaction hash`}
                     onCopy={(value) =>
                       copyValue(
                         value,

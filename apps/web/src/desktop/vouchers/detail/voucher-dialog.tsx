@@ -13,9 +13,10 @@ import {
 import { cn } from "#/lib/utils";
 
 /**
- * The voucher page's forms and details as a centred desktop dialog: a 52px
- * header with the title and a close button, a body that scrolls, and an
- * optional footer for the form's buttons. Square and flat, like every panel.
+ * The voucher page's forms and details as a centred desktop dialog: a header
+ * (52px, taller when a long name wraps) with the title and a close button, a
+ * body that scrolls, and an optional footer for the form's buttons. Square and
+ * flat, like every panel.
  */
 export function VoucherDialog({
   open,
@@ -46,8 +47,8 @@ export function VoucherDialog({
             wide ? "w-[560px] max-w-[560px]" : "w-[440px] max-w-[440px]",
           )}
         >
-          <div className="flex h-13 shrink-0 items-center justify-between gap-3 border-border border-b px-4">
-            <DialogTitle className="min-w-0 truncate">{title}</DialogTitle>
+          <div className="flex min-h-13 shrink-0 items-center justify-between gap-3 border-border border-b px-4 py-1.5">
+            <DialogTitle className="min-w-0 [overflow-wrap:anywhere]">{title}</DialogTitle>
             <Button
               type="button"
               variant="ghost"

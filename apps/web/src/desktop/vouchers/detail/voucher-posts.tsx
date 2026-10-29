@@ -18,6 +18,8 @@ import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
 import { formatReportDate } from "#/lib/report-display";
 
+import { useReportSectionCount } from "./voucher-section-bits";
+
 /**
  * Posts that name this voucher, three at a time, signed-in only as on the
  * phone. Its issuer gets "Write a post" in the header.
@@ -28,18 +30,25 @@ export function VoucherPostsDesk({
   voucherDataPending,
   canWritePost,
   layout,
+  onCount,
 }: {
   voucher: VoucherRef | undefined;
   voucherName: string;
   voucherDataPending: boolean;
   canWritePost: boolean;
   layout: "page" | "panel";
+  /** Reports the total once every page has loaded. */
+  onCount?: (count: number | undefined) => void;
 }) {
   const { t, i18n } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const auth = useAuthStatus();
   const reportsQuery = useVoucherReportsInfinite(voucher, 3, auth.isAuthenticated && !!voucher);
   const reports = reportsQuery.data?.pages.flatMap((page) => page.reports) ?? [];
+  useReportSectionCount(
+    onCount,
+    reportsQuery.isSuccess && !reportsQuery.hasNextPage ? reports.length : undefined,
+  );
 
   const notice = (children: ReactNode) => (
     <DeskPanel>

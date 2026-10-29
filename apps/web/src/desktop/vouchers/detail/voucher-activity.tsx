@@ -15,6 +15,8 @@ import {
 } from "#/features/wallet/logic/transfer-display";
 import { cn } from "#/lib/utils";
 
+import { useReportSectionCount } from "./voucher-section-bits";
+
 type Transfer = ReturnType<typeof useVoucherTransfers>["transfers"][number];
 
 /**
@@ -25,16 +27,21 @@ export function VoucherActivityDesk({
   accountAddress,
   contractAddress,
   layout,
+  onCount,
 }: {
   accountAddress: string | undefined;
   contractAddress: string;
   layout: "page" | "panel";
+  /** Reports the total once the viewer's whole transfer feed has loaded. */
+  onCount?: (count: number | undefined) => void;
 }) {
   const { t, i18n } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const { transfersQuery, visibleTransfers, hasMoreTransfers, loadMore } = useVoucherTransfers(
-    accountAddress,
-    contractAddress,
+  const { transfersQuery, transfers, visibleTransfers, hasMoreTransfers, loadMore } =
+    useVoucherTransfers(accountAddress, contractAddress);
+  useReportSectionCount(
+    onCount,
+    transfersQuery.isSuccess && !transfersQuery.hasNextPage ? transfers.length : undefined,
   );
 
   const columns: DeskColumn<Transfer>[] = [
@@ -158,6 +165,7 @@ export function VoucherActivityDesk({
     body = (
       <DeskTable
         label={t`Activity`}
+        partial={hasMoreTransfers}
         rows={visibleTransfers}
         columns={columns}
         rowKey={(transfer) => activityRowKey(transfer)}

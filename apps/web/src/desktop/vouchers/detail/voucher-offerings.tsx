@@ -31,7 +31,7 @@ import { isStorageConfigured } from "#/lib/api/storage";
 import { cn } from "#/lib/utils";
 
 import { VoucherDialog } from "./voucher-dialog";
-import { QuotaLabel } from "./voucher-section-bits";
+import { QuotaStatus, useReportSectionCount } from "./voucher-section-bits";
 
 /**
  * One voucher's offerings as tiles: three columns on the page, two in the
@@ -45,6 +45,7 @@ export function VoucherOfferingsDesk({
   voucherUoa,
   ownerAddress,
   layout,
+  onCount,
 }: {
   address: string;
   symbol: string;
@@ -53,6 +54,8 @@ export function VoucherOfferingsDesk({
   ownerAddress: string | null;
   /** `page`: a titled section, 3 columns. `panel`: under the place panel's tabs, 2 columns. */
   layout: "page" | "panel";
+  /** Reports the total once every page has loaded. */
+  onCount?: (count: number | undefined) => void;
 }) {
   const manager = useVoucherOfferingsManager({ voucherAddress: address, ownerAddress });
   const { isOwner, usage, query, editor, setEditor } = manager;
@@ -63,7 +66,14 @@ export function VoucherOfferingsDesk({
   const hasMore = limit < offerings.length || query.hasNextPage;
   const rate: OfferingVoucherRate = { value: voucherValue, unit: voucherUoa };
   const quota = usage.data?.offers;
+  useReportSectionCount(
+    onCount,
+    query.isSuccess && !query.hasNextPage ? offerings.length : undefined,
+  );
 
+  const allowance = isOwner ? (
+    <QuotaStatus quota={quota} pending={usage.isPending} error={usage.isError} />
+  ) : null;
   const add = isOwner ? (
     <span className="flex items-center gap-3">
       {usage.isError ? (
@@ -169,20 +179,15 @@ export function VoucherOfferingsDesk({
     </div>
   );
 
-  const title = isOwner ? (
-    <QuotaLabel quota={quota} pending={usage.isPending} error={usage.isError}>
-      <Trans>Offerings</Trans>
-    </QuotaLabel>
-  ) : (
-    <Trans>Offerings</Trans>
-  );
-
   if (layout === "panel") {
     return (
       <div className="grid gap-3">
         {isOwner ? (
           <div className="flex h-[30px] items-center justify-between gap-3 text-sm">
-            {title}
+            <span className="flex min-w-0 items-baseline gap-2">
+              <Trans>Offerings</Trans>
+              {allowance}
+            </span>
             {add}
           </div>
         ) : null}
@@ -191,7 +196,17 @@ export function VoucherOfferingsDesk({
     );
   }
   return (
-    <DeskSection title={title} action={add}>
+    <DeskSection
+      title={<Trans>Offerings</Trans>}
+      action={
+        isOwner ? (
+          <span className="flex min-w-0 items-center gap-3">
+            {allowance}
+            {add}
+          </span>
+        ) : null
+      }
+    >
       {body}
     </DeskSection>
   );
