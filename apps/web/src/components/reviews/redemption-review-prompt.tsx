@@ -1,18 +1,9 @@
+import type { ReviewResourceKind, ReviewTarget } from "@clc/core/features/reviews/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import {
-  canWriteReview,
-  type ReviewResourceKind,
-  type ReviewTarget,
-} from "@clc/core/features/reviews/logic";
-import { reviewKeys } from "@clc/api/features/reviews/queries";
-import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useResourceReviewAccess } from "#/features/reviews/hooks/use-voucher-reviews";
-import { reviewsClient } from "#/lib/api/reviews";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { ReviewEditor } from "./review-editor";
+import { useIsRedemption, useRedemptionReview } from "./use-redemption-review";
 
 /** Receipt hints only select the UI. The server independently verifies redemption. */
 export function RedemptionReviewPrompt({
@@ -22,8 +13,7 @@ export function RedemptionReviewPrompt({
   address: string;
   recipient: string;
 }) {
-  const detail = useMarketVoucherDetail(address);
-  if (detail.data?.ownerAddress?.toLowerCase() !== recipient.toLowerCase()) return null;
+  if (!useIsRedemption(address, recipient)) return null;
   return <EligiblePrompt key={address} target={{ kind: "voucher", address }} />;
 }
 
@@ -33,54 +23,37 @@ export function PoolSwapReviewPrompt({ address }: { address: string }) {
 
 function EligiblePrompt({ target }: { target: ReviewTarget }) {
   const { t } = useLingui();
-  const client = useQueryClient();
-  const [dismissed, setDismissed] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const { auth, access } = useResourceReviewAccess(target, !dismissed && !saved);
-  const mutation = useMutation({
-    mutationFn: ({ stars, text }: { stars: number; text: string }) =>
-      reviewsClient.save(target, stars, text),
-    onSuccess: () => {
-      setSaved(true);
-      void client.invalidateQueries({ queryKey: reviewKeys.resource(target) });
-    },
-  });
-  if (dismissed || !auth.isAuthenticated || access.data?.isOwner || access.data?.hidden)
-    return null;
-  if (saved)
+  const review = useRedemptionReview(target);
+  if (review.status === "hidden") return null;
+  if (review.status === "saved")
     return (
       <p role="status" className="mb-5 border border-border bg-card p-4 text-sm">
         <Trans>Your review has been saved.</Trans>
       </p>
     );
-  if (access.isError)
+  if (review.status === "error")
     return (
       <div role="alert" className="mb-5 space-y-2 border border-border bg-card p-4 text-sm">
         <p>
           <Trans>Couldn't check your review access.</Trans>
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            tap
-            pending={access.isFetching}
-            onClick={() => void access.refetch()}
-          >
+          <Button variant="outline" tap pending={review.retrying} onClick={review.retry}>
             <Trans>Try again</Trans>
           </Button>
-          <Button variant="ghost" tap onClick={() => setDismissed(true)}>
+          <Button variant="ghost" tap onClick={review.dismiss}>
             <Trans>Later</Trans>
           </Button>
         </div>
       </div>
     );
-  if (!access.data || !canWriteReview(access.data))
+  if (review.status === "processing")
     return (
       <div className="mb-5 space-y-2 border border-border bg-card p-4 text-sm">
         <p>
           <ReviewProcessingMessage kind={target.kind} />
         </p>
-        <Button variant="ghost" tap onClick={() => setDismissed(true)}>
+        <Button variant="ghost" tap onClick={review.dismiss}>
           <Trans>Later</Trans>
         </Button>
       </div>
@@ -88,7 +61,7 @@ function EligiblePrompt({ target }: { target: ReviewTarget }) {
   return (
     <section className="mb-5 space-y-3 border border-border bg-card p-4">
       <SectionHeading>
-        {access.data.review ? t`Update your review` : t`How was your experience?`}
+        {review.access.review ? t`Update your review` : t`How was your experience?`}
       </SectionHeading>
       <p className="text-xs text-muted-foreground">
         {target.kind === "voucher" ? (
@@ -98,12 +71,12 @@ function EligiblePrompt({ target }: { target: ReviewTarget }) {
         )}
       </p>
       <ReviewEditor
-        initialStars={access.data.review?.stars}
-        initialText={access.data.review?.comment}
-        pending={mutation.isPending}
-        error={mutation.isError ? t`Couldn't save your review. Please try again.` : null}
-        onSave={(stars, text) => mutation.mutate({ stars, text })}
-        onCancel={() => setDismissed(true)}
+        initialStars={review.access.review?.stars}
+        initialText={review.access.review?.comment}
+        pending={review.pending}
+        error={review.failed ? t`Couldn't save your review. Please try again.` : null}
+        onSave={review.save}
+        onCancel={review.dismiss}
       />
     </section>
   );

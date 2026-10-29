@@ -1,41 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { lazy } from "react";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
+import { LayoutSwitch } from "#/desktop/switch";
 import { sendReceiptSearchSchema } from "#/features/wallet/send-receipt-search";
 import { SendReceiptPage } from "#/features/wallet/ui";
 
+const SendReceiptDesk = lazy(() =>
+  import("#/desktop/wallet/send-receipt-desk").then((module) => ({
+    default: module.SendReceiptDesk,
+  })),
+);
+
 export const Route = createFileRoute("/wallet/send/receipt")({
+  staticData: { desktop: "fill" },
   validateSearch: sendReceiptSearchSchema,
   component: SendReceiptRoute,
 });
 
 function SendReceiptRoute() {
-  const {
-    trackingId,
-    recipient,
-    recipientLabel,
-    amount,
-    symbol,
-    token,
-    uoaValue,
-    uoa,
-    uoaUnavailable,
-    returnPool,
-  } = Route.useSearch();
+  const search = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <SendReceiptPage
-        token={token}
-        trackingId={trackingId}
-        recipient={recipient}
-        recipientLabel={recipientLabel}
-        amount={amount}
-        symbol={symbol}
-        uoaValue={uoaValue}
-        uoa={uoa}
-        uoaUnavailable={uoaUnavailable}
-        returnPool={returnPool}
-      />
+      <LayoutSwitch mobile={<SendReceiptPage {...search} />} desktop={<SendReceiptDesk />} />
     </AuthenticatedRoute>
   );
 }

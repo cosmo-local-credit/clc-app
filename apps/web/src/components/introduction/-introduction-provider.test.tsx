@@ -109,3 +109,19 @@ it("releases the route immediately when a guest chooses Market", async () => {
   expect(screen.getByText("App content")).toBeTruthy();
   expect(screen.queryByTestId("welcome")).toBeNull();
 });
+
+it("skips the carousel on desktop and opens the concept grid from replay", async () => {
+  render(
+    <IntroductionProvider desktop>
+      <p>App content</p>
+      <IntroductionReplayButton />
+    </IntroductionProvider>,
+  );
+  expect(await screen.findByText("App content")).toBeTruthy();
+  expect(screen.queryByTestId("welcome")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "How to use CLC" }));
+  expect(mock.navigate).toHaveBeenCalledWith({
+    to: "/onboarding",
+    search: { step: "welcome" },
+  });
+});

@@ -1,39 +1,14 @@
-import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
 import {
-  type PoolCreateInput,
-  PoolOracleUnavailableError,
-  type PoolPricing,
-  chainHasPoolOracle,
   hasPoolOracleBaseCurrency,
-  poolCreateSchemaForChain,
+  type PoolPricing,
   poolDeploymentContractCount,
-  poolDescriptionSchema,
-  poolFeeAddressSchema,
-  poolNameSchema,
-  poolSwapFeeSchema,
-  poolSymbolSchema,
-  poolTermsSchema,
-  poolUnitSchemaForPricing,
-  toPoolDeployPayload,
 } from "@clc/core/features/pools/logic";
-import {
-  isHttpUrl,
-  optionalEmailSchema,
-  optionalPhoneSchema,
-  optionalTermsTextSchema,
-  optionalTermsUrlSchema,
-  optionalWebsiteSchema,
-  TERMS_TEXT_MAX,
-} from "@clc/core/lib/contact";
-import { profilePrefill } from "@clc/core/features/signup/prefill";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { isHttpUrl, TERMS_TEXT_MAX } from "@clc/core/lib/contact";
+import { getFieldError } from "@clc/core/lib/forms";
 import { findUnitOfAccountOption } from "@clc/core/lib/currencies";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { getAddress } from "viem";
-import { useConnection } from "wagmi";
+import { useRouter } from "@tanstack/react-router";
+import { useRef, useState } from "react";
 
 import { PublicContactWarning } from "#/components/public-contact-warning";
 import { PublicLocationWarning } from "#/components/public-location-warning";
@@ -56,274 +31,46 @@ import { Textarea } from "#/components/ui/textarea";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
-import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { ResourceUsage } from "#/components/resource-usage";
-import { useResourceUsage } from "#/hooks/use-resource-usage";
-import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
-import { useTokenTags } from "#/hooks/use-deployment";
-import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
-import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
-import { isStorageConfigured } from "#/lib/api/storage";
-import { CHAIN_ID } from "#/lib/chain";
 import {
-  beginPoolCreateHistory,
-  exitPoolCreateHistory,
-} from "#/lib/navigation/pool-create-history";
+  type PoolCreateStep,
+  useCreatePoolForm,
+} from "#/features/pools/hooks/use-create-pool-form";
+import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { PoolDetailsRows } from "./pool-details-rows";
 
-export type PoolCreateStep = "pool" | "place" | "review";
-
-type PoolFormValues = Omit<PoolCreateInput, "location" | "acceptedTerms"> & {
-  location: LocationInput | undefined;
-  /** Form-only: whether `terms` is a link or the terms themselves. */
-  termsMode: "url" | "text";
-  acceptedTerms: boolean;
-};
-
-const DEFAULT_VALUES: PoolFormValues = {
-  name: "",
-  symbol: "",
-  unitOfAccount: "KES",
-  description: "",
-  pricing: "relative",
-  feePolicyDefault: "0",
-  feesDecoupled: false,
-  feeAddress: "",
-  location: undefined,
-  tags: [],
-  email: "",
-  website: "",
-  phone: "",
-  terms: "",
-  termsMode: "url",
-  imageUrl: "",
-  acceptedTerms: false,
-};
-
-/** The text fields a saved profile can seed, all of which default to "". */
-type SeedableTextField = "name" | "email" | "phone" | "website" | "description" | "imageUrl";
-
-const DETAIL_FIELDS = [
-  "name",
-  "symbol",
-  "unitOfAccount",
-  "description",
-  "feePolicyDefault",
-] as const;
-/** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
-const ADVANCED_FIELDS = ["symbol", "feePolicyDefault"] as const;
-const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "imageUrl"] as const;
+export type { PoolCreateStep };
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const { i18n, t } = useLingui();
-  const navigate = useNavigate();
   const router = useRouter();
-  const { address, chainId } = useConnection();
-  // Pre-connect the form still has to validate, so it assumes the chain this
-  // build was configured for — which is the one the wallet will connect to.
-  const activeChainId = chainId ?? CHAIN_ID;
-  const hasOracle = chainHasPoolOracle(activeChainId);
-  const defaultPricing: PoolPricing = "relative";
-  const poolCreateSchema = poolCreateSchemaForChain(activeChainId);
-  const deployPool = useDeployPool();
-  const usage = useResourceUsage();
-  const tagsQuery = useTokenTags();
-  const profileQuery = useAuthProfile();
-  const draft = usePoolCreateDraft((state) => state.draft);
-  const setDraft = usePoolCreateDraft((state) => state.setDraft);
-  const hasPrefilledProfile = useRef(false);
   const advancedRef = useRef<HTMLDetailsElement>(null);
-  const suggestedSymbol = useSuggestedSymbol({ kind: "pool", initialSymbol: draft?.symbol ?? "" });
-  const checkNameAvailable = useNameAvailabilityValidator("pool");
   const [tagsOpen, setTagsOpen] = useState(false);
-  const [logoBusy, setLogoBusy] = useState(false);
-  const [advancing, setAdvancing] = useState(false);
-
-  // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
-  // receipt failure is what causes TanStack Form to consume these defaults again.
-  const form = useForm({
-    defaultValues: draft
-      ? {
-          ...draft,
-          termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
-        }
-      : { ...DEFAULT_VALUES, pricing: defaultPricing },
-    validators: {
-      // The form-only terms mode is deliberately absent from the persisted
-      // create input, so translate the Standard Schema issues by field.
-      onSubmit: ({ value }) => {
-        const result = poolCreateSchema.safeParse(value);
-        if (result.success) return undefined;
-        const fields: Record<string, string> = {};
-        for (const issue of result.error.issues) {
-          const key = issue.path.map(String).join(".");
-          if (key !== "" && !(key in fields)) fields[key] = issue.message;
-        }
-        return { fields };
-      },
-    },
-    onSubmit: async ({ value }) => {
-      if (usage.isError || !usage.data?.pools.canCreate) return;
-      if (!address || chainId === undefined) {
-        toast.error(t`Connect your wallet before publishing.`);
-        return;
-      }
-      const check = await suggestedSymbol.confirm(value.name, value.symbol);
-      if (!check.ok) {
-        toast.error(t`That symbol is already in use.`);
-        return;
-      }
-      if (check.symbol !== value.symbol) {
-        form.setFieldValue("symbol", check.symbol);
-        toast.info(t`Symbol was taken, using ${check.symbol} instead.`);
-      }
-      const parsed = poolCreateSchema.parse({ ...value, symbol: check.symbol });
-      setDraft(parsed);
-      try {
-        const result = await deployPool.mutateAsync(
-          toPoolDeployPayload(parsed, getAddress(address), chainId),
-        );
-        exitPoolCreateHistory({
-          history: router.history,
-          destination: `/pools/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}`,
-        });
-      } catch (error) {
-        if (error instanceof BackendApiError && error.code === "E11") {
-          toast.error(t`Limit reached. Ask an administrator to increase your allowance.`);
-          return;
-        }
-        // See create-voucher-flow: the availability check is advisory, so the
-        // name can be taken between step 1 and publish.
-        if (error instanceof BackendApiError && error.kind === "conflict") {
-          toast.error(t`That pool name was taken while you were filling this in.`);
-          void navigate({ to: "/pools/create/$step", params: { step: "pool" } });
-          void form.validateField("name", "submit");
-          return;
-        }
-        toast.error(
-          error instanceof BackendApiError
-            ? formatBackendApiError(error)
-            : error instanceof PoolOracleUnavailableError
-              ? t`The selected unit does not have a configured price feed.`
-              : error instanceof Error
-                ? error.message
-                : t`Couldn't publish your pool.`,
-        );
-      }
+  const {
+    form,
+    validators,
+    activeChainId,
+    hasOracle,
+    usage,
+    deployPool,
+    tagsQuery,
+    advancing,
+    logoBusy,
+    setLogoBusy,
+    fillSuggestedSymbol,
+    suggestSymbolFor,
+    normalizeSymbol,
+    syncPricingToUnit,
+    syncFeeFields,
+    goToPlace,
+    goToReview,
+  } = useCreatePoolForm({
+    step,
+    revealAdvanced: () => {
+      if (advancedRef.current) advancedRef.current.open = true;
     },
   });
-
-  // A steward already gave all of this during onboarding, so the form starts
-  // from it. Only an untouched field still holding its default is seeded — a
-  // retry draft, or anything typed over, always wins.
-  useEffect(() => {
-    const profile = profileQuery.data;
-    if (hasPrefilledProfile.current || !profile || draft) return;
-    hasPrefilledProfile.current = true;
-
-    const prefill = profilePrefill(profile);
-
-    function seedText(name: SeedableTextField, value: string) {
-      if (!value) return;
-      if (form.getFieldMeta(name)?.isTouched) return;
-      if (form.getFieldValue(name) !== "") return;
-      form.setFieldValue(name, value, { dontUpdateMeta: true });
-    }
-
-    seedText("email", prefill.email);
-    seedText("phone", prefill.phone);
-    seedText("website", prefill.website);
-    seedText("name", prefill.name ? `${prefill.name} Pool` : "");
-    // The bio is free text with no minimum, so it only becomes a description
-    // when it would pass as one.
-    if (poolDescriptionSchema.safeParse(prefill.description).success) {
-      seedText("description", prefill.description);
-    }
-    // Only where the upload fields are rendered: seeding a hidden field would
-    // attach a photo the steward was never shown.
-    if (isStorageConfigured) seedText("imageUrl", prefill.imageUrl);
-
-    // A pool unit is the narrower set, and under oracle pricing it also has to
-    // be one this chain has a feed for — so the preference is offered to the
-    // same schema the field itself validates against rather than assumed.
-    const preferredUnit = poolUnitSchemaForPricing(
-      form.getFieldValue("pricing"),
-      activeChainId,
-    ).safeParse(prefill.unitOfAccount);
-    if (
-      preferredUnit.success &&
-      !form.getFieldMeta("unitOfAccount")?.isTouched &&
-      form.getFieldValue("unitOfAccount") === DEFAULT_VALUES.unitOfAccount
-    ) {
-      form.setFieldValue("unitOfAccount", preferredUnit.data, { dontUpdateMeta: true });
-    }
-
-    if (
-      prefill.location &&
-      !form.getFieldMeta("location")?.isTouched &&
-      form.getFieldValue("location") === undefined
-    ) {
-      form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
-    }
-  }, [activeChainId, draft, form, profileQuery.data]);
-
-  useEffect(() => {
-    if (step === "pool") beginPoolCreateHistory(router.history);
-  }, [router.history, step]);
-
-  useEffect(() => {
-    if (step === "pool") return;
-    if (poolNameSchema.safeParse(form.getFieldValue("name")).success) return;
-    void navigate({ to: "/pools/create/$step", params: { step: "pool" }, replace: true });
-  }, [form, navigate, step]);
-
-  async function fieldsAreValid(fields: readonly (keyof PoolFormValues)[]) {
-    const results = await Promise.all(
-      fields.map((field) => Promise.resolve(form.validateField(field, "submit"))),
-    );
-    return results.every((errors) => errors.length === 0);
-  }
-
-  /**
-   * Writes the derived symbol into the still-empty field.
-   *
-   * Called both when "Advanced" unfolds and on the way out of the step: the
-   * field is only ever looked at from inside the disclosure, so a suggestion
-   * that arrives at Next is one the user never sees being made.
-   */
-  async function fillSuggestedSymbol() {
-    if (form.getFieldValue("symbol") !== "") return;
-    const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
-    if (symbol) form.setFieldValue("symbol", symbol);
-  }
-
-  async function goToPlace() {
-    // The symbol lookup and the name check reach the backend, so Next waits
-    // visibly rather than looking dead.
-    setAdvancing(true);
-    try {
-      // Blur may not have fired, or its lookup may still be in flight.
-      await fillSuggestedSymbol();
-      if (!(await fieldsAreValid(DETAIL_FIELDS))) {
-        if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
-          if (advancedRef.current) advancedRef.current.open = true;
-        }
-        return;
-      }
-    } finally {
-      setAdvancing(false);
-    }
-    void navigate({ to: "/pools/create/$step", params: { step: "place" } });
-  }
-
-  async function goToReview() {
-    if (logoBusy) return;
-    if (!(await fieldsAreValid(PLACE_FIELDS))) return;
-    void navigate({ to: "/pools/create/$step", params: { step: "review" } });
-  }
 
   const progressStep = step === "pool" ? 1 : step === "place" ? 2 : 3;
   const fallbackTo =
@@ -374,16 +121,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             </aside>
 
             <div className="mt-3.5 space-y-3.5">
-              <form.Field
-                name="name"
-                asyncDebounceMs={400}
-                validators={{
-                  onBlur: poolNameSchema,
-                  onSubmit: poolNameSchema,
-                  onChangeAsync: checkNameAvailable,
-                  onSubmitAsync: checkNameAvailable,
-                }}
-              >
+              <form.Field name="name" asyncDebounceMs={400} validators={validators.name}>
                 {(field) => (
                   <Field
                     label={t`Pool Name`}
@@ -397,9 +135,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       onChange={(event) => field.handleChange(event.target.value)}
                       onBlur={() => {
                         field.handleBlur();
-                        void suggestedSymbol.suggest(field.state.value).then((symbol) => {
-                          if (symbol !== undefined) form.setFieldValue("symbol", symbol);
-                        });
+                        suggestSymbolFor(field.state.value);
                       }}
                       placeholder={t`Enter pool name`}
                       aria-invalid={field.state.meta.errors.length > 0}
@@ -410,13 +146,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
 
               <form.Subscribe selector={(state) => state.values.pricing}>
                 {(pricing) => (
-                  <form.Field
-                    name="unitOfAccount"
-                    validators={{
-                      onBlur: poolUnitSchemaForPricing(pricing, activeChainId),
-                      onSubmit: poolUnitSchemaForPricing(pricing, activeChainId),
-                    }}
-                  >
+                  <form.Field name="unitOfAccount" validators={validators.unitOfAccount(pricing)}>
                     {(field) => (
                       <Field
                         label={t`Unit of Account`}
@@ -428,12 +158,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                           value={field.state.value}
                           onValueChange={(unit) => {
                             field.handleChange(unit);
-                            if (
-                              form.getFieldValue("pricing") === "oracle" &&
-                              !hasPoolOracleBaseCurrency(unit, activeChainId)
-                            ) {
-                              form.setFieldValue("pricing", "relative");
-                            }
+                            syncPricingToUnit(unit);
                           }}
                           placeholder={t`Search units of account`}
                           emptyMessage={t`No units of account found`}
@@ -444,13 +169,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 )}
               </form.Subscribe>
 
-              <form.Field
-                name="description"
-                validators={{
-                  onBlur: poolDescriptionSchema,
-                  onSubmit: poolDescriptionSchema,
-                }}
-              >
+              <form.Field name="description" validators={validators.description}>
                 {(field) => (
                   <Field
                     label={t`Pool Description`}
@@ -484,10 +203,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   id="pool-advanced"
                   className="mt-4 space-y-3.5 border border-border bg-card p-4"
                 >
-                  <form.Field
-                    name="symbol"
-                    validators={{ onBlur: poolSymbolSchema, onSubmit: poolSymbolSchema }}
-                  >
+                  <form.Field name="symbol" validators={validators.symbol}>
                     {(field) => (
                       <Field
                         label={t`Pool symbol`}
@@ -497,11 +213,9 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         <Input
                           id="pool-symbol"
                           value={field.state.value}
-                          onChange={(event) => {
-                            const symbol = event.target.value.toUpperCase();
-                            field.handleChange(symbol);
-                            suggestedSymbol.track(symbol);
-                          }}
+                          onChange={(event) =>
+                            field.handleChange(normalizeSymbol(event.target.value))
+                          }
                           onBlur={field.handleBlur}
                           placeholder={t`Enter pool symbol, eg. ABC1`}
                           maxLength={6}
@@ -563,10 +277,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     )}
                   </form.Field>
 
-                  <form.Field
-                    name="feePolicyDefault"
-                    validators={{ onBlur: poolSwapFeeSchema, onSubmit: poolSwapFeeSchema }}
-                  >
+                  <form.Field name="feePolicyDefault" validators={validators.feePolicyDefault}>
                     {(field) => (
                       <Field
                         label={t`Swap Fee (%)`}
@@ -581,22 +292,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                           onChange={(event) => {
                             const fee = event.target.value;
                             field.handleChange(fee);
-                            if (Number(fee) > 0) {
-                              // The recipient starts as the connected wallet,
-                              // which is where the pool pays fees when nothing
-                              // else is named. Seeded, not bound: a steward who
-                              // typed another address keeps it.
-                              if (address && form.getFieldValue("feeAddress") === "") {
-                                form.setFieldValue("feeAddress", getAddress(address), {
-                                  dontUpdateMeta: true,
-                                });
-                              }
-                              return;
-                            }
-                            form.setFieldValue("feesDecoupled", false, {
-                              dontUpdateMeta: true,
-                            });
-                            form.setFieldValue("feeAddress", "", { dontUpdateMeta: true });
+                            syncFeeFields(fee);
                           }}
                           onBlur={field.handleBlur}
                           aria-invalid={field.state.meta.errors.length > 0}
@@ -638,13 +334,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   <form.Subscribe selector={(state) => Number(state.values.feePolicyDefault) > 0}>
                     {(hasFee) =>
                       hasFee ? (
-                        <form.Field
-                          name="feeAddress"
-                          validators={{
-                            onBlur: poolFeeAddressSchema,
-                            onSubmit: poolFeeAddressSchema,
-                          }}
-                        >
+                        <form.Field name="feeAddress" validators={validators.feeAddress}>
                           {(field) => (
                             <Field
                               label={t`Fee recipient`}
@@ -712,7 +402,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 </div>
               ) : null}
 
-              <form.Field name="location" validators={{ onSubmit: locationSchema }}>
+              <form.Field name="location" validators={validators.location}>
                 {(field) => {
                   const error = getFieldError(field.state.meta.errors);
                   return (
@@ -776,10 +466,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
 
               <PublicContactWarning />
 
-              <form.Field
-                name="email"
-                validators={{ onBlur: optionalEmailSchema, onSubmit: optionalEmailSchema }}
-              >
+              <form.Field name="email" validators={validators.email}>
                 {(field) => (
                   <Field
                     label={t`Contact Email`}
@@ -801,10 +488,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 )}
               </form.Field>
 
-              <form.Field
-                name="website"
-                validators={{ onBlur: optionalWebsiteSchema, onSubmit: optionalWebsiteSchema }}
-              >
+              <form.Field name="website" validators={validators.website}>
                 {(field) => (
                   <Field
                     label={t`Contact Website`}
@@ -827,10 +511,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 )}
               </form.Field>
 
-              <form.Field
-                name="phone"
-                validators={{ onBlur: optionalPhoneSchema, onSubmit: optionalPhoneSchema }}
-              >
+              <form.Field name="phone" validators={validators.phone}>
                 {(field) => (
                   <Field
                     label={t`Contact Phone`}
@@ -867,13 +548,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     </div>
 
                     {modeField.state.value === "text" ? (
-                      <form.Field
-                        name="terms"
-                        validators={{
-                          onBlur: optionalTermsTextSchema,
-                          onSubmit: optionalTermsTextSchema,
-                        }}
-                      >
+                      <form.Field name="terms" validators={validators.termsText}>
                         {(field) => {
                           const error = getFieldError(field.state.meta.errors);
                           return (
@@ -904,13 +579,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         }}
                       </form.Field>
                     ) : (
-                      <form.Field
-                        name="terms"
-                        validators={{
-                          onBlur: optionalTermsUrlSchema,
-                          onSubmit: optionalTermsUrlSchema,
-                        }}
-                      >
+                      <form.Field name="terms" validators={validators.termsUrl}>
                         {(field) => {
                           const error = getFieldError(field.state.meta.errors);
                           return (
@@ -978,7 +647,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             </form.Subscribe>
 
             <div className="mt-3.5 space-y-3">
-              <form.Field name="acceptedTerms" validators={{ onSubmit: poolTermsSchema }}>
+              <form.Field name="acceptedTerms" validators={validators.acceptedTerms}>
                 {(field) => (
                   <TermsAcceptanceField
                     id="pool-terms"

@@ -1,9 +1,4 @@
-import {
-  formatOfferingDisplayPrice,
-  formatOfferingDisplayValue,
-  formatOfferingPrice,
-  formatOfferingQuantity,
-} from "@clc/core/features/market/logic";
+import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
@@ -24,9 +19,13 @@ import {
 } from "#/components/ui/sheet";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
-import type { Offering, OfferingFrequency } from "@clc/api/features/offerings/client";
+import type { Offering } from "@clc/api/features/offerings/client";
 import { cn } from "#/lib/utils";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
+import {
+  resolveOfferingDisplayPrice,
+  useOfferingFrequencyLabel,
+} from "#/components/offerings/offering-display";
 
 /**
  * The shape both offering screens' infinite queries satisfy. Declared
@@ -567,27 +566,6 @@ function OfferingDetailsSheet({
   );
 }
 
-function resolveOfferingDisplayPrice(
-  offering: Offering,
-  voucherRate: OfferingVoucherRate | null,
-  locale: string,
-): { value: string; unit: string } | null {
-  if (!formatOfferingPrice(offering.pricePerUnit)) return null;
-
-  const converted = voucherRate
-    ? formatOfferingDisplayPrice(offering.pricePerUnit, voucherRate.value, voucherRate.unit, "")
-    : offering.priceInUnitOfAccount && offering.voucherUoa
-      ? {
-          value: formatOfferingPrice(offering.priceInUnitOfAccount)?.value ?? "",
-          unit: offering.voucherUoa.trim(),
-        }
-      : null;
-  if (!converted?.value || !converted.unit) return null;
-
-  const localized = formatOfferingDisplayValue(converted.value, locale);
-  return localized ? { value: localized, unit: converted.unit } : null;
-}
-
 /**
  * An offering's photo, or a seeded monogram when it has none or the fetch
  * failed. 44% of the imported catalog has no image, so the fallback is a normal
@@ -643,20 +621,4 @@ function offeringInitials(commodityName: string): string {
       .join("")
       .toLocaleUpperCase() || "OF"
   );
-}
-
-function useOfferingFrequencyLabel(frequency: OfferingFrequency | null): string | null {
-  const { t } = useLingui();
-  switch (frequency) {
-    case "day":
-      return t`Daily`;
-    case "week":
-      return t`Weekly`;
-    case "month":
-      return t`Monthly`;
-    case "year":
-      return t`Yearly`;
-    case null:
-      return null;
-  }
 }

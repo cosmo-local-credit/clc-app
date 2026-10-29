@@ -1,12 +1,8 @@
-import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import type { ProfileResult } from "@clc/api/features/auth/client";
-import { usernameSchema } from "@clc/core/features/signup/logic";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { RiAtLine, RiFileCopyLine } from "react-icons/ri";
-import { toast } from "sonner";
-import { z } from "zod";
 
 import { UsernameInput } from "#/components/profile/username-input";
 import { ActionRow } from "#/components/ui/action-row";
@@ -20,14 +16,8 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
-import { translateRecipientError } from "#/lib/recipient-error-i18n";
+import { useCopyUsername, useUsernameForm } from "#/features/auth/hooks/use-username-form";
 import { translateValidationError } from "#/lib/validation-i18n";
-
-// Blank means "pick one for me" at signup; here it would save nothing.
-const chosenUsernameSchema = usernameSchema.refine((value) => value !== "", {
-  message: "Username must contain 1–80 characters",
-});
 
 /**
  * The account's public name, kept apart from the contact form: it is what other
@@ -38,17 +28,7 @@ export function ProfileUsernameSection({ profile }: { profile: ProfileResult }) 
   const { t } = useLingui();
   const [open, setOpen] = useState(false);
   const username = profile.username ?? null;
-
-  const copy = (value: string) => {
-    if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy username`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(t`Username copied`))
-      .catch(() => toast.error(t`Couldn't copy username`));
-  };
+  const copy = useCopyUsername();
 
   return (
     // One row split in two: the row opens the username sheet, and copying gets
@@ -113,39 +93,9 @@ export function ProfileUsernameSection({ profile }: { profile: ProfileResult }) 
 
 function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: () => void }) {
   const { i18n, t } = useLingui();
-  const updateProfile = useUpdateProfile();
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const current = profile.username ?? null;
-
-  const form = useForm({
-    defaultValues: { username: current ?? "" },
-    validators: { onChange: z.object({ username: chosenUsernameSchema }) },
-    onSubmit: async ({ value }) => {
-      setSubmitError(null);
-      try {
-        // POST /auth/profile overwrites name, email, phone and country, so the
-        // stored values go back unchanged; everything else is preserved on
-        // omission. The contact form's unsaved edits are not this sheet's to save.
-        await updateProfile.mutateAsync({
-          name: profile.name,
-          username: chosenUsernameSchema.parse(value.username),
-          email: profile.email,
-          phone: profile.phone,
-          country: profile.country,
-        });
-        toast.success(t`Username updated`);
-        onClose();
-      } catch (err) {
-        setSubmitError(
-          translateRecipientError(err, i18n) ??
-            (err instanceof BackendApiError
-              ? formatBackendApiError(err)
-              : err instanceof Error
-                ? err.message
-                : t`Couldn't save your username.`),
-        );
-      }
-    },
+  const { form, current, submitError, clearSubmitError, saving } = useUsernameForm({
+    profile,
+    onClose,
   });
 
   return (
@@ -168,7 +118,7 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
                 value={field.state.value}
                 hint={() => profile.name}
                 onChange={(next) => {
-                  setSubmitError(null);
+                  clearSubmitError();
                   field.handleChange(next);
                 }}
                 onBlur={field.handleBlur}
@@ -220,7 +170,7 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
           variant="outline"
           tap
           className="w-full"
-          disabled={updateProfile.isPending}
+          disabled={saving}
           onClick={onClose}
         >
           <Trans>Cancel</Trans>

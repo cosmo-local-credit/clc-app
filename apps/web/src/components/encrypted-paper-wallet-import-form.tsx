@@ -1,11 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { FiLock, FiX } from "react-icons/fi";
-import type { FormEvent } from "react";
-import { useEffect, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { PasswordInput } from "#/components/ui/password-input";
-import { decryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
+import { useEncryptedPaperWalletImport } from "#/components/use-encrypted-paper-wallet-import";
 import { cn } from "#/lib/utils";
 
 type EncryptedPaperWalletImportFormProps = {
@@ -22,34 +20,8 @@ export function EncryptedPaperWalletImportForm({
   className,
 }: EncryptedPaperWalletImportFormProps) {
   const { t } = useLingui();
-  const [passphrase, setPassphrase] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [decrypting, setDecrypting] = useState(false);
-  const isMounted = useRef(true);
-
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setDecrypting(true);
-    try {
-      const privateKey = await decryptPaperWalletPrivateKey(encryptedKey, passphrase);
-      await onDecrypted(privateKey);
-      if (isMounted.current) setPassphrase("");
-    } catch (err) {
-      if (isMounted.current) {
-        setError(err instanceof Error ? err.message : t`Could not unlock this sign-in card.`);
-      }
-    } finally {
-      if (isMounted.current) setDecrypting(false);
-    }
-  }
+  const { passphrase, setPassphrase, error, decrypting, handleSubmit } =
+    useEncryptedPaperWalletImport({ encryptedKey, onDecrypted });
 
   return (
     <form
@@ -82,10 +54,7 @@ export function EncryptedPaperWalletImportForm({
           id="encrypted-paper-wallet-password"
           autoComplete="current-password"
           value={passphrase}
-          onChange={(event) => {
-            setPassphrase(event.target.value);
-            setError(null);
-          }}
+          onChange={(event) => setPassphrase(event.target.value)}
           aria-invalid={!!error}
         />
       </div>

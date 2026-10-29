@@ -13,12 +13,15 @@ const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
 
 export type HomeTab = (typeof homeTabs)[number];
 export type MarketView = "map" | "list";
+/** The Wallet's Holdings chip on a wide screen; absent means All. */
+export type HoldingsFilter = "vouchers" | "stables";
 
 export type HomeRouteSearch = VoucherSheetSearch &
   WantSheetSearch &
   ActivityRouteSearch & {
     tab?: HomeTab;
     view?: MarketView;
+    holdings?: HoldingsFilter;
   };
 
 export function parseHomeTab(value: unknown): HomeTab {
@@ -42,6 +45,9 @@ export function parseHomeSearch(
     ...pickActivitySearch(search),
     ...parseVoucherSheetSearch(search),
     ...parseWantSheetSearch(search),
+    ...(search.holdings === "vouchers" || search.holdings === "stables"
+      ? { holdings: search.holdings }
+      : {}),
   };
 }
 

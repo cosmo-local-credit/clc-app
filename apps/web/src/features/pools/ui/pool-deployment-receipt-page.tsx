@@ -1,81 +1,29 @@
-import {
-  getPoolDeploymentStages,
-  type PoolDeploymentStage,
-  type PoolDeploymentStageState,
-} from "@clc/core/features/pools/logic";
+import type { PoolDeploymentStage, PoolDeploymentStageState } from "@clc/core/features/pools/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { RiCheckLine, RiCloseLine, RiRefreshLine, RiTimeLine } from "react-icons/ri";
-import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { InfoRow } from "#/components/ui/info-row";
 import { StepProgress } from "#/components/ui/step-progress";
 import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
-import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
-import {
-  getPoolDeploymentRecords,
-  getPoolTrackingOutcome,
-} from "@clc/api/features/pools/deploy-client";
-import { poolKeys } from "@clc/api/features/pools/queries";
-import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
-import { useDeploymentContract } from "#/hooks/use-deployment";
-import { exitPoolCreateHistory } from "#/lib/navigation/pool-create-history";
+import { usePoolDeploymentReceipt } from "#/features/pools/hooks/use-pool-deployment-receipt";
 import { PoolDetailsRows } from "./pool-details-rows";
 
 export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string }) {
   const { t } = useLingui();
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const clearDraft = usePoolCreateDraft((state) => state.clearDraft);
-  const draft = usePoolCreateDraft((state) => state.draft);
-  const draftPricing = draft?.pricing;
-  const tracking = useOtxTracking(trackingId ?? null, {
-    queryKey: "pool-deploy-track",
-    getOutcome: getPoolTrackingOutcome,
-  });
-  const records = getPoolDeploymentRecords(tracking.data);
-  const stages = getPoolDeploymentStages(
-    records,
-    {
-      registry: t`Voucher registry`,
-      limits: t`Limits`,
-      feePolicy: t`Fee policy`,
-      pricing: t`Pricing`,
-      pool: t`The pool`,
-    },
-    {
-      confirmed: t`Confirmed`,
-      inNetwork: t`In network`,
-      failed: t`Failed`,
-      reverted: t`Reverted`,
-      queued: t`Queued`,
-      notSent: t`Not sent`,
-    },
-    draftPricing,
-  );
-  const completedCount = stages.filter((stage) => stage.state === "done").length;
-  const failedStage = stages.find((stage) => stage.state === "failed");
-  const contractQuery = useDeploymentContract(
-    trackingId ?? null,
-    "POOL",
-    tracking.outcome.kind === "success",
-  );
-  const contract = contractQuery.data;
-  const confirmed = contract?.status === "CONFIRMED" && contract.address !== null;
-
-  useEffect(() => {
-    if (!confirmed) return;
-    void queryClient.invalidateQueries({ queryKey: poolKeys.all });
-  }, [confirmed, queryClient]);
-
-  const exit = (destination: string, preserveDraft = false) => {
-    if (!preserveDraft) clearDraft();
-    exitPoolCreateHistory({ history: router.history, destination });
-  };
+  const {
+    draft,
+    stages,
+    completedCount,
+    contract,
+    confirmed,
+    failed,
+    failureMessage,
+    txHash,
+    exit,
+    copyValue,
+  } = usePoolDeploymentReceipt(trackingId);
 
   if (!trackingId) {
     return (
@@ -93,19 +41,12 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
     );
   }
 
-  if (tracking.outcome.kind === "error" || contractQuery.isError || contract?.status === "FAILED") {
-    const message = failedStage
-      ? t`${failedStage.label} failed on-chain. The pool was not created.`
-      : tracking.outcome.kind === "error"
-        ? tracking.outcome.error
-        : contractQuery.error instanceof Error
-          ? contractQuery.error.message
-          : t`The pool could not be published.`;
+  if (failed) {
     return (
       <DeploymentStateShell
         icon={<FailureCross />}
         title={t`Publishing failed`}
-        message={message}
+        message={failureMessage}
         status={<StatusPill tone="error" label={t`Failed`} />}
         stages={stages}
         actions={
@@ -123,7 +64,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
     );
   }
 
-  if (!confirmed || !contract.address) {
+  if (!confirmed || !contract?.address) {
     return (
       <DeploymentStateShell
         icon={<PendingClock />}
@@ -142,17 +83,6 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
   }
 
   const address = contract.address;
-  const txHash = tracking.outcome.kind === "success" ? tracking.outcome.otx.txHash : "";
-  const copyValue = (value: string, successMessage: string, errorMessage: string) => {
-    if (!navigator.clipboard) {
-      toast.error(errorMessage);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(successMessage))
-      .catch(() => toast.error(errorMessage));
-  };
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { type PoolTransfer, buildPoolActivity } from "./pool-activity";
+import { type PoolTransfer, buildPoolActivity, countSwapsSince } from "./pool-activity";
 
 const TRADER = "0x1111111111111111111111111111111111111111";
 const OTHER = "0x2222222222222222222222222222222222222222";
@@ -223,5 +223,29 @@ describe("buildPoolActivity", () => {
       0,
     );
     expect(accounted).toBe(rows.length);
+  });
+});
+
+describe("countSwapsSince", () => {
+  const since = new Date("2026-09-01T00:00:00Z");
+  const at = (legs: PoolTransfer[], dateBlock: string) =>
+    legs.map((leg) => ({ ...leg, dateBlock }));
+
+  it("counts reassembled swaps inside the window, not their legs or deposits", () => {
+    const transfers = [
+      ...at(swapLegs({ txHash: "0xa" }), "2026-09-10T00:00:00Z"),
+      transfer({ txHash: "0xb", dateBlock: "2026-09-05T00:00:00Z" }),
+      ...at(swapLegs({ txHash: "0xc" }), "2026-09-02T00:00:00Z"),
+      ...at(swapLegs({ txHash: "0xd" }), "2026-08-20T00:00:00Z"),
+    ];
+
+    expect(countSwapsSince(transfers, since, true)).toEqual({ count: 2, complete: true });
+  });
+
+  it("is incomplete while more history may still fall inside the window", () => {
+    const transfers = at(swapLegs({ txHash: "0xa" }), "2026-09-10T00:00:00Z");
+
+    expect(countSwapsSince(transfers, since, true)).toEqual({ count: 1, complete: false });
+    expect(countSwapsSince(transfers, since, false)).toEqual({ count: 1, complete: true });
   });
 });

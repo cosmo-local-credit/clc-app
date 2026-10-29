@@ -43,6 +43,9 @@ import {
   BRAND_THEME_COLOR,
 } from "#/lib/brand";
 import { AppI18nProvider } from "#/providers/i18n";
+import { DesktopBoundary } from "#/desktop/shell/boundary";
+import { layoutBootstrapScript, useLayout } from "#/desktop/layout";
+import { LayoutSwitch } from "#/desktop/switch";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
@@ -51,6 +54,7 @@ import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
 import { useInstallPromptListener } from "#/features/install/install-store";
 import { installBootstrapScript } from "#/features/install/install-bootstrap";
 import { IntroductionProvider } from "#/components/introduction/introduction-provider";
+import { type AuthGateSlot, AuthGateSlotProvider } from "#/components/auth/auth-gate-slot";
 import appCss from "../styles.css?url";
 
 const AppDevtools = import.meta.env.DEV
@@ -60,6 +64,27 @@ const AppDevtools = import.meta.env.DEV
       })),
     )
   : null;
+
+const SafePendingDesk = lazy(() =>
+  import("#/desktop/safe/safe-pending-desk").then((module) => ({
+    default: module.SafePendingDesk,
+  })),
+);
+
+const DeskAuthRequired = lazy(() =>
+  import("#/desktop/auth/auth-gate-desk").then((module) => ({ default: module.DeskAuthRequired })),
+);
+const DeskSessionCheckError = lazy(() =>
+  import("#/desktop/auth/auth-gate-desk").then((module) => ({
+    default: module.DeskSessionCheckError,
+  })),
+);
+
+/** What a guest on a protected route sees on desktop, in place of the phone's gate. */
+const DESKTOP_AUTH_GATE: AuthGateSlot = {
+  required: (props) => <DeskAuthRequired {...props} />,
+  sessionError: (props) => <DeskSessionCheckError {...props} />,
+};
 
 const EncryptedPaperWalletImportForm = lazy(() =>
   import("#/components/encrypted-paper-wallet-import-form").then((module) => ({
@@ -130,6 +155,7 @@ function AppInner() {
   const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
     useScanUrlImport({ address, isSwitching: switching });
   const [switchError, setSwitchError] = useState<string | null>(null);
+  const layout = useLayout();
 
   const pendingAddress = useMemo(
     () => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
@@ -251,11 +277,18 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
-      <SafePendingSheet />
-      <IntroductionProvider suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}>
-        <RootDiscoveryLocation>
-          <Outlet />
-        </RootDiscoveryLocation>
+      <LayoutSwitch mobile={<SafePendingSheet />} desktop={<SafePendingDesk />} />
+      <IntroductionProvider
+        desktop={layout === "desktop"}
+        suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}
+      >
+        <AuthGateSlotProvider value={layout === "desktop" ? DESKTOP_AUTH_GATE : null}>
+          <RootDiscoveryLocation>
+            <DesktopBoundary>
+              <Outlet />
+            </DesktopBoundary>
+          </RootDiscoveryLocation>
+        </AuthGateSlotProvider>
       </IntroductionProvider>
       {pendingEncryptedKey ? (
         <DialogRoot
@@ -404,6 +437,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: installBootstrapScript }} />
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: layoutBootstrapScript }} />
       </head>
       <body>
         {children}

@@ -1,21 +1,13 @@
 import type { UserPool } from "@clc/api/features/pools/client";
-import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { toast } from "sonner";
-import { z } from "zod";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { SheetFooter } from "#/components/ui/sheet";
 import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
-import {
-  ownershipKey,
-  useOwnershipSubmissions,
-} from "#/features/ownership/state/ownership-submissions";
 import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
-import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
-import { usePoolOwnershipTransfer } from "#/features/pools/hooks/use-pool-ownership-transfer";
 import type { PoolFeeSettings } from "#/features/pools/hooks/use-pool-fee-settings";
+import { usePoolOwnershipTransferForm } from "#/features/pools/hooks/use-pool-ownership-transfer-form";
 
 export function PoolOwnershipTransferForm({
   pool,
@@ -27,45 +19,7 @@ export function PoolOwnershipTransferForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
-  const transfer = usePoolOwnershipTransfer(pool);
-  const reportError = useReportWriteError();
-  const submission = useOwnershipSubmissions(
-    (state) => state.submissions[ownershipKey(pool.address)],
-  );
-  const contracts = [
-    pool.address,
-    pool.tokenRegistryAddress,
-    pool.limiterAddress,
-    pool.feePolicyAddress,
-    pool.quoterAddress,
-    pool.protocolFeeControllerAddress,
-  ];
-  const form = useForm({
-    defaultValues: { newOwnerAddress: String(submission?.newOwnerAddress ?? "") },
-    validators: {
-      onSubmit: z.object({
-        newOwnerAddress: ownershipRecipientSchema(pool.ownerAddress ?? "", contracts),
-      }),
-    },
-    onSubmit: async ({ value }) => {
-      if (!pool.ownerAddress) return;
-      try {
-        const result = await transfer.mutateAsync({
-          assetAddress: pool.address,
-          ownerAddress: pool.ownerAddress,
-          newOwnerAddress: value.newOwnerAddress.trim() as `0x${string}`,
-        });
-        if (result.catalogSynced) toast.success(t`Pool ownership transferred.`);
-        else
-          toast.info(
-            t`Ownership transferred on-chain. Catalog synchronization is delayed; your management controls have been removed.`,
-          );
-        onDone();
-      } catch (error) {
-        if (reportError(error, t`Couldn't transfer ownership.`)) onDone();
-      }
-    },
-  });
+  const { form, transfer, submission } = usePoolOwnershipTransferForm({ pool, onDone });
   return (
     <form
       className="flex min-h-0 flex-1 flex-col"

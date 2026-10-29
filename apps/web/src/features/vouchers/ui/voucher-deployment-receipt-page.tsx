@@ -1,12 +1,4 @@
-import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
-import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
-import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
@@ -14,20 +6,7 @@ import { Field } from "#/components/ui/field";
 import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
 import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
-import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
-import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
-import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
-import { useVoucherSupply } from "#/features/vouchers/hooks/use-voucher-supply";
-import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
-import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
-import { createRelayerClient } from "@clc/api/features/relayer/client";
-import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
-import { useDeploymentContract } from "#/hooks/use-deployment";
-import { RELAYER_URL } from "#/lib/relayer-config";
-import { exitVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
-
-const relayerClient = createRelayerClient(RELAYER_URL);
+import { useVoucherDeploymentReceipt } from "#/features/vouchers/hooks/use-voucher-deployment-receipt";
 
 export function VoucherDeploymentReceiptPage({
   trackingId,
@@ -39,149 +18,28 @@ export function VoucherDeploymentReceiptPage({
   mintAmount?: string;
 }) {
   const { t } = useLingui();
-  const router = useRouter();
-  const navigate = useNavigate({ from: "/vouchers/create/receipt" });
-  const queryClient = useQueryClient();
-  const { address: walletAddress } = useConnection();
-  const delegationStatus = useCaliburDelegation(walletAddress as `0x${string}` | undefined);
-  const draft = useVoucherCreateDraft((state) => state.draft);
-  const clearDraft = useVoucherCreateDraft((state) => state.clearDraft);
-  const tracking = useOtxTracking(trackingId ?? null, { queryKey: "voucher-deploy-track" });
-  const contractQuery = useDeploymentContract(
-    trackingId ?? null,
-    "TOKEN",
-    tracking.outcome.kind === "success",
-  );
-  const contract = contractQuery.data;
-  const confirmed = contract?.status === "CONFIRMED" && contract.address !== null;
-  const voucherDetail = useMarketVoucherDetail(
-    confirmed && !draft ? (contract?.address ?? undefined) : undefined,
-  );
-
-  const [supply, setSupply] = useState(mintAmount ?? "");
-  const [supplyError, setSupplyError] = useState<string | null>(null);
-  const [submittedMintTrackingId, setSubmittedMintTrackingId] = useState<string | null>(null);
-  const mintSubmissionInFlight = useRef(false);
-  const activeMintTrackingId = submittedMintTrackingId ?? mintTrackingId ?? null;
-  const mint = useVoucherMint();
-  const mintTracking = useOtxTracking(activeMintTrackingId, {
-    queryKey: "voucher-mint-track",
-    queryFn: async (nextTrackingId) => (await relayerClient.trackRelay(nextTrackingId)).result,
-  });
-  const voucherSupply = useVoucherSupply(
-    confirmed && contract?.address ? contract.address : undefined,
-  );
-  const trackedMinted = mintTracking.outcome.kind === "success";
-  const onChainMinted = voucherSupply.data !== undefined && BigInt(voucherSupply.data) > 0n;
-  const minted = trackedMinted || onChainMinted;
-
-  useEffect(() => {
-    if (activeMintTrackingId && !mintTracking.isError && mintTracking.outcome.kind === "error") {
-      mintSubmissionInFlight.current = false;
-    }
-  }, [activeMintTrackingId, mintTracking.isError, mintTracking.outcome.kind]);
-
-  useEffect(() => {
-    if (!confirmed) return;
-    void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-    void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-  }, [confirmed, queryClient]);
-
-  useEffect(() => {
-    if (!minted) return;
-    void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-    void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-  }, [minted, queryClient]);
-
-  const decimals = contract?.decimals ?? (draft ? Number(draft.decimals) : null);
-  const walletPreparing = delegationStatus === "checking";
-
-  const submitMint = async () => {
-    if (mintSubmissionInFlight.current) return;
-    if (!confirmed || !contract.address) return;
-    if (decimals === null || !Number.isInteger(decimals)) {
-      toast.error(t`Couldn't read how many decimals this voucher uses.`);
-      return;
-    }
-    if (voucherSupply.data === undefined || BigInt(voucherSupply.data) > 0n) return;
-    const parsed = voucherMintAmountSchema(decimals).safeParse(supply);
-    if (!parsed.success) {
-      setSupplyError(parsed.error.issues[0]?.message ?? "Supply must be greater than zero");
-      return;
-    }
-    if (!walletAddress) {
-      toast.error(t`Connect your wallet to create vouchers.`);
-      return;
-    }
-    if (!contract.admin) {
-      toast.error(t`Couldn't verify who owns this voucher.`);
-      return;
-    }
-    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) {
-      toast.error(t`Reconnect the wallet that published this voucher to create its supply.`);
-      return;
-    }
-    if (walletPreparing) return;
-    setSupplyError(null);
-    mintSubmissionInFlight.current = true;
-
-    const result = await mint
-      .mutateAsync({
-        tokenAddress: contract.address,
-        ownerAddress: contract.admin,
-        amountRaw: parseTokenAmount(parsed.data, decimals),
-        includeAuthorization: delegationStatus === "not-delegated",
-      })
-      .catch((error: unknown) => {
-        toast.error(error instanceof Error ? error.message : t`Couldn't create the first supply.`);
-        return null;
-      });
-    if (!result) {
-      mintSubmissionInFlight.current = false;
-      return;
-    }
-    setSubmittedMintTrackingId(result.trackingId);
-    void navigate({
-      to: "/vouchers/create/receipt",
-      search: {
-        trackingId,
-        mintTrackingId: result.trackingId,
-        mintAmount: parsed.data,
-      },
-      replace: true,
-    });
-  };
-
-  // The issuer chose the opening supply while creating the voucher, so once the
-  // contract confirms it is minted without another tap. Anything the guards
-  // below reject leaves the manual mint step in place as the recovery path.
-  const autoMintAttempted = useRef(false);
-  useEffect(() => {
-    if (autoMintAttempted.current) return;
-    if (!mintAmount || activeMintTrackingId !== null) return;
-    if (!confirmed || !contract.address || !contract.admin || !walletAddress) return;
-    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) return;
-    if (walletPreparing) return;
-    if (voucherSupply.data !== "0") return;
-    autoMintAttempted.current = true;
-    void submitMint();
-  }, [
-    activeMintTrackingId,
-    confirmed,
+  const receipt = useVoucherDeploymentReceipt({ trackingId, mintTrackingId, mintAmount });
+  const {
     contract,
-    mintAmount,
-    submitMint,
-    voucherSupply.data,
-    walletAddress,
-    walletPreparing,
-  ]);
+    draft,
+    decimals,
+    supply,
+    supplyError,
+    supplyValue,
+    copyValue,
+    mintError,
+    mintFailed,
+    minting,
+    trackingUnavailable,
+    supplyChecking,
+    supplyCheckFailed,
+    ownerUnavailable,
+    ownerMismatch,
+    blockingMessage,
+    pendingState,
+  } = receipt;
 
-  const exit = (destination: string) => {
-    clearDraft();
-    exitVoucherCreateHistory({ history: router.history, destination });
-  };
-
-  if (!trackingId) {
+  if (receipt.phase === "missing") {
     return (
       <DeploymentStateShell
         icon={<FailureCross />}
@@ -192,24 +50,18 @@ export function VoucherDeploymentReceiptPage({
     );
   }
 
-  if (tracking.outcome.kind === "error" || contractQuery.isError || contract?.status === "FAILED") {
-    const message =
-      tracking.outcome.kind === "error"
-        ? tracking.outcome.error
-        : contractQuery.error instanceof Error
-          ? contractQuery.error.message
-          : t`The voucher could not be published.`;
+  if (receipt.phase === "failed") {
     return (
       <DeploymentStateShell
         icon={<FailureCross />}
         title={t`Publishing failed`}
-        message={message}
+        message={receipt.failureMessage}
         status={<StatusPill tone="error" label={t`Failed`} />}
       />
     );
   }
 
-  if (!confirmed || !contract.address) {
+  if (receipt.phase === "deploying" || !contract?.address) {
     return (
       <DeploymentStateShell
         icon={<PendingClock />}
@@ -222,27 +74,6 @@ export function VoucherDeploymentReceiptPage({
   }
 
   const address = contract.address;
-  const deploymentTxHash = tracking.outcome.kind === "success" ? tracking.outcome.otx.txHash : "";
-  const mintTxHash = mintTracking.outcome.kind === "success" ? mintTracking.outcome.otx.txHash : "";
-  const copyValue = (value: string, successMessage: string, errorMessage: string) => {
-    if (!navigator.clipboard) {
-      toast.error(errorMessage);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(successMessage))
-      .catch(() => toast.error(errorMessage));
-  };
-
-  const voucherValue = draft?.price ?? voucherDetail.data?.voucherValue ?? null;
-  const voucherUnit = draft?.unitOfAccount ?? voucherDetail.data?.voucherUoa ?? null;
-  const supplyValue = formatOfferingDisplayPrice(
-    supply,
-    voucherValue,
-    voucherUnit,
-    contract.symbol,
-  );
   const detailRows = (
     <>
       <InfoRow label={t`Name`}>{contract.name}</InfoRow>
@@ -269,47 +100,7 @@ export function VoucherDeploymentReceiptPage({
     </>
   );
 
-  // Deployment and minting are separate transactions. The chain supply is the
-  // recovery source of truth; the mint tracking ID only provides the receipt.
-  if (!minted) {
-    const mintOutcome = mintTracking.outcome;
-    const trackingUnavailable = activeMintTrackingId !== null && mintTracking.isError;
-    const trackingError = trackingUnavailable
-      ? mintTracking.error instanceof Error
-        ? mintTracking.error.message
-        : t`Supply creation status is temporarily unavailable.`
-      : null;
-    const mintError =
-      !trackingUnavailable && mintOutcome.kind === "error" ? mintOutcome.error : null;
-    const mintFailed = mintError !== null;
-    const minting = activeMintTrackingId !== null && !mintFailed && !trackingUnavailable;
-    const supplyChecking = voucherSupply.isPending && activeMintTrackingId === null;
-    const supplyCheckFailed = voucherSupply.isError && activeMintTrackingId === null;
-    const ownerUnavailable = contract.admin === null;
-    const ownerMismatch = Boolean(
-      contract.admin &&
-      walletAddress &&
-      contract.admin.toLowerCase() !== walletAddress.toLowerCase(),
-    );
-    const primaryAction = () => {
-      if (trackingUnavailable) {
-        void mintTracking.refetch();
-        return;
-      }
-      if (supplyCheckFailed) {
-        void voucherSupply.refetch();
-        return;
-      }
-      void submitMint();
-    };
-
-    const blockingMessage = ownerMismatch
-      ? t`Reconnect the wallet that published this voucher to create its supply.`
-      : ownerUnavailable
-        ? t`Couldn't verify who owns this voucher.`
-        : trackingError;
-    const pendingState = minting || supplyChecking || trackingUnavailable;
-
+  if (receipt.phase === "supply") {
     return (
       <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="flex flex-col items-center text-center">
@@ -377,10 +168,7 @@ export function VoucherDeploymentReceiptPage({
                 dir="ltr"
                 inputMode="decimal"
                 value={supply}
-                onChange={(event) => {
-                  setSupply(event.target.value);
-                  setSupplyError(null);
-                }}
+                onChange={(event) => receipt.setSupply(event.target.value)}
                 placeholder="0"
                 disabled={
                   minting ||
@@ -389,7 +177,7 @@ export function VoucherDeploymentReceiptPage({
                   trackingUnavailable ||
                   ownerUnavailable ||
                   ownerMismatch ||
-                  walletPreparing
+                  receipt.walletPreparing
                 }
                 aria-invalid={supplyError !== null}
               />
@@ -410,9 +198,9 @@ export function VoucherDeploymentReceiptPage({
           <Button
             tap
             className="w-full"
-            disabled={ownerUnavailable || ownerMismatch || !walletAddress}
-            pending={minting || mint.isPending || supplyChecking || walletPreparing}
-            onClick={primaryAction}
+            disabled={ownerUnavailable || ownerMismatch || !receipt.walletAddress}
+            pending={minting || receipt.mintPending || supplyChecking || receipt.walletPreparing}
+            onClick={receipt.primaryAction}
           >
             {trackingUnavailable ? (
               <Trans>Check creation status</Trans>
@@ -422,7 +210,7 @@ export function VoucherDeploymentReceiptPage({
               <Trans>Creating…</Trans>
             ) : supplyChecking ? (
               <Trans>Checking supply…</Trans>
-            ) : walletPreparing ? (
+            ) : receipt.walletPreparing ? (
               <Trans>Preparing wallet…</Trans>
             ) : mintFailed ? (
               <Trans>Try again</Trans>
@@ -435,14 +223,7 @@ export function VoucherDeploymentReceiptPage({
     );
   }
 
-  const chainSupply =
-    voucherSupply.data && BigInt(voucherSupply.data) > 0n && decimals !== null
-      ? formatTokenAmount(voucherSupply.data, decimals, decimals)
-      : "";
-  const publishedSupply = chainSupply || mintAmount || supply.trim();
-  const publishedSupplyValue = publishedSupply
-    ? formatOfferingDisplayPrice(publishedSupply, voucherValue, voucherUnit, contract.symbol)
-    : null;
+  const { publishedSupply, publishedSupplyValue, deploymentTxHash, mintTxHash } = receipt;
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -501,7 +282,11 @@ export function VoucherDeploymentReceiptPage({
       </AdvancedDeploymentDetails>
 
       <div className="mt-auto pt-6">
-        <Button tap className="w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
+        <Button
+          tap
+          className="w-full"
+          onClick={() => receipt.exit(`/vouchers/${address}?from=vouchers`)}
+        >
           <Trans>View voucher</Trans>
         </Button>
       </div>

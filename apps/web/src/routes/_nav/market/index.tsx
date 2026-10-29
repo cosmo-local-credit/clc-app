@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { lazy } from "react";
 
 import { NearbyCatalog } from "#/components/nearby-catalog";
+import { LayoutSwitch } from "#/desktop/switch";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { CatalogsPage } from "#/features/catalogs/ui/catalogs-page";
 import { MarketListPage } from "#/features/home/ui/market-list-page";
@@ -16,29 +18,53 @@ import {
   type MarketplaceRouteSearch,
 } from "#/lib/navigation/marketplace-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
+import { parseWantId } from "#/lib/navigation/want-sheet-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 
-type MarketRouteSearch = MarketplaceRouteSearch & { voucher?: string };
+const MarketDesk = lazy(() =>
+  import("#/desktop/market/market-desk").then((module) => ({ default: module.MarketDesk })),
+);
+
+type MarketViewParam = "map" | "list";
+
+type MarketRouteSearch = MarketplaceRouteSearch & {
+  voucher?: string;
+  want?: string;
+  view?: MarketViewParam;
+};
+
+function pickView(search: unknown): MarketViewParam | undefined {
+  if (typeof search !== "object" || search === null || !("view" in search)) return undefined;
+  const view = (search as Record<string, unknown>).view;
+  return view === "map" || view === "list" ? view : undefined;
+}
 
 function pickMarketRouteSearch(search: unknown): MarketRouteSearch {
   const marketplaceSearch = pickMarketplaceSearch(search);
-  if (typeof search !== "object" || search === null || !("voucher" in search)) {
-    return marketplaceSearch;
-  }
-  const voucher = (search as Record<string, unknown>).voucher;
-  if (voucher === undefined) return marketplaceSearch;
+  const view = pickView(search);
+  const withView = view ? { ...marketplaceSearch, view } : marketplaceSearch;
+  if (typeof search !== "object" || search === null) return withView;
+  const record = search as Record<string, unknown>;
+  const voucher = "voucher" in record ? record.voucher : undefined;
+  const want = "want" in record ? record.want : undefined;
   return {
-    ...marketplaceSearch,
-    voucher: typeof voucher === "string" ? voucher : "__invalid__",
+    ...withView,
+    ...(voucher !== undefined
+      ? { voucher: typeof voucher === "string" ? voucher : "__invalid__" }
+      : {}),
+    ...(want !== undefined ? { want: typeof want === "string" ? want : "__invalid__" } : {}),
   };
 }
 
 export const Route = createFileRoute("/_nav/market/")({
-  staticData: { navOwner: "market" },
+  staticData: { navOwner: "market", desktop: "map" },
   validateSearch: (search): MarketRouteSearch => pickMarketRouteSearch(search),
   beforeLoad: ({ search }) => {
+    // view=map and view=list keep the sheet params. A voucher on the bare list
+    // URL is still the old card link and goes to the voucher page.
+    const keepsSheet = search.view === "map" || search.view === "list";
     const voucherAddress = parseVoucherAddress(search.voucher);
-    if (voucherAddress) {
+    if (voucherAddress && !keepsSheet) {
       throw redirect({
         to: "/vouchers/$voucherAddress",
         params: { voucherAddress },
@@ -46,7 +72,21 @@ export const Route = createFileRoute("/_nav/market/")({
         replace: true,
       });
     }
-    if (search.voucher !== undefined) {
+    if (search.voucher !== undefined && !voucherAddress) {
+      throw redirect({
+        to: "/market",
+        search: { ...pickMarketplaceSearch(search), ...(search.view ? { view: search.view } : {}) },
+        replace: true,
+      });
+    }
+    if (search.want !== undefined && !parseWantId(search.want)) {
+      throw redirect({
+        to: "/market",
+        search: { ...pickMarketplaceSearch(search), ...(search.view ? { view: search.view } : {}) },
+        replace: true,
+      });
+    }
+    if (search.want !== undefined && !keepsSheet) {
       throw redirect({
         to: "/market",
         search: pickMarketplaceSearch(search),
@@ -58,7 +98,18 @@ export const Route = createFileRoute("/_nav/market/")({
       throw redirect({ to: "/", search: mapSearchFrom(search), replace: true });
     }
     const next = canonicalMarketplaceSearch(search);
-    if (next) throw redirect({ to: "/market", search: next, replace: true });
+    if (next) {
+      throw redirect({
+        to: "/market",
+        search: {
+          ...next,
+          ...(search.view ? { view: search.view } : {}),
+          ...(keepsSheet && voucherAddress ? { voucher: voucherAddress } : {}),
+          ...(keepsSheet && search.want ? { want: search.want } : {}),
+        },
+        replace: true,
+      });
+    }
   },
   component: MarketListRoute,
 });
@@ -69,6 +120,33 @@ function MarketListRoute() {
   const scope = parseMarketplaceScope(search.scope);
   const owner =
     auth.isAuthenticated && auth.address ? auth.address.toLowerCase() : GUEST_STORAGE_OWNER;
+  const mobile = <MarketMobile scope={scope} search={search} owner={owner} />;
+  // Map or list is the URL's `view`, else the person's last choice; a link that
+  // names none (the shell's scope links) must not change it.
+  const desktop = (
+    <NearbyCatalog>
+      <MarketDesk
+        scope={scope}
+        urlView={search.view}
+        isAuthenticated={auth.isAuthenticated}
+        creditableSearch={search.creditable}
+        outputVoucherSearch={search.out_voucher}
+        locationOwner={owner}
+      />
+    </NearbyCatalog>
+  );
+  return <LayoutSwitch mobile={mobile} desktop={desktop} />;
+}
+
+function MarketMobile({
+  scope,
+  search,
+  owner,
+}: {
+  scope: ReturnType<typeof parseMarketplaceScope>;
+  search: MarketRouteSearch;
+  owner: string;
+}) {
   if (scope === "catalogs") {
     return <CatalogsPage creditableSearch={search.creditable} />;
   }

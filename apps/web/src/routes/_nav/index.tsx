@@ -2,6 +2,8 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
+import { NearbyCatalog } from "#/components/nearby-catalog";
+import { LayoutSwitch } from "#/desktop/switch";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { canonicalRedirectSearch } from "#/lib/navigation/catalog-search";
 import {
@@ -25,6 +27,23 @@ const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
     default: module.HomePage,
   })),
+);
+const MarketMapDesk = lazy(() =>
+  import("#/desktop/market/market-map-desk").then((module) => ({
+    default: module.MarketMapDesk,
+  })),
+);
+const WalletDesk = lazy(() =>
+  import("#/desktop/wallet/wallet-desk").then((module) => ({ default: module.WalletDesk })),
+);
+const ActivityDesk = lazy(() =>
+  import("#/desktop/activity/activity-desk").then((module) => ({ default: module.ActivityDesk })),
+);
+const PostsDesk = lazy(() =>
+  import("#/desktop/posts/posts-desk").then((module) => ({ default: module.PostsDesk })),
+);
+const SettingsDesk = lazy(() =>
+  import("#/desktop/account/settings-desk").then((module) => ({ default: module.SettingsDesk })),
 );
 
 export const Route = createFileRoute("/_nav/")({
@@ -89,7 +108,10 @@ export const Route = createFileRoute("/_nav/")({
     }
     if (
       search.tab !== "activity" &&
-      (search.activityQ !== undefined || search.activityTypes !== undefined)
+      (search.activityQ !== undefined ||
+        search.activityTypes !== undefined ||
+        search.activityVoucher !== undefined ||
+        search.activityRange !== undefined)
     ) {
       throw redirect({
         to: "/",
@@ -116,7 +138,7 @@ function IndexPage() {
 
   if (auth.isLoading) return <HomePageFallback />;
 
-  const page = (
+  const mobile = (
     <Suspense fallback={<HomePageFallback />}>
       <HomePage
         activeTab={tab}
@@ -141,6 +163,45 @@ function IndexPage() {
       />
     </Suspense>
   );
+  const desktop =
+    tab === "wallet" ? (
+      <WalletDesk />
+    ) : tab === "activity" ? (
+      <ActivityDesk
+        address={auth.address}
+        query={activity.q}
+        types={activity.types}
+        onQueryChange={(activityQ) =>
+          navigate({
+            search: (previous) => ({ ...previous, activityQ: activityQ || undefined }),
+            replace: true,
+          })
+        }
+        onTypesChange={(activityTypes) =>
+          navigate({
+            search: (previous) => ({
+              ...previous,
+              activityTypes: activityTypes.length ? activityTypes.join(",") : undefined,
+            }),
+          })
+        }
+      />
+    ) : tab === "posts" ? (
+      <NearbyCatalog>
+        <PostsDesk />
+      </NearbyCatalog>
+    ) : tab === "settings" ? (
+      <SettingsDesk address={auth.address} />
+    ) : (
+      <NearbyCatalog>
+        <MarketMapDesk
+          isAuthenticated={auth.isAuthenticated}
+          creditableSearch={creditable}
+          creditRoute="home"
+        />
+      </NearbyCatalog>
+    );
+  const page = <LayoutSwitch mobile={mobile} desktop={desktop} />;
   // A guest's Wallet, Activity or Settings is the sign-in screen, under the
   // bottom navigation that led there.
   return isPrivateHomeTab(tab) ? <AuthenticatedRoute>{page}</AuthenticatedRoute> : page;

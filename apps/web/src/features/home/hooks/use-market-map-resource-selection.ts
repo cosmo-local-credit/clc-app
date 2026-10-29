@@ -66,9 +66,14 @@ export function useMarketMapResourceSelection(owner: string) {
   const toggleAll = useCallback(() => {
     save(allSelected ? ["voucher"] : MARKET_MAP_RESOURCE_KINDS);
   }, [allSelected, save]);
+  /** Back to what a first visit shows, which is also the way out of an empty selection. */
+  const reset = useCallback(() => save(DEFAULT_MARKET_MAP_RESOURCES), [save]);
+  const isDefault =
+    selected.length === DEFAULT_MARKET_MAP_RESOURCES.length &&
+    DEFAULT_MARKET_MAP_RESOURCES.every((kind) => selected.includes(kind));
 
   return useMemo(
-    () => ({ selected, toggle, toggleAll, allSelected }),
-    [allSelected, selected, toggle, toggleAll],
+    () => ({ selected, toggle, toggleAll, allSelected, reset, isDefault }),
+    [allSelected, isDefault, reset, selected, toggle, toggleAll],
   );
 }

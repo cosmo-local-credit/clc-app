@@ -30,6 +30,7 @@ import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { useKeepSendDraft, useSendDraft } from "#/features/wallet/hooks/use-send-draft";
 import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
@@ -50,8 +51,8 @@ function sanitizeAmount(raw: string): string {
 
 export function SendAmountPage({
   token,
-  recipient,
-  recipientLabel,
+  recipient: recipientProp,
+  recipientLabel: recipientLabelProp,
   amount: seededAmount,
   returnPool,
 }: {
@@ -73,11 +74,22 @@ export function SendAmountPage({
     .filter((item) => item.catalogActive !== false)
     .map(accountTokenToWalletToken);
 
+  // After a zoom or resize from the desktop view the page opens with what was
+  // typed there. A restored recipient replaces the URL's, and no recipient in
+  // the draft means none is shown: this page never pays someone the person was
+  // no longer looking at. The confirmation sheet is not restored.
+  const draft = useSendDraft(address);
+  const restored = draft.restored;
+  const recipient = restored ? restored.recipient?.address : recipientProp;
+  const recipientLabel = restored ? (restored.recipient?.name ?? undefined) : recipientLabelProp;
+
   // Preselect the token passed from the token detail page; fall back to the
   // first token once balances load if none was requested. Never substitute a
   // different asset for a retired selection. `selectedId` mirrors the fetched token id
   // (the lowercased contract address).
-  const [selectedId, setSelectedId] = useState<string | undefined>(token?.toLowerCase());
+  const [selectedId, setSelectedId] = useState<string | undefined>(
+    (restored?.token ?? token)?.toLowerCase(),
+  );
   const selectedToken = selectedId ? tokens.find((item) => item.id === selectedId) : tokens[0];
   const firstTokenId = tokens[0]?.id;
   useEffect(() => {
@@ -88,7 +100,9 @@ export function SendAmountPage({
 
   // Seeded once. The param is a starting point a shortcut chose, not a
   // controlled value — typing over it must not be undone by a re-render.
-  const [amount, setAmount] = useState(() => sanitizeAmount(seededAmount ?? ""));
+  const [amount, setAmount] = useState(() =>
+    sanitizeAmount(restored ? restored.amount : (seededAmount ?? "")),
+  );
   const [amountFocused, setAmountFocused] = useState(false);
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -159,6 +173,20 @@ export function SendAmountPage({
     delegationStatus !== "checking" &&
     isValidAmount &&
     !exceedsMax;
+  useKeepSendDraft(draft, {
+    query: recipientAddress ?? "",
+    recipient: recipientAddress
+      ? {
+          address: recipientAddress,
+          name: recipientLabel ?? restored?.recipient?.name ?? null,
+          source: restored?.recipient?.source ?? "manual",
+        }
+      : null,
+    amount,
+    // The displayed default is a selection too. Keep its id even if a later
+    // balance response removes it, rather than substituting another asset.
+    token: selectedId ?? selectedToken?.id,
+  });
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -379,6 +407,7 @@ export function SendAmountPage({
             })
             .catch(() => null);
           if (!result) return;
+          draft.clear();
           const submittedUnitValue = relaySnapshotUnitValue(
             result.valuationSnapshots,
             tokenAddress,

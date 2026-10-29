@@ -9,13 +9,18 @@ import { cn } from "#/lib/utils";
 
 type State = ReturnType<typeof useCreditableBrowse>;
 
+/** Which notice the feedback part shows, if any. */
+export function creditFeedback(state: State): "invalid" | "signin" | "checking" | "error" | null {
+  if (!state.parsed.ok) return "invalid";
+  if (!state.enabled) return null;
+  if (state.auth.isLoading) return "checking";
+  if (!state.auth.isAuthenticated) return "signin";
+  return state.verification.status === "error" ? "error" : null;
+}
+
 /** Whether the feedback part has anything to say, so a screen can give it the one notice slot. */
 export function hasCreditFeedback(state: State): boolean {
-  if (!state.parsed.ok) return true;
-  if (!state.enabled) return false;
-  return (
-    state.auth.isLoading || !state.auth.isAuthenticated || state.verification.status === "error"
-  );
+  return creditFeedback(state) !== null;
 }
 
 export function CreditableBrowseControl({

@@ -1,12 +1,12 @@
-import { checkImageFile, IMAGE_POLICIES } from "@clc/api/features/images/policy";
 import { useLingui } from "@lingui/react/macro";
-import { useEffect, useId, useState } from "react";
+import { useId } from "react";
 import { FaUser } from "react-icons/fa";
 
 import { Button } from "#/components/ui/button";
 import { ImageCropSheet } from "#/components/ui/image-crop-sheet";
 import { PhotoSourcePicker } from "#/components/ui/photo-source-picker";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
+import { useAvatarPicker } from "#/components/ui/use-avatar-picker";
 
 type Props = {
   /** The chosen file, owned by the caller so a form can carry it between steps. */
@@ -40,46 +40,11 @@ export function AvatarPicker({
 }: Props) {
   const { t } = useLingui();
   const validationErrorId = useId();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  /** Chosen but not yet framed. Held here so the sheet owns one job. */
-  const [pending, setPending] = useState<File | null>(null);
-
-  useEffect(() => {
-    if (!value) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(value);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [value]);
-
-  function select(file: File | undefined) {
-    if (!file) return;
-
-    const check = checkImageFile(file);
-    if (!check.ok) {
-      setError(
-        check.reason === "unsupported-type"
-          ? t`Choose a JPEG, PNG or WebP image.`
-          : t`That image is too large. Choose one under 8 MB.`,
-      );
-      onChange(null);
-      return;
-    }
-
-    setError(null);
-    // A profile photo has a fixed display shape, so it is framed before it is
-    // accepted — the picker never sets an unframed file.
-    if (IMAGE_POLICIES["profile.avatar"].aspect) {
-      setPending(file);
-      return;
-    }
-    onChange(file);
-  }
-
-  const shown = previewUrl ?? currentUrl ?? null;
+  const { shown, error, pending, select, remove, cancelCrop, acceptCrop } = useAvatarPicker({
+    value,
+    onChange,
+    currentUrl,
+  });
 
   return (
     <div className="flex items-center gap-4">
@@ -113,10 +78,7 @@ export function AvatarPicker({
             variant="link"
             tap
             disabled={disabled}
-            onClick={() => {
-              setError(null);
-              onChange(null);
-            }}
+            onClick={remove}
             className="text-muted-foreground"
           >
             {t`Remove`}
@@ -147,11 +109,8 @@ export function AvatarPicker({
       <ImageCropSheet
         file={pending}
         purpose="profile.avatar"
-        onCancel={() => setPending(null)}
-        onCropped={(cropped) => {
-          setPending(null);
-          onChange(cropped);
-        }}
+        onCancel={cancelCrop}
+        onCropped={acceptCrop}
       />
     </div>
   );

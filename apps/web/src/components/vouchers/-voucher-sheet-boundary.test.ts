@@ -23,6 +23,7 @@ function importers(specifier: string): string[] {
 describe("voucher sheet boundary", () => {
   it("mounts the voucher sheet only on the Marketplace map", () => {
     expect(importers("#/components/vouchers/voucher-sheet")).toEqual([
+      "features/home/hooks/use-market-screen.tsx",
       "features/home/ui/market-page.tsx",
     ]);
   });
@@ -30,7 +31,9 @@ describe("voucher sheet boundary", () => {
   it("keeps sheet URL selection inside the map implementation", () => {
     expect(importers("#/lib/navigation/use-voucher-sheet-selection")).toEqual([
       "components/vouchers/voucher-sheet.tsx",
-      "features/home/ui/market-page.tsx",
+      "desktop/market/market-list-desk.tsx",
+      "desktop/market/place-panel.tsx",
+      "features/home/hooks/use-market-screen.tsx",
     ]);
   });
 });

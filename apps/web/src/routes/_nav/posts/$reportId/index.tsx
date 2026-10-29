@@ -1,11 +1,17 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { lazy } from "react";
 import { z } from "zod";
 
+import { LayoutSwitch } from "#/desktop/switch";
 import { ReportPage } from "#/features/home/ui/report-page";
+
+const PostDesk = lazy(() =>
+  import("#/desktop/posts/post-desk").then((module) => ({ default: module.PostDesk })),
+);
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 export const Route = createFileRoute("/_nav/posts/$reportId/")({
-  staticData: { navOwner: "posts" },
+  staticData: { navOwner: "posts", desktop: "fill" },
   validateSearch: z.object({ voucher: z.string().optional().catch(undefined) }),
   beforeLoad: ({ params, search }) => {
     const voucherAddress = parseVoucherAddress(search.voucher);
@@ -32,10 +38,15 @@ export const Route = createFileRoute("/_nav/posts/$reportId/")({
 function ReportRoute() {
   const { reportId } = Route.useParams();
   return (
-    <div className="min-h-[100svh] bg-background text-foreground pb-bottom-nav">
-      <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-        <ReportPage reportId={reportId} />
-      </main>
-    </div>
+    <LayoutSwitch
+      mobile={
+        <div className="min-h-[100svh] bg-background pb-bottom-nav text-foreground">
+          <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
+            <ReportPage reportId={reportId} />
+          </main>
+        </div>
+      }
+      desktop={<PostDesk reportId={reportId} />}
+    />
   );
 }

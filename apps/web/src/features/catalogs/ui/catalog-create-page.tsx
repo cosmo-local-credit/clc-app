@@ -1,17 +1,11 @@
 import { ResourceUsage } from "#/components/resource-usage";
-import { useResourceUsage } from "#/hooks/use-resource-usage";
-import { catalogMemberMutationOptions } from "@clc/api/features/catalogs/queries";
-import type { Catalog, CatalogCreateIntent } from "@clc/core/features/catalogs/logic";
+import type { CatalogCreateIntent } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
 import { BackChevron } from "#/components/wallet";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { catalogsClient } from "#/lib/api/catalogs";
-import { useMyCatalog } from "../hooks/use-my-catalog";
+import { useCatalogCreate } from "../hooks/use-catalog-create";
 import { CatalogForm } from "./catalog-form";
 
 export function CatalogCreatePage({ intent }: { intent?: CatalogCreateIntent }) {
@@ -21,62 +15,7 @@ export function CatalogCreatePage({ intent }: { intent?: CatalogCreateIntent }) 
 
 function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
   const { t } = useLingui();
-  const mine = useMyCatalog();
-  const usage = useResourceUsage();
-  const profile = useAuthProfile({ enabled: mine.auth.isAuthenticated });
-  const navigate = useNavigate();
-  const [saved, setSaved] = useState<Catalog | undefined>();
-  const [failed, setFailed] = useState(false);
-  const member = useMutation(
-    catalogMemberMutationOptions(
-      catalogsClient,
-      useQueryClient(),
-      mine.auth.session?.address ?? "",
-    ),
-  );
-  const catalog = saved;
-
-  async function finish(current: Catalog) {
-    setSaved(current);
-    if (intent) {
-      try {
-        await member.mutateAsync({
-          catalogId: current.id,
-          kind: intent.kind,
-          resourceId: intent.resourceId,
-          added: true,
-        });
-      } catch {
-        setFailed(true);
-        return;
-      }
-      if (intent.kind === "pool")
-        await navigate({
-          to: "/pools/$poolAddress",
-          params: { poolAddress: intent.address },
-          replace: true,
-        });
-      else
-        await navigate({
-          to: "/vouchers/$voucherAddress",
-          params: { voucherAddress: intent.address },
-          replace: true,
-        });
-    } else
-      await navigate({
-        to: "/catalogs/$catalogId",
-        params: { catalogId: current.id },
-        replace: true,
-      });
-  }
-  const place =
-    profile.data?.geoLat != null && profile.data.geoLng != null && profile.data.locationName
-      ? {
-          lat: profile.data.geoLat,
-          lng: profile.data.geoLng,
-          locationName: profile.data.locationName,
-        }
-      : undefined;
+  const { mine, usage, profile, member, catalog, failed, finish, place } = useCatalogCreate(intent);
   return (
     <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />

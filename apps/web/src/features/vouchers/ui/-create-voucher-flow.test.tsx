@@ -661,6 +661,8 @@ describe("CreateVoucherFlow", () => {
 
     view.rerender(<CreateVoucherFlow step="review" />);
     expect(screen.getByText("Education")).toBeTruthy();
+    // Terms are asked for afresh, whatever the draft held.
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
     await waitFor(() =>
       expect(deployMutateAsync).toHaveBeenCalledWith(

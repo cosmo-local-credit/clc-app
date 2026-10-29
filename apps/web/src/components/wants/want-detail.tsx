@@ -1,12 +1,6 @@
-import {
-  wantCreatorPoolsInfiniteQueryOptions,
-  wantCreatorVouchersInfiniteQueryOptions,
-  wantContactQueryOptions,
-} from "@clc/api/features/wants/queries";
 import type { WantCreatorPool, WantCreatorVoucher } from "@clc/api/features/wants/client";
 import type { Want } from "@clc/core/features/wants/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Suspense, type ReactNode } from "react";
 import {
@@ -16,16 +10,14 @@ import {
   RiPhoneLine,
   RiShareLine,
 } from "react-icons/ri";
-import { toast } from "sonner";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { WantPicture } from "./want-row";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
-import { wantsClient } from "#/lib/api/wants";
+import { useWantContact, useWantCreatorResources, useWantShare } from "./use-want-detail";
 
 export function WantDetail({
   want,
@@ -144,11 +136,7 @@ export function WantDetail({
 }
 
 function AuthenticatedWantContact({ wantId }: { wantId: string }) {
-  const auth = useAuthStatus();
-  const contactQuery = useQuery({
-    ...wantContactQueryOptions(wantsClient, wantId, auth.session?.address),
-    retry: false,
-  });
+  const contactQuery = useWantContact(wantId);
 
   if (contactQuery.isPending) {
     return (
@@ -214,8 +202,7 @@ function AuthenticatedWantContact({ wantId }: { wantId: string }) {
 }
 
 function WantCreatorResources({ want }: { want: Want }) {
-  const vouchers = useInfiniteQuery(wantCreatorVouchersInfiniteQueryOptions(wantsClient, want.id));
-  const pools = useInfiniteQuery(wantCreatorPoolsInfiniteQueryOptions(wantsClient, want.id));
+  const { vouchers, pools } = useWantCreatorResources(want.id);
   return (
     <>
       <RelatedSection
@@ -369,19 +356,7 @@ function CreatorPoolRow({ pool, wantId }: { pool: WantCreatorPool; wantId: strin
 
 export function WantShareButton({ want }: { want: Pick<Want, "id" | "name"> }) {
   const { t } = useLingui();
-  const share = async () => {
-    const url = new URL(`/wants/${want.id}`, window.location.origin).toString();
-    try {
-      if (navigator.share) await navigator.share({ title: want.name, url });
-      else {
-        await navigator.clipboard.writeText(url);
-        toast.success(t`Link copied`);
-      }
-    } catch (cause) {
-      if (cause instanceof Error && cause.name === "AbortError") return;
-      toast.error(t`Couldn't share this Want.`);
-    }
-  };
+  const share = useWantShare(want);
   return (
     <Button variant="ghost" size="icon" onClick={() => void share()} aria-label={t`Share`}>
       <RiShareLine aria-hidden="true" />

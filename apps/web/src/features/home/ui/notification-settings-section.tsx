@@ -1,28 +1,15 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState } from "react";
 import { RiNotification3Line, RiPulseLine, RiVolumeUpLine } from "react-icons/ri";
 
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import { SettingsSheet, SettingsSheetAlert } from "#/components/ui/settings-sheet";
 import { Switch } from "#/components/ui/switch";
-import { useNotificationCues } from "#/features/notifications/state/cue-preferences";
 import {
-  enableNotificationSubscription,
-  type EnableNotificationSubscriptionResult,
-  readNotificationSubscriptionSnapshot,
-  type NotificationSubscriptionSnapshot,
-} from "#/features/notifications/subscription/coordinator";
-
-type NotificationSettingsState =
-  | { status: "loading" }
-  | { snapshot: NotificationSubscriptionSnapshot; status: "ready" }
-  | { snapshot: NotificationSubscriptionSnapshot | null; status: "enabling" }
-  | {
-      message?: string;
-      result: EnableNotificationSubscriptionResult;
-      status: "result";
-    };
+  useNotificationCuePreferences,
+  useNotificationSettings,
+} from "#/features/home/hooks/use-notification-settings";
 
 /**
  * Settings row for push notifications: On, Off, Blocked or Unavailable at a
@@ -33,52 +20,8 @@ type NotificationSettingsState =
  */
 export function NotificationSettingsSection({ walletAddress }: { walletAddress?: `0x${string}` }) {
   const { t } = useLingui();
-  const [state, setState] = useState<NotificationSettingsState>({ status: "loading" });
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    void readNotificationSubscriptionSnapshot().then(
-      (snapshot) => {
-        if (active) setState({ snapshot, status: "ready" });
-      },
-      (error: unknown) => {
-        if (active) {
-          setState({
-            message: errorMessage(error),
-            result: {
-              capability: unavailableCapability,
-              error,
-              status: "storage-unavailable",
-            },
-            status: "result",
-          });
-        }
-      },
-    );
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  async function handleEnable() {
-    const snapshot = state.status === "ready" ? state.snapshot : null;
-    setState({ snapshot, status: "enabling" });
-
-    const result = await enableNotificationSubscription({
-      currentWalletAddress: walletAddress,
-    });
-    setState({
-      message: result.status === "failed" ? result.message : undefined,
-      result,
-      status: "result",
-    });
-  }
-
-  const presentation = notificationSettingsPresentation(state);
-  const hasDetail = presentation.title !== undefined && !presentation.on;
+  const { presentation, hasDetail, enabling, enable } = useNotificationSettings(walletAddress);
   // Adjusted during render rather than in an effect, so the sheet starts
   // closing in the same commit that turns notifications on.
   if (open && !hasDetail) setOpen(false);
@@ -102,13 +45,13 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
               variant="outline"
               tap
               className="w-full"
-              pending={state.status === "enabling"}
+              pending={enabling}
               onClick={() => {
-                void handleEnable();
+                void enable();
               }}
             >
               <RiNotification3Line aria-hidden="true" />
-              {state.status === "enabling" ? (
+              {enabling ? (
                 <Trans>Enabling notifications…</Trans>
               ) : (
                 <Trans>Enable notifications</Trans>
@@ -127,21 +70,9 @@ export function NotificationSettingsSection({ walletAddress }: { walletAddress?:
   );
 }
 
-/**
- * The realtime session, and so the cue, runs for every signed-in wallet, with
- * or without push permission.
- */
 function NotificationCueRows() {
   const { t } = useLingui();
-  const sound = useNotificationCues((state) => state.sound);
-  const vibration = useNotificationCues((state) => state.vibration);
-  const setSound = useNotificationCues((state) => state.setSound);
-  const setVibration = useNotificationCues((state) => state.setVibration);
-  const canVibrate = typeof navigator.vibrate === "function";
-
-  useEffect(() => {
-    void useNotificationCues.persist.rehydrate();
-  }, []);
+  const { sound, vibration, setSound, setVibration, canVibrate } = useNotificationCuePreferences();
 
   return (
     <>
@@ -161,142 +92,4 @@ function NotificationCueRows() {
       ) : null}
     </>
   );
-}
-
-type NotificationPresentation = {
-  /** The row's value. */
-  status: ReactNode;
-  /** On has nothing to add, so its row is static; its title only covers the sheet's exit. */
-  on?: boolean;
-  /** The sheet's title; a state without one has nothing to open. */
-  title?: ReactNode;
-  description?: ReactNode;
-  alert?: ReactNode;
-  canEnable: boolean;
-};
-
-function notificationSettingsPresentation(
-  state: NotificationSettingsState,
-): NotificationPresentation {
-  if (state.status === "loading") {
-    return { status: <Trans>Checking…</Trans>, canEnable: false };
-  }
-
-  if (state.status === "enabling") {
-    return {
-      status: <Trans>Off</Trans>,
-      canEnable: true,
-      description: <Trans>Complete the browser permission prompt to continue.</Trans>,
-      title: <Trans>Enabling notifications</Trans>,
-    };
-  }
-
-  if (state.status === "result") {
-    if (state.result.status === "enabled") {
-      return enabledPresentation;
-    }
-    if (state.result.status === "install-required") {
-      return installRequiredPresentation;
-    }
-    if (state.result.status === "permission-denied") {
-      return permissionDeniedPresentation;
-    }
-    if (state.result.status === "unsupported") {
-      return unsupportedPresentation;
-    }
-    if (state.result.status === "storage-unavailable") {
-      return storageUnavailablePresentation;
-    }
-
-    return {
-      status: <Trans>Off</Trans>,
-      canEnable: true,
-      alert: state.message || (
-        <Trans>Registration failed. Check your connection and try again.</Trans>
-      ),
-      title: <Trans>Notifications could not be enabled</Trans>,
-    };
-  }
-
-  if (state.snapshot.capability.status === "install-required") {
-    return installRequiredPresentation;
-  }
-  if (state.snapshot.capability.status === "unsupported") {
-    return unsupportedPresentation;
-  }
-  if (state.snapshot.capability.permission === "denied") {
-    return permissionDeniedPresentation;
-  }
-  if (!state.snapshot.storageAvailable) {
-    return storageUnavailablePresentation;
-  }
-  if (state.snapshot.capability.permission === "granted" && state.snapshot.subscription !== null) {
-    return enabledPresentation;
-  }
-
-  return {
-    status: <Trans>Off</Trans>,
-    canEnable: true,
-    title: <Trans>Notifications are off</Trans>,
-  };
-}
-
-const enabledPresentation: NotificationPresentation = {
-  status: <Trans>On</Trans>,
-  on: true,
-  canEnable: false,
-  title: <Trans>Notifications are enabled</Trans>,
-};
-
-const installRequiredPresentation: NotificationPresentation = {
-  status: <Trans>Off</Trans>,
-  canEnable: false,
-  description: (
-    <Trans>
-      Add CLC to your iPhone Home Screen, open the installed app, then enable notifications.
-    </Trans>
-  ),
-  title: <Trans>Install the app first</Trans>,
-};
-
-const permissionDeniedPresentation: NotificationPresentation = {
-  status: <Trans>Blocked</Trans>,
-  canEnable: false,
-  description: (
-    <Trans>Notifications are blocked. Allow them in your browser or device settings.</Trans>
-  ),
-  title: <Trans>Notification permission denied</Trans>,
-};
-
-const unsupportedPresentation: NotificationPresentation = {
-  status: <Trans>Unavailable</Trans>,
-  canEnable: false,
-  description: (
-    <Trans>Notifications currently require Chrome on Android or the installed iPhone app.</Trans>
-  ),
-  title: <Trans>Notifications are unavailable</Trans>,
-};
-
-const storageUnavailablePresentation: NotificationPresentation = {
-  status: <Trans>Unavailable</Trans>,
-  canEnable: false,
-  description: <Trans>This browser cannot store notification registration safely.</Trans>,
-  title: <Trans>Notification storage is unavailable</Trans>,
-};
-
-const unavailableCapability: NotificationSubscriptionSnapshot["capability"] = {
-  canRequestPermission: false,
-  canSubscribe: false,
-  hasNotification: false,
-  hasPushManager: false,
-  hasServiceWorker: false,
-  isSecureContext: false,
-  permission: "unavailable",
-  platform: "unsupported",
-  reasons: ["unsupported-platform"],
-  status: "unsupported",
-};
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

@@ -1,17 +1,12 @@
-import {
-  canWriteReview,
-  type Review,
-  type ReviewResourceKind,
-  REVIEW_STARS,
-} from "@clc/core/features/reviews/logic";
+import { REVIEW_STARS, type ReviewResourceKind } from "@clc/core/features/reviews/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useState } from "react";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
-import { useResourceReviews } from "#/features/reviews/hooks/use-voucher-reviews";
+import {
+  type ReviewEditorTarget,
+  useResourceReviewsPanel,
+} from "#/features/reviews/hooks/use-resource-reviews-panel";
 import { ReviewEditor, ReviewStars } from "./review-editor";
-
-type Editor = { kind: "review" } | { kind: "reply" | "flag"; review: Review };
 
 export function ResourceReviewsPanel({
   kind,
@@ -23,47 +18,36 @@ export function ResourceReviewsPanel({
   presentation?: "tabpanel" | "section";
 }) {
   const { t } = useLingui();
-  const [filter, setFilter] = useState<number>();
-  const [editor, setEditor] = useState<Editor | null>(null);
-  const { auth, access, reviews, mutation } = useResourceReviews({ kind, address }, filter);
-  const viewer = auth.isAuthenticated ? access.data : undefined;
-  const canWrite = viewer ? canWriteReview(viewer) : false;
-  useEffect(() => {
-    setEditor(null);
-    mutation.reset();
-  }, [auth.address, auth.isAuthenticated, address]);
-  const summary = reviews.data?.pages[0];
-  const summaryTotal = summary && Number.isFinite(summary.total) ? (summary.total ?? 0) : 0;
-  const summaryAverage = summary && Number.isFinite(summary.average) ? (summary.average ?? 0) : 0;
-  const summaryCounts = summary?.counts ?? {};
-  const items = reviews.data?.pages.flatMap((page) => page.reviews ?? []) ?? [];
-  const open = (next: Editor) => {
-    mutation.reset();
-    setEditor(next);
-  };
-  const renderEditor = (current: Editor) => (
+  const {
+    auth,
+    access,
+    reviews,
+    mutation,
+    viewer,
+    canWrite,
+    filter,
+    setFilter,
+    editor,
+    setEditor,
+    open,
+    save,
+    initialText,
+    summary,
+    summaryTotal,
+    summaryAverage,
+    summaryCounts,
+    items,
+  } = useResourceReviewsPanel({ kind, address });
+  const renderEditor = (current: ReviewEditorTarget) => (
     <ReviewEditor
       key={current.kind === "review" ? "review" : `${current.kind}-${current.review.id}`}
       kind={current.kind}
       initialStars={current.kind === "review" ? viewer?.review?.stars : undefined}
-      initialText={
-        current.kind === "review"
-          ? viewer?.review?.comment
-          : current.kind === "reply"
-            ? (current.review.reply ?? "")
-            : ""
-      }
+      initialText={initialText(current)}
       pending={mutation.isPending}
       error={mutation.isError ? t`Couldn't save. Please try again.` : null}
       onCancel={() => setEditor(null)}
-      onSave={(stars, text) =>
-        mutation.mutate(
-          current.kind === "review"
-            ? { kind: "review", stars, text }
-            : { kind: current.kind, id: current.review.id, text },
-          { onSuccess: () => setEditor(null) },
-        )
-      }
+      onSave={(stars, text) => save(current, stars, text)}
     />
   );
 

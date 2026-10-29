@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { lazy } from "react";
 import { z } from "zod";
 
+import { LayoutSwitch } from "#/desktop/switch";
 import { VoucherDetailPage } from "#/features/wallet/ui";
+import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
+
+const VoucherDesk = lazy(() =>
+  import("#/desktop/vouchers/voucher-desk").then((module) => ({ default: module.VoucherDesk })),
+);
 
 const searchSchema = z.object({
   tab: z.enum(["offerings", "activity", "info", "reviews", "posts"]).optional().catch(undefined),
@@ -13,7 +20,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_nav/vouchers/$voucherAddress")({
-  staticData: { navOwner: "voucher" },
+  staticData: { navOwner: "voucher", desktop: "fill" },
   validateSearch: searchSchema,
   component: VoucherDetailRoute,
 });
@@ -21,7 +28,8 @@ export const Route = createFileRoute("/_nav/vouchers/$voucherAddress")({
 function VoucherDetailRoute() {
   const { voucherAddress } = Route.useParams();
   const { from, poolAddress, reportId, tab, wantId } = Route.useSearch();
-  return (
+  const address = parseVoucherAddress(voucherAddress);
+  const mobile = (
     <VoucherDetailPage
       voucherAddress={voucherAddress}
       activeTab={tab}
@@ -29,6 +37,12 @@ function VoucherDetailRoute() {
       poolAddress={poolAddress}
       reportId={reportId}
       wantId={wantId}
+    />
+  );
+  return (
+    <LayoutSwitch
+      mobile={mobile}
+      desktop={address ? <VoucherDesk voucherAddress={address} /> : mobile}
     />
   );
 }
