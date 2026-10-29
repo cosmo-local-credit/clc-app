@@ -28,6 +28,10 @@ function subscribe(onStoreChange: () => void) {
     const next: AppLayout = media.matches ? "desktop" : "mobile";
     const root = document.documentElement;
     if (root.dataset.layout === next) return;
+    // Written BEFORE React is told, on purpose: `lib/view-drafts` reads this
+    // attribute to tell a layout switch (the old view unmounts with the
+    // attribute already naming the new layout) from a navigation (it does not).
+    // `-view-draft-switch.test.tsx` holds this order in place.
     root.dataset.layout = next;
     onStoreChange();
   };
