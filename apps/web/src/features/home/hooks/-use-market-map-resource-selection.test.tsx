@@ -54,6 +54,26 @@ describe("useMarketMapResourceSelection", () => {
     expect(result.current.allSelected).toBe(false);
   });
 
+  it("resets an empty or customised selection to the defaults and persists it", () => {
+    const { result } = renderHook(() => useMarketMapResourceSelection("guest"));
+    expect(result.current.isDefault).toBe(true);
+
+    act(() => result.current.toggle("voucher"));
+    act(() => result.current.toggle("want"));
+    expect(result.current.selected).toEqual([]);
+    expect(result.current.isDefault).toBe(false);
+
+    act(() => result.current.reset());
+    expect(result.current.selected).toEqual(DEFAULT_MARKET_MAP_RESOURCES);
+    expect(result.current.isDefault).toBe(true);
+    expect(
+      JSON.parse(window.localStorage.getItem(ownerScopedKey("guest", STORAGE_NAME)) ?? "null"),
+    ).toEqual([...DEFAULT_MARKET_MAP_RESOURCES]);
+
+    act(() => result.current.toggle("post"));
+    expect(result.current.isDefault).toBe(false);
+  });
+
   it("keeps wallet selections isolated and repairs invalid storage", () => {
     window.localStorage.setItem(
       ownerScopedKey("0xaaa", STORAGE_NAME),

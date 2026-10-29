@@ -1,17 +1,18 @@
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { RiArrowLeftSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
 import { useVoucherBalanceSummary } from "#/components/vouchers/voucher-summary";
 import { marketSeedGradient } from "#/desktop/market/market-bits";
-import { DeskTab, DeskTabs } from "#/desktop/ui/tabs";
+import { DeskTab, DeskTabPanel, DeskTabs } from "#/desktop/ui/tabs";
 import { WantPlaceDesk } from "#/desktop/wants/want-place-desk";
 import { VoucherActionCells } from "#/desktop/vouchers/detail/voucher-actions";
 import { VoucherActivityDesk } from "#/desktop/vouchers/detail/voucher-activity";
@@ -72,6 +73,9 @@ function VoucherPlace({
 }) {
   const { t } = useLingui();
   const [section, setSection] = useState<Section>("offerings");
+  const tabsId = useId();
+  const panelId = `${tabsId}-panel`;
+  const tabId = (id: Section) => `${tabsId}-tab-${id}`;
   const detailQuery = useMarketVoucherDetail(address);
   const detail = detailQuery.data;
   const name = detail?.name ?? "";
@@ -139,20 +143,28 @@ function VoucherPlace({
         <div className="grid gap-3.5 p-4 pb-6">
           <div className="grid min-w-0 gap-1.5">
             <div className="flex min-w-0 items-start gap-2">
-              <h2 className="flex min-w-0 flex-1 items-baseline gap-2 pt-1">
+              {/* The 16px section/inspector title role, as every other panel heading. */}
+              <SectionHeading
+                as="h2"
+                variant="section"
+                className="flex min-w-0 flex-1 items-baseline gap-2 pt-1.5"
+              >
                 <Link
                   to="/vouchers/$voucherAddress"
                   params={{ voucherAddress }}
                   search={{ from: "market" }}
                   dir="auto"
-                  className="min-w-0 truncate font-heading text-xl font-semibold tracking-tight hover:underline"
+                  className="min-w-0 truncate hover:underline"
                 >
                   {name}
                 </Link>
-                <span dir="ltr" className="shrink-0 font-mono text-xs text-muted-foreground">
+                <span
+                  dir="ltr"
+                  className="shrink-0 font-mono text-xs font-normal text-muted-foreground"
+                >
                   {symbol}
                 </span>
-              </h2>
+              </SectionHeading>
               <VoucherShareButton name={name} address={address} />
             </div>
             {balance.status === "hidden" ? null : (
@@ -188,9 +200,15 @@ function VoucherPlace({
               <VoucherCatalogButton resourceId={detail.id} address={detail.address} />
             </div>
           ) : null}
-          <DeskTabs label={t`Voucher`} tight className="sticky top-0 z-10 bg-card">
+          {/* Local content tabs: the tablist pattern, not route links. */}
+          <DeskTabs label={t`Voucher`} kind="tabs" tight className="sticky top-0 z-10 bg-card">
             {SECTIONS.map((entry) => (
-              <DeskTab key={entry.id} active={entry.id === section}>
+              <DeskTab
+                key={entry.id}
+                active={entry.id === section}
+                id={tabId(entry.id)}
+                controls={panelId}
+              >
                 <button type="button" onClick={() => setSection(entry.id)}>
                   {entry.label}
                 </button>
@@ -198,7 +216,7 @@ function VoucherPlace({
             ))}
           </DeskTabs>
           {/* Only the open tab is mounted, so a closed tab runs no query. */}
-          <div className="min-w-0 pt-1">
+          <DeskTabPanel id={panelId} tabId={tabId(section)} className="min-w-0 pt-1">
             {section === "offerings" ? (
               <VoucherOfferingsDesk
                 address={voucherAddress}
@@ -234,7 +252,7 @@ function VoucherPlace({
                 layout="panel"
               />
             )}
-          </div>
+          </DeskTabPanel>
         </div>
       )}
     </div>

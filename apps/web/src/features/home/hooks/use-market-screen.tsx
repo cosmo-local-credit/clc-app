@@ -24,6 +24,7 @@ import {
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { useMarketMap } from "#/features/home/hooks/use-market-map";
 import { useMarketMapResourceSelection } from "#/features/home/hooks/use-market-map-resource-selection";
+import type { OutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useMarketFilterNotice } from "#/features/home/ui/market-filter-ui";
@@ -57,6 +58,8 @@ export function useMarketScreen({
   creditableSearch,
   kinds,
   creditRoute = "home",
+  output,
+  alsoClear,
 }: {
   isAuthenticated?: boolean;
   locationOwner?: string;
@@ -64,6 +67,16 @@ export function useMarketScreen({
   kinds?: readonly MarketMapKind[];
   /** Where Credit writes its search param. The phone map is the home tab. */
   creditRoute?: "home" | "market";
+  /**
+   * The link's requested output voucher (`out_voucher`), already read by the
+   * caller through `useOutputVoucherBrowse` together with Credit. Only the
+   * desktop pools map passes it: its pool restriction replaces Credit's alone
+   * (it already contains it), and a selected pool opens its swap with the
+   * voucher on the receiving side. The phone map leaves it out and is unchanged.
+   */
+  output?: Pick<OutputVoucherBrowse, "address" | "poolRefs" | "blocksResults" | "state">;
+  /** Runs after `filter.clear`, for a surface whose Clear filters also drops Credit or the output. */
+  alsoClear?: () => void;
 }) {
   const { t } = useLingui();
   const {
@@ -161,7 +174,8 @@ export function useMarketScreen({
     isResolvingInitialCamera;
   const mapDiscoveryReady = fetchBounds.length > 0 || (!camera && !cameraBootstrapPending);
 
-  const filter = useMarketFilter(useStorageOwner());
+  // A link that names an output voucher is explicit: a remembered tag set must not join it.
+  const filter = useMarketFilter(useStorageOwner(), output !== undefined && output.state !== "off");
   const credit = useCreditableBrowse(creditableSearch);
   const mapResources = useMarketMapResourceSelection(locationOwner);
   const activeKinds = kinds ?? mapResources.selected;
@@ -173,13 +187,15 @@ export function useMarketScreen({
     bounds: fetchBounds,
     zoom: fetchZoom,
     kinds: activeKinds,
-    creditablePools: credit.enabled ? credit.poolRefs : undefined,
+    // Credit's pools, narrowed to the requested output's when the link has one.
+    creditablePools: output ? output.poolRefs : credit.enabled ? credit.poolRefs : undefined,
     enabled:
       mapDiscoveryReady &&
       activeKinds.length > 0 &&
       !filter.isRestoringPreference &&
       filter.result.ok &&
       !credit.blocksResults &&
+      !output?.blocksResults &&
       !(credit.enabled && credit.poolRefs?.length === 0),
     facets: filtersEverOpened,
   });
@@ -240,6 +256,15 @@ export function useMarketScreen({
       const location = locations.find((candidate) => candidate.id === id);
       if (!location) return;
       if (location.resourceKind === "pool") {
+        // A member who asked for a voucher arrives at its swap with it chosen.
+        if (isAuthenticated && output?.address) {
+          void navigate({
+            to: "/pools/$poolAddress/swap",
+            params: { poolAddress: location.resourceId },
+            search: { receive: output.address },
+          });
+          return;
+        }
         void navigate({
           to: "/pools/$poolAddress",
           params: { poolAddress: location.resourceId },
@@ -268,7 +293,7 @@ export function useMarketScreen({
         openVoucher(location.resourceId as `0x${string}`);
       }
     },
-    [locations, navigate, openVoucher, openWant],
+    [isAuthenticated, locations, navigate, openVoucher, openWant, output?.address],
   );
   const closeSelection = useCallback(() => {
     if (wantSelection.want) wantSelection.close();
@@ -302,8 +327,13 @@ export function useMarketScreen({
     [area, camera?.rank, clearArea, setArea],
   );
 
+  const filterClear = filter.clear;
+  const clearFilters = useCallback(() => {
+    filterClear();
+    alsoClear?.();
+  }, [alsoClear, filterClear]);
   const notice = useMarketFilterNotice(
-    filter,
+    { ...filter, clear: clearFilters },
     marketMap.error,
     marketMap.retry,
     marketMap.retrying,
@@ -346,6 +376,22 @@ export function useMarketScreen({
           ? { ...previous, creditable: false }
           : { ...previous, tab: "market", view: "map", creditable: false },
     });
+
+  const clusterTotal = marketMap.clusters.reduce((sum, cluster) => sum + cluster.count, 0);
+  // What the result count may claim. A zero is only a count once a result set
+  // has arrived; a failed or blocked request has no count, and one that has not
+  // started yet is still on its way.
+  const resultsBlocked =
+    activeKinds.length === 0 ||
+    !filter.result.ok ||
+    credit.blocksResults ||
+    output?.blocksResults === true ||
+    (credit.enabled && credit.poolRefs?.length === 0);
+  const resultsState: "ready" | "unavailable" | "pending" = marketMap.hasData
+    ? "ready"
+    : marketMap.status === "error" || resultsBlocked
+      ? "unavailable"
+      : "pending";
 
   const mapStatus: MarketMapStatus =
     activeKinds.length === 0
@@ -400,7 +446,7 @@ export function useMarketScreen({
             <p>
               <Trans>No marketplace results match this search.</Trans>
             </p>
-            <Button variant="outline" tap onClick={filter.clear}>
+            <Button variant="outline" tap onClick={clearFilters}>
               <Trans>Clear filters</Trans>
             </Button>
           </>
@@ -424,6 +470,13 @@ export function useMarketScreen({
     filter,
     mapResources,
     credit,
+    results: {
+      state: resultsState,
+      /** Markers in the response, plus everything its clusters stand for. */
+      total: locations.length + clusterTotal,
+      /** Only clusters came back: the area holds results too many to list at this zoom. */
+      clusteredOnly: locations.length === 0 && clusterTotal > 0,
+    },
     filtersOpen,
     setFiltersOpen,
     setFiltersEverOpened,
@@ -444,6 +497,7 @@ export function useMarketScreen({
     mapStatus,
     changeCredit,
     clearCredit,
+    clearFilters,
   };
 }
 

@@ -1,17 +1,12 @@
-import { marketplaceInfiniteQueryOptions } from "@clc/api/features/marketplace/queries";
 import type { Offering } from "@clc/api/features/offerings/client";
-import { offeringsDiscoveryInfiniteQueryOptions } from "@clc/api/features/offerings/queries";
-import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
-import type { MarketplaceKind, MarketplaceResult } from "@clc/core/features/marketplace/logic";
+import type { MarketplaceResult } from "@clc/core/features/marketplace/logic";
 import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { MarketEmptyMessage } from "#/components/market-empty-message";
-import { nearbyQueryPolicy, useNearbyCatalog } from "#/components/nearby-catalog";
 import {
   resolveOfferingDisplayPrice,
   useOfferingFrequencyLabel,
@@ -24,8 +19,8 @@ import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
-import { marketplaceClient } from "#/lib/api/marketplace";
-import { offeringsClient } from "#/lib/api/offerings";
+import { useOutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
+import { useMarketFilterNotice } from "#/features/home/ui/market-filter-ui";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
@@ -35,96 +30,83 @@ import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { DeskSplit } from "#/desktop/ui/inspector";
 import { DeskCanvas } from "#/desktop/ui/page";
 import { MarketAvatar, MarketKindBadge, marketSeedGradient } from "#/desktop/market/market-bits";
-import { MarketCreditNotice } from "#/desktop/market/market-notices";
+import {
+  MarketListFooter,
+  MarketListSkeleton,
+  OFFER_GRID,
+} from "#/desktop/market/market-list-states";
+import { useClearMarketNarrowing, useClearOutputVoucher } from "#/desktop/market/market-narrowing";
+import {
+  MarketCreditNotice,
+  MarketFilterNotice,
+  MarketOutputNotice,
+} from "#/desktop/market/market-notices";
 import { MarketDeskToolbar } from "#/desktop/market/market-toolbar";
+import { useRememberMarketView } from "#/desktop/market/market-view";
 import { MarketPlacePanel } from "#/desktop/market/place-panel";
-
-const LIST_KINDS: Record<Exclude<MarketListScope, "all">, readonly MarketplaceKind[]> = {
-  offers: ["offering"],
-  wants: ["want"],
-  vouchers: ["voucher"],
-  pools: ["pool"],
-  catalogs: ["catalog"],
-};
+import { type MarketListPhase, useMarketList } from "#/desktop/market/use-market-list";
 
 export function MarketListDesk({
   scope,
   creditableSearch,
+  outputVoucherSearch,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
   scope: MarketListScope;
   creditableSearch?: boolean | string | readonly (boolean | string)[];
+  /** The link's requested output voucher; it narrows the Pools list to pools that can pay it out. */
+  outputVoucherSearch?: string | readonly string[];
   locationOwner?: string;
 }) {
+  const { t } = useLingui();
   const navigate = useNavigate();
-  const nearby = useNearbyCatalog();
+  useRememberMarketView("list");
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
   const credit = useCreditableBrowse(creditableSearch);
-  const filter = useMarketFilter(useStorageOwner(), creditableSearch !== undefined);
+  const output = useOutputVoucherBrowse(outputVoucherSearch, credit);
+  const filter = useMarketFilter(
+    useStorageOwner(),
+    creditableSearch !== undefined || outputVoucherSearch !== undefined,
+  );
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const parsed = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
-  const kinds = scope === "all" ? undefined : LIST_KINDS[scope];
-  const ready =
-    filter.result.ok &&
-    !filter.isRestoringPreference &&
-    !filter.isDebouncing &&
-    !credit.blocksResults;
-  const query = useInfiniteQuery({
-    ...marketplaceInfiniteQueryOptions(marketplaceClient, {
-      perPage: 20,
-      q: parsed.term,
-      tags: parsed.tags,
-      tagMatch: parsed.tagMatch,
-      kinds,
-      facets: true,
-      nearby: nearby?.nearby === true,
-      scope: nearby?.scope,
-      bounds: nearby?.bounds,
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
-    }),
-    enabled: ready && scope !== "offers",
-    ...nearbyQueryPolicy(nearby),
-  });
-  // Offers read the phone Offers page's discovery query: its rows carry the
-  // quantity and frequency a tile shows, which the marketplace rows do not.
-  const offersQuery = useInfiniteQuery({
-    ...offeringsDiscoveryInfiniteQueryOptions(offeringsClient, {
-      perPage: 20,
-      q: parsed.term,
-      tags: parsed.tags,
-      tagMatch: parsed.tagMatch,
-      facets: true,
-      nearby: nearby?.nearby === true,
-      scope: nearby?.scope,
-      bounds: nearby?.bounds,
-      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
-    }),
-    enabled: ready && scope === "offers",
-    ...nearbyQueryPolicy(nearby),
-  });
-  const active = scope === "offers" ? offersQuery : query;
-  const rows = query.data?.pages.flatMap((page) => page.results) ?? [];
-  const offerings = offersQuery.data?.pages.flatMap((page) => page.offerings) ?? [];
-  const facets =
-    (scope === "offers"
-      ? offersQuery.data?.pages[0]?.tagFacets
-      : query.data?.pages[0]?.tagFacets) ?? [];
-  const count = scope === "offers" ? offerings.length : rows.length;
+  const list = useMarketList({ scope, filter, credit, output });
+  const clearNarrowing = useClearMarketNarrowing();
+  const clearOutput = useClearOutputVoucher();
+  // Clear filters means every narrowing the list has: search, tags, Credit and the requested output.
+  const clearAll = () => {
+    filter.clear();
+    clearNarrowing();
+  };
+  const notice = useMarketFilterNotice(
+    { ...filter, clear: clearAll },
+    list.phase === "failed" || list.refreshFailed ? list.error : null,
+    list.retry,
+    list.fetching,
+    t`Couldn't load marketplace results.`,
+  );
   const voucher = useVoucherSheetSelection();
   const want = useWantSheetSelection();
   const open = voucher.voucher !== null || want.want !== null;
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const hasMore = active.hasNextPage && !active.isFetchNextPageError;
+  const { hasMore, failed: nextFailed, loading: nextLoading, load } = list.next;
 
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || !hasMore || typeof IntersectionObserver === "undefined") return;
+    if (
+      !target ||
+      !hasMore ||
+      nextFailed ||
+      nextLoading ||
+      typeof IntersectionObserver === "undefined"
+    ) {
+      return;
+    }
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting && !active.isFetchingNextPage) void active.fetchNextPage();
+      if (entries[0]?.isIntersecting) load();
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [hasMore, active.fetchNextPage, active.isFetchingNextPage]);
+  }, [hasMore, nextFailed, nextLoading, load]);
 
   const changeCredit = (checked: boolean) =>
     void navigate({
@@ -147,7 +129,12 @@ export function MarketListDesk({
     return meters;
   };
 
-  const filtered = filter.isFiltered || credit.enabled;
+  // Search, tags, Credit or a requested output narrow what the list can show.
+  const narrowed = filter.isFiltered || credit.enabled || output.active;
+  const creditEmpty = credit.enabled && credit.poolRefs?.length === 0;
+  const checking =
+    (output.state === "loading" && !credit.blocksResults) ||
+    (credit.enabled && credit.verification.status === "loading" && !output.blocksResults);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -162,27 +149,46 @@ export function MarketListDesk({
               layout="page"
               scope={scope}
               filter={filter}
-              facets={facets}
+              facets={list.facets}
               filtersOpen={filtersOpen}
               onFiltersOpenChange={setFiltersOpen}
               credit={credit}
               onCredit={changeCredit}
-              count={filtered && active.data ? count : undefined}
+              output={output}
+              onClearOutput={clearOutput}
+              count={narrowed && list.phase === "ready" ? list.count : undefined}
+              refreshing={list.refreshing}
             />
-            <MarketCreditNotice credit={credit} onClear={clearCredit} />
+            <div className="grid gap-2 empty:hidden">
+              <MarketCreditNotice credit={credit} onClear={clearCredit} />
+              <MarketOutputNotice
+                output={output}
+                credit={credit}
+                onClear={clearOutput}
+                onClearAll={clearAll}
+                showEmpty={false}
+              />
+              {notice ? <MarketFilterNotice notice={notice} /> : null}
+            </div>
             <div>
               <ListBody
                 scope={scope}
-                rows={rows}
-                offerings={offerings}
+                phase={list.phase}
+                waiting={checking}
+                rows={list.rows}
+                offerings={list.offerings}
                 distanceOrigin={distanceOrigin}
-                pending={active.isPending}
-                error={active.isError && !active.data}
-                fetching={active.isFetching}
-                onRetry={() => void active.refetch()}
-                filtered={filtered}
-                onClear={filter.clear}
+                retained={list.retained}
+                narrowed={narrowed}
+                creditEmpty={creditEmpty}
+                creditChecked={credit.enabled}
+                outputActive={output.active}
+                outputEmpty={output.isEmpty}
+                filterActive={filter.isFiltered}
+                onClear={clearAll}
                 distanceOf={distanceOf}
+                partial={hasMore}
+                receiveOutput={credit.auth.isAuthenticated ? output.address : null}
                 selectedKey={
                   voucher.voucher
                     ? `voucher:${voucher.voucher.toLowerCase()}`
@@ -195,10 +201,11 @@ export function MarketListDesk({
                 sheetOpen={open}
               />
               <div ref={loadMoreRef} className="h-px" />
-              {active.isFetchingNextPage ? (
-                <p className="py-3 text-center text-xs text-muted-foreground">
-                  <Trans>Loading more…</Trans>
-                </p>
+              {list.phase === "ready" && list.count > 0 ? (
+                <MarketListFooter
+                  next={list.next}
+                  ended={!list.retained && !list.refreshing && !list.refreshFailed}
+                />
               ) : null}
             </div>
           </DeskCanvas>
@@ -217,70 +224,95 @@ export function MarketListDesk({
 
 function ListBody({
   scope,
+  phase,
+  waiting,
   rows,
   offerings,
   distanceOrigin,
-  pending,
-  error,
-  fetching,
-  onRetry,
-  filtered,
+  retained,
+  narrowed,
+  creditEmpty,
+  creditChecked,
+  outputActive,
+  outputEmpty,
+  filterActive,
   onClear,
   distanceOf,
+  partial,
+  receiveOutput,
   selectedKey,
   onOpenVoucher,
   onOpenWant,
   sheetOpen,
 }: {
   scope: MarketListScope;
+  phase: MarketListPhase;
+  /** A check that gates the request is running, so rows are still to come. */
+  waiting: boolean;
   rows: MarketplaceResult[];
   offerings: Offering[];
   distanceOrigin: { lat: number; lng: number } | null;
-  pending: boolean;
-  error: boolean;
-  fetching: boolean;
-  onRetry: () => void;
-  filtered: boolean;
+  /** The rows are the previous search's, kept until the next arrives. */
+  retained: boolean;
+  narrowed: boolean;
+  creditEmpty: boolean;
+  creditChecked: boolean;
+  outputActive: boolean;
+  outputEmpty: boolean;
+  filterActive: boolean;
+  /** Clears search, tags, Credit and the requested output. */
   onClear: () => void;
   distanceOf: (row: MarketplaceResult) => number | null;
+  partial: boolean;
+  /** The voucher a pool's row should open the swap with, for a signed-in member who asked for it. */
+  receiveOutput: `0x${string}` | null;
   selectedKey: string | null;
   onOpenVoucher: (address: `0x${string}`) => void;
   onOpenWant: (id: string) => void;
   sheetOpen: boolean;
 }) {
   const { t, i18n } = useLingui();
-  if (error) {
-    return (
-      <div className="space-y-3 border border-border bg-card p-4" role="alert">
-        <p className="text-sm text-muted-foreground">
-          <Trans>Couldn't load marketplace results.</Trans>
-        </p>
-        <Button variant="outline" tap pending={fetching} onClick={onRetry}>
-          <Trans>Retry</Trans>
-        </Button>
-      </div>
-    );
+  if (phase === "failed") return null;
+  if (phase === "loading" || waiting) {
+    return <MarketListSkeleton scope={scope} label={t`Loading marketplace…`} />;
   }
-  if (pending) {
-    return <p className="text-sm text-muted-foreground">{t`Loading marketplace…`}</p>;
+  if (phase === "blocked") {
+    if (!creditEmpty && !outputEmpty) return null;
+    return (
+      <EmptyPanel onClear={onClear}>
+        {outputEmpty ? (
+          creditChecked ? (
+            <Trans>No creditable pools have this voucher available.</Trans>
+          ) : (
+            <Trans>No pools have this voucher available.</Trans>
+          )
+        ) : (
+          <Trans>No marketplace results are available through your Credit pools.</Trans>
+        )}
+      </EmptyPanel>
+    );
   }
   if ((scope === "offers" ? offerings.length : rows.length) === 0) {
     return (
-      <div className="space-y-3 border border-border bg-card p-4">
-        <p className="text-sm text-muted-foreground">
-          {filtered ? <Trans>No marketplace results found.</Trans> : <MarketEmptyMessage />}
-        </p>
-        {filtered ? (
-          <Button variant="outline" tap onClick={onClear}>
-            <Trans>Clear filters</Trans>
-          </Button>
-        ) : null}
-      </div>
+      <EmptyPanel onClear={narrowed ? onClear : undefined}>
+        {creditChecked && outputActive && filterActive ? (
+          <Trans>No creditable pools with this voucher match these filters.</Trans>
+        ) : outputActive && filterActive ? (
+          <Trans>No pools with this voucher match these filters.</Trans>
+        ) : narrowed ? (
+          <Trans>No marketplace results found.</Trans>
+        ) : (
+          <MarketEmptyMessage />
+        )}
+      </EmptyPanel>
     );
   }
   if (scope === "offers") {
     return (
-      <div className="grid grid-cols-4 gap-4">
+      <div
+        className={retained ? `${OFFER_GRID} opacity-60 transition-opacity` : OFFER_GRID}
+        aria-busy={retained}
+      >
         {offerings.map((offering) => (
           <OfferTile key={offering.id} offering={offering} distanceOrigin={distanceOrigin} />
         ))}
@@ -290,55 +322,81 @@ function ListBody({
 
   const columns = columnsFor(scope, distanceOf, i18n.locale, t);
   return (
-    <DeskTable
-      label={t`Market`}
-      rows={rows}
-      columns={columns}
-      rowKey={selectionKey}
-      selectedKey={selectedKey}
-      empty={<Trans>No marketplace results found.</Trans>}
-      renderRow={(row, props, cells) => {
-        if (row.kind === "pool" && row.address) {
+    <div className={retained ? "opacity-60 transition-opacity" : undefined} aria-busy={retained}>
+      <DeskTable
+        label={t`Market`}
+        rows={rows}
+        columns={columns}
+        rowKey={selectionKey}
+        selectedKey={selectedKey}
+        partial={partial}
+        empty={<Trans>No marketplace results found.</Trans>}
+        renderRow={(row, props, cells) => {
+          if (row.kind === "pool" && row.address) {
+            return receiveOutput ? (
+              <Link
+                to="/pools/$poolAddress/swap"
+                params={{ poolAddress: row.address }}
+                search={{ receive: receiveOutput }}
+                {...props}
+              >
+                {cells}
+              </Link>
+            ) : (
+              <Link to="/pools/$poolAddress" params={{ poolAddress: row.address }} {...props}>
+                {cells}
+              </Link>
+            );
+          }
+          if (row.kind === "catalog") {
+            return (
+              <Link to="/catalogs/$catalogId" params={{ catalogId: row.id }} {...props}>
+                {cells}
+              </Link>
+            );
+          }
+          if (row.kind === "offering" && row.voucherAddress) {
+            return (
+              <Link
+                to="/vouchers/$voucherAddress"
+                params={{ voucherAddress: row.voucherAddress }}
+                search={{ from: "market" }}
+                {...props}
+              >
+                {cells}
+              </Link>
+            );
+          }
           return (
-            <Link to="/pools/$poolAddress" params={{ poolAddress: row.address }} {...props}>
-              {cells}
-            </Link>
-          );
-        }
-        if (row.kind === "catalog") {
-          return (
-            <Link to="/catalogs/$catalogId" params={{ catalogId: row.id }} {...props}>
-              {cells}
-            </Link>
-          );
-        }
-        if (row.kind === "offering" && row.voucherAddress) {
-          return (
-            <Link
-              to="/vouchers/$voucherAddress"
-              params={{ voucherAddress: row.voucherAddress }}
-              search={{ from: "market" }}
+            <button
+              type="button"
               {...props}
+              onFocus={(event) => {
+                if (!sheetOpen || !event.currentTarget.matches(":focus-visible")) return;
+                openRow(row, onOpenVoucher, onOpenWant);
+              }}
+              onClick={() => openRow(row, onOpenVoucher, onOpenWant)}
             >
               {cells}
-            </Link>
+            </button>
           );
-        }
-        return (
-          <button
-            type="button"
-            {...props}
-            onFocus={(event) => {
-              if (!sheetOpen || !event.currentTarget.matches(":focus-visible")) return;
-              openRow(row, onOpenVoucher, onOpenWant);
-            }}
-            onClick={() => openRow(row, onOpenVoucher, onOpenWant)}
-          >
-            {cells}
-          </button>
-        );
-      }}
-    />
+        }}
+      />
+    </div>
+  );
+}
+
+/** No matches: the narrowing that caused it, and the one action that undoes all of it. */
+function EmptyPanel({ children, onClear }: { children: ReactNode; onClear?: () => void }) {
+  return (
+    <div className="space-y-3 border border-border bg-card p-4">
+      <p className="text-sm text-muted-foreground">{children}</p>
+      {onClear ? (
+        <Button variant="outline" onClick={onClear}>
+          <Trans>Clear filters</Trans>
+        </Button>
+      ) : null}
+    </div>
   );
 }
 

@@ -2,10 +2,9 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { CATALOG_MAX_TAGS } from "@clc/core/features/catalog/logic";
-import { RiCheckLine, RiCloseLine, RiFilter3Line, RiSearchLine } from "react-icons/ri";
+import { RiCheckLine, RiCloseLine, RiFilter3Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { Spinner } from "#/components/ui/spinner";
@@ -14,13 +13,18 @@ import { Toggle } from "#/components/ui/toggle";
 import { useCatalogFilterDraft } from "#/components/use-catalog-filter-draft";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";
+import type { OutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
 import {
   marketplaceSearchForScope,
   marketplaceSharedSearch,
   type MarketListScope,
+  parseMarketplaceScope,
+  pickMarketplaceSearch,
 } from "#/lib/navigation/marketplace-search";
+import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
-import { DeskKbd } from "#/desktop/ui/kbd";
+import { MapLayersChip, type MapLayers } from "#/desktop/market/market-layers";
+import { MarketSearchField } from "#/desktop/market/market-search-field";
 import { DeskChip, DeskSegment, DeskSegmentItem } from "#/desktop/ui/segment";
 import { DeskTab, DeskTabs } from "#/desktop/ui/tabs";
 
@@ -36,8 +40,10 @@ const SCOPES: { id: MarketListScope; label: ReactNode }[] = [
 type Credit = ReturnType<typeof useCreditableBrowse>;
 
 /**
- * Search, Filters, Credit, the result count and Map | List over the scope
- * tabs. `column` is the map's 400px results column; `page` is the list.
+ * Search, Filters, Credit, the requested output, the result count and
+ * Map | List over the scope tabs. `column` is the map's 400px results column;
+ * `page` is the list. The scope tabs are route links to a marketplace category
+ * and keep the current view; Map | List is the one place that changes it.
  */
 export function MarketDeskToolbar({
   layout,
@@ -48,7 +54,11 @@ export function MarketDeskToolbar({
   onFiltersOpenChange,
   credit,
   onCredit,
+  output,
+  onClearOutput,
+  layers,
   count,
+  refreshing = false,
 }: {
   layout: "column" | "page";
   scope: MarketListScope;
@@ -58,12 +68,20 @@ export function MarketDeskToolbar({
   onFiltersOpenChange: (open: boolean) => void;
   credit: Credit;
   onCredit: (checked: boolean) => void;
+  output: OutputVoucherBrowse;
+  onClearOutput: () => void;
+  /** The map's resource types, only while the All scope draws them. */
+  layers?: MapLayers;
   /** Shown beside the chips on the list; the column draws its own count row. */
   count?: number;
+  /** The list is refreshing behind the rows it still shows. */
+  refreshing?: boolean;
 }) {
   const { t } = useLingui();
   const view = layout === "column" ? "map" : "list";
-  const search = <MarketSearchField filter={filter} scope={scope} column={layout === "column"} />;
+  const search = (
+    <MarketSearchFieldFor filter={filter} scope={scope} column={layout === "column"} />
+  );
   const chips = (
     <>
       <FiltersChip
@@ -74,6 +92,9 @@ export function MarketDeskToolbar({
         onOpenChange={onFiltersOpenChange}
       />
       <CreditChip credit={credit} onCredit={onCredit} />
+      <SignInAction credit={credit} />
+      {layers ? <MapLayersChip layers={layers} /> : null}
+      <OutputChip output={output} onClear={onClearOutput} />
     </>
   );
   const segment = (
@@ -110,7 +131,7 @@ export function MarketDeskToolbar({
     return (
       <div className="grid shrink-0 gap-2.5 border-border border-b px-3.5 pt-3.5">
         {search}
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           {chips}
           {segment}
         </div>
@@ -120,12 +141,21 @@ export function MarketDeskToolbar({
   }
   return (
     <div className="grid min-w-0 gap-6">
-      <div className="flex min-w-0 items-center gap-2">
-        <div className="w-[420px] min-w-0 shrink">{search}</div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="w-[420px] max-w-full min-w-0 shrink">{search}</div>
         {chips}
         {count !== undefined ? (
-          <span className="shrink-0 text-xs text-muted-foreground">
+          <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+            {refreshing ? <Spinner /> : null}
             <Trans>{count} results</Trans>
+          </span>
+        ) : refreshing ? (
+          <span
+            role="status"
+            className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground"
+          >
+            <Spinner />
+            <Trans>Updating…</Trans>
           </span>
         ) : null}
         {segment}
@@ -135,7 +165,7 @@ export function MarketDeskToolbar({
   );
 }
 
-function MarketSearchField({
+function MarketSearchFieldFor({
   filter,
   scope,
   column,
@@ -147,7 +177,7 @@ function MarketSearchField({
   const { t } = useLingui();
   const label =
     scope === "offers"
-      ? t`Search offers, vouchers, descriptions, or tags`
+      ? t`Search offers`
       : scope === "wants"
         ? t`Search Wants`
         : scope === "vouchers"
@@ -157,37 +187,7 @@ function MarketSearchField({
             : scope === "catalogs"
               ? t`Search catalogs`
               : t`Search the marketplace`;
-  return (
-    <div className="relative min-w-0">
-      <RiSearchLine
-        className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-        aria-hidden="true"
-      />
-      <Input
-        value={filter.term}
-        onChange={(event) => filter.setTerm(event.target.value)}
-        placeholder={label}
-        aria-label={label}
-        // The map has no top bar, so `/` focuses this field there.
-        data-desktop-search={column ? "" : undefined}
-        className="truncate ps-9 pe-10"
-      />
-      {filter.term !== "" ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={t`Clear search`}
-          onClick={filter.clearTerm}
-          className="absolute end-0 top-0 border-0 text-muted-foreground"
-        >
-          <RiCloseLine aria-hidden="true" />
-        </Button>
-      ) : column ? (
-        <DeskKbd className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2">/</DeskKbd>
-      ) : null}
-    </div>
-  );
+  return <MarketSearchField filter={filter} label={label} column={column} />;
 }
 
 /**
@@ -365,7 +365,51 @@ function CreditChip({
   );
 }
 
-/** One scope in one view. All on the map is the home map; every other pairing lives on /market. */
+/** A guest's way in, where a member has Credit, as the phone's market bar has it. */
+function SignInAction({ credit }: { credit: Credit }) {
+  if (credit.auth.isLoading || credit.auth.isAuthenticated) return null;
+  return (
+    <Button asChild>
+      <Link to="/onboarding" search={onboardingSearch("welcome")}>
+        <Trans>Sign in</Trans>
+      </Link>
+    </Button>
+  );
+}
+
+/** The requested output voucher, as a removable chip: Get BAKE. */
+function OutputChip({ output, onClear }: { output: OutputVoucherBrowse; onClear: () => void }) {
+  const { t } = useLingui();
+  if (!output.active) return null;
+  const symbol = output.symbol;
+  const label = symbol ? t`Get ${symbol}` : t`Get voucher`;
+  return (
+    <DeskChip on>
+      <button
+        type="button"
+        aria-label={t`Remove filter: ${label}`}
+        aria-busy={output.state === "loading"}
+        onClick={onClear}
+      >
+        {output.state === "loading" ? <Spinner /> : null}
+        {symbol ? (
+          <Trans>
+            Get <span className="font-mono">{symbol}</span>
+          </Trans>
+        ) : (
+          <Trans>Get voucher</Trans>
+        )}
+        <RiCloseLine aria-hidden="true" />
+      </button>
+    </DeskChip>
+  );
+}
+
+/**
+ * One scope in one view. All on the map is the home map; every other pairing
+ * lives on /market. The requested output belongs to the pools scope, so it
+ * travels between Map and List there and nowhere else.
+ */
 function MarketLink({
   scope,
   view,
@@ -385,10 +429,22 @@ function MarketLink({
       search={(previous) =>
         home
           ? { ...marketplaceSharedSearch(previous), tab: "market" as const, view: "map" as const }
-          : { ...marketplaceSearchForScope(marketplaceSharedSearch(previous), scope), view }
+          : {
+              ...marketplaceSearchForScope(
+                { ...marketplaceSharedSearch(previous), out_voucher: keptOutput(previous, scope) },
+                scope,
+              ),
+              view,
+            }
       }
     >
       {children}
     </Link>
   );
+}
+
+function keptOutput(previous: unknown, scope: MarketListScope) {
+  if (scope !== "pools") return undefined;
+  const state = pickMarketplaceSearch(previous);
+  return parseMarketplaceScope(state.scope) === "pools" ? state.out_voucher : undefined;
 }

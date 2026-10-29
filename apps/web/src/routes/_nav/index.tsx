@@ -198,7 +198,6 @@ function IndexPage() {
           isAuthenticated={auth.isAuthenticated}
           creditableSearch={creditable}
           creditRoute="home"
-          view="map"
         />
       </NearbyCatalog>
     );

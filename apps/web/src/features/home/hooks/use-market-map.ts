@@ -66,6 +66,8 @@ export function useMarketMap(options: UseMarketMapOptions) {
     clusters,
     tagFacets: options.enabled ? (data?.tagFacets ?? []) : [],
     error: options.enabled ? query.error : null,
+    /** A successful response, fresh or retained, exists for what is on the map. */
+    hasData: options.enabled && data !== undefined,
     retry,
     retrying: options.enabled && query.isFetching,
     isFetching: options.enabled && query.isFetching,

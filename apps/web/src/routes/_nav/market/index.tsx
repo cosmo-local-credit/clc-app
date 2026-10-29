@@ -21,13 +21,8 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { parseWantId } from "#/lib/navigation/want-sheet-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 
-const MarketMapDesk = lazy(() =>
-  import("#/desktop/market/market-map-desk").then((module) => ({ default: module.MarketMapDesk })),
-);
-const MarketListDesk = lazy(() =>
-  import("#/desktop/market/market-list-desk").then((module) => ({
-    default: module.MarketListDesk,
-  })),
+const MarketDesk = lazy(() =>
+  import("#/desktop/market/market-desk").then((module) => ({ default: module.MarketDesk })),
 );
 
 type MarketViewParam = "map" | "list";
@@ -126,22 +121,20 @@ function MarketListRoute() {
   const owner =
     auth.isAuthenticated && auth.address ? auth.address.toLowerCase() : GUEST_STORAGE_OWNER;
   const mobile = <MarketMobile scope={scope} search={search} owner={owner} />;
-  const desktop =
-    search.view === "list" && scope ? (
-      <NearbyCatalog>
-        <MarketListDesk scope={scope} creditableSearch={search.creditable} locationOwner={owner} />
-      </NearbyCatalog>
-    ) : (
-      <NearbyCatalog>
-        <MarketMapDesk
-          isAuthenticated={auth.isAuthenticated}
-          creditableSearch={search.creditable}
-          scope={scope ?? "all"}
-          creditRoute="market"
-          view={search.view}
-        />
-      </NearbyCatalog>
-    );
+  // Map or list is the URL's `view`, else the person's last choice; a link that
+  // names none (the shell's scope links) must not change it.
+  const desktop = (
+    <NearbyCatalog>
+      <MarketDesk
+        scope={scope}
+        urlView={search.view}
+        isAuthenticated={auth.isAuthenticated}
+        creditableSearch={search.creditable}
+        outputVoucherSearch={search.out_voucher}
+        locationOwner={owner}
+      />
+    </NearbyCatalog>
+  );
   return <LayoutSwitch mobile={mobile} desktop={desktop} />;
 }
 
