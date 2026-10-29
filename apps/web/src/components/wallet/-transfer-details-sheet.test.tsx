@@ -101,6 +101,28 @@ afterEach(() => {
 });
 
 describe("TransferDetailsSheet receipt sharing", () => {
+  it("shows liquidity withdrawals with a separate initiating owner and recipient", () => {
+    const owner = "0x4444444444444444444444444444444444444444";
+    render(
+      <TransferDetailsSheet
+        transfer={{
+          ...TRANSFER,
+          activityKind: "withdrawn",
+          initiatorAddress: owner,
+          direction: "NONE",
+        }}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("Pay Out")).toBeTruthy();
+    expect(screen.getByText("Withdrawal")).toBeTruthy();
+    expect(screen.getByText("No balance change")).toBeTruthy();
+    expect(screen.getByText("Initiated by").parentElement?.textContent).toContain(owner);
+    expect(screen.getByText("From").parentElement?.textContent).toContain(TRANSFER.senderAddress);
+    expect(screen.getByText("To").parentElement?.textContent).toContain(TRANSFER.recipientAddress);
+  });
+
   it("shares a reopened confirmed send with its alias, amount, date and explorer link", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "share", { configurable: true, value: share });

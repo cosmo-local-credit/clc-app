@@ -35,10 +35,9 @@ import { PoolSwapFeeValue } from "./pool-swap-fee-value";
  * fits a pool. A swap here is two legs and sometimes a third for the protocol's
  * cut, and the whole point of the activity list is that those belong together.
  *
- * The activity entry comes from `token_transfer`, while an opened swap also
- * reads its transaction receipt. The transfer feed reconstructs the legs and
- * can spot a separate protocol transfer; the settlement event supplies the
- * pool fee that never moved and the authoritative complete fee split.
+ * Core classifies the operation and matches its indexed transfer legs. An
+ * opened swap also reads its receipt: the settlement event supplies the pool
+ * fee that never moved and the complete fee split.
  */
 export function PoolActivityDetailsSheet({
   poolAddress,
@@ -75,7 +74,7 @@ export function PoolActivityDetailsSheet({
         ? t`Created`
         : entry.direction === "IN"
           ? t`Deposit`
-          : t`Paid out`;
+          : t`Pay Out`;
   const copy = (value: string) => {
     if (!navigator.clipboard) {
       toast.error(t`Couldn't copy transaction hash`);
@@ -94,6 +93,16 @@ export function PoolActivityDetailsSheet({
         <SheetContent className="max-h-[85svh] overflow-y-auto [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
             <Badge caps>{kind}</Badge>
+            {entry?.kind === "withdrawal" ? (
+              <p className="text-sm">
+                <Trans>Withdrawal</Trans>
+              </p>
+            ) : null}
+            {entry?.kind === "fee-withdrawal" ? (
+              <p className="text-sm">
+                <Trans>Fee withdrawal</Trans>
+              </p>
+            ) : null}
             <SheetTitle className="sr-only">
               <Trans>Pool activity details</Trans>
             </SheetTitle>
@@ -107,6 +116,11 @@ export function PoolActivityDetailsSheet({
                     {entry.success ? t`Confirmed` : t`Failed`}
                   </Badge>
                 </DetailRow>
+                {entry.initiatorAddress ? (
+                  <DetailRow label={t`Initiated by`}>
+                    <EllipsizedAddress address={entry.initiatorAddress} />
+                  </DetailRow>
+                ) : null}
 
                 {entry.kind === "swap" ? (
                   <>
