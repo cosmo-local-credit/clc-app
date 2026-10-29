@@ -5,11 +5,13 @@ import type { LocationInput } from "@clc/core/features/location/logic";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { catalogsClient } from "#/lib/api/catalogs";
+import { useViewDraft } from "#/lib/view-drafts";
 
 export type CatalogPlace = Omit<LocationInput, "country">;
 
@@ -28,6 +30,20 @@ const formSchema = z.object({
     .refine((value): boolean => !!value, "Choose a location"),
 });
 
+type CatalogFormValues = z.input<typeof formSchema>;
+
+/**
+ * What the catalog form keeps across a phone/desktop view swap: the typed
+ * fields. Not the picture, which is a file in flight or a copied image the
+ * person can choose again.
+ */
+type CatalogDraft = Omit<CatalogFormValues, "imageUrl">;
+
+function catalogDraftOf(values: CatalogFormValues): CatalogDraft {
+  const { imageUrl: _imageUrl, ...fields } = values;
+  return fields;
+}
+
 /** Form state and save for creating or editing a catalog. */
 export function useCatalogForm({
   catalog,
@@ -44,7 +60,16 @@ export function useCatalogForm({
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const tagsQuery = useTokenTags();
-  const defaultValues: z.input<typeof formSchema> = {
+  const { address: account } = useAuthStatus();
+  // Create only. An edit opens inside a sheet (phone) or behind `?edit`
+  // (desktop), and neither view's open state follows the other across a swap,
+  // so there is no editor on the far side to hand a draft to.
+  const viewDraft = useViewDraft<CatalogDraft>({
+    scope: "catalog-create",
+    account: catalog ? undefined : account,
+  });
+  const restored = viewDraft.restored;
+  const defaultValues: CatalogFormValues = {
     name: catalog?.name ?? "",
     description: catalog?.description ?? "",
     imageUrl: catalog?.imageUrl ?? "",
@@ -53,8 +78,12 @@ export function useCatalogForm({
       ? { lat: catalog.geoLat, lng: catalog.geoLng, locationName: catalog.locationName }
       : initialPlace,
   };
+  // The form as it opened, before anyone has typed: the draft is only kept
+  // while the fields differ from this.
+  const [opened] = useState(() => JSON.stringify(catalogDraftOf(defaultValues)));
   const form = useForm({
-    defaultValues,
+    // What was typed in the other view goes on top of the loaded catalog.
+    defaultValues: restored ? { ...defaultValues, ...restored } : defaultValues,
     validators: { onSubmit: formSchema },
     onSubmit: async ({ value }) => {
       if (!value.location) return;
@@ -69,6 +98,7 @@ export function useCatalogForm({
           locationName: value.location.locationName,
           tags: value.tags,
         });
+        viewDraft.clear();
         await onSaved(saved);
       } catch (cause) {
         setError(
@@ -81,5 +111,22 @@ export function useCatalogForm({
       }
     },
   });
+  const { save: saveViewDraft, clear: clearViewDraft } = viewDraft;
+  useEffect(() => {
+    let seen: unknown;
+    const sync = () => {
+      const { values } = form.store.state;
+      // Submitting and validating also touch the store; only a changed value
+      // may write, or a cleared draft would come straight back.
+      if (values === seen) return;
+      seen = values;
+      const fields = catalogDraftOf(values);
+      if (JSON.stringify(fields) === opened) clearViewDraft();
+      else saveViewDraft(fields);
+    };
+    sync();
+    const subscription = form.store.subscribe(sync);
+    return () => subscription.unsubscribe();
+  }, [clearViewDraft, form, opened, saveViewDraft]);
   return { form, save, imageBusy, setImageBusy, error, tagOptions: tagsQuery.data ?? [] };
 }

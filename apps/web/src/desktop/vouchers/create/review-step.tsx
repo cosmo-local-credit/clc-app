@@ -24,7 +24,7 @@ function Prose({ children }: { children: ReactNode }) {
   );
 }
 
-/** Step 3, Confirm & publish: the summary, the terms, the agreement. */
+/** Step 3, Confirm and publish: the summary, the terms, the agreement. */
 export function ReviewStep({ wizard }: { wizard: VoucherWizard }) {
   const { t } = useLingui();
   const markerLabels = useMarkerLabels();
@@ -32,7 +32,7 @@ export function ReviewStep({ wizard }: { wizard: VoucherWizard }) {
   return (
     <>
       <DeskTitle>
-        <Trans>Confirm &amp; publish</Trans>
+        <Trans>Confirm and publish</Trans>
       </DeskTitle>
 
       <form.Subscribe selector={(state) => state.values}>
@@ -122,7 +122,7 @@ export function ReviewStep({ wizard }: { wizard: VoucherWizard }) {
                 disabled={!acceptedTerms || wizard.blocked}
                 pending={publishing}
               >
-                {publishing ? <Trans>Publishing…</Trans> : <Trans>Confirm &amp; Publish</Trans>}
+                {publishing ? <Trans>Publishing…</Trans> : <Trans>Confirm and publish</Trans>}
               </Button>
             );
           }}

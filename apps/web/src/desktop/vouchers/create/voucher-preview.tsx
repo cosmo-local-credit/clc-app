@@ -94,7 +94,7 @@ export function CreateVoucherPreview({
               )}
               <span className="min-w-0 flex-1">
                 <span dir="auto" className="block truncate text-sm font-semibold">
-                  {title || <Trans>Voucher Name</Trans>}
+                  {title || <Trans>Voucher name</Trans>}
                 </span>
                 <span className="block truncate text-xs text-muted-foreground">
                   {symbol ? (

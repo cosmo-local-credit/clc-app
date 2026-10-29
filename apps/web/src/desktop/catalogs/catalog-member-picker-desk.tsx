@@ -16,6 +16,7 @@ import {
 } from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
+import { SectionHeading } from "#/components/ui/section-heading";
 import { Spinner } from "#/components/ui/spinner";
 import { MarketAvatar } from "#/desktop/market/market-bits";
 import {
@@ -276,12 +277,9 @@ function SuggestionGroup({
   );
   return (
     <section className="grid gap-1.5" aria-labelledby={`catalog-add-${kind}-${group.id}`}>
-      <h3
-        id={`catalog-add-${kind}-${group.id}`}
-        className="font-mono text-2xs tracking-[0.14em] text-muted-foreground uppercase"
-      >
+      <SectionHeading as="h3" variant="group" id={`catalog-add-${kind}-${group.id}`}>
         {group.label}
-      </h3>
+      </SectionHeading>
       {group.rows.length > 0 ? (
         <CandidateList
           kind={kind}

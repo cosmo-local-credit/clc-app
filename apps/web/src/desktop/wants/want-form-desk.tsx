@@ -1,6 +1,6 @@
 import type { Want } from "@clc/core/features/wants/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, useState } from "react";
 
 import { PublicLocationWarning } from "#/components/public-location-warning";
 import { ResourceUsage } from "#/components/resource-usage";
@@ -31,16 +31,29 @@ import {
 } from "#/features/wants/hooks/use-want-form";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { cn } from "#/lib/utils";
+import { partId, WantOutline, WantPartHeading } from "./want-outline";
 
-/** The outline: each entry scrolls its part of the form into view. */
-const OUTLINE: { target: string; label: ReactNode }[] = [
-  { target: "want-part-want", label: <Trans>Want</Trans> },
-  { target: "want-part-when", label: <Trans>When</Trans> },
-  { target: "want-part-where", label: <Trans>Where</Trans> },
-  { target: "want-part-picture", label: <Trans>Picture</Trans> },
-  { target: "want-part-contact", label: <Trans>Contact</Trans> },
-];
-const OUTLINE_TARGETS = OUTLINE.map((entry) => entry.target);
+/**
+ * The editor is laid out against the canvas it is given (the shell's size
+ * container). The form always keeps 440-560px, so the secondary columns give way
+ * before it does:
+ *
+ * - under 43rem: one column. The outline is a wrapped row above the form and
+ *   the preview follows it.
+ * - from 43rem: a 160-200px outline beside the form; the preview moves under it.
+ * - from 62rem: the preview takes a third column. 160 + 440 + 240 and two 32px
+ *   gaps fit by then, so the form is never squeezed to make room for it.
+ */
+const GRID = [
+  "max-w-[1180px] grid-cols-1 items-start gap-x-8",
+  "@min-[43rem]:grid-cols-[minmax(160px,200px)_minmax(440px,560px)]",
+  "@min-[62rem]:grid-cols-[minmax(160px,200px)_minmax(440px,560px)_minmax(240px,1fr)]",
+].join(" ");
+const OUTLINE_PLACE =
+  "@min-[43rem]:col-start-1 @min-[43rem]:row-start-1 @min-[43rem]:row-span-2 @min-[62rem]:row-span-1";
+const FORM_PLACE = "@min-[43rem]:col-start-2 @min-[43rem]:row-start-1";
+const PREVIEW_PLACE =
+  "@min-[43rem]:col-start-2 @min-[43rem]:row-start-2 @min-[62rem]:sticky @min-[62rem]:top-7 @min-[62rem]:col-start-3 @min-[62rem]:row-start-1";
 
 /**
  * Create Want and Edit Want: an outline, the form, and a live preview of the
@@ -55,8 +68,8 @@ export function WantFormDesk({ wantId }: { wantId?: string }) {
     return <WantEditor want={wantId ? ownerQuery.data : undefined} profile={profile.data} />;
   }
   return (
-    <DeskCanvas className="grid-cols-[200px_minmax(0,520px)] gap-x-8">
-      <div aria-hidden="true" />
+    <DeskCanvas className="grid-cols-1 gap-x-8 @min-[43rem]:grid-cols-[minmax(160px,200px)_minmax(440px,560px)]">
+      <div aria-hidden="true" className="hidden @min-[43rem]:block" />
       <div className="grid min-w-0 content-start gap-5">
         <DeskTitle>{title}</DeskTitle>
         {loading ? (
@@ -83,38 +96,15 @@ export function WantFormDesk({ wantId }: { wantId?: string }) {
 function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }) {
   const { t } = useLingui();
   const form = useWantForm({ want, profile });
-  const active = useActiveTarget(OUTLINE_TARGETS);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const busy = form.save.isPending;
 
   return (
-    <DeskCanvas className="max-w-[1180px] grid-cols-[200px_minmax(0,520px)_minmax(240px,1fr)] items-start gap-x-8">
-      <nav aria-label={t`Sections`} className="sticky top-7 grid content-start">
-        {OUTLINE.map((entry) => (
-          <a
-            key={entry.target}
-            href={`#${entry.target}`}
-            aria-current={active === entry.target ? "location" : undefined}
-            onClick={(event) => {
-              const part = document.getElementById(entry.target);
-              if (!part) return;
-              event.preventDefault();
-              part.scrollIntoView({ block: "start", behavior: "smooth" });
-            }}
-            className={cn(
-              "border-s-2 px-3 py-2 text-sm font-medium",
-              active === entry.target
-                ? "border-primary bg-card font-semibold text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {entry.label}
-          </a>
-        ))}
-      </nav>
+    <DeskCanvas className={GRID}>
+      <WantOutline className={OUTLINE_PLACE} />
 
       <form
-        className="grid min-w-0 content-start gap-5"
+        className={cn("grid min-w-0 content-start gap-5", FORM_PLACE)}
         onSubmit={(event) => {
           event.preventDefault();
           void form.submit();
@@ -122,7 +112,12 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
       >
         <DeskTitle>{want ? <Trans>Edit Want</Trans> : <Trans>Create Want</Trans>}</DeskTitle>
 
-        <div id="want-part-want" className="grid scroll-mt-7 gap-5">
+        <section
+          id={partId("want")}
+          aria-labelledby={`${partId("want")}-heading`}
+          className="grid scroll-mt-7 gap-5"
+        >
+          <WantPartHeading part="want" />
           <Field label={t`Name`} htmlFor="want-name">
             <Input
               id="want-name"
@@ -161,29 +156,36 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
               removeLabel={(tag) => t`Remove ${tag}`}
             />
           </div>
-        </div>
+        </section>
 
-        <div id="want-part-when" className="grid scroll-mt-7 gap-3">
-          <div className="grid grid-cols-2 gap-4">
-            <Field label={t`Starts`} htmlFor="want-start">
-              <Input
-                id="want-start"
-                type="datetime-local"
-                className="bg-card font-mono"
-                value={form.start}
-                onChange={(event) => form.setStart(event.target.value)}
-              />
-            </Field>
-            <Field label={t`Ends`} htmlFor="want-end">
-              <Input
-                id="want-end"
-                type="datetime-local"
-                className="bg-card font-mono"
-                disabled={!form.hasEnding}
-                value={form.hasEnding ? form.ending : ""}
-                onChange={(event) => form.setEnding(event.target.value)}
-              />
-            </Field>
+        <section
+          id={partId("when")}
+          aria-labelledby={`${partId("when")}-heading`}
+          className="grid scroll-mt-7 gap-3"
+        >
+          <WantPartHeading part="when" />
+          <div className="@container">
+            <div className="grid grid-cols-1 gap-4 @min-[30rem]:grid-cols-2">
+              <Field label={t`Starts`} htmlFor="want-start">
+                <Input
+                  id="want-start"
+                  type="datetime-local"
+                  className="bg-card font-mono"
+                  value={form.start}
+                  onChange={(event) => form.setStart(event.target.value)}
+                />
+              </Field>
+              <Field label={t`Ends`} htmlFor="want-end">
+                <Input
+                  id="want-end"
+                  type="datetime-local"
+                  className="bg-card font-mono"
+                  disabled={!form.hasEnding}
+                  value={form.hasEnding ? form.ending : ""}
+                  onChange={(event) => form.setEnding(event.target.value)}
+                />
+              </Field>
+            </div>
           </div>
           <label className="flex items-center gap-3 text-sm">
             <Checkbox
@@ -192,9 +194,14 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
             />
             <Trans>No ending date</Trans>
           </label>
-        </div>
+        </section>
 
-        <div id="want-part-where" className="grid scroll-mt-7 gap-4">
+        <section
+          id={partId("where")}
+          aria-labelledby={`${partId("where")}-heading`}
+          className="grid scroll-mt-7 gap-4"
+        >
+          <WantPartHeading part="where" />
           <LocationPicker
             value={form.location}
             onChange={form.setLocation}
@@ -208,9 +215,14 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
             onChange={form.setMarkerIcon}
             disabled={busy}
           />
-        </div>
+        </section>
 
-        <div id="want-part-picture" className="grid scroll-mt-7 gap-3">
+        <section
+          id={partId("picture")}
+          aria-labelledby={`${partId("picture")}-heading`}
+          className="grid scroll-mt-7 gap-3"
+        >
+          <WantPartHeading part="picture" />
           <ImageUploadField
             label={t`Want picture`}
             hint={t`Leave empty to show the Want marker.`}
@@ -240,9 +252,14 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
               </p>
             </div>
           ) : null}
-        </div>
+        </section>
 
-        <div id="want-part-contact" className="grid scroll-mt-7 gap-2">
+        <section
+          id={partId("contact")}
+          aria-labelledby={`${partId("contact")}-heading`}
+          className="grid scroll-mt-7 gap-2"
+        >
+          <WantPartHeading part="contact" />
           <label htmlFor="want-contact" className="text-sm font-medium">
             <Trans>How should people contact you?</Trans>
           </label>
@@ -287,7 +304,7 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
               exact coordinates stay public.
             </Trans>
           </p>
-        </div>
+        </section>
 
         {form.error ? (
           <p role="alert" className="text-sm text-destructive">
@@ -336,6 +353,7 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
       </form>
 
       <WantPreview
+        className={PREVIEW_PLACE}
         name={form.name}
         location={form.location}
         markerStyle={{ icon: form.markerIcon, color: form.markerColor }}
@@ -373,12 +391,14 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
 }
 
 function WantPreview({
+  className,
   name,
   location,
   markerStyle,
   imageUrl,
   scheduled,
 }: {
+  className: string;
   name: string;
   location: { lat: number; lng: number; locationName: string } | undefined;
   markerStyle: { icon: Want["markerIcon"]; color: Want["markerColor"] };
@@ -388,7 +408,7 @@ function WantPreview({
   const { t } = useLingui();
   const shownName = name.trim() || t`Want`;
   return (
-    <aside className="sticky top-7 grid min-w-0 content-start gap-2.5">
+    <aside aria-label={t`Preview`} className={cn("grid min-w-0 content-start gap-2.5", className)}>
       <DeskEyebrow>
         <Trans>Preview · Map</Trans>
       </DeskEyebrow>
@@ -431,37 +451,4 @@ function WantPreview({
       </div>
     </aside>
   );
-}
-
-/** The last outline entry whose part has scrolled into the top part of the viewport. */
-function useActiveTarget(targets: readonly string[]) {
-  const [active, setActive] = useState(targets[0]);
-  useEffect(() => {
-    let frame = 0;
-    const update = (event?: Event) => {
-      const scroller = event?.target instanceof Element ? event.target : null;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        // At the end of the page the last part may never reach the line.
-        const atEnd =
-          scroller !== null &&
-          scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2;
-        const line = atEnd ? window.innerHeight : window.innerHeight * 0.4;
-        let current = targets[0];
-        for (const target of targets) {
-          const element = document.getElementById(target);
-          if (element && element.getBoundingClientRect().top <= line) current = target;
-        }
-        setActive(current);
-      });
-    };
-    update();
-    // The canvas scrolls, not the window; capture sees every scroller.
-    document.addEventListener("scroll", update, { capture: true, passive: true });
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener("scroll", update, { capture: true });
-    };
-  }, [targets]);
-  return active;
 }

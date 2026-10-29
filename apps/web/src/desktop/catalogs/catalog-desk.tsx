@@ -1,8 +1,8 @@
 import type { Catalog, CatalogKind } from "@clc/core/features/catalogs/logic";
 import { BackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { RiAddLine, RiFileCopyLine, RiShareLine } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
@@ -21,12 +21,48 @@ import { useCatalogShare } from "#/features/catalogs/hooks/use-catalog-share";
 import { CatalogFieldsDesk, CatalogMarkDesk } from "./catalog-fields-desk";
 import { CatalogMemberPickerDesk } from "./catalog-member-picker-desk";
 
-/** A catalog: title row, description and tags, then Pools and Vouchers side by side. */
+/**
+ * A catalog: title row, description and tags, then Pools and Vouchers side by
+ * side. Editing is the `?edit` search param, so Back closes the inspector and a
+ * link to it opens it; closing a link that arrived with it open drops the param
+ * and lands on the catalog itself.
+ */
 export function CatalogDesk({ id }: { id: string }) {
   const { t } = useLingui();
   const { query, catalog, owner } = useCatalogDetail(id);
-  const [editing, setEditing] = useState(false);
+  const navigate = useNavigate();
+  const router = useRouter();
+  const search = useSearch({ strict: false }) as { edit?: unknown };
+  const editing = search.edit === true;
+  // Opening pushes one history entry; close pops it, or on a direct link replaces it.
+  const pushed = useRef(false);
+  useEffect(() => {
+    if (!editing) pushed.current = false;
+  }, [editing]);
   useDeskTrailLabel(catalog?.name);
+
+  function openEditor() {
+    pushed.current = true;
+    void navigate({
+      to: ".",
+      search: (previous) => ({ ...previous, edit: true }),
+      resetScroll: false,
+    });
+  }
+
+  function closeEditor() {
+    if (pushed.current) {
+      pushed.current = false;
+      router.history.back();
+      return;
+    }
+    void navigate({
+      to: ".",
+      search: (previous) => ({ ...previous, edit: undefined }),
+      replace: true,
+      resetScroll: false,
+    });
+  }
 
   const page = (
     <DeskCanvas className="max-w-[1164px]">
@@ -73,7 +109,7 @@ export function CatalogDesk({ id }: { id: string }) {
                     <Button
                       variant="outline"
                       aria-expanded={editing}
-                      onClick={() => setEditing((open) => !open)}
+                      onClick={editing ? closeEditor : openEditor}
                     >
                       <Trans>Edit catalog</Trans>
                     </Button>
@@ -100,7 +136,7 @@ export function CatalogDesk({ id }: { id: string }) {
               ) : null}
             </div>
           ) : null}
-          <div className="grid grid-cols-2 items-start gap-4">
+          <div className="grid grid-cols-1 items-start gap-4 @min-[44rem]:grid-cols-2">
             <CatalogMembersDesk catalogId={id} kind="pool" canEdit={owner} />
             <CatalogMembersDesk catalogId={id} kind="voucher" canEdit={owner} />
           </div>
@@ -109,15 +145,16 @@ export function CatalogDesk({ id }: { id: string }) {
     </DeskCanvas>
   );
 
-  if (!(owner && editing && catalog)) return page;
   return (
     <div className="flex h-full min-h-0">
       <DeskSplit
         main={page}
         side={
-          <DeskInspector title={<Trans>Edit catalog</Trans>} onClose={() => setEditing(false)}>
-            <CatalogEditDesk catalog={catalog} onSaved={() => setEditing(false)} />
-          </DeskInspector>
+          owner && editing && catalog ? (
+            <DeskInspector title={<Trans>Edit catalog</Trans>} onClose={closeEditor} focusOnOpen>
+              <CatalogEditDesk catalog={catalog} onSaved={closeEditor} />
+            </DeskInspector>
+          ) : null
         }
       />
     </div>

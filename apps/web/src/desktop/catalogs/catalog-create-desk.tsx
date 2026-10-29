@@ -1,5 +1,5 @@
 import type { Catalog, CatalogCreateIntent } from "@clc/core/features/catalogs/logic";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -11,7 +11,11 @@ import { useCatalogCreate } from "#/features/catalogs/hooks/use-catalog-create";
 import { type CatalogPlace, useCatalogForm } from "#/features/catalogs/hooks/use-catalog-form";
 import { CatalogFieldsDesk, CatalogPreviewDesk } from "./catalog-fields-desk";
 
-/** Create catalog: the form in a 560px column, the live Catalogs row beside it. */
+/**
+ * Create catalog: the form in a 560px column. The live Catalogs row sits beside
+ * it only once the canvas leaves it at least 240px (62rem); narrower, it
+ * follows the form.
+ */
 export function CatalogCreateDesk({ intent }: { intent?: CatalogCreateIntent }) {
   const auth = useAuthStatus();
   return <CatalogCreateContent key={auth.session?.address ?? "guest"} intent={intent} />;
@@ -130,9 +134,10 @@ function CatalogCreateForm({
   title: ReactNode;
   children: ReactNode;
 }) {
+  const { t } = useLingui();
   const model = useCatalogForm({ initialPlace: place, onSaved });
   return (
-    <DeskCanvas className="max-w-[1164px] grid-cols-[minmax(0,560px)_minmax(0,1fr)] items-start gap-x-8">
+    <DeskCanvas className="max-w-[1164px] grid-cols-[minmax(0,560px)] items-start gap-x-8 @min-[62rem]:grid-cols-[minmax(0,560px)_minmax(240px,1fr)]">
       <div className="grid min-w-0 content-start gap-4">
         <CatalogFieldsDesk
           model={model}
@@ -141,7 +146,10 @@ function CatalogCreateForm({
         />
         {children}
       </div>
-      <aside className="sticky top-7 grid min-w-0 content-start gap-2.5">
+      <aside
+        aria-label={t`Preview`}
+        className="grid min-w-0 content-start gap-2.5 @min-[62rem]:sticky @min-[62rem]:top-7"
+      >
         <DeskEyebrow>
           <Trans>Preview · Catalogs</Trans>
         </DeskEyebrow>

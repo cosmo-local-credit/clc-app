@@ -26,6 +26,7 @@ import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
 import { isStorageConfigured } from "#/lib/api/storage";
+import { useViewDraft } from "#/lib/view-drafts";
 import {
   beginVoucherCreateHistory,
   exitVoucherCreateHistory,
@@ -80,6 +81,19 @@ export const VOUCHER_FORM_DEFAULTS: VoucherFormValues = {
   acceptedTerms: false,
 };
 
+/**
+ * What the voucher form keeps across a phone/desktop view swap: the typed
+ * fields. Not the icon (a file in flight or a copied profile image, to be
+ * chosen again) and not the terms acceptance, which the review step asks for
+ * afresh.
+ */
+type VoucherFormDraft = Omit<VoucherFormValues, "iconUrl" | "acceptedTerms">;
+
+function voucherDraftOf(values: VoucherFormValues): VoucherFormDraft {
+  const { iconUrl: _iconUrl, acceptedTerms: _acceptedTerms, ...fields } = values;
+  return fields;
+}
+
 /** The text fields a saved profile can seed, all of which default to "". */
 type SeedableTextField = "name" | "email" | "phone" | "website" | "description" | "iconUrl";
 
@@ -113,27 +127,33 @@ export function useCreateVoucherForm({
   const profileQuery = useAuthProfile();
   const draft = useVoucherCreateDraft((state) => state.draft);
   const setDraft = useVoucherCreateDraft((state) => state.setDraft);
+  const viewDraft = useViewDraft<VoucherFormDraft>({ scope: "voucher-create", account: address });
+  const restored = viewDraft.restored;
   const hasPrefilledProfile = useRef(false);
   const suggestedSymbol = useSuggestedSymbol({
     kind: "voucher",
-    initialSymbol: draft?.symbol ?? "",
+    initialSymbol: restored?.symbol ?? draft?.symbol ?? "",
   });
   const checkNameAvailable = useNameAvailabilityValidator("voucher");
   const [iconBusy, setIconBusy] = useState(false);
   const [advancing, setAdvancing] = useState(false);
 
-  const defaultValues: VoucherFormValues = draft
-    ? {
-        ...draft,
-        voucherType: "standard",
-        expiryDate: "",
-        decimals: "6",
-        iconUrl: draft.iconUrl ?? "",
-        termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
-      }
-    : VOUCHER_FORM_DEFAULTS;
+  const [pristine] = useState<VoucherFormValues>(() =>
+    draft
+      ? {
+          ...draft,
+          voucherType: "standard",
+          expiryDate: "",
+          decimals: "6",
+          iconUrl: draft.iconUrl ?? "",
+          termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+        }
+      : VOUCHER_FORM_DEFAULTS,
+  );
   const form = useForm({
-    defaultValues,
+    // A draft carried over a view swap is newer than a retry snapshot: it holds
+    // what was typed since, so it goes on top.
+    defaultValues: restored ? { ...pristine, ...restored } : pristine,
     validators: {
       // A function rather than the schema itself: the form carries `termsMode`,
       // which the schema neither knows nor needs, so the two types differ.
@@ -175,6 +195,7 @@ export function useCreateVoucherForm({
         const result = await deployVoucher.mutateAsync(
           toVoucherDeployPayload(parsed, getAddress(address)),
         );
+        viewDraft.clear();
         // The opening supply rides along in the URL so the receipt can mint it
         // as soon as the contract confirms, even after a reload loses the draft.
         exitVoucherCreateHistory({
@@ -213,7 +234,8 @@ export function useCreateVoucherForm({
   // value the issuer has typed over, always wins.
   useEffect(() => {
     const profile = profileQuery.data;
-    if (hasPrefilledProfile.current || !profile || draft) return;
+    // A draft from the other view already holds what was typed, or left empty.
+    if (hasPrefilledProfile.current || !profile || draft || restored) return;
     hasPrefilledProfile.current = true;
 
     const prefill = profilePrefill(profile);
@@ -253,7 +275,35 @@ export function useCreateVoucherForm({
     ) {
       form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
     }
-  }, [draft, form, profileQuery.data]);
+  }, [draft, form, profileQuery.data, restored]);
+
+  // Keep the typed fields for a phone/desktop view swap while they differ from
+  // how the form opened; forget them when they are back to that.
+  const { save: saveViewDraft, clear: clearViewDraft } = viewDraft;
+  useEffect(() => {
+    const opened = JSON.stringify(voucherDraftOf(pristine));
+    let seen: unknown;
+    const sync = () => {
+      const { values } = form.store.state;
+      // Submitting and validating also touch the store; only a changed value
+      // may write, or a cleared draft would come straight back.
+      if (values === seen) return;
+      seen = values;
+      const fields = voucherDraftOf(values);
+      if (JSON.stringify(fields) === opened) clearViewDraft();
+      else saveViewDraft(fields);
+    };
+    sync();
+    const subscription = form.store.subscribe(sync);
+    return () => subscription.unsubscribe();
+  }, [clearViewDraft, form, pristine, saveViewDraft]);
+
+  useEffect(() => {
+    // Advanced is a fold each view keeps for itself; a draft carried over a view
+    // swap may hold values inside it, so open it, once, on arrival.
+    if (restored) revealAdvanced?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
 
   useEffect(() => {
     if (step === "voucher") beginVoucherCreateHistory(router.history);

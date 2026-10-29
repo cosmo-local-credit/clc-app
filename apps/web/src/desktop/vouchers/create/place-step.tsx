@@ -27,7 +27,7 @@ import { DeskPinPicker } from "./desk-pin-picker";
 import { DeskTagField } from "./desk-tag-field";
 import { FormFoot, type VoucherWizard } from "./wizard-bits";
 
-/** Step 2, Where and what for: logo, place, pin, tags, contact and terms. */
+/** Step 2, Location and tags: logo, place, pin, tags, contact and terms. */
 export function PlaceStep({ wizard }: { wizard: VoucherWizard }) {
   const { i18n, t } = useLingui();
   const { form, tagsQuery } = wizard;
@@ -35,7 +35,7 @@ export function PlaceStep({ wizard }: { wizard: VoucherWizard }) {
   return (
     <>
       <DeskTitle>
-        <Trans>Where and what for</Trans>
+        <Trans>Location and tags</Trans>
       </DeskTitle>
 
       {isStorageConfigured ? (
@@ -149,7 +149,7 @@ export function PlaceStep({ wizard }: { wizard: VoucherWizard }) {
       >
         {(field) => (
           <Field
-            label={t`Contact Email`}
+            label={t`Contact email`}
             htmlFor="voucher-email"
             error={getFieldError(field.state.meta.errors)}
           >
@@ -174,7 +174,7 @@ export function PlaceStep({ wizard }: { wizard: VoucherWizard }) {
       >
         {(field) => (
           <Field
-            label={t`Contact Phone`}
+            label={t`Contact phone`}
             htmlFor="voucher-phone"
             error={getFieldError(field.state.meta.errors)}
           >
@@ -195,7 +195,7 @@ export function PlaceStep({ wizard }: { wizard: VoucherWizard }) {
       >
         {(field) => (
           <Field
-            label={t`Contact Website`}
+            label={t`Contact website`}
             htmlFor="voucher-website"
             error={getFieldError(field.state.meta.errors)}
           >

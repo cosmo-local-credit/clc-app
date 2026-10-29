@@ -9,6 +9,9 @@ const CatalogDesk = lazy(() =>
 
 export const Route = createFileRoute("/_nav/catalogs/$catalogId")({
   staticData: { navOwner: "wallet", desktop: "fill" },
+  // `?edit` opens the desktop editor, so Back closes it. The phone ignores it.
+  validateSearch: (search: Record<string, unknown>): { edit?: true } =>
+    search.edit === true || search.edit === "true" ? { edit: true } : {},
   component: CatalogDetailRoute,
 });
 function CatalogDetailRoute() {

@@ -17,13 +17,14 @@ import {
 import { useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { tokenTagsQueryKey, useTokenTags } from "#/hooks/use-deployment";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { wantsClient } from "#/lib/api/wants";
+import { useViewDraft } from "#/lib/view-drafts";
 
 export type WantFormProfile = NonNullable<ReturnType<typeof useAuthProfile>["data"]>;
 
@@ -32,6 +33,25 @@ function localDateTime(value: string | Date) {
   const offset = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
+
+/**
+ * The fields the editor keeps across a phone/desktop view swap. The picture is
+ * not one of them: an upload is a file in flight and a copied profile image is a
+ * choice the person can repeat, so a swap leaves the Want's saved picture alone.
+ */
+type WantDraft = {
+  name: string;
+  description: string;
+  tags: string[];
+  start: string;
+  hasEnding: boolean;
+  ending: string;
+  location: LocationInput | undefined;
+  contactText: string;
+  shareEmail: boolean;
+  sharePhone: boolean;
+  markerIcon: WantMarkerIcon;
+};
 
 /** What the Want editor loads before it can show the form: the profile, the Want, the allowance. */
 export function useWantFormSources(id?: string) {
@@ -61,12 +81,12 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tagsQuery = useTokenTags();
-  const [name, setName] = useState(want?.name ?? "");
-  const [description, setDescription] = useState(want?.description ?? "");
-  const [tags, setTags] = useState<string[]>(want?.tags ?? []);
-  const [start, setStart] = useState(localDateTime(want?.startsAt ?? defaultWantStartsAt()));
-  const [hasEnding, setHasEnding] = useState(want?.expiresAt !== null && !!want?.expiresAt);
-  const [ending, setEnding] = useState(want?.expiresAt ? localDateTime(want.expiresAt) : "");
+  const { address: account } = useAuthStatus();
+  const viewDraft = useViewDraft<WantDraft>({
+    scope: want ? `want-edit:${want.id}` : "want-new",
+    account,
+  });
+  const restored = viewDraft.restored;
   const initialLocation = useMemo<LocationInput | undefined>(() => {
     if (want)
       return {
@@ -83,19 +103,72 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
       country: profile.country,
     };
   }, [profile, want]);
-  const [location, setLocation] = useState<LocationInput | undefined>(initialLocation);
-  const [imageUrl, setImageUrl] = useState<string | null>(want?.imageUrl ?? null);
-  const [imageBusy, setImageBusy] = useState(false);
-  const [contactText, setContactText] = useState(want?.contactText ?? "");
   const emailAvailable = !!profile.email && !profile.email.toLowerCase().endsWith("@clc.local");
   const phoneAvailable = !!profile.phone?.trim();
-  const [shareEmail, setShareEmail] = useState(
-    !!want && ((want.contactPermission ?? 0) & 1) === 1 && emailAvailable,
-  );
-  const [sharePhone, setSharePhone] = useState(
-    !!want && ((want.contactPermission ?? 0) & 2) === 2 && phoneAvailable,
-  );
-  const [markerIcon, setMarkerIcon] = useState<WantMarkerIcon>(want?.markerIcon ?? "question");
+  // The editor as it opens, before anyone has typed: the draft is only kept
+  // while the fields differ from this.
+  const [pristine] = useState<WantDraft>(() => ({
+    name: want?.name ?? "",
+    description: want?.description ?? "",
+    tags: want?.tags ?? [],
+    start: localDateTime(want?.startsAt ?? defaultWantStartsAt()),
+    hasEnding: want?.expiresAt !== null && !!want?.expiresAt,
+    ending: want?.expiresAt ? localDateTime(want.expiresAt) : "",
+    location: initialLocation,
+    contactText: want?.contactText ?? "",
+    shareEmail: !!want && ((want.contactPermission ?? 0) & 1) === 1 && emailAvailable,
+    sharePhone: !!want && ((want.contactPermission ?? 0) & 2) === 2 && phoneAvailable,
+    markerIcon: want?.markerIcon ?? "question",
+  }));
+  // A restored draft wins over the loaded Want. Contact sharing is still bound
+  // by what the profile can offer now.
+  const seed = restored ?? pristine;
+  const [name, setName] = useState(seed.name);
+  const [description, setDescription] = useState(seed.description);
+  const [tags, setTags] = useState<string[]>(seed.tags);
+  const [start, setStart] = useState(seed.start);
+  const [hasEnding, setHasEnding] = useState(seed.hasEnding);
+  const [ending, setEnding] = useState(seed.ending);
+  const [location, setLocation] = useState<LocationInput | undefined>(seed.location);
+  const [imageUrl, setImageUrl] = useState<string | null>(want?.imageUrl ?? null);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [contactText, setContactText] = useState(seed.contactText);
+  const [shareEmail, setShareEmail] = useState(seed.shareEmail && emailAvailable);
+  const [sharePhone, setSharePhone] = useState(seed.sharePhone && phoneAvailable);
+  const [markerIcon, setMarkerIcon] = useState<WantMarkerIcon>(seed.markerIcon);
+  const { save: saveDraft, clear: clearDraft } = viewDraft;
+  useEffect(() => {
+    const current: WantDraft = {
+      name,
+      description,
+      tags,
+      start,
+      hasEnding,
+      ending,
+      location,
+      contactText,
+      shareEmail,
+      sharePhone,
+      markerIcon,
+    };
+    if (JSON.stringify(current) === JSON.stringify(pristine)) clearDraft();
+    else saveDraft(current);
+  }, [
+    clearDraft,
+    contactText,
+    description,
+    ending,
+    hasEnding,
+    location,
+    markerIcon,
+    name,
+    pristine,
+    saveDraft,
+    shareEmail,
+    sharePhone,
+    start,
+    tags,
+  ]);
   const markerColor: MarkerColor = want?.markerColor ?? "orange";
   const [error, setError] = useState<string | null>(null);
   const save = useMutation(
@@ -105,6 +178,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
     mutationFn: (action: "close" | "delete") =>
       action === "close" ? wantsClient.close(want?.id ?? "") : wantsClient.remove(want?.id ?? ""),
     onSuccess: async () => {
+      clearDraft();
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: wantKeys.all }),
         queryClient.invalidateQueries({ queryKey: marketplaceKeys.all }),
@@ -145,6 +219,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
     }
     try {
       const saved = await save.mutateAsync(parsed.data);
+      clearDraft();
       await queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey });
       if (saved.state === "active") {
         await navigate({
