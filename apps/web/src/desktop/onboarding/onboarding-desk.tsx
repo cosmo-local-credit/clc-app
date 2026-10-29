@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { IconType } from "react-icons";
 import {
   RiArrowLeftDownLine,
@@ -23,9 +23,11 @@ import { SignInDesk, SignInSplit } from "./sign-in-desk";
 import { cn } from "#/lib/utils";
 
 /**
- * Onboarding without the app shell. Welcome and sign-in share one split: the
- * concepts (or the camera) on the gray canvas and a 420px white column that
- * swaps between the two. Setup is the step list beside a 760px form column.
+ * Onboarding without the app shell, under one header that keeps language and
+ * theme within reach. Welcome and sign-in share one split: on the gray canvas,
+ * the concepts (first visit), a small brand area (returning), or the camera,
+ * and a 420px white column that swaps between the methods. Setup is the step
+ * list beside a 760px form column.
  */
 export function OnboardingDesk({
   step,
@@ -34,24 +36,44 @@ export function OnboardingDesk({
   step: OnboardingStep;
   redirectTo?: string;
 }) {
-  const concepts = (
-    <div className="grid min-h-0 content-start gap-7 overflow-y-auto p-12">
-      <Brand />
-      <ConceptGrid />
-    </div>
-  );
   if (step === "welcome") {
-    return <SignInSplit left={concepts} right={<WelcomeActions redirectTo={redirectTo} />} />;
+    return (
+      <SignInSplit
+        left={
+          <div className="@container grid min-h-0 content-start gap-7 overflow-y-auto p-12">
+            <ConceptGrid />
+          </div>
+        }
+        right={<WelcomeActions redirectTo={redirectTo} />}
+      />
+    );
   }
-  if (step === "signin") return <SignInDesk redirectTo={redirectTo} concepts={concepts} />;
+  if (step === "signin") {
+    return (
+      <SignInDesk redirectTo={redirectTo} context={<SignInContext redirectTo={redirectTo} />} />
+    );
+  }
   return <SetupDesk step={step} redirectTo={redirectTo} />;
 }
 
-function Brand() {
+/**
+ * What a returning member sees beside the sign-in methods: who this is, and a
+ * way back to the guide. They came to regain access, so the six concepts stay
+ * on the first welcome.
+ */
+function SignInContext({ redirectTo }: { redirectTo?: string }) {
+  const { i18n } = useLingui();
+  const [intro] = introductionSlides;
+
   return (
-    <div className="flex items-center gap-2.5">
-      <CLCLogo className="size-6 shrink-0" sharp />
-      <span className="font-heading text-lg font-bold">CLC</span>
+    <div className="grid min-h-0 content-center justify-items-start gap-4 overflow-y-auto p-12">
+      <CLCLogo className="size-14 shrink-0" sharp />
+      {intro ? <p className="font-heading text-lg font-bold">{i18n._(intro.title)}</p> : null}
+      <Button asChild variant="link" className="-ms-3">
+        <Link to="/onboarding" search={onboardingSearch("welcome", redirectTo)}>
+          <Trans>How CLC works</Trans>
+        </Link>
+      </Button>
     </div>
   );
 }
@@ -73,12 +95,14 @@ function ConceptGrid() {
   return (
     <>
       <div className="flex flex-col gap-2">
+        {/* The one page-level heading on the first welcome; the cards are h2. */}
         <h1 className="max-w-[18ch] font-heading text-[1.75rem] font-bold leading-tight">
           {i18n._(intro.title)}
         </h1>
         <p className="max-w-[56ch] text-muted-foreground">{i18n._(intro.body)}</p>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      {/* Two columns while the area is narrow, so a card keeps room for its sentence. */}
+      <div className="grid grid-cols-1 gap-4 @min-[30rem]:grid-cols-2 @min-[45rem]:grid-cols-3">
         {concepts.map((concept) => {
           const art = CONCEPT_ICONS[concept.art];
           return (

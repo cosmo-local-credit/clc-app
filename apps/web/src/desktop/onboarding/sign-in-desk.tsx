@@ -23,6 +23,7 @@ import { Spinner } from "#/components/ui/spinner";
 import { useEncryptedPaperWalletImport } from "#/components/use-encrypted-paper-wallet-import";
 import { usePaperWalletScan } from "#/components/use-paper-wallet-scan";
 import { BackChevron } from "#/components/wallet/wallet-layout";
+import { DeskOnboardingHeader } from "#/desktop/auth/onboarding-header";
 import { DeskTitle } from "#/desktop/ui/page";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
@@ -35,10 +36,10 @@ const FLUSH_GHOST = "-ms-3 self-start";
 
 /**
  * Sign-in on desktop. The camera fills the large area while a paper wallet is
- * being scanned or a captured card is being opened; otherwise the concepts
- * stay there. The 420px column keeps the methods within reach throughout.
+ * being scanned or a captured card is being opened; otherwise `context` stays
+ * there. The 420px column keeps the methods within reach throughout.
  */
-export function SignInDesk({ redirectTo, concepts }: { redirectTo?: string; concepts: ReactNode }) {
+export function SignInDesk({ redirectTo, context }: { redirectTo?: string; context: ReactNode }) {
   const { t } = useLingui();
   const signIn = useSignIn({
     redirectTo,
@@ -129,7 +130,7 @@ export function SignInDesk({ redirectTo, concepts }: { redirectTo?: string; conc
             ) : null}
           </div>
         ) : (
-          concepts
+          context
         )
       }
       right={
@@ -155,13 +156,16 @@ export function SignInDesk({ redirectTo, concepts }: { redirectTo?: string; conc
   );
 }
 
-/** The welcome and sign-in split: the large area, and the 420px white column. */
+/** The welcome and sign-in split, under the onboarding header: the large area, and the 420px white column. */
 export function SignInSplit({ left, right }: { left: ReactNode; right: ReactNode }) {
   return (
-    <div className="grid h-dvh grid-cols-[minmax(0,1fr)_420px] bg-background">
-      {left}
-      <div className="flex min-h-0 flex-col gap-3 overflow-y-auto border-border border-s bg-card px-10 py-12">
-        {right}
+    <div className="flex h-dvh flex-col bg-background">
+      <DeskOnboardingHeader />
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_420px]">
+        {left}
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto border-border border-s bg-card px-10 py-12">
+          {right}
+        </div>
       </div>
     </div>
   );
@@ -204,10 +208,21 @@ function SignInColumn({
   } = signIn;
   const ProviderIcon = provider === "apple" ? FaApple : FaGoogle;
 
-  if (panelState === "approvalPending") {
-    return <ApprovalPending onRetry={retryAction ?? undefined} busy={approvalBusy} />;
+  // The state's own heading is a section heading, so the page keeps its h1.
+  if (panelState === "approvalPending" || panelState === "approvalRejected") {
+    return (
+      <>
+        <DeskTitle>
+          <Trans>Welcome back</Trans>
+        </DeskTitle>
+        {panelState === "approvalPending" ? (
+          <ApprovalPending onRetry={retryAction ?? undefined} busy={approvalBusy} />
+        ) : (
+          <ApprovalRejected />
+        )}
+      </>
+    );
   }
-  if (panelState === "approvalRejected") return <ApprovalRejected />;
 
   if (captured && signIn.encryptedPaperWallet) {
     return (

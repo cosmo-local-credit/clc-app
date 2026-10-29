@@ -51,11 +51,13 @@ export function PaperWalletCardTile({
             overflow: "hidden",
           }}
         >
+          {/* The card is wider than its column and shrinks toward the edge it starts
+              from: the left in LTR, the right in RTL, where it overflows leftwards. */}
           <div
+            className="origin-top-left rtl:origin-top-right"
             style={{
               width: PAPER_WALLET_WIDTH,
               height: PAPER_WALLET_HEIGHT,
-              transformOrigin: "top left",
               transform: `scale(${scale})`,
             }}
           >
@@ -90,7 +92,7 @@ export function PaperWalletCustomizeInspector({
     <DeskInspector
       title={<Trans>Customize</Trans>}
       onClose={onClose}
-      className="fixed inset-y-0 end-0 z-40"
+      className="fixed end-0 top-14 bottom-0 z-40"
       footer={
         <Button className="w-full" onClick={onClose}>
           <Trans>Done</Trans>

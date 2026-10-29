@@ -24,7 +24,6 @@ import { AgreementField } from "#/components/ui/agreement-field";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
-import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { DeskPhoneField } from "#/desktop/ui/phone-field";
@@ -36,6 +35,7 @@ import { Textarea } from "#/components/ui/textarea";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { useAvatarPicker } from "#/components/ui/use-avatar-picker";
 import { useLocationPicker } from "#/components/ui/use-location-picker";
+import { DeskOnboardingHeader } from "#/desktop/auth/onboarding-header";
 import { DeskRow, DeskRowList, DeskEyebrow, DeskTitle } from "#/desktop/ui/page";
 import { DeskStep, DeskStepper } from "#/desktop/ui/stepper";
 import { type SetupStep, useOnboardingFlow } from "#/features/onboarding/hooks/use-onboarding-flow";
@@ -52,9 +52,9 @@ import { AvatarCropDialog } from "./avatar-crop-dialog";
 import { PaperWalletCardTile, PaperWalletCustomizeInspector } from "./paper-wallet-desk";
 
 /**
- * Account setup on desktop: the step list beside a 760px form column. The
- * flow, the form and the wallet work are the phone's own hooks; only the
- * layout is desktop.
+ * Account setup on desktop: the step list beside a 760px form column, under
+ * the onboarding header. The flow, the form and the wallet work are the
+ * phone's own hooks; only the layout is desktop.
  */
 export function SetupDesk({ step, redirectTo }: { step: SetupStep; redirectTo?: string }) {
   const flow = useOnboardingFlow({ step, redirectTo });
@@ -86,16 +86,13 @@ function SetupFrame({
   children: ReactNode;
 }) {
   return (
-    <div className="h-dvh overflow-y-auto bg-background">
-      <div className="grid grid-cols-[260px_minmax(0,760px)] content-start gap-10 px-12 py-10">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2.5">
-            <CLCLogo className="size-6 shrink-0" sharp />
-            <span className="font-heading text-lg font-bold">CLC</span>
-          </div>
+    <div className="flex h-dvh flex-col bg-background">
+      <DeskOnboardingHeader />
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="grid grid-cols-[260px_minmax(0,760px)] content-start gap-10 px-12 py-10">
           <SetupStepper {...frame} allDone={allDone} />
+          <div className="flex min-w-0 flex-col gap-5">{children}</div>
         </div>
-        <div className="flex min-w-0 flex-col gap-5">{children}</div>
       </div>
     </div>
   );

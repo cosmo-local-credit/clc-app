@@ -54,6 +54,7 @@ import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
 import { useInstallPromptListener } from "#/features/install/install-store";
 import { installBootstrapScript } from "#/features/install/install-bootstrap";
 import { IntroductionProvider } from "#/components/introduction/introduction-provider";
+import { type AuthGateSlot, AuthGateSlotProvider } from "#/components/auth/auth-gate-slot";
 import appCss from "../styles.css?url";
 
 const AppDevtools = import.meta.env.DEV
@@ -69,6 +70,21 @@ const SafePendingDesk = lazy(() =>
     default: module.SafePendingDesk,
   })),
 );
+
+const DeskAuthRequired = lazy(() =>
+  import("#/desktop/auth/auth-gate-desk").then((module) => ({ default: module.DeskAuthRequired })),
+);
+const DeskSessionCheckError = lazy(() =>
+  import("#/desktop/auth/auth-gate-desk").then((module) => ({
+    default: module.DeskSessionCheckError,
+  })),
+);
+
+/** What a guest on a protected route sees on desktop, in place of the phone's gate. */
+const DESKTOP_AUTH_GATE: AuthGateSlot = {
+  required: (props) => <DeskAuthRequired {...props} />,
+  sessionError: (props) => <DeskSessionCheckError {...props} />,
+};
 
 const EncryptedPaperWalletImportForm = lazy(() =>
   import("#/components/encrypted-paper-wallet-import-form").then((module) => ({
@@ -266,11 +282,13 @@ function AppInner() {
         desktop={layout === "desktop"}
         suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}
       >
-        <RootDiscoveryLocation>
-          <DesktopBoundary>
-            <Outlet />
-          </DesktopBoundary>
-        </RootDiscoveryLocation>
+        <AuthGateSlotProvider value={layout === "desktop" ? DESKTOP_AUTH_GATE : null}>
+          <RootDiscoveryLocation>
+            <DesktopBoundary>
+              <Outlet />
+            </DesktopBoundary>
+          </RootDiscoveryLocation>
+        </AuthGateSlotProvider>
       </IntroductionProvider>
       {pendingEncryptedKey ? (
         <DialogRoot
