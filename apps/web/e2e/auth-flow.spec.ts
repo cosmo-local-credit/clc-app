@@ -31,7 +31,7 @@ test.describe("landing page", () => {
 
     await expect(page.getByRole("heading", { name: "CLC" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Create an account" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue with Paper Wallet" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign in with QR card" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Advanced options" })).toBeVisible();
 
     await percySnapshot(page, "Landing page");
@@ -63,7 +63,7 @@ test.describe("onboarding profile form", () => {
 
     // Should still be on the profile step
     await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Your paper wallet" })).toBeHidden();
+    await expect(page.getByRole("heading", { name: "Your sign-in card" })).toBeHidden();
 
     // Validation error(s) should appear
     await expect(page.getByText(/required|enter/i).first()).toBeVisible();
@@ -72,7 +72,7 @@ test.describe("onboarding profile form", () => {
   test("accepts valid input and advances to wallet step (TC-04)", async ({ page }) => {
     await completeProfileStep(page);
 
-    await expect(page.getByRole("heading", { name: "Your paper wallet" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your sign-in card" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Download card" })).toBeVisible();
 
     await percySnapshot(page, "Onboarding — paper wallet step");
@@ -118,7 +118,7 @@ test.describe("paper wallet step", () => {
   });
 
   test("download card triggers a PNG download (TC-08)", async ({ page }) => {
-    await page.getByLabel("Protect paper wallet with a password").uncheck();
+    await page.getByLabel(/Protect with a password/).uncheck();
     const [download] = await Promise.all([
       page.waitForEvent("download", { timeout: 10_000 }),
       page.getByRole("button", { name: "Download card" }).click(),
@@ -131,7 +131,7 @@ test.describe("paper wallet step", () => {
     page,
   }) => {
     const continueBtn = page.getByRole("button", {
-      name: /Continue with paper wallet only|Continue to wallet/,
+      name: /Continue with sign-in card|Continue to wallet/,
     });
 
     await expect(continueBtn).toBeDisabled();
@@ -151,7 +151,7 @@ test.describe("paper wallet step", () => {
     await page.getByRole("checkbox", { name: "Accept Terms and Conditions" }).check();
 
     const continueBtn = page.getByRole("button", {
-      name: /Continue with paper wallet only|Continue to wallet/,
+      name: /Continue with sign-in card|Continue to wallet/,
     });
     await continueBtn.click();
 
@@ -451,6 +451,6 @@ test.describe("edge cases", () => {
 
     // Page buttons still visible
     await expect(page.getByRole("button", { name: "Create an account" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue with Paper Wallet" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign in with QR card" })).toBeVisible();
   });
 });

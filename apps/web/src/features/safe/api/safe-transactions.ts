@@ -7,7 +7,6 @@ import {
 import type { SafeClient, SafeProposal } from "@clc/api/features/safe/client";
 import type { Client } from "viem";
 import { readContract } from "viem/actions";
-import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
 import { CHAIN_ID } from "#/lib/chain";
 import { SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
 import { signSafeTransaction, type SignTypedData } from "./sign-safe-transaction";
@@ -46,11 +45,6 @@ export async function proposeSafeTransaction(
     calls: readonly SafeCall[];
   },
 ): Promise<SafeProposal> {
-  if (input.signer.connectorId === CALIBUR_WEBAUTHN_CONNECTOR_ID)
-    throw new SafeDashboardRequiredError(
-      input.safe,
-      "Use the multisig wallet to create this transaction.",
-    );
   const nonce = (
     await readContract(deps.chain, {
       address: input.safe,
@@ -73,6 +67,8 @@ export async function proposeSafeTransaction(
     safeAddress: input.safe,
     tx,
     sign: input.signer.sign,
+    owner: input.signer.senderAddress,
+    chain: deps.chain,
   });
   return deps.safe.propose({
     safe: input.safe,

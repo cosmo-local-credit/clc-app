@@ -25,6 +25,7 @@ import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
 import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { DeskPhoneField } from "#/desktop/ui/phone-field";
 import { PopoverContent, PopoverRoot, PopoverTrigger } from "#/components/ui/popover";
@@ -114,8 +115,8 @@ function SetupStepper({
     profile: <Trans>Create your account</Trans>,
     contact: <Trans>Contact</Trans>,
     location: <Trans>Location</Trans>,
-    card: <Trans>Your paper wallet</Trans>,
-    save: <Trans>Save your card</Trans>,
+    card: <Trans>Your sign-in card</Trans>,
+    save: <Trans>Save your sign-in card</Trans>,
     link: t`Link ${providerLabel}?`,
   };
 
@@ -506,11 +507,15 @@ function ProfileSteps({ frame, redirectTo, ...options }: ProfileStepsProps) {
                   <Trans>Go back to sign in</Trans>
                 </Link>
               </>
+            ) : profile.identityNotice ? (
+              <span role="alert" className="text-destructive">
+                {profile.identityNotice}
+              </span>
             ) : null
           }
         >
           {page === "profile" ? null : <BackButton to={profile.previous} redirectTo={redirectTo} />}
-          <Button type="submit" disabled={!isStorageConfigured}>
+          <Button type="submit" disabled={!isStorageConfigured || profile.continueBlocked}>
             <Trans>Continue</Trans>
           </Button>
         </FormFoot>
@@ -774,7 +779,7 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
     return (
       <SetupFrame frame={frame}>
         <DeskTitle>
-          <Trans>Your paper wallet</Trans>
+          <Trans>Your sign-in card</Trans>
         </DeskTitle>
         <div className="grid grid-cols-2 items-start gap-4">
           <PaperWalletCardTile setup={setup} />
@@ -794,7 +799,7 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
             <label className="flex cursor-pointer items-center gap-2.5">
               <Checkbox checked={protection.enabled} onCheckedChange={protection.setEnabled} />
               <SectionHeading as="h2">
-                <Trans>Protect paper wallet with a password</Trans>
+                <Trans>Protect with a password</Trans>
               </SectionHeading>
             </label>
             {protection.enabled ? (
@@ -803,9 +808,8 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
                   <FieldLabel htmlFor="pw-passphrase">
                     <Trans>Password</Trans>
                   </FieldLabel>
-                  <Input
+                  <PasswordInput
                     id="pw-passphrase"
-                    type="password"
                     autoComplete="new-password"
                     className="font-mono"
                     value={protection.passphrase}
@@ -817,9 +821,8 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
                   <FieldLabel htmlFor="pw-passphrase-confirm">
                     <Trans>Confirm password</Trans>
                   </FieldLabel>
-                  <Input
+                  <PasswordInput
                     id="pw-passphrase-confirm"
-                    type="password"
                     autoComplete="new-password"
                     className="font-mono"
                     value={protection.confirmPassphrase}
@@ -839,7 +842,7 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
                   pending={protection.isEncrypting}
                 >
                   <FiLock aria-hidden="true" />
-                  {protection.isEncrypting ? t`Protecting paper wallet…` : t`Protect paper wallet`}
+                  {protection.isEncrypting ? t`Applying password…` : t`Apply password`}
                 </Button>
               </>
             ) : null}
@@ -851,14 +854,12 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
             >
               {protection.enabled ? (
                 protection.isProtected ? (
-                  <Trans>
-                    Paper wallet is protected. Keep the password separate from the card.
-                  </Trans>
+                  <Trans>Protected. Keep the password separate from the card.</Trans>
                 ) : (
-                  <Trans>Enter and apply a password before downloading this card.</Trans>
+                  <Trans>Enter a password before saving.</Trans>
                 )
               ) : (
-                <Trans>QR currently contains the raw private key.</Trans>
+                <Trans>Not protected. Anyone who scans this card can access your wallet.</Trans>
               )}
             </p>
           </form>
@@ -878,7 +879,7 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
       <SetupFrame frame={frame}>
         <div className="flex min-w-0 items-center gap-3">
           <DeskTitle>
-            <Trans>Save your card</Trans>
+            <Trans>Save your sign-in card</Trans>
           </DeskTitle>
           <Button
             variant="outline"
@@ -977,7 +978,7 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
         <FormFoot
           note={
             wallet.paperWalletDownloaded ? null : (
-              <Trans>Download your paper wallet before continuing.</Trans>
+              <Trans>Save your sign-in card before continuing.</Trans>
             )
           }
         >
@@ -1007,7 +1008,7 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
     <SetupFrame frame={frame}>
       <DeskTitle>{t`Link ${providerLabel}?`}</DeskTitle>
       <p className="max-w-[60ch] text-muted-foreground">
-        {t`Every account gets a paper wallet. Linking ${providerLabel} adds another way to sign in.`}
+        {t`Every account has a sign-in card. Linking ${providerLabel} adds another way to sign in.`}
       </p>
       <TermsAcceptanceField
         id="signup-terms"
@@ -1038,7 +1039,7 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
           pending={wallet.paperPending}
         >
           <span className="truncate">
-            <Trans>Continue with paper wallet</Trans>
+            <Trans>Continue with sign-in card</Trans>
           </span>
         </Button>
       </div>
@@ -1060,7 +1061,7 @@ function SettingUp({
   const labels =
     path === "passkey"
       ? [t`Account`, t`Passkey`, t`Network`, t`Wallet`]
-      : [t`Account`, t`Paper wallet`, t`Network`, t`Wallet`];
+      : [t`Account`, t`Sign-in card`, t`Network`, t`Wallet`];
 
   return (
     <>

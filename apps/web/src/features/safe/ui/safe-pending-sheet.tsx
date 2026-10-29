@@ -25,6 +25,7 @@ import {
   MintAmount,
   proposalRecipients,
   proposalTitle,
+  signerChangeRows,
 } from "./safe-proposal-labels";
 
 /**
@@ -49,7 +50,7 @@ export function SafePendingSheet() {
               <Trans>Multisig transactions</Trans>
             </SheetTitle>
           </SheetHeader>
-          {safe ? <PendingList safe={safe} onClose={close} /> : null}
+          {safe ? <PendingList key={safe} safe={safe} onClose={close} /> : null}
         </SheetContent>
       </SheetPortal>
     </SheetRoot>
@@ -78,6 +79,7 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
             {pending.proposals.map((proposal) => (
               <Proposal
                 key={proposal.transaction.safeTxHash}
+                safe={safe}
                 proposal={proposal}
                 busy={pending.confirmBusy}
               />
@@ -105,12 +107,29 @@ function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => vo
   );
 }
 
-/** Each mint's recipient and amount, and the new owner of a handover. */
-function ProposalDetails({ calls }: { calls: readonly SafeCall[] | null }) {
-  const { mints, newOwners } = proposalRecipients(calls);
-  if (mints.length === 0 && newOwners.length === 0) return null;
+/**
+ * Each mint's recipient and amount, the new owner of a handover, and who signs
+ * for the multisig afterwards.
+ */
+function ProposalDetails({
+  calls,
+  safe,
+}: {
+  calls: readonly SafeCall[] | null;
+  safe: `0x${string}`;
+}) {
+  const { i18n } = useLingui();
+  const { mints, newOwners, signerChanges } = proposalRecipients(calls, safe);
+  if (mints.length === 0 && newOwners.length === 0 && signerChanges.length === 0) return null;
   return (
     <dl className="space-y-1.5">
+      {signerChanges.flatMap((change, index) =>
+        signerChangeRows(change, i18n.locales?.[0] ?? i18n.locale).map((row) => (
+          <DetailRow key={`${index}-${row.key}`} label={row.label}>
+            {row.value}
+          </DetailRow>
+        )),
+      )}
       {mints.map((mint, index) => (
         <Fragment key={index}>
           <DetailRow label={<Trans>Recipient</Trans>}>
@@ -139,13 +158,21 @@ function DetailRow({ label, children }: { label: ReactNode; children: ReactNode 
   );
 }
 
-function Proposal({ proposal, busy }: { proposal: SafePendingProposal; busy: boolean }) {
+function Proposal({
+  safe,
+  proposal,
+  busy,
+}: {
+  safe: `0x${string}`;
+  proposal: SafePendingProposal;
+  busy: boolean;
+}) {
   const { t } = useLingui();
   const { transaction, calls, action } = proposal;
   return (
     <li className="space-y-2 py-3">
       <div className="flex items-start justify-between gap-3">
-        <span className="min-w-0 text-sm font-semibold">{proposalTitle(calls)}</span>
+        <span className="min-w-0 text-sm font-semibold">{proposalTitle(calls, safe)}</span>
         <Badge
           size="sm"
           variant={action === "execute" || action === "executing" ? "primary" : "muted"}
@@ -156,12 +183,12 @@ function Proposal({ proposal, busy }: { proposal: SafePendingProposal; busy: boo
       <p className="text-xs text-muted-foreground">
         <Trans>Nonce {transaction.nonce}</Trans>
       </p>
-      <ProposalDetails calls={calls} />
+      <ProposalDetails calls={calls} safe={safe} />
       {calls && calls.length > 1 ? (
         <ul className="space-y-1">
           {calls.map((call, index) => (
             <li key={index} className="flex items-baseline justify-between gap-2 text-xs">
-              <CallLabel group={callGroup(call)} />
+              <CallLabel group={callGroup(call, safe)} />
               <span dir="ltr" className="font-mono text-muted-foreground">
                 {formatVoucherAddress(call.to)}
               </span>
@@ -199,6 +226,10 @@ function Proposal({ proposal, busy }: { proposal: SafePendingProposal; busy: boo
             <Trans>You confirmed</Trans>
           ) : action === "execute" ? (
             <Trans>Execute it in Safe.</Trans>
+          ) : proposal.passkeyUnsupported ? (
+            <Trans>
+              Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.
+            </Trans>
           ) : (
             <Trans>Review this transaction in your multisig wallet.</Trans>
           )}

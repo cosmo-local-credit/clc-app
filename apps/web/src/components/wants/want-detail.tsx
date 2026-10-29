@@ -167,7 +167,7 @@ function AuthenticatedWantContact({ wantId }: { wantId: string }) {
   if (!contact || (!contact.text && !contact.email && !contact.phone)) {
     return (
       <p className="text-sm text-muted-foreground">
-        <Trans>No contact details available.</Trans>
+        <Trans>No contact information given</Trans>
       </p>
     );
   }

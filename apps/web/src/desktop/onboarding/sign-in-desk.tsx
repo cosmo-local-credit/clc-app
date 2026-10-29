@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "#/components/ui/dialog";
 import { Field } from "#/components/ui/field";
-import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { Spinner } from "#/components/ui/spinner";
 import { useEncryptedPaperWalletImport } from "#/components/use-encrypted-paper-wallet-import";
 import { usePaperWalletScan } from "#/components/use-paper-wallet-scan";
@@ -124,7 +124,7 @@ export function SignInDesk({ redirectTo, context }: { redirectTo?: string; conte
                   </p>
                 ) : null}
                 <p className="text-sm text-white">
-                  <Trans>Hold your paper wallet's QR code up to the camera</Trans>
+                  <Trans>Hold your sign-in card's QR code up to the camera</Trans>
                 </p>
               </div>
             ) : null}
@@ -147,7 +147,7 @@ export function SignInDesk({ redirectTo, context }: { redirectTo?: string; conte
               accept="image/*"
               onChange={scan.handleFileUpload}
               className="hidden"
-              aria-label={t`Upload QR code image`}
+              aria-label={t`Upload card image`}
             />
           }
         />
@@ -288,12 +288,12 @@ function SignInColumn({
             onClick={signIn.openScanner}
           >
             <TbScan aria-hidden="true" />
-            <Trans>Continue with Paper Wallet</Trans>
+            <Trans>Sign in with QR card</Trans>
           </Button>
           {scanning ? (
             <Button variant="outline" className="w-full" onClick={onUpload}>
               <RiUploadLine aria-hidden="true" />
-              <Trans>Upload Image</Trans>
+              <Trans>Upload card image</Trans>
             </Button>
           ) : null}
           {upload}
@@ -335,10 +335,11 @@ function SignInColumn({
         {showAdvanced ? (
           <form onSubmit={signIn.handlePkSubmit} className="flex flex-col gap-3 pt-1 pb-4">
             <Field label={t`Private key`} htmlFor="desk-private-key">
-              <Input
+              <PasswordInput
                 id="desk-private-key"
-                type="password"
                 autoComplete="off"
+                showLabel={t`Show private key`}
+                hideLabel={t`Hide private key`}
                 value={pkInput}
                 onChange={(e) => setPkInput(e.target.value)}
                 placeholder="0x..."
@@ -408,12 +409,11 @@ function CardPassword({
     <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-3">
       <BackChevron label={t`Back`} onClick={onBack} className={BACK_CLASS} />
       <DeskTitle>
-        <Trans>Password-protected paper wallet</Trans>
+        <Trans>Enter card password</Trans>
       </DeskTitle>
       <Field label={t`Password`} htmlFor="desk-card-password">
-        <Input
+        <PasswordInput
           id="desk-card-password"
-          type="password"
           autoComplete="current-password"
           className="font-mono"
           value={passphrase}
@@ -428,7 +428,7 @@ function CardPassword({
         </p>
       ) : null}
       <Button type="submit" className="w-full" pending={decrypting}>
-        {decrypting ? t`Opening paper wallet…` : t`Continue`}
+        {decrypting ? t`Opening sign-in card…` : t`Continue`}
       </Button>
       <Button variant="ghost" className={FLUSH_GHOST} onClick={onCancel} disabled={decrypting}>
         <Trans>Cancel</Trans>

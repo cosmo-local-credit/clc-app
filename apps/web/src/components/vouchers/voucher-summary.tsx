@@ -22,12 +22,11 @@ import { toast } from "sonner";
 import { isAddress, type Address, zeroAddress } from "viem";
 
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
-import { ReviewStars } from "#/components/reviews/review-editor";
+import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { VoucherAvatar } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useVoucherReviewSummary } from "#/features/reviews/hooks/use-voucher-reviews";
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { cn } from "#/lib/utils";
@@ -244,7 +243,7 @@ export function VoucherIdentitySummary({
       </div>
 
       <p className="mt-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-muted-foreground text-xs">
-        <VoucherReviewSummaryContent address={address} place={place} />
+        <ReviewSummaryContent kind="voucher" address={address} place={place} />
       </p>
       <VoucherTagList tags={tags} className="mt-2" />
       <VoucherActionRow
@@ -262,45 +261,6 @@ export function VoucherIdentitySummary({
         className="mt-3"
       />
     </div>
-  );
-}
-
-/**
- * The voucher-level rating used by both the map sheet and complete voucher page.
- * Keeping the query here also guarantees the summary shares the full reviews
- * panel's public React Query cache entry.
- */
-function VoucherReviewSummaryContent({
-  address,
-  place,
-}: {
-  address: string;
-  place?: string | null;
-}) {
-  const { i18n } = useLingui();
-  const reviewQuery = useVoucherReviewSummary(address);
-  const reviewCount = reviewQuery.summary?.total ?? 0;
-  const reviewAverage = reviewCount > 0 ? (reviewQuery.summary?.average ?? 0) : 0;
-  const numberLocale = i18n.locales?.[0] ?? i18n.locale;
-  const formattedAverage = new Intl.NumberFormat(numberLocale, {
-    maximumFractionDigits: 1,
-  }).format(reviewAverage);
-  const formattedReviewCount = new Intl.NumberFormat(numberLocale).format(reviewCount);
-
-  return (
-    <>
-      <span className="font-mono tabular-nums">{formattedAverage}</span>
-      <ReviewStars stars={reviewAverage} />
-      <span className="font-mono tabular-nums">({formattedReviewCount})</span>
-      {place ? (
-        <>
-          <span aria-hidden="true">·</span>
-          <span dir="auto" className="min-w-0 truncate">
-            {place}
-          </span>
-        </>
-      ) : null}
-    </>
   );
 }
 

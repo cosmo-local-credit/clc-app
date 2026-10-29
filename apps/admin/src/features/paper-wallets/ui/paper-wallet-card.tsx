@@ -222,7 +222,7 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
                 <img
                   data-slot="qr"
                   src={qrDataUrl}
-                  alt="Wallet QR code"
+                  alt="Sign-in card QR code"
                   style={{ width: "100%", height: "100%" }}
                 />
               ) : null}

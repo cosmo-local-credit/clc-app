@@ -198,8 +198,8 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
         </h2>
         <p className="text-xs text-warning-foreground">
           <Trans>
-            The contact details you select are visible to signed-in users. The Want's map pin and
-            exact coordinates stay public.
+            Contact information is optional. Any contact details you select are visible to signed-in
+            users. The Want's map pin and exact coordinates stay public.
           </Trans>
         </p>
         <Field label={t`Contact instructions`} htmlFor="want-contact">

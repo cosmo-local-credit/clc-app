@@ -5,10 +5,12 @@ import {
   encodePacked,
   hashTypedData,
   isAddressEqual,
+  pad,
   parseAbi,
   size,
   slice,
   toFunctionSelector,
+  toHex,
   zeroAddress,
   type Hex,
 } from "viem";
@@ -25,15 +27,18 @@ const hexSchema = z.custom<Hex>(
 const decimalSchema = z.string().regex(/^\d+$/);
 
 /** Persisted ownership capabilities. A custom multisig may omit a threshold getter. */
+export const safeOwnerInfoSchema = z.object({
+  kind: z.literal("safe"),
+  owner: addressSchema,
+  signers: z.array(addressSchema).min(1),
+  threshold: z.number().int().min(1).nullable(),
+});
+export type SafeOwnerInfo = z.infer<typeof safeOwnerInfoSchema>;
+
 export const assetOwnerInfoSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("eoa"), owner: addressSchema }),
   z.object({ kind: z.literal("unsupported"), owner: addressSchema }),
-  z.object({
-    kind: z.literal("safe"),
-    owner: addressSchema,
-    signers: z.array(addressSchema).min(1),
-    threshold: z.number().int().min(1).nullable(),
-  }),
+  safeOwnerInfoSchema,
 ]);
 export type AssetOwnerInfo = z.infer<typeof assetOwnerInfoSchema>;
 
@@ -83,12 +88,41 @@ const safeTxTypes = {
 
 const safeAbi = parseAbi(["function multiSend(bytes transactions)"]);
 
-/** The reads that identify a Safe and give its signer set and next nonce. */
+/** The reads that identify a Safe and give its signer set, next nonce and version. */
 export const safeReadAbi = parseAbi([
   "function getOwners() view returns (address[])",
   "function getThreshold() view returns (uint256)",
   "function nonce() view returns (uint256)",
+  "function VERSION() view returns (string)",
 ]);
+
+/**
+ * Whether a Safe's `VERSION()` verifies contract (EIP-1271) owner signatures
+ * with `isValidSignature(bytes32,bytes)`, the only form a Calibur passkey
+ * account implements. Safe 1.5.0 does; 1.3.0 and 1.4.1 call the legacy
+ * `isValidSignature(bytes,bytes)`. clc-core applies the same rule.
+ */
+export function safeSupportsContractSignatures(version: string | undefined): boolean {
+  const [major, minor] = (version ?? "").split(".").map((part) => Number.parseInt(part, 10));
+  if (major === undefined || minor === undefined || Number.isNaN(major) || Number.isNaN(minor))
+    return false;
+  return major > 1 || (major === 1 && minor >= 5);
+}
+
+/**
+ * A contract owner's signature on its own, as clc-core and the Transaction
+ * Service take it: `r` the owner, `s` the offset 65 of the data, `v` 0, then
+ * the length-prefixed data its `isValidSignature` receives.
+ */
+export function encodeSafeContractSignature(owner: `0x${string}`, data: Hex): Hex {
+  return concatHex([
+    pad(owner, { size: 32 }),
+    toHex(65n, { size: 32 }),
+    "0x00",
+    toHex(BigInt(size(data)), { size: 32 }),
+    data,
+  ]);
+}
 
 /** Gas parameters clc-core requires: an inner failure reverts and nothing is refunded to the relayer. */
 const ZERO_GAS = {
@@ -224,10 +258,184 @@ const SAFE_CALL_NAMES = new Map<string, string>(
   ]),
 );
 
-/** The function name of an allowed owner action, or null for anything else. */
-export function safeCallName(data: Hex): string | null {
-  if (size(data) < 4) return null;
-  return SAFE_CALL_NAMES.get(slice(data, 0, 4)) ?? null;
+/**
+ * The owner management a Safe performs on itself, the only call it may make to
+ * itself. Mirrors `checkOwnerChange` in clc-core's `internal/safe`: modules,
+ * guards and the fallback handler on the Safe stay unknown.
+ */
+const safeOwnerAbi = parseAbi([
+  "function addOwnerWithThreshold(address owner, uint256 threshold)",
+  "function removeOwner(address prevOwner, address owner, uint256 threshold)",
+  "function swapOwner(address prevOwner, address oldOwner, address newOwner)",
+  "function changeThreshold(uint256 threshold)",
+]);
+
+/** Heads a Safe's owner list: valid as a prevOwner, never as an owner. */
+const SENTINEL_OWNER = "0x0000000000000000000000000000000000000001";
+
+export type SafeOwnerChange =
+  | { kind: "addSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "removeSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "replaceSigner"; oldSigner: `0x${string}`; newSigner: `0x${string}` }
+  | { kind: "changeThreshold"; threshold: number };
+
+/**
+ * A signer or threshold change the Safe makes on itself, or null for anything
+ * clc-core would refuse: another target, calldata that is not exactly the
+ * call's arguments, an owner that is the zero address, the sentinel or the
+ * Safe, a zero threshold, or a signer replaced by itself. Membership and the
+ * threshold's upper bound are the Safe's own checks.
+ */
+export function safeOwnerChange(call: SafeCall, safe: `0x${string}`): SafeOwnerChange | null {
+  if (!isAddressEqual(call.to, safe)) return null;
+  let decoded;
+  try {
+    decoded = decodeFunctionData({ abi: safeOwnerAbi, data: call.data });
+  } catch {
+    return null;
+  }
+  // Re-encoding rejects trailing bytes and address words with stray high bits.
+  if (
+    encodeFunctionData({ abi: safeOwnerAbi, ...decoded }).toLowerCase() !== call.data.toLowerCase()
+  )
+    return null;
+  const owner = (address: `0x${string}`) =>
+    !isAddressEqual(address, zeroAddress) &&
+    !isAddressEqual(address, SENTINEL_OWNER) &&
+    !isAddressEqual(address, safe);
+  const threshold = (value: bigint) =>
+    value >= 1n && value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
+
+  switch (decoded.functionName) {
+    case "addOwnerWithThreshold": {
+      const [signer, required] = decoded.args;
+      const n = threshold(required);
+      return owner(signer) && n !== null ? { kind: "addSigner", signer, threshold: n } : null;
+    }
+    case "removeOwner": {
+      const [, signer, required] = decoded.args;
+      const n = threshold(required);
+      return owner(signer) && n !== null ? { kind: "removeSigner", signer, threshold: n } : null;
+    }
+    case "swapOwner": {
+      const [, oldSigner, newSigner] = decoded.args;
+      return owner(oldSigner) && owner(newSigner) && !isAddressEqual(oldSigner, newSigner)
+        ? { kind: "replaceSigner", oldSigner, newSigner }
+        : null;
+    }
+    case "changeThreshold": {
+      const n = threshold(decoded.args[0]);
+      return n !== null ? { kind: "changeThreshold", threshold: n } : null;
+    }
+  }
+}
+
+/** A signer or threshold change a signer proposes for their own Safe. */
+export type SafeSignerChangeRequest =
+  | { kind: "addSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "removeSigner"; signer: `0x${string}`; threshold: number }
+  | { kind: "changeThreshold"; threshold: number };
+
+/** Why a requested change cannot execute against the Safe's current signers. */
+export type SafeSignerChangeProblem =
+  | "not-a-signer-address"
+  | "already-signer"
+  | "not-signer"
+  | "last-signer"
+  | "threshold-out-of-range"
+  | "unchanged";
+
+/** The Safe as read from chain just before proposing: owners in `getOwners` order. */
+export type SafeSignerState = {
+  safe: `0x${string}`;
+  owners: readonly `0x${string}`[];
+  threshold: number;
+};
+
+/**
+ * The Safe's own checks on a change, run before anyone signs it: a new signer
+ * cannot be the zero address, the sentinel, the Safe or an existing signer;
+ * a removed one must be a signer and not the last; and the approvals required
+ * must stay between one and the signer count the change leaves.
+ */
+export function safeSignerChangeProblem(
+  state: SafeSignerState,
+  change: SafeSignerChangeRequest,
+): SafeSignerChangeProblem | null {
+  const count = state.owners.length;
+  const isOwner = (address: `0x${string}`) =>
+    state.owners.some((owner) => isAddressEqual(owner, address));
+  const inRange = (threshold: number, max: number) =>
+    Number.isInteger(threshold) && threshold >= 1 && threshold <= max;
+  switch (change.kind) {
+    case "addSigner":
+      if (
+        ([zeroAddress, SENTINEL_OWNER, state.safe] as const).some((a) =>
+          isAddressEqual(a, change.signer),
+        )
+      )
+        return "not-a-signer-address";
+      if (isOwner(change.signer)) return "already-signer";
+      return inRange(change.threshold, count + 1) ? null : "threshold-out-of-range";
+    case "removeSigner":
+      if (!isOwner(change.signer)) return "not-signer";
+      if (count === 1) return "last-signer";
+      return inRange(change.threshold, count - 1) ? null : "threshold-out-of-range";
+    case "changeThreshold":
+      if (!inRange(change.threshold, count)) return "threshold-out-of-range";
+      return change.threshold === state.threshold ? "unchanged" : null;
+  }
+}
+
+/**
+ * The call that makes a change. A removal names the signer's predecessor in
+ * the Safe's linked owner list, which `getOwners` returns in order; the first
+ * owner follows the sentinel. Throws for a change the Safe would refuse.
+ */
+export function buildSafeSignerChangeCall(
+  state: SafeSignerState,
+  change: SafeSignerChangeRequest,
+): SafeCall {
+  const problem = safeSignerChangeProblem(state, change);
+  if (problem) throw new Error(`The signer change cannot execute: ${problem}`);
+  const threshold = BigInt(change.threshold);
+  let data: Hex;
+  switch (change.kind) {
+    case "addSigner":
+      data = encodeFunctionData({
+        abi: safeOwnerAbi,
+        functionName: "addOwnerWithThreshold",
+        args: [change.signer, threshold],
+      });
+      break;
+    case "removeSigner": {
+      const index = state.owners.findIndex((owner) => isAddressEqual(owner, change.signer));
+      data = encodeFunctionData({
+        abi: safeOwnerAbi,
+        functionName: "removeOwner",
+        args: [index === 0 ? SENTINEL_OWNER : state.owners[index - 1]!, change.signer, threshold],
+      });
+      break;
+    }
+    case "changeThreshold":
+      data = encodeFunctionData({
+        abi: safeOwnerAbi,
+        functionName: "changeThreshold",
+        args: [threshold],
+      });
+      break;
+  }
+  return { to: state.safe, value: "0", data };
+}
+
+/**
+ * The name of an allowed owner action, or null for anything else. A call to
+ * the Safe itself is named by its owner change; any other by its function.
+ */
+export function safeCallName(call: SafeCall, safe: `0x${string}`): string | null {
+  if (isAddressEqual(call.to, safe)) return safeOwnerChange(call, safe)?.kind ?? null;
+  if (size(call.data) < 4) return null;
+  return SAFE_CALL_NAMES.get(slice(call.data, 0, 4)) ?? null;
 }
 
 /**
@@ -282,6 +490,7 @@ export function decodeSafeTransactionCalls(
 export type SafeProposalAction = "executing" | "execute" | "confirmed" | "confirm" | "review";
 
 export function safeProposalAction(input: {
+  safe: `0x${string}`;
   confirmations: readonly { owner: string }[];
   confirmationsRequired: number;
   calls: readonly SafeCall[] | null;
@@ -300,7 +509,7 @@ export function safeProposalAction(input: {
   const allowed =
     input.calls !== null &&
     input.calls.length > 0 &&
-    input.calls.every((call) => safeCallName(call.data) !== null);
+    input.calls.every((call) => safeCallName(call, input.safe) !== null);
   return input.canSign && allowed ? "confirm" : "review";
 }
 
@@ -309,12 +518,14 @@ const describeAbi = parseAbi([
   "function transferOwnership(address newOwner)",
 ]);
 
-/** What a confirming signer needs to see in a call: who receives what. */
+/** What a confirming signer needs to see in a call: who receives what, or who signs. */
 export type SafeCallDetail =
   | { kind: "mint"; token: `0x${string}`; recipient: `0x${string}`; amountRaw: string }
-  | { kind: "ownership"; asset: `0x${string}`; newOwner: `0x${string}` };
+  | { kind: "ownership"; asset: `0x${string}`; newOwner: `0x${string}` }
+  | SafeOwnerChange;
 
-export function describeSafeCall(call: SafeCall): SafeCallDetail | null {
+export function describeSafeCall(call: SafeCall, safe: `0x${string}`): SafeCallDetail | null {
+  if (isAddressEqual(call.to, safe)) return safeOwnerChange(call, safe);
   try {
     const decoded = decodeFunctionData({ abi: describeAbi, data: call.data });
     if (decoded.functionName === "mintTo") {

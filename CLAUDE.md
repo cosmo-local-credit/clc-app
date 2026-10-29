@@ -12,6 +12,11 @@ or seed pools).
 **Core flows:** signup + wallet onboarding → on-ramp → join/create pool →
 create voucher → send/swap/redeem → marketplace → off-ramp.
 
+**Credential terminology:** user-facing copy calls the QR credential a
+**Sign-in card**. Legacy internal identifiers such as `paperWallet` and the
+`/paper-wallets` route remain for compatibility and must not appear as product
+copy.
+
 ## Stack
 
 TanStack Start (Vite + Nitro 3), Serwist PWA, shadcn on **Base UI** (not Radix),
@@ -456,13 +461,14 @@ Admin conventions:
   coordinates), surface the gap with the `receivedCount` delta. An admin total
   that silently under-reports is worse than no total.
 - Auth is a real session, decided in one place:
-  `#/features/auth/admin-session.ts` reads `GET /auth/session` and authorizes on
-  `role === "SUPERADMIN"`; `#/components/layout/auth-boundary.tsx` renders the
+  `#/features/auth/admin-session.ts` reads `GET /auth/session` and authorizes
+  `ADMIN` and `SUPERADMIN`; only `SUPERADMIN` may change account roles.
+  `#/components/layout/auth-boundary.tsx` renders the
   five states. Operators sign in with the same credentials as `apps/web` — a
   paper wallet (SIWE via `@clc/api/features/auth/siwe`) or a passkey. There is no
   stub session and no bearer-token escape hatch; don't reintroduce either.
-  clc-core enforces `requireSuperAdmin` on every `/api/v2/admin` endpoint, so the
-  gate here is UX only.
+  clc-core enforces administrative access on `/api/v2/admin`, so the gate here
+  is UX only.
 - A session whose `role` the backend omits is `unavailable`, never
   `unauthorized`. Denying a real superadmin sends them hunting a permission
   problem that does not exist.

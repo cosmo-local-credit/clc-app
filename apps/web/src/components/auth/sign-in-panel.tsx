@@ -10,8 +10,8 @@ import { NfcCardPrompt } from "#/components/nfc-card-prompt";
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
+import { PasswordInput } from "#/components/ui/password-input";
 import { Spinner } from "#/components/ui/spinner";
-import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
   SheetContent,
@@ -117,7 +117,7 @@ export function SignInPanel({ onCancel, ...options }: SignInPanelProps) {
           ) : (
             <Button tap className="w-full" onClick={openScanner}>
               <TbScan className="me-2 size-4" />
-              <Trans>Continue with Paper Wallet</Trans>
+              <Trans>Sign in with QR card</Trans>
             </Button>
           )}
 
@@ -126,7 +126,7 @@ export function SignInPanel({ onCancel, ...options }: SignInPanelProps) {
               {available ? (
                 <ActionRow
                   icon={<TbScan className="size-4" aria-hidden="true" />}
-                  label={t`Continue with Paper Wallet`}
+                  label={t`Sign in with QR card`}
                   onClick={openScanner}
                 />
               ) : null}
@@ -180,7 +180,7 @@ export function SignInPanel({ onCancel, ...options }: SignInPanelProps) {
         </Link>
       </p>
 
-      <MethodSheet open={showScanner && !connecting} onClose={closeScanner} title={t`Paper Wallet`}>
+      <MethodSheet open={showScanner && !connecting} onClose={closeScanner} title={t`Sign-in card`}>
         <div className="space-y-3">
           <PaperWalletScanner onKeyDecoded={handleKeyScanned} onCancel={closeScanner} />
           {errorAlert}
@@ -202,7 +202,7 @@ export function SignInPanel({ onCancel, ...options }: SignInPanelProps) {
       <MethodSheet
         open={!!encryptedPaperWallet && !connecting}
         onClose={closeEncrypted}
-        title={t`Password-protected paper wallet`}
+        title={t`Enter card password`}
       >
         {encryptedPaperWallet ? (
           <Suspense fallback={null}>
@@ -236,8 +236,7 @@ export function SignInPanel({ onCancel, ...options }: SignInPanelProps) {
               <FiX className="size-4" />
             </Button>
           </div>
-          <Input
-            type="password"
+          <PasswordInput
             autoComplete="off"
             value={pkInput}
             onChange={(e) => setPkInput(e.target.value)}
@@ -245,6 +244,8 @@ export function SignInPanel({ onCancel, ...options }: SignInPanelProps) {
             className="font-mono"
             aria-invalid={!!error}
             aria-label={t`Private key`}
+            showLabel={t`Show private key`}
+            hideLabel={t`Hide private key`}
           />
           {errorAlert}
           <Button type="submit" tap disabled={!pkInput.trim()} className="w-full">

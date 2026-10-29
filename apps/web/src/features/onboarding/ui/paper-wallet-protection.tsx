@@ -1,7 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import { FiLock, FiUnlock } from "react-icons/fi";
 
-import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { Switch } from "#/components/ui/switch";
 import type { PaperWalletProtection } from "#/features/onboarding/hooks/use-paper-wallet-protection";
 import { cn } from "#/lib/utils";
@@ -23,7 +23,7 @@ export function PaperWalletProtectionControls({
         )}
         <span className="min-w-0 flex-1">
           <span className="block font-medium text-foreground text-sm">
-            <Trans>Protect paper wallet with a password</Trans>
+            <Trans>Protect with a password</Trans>
           </span>
           <span
             className={cn(
@@ -33,12 +33,12 @@ export function PaperWalletProtectionControls({
           >
             {enabled ? (
               protection.isProtected ? (
-                <Trans>Paper wallet is protected. Keep the password separate from the card.</Trans>
+                <Trans>Protected. Keep the password separate from the card.</Trans>
               ) : (
-                <Trans>Enter and apply a password before downloading this card.</Trans>
+                <Trans>Enter a password before saving.</Trans>
               )
             ) : (
-              <Trans>QR currently contains the raw private key.</Trans>
+              <Trans>Not protected. Anyone who scans this card can access your wallet.</Trans>
             )}
           </span>
         </span>
@@ -51,9 +51,8 @@ export function PaperWalletProtectionControls({
             <label htmlFor="pw-passphrase" className="font-medium text-foreground text-sm">
               <Trans>Password</Trans>
             </label>
-            <Input
+            <PasswordInput
               id="pw-passphrase"
-              type="password"
               autoComplete="new-password"
               value={passphrase}
               onChange={(event) => protection.setPassphrase(event.target.value)}
@@ -65,9 +64,8 @@ export function PaperWalletProtectionControls({
             <label htmlFor="pw-passphrase-confirm" className="font-medium text-foreground text-sm">
               <Trans>Confirm password</Trans>
             </label>
-            <Input
+            <PasswordInput
               id="pw-passphrase-confirm"
-              type="password"
               autoComplete="new-password"
               value={confirmPassphrase}
               onChange={(event) => protection.setConfirmPassphrase(event.target.value)}

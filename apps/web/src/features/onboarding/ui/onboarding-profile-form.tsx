@@ -53,6 +53,8 @@ export function OnboardingProfileForm({ redirectTo, progressTotal, ...options }:
     suggestForCountry,
     shownError,
     handleContinue,
+    continueBlocked,
+    identityNotice,
     previous,
     markCurrencyChosen,
   } = useOnboardingProfile(options);
@@ -77,10 +79,15 @@ export function OnboardingProfileForm({ redirectTo, progressTotal, ...options }:
       }
       footer={
         <>
+          {identityNotice ? (
+            <p className="text-center text-destructive text-xs" role="alert">
+              {identityNotice}
+            </p>
+          ) : null}
           <Button
             type="submit"
             form="onboarding-profile"
-            disabled={!isStorageConfigured}
+            disabled={!isStorageConfigured || continueBlocked}
             tap
             className="w-full"
           >

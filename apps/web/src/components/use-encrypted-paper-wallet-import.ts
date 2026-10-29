@@ -43,7 +43,7 @@ export function useEncryptedPaperWalletImport({
       if (isMounted.current) setPassphraseState("");
     } catch (err) {
       if (isMounted.current) {
-        setError(err instanceof Error ? err.message : t`Could not import this paper wallet.`);
+        setError(err instanceof Error ? err.message : t`Could not unlock this sign-in card.`);
       }
     } finally {
       if (isMounted.current) setDecrypting(false);

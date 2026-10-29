@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { FiLock, FiX } from "react-icons/fi";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
+import { PasswordInput } from "#/components/ui/password-input";
 import { useEncryptedPaperWalletImport } from "#/components/use-encrypted-paper-wallet-import";
 import { cn } from "#/lib/utils";
 
@@ -31,14 +31,14 @@ export function EncryptedPaperWalletImportForm({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-foreground text-sm font-medium">
-            <Trans>Password-protected paper wallet</Trans>
+            <Trans>Enter card password</Trans>
           </p>
         </div>
         <Button
           variant="ghost"
           size="icon"
           tap
-          aria-label={t`Close password-protected wallet import`}
+          aria-label={t`Close card password form`}
           onClick={onCancel}
           disabled={decrypting}
         >
@@ -50,9 +50,8 @@ export function EncryptedPaperWalletImportForm({
         <label htmlFor="encrypted-paper-wallet-password" className="text-sm font-medium">
           <Trans>Password</Trans>
         </label>
-        <Input
+        <PasswordInput
           id="encrypted-paper-wallet-password"
-          type="password"
           autoComplete="current-password"
           value={passphrase}
           onChange={(event) => setPassphrase(event.target.value)}
@@ -74,7 +73,7 @@ export function EncryptedPaperWalletImportForm({
         className="w-full"
       >
         <FiLock className="size-4" />
-        {decrypting ? t`Unlocking…` : t`Unlock and import`}
+        {decrypting ? t`Unlocking…` : t`Unlock and sign in`}
       </Button>
     </form>
   );

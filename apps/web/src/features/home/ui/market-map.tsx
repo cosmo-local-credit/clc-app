@@ -69,7 +69,7 @@ const INTERACTIVE_LAYER_IDS = [
   SELECTED_LABEL_LAYER_ID,
 ];
 
-const VIEWPORT_SETTLE_MS = 400;
+const VIEWPORT_SETTLE_MS = 100;
 
 /** Font stacks available from both the standard and satellite style glyph endpoints. */
 const LABEL_FONT = ["Noto Sans Regular"];

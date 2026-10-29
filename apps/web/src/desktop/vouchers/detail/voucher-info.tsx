@@ -1,5 +1,6 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense } from "react";
@@ -31,7 +32,7 @@ export function useCanEditVoucher(address: string, detail: MarketVoucherDetail |
   const canEdit =
     auth.isAuthenticated &&
     !!detail &&
-    (auth.session?.role === "SUPERADMIN" ||
+    (isAdminRole(auth.session?.role) ||
       (!!auth.session?.address && !!detail.ownerAddress && ownerInfo.canManage));
   return { canEdit, ownerInfo: ownerInfo.info };
 }

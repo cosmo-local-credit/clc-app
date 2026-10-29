@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { Button } from "#/components/ui/button";
 import { ReviewStars } from "#/components/reviews/review-editor";
 import { useShareVoucher, type VoucherBalanceSummary } from "#/components/vouchers/voucher-summary";
-import { useVoucherReviewSummary } from "#/features/reviews/hooks/use-voucher-reviews";
+import { useReviewSummary } from "#/features/reviews/hooks/use-voucher-reviews";
 import { cn } from "#/lib/utils";
 
 type Quota = ResourceUsageData[ResourceKind];
@@ -117,7 +117,7 @@ export function VoucherRatingLine({
   wrapPlace?: boolean;
 }) {
   const { i18n } = useLingui();
-  const review = useVoucherReviewSummary(address);
+  const review = useReviewSummary({ kind: "voucher", address });
   const count = review.summary?.total ?? 0;
   const average = count > 0 ? (review.summary?.average ?? 0) : 0;
   const locale = i18n.locales?.[0] ?? i18n.locale;

@@ -1,6 +1,7 @@
 import {
   assetOwnerInfoSchema,
   safeConfirmationSchema,
+  safeOwnerInfoSchema,
   safeTransactionSchema,
   type SafeTransaction,
 } from "@clc/core/features/safe/logic";
@@ -25,6 +26,7 @@ const safeProposalSchema = safeTransactionSchema.extend({
 export type SafeProposal = z.infer<typeof safeProposalSchema>;
 
 const pendingSchema = z.object({ results: z.array(safeProposalSchema) });
+const mineSchema = z.object({ safes: z.array(safeOwnerInfoSchema) });
 
 export type ProposeSafeTransactionInput = {
   safe: `0x${string}`;
@@ -68,6 +70,15 @@ export function createSafeClient(http: HttpClient) {
         { method: "GET", signal, cache: "no-store" },
       );
       return pendingSchema.parse(result).results;
+    },
+    /** The multisigs the signed-in account signs for, from the projection that authorizes writes. */
+    async mine(signal?: AbortSignal) {
+      const result = await http.request<unknown>("/api/v2/users/me/safes", {
+        method: "GET",
+        signal,
+        cache: "no-store",
+      });
+      return mineSchema.parse(result).safes;
     },
   };
 }

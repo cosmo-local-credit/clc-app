@@ -1,10 +1,15 @@
-import { canWriteReview, type ReviewAccess } from "@clc/core/features/reviews/logic";
+import { reviewKeys } from "@clc/api/features/reviews/queries";
+import {
+  canWriteReview,
+  type ReviewAccess,
+  type ReviewTarget,
+} from "@clc/core/features/reviews/logic";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { saveReview } from "#/features/reviews/api/reviews-client";
-import { useReviewAccess } from "#/features/reviews/hooks/use-voucher-reviews";
+import { useResourceReviewAccess } from "#/features/reviews/hooks/use-voucher-reviews";
+import { reviewsClient } from "#/lib/api/reviews";
 
 /**
  * Whether a send receipt should invite a review of the voucher just redeemed,
@@ -20,6 +25,7 @@ export function useIsRedemption(address: string, recipient: string) {
 export type RedemptionReview =
   | { status: "hidden" }
   | { status: "saved" }
+  | { status: "error"; retry: () => void; retrying: boolean; dismiss: () => void }
   | { status: "processing"; dismiss: () => void }
   | {
       status: "ready";
@@ -30,18 +36,21 @@ export type RedemptionReview =
       failed: boolean;
     };
 
-/** The review state for one redeemed voucher. Mount it only for a redemption. */
-export function useRedemptionReview(address: string): RedemptionReview {
+/**
+ * The review state for one redeemed voucher or swapped pool. Mount it only
+ * once the receipt is known to earn a review.
+ */
+export function useRedemptionReview(target: ReviewTarget): RedemptionReview {
   const client = useQueryClient();
   const [dismissed, setDismissed] = useState(false);
   const [saved, setSaved] = useState(false);
-  const { auth, access } = useReviewAccess(address, !dismissed && !saved);
+  const { auth, access } = useResourceReviewAccess(target, !dismissed && !saved);
   const mutation = useMutation({
     mutationFn: ({ stars, text }: { stars: number; text: string }) =>
-      saveReview(address, stars, text),
+      reviewsClient.save(target, stars, text),
     onSuccess: () => {
       setSaved(true);
-      void client.invalidateQueries({ queryKey: ["voucher-reviews", address.toLowerCase()] });
+      void client.invalidateQueries({ queryKey: reviewKeys.resource(target) });
     },
   });
   const dismiss = () => setDismissed(true);
@@ -49,6 +58,14 @@ export function useRedemptionReview(address: string): RedemptionReview {
     return { status: "hidden" };
   }
   if (saved) return { status: "saved" };
+  if (access.isError) {
+    return {
+      status: "error",
+      retry: () => void access.refetch(),
+      retrying: access.isFetching,
+      dismiss,
+    };
+  }
   if (!access.data || !canWriteReview(access.data)) return { status: "processing", dismiss };
   return {
     status: "ready",

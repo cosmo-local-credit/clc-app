@@ -258,7 +258,7 @@ export function useSignIn({
       setEncryptedPaperWallet(result.encryptedKey);
       return;
     }
-    setError(t`Enter a valid private key or paper wallet.`);
+    setError(t`Enter a valid private key or sign-in card.`);
   }
 
   function handleKeyScanned(raw: string) {

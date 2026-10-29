@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { isAddress } from "viem";
 
 import { Button } from "#/components/ui/button";
+import { PoolSwapReviewPrompt } from "#/components/reviews/redemption-review-prompt";
 import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import {
   FailureCross,
@@ -276,6 +277,7 @@ export function SwapReceiptPage({
           ) : null}
         </div>
       ) : null}
+      <PoolSwapReviewPrompt address={poolAddress} />
       <div className="flex-1" />
       {explorerUrl ? (
         <ShareReceiptButton

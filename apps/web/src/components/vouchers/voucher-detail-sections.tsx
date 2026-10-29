@@ -1,6 +1,7 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
@@ -103,7 +104,7 @@ export function VoucherDetailSections({
   const canEditDetails =
     auth.isAuthenticated &&
     !!detail &&
-    (auth.session?.role === "SUPERADMIN" ||
+    (isAdminRole(auth.session?.role) ||
       (!!auth.session?.address && !!detail.ownerAddress && ownerInfo.canManage));
   const reportVoucher: VoucherRef | undefined =
     chainId && address ? { chainId, address: address as VoucherRef["address"] } : undefined;

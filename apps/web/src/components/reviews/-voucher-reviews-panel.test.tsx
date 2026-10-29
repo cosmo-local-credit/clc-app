@@ -4,16 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { ReviewAccess, ReviewPage } from "@clc/core/features/reviews/logic";
 
 const mocks = vi.hoisted(() => ({
-  getReviews: vi.fn(),
-  getReviewAccess: vi.fn(),
-  saveReview: vi.fn(),
-  saveReviewReply: vi.fn(),
-  flagReview: vi.fn(),
+  list: vi.fn(),
+  access: vi.fn(),
+  save: vi.fn(),
+  reply: vi.fn(),
+  flag: vi.fn(),
   auth: { isAuthenticated: true, address: "0x1111111111111111111111111111111111111111" },
 }));
-vi.mock("#/features/reviews/api/reviews-client", () => mocks);
+vi.mock("#/lib/api/reviews", () => ({ reviewsClient: mocks }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
-import { VoucherReviewsPanel } from "./voucher-reviews-panel";
+import { PoolReviewsPanel, VoucherReviewsPanel } from "./voucher-reviews-panel";
 
 const review = { id: 8, stars: 5, comment: "Lovely produce", reply: null };
 const page: ReviewPage = {
@@ -32,13 +32,17 @@ const access: ReviewAccess = {
   flaggedReviewIds: [],
 };
 
-function mount() {
+function mount(kind: "voucher" | "pool" = "voucher") {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
     <QueryClientProvider client={client}>
-      <VoucherReviewsPanel address="0x2222222222222222222222222222222222222222" />
+      {kind === "voucher" ? (
+        <VoucherReviewsPanel address="0x2222222222222222222222222222222222222222" />
+      ) : (
+        <PoolReviewsPanel address="0x2222222222222222222222222222222222222222" />
+      )}
     </QueryClientProvider>,
   );
 }
@@ -46,17 +50,17 @@ function mount() {
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.auth.isAuthenticated = true;
-  mocks.getReviews.mockResolvedValue(page);
-  mocks.getReviewAccess.mockResolvedValue(access);
-  mocks.saveReview.mockResolvedValue({ saved: true });
-  mocks.saveReviewReply.mockResolvedValue({ saved: true });
-  mocks.flagReview.mockResolvedValue({ saved: true });
+  mocks.list.mockResolvedValue(page);
+  mocks.access.mockResolvedValue(access);
+  mocks.save.mockResolvedValue({ saved: true });
+  mocks.reply.mockResolvedValue({ saved: true });
+  mocks.flag.mockResolvedValue({ saved: true });
 });
 
 describe("voucher reviews", () => {
   it("shows a simple empty state without ratings or sorting when no reviews exist", async () => {
     mocks.auth.isAuthenticated = false;
-    mocks.getReviews.mockResolvedValue({
+    mocks.list.mockResolvedValue({
       reviews: [],
       counts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
       average: 0,
@@ -73,7 +77,7 @@ describe("voucher reviews", () => {
   });
 
   it("lets an eligible redeemer write the first review", async () => {
-    mocks.getReviews.mockResolvedValue({
+    mocks.list.mockResolvedValue({
       reviews: [],
       counts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
       average: 0,
@@ -87,35 +91,35 @@ describe("voucher reviews", () => {
   });
 
   it("shows a load error instead of claiming there are no reviews", async () => {
-    mocks.getReviews.mockRejectedValue(new Error("offline"));
+    mocks.list.mockRejectedValue(new Error("offline"));
     mount();
     expect(await screen.findByText("Couldn't load reviews.")).toBeTruthy();
     expect(screen.queryByText("No reviews yet.")).toBeNull();
   });
 
   it("retries failed reviews and review-access requests", async () => {
-    mocks.getReviews.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(page);
-    mocks.getReviewAccess.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(access);
+    mocks.list.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(page);
+    mocks.access.mockRejectedValueOnce(new Error("offline")).mockResolvedValue(access);
     mount();
 
     const retries = await screen.findAllByRole("button", { name: "Try again" });
     for (const retry of retries) fireEvent.click(retry);
 
-    await waitFor(() => expect(mocks.getReviews).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(mocks.getReviewAccess).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mocks.list).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mocks.access).toHaveBeenCalledTimes(2));
     expect(await screen.findByText("Lovely produce")).toBeTruthy();
   });
 
   it("shows anonymous public cards and filters by histogram without hiding the summary", async () => {
     mocks.auth.isAuthenticated = false;
-    mocks.getReviews.mockImplementation((_address, stars) =>
-      Promise.resolve(stars === 1 ? { ...page, reviews: [] } : page),
+    mocks.list.mockImplementation((_target, params) =>
+      Promise.resolve(params.stars === 1 ? { ...page, reviews: [] } : page),
     );
     const view = mount();
     const card = await screen.findByRole("article");
     expect(within(card).getByText("Lovely produce")).toBeTruthy();
     expect(view.container.textContent).not.toContain(mocks.auth.address);
-    expect(mocks.getReviewAccess).not.toHaveBeenCalled();
+    expect(mocks.access).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Show 1-star reviews" }));
     expect(await screen.findByText("No reviews with this rating.")).toBeTruthy();
     expect(screen.getByText("5.0")).toBeTruthy();
@@ -133,12 +137,16 @@ describe("voucher reviews", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
-      expect(mocks.saveReview).toHaveBeenCalledWith(expect.any(String), 4, "Good service"),
+      expect(mocks.save).toHaveBeenCalledWith(
+        { kind: "voucher", address: expect.any(String) },
+        4,
+        "Good service",
+      ),
     );
   });
 
   it("locks an existing review after its window expires", async () => {
-    mocks.getReviewAccess.mockResolvedValue({
+    mocks.access.mockResolvedValue({
       ...access,
       editableUntil: "2020-01-01T00:00:00Z",
       review,
@@ -151,8 +159,8 @@ describe("voucher reviews", () => {
   });
 
   it("lets owners edit only their own replies and report other reviews", async () => {
-    mocks.getReviewAccess.mockResolvedValue({ ...access, isOwner: true, editableReplyIds: [8] });
-    mocks.getReviews.mockResolvedValue({
+    mocks.access.mockResolvedValue({ ...access, isOwner: true, editableReplyIds: [8] });
+    mocks.list.mockResolvedValue({
       ...page,
       reviews: [
         { ...review, reply: "Thank you" },
@@ -166,7 +174,11 @@ describe("voucher reviews", () => {
     fireEvent.change(screen.getByLabelText("Your reply"), { target: { value: "Thanks again" } });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
-      expect(mocks.saveReviewReply).toHaveBeenCalledWith(expect.any(String), 8, "Thanks again"),
+      expect(mocks.reply).toHaveBeenCalledWith(
+        { kind: "voucher", address: expect.any(String) },
+        8,
+        "Thanks again",
+      ),
     );
     fireEvent.click(screen.getAllByRole("button", { name: "Report inappropriate" })[0]!);
     fireEvent.change(screen.getByLabelText("Reason for reporting"), {
@@ -174,8 +186,8 @@ describe("voucher reviews", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Send report" }));
     await waitFor(() =>
-      expect(mocks.flagReview).toHaveBeenCalledWith(
-        expect.any(String),
+      expect(mocks.flag).toHaveBeenCalledWith(
+        { kind: "voucher", address: expect.any(String) },
         8,
         "Contains private information",
       ),
@@ -183,7 +195,7 @@ describe("voucher reviews", () => {
   });
 
   it("retains the draft and exposes a retry after a failed save", async () => {
-    mocks.saveReview.mockRejectedValue(new Error("offline"));
+    mocks.save.mockRejectedValue(new Error("offline"));
     mount();
     fireEvent.click(await screen.findByRole("button", { name: "Write a review" }));
     fireEvent.click(screen.getByRole("radio", { name: "3 stars" }));
@@ -194,6 +206,36 @@ describe("voucher reviews", () => {
     expect(await screen.findByRole("alert")).toBeTruthy();
     expect((screen.getByLabelText("Comment (optional)") as HTMLTextAreaElement).value).toBe(
       "Keep this draft",
+    );
+  });
+
+  it("uses Pool eligibility copy and isolated Pool API paths", async () => {
+    mocks.auth.isAuthenticated = false;
+    mount("pool");
+    expect(
+      await screen.findByText("Sign in after swapping in this pool to leave a review."),
+    ).toBeTruthy();
+    expect(mocks.list).toHaveBeenCalledWith(
+      { kind: "pool", address: "0x2222222222222222222222222222222222222222" },
+      { stars: undefined, before: undefined },
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("writes an eligible Pool review through the Pool endpoint", async () => {
+    mount("pool");
+    fireEvent.click(await screen.findByRole("button", { name: "Write a review" }));
+    fireEvent.click(screen.getByRole("radio", { name: "5 stars" }));
+    fireEvent.change(screen.getByLabelText("Comment (optional)"), {
+      target: { value: "Fast and fair" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mocks.save).toHaveBeenCalledWith(
+        { kind: "pool", address: "0x2222222222222222222222222222222222222222" },
+        5,
+        "Fast and fair",
+      ),
     );
   });
 });

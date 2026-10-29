@@ -1,4 +1,8 @@
-import { isPlaceholderSignupEmail, PAPER_WALLET_PLACEHOLDER_NAME } from "../wallet/paper-wallet";
+import {
+  isPlaceholderSignupEmail,
+  LEGACY_PAPER_WALLET_PLACEHOLDER_NAME,
+  PAPER_WALLET_PLACEHOLDER_NAME,
+} from "../wallet/paper-wallet";
 
 export type ProfileCompletenessInput = {
   name: string;
@@ -11,14 +15,19 @@ export type ProfileGaps = { avatar: boolean; name: boolean; contact: boolean };
 
 /**
  * What an account still lacks for a complete profile. Web onboarding collects
- * everything up front; an account issued in bulk as a paper wallet starts with
+ * everything up front; an account issued in bulk as a paper wallet, or
+ * registered by clc-core when a wallet with no account signs in, starts with
  * placeholders, and this is how the app notices and asks the holder to finish.
  */
 export function profileGaps(profile: ProfileCompletenessInput): ProfileGaps {
   const name = profile.name.trim();
   return {
     avatar: !profile.avatarUrl,
-    name: name === "" || name === PAPER_WALLET_PLACEHOLDER_NAME || /^0x[0-9a-f]{40}$/i.test(name),
+    name:
+      name === "" ||
+      name === PAPER_WALLET_PLACEHOLDER_NAME ||
+      name === LEGACY_PAPER_WALLET_PLACEHOLDER_NAME ||
+      /^0x[0-9a-f]{40}$/i.test(name),
     contact:
       (profile.email.trim() === "" || isPlaceholderSignupEmail(profile.email)) &&
       profile.phone.trim() === "",

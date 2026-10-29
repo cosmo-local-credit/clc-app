@@ -1,11 +1,14 @@
+import type { IdentityAvailability } from "@clc/api/features/identity/client";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
-import { profileSchema } from "@clc/core/features/signup/logic";
+import { profileSchema, usernameSchema } from "@clc/core/features/signup/logic";
+import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
 import { useForm, useStore } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useIPCamera } from "#/features/home/hooks/use-ip-camera";
+import { identityClient } from "#/lib/api/identity";
 import { isStorageConfigured } from "#/lib/api/storage";
 import type { ProfilePage } from "#/lib/onboarding-search";
 import {
@@ -96,6 +99,57 @@ function pageErrors(
 
 const pageIsValid = (page: ProfilePage, values: ProfileFormValues) =>
   Object.keys(pageErrors(page, values)).length === 0;
+
+const IDENTITY_CHECK_DEBOUNCE_MS = 300;
+
+/** Stable English ids. translateValidationError is what shows them. */
+const TAKEN_IDENTITY = {
+  email: "That email is already linked to an account",
+  phone: "That phone number is already linked to an account",
+  username: "That username is already taken",
+} as const;
+
+type IdentityField = keyof typeof TAKEN_IDENTITY;
+
+type IdentityProbe = {
+  key: string;
+  fields: Partial<Record<IdentityField, string>>;
+};
+
+/** Locally valid, non-empty identities. Invalid text stays on the schema gate. */
+function identityProbe(values: ProfileFormValues): IdentityProbe {
+  const fields: IdentityProbe["fields"] = {};
+  const email = optionalEmailSchema.safeParse(values.email);
+  if (email.success && email.data) fields.email = email.data.toLowerCase();
+  const phone = optionalPhoneSchema.safeParse(values.phone);
+  if (phone.success && phone.data) fields.phone = phone.data;
+  const username = usernameSchema.safeParse(values.username ?? "");
+  if (username.success && username.data) fields.username = username.data;
+  const active = Boolean(fields.email || fields.phone || fields.username);
+  return {
+    key: active
+      ? JSON.stringify([fields.email ?? null, fields.phone ?? null, fields.username ?? null])
+      : "",
+    fields,
+  };
+}
+
+function takenIdentities(
+  result: IdentityAvailability,
+  fields: IdentityProbe["fields"],
+): Partial<Record<IdentityField, string>> {
+  const taken: Partial<Record<IdentityField, string>> = {};
+  if (fields.email && result.email?.available === false) taken.email = TAKEN_IDENTITY.email;
+  if (fields.phone && result.phone?.available === false) taken.phone = TAKEN_IDENTITY.phone;
+  if (fields.username && result.username?.available === false) {
+    taken.username = TAKEN_IDENTITY.username;
+  }
+  return taken;
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
+}
 
 /**
  * Create account, in three short pages: who you are (photo, name, username),
@@ -195,8 +249,58 @@ export function useOnboardingProfile({
 
   const values = useStore(form.store, (state) => state.values);
   const errors = useMemo(() => pageErrors(page, values), [page, values]);
+  const probe = identityProbe(values);
+  const fieldsRef = useRef(probe.fields);
+  fieldsRef.current = probe.fields;
+  const [availability, setAvailability] = useState<{
+    key: string;
+    taken: Partial<Record<IdentityField, string>>;
+  } | null>(null);
+
+  // A check that is still settling must not keep the previous value's message,
+  // and it must not let Continue through to the sign-in card.
+  useEffect(() => {
+    if (!probe.key) return;
+    const key = probe.key;
+    const controller = new AbortController();
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      const fields = fieldsRef.current;
+      void identityClient.getAvailability(fields, { signal: controller.signal }).then(
+        (result) => {
+          if (cancelled) return;
+          setAvailability({ key, taken: takenIdentities(result, fields) });
+        },
+        (error: unknown) => {
+          if (cancelled || isAbortError(error)) return;
+          setAvailability({ key, taken: {} });
+        },
+      );
+    }, IDENTITY_CHECK_DEBOUNCE_MS);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [probe.key]);
+
+  const settled = availability?.key === probe.key ? availability.taken : undefined;
+  const checking = probe.key !== "" && availability?.key !== probe.key;
+  const usernameConcern = Boolean(probe.fields.username);
+  const contactConcern = Boolean(probe.fields.email || probe.fields.phone);
+  const continueBlocked =
+    page === "profile"
+      ? usernameConcern && (checking || Boolean(settled?.username))
+      : page === "contact"
+        ? contactConcern && (checking || Boolean(settled?.email || settled?.phone))
+        : (usernameConcern || contactConcern) &&
+          (checking || Boolean(settled?.email || settled?.phone || settled?.username));
+  const locationTaken = settled?.email ?? settled?.phone ?? settled?.username;
+  const identityNotice =
+    page === "location" && locationTaken ? translateValidationError(locationTaken, i18n) : null;
 
   async function handleContinue() {
+    if (continueBlocked) return;
     setAttempted((current) => new Set(current).add(page));
     const missingPhoto = page === "profile" && !avatarFile;
     if (missingPhoto) setPhotoError(t`Required`);
@@ -209,8 +313,17 @@ export function useOnboardingProfile({
     else await form.handleSubmit().finally(focusFirstInvalidField);
   }
 
-  /** The translated error a field shows, once its page has been tried or it has been touched. */
+  /** The translated error a field shows. A taken identity shows immediately. */
   function shownError(name: keyof ProfileFormValues, touched: boolean) {
+    const taken =
+      name === "email"
+        ? settled?.email
+        : name === "phone"
+          ? settled?.phone
+          : name === "username"
+            ? settled?.username
+            : undefined;
+    if (taken) return translateValidationError(taken, i18n);
     if (!touched && !attempted.has(page)) return null;
     const err = errors[name];
     if (!err) return null;
@@ -234,6 +347,10 @@ export function useOnboardingProfile({
     suggestForCountry,
     shownError,
     handleContinue,
+    /** A taken or still-checking identity holds Continue back. */
+    continueBlocked,
+    /** Shown on the last page, where the taken identity's own field is out of sight. */
+    identityNotice,
     previous,
     /** The person picked a currency themselves; the location stops suggesting one. */
     markCurrencyChosen: () => {

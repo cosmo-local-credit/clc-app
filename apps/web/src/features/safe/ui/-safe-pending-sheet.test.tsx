@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { encodeFunctionData, parseAbi } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -11,7 +11,9 @@ const mocks = vi.hoisted(() => ({
   pending: vi.fn(),
   confirm: vi.fn(),
   voucher: vi.fn(),
+  version: vi.fn(),
   connectorId: "private-key",
+  refreshSigners: vi.fn(),
 }));
 vi.mock("#/lib/api/market", () => ({ marketClient: { getMarketVoucher: mocks.voucher } }));
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
@@ -23,13 +25,19 @@ vi.mock("#/connectors/calibur-webauthn", () => ({
   CALIBUR_WEBAUTHN_CONNECTOR_ID: "calibur-webauthn",
 }));
 vi.mock("wagmi", () => ({
+  useClient: () => ({ chain: { id: 100 } }),
   useConnection: () => ({ address: ME, connector: { id: mocks.connectorId } }),
 }));
+vi.mock("viem/actions", () => ({ readContract: mocks.version }));
+vi.mock("#/lib/chain", () => ({ CHAIN_ID: 100 }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: true, session: { address: ME } }),
 }));
 vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
   useSafeOwnersSignedBy: () => new Set([SAFE]),
+}));
+vi.mock("../hooks/use-safe-signers", () => ({
+  useRefreshSafeSigners: () => mocks.refreshSigners,
 }));
 vi.mock("../hooks/use-safe-confirm", () => ({
   useSafeConfirm: () => ({ mutate: mocks.confirm, isPending: false, variables: undefined }),
@@ -67,10 +75,13 @@ function proposal(overrides: Record<string, unknown> = {}) {
   };
 }
 
+let queryClient: QueryClient;
+
 async function openWith(transactions: unknown[]) {
   mocks.pending.mockResolvedValue(transactions);
+  queryClient = new QueryClient();
   render(
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <SafePendingSheet />
     </QueryClientProvider>,
   );
@@ -157,13 +168,111 @@ describe("SafePendingSheet", () => {
     expect(within(sheet).queryByText("Execute it in Safe.")).toBeNull();
   });
 
-  it("leaves a passkey session and undecodable calls to Safe", async () => {
+  it("lets a passkey confirm on a Safe 1.5.0", async () => {
     mocks.connectorId = "calibur-webauthn";
+    mocks.version.mockResolvedValue("1.5.0");
+    const tx = proposal();
+    const sheet = await openWith([tx]);
+    fireEvent.click(await within(sheet).findByRole("button", { name: "Confirm" }));
+    expect(mocks.confirm).toHaveBeenCalledWith(tx, expect.anything());
+    expect(mocks.version).toHaveBeenCalledWith(expect.anything(), {
+      address: SAFE,
+      abi: expect.anything(),
+      functionName: "VERSION",
+    });
+  });
+
+  it("points a passkey on an older Safe to the paper wallet", async () => {
+    mocks.connectorId = "calibur-webauthn";
+    mocks.version.mockResolvedValue("1.4.1");
     const sheet = await openWith([proposal()]);
-    expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();
     expect(
-      within(sheet).getByText("Review this transaction in your multisig wallet."),
+      await within(sheet).findByText(
+        "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.",
+      ),
     ).toBeTruthy();
+    expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();
+  });
+
+  it("does not read the Safe version for a paper wallet", async () => {
+    await openWith([proposal()]);
+    expect(mocks.version).not.toHaveBeenCalled();
+  });
+
+  describe("signer changes queued in Safe", () => {
+    const NEWCOMER = "0x00000000000000000000000000000000000000c3";
+    const ownerAbi = parseAbi([
+      "function addOwnerWithThreshold(address,uint256)",
+      "function swapOwner(address,address,address)",
+      "function enableModule(address)",
+    ]);
+    const addSigner = proposal({
+      to: SAFE,
+      data: encodeFunctionData({
+        abi: ownerAbi,
+        functionName: "addOwnerWithThreshold",
+        args: [NEWCOMER, 2n],
+      }),
+    });
+
+    it("names an added signer and the approvals it leaves, and lets a signer confirm", async () => {
+      const sheet = await openWith([addSigner]);
+      expect(within(sheet).getByText("Add signer")).toBeTruthy();
+      expect(within(sheet).getByText("New signer")).toBeTruthy();
+      expect(within(sheet).getByText("Approvals required")).toBeTruthy();
+      expect(within(sheet).getByText("2")).toBeTruthy();
+      fireEvent.click(within(sheet).getByRole("button", { name: "Confirm" }));
+      expect(mocks.confirm).toHaveBeenCalledWith(addSigner, expect.anything());
+    });
+
+    it("lets a passkey confirm it on a Safe 1.5.0", async () => {
+      mocks.connectorId = "calibur-webauthn";
+      mocks.version.mockResolvedValue("1.5.0");
+      const sheet = await openWith([addSigner]);
+      fireEvent.click(await within(sheet).findByRole("button", { name: "Confirm" }));
+      expect(mocks.confirm).toHaveBeenCalledWith(addSigner, expect.anything());
+    });
+
+    it("shows who leaves and who joins when a signer is replaced", async () => {
+      const sheet = await openWith([
+        proposal({
+          to: SAFE,
+          data: encodeFunctionData({
+            abi: ownerAbi,
+            functionName: "swapOwner",
+            args: ["0x0000000000000000000000000000000000000001", OTHER, NEWCOMER],
+          }),
+        }),
+      ]);
+      expect(within(sheet).getByText("Replace signer")).toBeTruthy();
+      expect(within(sheet).getByText("Removed signer")).toBeTruthy();
+      expect(within(sheet).getByText("New signer")).toBeTruthy();
+    });
+
+    it("leaves any other change to the Safe itself unknown", async () => {
+      const sheet = await openWith([
+        proposal({
+          to: SAFE,
+          data: encodeFunctionData({ abi: ownerAbi, functionName: "enableModule", args: [OTHER] }),
+        }),
+      ]);
+      expect(within(sheet).getByText("Unknown call")).toBeTruthy();
+      expect(within(sheet).queryByRole("button", { name: "Confirm" })).toBeNull();
+    });
+  });
+
+  it("re-reads signer-derived state when a transaction leaves the queue", async () => {
+    const executed = proposal();
+    const next = proposal({ safeTxHash: `0x${"cd".repeat(32)}`, nonce: "2" });
+    await openWith([executed, next]);
+    mocks.pending.mockResolvedValue([executed, next]);
+    await act(() => queryClient.refetchQueries());
+    expect(mocks.refreshSigners).not.toHaveBeenCalled();
+
+    mocks.pending.mockResolvedValue([next]);
+    await act(() => queryClient.refetchQueries());
+    await waitFor(() => expect(mocks.refreshSigners).toHaveBeenCalledWith(SAFE));
+    expect(screen.queryByText("Nonce 1")).toBeNull();
   });
 
   it("does not offer to confirm a call it cannot decode", async () => {

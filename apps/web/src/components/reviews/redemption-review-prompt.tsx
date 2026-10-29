@@ -1,3 +1,4 @@
+import type { ReviewResourceKind, ReviewTarget } from "@clc/core/features/reviews/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
@@ -13,12 +14,16 @@ export function RedemptionReviewPrompt({
   recipient: string;
 }) {
   if (!useIsRedemption(address, recipient)) return null;
-  return <EligiblePrompt key={address} address={address} />;
+  return <EligiblePrompt key={address} target={{ kind: "voucher", address }} />;
 }
 
-function EligiblePrompt({ address }: { address: string }) {
+export function PoolSwapReviewPrompt({ address }: { address: string }) {
+  return <EligiblePrompt key={address} target={{ kind: "pool", address }} />;
+}
+
+function EligiblePrompt({ target }: { target: ReviewTarget }) {
   const { t } = useLingui();
-  const review = useRedemptionReview(address);
+  const review = useRedemptionReview(target);
   if (review.status === "hidden") return null;
   if (review.status === "saved")
     return (
@@ -26,14 +31,27 @@ function EligiblePrompt({ address }: { address: string }) {
         <Trans>Your review has been saved.</Trans>
       </p>
     );
+  if (review.status === "error")
+    return (
+      <div role="alert" className="mb-5 space-y-2 border border-border bg-card p-4 text-sm">
+        <p>
+          <Trans>Couldn't check your review access.</Trans>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" tap pending={review.retrying} onClick={review.retry}>
+            <Trans>Try again</Trans>
+          </Button>
+          <Button variant="ghost" tap onClick={review.dismiss}>
+            <Trans>Later</Trans>
+          </Button>
+        </div>
+      </div>
+    );
   if (review.status === "processing")
     return (
       <div className="mb-5 space-y-2 border border-border bg-card p-4 text-sm">
         <p>
-          <Trans>
-            Your review will be available once this redemption is processed. You can also find it
-            later in the voucher’s Reviews tab.
-          </Trans>
+          <ReviewProcessingMessage kind={target.kind} />
         </p>
         <Button variant="ghost" tap onClick={review.dismiss}>
           <Trans>Later</Trans>
@@ -46,7 +64,11 @@ function EligiblePrompt({ address }: { address: string }) {
         {review.access.review ? t`Update your review` : t`How was your experience?`}
       </SectionHeading>
       <p className="text-xs text-muted-foreground">
-        <Trans>You have seven days after redemption to write or edit your review.</Trans>
+        {target.kind === "voucher" ? (
+          <Trans>You have seven days after redemption to write or edit your review.</Trans>
+        ) : (
+          <Trans>You have seven days after the swap to write or edit your review.</Trans>
+        )}
       </p>
       <ReviewEditor
         initialStars={review.access.review?.stars}
@@ -57,5 +79,22 @@ function EligiblePrompt({ address }: { address: string }) {
         onCancel={review.dismiss}
       />
     </section>
+  );
+}
+
+function ReviewProcessingMessage({ kind }: { kind: ReviewResourceKind }) {
+  if (kind === "voucher") {
+    return (
+      <Trans>
+        Your review will be available once this redemption is processed. You can also find it later
+        in the voucher’s Reviews section.
+      </Trans>
+    );
+  }
+  return (
+    <Trans>
+      Your review will be available once this swap is processed. You can also find it later in the
+      pool’s Reviews section.
+    </Trans>
   );
 }

@@ -21,6 +21,7 @@ import {
   MintAmount,
   proposalRecipients,
   proposalTitle,
+  signerChangeRows,
 } from "#/features/safe/ui/safe-proposal-labels";
 import { SAFE_APP_PREFIX } from "#/lib/safe-config";
 
@@ -50,7 +51,7 @@ export function SafePendingDesk() {
               <RiCloseLine aria-hidden="true" />
             </Button>
           </div>
-          {safe ? <PendingBody safe={safe} /> : null}
+          {safe ? <PendingBody key={safe} safe={safe} /> : null}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
@@ -80,6 +81,7 @@ function PendingBody({ safe }: { safe: `0x${string}` }) {
           pending.proposals.map((proposal) => (
             <Proposal
               key={proposal.transaction.safeTxHash}
+              safe={safe}
               proposal={proposal}
               busy={pending.confirmBusy}
               signers={signers?.signers}
@@ -105,21 +107,29 @@ function PendingBody({ safe }: { safe: `0x${string}` }) {
 }
 
 function Proposal({
+  safe,
   proposal,
   busy,
   signers,
 }: {
+  safe: `0x${string}`;
   proposal: SafePendingProposal;
   busy: boolean;
   signers: readonly `0x${string}`[] | undefined;
 }) {
+  const { i18n } = useLingui();
   const { transaction, calls, action } = proposal;
-  const { mints, newOwners } = proposalRecipients(calls);
+  const { mints, newOwners, signerChanges } = proposalRecipients(calls, safe);
   const confirmed = new Set(transaction.confirmations.map((c) => c.owner.toLowerCase()));
   // Every signer with their state when the Safe's signers are known; otherwise
   // only the ones that have confirmed.
   const signerRows = signers ?? transaction.confirmations.map((c) => c.owner);
   const rows: [ReactNode, ReactNode][] = [];
+  for (const change of signerChanges) {
+    for (const row of signerChangeRows(change, i18n.locales?.[0] ?? i18n.locale)) {
+      rows.push([row.label, row.value]);
+    }
+  }
   for (const mint of mints) {
     // A signer checks who is being paid, so the address is shown in full.
     rows.push([
@@ -144,7 +154,7 @@ function Proposal({
   if (calls && calls.length > 1) {
     for (const call of calls) {
       rows.push([
-        <CallLabel group={callGroup(call)} />,
+        <CallLabel group={callGroup(call, safe)} />,
         <span dir="ltr" className="text-muted-foreground">
           {formatVoucherAddress(call.to)}
         </span>,
@@ -156,7 +166,7 @@ function Proposal({
     <section className="grid gap-3 border-border border-b pb-4 last:border-b-0 last:pb-0">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold">{proposalTitle(calls)}</h3>
+          <h3 className="text-sm font-semibold">{proposalTitle(calls, safe)}</h3>
           <p className="text-xs text-muted-foreground">
             <Trans>Nonce {transaction.nonce}</Trans>
           </p>
@@ -230,6 +240,10 @@ function Proposal({
             <Trans>You confirmed</Trans>
           ) : action === "execute" ? (
             <Trans>Execute it in Safe.</Trans>
+          ) : proposal.passkeyUnsupported ? (
+            <Trans>
+              Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in card.
+            </Trans>
           ) : (
             <Trans>Review this transaction in your multisig wallet.</Trans>
           )}

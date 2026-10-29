@@ -122,7 +122,7 @@ export function PaperWalletSaveActions({ setup }: { setup: PaperWalletSetupState
           <p className="text-muted-foreground text-xs">
             {t`Press and hold the image below, then choose Save Image.`}
           </p>
-          <img src={savedCardUrl} alt={t`Paper wallet card`} className="w-full" />
+          <img src={savedCardUrl} alt={t`Sign-in card`} className="w-full" />
         </div>
       ) : null}
     </div>

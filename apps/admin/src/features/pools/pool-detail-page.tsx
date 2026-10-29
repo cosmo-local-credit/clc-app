@@ -25,6 +25,7 @@ import { AddPoolVoucherSheet } from "./ui/add-pool-voucher-sheet";
 import { EditPoolProfileSheet } from "./ui/edit-pool-profile-sheet";
 import { PoolActivityChart } from "./ui/pool-activity-chart";
 import { PoolAdvisories } from "./ui/pool-advisories";
+import { PoolControlsSheet } from "./ui/pool-controls-sheet";
 import { PoolHeader } from "./ui/pool-header";
 import { PoolOffersChart } from "./ui/pool-offers-chart";
 import { PoolProfileCard } from "./ui/pool-profile-card";
@@ -63,6 +64,7 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
   const [addingVoucher, setAddingVoucher] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<PoolVoucherEdit | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
 
   const vouchersQuery = usePoolVouchers(address, settling);
   const activityQuery = useQuery(
@@ -111,6 +113,7 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
         pool={pool}
         onAddVoucher={() => setAddingVoucher(true)}
         onEditProfile={() => setEditingProfile(true)}
+        onControls={() => setControlsOpen(true)}
         onRestore={() => setRestoring(true)}
       />
 
@@ -198,6 +201,13 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
         pool={pool}
         open={editingProfile}
         onClose={() => setEditingProfile(false)}
+      />
+
+      <PoolControlsSheet
+        pool={pool}
+        vouchers={vouchers}
+        open={controlsOpen}
+        onClose={() => setControlsOpen(false)}
       />
     </div>
   );

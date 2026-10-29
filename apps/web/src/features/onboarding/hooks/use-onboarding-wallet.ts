@@ -137,7 +137,7 @@ export function useOnboardingWallet({
               : isDelegating
                 ? t`Activating smart wallet…`
                 : connecting
-                  ? t`Opening paper wallet…`
+                  ? t`Opening sign-in card…`
                   : null;
 
   useEffect(() => {

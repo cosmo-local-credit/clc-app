@@ -1,8 +1,15 @@
 export const REVIEW_TEXT_LIMIT = 2000;
 export const REVIEW_STARS = [5, 4, 3, 2, 1] as const;
 
-/** Public DTOs deliberately contain no reviewer identity or redemption metadata. */
-export type VoucherReview = {
+export type ReviewResourceKind = "voucher" | "pool";
+
+export type ReviewTarget = {
+  kind: ReviewResourceKind;
+  address: string;
+};
+
+/** Public DTOs deliberately contain no reviewer identity or transaction metadata. */
+export type Review = {
   id: number;
   stars: number;
   comment: string;
@@ -10,7 +17,7 @@ export type VoucherReview = {
 };
 
 export type ReviewPage = {
-  reviews: VoucherReview[];
+  reviews: Review[];
   counts: Record<number, number>;
   total: number;
   average: number;
@@ -21,7 +28,7 @@ export type ReviewPage = {
 export type ReviewAccess = {
   isOwner: boolean;
   editableUntil: string | null;
-  review: VoucherReview | null;
+  review: Review | null;
   hidden: boolean;
   editableReplyIds: number[];
   flaggedReviewIds: number[];

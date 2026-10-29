@@ -13,6 +13,7 @@ import {
 import { Badge } from "#/components/ui/badge";
 import { Card, CardContent } from "#/components/ui/card";
 import { poolDependencies } from "../pool-posture";
+import { PoolSealBits } from "./pool-seal-bits";
 
 /**
  * The pool's record, split by who owns each fact.
@@ -104,6 +105,9 @@ export function PoolProfileCard({ pool }: { pool: UserPool }) {
           {/* Whether a token balance is liquidity or a fee owed to the recipient. */}
           <RecordRow label="Fee accounting">
             {pool.feesDecoupled ? "Held separately" : "Part of liquidity"}
+          </RecordRow>
+          <RecordRow label="Seal">
+            <PoolSealBits pool={pool} />
           </RecordRow>
           {poolDependencies(pool).map((dependency) => (
             <RecordRow key={dependency.key} label={dependency.label}>

@@ -15,8 +15,12 @@ import { createClcApi } from "@clc/api/client/create-clc-api";
  */
 const DEV_FALLBACK_BASE_URL = "http://localhost:5003";
 
+/** The origin this console calls. Settings shows the same value the client uses. */
+export const API_ORIGIN =
+  import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? DEV_FALLBACK_BASE_URL : "");
+
 export const clcApi = createClcApi({
-  baseUrl: import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? DEV_FALLBACK_BASE_URL : ""),
+  baseUrl: API_ORIGIN,
   // The console writes what it reads, and the catalog endpoints answer
   // `Cache-Control: public, max-age=60, stale-while-revalidate=300`. Without this
   // an operator's own edit disappears: the mutation seeds the saved row into the

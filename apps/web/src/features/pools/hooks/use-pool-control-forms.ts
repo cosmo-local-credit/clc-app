@@ -25,7 +25,7 @@ import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balance
 /**
  * What a steward's control surface reads once: the owner, the vouchers the
  * pool can pay out, their withdrawable balances and the on-chain fee policy.
- * Balances are read for the withdraw forms alone, so a superadmin who can only
+ * Balances are read for the withdraw forms alone, so an administrator who can only
  * edit the record never pays for the calls.
  */
 export function usePoolControls(

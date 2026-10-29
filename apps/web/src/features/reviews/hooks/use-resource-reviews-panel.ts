@@ -1,27 +1,25 @@
-import { canWriteReview, type VoucherReview } from "@clc/core/features/reviews/logic";
+import { canWriteReview, type Review, type ReviewTarget } from "@clc/core/features/reviews/logic";
 import { useEffect, useState } from "react";
 
-import { useVoucherReviews } from "./use-voucher-reviews";
+import { useResourceReviews } from "./use-voucher-reviews";
 
-export type ReviewEditorTarget =
-  | { kind: "review" }
-  | { kind: "reply" | "flag"; review: VoucherReview };
+export type ReviewEditorTarget = { kind: "review" } | { kind: "reply" | "flag"; review: Review };
 
 /**
- * Everything a voucher's reviews surface decides: the star filter, which editor
- * is open, what the viewer may do, and the save that closes the editor. The
- * phone panel and the desktop section render this one state.
+ * Everything a voucher's or pool's reviews surface decides: the star filter,
+ * which editor is open, what the viewer may do, and the save that closes the
+ * editor. The phone panel and the desktop section render this one state.
  */
-export function useVoucherReviewsPanel(address: string) {
+export function useResourceReviewsPanel(target: ReviewTarget) {
   const [filter, setFilter] = useState<number>();
   const [editor, setEditor] = useState<ReviewEditorTarget | null>(null);
-  const { auth, access, reviews, mutation } = useVoucherReviews(address, filter);
+  const { auth, access, reviews, mutation } = useResourceReviews(target, filter);
   const viewer = auth.isAuthenticated ? access.data : undefined;
   const canWrite = viewer ? canWriteReview(viewer) : false;
   useEffect(() => {
     setEditor(null);
     mutation.reset();
-  }, [auth.address, auth.isAuthenticated, address]);
+  }, [auth.address, auth.isAuthenticated, target.kind, target.address]);
   const summary = reviews.data?.pages[0];
   const summaryTotal = summary && Number.isFinite(summary.total) ? (summary.total ?? 0) : 0;
   const summaryAverage = summary && Number.isFinite(summary.average) ? (summary.average ?? 0) : 0;

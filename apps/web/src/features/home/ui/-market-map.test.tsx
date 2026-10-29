@@ -342,7 +342,7 @@ describe("MarketMap lifecycle", () => {
 
     act(() => useThemeStore.getState().setTheme("dark"));
 
-    expect(map.setStyle).toHaveBeenCalledWith("https://tiles.openfreemap.org/styles/fiord");
+    expect(map.setStyle).toHaveBeenCalledWith("/map-styles/liberty-dark.json");
     expect(mapInstances).toHaveLength(1);
     expect(map.getSource(MARKET_SOURCE_ID)).toBeUndefined();
 
@@ -864,7 +864,7 @@ describe("MarketMap viewport reporting", () => {
       act(() => {
         map.trigger("load");
         map.trigger("moveend");
-        vi.advanceTimersByTime(400);
+        vi.advanceTimersByTime(100);
       });
       expect(onViewportSettled).toHaveBeenCalledTimes(1);
     } finally {
@@ -886,7 +886,7 @@ describe("MarketMap viewport reporting", () => {
       map.isMoving.mockReturnValue(false);
       act(() => {
         map.trigger("moveend");
-        vi.advanceTimersByTime(400);
+        vi.advanceTimersByTime(100);
       });
       expect(onViewportSettled).toHaveBeenCalledOnce();
     } finally {
@@ -914,7 +914,12 @@ describe("MarketMap viewport reporting", () => {
       expect(onViewportSettled).not.toHaveBeenCalled();
 
       act(() => {
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(99);
+      });
+      expect(onViewportSettled).not.toHaveBeenCalled();
+
+      act(() => {
+        vi.advanceTimersByTime(1);
       });
 
       expect(onViewportSettled).toHaveBeenCalledTimes(1);
@@ -945,14 +950,14 @@ describe("MarketMap viewport reporting", () => {
       map.bounds = { ...map.bounds, east: 37.2 };
       act(() => {
         map.trigger("moveend");
-        vi.advanceTimersByTime(200);
+        vi.advanceTimersByTime(50);
         map.trigger("movestart");
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(100);
       });
       expect(onViewportSettled).not.toHaveBeenCalled();
       act(() => {
         map.trigger("moveend");
-        vi.advanceTimersByTime(400);
+        vi.advanceTimersByTime(100);
       });
       expect(onViewportSettled).toHaveBeenCalledOnce();
     } finally {

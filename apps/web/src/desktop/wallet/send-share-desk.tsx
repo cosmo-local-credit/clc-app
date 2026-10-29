@@ -248,9 +248,20 @@ function OrderNoteLength({
   );
 }
 
-function Notice({ children, action }: { children: ReactNode; action?: ReactNode }) {
+function Notice({
+  children,
+  action,
+  role,
+}: {
+  children: ReactNode;
+  action?: ReactNode;
+  role?: "alert";
+}) {
   return (
-    <div className="flex min-w-0 items-center justify-between gap-3 border border-border bg-card p-3">
+    <div
+      role={role}
+      className="flex min-w-0 items-center justify-between gap-3 border border-border bg-card p-3"
+    >
       <p className="min-w-0 text-sm text-muted-foreground">{children}</p>
       {action}
     </div>
@@ -271,13 +282,37 @@ export function RedemptionReviewDesk({
 
 function RedemptionReviewBody({ address }: { address: string }) {
   const { t } = useLingui();
-  const review = useRedemptionReview(address);
+  const review = useRedemptionReview({ kind: "voucher", address });
   if (review.status === "hidden") return null;
   if (review.status === "saved") {
     return (
       <p role="status" className="border border-border bg-card p-3 text-sm">
         <Trans>Your review has been saved.</Trans>
       </p>
+    );
+  }
+  if (review.status === "error") {
+    return (
+      <Notice
+        role="alert"
+        action={
+          <span className="flex shrink-0 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              pending={review.retrying}
+              onClick={review.retry}
+            >
+              <Trans>Try again</Trans>
+            </Button>
+            <Button type="button" variant="ghost" onClick={review.dismiss}>
+              <Trans>Later</Trans>
+            </Button>
+          </span>
+        }
+      >
+        <Trans>Couldn't check your review access.</Trans>
+      </Notice>
     );
   }
   if (review.status === "processing") {
@@ -291,7 +326,7 @@ function RedemptionReviewBody({ address }: { address: string }) {
       >
         <Trans>
           Your review will be available once this redemption is processed. You can also find it
-          later in the voucher’s Reviews tab.
+          later in the voucher’s Reviews section.
         </Trans>
       </Notice>
     );

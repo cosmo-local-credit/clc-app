@@ -91,7 +91,7 @@ export function CsvSource({
           onClick={() =>
             downloadBlob(
               new Blob([PAPER_WALLET_CSV_TEMPLATE], { type: "text/csv" }),
-              "paper-wallets-template.csv",
+              "sign-in-cards-template.csv",
             )
           }
         >

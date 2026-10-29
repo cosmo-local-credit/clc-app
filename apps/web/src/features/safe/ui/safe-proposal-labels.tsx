@@ -4,21 +4,31 @@ import {
   safeCallName,
   type SafeCall,
   type SafeCallDetail,
+  type SafeOwnerChange,
 } from "@clc/core/features/safe/logic";
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode } from "react";
 import { Skeleton } from "#/components/ui/skeleton";
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { marketClient } from "#/lib/api/market";
 
 /** The owner action a call performs, in the words its own control uses. */
-export function callGroup(call: SafeCall): string {
-  return safeCallName(call.data) ?? "unknown";
+export function callGroup(call: SafeCall, safe: `0x${string}`): string {
+  return safeCallName(call, safe) ?? "unknown";
 }
 
 export function CallLabel({ group }: { group: string }) {
   switch (group) {
+    case "addSigner":
+      return <Trans>Add signer</Trans>;
+    case "removeSigner":
+      return <Trans>Remove signer</Trans>;
+    case "replaceSigner":
+      return <Trans>Replace signer</Trans>;
+    case "changeThreshold":
+      return <Trans>Change approvals required</Trans>;
     case "mintTo":
       return <Trans>Create vouchers</Trans>;
     case "transferOwnership":
@@ -54,10 +64,10 @@ function labelKey(group: string): string {
   return group;
 }
 
-export function proposalTitle(calls: readonly SafeCall[] | null): ReactNode {
+export function proposalTitle(calls: readonly SafeCall[] | null, safe: `0x${string}`): ReactNode {
   if (!calls) return <Trans>Unknown call</Trans>;
   const byLabel = new Map<string, string>();
-  for (const call of calls) byLabel.set(labelKey(callGroup(call)), callGroup(call));
+  for (const call of calls) byLabel.set(labelKey(callGroup(call, safe)), callGroup(call, safe));
   // Approving a voucher already sets its limit and rate.
   if (byLabel.has("add")) byLabel.delete("manage");
   return [...byLabel.values()].map((group, index) => (
@@ -70,12 +80,12 @@ export function proposalTitle(calls: readonly SafeCall[] | null): ReactNode {
 
 /**
  * Who receives what, for the calls where that is the decision: each mint's
- * recipient and amount, and the new owner of a handover (one entry for a
- * pool's batch of wiring contracts).
+ * recipient and amount, the new owner of a handover (one entry for a pool's
+ * batch of wiring contracts), and who signs for the multisig afterwards.
  */
-export function proposalRecipients(calls: readonly SafeCall[] | null) {
+export function proposalRecipients(calls: readonly SafeCall[] | null, safe: `0x${string}`) {
   const details = (calls ?? [])
-    .map(describeSafeCall)
+    .map((call) => describeSafeCall(call, safe))
     .filter((detail): detail is SafeCallDetail => detail !== null);
   const mints = details.filter(
     (detail): detail is Extract<SafeCallDetail, { kind: "mint" }> => detail.kind === "mint",
@@ -87,7 +97,65 @@ export function proposalRecipients(calls: readonly SafeCall[] | null) {
       ),
     ),
   ];
-  return { mints, newOwners };
+  const signerChanges = details.filter(
+    (detail): detail is SafeOwnerChange =>
+      detail.kind === "addSigner" ||
+      detail.kind === "removeSigner" ||
+      detail.kind === "replaceSigner" ||
+      detail.kind === "changeThreshold",
+  );
+  return { mints, newOwners, signerChanges };
+}
+
+export type SignerChangeRow = { key: string; label: ReactNode; value: ReactNode };
+
+/** The rows a signer change reads as: who joins or leaves, and the approvals that follow. */
+export function signerChangeRows(change: SafeOwnerChange, locale: string): SignerChangeRow[] {
+  const approvals: SignerChangeRow[] =
+    "threshold" in change
+      ? [
+          {
+            key: "threshold",
+            label: <Trans>Approvals required</Trans>,
+            value: new Intl.NumberFormat(locale).format(change.threshold),
+          },
+        ]
+      : [];
+  switch (change.kind) {
+    case "addSigner":
+      return [
+        {
+          key: "signer",
+          label: <Trans>New signer</Trans>,
+          value: <RecipientIdentityLabel address={change.signer} showAddress />,
+        },
+        ...approvals,
+      ];
+    case "removeSigner":
+      return [
+        {
+          key: "signer",
+          label: <Trans>Removed signer</Trans>,
+          value: <RecipientIdentityLabel address={change.signer} showAddress />,
+        },
+        ...approvals,
+      ];
+    case "replaceSigner":
+      return [
+        {
+          key: "old",
+          label: <Trans>Removed signer</Trans>,
+          value: <RecipientIdentityLabel address={change.oldSigner} showAddress />,
+        },
+        {
+          key: "new",
+          label: <Trans>New signer</Trans>,
+          value: <RecipientIdentityLabel address={change.newSigner} showAddress />,
+        },
+      ];
+    case "changeThreshold":
+      return approvals;
+  }
 }
 
 export function MintAmount({ token, amountRaw }: { token: `0x${string}`; amountRaw: string }) {

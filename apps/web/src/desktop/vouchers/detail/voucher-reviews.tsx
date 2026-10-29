@@ -9,8 +9,8 @@ import { Textarea } from "#/components/ui/textarea";
 import { DeskPanel, DeskSection, deskSectionLinkClass } from "#/desktop/ui/page";
 import {
   type ReviewEditorTarget,
-  useVoucherReviewsPanel,
-} from "#/features/reviews/hooks/use-voucher-reviews-panel";
+  useResourceReviewsPanel,
+} from "#/features/reviews/hooks/use-resource-reviews-panel";
 import { cn } from "#/lib/utils";
 
 import { VoucherDialog } from "./voucher-dialog";
@@ -32,7 +32,7 @@ export function VoucherReviewsDesk({
   onCount?: (count: number | undefined) => void;
 }) {
   const { t, i18n } = useLingui();
-  const panel = useVoucherReviewsPanel(address);
+  const panel = useResourceReviewsPanel({ kind: "voucher", address });
   const {
     auth,
     access,

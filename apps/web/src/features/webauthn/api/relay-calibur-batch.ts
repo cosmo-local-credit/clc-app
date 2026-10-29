@@ -1,18 +1,10 @@
-import {
-  base64UrlToBytes,
-  eip7702AuthMessage,
-  encodeWebAuthnAuth,
-  normalizeS,
-  parseDERSignature,
-  type CaliburCall,
-} from "@clc/core/features/webauthn/index";
-import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
-import { encodeAbiParameters, hexToBytes, parseSignature } from "viem";
+import { eip7702AuthMessage, type CaliburCall } from "@clc/core/features/webauthn/index";
+import { encodeAbiParameters, parseSignature } from "viem";
 import { type PrivateKeyAccount, privateKeyToAccount } from "viem/accounts";
 
 import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
 import { getStoredKey, PRIVATE_KEY_CONNECTOR_ID } from "#/connectors/privateKey";
-import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
+import { signDigestWithPasskey } from "#/features/webauthn/api/sign-digest";
 import { CHAIN_ID, CHAIN_ID_BIGINT } from "#/lib/chain";
 import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
@@ -23,7 +15,6 @@ import type {
 } from "@clc/api/features/relayer/client";
 
 const ZERO_HASH = `0x${"00".repeat(32)}` as `0x${string}`;
-const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 
 export type RelayCaliburBatchInput = {
   senderAddress: `0x${string}`;
@@ -85,7 +76,10 @@ export async function relayCaliburBatch(
       executor,
       deadline,
     };
-    const signature = await signPreviewWithWebAuthn(preview.result.digest, credential.credentialId);
+    const signature = encodeAbiParameters(
+      [{ type: "bytes" }, { type: "bytes" }],
+      [await signDigestWithPasskey(preview.result.digest, credential.credentialId), "0x"],
+    );
     const { result } = await client.relay({
       userAddress: credential.address,
       signedBatch,
@@ -208,50 +202,4 @@ async function buildAuthorization(account: PrivateKeyAccount, client: RelayerCli
     r: authSig.r,
     s: authSig.s,
   };
-}
-
-async function signPreviewWithWebAuthn(
-  digest: `0x${string}`,
-  credentialId: string,
-): Promise<`0x${string}`> {
-  const assertion = await requestWebAuthnAssertion({
-    publicKey: {
-      challenge: toArrayBuffer(hexToBytes(digest)),
-      rpId: RELYING_PARTY_ID,
-      allowCredentials: [
-        {
-          id: toArrayBuffer(base64UrlToBytes(credentialId)),
-          type: "public-key",
-        },
-      ],
-      userVerification: "required",
-    },
-  });
-
-  const response = assertion.response as AuthenticatorAssertionResponse;
-  const { r, s } = parseDERSignature(new Uint8Array(response.signature));
-  const normalizedS = normalizeS(s);
-  const clientDataJSON = new TextDecoder().decode(response.clientDataJSON);
-  const typeIndex = clientDataJSON.indexOf('"type"');
-  const challengeIndex = clientDataJSON.indexOf('"challenge"');
-  if (typeIndex === -1 || challengeIndex === -1) throw new Error("Malformed clientDataJSON");
-
-  const webAuthnSig = encodeWebAuthnAuth({
-    authenticatorData: new Uint8Array(response.authenticatorData),
-    clientDataJSON,
-    challengeIndex: BigInt(challengeIndex),
-    typeIndex: BigInt(typeIndex),
-    r: bytesToBigInt(r),
-    s: bytesToBigInt(normalizedS),
-  });
-
-  return encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [webAuthnSig, "0x"]);
-}
-
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
-}
-
-function bytesToBigInt(bytes: Uint8Array): bigint {
-  return BigInt(`0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`);
 }

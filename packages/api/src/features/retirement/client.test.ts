@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createHttpClient } from "../../client/http-client";
 import { createRetirementClient } from "./client";
-import { retirementKeys } from "./queries";
+import { myRetirementRequestsQueryOptions, retirementKeys } from "./queries";
+import { retryTransientBackendRead } from "../../client/errors";
 
 const ADDRESS = "0x1111111111111111111111111111111111111111";
 const OWNER = "0x2222222222222222222222222222222222222222";
@@ -224,5 +225,6 @@ describe("retirement client", () => {
       retirementKeys.preview("voucher", ADDRESS, ADDRESS),
     );
     expect(retirementKeys.mine(OWNER)).not.toEqual(retirementKeys.mine(ADDRESS));
+    expect(myRetirementRequestsQueryOptions(api, OWNER).retry).toBe(retryTransientBackendRead);
   });
 });

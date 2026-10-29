@@ -150,6 +150,22 @@ describe("listUsers", () => {
     expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/users?perPage=25&q=ada+lovelace`);
   });
 
+  it("sends an approval status only when one is selected", async () => {
+    fetchMock.mockResolvedValue(ok({ users: [] }));
+
+    await client().listUsers({ perPage: 25, status: "PENDING" });
+
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/users?perPage=25&status=PENDING`);
+  });
+
+  it("sends selected administrative roles together", async () => {
+    fetchMock.mockResolvedValue(ok({ users: [] }));
+
+    await client().listUsers({ perPage: 25, roles: ["ADMIN", "SUPERADMIN"] });
+
+    expect(new URL(lastCall().url).searchParams.get("roles")).toBe("ADMIN,SUPERADMIN");
+  });
+
   it("omits q entirely when there is no term", async () => {
     // clc-core validates the term's length, so an empty q is a request it would
     // have to have an opinion about. There is nothing to ask.
@@ -517,6 +533,18 @@ describe("user mutations", () => {
     expect(updated.status).toBe("REJECTED");
   });
 
+  it("updates a user role with the dedicated body", async () => {
+    fetchMock.mockResolvedValue(ok({ user: user({ role: "ADMIN" }) }));
+
+    const updated = await client().updateUserRole(ADDRESS, "ADMIN");
+
+    const { url, init } = lastCall();
+    expect(url).toBe(`${BASE_URL}/api/v2/admin/users/${ADDRESS}/role`);
+    expect(init.method).toBe("PUT");
+    expect(JSON.parse(init.body as string)).toEqual({ role: "ADMIN" });
+    expect(updated.role).toBe("ADMIN");
+  });
+
   it("sends both limits, because the backend replaces rather than patches them", async () => {
     fetchMock.mockResolvedValue(ok({ user: user({ maxPools: 3, maxTokens: 7 }) }));
 
@@ -785,5 +813,127 @@ describe("listOTX", () => {
     const page = await client().listOTX({ perPage: 10 });
 
     expect(page).toMatchObject({ otx: [], receivedCount: 0 });
+  });
+});
+
+describe("operator desk administration", () => {
+  const deployment = (id: number) => ({
+    id,
+    userId: id + 100,
+    trackingId: `tracking-${id}`,
+    resourceType: "voucher",
+    createdAt: "2026-08-13T11:00:00Z",
+    ethereumAddress: ADDRESS,
+    userName: "Operator",
+  });
+
+  it("pages review notifications and resolves a selected action", async () => {
+    const controller = new AbortController();
+    fetchMock
+      .mockResolvedValueOnce(
+        ok({
+          notifications: [
+            {
+              id: 7,
+              reviewId: 8,
+              voucherAddress: ADDRESS,
+              reason: "spam",
+              stars: 1,
+              comment: "review",
+              reportedStars: 5,
+              reportedComment: "reported",
+              createdAt: "2026-08-13T11:00:00Z",
+            },
+          ],
+          next: 6,
+        }),
+      )
+      .mockResolvedValueOnce(ok({}));
+
+    const page = await client().listReviewNotifications({ before: 9 }, controller.signal);
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/review-notifications?before=9`);
+    expect(lastCall().init.signal).toBe(controller.signal);
+    expect(page).toMatchObject({ next: 6 });
+    expect(page.notifications).toHaveLength(1);
+    expect(page.notifications[0]).toMatchObject({
+      resourceKind: "voucher",
+      resourceAddress: ADDRESS,
+    });
+
+    await client().resolveReviewFlag(7, "hide");
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/review-notifications/7`);
+    expect(lastCall().init.method).toBe("PUT");
+    expect(JSON.parse(lastCall().init.body as string)).toEqual({ action: "hide" });
+  });
+
+  it("normalizes empty review pages and absent cursors", async () => {
+    fetchMock.mockResolvedValue(ok({ notifications: null, next: "old" }));
+    await expect(client().listReviewNotifications({})).resolves.toEqual({
+      notifications: [],
+      next: null,
+    });
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/admin/review-notifications`);
+  });
+
+  it("uses server deployment cursors when available", async () => {
+    const controller = new AbortController();
+    fetchMock.mockResolvedValue(ok({ deployments: [deployment(8)], first: 8, last: 8 }));
+
+    const page = await client().listDeployments(
+      { perPage: 5, cursor: 9, next: true },
+      controller.signal,
+    );
+
+    expect(lastCall().url).toBe(
+      `${BASE_URL}/api/v2/admin/deployments?perPage=5&cursor=9&next=true`,
+    );
+    expect(lastCall().init.signal).toBe(controller.signal);
+    expect(page).toMatchObject({ first: 8, last: 8, receivedCount: 1 });
+  });
+
+  it("pages legacy deployment dumps in both directions", async () => {
+    const rows = [deployment(6), deployment(10), deployment(8), deployment(4)];
+    fetchMock.mockResolvedValue(ok({ deployments: rows }));
+    await expect(client().listDeployments({ perPage: 2 })).resolves.toMatchObject({
+      deployments: [deployment(10), deployment(8)],
+      first: 10,
+      last: 8,
+    });
+
+    fetchMock.mockResolvedValue(ok({ deployments: rows }));
+    await expect(
+      client().listDeployments({ perPage: 2, cursor: 9, next: true }),
+    ).resolves.toMatchObject({ deployments: [deployment(8), deployment(6)] });
+
+    fetchMock.mockResolvedValue(ok({ deployments: rows }));
+    await expect(
+      client().listDeployments({ perPage: 2, cursor: 7, next: false }),
+    ).resolves.toMatchObject({ deployments: [deployment(10), deployment(8)] });
+
+    fetchMock.mockResolvedValue(ok({ deployments: null }));
+    await expect(client().listDeployments({ perPage: 2 })).resolves.toMatchObject({
+      deployments: [],
+      first: 0,
+      last: 0,
+      receivedCount: 0,
+    });
+  });
+
+  it("queues token and pool upgrades with canonical addresses", async () => {
+    fetchMock
+      .mockResolvedValueOnce(ok({ trackingId: "token-upgrade", address: ADDRESS }))
+      .mockResolvedValueOnce(ok({ trackingId: "pool-upgrade", upgrades: [], skipped: [] }));
+
+    await expect(client().upgradeToken(ADDRESS.toLowerCase())).resolves.toMatchObject({
+      trackingId: "token-upgrade",
+    });
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/contracts/upgrade/token`);
+    expect(JSON.parse(lastCall().init.body as string)).toEqual({ address: ADDRESS });
+
+    await expect(client().upgradePool(ADDRESS.toLowerCase())).resolves.toMatchObject({
+      trackingId: "pool-upgrade",
+    });
+    expect(lastCall().url).toBe(`${BASE_URL}/api/v2/contracts/upgrade/pool`);
+    expect(JSON.parse(lastCall().init.body as string)).toEqual({ address: ADDRESS });
   });
 });

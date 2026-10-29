@@ -1,17 +1,19 @@
-import { REVIEW_STARS } from "@clc/core/features/reviews/logic";
+import { REVIEW_STARS, type ReviewResourceKind } from "@clc/core/features/reviews/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import {
   type ReviewEditorTarget,
-  useVoucherReviewsPanel,
-} from "#/features/reviews/hooks/use-voucher-reviews-panel";
+  useResourceReviewsPanel,
+} from "#/features/reviews/hooks/use-resource-reviews-panel";
 import { ReviewEditor, ReviewStars } from "./review-editor";
 
-export function VoucherReviewsPanel({
+export function ResourceReviewsPanel({
+  kind,
   address,
   presentation = "tabpanel",
 }: {
+  kind: ReviewResourceKind;
   address: string;
   presentation?: "tabpanel" | "section";
 }) {
@@ -35,7 +37,7 @@ export function VoucherReviewsPanel({
     summaryAverage,
     summaryCounts,
     items,
-  } = useVoucherReviewsPanel(address);
+  } = useResourceReviewsPanel({ kind, address });
   const renderEditor = (current: ReviewEditorTarget) => (
     <ReviewEditor
       key={current.kind === "review" ? "review" : `${current.kind}-${current.review.id}`}
@@ -51,9 +53,9 @@ export function VoucherReviewsPanel({
 
   return (
     <section
-      id={presentation === "tabpanel" ? "voucher-panel-reviews" : undefined}
+      id={presentation === "tabpanel" ? `${kind}-panel-reviews` : undefined}
       role={presentation === "tabpanel" ? "tabpanel" : undefined}
-      aria-labelledby={presentation === "tabpanel" ? "voucher-tab-reviews" : undefined}
+      aria-labelledby={presentation === "tabpanel" ? `${kind}-tab-reviews` : undefined}
       className="space-y-3"
     >
       {reviews.isPending ? (
@@ -123,7 +125,11 @@ export function VoucherReviewsPanel({
         <div className="space-y-3 border border-border bg-card p-4">
           {!auth.isAuthenticated ? (
             <p className="text-sm text-muted-foreground">
-              <Trans>Sign in after redeeming this voucher to leave a review.</Trans>
+              {kind === "voucher" ? (
+                <Trans>Sign in after redeeming this voucher to leave a review.</Trans>
+              ) : (
+                <Trans>Sign in after swapping in this pool to leave a review.</Trans>
+              )}
             </p>
           ) : access.isPending ? (
             <p className="text-sm text-muted-foreground">
@@ -177,8 +183,12 @@ export function VoucherReviewsPanel({
               ) : (
                 <p className="text-sm text-muted-foreground">
                   {viewer?.review
-                    ? t`Redeem this voucher again to update your review.`
-                    : t`Redeem this voucher to leave a review within seven days.`}
+                    ? kind === "voucher"
+                      ? t`Redeem this voucher again to update your review.`
+                      : t`Swap in this pool again to update your review.`
+                    : kind === "voucher"
+                      ? t`Redeem this voucher to leave a review within seven days.`
+                      : t`Swap in this pool to leave a review within seven days.`}
                 </p>
               )}
             </>
@@ -204,7 +214,7 @@ export function VoucherReviewsPanel({
             <article
               key={review.id}
               className="space-y-3 border border-border bg-card p-4"
-              aria-label={t`Voucher review`}
+              aria-label={kind === "voucher" ? t`Voucher review` : t`Pool review`}
             >
               <ReviewStars stars={review.stars} />
               {review.comment ? (
@@ -260,4 +270,14 @@ export function VoucherReviewsPanel({
       ) : null}
     </section>
   );
+}
+
+export function VoucherReviewsPanel(
+  props: Omit<Parameters<typeof ResourceReviewsPanel>[0], "kind">,
+) {
+  return <ResourceReviewsPanel {...props} kind="voucher" />;
+}
+
+export function PoolReviewsPanel(props: Omit<Parameters<typeof ResourceReviewsPanel>[0], "kind">) {
+  return <ResourceReviewsPanel {...props} kind="pool" />;
 }

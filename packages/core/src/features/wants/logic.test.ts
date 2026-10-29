@@ -34,7 +34,7 @@ const want = {
 };
 
 describe("Want contracts", () => {
-  it("requires one public contact method and validates expiration after Start", () => {
+  it("allows contact information to be omitted and validates expiration after Start", () => {
     expect(wantWriteSchema.safeParse(baseWrite).success).toBe(true);
     expect(
       wantWriteSchema.safeParse({
@@ -43,7 +43,7 @@ describe("Want contracts", () => {
         shareEmail: false,
         sharePhone: false,
       }).success,
-    ).toBe(false);
+    ).toBe(true);
     expect(
       wantWriteSchema.safeParse({
         ...baseWrite,

@@ -1,10 +1,13 @@
+import { decodeAbiParameters } from "viem";
 import { describe, expect, it } from "vite-plus/test";
 import {
   base64UrlToBytes,
   buildCaliburNonce,
+  caliburNestedPersonalSignDigest,
   computeEIP712Digest,
   eip7702AuthMessage,
   eip7702DelegationCode,
+  encodeCaliburErc1271Signature,
   encodeRegisterCalldata,
   encodeWebAuthnAuth,
   isEip7702Delegated,
@@ -293,5 +296,25 @@ describe("isEip7702Delegated", () => {
   it("returns false for undefined / empty bytecode", () => {
     expect(isEip7702Delegated(undefined, CALIBUR_ADDRESS)).toBe(false);
     expect(isEip7702Delegated(null, CALIBUR_ADDRESS)).toBe(false);
+  });
+});
+
+describe("Calibur ERC-1271 signatures", () => {
+  it("nests a hash in the account's PersonalSign as clc-core's fork-tested vector does", () => {
+    // TestNestedPersonalSignDigestVector in clc-core internal/safe, whose
+    // formula executes against the deployed Calibur on a Gnosis fork.
+    expect(caliburNestedPersonalSignDigest(`0x${"11".repeat(32)}`, `0x${"22".repeat(32)}`)).toBe(
+      "0x91bdbc83f28b75d3df4fac8452de56db0c16cc019f4209875dbca3048d0c160f",
+    );
+  });
+
+  it("wraps a key's signature as abi.encode(keyHash, signature, hookData)", () => {
+    const keyHash = `0x${"55".repeat(32)}` as const;
+    expect(
+      decodeAbiParameters(
+        [{ type: "bytes32" }, { type: "bytes" }, { type: "bytes" }],
+        encodeCaliburErc1271Signature(keyHash, "0xa11ce0"),
+      ),
+    ).toEqual([keyHash, "0xa11ce0", "0x"]);
   });
 });

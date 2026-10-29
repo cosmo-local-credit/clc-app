@@ -190,6 +190,20 @@ describe("getWebAuthnCredentials", () => {
   });
 });
 
+describe("getSystem", () => {
+  it("reads the public system metadata", async () => {
+    const result = { gas: { symbol: "xDAI" } };
+    const fetchMock = mockFetch({ status: 200, body: { ok: true, result } });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.getSystem()).resolves.toEqual(result);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.test/api/v2/system",
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+});
+
 describe("signinWithWebAuthn", () => {
   const assertion = {
     credentialId: "cred-1",

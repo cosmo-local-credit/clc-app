@@ -23,7 +23,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
       {/* Name */}
       <div className="space-y-2">
         <label htmlFor="pw-name" className="font-medium text-foreground text-sm">
-          <Trans>Name on wallet</Trans>
+          <Trans>Name on card</Trans>
         </label>
         <Input
           id="pw-name"

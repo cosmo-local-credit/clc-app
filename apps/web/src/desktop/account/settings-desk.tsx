@@ -154,7 +154,7 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
               <Trans>Sign out?</Trans>
             </DialogTitle>
             <p className="mt-3 text-sm">
-              <Trans>You’ll need your paper card or passkey to sign back in.</Trans>
+              <Trans>You’ll need your sign-in card or passkey to sign back in.</Trans>
             </p>
             <div className="mt-6 flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setConfirming(false)}>

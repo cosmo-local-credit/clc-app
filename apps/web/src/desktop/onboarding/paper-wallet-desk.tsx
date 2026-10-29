@@ -99,7 +99,7 @@ export function PaperWalletCustomizeInspector({
         </Button>
       }
     >
-      <Field label={t`Name on wallet`} htmlFor="desk-pw-name">
+      <Field label={t`Name on card`} htmlFor="desk-pw-name">
         <Input
           id="desk-pw-name"
           maxLength={32}

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { BackendApiError } from "@clc/api/client/errors";
 
 const mocks = vi.hoisted(() => ({
   getAccountActivity: vi.fn(),
@@ -51,6 +52,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
@@ -76,6 +78,27 @@ describe("account balance polling", () => {
 
     await tick(16_000);
     expect(mocks.getAccountTokens.mock.calls.length).toBeGreaterThan(1);
+  });
+
+  it("retries a transient balance failure with bounded backoff", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    mocks.getAccountTokens
+      .mockReset()
+      .mockRejectedValueOnce(new BackendApiError(503, "busy"))
+      .mockRejectedValueOnce(new BackendApiError(503, "still busy"))
+      .mockResolvedValue({ tokens: [] });
+
+    renderHook(() => useAccountTokensInfinite(ADDRESS), {
+      wrapper: wrapper(),
+    });
+    await tick(0);
+    expect(mocks.getAccountTokens).toHaveBeenCalledTimes(1);
+
+    await tick(1_000);
+    expect(mocks.getAccountTokens).toHaveBeenCalledTimes(2);
+    await tick(2_000);
+    await tick(0);
+    expect(mocks.getAccountTokens).toHaveBeenCalledTimes(3);
   });
 
   it("polls transfers only for the activity screens", async () => {

@@ -5,6 +5,7 @@ import {
   hashTypedData,
   keccak256,
   pad,
+  parseAbi,
   toHex,
   toRlp,
 } from "viem";
@@ -93,6 +94,40 @@ export function encodeRegisterCalldata(x: bigint, y: bigint): `0x${string}` {
     functionName: "register",
     args: [{ keyType: 1, publicKey }],
   });
+}
+
+const PERSONAL_SIGN_TYPEHASH = keccak256(toHex("PersonalSign(bytes prefixed)"));
+
+/** Calibur's own EIP-712 domain, read from the account it is delegated to. */
+export const caliburDomainAbi = parseAbi(["function domainSeparator() view returns (bytes32)"]);
+
+/**
+ * The digest a Calibur key signs for `isValidSignature(hash, ...)`: ERC-7739's
+ * nested PersonalSign, `hash` wrapped in the account's own EIP-712 domain so a
+ * signature for one account cannot be replayed on another the same passkey
+ * controls. `domainSeparator` is the account's on-chain `domainSeparator()`.
+ */
+export function caliburNestedPersonalSignDigest(
+  domainSeparator: `0x${string}`,
+  hash: `0x${string}`,
+): `0x${string}` {
+  const structHash = keccak256(concat([PERSONAL_SIGN_TYPEHASH, hash]));
+  return keccak256(concat(["0x1901", domainSeparator, structHash]));
+}
+
+/**
+ * Calibur's `isValidSignature` payload for a registered key:
+ * `abi.encode(keyHash, signature, hookData)`. The batch path's wrapper differs;
+ * it carries the keyHash in the signed batch instead.
+ */
+export function encodeCaliburErc1271Signature(
+  keyHash: `0x${string}`,
+  signature: `0x${string}`,
+): `0x${string}` {
+  return encodeAbiParameters(
+    [{ type: "bytes32" }, { type: "bytes" }, { type: "bytes" }],
+    [keyHash, signature, "0x"],
+  );
 }
 
 export type CaliburCall = {

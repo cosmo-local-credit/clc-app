@@ -209,7 +209,7 @@ describe("LocationMap", () => {
     act(() => useThemeStore.getState().setTheme("dark"));
 
     expect(mapInstances).toHaveLength(1);
-    expect(map?.setStyle).toHaveBeenCalledWith("https://tiles.openfreemap.org/styles/fiord");
+    expect(map?.setStyle).toHaveBeenCalledWith("/map-styles/liberty-dark.json");
     expect(map?.remove).not.toHaveBeenCalled();
     expect(markerInstances).toHaveLength(1);
   });

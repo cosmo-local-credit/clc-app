@@ -61,7 +61,7 @@ export function usePaperWalletProtection({ privateKey }: { privateKey: `0x${stri
       const encrypted = await encryptPaperWalletPrivateKey(privateKey, passphrase);
       setEncryptedPayload(encrypted);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not protect this paper wallet.`);
+      setError(err instanceof Error ? err.message : t`Could not protect this sign-in card.`);
     } finally {
       setEncrypting(false);
     }

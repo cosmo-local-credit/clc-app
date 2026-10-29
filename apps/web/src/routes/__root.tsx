@@ -301,7 +301,7 @@ function AppInner() {
             <DialogBackdrop />
             <DialogContent className="p-0">
               <DialogTitle className="sr-only">
-                <Trans>Password-protected paper wallet</Trans>
+                <Trans>Enter card password</Trans>
               </DialogTitle>
               <Suspense fallback={null}>
                 <EncryptedPaperWalletImportForm
@@ -326,19 +326,19 @@ function AppInner() {
             <DialogBackdrop />
             <DialogContent>
               <DialogTitle>
-                {address ? <Trans>Switch wallet?</Trans> : <Trans>Import paper wallet?</Trans>}
+                {address ? <Trans>Switch wallet?</Trans> : <Trans>Sign in with this card?</Trans>}
               </DialogTitle>
               <p className="text-muted-foreground mt-1 text-sm">
                 {address ? (
-                  <Trans>A paper wallet QR was scanned. Import this address?</Trans>
+                  <Trans>A sign-in card was scanned. Switch to this wallet?</Trans>
                 ) : (
-                  <Trans>A paper wallet link was opened. Sign in with this address?</Trans>
+                  <Trans>A sign-in card link was opened. Sign in to this wallet?</Trans>
                 )}
               </p>
               <p className="text-foreground mt-2 truncate font-mono text-xs">{pendingAddress}</p>
               <div className="mt-5 flex flex-col gap-2">
                 <Button tap className="w-full" pending={switching} onClick={handleConfirmSwitch}>
-                  {switching ? t`Connecting…` : address ? t`Switch wallet` : t`Import wallet`}
+                  {switching ? t`Connecting…` : address ? t`Switch wallet` : t`Sign in`}
                 </Button>
                 <Button
                   variant="ghost"

@@ -123,7 +123,7 @@ export function OnboardingWalletStep({
               onClick={() => void protect()}
             >
               <FiLock className="size-4" />
-              {paperWalletEncrypting ? t`Protecting paper wallet…` : t`Protect paper wallet`}
+              {paperWalletEncrypting ? t`Applying password…` : t`Apply password`}
             </Button>
           ) : (
             <Button tap className="w-full" onClick={() => onPage("save")}>
@@ -134,8 +134,9 @@ export function OnboardingWalletStep({
       >
         <StepProgress step={PAGE_STEP.card} total={progressTotal} className="" />
         <OnboardingTitle>
-          <Trans>Your paper wallet</Trans>
+          <Trans>Your sign-in card</Trans>
         </OnboardingTitle>
+        <GuideArt name="sign-in-card" className="h-40 shrink-0" />
         <div className="flex items-start gap-2.5 border border-border bg-card p-3 text-sm">
           <RiErrorWarningLine
             className="mt-0.5 size-4 shrink-0 text-warning-foreground"
@@ -143,8 +144,9 @@ export function OnboardingWalletStep({
           />
           <p>
             <Trans>
-              Save this card securely. If you use a password, keep it separately. Anyone with an
-              unprotected QR code can access the wallet.
+              Use this QR card to sign in to your wallet. Save it securely. If you add a password,
+              keep it separately. Without a password, anyone who scans the card can access your
+              wallet.
             </Trans>
           </p>
         </div>
@@ -167,7 +169,7 @@ export function OnboardingWalletStep({
           <>
             {!paperWalletDownloaded ? (
               <p className="text-muted-foreground text-xs">
-                <Trans>Download your paper wallet before continuing.</Trans>
+                <Trans>Save your sign-in card before continuing.</Trans>
               </p>
             ) : null}
             {linkPasskey ? (
@@ -194,7 +196,7 @@ export function OnboardingWalletStep({
         <StepProgress step={PAGE_STEP.save} total={progressTotal} className="" />
         <div className="flex items-start justify-between gap-3">
           <OnboardingTitle>
-            <Trans>Save your card</Trans>
+            <Trans>Save your sign-in card</Trans>
           </OnboardingTitle>
           <Button
             variant="outline"
@@ -215,7 +217,7 @@ export function OnboardingWalletStep({
           onCheckedChange={setAcked}
           disabled={!paperWalletReady || paperWalletEncrypting}
         >
-          <Trans>I have saved this key. If lost, my wallet cannot be recovered.</Trans>
+          <Trans>I saved my sign-in card. If I lose it, I may lose access to my wallet.</Trans>
         </AgreementField>
         {linkPasskey ? null : (
           <TermsAcceptanceField
@@ -269,7 +271,7 @@ export function OnboardingWalletStep({
             disabled={paperBusy}
             pending={paperPending}
           >
-            <Trans>Continue with paper wallet</Trans>
+            <Trans>Continue with sign-in card</Trans>
           </Button>
         </>
       }
@@ -277,7 +279,7 @@ export function OnboardingWalletStep({
       <StepProgress step={PAGE_STEP.link} total={progressTotal} className="" />
       <OnboardingTitle>{t`Link ${providerLabel}?`}</OnboardingTitle>
       <p className="text-muted-foreground text-sm leading-relaxed">
-        {t`Every account gets a paper wallet. Linking ${providerLabel} adds another way to sign in.`}
+        {t`Every account has a sign-in card. Linking ${providerLabel} adds another way to sign in.`}
       </p>
       <GuideArt name="link" className="min-h-26 max-h-48 flex-1" />
       <TermsAcceptanceField
@@ -309,7 +311,7 @@ function OnboardingWalletPending({
   const labels =
     path === "passkey"
       ? [t`Account`, t`Passkey`, t`Network`, t`Wallet`]
-      : [t`Account`, t`Paper wallet`, t`Network`, t`Wallet`];
+      : [t`Account`, t`Sign-in card`, t`Network`, t`Wallet`];
 
   return (
     <OnboardingScreen start={<CLCLogo className="size-9" sharp />}>

@@ -4,6 +4,7 @@ import {
   POOL_FEE_PERCENT_DECIMALS,
   POOL_PRICE_INDEX_DECIMALS,
 } from "@clc/core/features/pool-admin/logic";
+import { isAdminRole } from "@clc/core/features/users/roles";
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useSearch } from "@tanstack/react-router";
@@ -87,7 +88,7 @@ export function usePoolDeskModel(poolAddress: string) {
   });
   const poolVouchers = poolVouchersQuery.vouchers;
   const canEditDetails =
-    auth.isAuthenticated && !!pool && (auth.session?.role === "SUPERADMIN" || isPoolOwner);
+    auth.isAuthenticated && !!pool && (isAdminRole(auth.session?.role) || isPoolOwner);
   const privateInfo = poolQuery.privateInfo
     ? { ...poolQuery.privateInfo, retry: () => void poolQuery.privateInfo?.refetch() }
     : undefined;
