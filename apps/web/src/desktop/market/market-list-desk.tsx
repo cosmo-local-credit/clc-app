@@ -140,6 +140,8 @@ export function MarketListDesk({
     <div className="flex h-full min-h-0 flex-col">
       <DeskSplit
         dimmed={open}
+        label={t`Marketplace details`}
+        onDismiss={voucher.voucher !== null ? voucher.close : want.close}
         main={
           <DeskCanvas width="full">
             <h1 className="sr-only">

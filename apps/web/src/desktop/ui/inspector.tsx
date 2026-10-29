@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/react/macro";
+import { Dialog } from "@base-ui/react/dialog";
 import {
   createContext,
   useContext,
@@ -22,7 +23,7 @@ import { cn } from "#/lib/utils";
  */
 const DOCK_MIN_WIDTH = 560 + 380;
 
-const SplitContext = createContext({ overlay: false });
+const SplitContext = createContext({ modal: false, managed: false });
 
 /**
  * The 380px column. The page owns what it shows.
@@ -53,10 +54,11 @@ export function DeskInspector({
   className?: string;
 }) {
   const { t } = useLingui();
-  const { overlay } = useContext(SplitContext);
+  const { modal, managed } = useContext(SplitContext);
   const titleId = useId();
   const panel = useRef<HTMLElement>(null);
-  const takeFocus = focusOnOpen ?? overlay;
+  // The split owns modal focus even when its side is not a DeskInspector.
+  const takeFocus = !modal && (focusOnOpen ?? false);
 
   useEffect(() => {
     if (!takeFocus) return;
@@ -72,6 +74,7 @@ export function DeskInspector({
   }, [takeFocus]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (modal && managed) return;
     if (event.key !== "Escape" || !onClose || event.defaultPrevented) return;
     event.stopPropagation();
     onClose();
@@ -80,9 +83,9 @@ export function DeskInspector({
   return (
     <aside
       ref={panel}
-      tabIndex={-1}
-      role={overlay ? "dialog" : "complementary"}
-      aria-labelledby={titleId}
+      tabIndex={modal ? undefined : -1}
+      role={modal ? "presentation" : "complementary"}
+      aria-labelledby={modal ? undefined : titleId}
       data-desk-inspector=""
       onKeyDown={onKeyDown}
       className={cn(
@@ -91,9 +94,15 @@ export function DeskInspector({
       )}
     >
       <div className="flex h-13 shrink-0 items-center justify-between gap-3 border-border border-b px-4">
-        <h2 id={titleId} className="font-heading text-base font-semibold">
-          {title}
-        </h2>
+        {managed ? (
+          <Dialog.Title id={titleId} className="font-heading text-base font-semibold">
+            {title}
+          </Dialog.Title>
+        ) : (
+          <h2 id={titleId} className="font-heading text-base font-semibold">
+            {title}
+          </h2>
+        )}
         {onClose ? (
           <Button type="button" variant="ghost" size="icon" aria-label={t`Close`} onClick={onClose}>
             <RiCloseLine />
@@ -117,13 +126,19 @@ export function DeskSplit({
   side,
   dimmed = false,
   onDismiss,
+  label,
 }: {
   main: ReactNode;
   side: ReactNode;
   dimmed?: boolean;
   onDismiss?: () => void;
+  /** Accessible name when the side does not supply a DeskInspector title. */
+  label?: string;
 }) {
+  const { t } = useLingui();
   const frame = useRef<HTMLDivElement>(null);
+  const popup = useRef<HTMLDivElement>(null);
+  const [portalHost, setPortalHost] = useState<HTMLDivElement | null>(null);
   const [narrow, setNarrow] = useState(false);
   const hasSide = side != null && side !== false;
 
@@ -142,31 +157,73 @@ export function DeskSplit({
   }, []);
 
   const overlay = hasSide && narrow;
-  const blocked = dimmed || overlay;
+  const blocked = hasSide && (dimmed || overlay);
+
+  // Focus entry/return is shared by every side, including raw marketplace
+  // panels. The portal host and popup stay the same when the width changes,
+  // so the form inside never remounts just to become modal.
+  useEffect(() => {
+    if (!hasSide || !portalHost) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => {
+      const rest = document.activeElement;
+      if (opener?.isConnected && (!rest || rest === document.body)) {
+        opener.focus({ preventScroll: true });
+      }
+    };
+  }, [hasSide, portalHost]);
 
   return (
-    <SplitContext.Provider value={{ overlay }}>
-      <div ref={frame} className="relative flex min-h-0 flex-1">
-        <div
-          className={cn(
-            "@container min-w-0 flex-1 overflow-y-auto",
-            blocked && "pointer-events-none opacity-40",
-          )}
-          inert={blocked || undefined}
-        >
-          {main}
-        </div>
-        {overlay && onDismiss ? (
-          <div aria-hidden="true" className="absolute inset-0 z-10" onClick={onDismiss} />
-        ) : null}
-        {hasSide ? (
+    <Dialog.Root
+      open={hasSide}
+      modal={blocked}
+      disablePointerDismissal={!blocked || !onDismiss}
+      onOpenChange={(open, details) => {
+        if (!open && blocked && onDismiss) onDismiss();
+        else details.cancel();
+      }}
+    >
+      <SplitContext.Provider value={{ modal: blocked, managed: true }}>
+        <div ref={frame} className="relative flex min-h-0 flex-1">
           <div
+            className={cn(
+              "@container min-w-0 flex-1 overflow-y-auto",
+              blocked && "pointer-events-none opacity-40",
+            )}
+            inert={blocked || undefined}
+          >
+            {main}
+          </div>
+          {overlay && onDismiss ? (
+            <div aria-hidden="true" className="absolute inset-0 z-10" onClick={onDismiss} />
+          ) : null}
+          <div
+            ref={setPortalHost}
             className={cn("flex min-h-0", overlay && "absolute inset-y-0 end-0 z-20 max-w-full")}
           >
-            {side}
+            {hasSide && portalHost ? (
+              <Dialog.Portal container={portalHost} className="flex min-h-0">
+                <Dialog.Popup
+                  ref={popup}
+                  role={blocked ? "dialog" : "presentation"}
+                  aria-modal={blocked || undefined}
+                  aria-label={label ?? t`Details`}
+                  initialFocus={
+                    blocked
+                      ? () =>
+                          popup.current?.contains(document.activeElement) ? false : popup.current
+                      : false
+                  }
+                  finalFocus={false}
+                  className="relative flex min-h-0 outline-none"
+                >
+                  {side}
+                </Dialog.Popup>
+              </Dialog.Portal>
+            ) : null}
           </div>
-        ) : null}
-      </div>
-    </SplitContext.Provider>
+        </div>
+      </SplitContext.Provider>
+    </Dialog.Root>
   );
 }
