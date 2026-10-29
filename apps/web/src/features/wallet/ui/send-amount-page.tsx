@@ -90,7 +90,6 @@ export function SendAmountPage({
   const [selectedId, setSelectedId] = useState<string | undefined>(
     (restored?.token ?? token)?.toLowerCase(),
   );
-  const [tokenChosen, setTokenChosen] = useState(restored?.token !== undefined);
   const selectedToken = selectedId ? tokens.find((item) => item.id === selectedId) : tokens[0];
   const firstTokenId = tokens[0]?.id;
   useEffect(() => {
@@ -184,7 +183,9 @@ export function SendAmountPage({
         }
       : null,
     amount,
-    token: tokenChosen ? selectedId : undefined,
+    // The displayed default is a selection too. Keep its id even if a later
+    // balance response removes it, rather than substituting another asset.
+    token: selectedId ?? selectedToken?.id,
   });
 
   return (
@@ -372,7 +373,6 @@ export function SendAmountPage({
         onSelect={(next) => {
           focusAmountAfterSelectionRef.current = true;
           setMaxAmountRaw(null);
-          setTokenChosen(true);
           setSelectedId(next.id);
         }}
         finalFocus={() => {

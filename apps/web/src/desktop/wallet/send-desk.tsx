@@ -121,7 +121,6 @@ export function SendDesk({
   const [selectedId, setSelectedId] = useState<string | undefined>(
     restored?.token?.toLowerCase() ?? seededToken,
   );
-  const [tokenChosen, setTokenChosen] = useState(restored?.token !== undefined);
   const selectedToken = selectedId ? tokens.find((item) => item.id === selectedId) : tokens[0];
   const firstTokenId = tokens[0]?.id;
   useEffect(() => {
@@ -175,7 +174,9 @@ export function SendDesk({
     query,
     recipient,
     amount,
-    token: tokenChosen ? selectedId : undefined,
+    // Preserve the asset currently shown, including a default/shortcut choice.
+    // A missing selection keeps its id and cannot silently become another asset.
+    token: selectedId ?? selectedToken?.id,
   });
   const showRecent = query.trim() === "";
   const tokenDecimals = selectedToken?.tokenDecimals ?? 2;
@@ -258,7 +259,6 @@ export function SendDesk({
 
   function selectToken(id: string) {
     setMaxAmountRaw(null);
-    setTokenChosen(true);
     setSelectedId(id);
   }
 

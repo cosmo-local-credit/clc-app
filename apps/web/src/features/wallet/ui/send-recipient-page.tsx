@@ -74,13 +74,13 @@ export function SendRecipientPage({
     ? resolvedRecipient
     : (selectedRecipient ?? resolvedRecipient);
   const showRecent = query.trim() === "";
-  // Only what this page itself holds goes in the draft; the URL's seeds are
-  // read by both views and need no carrying.
+  // Carry the effective values, including shortcut seeds. Once the other view
+  // restores a draft it deliberately trusts it instead of the older URL.
   useKeepSendDraft(draft, {
     query,
     recipient,
-    amount: restored?.amount ?? "",
-    token: restored?.token,
+    amount: amount ?? "",
+    token,
   });
 
   function handleSelectRecipient(recipient: Recipient) {

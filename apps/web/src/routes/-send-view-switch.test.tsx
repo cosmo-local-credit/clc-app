@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   /** The signed-in account both views read, or none for a guest. */
   account: { address: undefined as string | undefined },
   search: {} as Record<string, string>,
+  tokenOrder: [] as string[],
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -58,7 +59,13 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
         iconUrl: null,
         lastDateBlock: "2026-10-01T00:00:00Z",
       },
-    ],
+    ]
+      .filter((token) => mocks.tokenOrder.includes(token.tokenAddress))
+      .sort(
+        (left, right) =>
+          mocks.tokenOrder.indexOf(left.tokenAddress) -
+          mocks.tokenOrder.indexOf(right.tokenAddress),
+      ),
     isPending: false,
     isError: false,
     isFetching: false,
@@ -179,6 +186,7 @@ beforeEach(() => {
   media.listeners.clear();
   mocks.account.address = SENDER;
   mocks.search = {};
+  mocks.tokenOrder = [RIV, BABAS];
   mocks.send.error = null;
   mocks.send.isPending = false;
   mocks.send.mutateAsync.mockResolvedValue({ trackingId: "track-1", valuationSnapshots: [] });
@@ -202,6 +210,67 @@ afterEach(() => {
 });
 
 describe("Send across a phone/desktop view switch", () => {
+  it("keeps a shortcut's amount and voucher when switching from the phone's recipient step", () => {
+    mocks.search = { token: BABAS, amount: "3.25" };
+    render(
+      <LayoutSwitch
+        mobile={<SendRecipientPage token={BABAS} amount="3.25" />}
+        desktop={<SendDesk step="recipient" token={BABAS} amount="3.25" />}
+      />,
+    );
+    fireEvent.change(phoneRecipient(), { target: { value: RECIPIENT } });
+
+    setViewport(true);
+
+    expect(amountBox().value).toBe("3.25");
+    expect(deskVoucher().textContent).toContain("BABAS");
+  });
+
+  it.each([false, true])(
+    "keeps the displayed default voucher after balances reorder (starting desktop: %s)",
+    (desktop) => {
+      mocks.search = { recipient: RECIPIENT, recipientLabel: "Maria" };
+      openViewport(desktop);
+      render(
+        <LayoutSwitch
+          mobile={<SendAmountPage recipient={RECIPIENT} recipientLabel="Maria" />}
+          desktop={<SendDesk step="amount" />}
+        />,
+      );
+      fireEvent.change(amountBox(), { target: { value: "2.5" } });
+
+      mocks.tokenOrder = [BABAS, RIV];
+      setViewport(!desktop);
+
+      expect(amountBox().value).toBe("2.5");
+      const picker = desktop ? screen.getByRole("button", { name: /Balance/ }) : deskVoucher();
+      expect(picker.textContent).toContain("RIV");
+    },
+  );
+
+  it.each([false, true])(
+    "does not substitute another voucher when the displayed default disappears (starting desktop: %s)",
+    (desktop) => {
+      mocks.search = { recipient: RECIPIENT, recipientLabel: "Maria" };
+      openViewport(desktop);
+      render(
+        <LayoutSwitch
+          mobile={<SendAmountPage recipient={RECIPIENT} recipientLabel="Maria" />}
+          desktop={<SendDesk step="amount" />}
+        />,
+      );
+      fireEvent.change(amountBox(), { target: { value: "2.5" } });
+
+      mocks.tokenOrder = [BABAS];
+      setViewport(!desktop);
+
+      expect(amountBox().value).toBe("2.5");
+      const submit = screen.getByRole("button", { name: desktop ? "Send" : "Review" });
+      expect((submit as HTMLButtonElement).disabled).toBe(true);
+      expect(mocks.send.mutateAsync).not.toHaveBeenCalled();
+    },
+  );
+
   it("carries the amount and the chosen voucher from the phone's amount step to the desktop panel", async () => {
     mocks.search = { recipient: RECIPIENT, recipientLabel: "Maria" };
     render(amountStep());
