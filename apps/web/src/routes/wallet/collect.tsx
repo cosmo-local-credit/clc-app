@@ -25,7 +25,10 @@ function CollectRoute() {
   const { token } = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <LayoutSwitch mobile={<CollectPage token={token} />} desktop={<CollectDesk />} />
+      <LayoutSwitch
+        mobile={<CollectPage token={token} />}
+        desktop={<CollectDesk token={token} />}
+      />
     </AuthenticatedRoute>
   );
 }

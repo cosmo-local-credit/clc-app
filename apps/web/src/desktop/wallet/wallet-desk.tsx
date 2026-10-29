@@ -1,25 +1,26 @@
-import type { ResourceKind, ResourceUsage } from "@clc/api/features/resource-limits/client";
-import type { AccountActivityItem } from "@clc/api/features/accounts/client";
 import { myWantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
 import type { Want } from "@clc/core/features/wants/logic";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic";
 import { offrampTokenSymbol } from "@clc/core/features/wallet/pretium";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useMemo, type ReactNode } from "react";
-import { RiBankCardLine, RiDownloadLine, RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
+import { useMemo } from "react";
+import {
+  RiBankCardLine,
+  RiDownloadLine,
+  RiExchangeDollarLine,
+  RiFileCopyLine,
+  RiSendPlane2Line,
+} from "react-icons/ri";
 import { toast } from "sonner";
 
-import { SwapActivityTitle } from "#/components/activity/swap-activity";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import { WantPicture } from "#/components/wants/want-row";
 import { PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
-import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { activityRowKey } from "#/desktop/activity/activity-desk";
 import type { DeskColumn } from "#/desktop/ui/data-table";
 import { DeskTable } from "#/desktop/ui/data-table";
@@ -29,9 +30,24 @@ import {
   DeskRow,
   DeskRowList,
   DeskSection,
+  DeskTitle,
   deskSectionLinkClass,
 } from "#/desktop/ui/page";
 import { DeskChip } from "#/desktop/ui/segment";
+import { useElementWidth } from "#/desktop/wallet/use-element-width";
+import { WalletCatalogs } from "#/desktop/wallet/wallet-catalogs";
+import {
+  ActivityAmount,
+  ActivityTitle,
+  Dash,
+  Empty,
+  ErrorRetry,
+  Loading,
+  QuotaMeta,
+  SectionActions,
+} from "#/desktop/wallet/wallet-parts";
+import { WalletProfileAction } from "#/desktop/wallet/wallet-profile-action";
+import { WalletRetirements } from "#/desktop/wallet/wallet-retirements";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
@@ -45,12 +61,19 @@ import { wantsClient } from "#/lib/api/wants";
 import { CHAIN_ID } from "#/lib/chain";
 import type { HoldingsFilter } from "#/lib/navigation/home-tabs";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
-import { cn } from "#/lib/utils";
 
 /**
- * The Wallet tab on a wide screen: one three-column grid. The band spans all
- * three, Holdings two with Activity beside it, then My Vouchers, My Pools and
- * My Wants one column each. Same queries as the phone Wallet.
+ * Below this, Holdings folds Pools into the voucher cell instead of giving it a
+ * column: the name keeps the room, and the pool is still on the row.
+ */
+const HOLDINGS_COMPACT_WIDTH = 704;
+
+/**
+ * The Wallet tab on a wide screen. The page is two columns until the canvas is
+ * 64rem wide, then three: the band spans the row, Holdings is the full row (two
+ * of three, with Activity beside it, when there is room), then My Vouchers, My
+ * Pools, My Wants, My Catalogs and Retirement requests one column each. Same
+ * queries as the phone Wallet.
  */
 export function WalletDesk() {
   const { t, i18n } = useLingui();
@@ -110,91 +133,100 @@ export function WalletDesk() {
   const unitLabel = valuation.unit;
   const formatValue = (value: string) => formatUnitOfAccountDisplayValue(value, locale) ?? value;
 
-  const holdingColumns = useMemo<DeskColumn<WalletToken>[]>(
-    () => [
-      {
-        id: "voucher",
-        header: t`Voucher`,
-        sortValue: (row) => row.name,
-        cell: (row) => (
-          <span className="flex min-w-0 items-center gap-3">
-            <TokenLogo token={row} size={28} />
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold">{row.name}</span>
-              <span className="block truncate font-mono text-xs text-muted-foreground" dir="ltr">
+  // Holdings sits in a flexible slot, so its columns follow the room it was
+  // given: Pools is its own column while there is room, and folds into the
+  // voucher cell once there is not. Unmeasured counts as roomy.
+  const [holdingsRef, holdingsWidth] = useElementWidth<HTMLDivElement>();
+  const compactHoldings =
+    holdingsWidth !== null && holdingsWidth > 0 && holdingsWidth < HOLDINGS_COMPACT_WIDTH;
+
+  const holdingColumns = useMemo<DeskColumn<WalletToken>[]>(() => {
+    const poolsCell = (row: WalletToken) => {
+      if (row.admin) {
+        return (
+          <Badge variant="outline" size="sm" caps>
+            <Trans>Admin</Trans>
+          </Badge>
+        );
+      }
+      const entry = holdingPools.get((row.contractAddress ?? row.id).toLowerCase());
+      if (entry === undefined && !isStable(row)) return <Spinner />;
+      const first = entry?.pools[0];
+      if (!first) return <Dash />;
+      return (
+        <span className="flex min-w-0 items-center gap-1.5">
+          <Badge variant="outline" size="sm" className="min-w-0 truncate">
+            {first.name}
+          </Badge>
+          {entry.pools.length > 1 || entry.more ? (
+            <span className="shrink-0 text-xs text-muted-foreground">
+              +{entry.more ? `${entry.pools.length - 1}+` : entry.pools.length - 1}
+            </span>
+          ) : null}
+        </span>
+      );
+    };
+    const voucher: DeskColumn<WalletToken> = {
+      id: "voucher",
+      header: t`Voucher`,
+      sortValue: (row) => row.name,
+      cell: (row) => (
+        <span className="flex min-w-0 items-center gap-3">
+          <TokenLogo token={row} size={28} />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold">{row.name}</span>
+            <span className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+              <span className="truncate font-mono" dir="ltr">
                 {row.symbol}
               </span>
+              {compactHoldings ? poolsCell(row) : null}
             </span>
           </span>
-        ),
+        </span>
+      ),
+    };
+    const pools: DeskColumn<WalletToken> = {
+      id: "pools",
+      header: t`Pools`,
+      width: "10rem",
+      cell: poolsCell,
+    };
+    const balance: DeskColumn<WalletToken> = {
+      id: "balance",
+      header: t`Balance`,
+      align: "end",
+      width: "9rem",
+      sortValue: (row) => Number(row.balance ?? 0),
+      cell: (row) => (
+        <span className="font-heading text-base font-semibold tracking-tight" dir="ltr">
+          {row.amount}
+        </span>
+      ),
+    };
+    const value: DeskColumn<WalletToken> = {
+      id: "value",
+      header: unitLabel ? t`Value (${unitLabel})` : t`Value`,
+      align: "end",
+      width: "9rem",
+      sortValue: (row) => {
+        const priced = valuation.values.get((row.contractAddress ?? row.id).toLowerCase());
+        return priced?.status === "priced" ? Number(priced.value) : -1;
       },
-      {
-        id: "pools",
-        header: t`Pools`,
-        width: "10rem",
-        cell: (row) => {
-          if (row.admin) {
-            return (
-              <Badge variant="outline" size="sm" caps>
-                <Trans>Admin</Trans>
-              </Badge>
-            );
-          }
-          const entry = holdingPools.get((row.contractAddress ?? row.id).toLowerCase());
-          if (entry === undefined && !isStable(row)) return <Spinner />;
-          const first = entry?.pools[0];
-          if (!first) return <Dash />;
-          return (
-            <span className="flex min-w-0 items-center gap-1.5">
-              <Badge variant="outline" size="sm" className="min-w-0 truncate">
-                {first.name}
-              </Badge>
-              {entry.pools.length > 1 || entry.more ? (
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  +{entry.more ? `${entry.pools.length - 1}+` : entry.pools.length - 1}
-                </span>
-              ) : null}
-            </span>
-          );
-        },
-      },
-      {
-        id: "balance",
-        header: t`Balance`,
-        align: "end",
-        width: "7.5rem",
-        sortValue: (row) => Number(row.balance ?? 0),
-        cell: (row) => (
-          <span className="font-heading text-base font-semibold tracking-tight" dir="ltr">
-            {row.amount}
+      cell: (row) => {
+        const priced = valuation.values.get((row.contractAddress ?? row.id).toLowerCase());
+        if (priced === undefined || priced.status === "pending") {
+          return valuation.isError ? <Dash /> : <Spinner />;
+        }
+        if (priced.status === "unpriced") return <Dash />;
+        return (
+          <span className="font-mono text-sm font-semibold" dir="ltr">
+            {formatValue(priced.value)}
           </span>
-        ),
+        );
       },
-      {
-        id: "value",
-        header: unitLabel ? t`Value (${unitLabel})` : t`Value`,
-        align: "end",
-        width: "8.5rem",
-        sortValue: (row) => {
-          const value = valuation.values.get((row.contractAddress ?? row.id).toLowerCase());
-          return value?.status === "priced" ? Number(value.value) : -1;
-        },
-        cell: (row) => {
-          const value = valuation.values.get((row.contractAddress ?? row.id).toLowerCase());
-          if (value === undefined || value.status === "pending") {
-            return valuation.isError ? <Dash /> : <Spinner />;
-          }
-          if (value.status === "unpriced") return <Dash />;
-          return (
-            <span className="font-mono text-sm font-semibold" dir="ltr">
-              {formatValue(value.value)}
-            </span>
-          );
-        },
-      },
-    ],
-    [t, holdingPools, valuation, unitLabel, formatValue],
-  );
+    };
+    return compactHoldings ? [voucher, balance, value] : [voucher, pools, balance, value];
+  }, [t, holdingPools, valuation, unitLabel, formatValue, compactHoldings]);
 
   const copyAddress = (value: string) => {
     if (!navigator.clipboard) {
@@ -211,19 +243,24 @@ export function WalletDesk() {
   const wantsCreatable = usage.data?.wants.canCreate === true && !usage.isError;
 
   return (
-    <DeskCanvas className="grid-cols-3">
+    <DeskCanvas className="grid-cols-2 @min-[64rem]:grid-cols-3">
+      <div className="col-span-full">
+        <DeskTitle>
+          <Trans>Wallet</Trans>
+        </DeskTitle>
+      </div>
+
+      <WalletProfileAction address={address} />
+
       <section
         aria-label={t`Wallet actions`}
-        className="col-span-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border border-border bg-card p-5"
+        className="col-span-full grid grid-cols-1 gap-4 border border-border bg-card p-5 @min-[64rem]:grid-cols-[minmax(0,1fr)_auto] @min-[64rem]:items-end"
       >
         <div className="grid min-w-0 gap-1">
-          <h1 className="sr-only">
-            <Trans>Wallet</Trans>
-          </h1>
           <DeskEyebrow>
             <Trans>Total value</Trans>
           </DeskEyebrow>
-          <p className="flex min-h-11 min-w-0 items-baseline gap-2" aria-live="polite">
+          <p className="flex min-h-11 min-w-0 flex-wrap items-baseline gap-x-2" aria-live="polite">
             {valuation.isPending ? (
               <Spinner />
             ) : valuation.isError || !unitLabel ? (
@@ -233,7 +270,7 @@ export function WalletDesk() {
             ) : (
               <>
                 <span
-                  className="min-w-0 truncate font-heading text-[2.25rem] leading-tight font-semibold tracking-tight"
+                  className="min-w-0 font-heading text-[2.25rem] leading-tight font-semibold tracking-tight [overflow-wrap:anywhere]"
                   dir="ltr"
                 >
                   {formatValue(valuation.total)}
@@ -260,7 +297,7 @@ export function WalletDesk() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button asChild>
             <Link to="/wallet/send">
               <RiSendPlane2Line aria-hidden="true" />
@@ -274,14 +311,15 @@ export function WalletDesk() {
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/wallet/cash">
-              <RiBankCardLine aria-hidden="true" />
-              <Trans>Cash</Trans>
+            <Link to="/wallet/top-up">
+              <RiExchangeDollarLine aria-hidden="true" />
+              <Trans>Add / withdraw</Trans>
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/wallet/top-up" search={{ sheet: "add" }}>
-              <Trans>Top up</Trans>
+            <Link to="/wallet/cash">
+              <RiBankCardLine aria-hidden="true" />
+              <Trans>Other cash options</Trans>
             </Link>
           </Button>
         </div>
@@ -290,7 +328,7 @@ export function WalletDesk() {
       {usage.isError ? (
         <div
           role="alert"
-          className="col-span-3 flex items-center justify-between gap-3 border border-border bg-card p-4 text-sm"
+          className="col-span-full flex items-center justify-between gap-3 border border-border bg-card p-4 text-sm"
         >
           <p>
             <Trans>Couldn't load resource limits.</Trans>
@@ -307,68 +345,85 @@ export function WalletDesk() {
       ) : null}
 
       <DeskSection
-        className="col-span-2"
+        className="col-span-full @min-[64rem]:col-span-2"
         title={<Trans>Holdings</Trans>}
         action={
-          <div role="group" aria-label={t`Holdings`} className="flex items-center gap-2">
-            {(
-              [
-                ["all", t`All`],
-                ["vouchers", t`Vouchers`],
-                ["stables", t`Stables`],
-              ] as const
-            ).map(([value, label]) => (
-              <DeskChip key={value} on={filter === value}>
-                <button
-                  type="button"
-                  aria-pressed={filter === value}
-                  onClick={() => setFilter(value)}
-                >
-                  {label}
-                </button>
-              </DeskChip>
-            ))}
+          <div className="flex items-center gap-3">
+            <div role="group" aria-label={t`Holdings`} className="flex items-center gap-2">
+              {(
+                [
+                  ["all", t`All`],
+                  ["vouchers", t`Vouchers`],
+                  ["stables", t`Stables`],
+                ] as const
+              ).map(([value, label]) => (
+                <DeskChip key={value} on={filter === value}>
+                  <button
+                    type="button"
+                    aria-pressed={filter === value}
+                    onClick={() => setFilter(value)}
+                  >
+                    {label}
+                  </button>
+                </DeskChip>
+              ))}
+            </div>
+            <Link
+              to="/wallet/vouchers"
+              aria-label={`${t`View all`} ${t`Holdings`}`}
+              className={deskSectionLinkClass()}
+            >
+              <Trans>View all</Trans>
+            </Link>
           </div>
         }
       >
-        {Boolean(address) && vouchers.isPending ? (
-          <Loading label={<Trans>Loading vouchers…</Trans>} />
-        ) : vouchers.isBalanceError ? (
-          <ErrorRetry
-            message={<Trans>Couldn't load vouchers.</Trans>}
-            pending={vouchers.isFetching}
-            onRetry={() => void vouchers.refetchBalances()}
-          />
-        ) : (
-          <DeskTable
-            label={t`Holdings`}
-            rows={shown}
-            columns={holdingColumns}
-            rowKey={(row) => row.id}
-            empty={<Trans>No vouchers yet.</Trans>}
-            renderRow={(row, props, cells) => {
-              const voucherAddress = parseVoucherAddress(row.contractAddress ?? row.id);
-              return voucherAddress ? (
-                <Link
-                  to="/vouchers/$voucherAddress"
-                  params={{ voucherAddress }}
-                  search={{ from: "wallet" }}
-                  {...props}
-                >
-                  {cells}
-                </Link>
-              ) : (
-                <div {...props}>{cells}</div>
-              );
-            }}
-          />
-        )}
+        <div ref={holdingsRef} className="min-w-0">
+          {Boolean(address) && vouchers.isPending ? (
+            <Loading label={<Trans>Loading vouchers…</Trans>} />
+          ) : vouchers.isBalanceError ? (
+            <ErrorRetry
+              message={<Trans>Couldn't load vouchers.</Trans>}
+              pending={vouchers.isFetching}
+              onRetry={() => void vouchers.refetchBalances()}
+            />
+          ) : (
+            <DeskTable
+              label={t`Holdings`}
+              rows={shown}
+              columns={holdingColumns}
+              rowKey={(row) => row.id}
+              partial={vouchers.isTruncated}
+              empty={<Trans>No vouchers yet.</Trans>}
+              renderRow={(row, props, cells) => {
+                const voucherAddress = parseVoucherAddress(row.contractAddress ?? row.id);
+                return voucherAddress ? (
+                  <Link
+                    to="/vouchers/$voucherAddress"
+                    params={{ voucherAddress }}
+                    search={{ from: "wallet" }}
+                    {...props}
+                  >
+                    {cells}
+                  </Link>
+                ) : (
+                  <div {...props}>{cells}</div>
+                );
+              }}
+            />
+          )}
+        </div>
       </DeskSection>
 
       <DeskSection
         title={<Trans>Activity</Trans>}
         action={
-          <Link to="/" search={{ tab: "activity" }} className={deskSectionLinkClass()}>
+          <Link
+            to="/"
+            search={{ tab: "activity" }}
+            aria-label={`${t`View all`} ${t`Activity`}`}
+            className={deskSectionLinkClass()}
+          >
             <Trans>View all</Trans>
           </Link>
         }
@@ -423,7 +478,11 @@ export function WalletDesk() {
                 <Trans>Create</Trans>
               </Link>
             ) : null}
-            <Link to="/wallet/vouchers" className={deskSectionLinkClass()}>
+            <Link
+              to="/wallet/vouchers"
+              aria-label={`${t`View all`} ${t`My Vouchers`}`}
+              className={deskSectionLinkClass()}
+            >
               <Trans>View all</Trans>
             </Link>
           </SectionActions>
@@ -631,6 +690,10 @@ export function WalletDesk() {
           </Button>
         ) : null}
       </DeskSection>
+
+      <WalletCatalogs usage={usage} />
+
+      {address ? <WalletRetirements viewer={address} /> : null}
     </DeskCanvas>
   );
 }
@@ -645,40 +708,6 @@ function hasBalance(token: WalletToken): boolean {
 
 function isStable(token: WalletToken): boolean {
   return offrampTokenSymbol(CHAIN_ID, token.contractAddress ?? token.id) !== null;
-}
-
-function ActivityTitle({ item }: { item: AccountActivityItem }) {
-  if (item.kind === "swapped") {
-    return <SwapActivityTitle symbols={[item.received.tokenSymbol, item.sent.tokenSymbol]} />;
-  }
-  if (item.kind === "creation") return <Trans>Created</Trans>;
-  return <RecipientIdentityLabel address={item.counterpartyAddress} />;
-}
-
-function ActivityAmount({ item }: { item: AccountActivityItem }) {
-  const leg = item.kind === "swapped" ? item.received : item.transfer;
-  const incoming = item.kind !== "sent";
-  return (
-    <span
-      className={cn(
-        "shrink-0 font-mono text-xs font-semibold",
-        incoming && item.kind !== "creation" && "text-success-ink",
-      )}
-      dir="ltr"
-    >
-      {item.kind === "creation" ? "" : incoming ? "+" : "−"}
-      {formatTokenAmount(leg.amount, leg.tokenDecimals)}{" "}
-      <span className="text-2xs text-muted-foreground">{leg.tokenSymbol}</span>
-    </span>
-  );
-}
-
-function Dash() {
-  return (
-    <span className="text-muted-foreground" dir="ltr">
-      —
-    </span>
-  );
 }
 
 /**
@@ -697,78 +726,4 @@ function WantWhen({ want, locale }: { want: Want; locale: string }) {
   if (!want.expiresAt) return <Trans>No ending date</Trans>;
   const ends = date(want.expiresAt);
   return want.state === "expired" ? <Trans>Expired {ends}</Trans> : <Trans>Expires {ends}</Trans>;
-}
-
-function SectionActions({ children }: { children: ReactNode }) {
-  return <div className="flex shrink-0 items-center gap-3">{children}</div>;
-}
-
-/** "1 of 3 used", muted: the phone's count, set as section meta. */
-function QuotaMeta({
-  usage,
-  kind,
-}: {
-  usage: ReturnType<typeof useResourceUsage>;
-  kind: ResourceKind;
-}) {
-  const { i18n } = useLingui();
-  const quota: ResourceUsage[ResourceKind] | undefined = usage.data?.[kind];
-  if (usage.isError || !quota) return null;
-  const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
-  const used = digits.format(quota.used);
-  const limit = digits.format(quota.limit);
-  return (
-    <span className="text-xs whitespace-nowrap text-muted-foreground" aria-live="polite">
-      {quota.unlimited ? (
-        <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-      ) : (
-        <Trans id="{used} of {limit} used">
-          {used} of {limit} used
-        </Trans>
-      )}
-    </span>
-  );
-}
-
-function Loading({ label }: { label: ReactNode }) {
-  return (
-    <p className="flex items-center gap-2 border border-border bg-card px-4 py-6 text-sm text-muted-foreground">
-      <Spinner />
-      {label}
-    </p>
-  );
-}
-
-function Empty({ children, quota }: { children: ReactNode; quota?: ResourceUsage[ResourceKind] }) {
-  return (
-    <div className="grid gap-1 border border-border bg-card px-4 py-6">
-      <p className="text-sm text-muted-foreground">{children}</p>
-      {quota && !quota.canCreate ? (
-        <p className="text-xs text-muted-foreground">
-          <Trans>Limit reached. Ask an administrator to increase your allowance.</Trans>
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function ErrorRetry({
-  message,
-  pending,
-  onRetry,
-}: {
-  message: ReactNode;
-  pending: boolean;
-  onRetry: () => void;
-}) {
-  return (
-    <div className="grid justify-items-start gap-2 border border-border bg-card p-4">
-      <p role="alert" className="text-sm text-muted-foreground">
-        {message}
-      </p>
-      <Button type="button" variant="outline" pending={pending} onClick={onRetry}>
-        <Trans>Try again</Trans>
-      </Button>
-    </div>
-  );
 }

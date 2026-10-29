@@ -105,7 +105,7 @@ export function SendShareDesk({
         void form.handleSubmit();
       }}
     >
-      <SectionHeading as="h3" variant="group">
+      <SectionHeading as="h2" variant="group">
         {share.orderReady ? (
           <Trans>Add a message or place an order</Trans>
         ) : (
@@ -298,7 +298,7 @@ function RedemptionReviewBody({ address }: { address: string }) {
   }
   return (
     <section className="grid min-w-0 gap-3">
-      <SectionHeading as="h3" variant="group">
+      <SectionHeading as="h2" variant="group">
         {review.access.review ? t`Update your review` : t`How was your experience?`}
       </SectionHeading>
       <p className="text-xs text-muted-foreground">

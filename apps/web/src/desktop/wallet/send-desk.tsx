@@ -9,7 +9,7 @@ import {
   parseTokenAmount,
 } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useCanGoBack, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { RiGroupLine } from "react-icons/ri";
 import { getAddress, isAddress } from "viem";
@@ -17,26 +17,19 @@ import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
-import {
-  DialogBackdrop,
-  DialogContent,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from "#/components/ui/dialog";
 import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
 import { Spinner } from "#/components/ui/spinner";
 import { TokenLogo, WalletAmountInput, type WalletToken } from "#/components/wallet";
-import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import type { ResolvedRecipientAddress } from "#/components/wallet/recipient-address-input";
 import type { Recipient } from "#/components/wallet/wallet-data";
 import { useDeskTrailLabel } from "#/desktop/trail";
-import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
-import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskKV } from "#/desktop/ui/kv";
-import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
+import { DeskDetail, DeskTitleRow } from "#/desktop/ui/page";
 import { DeskChip } from "#/desktop/ui/segment";
+import { FullValue } from "#/desktop/ui/full-value";
 import { SendRecipientField } from "#/desktop/wallet/send-recipient-field";
+import { SendReviewDialog } from "#/desktop/wallet/send-review-dialog";
+import { Dash } from "#/desktop/wallet/wallet-parts";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import {
@@ -52,6 +45,7 @@ import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token
 import { recentSendRecipients } from "#/features/wallet/logic/recent-send-recipients";
 import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
+import { useKeepSendDraft, useSendDraft } from "#/features/wallet/hooks/use-send-draft";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { GUEST_STORAGE_OWNER, type StorageOwner } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
@@ -98,8 +92,6 @@ export function SendDesk({
 }) {
   const { i18n, t } = useLingui();
   const navigate = useNavigate();
-  const router = useRouter();
-  const canGoBack = useCanGoBack();
   const locationSearch = useRouterState({ select: (state) => state.location.search });
   const route = readSendLocation(locationSearch);
   const seededTo = to ?? route.to ?? route.recipient;
@@ -119,30 +111,42 @@ export function SendDesk({
   const tokens = tokensQuery.tokens
     .filter((item) => item.catalogActive !== false)
     .map(accountTokenToWalletToken);
-  const [selectedId, setSelectedId] = useState<string | undefined>(seededToken);
+  // The phone and desktop views share one draft of this payment, so a zoom or
+  // resize across the breakpoint carries the recipient, amount and voucher
+  // over. Only the fields: the review step and "Max" never come back.
+  const owner = useStorageOwner();
+  const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
+  const draft = useSendDraft(wallet);
+  const restored = draft.restored;
+  const [selectedId, setSelectedId] = useState<string | undefined>(
+    restored?.token?.toLowerCase() ?? seededToken,
+  );
+  const [tokenChosen, setTokenChosen] = useState(restored?.token !== undefined);
   const selectedToken = selectedId ? tokens.find((item) => item.id === selectedId) : tokens[0];
   const firstTokenId = tokens[0]?.id;
   useEffect(() => {
     if (!selectedId && firstTokenId) setSelectedId(firstTokenId);
   }, [selectedId, firstTokenId]);
-  const [amount, setAmount] = useState(() => sanitizeAmount(amountProp ?? route.amount ?? ""));
+  const [amount, setAmount] = useState(() =>
+    sanitizeAmount(restored ? restored.amount : (amountProp ?? route.amount ?? "")),
+  );
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [query, setQuery] = useState(seededTo ?? "");
+  const [query, setQuery] = useState(restored ? restored.query : (seededTo ?? ""));
   const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipientAddress | null>(
-    seededTo
-      ? {
-          name: seededLabel && !seededLabel.toLowerCase().startsWith("0x") ? seededLabel : null,
-          address: seededTo,
-          source: "manual",
-        }
-      : null,
+    restored
+      ? (restored.recipient ?? null)
+      : seededTo
+        ? {
+            name: seededLabel && !seededLabel.toLowerCase().startsWith("0x") ? seededLabel : null,
+            address: seededTo,
+            source: "manual",
+          }
+        : null,
   );
   const [resolvedRecipient, setResolvedRecipient] = useState<ResolvedRecipientAddress | null>(null);
   const locale = i18n.locales?.[0] ?? i18n.locale;
-  const owner = useStorageOwner();
   const upsertRecipient = useUpsertAddressBookRecipient(owner);
-  const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
   const transfersQuery = useAccountTransfersInfinite(wallet, { poll: false });
   const addressBook = useAddressBookRecipients(owner);
   const labels = new Map(
@@ -167,6 +171,12 @@ export function SendDesk({
     ? resolvedRecipient
     : (selectedRecipient ?? resolvedRecipient);
   useDeskTrailLabel(recipient?.name ?? null);
+  useKeepSendDraft(draft, {
+    query,
+    recipient,
+    amount,
+    token: tokenChosen ? selectedId : undefined,
+  });
   const showRecent = query.trim() === "";
   const tokenDecimals = selectedToken?.tokenDecimals ?? 2;
   const voucherDetail = useMarketVoucherDetail(selectedToken?.contractAddress);
@@ -231,35 +241,6 @@ export function SendDesk({
     isValidAmount &&
     !exceedsMax;
   const loadingTokens = Boolean(address) && tokensQuery.isPending;
-  const columns = useMemo<DeskColumn<WalletToken>[]>(
-    () => [
-      {
-        id: "token",
-        header: t`Voucher`,
-        sortValue: (row) => row.name,
-        cell: (row) => (
-          <span className="flex min-w-0 items-center gap-2.5">
-            <TokenLogo token={row} size={20} />
-            <span className="truncate">{row.name}</span>
-          </span>
-        ),
-      },
-      {
-        id: "balance",
-        header: t`Balance`,
-        align: "end",
-        width: "10rem",
-        sortValue: (row) => Number(row.balance ?? 0),
-        cell: (row) => (
-          <span className="font-heading font-semibold tracking-tight" dir="ltr">
-            {row.amount}
-          </span>
-        ),
-      },
-    ],
-    [t],
-  );
-
   function handleSelectRecipient(next: Recipient) {
     const nextAddress = hexAddress(next.address);
     if (nextAddress) {
@@ -277,15 +258,8 @@ export function SendDesk({
 
   function selectToken(id: string) {
     setMaxAmountRaw(null);
+    setTokenChosen(true);
     setSelectedId(id);
-  }
-
-  function close() {
-    if (canGoBack) {
-      router.history.back();
-      return;
-    }
-    void navigate({ to: "/", search: { tab: "wallet" } });
   }
 
   async function openReview() {
@@ -302,173 +276,178 @@ export function SendDesk({
   }
 
   return (
-    <div className="flex h-full min-h-0">
-      <DeskSplit
-        dimmed
-        main={
-          <DeskCanvas>
-            <DeskTitle>
-              <Trans>Wallet</Trans>
-            </DeskTitle>
-            <DeskTable
-              label={t`Holdings`}
-              rows={tokens}
-              columns={columns}
-              rowKey={(row) => row.id}
-              selectedKey={selectedToken?.id}
-              onSelect={(row) => selectToken(row.id)}
-              empty={
-                !address ? (
-                  <Trans>No wallet address available.</Trans>
-                ) : loadingTokens ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Spinner />
-                    <Trans>Loading tokens…</Trans>
-                  </span>
-                ) : tokensQuery.isError ? (
-                  <Trans>Couldn't load tokens</Trans>
-                ) : (
-                  <Trans>No tokens available</Trans>
-                )
-              }
-            />
-          </DeskCanvas>
-        }
-        side={
-          <DeskInspector title={<Trans>Send</Trans>} onClose={close}>
-            <div className="grid min-w-0 gap-2">
-              <label htmlFor="send-recipient" className="text-sm font-medium">
-                <Trans>To</Trans>
-              </label>
-              <SendRecipientField
-                id="send-recipient"
-                value={query}
-                onValueChange={(value) => {
-                  setSelectedRecipient(null);
-                  setQuery(value);
-                }}
-                onRecipientChange={setResolvedRecipient}
-                ariaLabel={t`Recipient username, pool name, phone or address`}
-              />
-              {wallet !== undefined ? (
-                <RecentChips
-                  recipients={showRecent ? recent : []}
-                  pending={showRecent && transfersQuery.isPending}
-                  failed={showRecent && transfersQuery.isError}
-                  retrying={transfersQuery.isFetching}
-                  onRetry={() => void transfersQuery.refetch()}
-                  onSelect={handleSelectRecipient}
-                  addressBook={
-                    <AddressBookPopover owner={owner} onSelect={handleSelectRecipient} />
-                  }
-                />
-              ) : null}
-            </div>
-            <div className="grid min-w-0 gap-2">
-              <label htmlFor="send-amount" className="text-sm font-medium">
-                <Trans>Amount</Trans>
-              </label>
-              {/* The 64px amount box: WalletAmountInput keeps its surface, border
-                  and amount type; the token picker sits inside its end edge. */}
-              <div className="relative min-w-0">
-                <WalletAmountInput
-                  id="send-amount"
-                  label={t`Amount`}
-                  value={amount}
-                  autoFocus={step === "amount"}
-                  aria-invalid={exceedsMax}
-                  style={{
-                    height: "4rem",
-                    paddingInlineEnd: "9rem",
-                    paddingInlineStart: "0.875rem",
-                  }}
-                  onValueChange={(value) => {
-                    setMaxAmountRaw(null);
-                    setAmount(sanitizeAmount(value));
-                  }}
-                />
-                <div className="absolute inset-y-0 end-3 flex items-center">
-                  <TokenPicker
-                    tokens={tokens}
-                    selected={selectedToken}
-                    loading={loadingTokens}
-                    onSelect={selectToken}
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <DeskDetail
+          main={
+            <>
+              <DeskTitleRow title={<Trans>Send</Trans>} />
+              <div className="grid max-w-[560px] min-w-0 gap-5">
+                <div className="grid min-w-0 gap-2">
+                  <label htmlFor="send-recipient" className="text-sm font-medium">
+                    <Trans>To</Trans>
+                  </label>
+                  <SendRecipientField
+                    id="send-recipient"
+                    value={query}
+                    onValueChange={(value) => {
+                      setSelectedRecipient(null);
+                      setQuery(value);
+                    }}
+                    onRecipientChange={setResolvedRecipient}
+                    ariaLabel={t`Recipient username, pool name, phone or address`}
                   />
+                  {wallet !== undefined ? (
+                    <RecentChips
+                      recipients={showRecent ? recent : []}
+                      pending={showRecent && transfersQuery.isPending}
+                      failed={showRecent && transfersQuery.isError}
+                      retrying={transfersQuery.isFetching}
+                      onRetry={() => void transfersQuery.refetch()}
+                      onSelect={handleSelectRecipient}
+                      addressBook={
+                        <AddressBookPopover owner={owner} onSelect={handleSelectRecipient} />
+                      }
+                    />
+                  ) : null}
+                </div>
+                <div className="grid min-w-0 gap-2">
+                  <label htmlFor="send-amount" className="text-sm font-medium">
+                    <Trans>Amount</Trans>
+                  </label>
+                  {/* The 64px amount box: WalletAmountInput keeps its surface, border
+                      and amount type; the token picker sits inside its end edge. */}
+                  <div className="relative min-w-0">
+                    <WalletAmountInput
+                      id="send-amount"
+                      label={t`Amount`}
+                      value={amount}
+                      autoFocus={step === "amount"}
+                      aria-invalid={exceedsMax}
+                      style={{
+                        height: "4rem",
+                        paddingInlineEnd: "9rem",
+                        paddingInlineStart: "0.875rem",
+                      }}
+                      onValueChange={(value) => {
+                        setMaxAmountRaw(null);
+                        setAmount(sanitizeAmount(value));
+                      }}
+                    />
+                    <div className="absolute inset-y-0 end-3 flex items-center">
+                      <TokenPicker
+                        tokens={tokens}
+                        selected={selectedToken}
+                        loading={loadingTokens}
+                        onSelect={selectToken}
+                      />
+                    </div>
+                  </div>
+                  {selectedToken ? (
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="text-xs text-muted-foreground [overflow-wrap:anywhere]">
+                        <Trans>
+                          Balance <span className="font-mono">{selectedToken.amount}</span>
+                        </Trans>
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (selectedToken.balance) {
+                            setAmount(
+                              formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2),
+                            );
+                            setMaxAmountRaw(selectedToken.balance);
+                            return;
+                          }
+                          setMaxAmountRaw(null);
+                          setAmount(selectedToken.amount.replace(/,/g, ""));
+                        }}
+                      >
+                        <Trans>Max</Trans>
+                      </Button>
+                    </div>
+                  ) : (
+                    <p
+                      className={cn(
+                        "text-xs",
+                        tokensQuery.isError ? "text-destructive" : "text-muted-foreground",
+                      )}
+                      role={tokensQuery.isError ? "alert" : undefined}
+                    >
+                      {loadingTokens ? (
+                        <Trans>Loading tokens…</Trans>
+                      ) : tokensQuery.isError ? (
+                        <Trans>Couldn't load tokens</Trans>
+                      ) : tokens.length > 0 ? (
+                        <Trans>Select a token</Trans>
+                      ) : (
+                        <Trans>No tokens available</Trans>
+                      )}
+                    </p>
+                  )}
+                  {tokensQuery.isError && !selectedToken ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="justify-self-start"
+                      pending={tokensQuery.isFetching}
+                      onClick={() => void tokensQuery.refetch()}
+                    >
+                      <Trans>Try again</Trans>
+                    </Button>
+                  ) : null}
+                  {exceedsMax ? (
+                    <p className="text-xs text-destructive" role="alert">
+                      <Trans>Amount exceeds your balance</Trans>
+                    </p>
+                  ) : null}
                 </div>
               </div>
-              {selectedToken ? (
-                <div className="flex min-w-0 items-center justify-between gap-3">
-                  <span className="truncate text-xs text-muted-foreground">
-                    <Trans>
-                      Balance <span className="font-mono">{selectedToken.amount}</span>
-                    </Trans>
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      if (selectedToken.balance) {
-                        setAmount(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
-                        setMaxAmountRaw(selectedToken.balance);
-                        return;
-                      }
-                      setMaxAmountRaw(null);
-                      setAmount(selectedToken.amount.replace(/,/g, ""));
-                    }}
-                  >
-                    <Trans>Max</Trans>
-                  </Button>
-                </div>
-              ) : (
-                <p
-                  className={cn(
-                    "text-xs",
-                    tokensQuery.isError ? "text-destructive" : "text-muted-foreground",
-                  )}
-                  role={tokensQuery.isError ? "alert" : undefined}
-                >
-                  {loadingTokens ? (
-                    <Trans>Loading tokens…</Trans>
-                  ) : tokensQuery.isError ? (
-                    <Trans>Couldn't load tokens</Trans>
-                  ) : tokens.length > 0 ? (
-                    <Trans>Select a token</Trans>
-                  ) : (
-                    <Trans>No tokens available</Trans>
-                  )}
-                </p>
-              )}
-              {tokensQuery.isError && !selectedToken ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="justify-self-start"
-                  pending={tokensQuery.isFetching}
-                  onClick={() => void tokensQuery.refetch()}
-                >
-                  <Trans>Try again</Trans>
-                </Button>
-              ) : null}
-              {exceedsMax ? (
-                <p className="text-xs text-destructive" role="alert">
-                  <Trans>Amount exceeds your balance</Trans>
-                </p>
-              ) : null}
-            </div>
+            </>
+          }
+          side={
             <DeskKV
               rows={[
                 [
+                  t`Voucher`,
+                  selectedToken ? (
+                    <span key="voucher" className="font-sans">
+                      <span dir="auto">{selectedToken.name}</span>{" "}
+                      <span className="font-mono" dir="ltr">
+                        ({selectedToken.symbol})
+                      </span>
+                    </span>
+                  ) : (
+                    <Dash key="voucher" />
+                  ),
+                ],
+                [
+                  t`Balance`,
+                  selectedToken ? (
+                    <span key="balance" dir="ltr">
+                      {selectedToken.amount} {selectedToken.symbol}
+                    </span>
+                  ) : (
+                    <Dash key="balance" />
+                  ),
+                ],
+                [
                   t`Recipient`,
                   recipient ? (
-                    <span key="recipient" className="grid min-w-0" title={recipient.address}>
+                    <span key="recipient" className="grid min-w-0 gap-1.5">
                       {recipient.name ? (
-                        <span className="truncate font-sans" dir="auto">
+                        <span className="font-sans" dir="auto">
                           {recipient.name}
                         </span>
                       ) : null}
-                      <span className="truncate" dir="ltr">
-                        {formatVoucherAddress(recipient.address)}
-                      </span>
+                      <FullValue
+                        value={recipient.address}
+                        copyLabel={t`Copy recipient address`}
+                        copiedMessage={t`Address copied`}
+                        failedMessage={t`Couldn't copy address`}
+                      />
                     </span>
                   ) : (
                     <Dash key="recipient" />
@@ -505,80 +484,79 @@ export function SendDesk({
                 ],
               ]}
             />
-            <Button
-              type="button"
-              className="w-full"
-              disabled={!canSend}
-              pending={upsertRecipient.isPending}
-              onClick={() => void openReview()}
-            >
-              <Trans>Review</Trans>
-            </Button>
-            <SendConfirmDialog
-              open={confirmOpen}
-              onOpenChange={setConfirmOpen}
-              amount={submittedVoucherAmount}
-              symbol={selectedToken?.symbol ?? ""}
-              unitValueLabel={unitValueLabel}
-              recipient={recipientAddress}
-              recipientLabel={recipient?.name ?? seededLabel}
-              error={sendVoucher.error instanceof Error ? sendVoucher.error.message : null}
-              isPending={sendVoucher.isPending}
-              onConfirm={async () => {
-                if (
-                  !canSend ||
-                  !address ||
-                  !selectedToken ||
-                  !parsedAmountRaw ||
-                  !tokenAddress ||
-                  !recipientAddress
-                ) {
-                  return;
-                }
-                const result = await sendVoucher
-                  .mutateAsync({
-                    senderAddress: address,
-                    tokenAddress,
-                    recipientAddress,
-                    amountRaw: parsedAmountRaw,
-                    includeAuthorization: delegationStatus === "not-delegated",
-                  })
-                  .catch(() => null);
-                if (!result) return;
-                const submittedUnitValue = relaySnapshotUnitValue(
-                  result.valuationSnapshots,
-                  tokenAddress,
-                  exactVoucherAmount ?? amount,
-                );
-                void navigate({
-                  to: "/wallet/send/receipt",
-                  search: {
-                    trackingId: result.trackingId,
-                    token: tokenAddress,
-                    recipient: recipientAddress,
-                    recipientLabel: recipient?.name ?? seededLabel,
-                    amount: submittedVoucherAmount,
-                    symbol: selectedToken.symbol,
-                    ...(submittedUnitValue
-                      ? { uoaValue: submittedUnitValue.value, uoa: submittedUnitValue.unit }
-                      : { uoaUnavailable: true }),
-                    ...(returnPool ? { returnPool } : {}),
-                  },
-                });
-              }}
-            />
-          </DeskInspector>
-        }
+          }
+        />
+      </div>
+      {/* The action stays in view at any window height. It is a sibling of the
+          scrolling body, not laid over it, so it never covers a field or an error. */}
+      <div className="shrink-0 border-border border-t bg-card">
+        <div className="flex w-full max-w-[1324px] justify-end px-6 py-3 @4xl:px-8">
+          <Button
+            type="button"
+            className="min-w-40"
+            disabled={!canSend}
+            pending={upsertRecipient.isPending}
+            onClick={() => void openReview()}
+          >
+            <Trans>Review</Trans>
+          </Button>
+        </div>
+      </div>
+      <SendReviewDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        amount={submittedVoucherAmount}
+        symbol={selectedToken?.symbol ?? ""}
+        unitValueLabel={unitValueLabel}
+        recipient={recipientAddress}
+        recipientLabel={recipient?.name ?? seededLabel}
+        error={sendVoucher.error instanceof Error ? sendVoucher.error.message : null}
+        isPending={sendVoucher.isPending}
+        onConfirm={async () => {
+          if (
+            !canSend ||
+            !address ||
+            !selectedToken ||
+            !parsedAmountRaw ||
+            !tokenAddress ||
+            !recipientAddress
+          ) {
+            return;
+          }
+          const result = await sendVoucher
+            .mutateAsync({
+              senderAddress: address,
+              tokenAddress,
+              recipientAddress,
+              amountRaw: parsedAmountRaw,
+              includeAuthorization: delegationStatus === "not-delegated",
+            })
+            .catch(() => null);
+          if (!result) return;
+          draft.clear();
+          const submittedUnitValue = relaySnapshotUnitValue(
+            result.valuationSnapshots,
+            tokenAddress,
+            exactVoucherAmount ?? amount,
+          );
+          void navigate({
+            to: "/wallet/send/receipt",
+            search: {
+              trackingId: result.trackingId,
+              token: tokenAddress,
+              recipient: recipientAddress,
+              recipientLabel: recipient?.name ?? seededLabel,
+              amount: submittedVoucherAmount,
+              symbol: selectedToken.symbol,
+              ...(submittedUnitValue
+                ? { uoaValue: submittedUnitValue.value, uoa: submittedUnitValue.unit }
+                : { uoaUnavailable: true }),
+              ...(returnPool ? { returnPool } : {}),
+            },
+          });
+        }}
       />
     </div>
-  );
-}
-
-function Dash() {
-  return (
-    <span className="text-muted-foreground" dir="ltr">
-      —
-    </span>
   );
 }
 
@@ -807,79 +785,5 @@ function AddressBookEntry({ recipient, onSelect }: { recipient: Recipient; onSel
         </span>
       ) : null}
     </button>
-  );
-}
-
-function SendConfirmDialog({
-  open,
-  onOpenChange,
-  amount,
-  symbol,
-  unitValueLabel,
-  recipient,
-  recipientLabel,
-  error,
-  isPending,
-  onConfirm,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  amount: string;
-  symbol: string;
-  unitValueLabel: string | null;
-  recipient: `0x${string}` | null;
-  recipientLabel?: string;
-  error: string | null;
-  isPending: boolean;
-  onConfirm: () => Promise<void>;
-}) {
-  return (
-    <DialogRoot open={open} onOpenChange={onOpenChange}>
-      <DialogPortal>
-        <DialogBackdrop />
-        <DialogContent className="rounded-none border border-border bg-card shadow-none">
-          <DialogTitle>
-            <Trans>Confirm send</Trans>
-          </DialogTitle>
-          <div className="mt-4 border border-border bg-card">
-            <div className="flex items-center justify-between gap-3 border-border border-b px-3 py-2.5">
-              <span className="text-xs text-muted-foreground">
-                <Trans>Amount</Trans>
-              </span>
-              <span className="min-w-0 text-end font-mono text-xs font-semibold" dir="ltr">
-                {amount} {symbol}
-                {unitValueLabel ? ` (${unitValueLabel})` : ""}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-3 px-3 py-2.5">
-              <span className="text-xs text-muted-foreground">
-                <Trans>Recipient</Trans>
-              </span>
-              {recipient ? (
-                <RecipientIdentityLabel address={recipient} fallback={recipientLabel} showAddress />
-              ) : null}
-            </div>
-          </div>
-          {error ? (
-            <p className="mt-2 text-xs text-destructive" role="alert">
-              {error}
-            </p>
-          ) : null}
-          <div className="mt-4 flex flex-col gap-2">
-            <Button type="button" pending={isPending} onClick={() => void onConfirm()}>
-              {isPending ? <Trans>Sending…</Trans> : <Trans>Confirm and send</Trans>}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={isPending}
-              onClick={() => onOpenChange(false)}
-            >
-              <Trans>Cancel</Trans>
-            </Button>
-          </div>
-        </DialogContent>
-      </DialogPortal>
-    </DialogRoot>
   );
 }

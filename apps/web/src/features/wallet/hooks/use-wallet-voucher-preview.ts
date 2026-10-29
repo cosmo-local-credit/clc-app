@@ -40,6 +40,11 @@ export function useWalletVoucherPreview(address: string | undefined) {
 
   return {
     holdings: voucherGroups.holdings.slice(0, WALLET_VOUCHER_PREVIEW_LIMIT),
+    /** The previews are a cut of the account's vouchers: more may be behind View all. */
+    isTruncated:
+      voucherGroups.holdings.length > WALLET_VOUCHER_PREVIEW_LIMIT ||
+      voucherGroups.issued.length > WALLET_VOUCHER_PREVIEW_LIMIT ||
+      balancesQuery.hasNextPage === true,
     issued: voucherGroups.issued.slice(0, WALLET_VOUCHER_PREVIEW_LIMIT),
     isPending: voucherGroups.isPending || balancesQuery.isPending || needsMoreHoldings,
     isIssuedError: voucherGroups.isError,

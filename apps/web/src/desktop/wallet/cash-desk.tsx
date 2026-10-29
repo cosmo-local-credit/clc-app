@@ -10,7 +10,13 @@ import { SectionHeading } from "#/components/ui/section-heading";
 import { DeskCanvas, DeskPanel, DeskTitle } from "#/desktop/ui/page";
 import { CHAIN_INFO } from "#/lib/chain";
 
-/** The guide to outside providers: address on top, the four routes in a 2 × 2 grid. */
+/**
+ * The outside providers, for people who would rather not use the integrated
+ * add / withdraw ramps: address on top, then the four routes. Each route keeps
+ * a one-line summary of the provider and folds its step-by-step instructions
+ * into an optional "Steps"; the provider shows them again on its own site. The
+ * network and token warning stays visible.
+ */
 export function CashDesk() {
   const { t } = useLingui();
   const { address } = useConnection();
@@ -30,7 +36,7 @@ export function CashDesk() {
     <DeskCanvas className="max-w-[1100px]">
       <div className="flex min-w-0 items-center gap-3">
         <DeskTitle>
-          <Trans>Cash</Trans>
+          <Trans>Other cash options</Trans>
         </DeskTitle>
         <Badge variant="outline" size="sm">
           {CHAIN_INFO.name}
@@ -43,7 +49,7 @@ export function CashDesk() {
             <Trans>{CHAIN_INFO.name} wallet address</Trans>
           </p>
           {address ? (
-            <p className="truncate font-mono text-sm font-semibold" dir="ltr">
+            <p className="font-mono text-sm font-semibold [overflow-wrap:anywhere]" dir="ltr">
               {address}
             </p>
           ) : (
@@ -60,7 +66,7 @@ export function CashDesk() {
         ) : null}
       </DeskPanel>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-2">
         <GuidePanel
           title={<Trans>Buy stablecoins on Gnosis</Trans>}
           provider="Mt Pelerin"
@@ -69,7 +75,7 @@ export function CashDesk() {
           <p>
             <Trans>Pay by card or bank transfer.</Trans>
           </p>
-          <InstructionList>
+          <Steps>
             <li>
               <Trans>Enter the amount.</Trans>
             </li>
@@ -79,7 +85,7 @@ export function CashDesk() {
             <li>
               <Trans>Pay and receive xDAI directly.</Trans>
             </li>
-          </InstructionList>
+          </Steps>
         </GuidePanel>
 
         <GuidePanel
@@ -87,7 +93,7 @@ export function CashDesk() {
           provider="Mt Pelerin"
           links={[["Mt Pelerin", "https://www.mtpelerin.com/sell-xdai"]]}
         >
-          <InstructionList>
+          <Steps>
             <li>
               <Trans>Enter the amount and your bank details.</Trans>
             </li>
@@ -97,7 +103,7 @@ export function CashDesk() {
             <li>
               <Trans>Receive the bank transfer.</Trans>
             </li>
-          </InstructionList>
+          </Steps>
         </GuidePanel>
 
         <GuidePanel
@@ -185,8 +191,16 @@ function GuidePanel({
   );
 }
 
-function InstructionList({ children }: { children: ReactNode }) {
-  return <ol className="grid list-decimal gap-1 ps-5">{children}</ol>;
+/** The provider's step-by-step, folded away: the provider repeats it after the hand-off. */
+function Steps({ children }: { children: ReactNode }) {
+  return (
+    <details>
+      <summary className="w-fit cursor-pointer text-xs font-semibold text-primary hover:underline">
+        <Trans>Steps</Trans>
+      </summary>
+      <ol className="mt-2 grid list-decimal gap-1 ps-5">{children}</ol>
+    </details>
+  );
 }
 
 function InlineLink({ href, children }: { href: string; children: ReactNode }) {

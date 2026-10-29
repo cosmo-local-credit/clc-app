@@ -3,9 +3,8 @@ import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useMemo, useRef, type ReactNode } from "react";
-import { RiArrowRightSLine, RiErrorWarningLine, RiFileCopyLine } from "react-icons/ri";
-import { toast } from "sonner";
+import { useCallback, useMemo, type ReactNode } from "react";
+import { RiArrowRightSLine, RiErrorWarningLine } from "react-icons/ri";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -13,11 +12,13 @@ import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
 import { Spinner } from "#/components/ui/spinner";
-import { EllipsizedAddress, TokenLogo, WalletAmountInput } from "#/components/wallet";
+import { TokenLogo, WalletAmountInput } from "#/components/wallet";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
 import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskCanvas, DeskRow, DeskRowList, DeskSection, DeskTitle } from "#/desktop/ui/page";
+import { FullValue } from "#/desktop/ui/full-value";
+import { useInspectorHistory } from "#/desktop/wallet/use-inspector-history";
 import {
   useAddStables,
   useCashAccess,
@@ -29,7 +30,6 @@ import {
   formatHistoryKes,
   isCompletePretiumStatus,
   ONRAMP_ASSET_LABEL,
-  shortenIdentifier,
 } from "#/features/wallet/logic/pretium-cash";
 import { CHAIN_INFO } from "#/lib/chain";
 
@@ -39,7 +39,12 @@ function historyKey(transaction: PretiumCashTransaction): string {
   return `${transaction.kind}-${transaction.reference}`;
 }
 
-/** The two MPESA ramps and the Pretium history; forms and receipts open in the inspector. */
+/**
+ * The two MPESA ramps and the Pretium history; forms and receipts open in the
+ * inspector. A ramp form is the task, so it takes focus and carries its action
+ * in the inspector footer; a history row only informs, so the table keeps
+ * focus and J/K keeps working.
+ */
 export function TopUpDesk() {
   const access = useCashAccess();
   const { cashAddress, cashTransactions, transactionsQuery, disabledReason } = access;
@@ -50,36 +55,30 @@ export function TopUpDesk() {
     ? (cashTransactions.find((transaction) => historyKey(transaction) === search.tx) ?? null)
     : null;
   const addStables = useAddStables({ access, ratesEnabled: panel === "add" });
-  // Opening the first inspector pushes history; switching replaces it; closing
-  // pops what this page pushed, or drops the params on a deep link.
-  const pushed = useRef(false);
   const inspectorOpen = panel !== null || search.tx !== undefined;
+  // Opening the first inspector pushes history; switching replaces it. Closing
+  // pops what this page pushed, or, for a direct link, goes to the page itself.
+  const toParent = useCallback(() => void navigate({ search: {}, replace: true }), [navigate]);
+  const history = useInspectorHistory(inspectorOpen, toParent);
 
   function open(next: { sheet?: CashPanel; tx?: string }) {
     if (next.sheet === search.sheet && next.tx === search.tx) return;
     const replace = inspectorOpen;
-    if (!replace) pushed.current = true;
+    if (!replace) history.markPushed();
     void navigate({ search: next, replace });
   }
-
-  function close() {
-    if (pushed.current) {
-      pushed.current = false;
-      window.history.back();
-      return;
-    }
-    void navigate({ search: {}, replace: true });
-  }
+  const close = history.close;
 
   return (
     <div className="flex h-full min-h-0">
       <DeskSplit
+        onDismiss={close}
         main={
           <DeskCanvas>
             <DeskTitle>
-              <Trans>Cash</Trans>
+              <Trans>Add / withdraw</Trans>
             </DeskTitle>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-2">
               <DeskSection title={<Trans>Add stables</Trans>}>
                 <DeskRowList>
                   <RampRow
@@ -117,14 +116,21 @@ export function TopUpDesk() {
           </DeskCanvas>
         }
         side={
-          inspectorOpen ? (
+          panel === "add" ? (
+            <AddStablesInspector form={addStables} access={access} onClose={close} />
+          ) : panel === "withdraw" ? (
+            <WithdrawInspector
+              key={`${cashAddress ?? ""}:${access.phone}`}
+              address={cashAddress}
+              phone={access.phone}
+              disabledReason={disabledReason}
+              entryDisabled={access.entryDisabled}
+              onClose={close}
+            />
+          ) : search.tx !== undefined ? (
             <DeskInspector
               title={
-                panel === "add" ? (
-                  <Trans>Add stables</Trans>
-                ) : panel === "withdraw" ? (
-                  <Trans>Withdraw</Trans>
-                ) : selectedTx?.kind === "offramp" ? (
+                selectedTx?.kind === "offramp" ? (
                   <Trans>Offramp details</Trans>
                 ) : (
                   <Trans>Onramp details</Trans>
@@ -132,17 +138,7 @@ export function TopUpDesk() {
               }
               onClose={close}
             >
-              {panel === "add" ? (
-                <AddStablesForm form={addStables} access={access} />
-              ) : panel === "withdraw" ? (
-                <WithdrawForm
-                  key={`${cashAddress ?? ""}:${access.phone}`}
-                  address={cashAddress}
-                  phone={access.phone}
-                  disabledReason={disabledReason}
-                  entryDisabled={access.entryDisabled}
-                />
-              ) : selectedTx ? (
+              {selectedTx ? (
                 <CashDetail transaction={selectedTx} />
               ) : transactionsQuery.isPending ? (
                 <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -219,6 +215,48 @@ function Notice({ tone, children }: { tone: "muted" | "warning" | "error"; child
   );
 }
 
+/** Where a ramp form's submit lives: under the scrolling body, with its error beside it. */
+function RampFooter({ error, children }: { error: string | null; children: ReactNode }) {
+  return (
+    <div className="grid gap-3">
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      {children}
+    </div>
+  );
+}
+
+function AddStablesInspector({
+  form,
+  access,
+  onClose,
+}: {
+  form: ReturnType<typeof useAddStables>;
+  access: ReturnType<typeof useCashAccess>;
+  onClose: () => void;
+}) {
+  return (
+    <DeskInspector
+      title={<Trans>Add stables</Trans>}
+      onClose={onClose}
+      focusOnOpen
+      footer={
+        <RampFooter error={form.mutationError}>
+          <Button
+            type="submit"
+            form="topup-add"
+            disabled={!form.canContinue}
+            pending={form.pending}
+          >
+            {form.pending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
+          </Button>
+        </RampFooter>
+      }
+    >
+      <AddStablesForm form={form} access={access} />
+    </DeskInspector>
+  );
+}
+
 function AddStablesForm({
   form,
   access,
@@ -234,6 +272,7 @@ function AddStablesForm({
 
   return (
     <form
+      id="topup-add"
       className="grid gap-4"
       onSubmit={(event) => {
         event.preventDefault();
@@ -287,27 +326,64 @@ function AddStablesForm({
         </Notice>
       ) : null}
       {disabledReason ? <Notice tone="muted">{disabledReason}</Notice> : null}
-      {form.mutationError ? <Notice tone="error">{form.mutationError}</Notice> : null}
-      <Button type="submit" disabled={!form.canContinue} pending={form.pending}>
-        {form.pending ? <Trans>Starting…</Trans> : <Trans>Continue</Trans>}
-      </Button>
     </form>
   );
 }
 
-function WithdrawForm({
+function WithdrawInspector({
   address,
   phone,
   disabledReason,
   entryDisabled,
+  onClose,
 }: {
   address: `0x${string}` | undefined;
   phone: string;
   disabledReason: string | null;
   entryDisabled: boolean;
+  onClose: () => void;
+}) {
+  const form = usePretiumWithdraw({ open: true, address, phone, entryDisabled });
+  return (
+    <DeskInspector
+      title={<Trans>Withdraw</Trans>}
+      onClose={onClose}
+      focusOnOpen
+      footer={
+        <RampFooter error={form.sendError}>
+          <Button
+            type="submit"
+            form="topup-withdraw"
+            disabled={!form.canWithdraw}
+            pending={form.pending}
+          >
+            {form.pending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}
+          </Button>
+        </RampFooter>
+      }
+    >
+      <WithdrawForm
+        form={form}
+        phone={phone}
+        disabledReason={disabledReason}
+        entryDisabled={entryDisabled}
+      />
+    </DeskInspector>
+  );
+}
+
+function WithdrawForm({
+  form,
+  phone,
+  disabledReason,
+  entryDisabled,
+}: {
+  form: ReturnType<typeof usePretiumWithdraw>;
+  phone: string;
+  disabledReason: string | null;
+  entryDisabled: boolean;
 }) {
   const { i18n, t } = useLingui();
-  const form = usePretiumWithdraw({ open: true, address, phone, entryDisabled });
   const { eligible, selected } = form;
   const submit = async () => {
     if (await form.submit()) form.setAmount("");
@@ -315,6 +391,7 @@ function WithdrawForm({
 
   return (
     <form
+      id="topup-withdraw"
       className="grid gap-4"
       onSubmit={(event) => {
         event.preventDefault();
@@ -414,10 +491,6 @@ function WithdrawForm({
           />
         </>
       )}
-      {form.sendError ? <Notice tone="error">{form.sendError}</Notice> : null}
-      <Button type="submit" disabled={!form.canWithdraw} pending={form.pending}>
-        {form.pending ? <Trans>Submitting…</Trans> : <Trans>Withdraw</Trans>}
-      </Button>
     </form>
   );
 }
@@ -550,17 +623,6 @@ function CashDetail({ transaction }: { transaction: PretiumCashTransaction }) {
   const hasTxHash = transaction.txHash.trim() !== "";
   const explorerUrl = hasTxHash ? explorerTxUrl(CHAIN_INFO, transaction.txHash) : null;
   const incoming = transaction.kind === "onramp";
-  const copyPretiumId = (value: string) => {
-    if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy Pretium ID`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast.success(t`Pretium ID copied`))
-      .catch(() => toast.error(t`Couldn't copy Pretium ID`));
-  };
-
   return (
     <>
       <DeskKV
@@ -608,26 +670,24 @@ function CashDetail({ transaction }: { transaction: PretiumCashTransaction }) {
           ],
           [
             <Trans key="label">Pretium ID</Trans>,
-            <button
+            <FullValue
               key="value"
-              type="button"
-              className="flex min-w-0 items-center gap-1.5"
-              aria-label={t`Copy Pretium ID`}
-              onClick={() => copyPretiumId(transaction.reference)}
-            >
-              <span className="truncate" dir="ltr">
-                {shortenIdentifier(transaction.reference)}
-              </span>
-              <RiFileCopyLine
-                className="size-3.5 shrink-0 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </button>,
+              value={transaction.reference}
+              copyLabel={t`Copy Pretium ID`}
+              copiedMessage={t`Pretium ID copied`}
+              failedMessage={t`Couldn't copy Pretium ID`}
+            />,
           ],
           [
             <Trans key="label">Transaction</Trans>,
             hasTxHash ? (
-              <EllipsizedAddress key="value" address={transaction.txHash} />
+              <FullValue
+                key="value"
+                value={transaction.txHash}
+                copyLabel={t`Copy transaction hash`}
+                copiedMessage={t`Transaction hash copied`}
+                failedMessage={t`Couldn't copy transaction hash`}
+              />
             ) : (
               <span key="value" className="text-muted-foreground">
                 <Trans>Pending</Trans>

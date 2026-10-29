@@ -1,7 +1,7 @@
 import type { ResourceUsage } from "@clc/api/features/resource-limits/client";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef } from "react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { RiAddLine, RiSendPlane2Line } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
@@ -17,6 +17,7 @@ import { DeskTable } from "#/desktop/ui/data-table";
 import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskCanvas, DeskSection, DeskTitleRow } from "#/desktop/ui/page";
+import { useInspectorHistory } from "#/desktop/wallet/use-inspector-history";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
@@ -27,7 +28,6 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 export function AllVouchersDesk() {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const router = useRouter();
   const { address } = useConnection();
   const { voucher } = useSearch({ from: "/_nav/wallet/vouchers" });
   const selectedAddress = parseVoucherAddress(voucher);
@@ -44,6 +44,13 @@ export function AllVouchersDesk() {
     : undefined;
   const armed = useRef<string | null>(null);
   useDeskTrailLabel(selected?.symbol ?? selected?.name ?? null);
+  // The voucher is URL state. Closing pops the entry this page pushed; a direct
+  // link has none, so it goes to the list itself instead of leaving the app.
+  const toList = useCallback(
+    () => void navigate({ to: "/wallet/vouchers", search: {}, replace: true }),
+    [navigate],
+  );
+  const history = useInspectorHistory(selectedAddress !== undefined, toList);
 
   useEffect(() => {
     resetVoucherCreateHistory();
@@ -58,6 +65,7 @@ export function AllVouchersDesk() {
     if (voucherAddress.toLowerCase() === selectedAddress?.toLowerCase()) return;
     if (armed.current === voucherAddress.toLowerCase()) return;
     const replace = selectedAddress != null || armed.current != null;
+    if (!replace) history.markPushed();
     armed.current = voucherAddress.toLowerCase();
     void navigate({
       to: "/wallet/vouchers",
@@ -110,6 +118,7 @@ export function AllVouchersDesk() {
   return (
     <div className="flex h-full min-h-0">
       <DeskSplit
+        onDismiss={history.close}
         main={
           <DeskCanvas>
             <DeskTitleRow
@@ -178,6 +187,7 @@ export function AllVouchersDesk() {
                       rowKey={(row) => row.id}
                       selectedKey={selected?.id}
                       onSelect={openVoucher}
+                      partial={balancesQuery.hasNextPage}
                     />
                     {balancesQuery.hasNextPage ? (
                       <Button
@@ -211,6 +221,7 @@ export function AllVouchersDesk() {
                     rowKey={(row) => row.id}
                     selectedKey={selected?.id}
                     onSelect={openVoucher}
+                    partial={balancesQuery.hasNextPage}
                     empty={
                       <span className="grid gap-1">
                         <Trans>No vouchers yet.</Trans>
@@ -243,7 +254,7 @@ export function AllVouchersDesk() {
                   <span className="truncate">{selected?.name ?? t`Vouchers`}</span>
                 </span>
               }
-              onClose={() => router.history.back()}
+              onClose={history.close}
             >
               {selected ? (
                 <>
