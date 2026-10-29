@@ -8,6 +8,7 @@ import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
 import { resourceLimitKeys } from "@clc/api/features/resource-limits/queries";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import type { MarkerColor } from "@clc/core/features/markers/logic";
+import { isHttpUrl } from "@clc/core/lib/contact";
 import {
   defaultWantStartsAt,
   type Want,
@@ -35,9 +36,8 @@ function localDateTime(value: string | Date) {
 }
 
 /**
- * The fields the editor keeps across a phone/desktop view swap. The picture is
- * not one of them: an upload is a file in flight and a copied profile image is a
- * choice the person can repeat, so a swap leaves the Want's saved picture alone.
+ * Keep completed image URLs and removals along with the written fields. Local
+ * upload previews never leave the view that owns the upload.
  */
 type WantDraft = {
   name: string;
@@ -51,6 +51,7 @@ type WantDraft = {
   shareEmail: boolean;
   sharePhone: boolean;
   markerIcon: WantMarkerIcon;
+  imageUrl?: string | null;
 };
 
 /** What the Want editor loads before it can show the form: the profile, the Want, the allowance. */
@@ -119,10 +120,11 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
     shareEmail: !!want && ((want.contactPermission ?? 0) & 1) === 1 && emailAvailable,
     sharePhone: !!want && ((want.contactPermission ?? 0) & 2) === 2 && phoneAvailable,
     markerIcon: want?.markerIcon ?? "question",
+    imageUrl: want?.imageUrl ?? null,
   }));
   // A restored draft wins over the loaded Want. Contact sharing is still bound
   // by what the profile can offer now.
-  const seed = restored ?? pristine;
+  const seed = { ...pristine, ...restored };
   const [name, setName] = useState(seed.name);
   const [description, setDescription] = useState(seed.description);
   const [tags, setTags] = useState<string[]>(seed.tags);
@@ -130,7 +132,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   const [hasEnding, setHasEnding] = useState(seed.hasEnding);
   const [ending, setEnding] = useState(seed.ending);
   const [location, setLocation] = useState<LocationInput | undefined>(seed.location);
-  const [imageUrl, setImageUrl] = useState<string | null>(want?.imageUrl ?? null);
+  const [imageUrl, setImageUrl] = useState<string | null>(seed.imageUrl ?? null);
   const [imageBusy, setImageBusy] = useState(false);
   const [contactText, setContactText] = useState(seed.contactText);
   const [shareEmail, setShareEmail] = useState(seed.shareEmail && emailAvailable);
@@ -150,6 +152,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
       shareEmail,
       sharePhone,
       markerIcon,
+      ...(imageUrl === null || imageUrl === "" || isHttpUrl(imageUrl) ? { imageUrl } : {}),
     };
     if (JSON.stringify(current) === JSON.stringify(pristine)) clearDraft();
     else saveDraft(current);
@@ -159,6 +162,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
     description,
     ending,
     hasEnding,
+    imageUrl,
     location,
     markerIcon,
     name,

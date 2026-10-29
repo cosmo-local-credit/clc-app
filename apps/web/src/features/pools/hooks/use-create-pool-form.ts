@@ -79,15 +79,18 @@ const DEFAULT_VALUES: PoolFormValues = {
 };
 
 /**
- * What the pool form keeps across a phone/desktop view swap: the typed fields.
- * Not the logo (a file in flight or a copied profile image, to be chosen
- * again) and not the terms acceptance, which the review step asks for afresh.
+ * Keep completed logo URLs and removals along with the written fields. Local
+ * upload previews stay in their view; terms acceptance is asked for afresh.
  */
-type PoolFormDraft = Omit<PoolFormValues, "imageUrl" | "acceptedTerms">;
+type PoolFormDraft = Omit<PoolFormValues, "imageUrl" | "acceptedTerms"> & {
+  imageUrl?: string;
+};
 
 function poolDraftOf(values: PoolFormValues): PoolFormDraft {
-  const { imageUrl: _imageUrl, acceptedTerms: _acceptedTerms, ...fields } = values;
-  return fields;
+  const { imageUrl, acceptedTerms: _acceptedTerms, ...fields } = values;
+  return imageUrl === "" || (typeof imageUrl === "string" && isHttpUrl(imageUrl))
+    ? { ...fields, imageUrl }
+    : fields;
 }
 
 /** The text fields a saved profile can seed, all of which default to "". */
@@ -153,13 +156,14 @@ export function useCreatePoolForm({
       ? {
           ...draft,
           termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+          acceptedTerms: false,
         }
       : { ...DEFAULT_VALUES, pricing: defaultPricing },
   );
   const form = useForm({
     // A draft carried over a view swap is newer than a retry snapshot: it holds
     // what was typed since, so it goes on top.
-    defaultValues: restored ? { ...pristine, ...restored } : pristine,
+    defaultValues: restored ? { ...pristine, ...restored, acceptedTerms: false } : pristine,
     validators: {
       // The form-only terms mode is deliberately absent from the persisted
       // create input, so translate the Standard Schema issues by field.

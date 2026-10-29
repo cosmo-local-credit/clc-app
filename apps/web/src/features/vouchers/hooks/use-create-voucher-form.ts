@@ -82,16 +82,16 @@ export const VOUCHER_FORM_DEFAULTS: VoucherFormValues = {
 };
 
 /**
- * What the voucher form keeps across a phone/desktop view swap: the typed
- * fields. Not the icon (a file in flight or a copied profile image, to be
- * chosen again) and not the terms acceptance, which the review step asks for
- * afresh.
+ * Keep completed icon URLs and removals along with the written fields. Local
+ * upload previews stay in their view; terms acceptance is asked for afresh.
  */
-type VoucherFormDraft = Omit<VoucherFormValues, "iconUrl" | "acceptedTerms">;
+type VoucherFormDraft = Omit<VoucherFormValues, "iconUrl" | "acceptedTerms"> & {
+  iconUrl?: string;
+};
 
 function voucherDraftOf(values: VoucherFormValues): VoucherFormDraft {
-  const { iconUrl: _iconUrl, acceptedTerms: _acceptedTerms, ...fields } = values;
-  return fields;
+  const { iconUrl, acceptedTerms: _acceptedTerms, ...fields } = values;
+  return iconUrl === "" || isHttpUrl(iconUrl) ? { ...fields, iconUrl } : fields;
 }
 
 /** The text fields a saved profile can seed, all of which default to "". */
@@ -147,13 +147,14 @@ export function useCreateVoucherForm({
           decimals: "6",
           iconUrl: draft.iconUrl ?? "",
           termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+          acceptedTerms: false,
         }
       : VOUCHER_FORM_DEFAULTS,
   );
   const form = useForm({
     // A draft carried over a view swap is newer than a retry snapshot: it holds
     // what was typed since, so it goes on top.
-    defaultValues: restored ? { ...pristine, ...restored } : pristine,
+    defaultValues: restored ? { ...pristine, ...restored, acceptedTerms: false } : pristine,
     validators: {
       // A function rather than the schema itself: the form carries `termsMode`,
       // which the schema neither knows nor needs, so the two types differ.
