@@ -37,12 +37,15 @@ import {
   useVoucherSearch,
 } from "#/features/home/hooks/use-voucher-search";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
+import { cn } from "#/lib/utils";
 
 type Option = { ref: VoucherRef; name: string; symbol: string | null };
 
 /**
  * The phone's "Filter posts" sheet as a standing facet column. Every change
- * writes the filter straight away, so there is no Apply.
+ * writes the filter straight away, so there is no Apply. Where the page has no
+ * room to dock it, the page opens it above the feed, and its groups sit three
+ * across instead of stacking.
  */
 export function PostFacets({
   filter,
@@ -89,7 +92,10 @@ export function PostFacets({
   const atTagLimit = filter.tags.length >= CATALOG_MAX_TAGS;
 
   return (
-    <aside aria-label={t`Filter posts`} className="grid min-w-0 content-start">
+    <aside
+      aria-label={t`Filter posts`}
+      className="grid min-w-0 content-start @max-[56rem]:grid-cols-3 @max-[56rem]:gap-x-6"
+    >
       <FacetGroup
         title={<Trans>Vouchers</Trans>}
         count={
@@ -231,7 +237,7 @@ export function PostFacets({
         ) : null}
       </FacetGroup>
 
-      <div className="pt-4">
+      <div className="pt-4 @max-[56rem]:col-span-full">
         <Button variant="outline" disabled={!hasAny} onClick={filter.clear}>
           <Trans>Reset</Trans>
         </Button>
@@ -255,7 +261,7 @@ function FacetGroup({
   return (
     <section
       aria-labelledby={headingId}
-      className={`grid gap-2 border-border border-b py-4 ${className ?? ""}`}
+      className={cn("grid gap-2 border-border border-b py-4 @max-[56rem]:pt-0", className)}
     >
       <div className="flex items-baseline justify-between gap-3">
         <SectionHeading id={headingId} variant="group" as="h2">

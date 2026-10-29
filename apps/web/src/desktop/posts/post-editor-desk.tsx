@@ -35,7 +35,13 @@ import { MarkdownEditor } from "#/components/ui/markdown-editor";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
-import { DeskCanvas, DeskPanel, DeskTitle, DeskTitleRow } from "#/desktop/ui/page";
+import {
+  DESK_SELECTED_EDGE,
+  DeskCanvas,
+  DeskPanel,
+  DeskTitle,
+  DeskTitleRow,
+} from "#/desktop/ui/page";
 import {
   type PostEditorSeed,
   type SeedVoucher,
@@ -200,7 +206,10 @@ function EditorForm({
     const element = sectionRefs.current.get(key);
     if (!element) return;
     jumping.current = true;
-    element.scrollIntoView({ block: "start", behavior: "smooth" });
+    element.scrollIntoView({
+      block: "start",
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
     window.setTimeout(() => {
       jumping.current = false;
     }, 600);
@@ -236,8 +245,7 @@ function EditorForm({
             onClick={() => jumpTo(key)}
             className={cn(
               "flex h-[34px] items-center gap-2 px-3 text-start text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground",
-              active === key &&
-                "bg-accent font-semibold text-foreground shadow-[inset_2px_0_0_var(--color-primary)]",
+              active === key && `bg-accent font-semibold text-foreground ${DESK_SELECTED_EDGE}`,
             )}
           >
             <span className="min-w-0 flex-1 truncate">{labels[key]}</span>
@@ -272,7 +280,7 @@ function EditorForm({
         {draft?.restored ? (
           <div className="flex items-center gap-3 border border-border border-s-[3px] border-s-primary bg-card px-4 py-3.5">
             <p className="min-w-0 flex-1 text-sm">
-              <Trans>Picked up where you left off — this post has not been submitted yet.</Trans>
+              <Trans>Draft restored. Not published.</Trans>
             </p>
             <Button
               type="button"
@@ -703,6 +711,14 @@ function EditorGroup({
         {children}
       </div>
     </section>
+  );
+}
+
+/** Scripted scrolling jumps instead of gliding for people who asked for less motion. */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 }
 

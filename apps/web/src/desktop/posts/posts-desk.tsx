@@ -1,8 +1,8 @@
 import type { ReportSummary } from "@clc/api/features/reports/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { RiAddLine } from "react-icons/ri";
+import { useEffect, useId, useRef, useState } from "react";
+import { RiAddLine, RiFilter3Line } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { MarketViewportSearchNotice } from "#/components/market-viewport-search-notice";
@@ -19,10 +19,17 @@ import { useReportFilterNotice } from "#/features/home/hooks/use-report-filter-n
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { formatReportDate } from "#/lib/report-display";
+import { cn } from "#/lib/utils";
 
 import { PostFacets } from "./post-facets";
 
 const VISIBLE_TAGS = 2;
+
+/**
+ * Cards fill whatever width the feed has: as many 220px-or-wider columns as
+ * fit, so a narrow feed shows fewer, readable cards instead of three crushed ones.
+ */
+const POST_GRID = "grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4";
 
 export function PostsDesk() {
   const { t, i18n } = useLingui();
@@ -36,7 +43,12 @@ export function PostsDesk() {
     !filter.isFiltered && !filter.isRestoringPreference,
   );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  // The facet column is always open on desktop, so its vocabulary loads at once.
+  // Below 56rem of canvas the facets leave the page and open from the toolbar,
+  // so the cards keep their width. Wider, they dock beside the feed and this
+  // state is unused. Either way the facets stay mounted, so their vocabulary
+  // loads at once.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersId = useId();
   const feed = useReportFeed(
     filter,
     {
@@ -74,16 +86,14 @@ export function PostsDesk() {
     return () => observer.disconnect();
   }, [feed.hasMore, feed.isLoadingMore, feed.loadMore]);
 
-  return (
-    <DeskCanvas width="read" className="grid-cols-[240px_minmax(0,1fr)] gap-8">
-      <PostFacets
-        filter={filter}
-        tagFacets={feed.tagFacets}
-        voucherFacets={feed.voucherFacets}
-        poolFacets={feed.poolFacets}
-      />
+  const activeFilters = filter.tags.length + filter.vouchers.length + filter.pools.length;
 
-      <div className="grid min-w-0 content-start gap-4">
+  return (
+    <DeskCanvas
+      width="read"
+      className="gap-4 @min-[56rem]:grid-cols-[240px_minmax(0,1fr)] @min-[56rem]:grid-rows-[auto_1fr] @min-[56rem]:gap-x-8"
+    >
+      <div className="grid min-w-0 content-start gap-4 @min-[56rem]:col-start-2 @min-[56rem]:row-start-1">
         <DeskTitleRow
           title={<Trans>Posts</Trans>}
           actions={
@@ -104,14 +114,50 @@ export function PostsDesk() {
         />
 
         <div className="flex items-center gap-3">
-          <div className="w-[420px] min-w-0">
-            <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
+          <div className="min-w-0 max-w-[420px] flex-1">
+            <CatalogSearchField filter={filter} label={t`Search posts`} />
           </div>
+          <Button
+            variant="outline"
+            className="@min-[56rem]:hidden"
+            aria-expanded={filtersOpen}
+            aria-controls={filtersId}
+            onClick={() => setFiltersOpen((open) => !open)}
+          >
+            <RiFilter3Line aria-hidden="true" />
+            <Trans>Filters</Trans>
+            {activeFilters > 0 ? (
+              <>
+                {" "}
+                <Badge size="sm" className="font-mono">
+                  {activeFilters}
+                </Badge>
+              </>
+            ) : null}
+          </Button>
           {feed.status === "ready" && filter.result.ok ? (
             <span className="ms-auto text-muted-foreground text-xs">{resultCountLabel}</span>
           ) : null}
         </div>
+      </div>
 
+      <div
+        id={filtersId}
+        className={cn(
+          "min-w-0 border border-border bg-card p-4",
+          "@min-[56rem]:col-start-1 @min-[56rem]:row-span-2 @min-[56rem]:row-start-1 @min-[56rem]:self-start @min-[56rem]:border-0 @min-[56rem]:bg-transparent @min-[56rem]:p-0",
+          !filtersOpen && "@max-[56rem]:hidden",
+        )}
+      >
+        <PostFacets
+          filter={filter}
+          tagFacets={feed.tagFacets}
+          voucherFacets={feed.voucherFacets}
+          poolFacets={feed.poolFacets}
+        />
+      </div>
+
+      <div className="grid min-w-0 content-start gap-4 @min-[56rem]:col-start-2 @min-[56rem]:row-start-2">
         {notice ? (
           <div
             role="alert"
@@ -133,7 +179,7 @@ export function PostsDesk() {
         <MarketViewportSearchNotice query={filter.result.ok ? filter.result.filter.term : ""} />
 
         {feed.status === "loading" ? (
-          <div aria-busy="true" aria-label={t`Loading posts…`} className="grid grid-cols-3 gap-4">
+          <div aria-busy="true" aria-label={t`Loading posts…`} className={POST_GRID}>
             {[0, 1, 2].map((index) => (
               <div key={index} className="aspect-[4/3] border border-border bg-card" />
             ))}
@@ -162,7 +208,7 @@ export function PostsDesk() {
             <ul
               aria-label={t`Posts`}
               aria-busy={isRefining}
-              className={`grid grid-cols-3 gap-4 ${isRefining ? "opacity-60" : ""}`}
+              className={cn(POST_GRID, isRefining && "opacity-60")}
             >
               {reports.map((report) => (
                 <li key={report.id} className="min-w-0">
@@ -238,16 +284,27 @@ function PostCard({ report, locale }: { report: ReportSummary; locale: string })
         ) : null}
         <span className="flex h-5 min-w-0 items-center gap-2">
           {updated && report.updatedAt ? (
-            <time dateTime={report.updatedAt} className="font-mono text-muted-foreground text-xs">
+            <time
+              dateTime={report.updatedAt}
+              className="shrink-0 font-mono text-muted-foreground text-xs"
+            >
               {updated}
             </time>
           ) : null}
           {voucher ? (
-            <Badge variant="outline" size="sm" className="ms-auto max-w-28 truncate font-mono">
+            <Badge
+              variant="outline"
+              size="sm"
+              className="ms-auto min-w-0 max-w-28 truncate font-mono"
+            >
               {voucher.symbol}
             </Badge>
           ) : pool ? (
-            <Badge variant="outline" size="sm" className="ms-auto max-w-36 truncate text-info">
+            <Badge
+              variant="outline"
+              size="sm"
+              className="ms-auto min-w-0 max-w-36 truncate text-info"
+            >
               {pool.name}
             </Badge>
           ) : null}

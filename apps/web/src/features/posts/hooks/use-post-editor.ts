@@ -30,9 +30,22 @@ import { useMyPost } from "#/features/posts/hooks/use-my-posts";
 import { useCreatePost, useUpdatePost } from "#/features/posts/hooks/use-post-mutations";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
+import { useViewDraft } from "#/lib/view-drafts";
 
 /** Quiet time before an in-progress post is parked in local storage. */
 const DRAFT_SAVE_DEBOUNCE_MS = 500;
+
+/**
+ * What an edit keeps across a phone/desktop view swap: the written fields. Not
+ * the photos, the cover (one of them) or the attachments, which are uploads and
+ * links added through their own pickers; those return to the saved post's.
+ */
+type PostEditDraft = Omit<ReportWrite, "images" | "imageUrl" | "attachments">;
+
+function postEditDraftOf(values: ReportWrite): PostEditDraft {
+  const { images: _images, imageUrl: _imageUrl, attachments: _attachments, ...fields } = values;
+  return fields;
+}
 
 /** A voucher a screen carried in, so the post opens already linked to it. */
 export type SeedVoucher = { chainId: number; address: string; name?: string };
@@ -204,6 +217,13 @@ export function usePostEditorForm({
   const voucherOwner =
     auth.session?.role === "SUPERADMIN" ? undefined : (auth.session?.address ?? auth.address);
 
+  // Editing only. A new post already parks its draft on this device, and a
+  // second copy here would compete with it.
+  const viewDraft = useViewDraft<PostEditDraft>({
+    scope: `post-edit:${post?.id}`,
+    account: post ? auth.address : undefined,
+  });
+  const restored = viewDraft.restored;
   const form = useForm({
     defaultValues: initial,
     validators: { onSubmit: reportWriteSchema },
@@ -211,6 +231,7 @@ export function usePostEditorForm({
       try {
         if (post) {
           const saved = await update.mutateAsync({ id: post.id, input: value });
+          viewDraft.clear();
           toast.success(
             saved.status === "APPROVED"
               ? t`Post updated.`
@@ -255,6 +276,31 @@ export function usePostEditorForm({
     if (!draft || !isDirty || settling) return;
     writePostDraft(draft.owner, settledValues);
   }, [draft, isDirty, settledValues, settling]);
+
+  // What was written in the other view goes back on top of the saved post. It is
+  // set as an edit, not a new starting point, so the form is dirty again and the
+  // leave guard and the unload prompt cover it.
+  const [restoring, setRestoring] = useState(restored !== undefined);
+  useEffect(() => {
+    if (!restored) return;
+    for (const [name, value] of Object.entries(restored)) {
+      form.setFieldValue(name as keyof PostEditDraft, value as never);
+    }
+    setRestoring(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
+
+  // Keep the written fields for a phone/desktop view swap while they differ from
+  // how the editor opened; forget them when they are back to that. Not while the
+  // restored fields are still being applied: those renders hold the saved values.
+  const { save: saveViewDraft, clear: clearViewDraft } = viewDraft;
+  const [opened] = useState(() => JSON.stringify(postEditDraftOf(initial)));
+  useEffect(() => {
+    if (restoring) return;
+    const fields = postEditDraftOf(values);
+    if (JSON.stringify(fields) === opened) clearViewDraft();
+    else saveViewDraft(fields);
+  }, [clearViewDraft, opened, restoring, saveViewDraft, values]);
 
   // The browser's own prompt covers a reload or a closed tab; each screen's
   // leave dialog covers in-app navigation, which this never sees.

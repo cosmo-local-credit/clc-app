@@ -1,7 +1,7 @@
 import type { ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { Suspense, useEffect, useState } from "react";
+import { type ReactNode, Suspense, useEffect, useState } from "react";
 import { RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine } from "react-icons/ri";
 
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
@@ -27,7 +27,6 @@ import {
   DeskCanvas,
   DeskDetail,
   DeskPanel,
-  DeskRow,
   DeskRowList,
   DeskSection,
   DeskTitleRow,
@@ -90,7 +89,8 @@ export function PostDesk({ reportId }: { reportId: string }) {
       main={
         <article className="grid min-w-0 max-w-[720px] gap-3.5">
           <DeskTitleRow
-            title={<span className="[overflow-wrap:anywhere]">{report.title}</span>}
+            title={report.title}
+            wrap
             actions={
               isAuthor ? (
                 <Button asChild variant="outline">
@@ -197,7 +197,7 @@ function PostSide({
                 </Suspense>
               ) : null}
               <div className="flex min-h-14 items-center justify-between gap-3 px-3.5 py-2.5">
-                <span className="min-w-0 truncate text-xs">{locationLabel}</span>
+                <span className="min-w-0 text-xs [overflow-wrap:anywhere]">{locationLabel}</span>
                 {hasCoordinates ? (
                   <Button
                     variant="outline"
@@ -226,7 +226,7 @@ function PostSide({
                 search={{ from: "posts", reportId: report.id }}
                 className="block outline-none hover:bg-muted/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground"
               >
-                <DeskRow
+                <DetailRow
                   lead={
                     <VoucherAvatar
                       address={voucher.address}
@@ -237,7 +237,7 @@ function PostSide({
                   }
                   title={voucher.name}
                   trail={
-                    <Badge variant="outline" size="sm" className="max-w-24 truncate font-mono">
+                    <Badge variant="outline" size="sm" className="shrink-0 font-mono">
                       {voucher.symbol}
                     </Badge>
                   }
@@ -259,15 +259,11 @@ function PostSide({
                 search={{}}
                 className="block outline-none hover:bg-muted/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground"
               >
-                <DeskRow
+                <DetailRow
                   lead={<PoolLogo imageUrl={null} name={pool.name} seed={pool.address} size={28} />}
                   title={pool.name}
                   trail={
-                    <Badge
-                      variant="outline"
-                      size="sm"
-                      className="max-w-24 truncate font-mono text-info"
-                    >
+                    <Badge variant="outline" size="sm" className="shrink-0 font-mono text-info">
                       {pool.symbol}
                     </Badge>
                   }
@@ -289,10 +285,10 @@ function PostSide({
                 rel="noopener noreferrer"
                 className="block outline-none hover:bg-muted/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground"
               >
-                <DeskRow
+                <DetailRow
                   title={attachmentLabel(attachment)}
                   trail={
-                    <span className="text-muted-foreground text-xs">
+                    <span className="shrink-0 text-muted-foreground text-xs">
                       {attachmentMeta(attachment, { file: t`File`, embed: t`Link` })}
                     </span>
                   }
@@ -310,6 +306,28 @@ function PostSide({
           />
         </DeskSection>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * A row of the side column. The name sits on a post's detail page to be read
+ * and checked, so it wraps; list cards elsewhere truncate.
+ */
+function DetailRow({
+  lead,
+  title,
+  trail,
+}: {
+  lead?: ReactNode;
+  title: ReactNode;
+  trail?: ReactNode;
+}) {
+  return (
+    <div className="flex min-h-14 min-w-0 items-center gap-3 px-3.5 py-2.5">
+      {lead}
+      <div className="min-w-0 flex-1 text-sm font-semibold [overflow-wrap:anywhere]">{title}</div>
+      {trail}
     </div>
   );
 }
