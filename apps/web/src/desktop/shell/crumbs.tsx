@@ -1,13 +1,10 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
 import { deskCrumbIds, type DeskCrumbId, type DesktopSearch } from "#/desktop/chrome";
-import {
-  marketplaceSearchForScope,
-  marketplaceSharedSearch,
-} from "#/lib/navigation/marketplace-search";
+import { MarketHomeLink, MarketScopeLink } from "#/desktop/shell/market-links";
 
 function CrumbLabel({ id }: { id: DeskCrumbId }) {
   switch (id) {
@@ -36,7 +33,9 @@ function CrumbLabel({ id }: { id: DeskCrumbId }) {
     case "receive":
       return <Trans>Receive</Trans>;
     case "cash":
-      return <Trans>Cash</Trans>;
+      return <Trans>Other cash options</Trans>;
+    case "top-up":
+      return <Trans>Add / withdraw</Trans>;
     case "all-vouchers":
       return <Trans>All vouchers</Trans>;
     case "create-pool":
@@ -69,21 +68,7 @@ function CrumbLink({ id, children }: { id: DeskCrumbId; children: ReactNode }) {
       </Link>
     );
   }
-  if (id === "market") {
-    return (
-      <Link
-        to="/"
-        search={(previous) => ({
-          ...marketplaceSharedSearch(previous),
-          tab: "market",
-          view: "map",
-        })}
-        className={className}
-      >
-        {children}
-      </Link>
-    );
-  }
+  if (id === "market") return <MarketHomeLink className={className}>{children}</MarketHomeLink>;
   if (
     id === "offers" ||
     id === "wants" ||
@@ -92,16 +77,9 @@ function CrumbLink({ id, children }: { id: DeskCrumbId; children: ReactNode }) {
     id === "catalogs"
   ) {
     return (
-      <Link
-        to="/market"
-        search={(previous) => ({
-          ...marketplaceSearchForScope(marketplaceSharedSearch(previous), id),
-          view: "list",
-        })}
-        className={className}
-      >
+      <MarketScopeLink scope={id} className={className}>
         {children}
-      </Link>
+      </MarketScopeLink>
     );
   }
   if (id === "send") {
@@ -121,6 +99,13 @@ function CrumbLink({ id, children }: { id: DeskCrumbId; children: ReactNode }) {
   if (id === "cash") {
     return (
       <Link to="/wallet/cash" className={className}>
+        {children}
+      </Link>
+    );
+  }
+  if (id === "top-up") {
+    return (
+      <Link to="/wallet/top-up" className={className}>
         {children}
       </Link>
     );
@@ -193,6 +178,7 @@ export function DeskCrumbs({
   search: DesktopSearch;
   trail: string | null;
 }) {
+  const { t } = useLingui();
   const ids = deskCrumbIds(pathname, search);
   const items: ReactNode[] = ids.map((id, index) => {
     const last = index === ids.length - 1 && !trail;
@@ -200,10 +186,15 @@ export function DeskCrumbs({
     return (
       <span key={id} className="inline-flex items-center gap-1.5">
         {index > 0 ? (
-          <RiArrowRightSLine className="size-3 text-muted-foreground" aria-hidden="true" />
+          <RiArrowRightSLine
+            className="size-3 text-muted-foreground rtl:-scale-x-100"
+            aria-hidden="true"
+          />
         ) : null}
         {last ? (
-          <span className="font-semibold text-foreground">{label}</span>
+          <span aria-current="page" className="font-semibold text-foreground">
+            {label}
+          </span>
         ) : (
           <CrumbLink id={id}>{label}</CrumbLink>
         )}
@@ -211,12 +202,17 @@ export function DeskCrumbs({
     );
   });
   return (
-    <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 truncate text-sm">
+    <nav aria-label={t`Breadcrumb`} className="flex min-w-0 items-center gap-1.5 truncate text-sm">
       {items}
       {trail ? (
         <span className="inline-flex min-w-0 items-center gap-1.5">
-          <RiArrowRightSLine className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="truncate font-semibold text-foreground">{trail}</span>
+          <RiArrowRightSLine
+            className="size-3 shrink-0 text-muted-foreground rtl:-scale-x-100"
+            aria-hidden="true"
+          />
+          <span dir="auto" aria-current="page" className="truncate font-semibold text-foreground">
+            {trail}
+          </span>
         </span>
       ) : null}
     </nav>

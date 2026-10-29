@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 
-import { desktopChrome } from "#/desktop/chrome";
+import { desktopChrome, marketViewOf } from "#/desktop/chrome";
+import { resolveMarketView } from "#/desktop/market/market-view";
 import { CommandPalette } from "#/desktop/shell/command-palette";
+import { ShortcutHelp } from "#/desktop/shell/shortcut-help";
 import { DesktopShortcuts } from "#/desktop/shell/shortcuts";
 import { DesktopSidebar } from "#/desktop/shell/sidebar";
 import { DesktopTopBar } from "#/desktop/shell/top-bar";
@@ -19,7 +21,10 @@ export function DesktopShell({ children }: { children: ReactNode }) {
       return undefined;
     },
   });
-  const chrome = desktopChrome(pathname, search, declared);
+  // A market link that names no view opens in the one last used, so the frame
+  // follows the page it will hold, not the bare URL.
+  const view = pathname === "/market" ? resolveMarketView(marketViewOf(search)) : undefined;
+  const chrome = desktopChrome(pathname, view ? { ...search, view } : search, declared);
   return (
     <div className="flex h-dvh min-h-0 bg-background text-foreground">
       <DesktopSidebar rail={chrome === "map"} />
@@ -32,11 +37,12 @@ export function DesktopShell({ children }: { children: ReactNode }) {
         ) : chrome === "map" ? (
           <div className="flex min-h-0 flex-1 overflow-hidden">{children}</div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-auto">{children}</div>
+          <div className="@container min-h-0 flex-1 overflow-auto">{children}</div>
         )}
       </div>
       <CommandPalette />
-      <DesktopShortcuts />
+      <ShortcutHelp />
+      <DesktopShortcuts sidebarToggle={chrome !== "map"} />
     </div>
   );
 }

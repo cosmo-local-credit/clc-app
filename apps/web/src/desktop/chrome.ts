@@ -20,6 +20,19 @@ function scopeOf(value: unknown): DesktopScopeId | undefined {
   return typeof value === "string" && SCOPES.has(value) ? (value as DesktopScopeId) : undefined;
 }
 
+type MarketView = "map" | "list";
+
+/**
+ * The Map/List choice a URL carries, or undefined when it carries none. Scope
+ * links read this to keep the choice they leave; an absent choice stays absent,
+ * so a fresh visit lands on the default.
+ */
+export function marketViewOf(search: unknown): MarketView | undefined {
+  if (typeof search !== "object" || search === null) return undefined;
+  const view = (search as DesktopSearch).view;
+  return view === "map" || view === "list" ? view : undefined;
+}
+
 /** Which sidebar item is on, from the URL. The parent is filled only when no child is. */
 export function desktopNavSelection(
   pathname: string,
@@ -88,6 +101,7 @@ export type DeskCrumbId =
   | "send"
   | "receive"
   | "cash"
+  | "top-up"
   | "all-vouchers"
   | "create-pool"
   | "create-voucher"
@@ -114,8 +128,8 @@ export function deskCrumbIds(pathname: string, search: DesktopSearch = {}): Desk
   }
   if (path.startsWith("/wallet/send")) return ["wallet", "send"];
   if (path.startsWith("/wallet/receive")) return ["wallet", "receive"];
-  if (path.startsWith("/wallet/cash") || path.startsWith("/wallet/top-up"))
-    return ["wallet", "cash"];
+  if (path.startsWith("/wallet/cash")) return ["wallet", "cash"];
+  if (path.startsWith("/wallet/top-up")) return ["wallet", "top-up"];
   if (path.startsWith("/wallet/vouchers")) return ["wallet", "all-vouchers"];
   if (path.startsWith("/wallet/collect")) return ["wallet", "collect"];
   if (path.startsWith("/wallet/wants")) return ["wallet", "create-want"];

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { deskCrumbIds, desktopChrome, desktopNavSelection } from "./chrome";
+import { deskCrumbIds, desktopChrome, desktopNavSelection, marketViewOf } from "./chrome";
 
 describe("desktopNavSelection", () => {
   it("treats the home map as Market with no child", () => {
@@ -45,8 +45,29 @@ describe("desktopChrome", () => {
 describe("deskCrumbIds", () => {
   it("names send, cash and create the way the shell does", () => {
     expect(deskCrumbIds("/wallet/send/amount")).toEqual(["wallet", "send"]);
-    expect(deskCrumbIds("/wallet/top-up")).toEqual(["wallet", "cash"]);
+    expect(deskCrumbIds("/wallet/top-up")).toEqual(["wallet", "top-up"]);
+    expect(deskCrumbIds("/wallet/cash")).toEqual(["wallet", "cash"]);
     expect(deskCrumbIds("/catalogs/create")).toEqual(["wallet", "create-catalog"]);
     expect(deskCrumbIds("/market", { scope: "pools" })).toEqual(["market", "pools"]);
+  });
+});
+
+describe("marketViewOf", () => {
+  it("reads the Map/List choice the URL carries", () => {
+    expect(marketViewOf({ scope: "offers", view: "list" })).toBe("list");
+    expect(marketViewOf({ view: "map" })).toBe("map");
+  });
+
+  it("reports none when the URL carries none, so links add none", () => {
+    expect(marketViewOf({ scope: "offers" })).toBeUndefined();
+    expect(marketViewOf({ view: "grid" })).toBeUndefined();
+    expect(marketViewOf({ view: undefined })).toBeUndefined();
+    expect(marketViewOf(undefined)).toBeUndefined();
+    expect(marketViewOf("view=list")).toBeUndefined();
+  });
+
+  it("agrees with the chrome: an absent view is the map", () => {
+    expect(desktopChrome("/market", { scope: "offers" })).toBe("map");
+    expect(desktopChrome("/market", { scope: "offers", view: "list" })).toBe("fill");
   });
 });

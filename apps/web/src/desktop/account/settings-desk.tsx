@@ -1,6 +1,6 @@
 import { isSupportedLocale, LOCALE_OPTIONS } from "@clc/i18n/locales";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { RiExternalLinkLine, RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
@@ -21,6 +21,8 @@ import { RadioGroup, RadioGroupRow } from "#/components/ui/radio-group";
 import { SettingsSheetAlert } from "#/components/ui/settings-sheet";
 import { Switch } from "#/components/ui/switch";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
+import { useShortcutHelp } from "#/desktop/shell/shortcut-help";
+import { useCharacterShortcuts } from "#/desktop/shell/shortcut-state";
 import { DeskSegment, DeskSegmentItem } from "#/desktop/ui/segment";
 import { DeskCanvas, DeskSection, DeskTitle } from "#/desktop/ui/page";
 import { BUILD_INFO } from "#/features/app-updates/build-info";
@@ -71,6 +73,7 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
           <LanguageRow />
           <ThemeRow />
           <NotificationsRow walletAddress={wallet} />
+          <ShortcutsRow />
         </SetRows>
       </DeskSection>
 
@@ -175,6 +178,8 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
   );
 }
 
+const NOTIFICATIONS_ANCHOR = "notifications";
+
 const ROW_GRID =
   "grid min-h-14 grid-cols-[220px_minmax(0,1fr)_auto] items-center gap-4 ps-4 pe-2.5";
 
@@ -187,16 +192,19 @@ function SetRows({ children }: { children: ReactNode }) {
 }
 
 function SetRow({
+  id,
   label,
   value,
   action,
 }: {
+  /** An anchor other pages link to, as the top bar's notification settings do. */
+  id?: string;
   label: ReactNode;
   value?: ReactNode;
   action?: ReactNode;
 }) {
   return (
-    <div className={ROW_GRID}>
+    <div id={id} className={ROW_GRID}>
       <span className="min-w-0 truncate text-sm font-semibold">{label}</span>
       <div className="flex min-w-0 items-center gap-2 text-xs">{value}</div>
       <div className="flex shrink-0 items-center justify-end">{action}</div>
@@ -365,8 +373,25 @@ function NotificationsRow({ walletAddress }: { walletAddress?: `0x${string}` }) 
   const hasPopover = hasDetail || Boolean(walletAddress);
   if (open && !hasPopover) setOpen(false);
 
+  // The top bar links here (`#notifications`): bring the row into view, and
+  // open its preferences once there is something to open.
+  const requested = useRouterState({
+    select: (state) => state.location.hash.replace(/^#/, "") === NOTIFICATIONS_ANCHOR,
+  });
+  const arrived = useRef(false);
+  useEffect(() => {
+    if (!requested) return;
+    document.getElementById(NOTIFICATIONS_ANCHOR)?.scrollIntoView?.({ block: "center" });
+  }, [requested]);
+  useEffect(() => {
+    if (!requested || !hasPopover || arrived.current) return;
+    arrived.current = true;
+    setOpen(true);
+  }, [requested, hasPopover]);
+
   return (
     <SetRow
+      id={NOTIFICATIONS_ANCHOR}
       label={t`Notifications`}
       value={presentation.status}
       action={
@@ -411,6 +436,42 @@ function NotificationsRow({ walletAddress }: { walletAddress?: `0x${string}` }) 
             </PopoverContent>
           </PopoverRoot>
         ) : null
+      }
+    />
+  );
+}
+
+/**
+ * The shortcut list, and the switch for the single-key shortcuts. Ctrl/⌘ K and
+ * Escape are not character keys and stay on.
+ */
+function ShortcutsRow() {
+  const { t } = useLingui();
+  const { enabled, setEnabled } = useCharacterShortcuts();
+  const setHelpOpen = useShortcutHelp((state) => state.setOpen);
+  return (
+    <SetRow
+      label={t`Keyboard shortcuts`}
+      value={
+        <span className="text-muted-foreground">
+          {enabled ? (
+            <Trans>Single-key shortcuts on</Trans>
+          ) : (
+            <Trans>Single-key shortcuts off</Trans>
+          )}
+        </span>
+      }
+      action={
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={enabled}
+            onCheckedChange={setEnabled}
+            aria-label={t`Single-key shortcuts`}
+          />
+          <Button variant="ghost" onClick={() => setHelpOpen(true)}>
+            <Trans>View</Trans>
+          </Button>
+        </div>
       }
     />
   );
