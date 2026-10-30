@@ -43,6 +43,7 @@ import { SAFE_APP_PREFIX, SAFE_MULTISEND_CALL_ONLY } from "#/lib/safe-config";
 import { safeVersionQueryOptions } from "../api/sign-safe-transaction";
 import { useReportWriteError } from "../hooks/use-report-write-error";
 import { useSafeConfirm } from "../hooks/use-safe-confirm";
+import { useRefreshAfterSafeExecution } from "../hooks/use-refresh-after-safe-execution";
 import { useRefreshSafeSigners } from "../hooks/use-safe-signers";
 import { useSafeSheet } from "../state/safe-sheet";
 
@@ -78,16 +79,21 @@ export function SafePendingSheet() {
 function PendingList({ safe, onClose }: { safe: `0x${string}`; onClose: () => void }) {
   const query = useQuery(safePendingQueryOptions(safeClient, safe));
   const refreshSigners = useRefreshSafeSigners();
-  const queued = useRef<ReadonlySet<string> | null>(null);
+  const refreshAfterExecution = useRefreshAfterSafeExecution();
+  const queued = useRef<ReadonlyMap<string, SafeProposal> | null>(null);
   // A transaction leaving the queue executed, or another took its nonce. An
-  // executed signer change moves who signs, so what depends on that is re-read.
+  // executed signer change moves who signs, and an executed handover or mint
+  // moves what the catalog and balances show, so what depends on that is re-read.
   useEffect(() => {
     if (!query.data) return;
-    const current = new Set(query.data.map((transaction) => transaction.safeTxHash));
+    const current = new Map(query.data.map((transaction) => [transaction.safeTxHash, transaction]));
     const previous = queued.current;
     queued.current = current;
-    if (previous && [...previous].some((hash) => !current.has(hash))) void refreshSigners(safe);
-  }, [query.data, refreshSigners, safe]);
+    const left = previous ? [...previous.values()].filter((t) => !current.has(t.safeTxHash)) : [];
+    if (left.length === 0) return;
+    void refreshSigners(safe);
+    void refreshAfterExecution(left);
+  }, [query.data, refreshAfterExecution, refreshSigners, safe]);
   const transactions = query.data ?? [];
   const auth = useAuthStatus();
   const { address, connector } = useConnection();
