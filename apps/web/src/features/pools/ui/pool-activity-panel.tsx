@@ -1,3 +1,5 @@
+import type { ActivityKind } from "@clc/api/features/accounts/client";
+import { ActivityFilterSheet } from "#/components/activity/activity-filter-sheet";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
@@ -16,8 +18,11 @@ import {
   SwapActivityTitle,
 } from "#/components/activity/swap-activity";
 import { EllipsizedAddress, SignedAmount } from "#/components/wallet";
-import { type PoolActivityEntry, buildPoolActivity } from "#/features/pools/logic/pool-activity";
-import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
+import {
+  type PoolActivityEntry,
+  poolActivityFromAccount,
+} from "#/features/pools/logic/pool-activity";
+import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { PoolActivityDetailsSheet } from "./pool-activity-details-sheet";
 
@@ -25,24 +30,24 @@ import { PoolActivityDetailsSheet } from "./pool-activity-details-sheet";
  * Everything that has moved through the pool.
  *
  * The pool is an ordinary account as far as the indexer is concerned, so its
- * history is the same `/accounts/:address/transfers` feed a wallet reads — the
- * one endpoint that exposes swap legs without a superadmin session. `direction`
- * comes back relative to the address queried, so IN means into the pool.
+ * history uses the same classified activity feed as a wallet. The backend
+ * identifies operation events before pagination. Direction is relative to the
+ * pool, so IN means into the pool.
  */
 export function PoolActivityPanel({ pool }: { pool: UserPool }) {
   const { t } = useLingui();
-  // clc-core validates this path parameter as `eth_addr_checksum` and the
-  // indexer stores EIP-55 addresses, so a lowercased one is rejected outright
-  // and a mixed-case one matches nothing.
-  const transfersQuery = useAccountTransfersInfinite(
+  // Core validates the route address as EIP-55; indexed activity matching is
+  // case-insensitive so imported and live tracker rows resolve consistently.
+  const [types, setTypes] = useState<readonly ActivityKind[]>([]);
+  const transfersQuery = useAccountActivityInfinite(
     isAddress(pool.address) ? getAddress(pool.address) : undefined,
-    { poll: true },
+    { poll: true, types },
   );
   const [selected, setSelected] = useState<PoolActivityEntry | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const transfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
-  const entries = buildPoolActivity(transfers);
+  const transfers = transfersQuery.data?.pages.flatMap((page) => page.activity) ?? [];
+  const entries = transfers.map((item) => poolActivityFromAccount(item, pool.address));
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -65,6 +70,9 @@ export function PoolActivityPanel({ pool }: { pool: UserPool }) {
       aria-labelledby="pool-tab-activity"
       className="space-y-3"
     >
+      <div className="flex justify-end">
+        <ActivityFilterSheet types={types} onApply={setTypes} />
+      </div>
       <section className="border border-border bg-card" aria-label={t`Pool activity`}>
         {transfersQuery.isPending ? (
           <div className="p-3 text-muted-foreground text-sm">
@@ -88,7 +96,11 @@ export function PoolActivityPanel({ pool }: { pool: UserPool }) {
         ) : null}
         {transfersQuery.isSuccess && entries.length === 0 ? (
           <div className="p-3 text-muted-foreground text-sm">
-            <Trans>Nothing has moved through this pool yet.</Trans>
+            {types.length > 0 ? (
+              <Trans>No activity matches these filters.</Trans>
+            ) : (
+              <Trans>Nothing has moved through this pool yet.</Trans>
+            )}
           </div>
         ) : null}
         {entries.map((entry, index, list) => (
@@ -191,15 +203,28 @@ function EntryTitle({ entry }: { entry: PoolActivityEntry }) {
     return <SwapActivityTitle symbols={[entry.received.tokenSymbol, entry.sent.tokenSymbol]} />;
   }
   if (entry.kind === "mint") return <Trans>Created in the pool</Trans>;
-  // A deposit is the only inbound transfer a pool takes; outbound covers a fee
-  // sweep and a liquidity withdrawal, which the chain does not tell apart.
-  return entry.direction === "IN" ? <Trans>Deposit</Trans> : <Trans>Paid out</Trans>;
+  return entry.direction === "IN" ? <Trans>Deposit</Trans> : <Trans>Pay Out</Trans>;
 }
 
 function EntrySubtitle({ entry }: { entry: PoolActivityEntry }) {
   if (entry.kind === "mint") return <Trans>New supply</Trans>;
   return (
     <>
+      {entry.kind === "withdrawal" ? (
+        <>
+          <Trans>Withdrawal</Trans> ·{" "}
+        </>
+      ) : null}
+      {entry.kind === "fee-withdrawal" ? (
+        <>
+          <Trans>Fee withdrawal</Trans> ·{" "}
+        </>
+      ) : null}
+      {!entry.success ? (
+        <>
+          <Trans>Failed</Trans> ·{" "}
+        </>
+      ) : null}
       {entry.kind === "swap" || entry.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
       <EllipsizedAddress address={entry.counterpartyAddress} />
     </>
