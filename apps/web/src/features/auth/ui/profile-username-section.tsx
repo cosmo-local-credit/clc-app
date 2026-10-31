@@ -8,7 +8,7 @@ import { RiAtLine, RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { UsernameInput, type UsernameOccupancy } from "#/components/profile/username-input";
+import { UsernameInput } from "#/components/profile/username-input";
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import {
@@ -115,10 +115,6 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
   const { i18n, t } = useLingui();
   const updateProfile = useUpdateProfile();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [occupancy, setOccupancy] = useState<UsernameOccupancy>({
-    checking: false,
-    taken: false,
-  });
   const current = profile.username ?? null;
 
   const form = useForm({
@@ -170,13 +166,11 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
               <UsernameInput
                 id="profile-username"
                 value={field.state.value}
-                owned={current}
                 onChange={(next) => {
                   setSubmitError(null);
                   field.handleChange(next);
                 }}
                 onBlur={field.handleBlur}
-                onOccupancy={setOccupancy}
                 error={err ? translateValidationError(err, i18n) : null}
               />
             );
@@ -212,13 +206,7 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
                 type="submit"
                 tap
                 className="w-full"
-                disabled={
-                  !canSubmit ||
-                  normalized === "" ||
-                  normalized === current ||
-                  occupancy.checking ||
-                  occupancy.taken
-                }
+                disabled={!canSubmit || normalized === "" || normalized === current}
                 pending={isSubmitting}
               >
                 {isSubmitting ? t`Saving…` : t`Save username`}

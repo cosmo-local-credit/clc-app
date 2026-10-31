@@ -2,139 +2,165 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-const getAvailability = vi.hoisted(() => vi.fn());
+const suggest = vi.hoisted(() => vi.fn());
 
-vi.mock("#/lib/api/identity", () => ({
-  identityClient: { getAvailability },
+vi.mock("#/lib/api/recipients", () => ({
+  recipientsClient: { suggest },
 }));
 
 import { UsernameInput } from "./username-input";
 
 function TestInput({
   error,
-  owned,
-  initial = "",
+  initialName = "",
+  initialUsername = "",
 }: {
   error?: string;
-  owned?: string;
-  initial?: string;
+  initialName?: string;
+  initialUsername?: string;
 }) {
-  const [value, setValue] = useState(initial);
+  const [name, setName] = useState(initialName);
+  const [username, setUsername] = useState(initialUsername);
   return (
-    <UsernameInput
-      id="username"
-      value={value}
-      owned={owned}
-      onChange={setValue}
-      onBlur={vi.fn()}
-      error={error}
-    />
+    <>
+      <label htmlFor="display-name">Name</label>
+      <input id="display-name" value={name} onChange={(event) => setName(event.target.value)} />
+      <UsernameInput
+        id="username"
+        name={name}
+        value={username}
+        onChange={setUsername}
+        onBlur={vi.fn()}
+        error={error}
+      />
+    </>
   );
 }
 
-function usernameInput() {
+function usernameField() {
   return screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement;
 }
 
 afterEach(() => {
-  getAvailability.mockReset();
+  suggest.mockReset();
 });
 
 describe("UsernameInput", () => {
-  it("supports manual entry and connects its validation error", () => {
-    getAvailability.mockResolvedValue({ username: { available: true } });
+  it("supports a typed handle and connects its validation error", () => {
     render(<TestInput error="Use 80 characters or fewer" />);
 
-    fireEvent.change(usernameInput(), { target: { value: "alice-2" } });
+    fireEvent.change(usernameField(), { target: { value: "alice-2" } });
 
-    expect(usernameInput().value).toBe("alice-2");
-    expect(usernameInput().getAttribute("aria-invalid")).toBe("true");
-    expect(usernameInput().getAttribute("aria-describedby")).toBe("username-error");
+    expect(usernameField().value).toBe("alice-2");
+    expect(usernameField().getAttribute("aria-invalid")).toBe("true");
+    expect(usernameField().getAttribute("aria-describedby")).toBe("username-error");
     expect(screen.getByRole("alert").textContent).toBe("Use 80 characters or fewer");
     expect(screen.queryByRole("button", { name: "Suggest username" })).toBeNull();
+    expect(suggest).not.toHaveBeenCalled();
   });
 
-  it("spins inside the input while a typed name is being checked", async () => {
-    let resolveLookup: ((value: { username: { available: boolean } }) => void) | undefined;
-    getAvailability.mockImplementation(
+  it("fills a handle from the name being typed and spins while that lookup runs", async () => {
+    let resolveSuggestion: ((value: string) => void) | undefined;
+    suggest.mockImplementation(
       () =>
-        new Promise((resolve) => {
-          resolveLookup = resolve;
+        new Promise<string>((resolve) => {
+          resolveSuggestion = resolve;
         }),
     );
     render(<TestInput />);
 
-    fireEvent.change(usernameInput(), { target: { value: "alice" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "Alice Example" },
+    });
 
-    expect(usernameInput().getAttribute("aria-busy")).toBe("true");
-    expect(usernameInput().parentElement?.querySelector("[data-slot='spinner']")).toBeTruthy();
+    expect(usernameField().getAttribute("aria-busy")).toBe("true");
+    expect(usernameField().parentElement?.querySelector("[data-slot='spinner']")).toBeTruthy();
 
-    await waitFor(() => expect(getAvailability).toHaveBeenCalled());
-    resolveLookup?.({ username: { available: true } });
-
-    await waitFor(() => expect(usernameInput().hasAttribute("aria-busy")).toBe(false));
-    expect(getAvailability).toHaveBeenCalledWith(
-      { username: "alice" },
-      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    await waitFor(() =>
+      expect(suggest).toHaveBeenCalledWith("alice-example", expect.any(AbortSignal)),
     );
-    expect(screen.queryByRole("alert")).toBeNull();
+    resolveSuggestion?.("alice-example");
+
+    await waitFor(() => expect(usernameField().value).toBe("alice-example"));
+    expect(usernameField().hasAttribute("aria-busy")).toBe(false);
   });
 
-  it("reports a taken name once the lookup settles", async () => {
-    getAvailability.mockResolvedValue({ username: { available: false } });
+  it("asks for a lowercase, dashed handle whatever the spacing of the name", async () => {
+    suggest.mockResolvedValue("mary-jane-o'neil");
     render(<TestInput />);
 
-    fireEvent.change(usernameInput(), { target: { value: "  Aude-Péronne " } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "  Mary  Jane\tO'Neil " },
+    });
 
-    expect((await screen.findByRole("alert")).textContent).toBe("That username is already taken");
-    expect(usernameInput().getAttribute("aria-invalid")).toBe("true");
-    expect(getAvailability).toHaveBeenCalledWith(
-      { username: "Aude-Péronne" },
-      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    await waitFor(() =>
+      expect(suggest).toHaveBeenCalledWith("mary-jane-o'neil", expect.any(AbortSignal)),
     );
+    await waitFor(() => expect(usernameField().value).toBe("mary-jane-o'neil"));
   });
 
-  it("does not check a blank name or the one the account already holds", async () => {
-    render(<TestInput owned="alice" initial="alice" />);
+  it("replaces its own suggestion when the name is typed further", async () => {
+    suggest.mockResolvedValueOnce("alice").mockResolvedValueOnce("alice-example");
+    render(<TestInput />);
 
-    fireEvent.change(usernameInput(), { target: { value: "   " } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "Alice" },
+    });
+    await waitFor(() => expect(usernameField().value).toBe("alice"));
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "Alice Example" },
+    });
+
+    await waitFor(() => expect(usernameField().value).toBe("alice-example"));
+    expect(suggest).toHaveBeenNthCalledWith(1, "alice", expect.any(AbortSignal));
+    expect(suggest).toHaveBeenNthCalledWith(2, "alice-example", expect.any(AbortSignal));
+  });
+
+  it("keeps a handle the user typed, including over a suggestion still in flight", async () => {
+    let resolveSuggestion: ((value: string) => void) | undefined;
+    suggest.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolveSuggestion = resolve;
+        }),
+    );
+    render(<TestInput />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "Alice" },
+    });
+    await waitFor(() => expect(suggest).toHaveBeenCalled());
+    fireEvent.change(usernameField(), { target: { value: "custom-name" } });
+    resolveSuggestion?.("alice1");
+
+    await waitFor(() => expect(usernameField().hasAttribute("aria-busy")).toBe(false));
+    expect(usernameField().value).toBe("custom-name");
+  });
+
+  it("does not replace a handle the user already chose when the name changes", async () => {
+    suggest.mockResolvedValue("bob");
+    render(<TestInput initialUsername="custom-name" />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "Bob" },
+    });
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(getAvailability).not.toHaveBeenCalled();
-    expect(usernameInput().hasAttribute("aria-busy")).toBe(false);
+    expect(suggest).not.toHaveBeenCalled();
+    expect(usernameField().value).toBe("custom-name");
   });
 
-  it("drops a taken result that belongs to a name the user already replaced", async () => {
-    const lookups: Array<(value: { username: { available: boolean } }) => void> = [];
-    getAvailability.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          lookups.push(resolve);
-        }),
-    );
-    render(<TestInput />);
-    const input = usernameInput();
-
-    fireEvent.change(input, { target: { value: "alice" } });
-    await waitFor(() => expect(getAvailability).toHaveBeenCalledTimes(1));
-    fireEvent.change(input, { target: { value: "bob" } });
-    lookups[0]?.({ username: { available: false } });
-    await waitFor(() => expect(getAvailability).toHaveBeenCalledTimes(2));
-    lookups[1]?.({ username: { available: true } });
-
-    await waitFor(() => expect(input.hasAttribute("aria-busy")).toBe(false));
-    expect(screen.queryByRole("alert")).toBeNull();
-    expect(input.value).toBe("bob");
-  });
-
-  it("leaves the field usable when the lookup fails", async () => {
-    getAvailability.mockRejectedValue(new Error("offline"));
+  it("leaves the field empty when a suggestion cannot be looked up", async () => {
+    suggest.mockRejectedValue(new Error("offline"));
     render(<TestInput />);
 
-    fireEvent.change(usernameInput(), { target: { value: "alice" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "Alice" },
+    });
 
-    await waitFor(() => expect(usernameInput().hasAttribute("aria-busy")).toBe(false));
+    await waitFor(() => expect(usernameField().hasAttribute("aria-busy")).toBe(false));
+    expect(usernameField().value).toBe("");
     expect(screen.queryByRole("alert")).toBeNull();
-    expect(usernameInput().getAttribute("aria-invalid")).toBe("false");
   });
 });
