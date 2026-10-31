@@ -93,6 +93,7 @@ function account(overrides: Partial<AdminUser> = {}): AdminUser {
   return {
     id: 4210,
     ethereumAddress: ADDRESS,
+    username: "ada",
     name: "Ada Lovelace",
     email: "ada@example.test",
     phone: "+254700000000",

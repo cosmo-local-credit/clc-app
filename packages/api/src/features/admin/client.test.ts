@@ -10,6 +10,7 @@ function user(overrides: Partial<AdminUser> = {}): AdminUser {
   return {
     id: 1,
     ethereumAddress: ADDRESS,
+    username: null,
     name: "Superadmin",
     email: "devops@grassecon.org",
     phone: "",
@@ -187,6 +188,17 @@ describe("listUsers", () => {
       last: 0,
       receivedCount: 0,
     });
+  });
+
+  it("keeps a username and treats a blank one as none", async () => {
+    fetchMock.mockResolvedValue(
+      ok({ users: [user({ username: " ada " }), { ...user(), username: "" }] }),
+    );
+
+    const page = await client().listUsers({ perPage: 25 });
+
+    expect(page.users[0]?.username).toBe("ada");
+    expect(page.users[1]?.username).toBeNull();
   });
 
   it("fills in the location keys the response omits", async () => {

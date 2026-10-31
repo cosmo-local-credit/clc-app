@@ -48,6 +48,15 @@ const columns: Array<ColumnDef<AdminUser>> = [
     ),
   },
   {
+    accessorKey: "username",
+    header: "Username",
+    cell: ({ row }) => (
+      <span className="truncate font-mono text-xs">
+        {row.original.username || <Muted>none</Muted>}
+      </span>
+    ),
+  },
+  {
     accessorKey: "ethereumAddress",
     header: "Address",
     cell: ({ row }) => (
@@ -138,7 +147,7 @@ export function UsersPage({ search }: { search: AccountSearch }) {
                   search: filterSearch(search, { q: value || undefined }),
                 })
               }
-              searchPlaceholder="Name, email, phone, address"
+              searchPlaceholder="Name, username, email, phone, address"
             />
             <Select
               items={STATUS_OPTIONS}

@@ -60,6 +60,8 @@ import {
 export type AdminUser = {
   id: number;
   ethereumAddress: string;
+  /** Public username. Null when the account has none. */
+  username: string | null;
   name: string;
   email: string;
   phone: string;
@@ -166,7 +168,7 @@ export type AdminUserParams = {
   perPage: number;
   cursor?: number;
   next?: boolean;
-  /** Matched by the backend against name, email, phone and address. */
+  /** Matched by the backend against name, username, email, phone and address. */
   q?: string;
   /** One approval state. Omitted means every state. */
   status?: AdminUserStatus;
@@ -609,6 +611,7 @@ function normalizeAdminUser(user: BackendAdminUser): AdminUser {
   return {
     ...user,
     role: isUserRole(user.role) ? user.role : "USER",
+    username: normalizeText(user.username),
     preferredCurrency: normalizeText(user.preferredCurrency),
     bio: normalizeText(user.bio),
     website: normalizeText(user.website),
