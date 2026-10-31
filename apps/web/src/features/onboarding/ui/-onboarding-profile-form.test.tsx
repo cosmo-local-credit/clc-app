@@ -486,7 +486,9 @@ describe("OnboardingProfileForm Continue", () => {
     fireEvent.change(textbox(/^name$/i), { target: { value: "Alice Example" } });
 
     const username = textbox(/^username$/i) as HTMLInputElement;
-    expect(username.getAttribute("aria-busy")).toBe("true");
+    expect(username.hasAttribute("aria-busy")).toBe(false);
+    expect(mockSuggest).not.toHaveBeenCalled();
+    fireEvent.blur(textbox(/^name$/i));
     await waitFor(() => expect(username.value).toBe("alice-1"));
     expect(mockSuggest).toHaveBeenCalledWith("alice-example", expect.any(AbortSignal));
 

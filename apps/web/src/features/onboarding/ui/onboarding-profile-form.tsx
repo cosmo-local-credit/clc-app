@@ -277,8 +277,10 @@ export function OnboardingProfileForm({
     key: string;
     taken: Partial<Record<IdentityField, string>>;
   } | null>(null);
-  // A name suggestion still in flight must land before Continue leaves the page.
+  // A suggestion still in flight must land before Continue leaves the page.
+  // The name field and Continue both call this once typing has finished.
   const [usernamePending, setUsernamePending] = useState(false);
+  const settleUsername = useRef<(() => Promise<void>) | null>(null);
   const onUsernamePending = useCallback((pending: boolean) => {
     setUsernamePending((current) => (current === pending ? current : pending));
   }, []);
@@ -326,6 +328,8 @@ export function OnboardingProfileForm({
     page === "location" && locationTaken ? translateValidationError(locationTaken, i18n) : null;
 
   async function handleContinue() {
+    // Leaving the name, including through Continue, is the end of typing it.
+    if (page === "profile") await settleUsername.current?.();
     if (continueBlocked) return;
     setAttempted((current) => new Set(current).add(page));
     const missingPhoto = page === "profile" && !avatarFile;
@@ -456,7 +460,10 @@ export function OnboardingProfileForm({
                       placeholder={t`Your name`}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
+                      onBlur={() => {
+                        field.handleBlur();
+                        void settleUsername.current?.();
+                      }}
                       aria-invalid={!!err}
                       aria-label={t`Name`}
                     />
@@ -475,6 +482,7 @@ export function OnboardingProfileForm({
                   onChange={field.handleChange}
                   onBlur={field.handleBlur}
                   onPending={onUsernamePending}
+                  settleRef={settleUsername}
                   error={shownError("username", field.state.meta.isTouched)}
                 />
               )}

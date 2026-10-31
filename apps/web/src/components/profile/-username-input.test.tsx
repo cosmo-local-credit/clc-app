@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const suggest = vi.hoisted(() => vi.fn());
@@ -21,16 +21,25 @@ function TestInput({
 }) {
   const [name, setName] = useState(initialName);
   const [username, setUsername] = useState(initialUsername);
+  const settleRef = useRef<(() => Promise<void>) | null>(null);
   return (
     <>
       <label htmlFor="display-name">Name</label>
-      <input id="display-name" value={name} onChange={(event) => setName(event.target.value)} />
+      <input
+        id="display-name"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        onBlur={() => {
+          void settleRef.current?.();
+        }}
+      />
       <UsernameInput
         id="username"
         name={name}
         value={username}
         onChange={setUsername}
         onBlur={vi.fn()}
+        settleRef={settleRef}
         error={error}
       />
     </>
@@ -73,16 +82,39 @@ describe("UsernameInput", () => {
       target: { value: "Alice Example" },
     });
 
-    expect(usernameField().getAttribute("aria-busy")).toBe("true");
-    expect(usernameField().parentElement?.querySelector("[data-slot='spinner']")).toBeTruthy();
+    expect(suggest).not.toHaveBeenCalled();
+    expect(usernameField().hasAttribute("aria-busy")).toBe(false);
 
     await waitFor(() =>
       expect(suggest).toHaveBeenCalledWith("alice-example", expect.any(AbortSignal)),
     );
+    expect(usernameField().getAttribute("aria-busy")).toBe("true");
+    expect(usernameField().parentElement?.querySelector("[data-slot='spinner']")).toBeTruthy();
     resolveSuggestion?.("alice-example");
 
     await waitFor(() => expect(usernameField().value).toBe("alice-example"));
     expect(usernameField().hasAttribute("aria-busy")).toBe(false);
+  });
+
+  it("suggests as soon as the name is left, without waiting out the pause", async () => {
+    let resolveSuggestion: ((value: string) => void) | undefined;
+    suggest.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolveSuggestion = resolve;
+        }),
+    );
+    render(<TestInput />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), {
+      target: { value: "Alice Example" },
+    });
+    fireEvent.blur(screen.getByRole("textbox", { name: "Name" }));
+
+    expect(suggest).toHaveBeenCalledWith("alice-example", expect.any(AbortSignal));
+    expect(usernameField().getAttribute("aria-busy")).toBe("true");
+    resolveSuggestion?.("alice-example");
+    await waitFor(() => expect(usernameField().value).toBe("alice-example"));
   });
 
   it("asks for a lowercase, dashed handle whatever the spacing of the name", async () => {
@@ -159,6 +191,7 @@ describe("UsernameInput", () => {
       target: { value: "Alice" },
     });
 
+    await waitFor(() => expect(suggest).toHaveBeenCalled());
     await waitFor(() => expect(usernameField().hasAttribute("aria-busy")).toBe(false));
     expect(usernameField().value).toBe("");
     expect(screen.queryByRole("alert")).toBeNull();

@@ -6,22 +6,19 @@ import { Spinner } from "#/components/ui/spinner";
 import { recipientsClient } from "#/lib/api/recipients";
 import { cn } from "#/lib/utils";
 
-const SUGGEST_DEBOUNCE_MS = 300;
+/** How long the name stays still before the old Suggest action runs on its own. */
+const SUGGEST_PAUSE_MS = 600;
 
 /** A handle, not the display name: lowercase, words joined by dashes. */
 function usernameHint(name: string): string {
   return name.trim().toLowerCase().split(/\s+/).filter(Boolean).join("-");
 }
 
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === "AbortError";
-}
-
 /**
- * Username. Typing the person's name fills a free handle here. The spinner
- * sits in the field while that suggestion is looked up. A handle the person
- * types themselves is left alone, so a taken suggestion or one they do not
- * want can be replaced.
+ * Username. Once the person's name has been still, or they leave it, this asks
+ * for a free handle the way the old Suggest button did and fills it in. The
+ * spinner shows while that lookup runs. A handle they type themselves is left
+ * alone, so a taken or unwanted suggestion can be changed.
  */
 export function UsernameInput({
   id,
@@ -30,16 +27,22 @@ export function UsernameInput({
   onChange,
   onBlur,
   onPending,
+  settleRef,
   error,
 }: {
   id: string;
   value: string;
-  /** The display name being typed. A suggestion is taken from this, not from the handle. */
+  /** The display name. A suggestion is taken from this once typing has finished. */
   name?: string;
   onChange: (value: string) => void;
   onBlur: () => void;
-  /** True while a suggestion for the current name is still being looked up. */
+  /** True while the suggestion lookup for the finished name is in flight. */
   onPending?: (pending: boolean) => void;
+  /**
+   * Set to a function that runs the suggestion now. The name field calls it on
+   * blur, and Continue calls it so leaving the page does not drop the result.
+   */
+  settleRef?: { current: (() => Promise<void>) | null };
   error?: string | null;
 }) {
   const { t } = useLingui();
@@ -49,50 +52,98 @@ export function UsernameInput({
   onChangeRef.current = onChange;
   const onPendingRef = useRef(onPending);
   onPendingRef.current = onPending;
+  const hint = usernameHint(name);
+  const hintRef = useRef(hint);
+  hintRef.current = hint;
   const suggestionRef = useRef<string | null>(null);
+  const appliedHintRef = useRef<string | null>(null);
+  const requestId = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const flightRef = useRef<Promise<void> | null>(null);
+  const flightHintRef = useRef<string | null>(null);
   const [suggesting, setSuggesting] = useState(false);
   const errorId = `${id}-error`;
-  const hint = usernameHint(name);
 
-  useEffect(() => {
+  const runRef = useRef<() => Promise<void>>(async () => {});
+  runRef.current = () => {
+    const hintNow = hintRef.current;
     const untouched = () => valueRef.current === "" || valueRef.current === suggestionRef.current;
-    if (!hint || !untouched()) {
+    if (!hintNow || !untouched()) {
+      requestId.current += 1;
+      abortRef.current?.abort();
+      flightRef.current = null;
+      flightHintRef.current = null;
       setSuggesting(false);
       onPendingRef.current?.(false);
-      return;
+      return Promise.resolve();
     }
+    if (appliedHintRef.current === hintNow) return Promise.resolve();
+    if (flightRef.current && flightHintRef.current === hintNow) return flightRef.current;
+
+    requestId.current += 1;
+    const id = requestId.current;
+    abortRef.current?.abort();
     const controller = new AbortController();
-    let cancelled = false;
+    abortRef.current = controller;
+    flightHintRef.current = hintNow;
     setSuggesting(true);
     onPendingRef.current?.(true);
-    const timer = window.setTimeout(() => {
-      if (!untouched()) {
-        setSuggesting(false);
-        onPendingRef.current?.(false);
-        return;
-      }
-      const atRequest = valueRef.current;
-      void recipientsClient.suggest(hint, controller.signal).then(
+    const atRequest = valueRef.current;
+    // Abort has to settle this promise even when the client ignores the signal,
+    // or Continue would wait on a lookup for a name that is no longer current.
+    const flight = new Promise<void>((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      controller.signal.addEventListener("abort", finish, { once: true });
+      recipientsClient.suggest(hintNow, controller.signal).then(
         (suggestion) => {
-          if (cancelled) return;
-          setSuggesting(false);
-          onPendingRef.current?.(false);
-          if (valueRef.current !== atRequest && valueRef.current !== suggestionRef.current) return;
-          suggestionRef.current = suggestion;
-          if (valueRef.current !== suggestion) onChangeRef.current(suggestion);
+          if (id === requestId.current && !controller.signal.aborted) {
+            if (valueRef.current === atRequest || valueRef.current === suggestionRef.current) {
+              suggestionRef.current = suggestion;
+              appliedHintRef.current = hintNow;
+              if (valueRef.current !== suggestion) onChangeRef.current(suggestion);
+            }
+          }
+          finish();
         },
-        (lookupError: unknown) => {
-          if (cancelled || isAbortError(lookupError)) return;
-          setSuggesting(false);
-          onPendingRef.current?.(false);
-        },
+        () => finish(),
       );
-    }, SUGGEST_DEBOUNCE_MS);
+    }).finally(() => {
+      if (id !== requestId.current) return;
+      flightRef.current = null;
+      flightHintRef.current = null;
+      setSuggesting(false);
+      onPendingRef.current?.(false);
+    });
+    flightRef.current = flight;
+    return flight;
+  };
+
+  useEffect(() => {
+    if (!settleRef) return;
+    settleRef.current = () => runRef.current();
     return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-      controller.abort();
+      settleRef.current = null;
     };
+  }, [settleRef]);
+
+  useEffect(() => {
+    // A name that is still changing supersedes a lookup for the previous one.
+    requestId.current += 1;
+    abortRef.current?.abort();
+    setSuggesting(false);
+    onPendingRef.current?.(false);
+
+    const untouched = valueRef.current === "" || valueRef.current === suggestionRef.current;
+    if (!hint || !untouched) return;
+    const timer = window.setTimeout(() => {
+      void runRef.current();
+    }, SUGGEST_PAUSE_MS);
+    return () => window.clearTimeout(timer);
   }, [hint]);
 
   return (
