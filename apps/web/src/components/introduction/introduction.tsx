@@ -21,7 +21,9 @@ import { introductionSlides as slides } from "./introduction-content";
  * two above the picture. Swipe, the arrows beside the picture, a segment, or
  * the arrow keys move it; it stops at the last slide rather than wrapping.
  *
- * On Welcome the first slide carries the page title. Elsewhere it is a section.
+ * On Welcome the first slide carries the page title, and the whole guide sits
+ * in the middle of the space under the header. Elsewhere it is a section,
+ * top-aligned, so the Settings replay is unchanged.
  */
 export function GuideCarousel({
   welcome = false,
@@ -59,7 +61,12 @@ export function GuideCarousel({
       setApi={setApi}
       direction={direction}
       aria-label={t({ id: "intro.replay", message: "How to use CLC" })}
-      className="flex flex-col"
+      className={cn(
+        "flex w-full flex-col",
+        // Auto margins center the block in the onboarding body and collapse to
+        // nothing when a short phone has to scroll.
+        welcome && "my-auto",
+      )}
     >
       <div className="relative">
         <CarouselContent className="ms-0 w-full items-stretch">

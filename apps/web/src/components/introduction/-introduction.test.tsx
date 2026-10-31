@@ -86,6 +86,19 @@ it("gives Welcome its page title on the first slide only", () => {
   expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(6);
 });
 
+it("centers the welcome guide and leaves the Settings replay at the top", () => {
+  const welcome = render(<GuideCarousel welcome />);
+  expect(
+    welcome.container.querySelector("[data-slot='carousel']")?.classList.contains("my-auto"),
+  ).toBe(true);
+  welcome.unmount();
+
+  const replay = render(<GuideCarousel />);
+  expect(
+    replay.container.querySelector("[data-slot='carousel']")?.classList.contains("my-auto"),
+  ).toBe(false);
+});
+
 it("places the copy above the picture and keeps the arrows out of the track", () => {
   const { container } = render(<GuideCarousel welcome />);
   const heading = screen.getByRole("heading", { level: 1, name: "Cosmo-Local Credit" });
