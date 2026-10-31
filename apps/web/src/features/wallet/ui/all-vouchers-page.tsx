@@ -11,6 +11,7 @@ import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { MyRetirementRequests } from "#/components/retirement/my-retirement-requests";
 import { ResourceQuotaTitle } from "#/components/resource-usage";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { BackChevron } from "#/components/wallet/wallet-kit";
@@ -211,6 +212,7 @@ export function AllVouchersPage() {
               )}
             </div>
           </section>
+          {address ? <MyRetirementRequests viewer={address} /> : null}
         </div>
       )}
 

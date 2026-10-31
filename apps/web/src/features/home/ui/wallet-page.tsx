@@ -19,7 +19,6 @@ import { useWalletVoucherPreview } from "#/features/wallet/hooks/use-wallet-vouc
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
-import { MyRetirementRequests } from "#/components/retirement/my-retirement-requests";
 import { RESOURCE_HUE, RESOURCE_ICON, RESOURCE_OUTLINE } from "#/components/resource-tone";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
@@ -483,7 +482,6 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       </section>
 
-      {address ? <MyRetirementRequests viewer={address} /> : null}
       <MyCatalogSection usage={usage} />
     </div>
   );
