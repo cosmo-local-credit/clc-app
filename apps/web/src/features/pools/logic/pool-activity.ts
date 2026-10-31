@@ -48,6 +48,7 @@ export type PoolActivityEntry =
   | (PoolActivityBase & { kind: "mint"; leg: PoolActivityLeg })
   | (PoolActivityBase & {
       kind: "transfer" | "withdrawal" | "fee-withdrawal" | "payout";
+      nominalAmount?: string;
       direction: "IN" | "OUT";
       counterpartyAddress: string;
       leg: PoolActivityLeg;
@@ -105,5 +106,12 @@ export function poolActivityFromAccount(
         : item.kind === "pool_payout"
           ? "payout"
           : "transfer";
-  return { ...base, kind, direction, counterpartyAddress: counterparty, leg: movement };
+  return {
+    ...base,
+    kind,
+    nominalAmount: item.nominalAmount,
+    direction,
+    counterpartyAddress: counterparty,
+    leg: movement,
+  };
 }

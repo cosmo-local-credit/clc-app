@@ -71,6 +71,8 @@ export type ActivityLeg = {
 
 type DirectAccountActivityItem = {
   kind: Exclude<ActivityKind, "swapped">;
+  /** Nominal withdrawal debit; transfer.amount can be smaller after token tax. */
+  nominalAmount?: string;
   direction?: "IN" | "OUT" | "NONE";
   poolAddresses?: string[];
   poolName?: string;

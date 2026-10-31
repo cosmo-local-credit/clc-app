@@ -75,6 +75,7 @@ describe("server-classified pool activity", () => {
         recipientAddress: recipient,
         counterpartyAddress: recipient,
         initiatorAddress: kind === "withdrawn" ? owner : undefined,
+        nominalAmount: `${leg.amount}0`,
       },
       pool,
     );
@@ -82,6 +83,9 @@ describe("server-classified pool activity", () => {
     expect(entry.detail.senderAddress).toBe(pool);
     expect(entry.detail.recipientAddress).toBe(recipient);
     expect(entry.initiatorAddress).toBe(kind === "withdrawn" ? owner : undefined);
+    if (entry.kind === "swap" || entry.kind === "mint") throw new Error("expected direct movement");
+    expect(entry.nominalAmount).toBe(`${leg.amount}0`);
+    expect(entry.leg.amount).toBe(leg.amount);
   });
 
   it("keeps issuance separate from deposits", () => {

@@ -119,6 +119,7 @@ describe("ActivityPage", () => {
         poolAddresses: [pool],
         poolName: "Community Pool",
         initiatorAddress: ADDRESS,
+        nominalAmount: kind === "fee_withdrawn" ? "2000000" : "1000000",
         transfer: {
           tokenAddress: pool,
           tokenSymbol: "TEST",
@@ -146,6 +147,18 @@ describe("ActivityPage", () => {
         within(dialog).getByText(kind === "deposited" ? "Deposit into pool" : "Pay Out"),
       ).toBeTruthy();
       if (direction === "NONE") expect(within(dialog).getByText("No balance change")).toBeTruthy();
+      if (kind === "fee_withdrawn") {
+        expect(
+          within(dialog).getByText("Withdrawn from pool").parentElement?.textContent,
+        ).toContain("2 TEST");
+        expect(
+          within(dialog).getByText("Received by recipient").parentElement?.textContent,
+        ).toContain("1 TEST");
+        expect(row.textContent).toContain("1 TEST");
+        expect(row.textContent).not.toContain("2 TEST");
+      } else {
+        expect(within(dialog).queryByText("Received by recipient")).toBeNull();
+      }
       fireEvent.keyDown(document, { key: "Escape" });
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     },

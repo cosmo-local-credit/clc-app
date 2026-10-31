@@ -115,6 +115,57 @@ describe("PoolActivityDetailsSheet", () => {
     expect(screen.getByText("Total fees").parentElement?.textContent).toContain("1.10 SAR2.20%");
   });
 
+  it.each(["withdrawal", "fee-withdrawal"] as const)(
+    "shows the pool debit separately from the net recipient transfer for %s",
+    (kind) => {
+      render(
+        <PoolActivityDetailsSheet
+          poolAddress={POOL}
+          entry={{
+            ...base,
+            kind,
+            direction: "OUT",
+            counterpartyAddress: TRADER,
+            nominalAmount: "100000000",
+            leg: { ...leg, amount: "90000000", uoaValue: "90", uoa: "KES" },
+          }}
+          open
+          onOpenChange={() => {}}
+        />,
+      );
+      const nominal = screen.getByText("Withdrawn from pool").parentElement;
+      expect(nominal?.textContent).toContain("100 KAW");
+      expect(nominal?.textContent).not.toContain("KES");
+      expect(screen.getByText("Received by recipient").parentElement?.textContent).toContain(
+        "90 KAW (90.00 KES)",
+      );
+    },
+  );
+
+  it.each([undefined, "1000000"])(
+    "keeps one amount when the nominal amount is absent or equal (%s)",
+    (nominalAmount) => {
+      render(
+        <PoolActivityDetailsSheet
+          poolAddress={POOL}
+          entry={{
+            ...base,
+            kind: "withdrawal",
+            direction: "OUT",
+            counterpartyAddress: TRADER,
+            leg,
+            nominalAmount,
+          }}
+          open
+          onOpenChange={() => {}}
+        />,
+      );
+      expect(screen.getByText("Amount").parentElement?.textContent).toContain("−1 KAW");
+      expect(screen.queryByText("Withdrawn from pool")).toBeNull();
+      expect(screen.queryByText("Received by recipient")).toBeNull();
+    },
+  );
+
   it("shows both historical voucher values without recalculating them", () => {
     const entry: PoolActivityEntry = {
       ...base,

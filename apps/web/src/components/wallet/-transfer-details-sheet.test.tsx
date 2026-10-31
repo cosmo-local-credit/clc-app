@@ -101,6 +101,45 @@ afterEach(() => {
 });
 
 describe("TransferDetailsSheet receipt sharing", () => {
+  it.each(["withdrawn", "fee_withdrawn"] as const)(
+    "shows the nominal debit and received amount for a taxed %s",
+    (activityKind) => {
+      render(
+        <TransferDetailsSheet
+          transfer={{
+            ...TRANSFER,
+            activityKind,
+            amount: "90000000",
+            nominalAmount: "100000000",
+            uoaValue: "90",
+            uoa: "KES",
+          }}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      );
+      const nominal = screen.getByText("Withdrawn from pool").parentElement;
+      expect(nominal?.textContent).toContain("100 USDC");
+      expect(nominal?.textContent).not.toContain("KES");
+      expect(screen.getByText("Received by recipient").parentElement?.textContent).toContain(
+        "90 USDC(90.00 KES)",
+      );
+    },
+  );
+
+  it.each([
+    { activityKind: "withdrawn", nominalAmount: undefined },
+    { activityKind: "withdrawn", nominalAmount: "1000000" },
+    { activityKind: "pool_payout", nominalAmount: "2000000" },
+  ] as const)("keeps a single amount without a distinct withdrawal debit (%j)", (details) => {
+    render(
+      <TransferDetailsSheet transfer={{ ...TRANSFER, ...details }} open onOpenChange={vi.fn()} />,
+    );
+    expect(screen.getByText("Amount").parentElement?.textContent).toContain("1 USDC");
+    expect(screen.queryByText("Withdrawn from pool")).toBeNull();
+    expect(screen.queryByText("Received by recipient")).toBeNull();
+  });
+
   it("shows liquidity withdrawals with a separate initiating owner and recipient", () => {
     const owner = "0x4444444444444444444444444444444444444444";
     render(
@@ -110,6 +149,7 @@ describe("TransferDetailsSheet receipt sharing", () => {
           activityKind: "withdrawn",
           initiatorAddress: owner,
           direction: "NONE",
+          nominalAmount: "1000000",
         }}
         open
         onOpenChange={vi.fn()}
@@ -118,6 +158,8 @@ describe("TransferDetailsSheet receipt sharing", () => {
     expect(screen.getByText("Pay Out")).toBeTruthy();
     expect(screen.getByText("Withdrawal")).toBeTruthy();
     expect(screen.getByText("No balance change")).toBeTruthy();
+    expect(screen.queryByText("Received by recipient")).toBeNull();
+    expect(screen.getByText("Amount").parentElement?.textContent).toContain("1 USDC");
     expect(screen.getByText("Initiated by").parentElement?.textContent).toContain(owner);
     expect(screen.getByText("From").parentElement?.textContent).toContain(TRANSFER.senderAddress);
     expect(screen.getByText("To").parentElement?.textContent).toContain(TRANSFER.recipientAddress);

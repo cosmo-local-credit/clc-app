@@ -401,6 +401,7 @@ function toTransferDetails(
         ? item.kind
         : undefined,
     initiatorAddress: item.initiatorAddress,
+    nominalAmount: item.nominalAmount,
     txHash: item.txHash,
     dateBlock: item.dateBlock,
     direction: item.direction ?? (item.kind === "sent" ? "OUT" : "IN"),

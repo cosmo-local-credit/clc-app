@@ -32,6 +32,7 @@ import { ShareReceiptButton } from "./share-receipt-button";
 export type TransferDetails = {
   activityKind?: "deposited" | "withdrawn" | "fee_withdrawn" | "pool_payout";
   initiatorAddress?: string;
+  nominalAmount?: string;
   txHash: string;
   direction: "IN" | "OUT" | "NONE";
   senderAddress: string;
@@ -111,6 +112,14 @@ export function TransferDetailsSheet({
     ? formatTransferUnitValue(transfer.uoaValue, transfer.uoa, i18n.locales?.[0] ?? i18n.locale)
     : null;
   const amountLabel = uoaLabel ? `${tokenAmountLabel} (${uoaLabel})` : tokenAmountLabel;
+  const withdrawnAmountLabel =
+    transfer &&
+    (transfer.activityKind === "withdrawn" || transfer.activityKind === "fee_withdrawn") &&
+    transfer.direction !== "NONE" &&
+    transfer.nominalAmount &&
+    transfer.nominalAmount !== transfer.amount
+      ? `${formatTokenAmount(transfer.nominalAmount, transfer.tokenDecimals)} ${transfer.tokenSymbol}`
+      : null;
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -150,11 +159,25 @@ export function TransferDetailsSheet({
                     {status}
                   </Badge>
                 </div>
+                {withdrawnAmountLabel ? (
+                  <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                    <span className="text-muted-foreground text-xs">
+                      <Trans>Withdrawn from pool</Trans>
+                    </span>
+                    <span className="min-w-0 break-words text-end font-mono text-xs font-semibold">
+                      {withdrawnAmountLabel}
+                    </span>
+                  </div>
+                ) : null}
                 <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
                   <span className="text-muted-foreground text-xs">
-                    <Trans>Amount</Trans>
+                    {withdrawnAmountLabel ? (
+                      <Trans>Received by recipient</Trans>
+                    ) : (
+                      <Trans>Amount</Trans>
+                    )}
                   </span>
-                  <span className="text-end font-mono text-xs font-semibold">
+                  <span className="min-w-0 break-words text-end font-mono text-xs font-semibold">
                     <span className="block">
                       {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                       <Link
