@@ -98,6 +98,20 @@ export function AccountHeader({
           <div className="flex min-w-0 flex-col gap-1.5">
             <h1 className="min-w-0 break-words">{name}</h1>
 
+            {/* A username can be the display name itself, so it needs its own
+                label. It stays with the title: the records tab is what this
+                screen is usually opened on, and the record card sits below it. */}
+            {account ? (
+              <div className="flex min-w-0 items-baseline gap-2">
+                <span className="text-muted-foreground shrink-0 text-xs">Username</span>
+                {account.username ? (
+                  <span className="min-w-0 font-mono text-xs break-words">{account.username}</span>
+                ) : (
+                  <span className="text-muted-foreground font-mono text-xs">None</span>
+                )}
+              </div>
+            ) : null}
+
             <div className="flex items-center gap-1">
               <span className="font-data text-muted-foreground text-xs break-all">{address}</span>
               <CopyButton value={address} label="Copy address" />
