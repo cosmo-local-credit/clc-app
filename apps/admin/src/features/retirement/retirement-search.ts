@@ -2,6 +2,7 @@ import type {
   RetirementRequestStatus,
   RetirementResourceType,
 } from "@clc/api/features/retirement/client";
+import { type TableSearch, parseTableSearch } from "#/lib/table-search";
 
 export const RETIREMENT_STATUSES = [
   "pending",
@@ -12,10 +13,9 @@ export const RETIREMENT_STATUSES = [
   "all",
 ] as const;
 
-export type RetirementSearch = {
+export type RetirementSearch = TableSearch & {
   status?: RetirementRequestStatus | "all";
   resourceType?: RetirementResourceType;
-  cursor?: number;
 };
 
 export function parseRetirementSearch(search: Record<string, unknown>): RetirementSearch {
@@ -24,10 +24,9 @@ export function parseRetirementSearch(search: Record<string, unknown>): Retireme
     search.resourceType === "voucher" || search.resourceType === "pool"
       ? search.resourceType
       : undefined;
-  const cursor = Number(search.cursor);
   return {
+    ...parseTableSearch(search),
     ...(status && status !== "pending" ? { status } : {}),
     ...(resourceType ? { resourceType } : {}),
-    ...(Number.isSafeInteger(cursor) && cursor > 0 ? { cursor } : {}),
   };
 }

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { HiOutlineBell } from "react-icons/hi";
 import { Badge } from "#/components/ui/badge";
+import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 import { usePendingRetirementCount } from "./use-retirement";
 
 /**
@@ -28,6 +29,7 @@ export function RetirementDashboardLink() {
   return (
     <Link
       to="/retirement-requests"
+      search={{ perPage: DEFAULT_PAGE_SIZE }}
       className="border-border bg-card hover:bg-accent/60 focus-visible:ring-ring flex flex-wrap items-center gap-3 border p-4 outline-none focus-visible:ring-1"
     >
       <HiOutlineBell aria-hidden="true" className="size-5 shrink-0" />

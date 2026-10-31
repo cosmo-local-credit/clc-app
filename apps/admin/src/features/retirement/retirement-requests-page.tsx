@@ -10,10 +10,13 @@ import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
+import { TablePagination } from "#/components/admin/table-pagination";
 import { Button } from "#/components/ui/button";
 import { clcApi } from "#/lib/api";
 import { formatDateTime } from "#/lib/format";
+import { filterSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
+import { usePagedTable } from "#/lib/use-paged-table";
 import { RETIREMENT_STATUSES, type RetirementSearch } from "./retirement-search";
 import { RetirementStatus } from "./retirement-status";
 import { RETIREMENT_POLL_MS } from "./use-retirement";
@@ -66,19 +69,28 @@ export function RetirementRequestsPage({ search }: { search: RetirementSearch })
   const navigate = useNavigate();
   const query = useQuery({
     ...adminRetirementRequestsQueryOptions(clcApi.retirement, {
-      ...search,
       status: search.status ?? "pending",
-      perPage: 25,
+      resourceType: search.resourceType,
+      perPage: search.perPage,
+      cursor: search.cursor,
+      next: search.dir === undefined ? undefined : search.dir === "next",
     }),
     refetchInterval: RETIREMENT_POLL_MS,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: "always",
   });
+  const requests = query.data?.requests ?? [];
   const state = useDataState(query, (page) => page.requests.length === 0);
+  const dropped = (query.data?.receivedCount ?? 0) - requests.length;
+  const table = usePagedTable({
+    search,
+    page: query.data,
+    navigate: (next) => void navigate({ to: "/retirement-requests", search: next }),
+  });
   const filter = (next: Partial<RetirementSearch>) =>
     void navigate({
       to: "/retirement-requests",
-      search: { ...search, ...next, cursor: undefined },
+      search: filterSearch(search, next),
     });
   return (
     <div className="flex flex-col gap-6">
@@ -144,7 +156,8 @@ export function RetirementRequestsPage({ search }: { search: RetirementSearch })
           {state.kind === "stale" ? <StaleNotice message={state.message} /> : null}
           <DataTable
             columns={columns}
-            data={query.data?.requests ?? []}
+            data={requests}
+            rowClassName="h-12"
             emptyState={
               <EmptyState
                 title="No retirement requests"
@@ -152,35 +165,17 @@ export function RetirementRequestsPage({ search }: { search: RetirementSearch })
               />
             }
             footer={
-              <div className="flex items-center justify-end gap-2 p-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!search.cursor || query.isFetching}
-                  onClick={() =>
-                    void navigate({
-                      to: "/retirement-requests",
-                      search: { ...search, cursor: undefined },
-                    })
-                  }
-                >
-                  First page
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!query.data?.nextCursor || query.isFetching}
-                  onClick={() => {
-                    if (query.data?.nextCursor)
-                      void navigate({
-                        to: "/retirement-requests",
-                        search: { ...search, cursor: query.data.nextCursor },
-                      });
-                  }}
-                >
-                  Older requests
-                </Button>
-              </div>
+              <TablePagination
+                search={search}
+                dropped={dropped}
+                isFirstPage={table.isFirstPage}
+                mightHaveMore={table.mightHaveMore}
+                isFetching={query.isFetching}
+                onFirstPage={table.onFirstPage}
+                onPreviousPage={table.onPreviousPage}
+                onNextPage={table.onNextPage}
+                onPageSize={table.onPageSize}
+              />
             }
           />
         </>

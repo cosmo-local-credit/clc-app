@@ -29,7 +29,13 @@ function mount(
 }
 
 function pending(count: number) {
-  mocks.listAdmin.mockResolvedValue({ requests: [], pendingCount: count, nextCursor: null });
+  mocks.listAdmin.mockResolvedValue({
+    requests: [],
+    pendingCount: count,
+    first: 0,
+    last: 0,
+    receivedCount: 0,
+  });
 }
 
 /** A zero count draws nothing, so the settled query is the signal that it loaded. */
