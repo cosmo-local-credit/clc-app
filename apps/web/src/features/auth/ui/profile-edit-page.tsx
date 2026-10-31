@@ -155,7 +155,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
     // the DOM, but a React submit event would still bubble to this form.
     <>
       <ProfileUsernameSection profile={profile} />
-      <ProfilePrivacyNotice />
+      <ProfilePrivacyNotice className="mt-4" />
 
       <form
         aria-label={t`Edit profile`}
