@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiLock } from "react-icons/fi";
-import { RiCheckLine, RiEdit2Line, RiErrorWarningLine } from "react-icons/ri";
+import { RiCheckLine, RiEdit2Line } from "react-icons/ri";
 import { privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
@@ -496,19 +496,15 @@ export function OnboardingWalletStep({
           <Trans>Your sign-in card</Trans>
         </OnboardingTitle>
         <GuideArt name="sign-in-card" className="h-40 shrink-0" />
-        <div className="flex items-start gap-2.5 border border-border bg-card p-3 text-sm">
-          <RiErrorWarningLine
-            className="mt-0.5 size-4 shrink-0 text-warning-foreground"
-            aria-hidden="true"
-          />
-          <p>
+        <aside className="border border-primary/30 bg-card">
+          <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
             <Trans>
               Use this QR card to sign in to your wallet. Save it securely. If you add a password,
               keep it separately. Without a password, anyone who scans the card can access your
               wallet.
             </Trans>
           </p>
-        </div>
+        </aside>
         {protectionControls}
       </OnboardingScreen>
     );
