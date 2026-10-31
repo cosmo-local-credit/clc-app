@@ -1,17 +1,17 @@
 import type { IdentityAvailability } from "@clc/api/features/identity/client";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
-import { profileSchema, usernameSchema } from "@clc/core/features/signup/logic";
+import { profileSchema } from "@clc/core/features/signup/logic";
 import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
 import { useForm, useStore } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
 import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
 import { ProfilePrivacyNotice } from "#/components/profile-privacy-notice";
-import { UsernameInput } from "#/components/profile/username-input";
+import { UsernameInput, type UsernameOccupancy } from "#/components/profile/username-input";
 import { ActionRow } from "#/components/ui/action-row";
 import { AvatarPicker } from "#/components/ui/avatar-picker";
 import { Button } from "#/components/ui/button";
@@ -134,20 +134,19 @@ type IdentityProbe = {
   fields: Partial<Record<IdentityField, string>>;
 };
 
-/** Locally valid, non-empty identities. Invalid text stays on the schema gate. */
+/**
+ * Locally valid, non-empty email and phone. Invalid text stays on the schema
+ * gate. The username field checks its own occupancy.
+ */
 function identityProbe(values: ProfileFormValues): IdentityProbe {
   const fields: IdentityProbe["fields"] = {};
   const email = optionalEmailSchema.safeParse(values.email);
   if (email.success && email.data) fields.email = email.data.toLowerCase();
   const phone = optionalPhoneSchema.safeParse(values.phone);
   if (phone.success && phone.data) fields.phone = phone.data;
-  const username = usernameSchema.safeParse(values.username ?? "");
-  if (username.success && username.data) fields.username = username.data;
-  const active = Boolean(fields.email || fields.phone || fields.username);
+  const active = Boolean(fields.email || fields.phone);
   return {
-    key: active
-      ? JSON.stringify([fields.email ?? null, fields.phone ?? null, fields.username ?? null])
-      : "",
+    key: active ? JSON.stringify([fields.email ?? null, fields.phone ?? null]) : "",
     fields,
   };
 }
@@ -159,9 +158,6 @@ function takenIdentities(
   const taken: Partial<Record<IdentityField, string>> = {};
   if (fields.email && result.email?.available === false) taken.email = TAKEN_IDENTITY.email;
   if (fields.phone && result.phone?.available === false) taken.phone = TAKEN_IDENTITY.phone;
-  if (fields.username && result.username?.available === false) {
-    taken.username = TAKEN_IDENTITY.username;
-  }
   return taken;
 }
 
@@ -277,6 +273,16 @@ export function OnboardingProfileForm({
     key: string;
     taken: Partial<Record<IdentityField, string>>;
   } | null>(null);
+  // The username field checks itself. This is what Continue waits on.
+  const [usernameOccupancy, setUsernameOccupancy] = useState<UsernameOccupancy>({
+    checking: false,
+    taken: false,
+  });
+  const onUsernameOccupancy = useCallback((next: UsernameOccupancy) => {
+    setUsernameOccupancy((current) =>
+      current.checking === next.checking && current.taken === next.taken ? current : next,
+    );
+  }, []);
 
   // A check that is still settling must not keep the previous value's message,
   // and it must not let Continue through to the paper wallet.
@@ -307,16 +313,19 @@ export function OnboardingProfileForm({
 
   const settled = availability?.key === probe.key ? availability.taken : undefined;
   const checking = probe.key !== "" && availability?.key !== probe.key;
-  const usernameConcern = Boolean(probe.fields.username);
   const contactConcern = Boolean(probe.fields.email || probe.fields.phone);
+  const usernameBlocked = usernameOccupancy.checking || usernameOccupancy.taken;
   const continueBlocked =
     page === "profile"
-      ? usernameConcern && (checking || Boolean(settled?.username))
+      ? usernameBlocked
       : page === "contact"
         ? contactConcern && (checking || Boolean(settled?.email || settled?.phone))
-        : (usernameConcern || contactConcern) &&
-          (checking || Boolean(settled?.email || settled?.phone || settled?.username));
-  const locationTaken = settled?.email ?? settled?.phone ?? settled?.username;
+        : usernameBlocked ||
+          (contactConcern && (checking || Boolean(settled?.email || settled?.phone)));
+  const locationTaken =
+    settled?.email ??
+    settled?.phone ??
+    (usernameOccupancy.taken ? TAKEN_IDENTITY.username : undefined);
   const identityNotice =
     page === "location" && locationTaken ? translateValidationError(locationTaken, i18n) : null;
 
@@ -336,14 +345,7 @@ export function OnboardingProfileForm({
 
   /** The translated error a field shows. A taken identity shows immediately. */
   function shownError(name: keyof ProfileFormValues, touched: boolean) {
-    const taken =
-      name === "email"
-        ? settled?.email
-        : name === "phone"
-          ? settled?.phone
-          : name === "username"
-            ? settled?.username
-            : undefined;
+    const taken = name === "email" ? settled?.email : name === "phone" ? settled?.phone : undefined;
     if (taken) return translateValidationError(taken, i18n);
     if (!touched && !attempted.has(page)) return null;
     const err = errors[name];
@@ -466,9 +468,9 @@ export function OnboardingProfileForm({
                 <UsernameInput
                   id="onb-username"
                   value={field.state.value ?? ""}
-                  hint={() => form.getFieldValue("name")}
                   onChange={field.handleChange}
                   onBlur={field.handleBlur}
+                  onOccupancy={onUsernameOccupancy}
                   error={shownError("username", field.state.meta.isTouched)}
                 />
               )}

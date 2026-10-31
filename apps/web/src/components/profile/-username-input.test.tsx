@@ -2,21 +2,29 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-const suggest = vi.hoisted(() => vi.fn());
+const getAvailability = vi.hoisted(() => vi.fn());
 
-vi.mock("#/lib/api/recipients", () => ({
-  recipientsClient: { suggest },
+vi.mock("#/lib/api/identity", () => ({
+  identityClient: { getAvailability },
 }));
 
 import { UsernameInput } from "./username-input";
 
-function TestInput({ error, hint = "Alice Example" }: { error?: string; hint?: string }) {
-  const [value, setValue] = useState("");
+function TestInput({
+  error,
+  owned,
+  initial = "",
+}: {
+  error?: string;
+  owned?: string;
+  initial?: string;
+}) {
+  const [value, setValue] = useState(initial);
   return (
     <UsernameInput
       id="username"
       value={value}
-      hint={() => hint}
+      owned={owned}
       onChange={setValue}
       onBlur={vi.fn()}
       error={error}
@@ -24,79 +32,109 @@ function TestInput({ error, hint = "Alice Example" }: { error?: string; hint?: s
   );
 }
 
+function usernameInput() {
+  return screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement;
+}
+
 afterEach(() => {
-  suggest.mockReset();
+  getAvailability.mockReset();
 });
 
 describe("UsernameInput", () => {
   it("supports manual entry and connects its validation error", () => {
-    render(<TestInput error="That username is unavailable" />);
-    const input = screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement;
+    getAvailability.mockResolvedValue({ username: { available: true } });
+    render(<TestInput error="Use 80 characters or fewer" />);
 
-    fireEvent.change(input, { target: { value: "alice-2" } });
+    fireEvent.change(usernameInput(), { target: { value: "alice-2" } });
 
-    expect(input.value).toBe("alice-2");
-    expect(input.getAttribute("aria-invalid")).toBe("true");
-    expect(input.getAttribute("aria-describedby")).toBe("username-error");
-    expect(screen.getByRole("alert").textContent).toBe("That username is unavailable");
+    expect(usernameInput().value).toBe("alice-2");
+    expect(usernameInput().getAttribute("aria-invalid")).toBe("true");
+    expect(usernameInput().getAttribute("aria-describedby")).toBe("username-error");
+    expect(screen.getByRole("alert").textContent).toBe("Use 80 characters or fewer");
+    expect(screen.queryByRole("button", { name: "Suggest username" })).toBeNull();
   });
 
-  it("applies an automatic suggestion when the value has not changed", async () => {
-    suggest.mockResolvedValue("alice-example");
+  it("spins inside the input while a typed name is being checked", async () => {
+    let resolveLookup: ((value: { username: { available: boolean } }) => void) | undefined;
+    getAvailability.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveLookup = resolve;
+        }),
+    );
     render(<TestInput />);
 
-    const suggestButton = screen.getByRole("button", { name: "Suggest username" });
-    // A 36px target at least, the height of the input above it.
-    expect(suggestButton.className).toContain("h-9");
-    fireEvent.click(suggestButton);
+    fireEvent.change(usernameInput(), { target: { value: "alice" } });
 
-    await waitFor(() =>
-      expect((screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement).value).toBe(
-        "alice-example",
-      ),
+    expect(usernameInput().getAttribute("aria-busy")).toBe("true");
+    expect(usernameInput().parentElement?.querySelector("[data-slot='spinner']")).toBeTruthy();
+
+    await waitFor(() => expect(getAvailability).toHaveBeenCalled());
+    resolveLookup?.({ username: { available: true } });
+
+    await waitFor(() => expect(usernameInput().hasAttribute("aria-busy")).toBe(false));
+    expect(getAvailability).toHaveBeenCalledWith(
+      { username: "alice" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
-    expect(suggest).toHaveBeenCalledWith("alice-example");
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
-  it("asks for a lowercase, dashed name whatever the spacing of the hint", async () => {
-    suggest.mockResolvedValue("mary-jane-o'neil");
-    render(<TestInput hint={"  Mary  Jane\tO'Neil "} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Suggest username" }));
-
-    await waitFor(() => expect(suggest).toHaveBeenCalledWith("mary-jane-o'neil"));
-  });
-
-  it("does not overwrite text entered while a suggestion is pending", async () => {
-    let resolveSuggestion: ((value: string) => void) | undefined;
-    suggest.mockImplementation(
-      () => new Promise<string>((resolve) => (resolveSuggestion = resolve)),
-    );
-    render(<TestInput />);
-    const input = screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement;
-
-    fireEvent.click(screen.getByRole("button", { name: "Suggest username" }));
-    fireEvent.change(input, { target: { value: "manual-name" } });
-    resolveSuggestion?.("suggested-name");
-
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Suggest username" })).toBeTruthy(),
-    );
-    expect(input.value).toBe("manual-name");
-    expect(screen.queryByText(/choose automatically/i)).toBeNull();
-  });
-
-  it("announces suggestion failures without marking the input invalid", async () => {
-    suggest.mockRejectedValue(new Error("offline"));
+  it("reports a taken name once the lookup settles", async () => {
+    getAvailability.mockResolvedValue({ username: { available: false } });
     render(<TestInput />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Suggest username" }));
+    fireEvent.change(usernameInput(), { target: { value: "  Aude-Péronne " } });
 
-    expect((await screen.findByRole("alert")).textContent).toBe(
-      "Couldn't suggest a username. Please try again.",
+    expect((await screen.findByRole("alert")).textContent).toBe("That username is already taken");
+    expect(usernameInput().getAttribute("aria-invalid")).toBe("true");
+    expect(getAvailability).toHaveBeenCalledWith(
+      { username: "Aude-Péronne" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
-    expect(screen.getByRole("textbox", { name: "Username" }).getAttribute("aria-invalid")).toBe(
-      "false",
+  });
+
+  it("does not check a blank name or the one the account already holds", async () => {
+    render(<TestInput owned="alice" initial="alice" />);
+
+    fireEvent.change(usernameInput(), { target: { value: "   " } });
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(getAvailability).not.toHaveBeenCalled();
+    expect(usernameInput().hasAttribute("aria-busy")).toBe(false);
+  });
+
+  it("drops a taken result that belongs to a name the user already replaced", async () => {
+    const lookups: Array<(value: { username: { available: boolean } }) => void> = [];
+    getAvailability.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          lookups.push(resolve);
+        }),
     );
+    render(<TestInput />);
+    const input = usernameInput();
+
+    fireEvent.change(input, { target: { value: "alice" } });
+    await waitFor(() => expect(getAvailability).toHaveBeenCalledTimes(1));
+    fireEvent.change(input, { target: { value: "bob" } });
+    lookups[0]?.({ username: { available: false } });
+    await waitFor(() => expect(getAvailability).toHaveBeenCalledTimes(2));
+    lookups[1]?.({ username: { available: true } });
+
+    await waitFor(() => expect(input.hasAttribute("aria-busy")).toBe(false));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(input.value).toBe("bob");
+  });
+
+  it("leaves the field usable when the lookup fails", async () => {
+    getAvailability.mockRejectedValue(new Error("offline"));
+    render(<TestInput />);
+
+    fireEvent.change(usernameInput(), { target: { value: "alice" } });
+
+    await waitFor(() => expect(usernameInput().hasAttribute("aria-busy")).toBe(false));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(usernameInput().getAttribute("aria-invalid")).toBe("false");
   });
 });
