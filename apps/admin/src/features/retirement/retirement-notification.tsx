@@ -1,22 +1,24 @@
 import { Link } from "@tanstack/react-router";
 import { HiOutlineBell } from "react-icons/hi";
-import { SidebarMenuBadge } from "#/components/ui/sidebar";
+import { Badge } from "#/components/ui/badge";
 import { usePendingRetirementCount } from "./use-retirement";
 
+/**
+ * Count of pending retirement requests, drawn as the sidebar status counter:
+ * in the row, after the label, and absent when nothing is waiting.
+ */
 export function RetirementPendingBadge() {
   const count = usePendingRetirementCount();
-  const available = count.data !== undefined && !count.isError;
+  if (count.data === undefined || count.isError || count.data < 1) return null;
   return (
-    <SidebarMenuBadge
-      aria-label={
-        available
-          ? `${count.data} pending retirement requests`
-          : "Pending retirement count unavailable"
-      }
-      title={available ? "Pending retirement requests" : "Pending count unavailable"}
+    <Badge
+      variant="destructive"
+      aria-label={`${count.data} pending retirement requests`}
+      title="Pending retirement requests"
+      className="ml-auto h-5 min-w-5 justify-center px-1 font-mono group-data-[collapsible=icon]:hidden"
     >
-      {available ? count.data : "—"}
-    </SidebarMenuBadge>
+      {count.data}
+    </Badge>
   );
 }
 

@@ -32,6 +32,15 @@ function pending(count: number) {
   mocks.listAdmin.mockResolvedValue({ requests: [], pendingCount: count, nextCursor: null });
 }
 
+/** A zero count draws nothing, so the settled query is the signal that it loaded. */
+async function settled(client: QueryClient) {
+  await waitFor(() => {
+    const query = client.getQueryCache().findAll({ queryKey: ["clc", "retirement"] })[0];
+    expect(query?.state.status).toBe("success");
+    expect(query?.state.fetchStatus).toBe("idle");
+  });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   onlineManager.setOnline(true);
@@ -60,7 +69,8 @@ describe("retirement notification recovery", () => {
   it("refreshes a cached empty count when the admin returns", async () => {
     pending(0);
     const first = mount();
-    await screen.findByLabelText("0 pending retirement requests");
+    await settled(first.client);
+    expect(screen.queryByLabelText(/pending retirement requests/)).toBeNull();
     first.unmount();
     pending(2);
     mount(first.client);
@@ -72,15 +82,15 @@ describe("retirement notification recovery", () => {
     pending(4);
     mount();
     expect(mocks.listAdmin).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Pending retirement count unavailable")).toBeTruthy();
+    expect(screen.queryByLabelText(/pending retirement/)).toBeNull();
     act(() => onlineManager.setOnline(true));
     expect(await screen.findByLabelText("4 pending retirement requests")).toBeTruthy();
   });
 
   it("refreshes on focus even though normal admin queries disable focus refresh", async () => {
     pending(0);
-    mount();
-    await screen.findByLabelText("0 pending retirement requests");
+    const view = mount();
+    await settled(view.client);
     act(() => focusManager.setFocused(false));
     pending(1);
     act(() => focusManager.setFocused(true));
@@ -90,8 +100,8 @@ describe("retirement notification recovery", () => {
   it("polls after 30 seconds while the panel is visible", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     pending(0);
-    mount();
-    await screen.findByLabelText("0 pending retirement requests");
+    const view = mount();
+    await settled(view.client);
     pending(5);
     await act(() => vi.advanceTimersByTimeAsync(30_000));
     await waitFor(() =>

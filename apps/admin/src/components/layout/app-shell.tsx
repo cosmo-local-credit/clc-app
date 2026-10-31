@@ -148,9 +148,9 @@ function AppShellInner() {
                         render={<Link to={item.to} />}
                       >
                         <item.icon />
-                        <span>{item.label}</span>
+                        <span className="min-w-0 truncate">{item.label}</span>
+                        {item.to === "/retirement-requests" ? <RetirementPendingBadge /> : null}
                       </SidebarMenuButton>
-                      {item.to === "/retirement-requests" ? <RetirementPendingBadge /> : null}
                       {item.children ? (
                         <SidebarMenuSub>
                           {item.children.map((child) => (
