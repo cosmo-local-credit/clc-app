@@ -17,12 +17,11 @@ import { GuideArt } from "./guide-art";
 import { introductionSlides as slides } from "./introduction-content";
 
 /**
- * How to use CLC: one swipeable slide per idea, a picture over a title and a
- * sentence or two. Swipe, the arrows, a segment, or the arrow keys move it;
- * it stops at the last slide rather than wrapping.
+ * How to use CLC: one swipeable slide per idea, the title and a sentence or
+ * two above the picture. Swipe, the arrows beside the picture, a segment, or
+ * the arrow keys move it; it stops at the last slide rather than wrapping.
  *
- * On Welcome it fills the space between the top bar and the account buttons,
- * and its first slide carries the page title. Elsewhere it is a section.
+ * On Welcome the first slide carries the page title. Elsewhere it is a section.
  */
 export function GuideCarousel({
   welcome = false,
@@ -60,86 +59,100 @@ export function GuideCarousel({
       setApi={setApi}
       direction={direction}
       aria-label={t({ id: "intro.replay", message: "How to use CLC" })}
-      className="flex flex-[1_0_auto] flex-col"
+      className="flex flex-col"
     >
-      <CarouselContent viewportClassName="flex flex-[1_0_auto]" className="ms-0 w-full">
-        {slides.map((slide, slideIndex) => {
-          const Heading = welcome && slideIndex === 0 ? "h1" : "h2";
-          const current = slideIndex === index;
-          return (
-            <CarouselItem
-              key={slide.art}
-              inert={!current}
-              aria-label={i18n._(slide.title)}
-              className="flex flex-col ps-0"
+      <div className="relative">
+        <CarouselContent className="ms-0 w-full items-stretch">
+          {slides.map((slide, slideIndex) => {
+            const Heading = welcome && slideIndex === 0 ? "h1" : "h2";
+            const current = slideIndex === index;
+            return (
+              <CarouselItem
+                key={slide.art}
+                inert={!current}
+                aria-label={i18n._(slide.title)}
+                className="flex flex-col ps-0"
+              >
+                <div className="shrink-0">
+                  <Heading className="break-words font-heading text-[1.75rem] font-bold leading-tight">
+                    {i18n._(slide.title)}
+                  </Heading>
+                  <p className="mt-2 break-words text-muted-foreground leading-relaxed">
+                    {i18n._(slide.body)}
+                    {slide.about ? (
+                      <>
+                        {" "}
+                        <a
+                          href={PLATFORM_ABOUT_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-foreground underline underline-offset-4 hover:text-primary"
+                        >
+                          <Trans>About Cosmo-Local Credit</Trans>
+                        </a>
+                      </>
+                    ) : null}
+                  </p>
+                </div>
+                {/* Grows on a shorter slide so every picture shares one baseline. */}
+                <div className="flex-1" />
+                <div className="mt-5 ps-7 pe-7">
+                  <GuideArt name={slide.art} className="aspect-[4/3] w-full" />
+                </div>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+        {/* Beside the picture, outside the track, so a swipe does not carry them off. */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col justify-end">
+          <div className="-ms-4 -me-4 flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              tap
+              className="pointer-events-auto"
+              aria-label={t`Back`}
+              disabled={index === 0}
+              onClick={() => api?.scrollPrev()}
             >
-              <GuideArt name={slide.art} className="min-h-26 max-h-68 flex-1" />
-              <div className="shrink-0 pt-5">
-                <Heading className="break-words font-heading text-[1.75rem] font-bold leading-tight">
-                  {i18n._(slide.title)}
-                </Heading>
-                <p className="mt-2 break-words text-muted-foreground leading-relaxed">
-                  {i18n._(slide.body)}
-                  {slide.about ? (
-                    <>
-                      {" "}
-                      <a
-                        href={PLATFORM_ABOUT_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-foreground underline underline-offset-4 hover:text-primary"
-                      >
-                        <Trans>About Cosmo-Local Credit</Trans>
-                      </a>
-                    </>
-                  ) : null}
-                </p>
-              </div>
-            </CarouselItem>
-          );
-        })}
-      </CarouselContent>
-
-      <div className="mt-3 flex shrink-0 items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          tap
-          aria-label={t`Back`}
-          disabled={index === 0}
-          onClick={() => api?.scrollPrev()}
-        >
-          <RiArrowLeftSLine className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-        </Button>
-        <div className="flex flex-1 gap-1">
-          {slides.map((slide, slideIndex) => (
-            <button
-              key={slide.art}
-              type="button"
-              aria-label={i18n._(slide.title)}
-              aria-current={slideIndex === index ? "true" : undefined}
-              onClick={() => api?.scrollTo(slideIndex)}
-              className={cn(
-                "relative h-[3px] flex-1 outline-none before:absolute before:-inset-y-5 before:inset-x-0 before:content-[''] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground",
-                slideIndex === index
-                  ? "bg-foreground"
-                  : slideIndex < index
-                    ? "bg-muted-foreground"
-                    : "bg-border",
-              )}
-            />
-          ))}
+              <RiArrowLeftSLine className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+            </Button>
+            <div className="ms-2 me-2 min-w-0 flex-1" aria-hidden="true">
+              <div className="aspect-[4/3] w-full" />
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              tap
+              className="pointer-events-auto"
+              aria-label={t`Next`}
+              disabled={index === slides.length - 1}
+              onClick={() => api?.scrollNext()}
+            >
+              <RiArrowRightSLine className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+            </Button>
+          </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          tap
-          aria-label={t`Next`}
-          disabled={index === slides.length - 1}
-          onClick={() => api?.scrollNext()}
-        >
-          <RiArrowRightSLine className="size-4 rtl:-scale-x-100" aria-hidden="true" />
-        </Button>
+      </div>
+
+      <div className="mt-4 flex shrink-0 gap-1 py-3">
+        {slides.map((slide, slideIndex) => (
+          <button
+            key={slide.art}
+            type="button"
+            aria-label={i18n._(slide.title)}
+            aria-current={slideIndex === index ? "true" : undefined}
+            onClick={() => api?.scrollTo(slideIndex)}
+            className={cn(
+              "relative h-[3px] flex-1 outline-none before:absolute before:-inset-y-5 before:inset-x-0 before:content-[''] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground",
+              slideIndex === index
+                ? "bg-foreground"
+                : slideIndex < index
+                  ? "bg-muted-foreground"
+                  : "bg-border",
+            )}
+          />
+        ))}
       </div>
     </Carousel>
   );

@@ -86,6 +86,19 @@ it("gives Welcome its page title on the first slide only", () => {
   expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(6);
 });
 
+it("places the copy above the picture and keeps the arrows out of the track", () => {
+  const { container } = render(<GuideCarousel welcome />);
+  const heading = screen.getByRole("heading", { level: 1, name: "Cosmo-Local Credit" });
+  const art = container.querySelector("[data-art='network']");
+  expect(art).toBeTruthy();
+  expect(heading.compareDocumentPosition(art as Node) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(
+    0,
+  );
+  const back = screen.getByRole("button", { name: "Back" });
+  expect(back.closest("[data-slot='carousel-item']")).toBeNull();
+  expect(heading.closest("[data-slot='carousel-item']")?.contains(art as Node)).toBe(true);
+});
+
 it("ends the first slide with the About link", () => {
   render(<GuideCarousel />);
   const about = screen.getByRole("link", { name: "About Cosmo-Local Credit" });
