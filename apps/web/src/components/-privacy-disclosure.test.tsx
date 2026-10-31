@@ -15,9 +15,8 @@ describe("privacy disclosures", () => {
       </>,
     );
 
-    expect(
-      screen.getByText(/profile name, email, phone number, and saved location are not shown/i),
-    ).toBeTruthy();
+    expect(screen.getByText("Privacy note")).toBeTruthy();
+    expect(screen.getByText(/exact username or full phone number/i)).toBeTruthy();
     expect(
       screen.getByText(/Contact details entered here are visible to signed-in users/i),
     ).toBeTruthy();

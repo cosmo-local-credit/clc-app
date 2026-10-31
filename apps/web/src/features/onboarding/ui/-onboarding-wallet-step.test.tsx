@@ -285,6 +285,11 @@ describe("OnboardingWalletStep pages", () => {
   it("starts on Your paper wallet with the password on and nothing to download yet", () => {
     renderWalletStep();
     expect(screen.getByRole("heading", { name: "Your sign-in card" })).toBeTruthy();
+    const notice = screen.getByText(/use this qr card to sign in/i).closest("aside");
+    expect(notice?.className).toContain("border-primary/30");
+    expect(notice?.querySelector("p")?.className).toContain("text-sm");
+    expect(notice?.querySelector("p")?.className).toContain("leading-snug");
+    expect(notice?.querySelector("p")?.className).toContain("text-muted-foreground");
     const art = document.querySelector('[data-art="sign-in-card"]');
     expect(art).toBeTruthy();
     expect(art?.getAttribute("aria-hidden")).toBe("true");

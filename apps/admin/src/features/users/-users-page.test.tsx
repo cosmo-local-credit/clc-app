@@ -24,6 +24,7 @@ function user(id: number, overrides: Partial<AdminUser> = {}): AdminUser {
   return {
     id,
     ethereumAddress: `0x${id.toString(16).padStart(40, "0")}`,
+    username: `account-${id}`,
     name: `Account ${id}`,
     email: `account-${id}@example.test`,
     phone: `+25470000${id.toString().padStart(4, "0")}`,
@@ -94,6 +95,7 @@ describe("UsersPage", () => {
     renderUsersRoute();
 
     await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
+    expect(screen.getByText("account-4210")).toBeTruthy();
     expect(screen.getByText("+254700004210")).toBeTruthy();
     expect(screen.getByText("KE")).toBeTruthy();
     expect(screen.getByText("APPROVED")).toBeTruthy();
@@ -111,9 +113,12 @@ describe("UsersPage", () => {
     const router = renderUsersRoute();
     await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Name, email, phone, address" }), {
-      target: { value: "wanjiku" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "Name, username, email, phone, address" }),
+      {
+        target: { value: "wanjiku" },
+      },
+    );
 
     await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "wanjiku" }));
     expect(listUsers).toHaveBeenCalledWith(
@@ -129,9 +134,12 @@ describe("UsersPage", () => {
     const router = renderUsersRoute();
     await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Name, email, phone, address" }), {
-      target: { value: "w" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "Name, username, email, phone, address" }),
+      {
+        target: { value: "w" },
+      },
+    );
 
     await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "w" }));
     expect(listUsers).not.toHaveBeenCalledWith(

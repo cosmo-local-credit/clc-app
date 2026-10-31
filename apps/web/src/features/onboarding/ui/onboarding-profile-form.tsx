@@ -6,7 +6,7 @@ import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact"
 import { useForm, useStore } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
 import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
@@ -277,6 +277,13 @@ export function OnboardingProfileForm({
     key: string;
     taken: Partial<Record<IdentityField, string>>;
   } | null>(null);
+  // A suggestion still in flight must land before Continue leaves the page.
+  // The name field and Continue both call this once typing has finished.
+  const [usernamePending, setUsernamePending] = useState(false);
+  const settleUsername = useRef<(() => Promise<void>) | null>(null);
+  const onUsernamePending = useCallback((pending: boolean) => {
+    setUsernamePending((current) => (current === pending ? current : pending));
+  }, []);
 
   // A check that is still settling must not keep the previous value's message,
   // and it must not let Continue through to the paper wallet.
@@ -311,7 +318,7 @@ export function OnboardingProfileForm({
   const contactConcern = Boolean(probe.fields.email || probe.fields.phone);
   const continueBlocked =
     page === "profile"
-      ? usernameConcern && (checking || Boolean(settled?.username))
+      ? usernamePending || (usernameConcern && (checking || Boolean(settled?.username)))
       : page === "contact"
         ? contactConcern && (checking || Boolean(settled?.email || settled?.phone))
         : (usernameConcern || contactConcern) &&
@@ -321,6 +328,8 @@ export function OnboardingProfileForm({
     page === "location" && locationTaken ? translateValidationError(locationTaken, i18n) : null;
 
   async function handleContinue() {
+    // Leaving the name, including through Continue, is the end of typing it.
+    if (page === "profile") await settleUsername.current?.();
     if (continueBlocked) return;
     setAttempted((current) => new Set(current).add(page));
     const missingPhoto = page === "profile" && !avatarFile;
@@ -451,7 +460,10 @@ export function OnboardingProfileForm({
                       placeholder={t`Your name`}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
+                      onBlur={() => {
+                        field.handleBlur();
+                        void settleUsername.current?.();
+                      }}
                       aria-invalid={!!err}
                       aria-label={t`Name`}
                     />
@@ -465,10 +477,12 @@ export function OnboardingProfileForm({
               {(field) => (
                 <UsernameInput
                   id="onb-username"
+                  name={values.name}
                   value={field.state.value ?? ""}
-                  hint={() => form.getFieldValue("name")}
                   onChange={field.handleChange}
                   onBlur={field.handleBlur}
+                  onPending={onUsernamePending}
+                  settleRef={settleUsername}
                   error={shownError("username", field.state.meta.isTouched)}
                 />
               )}

@@ -99,14 +99,19 @@ function accountToken(id: number, balance = "1234") {
 function mockReads({
   tokenPages = [{ tokens: [] }],
   issuedPages = [{ tokens: [] }],
+  requests = [],
 }: {
   tokenPages?: readonly unknown[];
   issuedPages?: readonly unknown[];
+  requests?: readonly unknown[];
 } = {}) {
   let tokenCall = 0;
   let issuedCall = 0;
   const fetcher = vi.fn().mockImplementation((url: string | URL) => {
     const href = String(url);
+    if (href.includes("/retirement-requests")) {
+      return Promise.resolve(successResponse({ requests }));
+    }
     if (href.includes("/tokens/issued")) {
       const page = issuedPages[Math.min(issuedCall, issuedPages.length - 1)];
       issuedCall += 1;
@@ -210,6 +215,9 @@ describe("AllVouchersPage", () => {
   it("keeps issued vouchers visible when balances fail and retries balances", async () => {
     let tokenCalls = 0;
     const fetcher = vi.fn().mockImplementation((url: string | URL) => {
+      if (String(url).includes("/retirement-requests")) {
+        return Promise.resolve(successResponse({ requests: [] }));
+      }
       if (String(url).includes("/tokens/issued")) {
         return Promise.resolve(successResponse({ tokens: [accountToken(5)], last: 5 }));
       }
@@ -228,6 +236,9 @@ describe("AllVouchersPage", () => {
   it("retries an issued-list failure without filing any balance", async () => {
     let issuedCalls = 0;
     const fetcher = vi.fn().mockImplementation((url: string | URL) => {
+      if (String(url).includes("/retirement-requests")) {
+        return Promise.resolve(successResponse({ requests: [] }));
+      }
       if (String(url).includes("/tokens/issued")) {
         issuedCalls += 1;
         return Promise.resolve(
@@ -295,5 +306,54 @@ describe("AllVouchersPage", () => {
     expect(owned.getByText("Voucher 7")).toBeTruthy();
     expect(owned.queryByText("Voucher 8")).toBeNull();
     expect(holdings.getByText("Voucher 8")).toBeTruthy();
+  });
+
+  it("places retirement requests under My Vouchers", async () => {
+    mockReads({
+      issuedPages: [{ tokens: [accountToken(9)], last: 9 }],
+      requests: [
+        {
+          id: 1,
+          resourceType: "voucher",
+          resourceAddress: ADDRESS,
+          resourceName: "Voucher 9",
+          symbol: "V9",
+          chainId: 100,
+          requesterAddress: ADDRESS,
+          ownerAddress: ADDRESS,
+          reason: "Closing this voucher",
+          status: "pending",
+          requestedAt: "2026-10-25T12:00:00Z",
+          decisionAt: null,
+          decisionBy: null,
+          decisionReason: null,
+          snapshot: {
+            resourceType: "voucher",
+            resourceAddress: ADDRESS,
+            chainId: 100,
+            ownerAddress: ADDRESS,
+            active: true,
+            symbol: "V9",
+            decimals: 2,
+            amountOutsideOwnerRaw: "0",
+            positiveTokenCount: null,
+            hasPositiveBalances: false,
+            blockNumber: "1000",
+            checkedAt: "2026-10-25T12:00:00Z",
+            coverage: "total-supply",
+            coverageNote: null,
+          },
+          decisionSnapshot: null,
+        },
+      ],
+    });
+    renderPage();
+
+    const owned = await screen.findByRole("region", { name: /My Vouchers/ });
+    const requests = await screen.findByText("Retirement requests");
+    expect(within(owned).queryByText("Retirement requests")).toBeNull();
+    const text = document.body.textContent ?? "";
+    expect(text.indexOf("My Vouchers")).toBeLessThan(text.indexOf("Retirement requests"));
+    expect(requests.closest("details")?.textContent).toContain("Closing this voucher");
   });
 });

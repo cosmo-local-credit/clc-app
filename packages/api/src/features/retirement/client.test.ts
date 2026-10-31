@@ -203,20 +203,31 @@ describe("retirement client", () => {
     );
   });
 
-  it("retains status filters, cursor and pending count in the admin queue", async () => {
-    const fetcher = respond({ requests: [request], pendingCount: 3, nextCursor: 1 });
+  it("retains status filters, cursor direction and pending count in the admin queue", async () => {
+    const fetcher = respond({ requests: [request], pendingCount: 3, first: 9, last: 1 });
     expect(
-      await api.listAdmin({ status: "pending", resourceType: "voucher", cursor: 2, perPage: 1 }),
-    ).toMatchObject({ pendingCount: 3, nextCursor: 1 });
+      await api.listAdmin({
+        status: "pending",
+        resourceType: "voucher",
+        cursor: 2,
+        perPage: 1,
+        next: false,
+      }),
+    ).toMatchObject({ pendingCount: 3, first: 9, last: 1, receivedCount: 1 });
     expect(fetcher.mock.calls[0]?.[0]).toContain(
-      "status=pending&resourceType=voucher&cursor=2&perPage=1",
+      "status=pending&resourceType=voucher&perPage=1&cursor=2&next=false",
     );
   });
 
   it("omits the admin queue query string when every filter is absent", async () => {
-    const fetcher = respond({ requests: [], pendingCount: 0, nextCursor: null });
+    const fetcher = respond({ requests: [], pendingCount: 0, first: 0, last: 0 });
 
-    await expect(api.listAdmin()).resolves.toMatchObject({ pendingCount: 0 });
+    await expect(api.listAdmin()).resolves.toMatchObject({
+      pendingCount: 0,
+      first: 0,
+      last: 0,
+      receivedCount: 0,
+    });
     expect(fetcher.mock.calls[0]?.[0]).toBe("https://api.test/api/v2/admin/retirement-requests");
   });
 

@@ -118,10 +118,10 @@ export function adminUsersQueryOptions(admin: AdminClient, params: AdminUserPara
  * One account, found through the directory search.
  *
  * clc-core exposes no "get one admin user" endpoint, so the address is sent as
- * the search term — it is one of the four columns `q` matches. A short page is
+ * the search term — it is one of the columns `q` matches. A short page is
  * requested rather than a single row because the term is matched as a substring
- * across name, email and phone as well, so another account could in principle
- * come back first; the exact address decides which row is the answer.
+ * across name, username, email and phone as well, so another account could in
+ * principle come back first; the exact address decides which row is the answer.
  *
  * An address with no row is a real result, not an error: the pools and vouchers
  * surfaces link to addresses that hold tokens without necessarily having a CLC

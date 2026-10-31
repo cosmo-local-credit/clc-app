@@ -115,6 +115,9 @@ function mockBackend(
   let stored = profilePayload(profile);
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = requestUrl(input);
+    if (url.includes("/identity/availability")) {
+      return Promise.resolve(jsonResponse({ username: { available: true } }));
+    }
     if (url.includes("/auth/profile") && init?.method === "POST") {
       if (rejectSave) return Promise.resolve(errorResponse(409, rejectSave));
       stored = { ...stored, ...(JSON.parse(init.body as string) as Record<string, unknown>) };
@@ -307,7 +310,9 @@ describe("ProfileEditPage", () => {
     fireEvent.change(within(sheet).getByLabelText(/^username$/i), {
       target: { value: "Željko Petrović" },
     });
-    fireEvent.click(within(sheet).getByRole("button", { name: /save username/i }));
+    const save = within(sheet).getByRole("button", { name: /save username/i });
+    await waitFor(() => expect(save.hasAttribute("disabled")).toBe(false));
+    fireEvent.click(save);
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith("Username updated"));
     const body = JSON.parse(postBody(fetchMock)) as Record<string, unknown>;
@@ -335,7 +340,9 @@ describe("ProfileEditPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: /choose username/i }));
     const sheet = await screen.findByRole("form", { name: /choose username/i });
     fireEvent.change(within(sheet).getByLabelText(/^username$/i), { target: { value: "bob" } });
-    fireEvent.click(within(sheet).getByRole("button", { name: /save username/i }));
+    const save = within(sheet).getByRole("button", { name: /save username/i });
+    await waitFor(() => expect(save.hasAttribute("disabled")).toBe(false));
+    fireEvent.click(save);
 
     expect(
       await within(sheet).findByText("That username or pool name is already taken"),

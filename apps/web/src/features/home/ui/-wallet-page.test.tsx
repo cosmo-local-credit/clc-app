@@ -1,6 +1,3 @@
-vi.mock("#/components/retirement/my-retirement-requests", () => ({
-  MyRetirementRequests: () => null,
-}));
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -627,11 +624,11 @@ describe("WalletPage", () => {
     );
   });
 
-  it("does not mount owner-only retirement content without an address", async () => {
+  it("keeps retirement requests off the wallet page", async () => {
     mockNoTokens();
-    renderWithQueryClient(<WalletPage />);
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     expect(await screen.findByRole("heading", { name: "Wallet" })).toBeTruthy();
-    expect(screen.queryByText("My retirement requests")).toBeNull();
+    expect(screen.queryByText("Retirement requests")).toBeNull();
   });
 });

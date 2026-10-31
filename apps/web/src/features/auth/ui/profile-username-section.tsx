@@ -166,7 +166,6 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
               <UsernameInput
                 id="profile-username"
                 value={field.state.value}
-                hint={() => profile.name}
                 onChange={(next) => {
                   setSubmitError(null);
                   field.handleChange(next);
