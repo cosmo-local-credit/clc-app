@@ -84,7 +84,6 @@ export function RetirementRequestsPage({ search }: { search: RetirementSearch })
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Retirement requests"
-        description="Review owner requests for vouchers and pools. Resources stay active until you approve retirement."
         actions={
           <Button
             variant="outline"
@@ -135,11 +134,6 @@ export function RetirementRequestsPage({ search }: { search: RetirementSearch })
             <option value="pool">Pools</option>
           </select>
         </label>
-        <p role="status" className="text-muted-foreground pb-2 text-sm">
-          {query.data && !query.isError
-            ? `${query.data.pendingCount} pending across all resources`
-            : "Pending count unavailable"}
-        </p>
       </div>
       {state.kind === "pending" ? (
         <LoadingBlock rows={6} />

@@ -251,10 +251,7 @@ describe("retirement queue", () => {
     mocks.listAdmin.mockRejectedValue(new Error("Service unavailable"));
     mount();
     await screen.findByText("Could not load retirement requests");
-    // The sidebar counter is only a positive count. A failure stays unlabeled
-    // there, and the page says the count is unavailable rather than zero.
     expect(screen.queryByLabelText(/pending retirement requests/)).toBeNull();
-    expect(screen.getAllByText("Pending count unavailable").length).toBeGreaterThan(0);
-    expect(screen.queryByText("0 pending across all resources")).toBeNull();
+    expect(screen.queryByText(/pending across all resources/)).toBeNull();
   });
 });
