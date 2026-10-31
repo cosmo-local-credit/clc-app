@@ -48,7 +48,15 @@ type AccountTransfer = {
   hasNote: boolean;
 };
 
-export type ActivityKind = "creation" | "sent" | "received" | "swapped";
+export type ActivityKind =
+  | "creation"
+  | "sent"
+  | "received"
+  | "swapped"
+  | "deposited"
+  | "withdrawn"
+  | "fee_withdrawn"
+  | "pool_payout";
 
 export type ActivityLeg = {
   tokenAddress: string;
@@ -63,6 +71,12 @@ export type ActivityLeg = {
 
 type DirectAccountActivityItem = {
   kind: Exclude<ActivityKind, "swapped">;
+  /** Nominal withdrawal debit; transfer.amount can be smaller after token tax. */
+  nominalAmount?: string;
+  direction?: "IN" | "OUT" | "NONE";
+  poolAddresses?: string[];
+  poolName?: string;
+  initiatorAddress?: string;
   id: number;
   txHash: string;
   dateBlock: string;
@@ -76,6 +90,11 @@ type DirectAccountActivityItem = {
 
 type SwapAccountActivityItem = {
   kind: "swapped";
+  counterpartyAddress?: string;
+  senderAddress?: string;
+  recipientAddress?: string;
+  initiatorAddress?: string;
+  poolName?: string;
   id: number;
   txHash: string;
   dateBlock: string;

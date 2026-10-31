@@ -21,7 +21,7 @@ const {
   poolRegistry,
   poolTreasuryState,
   poolTokenLimit,
-  poolTransfers,
+  poolActivity,
   publicClientCall,
   publicClientMulticall,
   publicClientRead,
@@ -76,7 +76,7 @@ const {
   publicClientCall: vi.fn(),
   publicClientMulticall: vi.fn(),
   publicClientRead: vi.fn(),
-  poolTransfers: { value: [] as Array<Record<string, unknown>> },
+  poolActivity: { value: [] as Array<Record<string, unknown>> },
   swapMutateAsync: vi.fn(),
   swapTransferState: { error: null as Error | null, isPending: false },
 }));
@@ -247,8 +247,8 @@ function mockPoolRequests({
           }),
         );
       }
-      if (url.includes(`/api/v2/accounts/`) && url.includes("/transfers")) {
-        return Promise.resolve(response({ transfers: poolTransfers.value }));
+      if (url.includes(`/api/v2/accounts/`) && url.includes("/activity")) {
+        return Promise.resolve(response({ activity: poolActivity.value }));
       }
       if (url.includes(`/api/v2/accounts/`) && url.includes("/tokens?")) {
         return Promise.resolve(
@@ -388,7 +388,7 @@ beforeEach(() => {
   swapTransferState.error = null;
   swapTransferState.isPending = false;
   swapMutateAsync.mockResolvedValue({ trackingId: "swap-tracking-1", signatureType: "secp256k1" });
-  poolTransfers.value = [];
+  poolActivity.value = [];
   publicClientMulticall.mockImplementation(
     ({
       allowFailure,
@@ -773,39 +773,101 @@ describe("pool voucher UI", () => {
     expect(await within(panel).findByText("65.14 of 80.00 USD available credit")).toBeTruthy();
   });
 
-  it("reassembles a pool swap from the two transfer legs the indexer records", async () => {
-    // clc-core exposes swaps to non-superadmins only as their ERC-20 legs, so
-    // the panel that does not rejoin them reports one trade as two movements.
-    poolTransfers.value = [
-      {
-        id: 2,
-        txHash: "0xswap",
-        dateBlock: "2026-09-01T10:00:00Z",
-        direction: "IN",
-        counterpartyAddress: "0x9999999999999999999999999999999999999999",
-        senderAddress: "0x9999999999999999999999999999999999999999",
-        recipientAddress: POOL_ADDRESS,
+  it("shows deposits and Pay Out withdrawals and applies the pool activity filter", async () => {
+    const recipient = "0x9999999999999999999999999999999999999999";
+    const base = {
+      txHash: "0xactivity",
+      dateBlock: "2026-09-01T10:00:00Z",
+      success: true,
+      counterpartyAddress: recipient,
+      poolAddresses: [POOL_ADDRESS],
+      hasNote: false,
+      transfer: {
         tokenAddress: USDC_ADDRESS,
         tokenSymbol: "USDC",
         tokenName: "USD Coin",
         tokenDecimals: 6,
         amount: "5000000",
-        success: true,
+      },
+    };
+    poolActivity.value = [
+      {
+        ...base,
+        id: 1,
+        kind: "deposited",
+        direction: "IN",
+        senderAddress: recipient,
+        recipientAddress: POOL_ADDRESS,
       },
       {
-        id: 1,
+        ...base,
+        id: 2,
+        kind: "withdrawn",
+        nominalAmount: "6000000",
+        direction: "OUT",
+        senderAddress: POOL_ADDRESS,
+        recipientAddress: recipient,
+      },
+    ];
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="activity" />);
+    const panel = await screen.findByRole("tabpanel");
+    expect(await within(panel).findByRole("button", { name: /Deposit.*5 USDC/ })).toBeTruthy();
+    const payout = await within(panel).findByRole("button", { name: /Pay Out.*Withdrawal/ });
+    expect(payout.textContent).toContain("−5 USDC");
+    fireEvent.click(payout);
+    expect(within(screen.getByRole("dialog")).getByText("Pay Out")).toBeTruthy();
+    expect(
+      within(screen.getByRole("dialog")).getByText("Withdrawn from pool").parentElement
+        ?.textContent,
+    ).toContain("6 USDC");
+    expect(
+      within(screen.getByRole("dialog")).getByText("Received by recipient").parentElement
+        ?.textContent,
+    ).toContain("5 USDC");
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(within(panel).getByRole("button", { name: "Filters" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Pay Out" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+    await waitFor(() =>
+      expect(
+        vi.mocked(fetch).mock.calls.some(([input]) => {
+          const url =
+            typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+          return url.includes("/activity?") && url.includes("types=pool_payout");
+        }),
+      ).toBe(true),
+    );
+  });
+
+  it("shows one classified pool swap with both indexed legs", async () => {
+    // Core matches operation logs before pagination; the browser receives one
+    // swap even if its transfer legs would fall on separate raw-history pages.
+    poolActivity.value = [
+      {
+        id: 2,
+        kind: "swapped",
         txHash: "0xswap",
         dateBlock: "2026-09-01T10:00:00Z",
-        direction: "OUT",
         counterpartyAddress: "0x9999999999999999999999999999999999999999",
-        senderAddress: POOL_ADDRESS,
+        initiatorAddress: "0x9999999999999999999999999999999999999999",
         recipientAddress: "0x9999999999999999999999999999999999999999",
-        tokenAddress: TTX_ADDRESS,
-        tokenSymbol: "TTX",
-        tokenName: "Trade Token",
-        tokenDecimals: 6,
-        amount: "2500000",
         success: true,
+        received: {
+          tokenAddress: USDC_ADDRESS,
+          tokenSymbol: "USDC",
+          tokenName: "USD Coin",
+          tokenDecimals: 6,
+          amount: "5000000",
+        },
+        sent: {
+          tokenAddress: TTX_ADDRESS,
+          tokenSymbol: "TTX",
+          tokenName: "Trade Token",
+          tokenDecimals: 6,
+          amount: "2500000",
+        },
       },
     ];
     mockPoolRequests();
@@ -814,7 +876,7 @@ describe("pool voucher UI", () => {
     const panel = await screen.findByRole("tabpanel");
     expect(panel.id).toBe("pool-panel-activity");
 
-    const rows = await within(panel).findAllByRole("button");
+    const rows = await within(panel).findAllByRole("button", { name: /Swapped USDC for TTX/ });
     expect(rows).toHaveLength(1);
     expect(rows[0]?.textContent).toContain("Swapped USDC for TTX");
     // The in/out marks the receipts use, rather than a bare + and −: the pool

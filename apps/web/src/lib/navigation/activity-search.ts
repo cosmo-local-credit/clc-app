@@ -1,6 +1,15 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
 
-export const ACTIVITY_KIND_ORDER = ["creation", "sent", "received", "swapped"] as const;
+export const ACTIVITY_KIND_ORDER = [
+  "creation",
+  "sent",
+  "received",
+  "swapped",
+  "deposited",
+  "withdrawn",
+  "fee_withdrawn",
+  "pool_payout",
+] as const;
 
 export type ActivityRouteSearch = {
   activityQ?: string | readonly string[];

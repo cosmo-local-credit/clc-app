@@ -9,6 +9,7 @@ import {
   RiChat1Line,
   RiCloseLine,
   RiSearchLine,
+  RiUserLine,
   RiSparkling2Line,
 } from "react-icons/ri";
 
@@ -286,9 +287,16 @@ function ActivityRow({
     );
   }
 
-  const incoming = item.kind !== "sent";
+  const incoming = item.direction ? item.direction === "IN" : item.kind !== "sent";
   const created = item.kind === "creation";
-  const Icon = created ? RiSparkling2Line : incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
+  const neutral = item.direction === "NONE";
+  const Icon = created
+    ? RiSparkling2Line
+    : neutral
+      ? RiUserLine
+      : incoming
+        ? RiArrowLeftDownLine
+        : RiArrowRightUpLine;
   const transferDate = formatTransferDate(item.dateBlock);
   const uoaLabel = formatTransferUnitValue(item.transfer.uoaValue, item.transfer.uoa, locale);
   return (
@@ -298,13 +306,19 @@ function ActivityRow({
       onClick={onOpen}
     >
       <span
-        className={`flex size-7 shrink-0 items-center justify-center bg-muted ${created ? "text-foreground" : incoming ? "text-primary" : "text-destructive"}`}
+        className={`flex size-7 shrink-0 items-center justify-center bg-muted ${created || neutral ? "text-foreground" : incoming ? "text-primary" : "text-destructive"}`}
       >
         <Icon className="size-3.5" aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1.5 text-sm font-medium">
-          {created ? (
+          {item.kind === "deposited" ? (
+            <Trans>Deposit</Trans>
+          ) : item.kind === "withdrawn" ||
+            item.kind === "fee_withdrawn" ||
+            item.kind === "pool_payout" ? (
+            <Trans>Pay Out</Trans>
+          ) : created ? (
             <Trans>Created</Trans>
           ) : incoming ? (
             <Trans>Received</Trans>
@@ -320,24 +334,44 @@ function ActivityRow({
             </>
           ) : null}
         </p>
-        <p className="flex min-w-0 text-muted-foreground text-xs">
-          <span className="min-w-0 truncate">
+        <p className="min-w-0 text-muted-foreground text-xs">
+          <span className="block truncate">
+            {item.kind === "withdrawn" ? (
+              <>
+                <Trans>Withdrawal</Trans> ·{" "}
+              </>
+            ) : null}
+            {item.kind === "fee_withdrawn" ? (
+              <>
+                <Trans>Fee withdrawal</Trans> ·{" "}
+              </>
+            ) : null}
             {created ? (
               <Trans>New supply</Trans>
             ) : (
               <>
                 {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                <RecipientIdentityLabel address={item.counterpartyAddress} />
+                {item.poolName &&
+                (incoming ? item.senderAddress : item.recipientAddress).toLowerCase() ===
+                  item.poolAddresses?.[0]?.toLowerCase() ? (
+                  item.poolName
+                ) : (
+                  <RecipientIdentityLabel address={item.counterpartyAddress} />
+                )}
               </>
             )}
           </span>
           {transferDate ? (
-            <span className="shrink-0 whitespace-pre">
-              <span aria-hidden="true"> · </span>
+            <span className="block">
               <time dateTime={item.dateBlock}>{transferDate}</time>
             </span>
           ) : null}
         </p>
+        {neutral ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>No balance change</Trans>
+          </p>
+        ) : null}
       </div>
       <span className="shrink-0 text-end font-mono text-xs font-semibold">
         <span className="block">
@@ -345,6 +379,11 @@ function ActivityRow({
           {item.transfer.tokenSymbol}
         </span>
         {uoaLabel ? <span className="block text-muted-foreground">({uoaLabel})</span> : null}
+        {!item.success ? (
+          <span className="block text-muted-foreground">
+            <Trans>Failed</Trans>
+          </span>
+        ) : null}
       </span>
     </button>
   );
@@ -354,9 +393,18 @@ function toTransferDetails(
   item: Exclude<AccountActivityItem, { kind: "swapped" }>,
 ): TransferDetails {
   return {
+    activityKind:
+      item.kind === "deposited" ||
+      item.kind === "withdrawn" ||
+      item.kind === "fee_withdrawn" ||
+      item.kind === "pool_payout"
+        ? item.kind
+        : undefined,
+    initiatorAddress: item.initiatorAddress,
+    nominalAmount: item.nominalAmount,
     txHash: item.txHash,
     dateBlock: item.dateBlock,
-    direction: item.kind === "sent" ? "OUT" : "IN",
+    direction: item.direction ?? (item.kind === "sent" ? "OUT" : "IN"),
     senderAddress: item.senderAddress,
     recipientAddress: item.recipientAddress,
     ...item.transfer,
