@@ -1,14 +1,17 @@
-import { decodeFunctionData } from "viem";
+import { decodeFunctionData, toFunctionSelector } from "viem";
 import { describe, expect, it, vi } from "vite-plus/test";
 import {
   buildAddVoucherWriterCall,
   buildDeleteVoucherWriterCall,
+  buildVoucherBurnCall,
   buildVoucherMintCall,
   buildVoucherOwnershipTransferCall,
+  giftableTokenBurnAbi,
   giftableTokenMintToAbi,
   giftableTokenOwnershipAbi,
   giftableTokenWriterAbi,
   toVoucherDeployPayload,
+  voucherBurnAmountSchema,
   voucherCreateSchema,
   voucherMintAmountSchema,
   type VoucherCreateInput,
@@ -296,6 +299,63 @@ describe("buildVoucherMintCall", () => {
   it("rejects a non-integer or non-positive raw amount", () => {
     for (const amountRaw of ["0", "-1", "1.5", "", "1e6"]) {
       expect(() => buildVoucherMintCall({ tokenAddress, ownerAddress, amountRaw })).toThrow();
+    }
+  });
+});
+
+describe("voucherBurnAmountSchema", () => {
+  const message = (decimals: number, value: string, balanceRaw?: bigint) =>
+    voucherBurnAmountSchema(decimals, balanceRaw).safeParse(value).error?.issues[0]?.message;
+
+  it("accepts an amount up to and including the owner's balance", () => {
+    expect(voucherBurnAmountSchema(2, 1234n).safeParse("12.34").success).toBe(true);
+    expect(voucherBurnAmountSchema(2, 1234n).safeParse("0.01").success).toBe(true);
+  });
+
+  it("rejects an amount past the owner's balance", () => {
+    expect(message(2, "12.35", 1234n)).toBe("Amount exceeds your balance");
+    expect(message(6, "1", 0n)).toBe("Amount exceeds your balance");
+  });
+
+  it("checks only the format while the balance is unknown", () => {
+    expect(voucherBurnAmountSchema(2).safeParse("1000000").success).toBe(true);
+  });
+
+  it("rejects zero, negative and non-numeric amounts", () => {
+    for (const value of ["0", "0.00", "-5", "", "abc", "1e6"]) {
+      expect(message(6, value, 10n ** 18n)).toBe("Enter an amount greater than zero.");
+    }
+  });
+
+  it("rejects an amount finer than the voucher's decimals", () => {
+    expect(message(2, "1.234", 10n ** 18n)).toBe("Enter an amount this voucher supports.");
+    expect(message(0, "25.5", 10n ** 18n)).toBe("Enter an amount this voucher supports.");
+  });
+});
+
+describe("buildVoucherBurnCall", () => {
+  const tokenAddress = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
+
+  it("burns the raw amount from the caller's own balance", () => {
+    const call = buildVoucherBurnCall({ tokenAddress, amountRaw: "10000000000" });
+
+    expect(call.to).toBe(tokenAddress);
+    expect(call.value).toBe("0");
+    expect(decodeFunctionData({ abi: giftableTokenBurnAbi, data: call.data })).toEqual({
+      functionName: "burn",
+      args: [10_000_000_000n],
+    });
+  });
+
+  it("uses GiftableToken's burn(uint256) selector", () => {
+    const call = buildVoucherBurnCall({ tokenAddress, amountRaw: "1" });
+
+    expect(call.data.slice(0, 10)).toBe(toFunctionSelector("burn(uint256)"));
+  });
+
+  it("rejects a non-integer or non-positive raw amount", () => {
+    for (const amountRaw of ["0", "-1", "1.5", "", "1e6"]) {
+      expect(() => buildVoucherBurnCall({ tokenAddress, amountRaw })).toThrow();
     }
   });
 });

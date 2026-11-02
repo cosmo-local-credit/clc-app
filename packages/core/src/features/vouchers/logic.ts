@@ -10,6 +10,7 @@ import { isUnitOfAccount, normalizeUnitOfAccount, type UnitOfAccount } from "../
 import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
+import { parseTokenAmount } from "../wallet/logic";
 import {
   type MarkerColor,
   type MarkerIcon,
@@ -272,6 +273,58 @@ export function buildVoucherMintCall(input: BuildVoucherMintCallInput): CaliburC
       abi: giftableTokenMintToAbi,
       functionName: "mintTo",
       args: [input.recipientAddress ?? input.ownerAddress, amount],
+    }),
+  };
+}
+
+/**
+ * `burn` is `onlyOwner` and destroys from the caller's own balance, reverting
+ * `InsufficientBalance` past it. There is no `burnFrom`: the owner can destroy
+ * only what they hold, never a holder's vouchers.
+ */
+export const giftableTokenBurnAbi = parseAbi(["function burn(uint256 value)"]);
+
+/**
+ * The amount checks for `burn`. The balance is the owner's, read from the
+ * chain; while it is unknown only the format is checked and the contract
+ * remains the final word.
+ */
+export function voucherBurnAmountSchema(decimals: number, balanceRaw?: bigint) {
+  return z
+    .string()
+    .trim()
+    .superRefine((value, ctx) => {
+      if (!/^\d+(\.\d+)?$/.test(value) || Number(value) <= 0) {
+        ctx.addIssue({ code: "custom", message: "Enter an amount greater than zero." });
+        return;
+      }
+      if ((value.split(".")[1]?.length ?? 0) > decimals) {
+        ctx.addIssue({ code: "custom", message: "Enter an amount this voucher supports." });
+        return;
+      }
+      if (balanceRaw !== undefined && BigInt(parseTokenAmount(value, decimals)) > balanceRaw) {
+        ctx.addIssue({ code: "custom", message: "Amount exceeds your balance" });
+      }
+    });
+}
+
+export function buildVoucherBurnCall(input: {
+  tokenAddress: `0x${string}`;
+  amountRaw: string;
+}): CaliburCall {
+  if (!/^\d+$/.test(input.amountRaw)) {
+    throw new Error("Burn amount must be a positive integer string.");
+  }
+  const amount = BigInt(input.amountRaw);
+  if (amount <= 0n) throw new Error("Burn amount must be positive.");
+
+  return {
+    to: input.tokenAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: giftableTokenBurnAbi,
+      functionName: "burn",
+      args: [amount],
     }),
   };
 }
