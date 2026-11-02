@@ -69,6 +69,12 @@ export function useManagedVoucherOfferingsInfinite(
  * Deliberately not a fan-out over `usePoolVouchers`: a pool may allow many
  * vouchers, and one request each would multiply into a request storm on a screen
  * that only ever renders 20 tiles at a time.
+ *
+ * Refresh on entry and while visible: a confirmed registry write can precede
+ * Core's pool-token projection. One invalidation can therefore still fetch an
+ * empty list. The market's ten-minute freshness would keep that result on the
+ * next tab visit; a visible-tab interval also catches delayed indexing without
+ * requiring another visit. The client already sends `cache: "no-store"`.
  */
 export function usePoolOfferingsInfinite(
   poolAddress: string | undefined,
@@ -76,6 +82,12 @@ export function usePoolOfferingsInfinite(
 ) {
   return useInfiniteQuery({
     ...poolOfferingsInfiniteQueryOptions(offeringsClient, poolAddress, perPage),
-    ...MARKET_QUERY_FRESHNESS,
+    gcTime: MARKET_QUERY_FRESHNESS.gcTime,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
   });
 }
