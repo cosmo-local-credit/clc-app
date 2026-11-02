@@ -242,13 +242,17 @@ msgstr "تم سحب {amount} {0}."
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "رصيد متاح بقيمة {available} من أصل {limit} {denomination}"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:108
+#: apps/web/src/features/wallet/ui/receive-page.tsx:94
 msgid "{chainName} address"
 msgstr "عنوان {chainName}"
 
 #: apps/web/src/components/wallet/wallet-status.tsx:22
 msgid "{chainName} network"
 msgstr "شبكة {chainName}"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:80
+msgid "{chainName} network only"
+msgstr "شبكة {chainName} فقط"
 
 #: apps/web/src/components/ui/step-progress.tsx:24
 msgid "{clampedStep} of {clampedTotal}"
@@ -648,7 +652,7 @@ msgstr "إضافة إلى الكتالوج"
 msgid "Add what you accept this voucher for, and it appears in the marketplace."
 msgstr "أضف ما تقبله مقابل هذه القسيمة لتظهر في السوق."
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:67
+#: apps/web/src/features/home/ui/account-settings-section.tsx:68
 msgid "Add your contact details"
 msgstr "إضافة بيانات الاتصال"
 
@@ -674,7 +678,7 @@ msgstr "دفتر العناوين"
 #: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Address copied"
 msgstr "تم نسخ العنوان"
 
@@ -1170,7 +1174,7 @@ msgstr "التحقق من حالة الإصدار"
 msgid "Check supply again"
 msgstr "التحقق من المعروض مجددًا"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:566
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "تحقّق من الإرسال الحالي قبل أي نقل آخر:"
@@ -1179,7 +1183,7 @@ msgstr "تحقّق من الإرسال الحالي قبل أي نقل آخر:"
 msgid "Check the Want details."
 msgstr "تحقق من تفاصيل الطلب."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:601
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "التحقق من حالة النقل"
@@ -1519,7 +1523,7 @@ msgid "Collect again from this card"
 msgstr "التحصيل مرة أخرى من هذه البطاقة"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:114
-#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+#: apps/web/src/features/wallet/ui/receive-page.tsx:124
 msgid "Collect by card"
 msgstr "التحصيل بالبطاقة"
 
@@ -1795,7 +1799,7 @@ msgstr "عنوان العقد"
 msgid "Contract address copied"
 msgstr "تم نسخ عنوان العقد"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:152
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
 msgid "Copy"
 msgstr "نسخ"
 
@@ -1821,6 +1825,7 @@ msgstr "نسخ مستلم الرسوم"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 msgid "Copy link"
 msgstr "نسخ الرابط"
 
@@ -1857,12 +1862,12 @@ msgstr "نسخ تجزئة معاملة إصدار المعروض"
 msgid "Copy transaction hash"
 msgstr "نسخ تجزئة المعاملة"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:102
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Copy wallet address"
 msgstr "نسخ عنوان المحفظة"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:82
-#: apps/web/src/features/wallet/ui/receive-page.tsx:82
+#: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "Copy wallet username"
 msgstr "نسخ اسم مستخدم المحفظة"
 
@@ -1905,11 +1910,11 @@ msgstr "تعذر حماية بطاقة تسجيل الدخول هذه."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "تعذّر حفظ المحفظة الورقية. حاول مرة أخرى."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "تعذّر حفظ الورقة القابلة للطباعة. حاول مرة أخرى."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "تعذر حفظ بطاقة تسجيل الدخول. حاول مرة أخرى."
 
@@ -1917,7 +1922,7 @@ msgstr "تعذر حفظ بطاقة تسجيل الدخول. حاول مرة أخ
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "تعذّرت مشاركة المحفظة الورقية. جرّب تنزيلها بدلاً من ذلك."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "تعذر مشاركة بطاقة تسجيل الدخول. حاول تنزيلها بدلاً من ذلك."
 
@@ -1965,8 +1970,8 @@ msgstr "تعذّر التحقق من صلاحية وصولك إلى المراج
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
 #: apps/web/src/features/wallet/ui/cash-page.tsx:24
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy address"
 msgstr "تعذّر نسخ العنوان"
 
@@ -1991,6 +1996,8 @@ msgstr "تعذّر نسخ مستلم الرسوم"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:417
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:133
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:139
 msgid "Couldn't copy link"
 msgstr "تعذّر نسخ الرابط"
 
@@ -2033,14 +2040,18 @@ msgstr "تعذّر نسخ تجزئة المعاملة"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:44
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:50
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy username"
 msgstr "تعذّر نسخ اسم المستخدم"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:136
 msgid "Couldn't create the first supply."
 msgstr "تعذّر إصدار المعروض الأول."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:213
+msgid "Couldn't create the image."
+msgstr "تعذّر إنشاء الصورة."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
@@ -2370,7 +2381,7 @@ msgstr "تعذّر إرسال طلب السحب"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "تعذّر اقتراح اسم مستخدم. يُرجى المحاولة مرة أخرى."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:531
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "تعذّر نقل الملكية."
@@ -2672,11 +2683,11 @@ msgstr "الوصف"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
 msgid "Destroy vouchers"
 msgstr "إتلاف القسائم"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:473
 msgid "Destroying vouchers…"
 msgstr "جارٍ إتلاف القسائم…"
 
@@ -2723,8 +2734,8 @@ msgstr "تم"
 msgid "Done with this customer"
 msgstr "إنهاء التعامل مع هذا العميل"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "تنزيل البطاقة"
 
@@ -3725,6 +3736,7 @@ msgstr "اربط 12 قسيمة كحد أقصى"
 #: apps/web/src/components/wants/want-detail.tsx:378
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:138
 msgid "Link copied"
 msgstr "تم نسخ الرابط"
 
@@ -4299,7 +4311,7 @@ msgstr "منشوراتي"
 msgid "My Vouchers"
 msgstr "قسائمي"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:42
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:153
 msgid "My wallet address"
 msgstr "عنوان محفظتي"
 
@@ -4361,8 +4373,8 @@ msgstr "الشبكة"
 msgid "New owner"
 msgstr "المالك الجديد"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:573
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:585
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4725,7 +4737,7 @@ msgid "No vouchers yet."
 msgstr "لا توجد قسائم بعد."
 
 #: apps/web/src/features/wallet/ui/cash-page.tsx:56
-#: apps/web/src/features/wallet/ui/receive-page.tsx:72
+#: apps/web/src/features/wallet/ui/receive-page.tsx:58
 msgid "No wallet address available."
 msgstr "لا يوجد عنوان محفظة متاح."
 
@@ -4905,7 +4917,7 @@ msgstr "تفاصيل بيع الرصيد"
 msgid "On"
 msgstr "مفعّلة"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:123
+#: apps/web/src/features/wallet/ui/receive-page.tsx:109
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "أرسل الأصول إلى هذا العنوان على <0>شبكة {chainName}</0> فقط. قد تضيع "
@@ -4948,6 +4960,10 @@ msgstr "فتح القائمة"
 msgid "intro.receive.body"
 msgstr "افتح الاستلام وشارك رمز QR الخاص بالاستلام أو عنوان محفظتك مع المُرسل. "
 "احتفظ بالمفتاح الخاص لمحفظتك لنفسك."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:79
+msgid "Open Send in CLC and scan"
+msgstr "افتح «إرسال» في CLC وامسح الرمز"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -5062,14 +5078,14 @@ msgstr "رد المالك"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "تم إرسال نقل الملكية."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:526
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "نُقلت الملكية على السلسلة. تتأخر مزامنة الكتالوج، وقد أُزيلت عناصر "
 "التحكم الإدارية الخاصة بك."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:528
 msgid "Ownership transferred."
 msgstr "نُقلت الملكية."
 
@@ -5184,6 +5200,10 @@ msgstr "ادفع واستلم xDAI مباشرةً."
 msgid "Pay by card or bank transfer."
 msgstr "ادفع بالبطاقة أو التحويل المصرفي."
 
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:123
+msgid "Pay me on CLC"
+msgstr "ادفع لي عبر CLC"
+
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:38
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
 #: apps/web/src/features/home/ui/activity-page.tsx:320
@@ -5203,6 +5223,11 @@ msgstr "تم تأكيد الدفع"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:412
 msgid "Payment failed"
 msgstr "فشل الدفع"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:194
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:205
+msgid "Payment QR code"
+msgstr "رمز QR للدفع"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:251
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:249
@@ -5599,8 +5624,8 @@ msgid "Preferred unit of account"
 msgstr "وحدة الحساب المفضلة"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:471
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:597
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "جارٍ إعداد المحفظة…"
@@ -5615,8 +5640,8 @@ msgstr "جارٍ إعداد طلب السحب…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "جارٍ الإعداد…"
 
@@ -5624,9 +5649,13 @@ msgstr "جارٍ الإعداد…"
 msgid "Present card to pay {armedAmount}"
 msgstr "قدّم البطاقة لدفع {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "اضغط مطولاً على الصورة أدناه، ثم اختر «حفظ الصورة»."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:177
+msgid "Press and hold the image to save it."
+msgstr "اضغط مطولاً على الصورة لحفظها."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:471
 #~ msgid "Pretium deposits and withdrawals will appear here."
@@ -5711,7 +5740,7 @@ msgstr "التسعير"
 msgid "Primary navigation"
 msgstr "التنقل الرئيسي"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "طباعة"
 
@@ -5909,7 +5938,7 @@ msgstr "تم نسخ الإيصال"
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
-#: apps/web/src/features/wallet/ui/receive-page.tsx:60
+#: apps/web/src/features/wallet/ui/receive-page.tsx:46
 msgid "Receive"
 msgstr "استلام"
 
@@ -5918,7 +5947,7 @@ msgstr "استلام"
 msgid "intro.receive.title"
 msgstr "استلام قسيمة"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:67
+#: apps/web/src/features/wallet/ui/receive-page.tsx:53
 msgid "Receive details"
 msgstr "تفاصيل الاستلام"
 
@@ -6365,6 +6394,7 @@ msgstr "معاملات Safe"
 #~ msgstr "عرض القمر الصناعي"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:230
 msgid "Save"
 msgstr "حفظ"
 
@@ -6387,7 +6417,7 @@ msgstr "حفظ التغييرات"
 msgid "Save fee settings"
 msgstr "حفظ إعدادات الرسوم"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "حفظ ورقة A4 قابلة للطباعة"
 
@@ -6448,6 +6478,10 @@ msgstr "مسح رمز QR"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:222
 msgid "Scan recipient address"
 msgstr "مسح عنوان المستلم"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:78
+msgid "Scan to pay me"
+msgstr "امسح للدفع لي"
 
 #: apps/web/src/components/wants/want-row.tsx:66
 #: apps/web/src/features/home/ui/wallet-page.tsx:348
@@ -6795,12 +6829,13 @@ msgstr "الإعدادات"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/components/wants/want-detail.tsx:386
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
-#: apps/web/src/features/wallet/ui/receive-page.tsx:156
+#: apps/web/src/features/wallet/ui/receive-page.tsx:142
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
 msgstr "مشاركة"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "مشاركة البطاقة"
 
@@ -6969,8 +7004,8 @@ msgstr "تسجيل الدخول"
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "بطاقة تسجيل الدخول"
 
@@ -7483,7 +7518,7 @@ msgstr "الخريطة غير مدعومة على هذا الجهاز."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "يجب ألا يزيد طول الرسالة والطلب على 500 حرف."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:553
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "يمكن للمالك الجديد إنشاء القسائم ونقل الملكية."
 
@@ -7915,8 +7950,8 @@ msgstr "تم نسخ تجزئة المعاملة"
 #~ msgstr "سجل التحويلات"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:550
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
@@ -7924,7 +7959,7 @@ msgstr "تم نسخ تجزئة المعاملة"
 msgid "Transfer ownership"
 msgstr "نقل الملكية"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:599
 msgid "Transferring ownership…"
 msgstr "جارٍ نقل الملكية…"
 
@@ -7968,6 +8003,7 @@ msgstr "رحلة"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:428
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:180
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:216
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:457
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
@@ -8217,12 +8253,12 @@ msgstr "استخدم بطاقة الاستجابة السريعة هذه لتس�
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:60
-#: apps/web/src/features/wallet/ui/receive-page.tsx:88
+#: apps/web/src/features/wallet/ui/receive-page.tsx:74
 msgid "Username"
 msgstr "اسم المستخدم"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Username copied"
 msgstr "تم نسخ اسم المستخدم"
 
@@ -8510,7 +8546,7 @@ msgstr "في انتظار السلسلة…"
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:107
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
@@ -8916,7 +8952,7 @@ msgstr "لا يزال مفتاح المرور الخاص بك مؤكداً. يم
 #~ msgid "Your Pools"
 #~ msgstr "صناديقك"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:56
+#: apps/web/src/features/home/ui/account-settings-section.tsx:57
 msgid "Your profile"
 msgstr "ملفك الشخصي"
 

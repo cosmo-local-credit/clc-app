@@ -234,13 +234,17 @@ msgstr "{amount} {0} वापस ले लिया गया।"
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{limit} {denomination} में से {available} उपलब्ध क्रेडिट"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:108
+#: apps/web/src/features/wallet/ui/receive-page.tsx:94
 msgid "{chainName} address"
 msgstr "{chainName} पता"
 
 #: apps/web/src/components/wallet/wallet-status.tsx:22
 msgid "{chainName} network"
 msgstr "{chainName} नेटवर्क"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:80
+msgid "{chainName} network only"
+msgstr "केवल {chainName} नेटवर्क"
 
 #: apps/web/src/components/ui/step-progress.tsx:24
 msgid "{clampedStep} of {clampedTotal}"
@@ -640,7 +644,7 @@ msgid "Add what you accept this voucher for, and it appears in the marketplace."
 msgstr "आप जिस चीज़ के लिए यह वाउचर स्वीकार करते हैं उसे जोड़ें और यह बाज़ार "
 "में दिखाई देगा।"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:67
+#: apps/web/src/features/home/ui/account-settings-section.tsx:68
 msgid "Add your contact details"
 msgstr "अपना संपर्क विवरण जोड़ें"
 
@@ -666,7 +670,7 @@ msgstr "पता पुस्तिका"
 #: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Address copied"
 msgstr "पता कॉपी किया गया"
 
@@ -1166,7 +1170,7 @@ msgstr "निर्माण स्थिति जांचें"
 msgid "Check supply again"
 msgstr "आपूर्ति की दोबारा जाँच करें"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:566
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "दूसरा हस्तांतरण करने से पहले मौजूदा सबमिशन की जाँच करें:"
@@ -1175,7 +1179,7 @@ msgstr "दूसरा हस्तांतरण करने से पह�
 msgid "Check the Want details."
 msgstr "ज़रूरत का विवरण जाँचें।"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:601
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "हस्तांतरण की स्थिति जाँचें"
@@ -1516,7 +1520,7 @@ msgid "Collect again from this card"
 msgstr "इस कार्ड से पुनः संग्रह करें"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:114
-#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+#: apps/web/src/features/wallet/ui/receive-page.tsx:124
 msgid "Collect by card"
 msgstr "कार्ड द्वारा एकत्रित करें"
 
@@ -1795,7 +1799,7 @@ msgstr "अनुबंध का पता"
 msgid "Contract address copied"
 msgstr "अनुबंध का पता कॉपी किया गया"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:152
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
 msgid "Copy"
 msgstr "प्रतिलिपि"
 
@@ -1821,6 +1825,7 @@ msgstr "प्रतिलिपि शुल्क प्राप्तकर�
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 msgid "Copy link"
 msgstr "लिंक कॉपी करें"
 
@@ -1857,12 +1862,12 @@ msgstr "आपूर्ति निर्माण लेनदेन हैश
 msgid "Copy transaction hash"
 msgstr "लेन-देन हैश कॉपी करें"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:102
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Copy wallet address"
 msgstr "वॉलेट पता कॉपी करें"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:82
-#: apps/web/src/features/wallet/ui/receive-page.tsx:82
+#: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "Copy wallet username"
 msgstr "वॉलेट उपयोगकर्ता नाम कॉपी करें"
 
@@ -1905,11 +1910,11 @@ msgstr "इस साइन-इन कार्ड को सुरक्षि�
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "पेपर वॉलेट सहेजा नहीं जा सका. पुनः प्रयास करें।"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "मुद्रण योग्य शीट सहेजी नहीं जा सकी. पुनः प्रयास करें।"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "साइन-इन कार्ड सहेजा नहीं जा सका. पुनः प्रयास करें।"
 
@@ -1918,7 +1923,7 @@ msgstr "साइन-इन कार्ड सहेजा नहीं जा 
 #~ msgstr "पेपर वॉलेट साझा नहीं किया जा सका. इसके बजाय इसे डाउनलोड करने का प्रयास "
 #~ "करें."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "साइन-इन कार्ड साझा नहीं किया जा सका. इसके बजाय इसे डाउनलोड करने का "
 "प्रयास करें."
@@ -1967,8 +1972,8 @@ msgstr "आपकी समीक्षा पहुंच की जांच �
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
 #: apps/web/src/features/wallet/ui/cash-page.tsx:24
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy address"
 msgstr "पता कॉपी नहीं किया जा सका"
 
@@ -1993,6 +1998,8 @@ msgstr "शुल्क प्राप्तकर्ता की प्रत
 #: apps/web/src/components/vouchers/voucher-summary.tsx:417
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:133
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:139
 msgid "Couldn't copy link"
 msgstr "लिंक कॉपी नहीं किया जा सका"
 
@@ -2035,14 +2042,18 @@ msgstr "लेनदेन हैश की प्रतिलिपि नह�
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:44
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:50
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy username"
 msgstr "उपयोक्तानाम की प्रतिलिपि नहीं बनाई जा सकी"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:136
 msgid "Couldn't create the first supply."
 msgstr "पहली आपूर्ति नहीं बनाई जा सकी."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:213
+msgid "Couldn't create the image."
+msgstr "छवि नहीं बनाई जा सकी।"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
@@ -2378,7 +2389,7 @@ msgstr "निकासी जमा नहीं हो सकी"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "उपयोगकर्ता नाम सुझाया नहीं जा सका. कृपया पुन: प्रयास करें।"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:531
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "स्वामित्व हस्तांतरित नहीं किया जा सका."
@@ -2680,11 +2691,11 @@ msgstr "विवरण"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
 msgid "Destroy vouchers"
 msgstr "वाउचर नष्ट करें"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:473
 msgid "Destroying vouchers…"
 msgstr "वाउचर नष्ट किए जा रहे हैं…"
 
@@ -2731,8 +2742,8 @@ msgstr "हो गया"
 msgid "Done with this customer"
 msgstr "इस ग्राहक के साथ काम हो गया"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "कार्ड डाउनलोड करें"
 
@@ -3740,6 +3751,7 @@ msgstr "अधिकतम 12 वाउचर लिंक करें"
 #: apps/web/src/components/wants/want-detail.tsx:378
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:138
 msgid "Link copied"
 msgstr "लिंक कॉपी किया गया"
 
@@ -4314,7 +4326,7 @@ msgstr "मेरी पोस्ट"
 msgid "My Vouchers"
 msgstr "मेरे वाउचर"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:42
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:153
 msgid "My wallet address"
 msgstr "मेरे वॉलेट का पता"
 
@@ -4376,8 +4388,8 @@ msgstr "नेटवर्क"
 msgid "New owner"
 msgstr "नया मालिक"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:573
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:585
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4740,7 +4752,7 @@ msgid "No vouchers yet."
 msgstr "अभी तक कोई वाउचर नहीं."
 
 #: apps/web/src/features/wallet/ui/cash-page.tsx:56
-#: apps/web/src/features/wallet/ui/receive-page.tsx:72
+#: apps/web/src/features/wallet/ui/receive-page.tsx:58
 msgid "No wallet address available."
 msgstr "कोई वॉलेट पता उपलब्ध नहीं है."
 
@@ -4923,7 +4935,7 @@ msgstr "ऑफ्रैम्प विवरण"
 msgid "On"
 msgstr "चालू"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:123
+#: apps/web/src/features/wallet/ui/receive-page.tsx:109
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "संपत्तियां केवल <0>{chainName} नेटवर्क</0> पर इस पते पर भेजें। अन्य "
@@ -4966,6 +4978,10 @@ msgstr "मेनू खोलें"
 msgid "intro.receive.body"
 msgstr "प्राप्त करें खोलें और अपना प्राप्ति QR कोड या वॉलेट पता भेजने वाले के "
 "साथ साझा करें। अपने वॉलेट की निजी कुंजी किसी को न दें।"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:79
+msgid "Open Send in CLC and scan"
+msgstr "CLC में भेजें खोलें और स्कैन करें"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -5080,14 +5096,14 @@ msgstr "मालिक का जवाब"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "स्वामित्व हस्तांतरण प्रस्तुत किया गया."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:526
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "स्वामित्व ऑन-चेन हस्तांतरित हो गया है। कैटलॉग सिंक में देरी हो रही है; "
 "आपके प्रबंधन नियंत्रण हटा दिए गए हैं।"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:528
 msgid "Ownership transferred."
 msgstr "स्वामित्व हस्तांतरित हो गया।"
 
@@ -5202,6 +5218,10 @@ msgstr "भुगतान करें और सीधे xDAI प्राप
 msgid "Pay by card or bank transfer."
 msgstr "कार्ड या बैंक ट्रांसफ़र से भुगतान करें।"
 
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:123
+msgid "Pay me on CLC"
+msgstr "CLC पर मुझे भुगतान करें"
+
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:38
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
 #: apps/web/src/features/home/ui/activity-page.tsx:320
@@ -5221,6 +5241,11 @@ msgstr "भुगतान की पुष्टि हो गई"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:412
 msgid "Payment failed"
 msgstr "भुगतान विफल"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:194
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:205
+msgid "Payment QR code"
+msgstr "भुगतान QR कोड"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:251
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:249
@@ -5618,8 +5643,8 @@ msgid "Preferred unit of account"
 msgstr "पसंदीदा लेखा इकाई"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:471
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:597
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "वॉलेट तैयार किया जा रहा है…"
@@ -5634,8 +5659,8 @@ msgstr "आपकी निकासी की तैयारी की जा 
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "तैयारी हो रही है..."
 
@@ -5643,9 +5668,13 @@ msgstr "तैयारी हो रही है..."
 msgid "Present card to pay {armedAmount}"
 msgstr "{armedAmount} का भुगतान करने के लिए कार्ड प्रस्तुत करें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "नीचे दी गई छवि को दबाकर रखें, फिर छवि सहेजें चुनें।"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:177
+msgid "Press and hold the image to save it."
+msgstr "छवि सहेजने के लिए उसे दबाकर रखें।"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:471
 #~ msgid "Pretium deposits and withdrawals will appear here."
@@ -5730,7 +5759,7 @@ msgstr "मूल्य निर्धारण"
 msgid "Primary navigation"
 msgstr "प्राथमिक नेविगेशन"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "प्रिंट करें"
 
@@ -5930,7 +5959,7 @@ msgstr "रसीद की प्रतिलिपि बनाई गई"
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
-#: apps/web/src/features/wallet/ui/receive-page.tsx:60
+#: apps/web/src/features/wallet/ui/receive-page.tsx:46
 msgid "Receive"
 msgstr "प्राप्त करें"
 
@@ -5939,7 +5968,7 @@ msgstr "प्राप्त करें"
 msgid "intro.receive.title"
 msgstr "वाउचर प्राप्त करें"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:67
+#: apps/web/src/features/wallet/ui/receive-page.tsx:53
 msgid "Receive details"
 msgstr "विवरण प्राप्त करें"
 
@@ -6387,6 +6416,7 @@ msgstr "Safe लेन-देन"
 #~ msgstr "उपग्रह दृश्य"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:230
 msgid "Save"
 msgstr "सहेजें"
 
@@ -6409,7 +6439,7 @@ msgstr "परिवर्तन सहेजें"
 msgid "Save fee settings"
 msgstr "शुल्क सेटिंग सहेजें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "मुद्रण योग्य A4 शीट सहेजें"
 
@@ -6471,6 +6501,10 @@ msgstr "QR कोड को स्कैन करें"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:222
 msgid "Scan recipient address"
 msgstr "प्राप्तकर्ता का पता स्कैन करें"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:78
+msgid "Scan to pay me"
+msgstr "मुझे भुगतान करने के लिए स्कैन करें"
 
 #: apps/web/src/components/wants/want-row.tsx:66
 #: apps/web/src/features/home/ui/wallet-page.tsx:348
@@ -6819,12 +6853,13 @@ msgstr "सेटिंग्स"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/components/wants/want-detail.tsx:386
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
-#: apps/web/src/features/wallet/ui/receive-page.tsx:156
+#: apps/web/src/features/wallet/ui/receive-page.tsx:142
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
 msgstr "साझा करें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "कार्ड साझा करें"
 
@@ -6994,8 +7029,8 @@ msgstr "साइन इन"
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "साइन-इन कार्ड"
 
@@ -7508,7 +7543,7 @@ msgstr "इस डिवाइस पर मानचित्र समर्�
 msgid "The message and order must be 500 characters or fewer."
 msgstr "संदेश और ऑर्डर कुल मिलाकर 500 अक्षर या उससे कम होने चाहिए।"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:553
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "नया मालिक वाउचर जारी कर सकता है और स्वामित्व हस्तांतरित कर सकता है।"
 
@@ -7945,8 +7980,8 @@ msgstr "लेन-देन हैश कॉपी किया गया"
 #~ msgstr "स्थानांतरण इतिहास"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:550
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
@@ -7954,7 +7989,7 @@ msgstr "लेन-देन हैश कॉपी किया गया"
 msgid "Transfer ownership"
 msgstr "स्वामित्व स्थानांतरित करें"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:599
 msgid "Transferring ownership…"
 msgstr "स्वामित्व स्थानांतरित किया जा रहा है…"
 
@@ -7998,6 +8033,7 @@ msgstr "यात्रा"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:428
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:180
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:216
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:457
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
@@ -8248,12 +8284,12 @@ msgstr "अपने वॉलेट में साइन इन करने 
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:60
-#: apps/web/src/features/wallet/ui/receive-page.tsx:88
+#: apps/web/src/features/wallet/ui/receive-page.tsx:74
 msgid "Username"
 msgstr "उपयोगकर्ता नाम"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Username copied"
 msgstr "उपयोगकर्ता नाम कॉपी किया गया"
 
@@ -8541,7 +8577,7 @@ msgstr "श्रृंखला की प्रतीक्षा में...
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:107
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
@@ -8953,7 +8989,7 @@ msgstr "आपकी पासकी अभी भी पुष्टि कर 
 #~ msgid "Your Pools"
 #~ msgstr "आपके पूल"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:56
+#: apps/web/src/features/home/ui/account-settings-section.tsx:57
 msgid "Your profile"
 msgstr "आपकी प्रोफ़ाइल"
 

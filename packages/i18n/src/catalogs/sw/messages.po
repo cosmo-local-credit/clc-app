@@ -233,13 +233,17 @@ msgstr "{amount} {0} imetolewa."
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{available} kati ya {limit} {denomination} mkopo unaopatikana"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:108
+#: apps/web/src/features/wallet/ui/receive-page.tsx:94
 msgid "{chainName} address"
 msgstr "Anwani ya {chainName}"
 
 #: apps/web/src/components/wallet/wallet-status.tsx:22
 msgid "{chainName} network"
 msgstr "Mtandao wa {chainName}"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:80
+msgid "{chainName} network only"
+msgstr "Mtandao wa {chainName} pekee"
 
 #: apps/web/src/components/ui/step-progress.tsx:24
 msgid "{clampedStep} of {clampedTotal}"
@@ -639,7 +643,7 @@ msgstr "Ongeza kwenye katalogi"
 msgid "Add what you accept this voucher for, and it appears in the marketplace."
 msgstr "Ongeza unachokipokea kwa hati hii, na kitaonekana sokoni."
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:67
+#: apps/web/src/features/home/ui/account-settings-section.tsx:68
 msgid "Add your contact details"
 msgstr "Ongeza maelezo yako ya mawasiliano"
 
@@ -665,7 +669,7 @@ msgstr "Kitabu cha anwani"
 #: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Address copied"
 msgstr "Anwani imenakiliwa"
 
@@ -1167,7 +1171,7 @@ msgstr "Angalia hali ya uundaji"
 msgid "Check supply again"
 msgstr "Angalia usambazaji tena"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:566
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "Kagua uwasilishaji uliopo kabla ya uhamishaji mwingine:"
@@ -1176,7 +1180,7 @@ msgstr "Kagua uwasilishaji uliopo kabla ya uhamishaji mwingine:"
 msgid "Check the Want details."
 msgstr "Angalia maelezo ya ombi."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:601
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "Kagua hali ya uhamishaji"
@@ -1516,7 +1520,7 @@ msgid "Collect again from this card"
 msgstr "Pokea tena kutoka kadi hii"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:114
-#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+#: apps/web/src/features/wallet/ui/receive-page.tsx:124
 msgid "Collect by card"
 msgstr "Pokea malipo kwa kadi"
 
@@ -1797,7 +1801,7 @@ msgstr "Anwani ya mkataba"
 msgid "Contract address copied"
 msgstr "Anwani ya mkataba imenakiliwa"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:152
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
 msgid "Copy"
 msgstr "Nakili"
 
@@ -1823,6 +1827,7 @@ msgstr "Nakili mpokeaji wa ada"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 msgid "Copy link"
 msgstr "Nakili kiungo"
 
@@ -1859,12 +1864,12 @@ msgstr "Nakili hashi ya muamala wa kuunda usambazaji"
 msgid "Copy transaction hash"
 msgstr "Nakili heshi ya muamala"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:102
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Copy wallet address"
 msgstr "Nakili anwani ya pochi"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:82
-#: apps/web/src/features/wallet/ui/receive-page.tsx:82
+#: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "Copy wallet username"
 msgstr "Nakili jina la mtumiaji la pochi"
 
@@ -1907,11 +1912,11 @@ msgstr "Haikuwezekana kulinda kadi hii ya kuingia."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "Imeshindikana kuhifadhi pochi ya karatasi. Jaribu tena."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Imeshindwa kuhifadhi karatasi ya kuchapisha. Jaribu tena."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Imeshindikana kuhifadhi kadi ya kuingia. Jaribu tena."
 
@@ -1919,7 +1924,7 @@ msgstr "Imeshindikana kuhifadhi kadi ya kuingia. Jaribu tena."
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "Imeshindikana kushiriki pochi ya karatasi. Jaribu kuipakua badala yake."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Imeshindikana kushiriki kadi ya kuingia. Jaribu kuipakua badala yake."
 
@@ -1967,8 +1972,8 @@ msgstr "Imeshindwa kukagua ruhusa yako ya kutoa maoni."
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
 #: apps/web/src/features/wallet/ui/cash-page.tsx:24
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy address"
 msgstr "Imeshindwa kunakili anwani"
 
@@ -1993,6 +1998,8 @@ msgstr "Imeshindwa kunakili mpokeaji wa ada"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:417
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:133
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:139
 msgid "Couldn't copy link"
 msgstr "Haikuweza kunakili kiungo"
 
@@ -2035,14 +2042,18 @@ msgstr "Haikuwezekana kunakili heshi ya muamala"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:44
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:50
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy username"
 msgstr "Imeshindikana kunakili jina la mtumiaji"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:136
 msgid "Couldn't create the first supply."
 msgstr "Imeshindikana kuunda usambazaji wa kwanza."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:213
+msgid "Couldn't create the image."
+msgstr "Haikuweza kuunda picha."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
@@ -2378,7 +2389,7 @@ msgstr "Haikuwezekana kuwasilisha utoaji pesa"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "Hatukuweza kupendekeza jina la mtumiaji. Tafadhali jaribu tena."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:531
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "Hatukuweza kuhamisha umiliki."
@@ -2680,11 +2691,11 @@ msgstr "Maelezo"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
 msgid "Destroy vouchers"
 msgstr "Haribu vocha"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:473
 msgid "Destroying vouchers…"
 msgstr "Inaharibu vocha…"
 
@@ -2731,8 +2742,8 @@ msgstr "Maliza"
 msgid "Done with this customer"
 msgstr "Maliza na mteja huyu"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "Pakua kadi"
 
@@ -3736,6 +3747,7 @@ msgstr "Unganisha vocha 12 kwa juu zaidi"
 #: apps/web/src/components/wants/want-detail.tsx:378
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:138
 msgid "Link copied"
 msgstr "Kiungo kimenakiliwa"
 
@@ -4315,7 +4327,7 @@ msgstr "Machapisho yangu"
 msgid "My Vouchers"
 msgstr "Hati zangu"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:42
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:153
 msgid "My wallet address"
 msgstr "Anwani ya pochi yangu"
 
@@ -4377,8 +4389,8 @@ msgstr "Mtandao"
 msgid "New owner"
 msgstr "Mmiliki mpya"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:573
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:585
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4745,7 +4757,7 @@ msgid "No vouchers yet."
 msgstr "Bado hakuna hati."
 
 #: apps/web/src/features/wallet/ui/cash-page.tsx:56
-#: apps/web/src/features/wallet/ui/receive-page.tsx:72
+#: apps/web/src/features/wallet/ui/receive-page.tsx:58
 msgid "No wallet address available."
 msgstr "Hakuna anwani ya mkoba inayopatikana."
 
@@ -4928,7 +4940,7 @@ msgstr "Maelezo ya uuzaji"
 msgid "On"
 msgstr "Zimewashwa"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:123
+#: apps/web/src/features/wallet/ui/receive-page.tsx:109
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "Tuma mali kwenye <0>mtandao wa {chainName}</0> pekee kwa anwani hii. "
@@ -4972,6 +4984,10 @@ msgid "intro.receive.body"
 msgstr "Fungua Pokea na umshirikishe mtumaji msimbo wako wa QR wa kupokea au "
 "anwani ya pochi yako. Usimpe mtu mwingine ufunguo binafsi wa pochi "
 "yako."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:79
+msgid "Open Send in CLC and scan"
+msgstr "Fungua Tuma kwenye CLC kisha changanua"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -5086,14 +5102,14 @@ msgstr "Jibu la mmiliki"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "Uhamishaji wa umiliki umewasilishwa."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:526
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "Umiliki umehamishwa kwenye mnyororo. Usawazishaji wa katalogi "
 "umechelewa; vidhibiti vyako vya usimamizi vimeondolewa."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:528
 msgid "Ownership transferred."
 msgstr "Umiliki umehamishwa."
 
@@ -5208,6 +5224,10 @@ msgstr "Lipa na upokee xDAI moja kwa moja."
 msgid "Pay by card or bank transfer."
 msgstr "Lipa kwa kadi au uhamisho wa benki."
 
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:123
+msgid "Pay me on CLC"
+msgstr "Nilipe kwenye CLC"
+
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:38
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
 #: apps/web/src/features/home/ui/activity-page.tsx:320
@@ -5227,6 +5247,11 @@ msgstr "Malipo yamethibitishwa"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:412
 msgid "Payment failed"
 msgstr "Malipo yameshindikana"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:194
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:205
+msgid "Payment QR code"
+msgstr "Msimbo wa QR wa malipo"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:251
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:249
@@ -5624,8 +5649,8 @@ msgid "Preferred unit of account"
 msgstr "Kitengo cha hesabu unachopendelea"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:471
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:597
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "Inaandaa mkoba…"
@@ -5640,8 +5665,8 @@ msgstr "Inaandaa utoaji wako wa pesa…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Inaandaa…"
 
@@ -5649,10 +5674,14 @@ msgstr "Inaandaa…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Gusisha kadi ili kulipa {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Bonyeza na ushikilie picha iliyo hapa chini, kisha uchague Hifadhi "
 "Picha."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:177
+msgid "Press and hold the image to save it."
+msgstr "Bonyeza na ushikilie picha ili kuihifadhi."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:471
 #~ msgid "Pretium deposits and withdrawals will appear here."
@@ -5737,7 +5766,7 @@ msgstr "Upangaji wa bei"
 msgid "Primary navigation"
 msgstr "Urambazaji wa msingi"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "Chapisha"
 
@@ -5937,7 +5966,7 @@ msgstr "Risiti imenakiliwa"
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
-#: apps/web/src/features/wallet/ui/receive-page.tsx:60
+#: apps/web/src/features/wallet/ui/receive-page.tsx:46
 msgid "Receive"
 msgstr "Pokea"
 
@@ -5946,7 +5975,7 @@ msgstr "Pokea"
 msgid "intro.receive.title"
 msgstr "Pokea vocha"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:67
+#: apps/web/src/features/wallet/ui/receive-page.tsx:53
 msgid "Receive details"
 msgstr "Maelezo ya kupokea"
 
@@ -6396,6 +6425,7 @@ msgstr "Miamala ya Safe"
 #~ msgstr "Mwonekano wa setilaiti"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:230
 msgid "Save"
 msgstr "Hifadhi"
 
@@ -6418,7 +6448,7 @@ msgstr "Hifadhi mabadiliko"
 msgid "Save fee settings"
 msgstr "Hifadhi mipangilio ya ada"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "Hifadhi karatasi ya A4 ya kuchapisha"
 
@@ -6479,6 +6509,10 @@ msgstr "Changanua Msimbo wa QR"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:222
 msgid "Scan recipient address"
 msgstr "Changanua anwani ya mpokeaji"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:78
+msgid "Scan to pay me"
+msgstr "Changanua ili unilipe"
 
 #: apps/web/src/components/wants/want-row.tsx:66
 #: apps/web/src/features/home/ui/wallet-page.tsx:348
@@ -6828,12 +6862,13 @@ msgstr "Mipangilio"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/components/wants/want-detail.tsx:386
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
-#: apps/web/src/features/wallet/ui/receive-page.tsx:156
+#: apps/web/src/features/wallet/ui/receive-page.tsx:142
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
 msgstr "Shiriki"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Shiriki kadi"
 
@@ -7003,8 +7038,8 @@ msgstr "Kuingia"
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Kadi ya kuingia"
 
@@ -7519,7 +7554,7 @@ msgstr "Ramani haitumiki kwenye kifaa hiki."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "Ujumbe na agizo kwa pamoja lazima viwe na herufi 500 au chache."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:553
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "Mmiliki mpya anaweza kuunda vocha na kuhamisha umiliki."
 
@@ -7956,8 +7991,8 @@ msgstr "Hashi ya muamala imenakiliwa"
 #~ msgstr "Historia ya hamisho"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:550
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
@@ -7965,7 +8000,7 @@ msgstr "Hashi ya muamala imenakiliwa"
 msgid "Transfer ownership"
 msgstr "Hamisha umiliki"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:599
 msgid "Transferring ownership…"
 msgstr "Inahamisha umiliki…"
 
@@ -8009,6 +8044,7 @@ msgstr "Safari"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:428
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:180
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:216
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:457
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
@@ -8258,12 +8294,12 @@ msgstr "Tumia kadi hii ya QR kuingia kwenye pochi yako. Ihifadhi kwa usalama. "
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:60
-#: apps/web/src/features/wallet/ui/receive-page.tsx:88
+#: apps/web/src/features/wallet/ui/receive-page.tsx:74
 msgid "Username"
 msgstr "Jina la mtumiaji"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Username copied"
 msgstr "Jina la mtumiaji limenakiliwa"
 
@@ -8551,7 +8587,7 @@ msgstr "Inasubiri mnyororo…"
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:107
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
@@ -8961,7 +8997,7 @@ msgstr "Passkey yako bado inathibitishwa. Unaweza kuendelea kutumia mkoba wako "
 #~ msgid "Your Pools"
 #~ msgstr "Vikundi vyako"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:56
+#: apps/web/src/features/home/ui/account-settings-section.tsx:57
 msgid "Your profile"
 msgstr "Wasifu wako"
 

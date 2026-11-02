@@ -236,13 +236,17 @@ msgstr "Prelevati {amount} {0}."
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{available} di {limit} {denomination} di credito disponibile"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:108
+#: apps/web/src/features/wallet/ui/receive-page.tsx:94
 msgid "{chainName} address"
 msgstr "Indirizzo {chainName}"
 
 #: apps/web/src/components/wallet/wallet-status.tsx:22
 msgid "{chainName} network"
 msgstr "Rete {chainName}"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:80
+msgid "{chainName} network only"
+msgstr "Solo rete {chainName}"
 
 #: apps/web/src/components/ui/step-progress.tsx:24
 msgid "{clampedStep} of {clampedTotal}"
@@ -646,7 +650,7 @@ msgstr "Aggiungi al catalogo"
 msgid "Add what you accept this voucher for, and it appears in the marketplace."
 msgstr "Aggiunga ciò per cui accetta questo buono e comparirà nel mercato."
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:67
+#: apps/web/src/features/home/ui/account-settings-section.tsx:68
 msgid "Add your contact details"
 msgstr "Aggiunga i suoi recapiti"
 
@@ -672,7 +676,7 @@ msgstr "Rubrica"
 #: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Address copied"
 msgstr "Indirizzo copiato"
 
@@ -1174,7 +1178,7 @@ msgstr "Controlli lo stato dell’emissione"
 msgid "Check supply again"
 msgstr "Controlli di nuovo la quantità emessa"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:566
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "Controlli l’invio esistente prima di un altro trasferimento:"
@@ -1183,7 +1187,7 @@ msgstr "Controlli l’invio esistente prima di un altro trasferimento:"
 msgid "Check the Want details."
 msgstr "Controlla i dettagli della richiesta."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:601
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "Controlla lo stato del trasferimento"
@@ -1524,7 +1528,7 @@ msgid "Collect again from this card"
 msgstr "Incassi di nuovo da questa carta"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:114
-#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+#: apps/web/src/features/wallet/ui/receive-page.tsx:124
 msgid "Collect by card"
 msgstr "Incasso con carta"
 
@@ -1807,7 +1811,7 @@ msgstr "Indirizzo del contratto"
 msgid "Contract address copied"
 msgstr "Indirizzo del contratto copiato"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:152
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
 msgid "Copy"
 msgstr "Copi"
 
@@ -1833,6 +1837,7 @@ msgstr "Copi il destinatario delle commissioni"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 msgid "Copy link"
 msgstr "Copi il link"
 
@@ -1869,12 +1874,12 @@ msgstr "Copia l’hash della transazione di emissione"
 msgid "Copy transaction hash"
 msgstr "Copi l’hash della transazione"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:102
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Copy wallet address"
 msgstr "Copi l’indirizzo del portafoglio"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:82
-#: apps/web/src/features/wallet/ui/receive-page.tsx:82
+#: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "Copy wallet username"
 msgstr "Copi il nome utente del portafoglio"
 
@@ -1917,11 +1922,11 @@ msgstr "Non è stato possibile proteggere questo carta di accesso."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "Non è stato possibile salvare il portafoglio cartaceo. Riprovi."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Non è stato possibile salvare il foglio stampabile. Riprovi."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Non è stato possibile salvare il carta di accesso. Riprovi."
 
@@ -1930,7 +1935,7 @@ msgstr "Non è stato possibile salvare il carta di accesso. Riprovi."
 #~ msgstr "Non è stato possibile condividere il portafoglio cartaceo. Provi invece "
 #~ "a scaricarlo."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Non è stato possibile condividere il carta di accesso. Provi invece a "
 "scaricarlo."
@@ -1979,8 +1984,8 @@ msgstr "Impossibile verificare il tuo accesso alle recensioni."
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
 #: apps/web/src/features/wallet/ui/cash-page.tsx:24
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy address"
 msgstr "Non è stato possibile copiare l’indirizzo"
 
@@ -2005,6 +2010,8 @@ msgstr "Non è stato possibile copiare il destinatario delle commissioni"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:417
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:133
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:139
 msgid "Couldn't copy link"
 msgstr "Non è stato possibile copiare il link"
 
@@ -2047,14 +2054,18 @@ msgstr "Non è stato possibile copiare l’hash della transazione"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:44
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:50
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy username"
 msgstr "Impossibile copiare il nome utente"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:136
 msgid "Couldn't create the first supply."
 msgstr "Impossibile emettere la quantità iniziale."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:213
+msgid "Couldn't create the image."
+msgstr "Non è stato possibile creare l’immagine."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
@@ -2393,7 +2404,7 @@ msgstr "Non è stato possibile inviare il prelievo"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "Impossibile suggerire un nome utente. Riprovi."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:531
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "Non è stato possibile trasferire la proprietà."
@@ -2696,11 +2707,11 @@ msgstr "Descrizione"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
 msgid "Destroy vouchers"
 msgstr "Distrugga buoni"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:473
 msgid "Destroying vouchers…"
 msgstr "Distruzione dei buoni…"
 
@@ -2747,8 +2758,8 @@ msgstr "Fatto"
 msgid "Done with this customer"
 msgstr "Ho finito con questo cliente"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "Scarichi la carta"
 
@@ -3755,6 +3766,7 @@ msgstr "Colleghi al massimo 12 buoni"
 #: apps/web/src/components/wants/want-detail.tsx:378
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:138
 msgid "Link copied"
 msgstr "Link copiato"
 
@@ -4333,7 +4345,7 @@ msgstr "Le mie pubblicazioni"
 msgid "My Vouchers"
 msgstr "I miei buoni"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:42
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:153
 msgid "My wallet address"
 msgstr "Indirizzo del mio portafoglio"
 
@@ -4395,8 +4407,8 @@ msgstr "Rete"
 msgid "New owner"
 msgstr "Nuovo proprietario"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:573
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:585
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4763,7 +4775,7 @@ msgid "No vouchers yet."
 msgstr "Nessun buono per ora."
 
 #: apps/web/src/features/wallet/ui/cash-page.tsx:56
-#: apps/web/src/features/wallet/ui/receive-page.tsx:72
+#: apps/web/src/features/wallet/ui/receive-page.tsx:58
 msgid "No wallet address available."
 msgstr "Nessun indirizzo di portafoglio disponibile."
 
@@ -4947,7 +4959,7 @@ msgstr "Dettagli della conversione in uscita"
 msgid "On"
 msgstr "Attive"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:123
+#: apps/web/src/features/wallet/ui/receive-page.tsx:109
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "Invii a questo indirizzo solo asset sulla <0>rete {chainName}</0>. Gli "
@@ -4991,6 +5003,10 @@ msgid "intro.receive.body"
 msgstr "Apri Ricevi e condividi il tuo codice QR di ricezione o l’indirizzo del "
 "portafoglio con il mittente. Non condividere la chiave privata del "
 "portafoglio."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:79
+msgid "Open Send in CLC and scan"
+msgstr "Apra Invii in CLC e scansioni"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -5106,14 +5122,14 @@ msgstr "Risposta del proprietario"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "Trasferimento di proprietà inviato."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:526
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "Proprietà trasferita sulla blockchain. La sincronizzazione del catalogo "
 "è in ritardo; i Suoi controlli di gestione sono stati rimossi."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:528
 msgid "Ownership transferred."
 msgstr "Proprietà trasferita."
 
@@ -5231,6 +5247,10 @@ msgstr "Paghi e riceva direttamente xDAI."
 msgid "Pay by card or bank transfer."
 msgstr "Paghi con carta o bonifico bancario."
 
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:123
+msgid "Pay me on CLC"
+msgstr "Mi paghi con CLC"
+
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:38
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
 #: apps/web/src/features/home/ui/activity-page.tsx:320
@@ -5250,6 +5270,11 @@ msgstr "Pagamento confermato"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:412
 msgid "Payment failed"
 msgstr "Pagamento non riuscito"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:194
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:205
+msgid "Payment QR code"
+msgstr "Codice QR di pagamento"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:251
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:249
@@ -5649,8 +5674,8 @@ msgid "Preferred unit of account"
 msgstr "Unità di conto preferita"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:471
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:597
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "Preparazione del portafoglio…"
@@ -5665,8 +5690,8 @@ msgstr "Preparazione del prelievo…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Preparazione…"
 
@@ -5674,9 +5699,13 @@ msgstr "Preparazione…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Avvicini la carta per pagare {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Tenga premuta l’immagine qui sotto, quindi scelga Salva immagine."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:177
+msgid "Press and hold the image to save it."
+msgstr "Tenga premuta l’immagine per salvarla."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:471
 #~ msgid "Pretium deposits and withdrawals will appear here."
@@ -5761,7 +5790,7 @@ msgstr "Valutazione"
 msgid "Primary navigation"
 msgstr "Navigazione principale"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "Stampi"
 
@@ -5961,7 +5990,7 @@ msgstr "Ricevuta copiata"
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
-#: apps/web/src/features/wallet/ui/receive-page.tsx:60
+#: apps/web/src/features/wallet/ui/receive-page.tsx:46
 msgid "Receive"
 msgstr "Riceva"
 
@@ -5970,7 +5999,7 @@ msgstr "Riceva"
 msgid "intro.receive.title"
 msgstr "Ricevi un buono"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:67
+#: apps/web/src/features/wallet/ui/receive-page.tsx:53
 msgid "Receive details"
 msgstr "Dettagli di ricezione"
 
@@ -6419,6 +6448,7 @@ msgstr "Transazioni Safe"
 #~ msgstr "Vista satellitare"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:230
 msgid "Save"
 msgstr "Salva"
 
@@ -6441,7 +6471,7 @@ msgstr "Salvi le modifiche"
 msgid "Save fee settings"
 msgstr "Salvi le impostazioni delle commissioni"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "Salvi il foglio A4 stampabile"
 
@@ -6503,6 +6533,10 @@ msgstr "Scansioni il codice QR"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:222
 msgid "Scan recipient address"
 msgstr "Scansioni l’indirizzo del destinatario"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:78
+msgid "Scan to pay me"
+msgstr "Scansioni per pagarmi"
 
 #: apps/web/src/components/wants/want-row.tsx:66
 #: apps/web/src/features/home/ui/wallet-page.tsx:348
@@ -6853,12 +6887,13 @@ msgstr "Impostazioni"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/components/wants/want-detail.tsx:386
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
-#: apps/web/src/features/wallet/ui/receive-page.tsx:156
+#: apps/web/src/features/wallet/ui/receive-page.tsx:142
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
 msgstr "Condivida"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Condivida la carta"
 
@@ -7029,8 +7064,8 @@ msgstr "Accesso"
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Carta di accesso"
 
@@ -7553,7 +7588,7 @@ msgid "The message and order must be 500 characters or fewer."
 msgstr "Il messaggio e l’ordine devono avere complessivamente non più di 500 "
 "caratteri."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:553
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "Il nuovo proprietario può creare buoni e trasferire la proprietà."
 
@@ -8001,8 +8036,8 @@ msgstr "Hash della transazione copiato"
 #~ msgstr "Cronologia dei trasferimenti"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:550
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
@@ -8010,7 +8045,7 @@ msgstr "Hash della transazione copiato"
 msgid "Transfer ownership"
 msgstr "Trasferisca la proprietà"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:599
 msgid "Transferring ownership…"
 msgstr "Trasferimento della proprietà…"
 
@@ -8054,6 +8089,7 @@ msgstr "Viaggio"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:428
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:180
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:216
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:457
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
@@ -8303,12 +8339,12 @@ msgstr "Usa questa carta QR per accedere al tuo portafoglio. Conservala in modo 
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:60
-#: apps/web/src/features/wallet/ui/receive-page.tsx:88
+#: apps/web/src/features/wallet/ui/receive-page.tsx:74
 msgid "Username"
 msgstr "Nome utente"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Username copied"
 msgstr "Nome utente copiato"
 
@@ -8596,7 +8632,7 @@ msgstr "In attesa della blockchain…"
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:107
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
@@ -9011,7 +9047,7 @@ msgstr "La sua passkey è ancora in fase di conferma. Nel frattempo può "
 #~ msgid "Your Pools"
 #~ msgstr "I suoi fondi"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:56
+#: apps/web/src/features/home/ui/account-settings-section.tsx:57
 msgid "Your profile"
 msgstr "Il suo profilo"
 

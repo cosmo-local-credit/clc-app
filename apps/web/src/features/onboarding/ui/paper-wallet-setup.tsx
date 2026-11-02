@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FiDownload, FiPrinter, FiShare2 } from "react-icons/fi";
 
 import { Button } from "#/components/ui/button";
+import { downloadFile, isIosInstalledApp } from "#/lib/save-file";
 import { PaperWalletCard } from "./paper-wallet-card";
 import {
   PAPER_WALLET_HEIGHT,
@@ -14,15 +15,6 @@ import {
 import { PaperWalletCustomizer } from "./paper-wallet-customizer";
 import { exportPaperWallet, exportPaperWalletSheet } from "./paper-wallet-export";
 import type { PaperWalletCustomization } from "./paper-wallet-types";
-
-/**
- * Whether the app is running as an installed PWA, where the anchor fallback is
- * known to be silently ignored on iOS. Only there is the rendered PNG worth showing:
- * the preview above it is live DOM and cannot be long-pressed into Photos.
- */
-function isIosInstalledApp(): boolean {
-  return (navigator as Navigator & { standalone?: boolean }).standalone === true;
-}
 
 export type UsePaperWalletSetupProps = {
   address: `0x${string}`;
@@ -91,7 +83,6 @@ export function usePaperWalletSetup({
   contentRef.current = { qrUrl, customization: normalizedCustomization };
   const preparedRef = useRef<{
     file: File;
-    fileName: string;
     qrUrl: string;
     customization: PaperWalletCustomization;
   } | null>(null);
@@ -136,7 +127,7 @@ export function usePaperWalletSetup({
     return () => observer.disconnect();
   }, []);
 
-  async function prepareCard(): Promise<{ file: File; fileName: string }> {
+  async function prepareCard(): Promise<{ file: File }> {
     if (!cardRef.current) throw new Error("Sign-in card is missing");
     const content = contentRef.current;
     const prepared = preparedRef.current;
@@ -151,7 +142,7 @@ export function usePaperWalletSetup({
     ) {
       throw new Error("Sign-in card changed while exporting");
     }
-    const result = { file: new File([blob], fileName, { type: "image/png" }), fileName };
+    const result = { file: new File([blob], fileName, { type: "image/png" }) };
     preparedRef.current = { ...result, ...content };
     return result;
   }
@@ -162,22 +153,18 @@ export function usePaperWalletSetup({
     setDownloadError(null);
     setSavedCardUrl(null);
     try {
-      const { file, fileName } = await prepareCard();
-      const url = URL.createObjectURL(file);
+      const { file } = await prepareCard();
 
+      // An installed iOS app ignores download anchors. Only there is the
+      // rendered PNG worth showing: the preview above it is live DOM and cannot
+      // be long-pressed into Photos.
       if (isIosInstalledApp()) {
-        setSavedCardUrl(url);
+        setSavedCardUrl(URL.createObjectURL(file));
         onDownloaded?.();
         return;
       }
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      downloadFile(file);
       onDownloaded?.();
     } catch {
       setDownloadError(t`Could not save the sign-in card. Try again.`);
@@ -207,14 +194,7 @@ export function usePaperWalletSetup({
         return;
       }
 
-      const url = URL.createObjectURL(file);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      downloadFile(file);
       onDownloaded?.();
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {

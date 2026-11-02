@@ -4,6 +4,7 @@ import { RiArrowRightSLine, RiUser3Line } from "react-icons/ri";
 
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { initialsOf } from "#/lib/initials";
 
 /**
  * Settings' Account row: the member's photo, name, username and contact, and
@@ -73,15 +74,4 @@ export function AccountSettingsSection() {
       />
     </Link>
   );
-}
-
-/** Up to two initials, by code point so a name starting with an emoji survives. */
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => Array.from(word)[0])
-    .join("")
-    .toLocaleUpperCase();
 }

@@ -230,13 +230,17 @@ msgstr "Na-withdraw ang {amount} {0}."
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{available} sa {limit} {denomination} na available na credit"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:108
+#: apps/web/src/features/wallet/ui/receive-page.tsx:94
 msgid "{chainName} address"
 msgstr "Address ng {chainName}"
 
 #: apps/web/src/components/wallet/wallet-status.tsx:22
 msgid "{chainName} network"
 msgstr "Network ng {chainName}"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:80
+msgid "{chainName} network only"
+msgstr "Sa network ng {chainName} lang"
 
 #: apps/web/src/components/ui/step-progress.tsx:24
 msgid "{clampedStep} of {clampedTotal}"
@@ -634,7 +638,7 @@ msgid "Add what you accept this voucher for, and it appears in the marketplace."
 msgstr "Idagdag kung ano ang tinatanggap ninyo kapalit ng voucher na ito, at "
 "lilitaw ito sa pamilihan."
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:67
+#: apps/web/src/features/home/ui/account-settings-section.tsx:68
 msgid "Add your contact details"
 msgstr "Idagdag ang inyong mga detalye sa pakikipag-ugnayan"
 
@@ -660,7 +664,7 @@ msgstr "Address book"
 #: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Address copied"
 msgstr "Nakopya ang address"
 
@@ -1162,7 +1166,7 @@ msgstr "Suriin ang status ng pag-isyu"
 msgid "Check supply again"
 msgstr "Suriin muli ang suplay"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:566
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "Suriin ang kasalukuyang pagsusumite bago ang isa pang paglilipat:"
@@ -1171,7 +1175,7 @@ msgstr "Suriin ang kasalukuyang pagsusumite bago ang isa pang paglilipat:"
 msgid "Check the Want details."
 msgstr "Suriin ang mga detalye ng pangangailangan."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:601
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "Suriin ang status ng paglilipat"
@@ -1512,7 +1516,7 @@ msgid "Collect again from this card"
 msgstr "Kunin muli mula sa card na ito"
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:114
-#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+#: apps/web/src/features/wallet/ui/receive-page.tsx:124
 msgid "Collect by card"
 msgstr "Pagtipon sa pamamagitan ng card"
 
@@ -1794,7 +1798,7 @@ msgstr "Address ng kontrata"
 msgid "Contract address copied"
 msgstr "Address ng kontrata na naka-copy"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:152
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
 msgid "Copy"
 msgstr "Kopyahin"
 
@@ -1820,6 +1824,7 @@ msgstr "Kopyahin ang tatanggap ng bayarin"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 msgid "Copy link"
 msgstr "Kopyahin ang link"
 
@@ -1855,12 +1860,12 @@ msgstr "Kopyahin ang hash ng transaksyon sa pag-isyu ng supply"
 msgid "Copy transaction hash"
 msgstr "Kopyahin ang hash ng transaksyon"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:102
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Copy wallet address"
 msgstr "I-copy ang wallet address"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:82
-#: apps/web/src/features/wallet/ui/receive-page.tsx:82
+#: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "Copy wallet username"
 msgstr "I-copy ang wallet username"
 
@@ -1904,11 +1909,11 @@ msgstr "Hindi maprotektahan ang sign-in card na ito."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "Hindi ma-save ang papel na wallet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Hindi ma-save ang napi-print na sheet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:183
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Hindi ma-save ang sign-in card. Subukang muli."
 
@@ -1916,7 +1921,7 @@ msgstr "Hindi ma-save ang sign-in card. Subukang muli."
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "Hindi maibahagi ang papel na wallet. Subukan na lang itong i-download."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:241
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Hindi maibahagi ang sign-in card. Subukan na lang itong i-download."
 
@@ -1964,8 +1969,8 @@ msgstr "Hindi masuri ang inyong access sa review."
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
 #: apps/web/src/features/wallet/ui/cash-page.tsx:24
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy address"
 msgstr "Hindi makopya ang address"
 
@@ -1990,6 +1995,8 @@ msgstr "Hindi makopya ang tatanggap ng bayarin"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:417
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:28
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:34
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:133
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:139
 msgid "Couldn't copy link"
 msgstr "Hindi makopya ang link"
 
@@ -2031,14 +2038,18 @@ msgstr "Hindi makopya ang hash ng transaksyon"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:44
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:50
-#: apps/web/src/features/wallet/ui/receive-page.tsx:26
-#: apps/web/src/features/wallet/ui/receive-page.tsx:33
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:36
 msgid "Couldn't copy username"
 msgstr "Hindi makopya ang username"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:136
 msgid "Couldn't create the first supply."
 msgstr "Hindi ma-isyu ang unang supply."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:213
+msgid "Couldn't create the image."
+msgstr "Hindi magawa ang imahe."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
@@ -2373,7 +2384,7 @@ msgstr "Hindi maisumite ang withdrawal"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "Hindi makapagmungkahi ng username. Subukang muli."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:531
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "Hindi mailipat ang pagmamay-ari."
@@ -2674,11 +2685,11 @@ msgstr "Paglalarawan"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:475
 msgid "Destroy vouchers"
 msgstr "Sirain ang mga voucher"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:473
 msgid "Destroying vouchers…"
 msgstr "Sinisira ang mga voucher…"
 
@@ -2725,8 +2736,8 @@ msgstr "Tapos na"
 msgid "Done with this customer"
 msgstr "Natapos na sa customer na ito"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:297
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "I-download ang card"
 
@@ -3722,6 +3733,7 @@ msgstr "Mag-link ng hanggang 12 voucher"
 #: apps/web/src/components/wants/want-detail.tsx:378
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:33
 #: apps/web/src/features/install/ui/install-page.tsx:146
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:138
 msgid "Link copied"
 msgstr "Nakopya ang link"
 
@@ -4287,7 +4299,7 @@ msgstr "Ang aking mga post"
 msgid "My Vouchers"
 msgstr "Mga voucher ko"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:42
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:153
 msgid "My wallet address"
 msgstr "Ang aking wallet address"
 
@@ -4348,8 +4360,8 @@ msgstr "Network"
 msgid "New owner"
 msgstr "Bagong may-ari"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:573
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:585
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4716,7 +4728,7 @@ msgid "No vouchers yet."
 msgstr "Walang mga voucher pa."
 
 #: apps/web/src/features/wallet/ui/cash-page.tsx:56
-#: apps/web/src/features/wallet/ui/receive-page.tsx:72
+#: apps/web/src/features/wallet/ui/receive-page.tsx:58
 msgid "No wallet address available."
 msgstr "Walang available na address ng wallet."
 
@@ -4896,7 +4908,7 @@ msgstr "Mga detalye ng pag-convert sa lokal na pera"
 msgid "On"
 msgstr "Naka-on"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:123
+#: apps/web/src/features/wallet/ui/receive-page.tsx:109
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "Ipadala lamang ang mga asset sa <0>{chainName} network</0> sa address "
@@ -4940,6 +4952,10 @@ msgid "intro.receive.body"
 msgstr "Buksan ang Tumanggap at ibahagi ang iyong QR code sa pagtanggap o "
 "wallet address sa nagpadala. Huwag ibahagi ang pribadong susi ng iyong "
 "wallet."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:79
+msgid "Open Send in CLC and scan"
+msgstr "Buksan ang Ipadala sa CLC at i-scan"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -5055,14 +5071,14 @@ msgstr "Sagot ng may-ari"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "Naisumite ang paglipat ng pagmamay-ari."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:526
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "Nailipat na ang pagmamay-ari sa blockchain. Naantala ang pag-sync ng "
 "katalogo; inalis na ang inyong mga kontrol sa pamamahala."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:528
 msgid "Ownership transferred."
 msgstr "Nailipat na ang pagmamay-ari."
 
@@ -5180,6 +5196,10 @@ msgstr "Magbayad at direktang tumanggap ng xDAI."
 msgid "Pay by card or bank transfer."
 msgstr "Magbayad gamit ang card o bank transfer."
 
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:123
+msgid "Pay me on CLC"
+msgstr "Bayaran ako sa CLC"
+
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:38
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
 #: apps/web/src/features/home/ui/activity-page.tsx:320
@@ -5199,6 +5219,11 @@ msgstr "Nakumpirma ang pagbabayad"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:412
 msgid "Payment failed"
 msgstr "Nabigo ang pagbabayad"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:194
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:205
+msgid "Payment QR code"
+msgstr "QR code para sa bayad"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:251
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:249
@@ -5596,8 +5621,8 @@ msgid "Preferred unit of account"
 msgstr "Gustong unit of account"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:471
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:597
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "Paghahanda ng wallet..."
@@ -5612,8 +5637,8 @@ msgstr "Paghahanda ng inyong pag-alis..."
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:300
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Naghahanda..."
 
@@ -5621,10 +5646,14 @@ msgstr "Naghahanda..."
 msgid "Present card to pay {armedAmount}"
 msgstr "Ilapit ang card upang magbayad ng {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:334
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "I-press at i-hold ang imahe sa ibaba, pagkatapos ay piliin ang Save "
 "Image."
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:177
+msgid "Press and hold the image to save it."
+msgstr "I-press at i-hold ang imahe para i-save ito."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:471
 #~ msgid "Pretium deposits and withdrawals will appear here."
@@ -5703,7 +5732,7 @@ msgstr "Pagpepresyo"
 msgid "Primary navigation"
 msgstr "Pangunahing pag-navigate"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:313
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "I-print"
 
@@ -5902,7 +5931,7 @@ msgstr "Nakopya ang resibo"
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
-#: apps/web/src/features/wallet/ui/receive-page.tsx:60
+#: apps/web/src/features/wallet/ui/receive-page.tsx:46
 msgid "Receive"
 msgstr "Tumanggap"
 
@@ -5911,7 +5940,7 @@ msgstr "Tumanggap"
 msgid "intro.receive.title"
 msgstr "Tumanggap ng voucher"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:67
+#: apps/web/src/features/wallet/ui/receive-page.tsx:53
 msgid "Receive details"
 msgstr "Mga detalye ng pagtanggap"
 
@@ -6357,6 +6386,7 @@ msgstr "Mga transaksyon ng Safe"
 #~ msgstr "Tanaw mula sa satellite"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:230
 msgid "Save"
 msgstr "I-save"
 
@@ -6379,7 +6409,7 @@ msgstr "I-save ang mga pagbabago"
 msgid "Save fee settings"
 msgstr "I-save ang mga setting ng bayarin"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:310
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "I-save ang napi-print na A4 sheet"
 
@@ -6440,6 +6470,10 @@ msgstr "I-scan ang QR code"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:222
 msgid "Scan recipient address"
 msgstr "I-scan ang address ng tatanggap"
+
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:78
+msgid "Scan to pay me"
+msgstr "I-scan para bayaran ako"
 
 #: apps/web/src/components/wants/want-row.tsx:66
 #: apps/web/src/features/home/ui/wallet-page.tsx:348
@@ -6789,12 +6823,13 @@ msgstr "Mga setting"
 #: apps/web/src/components/vouchers/voucher-summary.tsx:400
 #: apps/web/src/components/wants/want-detail.tsx:386
 #: apps/web/src/features/catalogs/ui/catalog-share-button.tsx:19
-#: apps/web/src/features/wallet/ui/receive-page.tsx:156
+#: apps/web/src/features/wallet/ui/receive-page.tsx:142
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:246
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:604
 msgid "Share"
 msgstr "Ibahagi"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Ibahagi ang card"
 
@@ -6964,8 +6999,8 @@ msgstr "Pag-sign in"
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:80
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:336
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Card sa pag-sign in"
 
@@ -7481,7 +7516,7 @@ msgstr "Ang mapa ay hindi suportado sa aparato na ito."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "Ang mensahe at order ay dapat 500 character o mas kaunti."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:553
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "Maaaring mag-isyu ng mga voucher at maglipat ng pagmamay-ari ang bagong "
 "may-ari."
@@ -7926,8 +7961,8 @@ msgstr "Nakopya ang hash ng transaksyon"
 #~ msgstr "Kasaysayan ng paglilipat"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:550
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
@@ -7935,7 +7970,7 @@ msgstr "Nakopya ang hash ng transaksyon"
 msgid "Transfer ownership"
 msgstr "Paglipat ng pagmamay-ari"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:599
 msgid "Transferring ownership…"
 msgstr "Paglipat ng pagmamay-ari..."
 
@@ -7979,6 +8014,7 @@ msgstr "Paglakbay"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:428
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:180
+#: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:216
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:457
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
@@ -8231,12 +8267,12 @@ msgstr "Gamitin ang QR card na ito para mag-sign in sa iyong wallet. Itago ito "
 #: apps/web/src/components/profile/username-input.tsx:35
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:56
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:60
-#: apps/web/src/features/wallet/ui/receive-page.tsx:88
+#: apps/web/src/features/wallet/ui/receive-page.tsx:74
 msgid "Username"
 msgstr "Pangalan ng gumagamit"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:31
+#: apps/web/src/features/wallet/ui/receive-page.tsx:34
 msgid "Username copied"
 msgstr "Nakopya ang username"
 
@@ -8524,7 +8560,7 @@ msgstr "Naghihintay sa blockchain…"
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:138
 #: apps/web/src/features/wallet/ui/cash-page.tsx:29
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:104
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:107
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:65
@@ -8943,7 +8979,7 @@ msgstr "Kinukumpirma pa ang inyong passkey. Maaari ninyong gamitin muna ang "
 #~ msgid "Your Pools"
 #~ msgstr "Ang inyong mga pool"
 
-#: apps/web/src/features/home/ui/account-settings-section.tsx:56
+#: apps/web/src/features/home/ui/account-settings-section.tsx:57
 msgid "Your profile"
 msgstr "Inyong profile"
 
