@@ -67,6 +67,9 @@ const mocks = vi.hoisted(() => ({
   updateProfile: vi.fn(),
   createVouchers: vi.fn(),
   reportMintError: vi.fn((_error: unknown, _fallback: string) => false),
+  destroyVouchers: vi.fn(),
+  /** The owner's on-chain balance, raw; undefined while it is unread. */
+  ownerBalance: "1234" as string | undefined,
   transferOwnership: vi.fn(),
   navigate: vi.fn(),
   delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
@@ -306,6 +309,7 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  accountWalletQueryKeys: { all: ["account-wallet"] },
   useAllAccountTokens: () => ({
     tokens: [
       {
@@ -374,6 +378,12 @@ vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
     isPending: false,
     reportError: mocks.reportMintError,
   }),
+}));
+
+vi.mock("#/features/vouchers/hooks/use-voucher-burn", () => ({
+  useVoucherBurn: () => ({ mutateAsync: mocks.destroyVouchers, isPending: false }),
+  useVoucherOwnerBalance: () => ({ data: mocks.ownerBalance, isPending: false }),
+  voucherOwnerBalanceQueryKeys: { all: ["voucher-owner-balance"] },
 }));
 
 vi.mock("#/features/vouchers/hooks/use-voucher-ownership-transfer", () => ({
@@ -505,6 +515,9 @@ beforeEach(() => {
   mocks.distanceOrigin = null;
   mocks.createVouchers.mockReset();
   mocks.createVouchers.mockResolvedValue({ trackingId: "mint-1" });
+  mocks.destroyVouchers.mockReset();
+  mocks.destroyVouchers.mockResolvedValue({ trackingId: "burn-1" });
+  mocks.ownerBalance = "1234";
   mocks.transferOwnership.mockReset();
   mocks.transferOwnership.mockResolvedValue({ trackingId: "owner-1" });
   mocks.delegationStatus = "delegated";
@@ -1682,6 +1695,86 @@ describe("VoucherDetailPage contract controls", () => {
     const controls = screen.getByLabelText("Voucher controls");
     expect(within(controls).getByRole("button", { name: "Create vouchers" })).toBeTruthy();
     expect(within(controls).getByRole("button", { name: "Transfer ownership" })).toBeTruthy();
+  });
+
+  it("puts Destroy vouchers right below Create vouchers", () => {
+    mocks.address = OWNER;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    const labels = within(screen.getByLabelText("Voucher controls"))
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+    expect(labels.indexOf("Destroy vouchers")).toBe(labels.indexOf("Create vouchers") + 1);
+  });
+
+  it("converts the entered amount and relays a burn from the owner's wallet", async () => {
+    mocks.address = OWNER;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Destroy vouchers" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Balance 12.34 MALII")).toBeTruthy();
+    fireEvent.change(within(dialog).getByLabelText("Destroy vouchers"), {
+      target: { value: "12.34" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Destroy vouchers" }));
+
+    await waitFor(() =>
+      expect(mocks.destroyVouchers).toHaveBeenCalledWith({
+        tokenAddress: ADDRESS,
+        ownerAddress: OWNER,
+        amountRaw: "1234",
+        includeAuthorization: false,
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("refuses to destroy more than the owner holds", async () => {
+    mocks.address = OWNER;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Destroy vouchers" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Destroy vouchers"), {
+      target: { value: "12.35" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Destroy vouchers" }));
+
+    expect(await within(dialog).findByText("Amount exceeds your balance")).toBeTruthy();
+    expect(mocks.destroyVouchers).not.toHaveBeenCalled();
+  });
+
+  it("keeps the burn sheet open after a failed relay", async () => {
+    mocks.address = OWNER;
+    mocks.destroyVouchers.mockRejectedValueOnce(new Error("relay rejected"));
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Destroy vouchers" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Destroy vouchers"), {
+      target: { value: "1" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Destroy vouchers" }));
+
+    await waitFor(() => expect(mocks.destroyVouchers).toHaveBeenCalled());
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
+  it("does not offer Destroy vouchers to a Safe signer", () => {
+    const SIGNER = "0x5150000000000000000000000000000000000005";
+    mocks.safeSigners = [SIGNER];
+    try {
+      mocks.auth.session = { address: SIGNER, chainId: 100 };
+      mocks.address = SIGNER;
+      render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+      const controls = screen.getByLabelText("Voucher controls");
+      expect(within(controls).getByRole("button", { name: "Create vouchers" })).toBeTruthy();
+      expect(within(controls).queryByRole("button", { name: "Destroy vouchers" })).toBeNull();
+    } finally {
+      mocks.safeSigners = [];
+    }
   });
 
   it("converts the entered amount and relays a mint through the active owner", async () => {

@@ -546,7 +546,7 @@ msgid "Add a link"
 msgstr "إضافة رابط"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:253
+#: apps/web/src/lib/validation-i18n.ts:268
 msgid "Add a message or choose profile details"
 msgstr "أضف رسالة أو اختر تفاصيل الملف الشخصي"
 
@@ -581,12 +581,12 @@ msgid "Add a voucher"
 msgstr "إضافة قسيمة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:365
+#: apps/web/src/lib/validation-i18n.ts:380
 msgid "Add at most 20 attachments"
 msgstr "أضف 20 مرفقًا كحد أقصى"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:360
+#: apps/web/src/lib/validation-i18n.ts:375
 msgid "Add at most 50 images"
 msgstr "أضف 50 صورة كحد أقصى"
 
@@ -620,7 +620,7 @@ msgstr "إضافة صور"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
 msgid "Add signer"
 msgstr "إضافة موقّع"
 
@@ -750,7 +750,7 @@ msgstr "تأكد دائمًا من تطابق الرمز والشبكة قبل �
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:177
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:191
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -761,6 +761,11 @@ msgstr "تأكد دائمًا من تطابق الرمز والشبكة قبل �
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:273
 msgid "Amount"
 msgstr "المبلغ"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:258
+msgid "Amount exceeds your balance"
+msgstr "المبلغ يتجاوز رصيدك"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:458
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:324
@@ -835,7 +840,7 @@ msgstr "تطبيق كلمة المرور..."
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:299
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:305
 msgid "Approvals required"
 msgstr "الموافقات المطلوبة"
 
@@ -843,7 +848,7 @@ msgstr "الموافقات المطلوبة"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
 msgid "Approve voucher"
 msgstr "الموافقة على القسيمة"
 
@@ -926,6 +931,7 @@ msgstr "السلة"
 msgid "Balance {0}"
 msgstr "الرصيد {0}"
 
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:450
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:255
 msgid "Balance {tokenBalance}"
 msgstr "الرصيد {tokenBalance}"
@@ -1041,7 +1047,7 @@ msgid "Caption for photo {0}"
 msgstr "التسمية التوضيحية للصورة {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:305
+#: apps/web/src/lib/validation-i18n.ts:320
 msgid "Caption must be 500 characters or fewer"
 msgstr "يجب ألا تتجاوز التسمية التوضيحية 500 حرف"
 
@@ -1118,7 +1124,7 @@ msgid "Change"
 msgstr "تغيير"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
 msgid "Change approvals required"
 msgstr "تغيير عدد الموافقات المطلوبة"
 
@@ -1164,7 +1170,7 @@ msgstr "التحقق من حالة الإصدار"
 msgid "Check supply again"
 msgstr "التحقق من المعروض مجددًا"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:418
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "تحقّق من الإرسال الحالي قبل أي نقل آخر:"
@@ -1173,7 +1179,7 @@ msgstr "تحقّق من الإرسال الحالي قبل أي نقل آخر:"
 msgid "Check the Want details."
 msgstr "تحقق من تفاصيل الطلب."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:453
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "التحقق من حالة النقل"
@@ -1264,7 +1270,7 @@ msgid "Checking…"
 msgstr "جارٍ التحقق…"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:310
+#: apps/web/src/lib/validation-i18n.ts:325
 msgid "Choose a file or an embed"
 msgstr "اختر ملفًا أو محتوى مضمنًا"
 
@@ -1293,7 +1299,7 @@ msgid "Choose a photo"
 msgstr "اختر صورة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:370
+#: apps/web/src/lib/validation-i18n.ts:385
 msgid "Choose a place on the map or clear it"
 msgstr "اختر مكانًا على الخريطة أو امسحه"
 
@@ -1322,7 +1328,7 @@ msgid "Choose a unit of account"
 msgstr "اختر وحدة حساب"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:300
+#: apps/web/src/lib/validation-i18n.ts:315
 msgid "Choose a voucher"
 msgstr "اختر قسيمة"
 
@@ -1340,7 +1346,7 @@ msgid "Choose another"
 msgstr "اختر خيارًا آخر"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:350
+#: apps/web/src/lib/validation-i18n.ts:365
 msgid "Choose at most 12 tags"
 msgstr "اختر 12 وسمًا كحد أقصى"
 
@@ -1453,7 +1459,7 @@ msgstr "مسح البحث"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:175
 msgid "Close"
 msgstr "إغلاق"
 
@@ -1569,7 +1575,7 @@ msgstr "أكمل الطلب على هاتفك."
 msgid "Complete your profile"
 msgstr "أكمل ملفك الشخصي"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:448
 msgid "Confirm"
 msgstr "تأكيد"
 
@@ -1615,7 +1621,7 @@ msgstr "تأكيد المبادلة"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:123
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:256
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:421
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:427
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1623,7 +1629,7 @@ msgstr "تم التأكيد"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:448
 msgid "Confirming"
 msgstr "جارٍ التأكيد"
 
@@ -2036,9 +2042,13 @@ msgstr "تعذّر نسخ اسم المستخدم"
 msgid "Couldn't create the first supply."
 msgstr "تعذّر إصدار المعروض الأول."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:243
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
 msgstr "تعذّر إنشاء القسائم."
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:411
+msgid "Couldn't destroy vouchers."
+msgstr "تعذّر إتلاف القسائم."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:442
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:445
@@ -2360,7 +2370,7 @@ msgstr "تعذّر إرسال طلب السحب"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "تعذّر اقتراح اسم مستخدم. يُرجى المحاولة مرة أخرى."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:383
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "تعذّر نقل الملكية."
@@ -2448,11 +2458,11 @@ msgstr "أنشئ هذه المعاملة في محفظتك متعددة التو
 msgid "Create voucher"
 msgstr "إنشاء قسيمة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:132
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:141
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:289
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:303
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:354
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2502,7 +2512,7 @@ msgstr "جارٍ إنشاء {0}…"
 msgid "Creating account…"
 msgstr "جارٍ إنشاء الحساب…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:325
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:352
 msgid "Creating vouchers…"
 msgstr "جارٍ إنشاء القسائم…"
 
@@ -2659,6 +2669,17 @@ msgstr "صِف صندوقك"
 msgid "Description"
 msgstr "الوصف"
 
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+msgid "Destroy vouchers"
+msgstr "إتلاف القسائم"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+msgid "Destroying vouchers…"
+msgstr "جارٍ إتلاف القسائم…"
+
 #: apps/web/src/components/vouchers/voucher-summary.tsx:355
 msgid "Directions"
 msgstr "الاتجاهات"
@@ -2728,7 +2749,7 @@ msgid "Duration"
 msgstr "المدة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:335
+#: apps/web/src/lib/validation-i18n.ts:350
 msgid "Duration must be 100 characters or fewer"
 msgstr "يجب ألا تتجاوز المدة 100 حرف"
 
@@ -2741,22 +2762,22 @@ msgid "e.g. MARKET"
 msgstr "مثال: MARKET"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:395
+#: apps/web/src/lib/validation-i18n.ts:410
 msgid "Each attachment can only be added once"
 msgstr "لا يمكن إضافة كل مرفق إلا مرة واحدة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:390
+#: apps/web/src/lib/validation-i18n.ts:405
 msgid "Each image can only be added once"
 msgstr "لا يمكن إضافة كل صورة إلا مرة واحدة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:380
+#: apps/web/src/lib/validation-i18n.ts:395
 msgid "Each tag can only be added once"
 msgstr "لا يمكن إضافة كل وسم إلا مرة واحدة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:385
+#: apps/web/src/lib/validation-i18n.ts:400
 msgid "Each voucher can only be linked once"
 msgstr "لا يمكن ربط كل قسيمة إلا مرة واحدة"
 
@@ -2776,7 +2797,7 @@ msgstr "تعديل"
 msgid "Edit catalog"
 msgstr "تعديل الكتالوج"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:117
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:110
 msgid "Edit details"
 msgstr "تعديل التفاصيل"
@@ -2876,7 +2897,7 @@ msgid "Ends {0}"
 msgstr "ينتهي {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:405
+#: apps/web/src/lib/validation-i18n.ts:420
 msgid "Enter a credit limit greater than zero"
 msgstr "أدخل حد ائتمان أكبر من صفر"
 
@@ -2893,7 +2914,7 @@ msgid "Enter a password before saving."
 msgstr "أدخل كلمة مرور قبل الحفظ."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:260
+#: apps/web/src/lib/validation-i18n.ts:275
 msgid "Enter a title for your post"
 msgstr "أدخل عنوانًا لمنشورك"
 
@@ -2902,7 +2923,7 @@ msgid "Enter a username, pool name, phone number or address."
 msgstr "أدخل اسم مستخدم أو اسم صندوق أو رقم هاتف أو عنوانًا."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:295
+#: apps/web/src/lib/validation-i18n.ts:310
 msgid "Enter a valid date and time"
 msgstr "أدخل تاريخًا ووقتًا صالحين"
 
@@ -2919,7 +2940,7 @@ msgstr "أدخل مفتاحًا خاصًا صالحًا أو بطاقة تسجي
 msgid "Enter a valid wallet address"
 msgstr "أدخل عنوان محفظة صالحًا"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:219
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:246
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:612
 msgid "Enter a valid wallet address"
 msgstr "أدخل عنوان محفظة صالحًا"
@@ -2929,10 +2950,20 @@ msgstr "أدخل عنوان محفظة صالحًا"
 msgid "Enter a valid website URL including https://"
 msgstr "أدخل رابط موقع ويب صالحًا يتضمن https://"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:248
+msgid "Enter an amount greater than zero."
+msgstr "أدخل مبلغًا أكبر من صفر."
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:330
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:487
 msgid "Enter an amount greater than zero."
 msgstr "أدخل مبلغًا أكبر من صفر."
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:253
+msgid "Enter an amount this voucher supports."
+msgstr "أدخل مبلغًا تدعمه هذه القسيمة."
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:326
 msgid "Enter an amount this voucher supports."
@@ -2953,7 +2984,7 @@ msgstr "أدخل اسم المستخدم الدقيق أو رقم الهاتف �
 "المجمعات."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:400
+#: apps/web/src/lib/validation-i18n.ts:415
 msgid "Enter an exchange rate greater than zero"
 msgstr "أدخل سعر صرف أكبر من صفر"
 
@@ -2988,7 +3019,7 @@ msgid "Enter the amount."
 msgstr "أدخل المبلغ."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:330
+#: apps/web/src/lib/validation-i18n.ts:345
 msgid "Enter the number of participants as a whole number"
 msgstr "أدخل عدد المشاركين كعدد صحيح"
 
@@ -3033,11 +3064,11 @@ msgstr "سعر الصرف"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "سعر الصرف بالنسبة إلى القسيمة الافتراضية ({unitSymbol})"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:449
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
 msgid "Execute it in Safe."
 msgstr "نفّذه في Safe."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:438
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:444
 msgid "Executing…"
 msgstr "جارٍ التنفيذ…"
 
@@ -3075,7 +3106,7 @@ msgstr "قريب الانتهاء"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:225
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:153
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -3096,7 +3127,7 @@ msgstr "الزراعة"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:201
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
 msgid "Fee % and recipient"
 msgstr "نسبة الرسم ومستلمه"
 
@@ -3175,7 +3206,7 @@ msgid "File name (optional)"
 msgstr "اسم الملف (اختياري)"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:315
+#: apps/web/src/lib/validation-i18n.ts:330
 msgid "File name must be 255 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم الملف 255 حرفًا"
 
@@ -3356,7 +3387,7 @@ msgid "Host"
 msgstr "الجهة المنظمة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:320
+#: apps/web/src/lib/validation-i18n.ts:335
 msgid "Host must be 200 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم الجهة المنظمة 200 حرف"
 
@@ -3595,7 +3626,7 @@ msgid "Later"
 msgstr "لاحقاً"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:285
+#: apps/web/src/lib/validation-i18n.ts:300
 msgid "Latitude must be between -90 and 90"
 msgstr "يجب أن يكون خط العرض بين -90 و90"
 
@@ -3686,7 +3717,7 @@ msgid "Link at least one voucher or pool."
 msgstr "اربط قسيمة أو مجمعًا واحدًا على الأقل."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:355
+#: apps/web/src/lib/validation-i18n.ts:370
 msgid "Link at most 12 vouchers"
 msgstr "اربط 12 قسيمة كحد أقصى"
 
@@ -3959,7 +3990,7 @@ msgstr "جارٍ تحميل ملفك الشخصي…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:120
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:126
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -4000,7 +4031,7 @@ msgid "Logo"
 msgstr "الشعار"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:290
+#: apps/web/src/lib/validation-i18n.ts:305
 msgid "Longitude must be between -180 and 180"
 msgstr "يجب أن يكون خط الطول بين -180 و180"
 
@@ -4016,7 +4047,7 @@ msgid "Manage {0}"
 msgstr "إدارة {0}"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:213
 msgid "Manage voucher"
 msgstr "إدارة القسيمة"
 
@@ -4094,7 +4125,7 @@ msgid "Max {max} {symbol}"
 msgstr "الحد الأقصى {max} {symbol}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:280
+#: apps/web/src/lib/validation-i18n.ts:295
 msgid "Media must be an uploaded http(s) URL"
 msgstr "يجب أن تكون الوسائط رابط http(s) لملف تم تحميله"
 
@@ -4105,7 +4136,7 @@ msgid "Message"
 msgstr "رسالة"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:248
+#: apps/web/src/lib/validation-i18n.ts:263
 msgid "Message must be 500 characters or fewer"
 msgstr "يجب ألا تتجاوز الرسالة 500 حرف"
 
@@ -4225,7 +4256,7 @@ msgid "Multisig owned · {0} signers"
 msgstr "مملوك لمحفظة متعددة التوقيع · {0} موقّعين"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:68
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
 msgid "Multisig transactions"
 msgstr "معاملات متعددة التوقيع"
 
@@ -4326,12 +4357,12 @@ msgstr "البناء الطبيعي"
 msgid "Network"
 msgstr "الشبكة"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:293
 msgid "New owner"
 msgstr "المالك الجديد"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:425
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4355,8 +4386,8 @@ msgstr "منشور جديد"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:307
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:328
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:313
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:334
 msgid "New signer"
 msgstr "موقّع جديد"
 
@@ -4608,7 +4639,7 @@ msgstr "لا توجد منشورات بعد."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "لم يُعثر على رمز QR. حاول مرة أخرى بصورة أوضح."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:128
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:134
 msgid "No queued proposals found."
 msgstr "لم يتم العثور على مقترحات في قائمة الانتظار."
 
@@ -4715,7 +4746,7 @@ msgid "No. of participants"
 msgstr "عدد المشاركين"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:405
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:411
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4896,7 +4927,7 @@ msgid "Open in Maps"
 msgstr "فتح في الخرائط"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:170
 msgid "Open in Safe"
 msgstr "فتح في Safe"
 
@@ -5031,14 +5062,14 @@ msgstr "رد المالك"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "تم إرسال نقل الملكية."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:378
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "نُقلت الملكية على السلسلة. تتأخر مزامنة الكتالوج، وقد أُزيلت عناصر "
 "التحكم الإدارية الخاصة بك."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:380
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
 msgid "Ownership transferred."
 msgstr "نُقلت الملكية."
 
@@ -5074,7 +5105,7 @@ msgid "Participants"
 msgstr "المشاركون"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:325
+#: apps/web/src/lib/validation-i18n.ts:340
 msgid "Participants must be 100 characters or fewer"
 msgstr "يجب ألا تتجاوز قائمة المشاركين 100 حرف"
 
@@ -5120,7 +5151,7 @@ msgstr "تعذّر التحقق من حالة مفتاح المرور."
 #~ "أحدث. استخدم محفظتك الورقية."
 
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:451
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:457
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "يمكن لمفاتيح المرور تسجيل الدخول المتعدد على Safe 1.5 أو أحدث. استخدم "
@@ -5521,7 +5552,7 @@ msgid "Post text"
 msgstr "نص المنشور"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:270
+#: apps/web/src/lib/validation-i18n.ts:285
 msgid "Post text is too long"
 msgstr "نص المنشور طويل جدًا"
 
@@ -5567,8 +5598,9 @@ msgstr "التفضيلات"
 msgid "Preferred unit of account"
 msgstr "وحدة الحساب المفضلة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:323
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:449
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "جارٍ إعداد المحفظة…"
@@ -5706,7 +5738,7 @@ msgstr "تم تحديث الملف الشخصي"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "أُضيف المقترح إلى قائمة الانتظار. أكّده ونفّذه في Safe."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "المقترحات غير متاحة هنا. لا يزال بإمكانك استخدام محفظتك متعددة التوقيع."
 
@@ -5936,9 +5968,9 @@ msgstr "المستلمون مؤخرًا"
 #~ msgid "Recent voucher transfers for this wallet."
 #~ msgstr "عمليات نقل القسائم الأخيرة لهذه المحفظة."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:326
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:338
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:284
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -6032,7 +6064,7 @@ msgstr "التسعير النسبي"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:215
 msgid "Remove"
 msgstr "إزالة"
 
@@ -6076,12 +6108,12 @@ msgstr "إزالة الصورة {0}"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 msgid "Remove signer"
 msgstr "إزالة موقّع"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:325
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:322
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:331
 msgid "Removed signer"
 msgstr "الموقّع المُزال"
 
@@ -6096,7 +6128,7 @@ msgstr "تؤدي إزالة {0} إلى إيقاف مبادلته إلى هذا �
 msgid "Removing…"
 msgstr "جارٍ الإزالة…"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
 msgid "Replace signer"
 msgstr "استبدال موقّع"
 
@@ -6310,7 +6342,7 @@ msgstr "إعادة محاولة الاتصال"
 msgid "Reverted"
 msgstr "تم التراجع"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:461
 msgid "Review this transaction in your multisig wallet."
 msgstr "راجع هذه المعاملة في محفظتك متعددة التوقيع."
 
@@ -6323,7 +6355,7 @@ msgstr "التقييمات"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "ستظهر تقييمات هذه القسيمة هنا."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:135
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
 msgid "Safe transactions"
 msgstr "معاملات Safe"
@@ -7082,7 +7114,7 @@ msgstr "اقتراح اسم مستخدم"
 #~ msgstr "اقتراح مبني على الاسم. يمكنك تغييره."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:275
+#: apps/web/src/lib/validation-i18n.ts:290
 msgid "Summary must be 10,000 characters or fewer"
 msgstr "يجب ألا يتجاوز الملخص ١٠٬٠٠٠ حرف"
 
@@ -7252,12 +7284,12 @@ msgstr "الوسوم والموارد"
 #~ msgstr "الوسوم والقسائم"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:345
+#: apps/web/src/lib/validation-i18n.ts:360
 msgid "Tags must be 100 characters or fewer"
 msgstr "يجب ألا تتجاوز الوسوم 100 حرف"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:340
+#: apps/web/src/lib/validation-i18n.ts:355
 msgid "Tags must not be blank"
 msgstr "يجب ألا تكون الوسوم فارغة"
 
@@ -7429,7 +7461,7 @@ msgstr "تم بلوغ حد الائتمان. لا يمكن إضافة المزي
 #~ msgstr "العملة المستخدمة للتعبير عن القيمة في هذا الصندوق"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:375
+#: apps/web/src/lib/validation-i18n.ts:390
 msgid "The end of the period must not be before its start"
 msgstr "يجب ألا تسبق نهاية الفترة بدايتها"
 
@@ -7451,7 +7483,7 @@ msgstr "الخريطة غير مدعومة على هذا الجهاز."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "يجب ألا يزيد طول الرسالة والطلب على 500 حرف."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:405
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "يمكن للمالك الجديد إنشاء القسائم ونقل الملكية."
 
@@ -7803,7 +7835,7 @@ msgid "Title"
 msgstr "العنوان"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:265
+#: apps/web/src/lib/validation-i18n.ts:280
 msgid "Title must be 200 characters or fewer"
 msgstr "يجب ألا يتجاوز العنوان 200 حرف"
 
@@ -7882,17 +7914,17 @@ msgstr "تم نسخ تجزئة المعاملة"
 #~ msgid "Transfer history"
 #~ msgstr "سجل التحويلات"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:137
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:402
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:455
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:200
 msgid "Transfer ownership"
 msgstr "نقل الملكية"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:451
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
 msgid "Transferring ownership…"
 msgstr "جارٍ نقل الملكية…"
 
@@ -8020,8 +8052,8 @@ msgstr "وحدة الحساب"
 msgid "Unknown"
 msgstr "غير معروف"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:211
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:217
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:233
 msgid "Unknown call"
 msgstr "استدعاء غير معروف"
 
@@ -8303,7 +8335,7 @@ msgstr "إجراءات القسيمة"
 msgid "Voucher contract"
 msgstr "عقد القسيمة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:113
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:122
 msgid "Voucher controls"
 msgstr "عناصر التحكم في القسيمة"
 
@@ -8311,7 +8343,7 @@ msgstr "عناصر التحكم في القسيمة"
 msgid "Voucher creation receipt"
 msgstr "إيصال إنشاء القسيمة"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:240
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:267
 msgid "Voucher creation submitted."
 msgstr "تم إرسال طلب إنشاء القسيمة."
 
@@ -8329,6 +8361,10 @@ msgstr "وصف القسيمة مطلوب"
 #: apps/web/src/lib/validation-i18n.ts:153
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "يجب ألا يتجاوز وصف القسيمة 500 حرف"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:407
+msgid "Voucher destruction submitted."
+msgstr "تم إرسال طلب إتلاف القسيمة."
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:284
 #~ msgid "Voucher details"
@@ -8624,13 +8660,13 @@ msgstr "سحب"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:204
 msgid "Withdraw fees"
 msgstr "سحب الرسوم"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:202
 msgid "Withdraw liquidity"
 msgstr "سحب السيولة"
 
@@ -8729,7 +8765,7 @@ msgstr "لا يزال بإمكانك سحب الأموال بعد إيقاف ا�
 msgid "You can write or edit your review until {0}."
 msgstr "يمكنك كتابة مراجعتك أو تعديلها حتى {0}."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:447
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:453
 msgid "You confirmed"
 msgstr "لقد أكّدت"
 

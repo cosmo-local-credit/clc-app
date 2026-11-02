@@ -545,7 +545,7 @@ msgid "Add a link"
 msgstr "Een link toevoegen"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:253
+#: apps/web/src/lib/validation-i18n.ts:268
 msgid "Add a message or choose profile details"
 msgstr "Voeg een bericht toe of kies profielgegevens"
 
@@ -580,12 +580,12 @@ msgid "Add a voucher"
 msgstr "Een waardebon toevoegen"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:365
+#: apps/web/src/lib/validation-i18n.ts:380
 msgid "Add at most 20 attachments"
 msgstr "Voeg maximaal 20 bijlagen toe"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:360
+#: apps/web/src/lib/validation-i18n.ts:375
 msgid "Add at most 50 images"
 msgstr "Voeg maximaal 50 afbeeldingen toe"
 
@@ -619,7 +619,7 @@ msgstr "Foto's toevoegen"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
 msgid "Add signer"
 msgstr "Ondertekenaar toevoegen"
 
@@ -753,7 +753,7 @@ msgstr "Controleer vóór het verzenden altijd of de token en het netwerk "
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:177
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:191
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -764,6 +764,11 @@ msgstr "Controleer vóór het verzenden altijd of de token en het netwerk "
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:273
 msgid "Amount"
 msgstr "Bedrag"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:258
+msgid "Amount exceeds your balance"
+msgstr "Het bedrag is hoger dan uw saldo"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:458
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:324
@@ -839,7 +844,7 @@ msgstr "Wachtwoord toepassen…"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:299
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:305
 msgid "Approvals required"
 msgstr "Vereiste goedkeuringen"
 
@@ -847,7 +852,7 @@ msgstr "Vereiste goedkeuringen"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
 msgid "Approve voucher"
 msgstr "Waardebon goedkeuren"
 
@@ -930,6 +935,7 @@ msgstr "Tas"
 msgid "Balance {0}"
 msgstr "Saldo {0}"
 
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:450
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:255
 msgid "Balance {tokenBalance}"
 msgstr "Saldo {tokenBalance}"
@@ -1045,7 +1051,7 @@ msgid "Caption for photo {0}"
 msgstr "Bijschrift voor foto {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:305
+#: apps/web/src/lib/validation-i18n.ts:320
 msgid "Caption must be 500 characters or fewer"
 msgstr "Het bijschrift mag maximaal 500 tekens bevatten"
 
@@ -1123,7 +1129,7 @@ msgid "Change"
 msgstr "Wijzigen"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
 msgid "Change approvals required"
 msgstr "Vereiste goedkeuringen wijzigen"
 
@@ -1171,7 +1177,7 @@ msgstr "Aanmaakstatus controleren"
 msgid "Check supply again"
 msgstr "Voorraad opnieuw controleren"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:418
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "Controleer de bestaande indiening vóór een volgende overdracht:"
@@ -1180,7 +1186,7 @@ msgstr "Controleer de bestaande indiening vóór een volgende overdracht:"
 msgid "Check the Want details."
 msgstr "Controleer de details van het verzoek."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:453
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "Status van overdracht controleren"
@@ -1271,7 +1277,7 @@ msgid "Checking…"
 msgstr "Controleren…"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:310
+#: apps/web/src/lib/validation-i18n.ts:325
 msgid "Choose a file or an embed"
 msgstr "Kies een bestand of ingesloten media"
 
@@ -1300,7 +1306,7 @@ msgid "Choose a photo"
 msgstr "Kies een foto"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:370
+#: apps/web/src/lib/validation-i18n.ts:385
 msgid "Choose a place on the map or clear it"
 msgstr "Kies een plaats op de kaart of wis deze"
 
@@ -1330,7 +1336,7 @@ msgid "Choose a unit of account"
 msgstr "Kies een rekeneenheid"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:300
+#: apps/web/src/lib/validation-i18n.ts:315
 msgid "Choose a voucher"
 msgstr "Kies een waardebon"
 
@@ -1348,7 +1354,7 @@ msgid "Choose another"
 msgstr "Kies een andere"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:350
+#: apps/web/src/lib/validation-i18n.ts:365
 msgid "Choose at most 12 tags"
 msgstr "Kies maximaal 12 tags"
 
@@ -1462,7 +1468,7 @@ msgstr "Zoekopdracht wissen"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:175
 msgid "Close"
 msgstr "Sluiten"
 
@@ -1580,7 +1586,7 @@ msgstr "Rond de melding op uw telefoon af."
 msgid "Complete your profile"
 msgstr "Voltooi uw profiel"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:448
 msgid "Confirm"
 msgstr "Bevestigen"
 
@@ -1626,7 +1632,7 @@ msgstr "Omwisseling bevestigen"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:123
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:256
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:421
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:427
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1634,7 +1640,7 @@ msgstr "Bevestigd"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:448
 msgid "Confirming"
 msgstr "Bevestigen"
 
@@ -2056,9 +2062,13 @@ msgstr "Gebruikersnaam kon niet worden gekopieerd"
 msgid "Couldn't create the first supply."
 msgstr "De eerste voorraad kon niet worden aangemaakt."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:243
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
 msgstr "De waardebonnen konden niet worden uitgegeven."
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:411
+msgid "Couldn't destroy vouchers."
+msgstr "De waardebonnen konden niet worden vernietigd."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:442
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:445
@@ -2388,7 +2398,7 @@ msgstr "De opname kon niet worden ingediend"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "Er kon geen gebruikersnaam worden voorgesteld. Probeer het opnieuw."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:383
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "Het eigendom kon niet worden overgedragen."
@@ -2477,11 +2487,11 @@ msgstr "Maak deze transactie in je multisigwallet. Je kunt hier nog steeds "
 msgid "Create voucher"
 msgstr "Waardebon aanmaken"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:132
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:141
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:289
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:303
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:354
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2531,7 +2541,7 @@ msgstr "{0} aanmaken…"
 msgid "Creating account…"
 msgstr "Account aanmaken…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:325
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:352
 msgid "Creating vouchers…"
 msgstr "Waardebonnen uitgeven…"
 
@@ -2688,6 +2698,17 @@ msgstr "Beschrijf uw fonds"
 msgid "Description"
 msgstr "Beschrijving"
 
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+msgid "Destroy vouchers"
+msgstr "Waardebonnen vernietigen"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+msgid "Destroying vouchers…"
+msgstr "Waardebonnen vernietigen…"
+
 #: apps/web/src/components/vouchers/voucher-summary.tsx:355
 msgid "Directions"
 msgstr "Routebeschrijving"
@@ -2758,7 +2779,7 @@ msgid "Duration"
 msgstr "Duur"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:335
+#: apps/web/src/lib/validation-i18n.ts:350
 msgid "Duration must be 100 characters or fewer"
 msgstr "De duur mag maximaal 100 tekens bevatten"
 
@@ -2771,22 +2792,22 @@ msgid "e.g. MARKET"
 msgstr "bijv. MARKET"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:395
+#: apps/web/src/lib/validation-i18n.ts:410
 msgid "Each attachment can only be added once"
 msgstr "Elke bijlage kan maar eenmaal worden toegevoegd"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:390
+#: apps/web/src/lib/validation-i18n.ts:405
 msgid "Each image can only be added once"
 msgstr "Elke afbeelding kan maar eenmaal worden toegevoegd"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:380
+#: apps/web/src/lib/validation-i18n.ts:395
 msgid "Each tag can only be added once"
 msgstr "Elke tag kan maar eenmaal worden toegevoegd"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:385
+#: apps/web/src/lib/validation-i18n.ts:400
 msgid "Each voucher can only be linked once"
 msgstr "Elke waardebon kan maar eenmaal worden gekoppeld"
 
@@ -2806,7 +2827,7 @@ msgstr "Bewerken"
 msgid "Edit catalog"
 msgstr "Catalogus bewerken"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:117
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:110
 msgid "Edit details"
 msgstr "Gegevens bewerken"
@@ -2906,7 +2927,7 @@ msgid "Ends {0}"
 msgstr "Eindigt {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:405
+#: apps/web/src/lib/validation-i18n.ts:420
 msgid "Enter a credit limit greater than zero"
 msgstr "Voer een kredietlimiet groter dan nul in"
 
@@ -2923,7 +2944,7 @@ msgid "Enter a password before saving."
 msgstr "Voer een wachtwoord in en pas het toe voordat u deze kaart downloadt."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:260
+#: apps/web/src/lib/validation-i18n.ts:275
 msgid "Enter a title for your post"
 msgstr "Voer een titel voor uw bericht in"
 
@@ -2932,7 +2953,7 @@ msgid "Enter a username, pool name, phone number or address."
 msgstr "Voer een gebruikersnaam, fondsnaam, telefoonnummer of adres in."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:295
+#: apps/web/src/lib/validation-i18n.ts:310
 msgid "Enter a valid date and time"
 msgstr "Voer een geldige datum en tijd in"
 
@@ -2949,7 +2970,7 @@ msgstr "Voer een geldige privésleutel of aanmeldkaart in."
 msgid "Enter a valid wallet address"
 msgstr "Voer een geldig portefeuilleadres in"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:219
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:246
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:612
 msgid "Enter a valid wallet address"
 msgstr "Voer een geldig portefeuilleadres in"
@@ -2959,10 +2980,20 @@ msgstr "Voer een geldig portefeuilleadres in"
 msgid "Enter a valid website URL including https://"
 msgstr "Voer een geldige website-URL met https:// in"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:248
+msgid "Enter an amount greater than zero."
+msgstr "Voer een bedrag groter dan nul in."
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:330
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:487
 msgid "Enter an amount greater than zero."
 msgstr "Voer een bedrag groter dan nul in."
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:253
+msgid "Enter an amount this voucher supports."
+msgstr "Voer een bedrag in dat deze waardebon ondersteunt."
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:326
 msgid "Enter an amount this voucher supports."
@@ -2983,7 +3014,7 @@ msgstr "Voer een exacte gebruikersnaam of een volledig telefoonnummer in. "
 "Poolnamen kunnen worden doorzocht."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:400
+#: apps/web/src/lib/validation-i18n.ts:415
 msgid "Enter an exchange rate greater than zero"
 msgstr "Voer een wisselkoers groter dan nul in"
 
@@ -3018,7 +3049,7 @@ msgid "Enter the amount."
 msgstr "Voer het bedrag in."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:330
+#: apps/web/src/lib/validation-i18n.ts:345
 msgid "Enter the number of participants as a whole number"
 msgstr "Voer het aantal deelnemers als een geheel getal in"
 
@@ -3063,11 +3094,11 @@ msgstr "Wisselkoers"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "Wisselkoers ten opzichte van de standaardwaardebon ({unitSymbol})"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:449
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
 msgid "Execute it in Safe."
 msgstr "Voer het uit in Safe."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:438
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:444
 msgid "Executing…"
 msgstr "Wordt uitgevoerd…"
 
@@ -3105,7 +3136,7 @@ msgstr "Verloopt binnenkort"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:225
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:153
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -3126,7 +3157,7 @@ msgstr "Landbouw"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:201
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
 msgid "Fee % and recipient"
 msgstr "Kostenpercentage en ontvanger"
 
@@ -3205,7 +3236,7 @@ msgid "File name (optional)"
 msgstr "Bestandsnaam (optioneel)"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:315
+#: apps/web/src/lib/validation-i18n.ts:330
 msgid "File name must be 255 characters or fewer"
 msgstr "De bestandsnaam mag maximaal 255 tekens bevatten"
 
@@ -3386,7 +3417,7 @@ msgid "Host"
 msgstr "Host"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:320
+#: apps/web/src/lib/validation-i18n.ts:335
 msgid "Host must be 200 characters or fewer"
 msgstr "De host mag maximaal 200 tekens bevatten"
 
@@ -3630,7 +3661,7 @@ msgid "Later"
 msgstr "Later"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:285
+#: apps/web/src/lib/validation-i18n.ts:300
 msgid "Latitude must be between -90 and 90"
 msgstr "De breedtegraad moet tussen -90 en 90 liggen"
 
@@ -3722,7 +3753,7 @@ msgid "Link at least one voucher or pool."
 msgstr "Koppel ten minste één voucher of pool."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:355
+#: apps/web/src/lib/validation-i18n.ts:370
 msgid "Link at most 12 vouchers"
 msgstr "Koppel maximaal 12 waardebonnen"
 
@@ -3997,7 +4028,7 @@ msgstr "Uw profiel laden…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:120
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:126
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -4038,7 +4069,7 @@ msgid "Logo"
 msgstr "Logo"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:290
+#: apps/web/src/lib/validation-i18n.ts:305
 msgid "Longitude must be between -180 and 180"
 msgstr "De lengtegraad moet tussen -180 en 180 liggen"
 
@@ -4054,7 +4085,7 @@ msgid "Manage {0}"
 msgstr "{0} beheren"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:213
 msgid "Manage voucher"
 msgstr "Waardebon beheren"
 
@@ -4132,7 +4163,7 @@ msgid "Max {max} {symbol}"
 msgstr "Max. {max} {symbol}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:280
+#: apps/web/src/lib/validation-i18n.ts:295
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Media moeten een geüploade http(s)-URL zijn"
 
@@ -4143,7 +4174,7 @@ msgid "Message"
 msgstr "Bericht"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:248
+#: apps/web/src/lib/validation-i18n.ts:263
 msgid "Message must be 500 characters or fewer"
 msgstr "Het bericht mag maximaal 500 tekens bevatten"
 
@@ -4264,7 +4295,7 @@ msgid "Multisig owned · {0} signers"
 msgstr "In bezit van een multisig · {0} ondertekenaars"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:68
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
 msgid "Multisig transactions"
 msgstr "Multisigtransacties"
 
@@ -4365,12 +4396,12 @@ msgstr "Natuurlijk bouwen"
 msgid "Network"
 msgstr "Netwerk"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:293
 msgid "New owner"
 msgstr "Nieuwe eigenaar"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:425
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4394,8 +4425,8 @@ msgstr "Nieuw bericht"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:307
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:328
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:313
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:334
 msgid "New signer"
 msgstr "Nieuwe ondertekenaar"
 
@@ -4651,7 +4682,7 @@ msgid "No QR code found. Try again with a clearer image."
 msgstr "Geen QR-code gevonden. Probeer het opnieuw met een duidelijkere "
 "afbeelding."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:128
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:134
 msgid "No queued proposals found."
 msgstr "Geen voorstellen in de wachtrij gevonden."
 
@@ -4758,7 +4789,7 @@ msgid "No. of participants"
 msgstr "Aantal deelnemers"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:405
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:411
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4943,7 +4974,7 @@ msgid "Open in Maps"
 msgstr "Openen in Kaarten"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:170
 msgid "Open in Safe"
 msgstr "Openen in Safe"
 
@@ -5079,14 +5110,14 @@ msgstr "Antwoord van eigenaar"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "Eigendomsoverdracht ingediend."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:378
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "Eigendom overgedragen op de blockchain. De catalogussynchronisatie "
 "loopt vertraging op; uw beheerrechten zijn verwijderd."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:380
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
 msgid "Ownership transferred."
 msgstr "Eigendom overgedragen."
 
@@ -5123,7 +5154,7 @@ msgid "Participants"
 msgstr "Deelnemers"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:325
+#: apps/web/src/lib/validation-i18n.ts:340
 msgid "Participants must be 100 characters or fewer"
 msgstr "Deelnemers mogen maximaal 100 tekens bevatten"
 
@@ -5172,7 +5203,7 @@ msgstr "De passkeystatus kon niet worden gecontroleerd."
 #~ "Gebruik je papieren portefeuille."
 
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:451
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:457
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "Passkeys kunnen ondertekenen voor multisigwallets vanaf Safe 1.5. "
@@ -5574,7 +5605,7 @@ msgid "Post text"
 msgstr "Berichttekst"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:270
+#: apps/web/src/lib/validation-i18n.ts:285
 msgid "Post text is too long"
 msgstr "De berichttekst is te lang"
 
@@ -5620,8 +5651,9 @@ msgstr "Voorkeuren"
 msgid "Preferred unit of account"
 msgstr "Voorkeursrekeneenheid"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:323
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:449
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "Portefeuille voorbereiden…"
@@ -5761,7 +5793,7 @@ msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "Voorstel in de wachtrij geplaatst. Bevestig het en voer het uit in "
 "Safe."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "Voorstellen zijn hier niet beschikbaar. Je kunt je multisigwallet nog "
 "steeds gebruiken."
@@ -5993,9 +6025,9 @@ msgstr "Recente ontvangers"
 #~ msgid "Recent voucher transfers for this wallet."
 #~ msgstr "Recente overdrachten van waardebonnen voor deze portefeuille."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:326
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:338
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:284
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -6092,7 +6124,7 @@ msgstr "Relatieve prijsstelling"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:215
 msgid "Remove"
 msgstr "Verwijderen"
 
@@ -6136,12 +6168,12 @@ msgstr "Foto {0} verwijderen"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 msgid "Remove signer"
 msgstr "Ondertekenaar verwijderen"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:325
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:322
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:331
 msgid "Removed signer"
 msgstr "Verwijderde ondertekenaar"
 
@@ -6156,7 +6188,7 @@ msgstr "Als u {0} verwijdert, kan deze waardebon niet meer in of uit dit fonds "
 msgid "Removing…"
 msgstr "Verwijderen…"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
 msgid "Replace signer"
 msgstr "Ondertekenaar vervangen"
 
@@ -6372,7 +6404,7 @@ msgstr "Verbinding opnieuw proberen"
 msgid "Reverted"
 msgstr "Teruggedraaid"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:461
 msgid "Review this transaction in your multisig wallet."
 msgstr "Controleer deze transactie in je multisigwallet."
 
@@ -6385,7 +6417,7 @@ msgstr "Beoordelingen"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Beoordelingen van deze waardebon verschijnen hier."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:135
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
 msgid "Safe transactions"
 msgstr "Safe-transacties"
@@ -7152,7 +7184,7 @@ msgstr "Gebruikersnaam voorstellen"
 #~ msgstr "Voorgesteld op basis van de naam. U kunt dit wijzigen."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:275
+#: apps/web/src/lib/validation-i18n.ts:290
 msgid "Summary must be 10,000 characters or fewer"
 msgstr "De samenvatting mag maximaal 10.000 tekens bevatten"
 
@@ -7324,12 +7356,12 @@ msgstr "Tags en bronnen"
 #~ msgstr "Tags en waardebonnen"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:345
+#: apps/web/src/lib/validation-i18n.ts:360
 msgid "Tags must be 100 characters or fewer"
 msgstr "Tags mogen maximaal 100 tekens bevatten"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:340
+#: apps/web/src/lib/validation-i18n.ts:355
 msgid "Tags must not be blank"
 msgstr "Tags mogen niet leeg zijn"
 
@@ -7503,7 +7535,7 @@ msgstr "De kredietlimiet is bereikt. Er kan niets meer aan dit fonds worden "
 #~ msgstr "De valuta waarin de waarde in dit fonds wordt uitgedrukt"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:375
+#: apps/web/src/lib/validation-i18n.ts:390
 msgid "The end of the period must not be before its start"
 msgstr "Het einde van de periode mag niet voor het begin liggen"
 
@@ -7525,7 +7557,7 @@ msgstr "De kaart wordt niet ondersteund op dit apparaat."
 msgid "The message and order must be 500 characters or fewer."
 msgstr "Het bericht en de bestelling mogen samen maximaal 500 tekens bevatten."
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:405
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "De nieuwe eigenaar kan waardebonnen uitgeven en het eigendom "
 "overdragen."
@@ -7890,7 +7922,7 @@ msgid "Title"
 msgstr "Titel"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:265
+#: apps/web/src/lib/validation-i18n.ts:280
 msgid "Title must be 200 characters or fewer"
 msgstr "De titel mag maximaal 200 tekens bevatten"
 
@@ -7970,17 +8002,17 @@ msgstr "Transactiehash gekopieerd"
 #~ msgid "Transfer history"
 #~ msgstr "Overdrachtsgeschiedenis"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:137
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:402
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:455
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:200
 msgid "Transfer ownership"
 msgstr "Eigendom overdragen"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:451
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
 msgid "Transferring ownership…"
 msgstr "Eigendom overdragen…"
 
@@ -8109,8 +8141,8 @@ msgstr "Rekeneenheid"
 msgid "Unknown"
 msgstr "Onbekend"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:211
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:217
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:233
 msgid "Unknown call"
 msgstr "Onbekende aanroep"
 
@@ -8393,7 +8425,7 @@ msgstr "Waardebonacties"
 msgid "Voucher contract"
 msgstr "Waardeboncontract"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:113
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:122
 msgid "Voucher controls"
 msgstr "Waardebonbeheer"
 
@@ -8401,7 +8433,7 @@ msgstr "Waardebonbeheer"
 msgid "Voucher creation receipt"
 msgstr "Bewijs van waardebonuitgifte"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:240
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:267
 msgid "Voucher creation submitted."
 msgstr "De waardebonuitgifte is ingediend."
 
@@ -8419,6 +8451,10 @@ msgstr "Een beschrijving van de waardebon is verplicht"
 #: apps/web/src/lib/validation-i18n.ts:153
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "De beschrijving van de waardebon mag maximaal 500 tekens bevatten"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:407
+msgid "Voucher destruction submitted."
+msgstr "De vernietiging van de waardebonnen is ingediend."
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:284
 #~ msgid "Voucher details"
@@ -8716,13 +8752,13 @@ msgstr "Opnemen"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:204
 msgid "Withdraw fees"
 msgstr "Kosten opnemen"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:202
 msgid "Withdraw liquidity"
 msgstr "Liquiditeit opnemen"
 
@@ -8822,7 +8858,7 @@ msgstr "U kunt nog steeds tegoeden opnemen nadat het fonds buiten gebruik is "
 msgid "You can write or edit your review until {0}."
 msgstr "U kunt uw beoordeling tot {0} schrijven of bewerken."
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:447
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:453
 msgid "You confirmed"
 msgstr "Je hebt bevestigd"
 

@@ -523,7 +523,7 @@ msgid "Add a link"
 msgstr "新增連結"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:253
+#: apps/web/src/lib/validation-i18n.ts:268
 msgid "Add a message or choose profile details"
 msgstr "新增訊息或選擇個人資料詳細資訊"
 
@@ -558,12 +558,12 @@ msgid "Add a voucher"
 msgstr "新增代金券"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:365
+#: apps/web/src/lib/validation-i18n.ts:380
 msgid "Add at most 20 attachments"
 msgstr "最多新增 20 個附件"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:360
+#: apps/web/src/lib/validation-i18n.ts:375
 msgid "Add at most 50 images"
 msgstr "最多新增 50 張圖片"
 
@@ -596,7 +596,7 @@ msgstr "新增照片"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:74
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:152
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:184
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
 msgid "Add signer"
 msgstr "新增簽署者"
 
@@ -726,7 +726,7 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:177
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:191
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:374
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:281
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:168
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:257
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:446
@@ -737,6 +737,11 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:273
 msgid "Amount"
 msgstr "金額"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:258
+msgid "Amount exceeds your balance"
+msgstr "金額超過您的餘額"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:458
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:324
@@ -810,7 +815,7 @@ msgstr "正在套用密碼…"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:287
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:350
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:299
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:305
 msgid "Approvals required"
 msgstr "所需核准數"
 
@@ -818,7 +823,7 @@ msgstr "所需核准數"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:345
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:599
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:203
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
 msgid "Approve voucher"
 msgstr "批准代金券"
 
@@ -901,6 +906,7 @@ msgstr "袋"
 msgid "Balance {0}"
 msgstr "餘額{0}"
 
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:450
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:255
 msgid "Balance {tokenBalance}"
 msgstr "餘額{tokenBalance}"
@@ -1016,7 +1022,7 @@ msgid "Caption for photo {0}"
 msgstr "照片 {0} 的說明"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:305
+#: apps/web/src/lib/validation-i18n.ts:320
 msgid "Caption must be 500 characters or fewer"
 msgstr "標題不得超過 500 個字元"
 
@@ -1093,7 +1099,7 @@ msgid "Change"
 msgstr "更改"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:80
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:190
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
 msgid "Change approvals required"
 msgstr "變更所需核准數"
 
@@ -1139,7 +1145,7 @@ msgstr "檢查增發狀態"
 msgid "Check supply again"
 msgstr "重新檢查發行量"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:418
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:572
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:91
 msgid "Check the existing submission before another transfer:"
 msgstr "請先核對已有的提交，再進行另一次轉讓："
@@ -1148,7 +1154,7 @@ msgstr "請先核對已有的提交，再進行另一次轉讓："
 msgid "Check the Want details."
 msgstr "請檢查需求詳情。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:453
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:607
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:130
 msgid "Check transfer status"
 msgstr "查看轉讓狀態"
@@ -1239,7 +1245,7 @@ msgid "Checking…"
 msgstr "檢查…"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:310
+#: apps/web/src/lib/validation-i18n.ts:325
 msgid "Choose a file or an embed"
 msgstr "選擇檔案或嵌入"
 
@@ -1268,7 +1274,7 @@ msgid "Choose a photo"
 msgstr "選擇一張照片"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:370
+#: apps/web/src/lib/validation-i18n.ts:385
 msgid "Choose a place on the map or clear it"
 msgstr "在地圖上選擇一個地點或清除它"
 
@@ -1296,7 +1302,7 @@ msgid "Choose a unit of account"
 msgstr "選擇記帳單位"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:300
+#: apps/web/src/lib/validation-i18n.ts:315
 msgid "Choose a voucher"
 msgstr "選擇代金券"
 
@@ -1314,7 +1320,7 @@ msgid "Choose another"
 msgstr "選擇另一個"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:350
+#: apps/web/src/lib/validation-i18n.ts:365
 msgid "Choose at most 12 tags"
 msgstr "最多選擇 12 個標籤"
 
@@ -1426,7 +1432,7 @@ msgstr "清除搜尋"
 #: apps/web/src/components/wants/want-sheet.tsx:101
 #: apps/web/src/components/wants/want-sheet.tsx:108
 #: apps/web/src/features/home/ui/report-page.tsx:292
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:169
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:175
 msgid "Close"
 msgstr "關閉"
 
@@ -1542,7 +1548,7 @@ msgstr "完成手機上的提示。"
 msgid "Complete your profile"
 msgstr "完成您的個人資料"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:448
 msgid "Confirm"
 msgstr "確認"
 
@@ -1587,7 +1593,7 @@ msgstr "確認兌換"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:123
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:256
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:421
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:427
 #: apps/web/src/features/wallet/ui/collect-page.tsx:435
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
 msgid "Confirmed"
@@ -1595,7 +1601,7 @@ msgstr "已確認"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:723
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:442
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:448
 msgid "Confirming"
 msgstr "正在確認"
 
@@ -2003,9 +2009,13 @@ msgstr "無法複製使用者名稱"
 msgid "Couldn't create the first supply."
 msgstr "無法完成首次增發。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:243
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 msgid "Couldn't create vouchers."
 msgstr "無法發行代金券。"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:411
+msgid "Couldn't destroy vouchers."
+msgstr "無法銷毀代金券。"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:442
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:445
@@ -2327,7 +2337,7 @@ msgstr "無法提交提款"
 msgid "Couldn't suggest a username. Please try again."
 msgstr "無法建議使用者名稱。請再試一次。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:383
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:537
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:65
 msgid "Couldn't transfer ownership."
 msgstr "無法轉移所有權。"
@@ -2414,11 +2424,11 @@ msgstr "請在多簽錢包中建立此交易。你仍可在此編輯中繼資料
 msgid "Create voucher"
 msgstr "建立代金券"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:132
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:262
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:276
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:327
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:141
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:289
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:303
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:354
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:458
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
 msgid "Create vouchers"
@@ -2468,7 +2478,7 @@ msgstr "正在建立 {0}…"
 msgid "Creating account…"
 msgstr "正在建立帳戶…"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:325
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:352
 msgid "Creating vouchers…"
 msgstr "正在發行代金券…"
 
@@ -2624,6 +2634,17 @@ msgstr "介紹您的資金池"
 msgid "Description"
 msgstr "描述"
 
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:148
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:434
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:448
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:481
+msgid "Destroy vouchers"
+msgstr "銷毀代金券"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:479
+msgid "Destroying vouchers…"
+msgstr "正在銷毀代金券…"
+
 #: apps/web/src/components/vouchers/voucher-summary.tsx:355
 msgid "Directions"
 msgstr "路線"
@@ -2693,7 +2714,7 @@ msgid "Duration"
 msgstr "時長"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:335
+#: apps/web/src/lib/validation-i18n.ts:350
 msgid "Duration must be 100 characters or fewer"
 msgstr "持續時間不得超過 100 個字元"
 
@@ -2706,22 +2727,22 @@ msgid "e.g. MARKET"
 msgstr "例如市場"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:395
+#: apps/web/src/lib/validation-i18n.ts:410
 msgid "Each attachment can only be added once"
 msgstr "每個附件只能新增一次"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:390
+#: apps/web/src/lib/validation-i18n.ts:405
 msgid "Each image can only be added once"
 msgstr "每張圖片只能新增一次"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:380
+#: apps/web/src/lib/validation-i18n.ts:395
 msgid "Each tag can only be added once"
 msgstr "每個標籤只能新增一次"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:385
+#: apps/web/src/lib/validation-i18n.ts:400
 msgid "Each voucher can only be linked once"
 msgstr "每個代金券只能連結一次"
 
@@ -2741,7 +2762,7 @@ msgstr "編輯"
 msgid "Edit catalog"
 msgstr "編輯目錄"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:117
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:110
 msgid "Edit details"
 msgstr "編輯詳細資訊"
@@ -2841,7 +2862,7 @@ msgid "Ends {0}"
 msgstr "結束於 {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:405
+#: apps/web/src/lib/validation-i18n.ts:420
 msgid "Enter a credit limit greater than zero"
 msgstr "輸入大於零的信用額度"
 
@@ -2858,7 +2879,7 @@ msgid "Enter a password before saving."
 msgstr "下載此卡之前輸入並應用密碼。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:260
+#: apps/web/src/lib/validation-i18n.ts:275
 msgid "Enter a title for your post"
 msgstr "輸入貼文的標題"
 
@@ -2867,7 +2888,7 @@ msgid "Enter a username, pool name, phone number or address."
 msgstr "輸入使用者名稱、資金池名稱、電話號碼或地址。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:295
+#: apps/web/src/lib/validation-i18n.ts:310
 msgid "Enter a valid date and time"
 msgstr "輸入有效的日期和時間"
 
@@ -2884,7 +2905,7 @@ msgstr "輸入有效的私鑰或登入卡。"
 msgid "Enter a valid wallet address"
 msgstr "請輸入有效的錢包地址"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:219
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:246
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:612
 msgid "Enter a valid wallet address"
 msgstr "輸入有效的錢包地址"
@@ -2894,10 +2915,20 @@ msgstr "輸入有效的錢包地址"
 msgid "Enter a valid website URL including https://"
 msgstr "輸入有效的網站 URL，包括 https://"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:248
+msgid "Enter an amount greater than zero."
+msgstr "輸入大於零的金額。"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:330
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:487
 msgid "Enter an amount greater than zero."
 msgstr "輸入大於零的金額。"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:253
+msgid "Enter an amount this voucher supports."
+msgstr "輸入此代金券支援的金額。"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:326
 msgid "Enter an amount this voucher supports."
@@ -2917,7 +2948,7 @@ msgid "Enter an exact username or full phone number. Pool names can be "
 msgstr "請輸入完整使用者名稱或完整電話號碼。可以搜尋資金池名稱。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:400
+#: apps/web/src/lib/validation-i18n.ts:415
 msgid "Enter an exchange rate greater than zero"
 msgstr "輸入大於零的匯率"
 
@@ -2952,7 +2983,7 @@ msgid "Enter the amount."
 msgstr "請輸入金額。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:330
+#: apps/web/src/lib/validation-i18n.ts:345
 msgid "Enter the number of participants as a whole number"
 msgstr "輸入參加人數的整數"
 
@@ -2995,11 +3026,11 @@ msgstr "匯率"
 #~ msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 #~ msgstr "相對於預設代金券 ({unitSymbol}) 的匯率"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:449
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
 msgid "Execute it in Safe."
 msgstr "請在 Safe 中執行。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:438
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:444
 msgid "Executing…"
 msgstr "執行中…"
 
@@ -3037,7 +3068,7 @@ msgstr "即將到期"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:225
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:153
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:207
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:350
 #: apps/web/src/features/wallet/ui/collect-page.tsx:437
@@ -3058,7 +3089,7 @@ msgstr "農業"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:134
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:220
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:201
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
 msgid "Fee % and recipient"
 msgstr "費率和費用接收方"
 
@@ -3137,7 +3168,7 @@ msgid "File name (optional)"
 msgstr "檔名（可選）"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:315
+#: apps/web/src/lib/validation-i18n.ts:330
 msgid "File name must be 255 characters or fewer"
 msgstr "檔名不得超過 255 個字元"
 
@@ -3318,7 +3349,7 @@ msgid "Host"
 msgstr "主辦方"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:320
+#: apps/web/src/lib/validation-i18n.ts:335
 msgid "Host must be 200 characters or fewer"
 msgstr "主辦方不得超過 200 個字元"
 
@@ -3555,7 +3586,7 @@ msgid "Later"
 msgstr "之後"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:285
+#: apps/web/src/lib/validation-i18n.ts:300
 msgid "Latitude must be between -90 and 90"
 msgstr "緯度必須介於 -90 到 90 之間"
 
@@ -3645,7 +3676,7 @@ msgid "Link at least one voucher or pool."
 msgstr "請至少關聯一個代金券或資金池。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:355
+#: apps/web/src/lib/validation-i18n.ts:370
 msgid "Link at most 12 vouchers"
 msgstr "最多連結 12 個代金券"
 
@@ -3916,7 +3947,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:132
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1031
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:120
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:126
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:225
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
 msgid "Loading…"
@@ -3957,7 +3988,7 @@ msgid "Logo"
 msgstr "標識"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:290
+#: apps/web/src/lib/validation-i18n.ts:305
 msgid "Longitude must be between -180 and 180"
 msgstr "經度必須介於 -180 到 180 之間"
 
@@ -3972,7 +4003,7 @@ msgid "Manage {0}"
 msgstr "管理 {0}"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:117
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:207
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:213
 msgid "Manage voucher"
 msgstr "管理代金券"
 
@@ -4050,7 +4081,7 @@ msgid "Max {max} {symbol}"
 msgstr "最大 {max} {symbol}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:280
+#: apps/web/src/lib/validation-i18n.ts:295
 msgid "Media must be an uploaded http(s) URL"
 msgstr "媒體必須是上傳的 http(s) URL"
 
@@ -4061,7 +4092,7 @@ msgid "Message"
 msgstr "留言"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:248
+#: apps/web/src/lib/validation-i18n.ts:263
 msgid "Message must be 500 characters or fewer"
 msgstr "留言不得超過 500 個字元"
 
@@ -4181,7 +4212,7 @@ msgid "Multisig owned · {0} signers"
 msgstr "由多簽錢包持有 · {0} 位簽署者"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:163
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:68
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:69
 msgid "Multisig transactions"
 msgstr "多簽交易"
 
@@ -4282,12 +4313,12 @@ msgstr "自然建築"
 msgid "Network"
 msgstr "網路"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:287
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:293
 msgid "New owner"
 msgstr "新所有者"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:425
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:437
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:579
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:591
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:98
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:110
 msgid "New owner address"
@@ -4311,8 +4342,8 @@ msgstr "新貼文"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:310
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:313
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:307
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:328
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:313
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:334
 msgid "New signer"
 msgstr "新簽署者"
 
@@ -4560,7 +4591,7 @@ msgstr "還沒有貼文。"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "未找到QR 碼。請使用更清晰的圖片重試。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:128
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:134
 msgid "No queued proposals found."
 msgstr "找不到佇列中的提案。"
 
@@ -4667,7 +4698,7 @@ msgid "No. of participants"
 msgstr "參加人數"
 
 #. placeholder {0}: transaction.nonce
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:405
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:411
 msgid "Nonce {0}"
 msgstr "Nonce {0}"
 
@@ -4851,7 +4882,7 @@ msgid "Open in Maps"
 msgstr "在地圖中開啟"
 
 #: apps/web/src/components/safe/multisig-owner-notice.tsx:30
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:164
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:170
 msgid "Open in Safe"
 msgstr "在 Safe 中開啟"
 
@@ -4984,13 +5015,13 @@ msgstr "發行方回覆"
 #~ msgid "Ownership transfer submitted."
 #~ msgstr "已提交所有權轉讓。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:378
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:532
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:61
 msgid "Ownership transferred on-chain. Catalog synchronization is delayed; your "
 "management controls have been removed."
 msgstr "所有權已在鏈上轉讓。目錄同步有所延遲；您的管理權限已被移除。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:380
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:534
 msgid "Ownership transferred."
 msgstr "所有權已轉讓。"
 
@@ -5026,7 +5057,7 @@ msgid "Participants"
 msgstr "參與者"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:325
+#: apps/web/src/lib/validation-i18n.ts:340
 msgid "Participants must be 100 characters or fewer"
 msgstr "參與者不得超過 100 個字元"
 
@@ -5071,7 +5102,7 @@ msgstr "無法檢查通行金鑰狀態。"
 #~ msgstr "通行金鑰可為 Safe 1.5 及更新版本的多簽錢包簽署。請使用您的紙錢包。"
 
 #: apps/web/src/features/safe/hooks/use-report-write-error.ts:35
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:451
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:457
 msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 "card."
 msgstr "通行金鑰可為 Safe 1.5 及更新版本的多簽錢包簽署。請使用您的登入卡。"
@@ -5469,7 +5500,7 @@ msgid "Post text"
 msgstr "貼文內容"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:270
+#: apps/web/src/lib/validation-i18n.ts:285
 msgid "Post text is too long"
 msgstr "貼文文字太長"
 
@@ -5515,8 +5546,9 @@ msgstr "偏好設定"
 msgid "Preferred unit of account"
 msgstr "偏好的記帳單位"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:323
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:449
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:350
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:477
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:603
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:426
 msgid "Preparing wallet…"
 msgstr "正在準備錢包…"
@@ -5654,7 +5686,7 @@ msgstr "個人資料已更新"
 msgid "Proposal queued. Confirm and execute it in Safe."
 msgstr "提案已加入佇列。請在 Safe 中確認並執行。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:124
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:130
 msgid "Proposals are unavailable here. You can still use your multisig wallet."
 msgstr "此處暫時無法使用提案。你仍可使用多簽錢包。"
 
@@ -5884,9 +5916,9 @@ msgstr "最近的接收方"
 #~ msgid "Recent voucher transfers for this wallet."
 #~ msgstr "此錢包最近的代金券轉帳。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:299
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:311
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:278
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:326
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:338
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:284
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:455
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:203
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:690
@@ -5980,7 +6012,7 @@ msgstr "相對定價"
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:120
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:561
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:114
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:209
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:215
 msgid "Remove"
 msgstr "刪除"
 
@@ -6029,12 +6061,12 @@ msgstr "刪除照片 {0}"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:77
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:274
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:186
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:192
 msgid "Remove signer"
 msgstr "移除簽署者"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:316
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:325
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:322
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:331
 msgid "Removed signer"
 msgstr "已移除的簽署者"
 
@@ -6048,7 +6080,7 @@ msgstr "刪除 {0} 後，將無法再將其兌入或兌出此資金池。其匯�
 msgid "Removing…"
 msgstr "正在刪除…"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:188
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
 msgid "Replace signer"
 msgstr "替換簽署者"
 
@@ -6260,7 +6292,7 @@ msgstr "重試連線"
 msgid "Reverted"
 msgstr "已回滾"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:455
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:461
 msgid "Review this transaction in your multisig wallet."
 msgstr "請在多簽錢包中檢視此交易。"
 
@@ -6273,7 +6305,7 @@ msgstr "評價"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "對此代金券的評價將出現在此處。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:126
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:135
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
 msgid "Safe transactions"
 msgstr "Safe 交易"
@@ -7027,7 +7059,7 @@ msgstr "建議使用者名稱"
 #~ msgstr "根據名稱生成，您可以更改。"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:275
+#: apps/web/src/lib/validation-i18n.ts:290
 msgid "Summary must be 10,000 characters or fewer"
 msgstr "摘要不得超過 10,000 個字元"
 
@@ -7197,12 +7229,12 @@ msgstr "標籤和資源"
 #~ msgstr "標籤和代金券"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:345
+#: apps/web/src/lib/validation-i18n.ts:360
 msgid "Tags must be 100 characters or fewer"
 msgstr "標籤不得超過 100 個字元"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:340
+#: apps/web/src/lib/validation-i18n.ts:355
 msgid "Tags must not be blank"
 msgstr "標籤不能為空"
 
@@ -7371,7 +7403,7 @@ msgstr "已達到信用額度。無法再向此資金池新增代金券。"
 #~ msgstr "資金池中用於描述價值的貨幣"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:375
+#: apps/web/src/lib/validation-i18n.ts:390
 msgid "The end of the period must not be before its start"
 msgstr "期間的結束時間不得早於其開始時間"
 
@@ -7392,7 +7424,7 @@ msgstr "此裝置不支援該地圖。"
 msgid "The message and order must be 500 characters or fewer."
 msgstr "訊息和訂單不得超過 500 個字元。"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:405
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:559
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "新所有者可以發行代金券並轉讓所有權。"
 
@@ -7732,7 +7764,7 @@ msgid "Title"
 msgstr "標題"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:265
+#: apps/web/src/lib/validation-i18n.ts:280
 msgid "Title must be 200 characters or fewer"
 msgstr "標題不得超過 200 個字元"
 
@@ -7811,17 +7843,17 @@ msgstr "交易雜湊已複製"
 #~ msgid "Transfer history"
 #~ msgstr "轉帳記錄"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:137
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:402
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:455
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:154
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:556
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:609
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:149
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:212
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:132
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:200
 msgid "Transfer ownership"
 msgstr "轉讓所有權"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:451
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:605
 msgid "Transferring ownership…"
 msgstr "轉讓所有權…"
 
@@ -7949,8 +7981,8 @@ msgstr "記賬單位"
 msgid "Unknown"
 msgstr "未知"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:211
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:227
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:217
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:233
 msgid "Unknown call"
 msgstr "未知呼叫"
 
@@ -8233,7 +8265,7 @@ msgstr "代金券操作"
 msgid "Voucher contract"
 msgstr "代金券合同"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:113
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:122
 msgid "Voucher controls"
 msgstr "代金券管理"
 
@@ -8241,7 +8273,7 @@ msgstr "代金券管理"
 msgid "Voucher creation receipt"
 msgstr "代金券建立收據"
 
-#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:240
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:267
 msgid "Voucher creation submitted."
 msgstr "代金券建立已提交。"
 
@@ -8259,6 +8291,10 @@ msgstr "請輸入代金券說明"
 #: apps/web/src/lib/validation-i18n.ts:153
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "代金券描述不得超過 500 個字元"
+
+#: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:407
+msgid "Voucher destruction submitted."
+msgstr "代金券銷毀已提交。"
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:284
 #~ msgid "Voucher details"
@@ -8553,13 +8589,13 @@ msgstr "提取"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:129
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:193
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:198
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:204
 msgid "Withdraw fees"
 msgstr "提取費用"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:124
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:175
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:196
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:202
 msgid "Withdraw liquidity"
 msgstr "提取流動性"
 
@@ -8657,7 +8693,7 @@ msgstr "資金池停用後，您仍可提取資金。"
 msgid "You can write or edit your review until {0}."
 msgstr "您可以在 {0} 之前撰寫或編輯您的評價。"
 
-#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:447
+#: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:453
 msgid "You confirmed"
 msgstr "您已確認"
 
