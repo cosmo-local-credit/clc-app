@@ -107,7 +107,7 @@ export function CollectPage({ token }: { token?: string }) {
       : null;
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={t`Receive`} to="/wallet/receive" />
 
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">

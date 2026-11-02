@@ -10,7 +10,7 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { InstallAppLink } from "#/components/install-app-link";
-import { Route as InstallRoute } from "#/routes/install";
+import { Route as InstallRoute } from "#/routes/_nav/install";
 import { initializeInstallEvents, useInstallStore } from "./install-store";
 
 import { installBootstrapScript, type InstallPromptEvent } from "./install-bootstrap";

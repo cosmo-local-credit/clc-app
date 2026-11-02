@@ -22,6 +22,13 @@ describe("bottom-navigation layout contract", () => {
     expect(styles).not.toContain("@utility pb-market-list");
   });
 
+  it("pins the profile save bar on top of the navigation", () => {
+    const profile = source("features/auth/ui/profile-edit-page.tsx");
+
+    expect(profile).toContain("pb-[var(--bottom-nav-offset)]");
+    expect(profile).toContain("sticky bottom-[var(--bottom-nav-offset)]");
+  });
+
   it("reserves the desktop scrollbar gutter so fixed navigation does not shift", () => {
     const styles = source("styles.css");
 

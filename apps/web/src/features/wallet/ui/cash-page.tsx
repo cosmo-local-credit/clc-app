@@ -25,7 +25,7 @@ export function CashPage() {
   };
 
   return (
-    <main className="min-h-[100svh] bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <main className="min-h-[100svh] bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
 
       <div className="mt-2 text-center">

@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { WantFormPage } from "#/features/wants/ui/want-form-page";
 
-export const Route = createFileRoute("/wallet/wants/new")({ component: NewWantRoute });
+export const Route = createFileRoute("/_nav/wallet/wants/$wantId/edit")({
+  staticData: { navOwner: "wallet" },
+  component: EditWantRoute,
+});
 
-function NewWantRoute() {
+function EditWantRoute() {
   return (
     <AuthenticatedRoute>
-      <WantFormPage />
+      <WantFormPage id={Route.useParams().wantId} />
     </AuthenticatedRoute>
   );
 }

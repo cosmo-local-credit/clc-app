@@ -28,6 +28,9 @@ export function NavigationShell() {
     throw new Error("A route inside the navigation shell must declare navOwner");
   }
 
+  // A shared install link is a landing page: it belongs with onboarding.
+  if (navOwner === "install" && search.from !== "settings") return <Outlet />;
+
   let activeTab: HomeTab;
   let atActiveTabRoot = false;
   const isMarketMap =
@@ -54,6 +57,8 @@ export function NavigationShell() {
       poolAddress: typeof search.poolAddress === "string" ? search.poolAddress : undefined,
       reportId: typeof search.reportId === "string" ? search.reportId : undefined,
     }).activeTab;
+  } else if (navOwner === "install") {
+    activeTab = "settings";
   } else {
     activeTab = navOwner;
   }

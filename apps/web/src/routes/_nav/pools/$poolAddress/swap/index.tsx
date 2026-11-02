@@ -10,7 +10,8 @@ const searchSchema = z.object({
   receive: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/pools/$poolAddress/swap/")({
+export const Route = createFileRoute("/_nav/pools/$poolAddress/swap/")({
+  staticData: { navOwner: "wallet" },
   validateSearch: searchSchema,
   component: PoolSwapRoute,
 });

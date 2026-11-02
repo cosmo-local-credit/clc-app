@@ -8,7 +8,8 @@ const searchSchema = z.object({
   from: z.enum(["settings"]).optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/install")({
+export const Route = createFileRoute("/_nav/install")({
+  staticData: { navOwner: "install" },
   validateSearch: searchSchema,
   component: InstallRoute,
 });

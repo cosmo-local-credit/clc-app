@@ -4,7 +4,8 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { sendReceiptSearchSchema } from "#/features/wallet/send-receipt-search";
 import { SendReceiptPage } from "#/features/wallet/ui";
 
-export const Route = createFileRoute("/wallet/send/receipt")({
+export const Route = createFileRoute("/_nav/wallet/send/receipt")({
+  staticData: { navOwner: "wallet" },
   validateSearch: sendReceiptSearchSchema,
   component: SendReceiptRoute,
 });

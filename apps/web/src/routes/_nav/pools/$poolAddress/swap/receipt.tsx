@@ -4,7 +4,8 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { swapReceiptSearchSchema } from "#/features/pools/swap-receipt-search";
 import { SwapReceiptPage } from "#/features/pools/ui";
 
-export const Route = createFileRoute("/pools/$poolAddress/swap/receipt")({
+export const Route = createFileRoute("/_nav/pools/$poolAddress/swap/receipt")({
+  staticData: { navOwner: "wallet" },
   validateSearch: swapReceiptSearchSchema,
   component: SwapReceiptRoute,
 });

@@ -9,7 +9,8 @@ const searchSchema = z.object({
   token: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/wallet/collect")({
+export const Route = createFileRoute("/_nav/wallet/collect")({
+  staticData: { navOwner: "wallet" },
   validateSearch: searchSchema,
   component: CollectRoute,
 });

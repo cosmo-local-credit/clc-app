@@ -21,7 +21,8 @@ const searchSchema = z.object({
   returnPool: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/wallet/send/amount")({
+export const Route = createFileRoute("/_nav/wallet/send/amount")({
+  staticData: { navOwner: "wallet" },
   validateSearch: searchSchema,
   component: SendAmountRoute,
 });

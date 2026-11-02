@@ -6,7 +6,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { CatalogCreatePage } from "#/features/catalogs/ui/catalog-create-page";
 
-export const Route = createFileRoute("/catalogs/create")({
+export const Route = createFileRoute("/_nav/catalogs/create")({
+  staticData: { navOwner: "wallet" },
   validateSearch: parseCatalogCreateSearch,
   component: CatalogCreateRoute,
 });

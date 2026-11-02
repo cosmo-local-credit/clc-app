@@ -185,7 +185,7 @@ export function SendReceiptPage({
     : null;
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav">
       <div className="flex flex-col items-center text-center">
         <SuccessCheck />
         <h1 className="font-heading mt-3.5 text-[1.75rem] font-bold leading-tight">
@@ -675,7 +675,7 @@ function ReceiptShell({
   onDone?: () => void;
 }) {
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav">
       <div className="flex flex-col items-center text-center">
         {icon}
         <h1 className="font-heading mt-3.5 flex flex-col items-center gap-1 text-[1.75rem] font-bold leading-tight">

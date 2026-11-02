@@ -8,7 +8,8 @@ const searchSchema = z.object({
   trackingId: z.string().min(1).optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/pools/create/receipt")({
+export const Route = createFileRoute("/_nav/pools/create/receipt")({
+  staticData: { navOwner: "wallet" },
   validateSearch: searchSchema,
   component: PoolDeploymentReceiptRoute,
 });

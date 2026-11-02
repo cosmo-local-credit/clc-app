@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { ProfileEditPage } from "#/features/auth/ui/profile-edit-page";
 
-export const Route = createFileRoute("/settings/profile")({
+export const Route = createFileRoute("/_nav/settings/profile")({
+  staticData: { navOwner: "settings" },
   component: ProfileSettingsRoute,
 });
 
