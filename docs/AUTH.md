@@ -249,15 +249,19 @@ account to a new address. Settings → Sign-in → **Replace sign-in card** open
 
 1. **Review.** `loadRotationAssets` lists what the old wallet owns alone, from
    chain reads: pools (with the fee address when it is the creator's), vouchers
-   whose `owner()` is the card, balances by `balanceOf`, and native gas. Safe-owned
-   assets never qualify. Expired vouchers, sealed fee addresses and anything a
-   per-call simulation says would revert are listed as staying behind.
+   whose `owner()` is the card (retired ones included), balances by `balanceOf`,
+   and native gas. Safe-owned assets never qualify. Expired vouchers, sealed fee
+   addresses, contracts whose reads fail and anything a per-call simulation says
+   would revert are listed as staying behind; none of them stops the rest.
 2. **New card.** Generated in memory, protected and saved with the shared
    `components/paper-wallet` builder, then scanned back. Nothing moves to a key
    nobody kept.
 3. **Switch.** `POST /auth/key-rotation` with two SIWE proofs over the statement
    `buildKeyRotationStatement(old, new)`. When the account has an active passkey,
-   the old card's proof must be a passkey assertion. clc-core moves the account in
+   the old card's proof must be a passkey assertion over
+   `keyRotationPasskeyChallenge(statement, nonce)`, which commits to both cards;
+   a sign-in assertion is refused. The wallet-switch signal is taken before the
+   request, so a sign-out while it is pending wins over its answer. clc-core moves the account in
    place (same user id), retires the old address (E20 on any sign-in or recipient
    lookup) and signs out every session for it. The client then moves the owner
    tier (`moveOwnerTier`), stores the new key and connects it, as the `?w=`
@@ -265,8 +269,11 @@ account to a new address. Settings → Sign-in → **Replace sign-in card** open
 4. **Move.** `runRotationBatches` relays the planned batches as the old wallet,
    one at a time, ownership before transfers. A lost response is resent as the
    identical request under its `operationId`.
-5. **Passkeys.** Each moved passkey is registered on the new wallet with the new
-   root key (`relinkPasskey`). Until then its sign-in answers E21.
+5. **Passkeys.** `relinkMovedPasskeys` reads the account's passkeys from clc-core
+   and registers each `moved` one on the new wallet with the new root key, skips
+   any already registered, and follows a registration still settling. It is safe
+   to run again. Until then a moved passkey's sign-in answers E21, and a further
+   replacement carries it along.
 
 Both keys live only in `useRotationSession` (memory, no `persist`). It survives
 `AuthenticatedRoute` remounting during the switch, retains through
