@@ -529,3 +529,56 @@ describe("submitProfile — avatar", () => {
     ).resolves.toEqual(saved);
   });
 });
+
+describe("key rotation", () => {
+  it("posts both proofs to /auth/key-rotation and returns the moved account", async () => {
+    const result = {
+      userId: 7,
+      role: "USER",
+      address: "0x6a347bA6B1eC10348478377c5fCeE7Ceb6921A69",
+      oldAddress: "0x8fd379246834eac74B8419FfdA202CF8051F7A03",
+      movedPasskeys: [{ credentialId: "cred", publicKeyX: "1", publicKeyY: "2" }],
+      replayed: false,
+    };
+    const fetcher = mockFetch({ body: { ok: true, description: "Sign-in card replaced", result } });
+    vi.stubGlobal("fetch", fetcher);
+    const payload = {
+      old: {
+        webauthn: {
+          credentialId: "cred",
+          authenticatorData: "a",
+          clientDataJSON: "c",
+          signature: "s",
+        },
+      },
+      new: { message: "m", signature: "0x01" },
+    };
+
+    await expect(api.rotateKey(payload)).resolves.toEqual(result);
+    const [url, init] = fetcher.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.test/auth/key-rotation");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual(payload);
+  });
+
+  it("surfaces a replaced card as its own kind", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 410,
+        body: { ok: false, code: "E20", description: "this sign-in card was replaced" },
+      }),
+    );
+    await expect(
+      api.rotateKey({
+        old: { siwe: { message: "m", signature: "s" } },
+        new: { message: "m", signature: "s" },
+      }),
+    ).rejects.toMatchObject({ kind: "card-replaced", status: 410 });
+  });
+
+  it("lists replaced cards, treating a null list as none", async () => {
+    vi.stubGlobal("fetch", mockFetch({ body: { ok: true, result: { rotations: null } } }));
+    await expect(api.listKeyRotations()).resolves.toEqual([]);
+  });
+});

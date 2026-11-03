@@ -64,9 +64,16 @@ export type SessionResult = {
  * `pending` has been relayed and is waiting on that transaction; `failed` means
  * it reverted or was dropped. `legacy` rows predate confirmation tracking and
  * are awaiting clc-core's one-time chain check, which leaves the ones it could
- * not confirm `unverified`.
+ * not confirm `unverified`. `moved` came with the account when it replaced its
+ * sign-in card, and signs in again once the new wallet registers it.
  */
-export type WebAuthnCredentialState = "pending" | "active" | "failed" | "legacy" | "unverified";
+export type WebAuthnCredentialState =
+  | "pending"
+  | "active"
+  | "failed"
+  | "legacy"
+  | "unverified"
+  | "moved";
 
 export type WebAuthnCredentialSummary = {
   credentialId: string;
@@ -74,6 +81,44 @@ export type WebAuthnCredentialSummary = {
   createdAt: string;
   /** Set only while `pending`, so a client that reloaded can resume following it. */
   trackingId: string | null;
+  /** Decimal P-256 coordinates. Absent from a backend that predates key rotation. */
+  publicKeyX?: string;
+  publicKeyY?: string;
+};
+
+/** A SIWE message whose statement is `buildKeyRotationStatement(old, new)`. */
+export type KeyRotationSiweProof = { message: string; signature: string };
+
+/**
+ * `POST /auth/key-rotation`. The old card proves control with its own SIWE
+ * signature, or — required when the account has an active passkey — with a
+ * passkey assertion.
+ */
+export type KeyRotationPayload = {
+  old: { siwe: KeyRotationSiweProof } | { webauthn: WebAuthnAssertionPayload };
+  new: KeyRotationSiweProof;
+};
+
+export type MovedPasskey = { credentialId: string; publicKeyX: string; publicKeyY: string };
+
+export type KeyRotationResult = {
+  userId: number;
+  role: string;
+  /** The account's new address. */
+  address: `0x${string}`;
+  oldAddress: `0x${string}`;
+  /** Passkeys that came along and wait for the new wallet to register them. */
+  movedPasskeys: MovedPasskey[];
+  /** The same rotation had already committed; nothing new was written. */
+  replayed: boolean;
+};
+
+export type AddressRotation = {
+  id: number;
+  oldAddress: `0x${string}`;
+  newAddress: `0x${string}`;
+  initiatedBy: "user" | "admin";
+  createdAt: string;
 };
 
 /** `GET /auth/webauthn/credentials` — scoped by clc-core to the session's wallet. */
@@ -266,6 +311,13 @@ export type AuthClient = {
   logout(): Promise<void>;
   getSession(): Promise<SessionResult | null>;
   getWebAuthnCredentials(): Promise<WebAuthnCredentialsResult>;
+  /**
+   * Moves the account to a new sign-in card. Authenticated by the two proofs,
+   * not the session, and sets the new card's session cookie.
+   */
+  rotateKey(payload: KeyRotationPayload): Promise<KeyRotationResult>;
+  /** The sign-in cards this account replaced, newest first. */
+  listKeyRotations(): Promise<AddressRotation[]>;
   /** `GET /api/v2/system` — the platform signer, for any signed-in caller. */
   getSystem(): Promise<SystemInfo>;
   submitProfile(payload: ProfilePayload): Promise<SavedProfile>;
@@ -345,6 +397,21 @@ export function createAuthClient(http: HttpClient): AuthClient {
       return http.request<WebAuthnCredentialsResult>("/auth/webauthn/credentials", {
         method: "GET",
       });
+    },
+
+    async rotateKey(payload): Promise<KeyRotationResult> {
+      return http.request<KeyRotationResult>("/auth/key-rotation", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+
+    async listKeyRotations(): Promise<AddressRotation[]> {
+      const result = await http.request<{ rotations?: AddressRotation[] | null }>(
+        "/api/v2/users/me/key-rotations",
+        { method: "GET", cache: "no-store" },
+      );
+      return result.rotations ?? [];
     },
 
     async getSystem(): Promise<SystemInfo> {
