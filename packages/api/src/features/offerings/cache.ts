@@ -3,6 +3,26 @@ import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { Offering, OfferingPage } from "./client";
 import { offeringKeys } from "./queries";
 
+/** Pool membership affects this pool's offers and discovery filtered by it. */
+export async function invalidatePoolOfferings(queryClient: QueryClient, poolAddress: string) {
+  const address = poolAddress.toLowerCase();
+  const filters = {
+    queryKey: offeringKeys.all,
+    predicate: ({ queryKey }: { queryKey: readonly unknown[] }) => {
+      if (queryKey[2] === "pool") {
+        return (queryKey[3] === "infinite" ? queryKey[4] : queryKey[3]) === address;
+      }
+      if (queryKey[2] !== "discovery") return false;
+      const params = queryKey[3] as { pools?: string[] } | undefined;
+      return params?.pools?.some((pool) => pool.endsWith(`:${address}`)) ?? false;
+    },
+  };
+  // Even an initial request with no cached data can have read pre-change state.
+  // Cancel it explicitly; invalidateQueries alone can reuse that first request.
+  await queryClient.cancelQueries(filters);
+  return queryClient.invalidateQueries(filters);
+}
+
 /**
  * Writing an offering into every cached shape that holds it.
  *
