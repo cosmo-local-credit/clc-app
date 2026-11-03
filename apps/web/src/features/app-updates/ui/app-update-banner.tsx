@@ -30,6 +30,7 @@ const RELOAD_UNSAFE_ROUTES: ReadonlySet<RouteIds<RegisteredRouter["routeTree"]>>
   "/onboarding",
   "/_nav/wallet/send/amount",
   "/_nav/pools/$poolAddress/swap/",
+  "/settings/sign-in-card",
   "/pools/create/$step",
   "/vouchers/create/$step",
 ]);

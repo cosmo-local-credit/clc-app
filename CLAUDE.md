@@ -628,8 +628,8 @@ config is present it is the source of truth: Pages surfaces its `vars` in the
 dashboard read-only, and supplies them to the build as well as to the Function, so
 `VITE_` values are inlined into the client bundle from there. Admin declares the
 variables it reads (`VITE_API_URL`, `VITE_BRAND`, `VITE_CHAIN_ID`,
-`VITE_RELAYER_URL`, `VITE_RELYING_PARTY_ID`, `VITE_STORAGE_URL`,
-`VITE_MAPTILER_KEY`).
+`VITE_KEY_ROTATION_ENABLED`, `VITE_RELAYER_URL`, `VITE_RELYING_PARTY_ID`,
+`VITE_STORAGE_URL`, `VITE_MAPTILER_KEY`).
 
 A local build is the exception and can mislead: nothing injects the Wrangler vars
 outside Cloudflare's build system. Admin reads only `apps/admin/.env`. Web reads

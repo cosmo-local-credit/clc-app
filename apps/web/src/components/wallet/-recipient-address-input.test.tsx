@@ -141,6 +141,34 @@ describe("RecipientAddressInput", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("refuses a sign-in card that was replaced, whoever enters it", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              ok: false,
+              code: "E20",
+              description: "this sign-in card was replaced",
+            }),
+            { status: 410, headers: { "Content-Type": "application/json" } },
+          ),
+        ),
+      ),
+    );
+    const onRecipientChange = renderInput();
+    fireEvent.change(screen.getByRole("textbox", { name: "Recipient" }), {
+      target: { value: ADDRESS },
+    });
+    expect(
+      await screen.findByText(
+        "This sign-in card was replaced. Ask its owner for their new address.",
+      ),
+    ).toBeTruthy();
+    expect(onRecipientChange).toHaveBeenLastCalledWith(null);
+  });
+
   it("searches single-character names and hides results when cleared", async () => {
     const fetcher = vi.fn((_url: string) =>
       Promise.resolve(

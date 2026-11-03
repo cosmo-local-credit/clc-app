@@ -102,6 +102,15 @@ msgid "{0, plural, one {# activity item shown.} other {# activity items "
 msgstr "{0, plural, one {# item ng aktibidad ang ipinapakita.} other {# item ng "
 "aktibidad ang ipinapakita.}}"
 
+#. placeholder {0}: passkeys.length
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:30
+#~ msgid "{0, plural, one {Your passkey moves to the new card once it is "
+#~ "registered there.} other {Your # passkeys move to the new card once they "
+#~ "are registered there.}}"
+#~ msgstr "{0, plural, one {Malilipat ang inyong passkey sa bagong card kapag "
+#~ "nairehistro na ito roon.} other {Malilipat ang inyong # passkey sa "
+#~ "bagong card kapag nairehistro na ang mga ito roon.}}"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:441
@@ -279,6 +288,14 @@ msgstr "{count} sa {signers}"
 msgid "{current} / {0}"
 msgstr "{current} / {0}"
 
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:56
+msgid "{failedCount, plural, one {# transaction failed. Try again to move what "
+"is left.} other {# transactions failed. Try again to move what is "
+"left.}}"
+msgstr "{failedCount, plural, one {# transaksyon ang nabigo. Subukang muli para "
+"mailipat ang natitira.} other {# transaksyon ang nabigo. Subukang muli "
+"para mailipat ang natitira.}}"
+
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:198
 #~ msgid "{filter}-star reviews · newest first"
 #~ msgstr "Mga {filter}-star na review · pinakabago muna"
@@ -369,7 +386,7 @@ msgstr "1 voucher"
 #~ msgid "A good"
 #~ msgstr "Isang produkto"
 
-#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:113
 msgid "A new version is available"
 msgstr "May bagong bersyon"
 
@@ -393,12 +410,12 @@ msgstr "Pinagsasama-sama ng pool ang mga voucher upang makapagpalit ang mga "
 #~ msgid "A service"
 #~ msgstr "Isang serbisyo"
 
-#: apps/web/src/routes/__root.tsx:302
+#: apps/web/src/routes/__root.tsx:306
 msgid "A sign-in card link was opened. Sign in to this wallet?"
 msgstr "May binuksang link ng sign-in card. Mag-sign in gamit ang address na "
 "ito?"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:304
 msgid "A sign-in card was scanned. Switch to this wallet?"
 msgstr "Na-scan ang isang sign-in card. Lumipat sa wallet na ito?"
 
@@ -446,7 +463,7 @@ msgid "About"
 msgstr "Tungkol dito"
 
 #: apps/web/src/components/introduction/introduction.tsx:92
-#: apps/web/src/features/home/ui/settings-page.tsx:92
+#: apps/web/src/features/home/ui/settings-page.tsx:94
 msgid "About Cosmo-Local Credit"
 msgstr "Tungkol sa Cosmo-Local Credit"
 
@@ -464,7 +481,7 @@ msgstr "Tanggapin ang mga tuntunin upang i-publish ang inyong pool"
 msgid "Accept the terms to publish your voucher"
 msgstr "Tanggapin ang mga tuntunin upang i-publish ang inyong voucher"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:56
+#: apps/web/src/features/home/ui/settings-page.tsx:57
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
 msgid "Account"
@@ -478,7 +495,7 @@ msgstr "Account na naghihintay ng pahintulot"
 msgid "Account not approved"
 msgstr "Hindi naaprubahan ang account"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:524
+#: apps/web/src/components/auth/sign-in-panel.tsx:531
 msgid "Account not found"
 msgstr "Hindi natagpuan ang account"
 
@@ -502,7 +519,7 @@ msgstr "Pag-activate sa chain…"
 msgid "Activating smart wallet…"
 msgstr "Pag-activate ng smart wallet…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:257
+#: apps/web/src/features/home/ui/settings-page.tsx:259
 #: apps/web/src/features/home/ui/wallet-page.tsx:354
 msgid "Active"
 msgstr "Aktibo"
@@ -661,7 +678,7 @@ msgstr "Address"
 msgid "Address book"
 msgstr "Address book"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:198
+#: apps/web/src/features/home/ui/settings-page.tsx:200
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:34
@@ -691,7 +708,7 @@ msgstr "Advanced"
 msgid "Advanced details"
 msgstr "Mga advanced na detalye"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:404
+#: apps/web/src/components/auth/sign-in-panel.tsx:411
 msgid "Advanced options"
 msgstr "Mga advanced na opsyon"
 
@@ -797,7 +814,7 @@ msgstr "Ang isa pang pag-scan ng card ay tumatakbo na. Subukan muli."
 msgid "Any selected"
 msgstr "Alinman sa napili"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:77
+#: apps/web/src/features/home/ui/settings-page.tsx:79
 msgid "App"
 msgstr "App"
 
@@ -810,7 +827,7 @@ msgstr "Pag-install ng app"
 msgid "App menu"
 msgstr "Menu ng app"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:99
+#: apps/web/src/features/home/ui/settings-page.tsx:101
 msgid "App version"
 msgstr "Bersyon ng app"
 
@@ -823,10 +840,12 @@ msgstr "Ilapat"
 msgid "Apply filters"
 msgstr "Ilapat ang mga filter"
 
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:61
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Apply password"
 msgstr "Ilapat ang password"
 
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:61
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:485
 msgid "Applying password…"
 msgstr "Inilalapat ang password…"
@@ -915,9 +934,9 @@ msgstr "Bumalik sa mga pool"
 msgid "Bag"
 msgstr "Bag"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:252
-#~ msgid "Balance"
-#~ msgstr "Balanse"
+#: apps/web/src/features/key-rotation/ui/rotation-labels.ts:16
+msgid "Balance"
+msgstr "Balanse"
 
 #. placeholder {0}: selectedToken.amount
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:214
@@ -1005,15 +1024,15 @@ msgstr "Tumawag"
 msgid "Camera access denied."
 msgstr "Ang pag-access ng camera ay tinanggihan."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:424
-#: apps/web/src/components/auth/sign-in-panel.tsx:540
+#: apps/web/src/components/auth/sign-in-panel.tsx:431
+#: apps/web/src/components/auth/sign-in-panel.tsx:547
 #: apps/web/src/components/nfc-card-prompt.tsx:117
 #: apps/web/src/components/reviews/review-editor.tsx:148
 #: apps/web/src/components/ui/photo-source-picker.tsx:128
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:373
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:527
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:226
-#: apps/web/src/features/home/ui/settings-page.tsx:152
+#: apps/web/src/features/home/ui/settings-page.tsx:154
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:515
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:756
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:348
@@ -1023,7 +1042,7 @@ msgstr "Ang pag-access ng camera ay tinanggihan."
 #: apps/web/src/features/wallet/ui/collect-page.tsx:231
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:485
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:88
-#: apps/web/src/routes/__root.tsx:317
+#: apps/web/src/routes/__root.tsx:321
 msgid "Cancel"
 msgstr "Kanselahin"
 
@@ -1057,7 +1076,7 @@ msgstr "Hawak ang card:"
 msgid "Card read — processing {amount}"
 msgstr "Nabasa ang card — pinoproseso ang {amount}"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:356
+#: apps/web/src/components/auth/sign-in-panel.tsx:363
 msgid "Card read — signing in"
 msgstr "Nabasa ang card — nagsa-sign in"
 
@@ -1249,6 +1268,14 @@ msgstr "Sinusuri ang supply…"
 msgid "Checking voucher availability…"
 msgstr "Sinusuri ang availability ng voucher…"
 
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:45
+msgid "Checking what the old card holds…"
+msgstr "Sinusuri ang laman ng lumang card…"
+
+#: apps/web/src/features/key-rotation/ui/review-step.tsx:36
+msgid "Checking what this card holds"
+msgstr "Sinusuri ang laman ng card na ito"
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:411
 msgid "Checking which vouchers this pool takes…"
 msgstr "Sinusuri kung aling mga voucher ang tinatanggap ng pool na ito…"
@@ -1260,7 +1287,7 @@ msgstr "Sinusuri ang iyong session…"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:182
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:56
-#: apps/web/src/features/home/ui/settings-page.tsx:257
+#: apps/web/src/features/home/ui/settings-page.tsx:259
 msgid "Checking…"
 msgstr "Sinusuri…"
 
@@ -1482,7 +1509,7 @@ msgstr "Isara ang menu"
 #~ msgid "Close password-protected wallet import"
 #~ msgstr "Isara ang pag-import ng wallet na protektado ng password"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:493
+#: apps/web/src/components/auth/sign-in-panel.tsx:500
 msgid "Close private key form"
 msgstr "Isara ang form ng pribadong key"
 
@@ -1602,7 +1629,7 @@ msgstr "Kumpirma at magpadala"
 msgid "Confirm Install or Add when asked."
 msgstr "Kumpirmahin ang I-install o I-add kapag hinihiling."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "Kumpirmahin ang password"
 
@@ -1614,6 +1641,12 @@ msgstr "Kumpirmahin ang pagpapadala"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:747
 msgid "Confirm swap"
 msgstr "Kumpirmahin ang pagpapalit"
+
+#: apps/web/src/features/key-rotation/ui/verify-card-step.tsx:57
+msgid "Confirm with your passkey. Your old card will stop working for sign-in, "
+"on every device."
+msgstr "Kumpirmahin gamit ang inyong passkey. Hindi na gagana ang inyong lumang "
+"card sa pag-sign in, sa anumang device."
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:78
@@ -1657,7 +1690,7 @@ msgstr "Ikonekta ang inyong wallet upang mag-isyu ng mga voucher."
 msgid "Connect your wallet to use MPESA."
 msgstr "Ikonekta ang inyong wallet upang gamitin ang MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:215
+#: apps/web/src/features/home/ui/settings-page.tsx:217
 msgid "Connected address"
 msgstr "Nakakonektang address"
 
@@ -1674,16 +1707,16 @@ msgstr "Pagkonekta ng wallet…"
 #~ msgid "Connecting..."
 #~ msgstr "Pagkakonekta..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:356
+#: apps/web/src/components/auth/sign-in-panel.tsx:363
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
-#: apps/web/src/routes/__root.tsx:308
+#: apps/web/src/routes/__root.tsx:312
 msgid "Connecting…"
 msgstr "Pagkakonekta..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:137
+#: apps/web/src/components/auth/sign-in-panel.tsx:144
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:320
-#: apps/web/src/routes/__root.tsx:214
-#: apps/web/src/routes/__root.tsx:245
+#: apps/web/src/routes/__root.tsx:217
+#: apps/web/src/routes/__root.tsx:249
 msgid "Connection failed."
 msgstr "Nabigo ang koneksyon."
 
@@ -1746,6 +1779,9 @@ msgstr "Telepono ng Kontak"
 msgid "Contact Website"
 msgstr "Website ng pakikipag-ugnayan"
 
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:79
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:96
+#: apps/web/src/features/key-rotation/ui/review-step.tsx:65
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:387
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:489
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:538
@@ -1767,7 +1803,7 @@ msgstr "Magpatuloy sa CLC"
 msgid "Continue to wallet"
 msgstr "Magpatuloy sa wallet"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:365
+#: apps/web/src/components/auth/sign-in-panel.tsx:372
 msgid "Continue with {providerLabel}"
 msgstr "Magpatuloy sa {providerLabel}"
 
@@ -1802,7 +1838,7 @@ msgstr "Address ng kontrata na naka-copy"
 msgid "Copy"
 msgstr "Kopyahin"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:234
+#: apps/web/src/features/home/ui/settings-page.tsx:236
 #: apps/web/src/features/wallet/ui/cash-page.tsx:51
 msgid "Copy address"
 msgstr "Kopyahin ang address"
@@ -1879,6 +1915,10 @@ msgid "Cosmo-Local Credit helps people and organizations support, share, and "
 msgstr "Tinutulungan ng Cosmo-Local Credit ang mga tao at organisasyon na "
 "suportahan, ibahagi, at palitan ang mga kalakal at serbisyo."
 
+#: apps/web/src/features/key-rotation/ui/rotation-labels.ts:22
+msgid "Could not be moved"
+msgstr "Hindi mailipat"
+
 #: apps/web/src/components/retirement/retirement-request-form.tsx:56
 msgid "Could not check balances. Try again before submitting your request."
 msgstr "Hindi masuri ang mga balanse. Subukang muli bago isumite ang iyong "
@@ -1901,7 +1941,7 @@ msgstr "Hindi ma-load ang mga voucher."
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "Hindi maprotektahan ang papel na wallet na ito."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "Hindi maprotektahan ang sign-in card na ito."
 
@@ -1909,11 +1949,11 @@ msgstr "Hindi maprotektahan ang sign-in card na ito."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "Hindi ma-save ang papel na wallet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Hindi ma-save ang napi-print na sheet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Hindi ma-save ang sign-in card. Subukang muli."
 
@@ -1921,7 +1961,7 @@ msgstr "Hindi ma-save ang sign-in card. Subukang muli."
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "Hindi maibahagi ang papel na wallet. Subukan na lang itong i-download."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Hindi maibahagi ang sign-in card. Subukan na lang itong i-download."
 
@@ -1963,8 +2003,8 @@ msgstr "Hindi masuri kung aling mga voucher ang tinatanggap ng pool na ito."
 msgid "Couldn't check your review access."
 msgstr "Hindi masuri ang inyong access sa review."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:193
-#: apps/web/src/features/home/ui/settings-page.tsx:199
+#: apps/web/src/features/home/ui/settings-page.tsx:195
+#: apps/web/src/features/home/ui/settings-page.tsx:201
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
 #: apps/web/src/features/wallet/ui/cash-page.tsx:18
@@ -2279,7 +2319,7 @@ msgid "Couldn't reach the payment relay. Check your connection and try again."
 msgstr "Hindi makontak ang relay ng pagbabayad. Suriin ang inyong koneksyon at "
 "subukang muli."
 
-#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:78
 msgid "Couldn’t reach the update. Check your connection and try again."
 msgstr "Hindi makuha ang update. Suriin ang inyong koneksyon at subukang muli."
 
@@ -2303,7 +2343,7 @@ msgstr "Hindi mabasa ang kasalukuyang rate ng voucher na ito, kaya hindi muna "
 msgid "Couldn't remove the offering."
 msgstr "Hindi maalis ang alok."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:231
+#: apps/web/src/components/wallet/recipient-address-input.tsx:239
 msgid "Couldn't resolve that recipient."
 msgstr "Hindi matukoy ang tatanggap na iyon."
 
@@ -2429,8 +2469,8 @@ msgstr "Gumawa"
 msgid "Create account"
 msgstr "Gumawa ng account"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:436
-#: apps/web/src/components/auth/sign-in-panel.tsx:532
+#: apps/web/src/components/auth/sign-in-panel.tsx:443
+#: apps/web/src/components/auth/sign-in-panel.tsx:539
 msgid "Create an account"
 msgstr "Gumawa ng isang account"
 
@@ -2568,6 +2608,8 @@ msgid "Custom units have no price feed. Relative pricing is used instead."
 msgstr "Walang price feed ang mga custom na unit. Relative pricing ang "
 "gagamitin sa halip."
 
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:77
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:104
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:570
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:593
 msgid "Customize"
@@ -2625,7 +2667,7 @@ msgstr "Pababain ang dami ng {0}"
 msgid "Default"
 msgstr "Default"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:243
+#: apps/web/src/features/home/ui/settings-page.tsx:245
 msgid "Delegated to Calibur"
 msgstr "Ipinadala sa Calibur"
 
@@ -2672,10 +2714,10 @@ msgstr "Ilarawan ang mga patakaran para sa pagsasama at paggamit ng pool..."
 msgid "Describe your pool"
 msgstr "Ilarawan ang inyong pool"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2701,7 +2743,7 @@ msgstr "Mga direksyon"
 msgid "Discard changes"
 msgstr "Huwag i-save ang mga pagbabago"
 
-#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:128
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:129
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:50
 msgid "Dismiss"
 msgstr "Isara"
@@ -2722,6 +2764,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "Ang pangalan ng display ay dapat na 120 character o mas mababa"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:107
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:59
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:596
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:719
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
@@ -2736,8 +2780,8 @@ msgstr "Tapos na"
 msgid "Done with this customer"
 msgstr "Natapos na sa customer na ito"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "I-download ang card"
 
@@ -2922,7 +2966,7 @@ msgstr "Isulat ang bayarin mula 0 hanggang 100"
 msgid "Enter a link starting with http:// or https://"
 msgstr "Ilagay ang isang link na nagsisimula sa http:// o https://"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "I-enter at i-apply ang isang password bago i-download ang card na ito."
 
@@ -2944,7 +2988,7 @@ msgstr "Maglagay ng wastong petsa at oras"
 #~ msgid "Enter a valid private key or paper wallet."
 #~ msgstr "Ipasok ang isang matukoy na pribadong susi o papel na wallet."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:283
+#: apps/web/src/components/auth/sign-in-panel.tsx:290
 msgid "Enter a valid private key or sign-in card."
 msgstr "Ipasok ang isang matukoy na pribadong susi o sign-in card."
 
@@ -2985,11 +3029,11 @@ msgstr "Isulat ang halaga na suportado ng voucher na ito."
 #~ msgid "Enter an ENS, phone number or address."
 #~ msgstr "Maglagay ng ENS, numero ng telepono, o address."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:180
+#: apps/web/src/components/wallet/recipient-address-input.tsx:188
 msgid "Enter an exact username or full phone number."
 msgstr "Maglagay ng eksaktong username o buong numero ng telepono."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:178
+#: apps/web/src/components/wallet/recipient-address-input.tsx:186
 msgid "Enter an exact username or full phone number. Pool names can be "
 "searched."
 msgstr "Maglagay ng eksaktong username o buong numero ng telepono. Maaaring "
@@ -3004,9 +3048,9 @@ msgstr "Isulat ang rate ng palitan na higit sa zero"
 #~ msgid "Enter and apply a password before downloading this card."
 #~ msgstr "I-enter at i-apply ang isang password bago i-download ang card na ito."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:462
+#: apps/web/src/components/auth/sign-in-panel.tsx:469
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:271
+#: apps/web/src/routes/__root.tsx:275
 msgid "Enter card password"
 msgstr "Ilagay ang password ng card"
 
@@ -3104,6 +3148,10 @@ msgstr "Ang petsa ng pag-expire ay dapat nasa hinaharap"
 msgid "Expired"
 msgstr "Nag-expire na"
 
+#: apps/web/src/features/key-rotation/ui/rotation-labels.ts:19
+msgid "Expired, so it cannot move"
+msgstr "Nag-expire na, kaya hindi mailipat"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:252
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:36
 msgid "Expiring"
@@ -3192,6 +3240,11 @@ msgstr "Ang mga bayarin ay binabayaran sa {0}."
 msgid "Fees held separately"
 msgstr "Nakahiwalay ang mga bayarin"
 
+#: apps/web/src/features/key-rotation/ui/rotation-labels.ts:21
+msgid "Fees keep going to the old card: the fee address is sealed"
+msgstr "Patuloy na mapupunta sa lumang card ang mga bayarin: naka-lock ang "
+"address ng bayarin"
+
 #: apps/web/src/lib/category-label.ts:13
 msgid "Fellowship"
 msgstr "Samahan"
@@ -3219,7 +3272,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Ang pangalan ng file ay dapat 255 character o mas kaunti"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Ang file ay masyadong malaki ({0} KB). Ang maximum ay 512 KB."
 
@@ -3275,6 +3328,10 @@ msgstr "Paghahanap ng isang pangalan..."
 msgid "Finding location"
 msgstr "Paghahanap ng lokasyon"
 
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:60
+msgid "Finish moving your passkey"
+msgstr "Tapusin ang paglilipat ng inyong passkey"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Follow the prompt on your device…"
 msgstr "Sundin ang utos sa inyong aparato..."
@@ -3310,6 +3367,10 @@ msgstr "I-frame ang inyong larawan"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:228
 msgid "From"
 msgstr "Mula kay"
+
+#: apps/web/src/features/key-rotation/ui/rotation-labels.ts:15
+msgid "Gas balance"
+msgstr "Balanse ng gas"
 
 #: apps/web/src/lib/category-label.ts:14
 msgid "Gathering"
@@ -3367,7 +3428,7 @@ msgstr "Pangkalusugan"
 msgid "Hide password"
 msgstr "Itago ang password"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:508
+#: apps/web/src/components/auth/sign-in-panel.tsx:515
 msgid "Hide private key"
 msgstr "Itago ang pribadong key"
 
@@ -3477,6 +3538,10 @@ msgstr "Nakatanggap ako ng {amountLabel} mula sa {senderLabel}."
 #~ msgid "I received {amountLabel}."
 #~ msgstr "Nakatanggap ako ng {amountLabel}."
 
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:88
+msgid "I saved my new sign-in card."
+msgstr "Na-save ko na ang bago kong sign-in card."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:581
 msgid "I saved my sign-in card. If I lose it, I may lose access to my wallet."
 msgstr "Na-save ko na ang key na ito. Kapag nawala ito, hindi na mare-recover "
@@ -3524,7 +3589,7 @@ msgstr "Sa network"
 #~ msgid "In this pool"
 #~ msgstr "Sa pool na ito"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:257
+#: apps/web/src/features/home/ui/settings-page.tsx:259
 msgid "Inactive"
 msgstr "Hindi aktibo"
 
@@ -3549,7 +3614,7 @@ msgstr "Pinasimulan ni"
 #: apps/web/src/components/install-app-button.tsx:65
 #: apps/web/src/components/install-app-dialog.tsx:19
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:87
+#: apps/web/src/features/home/ui/settings-page.tsx:89
 #: apps/web/src/features/install/ui/install-page.tsx:40
 msgid "Install CLC"
 msgstr "I-install ang CLC"
@@ -3831,6 +3896,10 @@ msgstr "Mag-load pa"
 msgid "Load more reviews"
 msgstr "I-load ang higit pang mga review"
 
+#: apps/web/src/features/key-rotation/ui/resume-step.tsx:30
+msgid "Loading"
+msgstr "Naglo-load"
+
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:419
 #: apps/web/src/features/home/ui/activity-page.tsx:182
 #: apps/web/src/features/home/ui/activity-page.tsx:219
@@ -4033,8 +4102,8 @@ msgstr "Mapa ng lokasyon"
 msgid "Location unavailable"
 msgstr "Hindi available ang lokasyon"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4116,7 +4185,7 @@ msgstr "Mga seksyon ng pamilihan"
 msgid "Match"
 msgstr "Katugma"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:185
+#: apps/web/src/components/wallet/recipient-address-input.tsx:193
 msgid "Matching recipients"
 msgstr "Mga tumutugmang tatanggap"
 
@@ -4204,6 +4273,10 @@ msgstr "Paggalaw at transportasyon"
 msgid "Monthly"
 msgstr "Buwanan"
 
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:34
+msgid "Move my passkey"
+msgstr "Ilipat ang aking passkey"
+
 #. placeholder {0}: index + 1
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:242
 msgid "Move photo {0} down"
@@ -4213,6 +4286,36 @@ msgstr "Ipaglipat ang larawan {0} sa ibaba"
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:231
 msgid "Move photo {0} up"
 msgstr "Ipaglipat ang larawan {0} sa itaas"
+
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:83
+msgid "Move to my new card"
+msgstr "Ilipat sa aking bagong card"
+
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:114
+msgid "Move what's left"
+msgstr "Ilipat ang natitira"
+
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:52
+msgid "Move what's left from an old card"
+msgstr "Ilipat ang natitira mula sa lumang card"
+
+#: apps/web/src/features/key-rotation/ui/review-step.tsx:33
+msgid "Moves to your new card"
+msgstr "Malilipat sa inyong bagong card"
+
+#. placeholder {0}: progress.current + 1
+#. placeholder {1}: progress.total
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:41
+msgid "Moving {0} of {1}"
+msgstr "Inililipat ang {0} sa {1}"
+
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:60
+msgid "Moving passkey…"
+msgstr "Inililipat ang passkey…"
+
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:83
+msgid "Moving…"
+msgstr "Inililipat…"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:94
 msgid "MPESA cash services need a Kenyan phone number."
@@ -4240,7 +4343,7 @@ msgid "MPESA via Pretium"
 msgstr "MPESA sa pamamagitan ng Pretium"
 
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:83
-#: apps/web/src/features/home/ui/settings-page.tsx:72
+#: apps/web/src/features/home/ui/settings-page.tsx:74
 msgid "Multisig"
 msgstr "Multisig"
 
@@ -4331,7 +4434,7 @@ msgstr "Kinakailangan ang pangalan"
 msgid "Name must be 80 characters or fewer"
 msgstr "Ang pangalan ay dapat 80 character o mas kaunti"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "Pangalan sa wallet"
 
@@ -4398,7 +4501,7 @@ msgstr "Bagong lumalagda"
 msgid "New supply"
 msgstr "Bagong supply"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:429
+#: apps/web/src/components/auth/sign-in-panel.tsx:436
 msgid "New to CLC?"
 msgstr "Bago sa CLC?"
 
@@ -4450,7 +4553,7 @@ msgstr "Walang aktibidad na tumutugma sa mga filter na ito."
 msgid "No activity yet."
 msgstr "Walang aktibidad pa."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:225
+#: apps/web/src/features/home/ui/settings-page.tsx:227
 msgid "No address available"
 msgstr "Walang available na address"
 
@@ -4484,7 +4587,7 @@ msgstr "Walang available na kategorya para sa kasalukuyang mga resulta."
 msgid "No category filters are available."
 msgstr "Walang available na filter ng kategorya."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:527
+#: apps/web/src/components/auth/sign-in-panel.tsx:534
 msgid "No CLC account was found for this sign-in."
 msgstr "Walang CLC account ang natagpuan para sa pag-sign-in na ito."
 
@@ -4581,7 +4684,7 @@ msgstr "Wala pang mga resulta sa pamilihan. Bisitahin ang iyong <0>Wallet</0> "
 msgid "No marketplace results to show yet."
 msgstr "Wala pang mga resulta sa pamilihan na maipapakita."
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:215
+#: apps/web/src/components/wallet/recipient-address-input.tsx:223
 msgid "No matching recipients."
 msgstr "Walang tumutugma na mga tumatanggap."
 
@@ -4785,7 +4888,7 @@ msgstr "Hindi hawak"
 msgid "Not linked"
 msgstr "Hindi naka-link"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "Hindi protektado. Maaaring ma-access ng sinumang mag-scan ng card na "
 "ito ang iyong wallet."
@@ -4811,6 +4914,10 @@ msgstr "Walang lumipat sa pool na ito hanggang ngayon."
 #: apps/web/src/components/catalog-filter-controls.tsx:534
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Walang tumutugma sa “{searchTerm}” na may kategorya."
+
+#: apps/web/src/features/key-rotation/ui/rotation-asset-list.tsx:22
+msgid "Nothing to move"
+msgstr "Walang ililipat"
 
 #~ msgid "Nothing to preview yet."
 #~ msgstr "Wala pang mapi-preview."
@@ -5151,6 +5258,10 @@ msgstr "Naka-link ang passkey… kinukumpirma on-chain…"
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Naka-link ang passkey, ngunit nabigo ang koneksyon ng wallet."
 
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:67
+msgid "Passkey moved"
+msgstr "Nailipat ang passkey"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:38
 msgid "Passkey status could not be checked."
 msgstr "Hindi maaaring suriin ang kalagayan ng passkey."
@@ -5170,11 +5281,11 @@ msgstr "Makakapag-sign ang mga passkey para sa mga multisig wallet sa Safe 1.5 "
 "o mas bago. Gamitin ang iyong sign-in card."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Password"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Ang password ay hindi maaaring walang laman."
 
@@ -5184,7 +5295,7 @@ msgstr "Ang password ay hindi maaaring walang laman."
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "Papel na wallet na protektado ng password"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Ang mga password ay hindi katugma."
 
@@ -5347,9 +5458,10 @@ msgstr "Punlaan"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
-#: apps/web/src/components/wallet/recipient-address-input.tsx:196
+#: apps/web/src/components/wallet/recipient-address-input.tsx:204
 #: apps/web/src/features/home/ui/activity-page.tsx:268
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
+#: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:179
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:301
@@ -5600,7 +5712,7 @@ msgstr "Mga post"
 msgid "Posts aren't available for this voucher."
 msgstr "Hindi available ang mga post para sa voucher na ito."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:60
+#: apps/web/src/features/home/ui/settings-page.tsx:61
 msgid "Preferences"
 msgstr "Mga kagustuhan"
 
@@ -5635,10 +5747,10 @@ msgstr "Paghahanda ng inyong pag-alis..."
 #~ msgid "Preparing..."
 #~ msgstr "Naghahanda..."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Naghahanda..."
 
@@ -5646,7 +5758,7 @@ msgstr "Naghahanda..."
 msgid "Present card to pay {armedAmount}"
 msgstr "Ilapit ang card upang magbayad ng {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "I-press at i-hold ang imahe sa ibaba, pagkatapos ay piliin ang Save "
 "Image."
@@ -5732,7 +5844,7 @@ msgstr "Pagpepresyo"
 msgid "Primary navigation"
 msgstr "Pangunahing pag-navigate"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "I-print"
 
@@ -5740,10 +5852,10 @@ msgstr "I-print"
 msgid "Private attachment"
 msgstr "Pribadong attachment"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:411
-#: apps/web/src/components/auth/sign-in-panel.tsx:482
-#: apps/web/src/components/auth/sign-in-panel.tsx:487
-#: apps/web/src/components/auth/sign-in-panel.tsx:506
+#: apps/web/src/components/auth/sign-in-panel.tsx:418
+#: apps/web/src/components/auth/sign-in-panel.tsx:489
+#: apps/web/src/components/auth/sign-in-panel.tsx:494
+#: apps/web/src/components/auth/sign-in-panel.tsx:513
 msgid "Private key"
 msgstr "Pribadong key"
 
@@ -5780,11 +5892,11 @@ msgstr "Nagmumungkahi…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "Protektahan ng password ang papel na wallet"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "Protektahan ng password ang sign-in card"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "Ang sign-in card ay protektado. Panatilihin ang password na hiwalay sa "
 "card."
@@ -6057,6 +6169,10 @@ msgstr "Regeneratibong agrikultura"
 msgid "Registering your passkey…"
 msgstr "Pagrehistro ng inyong passkey..."
 
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:34
+msgid "Registering…"
+msgstr "Nagrerehistro…"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:215
 msgid "Registration failed. Check your connection and try again."
 msgstr "Nabigo ang pagpaparehistro. Suriin ang inyong koneksyon at subukang "
@@ -6152,9 +6268,19 @@ msgstr "Ang pag-alis ng {0} ay huminto sa pagpapalitan nito sa pool na ito o sa 
 msgid "Removing…"
 msgstr "Inaalis…"
 
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:46
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:114
+#: apps/web/src/features/key-rotation/ui/verify-card-step.tsx:75
+msgid "Replace sign-in card"
+msgstr "Palitan ang sign-in card"
+
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:194
 msgid "Replace signer"
 msgstr "Palitan ang lumalagda"
+
+#: apps/web/src/features/key-rotation/ui/verify-card-step.tsx:75
+msgid "Replacing…"
+msgstr "Pinapalitan…"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:251
 msgid "Reply"
@@ -6218,7 +6344,7 @@ msgstr "Kinakailangan"
 msgid "Reset"
 msgstr "I-reset"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "I-reset ang logo"
 
@@ -6409,9 +6535,17 @@ msgstr "I-save ang mga pagbabago"
 msgid "Save fee settings"
 msgstr "I-save ang mga setting ng bayarin"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "I-save ang napi-print na A4 sheet"
+
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:45
+msgid "Save the new card before going on. If you add a password, keep it "
+"separately. Without a password, anyone who scans the card can access "
+"your wallet."
+msgstr "I-save ang bagong card bago magpatuloy. Kung maglalagay kayo ng "
+"password, itago ito nang hiwalay. Kung walang password, maaaring "
+"ma-access ng sinumang mag-scan ng card ang inyong wallet."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:504
 #~ msgid "Save this card securely. If you use a password, keep it separately. "
@@ -6431,6 +6565,10 @@ msgstr "I-save ang pangangailangan"
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:558
 #~ msgid "Save your card"
 #~ msgstr "I-save ang inyong card"
+
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:67
+msgid "Save your new card"
+msgstr "I-save ang inyong bagong card"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:560
 msgid "Save your sign-in card"
@@ -6459,7 +6597,7 @@ msgstr "Na-save. Naghihintay muli ng pag-apruba ang inyong post."
 msgid "Saving…"
 msgstr "Sine-save…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:168
+#: apps/web/src/components/wallet/recipient-address-input.tsx:176
 msgid "Scan QR"
 msgstr "I-scan ang QR"
 
@@ -6467,13 +6605,25 @@ msgstr "I-scan ang QR"
 msgid "Scan QR Code"
 msgstr "I-scan ang QR code"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:222
+#: apps/web/src/components/wallet/recipient-address-input.tsx:230
 msgid "Scan recipient address"
 msgstr "I-scan ang address ng tatanggap"
+
+#: apps/web/src/features/key-rotation/ui/resume-step.tsx:71
+msgid "Scan the old card"
+msgstr "I-scan ang lumang card"
 
 #: apps/web/src/features/wallet/ui/receive-poster-sheet.tsx:78
 msgid "Scan to pay me"
 msgstr "I-scan para bayaran ako"
+
+#: apps/web/src/features/key-rotation/ui/verify-card-step.tsx:34
+msgid "Scan your new card"
+msgstr "I-scan ang inyong bagong card"
+
+#: apps/web/src/features/key-rotation/ui/resume-step.tsx:46
+msgid "Scan your old card"
+msgstr "I-scan ang inyong lumang card"
 
 #: apps/web/src/components/wants/want-row.tsx:66
 #: apps/web/src/features/home/ui/wallet-page.tsx:348
@@ -6536,7 +6686,7 @@ msgstr "Maghanap ng mga alok, voucher, paglalarawan, o tag"
 msgid "Search or add tags"
 msgstr "Maghanap o magdagdag ng mga tag"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:155
+#: apps/web/src/components/wallet/recipient-address-input.tsx:163
 msgid "Search or enter"
 msgstr "Maghanap o magpasok"
 
@@ -6633,7 +6783,7 @@ msgstr "Paghahanap ng mga lugar..."
 msgid "Searching pools…"
 msgstr "Naghahanap ng mga pool…"
 
-#: apps/web/src/components/wallet/recipient-address-input.tsx:206
+#: apps/web/src/components/wallet/recipient-address-input.tsx:214
 msgid "Searching recipients…"
 msgstr "Naghahanap ng mga tumatanggap..."
 
@@ -6785,7 +6935,7 @@ msgid "Serving"
 msgstr "Paglilingkod"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:75
-#: apps/web/src/features/home/ui/settings-page.tsx:109
+#: apps/web/src/features/home/ui/settings-page.tsx:111
 msgid "Session"
 msgstr "Sesyon"
 
@@ -6815,8 +6965,9 @@ msgstr "Pag-set up ng inyong wallet…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:71
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/home/ui/settings-page.tsx:53
+#: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:112
 msgid "Settings"
 msgstr "Mga setting"
 
@@ -6829,12 +6980,12 @@ msgstr "Mga setting"
 msgid "Share"
 msgstr "Ibahagi"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Ibahagi ang card"
 
 #: apps/web/src/components/install-app-link.tsx:15
-#: apps/web/src/features/home/ui/settings-page.tsx:87
+#: apps/web/src/features/home/ui/settings-page.tsx:89
 #: apps/web/src/features/install/ui/install-page.tsx:127
 msgid "Share CLC"
 msgstr "Ibahagi ang CLC"
@@ -6883,7 +7034,7 @@ msgstr "Ipakita lahat"
 msgid "Show password"
 msgstr "Ipakita ang password"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:507
+#: apps/web/src/components/auth/sign-in-panel.tsx:514
 msgid "Show private key"
 msgstr "Ipakita ang pribadong key"
 
@@ -6930,7 +7081,7 @@ msgstr "Ipinakita sa sinumang gumagamit ng pool"
 
 #: apps/web/src/components/creditable-browse-control.tsx:62
 #: apps/web/src/components/market-bar.tsx:140
-#: apps/web/src/routes/__root.tsx:308
+#: apps/web/src/routes/__root.tsx:312
 msgid "Sign in"
 msgstr "Mag-sign in"
 
@@ -6964,16 +7115,16 @@ msgstr "Mag-sign in upang tingnan ang aktibidad."
 msgid "Sign in to view posts."
 msgstr "Mag-sign in upang tingnan ang mga post."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:513
+#: apps/web/src/components/auth/sign-in-panel.tsx:520
 msgid "Sign in with private key"
 msgstr "Mag-sign in gamit ang private key"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:370
-#: apps/web/src/components/auth/sign-in-panel.tsx:379
+#: apps/web/src/components/auth/sign-in-panel.tsx:377
+#: apps/web/src/components/auth/sign-in-panel.tsx:386
 msgid "Sign in with QR card"
 msgstr "Mag-sign in gamit ang QR card"
 
-#: apps/web/src/routes/__root.tsx:296
+#: apps/web/src/routes/__root.tsx:300
 msgid "Sign in with this card?"
 msgstr "Mag-sign in gamit ang card na ito?"
 
@@ -6983,24 +7134,29 @@ msgstr "Mag-sign in gamit ang card na ito?"
 #~ "papel na card. Hihingi ng pahintulot ang inyong device sa pamamagitan "
 #~ "ng {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:130
-#: apps/web/src/features/home/ui/settings-page.tsx:149
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:92
+msgid "Sign in with your sign-in card or passkey to replace it."
+msgstr "Mag-sign in gamit ang inyong sign-in card o passkey para mapalitan ito."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:132
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Sign out"
 msgstr "Mag-sign out"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:136
+#: apps/web/src/features/home/ui/settings-page.tsx:138
 msgid "Sign out?"
 msgstr "Mag-sign out?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:66
+#: apps/web/src/features/home/ui/settings-page.tsx:67
 msgid "Sign-in"
 msgstr "Pag-sign in"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:440
+#: apps/web/src/components/auth/sign-in-panel.tsx:447
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
+#: apps/web/src/features/key-rotation/ui/new-card-step.tsx:36
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Card sa pag-sign in"
 
@@ -7024,13 +7180,13 @@ msgstr "Mga lumalagda at pag-apruba"
 #~ msgid "Signing out..."
 #~ msgstr "Pag-sign out..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:130
+#: apps/web/src/features/home/ui/settings-page.tsx:132
 msgid "Signing out…"
 msgstr "Nagsa-sign out…"
 
-#: apps/web/src/components/introduction/introduction.tsx:180
-#~ msgid "Skip"
-#~ msgstr "Laktawan"
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:43
+msgid "Skip"
+msgstr "Laktawan"
 
 #: apps/web/src/lib/category-label.ts:45
 msgid "Sociocracy"
@@ -7181,7 +7337,7 @@ msgstr "Mas maraming decimal place ang supply kaysa sa sinusuportahan ng "
 msgid "Supply must be greater than zero"
 msgstr "Dapat higit sa zero ang supply"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Hindi suportado ang mga file ng SVG. Gamitin ang PNG, JPEG, o WebP."
 
@@ -7264,11 +7420,11 @@ msgstr "Nagpapalit…"
 msgid "Swaps settle within the market association..."
 msgstr "Ang mga pagpapalit ay nakatuon sa loob ng market association..."
 
-#: apps/web/src/routes/__root.tsx:308
+#: apps/web/src/routes/__root.tsx:312
 msgid "Switch wallet"
 msgstr "Lumipat ng wallet"
 
-#: apps/web/src/routes/__root.tsx:296
+#: apps/web/src/routes/__root.tsx:300
 msgid "Switch wallet?"
 msgstr "Mag-switch ng wallet?"
 
@@ -7333,7 +7489,7 @@ msgstr "Kunin ang mga bayarin nang hiwalay"
 msgid "Take photo"
 msgstr "Kumuha ng larawan"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:386
+#: apps/web/src/components/auth/sign-in-panel.tsx:393
 msgid "Tap NFC card"
 msgstr "I-tap ang NFC card"
 
@@ -7346,8 +7502,8 @@ msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "I-tap ang tatlong-dot na menu, pagkatapos ay Magdagdag sa home screen o "
 "I-install ang app."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:447
-#: apps/web/src/components/auth/sign-in-panel.tsx:453
+#: apps/web/src/components/auth/sign-in-panel.tsx:454
+#: apps/web/src/components/auth/sign-in-panel.tsx:460
 msgid "Tap your NFC card"
 msgstr "I-tap ang inyong NFC card"
 
@@ -7504,6 +7660,11 @@ msgid "The exact pin will be public. Choose a safe public meeting place, not a "
 msgstr "Magiging pampubliko ang eksaktong pin. Pumili ng ligtas na pampublikong "
 "tagpuan, hindi pribadong tahanan."
 
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:65
+msgid "The last move is still settling. Check again in a minute."
+msgstr "Pinoproseso pa ang huling paglilipat. Tingnan muli pagkalipas ng isang "
+"minuto."
+
 #: apps/web/src/features/home/ui/market-map.tsx:1097
 msgid "The map could not be loaded."
 msgstr "Hindi mai-load ang mapa."
@@ -7520,6 +7681,12 @@ msgstr "Ang mensahe at order ay dapat 500 character o mas kaunti."
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "Maaaring mag-isyu ng mga voucher at maglipat ng pagmamay-ari ang bagong "
 "may-ari."
+
+#: apps/web/src/features/key-rotation/ui/review-step.tsx:58
+msgid "The old card stays a signer on your multisigs. Ask their other signers "
+"to replace it."
+msgstr "Nananatiling lumalagda ang lumang card sa inyong mga multisig. Hilingin "
+"sa iba pang lumalagda na palitan ito."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:43
 msgid "The passkey on this device is linked. Switch to it to sign with your "
@@ -7625,6 +7792,10 @@ msgid "This account cannot be approved. Contact support if you think this is a "
 msgstr "Hindi maaaprubahan ang account na ito. Makipag-ugnayan sa support kung "
 "sa tingin ninyo ay may pagkakamali."
 
+#: apps/web/src/features/key-rotation/ui/resume-step.tsx:37
+msgid "This account did not replace that sign-in card."
+msgstr "Hindi pinalitan ng account na ito ang sign-in card na iyon."
+
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:107
 msgid "This address can't be a signer."
 msgstr "Hindi maaaring maging lumalagda ang address na ito."
@@ -7716,6 +7887,10 @@ msgstr "Wala sa device na ito ang key ng inyong sign-in card. Mag-sign in gamit 
 #~ msgid "This device is subscribed to wallet notifications."
 #~ msgstr "Naka-subscribe ang device na ito sa mga notification ng wallet."
 
+#: apps/web/src/features/key-rotation/ui/card-reader.tsx:35
+msgid "This is a different sign-in card."
+msgstr "Ibang sign-in card ito."
+
 #: apps/web/src/components/creditable-browse-control.tsx:44
 msgid "This link contains an invalid Credit filter."
 msgstr "May hindi wastong Credit filter ang link na ito."
@@ -7760,6 +7935,12 @@ msgid "This order is shared as a private message. It does not change the "
 "voucher amount already sent."
 msgstr "Ang order na ito ay ibinahagi bilang isang pribadong mensahe. Hindi ito "
 "nagbabago sa halaga ng voucher na ipinadala na."
+
+#: apps/web/src/components/auth/replaced-credential.ts:17
+msgid "This passkey moved with your account. Sign in with your new card to "
+"finish moving it."
+msgstr "Lumipat ang passkey na ito kasama ng inyong account. Mag-sign in gamit "
+"ang inyong bagong card para matapos ang paglilipat nito."
 
 #: apps/web/src/features/wallet/ui/collect-page.tsx:119
 msgid "This phone or browser can't read NFC cards."
@@ -7854,15 +8035,29 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Masyadong malaki ang post na ito upang i-save. Paikliin ang teksto o "
 "mag-alis ng ilang media."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:298
+#: apps/web/src/components/auth/sign-in-panel.tsx:305
 msgid "This QR code does not contain a valid private key."
 msgstr "Walang wastong pribadong key ang QR code na ito."
+
+#: apps/web/src/features/key-rotation/ui/card-reader.tsx:66
+msgid "This QR code does not contain a valid sign-in card."
+msgstr "Walang valid na sign-in card sa QR code na ito."
 
 #: apps/web/src/components/retirement/retirement-request-form.tsx:98
 msgid "This resource is already retired."
 msgstr "Na-retire na ang resource na ito."
 
-#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+#: apps/web/src/components/wallet/recipient-address-input.tsx:244
+msgid "This sign-in card was replaced. Ask its owner for their new address."
+msgstr "Napalitan na ang sign-in card na ito. Hingin sa may-ari nito ang bago "
+"nilang address."
+
+#: apps/web/src/components/auth/replaced-credential.ts:14
+msgid "This sign-in card was replaced. Sign in with your new card."
+msgstr "Napalitan na ang sign-in card na ito. Mag-sign in gamit ang inyong "
+"bagong card."
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:117
 msgid "This version is no longer supported."
 msgstr "Ang bersyon na ito ay hindi na suportado."
 
@@ -8002,6 +8197,8 @@ msgstr "Paglakbay"
 #: apps/web/src/features/home/ui/wallet-page.tsx:212
 #: apps/web/src/features/home/ui/wallet-page.tsx:303
 #: apps/web/src/features/home/ui/wallet-page.tsx:407
+#: apps/web/src/features/key-rotation/ui/move-step.tsx:83
+#: apps/web/src/features/key-rotation/ui/review-step.tsx:48
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:256
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:93
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:248
@@ -8128,7 +8325,7 @@ msgstr "I-unlock at mag-sign in"
 msgid "Unlocking…"
 msgstr "Ina-unlock…"
 
-#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:121
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:122
 msgid "Update"
 msgstr "I-update"
 
@@ -8140,7 +8337,7 @@ msgstr "I-update ang larawan"
 #~ msgid "Update protected paper wallet"
 #~ msgstr "I-update ang papel na wallet na protektado"
 
-#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:113
 msgid "Update required"
 msgstr "Kinakailangan ng update"
 
@@ -8157,7 +8354,7 @@ msgstr "I-update ang inyong review"
 msgid "Updated"
 msgstr "Na-update"
 
-#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:121
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:122
 msgid "Updating…"
 msgstr "Ina-update…"
 
@@ -8179,7 +8376,7 @@ msgstr "Mag-upload ng larawan sa halip"
 #~ msgid "Upload Image Instead"
 #~ msgstr "Mag-upload ng larawan sa halip"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "I-upload ang logo"
 
@@ -8236,6 +8433,10 @@ msgstr "Gamitin ang max · {0}"
 #: apps/web/src/components/ui/location-picker.tsx:245
 msgid "Use my location"
 msgstr "Gamitin ang aking lokasyon"
+
+#: apps/web/src/features/key-rotation/ui/resume-step.tsx:81
+msgid "Use my passkey"
+msgstr "Gamitin ang aking passkey"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:208
@@ -8372,6 +8573,7 @@ msgstr "voucher"
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
 #: apps/web/src/features/home/ui/marketplace-page.tsx:411
+#: apps/web/src/features/key-rotation/ui/rotation-labels.ts:13
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:199
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:177
 msgid "Voucher"
@@ -8553,7 +8755,7 @@ msgid "Waiting for the chain…"
 msgstr "Naghihintay sa blockchain…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:43
-#: apps/web/src/components/wallet/recipient-address-input.tsx:196
+#: apps/web/src/components/wallet/recipient-address-input.tsx:204
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:124
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:674
@@ -8578,8 +8780,8 @@ msgstr "Mga aksyon sa wallet"
 #~ msgstr "Available ang mga aksyon sa wallet pagkatapos ninyong mag-sign up o "
 #~ "mag-sign in."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:206
-#: apps/web/src/features/home/ui/settings-page.tsx:210
+#: apps/web/src/features/home/ui/settings-page.tsx:208
+#: apps/web/src/features/home/ui/settings-page.tsx:212
 msgid "Wallet session"
 msgstr "Sesyon ng wallet"
 
@@ -8625,6 +8827,11 @@ msgid "We could not verify your session. Check your connection and try again."
 msgstr "Hindi namin ma-verify ang inyong sesyon. Suriin ang inyong koneksyon at "
 "subukan muli."
 
+#: apps/web/src/features/key-rotation/ui/review-step.tsx:40
+msgid "We couldn't check what this card holds. You can still replace it."
+msgstr "Hindi namin masuri ang laman ng card na ito. Maaari pa rin ninyo itong "
+"palitan."
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:90
 msgid "We couldn't load your profile phone number."
 msgstr "Hindi namin ma-load ang numero ng telepono sa inyong profile."
@@ -8643,13 +8850,13 @@ msgstr "Hindi namin matukoy kung paano pinapresyuhan ng pool na ito ang mga "
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Hindi namin ma-verify kung ang voucher na ito ay may supply na."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
@@ -8884,7 +9091,7 @@ msgstr "Ipapadala ninyo"
 #~ msgstr "Kakailanganin ninyo ang inyong papel na card o passkey para "
 #~ "makapag-sign in muli."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:158
+#: apps/web/src/features/home/ui/settings-page.tsx:160
 msgid "You’ll need your sign-in card or passkey to sign back in."
 msgstr "Kakailanganin ninyo ang inyong sign-in card o passkey para makapag-sign "
 "in muli."
@@ -8922,6 +9129,14 @@ msgstr "Ang inyong account ay naghihintay ng pahintulot. Maaari kayong "
 msgid "Your Balance"
 msgstr "Balanse ninyo"
 
+#: apps/web/src/features/key-rotation/ui/review-step.tsx:25
+msgid "Your current card stops working once it is replaced. Anyone who copied "
+"it can still spend what it holds until it moves, so move everything "
+"straight away."
+msgstr "Hihinto sa paggana ang inyong kasalukuyang card kapag napalitan na ito. "
+"Ang sinumang kumopya nito ay makakagastos pa rin ng laman nito hanggang "
+"mailipat ito, kaya ilipat agad ang lahat."
+
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:182
 msgid "Your current username stops working as soon as you save, and someone "
 "else can then take it."
@@ -8942,6 +9157,20 @@ msgid "Your name and wallet address will not be shown. Avoid including personal 
 "details in your comment."
 msgstr "Hindi ipapakita ang inyong pangalan at wallet address. Iwasang maglagay "
 "ng personal na detalye sa inyong komento."
+
+#: apps/web/src/features/key-rotation/ui/verify-card-step.tsx:52
+msgid "Your new card is ready."
+msgstr "Handa na ang inyong bagong card."
+
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:55
+msgid "Your new sign-in card is ready. Your old card no longer signs in."
+msgstr "Handa na ang inyong bagong sign-in card. Hindi na makakapag-sign in ang "
+"inyong lumang card."
+
+#: apps/web/src/features/key-rotation/ui/verify-card-step.tsx:61
+msgid "Your old card will stop working for sign-in, on every device."
+msgstr "Hindi na gagana ang inyong lumang card sa pag-sign in, sa anumang "
+"device."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:496
 #~ msgid "Your paper wallet"

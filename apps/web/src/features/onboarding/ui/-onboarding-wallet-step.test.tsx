@@ -65,7 +65,7 @@ vi.mock("viem/accounts", () => ({
   privateKeyToAccount: () => ({ address: FAKE_ADDRESS }),
 }));
 
-vi.mock("#/features/onboarding/ui/paper-wallet-card", () => ({
+vi.mock("#/components/paper-wallet/paper-wallet-card", () => ({
   PaperWalletCard: forwardRef<HTMLDivElement, { address: string }>(({ address }, ref) => (
     <div ref={ref} data-testid="paper-wallet-card">
       {address}
@@ -73,7 +73,7 @@ vi.mock("#/features/onboarding/ui/paper-wallet-card", () => ({
   )),
 }));
 
-vi.mock("#/features/onboarding/ui/paper-wallet-export", () => ({
+vi.mock("#/components/paper-wallet/paper-wallet-export", () => ({
   exportPaperWallet: (...args: unknown[]) => mockExportPaperWallet(...args),
 }));
 
