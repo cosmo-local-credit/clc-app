@@ -36,31 +36,47 @@ const MOVED: WebAuthnCredentialSummary["state"] = "moved";
 /**
  * Brings every passkey that came with the account onto the new card's wallet,
  * from clc-core's record rather than from memory, so it can run again after
- * anything: a registration already confirmed is skipped, one still settling is
- * followed to its end instead of relayed again, and one that never took is
- * registered. A passkey refused or reverted does not stop the next; one whose
- * outcome is unknown stops everything, and the next run follows it first.
+ * anything.
+ *
+ * Registrations already submitted are settled first, all of them, before
+ * anything is signed: each new registration is signed over the wallet's next
+ * Calibur nonce, and one still in flight holds that nonce until it lands. Only
+ * then is the record read again and each passkey still `moved` registered, one
+ * at a time. A passkey refused or reverted does not stop the next; one whose
+ * outcome is unknown stops everything, and the next run settles it first.
  */
 export async function relinkMovedPasskeys(input: {
   auth: AuthClient;
   relayer: RelayerClient;
   newKey: `0x${string}`;
 }): Promise<void> {
-  const { credentials } = await input.auth.getWebAuthnCredentials();
+  const before = await input.auth.getWebAuthnCredentials();
   let failure: unknown = null;
-  for (const credential of credentials) {
+  for (const credential of before.credentials) {
+    if (credential.state !== "pending") continue;
+    // A pending row always carries the tracking id it waits on; one without it
+    // cannot be followed, so nothing may be signed past it.
+    if (!credential.trackingId) throw new UnsettledRegistrationError(null);
     try {
-      if (credential.state === "pending" && credential.trackingId) {
-        await settle(input.relayer, credential.trackingId);
-      } else if (credential.state === MOVED && credential.publicKeyX && credential.publicKeyY) {
-        await relinkPasskey({
-          credentialId: credential.credentialId,
-          publicKeyX: credential.publicKeyX,
-          publicKeyY: credential.publicKeyY,
-          newKey: input.newKey,
-          relayer: input.relayer,
-        });
-      }
+      await settle(input.relayer, credential.trackingId);
+    } catch (error) {
+      if (error instanceof UnsettledRegistrationError) throw error;
+      failure ??= error;
+    }
+  }
+
+  const { credentials } = await input.auth.getWebAuthnCredentials();
+  for (const credential of credentials) {
+    if (credential.state === "pending") throw new UnsettledRegistrationError(null);
+    if (credential.state !== MOVED || !credential.publicKeyX || !credential.publicKeyY) continue;
+    try {
+      await relinkPasskey({
+        credentialId: credential.credentialId,
+        publicKeyX: credential.publicKeyX,
+        publicKeyY: credential.publicKeyY,
+        newKey: input.newKey,
+        relayer: input.relayer,
+      });
     } catch (error) {
       if (error instanceof UnsettledRegistrationError) throw error;
       failure ??= error;

@@ -75,11 +75,18 @@ describe("relinkMovedPasskeys", () => {
   it("follows a registration still settling instead of relaying it again", async () => {
     readCaliburDelegation.mockResolvedValue(true);
     const client = relayer();
-    await relinkMovedPasskeys({
-      auth: auth([credential("a", "pending", "tracking-a")]),
-      relayer: client,
-      newKey: NEW_KEY,
-    });
+    // clc-core settles the row in the same transaction as the status the
+    // tracker reports, so the second read already sees it active.
+    const settling = {
+      getWebAuthnCredentials: vi
+        .fn()
+        .mockResolvedValueOnce({
+          address: "0x",
+          credentials: [credential("a", "pending", "tracking-a")],
+        })
+        .mockResolvedValueOnce({ address: "0x", credentials: [credential("a", "active")] }),
+    } as unknown as AuthClient;
+    await relinkMovedPasskeys({ auth: settling, relayer: client, newKey: NEW_KEY });
     expect(client.relay).not.toHaveBeenCalled();
     expect(client.trackRelay).toHaveBeenCalledWith("tracking-a");
   });
@@ -155,6 +162,86 @@ describe("relinkMovedPasskeys", () => {
       relayer: client,
       newKey: NEW_KEY,
     });
+    expect(client.relay).not.toHaveBeenCalled();
+  });
+
+  // Run one: A reverts, B is accepted and its outcome is unknown. Run two must
+  // settle B before signing anything, or A would reuse B's live nonce.
+  it("settles a registration left in flight before signing another, across runs", async () => {
+    readCaliburDelegation.mockResolvedValue(true);
+    const client = relayer();
+    const reverted = {
+      ok: true,
+      result: {
+        otx: [
+          {
+            id: 1,
+            trackingId: "t",
+            otxType: "RELAY",
+            txHash: "0x1",
+            nonce: 1,
+            replaced: false,
+            createdAt: "",
+            status: "REVERTED",
+          },
+        ],
+      },
+    };
+    vi.mocked(client.relay)
+      .mockResolvedValueOnce({ ok: true, result: { trackingId: "tracking-a" } } as never)
+      .mockResolvedValueOnce({ ok: true, result: { trackingId: "tracking-b" } } as never)
+      .mockResolvedValueOnce({ ok: true, result: { trackingId: "tracking-a2" } } as never);
+    vi.mocked(client.trackRelay)
+      .mockResolvedValueOnce(reverted as never)
+      .mockRejectedValueOnce(new RelayerError("server_error", "tracker unavailable", 503));
+
+    await expect(
+      relinkMovedPasskeys({
+        auth: auth([credential("a", "moved"), credential("b", "moved")]),
+        relayer: client,
+        newKey: NEW_KEY,
+      }),
+    ).rejects.toBeInstanceOf(UnsettledRegistrationError);
+    expect(relayed(client)).toEqual(["a", "b"]);
+
+    const retry = {
+      getWebAuthnCredentials: vi
+        .fn()
+        .mockResolvedValueOnce({
+          address: "0x",
+          credentials: [credential("a", "moved"), credential("b", "pending", "tracking-b")],
+        })
+        .mockResolvedValueOnce({
+          address: "0x",
+          credentials: [credential("a", "moved"), credential("b", "active")],
+        }),
+    } as unknown as AuthClient;
+    vi.mocked(client.trackRelay).mockClear();
+    vi.mocked(client.relayPreview).mockClear();
+
+    await relinkMovedPasskeys({ auth: retry, relayer: client, newKey: NEW_KEY });
+
+    const settledB = vi.mocked(client.trackRelay).mock.invocationCallOrder[0] ?? Infinity;
+    const signedA = vi.mocked(client.relayPreview).mock.invocationCallOrder[0] ?? -Infinity;
+    expect(vi.mocked(client.trackRelay).mock.calls[0]).toEqual(["tracking-b"]);
+    expect(settledB).toBeLessThan(signedA);
+    expect(relayed(client)).toEqual(["a", "b", "a"]);
+  });
+
+  it("signs nothing while a registration is still unsettled", async () => {
+    readCaliburDelegation.mockResolvedValue(true);
+    const client = relayer();
+    vi.mocked(client.trackRelay).mockRejectedValueOnce(
+      new RelayerError("server_error", "tracker unavailable", 503),
+    );
+    await expect(
+      relinkMovedPasskeys({
+        auth: auth([credential("a", "moved"), credential("b", "pending", "tracking-b")]),
+        relayer: client,
+        newKey: NEW_KEY,
+      }),
+    ).rejects.toBeInstanceOf(UnsettledRegistrationError);
+    expect(client.relayPreview).not.toHaveBeenCalled();
     expect(client.relay).not.toHaveBeenCalled();
   });
 });
