@@ -1,24 +1,45 @@
 import type { AuthClient, WebAuthnCredentialSummary } from "@clc/api/features/auth/client";
-import { RelayerError, type RelayerClient } from "@clc/api/features/relayer/client";
+import {
+  isRelaySubmissionUncertain,
+  RelayerError,
+  type RelayerClient,
+} from "@clc/api/features/relayer/client";
 import { encodeRegisterCalldata } from "@clc/core/features/webauthn/index";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { waitForOwnershipRelay } from "#/features/ownership/api/wait-for-ownership-relay";
+import {
+  OwnershipSettlementError,
+  waitForOwnershipRelay,
+} from "#/features/ownership/api/wait-for-ownership-relay";
 import { readCaliburDelegation } from "#/features/webauthn/api/calibur-delegation";
 import { signCaliburBatchWithAccount } from "#/features/webauthn/api/relay-calibur-batch";
 
 import { relayIdempotently } from "./relay-idempotently";
 
-/** States a key rotation leaves for the new wallet's root key to register. */
-const RELINKABLE: ReadonlySet<WebAuthnCredentialSummary["state"]> = new Set(["moved", "failed"]);
+/**
+ * A registration was submitted but its outcome is unknown. Nothing else may be
+ * signed until it settles: the next registration would be signed over the same
+ * Calibur nonce, and one of the two would revert.
+ */
+export class UnsettledRegistrationError extends Error {
+  constructor(cause: unknown) {
+    super("A passkey registration is still settling. Try again in a minute.", { cause });
+  }
+}
+
+/**
+ * The state clc-core leaves a passkey in until the new wallet registers it. A
+ * registration that reverts returns it here, so this is also the retry.
+ */
+const MOVED: WebAuthnCredentialSummary["state"] = "moved";
 
 /**
  * Brings every passkey that came with the account onto the new card's wallet,
  * from clc-core's record rather than from memory, so it can run again after
  * anything: a registration already confirmed is skipped, one still settling is
  * followed to its end instead of relayed again, and one that never took is
- * registered. Each passkey is tried; the first failure is reported after all
- * have had their turn.
+ * registered. A passkey refused or reverted does not stop the next; one whose
+ * outcome is unknown stops everything, and the next run follows it first.
  */
 export async function relinkMovedPasskeys(input: {
   auth: AuthClient;
@@ -30,12 +51,8 @@ export async function relinkMovedPasskeys(input: {
   for (const credential of credentials) {
     try {
       if (credential.state === "pending" && credential.trackingId) {
-        await waitForOwnershipRelay(input.relayer, credential.trackingId);
-      } else if (
-        RELINKABLE.has(credential.state) &&
-        credential.publicKeyX &&
-        credential.publicKeyY
-      ) {
+        await settle(input.relayer, credential.trackingId);
+      } else if (credential.state === MOVED && credential.publicKeyX && credential.publicKeyY) {
         await relinkPasskey({
           credentialId: credential.credentialId,
           publicKeyX: credential.publicKeyX,
@@ -45,10 +62,23 @@ export async function relinkMovedPasskeys(input: {
         });
       }
     } catch (error) {
+      if (error instanceof UnsettledRegistrationError) throw error;
       failure ??= error;
     }
   }
   if (failure) throw failure;
+}
+
+/** Follows a registration to its end; an unknown end is not a failure to skip. */
+async function settle(relayer: RelayerClient, trackingId: string): Promise<void> {
+  try {
+    await waitForOwnershipRelay(relayer, trackingId);
+  } catch (error) {
+    if (error instanceof OwnershipSettlementError && !error.terminal) {
+      throw new UnsettledRegistrationError(error);
+    }
+    throw error;
+  }
 }
 
 /**
@@ -109,11 +139,13 @@ async function relinkPasskey(input: {
       if (error.result?.state === "active") return;
       const pending = error.result?.trackingId;
       if (error.result?.state === "pending" && typeof pending === "string") {
-        await waitForOwnershipRelay(relayer, pending);
+        await settle(relayer, pending);
         return;
       }
     }
+    // Resent as often as it may be and still unanswered: it may be queued.
+    if (isRelaySubmissionUncertain(error)) throw new UnsettledRegistrationError(error);
     throw error;
   }
-  await waitForOwnershipRelay(relayer, trackingId);
+  await settle(relayer, trackingId);
 }

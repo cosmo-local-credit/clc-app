@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 const { readCaliburDelegation } = vi.hoisted(() => ({ readCaliburDelegation: vi.fn() }));
 vi.mock("#/features/webauthn/api/calibur-delegation", () => ({ readCaliburDelegation }));
 
-import { relinkMovedPasskeys } from "./relink-passkey";
+import { relinkMovedPasskeys, UnsettledRegistrationError } from "./relink-passkey";
 
 const NEW_KEY = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" as const;
 const RELAYER = "0x1234567890123456789012345678901234567890" as const;
@@ -128,5 +128,33 @@ describe("relinkMovedPasskeys", () => {
       }),
     ).rejects.toThrow();
     expect(relayed(client)).toEqual(["a", "b"]);
+  });
+
+  it("stops at a registration whose outcome is unknown instead of signing the next", async () => {
+    readCaliburDelegation.mockResolvedValue(true);
+    const client = relayer();
+    vi.mocked(client.trackRelay).mockRejectedValueOnce(
+      new RelayerError("server_error", "tracker unavailable", 503),
+    );
+    await expect(
+      relinkMovedPasskeys({
+        auth: auth([credential("a", "moved"), credential("b", "moved")]),
+        relayer: client,
+        newKey: NEW_KEY,
+      }),
+    ).rejects.toBeInstanceOf(UnsettledRegistrationError);
+    expect(relayed(client)).toEqual(["a"]);
+    expect(client.relayPreview).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves a passkey that failed outside a rotation to the passkey settings", async () => {
+    readCaliburDelegation.mockResolvedValue(true);
+    const client = relayer();
+    await relinkMovedPasskeys({
+      auth: auth([credential("a", "failed"), credential("b", "unverified")]),
+      relayer: client,
+      newKey: NEW_KEY,
+    });
+    expect(client.relay).not.toHaveBeenCalled();
   });
 });
