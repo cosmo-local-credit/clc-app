@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     onSuccess: (result: unknown, input: unknown) => Promise<void>;
   },
   invalidate: vi.fn(async (_filters: InvalidateQueryFilters): Promise<void> => undefined),
+  client: null as QueryClient | null,
   relayBatch: vi.fn(),
   waitRelay: vi.fn(),
   relayerClient: { kind: "relayer" },
@@ -23,7 +24,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
-  useQueryClient: () => ({ invalidateQueries: mocks.invalidate }),
+  useQueryClient: () => mocks.client ?? { invalidateQueries: mocks.invalidate },
   useMutation: (options: NonNullable<typeof mocks.mutationOptions>) => {
     mocks.mutationOptions = options;
     return options;
@@ -82,6 +83,7 @@ beforeEach(() => {
   mocks.waitRelay.mockResolvedValue({ trackingId: "tracking-1", txHash: "0xabc" });
   mocks.mutationOptions = null;
   mocks.owner = { info: undefined, isSafeSigner: false };
+  mocks.client = null;
 });
 
 function options() {
@@ -178,20 +180,21 @@ describe("usePoolAdminRelay", () => {
   it("refreshes every affected read while honoring deferred catalog refresh", async () => {
     const mutation = options();
     await mutation.onSuccess({}, calls);
-    expect(mocks.invalidate).toHaveBeenCalledTimes(9);
+    expect(mocks.invalidate).toHaveBeenCalledTimes(8);
     expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["pools"] });
     expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "marketplace"] });
     expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["clc", "wants"] });
-    expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: offeringKeys.all });
+    expect(mocks.invalidate).not.toHaveBeenCalledWith({ queryKey: offeringKeys.all });
 
     mocks.invalidate.mockClear();
     await mutation.onSuccess({}, { calls, deferCatalogRefresh: true });
-    expect(mocks.invalidate).toHaveBeenCalledTimes(8);
+    expect(mocks.invalidate).toHaveBeenCalledTimes(7);
     expect(mocks.invalidate).not.toHaveBeenCalledWith({ queryKey: ["pools"] });
   });
 
   it("marks cached pool offers stale after membership changes, including inactive tabs", async () => {
     const client = new QueryClient();
+    mocks.client = client;
     const poolAddress = "0x3333333333333333333333333333333333333333";
     const keys = [
       offeringKeys.byPool(poolAddress, 20),
@@ -199,14 +202,13 @@ describe("usePoolAdminRelay", () => {
       offeringKeys.discovery({ perPage: 20, pools: [{ chainId: 100, address: poolAddress }] }),
     ];
     for (const key of keys) client.setQueryData(key, { offerings: [] });
-    mocks.invalidate.mockImplementation((filters) => client.invalidateQueries(filters));
-
     try {
-      await options().onSuccess({}, calls);
+      usePoolAdminRelay({ address: poolAddress });
+      await mocks.mutationOptions!.onSuccess({}, calls);
       for (const key of keys) expect(client.getQueryState(key)?.isInvalidated).toBe(true);
     } finally {
       client.clear();
-      mocks.invalidate.mockImplementation(async () => undefined);
+      mocks.client = null;
     }
   });
 });

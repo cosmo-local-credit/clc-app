@@ -1,6 +1,6 @@
 import { poolKeys } from "@clc/api/features/pools/queries";
 import { marketplaceKeys } from "@clc/api/features/marketplace/queries";
-import { offeringKeys } from "@clc/api/features/offerings/queries";
+import { invalidatePoolOfferings } from "@clc/api/features/offerings/cache";
 import { wantKeys } from "@clc/api/features/wants/queries";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -120,9 +120,7 @@ export function usePoolAdminRelay(asset?: PoolAdminAsset) {
         // to decide whether a voucher can still be deposited.
         queryClient.invalidateQueries({ queryKey: poolSwapTokenQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: marketplaceKeys.all }),
-        // Membership changes affect the pool's Offers tab and pool-filtered
-        // offer discovery, which have separate keys from pools and marketplace.
-        queryClient.invalidateQueries({ queryKey: offeringKeys.all }),
+        ...(asset ? [invalidatePoolOfferings(queryClient, asset.address)] : []),
         queryClient.invalidateQueries({ queryKey: wantKeys.all }),
       ]);
     },

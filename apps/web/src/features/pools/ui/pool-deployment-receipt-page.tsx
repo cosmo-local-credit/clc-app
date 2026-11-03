@@ -21,7 +21,7 @@ import {
   getPoolTrackingOutcome,
 } from "@clc/api/features/pools/deploy-client";
 import { poolKeys } from "@clc/api/features/pools/queries";
-import { offeringKeys } from "@clc/api/features/offerings/queries";
+import { invalidatePoolOfferings } from "@clc/api/features/offerings/cache";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useDeploymentContract } from "#/hooks/use-deployment";
 import { exitPoolCreateHistory } from "#/lib/navigation/pool-create-history";
@@ -69,10 +69,10 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
   const confirmed = contract?.status === "CONFIRMED" && contract.address !== null;
 
   useEffect(() => {
-    if (!confirmed) return;
+    if (!confirmed || !contract?.address) return;
     void queryClient.invalidateQueries({ queryKey: poolKeys.all });
-    void queryClient.invalidateQueries({ queryKey: offeringKeys.all });
-  }, [confirmed, queryClient]);
+    void invalidatePoolOfferings(queryClient, contract.address);
+  }, [confirmed, contract?.address, queryClient]);
 
   const exit = (destination: string, preserveDraft = false) => {
     if (!preserveDraft) clearDraft();

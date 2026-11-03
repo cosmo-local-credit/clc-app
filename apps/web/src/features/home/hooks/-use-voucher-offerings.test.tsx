@@ -146,7 +146,7 @@ describe("usePoolOfferingsInfinite", () => {
     client.clear();
   });
 
-  it("picks up delayed indexing while Offers stays open, then stops refreshing when it closes", async () => {
+  it("does not poll while browsing and still refreshes on focus", async () => {
     const fetcher = vi
       .fn()
       .mockResolvedValueOnce(response({ offerings: [], first: 0, last: 0 }))
@@ -166,25 +166,26 @@ describe("usePoolOfferingsInfinite", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(10_001);
     });
-    expect(view.result.current.data?.pages[0]?.offerings).toHaveLength(1);
-    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(view.result.current.data?.pages[0]?.offerings).toEqual([]);
+    expect(fetcher).toHaveBeenCalledTimes(1);
 
     act(() => focusManager.setFocused(false));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(30_000);
     });
-    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher).toHaveBeenCalledTimes(1);
     await act(async () => {
       focusManager.setFocused(true);
       await vi.advanceTimersByTimeAsync(1);
     });
-    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(view.result.current.data?.pages[0]?.offerings).toHaveLength(1);
 
     view.unmount();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(30_000);
     });
-    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(fetcher).toHaveBeenCalledTimes(2);
     client.clear();
   });
 

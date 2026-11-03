@@ -96,7 +96,7 @@ afterEach(() => {
 });
 
 describe("PoolDeploymentReceiptPage", () => {
-  it("invalidates cached offers only when the new pool is confirmed", () => {
+  it("invalidates cached offers only when the new pool is confirmed", async () => {
     const address = "0x3333333333333333333333333333333333333333";
     const client = new QueryClient();
     const key = offeringKeys.byPoolInfinite(address, 20);
@@ -111,7 +111,7 @@ describe("PoolDeploymentReceiptPage", () => {
     state.contract = { address, name: "New pool", symbol: "NEW", status: "CONFIRMED" };
     state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
     const confirmed = renderReceipt(client);
-    expect(client.getQueryState(key)?.isInvalidated).toBe(true);
+    await waitFor(() => expect(client.getQueryState(key)?.isInvalidated).toBe(true));
     confirmed.unmount();
     client.clear();
   });
