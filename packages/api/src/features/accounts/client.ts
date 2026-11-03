@@ -20,6 +20,22 @@ export type AccountTokensResult = {
   last?: number;
 };
 
+/** A voucher the signed-in account owns, retired ones included. */
+export type OwnedVoucher = {
+  id: number;
+  address: string;
+  name: string;
+  symbol: string;
+  ownerAddress: string;
+  active: boolean;
+};
+
+export type OwnedVouchersResult = {
+  vouchers: OwnedVoucher[];
+  first?: number;
+  last?: number;
+};
+
 type AccountTransferDirection = "IN" | "OUT";
 
 type AccountTransfer = {
@@ -176,6 +192,23 @@ export function createAccountsClient(http: HttpClient) {
         ACCOUNT_READ_REQUEST,
       );
       return { ...result, tokens: result.tokens ?? [] };
+    },
+
+    /**
+     * `GET /api/v2/users/me/vouchers`: what the signed-in account owns,
+     * retired vouchers included. `owner` may name one of the account's replaced
+     * sign-in cards, to find the vouchers its old wallet still owns on chain.
+     */
+    async getOwnedVouchers(
+      params: Omit<CursorPageParams, "address"> & { owner?: string },
+    ): Promise<OwnedVouchersResult> {
+      const search = formatCursorSearch({ ...params, address: "" });
+      if (params.owner) search.set("owner", getAddress(params.owner));
+      const result = await http.request<OwnedVouchersResult>(
+        `/api/v2/users/me/vouchers?${search.toString()}`,
+        ACCOUNT_READ_REQUEST,
+      );
+      return { ...result, vouchers: result.vouchers ?? [] };
     },
 
     async getAccountTransfers(

@@ -1,4 +1,3 @@
-import type { AccountToken } from "@clc/api/features/accounts/client";
 import type { UserPool } from "@clc/api/features/pools/client";
 import {
   giftableTokenApplyExpiryAbi,
@@ -37,16 +36,19 @@ export type RotationAssets = {
   skipped: SkippedAsset[];
 };
 
+/** A catalog nomination: a contract and what to call it. */
+export type TokenCandidate = { address: string; symbol: string };
+
 export type DiscoverRotationAssetsInput = {
   client: Client;
   from: `0x${string}`;
   to: `0x${string}`;
-  /** Pools the catalog says `from` owns, including retired ones. */
+  /** Pools the catalog says `from` owns, retired ones included. */
   pools: UserPool[];
-  /** Vouchers the catalog says `from` owns. */
-  vouchers: AccountToken[];
+  /** Vouchers the catalog says `from` owns, retired ones included. */
+  vouchers: TokenCandidate[];
   /** Tokens the indexer has seen `from` hold. */
-  holdings: AccountToken[];
+  holdings: TokenCandidate[];
 };
 
 /**
@@ -103,36 +105,54 @@ export async function discoverRotationAssets(
     }
   }
 
+  // Every read below is about one contract, so a contract that answers badly
+  // costs only its own row: it is listed as left behind, and the rest move.
   for (const voucher of input.vouchers) {
-    const address = getAddress(voucher.tokenAddress);
-    const owner = await readContract(client, { address, abi: ownableAbi, functionName: "owner" });
+    const address = getAddress(voucher.address);
+    let owner: `0x${string}`;
+    try {
+      owner = await readContract(client, { address, abi: ownableAbi, functionName: "owner" });
+    } catch {
+      skipped.push({ kind: "voucher", address, label: voucher.symbol, reason: "would-fail" });
+      continue;
+    }
     if (!isAddressEqual(owner, from)) continue;
     candidates.push({
       kind: "voucher",
       address,
-      label: voucher.tokenSymbol,
+      label: voucher.symbol,
       calls: [buildVoucherOwnershipTransferCall({ tokenAddress: address, newOwnerAddress: to })],
     });
   }
 
-  const tokens = new Map<string, AccountToken>();
+  const tokens = new Map<`0x${string}`, TokenCandidate>();
   for (const token of [...input.holdings, ...input.vouchers]) {
-    tokens.set(getAddress(token.tokenAddress), token);
+    tokens.set(getAddress(token.address), token);
   }
-  for (const [address, token] of tokens) {
-    const tokenAddress = address as `0x${string}`;
-    const balance = await readContract(client, {
-      address: tokenAddress,
-      abi: erc20BalanceOfAbi,
-      functionName: "balanceOf",
-      args: [from],
-    });
+  for (const [tokenAddress, token] of tokens) {
+    let balance: bigint;
+    try {
+      balance = await readContract(client, {
+        address: tokenAddress,
+        abi: erc20BalanceOfAbi,
+        functionName: "balanceOf",
+        args: [from],
+      });
+    } catch {
+      skipped.push({
+        kind: "balance",
+        address: tokenAddress,
+        label: token.symbol,
+        reason: "would-fail",
+      });
+      continue;
+    }
     if (balance === 0n) continue;
     if (await isExpired(client, tokenAddress, from)) {
       skipped.push({
         kind: "balance",
         address: tokenAddress,
-        label: token.tokenSymbol,
+        label: token.symbol,
         reason: "expired",
       });
       continue;
@@ -140,7 +160,7 @@ export async function discoverRotationAssets(
     candidates.push({
       kind: "balance",
       address: tokenAddress,
-      label: token.tokenSymbol,
+      label: token.symbol,
       calls: [
         buildVoucherTransferCall({
           tokenAddress,

@@ -1,4 +1,3 @@
-import type { AccountToken } from "@clc/api/features/accounts/client";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { POOL_SEAL_FEE_ADDRESS } from "@clc/core/features/pool-admin/logic";
 import type { Client } from "viem";
@@ -30,17 +29,8 @@ const EXPIRED = "0x6666666666666666666666666666666666666666" as const;
 const STABLE = "0x7777777777777777777777777777777777777777" as const;
 const client = { chain: { nativeCurrency: { symbol: "xDAI" } } } as unknown as Client;
 
-function token(address: string, symbol: string): AccountToken {
-  return {
-    id: 1,
-    tokenAddress: address,
-    tokenSymbol: symbol,
-    tokenName: symbol,
-    tokenDecimals: 6,
-    balance: "0",
-    iconUrl: null,
-    lastDateBlock: "",
-  };
+function token(address: string, symbol: string) {
+  return { address, symbol };
 }
 
 const pool = { address: POOL, name: "Market pool", ownerAddress: FROM } as unknown as UserPool;
@@ -100,6 +90,36 @@ describe("discoverRotationAssets", () => {
     expect(groups[0]?.calls).toHaveLength(2);
     expect(skipped).toEqual([
       { kind: "balance", address: EXPIRED, label: "OLD", reason: "expired" },
+    ]);
+  });
+
+  it("leaves a contract that fails to answer behind and moves the rest", async () => {
+    chain();
+    const broken = "0x8888888888888888888888888888888888888888";
+    const reads = actions.readContract.getMockImplementation();
+    actions.readContract.mockImplementation(
+      async (client: Client, args: { address: string; functionName: string }) => {
+        if (args.address === broken) throw new Error("execution reverted");
+        return reads?.(client, args);
+      },
+    );
+    const { groups, skipped } = await discoverRotationAssets({
+      client,
+      from: FROM,
+      to: TO,
+      pools: [pool],
+      vouchers: [token(broken, "BAD"), token(OWNED, "OWN")],
+      holdings: [token(STABLE, "USD")],
+    });
+
+    expect(groups.map((group) => [group.kind, group.address])).toEqual([
+      ["pool", POOL],
+      ["voucher", OWNED],
+      ["balance", STABLE],
+    ]);
+    expect(skipped.map((asset) => [asset.kind, asset.address, asset.reason])).toEqual([
+      ["voucher", broken, "would-fail"],
+      ["balance", broken, "would-fail"],
     ]);
   });
 
