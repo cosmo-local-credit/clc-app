@@ -24,6 +24,9 @@ import { useRotationSession } from "../state/rotation-session";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
+const SIGNED_OUT_DURING_SWITCH =
+  "Signed out while switching to the new card. Sign in with the new card to continue.";
+
 export const keyRotationKeys = {
   assets: (from: string, to: string) =>
     ["clc", "key-rotation", "assets", from.toLowerCase(), to.toLowerCase()] as const,
@@ -62,6 +65,10 @@ export function useSwitchToNewCard() {
       if (!oldAddress || !newAddress || !newKey || !oldSigner) {
         throw new Error("Start the replacement again from Settings.");
       }
+      // Taken before the request, not after it returns: a sign-out while the
+      // backend is still answering must win, or its late answer would write the
+      // new key and reconnect a device the person just signed out of.
+      const signal = beginWalletSwitch();
       const siwe = { domain: window.location.host, uri: window.location.origin, chainId: CHAIN_ID };
       const replace = (kind: "card" | "passkey") =>
         replaceSignInCard({
@@ -84,8 +91,9 @@ export function useSwitchToNewCard() {
         }
         result = await replace("passkey");
       }
+      if (signal.aborted) throw new Error(SIGNED_OUT_DURING_SWITCH);
       session.setMovedPasskeys(result.movedPasskeys);
-      await switchSession(queryClient, newKey, oldAddress, newAddress);
+      await switchSession(queryClient, signal, newKey, oldAddress, newAddress);
       session.setStep("moving");
       return result;
     },
@@ -99,11 +107,11 @@ export function useSwitchToNewCard() {
  */
 async function switchSession(
   queryClient: QueryClient,
+  signal: AbortSignal,
   newKey: `0x${string}`,
   oldAddress: `0x${string}`,
   newAddress: `0x${string}`,
 ) {
-  const signal = beginWalletSwitch();
   // Before the session query flips, so the identity transition finds the
   // person's address book and filters already under the new card.
   moveOwnerTier(oldAddress.toLowerCase(), newAddress.toLowerCase());
@@ -115,6 +123,7 @@ async function switchSession(
   } catch {
     // The outgoing connector's own cleanup; connect below reports a stuck one.
   }
+  if (signal.aborted) throw new Error(SIGNED_OUT_DURING_SWITCH);
   storePrivateKey(newKey);
   await connect(wagmiConfig, { connector: pkConnector });
   if (signal.aborted) {
@@ -124,7 +133,7 @@ async function switchSession(
     } catch {
       // Credentials are already gone.
     }
-    throw new Error("Signed out while switching to the new card.");
+    throw new Error(SIGNED_OUT_DURING_SWITCH);
   }
   await queryClient.invalidateQueries({ queryKey: authSessionQueryKey, refetchType: "all" });
 }
