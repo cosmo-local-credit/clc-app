@@ -1616,7 +1616,7 @@ msgstr "Confirmar y enviar"
 msgid "Confirm Install or Add when asked."
 msgstr "Confirme Instalar o Añadir cuando se le solicite."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "Confirmar contraseña"
 
@@ -1916,7 +1916,7 @@ msgstr "No se pudieron cargar los vales."
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "No se pudo proteger esta billetera de papel."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "No se pudo proteger esta tarjeta de inicio de sesión."
 
@@ -1924,11 +1924,11 @@ msgstr "No se pudo proteger esta tarjeta de inicio de sesión."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "No se pudo guardar la billetera de papel. Inténtelo de nuevo."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "No se pudo guardar la hoja imprimible. Inténtelo de nuevo."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "No se pudo guardar la tarjeta de inicio de sesión. Inténtelo de nuevo."
 
@@ -1936,7 +1936,7 @@ msgstr "No se pudo guardar la tarjeta de inicio de sesión. Inténtelo de nuevo.
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "No se pudo compartir la billetera de papel. Pruebe a descargarla."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "No se pudo compartir la tarjeta de inicio de sesión. Pruebe a "
 "descargarla."
@@ -2692,10 +2692,10 @@ msgstr "Describa las reglas para unirse a este fondo y utilizarlo..."
 msgid "Describe your pool"
 msgstr "Describa su fondo"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2756,8 +2756,8 @@ msgstr "Hecho"
 msgid "Done with this customer"
 msgstr "Terminar con este cliente"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "Descargar tarjeta"
 
@@ -2943,7 +2943,7 @@ msgstr "Introduzca una comisión entre 0 y 100"
 msgid "Enter a link starting with http:// or https://"
 msgstr "Introduzca un enlace que comience con http:// o https://"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "Introduzca y aplique una contraseña antes de descargar esta tarjeta."
 
@@ -3247,7 +3247,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "El nombre del archivo debe tener 255 caracteres o menos"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "El archivo es demasiado grande ({0} KB). El máximo es 512 KB."
 
@@ -4068,8 +4068,8 @@ msgstr "Mapa de ubicación"
 msgid "Location unavailable"
 msgstr "Ubicación no disponible"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4380,7 +4380,7 @@ msgstr "El nombre es obligatorio"
 msgid "Name must be 80 characters or fewer"
 msgstr "El nombre debe tener 80 caracteres o menos"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "Nombre en la billetera"
 
@@ -4836,7 +4836,7 @@ msgstr "Sin saldo"
 msgid "Not linked"
 msgstr "No vinculado"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "Sin protección. Cualquier persona que escanee esta tarjeta puede "
 "acceder a tu billetera."
@@ -5225,11 +5225,11 @@ msgstr "Las claves de acceso pueden firmar en carteras multifirma con Safe 1.5 "
 "o posterior. Usa tu tarjeta de inicio de sesión."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Contraseña"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "La contraseña no puede estar vacía."
 
@@ -5239,7 +5239,7 @@ msgstr "La contraseña no puede estar vacía."
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "Billetera de papel protegida con contraseña"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Las contraseñas no coinciden."
 
@@ -5692,10 +5692,10 @@ msgstr "Preparando su retiro…"
 #~ msgid "Preparing..."
 #~ msgstr "Preparando…"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Preparando…"
 
@@ -5703,7 +5703,7 @@ msgstr "Preparando…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Acerque la tarjeta para pagar {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Mantenga pulsada la imagen siguiente y, a continuación, elija Guardar "
 "imagen."
@@ -5795,7 +5795,7 @@ msgstr "Precios"
 msgid "Primary navigation"
 msgstr "Navegación principal"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "Imprimir"
 
@@ -5843,11 +5843,11 @@ msgstr "Proponiendo…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "Proteger la billetera de papel con una contraseña"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "Proteger la tarjeta de inicio de sesión con una contraseña"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "La tarjeta de inicio de sesión está protegida. Mantenga la contraseña "
 "separada de la tarjeta."
@@ -6283,7 +6283,7 @@ msgstr "Obligatorio"
 msgid "Reset"
 msgstr "Restablecer"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "Restablecer logotipo"
 
@@ -6477,7 +6477,7 @@ msgstr "Guardar cambios"
 msgid "Save fee settings"
 msgstr "Guardar la configuración de comisiones"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "Guardar la hoja A4 imprimible"
 
@@ -6899,7 +6899,7 @@ msgstr "Configuración"
 msgid "Share"
 msgstr "Compartir"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Compartir tarjeta"
 
@@ -7071,9 +7071,9 @@ msgstr "Inicio de sesión"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Tarjeta de inicio de sesión"
 
@@ -7254,7 +7254,7 @@ msgstr "La cantidad emitida tiene más decimales de los que admite este vale"
 msgid "Supply must be greater than zero"
 msgstr "La cantidad emitida debe ser mayor que cero"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Los archivos SVG no son compatibles. Use PNG, JPEG o WebP."
 
@@ -8254,7 +8254,7 @@ msgstr "Subir otra imagen"
 #~ msgid "Upload Image Instead"
 #~ msgstr "Subir otra imagen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "Subir logotipo"
 
@@ -8718,13 +8718,13 @@ msgstr "No se pudo determinar cómo valora los vales este fondo, por lo que este
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "No se pudo verificar si ya se han emitido unidades de este vale."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58

@@ -1602,7 +1602,7 @@ msgstr "Kumpirma at magpadala"
 msgid "Confirm Install or Add when asked."
 msgstr "Kumpirmahin ang I-install o I-add kapag hinihiling."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "Kumpirmahin ang password"
 
@@ -1901,7 +1901,7 @@ msgstr "Hindi ma-load ang mga voucher."
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "Hindi maprotektahan ang papel na wallet na ito."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "Hindi maprotektahan ang sign-in card na ito."
 
@@ -1909,11 +1909,11 @@ msgstr "Hindi maprotektahan ang sign-in card na ito."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "Hindi ma-save ang papel na wallet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Hindi ma-save ang napi-print na sheet. Subukang muli."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Hindi ma-save ang sign-in card. Subukang muli."
 
@@ -1921,7 +1921,7 @@ msgstr "Hindi ma-save ang sign-in card. Subukang muli."
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "Hindi maibahagi ang papel na wallet. Subukan na lang itong i-download."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Hindi maibahagi ang sign-in card. Subukan na lang itong i-download."
 
@@ -2672,10 +2672,10 @@ msgstr "Ilarawan ang mga patakaran para sa pagsasama at paggamit ng pool..."
 msgid "Describe your pool"
 msgstr "Ilarawan ang inyong pool"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2736,8 +2736,8 @@ msgstr "Tapos na"
 msgid "Done with this customer"
 msgstr "Natapos na sa customer na ito"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "I-download ang card"
 
@@ -2922,7 +2922,7 @@ msgstr "Isulat ang bayarin mula 0 hanggang 100"
 msgid "Enter a link starting with http:// or https://"
 msgstr "Ilagay ang isang link na nagsisimula sa http:// o https://"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "I-enter at i-apply ang isang password bago i-download ang card na ito."
 
@@ -3219,7 +3219,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Ang pangalan ng file ay dapat 255 character o mas kaunti"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Ang file ay masyadong malaki ({0} KB). Ang maximum ay 512 KB."
 
@@ -4033,8 +4033,8 @@ msgstr "Mapa ng lokasyon"
 msgid "Location unavailable"
 msgstr "Hindi available ang lokasyon"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4331,7 +4331,7 @@ msgstr "Kinakailangan ang pangalan"
 msgid "Name must be 80 characters or fewer"
 msgstr "Ang pangalan ay dapat 80 character o mas kaunti"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "Pangalan sa wallet"
 
@@ -4785,7 +4785,7 @@ msgstr "Hindi hawak"
 msgid "Not linked"
 msgstr "Hindi naka-link"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "Hindi protektado. Maaaring ma-access ng sinumang mag-scan ng card na "
 "ito ang iyong wallet."
@@ -5170,11 +5170,11 @@ msgstr "Makakapag-sign ang mga passkey para sa mga multisig wallet sa Safe 1.5 "
 "o mas bago. Gamitin ang iyong sign-in card."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Password"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Ang password ay hindi maaaring walang laman."
 
@@ -5184,7 +5184,7 @@ msgstr "Ang password ay hindi maaaring walang laman."
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "Papel na wallet na protektado ng password"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Ang mga password ay hindi katugma."
 
@@ -5635,10 +5635,10 @@ msgstr "Paghahanda ng inyong pag-alis..."
 #~ msgid "Preparing..."
 #~ msgstr "Naghahanda..."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Naghahanda..."
 
@@ -5646,7 +5646,7 @@ msgstr "Naghahanda..."
 msgid "Present card to pay {armedAmount}"
 msgstr "Ilapit ang card upang magbayad ng {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "I-press at i-hold ang imahe sa ibaba, pagkatapos ay piliin ang Save "
 "Image."
@@ -5732,7 +5732,7 @@ msgstr "Pagpepresyo"
 msgid "Primary navigation"
 msgstr "Pangunahing pag-navigate"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "I-print"
 
@@ -5780,11 +5780,11 @@ msgstr "Nagmumungkahi…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "Protektahan ng password ang papel na wallet"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "Protektahan ng password ang sign-in card"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "Ang sign-in card ay protektado. Panatilihin ang password na hiwalay sa "
 "card."
@@ -6218,7 +6218,7 @@ msgstr "Kinakailangan"
 msgid "Reset"
 msgstr "I-reset"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "I-reset ang logo"
 
@@ -6409,7 +6409,7 @@ msgstr "I-save ang mga pagbabago"
 msgid "Save fee settings"
 msgstr "I-save ang mga setting ng bayarin"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "I-save ang napi-print na A4 sheet"
 
@@ -6829,7 +6829,7 @@ msgstr "Mga setting"
 msgid "Share"
 msgstr "Ibahagi"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Ibahagi ang card"
 
@@ -6998,9 +6998,9 @@ msgstr "Pag-sign in"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Card sa pag-sign in"
 
@@ -7181,7 +7181,7 @@ msgstr "Mas maraming decimal place ang supply kaysa sa sinusuportahan ng "
 msgid "Supply must be greater than zero"
 msgstr "Dapat higit sa zero ang supply"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Hindi suportado ang mga file ng SVG. Gamitin ang PNG, JPEG, o WebP."
 
@@ -8179,7 +8179,7 @@ msgstr "Mag-upload ng larawan sa halip"
 #~ msgid "Upload Image Instead"
 #~ msgstr "Mag-upload ng larawan sa halip"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "I-upload ang logo"
 
@@ -8643,13 +8643,13 @@ msgstr "Hindi namin matukoy kung paano pinapresyuhan ng pool na ito ang mga "
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Hindi namin ma-verify kung ang voucher na ito ay may supply na."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58

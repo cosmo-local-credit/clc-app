@@ -33,8 +33,8 @@ import { RELAYER_URL } from "#/lib/relayer-config";
 import { onboardingSearch, type WalletPage } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
-import { usePaperWalletProtection } from "./paper-wallet-protection";
-import { usePaperWalletSetup } from "./paper-wallet-setup";
+import { usePaperWalletProtection } from "#/components/paper-wallet/paper-wallet-protection";
+import { usePaperWalletSetup } from "#/components/paper-wallet/paper-wallet-setup";
 import { authClient } from "#/lib/api/auth";
 
 const relayerClient = createRelayerClient(RELAYER_URL);

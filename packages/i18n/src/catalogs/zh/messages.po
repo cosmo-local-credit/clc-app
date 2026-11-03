@@ -1575,7 +1575,7 @@ msgstr "确认并发送"
 msgid "Confirm Install or Add when asked."
 msgstr "当询问时确认安装或添加。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "确认密码"
 
@@ -1865,7 +1865,7 @@ msgstr "无法加载代金券。"
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "无法保护纸钱包。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "无法保护登录卡。"
 
@@ -1873,11 +1873,11 @@ msgstr "无法保护登录卡。"
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "无法保存纸钱包。再试一次。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "无法保存可打印工作表。再试一次。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "无法保存登录卡。再试一次。"
 
@@ -1885,7 +1885,7 @@ msgstr "无法保存登录卡。再试一次。"
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "无法共享纸钱包。尝试下载它。"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "无法共享登录卡。尝试下载它。"
 
@@ -2631,10 +2631,10 @@ msgstr "描述加入和使用此资金池的规则…"
 msgid "Describe your pool"
 msgstr "介绍您的资金池"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2695,8 +2695,8 @@ msgstr "完成"
 msgid "Done with this customer"
 msgstr "完成这位客户的操作"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "下载卡"
 
@@ -2881,7 +2881,7 @@ msgstr "输入 0 到 100 之间的费用"
 msgid "Enter a link starting with http:// or https://"
 msgstr "输入以 http:// 或 https:// 开头的链接"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "下载此卡之前输入并应用密码。"
 
@@ -3180,7 +3180,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "文件名不得超过 255 个字符"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "文件太大 ({0} KB)。最大为 512 KB。"
 
@@ -3987,8 +3987,8 @@ msgstr "位置图"
 msgid "Location unavailable"
 msgstr "位置不可用"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4296,7 +4296,7 @@ msgstr "姓名为必填项"
 msgid "Name must be 80 characters or fewer"
 msgstr "名称不得超过 80 个字符"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "钱包上的姓名"
 
@@ -4742,7 +4742,7 @@ msgstr "未持有"
 msgid "Not linked"
 msgstr "未链接"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "未受保护。任何扫描此卡的人都可以访问您的钱包。"
 
@@ -5116,11 +5116,11 @@ msgid "Passkeys can sign for multisigs on Safe 1.5 or later. Use your sign-in "
 msgstr "通行密钥可为 Safe 1.5 及更高版本的多签钱包签名。请使用您的登录卡。"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "密码"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "密码不能为空。"
 
@@ -5130,7 +5130,7 @@ msgstr "密码不能为空。"
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "受密码保护的纸钱包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "密码不匹配。"
 
@@ -5578,10 +5578,10 @@ msgstr "正在准备提现…"
 #~ msgid "Preparing..."
 #~ msgstr "正在准备…"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "正在准备……"
 
@@ -5589,7 +5589,7 @@ msgstr "正在准备……"
 msgid "Present card to pay {armedAmount}"
 msgstr "出示卡支付 {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "按住下面的图像，然后选择“保存图像”。"
 
@@ -5680,7 +5680,7 @@ msgstr "定价"
 msgid "Primary navigation"
 msgstr "主要导航"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "打印"
 
@@ -5727,11 +5727,11 @@ msgstr "正在提议…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "使用密码保护纸钱包"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "使用密码保护登录卡"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "登录卡受到保护。将密码与卡分开保存。"
 
@@ -6162,7 +6162,7 @@ msgstr "必填"
 msgid "Reset"
 msgstr "重置"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "重置徽标"
 
@@ -6354,7 +6354,7 @@ msgstr "保存更改"
 msgid "Save fee settings"
 msgstr "保存费用设置"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "保存可打印的 A4 纸"
 
@@ -6770,7 +6770,7 @@ msgstr "设置"
 msgid "Share"
 msgstr "分享"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "分享卡片"
 
@@ -6936,9 +6936,9 @@ msgstr "登录"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "登录卡"
 
@@ -7117,7 +7117,7 @@ msgstr "发行量的小数位数超过此代金券支持的位数"
 msgid "Supply must be greater than zero"
 msgstr "发行量必须大于零"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "不支持 SVG 文件。使用 PNG、JPEG 或 WebP。"
 
@@ -8077,7 +8077,7 @@ msgstr "改为上传图片"
 #~ msgid "Upload Image Instead"
 #~ msgstr "改为上传图片"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "上传徽标"
 
@@ -8533,13 +8533,13 @@ msgstr "我们无法得知资金池如何为代金券定价，因此无法在此
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "无法验证此代金券是否已有发行量。"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58

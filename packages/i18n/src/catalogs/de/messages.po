@@ -1608,7 +1608,7 @@ msgid "Confirm Install or Add when asked."
 msgstr "Bestätigen Sie „Installieren“ oder „Hinzufügen“, wenn Sie dazu "
 "aufgefordert werden."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "Passwort bestätigen"
 
@@ -1905,7 +1905,7 @@ msgstr "Die Gutscheine konnten nicht geladen werden."
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "Diese Papiergeldbörse konnte nicht geschützt werden."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "Diese Sign-in-Karte konnte nicht geschützt werden."
 
@@ -1914,11 +1914,11 @@ msgstr "Diese Sign-in-Karte konnte nicht geschützt werden."
 #~ msgstr "Die Papiergeldbörse konnte nicht gespeichert werden. Versuchen Sie es "
 #~ "erneut."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Konnte den bedruckbaren Bogen nicht speichern. Versuch es noch einmal."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Die Sign-in-Karte konnte nicht gespeichert werden. Versuchen Sie es "
 "erneut."
@@ -1928,7 +1928,7 @@ msgstr "Die Sign-in-Karte konnte nicht gespeichert werden. Versuchen Sie es "
 #~ msgstr "Die Papiergeldbörse konnte nicht geteilt werden. Laden Sie sie "
 #~ "stattdessen herunter."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Die Anmeldekarte konnte nicht freigegeben werden. Versuchen Sie "
 "stattdessen, es herunterzuladen."
@@ -2693,10 +2693,10 @@ msgstr "Beschreiben Sie die Regeln für den Beitritt und die Nutzung dieses "
 msgid "Describe your pool"
 msgstr "Beschreiben Sie Ihren Fonds"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2757,8 +2757,8 @@ msgstr "Geschehen"
 msgid "Done with this customer"
 msgstr "Fertig mit diesem Kunden"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "Downloadkarte"
 
@@ -2944,7 +2944,7 @@ msgstr "Geben Sie eine Gebühr von 0 bis 100 ein"
 msgid "Enter a link starting with http:// or https://"
 msgstr "Geben Sie einen Link ein, der mit http:// oder https:// beginnt"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "Geben Sie vor dem Speichern ein Passwort ein."
 
@@ -3248,7 +3248,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Der Dateiname muss 255 Zeichen oder weniger sein"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Die Datei ist zu groß ({0} KB). Zulässig sind höchstens 512 KB."
 
@@ -4065,8 +4065,8 @@ msgstr "Standortkarte"
 msgid "Location unavailable"
 msgstr "Standort nicht verfügbar"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4360,7 +4360,7 @@ msgstr "Name ist erforderlich"
 msgid "Name must be 80 characters or fewer"
 msgstr "Name muss 80 Zeichen oder weniger sein"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "Name auf der Karte"
 
@@ -4812,7 +4812,7 @@ msgstr "Nicht gehalten"
 msgid "Not linked"
 msgstr "Nicht verbunden"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "Nicht geschützt. Jeder, der diese Karte scannt, kann auf Ihr Wallet "
 "zugreifen."
@@ -5197,11 +5197,11 @@ msgstr "Passschlüssel können für Multisigs auf Safe 1.5 oder höher signieren
 "Verwenden Sie Ihre Anmeldekarte."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Passwort"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Das Passwort kann nicht leer sein."
 
@@ -5211,7 +5211,7 @@ msgstr "Das Passwort kann nicht leer sein."
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "Passwortgeschützte Papiergeldbörse"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Passwörter passen nicht zusammen."
 
@@ -5662,10 +5662,10 @@ msgstr "Ihre Auszahlung wird vorbereitet…"
 #~ msgid "Preparing..."
 #~ msgstr "Vorbereitung..."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Vorbereitung..."
 
@@ -5673,7 +5673,7 @@ msgstr "Vorbereitung..."
 msgid "Present card to pay {armedAmount}"
 msgstr "Karte vorhalten, um {armedAmount} zu bezahlen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Drücken und halten Sie das Bild unten, dann wählen Sie Bild speichern."
 
@@ -5758,7 +5758,7 @@ msgstr "Preisgestaltung"
 msgid "Primary navigation"
 msgstr "Primärnavigation"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "Druck"
 
@@ -5806,11 +5806,11 @@ msgstr "Wird vorgeschlagen…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "Papiergeldbörse mit einem Passwort schützen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "Mit einem Passwort schützen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "Geschützt. Halten Sie das Passwort von der Karte getrennt."
 
@@ -6245,7 +6245,7 @@ msgstr "erforderlich"
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "Logo zurücksetzen"
 
@@ -6437,7 +6437,7 @@ msgstr "Änderungen speichern"
 msgid "Save fee settings"
 msgstr "Einstellungen für Spargebühren"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "Druckbares A4-Blatt speichern"
 
@@ -6857,7 +6857,7 @@ msgstr "Einstellungen"
 msgid "Share"
 msgstr "Anteil"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Aktienkarte"
 
@@ -7026,9 +7026,9 @@ msgstr "Anmeldung"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Anmeldekarte"
 
@@ -7209,7 +7209,7 @@ msgstr "Der Bestand hat mehr Dezimalstellen, als dieser Gutschein unterstützt"
 msgid "Supply must be greater than zero"
 msgstr "Der Bestand muss größer als null sein"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG-Dateien werden nicht unterstützt. Verwenden Sie PNG, JPEG oder "
 "WebP."
@@ -8220,7 +8220,7 @@ msgstr "Kartenbild hochladen"
 #~ msgid "Upload Image Instead"
 #~ msgstr "Stattdessen ein Bild hochladen"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "Logo hochladen"
 
@@ -8686,13 +8686,13 @@ msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Es konnte nicht geprüft werden, ob dieser Gutschein bereits einen "
 "Bestand hat."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58

@@ -1605,7 +1605,7 @@ msgstr "पुष्टि करें और भेजें"
 msgid "Confirm Install or Add when asked."
 msgstr "पूछे जाने पर इंस्टॉल या जोड़ने की पुष्टि करें।"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "पासवर्ड की पुष्टि करें"
 
@@ -1902,7 +1902,7 @@ msgstr "वाउचर लोड नहीं किये जा सके."
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "इस पेपर वॉलेट को सुरक्षित नहीं किया जा सका।"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "इस साइन-इन कार्ड को सुरक्षित नहीं किया जा सका।"
 
@@ -1910,11 +1910,11 @@ msgstr "इस साइन-इन कार्ड को सुरक्षि�
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "पेपर वॉलेट सहेजा नहीं जा सका. पुनः प्रयास करें।"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "मुद्रण योग्य शीट सहेजी नहीं जा सकी. पुनः प्रयास करें।"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "साइन-इन कार्ड सहेजा नहीं जा सका. पुनः प्रयास करें।"
 
@@ -1923,7 +1923,7 @@ msgstr "साइन-इन कार्ड सहेजा नहीं जा 
 #~ msgstr "पेपर वॉलेट साझा नहीं किया जा सका. इसके बजाय इसे डाउनलोड करने का प्रयास "
 #~ "करें."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "साइन-इन कार्ड साझा नहीं किया जा सका. इसके बजाय इसे डाउनलोड करने का "
 "प्रयास करें."
@@ -2678,10 +2678,10 @@ msgstr "इस पूल में शामिल होने और उपय
 msgid "Describe your pool"
 msgstr "अपने पूल का वर्णन करें"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2742,8 +2742,8 @@ msgstr "हो गया"
 msgid "Done with this customer"
 msgstr "इस ग्राहक के साथ काम हो गया"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "कार्ड डाउनलोड करें"
 
@@ -2929,7 +2929,7 @@ msgstr "0 से 100 तक शुल्क दर्ज करें"
 msgid "Enter a link starting with http:// or https://"
 msgstr "http:// या https:// से शुरू होने वाला लिंक दर्ज करें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "इस कार्ड को डाउनलोड करने से पहले एक पासवर्ड दर्ज करें और लागू करें।"
 
@@ -3231,7 +3231,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "फ़ाइल का नाम 255 अक्षर या उससे कम होना चाहिए"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "फ़ाइल बहुत बड़ी है ({0} KB). अधिकतम 512 KB है."
 
@@ -4049,8 +4049,8 @@ msgstr "स्थान मानचित्र"
 msgid "Location unavailable"
 msgstr "स्थान अनुपलब्ध"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4359,7 +4359,7 @@ msgstr "नाम आवश्यक है"
 msgid "Name must be 80 characters or fewer"
 msgstr "नाम 80 अक्षर या उससे कम होना चाहिए"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "वॉलेट पर नाम"
 
@@ -4809,7 +4809,7 @@ msgstr "आयोजित नहीं किया गया"
 msgid "Not linked"
 msgstr "लिंक नहीं किया गया"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "सुरक्षित नहीं है। इस कार्ड को स्कैन करने वाला कोई भी व्यक्ति आपके वॉलेट "
 "तक पहुँच सकता है।"
@@ -5192,11 +5192,11 @@ msgstr "पासकी Safe 1.5 या उसके बाद के मल्�
 "हैं। अपने साइन-इन कार्ड का उपयोग करें।"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "पासवर्ड"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "पासवर्ड खाली नहीं हो सकता."
 
@@ -5206,7 +5206,7 @@ msgstr "पासवर्ड खाली नहीं हो सकता."
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "पासवर्ड से सुरक्षित पेपर वॉलेट"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "पासवर्ड मेल नहीं खाते."
 
@@ -5657,10 +5657,10 @@ msgstr "आपकी निकासी की तैयारी की जा 
 #~ msgid "Preparing..."
 #~ msgstr "तैयारी..."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "तैयारी हो रही है..."
 
@@ -5668,7 +5668,7 @@ msgstr "तैयारी हो रही है..."
 msgid "Present card to pay {armedAmount}"
 msgstr "{armedAmount} का भुगतान करने के लिए कार्ड प्रस्तुत करें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "नीचे दी गई छवि को दबाकर रखें, फिर छवि सहेजें चुनें।"
 
@@ -5759,7 +5759,7 @@ msgstr "मूल्य निर्धारण"
 msgid "Primary navigation"
 msgstr "प्राथमिक नेविगेशन"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "प्रिंट करें"
 
@@ -5808,11 +5808,11 @@ msgstr "प्रस्तावित किया जा रहा है…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "पेपर वॉलेट को पासवर्ड से सुरक्षित रखें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "साइन-इन कार्ड को पासवर्ड से सुरक्षित रखें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "साइन-इन कार्ड सुरक्षित है. पासवर्ड को कार्ड से अलग रखें."
 
@@ -6245,7 +6245,7 @@ msgstr "आवश्यक"
 msgid "Reset"
 msgstr "रीसेट करें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "लोगो रीसेट करें"
 
@@ -6439,7 +6439,7 @@ msgstr "परिवर्तन सहेजें"
 msgid "Save fee settings"
 msgstr "शुल्क सेटिंग सहेजें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "मुद्रण योग्य A4 शीट सहेजें"
 
@@ -6859,7 +6859,7 @@ msgstr "सेटिंग्स"
 msgid "Share"
 msgstr "साझा करें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "कार्ड साझा करें"
 
@@ -7028,9 +7028,9 @@ msgstr "साइन इन"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "साइन-इन कार्ड"
 
@@ -7210,7 +7210,7 @@ msgstr "आपूर्ति में इस वाउचर के समर�
 msgid "Supply must be greater than zero"
 msgstr "आपूर्ति शून्य से अधिक होनी चाहिए"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG फ़ाइलें समर्थित नहीं हैं. PNG, JPEG, या WebP का उपयोग करें।"
 
@@ -8196,7 +8196,7 @@ msgstr "इसके बजाय छवि अपलोड करें"
 #~ msgid "Upload Image Instead"
 #~ msgstr "इसके बजाय छवि अपलोड करें"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "लोगो अपलोड करें"
 
@@ -8658,13 +8658,13 @@ msgstr "हम यह नहीं बता सकते कि इस पू�
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "हम सत्यापित नहीं कर सके कि इस वाउचर की आपूर्ति पहले से ही है या नहीं।"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58

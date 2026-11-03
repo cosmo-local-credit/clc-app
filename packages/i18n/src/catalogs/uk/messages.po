@@ -1607,7 +1607,7 @@ msgstr "Підтвердити й надіслати"
 msgid "Confirm Install or Add when asked."
 msgstr "Коли з’явиться запит, підтвердьте встановлення або додавання."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "Підтвердьте пароль"
 
@@ -1906,7 +1906,7 @@ msgstr "Не вдалося завантажити ваучери."
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "Не вдалося захистити цей паперовий гаманець."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "Не вдалося захистити цей картка для входу."
 
@@ -1914,11 +1914,11 @@ msgstr "Не вдалося захистити цей картка для вхо
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "Не вдалося зберегти паперовий гаманець. Спробуйте ще раз."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Не вдалося зберегти аркуш для друку. Спробуйте ще раз."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Не вдалося зберегти картка для входу. Спробуйте ще раз."
 
@@ -1926,7 +1926,7 @@ msgstr "Не вдалося зберегти картка для входу. С�
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "Не вдалося поділитися паперовим гаманцем. Спробуйте завантажити його."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Не вдалося поділитися картка для входу. Спробуйте завантажити його."
 
@@ -2681,10 +2681,10 @@ msgstr "Опишіть правила приєднання до цього пу�
 msgid "Describe your pool"
 msgstr "Опишіть свій пул"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2745,8 +2745,8 @@ msgstr "Готово"
 msgid "Done with this customer"
 msgstr "Завершити обслуговування клієнта"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "Завантажити картку"
 
@@ -2932,7 +2932,7 @@ msgstr "Введіть комісію від 0 до 100"
 msgid "Enter a link starting with http:// or https://"
 msgstr "Введіть посилання, що починається з http:// або https://"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "Введіть і застосуйте пароль перед завантаженням цієї картки."
 
@@ -3231,7 +3231,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Назва файлу має містити не більше 255 символів"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Файл завеликий ({0} КБ). Максимальний розмір — 512 КБ."
 
@@ -4044,8 +4044,8 @@ msgstr "Мапа місця"
 msgid "Location unavailable"
 msgstr "Геодані недоступні"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4353,7 +4353,7 @@ msgstr "Назва обов’язкова"
 msgid "Name must be 80 characters or fewer"
 msgstr "Назва має містити не більше 80 символів"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "Ім’я на гаманці"
 
@@ -4803,7 +4803,7 @@ msgstr "Немає у власності"
 msgid "Not linked"
 msgstr "Не прив’язано"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "Не захищено. Кожен, хто відсканує цю картку, зможе отримати доступ до "
 "вашого гаманця."
@@ -5187,11 +5187,11 @@ msgstr "Ключі доступу можуть підписувати для г�
 "1.5. Скористайтеся своїм картка для входу."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Пароль"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Пароль не може бути порожнім."
 
@@ -5201,7 +5201,7 @@ msgstr "Пароль не може бути порожнім."
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "Захищений паролем паперовий гаманець"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Паролі не збігаються."
 
@@ -5651,10 +5651,10 @@ msgstr "Підготовка виведення коштів…"
 #~ msgid "Preparing..."
 #~ msgstr "Підготовка..."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Підготовка…"
 
@@ -5662,7 +5662,7 @@ msgstr "Підготовка…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Прикладіть картку, щоб сплатити {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Натисніть і утримуйте зображення нижче, а потім виберіть «Зберегти "
 "зображення»."
@@ -5754,7 +5754,7 @@ msgstr "Ціноутворення"
 msgid "Primary navigation"
 msgstr "Основна навігація"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "Друкувати"
 
@@ -5802,11 +5802,11 @@ msgstr "Пропонуємо…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "Захистити паперовий гаманець паролем"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "Захистити картку для входу паролем"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "картка для входу захищено. Зберігайте пароль окремо від картки."
 
@@ -6240,7 +6240,7 @@ msgstr "Обов’язково"
 msgid "Reset"
 msgstr "Скинути"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "Скинути логотип"
 
@@ -6431,7 +6431,7 @@ msgstr "Зберегти зміни"
 msgid "Save fee settings"
 msgstr "Зберегти налаштування комісії"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "Зберегти аркуш A4 для друку"
 
@@ -6849,7 +6849,7 @@ msgstr "Налаштування"
 msgid "Share"
 msgstr "Поділитися"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Поділитися карткою"
 
@@ -7016,9 +7016,9 @@ msgstr "Вхід"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Картка для входу"
 
@@ -7198,7 +7198,7 @@ msgstr "Кількість має більше десяткових знаків
 msgid "Supply must be greater than zero"
 msgstr "Кількість має бути більшою за нуль"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Файли SVG не підтримуються. Використовуйте PNG, JPEG або WebP."
 
@@ -8187,7 +8187,7 @@ msgstr "Натомість завантажити зображення"
 #~ msgid "Upload Image Instead"
 #~ msgstr "Натомість завантажити зображення"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "Завантажити логотип"
 
@@ -8649,13 +8649,13 @@ msgstr "Не вдалося визначити, як цей пул оцінює 
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Не вдалося перевірити, чи вже випускали цей ваучер."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58

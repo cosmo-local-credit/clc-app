@@ -1605,7 +1605,7 @@ msgstr "Thibitisha na utume"
 msgid "Confirm Install or Add when asked."
 msgstr "Thibitisha Install (Sakinisha) au Add (Ongeza) unapoombwa."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:136
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:136
 msgid "Confirm password"
 msgstr "Thibitisha nenosiri"
 
@@ -1904,7 +1904,7 @@ msgstr "Imeshindwa kupakia vocha."
 #~ msgid "Could not protect this paper wallet."
 #~ msgstr "Haikuwezekana kulinda mkoba huu wa karatasi."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:81
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:81
 msgid "Could not protect this sign-in card."
 msgstr "Haikuwezekana kulinda kadi hii ya kuingia."
 
@@ -1912,11 +1912,11 @@ msgstr "Haikuwezekana kulinda kadi hii ya kuingia."
 #~ msgid "Could not save the paper wallet. Try again."
 #~ msgstr "Imeshindikana kuhifadhi pochi ya karatasi. Jaribu tena."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:201
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:201
 msgid "Could not save the printable sheet. Try again."
 msgstr "Imeshindwa kuhifadhi karatasi ya kuchapisha. Jaribu tena."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:170
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:170
 msgid "Could not save the sign-in card. Try again."
 msgstr "Imeshindikana kuhifadhi kadi ya kuingia. Jaribu tena."
 
@@ -1924,7 +1924,7 @@ msgstr "Imeshindikana kuhifadhi kadi ya kuingia. Jaribu tena."
 #~ msgid "Could not share the paper wallet. Try downloading it instead."
 #~ msgstr "Imeshindikana kushiriki pochi ya karatasi. Jaribu kuipakua badala yake."
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:221
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:221
 msgid "Could not share the sign-in card. Try downloading it instead."
 msgstr "Imeshindikana kushiriki kadi ya kuingia. Jaribu kuipakua badala yake."
 
@@ -2678,10 +2678,10 @@ msgstr "Eleza masharti ya kujiunga na kutumia bwawa hili..."
 msgid "Describe your pool"
 msgstr "Eleza puli yako"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:104
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:266
 #: apps/web/src/components/wants/want-detail.tsx:125
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:121
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:104
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:33
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
 #: apps/web/src/features/wants/ui/want-form-page.tsx:231
@@ -2742,8 +2742,8 @@ msgstr "Maliza"
 msgid "Done with this customer"
 msgstr "Maliza na mteja huyu"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:277
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:277
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
 msgid "Download card"
 msgstr "Pakua kadi"
 
@@ -2928,7 +2928,7 @@ msgstr "Weka ada kuanzia 0 hadi 100"
 msgid "Enter a link starting with http:// or https://"
 msgstr "Weka kiungo kinachoanza na http:// au https://"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:109
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:109
 msgid "Enter a password before saving."
 msgstr "Weka na utumie nenosiri kabla ya kupakua kadi hii."
 
@@ -3231,7 +3231,7 @@ msgid "File name must be 255 characters or fewer"
 msgstr "Jina la faili lisizidi herufi 255"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:46
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:46
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Faili ni kubwa mno ({0} KB). Kiwango cha juu ni 512 KB."
 
@@ -4048,8 +4048,8 @@ msgstr "Ramani ya eneo"
 msgid "Location unavailable"
 msgstr "Eneo halipatikani"
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:119
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:274
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:119
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:702
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:273
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:664
@@ -4360,7 +4360,7 @@ msgstr "Jina linahitajika"
 msgid "Name must be 80 characters or fewer"
 msgstr "Jina lazima liwe herufi 80 au pungufu"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:78
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:78
 msgid "Name on card"
 msgstr "Jina kwenye mkoba"
 
@@ -4814,7 +4814,7 @@ msgstr "Huna"
 msgid "Not linked"
 msgstr "Haijaunganishwa"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:112
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:112
 msgid "Not protected. Anyone who scans this card can access your wallet."
 msgstr "Haijalindwa. Mtu yeyote anayechanganua kadi hii anaweza kufikia pochi "
 "yako."
@@ -5198,11 +5198,11 @@ msgstr "Passkey zinaweza kusaini kwa pochi za sahihi nyingi kuanzia Safe 1.5. "
 "Tumia kadi yako ya kuingia."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:79
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:123
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:123
 msgid "Password"
 msgstr "Nenosiri"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:67
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:67
 msgid "Password cannot be empty."
 msgstr "Nenosiri haliwezi kuwa tupu."
 
@@ -5212,7 +5212,7 @@ msgstr "Nenosiri haliwezi kuwa tupu."
 #~ msgid "Password-protected paper wallet"
 #~ msgstr "Mkoba wa karatasi uliolindwa kwa nenosiri"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:72
 msgid "Passwords do not match."
 msgstr "Manenosiri hayalingani."
 
@@ -5663,10 +5663,10 @@ msgstr "Inaandaa utoaji wako wa pesa…"
 #~ msgid "Preparing..."
 #~ msgstr "Inaandaa..."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:280
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 #: apps/web/src/components/ui/image-crop-sheet.tsx:262
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:85
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:280
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
 msgid "Preparing…"
 msgstr "Inaandaa…"
 
@@ -5674,7 +5674,7 @@ msgstr "Inaandaa…"
 msgid "Present card to pay {armedAmount}"
 msgstr "Gusisha kadi ili kulipa {armedAmount}"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:314
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:314
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Bonyeza na ushikilie picha iliyo hapa chini, kisha uchague Hifadhi "
 "Picha."
@@ -5766,7 +5766,7 @@ msgstr "Upangaji wa bei"
 msgid "Primary navigation"
 msgstr "Urambazaji wa msingi"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:293
 msgid "Print"
 msgstr "Chapisha"
 
@@ -5815,11 +5815,11 @@ msgstr "Inapendekeza…"
 #~ msgid "Protect paper wallet with a password"
 #~ msgstr "Linda mkoba wa karatasi kwa nenosiri"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:97
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:97
 msgid "Protect with a password"
 msgstr "Linda kadi ya kuingia kwa nenosiri"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:107
+#: apps/web/src/components/paper-wallet/paper-wallet-protection.tsx:107
 msgid "Protected. Keep the password separate from the card."
 msgstr "kadi ya kuingia umelindwa. Weka nenosiri mbali na kadi."
 
@@ -6254,7 +6254,7 @@ msgstr "Inahitajika"
 msgid "Reset"
 msgstr "Weka upya"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:145
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:145
 msgid "Reset logo"
 msgstr "Weka upya nembo"
 
@@ -6448,7 +6448,7 @@ msgstr "Hifadhi mabadiliko"
 msgid "Save fee settings"
 msgstr "Hifadhi mipangilio ya ada"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:290
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:290
 msgid "Save printable A4 sheet"
 msgstr "Hifadhi karatasi ya A4 ya kuchapisha"
 
@@ -6868,7 +6868,7 @@ msgstr "Mipangilio"
 msgid "Share"
 msgstr "Shiriki"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:305
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:305
 msgid "Share card"
 msgstr "Shiriki kadi"
 
@@ -7037,9 +7037,9 @@ msgstr "Kuingia"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:440
 #: apps/web/src/components/paper-wallet-scanner.tsx:121
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:72
+#: apps/web/src/components/paper-wallet/paper-wallet-setup.tsx:316
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:675
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:316
 msgid "Sign-in card"
 msgstr "Kadi ya kuingia"
 
@@ -7219,7 +7219,7 @@ msgstr "Usambazaji una nafasi nyingi za desimali kuliko vocha hii inavyoruhusu"
 msgid "Supply must be greater than zero"
 msgstr "Usambazaji lazima uwe zaidi ya sifuri"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:39
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:39
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Faili za SVG hazitumiki. Tumia PNG, JPEG, au WebP."
 
@@ -8207,7 +8207,7 @@ msgstr "Pakia Picha Badala Yake"
 #~ msgid "Upload Image Instead"
 #~ msgstr "Pakia Picha Badala Yake"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:124
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:124
 msgid "Upload logo"
 msgstr "Pakia nembo"
 
@@ -8668,13 +8668,13 @@ msgstr "Hatukuweza kubaini jinsi puli hii inavyopanga bei za vocha, hivyo "
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Hatukuweza kuthibitisha kama vocha hii tayari ina usambazaji."
 
+#: apps/web/src/components/paper-wallet/paper-wallet-customizer.tsx:91
 #: apps/web/src/components/vouchers/voucher-about.tsx:102
 #: apps/web/src/components/vouchers/voucher-summary.tsx:370
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:536
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:552
-#: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:91
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:63
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
