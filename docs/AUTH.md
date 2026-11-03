@@ -272,7 +272,10 @@ account to a new address. Settings → Sign-in → **Replace sign-in card** open
 5. **Passkeys.** `relinkMovedPasskeys` reads the account's passkeys from clc-core
    and registers each `moved` one on the new wallet with the new root key, skips
    any already registered, and follows a registration still settling. It is safe
-   to run again. Until then a moved passkey's sign-in answers E21, and a further
+   to run again, and stops at a registration whose outcome is unknown rather
+   than sign the next one over the same Calibur nonce. A registration that
+   reverts leaves the passkey `moved`, so Settings keeps offering **Finish moving
+   your passkey**. Until then a moved passkey's sign-in answers E21, and a further
    replacement carries it along.
 
 Both keys live only in `useRotationSession` (memory, no `persist`). It survives
