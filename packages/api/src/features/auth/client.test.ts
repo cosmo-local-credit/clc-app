@@ -550,6 +550,7 @@ describe("key rotation", () => {
           clientDataJSON: "c",
           signature: "s",
         },
+        nonce: "rotationnonce1",
       },
       new: { message: "m", signature: "0x01" },
     };

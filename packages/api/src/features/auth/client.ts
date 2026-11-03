@@ -92,10 +92,10 @@ export type KeyRotationSiweProof = { message: string; signature: string };
 /**
  * `POST /auth/key-rotation`. The old card proves control with its own SIWE
  * signature, or — required when the account has an active passkey — with a
- * passkey assertion.
+ * passkey assertion over `keyRotationPasskeyChallenge(statement, nonce)`.
  */
 export type KeyRotationPayload = {
-  old: { siwe: KeyRotationSiweProof } | { webauthn: WebAuthnAssertionPayload };
+  old: { siwe: KeyRotationSiweProof } | { webauthn: WebAuthnAssertionPayload; nonce: string };
   new: KeyRotationSiweProof;
 };
 

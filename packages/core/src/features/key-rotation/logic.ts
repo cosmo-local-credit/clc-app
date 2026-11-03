@@ -8,7 +8,7 @@
  * Calibur batches the old key signs. Assets a Safe owns are never touched.
  */
 
-import { encodeFunctionData, getAddress, isAddressEqual, parseAbi } from "viem";
+import { encodeFunctionData, getAddress, isAddressEqual, parseAbi, sha256, toBytes } from "viem";
 
 import { POOL_SEAL_FEE_ADDRESS, swapPoolSetFeeAddressAbi } from "../pool-admin/logic";
 import type { CaliburCall } from "../webauthn/index";
@@ -32,6 +32,17 @@ const KEY_ROTATION_STATEMENT_PREFIX = "Replace sign-in card ";
  */
 export function buildKeyRotationStatement(oldAddress: string, newAddress: string): string {
   return `${KEY_ROTATION_STATEMENT_PREFIX}${getAddress(oldAddress)} with ${getAddress(newAddress)}`;
+}
+
+/**
+ * The WebAuthn challenge a passkey signs to confirm a replacement:
+ * sha256(statement + "\n" + nonce), with a fresh nonce from POST /auth/nonce.
+ * It commits to both cards, so neither a sign-in assertion nor one made for a
+ * move to another card can confirm this one (clc-core
+ * util.KeyRotationPasskeyChallenge).
+ */
+export function keyRotationPasskeyChallenge(statement: string, nonce: string): Uint8Array {
+  return sha256(toBytes(`${statement}\n${nonce}`), "bytes");
 }
 
 export type RotationAssetKind = "pool" | "voucher" | "balance" | "native";

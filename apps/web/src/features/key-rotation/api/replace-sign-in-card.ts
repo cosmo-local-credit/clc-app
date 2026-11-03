@@ -4,11 +4,13 @@ import type {
   KeyRotationResult,
 } from "@clc/api/features/auth/client";
 import { privateKeySigner, type SiweRequest, signSiweMessage } from "@clc/api/features/auth/siwe";
-import type { RelayerClient } from "@clc/api/features/relayer/client";
-import { buildKeyRotationStatement } from "@clc/core/features/key-rotation/logic";
+import {
+  buildKeyRotationStatement,
+  keyRotationPasskeyChallenge,
+} from "@clc/core/features/key-rotation/logic";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { collectWebAuthnAssertion } from "#/features/webauthn/hooks/assertion";
+import { collectWebAuthnAssertionFor } from "#/features/webauthn/hooks/assertion";
 
 /**
  * How the old card proves the replacement is wanted. clc-core refuses the old
@@ -19,7 +21,6 @@ export type OldCardProof = { kind: "card"; key: `0x${string}` } | { kind: "passk
 
 export type ReplaceSignInCardInput = {
   auth: AuthClient;
-  relayer: RelayerClient;
   oldAddress: `0x${string}`;
   newKey: `0x${string}`;
   proof: OldCardProof;
@@ -30,8 +31,8 @@ export type ReplaceSignInCardInput = {
 /**
  * Moves the account from the old card to the new one.
  *
- * Both proofs sign the same statement naming both addresses, each over its own
- * nonce. The response sets the new card's session cookie; the old card's
+ * Both proofs commit to the same statement naming both addresses, each over
+ * its own nonce. The response sets the new card's session cookie; the old card's
  * session, on any device, stops working when this resolves.
  */
 export async function replaceSignInCard(input: ReplaceSignInCardInput): Promise<KeyRotationResult> {
@@ -47,7 +48,13 @@ export async function replaceSignInCard(input: ReplaceSignInCardInput): Promise<
     }
     old = { siwe: await signSiweMessage(input.auth, signer, request) };
   } else {
-    old = { webauthn: await collectWebAuthnAssertion(input.relayer) };
+    // Bound to this replacement: the passkey signs a challenge that commits to
+    // both cards, over a nonce clc-core spends when it accepts the assertion.
+    const nonce = await input.auth.getSiweNonce();
+    old = {
+      webauthn: await collectWebAuthnAssertionFor(keyRotationPasskeyChallenge(statement, nonce)),
+      nonce,
+    };
   }
   const proof = await signSiweMessage(input.auth, privateKeySigner(input.newKey), request);
   return input.auth.rotateKey({ old, new: proof });

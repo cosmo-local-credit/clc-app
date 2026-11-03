@@ -66,7 +66,6 @@ export function useSwitchToNewCard() {
       const replace = (kind: "card" | "passkey") =>
         replaceSignInCard({
           auth: authClient,
-          relayer: relayerClient,
           oldAddress,
           newKey,
           proof:

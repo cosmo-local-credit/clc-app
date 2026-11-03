@@ -1,4 +1,4 @@
-import { decodeFunctionData, getAddress } from "viem";
+import { decodeFunctionData, getAddress, toHex } from "viem";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
@@ -9,6 +9,7 @@ import {
 import type { CaliburCall } from "../webauthn/index";
 import {
   buildKeyRotationStatement,
+  keyRotationPasskeyChallenge,
   MAX_CALIBUR_BATCH_CALLS,
   planKeyRotationBatches,
   poolRotationCalls,
@@ -36,6 +37,19 @@ describe("buildKeyRotationStatement", () => {
   it("names both cards checksummed, word for word what clc-core parses", () => {
     expect(buildKeyRotationStatement(OLD, NEW)).toBe(
       "Replace sign-in card 0x6a347bA6B1eC10348478377c5fCeE7Ceb6921A69 with 0xf4e5A91e30903F508735943a78Fe382dfB18Da22",
+    );
+  });
+});
+
+describe("keyRotationPasskeyChallenge", () => {
+  it("matches clc-core's challenge for the same statement and nonce", () => {
+    const challenge = keyRotationPasskeyChallenge(
+      buildKeyRotationStatement(OLD, NEW),
+      "rotationnonce1",
+    );
+    // base64url 81nFFKgfqdSng7C5HyqExTO9Yz3y397Yh3GtRCQwWhw in clc-core's test.
+    expect(toHex(challenge)).toBe(
+      "0xf359c514a81fa9d4a783b0b91f2a84c533bd633df2dfded88771ad4424305a1c",
     );
   });
 });

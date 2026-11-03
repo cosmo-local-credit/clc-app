@@ -1,12 +1,16 @@
 import type { AuthClient } from "@clc/api/features/auth/client";
-import type { RelayerClient } from "@clc/api/features/relayer/client";
-import { buildKeyRotationStatement } from "@clc/core/features/key-rotation/logic";
+import {
+  buildKeyRotationStatement,
+  keyRotationPasskeyChallenge,
+} from "@clc/core/features/key-rotation/logic";
 import { privateKeyToAccount } from "viem/accounts";
 import { verifyMessage } from "viem";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { collectWebAuthnAssertion } = vi.hoisted(() => ({ collectWebAuthnAssertion: vi.fn() }));
-vi.mock("#/features/webauthn/hooks/assertion", () => ({ collectWebAuthnAssertion }));
+const { collectWebAuthnAssertionFor } = vi.hoisted(() => ({
+  collectWebAuthnAssertionFor: vi.fn(),
+}));
+vi.mock("#/features/webauthn/hooks/assertion", () => ({ collectWebAuthnAssertionFor }));
 
 import { replaceSignInCard } from "./replace-sign-in-card";
 
@@ -24,14 +28,13 @@ function auth() {
   } as unknown as AuthClient & { rotateKey: ReturnType<typeof vi.fn> };
 }
 
-afterEach(() => collectWebAuthnAssertion.mockReset());
+afterEach(() => collectWebAuthnAssertionFor.mockReset());
 
 describe("replaceSignInCard", () => {
   it("has both cards sign the same rotation statement over their own nonces", async () => {
     const client = auth();
     await replaceSignInCard({
       auth: client,
-      relayer: {} as RelayerClient,
       oldAddress: OLD,
       newKey: NEW_KEY,
       proof: { kind: "card", key: OLD_KEY },
@@ -64,7 +67,7 @@ describe("replaceSignInCard", () => {
     ).resolves.toBe(true);
   });
 
-  it("confirms with the passkey when the account has one", async () => {
+  it("confirms with the passkey over a challenge bound to both cards", async () => {
     const client = auth();
     const assertion = {
       credentialId: "cred",
@@ -72,11 +75,10 @@ describe("replaceSignInCard", () => {
       clientDataJSON: "c",
       signature: "s",
     };
-    collectWebAuthnAssertion.mockResolvedValue(assertion);
+    collectWebAuthnAssertionFor.mockResolvedValue(assertion);
 
     await replaceSignInCard({
       auth: client,
-      relayer: {} as RelayerClient,
       oldAddress: OLD,
       newKey: NEW_KEY,
       proof: { kind: "passkey" },
@@ -84,7 +86,11 @@ describe("replaceSignInCard", () => {
     });
 
     expect(client.rotateKey).toHaveBeenCalledWith(
-      expect.objectContaining({ old: { webauthn: assertion } }),
+      expect.objectContaining({ old: { webauthn: assertion, nonce: "rotationnonce1" } }),
+    );
+    const [challenge] = collectWebAuthnAssertionFor.mock.calls[0] as [Uint8Array];
+    expect(challenge).toEqual(
+      keyRotationPasskeyChallenge(buildKeyRotationStatement(OLD, NEW), "rotationnonce1"),
     );
   });
 
@@ -93,7 +99,6 @@ describe("replaceSignInCard", () => {
     await expect(
       replaceSignInCard({
         auth: client,
-        relayer: {} as RelayerClient,
         oldAddress: OLD,
         newKey: NEW_KEY,
         proof: { kind: "card", key: NEW_KEY },
