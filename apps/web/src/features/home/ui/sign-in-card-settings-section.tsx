@@ -1,4 +1,3 @@
-import type { MovedPasskey } from "@clc/api/features/auth/client";
 import {
   keyRotationsQueryOptions,
   webAuthnCredentialsQueryOptions,
@@ -34,19 +33,11 @@ function SignInCardRows({ address }: { address: `0x${string}` }) {
   const credentials = useQuery({ ...webAuthnCredentialsQueryOptions(authClient, address) });
   const relink = useRelinkPasskeys();
   const latest = rotations.data?.[0];
-  const moved: MovedPasskey[] = (credentials.data?.credentials ?? []).flatMap((credential) =>
-    credential.state === "moved" && credential.publicKeyX && credential.publicKeyY
-      ? [
-          {
-            credentialId: credential.credentialId,
-            publicKeyX: credential.publicKeyX,
-            publicKeyY: credential.publicKeyY,
-          },
-        ]
-      : [],
+  const moved = (credentials.data?.credentials ?? []).some(
+    (credential) => credential.state === "moved",
   );
   // Registering on the new wallet needs its root key: a card session.
-  const canRelink = connector?.id === PRIVATE_KEY_CONNECTOR_ID && moved.length > 0;
+  const canRelink = connector?.id === PRIVATE_KEY_CONNECTOR_ID && moved;
 
   return (
     <>
@@ -71,7 +62,7 @@ function SignInCardRows({ address }: { address: `0x${string}` }) {
             const key = getStoredKey();
             if (!key) return;
             relink.mutate(
-              { passkeys: moved, key },
+              { key },
               {
                 onSuccess: () => toast.success(t`Passkey moved`),
                 onError: (error) =>

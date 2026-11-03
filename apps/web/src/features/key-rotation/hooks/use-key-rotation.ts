@@ -1,5 +1,4 @@
 import { BackendApiError } from "@clc/api/client/errors";
-import type { MovedPasskey } from "@clc/api/features/auth/client";
 import { authKeys } from "@clc/api/features/auth/queries";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { planKeyRotationBatches } from "@clc/core/features/key-rotation/logic";
@@ -18,7 +17,7 @@ import { beginWalletSwitch } from "#/lib/wallet-session";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 
 import { loadRotationAssets } from "../api/load-rotation-assets";
-import { relinkPasskey } from "../api/relink-passkey";
+import { relinkMovedPasskeys } from "../api/relink-passkey";
 import { replaceSignInCard } from "../api/replace-sign-in-card";
 import { runRotationBatches } from "../api/run-rotation-batches";
 import { useRotationSession } from "../state/rotation-session";
@@ -168,23 +167,21 @@ export function useMoveOldCardAssets() {
 }
 
 /**
- * Registers passkeys that came along on the new card's wallet. `key` is the
- * new card's: from the replacement in memory, or the stored key of a session
- * signed in with that card afterwards.
+ * Registers the passkeys that came with the account on the new card's wallet.
+ * `key` is the new card's: from the replacement in memory, or the stored key of
+ * a session signed in with that card afterwards. Safe to run again.
  */
 export function useRelinkPasskeys() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["key-rotation", "passkeys"],
-    mutationFn: async (input: { passkeys: MovedPasskey[]; key: `0x${string}` }) => {
-      for (const passkey of input.passkeys) {
-        await relinkPasskey({ passkey, newKey: input.key, relayer: relayerClient });
-      }
+    mutationFn: async (input: { key: `0x${string}` }) => {
+      await relinkMovedPasskeys({ auth: authClient, relayer: relayerClient, newKey: input.key });
       return privateKeyToAccount(input.key).address;
     },
-    onSettled: (address) =>
-      address
-        ? queryClient.invalidateQueries({ queryKey: authKeys.webAuthnCredentials(address) })
-        : undefined,
+    onSettled: (_address, _error, input) =>
+      queryClient.invalidateQueries({
+        queryKey: authKeys.webAuthnCredentials(privateKeyToAccount(input.key).address),
+      }),
   });
 }

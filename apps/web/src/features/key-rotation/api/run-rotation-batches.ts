@@ -1,9 +1,5 @@
 import type { RotationBatch } from "@clc/core/features/key-rotation/logic";
-import {
-  isRelaySubmissionUncertain,
-  type RelayerClient,
-  type RelayPayload,
-} from "@clc/api/features/relayer/client";
+import type { RelayerClient, RelayPayload } from "@clc/api/features/relayer/client";
 import { privateKeyToAccount } from "viem/accounts";
 
 import {
@@ -17,6 +13,7 @@ import {
 } from "#/features/webauthn/api/relay-calibur-batch";
 
 import type { OldCardSigner } from "../state/rotation-session";
+import { relayIdempotently } from "./relay-idempotently";
 
 export type BatchProgress = "signing" | "confirming" | "moved" | "failed";
 
@@ -31,8 +28,6 @@ export type RotationRunResult = {
    */
   uncertainTrackingId: string | null;
 };
-
-const RESEND_ATTEMPTS = 3;
 
 /**
  * Signs and relays each batch as the old wallet, one at a time.
@@ -88,7 +83,7 @@ export async function runRotationBatches(input: {
             },
             relayer,
           );
-    const trackingId = await relayOnce({ ...payload, operationId: crypto.randomUUID() }, relayer);
+    const trackingId = await relayIdempotently(payload, relayer);
     delegated = true;
 
     input.onProgress?.(index, "confirming");
@@ -106,14 +101,4 @@ export async function runRotationBatches(input: {
     }
   }
   return result;
-}
-
-async function relayOnce(request: RelayPayload, relayer: RelayerClient): Promise<string> {
-  for (let attempt = 1; ; attempt += 1) {
-    try {
-      return (await relayer.relay(request)).result.trackingId;
-    } catch (error) {
-      if (!isRelaySubmissionUncertain(error) || attempt >= RESEND_ATTEMPTS) throw error;
-    }
-  }
 }

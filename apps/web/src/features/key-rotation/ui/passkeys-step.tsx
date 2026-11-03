@@ -9,13 +9,12 @@ import { useRotationSession } from "../state/rotation-session";
 /** Registers the passkeys that came along on the new card's wallet. */
 export function PasskeysStep({ onFinished }: { onFinished: () => void }) {
   const { t } = useLingui();
-  const passkeys = useRotationSession((state) => state.movedPasskeys);
   const relink = useRelinkPasskeys();
 
   const run = () => {
     const key = useRotationSession.getState().newKey;
     if (!key) return;
-    relink.mutate({ passkeys, key }, { onSuccess: onFinished });
+    relink.mutate({ key }, { onSuccess: onFinished });
   };
   const error = relink.error
     ? relink.error instanceof BackendApiError
