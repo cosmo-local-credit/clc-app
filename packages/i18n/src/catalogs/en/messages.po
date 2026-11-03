@@ -2753,7 +2753,7 @@ msgstr "Display name must be 120 characters or fewer"
 
 #: apps/web/src/components/introduction/introduction.tsx:165
 #: apps/web/src/features/key-rotation/ui/new-card-step.tsx:107
-#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:59
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:61
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:596
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:719
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:94
@@ -3321,7 +3321,7 @@ msgstr "Finding a name…"
 msgid "Finding location"
 msgstr "Finding location"
 
-#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:60
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:63
 msgid "Finish moving your passkey"
 msgstr "Finish moving your passkey"
 
@@ -4275,7 +4275,7 @@ msgstr "Mobility"
 msgid "Monthly"
 msgstr "Monthly"
 
-#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:34
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:35
 msgid "Move my passkey"
 msgstr "Move my passkey"
 
@@ -4293,11 +4293,11 @@ msgstr "Move photo {0} up"
 msgid "Move to my new card"
 msgstr "Move to my new card"
 
-#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:114
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:129
 msgid "Move what's left"
 msgstr "Move what's left"
 
-#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:52
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:55
 msgid "Move what's left from an old card"
 msgstr "Move what's left from an old card"
 
@@ -4311,7 +4311,7 @@ msgstr "Moves to your new card"
 msgid "Moving {0} of {1}"
 msgstr "Moving {0} of {1}"
 
-#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:60
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:63
 msgid "Moving passkey…"
 msgstr "Moving passkey…"
 
@@ -5252,7 +5252,7 @@ msgstr "Passkey linked … confirming on-chain…"
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Passkey linked, but wallet connection failed."
 
-#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:67
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:72
 msgid "Passkey moved"
 msgstr "Passkey moved"
 
@@ -6165,7 +6165,7 @@ msgstr "Regenerative Agriculture"
 msgid "Registering your passkey…"
 msgstr "Registering your passkey…"
 
-#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:34
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:35
 msgid "Registering…"
 msgstr "Registering…"
 
@@ -6263,8 +6263,8 @@ msgstr "Removing {0} stops it being swapped in or out of this pool. Its rate "
 msgid "Removing…"
 msgstr "Removing…"
 
-#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:46
-#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:114
+#: apps/web/src/features/home/ui/sign-in-card-settings-section.tsx:49
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:129
 #: apps/web/src/features/key-rotation/ui/verify-card-step.tsx:75
 msgid "Replace sign-in card"
 msgstr "Replace sign-in card"
@@ -6963,7 +6963,7 @@ msgstr "Setting up your wallet…"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
-#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:112
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:127
 msgid "Settings"
 msgstr "Settings"
 
@@ -7129,7 +7129,7 @@ msgstr "Sign in with this card?"
 #~ msgstr "Sign in with your device's screen lock instead of your paper card. Your "
 #~ "device will ask through {platformLabel}."
 
-#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:92
+#: apps/web/src/features/key-rotation/ui/key-rotation-page.tsx:93
 msgid "Sign in with your sign-in card or passkey to replace it."
 msgstr "Sign in with your sign-in card or passkey to replace it."
 
@@ -7179,7 +7179,7 @@ msgstr "Signers and approvals"
 msgid "Signing out…"
 msgstr "Signing out…"
 
-#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:43
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:44
 msgid "Skip"
 msgstr "Skip"
 
@@ -9121,7 +9121,7 @@ msgstr "Your name and wallet address will not be shown. Avoid including "
 msgid "Your new card is ready."
 msgstr "Your new card is ready."
 
-#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:55
+#: apps/web/src/features/key-rotation/ui/passkeys-step.tsx:56
 msgid "Your new sign-in card is ready. Your old card no longer signs in."
 msgstr "Your new sign-in card is ready. Your old card no longer signs in."
 
@@ -9160,6 +9160,14 @@ msgid "Your passkey is still confirming. You can keep using your sign-in card "
 "meanwhile."
 msgstr "Your passkey is still confirming. You can keep using your sign-in card "
 "meanwhile."
+
+#: apps/web/src/components/passkey-rename-notice.tsx:9
+msgid "Your passkey still shows the old address. On iPhone, open Settings, then "
+"Passwords, and rename the passkey for this site. On Android, open Google "
+"Password Manager and rename it there."
+msgstr "Your passkey still shows the old address. On iPhone, open Settings, "
+"then Passwords, and rename the passkey for this site. On Android, open "
+"Google Password Manager and rename it there."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:270
 #~ msgid "Your Pools"

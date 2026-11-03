@@ -27,7 +27,7 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 const SIGNED_OUT_DURING_SWITCH =
   "Signed out while switching to the new card. Sign in with the new card to continue.";
 
-export const keyRotationKeys = {
+const keyRotationKeys = {
   assets: (from: string, to: string) =>
     ["clc", "key-rotation", "assets", from.toLowerCase(), to.toLowerCase()] as const,
 };

@@ -1,20 +1,21 @@
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
 
+import { PasskeyRenameNotice } from "#/components/passkey-rename-notice";
 import { Button } from "#/components/ui/button";
 
 import { useRelinkPasskeys } from "../hooks/use-key-rotation";
 import { useRotationSession } from "../state/rotation-session";
 
 /** Registers the passkeys that came along on the new card's wallet. */
-export function PasskeysStep({ onFinished }: { onFinished: () => void }) {
+export function PasskeysStep({ onFinished }: { onFinished: (moved: boolean) => void }) {
   const { t } = useLingui();
   const relink = useRelinkPasskeys();
 
   const run = () => {
     const key = useRotationSession.getState().newKey;
     if (!key) return;
-    relink.mutate({ key }, { onSuccess: onFinished });
+    relink.mutate({ key }, { onSuccess: () => onFinished(true) });
   };
   const error = relink.error
     ? relink.error instanceof BackendApiError
@@ -38,7 +39,7 @@ export function PasskeysStep({ onFinished }: { onFinished: () => void }) {
           tap
           className="w-full"
           disabled={relink.isPending}
-          onClick={onFinished}
+          onClick={() => onFinished(false)}
         >
           <Trans>Skip</Trans>
         </Button>
@@ -47,7 +48,7 @@ export function PasskeysStep({ onFinished }: { onFinished: () => void }) {
   );
 }
 
-export function DoneStep({ onDone }: { onDone: () => void }) {
+export function DoneStep({ onDone, passkeyMoved }: { onDone: () => void; passkeyMoved: boolean }) {
   return (
     <div className="space-y-6">
       <div className="border border-border bg-card p-4">
@@ -55,6 +56,7 @@ export function DoneStep({ onDone }: { onDone: () => void }) {
           <Trans>Your new sign-in card is ready. Your old card no longer signs in.</Trans>
         </p>
       </div>
+      {passkeyMoved ? <PasskeyRenameNotice /> : null}
       <Button tap className="w-full" onClick={onDone}>
         <Trans>Done</Trans>
       </Button>

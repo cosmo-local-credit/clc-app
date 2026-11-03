@@ -13,10 +13,10 @@ export type OldCardSigner =
 
 export type RotationStep = "review" | "card" | "verify" | "moving" | "passkeys" | "done";
 
-export type MoveProgress = { total: number; current: number; state: BatchProgress };
+type MoveProgress = { total: number; current: number; state: BatchProgress };
 
 /** What a move run did, kept here so a remount mid-run still shows it. */
-export type MoveOutcome = {
+type MoveOutcome = {
   batches: RotationBatch<LabelledRotationGroup>[];
   moved: number[];
   failed: number[];

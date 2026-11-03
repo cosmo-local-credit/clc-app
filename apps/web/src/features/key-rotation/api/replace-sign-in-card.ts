@@ -17,7 +17,7 @@ import { collectWebAuthnAssertionFor } from "#/features/webauthn/hooks/assertion
  * card's signature alone when the account has an active passkey: whoever
  * copied the card does not hold the passkey.
  */
-export type OldCardProof = { kind: "card"; key: `0x${string}` } | { kind: "passkey" };
+type OldCardProof = { kind: "card"; key: `0x${string}` } | { kind: "passkey" };
 
 export type ReplaceSignInCardInput = {
   auth: AuthClient;

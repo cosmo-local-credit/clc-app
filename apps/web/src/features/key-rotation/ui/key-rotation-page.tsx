@@ -2,7 +2,7 @@ import { webAuthnCredentialsQueryOptions } from "@clc/api/features/auth/queries"
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useConnection } from "wagmi";
 
 import { BackChevron } from "#/components/wallet/wallet-kit";
@@ -53,6 +53,7 @@ export function KeyRotationPage({ from }: { from?: `0x${string}` }) {
   const newAddress = useRotationSession((state) => state.newAddress);
   const movedPasskeys = useRotationSession((state) => state.movedPasskeys);
   const setStep = useRotationSession((state) => state.setStep);
+  const [passkeyMoved, setPasskeyMoved] = useState(false);
   const connectorId = connector?.id;
 
   // Begins for the signed-in card, unless this replacement is already under
@@ -100,11 +101,25 @@ export function KeyRotationPage({ from }: { from?: `0x${string}` }) {
   } else if (step === "verify") {
     body = <VerifyCardStep newAddress={newAddress} proof={proof} />;
   } else if (step === "moving") {
-    body = <MoveStep onFinished={() => setStep(movedPasskeys.length > 0 ? "passkeys" : "done")} />;
+    body = (
+      <MoveStep
+        onFinished={() => {
+          if (movedPasskeys.length === 0) setPasskeyMoved(false);
+          setStep(movedPasskeys.length > 0 ? "passkeys" : "done");
+        }}
+      />
+    );
   } else if (step === "passkeys") {
-    body = <PasskeysStep onFinished={() => setStep("done")} />;
+    body = (
+      <PasskeysStep
+        onFinished={(moved) => {
+          setPasskeyMoved(moved);
+          setStep("done");
+        }}
+      />
+    );
   } else {
-    body = <DoneStep onDone={finish} />;
+    body = <DoneStep onDone={finish} passkeyMoved={passkeyMoved} />;
   }
 
   return (
