@@ -19,6 +19,7 @@ import {
 } from "#/components/ui/dialog";
 import { clearPrivateKey, getStoredKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
+import { useReplacedCredentialMessage } from "#/components/auth/replaced-credential";
 import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
@@ -126,6 +127,7 @@ function AppInner() {
   const auth = useAuthStatus();
   const queryClient = useQueryClient();
   const backendSignin = useBackendPrivateKeySignin();
+  const replacedCredentialMessage = useReplacedCredentialMessage();
   const [switching, setSwitching] = useState(false);
   const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
     useScanUrlImport({ address, isSwitching: switching });
@@ -207,11 +209,12 @@ function AppInner() {
         clearWebAuthnCredential();
       }
       setSwitchError(
-        err instanceof BackendApiError
-          ? formatBackendApiError(err)
-          : err instanceof Error
-            ? err.message
-            : t`Connection failed.`,
+        replacedCredentialMessage(err) ??
+          (err instanceof BackendApiError
+            ? formatBackendApiError(err)
+            : err instanceof Error
+              ? err.message
+              : t`Connection failed.`),
       );
     } finally {
       setSwitching(false);
@@ -238,11 +241,12 @@ function AppInner() {
     } catch (err) {
       clearPrivateKey();
       throw new Error(
-        err instanceof BackendApiError
-          ? formatBackendApiError(err)
-          : err instanceof Error
-            ? err.message
-            : t`Connection failed.`,
+        replacedCredentialMessage(err) ??
+          (err instanceof BackendApiError
+            ? formatBackendApiError(err)
+            : err instanceof Error
+              ? err.message
+              : t`Connection failed.`),
       );
     }
   }

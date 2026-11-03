@@ -6,6 +6,7 @@ import {
   dropLegacyUnscopedKeys,
   evictLeastRecentlyUsedOwnerTier,
   MAX_RETAINED_OWNER_TIERS,
+  moveOwnerTier,
   touchOwnerTier,
 } from "#/lib/storage/owner-tier-registry";
 
@@ -127,5 +128,27 @@ describe("legacy key drop", () => {
   it("is safe to run on every resolved identity", () => {
     dropLegacyUnscopedKeys();
     expect(() => dropLegacyUnscopedKeys()).not.toThrow();
+  });
+
+  it("hands a replaced card's tier to the new card, keeping what the new one already has", () => {
+    seed(1);
+    writeOwnerScoped(owner(1), "pools.filter-preferences.v1", "old-filter");
+    writeOwnerScoped(owner(2), "pools.filter-preferences.v1", "new-filter");
+
+    moveOwnerTier(owner(1), owner(2));
+
+    expect(localStorage.getItem(ownerScopedKey(owner(2), NAME))).toBe("data-1");
+    expect(localStorage.getItem(ownerScopedKey(owner(2), "pools.filter-preferences.v1"))).toBe(
+      "new-filter",
+    );
+    expect(localStorage.getItem(ownerScopedKey(owner(1), NAME))).toBeNull();
+    expect(
+      localStorage.getItem(ownerScopedKey(owner(1), "pools.filter-preferences.v1")),
+    ).toBeNull();
+
+    // The replaced card no longer holds a slot toward the cap.
+    expect(JSON.parse(localStorage.getItem("clc.owner-tiers.v1") ?? "{}")).toEqual({
+      owners: [owner(2)],
+    });
   });
 });

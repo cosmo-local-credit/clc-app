@@ -125,6 +125,12 @@ const routePolicy = [
   },
   { id: "/posts/", fullPath: "/posts/", source: "posts/index.tsx" },
   { id: "/settings/", fullPath: "/settings/", source: "settings/index.tsx" },
+  // Leaving drops the replacement's in-memory keys, so no tab bar to leave by.
+  {
+    id: "/settings/sign-in-card",
+    fullPath: "/settings/sign-in-card",
+    source: "settings/sign-in-card.tsx",
+  },
   // A wizard's three-step draft lives in component state a tab tap would discard.
   {
     id: "/vouchers/create/$step",
