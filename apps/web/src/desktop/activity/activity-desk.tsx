@@ -5,13 +5,7 @@ import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import {
-  RiChat1Line,
-  RiCloseLine,
-  RiDownload2Line,
-  RiExternalLinkLine,
-  RiSearchLine,
-} from "react-icons/ri";
+import { RiChat1Line, RiCloseLine, RiExternalLinkLine, RiSearchLine } from "react-icons/ri";
 
 import { formatActivityLegAmount } from "#/components/activity/swap-activity";
 import { Badge } from "#/components/ui/badge";
@@ -32,7 +26,6 @@ import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import {
-  activityCsv,
   activityRangeStart,
   activityVouchers,
   filterActivityRows,
@@ -223,21 +216,6 @@ export function ActivityDesk({
     void navigate({ search: (previous) => ({ ...previous, ...next }), replace: true });
   }
 
-  // The CSV is the filtered rows that have loaded. It says so, with the count,
-  // because older pages may not have been fetched yet. Amounts are written at
-  // full precision with their own decimals, not the two-digit display.
-  const exportCount = activity.length;
-
-  function exportCsv() {
-    const blob = new Blob([activityCsv(activity)], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `activity-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
   function toggleType(kind: ActivityKind) {
     const on = types.includes(kind);
     onTypesChange?.(
@@ -331,20 +309,7 @@ export function ActivityDesk({
         onDismiss={tx ? closeInspector : undefined}
         main={
           <DeskCanvas width="full" className="gap-4">
-            <DeskTitleRow
-              title={<Trans>Activity</Trans>}
-              actions={
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={activity.length === 0}
-                  onClick={exportCsv}
-                >
-                  <RiDownload2Line aria-hidden="true" />
-                  <Trans>Export loaded rows ({exportCount})</Trans>
-                </Button>
-              }
-            />
+            <DeskTitleRow title={<Trans>Activity</Trans>} />
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <DeskChip on={types.length === 0}>
                 <button

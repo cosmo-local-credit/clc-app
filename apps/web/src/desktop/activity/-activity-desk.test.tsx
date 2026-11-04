@@ -92,59 +92,13 @@ function amountCells() {
   return bodyRows().map((row) => within(row).getAllByRole("cell")[3]?.textContent);
 }
 
-function readBlob(blob: Blob) {
-  return new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-    reader.readAsText(blob);
-  });
-}
-
-let exported: Blob | null = null;
-
 beforeEach(() => {
-  exported = null;
   mocks.getAccountActivity.mockReset().mockResolvedValue({ activity: ROWS, last: undefined });
-  URL.createObjectURL = vi.fn((blob: Blob) => {
-    exported = blob;
-    return "blob:activity";
-  });
-  URL.revokeObjectURL = vi.fn();
-  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
-});
-
-describe("Activity export", () => {
-  it("says it exports the loaded rows, counts them, and writes their exact amounts", async () => {
-    renderDesk("/?tab=activity");
-    const button = await screen.findByRole("button", { name: "Export loaded rows (3)" });
-
-    // The table shows two decimals; the file keeps every digit the chain has.
-    expect(amountCells()[0]).toContain("1000.5 KFP");
-    fireEvent.click(button);
-
-    expect(exported).not.toBeNull();
-    const lines = (await readBlob(exported as unknown as Blob)).split("\r\n");
-    expect(lines).toHaveLength(1 + ROWS.length);
-    expect(lines[1]).toContain(",received,confirmed,,,1000.500001,KFP,");
-    expect(lines[2]).toContain(",sent,confirmed,50,USDC,,,");
-    expect(lines[3]).toContain(",received,confirmed,,,300,VCH,");
-  });
-
-  it("exports and counts only the rows the filters leave", async () => {
-    renderDesk(`/?tab=activity&activityVoucher=${USDC}`);
-    const button = await screen.findByRole("button", { name: "Export loaded rows (1)" });
-    expect(bodyRows()).toHaveLength(1);
-
-    fireEvent.click(button);
-    const lines = (await readBlob(exported as unknown as Blob)).split("\r\n");
-    expect(lines).toHaveLength(2);
-    expect(lines[1]).toContain("USDC");
-  });
 });
 
 describe("Activity amount order", () => {

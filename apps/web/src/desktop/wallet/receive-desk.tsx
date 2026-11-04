@@ -11,41 +11,21 @@ import { Button } from "#/components/ui/button";
 import { AddressQRCode } from "#/components/wallet";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { DeskKV } from "#/desktop/ui/kv";
-import {
-  DeskCanvas,
-  DeskRow,
-  DeskRowList,
-  DeskSection,
-  DeskTitle,
-  deskSectionLinkClass,
-} from "#/desktop/ui/page";
+import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
 import { FullValue } from "#/desktop/ui/full-value";
-import {
-  ActivityAmount,
-  ActivityTitle,
-  Empty,
-  ErrorRetry,
-  Loading,
-} from "#/desktop/wallet/wallet-parts";
-import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
-import { activityRowKey } from "#/desktop/activity/activity-desk";
-import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 import { useWebNfcSupported } from "#/lib/nfc/ndef-adapter";
 
 /**
- * Receive is a focused page: the QR and the address to give out, the network
- * warning, and the latest activity so an arriving payment is seen where the
- * sender is waiting. It does not mount the Wallet behind a dimmed pane.
+ * Receive is a focused page: the QR and the address to give out, and the
+ * network warning. It does not mount the Wallet behind a dimmed pane, and it
+ * does not repeat the activity list that the Activity tab is for.
  */
 export function ReceiveDesk() {
   const chainName = CHAIN_INFO.name;
-  const { i18n, t } = useLingui();
-  const locale = i18n.locales?.[0] ?? i18n.locale;
+  const { t } = useLingui();
   const { address } = useConnection();
-  const activityQuery = useAccountActivityInfinite(address, { poll: true });
-  const recentActivity = (activityQuery.data?.pages[0]?.activity ?? []).slice(0, 3);
   const nfcSupported = useWebNfcSupported();
   const identity = useReverseRecipientResolution(address ?? null);
   const username = identity.data?.alias ?? null;
@@ -162,55 +142,6 @@ export function ReceiveDesk() {
           ) : null}
         </div>
       </div>
-
-      <DeskSection
-        title={<Trans>Activity</Trans>}
-        action={
-          <Link
-            to="/"
-            search={{ tab: "activity" }}
-            aria-label={`${t`View all`} ${t`Activity`}`}
-            className={deskSectionLinkClass()}
-          >
-            <Trans>View all</Trans>
-          </Link>
-        }
-      >
-        {Boolean(address) && activityQuery.isPending ? (
-          <Loading label={<Trans>Loading activity…</Trans>} />
-        ) : activityQuery.isError ? (
-          <ErrorRetry
-            message={<Trans>Couldn't load activity.</Trans>}
-            pending={activityQuery.isFetching}
-            onRetry={() => void activityQuery.refetch()}
-          />
-        ) : recentActivity.length === 0 ? (
-          <Empty>
-            <Trans>No activity yet.</Trans>
-          </Empty>
-        ) : (
-          <DeskRowList>
-            {recentActivity.map((item) => (
-              <Link
-                key={activityRowKey(item)}
-                to="/"
-                search={{ tab: "activity", tx: activityRowKey(item) }}
-                className="block hover:bg-muted/60"
-              >
-                <DeskRow
-                  title={<ActivityTitle item={item} />}
-                  subtitle={
-                    <time className="font-mono" dateTime={item.dateBlock}>
-                      {formatTransferDate(item.dateBlock, locale)}
-                    </time>
-                  }
-                  trail={<ActivityAmount item={item} />}
-                />
-              </Link>
-            ))}
-          </DeskRowList>
-        )}
-      </DeskSection>
     </DeskCanvas>
   );
 }

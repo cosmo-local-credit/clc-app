@@ -28,16 +28,6 @@ vi.mock("#/lib/nfc/ndef-adapter", () => ({ useWebNfcSupported: () => mocks.nfc }
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useReverseRecipientResolution: () => ({ data: undefined }),
 }));
-vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
-  useAccountActivityInfinite: () => ({
-    data: { pages: [{ activity: [] }] },
-    isPending: false,
-    isError: false,
-    isFetching: false,
-    refetch: vi.fn(),
-  }),
-}));
-vi.mock("#/desktop/activity/activity-desk", () => ({ activityRowKey: () => "row" }));
 
 import { ReceiveDesk } from "./receive-desk";
 
@@ -75,7 +65,9 @@ describe("Receive page", () => {
           /Only send assets on the .+ network to this address/.test(node.textContent ?? ""),
       ),
     ).toBeTruthy();
-    expect(screen.getByText("No activity yet.")).toBeTruthy();
+    // The activity list belongs to the Activity tab; Receive does not repeat it.
+    expect(screen.queryByText("No activity yet.")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Activity" })).toBeNull();
   });
 
   it("offers Collect by card only where this browser can read NFC", () => {
