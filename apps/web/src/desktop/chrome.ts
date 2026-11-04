@@ -10,24 +10,6 @@ const SCOPES = new Set<string>(["offers", "wants", "vouchers", "pools", "catalog
  * one page rather than routes, so the sidebar reaches them by hash and the
  * page carries the matching `id` on each section.
  */
-export const DESK_WALLET_SECTIONS = [
-  "holdings",
-  "my-vouchers",
-  "my-pools",
-  "my-wants",
-  "my-catalogs",
-] as const;
-
-export type DeskWalletSection = (typeof DESK_WALLET_SECTIONS)[number];
-
-/** The Wallet section a URL hash names, with or without its leading `#`. */
-export function deskWalletSectionOf(hash: unknown): DeskWalletSection | undefined {
-  if (typeof hash !== "string") return undefined;
-  const id = hash.replace(/^#/, "");
-  return (DESK_WALLET_SECTIONS as readonly string[]).includes(id)
-    ? (id as DeskWalletSection)
-    : undefined;
-}
 
 export type DesktopSearch = {
   tab?: unknown;

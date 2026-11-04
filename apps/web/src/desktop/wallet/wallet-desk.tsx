@@ -5,8 +5,8 @@ import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic
 import { offrampTokenSymbol } from "@clc/core/features/wallet/pretium";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   RiBankCardLine,
   RiDownloadLine,
@@ -22,7 +22,6 @@ import { Spinner } from "#/components/ui/spinner";
 import { WantPicture } from "#/components/wants/want-row";
 import { PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { activityRowKey } from "#/desktop/activity/activity-desk";
-import { deskWalletSectionOf } from "#/desktop/chrome";
 import type { DeskColumn } from "#/desktop/ui/data-table";
 import { DeskTable } from "#/desktop/ui/data-table";
 import {
@@ -70,11 +69,37 @@ import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 const HOLDINGS_COMPACT_WIDTH = 704;
 
 /**
- * The Wallet tab on a wide screen. The page is two columns until the canvas is
- * 64rem wide, then three: the band spans the row, Holdings is the full row (two
- * of three, with Activity beside it, when there is room), then My Vouchers, My
- * Pools, My Wants, My Catalogs and Retirement requests one column each. Same
- * queries as the phone Wallet.
+ * Rows a rail section shows before the person asks for more.
+ *
+ * Six keeps every section about a screen's worth, so someone holding tens of
+ * vouchers, pools and wants still gets a dashboard rather than a stack of long
+ * lists. Load more adds another six and fetches the next page when it needs to.
+ */
+const RAIL_PREVIEW = 6;
+
+function useRailPreview<Row>(
+  rows: Row[],
+  page: { hasNextPage?: boolean; isFetchingNextPage: boolean; fetchNextPage: () => void },
+) {
+  const [shown, setShown] = useState(RAIL_PREVIEW);
+  return {
+    rows: rows.slice(0, shown),
+    /** More to show: already fetched, or a page away. */
+    hasMore: rows.length > shown || Boolean(page.hasNextPage),
+    busy: page.isFetchingNextPage,
+    showMore: () => {
+      setShown((current) => current + RAIL_PREVIEW);
+      // Fetch only when the next six are not already in hand.
+      if (rows.length <= shown + RAIL_PREVIEW && page.hasNextPage) page.fetchNextPage();
+    },
+  };
+}
+
+/**
+ * One column until the canvas is 64rem, then the balance band across the top,
+ * Holdings' table in the main column, and the six shorter sections in a rail
+ * beside it — which itself splits in two at 90rem rather than widening. Each
+ * rail section shows `RAIL_PREVIEW` rows. Same queries as the phone Wallet.
  */
 export function WalletDesk() {
   const { t, i18n } = useLingui();
@@ -84,7 +109,7 @@ export function WalletDesk() {
   const vouchers = useWalletVoucherPreview(address);
   const usage = useResourceUsage();
   const activityQuery = useAccountActivityInfinite(address, { poll: true });
-  const activity = (activityQuery.data?.pages[0]?.activity ?? []).slice(0, 6);
+  const activity = (activityQuery.data?.pages[0]?.activity ?? []).slice(0, RAIL_PREVIEW);
   const wantsQuery = useInfiniteQuery(myWantsInfiniteQueryOptions(wantsClient, address ?? ""));
   const wants = wantsQuery.data?.pages.flatMap((page) => page.wants) ?? [];
   const ownedPoolsQuery = useOwnedPoolsInfinite(address);
@@ -96,10 +121,15 @@ export function WalletDesk() {
     ),
     address,
   );
-  const ownedPools = ownedPoolRows.filter((pool) => {
+  const ownedPoolsAll = ownedPoolRows.filter((pool) => {
     const owner = pool.ownerAddress?.toLowerCase();
     return !!owner && (owner === account || signedSafes.has(owner));
   });
+  const poolsPreview = useRailPreview(ownedPoolsAll, ownedPoolsQuery);
+  const ownedPools = poolsPreview.rows;
+  const wantsPreview = useRailPreview(wants, wantsQuery);
+  const shownWants = wantsPreview.rows;
+  const issuedVouchers = vouchers.issued.slice(0, RAIL_PREVIEW);
   const navigate = useNavigate({ from: "/" });
   const filter: HoldingsFilter | "all" =
     useSearch({ strict: false, select: (search) => search.holdings }) ?? "all";
@@ -110,20 +140,6 @@ export function WalletDesk() {
       replace: true,
     });
   const valuation = useWalletValuation(address);
-
-  // The sidebar reaches the sections by hash. Scroll on arrival and once more
-  // when the first loads land, because a section above can still grow and
-  // carry the target off screen.
-  const section = useRouterState({ select: (state) => deskWalletSectionOf(state.location.hash) });
-  const settled =
-    !vouchers.isPending &&
-    !activityQuery.isPending &&
-    !ownedPoolsQuery.isPending &&
-    !wantsQuery.isPending;
-  useEffect(() => {
-    if (!section) return;
-    document.getElementById(section)?.scrollIntoView?.({ block: "start" });
-  }, [section, settled]);
 
   // Everything the account holds: other issuers' vouchers, then its own with a
   // balance, each marked Admin as on the All Vouchers screen.
@@ -258,9 +274,15 @@ export function WalletDesk() {
   const wantsCreatable = usage.data?.wants.canCreate === true && !usage.isError;
 
   return (
+    // Holdings is a sortable table and wants the width; the four lists beside
+    // it are short rows that read better in a rail than in columns of their
+    // own. Width past the rail goes to the table, so on an ample canvas the
+    // rail takes a second column instead — that holds the table to a readable
+    // measure without leaving the end of the canvas empty. Below 64rem the two
+    // become one column, in order.
     <DeskCanvas
       width="full"
-      className="grid-cols-2 @min-[64rem]:grid-cols-3 @min-[96rem]:grid-cols-4"
+      className="@min-[64rem]:grid-cols-[minmax(0,1fr)_412px] @min-[64rem]:items-start @min-[90rem]:grid-cols-[minmax(0,1fr)_824px]"
     >
       <div className="col-span-full">
         <DeskTitle>
@@ -364,7 +386,6 @@ export function WalletDesk() {
 
       <DeskSection
         id="holdings"
-        className="col-span-full @min-[64rem]:col-span-2"
         title={<Trans>Holdings</Trans>}
         action={
           <div className="flex items-center gap-3">
@@ -434,288 +455,297 @@ export function WalletDesk() {
         </div>
       </DeskSection>
 
-      <DeskSection
-        title={<Trans>Activity</Trans>}
-        action={
-          <Link
-            to="/"
-            search={{ tab: "activity" }}
-            aria-label={`${t`View all`} ${t`Activity`}`}
-            className={deskSectionLinkClass()}
-          >
-            <Trans>View all</Trans>
-          </Link>
-        }
-      >
-        {Boolean(address) && activityQuery.isPending ? (
-          <Loading label={<Trans>Loading activity…</Trans>} />
-        ) : activityQuery.isError ? (
-          <ErrorRetry
-            message={<Trans>Couldn't load activity.</Trans>}
-            pending={activityQuery.isFetching}
-            onRetry={() => void activityQuery.refetch()}
-          />
-        ) : activity.length === 0 ? (
-          <Empty>
-            <Trans>No activity yet.</Trans>
-          </Empty>
-        ) : (
-          <DeskRowList>
-            {activity.map((item) => (
-              <Link
-                key={activityRowKey(item)}
-                to="/"
-                search={{ tab: "activity", tx: activityRowKey(item) }}
-                className="block hover:bg-muted/60"
-              >
-                <DeskRow
-                  title={<ActivityTitle item={item} />}
-                  subtitle={
-                    <time className="font-mono" dateTime={item.dateBlock}>
-                      {formatTransferDate(item.dateBlock, locale)}
-                    </time>
-                  }
-                  trail={<ActivityAmount item={item} />}
-                />
-              </Link>
-            ))}
-          </DeskRowList>
-        )}
-      </DeskSection>
-
-      <DeskSection
-        id="my-vouchers"
-        title={<Trans>My Vouchers</Trans>}
-        action={
-          <SectionActions>
-            <QuotaMeta usage={usage} kind="vouchers" />
-            {vouchersCreatable ? (
-              <Link
-                to="/vouchers/create/$step"
-                params={{ step: "voucher" }}
-                className={deskSectionLinkClass()}
-              >
-                <Trans>Create</Trans>
-              </Link>
-            ) : null}
+      {/* The rail is a column, not a stack of tiles: one rule down the full
+          height of whichever column is taller divides it from the table,
+          32px clear on either side. */}
+      <div className="grid min-w-0 content-start items-start gap-6 @min-[64rem]:self-stretch @min-[64rem]:border-border @min-[64rem]:border-s @min-[64rem]:ps-8 @min-[90rem]:grid-cols-2">
+        <DeskSection
+          title={<Trans>Activity</Trans>}
+          action={
             <Link
-              to="/wallet/vouchers"
-              aria-label={`${t`View all`} ${t`My Vouchers`}`}
+              to="/"
+              search={{ tab: "activity" }}
+              aria-label={`${t`View all`} ${t`Activity`}`}
               className={deskSectionLinkClass()}
             >
               <Trans>View all</Trans>
             </Link>
-          </SectionActions>
-        }
-      >
-        {Boolean(address) && vouchers.isPending ? (
-          <Loading label={<Trans>Loading vouchers…</Trans>} />
-        ) : vouchers.isIssuedError ? (
-          <ErrorRetry
-            message={<Trans>Couldn't load vouchers.</Trans>}
-            pending={vouchers.isFetching}
-            onRetry={() => void vouchers.refetchIssued()}
-          />
-        ) : vouchers.issued.length === 0 ? (
-          <Empty quota={usage.data?.vouchers}>
-            <Trans>No vouchers yet.</Trans>
-          </Empty>
-        ) : (
-          <DeskRowList>
-            {vouchers.issued.map((token) => {
-              const voucherAddress = parseVoucherAddress(token.contractAddress ?? token.id);
-              const row = (
-                <DeskRow
-                  lead={<TokenLogo token={token} size={34} />}
-                  title={token.name}
-                  subtitle={
-                    <span className="font-mono" dir="ltr">
-                      {token.symbol}
-                    </span>
-                  }
-                  trail={
-                    <span
-                      className="shrink-0 font-heading text-sm font-semibold tracking-tight"
-                      dir="ltr"
-                    >
-                      {token.amount}
-                    </span>
-                  }
-                />
-              );
-              return voucherAddress ? (
+          }
+        >
+          {Boolean(address) && activityQuery.isPending ? (
+            <Loading label={<Trans>Loading activity…</Trans>} />
+          ) : activityQuery.isError ? (
+            <ErrorRetry
+              message={<Trans>Couldn't load activity.</Trans>}
+              pending={activityQuery.isFetching}
+              onRetry={() => void activityQuery.refetch()}
+            />
+          ) : activity.length === 0 ? (
+            <Empty>
+              <Trans>No activity yet.</Trans>
+            </Empty>
+          ) : (
+            <DeskRowList>
+              {activity.map((item) => (
                 <Link
-                  key={token.id}
-                  to="/vouchers/$voucherAddress"
-                  params={{ voucherAddress }}
-                  search={{ from: "wallet" }}
+                  key={activityRowKey(item)}
+                  to="/"
+                  search={{ tab: "activity", tx: activityRowKey(item) }}
                   className="block hover:bg-muted/60"
                 >
-                  {row}
+                  <DeskRow
+                    title={<ActivityTitle item={item} />}
+                    subtitle={
+                      <time className="font-mono" dateTime={item.dateBlock}>
+                        {formatTransferDate(item.dateBlock, locale)}
+                      </time>
+                    }
+                    trail={<ActivityAmount item={item} />}
+                  />
                 </Link>
-              ) : (
-                <div key={token.id}>{row}</div>
-              );
-            })}
-          </DeskRowList>
-        )}
-      </DeskSection>
+              ))}
+            </DeskRowList>
+          )}
+        </DeskSection>
 
-      <DeskSection
-        id="my-pools"
-        title={<Trans>My Pools</Trans>}
-        action={
-          <SectionActions>
-            <QuotaMeta usage={usage} kind="pools" />
-            {ownedPoolsQuery.isSuccess &&
-            ownedPools.length === 0 &&
-            usage.data?.pools.canCreate === true &&
-            !usage.isError ? (
+        <DeskSection
+          id="my-vouchers"
+          title={<Trans>My Vouchers</Trans>}
+          action={
+            <SectionActions>
+              <QuotaMeta usage={usage} kind="vouchers" />
+              {vouchersCreatable ? (
+                <Link
+                  to="/vouchers/create/$step"
+                  params={{ step: "voucher" }}
+                  className={deskSectionLinkClass()}
+                >
+                  <Trans>Create</Trans>
+                </Link>
+              ) : null}
               <Link
-                to="/pools/create/$step"
-                params={{ step: "pool" }}
+                to="/wallet/vouchers"
+                aria-label={`${t`View all`} ${t`My Vouchers`}`}
                 className={deskSectionLinkClass()}
               >
-                <Trans>Create</Trans>
+                <Trans>View all</Trans>
               </Link>
-            ) : null}
-            <Link to="/pools" className={deskSectionLinkClass()}>
-              <Trans>All pools</Trans>
-            </Link>
-          </SectionActions>
-        }
-      >
-        {Boolean(address) && ownedPoolsQuery.isPending ? (
-          <Loading label={<Trans>Loading pools…</Trans>} />
-        ) : ownedPoolsQuery.isError ? (
-          <ErrorRetry
-            message={<Trans>Couldn't load your pools.</Trans>}
-            pending={ownedPoolsQuery.isFetching}
-            onRetry={() => void ownedPoolsQuery.refetch()}
-          />
-        ) : ownedPools.length === 0 ? (
-          <Empty quota={usage.data?.pools}>
-            <Trans>You haven't created a pool yet.</Trans>
-          </Empty>
-        ) : (
-          <DeskRowList>
-            {ownedPools.map((pool) => (
-              <Link
-                key={pool.address}
-                to="/pools/$poolAddress"
-                params={{ poolAddress: pool.address }}
-                className="block hover:bg-muted/60"
-              >
-                <DeskRow
-                  lead={
-                    <PoolLogo
-                      imageUrl={pool.imageUrl}
-                      name={pool.name}
-                      seed={pool.address}
-                      size={34}
-                    />
-                  }
-                  title={pool.name}
-                  subtitle={
-                    pool.active === false ? (
-                      <Trans>Retired — withdrawals available</Trans>
-                    ) : pool.voucherCount === 1 ? (
-                      <Trans>1 voucher</Trans>
-                    ) : (
-                      <Trans>{pool.voucherCount} vouchers</Trans>
-                    )
-                  }
-                />
-              </Link>
-            ))}
-          </DeskRowList>
-        )}
-        {ownedPoolsQuery.hasNextPage ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-3 self-start"
-            pending={ownedPoolsQuery.isFetchingNextPage}
-            onClick={() => void ownedPoolsQuery.fetchNextPage()}
-          >
-            <Trans>Load more</Trans>
-          </Button>
-        ) : null}
-      </DeskSection>
+            </SectionActions>
+          }
+        >
+          {Boolean(address) && vouchers.isPending ? (
+            <Loading label={<Trans>Loading vouchers…</Trans>} />
+          ) : vouchers.isIssuedError ? (
+            <ErrorRetry
+              message={<Trans>Couldn't load vouchers.</Trans>}
+              pending={vouchers.isFetching}
+              onRetry={() => void vouchers.refetchIssued()}
+            />
+          ) : vouchers.issued.length === 0 ? (
+            <Empty quota={usage.data?.vouchers}>
+              <Trans>No vouchers yet.</Trans>
+            </Empty>
+          ) : (
+            <DeskRowList>
+              {issuedVouchers.map((token) => {
+                const voucherAddress = parseVoucherAddress(token.contractAddress ?? token.id);
+                const row = (
+                  <DeskRow
+                    lead={<TokenLogo token={token} size={34} />}
+                    title={token.name}
+                    subtitle={
+                      <span className="font-mono" dir="ltr">
+                        {token.symbol}
+                      </span>
+                    }
+                    trail={
+                      <span
+                        className="shrink-0 font-heading text-sm font-semibold tracking-tight"
+                        dir="ltr"
+                      >
+                        {token.amount}
+                      </span>
+                    }
+                  />
+                );
+                return voucherAddress ? (
+                  <Link
+                    key={token.id}
+                    to="/vouchers/$voucherAddress"
+                    params={{ voucherAddress }}
+                    search={{ from: "wallet" }}
+                    className="block hover:bg-muted/60"
+                  >
+                    {row}
+                  </Link>
+                ) : (
+                  <div key={token.id}>{row}</div>
+                );
+              })}
+            </DeskRowList>
+          )}
+        </DeskSection>
 
-      <DeskSection
-        id="my-wants"
-        title={<Trans>My Wants</Trans>}
-        action={
-          <SectionActions>
-            <QuotaMeta usage={usage} kind="wants" />
-            {wantsCreatable ? (
-              <Link to="/wallet/wants/new" className={deskSectionLinkClass()}>
-                <Trans>Create</Trans>
+        <DeskSection
+          id="my-pools"
+          title={<Trans>My Pools</Trans>}
+          action={
+            <SectionActions>
+              <QuotaMeta usage={usage} kind="pools" />
+              {ownedPoolsQuery.isSuccess &&
+              ownedPools.length === 0 &&
+              usage.data?.pools.canCreate === true &&
+              !usage.isError ? (
+                <Link
+                  to="/pools/create/$step"
+                  params={{ step: "pool" }}
+                  className={deskSectionLinkClass()}
+                >
+                  <Trans>Create</Trans>
+                </Link>
+              ) : null}
+              <Link to="/pools" className={deskSectionLinkClass()}>
+                <Trans>All pools</Trans>
               </Link>
-            ) : null}
-          </SectionActions>
-        }
-      >
-        {Boolean(address) && wantsQuery.isPending ? (
-          <Loading label={<Trans>Loading Wants…</Trans>} />
-        ) : wantsQuery.isError ? (
-          <ErrorRetry
-            message={<Trans>Couldn't load your Wants.</Trans>}
-            pending={wantsQuery.isFetching}
-            onRetry={() => void wantsQuery.refetch()}
-          />
-        ) : wants.length === 0 ? (
-          <Empty quota={usage.data?.wants}>
-            <Trans>No Wants yet.</Trans>
-          </Empty>
-        ) : (
-          <DeskRowList>
-            {wants.map((want) => (
-              <Link
-                key={want.id}
-                to="/wallet/wants/$wantId/edit"
-                params={{ wantId: want.id }}
-                className="block hover:bg-muted/60"
-              >
-                <DeskRow
-                  lead={<WantPicture want={want} />}
-                  title={want.name}
-                  subtitle={<WantWhen want={want} locale={locale} />}
-                  trail={
-                    <Badge variant={want.state === "active" ? "primary" : "outline"} size="sm" caps>
-                      {want.state === "scheduled" ? (
-                        <Trans>Scheduled</Trans>
-                      ) : want.state === "expired" ? (
-                        <Trans>Expired</Trans>
-                      ) : want.state === "closed" ? (
-                        <Trans>Closed</Trans>
+            </SectionActions>
+          }
+        >
+          {Boolean(address) && ownedPoolsQuery.isPending ? (
+            <Loading label={<Trans>Loading pools…</Trans>} />
+          ) : ownedPoolsQuery.isError ? (
+            <ErrorRetry
+              message={<Trans>Couldn't load your pools.</Trans>}
+              pending={ownedPoolsQuery.isFetching}
+              onRetry={() => void ownedPoolsQuery.refetch()}
+            />
+          ) : ownedPools.length === 0 ? (
+            <Empty quota={usage.data?.pools}>
+              <Trans>You haven't created a pool yet.</Trans>
+            </Empty>
+          ) : (
+            <DeskRowList>
+              {ownedPools.map((pool) => (
+                <Link
+                  key={pool.address}
+                  to="/pools/$poolAddress"
+                  params={{ poolAddress: pool.address }}
+                  className="block hover:bg-muted/60"
+                >
+                  <DeskRow
+                    lead={
+                      <PoolLogo
+                        imageUrl={pool.imageUrl}
+                        name={pool.name}
+                        seed={pool.address}
+                        size={34}
+                      />
+                    }
+                    title={pool.name}
+                    subtitle={
+                      pool.active === false ? (
+                        <Trans>Retired — withdrawals available</Trans>
+                      ) : pool.voucherCount === 1 ? (
+                        <Trans>1 voucher</Trans>
                       ) : (
-                        <Trans>Active</Trans>
-                      )}
-                    </Badge>
-                  }
-                />
-              </Link>
-            ))}
-          </DeskRowList>
-        )}
-        {wantsQuery.hasNextPage ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-3 self-start"
-            pending={wantsQuery.isFetchingNextPage}
-            onClick={() => void wantsQuery.fetchNextPage()}
-          >
-            <Trans>Load more</Trans>
-          </Button>
-        ) : null}
-      </DeskSection>
+                        <Trans>{pool.voucherCount} vouchers</Trans>
+                      )
+                    }
+                  />
+                </Link>
+              ))}
+            </DeskRowList>
+          )}
+          {poolsPreview.hasMore ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-3 self-start"
+              pending={poolsPreview.busy}
+              onClick={poolsPreview.showMore}
+            >
+              <Trans>Load more</Trans>
+            </Button>
+          ) : null}
+        </DeskSection>
 
-      <WalletCatalogs usage={usage} />
+        <DeskSection
+          id="my-wants"
+          title={<Trans>My Wants</Trans>}
+          action={
+            <SectionActions>
+              <QuotaMeta usage={usage} kind="wants" />
+              {wantsCreatable ? (
+                <Link to="/wallet/wants/new" className={deskSectionLinkClass()}>
+                  <Trans>Create</Trans>
+                </Link>
+              ) : null}
+            </SectionActions>
+          }
+        >
+          {Boolean(address) && wantsQuery.isPending ? (
+            <Loading label={<Trans>Loading Wants…</Trans>} />
+          ) : wantsQuery.isError ? (
+            <ErrorRetry
+              message={<Trans>Couldn't load your Wants.</Trans>}
+              pending={wantsQuery.isFetching}
+              onRetry={() => void wantsQuery.refetch()}
+            />
+          ) : wants.length === 0 ? (
+            <Empty quota={usage.data?.wants}>
+              <Trans>No Wants yet.</Trans>
+            </Empty>
+          ) : (
+            <DeskRowList>
+              {shownWants.map((want) => (
+                <Link
+                  key={want.id}
+                  to="/wallet/wants/$wantId/edit"
+                  params={{ wantId: want.id }}
+                  className="block hover:bg-muted/60"
+                >
+                  <DeskRow
+                    lead={<WantPicture want={want} />}
+                    title={want.name}
+                    subtitle={<WantWhen want={want} locale={locale} />}
+                    trail={
+                      <Badge
+                        variant={want.state === "active" ? "primary" : "outline"}
+                        size="sm"
+                        caps
+                      >
+                        {want.state === "scheduled" ? (
+                          <Trans>Scheduled</Trans>
+                        ) : want.state === "expired" ? (
+                          <Trans>Expired</Trans>
+                        ) : want.state === "closed" ? (
+                          <Trans>Closed</Trans>
+                        ) : (
+                          <Trans>Active</Trans>
+                        )}
+                      </Badge>
+                    }
+                  />
+                </Link>
+              ))}
+            </DeskRowList>
+          )}
+          {wantsPreview.hasMore ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-3 self-start"
+              pending={wantsPreview.busy}
+              onClick={wantsPreview.showMore}
+            >
+              <Trans>Load more</Trans>
+            </Button>
+          ) : null}
+        </DeskSection>
 
-      {address ? <WalletRetirements viewer={address} /> : null}
+        <WalletCatalogs usage={usage} />
+
+        {address ? <WalletRetirements viewer={address} /> : null}
+      </div>
     </DeskCanvas>
   );
 }

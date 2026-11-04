@@ -13,13 +13,7 @@ import {
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
-import {
-  type DeskWalletSection,
-  DESK_WALLET_SECTIONS,
-  desktopNavSelection,
-  type DesktopScopeId,
-  deskWalletSectionOf,
-} from "#/desktop/chrome";
+import { desktopNavSelection, type DesktopScopeId } from "#/desktop/chrome";
 import { MarketHomeLink, MarketScopeLink } from "#/desktop/shell/market-links";
 import { useSidebarCollapsed } from "#/desktop/sidebar-state";
 import { DeskTooltip, DeskTooltipProvider } from "#/desktop/ui/tooltip";
@@ -37,14 +31,6 @@ const SCOPES: readonly { id: DesktopScopeId; label: ReactNode }[] = [
   { id: "pools", label: <Trans>Pools</Trans> },
   { id: "catalogs", label: <Trans>Catalogs</Trans> },
 ];
-
-const WALLET_SECTION_LABELS: Record<DeskWalletSection, ReactNode> = {
-  holdings: <Trans>Holdings</Trans>,
-  "my-vouchers": <Trans>My Vouchers</Trans>,
-  "my-pools": <Trans>My Pools</Trans>,
-  "my-wants": <Trans>My Wants</Trans>,
-  "my-catalogs": <Trans>My Catalogs</Trans>,
-};
 
 const FOOTER_ICON =
   "flex size-8 shrink-0 items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground";
@@ -115,7 +101,6 @@ export function DesktopSidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const search = useRouterState({ select: (state) => state.location.search });
-  const hash = useRouterState({ select: (state) => state.location.hash });
   const selection = desktopNavSelection(pathname, search);
   const auth = useAuthStatus();
   const profile = useAuthProfile({ enabled: auth.isAuthenticated });
@@ -125,7 +110,6 @@ export function DesktopSidebar() {
   const address = auth.address;
   const name = profile.data?.name?.trim();
   const marketChild = selection.nav === "market" && Boolean(selection.scope);
-  const walletSection = selection.nav === "wallet" ? deskWalletSectionOf(hash) : undefined;
   const settingsCurrent = selection.nav === "settings";
   const itemClass = (active: boolean) =>
     cn(
@@ -162,25 +146,6 @@ export function DesktopSidebar() {
     <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-secondary font-heading text-2xs font-bold">
       {initials(name, address)}
     </span>
-  );
-
-  const walletSectionLink = (
-    section: DeskWalletSection,
-    className: string,
-    onClick?: () => void,
-  ) => (
-    <Link
-      key={section}
-      to="/"
-      search={{ tab: "wallet" }}
-      hash={section}
-      activeOptions={{ includeHash: true }}
-      aria-current={walletSection === section ? "page" : undefined}
-      onClick={onClick}
-      className={className}
-    >
-      {WALLET_SECTION_LABELS[section]}
-    </Link>
   );
 
   return (
@@ -269,32 +234,14 @@ export function DesktopSidebar() {
               <Link
                 to="/"
                 search={{ tab: "wallet" }}
-                // Its sections differ from it by hash alone, so the router has to
-                // weigh the hash or it would call this active on every one of them.
-                activeOptions={{ includeHash: true }}
                 aria-label={collapsed ? walletLabel : undefined}
-                aria-current={selection.nav === "wallet" && !walletSection ? "page" : undefined}
-                className={itemClass(selection.nav === "wallet" && (!walletSection || collapsed))}
+                aria-current={selection.nav === "wallet" ? "page" : undefined}
+                className={itemClass(selection.nav === "wallet")}
               >
                 {body(<RiWallet3Line aria-hidden="true" />, walletLabel)}
               </Link>
             </RailTip>
           ) : null}
-          {!privateNav ? null : collapsed ? (
-            <RailMenu trigger={t`Wallet sections`} title={walletLabel}>
-              {(close) =>
-                DESK_WALLET_SECTIONS.map((section) =>
-                  walletSectionLink(section, railItemClass(walletSection === section), close),
-                )
-              }
-            </RailMenu>
-          ) : (
-            <SubNav label={walletLabel}>
-              {DESK_WALLET_SECTIONS.map((section) =>
-                walletSectionLink(section, subItemClass(walletSection === section)),
-              )}
-            </SubNav>
-          )}
           {privateNav ? (
             <RailTip show={collapsed} label={activityLabel}>
               <Link

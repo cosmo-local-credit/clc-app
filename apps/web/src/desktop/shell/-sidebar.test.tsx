@@ -210,44 +210,18 @@ describe("marketplace links keep the Map/List choice", () => {
   });
 });
 
-describe("the Wallet's sections", () => {
-  it("lists every section under Wallet, each an anchor on the Wallet tab", async () => {
+describe("Wallet", () => {
+  it("is one item, with no section list under it", async () => {
     await renderInShell(<DesktopSidebar />, "/?tab=wallet");
-    const sections = screen.getByRole("group", { name: "Wallet" });
-    expect(
-      within(sections)
-        .getAllByRole("link")
-        .map((link) => link.textContent),
-    ).toEqual(["Holdings", "My Vouchers", "My Pools", "My Wants", "My Catalogs"]);
-    expect(within(sections).getByRole("link", { name: "My Pools" }).getAttribute("href")).toBe(
-      "/?tab=wallet#my-pools",
-    );
-  });
 
-  it("marks the section the hash names, and Wallet itself when it names none", async () => {
-    const plain = await renderInShell(<DesktopSidebar />, "/?tab=wallet");
-    expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("aria-current")).toBe("page");
-    expect(screen.getByRole("link", { name: "Holdings" }).getAttribute("aria-current")).toBeNull();
-    plain.unmount();
-
-    await renderInShell(<DesktopSidebar />, "/?tab=wallet#my-wants");
-    expect(screen.getByRole("link", { name: "My Wants" }).getAttribute("aria-current")).toBe(
-      "page",
-    );
-    expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("aria-current")).toBeNull();
-  });
-
-  it("reaches them from the rail too", async () => {
-    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
-    const { router } = await renderInShell(<DesktopSidebar />, "/?tab=wallet");
-    expect(screen.queryByRole("link", { name: "My Pools" })).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "Wallet sections" }));
-    const menu = await screen.findByRole("navigation", { name: "Wallet" });
-    fireEvent.click(within(menu).getByRole("link", { name: "My Catalogs" }));
-    await waitFor(() => {
-      expect(router.state.location.hash).toBe("my-catalogs");
-    });
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
+    const wallet = within(nav).getByRole("link", { name: "Wallet" });
+    expect(wallet.getAttribute("href")).toBe("/?tab=wallet");
+    expect(wallet.getAttribute("aria-current")).toBe("page");
+    // The sections it used to carry are the page's own headings now.
+    for (const label of ["Holdings", "My Vouchers", "My Pools", "My Wants", "My Catalogs"]) {
+      expect(within(nav).queryByRole("link", { name: label })).toBeNull();
+    }
   });
 });
 
