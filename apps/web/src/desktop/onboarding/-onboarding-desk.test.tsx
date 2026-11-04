@@ -146,10 +146,14 @@ describe("welcome", () => {
     const headings = screen.getAllByRole("heading", { level: 1 });
     expect(headings.map((heading) => heading.textContent)).toEqual(["Cosmo-Local Credit"]);
     expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(6);
+    // Each concept keeps the diagram the phone draws for it, all six at once.
+    expect(
+      [...document.querySelectorAll<HTMLElement>("[data-art]")].map((art) => art.dataset.art),
+    ).toEqual(["voucher", "offer", "pool", "send", "receive", "wallet"]);
 
     const header = screen.getByRole("banner");
     expect(within(header).getByRole("button", { name: /^language/i })).toBeTruthy();
-    expect(within(header).getByRole("group", { name: "Theme" })).toBeTruthy();
+    expect(within(header).getByRole("button", { name: "Dark mode" })).toBeTruthy();
   });
 
   it("carries the return destination into both ways in", () => {
@@ -166,7 +170,7 @@ describe("welcome", () => {
   it("sets the app's one theme preference from the header", () => {
     renderDesk("welcome");
 
-    fireEvent.click(within(screen.getByRole("group", { name: "Theme" })).getByText("Dark"));
+    fireEvent.click(screen.getByRole("button", { name: "Dark mode" }));
 
     expect(useThemeStore.getState().theme).toBe("dark");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
@@ -175,16 +179,16 @@ describe("welcome", () => {
 });
 
 describe("returning sign-in", () => {
-  it("replaces the concepts with a brand area and a How CLC works link", () => {
+  it("keeps the guide beside the methods, under the one Welcome back heading", () => {
     renderDesk("signin", "/wallet/send");
 
+    // The sign-in column owns the page heading; the concepts stay h2 beside it.
     const headings = screen.getAllByRole("heading", { level: 1 });
     expect(headings.map((heading) => heading.textContent)).toEqual(["Welcome back"]);
-    expect(screen.queryByText("What is a voucher?")).toBeNull();
-    expect(screen.queryByText("Your wallet")).toBeNull();
-    expect(screen.getByRole("link", { name: "How CLC works" }).getAttribute("href")).toBe(
-      "/onboarding?step=welcome&redirect=%2Fwallet%2Fsend",
-    );
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(6);
+    expect(
+      [...document.querySelectorAll<HTMLElement>("[data-art]")].map((art) => art.dataset.art),
+    ).toEqual(["voucher", "offer", "pool", "send", "receive", "wallet"]);
     expect(screen.getByRole("button", { name: /^language/i })).toBeTruthy();
   });
 
@@ -210,7 +214,7 @@ describe("returning sign-in", () => {
     renderDesk("signin");
 
     expect(screen.getByRole("button", { name: /^language/i })).toBeTruthy();
-    expect(screen.getByRole("group", { name: "Theme" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Dark mode" })).toBeTruthy();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
@@ -249,7 +253,7 @@ describe("returning sign-in", () => {
     renderDesk("signin");
 
     const key = screen.getByLabelText("Private key") as HTMLInputElement;
-    fireEvent.click(within(screen.getByRole("group", { name: "Theme" })).getByText("Dark"));
+    fireEvent.click(screen.getByRole("button", { name: "Dark mode" }));
 
     expect(screen.getByLabelText("Private key")).toBe(key);
     expect(key.value).toBe("0xabc");
@@ -286,6 +290,6 @@ describe("setup", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     const header = screen.getByRole("banner");
     expect(within(header).getByRole("button", { name: /^language/i })).toBeTruthy();
-    expect(within(header).getByRole("group", { name: "Theme" })).toBeTruthy();
+    expect(within(header).getByRole("button", { name: "Dark mode" })).toBeTruthy();
   });
 });

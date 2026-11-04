@@ -1,18 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link, useNavigate } from "@tanstack/react-router";
-import type { IconType } from "react-icons";
-import {
-  RiArrowLeftDownLine,
-  RiArrowRightUpLine,
-  RiBubbleChartLine,
-  RiCouponLine,
-  RiLayoutGridLine,
-  RiMap2Line,
-  RiWallet3Line,
-} from "react-icons/ri";
+import { useNavigate } from "@tanstack/react-router";
+import { RiMap2Line } from "react-icons/ri";
 
 import { InstallAppButton } from "#/components/install-app-button";
-import type { GuideArtName } from "#/components/introduction/guide-art";
+import { GuideArt } from "#/components/introduction/guide-art";
 import { introductionSlides } from "#/components/introduction/introduction-content";
 import { completeIntroduction } from "#/components/introduction/introduction-state";
 import { Button } from "#/components/ui/button";
@@ -20,7 +11,6 @@ import { CLCLogo } from "#/components/ui/clc-logo";
 import { onboardingSearch, type OnboardingStep } from "#/lib/onboarding-search";
 import { SetupDesk } from "./setup-desk";
 import { SignInDesk, SignInSplit } from "./sign-in-desk";
-import { cn } from "#/lib/utils";
 
 /**
  * Onboarding without the app shell, under one header that keeps language and
@@ -49,47 +39,62 @@ export function OnboardingDesk({
     );
   }
   if (step === "signin") {
-    return (
-      <SignInDesk redirectTo={redirectTo} context={<SignInContext redirectTo={redirectTo} />} />
-    );
+    return <SignInDesk redirectTo={redirectTo} context={<SignInContext />} />;
   }
   return <SetupDesk step={step} redirectTo={redirectTo} />;
 }
 
 /**
- * What a returning member sees beside the sign-in methods: who this is, and a
- * way back to the guide. They came to regain access, so the six concepts stay
- * on the first welcome.
+ * What a returning member sees beside the sign-in methods: the same guide the
+ * welcome lays out, under a brand line rather than a second page heading —
+ * "Welcome back" in the sign-in column is the page's one h1.
  */
-function SignInContext({ redirectTo }: { redirectTo?: string }) {
+function SignInContext() {
   const { i18n } = useLingui();
   const [intro] = introductionSlides;
 
   return (
-    <div className="grid min-h-0 content-center justify-items-start gap-4 overflow-y-auto p-12">
-      <CLCLogo className="size-14 shrink-0" sharp />
-      {intro ? <p className="font-heading text-lg font-bold">{i18n._(intro.title)}</p> : null}
-      <Button asChild variant="link" className="-ms-3">
-        <Link to="/onboarding" search={onboardingSearch("welcome", redirectTo)}>
-          <Trans>How CLC works</Trans>
-        </Link>
-      </Button>
+    <div className="@container grid min-h-0 content-start gap-7 overflow-y-auto p-12">
+      <div className="flex min-w-0 items-center gap-3">
+        <CLCLogo className="size-10 shrink-0" sharp />
+        {intro ? <p className="font-heading text-lg font-bold">{i18n._(intro.title)}</p> : null}
+      </div>
+      <ConceptCards />
     </div>
   );
 }
 
-const CONCEPT_ICONS: Partial<Record<GuideArtName, { icon: IconType; className?: string }>> = {
-  voucher: { icon: RiCouponLine, className: "text-voucher-ink" },
-  offer: { icon: RiLayoutGridLine, className: "text-voucher-ink" },
-  pool: { icon: RiBubbleChartLine, className: "text-pool-ink" },
-  send: { icon: RiArrowRightUpLine },
-  receive: { icon: RiArrowLeftDownLine },
-  wallet: { icon: RiWallet3Line },
-};
+/**
+ * The guide the phone pages through, laid out at once. Each concept keeps the
+ * diagram the phone draws for it (`GuideArt`), on the card's own surface: the
+ * width here is what a slider was working around, so there is nothing to page.
+ * The art keeps the diagram's own 300:160, so it grows with the column instead
+ * of sitting small in a wide box.
+ */
+function ConceptCards() {
+  const { i18n } = useLingui();
+  const [, ...concepts] = introductionSlides;
+
+  return (
+    // Two columns while the area is narrow, so a card keeps room for its sentence.
+    <div className="grid grid-cols-1 gap-4 @min-[30rem]:grid-cols-2 @min-[45rem]:grid-cols-3">
+      {concepts.map((concept) => (
+        <div key={concept.art} className="flex flex-col border border-border bg-card">
+          {/* The art is the card's own top region, so the two rules never double up. */}
+          <GuideArt name={concept.art} className="aspect-[300/160] border-0 border-b bg-muted" />
+          <div className="p-4">
+            <h2 className="font-heading text-base font-semibold">{i18n._(concept.title)}</h2>
+            <p className="mt-1.5 text-muted-foreground text-sm">{i18n._(concept.body)}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function ConceptGrid() {
   const { i18n } = useLingui();
-  const [intro, ...concepts] = introductionSlides;
+  const [intro] = introductionSlides;
   if (!intro) return null;
 
   return (
@@ -101,21 +106,7 @@ function ConceptGrid() {
         </h1>
         <p className="max-w-[56ch] text-muted-foreground">{i18n._(intro.body)}</p>
       </div>
-      {/* Two columns while the area is narrow, so a card keeps room for its sentence. */}
-      <div className="grid grid-cols-1 gap-4 @min-[30rem]:grid-cols-2 @min-[45rem]:grid-cols-3">
-        {concepts.map((concept) => {
-          const art = CONCEPT_ICONS[concept.art];
-          return (
-            <div key={concept.art} className="border border-border bg-card p-4">
-              {art ? <art.icon className={cn("size-5", art.className)} aria-hidden="true" /> : null}
-              <h2 className="mt-2.5 font-heading text-base font-semibold">
-                {i18n._(concept.title)}
-              </h2>
-              <p className="mt-1.5 text-muted-foreground text-sm">{i18n._(concept.body)}</p>
-            </div>
-          );
-        })}
-      </div>
+      <ConceptCards />
     </>
   );
 }
@@ -129,14 +120,17 @@ function WelcomeActions({ redirectTo }: { redirectTo?: string }) {
   }
 
   return (
-    <>
+    // Centred in its own column, the way a console's sign-in sits: the brand,
+    // the two ways in, then the two doors that need no account.
+    <div className="m-auto grid w-full gap-3 py-6">
+      <CLCLogo className="mx-auto mb-4 size-12 shrink-0" sharp />
       <Button className="w-full" onClick={() => go("profile")}>
         <Trans>Create account</Trans>
       </Button>
       <Button variant="outline" className="w-full" onClick={() => go("signin")}>
         <Trans>I already have an account</Trans>
       </Button>
-      <div className="mt-2 grid grid-cols-2 gap-4">
+      <div className="mt-4 grid grid-cols-2 gap-4 border-border border-t pt-4">
         <Button
           variant="ghost"
           className="min-w-0"
@@ -150,6 +144,6 @@ function WelcomeActions({ redirectTo }: { redirectTo?: string }) {
         </Button>
         <InstallAppButton quiet />
       </div>
-    </>
+    </div>
   );
 }

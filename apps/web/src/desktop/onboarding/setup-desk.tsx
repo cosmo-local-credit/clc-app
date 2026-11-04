@@ -37,7 +37,7 @@ import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox"
 import { useAvatarPicker } from "#/components/ui/use-avatar-picker";
 import { useLocationPicker } from "#/components/ui/use-location-picker";
 import { DeskOnboardingHeader } from "#/desktop/auth/onboarding-header";
-import { DeskRow, DeskRowList, DeskEyebrow, DeskTitle } from "#/desktop/ui/page";
+import { DeskTitle } from "#/desktop/ui/page";
 import { DeskStep, DeskStepper } from "#/desktop/ui/stepper";
 import { type SetupStep, useOnboardingFlow } from "#/features/onboarding/hooks/use-onboarding-flow";
 import { useOnboardingProfile } from "#/features/onboarding/hooks/use-onboarding-profile";
@@ -90,8 +90,12 @@ function SetupFrame({
     <div className="flex h-dvh flex-col bg-background">
       <DeskOnboardingHeader />
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="grid grid-cols-[260px_minmax(0,760px)] content-start gap-10 px-12 py-10">
-          <SetupStepper {...frame} allDone={allDone} />
+        <div className="grid grid-cols-[300px_minmax(0,760px)] content-start gap-10 px-12 py-10">
+          {/* The steps are a column, not a tile: one rule down the full height
+              of the form divides them from it, 40px clear on either side. */}
+          <div className="border-border border-e pe-10">
+            <SetupStepper {...frame} allDone={allDone} />
+          </div>
           <div className="flex min-w-0 flex-col gap-5">{children}</div>
         </div>
       </div>
@@ -274,7 +278,7 @@ function ProfileSteps({ frame, redirectTo, ...options }: ProfileStepsProps) {
       >
         {page === "profile" ? (
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex min-w-0 flex-col gap-4.5">
+            <div className="col-span-full flex min-w-0 flex-col gap-4.5">
               <div>
                 <div className="mb-1.5 flex items-center gap-1.5 font-medium text-sm">
                   <Trans>Photo</Trans>
@@ -344,27 +348,18 @@ function ProfileSteps({ frame, redirectTo, ...options }: ProfileStepsProps) {
                     onChange={field.handleChange}
                     onBlur={field.handleBlur}
                     error={shownError("username", field.state.meta.isTouched)}
+                    suggest={false}
                   />
                 )}
               </form.Field>
-            </div>
-            <div className="flex min-w-0 flex-col gap-2">
-              <DeskEyebrow>
-                <Trans>Preview</Trans>
-              </DeskEyebrow>
-              <DeskRowList>
-                <DeskRow
-                  lead={avatar("sm")}
-                  title={name.trim() || t`Your name`}
-                  subtitle={<Trans>New member</Trans>}
-                />
-              </DeskRowList>
             </div>
           </div>
         ) : null}
 
         {page === "contact" ? (
           <>
+            {/* Ahead of the fields, as the phone has it: it is read before anything is typed. */}
+            <ProfilePrivacyNotice />
             <div className="grid grid-cols-2 gap-4">
               <form.Field name="email">
                 {(field) => {
@@ -459,7 +454,6 @@ function ProfileSteps({ frame, redirectTo, ...options }: ProfileStepsProps) {
                 );
               }}
             </form.Field>
-            <ProfilePrivacyNotice />
           </>
         ) : null}
 

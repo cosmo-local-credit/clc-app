@@ -174,6 +174,7 @@ export function OnboardingProfileForm({ redirectTo, progressTotal, ...options }:
                   onChange={field.handleChange}
                   onBlur={field.handleBlur}
                   error={shownError("username", field.state.meta.isTouched)}
+                  suggest={false}
                 />
               )}
             </form.Field>

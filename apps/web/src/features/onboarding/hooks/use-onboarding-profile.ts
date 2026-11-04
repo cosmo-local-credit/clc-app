@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useIPCamera } from "#/features/home/hooks/use-ip-camera";
 import { identityClient } from "#/lib/api/identity";
+import { recipientsClient } from "#/lib/api/recipients";
 import { isStorageConfigured } from "#/lib/api/storage";
 import type { ProfilePage } from "#/lib/onboarding-search";
 import {
@@ -236,6 +237,36 @@ export function useOnboardingProfile({
     if (!avatarFile || earlier.some((previous) => !pageIsValid(previous, values))) onRestart();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-check only when the page changes
   }, [page]);
+
+  // A handle, not the display name: lowercase, words joined by dashes.
+  const nameValue = useStore(form.store, (state) => state.values.name);
+  const usernameValue = useStore(form.store, (state) => state.values.username ?? "");
+  // What the last suggestion put in the field. The moment the value is
+  // anything else, the person has taken the field over and nothing else is
+  // suggested, including when they clear it to keep no username at all.
+  const suggestedUsernameRef = useRef("");
+  useEffect(() => {
+    if (usernameValue !== "" && usernameValue !== suggestedUsernameRef.current) return;
+    const hint = nameValue.trim().toLowerCase().split(/\s+/).join("-");
+    if (!hint) return;
+    const controller = new AbortController();
+    // Typing a name is a run of changes; ask once it settles.
+    const timer = window.setTimeout(() => {
+      void recipientsClient.suggest(hint, controller.signal).then(
+        (suggestion) => {
+          if (controller.signal.aborted) return;
+          suggestedUsernameRef.current = suggestion;
+          form.setFieldValue("username", suggestion, { dontUpdateMeta: true });
+        },
+        // A suggestion is a convenience: the field stays empty and typeable.
+        () => {},
+      );
+    }, 500);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [form, nameValue, usernameValue]);
 
   /** A chosen location is a better hint than the network, for both fields. */
   function suggestForCountry(country: string) {

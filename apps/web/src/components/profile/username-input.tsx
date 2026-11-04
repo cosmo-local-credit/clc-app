@@ -13,6 +13,7 @@ export function UsernameInput({
   onChange,
   onBlur,
   error: validationError,
+  suggest = true,
 }: {
   id: string;
   value: string;
@@ -20,6 +21,12 @@ export function UsernameInput({
   onChange: (value: string) => void;
   onBlur: () => void;
   error?: string | null;
+  /**
+   * The Suggest username button. Onboarding passes false: it fills the field
+   * from the name on its own, so a second way to ask would be clutter. Editing
+   * an existing profile keeps it, where nothing may overwrite a claimed name.
+   */
+  suggest?: boolean;
 }) {
   const currentValue = useRef(value);
   currentValue.current = value;
@@ -50,30 +57,32 @@ export function UsernameInput({
         autoCorrect="off"
         spellCheck={false}
       />
-      <Button
-        type="button"
-        variant="outline"
-        tap
-        pending={busy}
-        onClick={async () => {
-          const before = currentValue.current;
-          setBusy(true);
-          setSuggestionError(null);
-          try {
-            // A handle, not the display name: lowercase, words joined by dashes.
-            const suggestion = await recipientsClient.suggest(
-              hint().trim().toLowerCase().split(/\s+/).join("-"),
-            );
-            if (currentValue.current === before) onChange(suggestion);
-          } catch {
-            setSuggestionError(t`Couldn't suggest a username. Please try again.`);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        {busy ? t`Finding a name…` : t`Suggest username`}
-      </Button>
+      {suggest ? (
+        <Button
+          type="button"
+          variant="outline"
+          tap
+          pending={busy}
+          onClick={async () => {
+            const before = currentValue.current;
+            setBusy(true);
+            setSuggestionError(null);
+            try {
+              // A handle, not the display name: lowercase, words joined by dashes.
+              const suggestion = await recipientsClient.suggest(
+                hint().trim().toLowerCase().split(/\s+/).join("-"),
+              );
+              if (currentValue.current === before) onChange(suggestion);
+            } catch {
+              setSuggestionError(t`Couldn't suggest a username. Please try again.`);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? t`Finding a name…` : t`Suggest username`}
+        </Button>
+      ) : null}
       {error ? (
         <p id={errorId} className="text-destructive text-xs" role="alert">
           {error}
