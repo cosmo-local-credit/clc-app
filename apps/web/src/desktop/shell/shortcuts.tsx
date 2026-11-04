@@ -79,11 +79,8 @@ function searchFields(value: unknown) {
  *
  * The listener runs in the bubble phase, so a component or a Base UI popup that
  * handled the key first (and said so) is never second-guessed.
- *
- * `sidebarToggle` is false where the sidebar has no visible collapse control
- * (the map forces the rail), so `[` does nothing there.
  */
-export function DesktopShortcuts({ sidebarToggle = true }: { sidebarToggle?: boolean }) {
+export function DesktopShortcuts() {
   const navigate = useNavigate();
   const router = useRouter();
   const { toggle } = useSidebarCollapsed();
@@ -91,9 +88,9 @@ export function DesktopShortcuts({ sidebarToggle = true }: { sidebarToggle?: boo
   const setPaletteOpen = usePaletteStore((state) => state.setOpen);
   const setHelpOpen = useShortcutHelp((state) => state.setOpen);
   const chord = useRef<number | null>(null);
-  const latest = useRef({ enabled, sidebarToggle, toggle });
+  const latest = useRef({ enabled, toggle });
   useEffect(() => {
-    latest.current = { enabled, sidebarToggle, toggle };
+    latest.current = { enabled, toggle };
   });
 
   useEffect(() => {
@@ -164,7 +161,6 @@ export function DesktopShortcuts({ sidebarToggle = true }: { sidebarToggle?: boo
         return;
       }
       if (key === "[") {
-        if (!state.sidebarToggle) return;
         event.preventDefault();
         state.toggle();
         return;

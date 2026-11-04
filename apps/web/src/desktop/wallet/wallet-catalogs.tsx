@@ -26,6 +26,7 @@ export function WalletCatalogs({ usage }: { usage: ReturnType<typeof useResource
 
   return (
     <DeskSection
+      id="my-catalogs"
       title={<Trans>My Catalogs</Trans>}
       action={
         <SectionActions>

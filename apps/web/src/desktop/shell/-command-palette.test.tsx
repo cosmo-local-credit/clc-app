@@ -19,6 +19,9 @@ const usageState = vi.hoisted(() => ({
     | undefined
     | Record<"vouchers" | "pools" | "catalogs" | "wants" | "offers", { canCreate: boolean }>,
 }));
+const auth = vi.hoisted(() => ({ isAuthenticated: true, isLoading: false }));
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => auth }));
 
 vi.mock("#/lib/api/recipients", () => ({ recipientsClient: recipients }));
 vi.mock("#/lib/api/marketplace", () => ({ marketplaceClient: marketplace }));
@@ -57,6 +60,8 @@ beforeEach(() => {
   recipients.search.mockReset().mockResolvedValue([person, pool]);
   marketplace.list.mockReset().mockResolvedValue({ results: [teaVoucher], nextCursor: null });
   usageState.data = undefined;
+  auth.isAuthenticated = true;
+  auth.isLoading = false;
   usePaletteStore.setState({ open: false });
   useShortcutHelp.setState({ open: false });
 });
@@ -243,6 +248,26 @@ describe("create actions", () => {
     await waitFor(() => {
       expect(options().map((option) => option.textContent)).toEqual(["Create voucher"]);
     });
+  });
+});
+
+describe("a guest", () => {
+  it("is offered only the actions it can run", async () => {
+    auth.isAuthenticated = false;
+    await openPalette();
+    for (const name of ["Send", "Receive", "Settings"]) {
+      expect(screen.queryByRole("option", { name })).toBeNull();
+    }
+    // Swap is the public pools list, and the shortcut reference is local.
+    expect(screen.getByRole("option", { name: "Swap" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Keyboard shortcuts" })).toBeTruthy();
+  });
+
+  it("keeps them while the session check runs", async () => {
+    auth.isAuthenticated = false;
+    auth.isLoading = true;
+    await openPalette();
+    expect(screen.getByRole("option", { name: "Send" })).toBeTruthy();
   });
 });
 

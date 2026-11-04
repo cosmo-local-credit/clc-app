@@ -21,18 +21,21 @@ export function DeskTitle({ children }: { children: ReactNode }) {
  * even when one of them has an action and the next does not.
  */
 export function DeskSection({
+  id,
   title,
   action,
   children,
   className,
 }: {
+  /** An anchor the sidebar or a link can scroll to. */
+  id?: string;
   title: ReactNode;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
   return (
-    <section className={cn("flex min-w-0 flex-col", className)}>
+    <section id={id} className={cn("flex min-w-0 scroll-mt-7 flex-col", className)}>
       <div className="mb-2.5 flex h-[30px] items-center justify-between gap-3">
         <SectionHeading as="h2" variant="section">
           {title}

@@ -67,7 +67,7 @@ export function MyPostsDesk() {
   ];
 
   return (
-    <DeskCanvas width="read" className="max-w-[1164px]">
+    <DeskCanvas width="full">
       <DeskTitleRow
         title={<Trans>My posts</Trans>}
         actions={

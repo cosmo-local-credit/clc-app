@@ -89,9 +89,11 @@ export function PostsDesk() {
   const activeFilters = filter.tags.length + filter.vouchers.length + filter.pools.length;
 
   return (
+    // Full width: the feed is a card grid, so a reading cap would leave the
+    // end of the canvas empty and push cards onto a row that had room.
     <DeskCanvas
-      width="read"
-      className="gap-4 @min-[56rem]:grid-cols-[240px_minmax(0,1fr)] @min-[56rem]:grid-rows-[auto_1fr] @min-[56rem]:gap-x-8"
+      width="full"
+      className="gap-4 @min-[56rem]:grid-cols-[272px_minmax(0,1fr)] @min-[56rem]:grid-rows-[auto_1fr] @min-[56rem]:gap-x-8"
     >
       <div className="grid min-w-0 content-start gap-4 @min-[56rem]:col-start-2 @min-[56rem]:row-start-1">
         <DeskTitleRow
@@ -145,7 +147,9 @@ export function PostsDesk() {
         id={filtersId}
         className={cn(
           "min-w-0 border border-border bg-card p-4",
-          "@min-[56rem]:col-start-1 @min-[56rem]:row-span-2 @min-[56rem]:row-start-1 @min-[56rem]:self-start @min-[56rem]:border-0 @min-[56rem]:bg-transparent @min-[56rem]:p-0",
+          // Docked, the facets are not a tile but a column: one rule down the
+          // full height of the feed divides them from it, 32px clear each side.
+          "@min-[56rem]:col-start-1 @min-[56rem]:row-span-2 @min-[56rem]:row-start-1 @min-[56rem]:self-stretch @min-[56rem]:border-0 @min-[56rem]:border-border @min-[56rem]:border-e @min-[56rem]:bg-transparent @min-[56rem]:p-0 @min-[56rem]:pe-8",
           !filtersOpen && "@max-[56rem]:hidden",
         )}
       >

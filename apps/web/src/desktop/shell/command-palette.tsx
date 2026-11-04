@@ -21,6 +21,8 @@ import { Input } from "#/components/ui/input";
 import { Spinner } from "#/components/ui/spinner";
 import { usePaletteStore } from "#/desktop/palette-store";
 import { useShortcutHelp } from "#/desktop/shell/shortcut-help";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { canReachPrivateRoutes } from "#/features/auth/logic/private-routes";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { marketplaceClient } from "#/lib/api/marketplace";
 import { recipientsClient } from "#/lib/api/recipients";
@@ -53,6 +55,9 @@ export function CommandPalette() {
   const setHelpOpen = useShortcutHelp((state) => state.setOpen);
   const navigate = useNavigate();
   const usage = useResourceUsage(open);
+  // Send, Receive and Settings are all behind `AuthenticatedRoute`. Search and
+  // Swap are public, so a guest still gets a useful palette.
+  const privateNav = canReachPrivateRoutes(useAuthStatus());
   const [query, setQuery] = useState("");
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const deferred = useDeferredValue(query.trim());
@@ -90,8 +95,16 @@ export function CommandPalette() {
 
   const needle = deferred.toLowerCase();
   const actions: Entry[] = [
-    { key: "send", label: t`Send`, run: () => void navigate({ to: "/wallet/send" }) },
-    { key: "receive", label: t`Receive`, run: () => void navigate({ to: "/wallet/receive" }) },
+    ...(privateNav
+      ? [
+          { key: "send", label: t`Send`, run: () => void navigate({ to: "/wallet/send" }) },
+          {
+            key: "receive",
+            label: t`Receive`,
+            run: () => void navigate({ to: "/wallet/receive" }),
+          },
+        ]
+      : []),
     {
       key: "swap",
       label: t`Swap`,
@@ -124,11 +137,15 @@ export function CommandPalette() {
           },
         ]
       : []),
-    {
-      key: "settings",
-      label: t`Settings`,
-      run: () => void navigate({ to: "/", search: { tab: "settings" } }),
-    },
+    ...(privateNav
+      ? [
+          {
+            key: "settings",
+            label: t`Settings`,
+            run: () => void navigate({ to: "/", search: { tab: "settings" } }),
+          },
+        ]
+      : []),
     { key: "shortcuts", label: t`Keyboard shortcuts`, run: () => setHelpOpen(true) },
   ]
     .filter((entry) => !needle || entry.label.toLowerCase().includes(needle))

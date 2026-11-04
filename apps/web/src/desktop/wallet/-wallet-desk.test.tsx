@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   listRetirements: vi.fn(),
   cancelRetirement: vi.fn(),
   navigate: vi.fn(),
+  hash: "",
   profile: { data: undefined as unknown },
   usage: {
     data: undefined as unknown,
@@ -35,6 +36,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mocks.navigate,
   useSearch: () => undefined,
+  useRouterState: ({ select }: { select: (state: unknown) => unknown }) =>
+    select({ location: { hash: mocks.hash } }),
   Link: ({
     to,
     params,

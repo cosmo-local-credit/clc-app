@@ -6,14 +6,23 @@ import { DesktopSidebar } from "./sidebar";
 
 const ADDRESS = "0xabcdef1234567890abcdef1234567890abcdef12";
 
+const auth = vi.hoisted(() => ({
+  isAuthenticated: true,
+  isLoading: false,
+  address: "0xabcdef1234567890abcdef1234567890abcdef12" as string | undefined,
+}));
+
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, address: ADDRESS }),
+  useAuthStatus: () => auth,
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: { name: "Amina Otieno" } }),
 }));
 
 beforeEach(() => {
+  auth.isAuthenticated = true;
+  auth.isLoading = false;
+  auth.address = ADDRESS;
   window.localStorage.removeItem("clc.desktop.sidebar");
   window.localStorage.removeItem("clc.desktop.market-view");
 });
@@ -63,12 +72,11 @@ describe("the collapsed rail", () => {
   });
 
   it.each([
-    ["expanded", false, undefined],
-    ["collapsed", false, "collapsed"],
-    ["the map's forced rail", true, undefined],
-  ])("keeps Settings and the profile reachable in %s", async (_label, rail, stored) => {
+    ["expanded", undefined],
+    ["collapsed", "collapsed"],
+  ])("keeps Settings and the profile reachable in %s", async (_label, stored) => {
     if (stored) window.localStorage.setItem("clc.desktop.sidebar", stored);
-    await renderInShell(<DesktopSidebar rail={rail} />, "/");
+    await renderInShell(<DesktopSidebar />, "/");
 
     const settings = screen.getByRole("link", { name: "Settings" });
     expect(settings.getAttribute("href")).toBe("/?tab=settings");
@@ -89,16 +97,20 @@ describe("the collapsed rail", () => {
     ).toBeTruthy();
   });
 
-  it("has no Expand or Collapse where the map forces the rail", async () => {
-    await renderInShell(<DesktopSidebar rail />, "/");
-    expect(screen.queryByRole("button", { name: "Expand" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Collapse" })).toBeNull();
+  it("stays expanded on the map, which only the person's own Collapse closes", async () => {
+    await renderInShell(<DesktopSidebar />, "/?tab=market");
+    expect(screen.getByRole("button", { name: "Collapse" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Wallet" }).textContent).toBe("Wallet");
   });
 });
 
 describe("the marketplace lists in the rail", () => {
-  it("opens a menu from the Market icon that reaches every list, even where the rail is forced", async () => {
-    const { router } = await renderInShell(<DesktopSidebar rail />, "/");
+  beforeEach(() => {
+    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
+  });
+
+  it("opens a menu from the Market icon that reaches every list", async () => {
+    const { router } = await renderInShell(<DesktopSidebar />, "/");
     expect(screen.queryByRole("link", { name: "Offers" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Marketplace lists" }));
@@ -120,10 +132,7 @@ describe("the marketplace lists in the rail", () => {
   });
 
   it("keeps the list view when it opens a list", async () => {
-    const { router } = await renderInShell(
-      <DesktopSidebar rail />,
-      "/market?scope=offers&view=list",
-    );
+    const { router } = await renderInShell(<DesktopSidebar />, "/market?scope=offers&view=list");
     fireEvent.click(screen.getByRole("button", { name: "Marketplace lists" }));
     const lists = await screen.findByRole("navigation", { name: "Marketplace" });
     fireEvent.click(within(lists).getByRole("link", { name: "Wants" }));
@@ -198,6 +207,83 @@ describe("marketplace links keep the Map/List choice", () => {
       view: "list",
       q: "tea",
     });
+  });
+});
+
+describe("the Wallet's sections", () => {
+  it("lists every section under Wallet, each an anchor on the Wallet tab", async () => {
+    await renderInShell(<DesktopSidebar />, "/?tab=wallet");
+    const sections = screen.getByRole("group", { name: "Wallet" });
+    expect(
+      within(sections)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Holdings", "My Vouchers", "My Pools", "My Wants", "My Catalogs"]);
+    expect(within(sections).getByRole("link", { name: "My Pools" }).getAttribute("href")).toBe(
+      "/?tab=wallet#my-pools",
+    );
+  });
+
+  it("marks the section the hash names, and Wallet itself when it names none", async () => {
+    const plain = await renderInShell(<DesktopSidebar />, "/?tab=wallet");
+    expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("aria-current")).toBe("page");
+    expect(screen.getByRole("link", { name: "Holdings" }).getAttribute("aria-current")).toBeNull();
+    plain.unmount();
+
+    await renderInShell(<DesktopSidebar />, "/?tab=wallet#my-wants");
+    expect(screen.getByRole("link", { name: "My Wants" }).getAttribute("aria-current")).toBe(
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("aria-current")).toBeNull();
+  });
+
+  it("reaches them from the rail too", async () => {
+    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
+    const { router } = await renderInShell(<DesktopSidebar />, "/?tab=wallet");
+    expect(screen.queryByRole("link", { name: "My Pools" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Wallet sections" }));
+    const menu = await screen.findByRole("navigation", { name: "Wallet" });
+    fireEvent.click(within(menu).getByRole("link", { name: "My Catalogs" }));
+    await waitFor(() => {
+      expect(router.state.location.hash).toBe("my-catalogs");
+    });
+  });
+});
+
+describe("a guest", () => {
+  beforeEach(() => {
+    auth.isAuthenticated = false;
+    auth.address = undefined;
+  });
+
+  it("is offered only what it can open", async () => {
+    await renderInShell(<DesktopSidebar />, "/?tab=market");
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
+    for (const name of ["Wallet", "Activity", "Settings", "My Pools"]) {
+      expect(within(nav).queryByRole("link", { name })).toBeNull();
+    }
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
+    expect(screen.queryByRole("group", { name: "Wallet" })).toBeNull();
+    // Market and Posts are public, so both stay, lists included.
+    expect(within(nav).getByRole("link", { name: "Market" })).toBeTruthy();
+    expect(within(nav).getByRole("link", { name: "Posts" })).toBeTruthy();
+    expect(within(nav).getByRole("link", { name: "Pools" })).toBeTruthy();
+  });
+
+  it("keeps Expand in the rail, the one way back from it", async () => {
+    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
+    await renderInShell(<DesktopSidebar />, "/?tab=market");
+    expect(screen.getByRole("button", { name: "Expand" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Wallet sections" })).toBeNull();
+  });
+
+  it("still sees them while the session check runs, so nothing pops out", async () => {
+    auth.isLoading = true;
+    await renderInShell(<DesktopSidebar />, "/?tab=market");
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
+    expect(within(nav).getByRole("link", { name: "Wallet" })).toBeTruthy();
+    expect(within(nav).getByRole("link", { name: "Activity" })).toBeTruthy();
   });
 });
 

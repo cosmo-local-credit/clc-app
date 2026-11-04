@@ -120,7 +120,7 @@ export function AllVouchersDesk() {
       <DeskSplit
         onDismiss={history.close}
         main={
-          <DeskCanvas>
+          <DeskCanvas width="full">
             <DeskTitleRow
               title={<Trans>All Vouchers</Trans>}
               actions={

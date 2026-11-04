@@ -330,7 +330,7 @@ export function ActivityDesk({
       <DeskSplit
         onDismiss={tx ? closeInspector : undefined}
         main={
-          <DeskCanvas className="gap-4">
+          <DeskCanvas width="full" className="gap-4">
             <DeskTitleRow
               title={<Trans>Activity</Trans>}
               actions={

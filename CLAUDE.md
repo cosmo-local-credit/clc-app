@@ -392,11 +392,21 @@ is no Settings override and no `Sec-CH-Viewport-Width` hint.
   top-bar search is the one extra `size="lg"`), `pending` Spinner, number
   fonts, `SectionHeading`, the explainer-copy ban, lingui, and logical
   `start`/`end`.
-- Shell: sidebar 224px collapsing to a 56px rail (`[`, key `clc.desktop.sidebar`),
-  56px top bar, canvas, 380px inspector. Market children stay visible. Reading
-  pages cap at 1200px. A route without `staticData.desktop` renders the phone
-  view in a 430px column. `/install` stays there. `/wallet/collect` is a phone
-  panel because Web NFC is Android-only.
+- Shell: sidebar 192px collapsing to a 56px rail (`[`, key `clc.desktop.sidebar`),
+  56px top bar, canvas, 380px inspector. The sidebar starts expanded and only
+  the person's own Collapse closes it — no screen forces the rail, the map
+  included. Market and Wallet both keep their children visible, and each keeps
+  them in a popover beside its icon once collapsed. The Wallet's children are
+  hash anchors on `/?tab=wallet` (`DESK_WALLET_SECTIONS` in `#/desktop/chrome`),
+  not routes. Reading pages — prose, forms and detail — cap at 1200px, and
+  browsing surfaces do not: a card grid or a `DeskTable` passes `width="full"`
+  so a wide canvas fills its first row instead of ending in empty gutter.
+  Onboarding is a browsing surface too: welcome and sign-in both lay the whole
+  guide out beside the methods, with each concept's `GuideArt`, rather than
+  paging it the way the phone does. A route without
+  `staticData.desktop` renders the phone view in a 430px column. `/install`
+  stays there. `/wallet/collect` is a phone panel because Web NFC is
+  Android-only.
 - Tables are a local sortable grid (mono uppercase headers, 40px rows,
   right-aligned figures). Do not add `@tanstack/react-table`. The selected row
   is a 2px primary inset on the start edge plus a 7% tint.

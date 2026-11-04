@@ -5,8 +5,8 @@ import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic
 import { offrampTokenSymbol } from "@clc/core/features/wallet/pretium";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { Link, useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
+import { useEffect, useMemo } from "react";
 import {
   RiBankCardLine,
   RiDownloadLine,
@@ -22,6 +22,7 @@ import { Spinner } from "#/components/ui/spinner";
 import { WantPicture } from "#/components/wants/want-row";
 import { PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { activityRowKey } from "#/desktop/activity/activity-desk";
+import { deskWalletSectionOf } from "#/desktop/chrome";
 import type { DeskColumn } from "#/desktop/ui/data-table";
 import { DeskTable } from "#/desktop/ui/data-table";
 import {
@@ -109,6 +110,20 @@ export function WalletDesk() {
       replace: true,
     });
   const valuation = useWalletValuation(address);
+
+  // The sidebar reaches the sections by hash. Scroll on arrival and once more
+  // when the first loads land, because a section above can still grow and
+  // carry the target off screen.
+  const section = useRouterState({ select: (state) => deskWalletSectionOf(state.location.hash) });
+  const settled =
+    !vouchers.isPending &&
+    !activityQuery.isPending &&
+    !ownedPoolsQuery.isPending &&
+    !wantsQuery.isPending;
+  useEffect(() => {
+    if (!section) return;
+    document.getElementById(section)?.scrollIntoView?.({ block: "start" });
+  }, [section, settled]);
 
   // Everything the account holds: other issuers' vouchers, then its own with a
   // balance, each marked Admin as on the All Vouchers screen.
@@ -243,7 +258,10 @@ export function WalletDesk() {
   const wantsCreatable = usage.data?.wants.canCreate === true && !usage.isError;
 
   return (
-    <DeskCanvas className="grid-cols-2 @min-[64rem]:grid-cols-3">
+    <DeskCanvas
+      width="full"
+      className="grid-cols-2 @min-[64rem]:grid-cols-3 @min-[96rem]:grid-cols-4"
+    >
       <div className="col-span-full">
         <DeskTitle>
           <Trans>Wallet</Trans>
@@ -345,6 +363,7 @@ export function WalletDesk() {
       ) : null}
 
       <DeskSection
+        id="holdings"
         className="col-span-full @min-[64rem]:col-span-2"
         title={<Trans>Holdings</Trans>}
         action={
@@ -465,6 +484,7 @@ export function WalletDesk() {
       </DeskSection>
 
       <DeskSection
+        id="my-vouchers"
         title={<Trans>My Vouchers</Trans>}
         action={
           <SectionActions>
@@ -542,6 +562,7 @@ export function WalletDesk() {
       </DeskSection>
 
       <DeskSection
+        id="my-pools"
         title={<Trans>My Pools</Trans>}
         action={
           <SectionActions>
@@ -623,6 +644,7 @@ export function WalletDesk() {
       </DeskSection>
 
       <DeskSection
+        id="my-wants"
         title={<Trans>My Wants</Trans>}
         action={
           <SectionActions>

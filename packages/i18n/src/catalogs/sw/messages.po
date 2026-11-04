@@ -158,7 +158,7 @@ msgstr "{0} kati ya {CATALOG_MAX_POOLS}"
 #. placeholder {0}: draftTags.length
 #. placeholder {0}: filter.tags.length
 #: apps/web/src/components/catalog-filter-controls.tsx:435
-#: apps/web/src/desktop/market/market-toolbar.tsx:258
+#: apps/web/src/desktop/market/market-toolbar.tsx:259
 #: apps/web/src/desktop/posts/post-facets.tsx:152
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} kati ya {CATALOG_MAX_TAGS}"
@@ -200,7 +200,7 @@ msgid "{0} removed from {1}."
 msgstr "{0} imeondolewa kutoka {1}."
 
 #. placeholder {0}: screen.results.total
-#: apps/web/src/desktop/market/market-map-desk.tsx:127
+#: apps/web/src/desktop/market/market-map-desk.tsx:128
 msgid "{0} results"
 msgstr "Matokeo {0}"
 
@@ -215,7 +215,7 @@ msgid "{0} updated."
 msgstr "{0} imesasishwa."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:604
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:625
 #: apps/web/src/features/home/ui/wallet-page.tsx:460
 #: apps/web/src/features/pools/ui/pools-page.tsx:407
 msgid "{0} vouchers"
@@ -281,7 +281,7 @@ msgstr "{count} kati ya {signers}"
 msgid "{count} of {total}"
 msgstr ""
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:150
+#: apps/web/src/desktop/market/market-toolbar.tsx:151
 msgid "{count} results"
 msgstr "matokeo {count}"
 
@@ -313,11 +313,6 @@ msgstr "Nyota {formattedStars} kati ya 5"
 msgid "{summaryTotal} reviews"
 msgstr "Maoni {summaryTotal}"
 
-#: apps/web/src/desktop/pools/create/create-pool-parts.tsx:92
-#: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:132
-msgid "{used} of {limit} used"
-msgstr ""
-
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:31
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:82
@@ -327,6 +322,11 @@ msgstr ""
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:47
 msgid "{used} of {limit} used"
 msgstr "{used} kati ya {limit} zimetumika"
+
+#: apps/web/src/desktop/pools/create/create-pool-parts.tsx:92
+#: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:132
+msgid "{used} of {limit} used"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: apps/web/src/components/resource-usage.tsx:29
@@ -380,7 +380,7 @@ msgstr "<0>Ingia</0> ili kupata maelezo zaidi."
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
 #: apps/web/src/components/vouchers/voucher-about.tsx:52
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:154
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:155
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -388,7 +388,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "ofa 1"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:602
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:623
 #: apps/web/src/features/home/ui/wallet-page.tsx:458
 #: apps/web/src/features/pools/ui/pools-page.tsx:405
 msgid "1 voucher"
@@ -537,7 +537,7 @@ msgstr "Akaunti haijapatikana"
 msgid "Account registration failed."
 msgstr "Usajili wa akaunti umeshindikana."
 
-#: apps/web/src/desktop/shell/command-palette.tsx:196
+#: apps/web/src/desktop/shell/command-palette.tsx:213
 msgid "Actions"
 msgstr ""
 
@@ -558,7 +558,7 @@ msgid "Activating smart wallet…"
 msgstr "Inawezesha mkoba mahiri…"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:620
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:672
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:694
 #: apps/web/src/features/home/ui/settings-page.tsx:257
 #: apps/web/src/features/home/ui/wallet-page.tsx:354
 msgid "Active"
@@ -573,16 +573,16 @@ msgstr "Imewashwa"
 #: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:210
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:810
-#: apps/web/src/desktop/pools/pool-main.tsx:393
+#: apps/web/src/desktop/pools/pool-main.tsx:394
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:97
+#: apps/web/src/desktop/shell/sidebar.tsx:145
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:199
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/desktop/wallet/receive-desk.tsx:167
 #: apps/web/src/desktop/wallet/receive-desk.tsx:172
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:419
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:424
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:438
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:443
 #: apps/web/src/features/home/ui/activity-page.tsx:97
 #: apps/web/src/features/home/ui/activity-page.tsx:140
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:70
@@ -611,7 +611,7 @@ msgstr "Ongeza {0} kwenye agizo"
 
 #: apps/web/src/desktop/shell/crumbs.tsx:38
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:79
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:316
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:334
 msgid "Add / withdraw"
 msgstr ""
 
@@ -773,7 +773,7 @@ msgstr "Kitabu cha anwani"
 #: apps/web/src/desktop/wallet/send-desk.tsx:448
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:184
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:90
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:238
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:253
 #: apps/web/src/features/home/ui/settings-page.tsx:198
 #: apps/web/src/features/pools/hooks/use-pool-receive.ts:24
 #: apps/web/src/features/wallet/ui/cash-page.tsx:23
@@ -782,7 +782,7 @@ msgid "Address copied"
 msgstr "Anwani imenakiliwa"
 
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:91
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:148
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:49
 msgid "Admin"
 msgstr "Msimamizi"
@@ -823,12 +823,12 @@ msgstr "Kilimo"
 #: apps/web/src/components/market-bar.tsx:205
 #: apps/web/src/components/market-bar.tsx:264
 #: apps/web/src/desktop/activity/activity-desk.tsx:357
-#: apps/web/src/desktop/market/market-toolbar.tsx:32
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:355
+#: apps/web/src/desktop/market/market-toolbar.tsx:31
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:374
 msgid "All"
 msgstr "Zote"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:562
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:583
 #: apps/web/src/features/home/ui/wallet-page.tsx:389
 msgid "All pools"
 msgstr "Vikundi vyote"
@@ -839,7 +839,7 @@ msgstr "Vikundi vyote"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:416
 #: apps/web/src/components/catalog-filter-controls.tsx:500
-#: apps/web/src/desktop/market/market-toolbar.tsx:321
+#: apps/web/src/desktop/market/market-toolbar.tsx:322
 #: apps/web/src/desktop/posts/post-facets.tsx:295
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:261
 msgid "All selected"
@@ -948,7 +948,7 @@ msgstr "Usomaji mwingine wa kadi tayari unaendelea. Jaribu tena."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:411
 #: apps/web/src/components/catalog-filter-controls.tsx:495
-#: apps/web/src/desktop/market/market-toolbar.tsx:321
+#: apps/web/src/desktop/market/market-toolbar.tsx:322
 #: apps/web/src/desktop/posts/post-facets.tsx:290
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:258
 msgid "Any selected"
@@ -983,7 +983,7 @@ msgstr "Tumia"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:116
 #: apps/web/src/components/catalog-filter-controls.tsx:513
-#: apps/web/src/desktop/market/market-toolbar.tsx:333
+#: apps/web/src/desktop/market/market-toolbar.tsx:334
 msgid "Apply filters"
 msgstr "Tumia vichujio"
 
@@ -1111,7 +1111,7 @@ msgstr "Gunia"
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:513
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:100
 #: apps/web/src/desktop/wallet/send-desk.tsx:427
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:196
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:211
 msgid "Balance"
 msgstr "Salio"
 
@@ -1314,7 +1314,7 @@ msgstr "Huduma za fedha taslimu hazipatikani kwenye {0}."
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:186
 #: apps/web/src/desktop/market/market-bits.tsx:76
 #: apps/web/src/desktop/market/market-list-desk.tsx:438
-#: apps/web/src/desktop/shell/command-palette.tsx:81
+#: apps/web/src/desktop/shell/command-palette.tsx:86
 #: apps/web/src/features/home/ui/marketplace-page.tsx:413
 msgid "Catalog"
 msgstr "Katalogi"
@@ -1343,9 +1343,9 @@ msgstr "Katalogi imehifadhiwa. Kipengee hakikuweza kuongezwa. Jaribu tena."
 #: apps/web/src/components/market-bar.tsx:269
 #: apps/web/src/components/resource-usage.tsx:116
 #: apps/web/src/desktop/market/market-layers.tsx:38
-#: apps/web/src/desktop/market/market-toolbar.tsx:37
+#: apps/web/src/desktop/market/market-toolbar.tsx:36
 #: apps/web/src/desktop/shell/crumbs.tsx:30
-#: apps/web/src/desktop/shell/sidebar.tsx:31
+#: apps/web/src/desktop/shell/sidebar.tsx:38
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:32
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:33
 msgid "Catalogs"
@@ -1706,7 +1706,7 @@ msgstr "Ondoa kichujio"
 #: apps/web/src/desktop/market/market-notices.tsx:198
 #: apps/web/src/desktop/market/market-notices.tsx:266
 #: apps/web/src/desktop/market/market-notices.tsx:281
-#: apps/web/src/desktop/posts/posts-desk.tsx:198
+#: apps/web/src/desktop/posts/posts-desk.tsx:202
 #: apps/web/src/features/home/hooks/use-market-screen.tsx:450
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:37
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:46
@@ -1740,7 +1740,7 @@ msgstr "Futa eneo"
 #: apps/web/src/components/market-search.tsx:180
 #: apps/web/src/desktop/activity/activity-desk.tsx:452
 #: apps/web/src/desktop/market/market-search-field.tsx:131
-#: apps/web/src/desktop/market/market-toolbar.tsx:298
+#: apps/web/src/desktop/market/market-toolbar.tsx:299
 #: apps/web/src/features/home/ui/activity-page.tsx:121
 msgid "Clear search"
 msgstr "Ondoa utafutaji"
@@ -1805,7 +1805,7 @@ msgstr ""
 msgid "Close Want"
 msgstr "Funga ombi"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:670
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:692
 #: apps/web/src/features/home/ui/wallet-page.tsx:352
 msgid "Closed"
 msgstr "Limefungwa"
@@ -1815,8 +1815,8 @@ msgid "Collaboration"
 msgstr "Ushirikiano"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:136
-#: apps/web/src/desktop/shell/sidebar.tsx:140
+#: apps/web/src/desktop/shell/sidebar.tsx:203
+#: apps/web/src/desktop/shell/sidebar.tsx:207
 msgid "Collapse"
 msgstr "Kunja"
 
@@ -2175,7 +2175,7 @@ msgstr "Endelea kwa {providerLabel}"
 msgid "Continue with sign-in card"
 msgstr "Endelea na kadi ya kuingia"
 
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:170
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:171
 msgid "Contract"
 msgstr "Mkataba"
 
@@ -2193,7 +2193,7 @@ msgstr "Anwani ya mkataba"
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:73
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:426
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:115
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:144
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:145
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:118
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:29
@@ -2223,7 +2223,7 @@ msgstr "Nakili anwani"
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:102
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:424
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:113
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:174
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:175
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:105
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:116
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:47
@@ -2305,7 +2305,7 @@ msgid "Copy transaction hash"
 msgstr "Nakili heshi ya muamala"
 
 #: apps/web/src/desktop/wallet/receive-desk.tsx:126
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:287
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:305
 #: apps/web/src/features/wallet/ui/receive-page.tsx:102
 msgid "Copy wallet address"
 msgstr "Nakili anwani ya pochi"
@@ -2439,8 +2439,8 @@ msgstr ""
 #: apps/web/src/desktop/wallet/send-desk.tsx:449
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:185
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:91
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:233
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:239
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:248
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:254
 #: apps/web/src/features/home/ui/settings-page.tsx:193
 #: apps/web/src/features/home/ui/settings-page.tsx:199
 #: apps/web/src/features/pools/hooks/use-pool-receive.ts:19
@@ -2458,8 +2458,8 @@ msgstr "Imeshindwa kunakili anwani"
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:74
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:426
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:115
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:139
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:145
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:140
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:146
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:107
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:118
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:24
@@ -2571,7 +2571,7 @@ msgstr "Haikuwezekana kutambua nchi hapa. Jaribu sehemu iliyo karibu."
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:153
 #: apps/web/src/desktop/wallet/receive-desk.tsx:183
 #: apps/web/src/desktop/wallet/send-desk.tsx:698
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:435
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:454
 #: apps/web/src/features/home/ui/activity-page.tsx:186
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:77
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:233
@@ -2588,7 +2588,7 @@ msgstr "Imeshindikana kupakia vipengee vya katalogi."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:58
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:47
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:51
-#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:45
+#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:46
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:32
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:41
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:137
@@ -2673,7 +2673,7 @@ msgstr "Hatukuweza kupakia historia ya Pretium."
 #: apps/web/src/components/resource-usage.tsx:126
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:59
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:154
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:334
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:352
 #: apps/web/src/features/home/ui/wallet-page.tsx:148
 msgid "Couldn't load resource limits."
 msgstr "Imeshindikana kupakia vikomo vya rasilimali."
@@ -2750,7 +2750,7 @@ msgstr "Imeshindikana kupakia vitengo vya hesabu."
 #~ msgstr "Imeshindikana kupakia chaguo za vocha."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:224
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:115
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:116
 msgid "Couldn't load voucher information."
 msgstr "Imeshindikana kupakia taarifa za vocha."
 
@@ -2770,8 +2770,8 @@ msgstr "Imeshindikana kupakia vocha"
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:150
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:169
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:316
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:386
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:495
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:405
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:515
 #: apps/web/src/desktop/wants/want-place-desk.tsx:295
 #: apps/web/src/features/home/ui/wallet-page.tsx:186
 #: apps/web/src/features/home/ui/wallet-page.tsx:204
@@ -2790,7 +2790,7 @@ msgstr "Maombi ya bwawa hili hayakuweza kupakiwa."
 msgid "Couldn't load Wants."
 msgstr "Maombi hayakuweza kupakiwa."
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:571
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:592
 #: apps/web/src/features/home/ui/wallet-page.tsx:399
 msgid "Couldn't load your pools."
 msgstr "Haikuwezekana kupakia vikundi vyako."
@@ -2800,7 +2800,7 @@ msgstr "Haikuwezekana kupakia vikundi vyako."
 msgid "Couldn't load your posts."
 msgstr "Imeshindwa kupakia machapisho yako."
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:642
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:664
 #: apps/web/src/features/home/ui/wallet-page.tsx:295
 msgid "Couldn't load your Wants."
 msgstr "Maombi yako hayakuweza kupakiwa."
@@ -2993,10 +2993,10 @@ msgstr "Picha ya jalada"
 
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:131
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:136
-#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:35
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:478
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:558
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:632
+#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:36
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:498
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:579
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:654
 #: apps/web/src/features/home/ui/wallet-page.tsx:285
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:94
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:99
@@ -3005,7 +3005,7 @@ msgstr "Unda"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:109
 #: apps/web/src/desktop/auth/auth-gate-desk.tsx:55
-#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:134
+#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:128
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:124
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:266
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:45
@@ -3024,7 +3024,7 @@ msgstr "Fungua akaunti"
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:37
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:28
 #: apps/web/src/desktop/catalogs/catalog-create-desk.tsx:145
-#: apps/web/src/desktop/shell/command-palette.tsx:122
+#: apps/web/src/desktop/shell/command-palette.tsx:135
 #: apps/web/src/desktop/shell/crumbs.tsx:48
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:23
 #: apps/web/src/features/catalogs/ui/catalog-form.tsx:143
@@ -3038,7 +3038,7 @@ msgstr "Unda katalogi"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:109
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:128
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:82
-#: apps/web/src/desktop/shell/command-palette.tsx:113
+#: apps/web/src/desktop/shell/command-palette.tsx:126
 #: apps/web/src/desktop/shell/crumbs.tsx:42
 #: apps/web/src/features/home/ui/wallet-page.tsx:427
 #: apps/web/src/features/home/ui/wallet-page.tsx:432
@@ -3062,7 +3062,7 @@ msgid "Create this transaction in your multisig wallet. Metadata edits are "
 msgstr "Unda muamala huu katika pochi yako ya sahihi nyingi. Bado unaweza "
 "kuhariri maelezo hapa."
 
-#: apps/web/src/desktop/shell/command-palette.tsx:104
+#: apps/web/src/desktop/shell/command-palette.tsx:117
 #: apps/web/src/desktop/shell/crumbs.tsx:44
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:68
 #: apps/web/src/desktop/vouchers/create/details-step.tsx:44
@@ -3169,8 +3169,8 @@ msgid "Creation failed"
 msgstr "Uundaji umeshindikana"
 
 #: apps/web/src/components/creditable-browse-control.tsx:107
-#: apps/web/src/desktop/market/market-toolbar.tsx:362
-#: apps/web/src/desktop/pools/pool-main.tsx:391
+#: apps/web/src/desktop/market/market-toolbar.tsx:363
+#: apps/web/src/desktop/pools/pool-main.tsx:392
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:69
 msgid "Credit"
 msgstr "Mkopo"
@@ -3218,7 +3218,6 @@ msgstr "Kila siku"
 
 #: apps/web/src/components/theme-selector.tsx:17
 #: apps/web/src/desktop/account/settings-desk.tsx:354
-#: apps/web/src/desktop/auth/onboarding-header.tsx:122
 msgid "Dark"
 msgstr "Giza"
 
@@ -3318,7 +3317,7 @@ msgid "Deployment transaction hash copied"
 msgstr "Hashi ya muamala wa kuunda mkataba imenakiliwa"
 
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:932
-#: apps/web/src/desktop/pools/pool-main.tsx:190
+#: apps/web/src/desktop/pools/pool-main.tsx:191
 #: apps/web/src/features/pools/hooks/use-pool-activity-details.ts:52
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:196
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:225
@@ -3547,7 +3546,7 @@ msgstr "Hariri chapisho"
 #: apps/web/src/desktop/account/profile-desk.tsx:188
 #: apps/web/src/desktop/account/settings-desk.tsx:253
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:100
+#: apps/web/src/desktop/shell/sidebar.tsx:148
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
 msgid "Edit profile"
@@ -3595,7 +3594,7 @@ msgstr "Wazee"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:376
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:109
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:69
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:180
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:181
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:290
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:94
 #: apps/web/src/desktop/wants/want-place-desk.tsx:267
@@ -3843,8 +3842,8 @@ msgid "Existing fee recipient"
 msgstr "Mpokeaji wa sasa wa ada"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:219
-#: apps/web/src/desktop/shell/sidebar.tsx:223
+#: apps/web/src/desktop/shell/sidebar.tsx:316
+#: apps/web/src/desktop/shell/sidebar.tsx:317
 msgid "Expand"
 msgstr "Panua"
 
@@ -3857,16 +3856,16 @@ msgstr "Mwisho wa matumizi"
 msgid "Expiration date must be in the future"
 msgstr "Tarehe ya mwisho wa matumizi lazima iwe ya baadaye"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:668
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:690
 #: apps/web/src/features/home/ui/wallet-page.tsx:350
 msgid "Expired"
 msgstr "Limekwisha muda"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:728
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:750
 msgid "Expired {ends}"
 msgstr "Iliisha {ends}"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:728
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:750
 msgid "Expires {ends}"
 msgstr "Inaisha {ends}"
 
@@ -4014,27 +4013,27 @@ msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Faili ni kubwa mno ({0} KB). Kiwango cha juu ni 512 KB."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:449
-#: apps/web/src/desktop/market/market-toolbar.tsx:263
+#: apps/web/src/desktop/market/market-toolbar.tsx:264
 #: apps/web/src/desktop/posts/post-facets.tsx:162
 msgid "Filter by tag"
 msgstr "Chuja kwa lebo"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:252
+#: apps/web/src/desktop/market/market-toolbar.tsx:253
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:99
 msgid "Filter catalogs"
 msgstr "Chuja katalogi"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:254
+#: apps/web/src/desktop/market/market-toolbar.tsx:255
 #: apps/web/src/features/home/ui/marketplace-page.tsx:132
 msgid "Filter marketplace"
 msgstr "Chuja soko"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:244
+#: apps/web/src/desktop/market/market-toolbar.tsx:245
 #: apps/web/src/features/home/ui/offers-page.tsx:123
 msgid "Filter offers"
 msgstr "Chuja matoleo"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:250
+#: apps/web/src/desktop/market/market-toolbar.tsx:251
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:25
 msgid "Filter pools"
 msgstr "Chuja puli"
@@ -4044,12 +4043,12 @@ msgstr "Chuja puli"
 msgid "Filter posts"
 msgstr "Chuja machapisho"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:248
+#: apps/web/src/desktop/market/market-toolbar.tsx:249
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:113
 msgid "Filter vouchers"
 msgstr "Chuja vocha"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:246
+#: apps/web/src/desktop/market/market-toolbar.tsx:247
 #: apps/web/src/features/wants/ui/wants-page.tsx:87
 msgid "Filter Wants"
 msgstr "Chuja maombi"
@@ -4060,8 +4059,8 @@ msgstr "Chuja maombi"
 #: apps/web/src/components/catalog-filter-controls.tsx:206
 #: apps/web/src/components/catalog-filter-controls.tsx:207
 #: apps/web/src/components/catalog-filter-controls.tsx:214
-#: apps/web/src/desktop/market/market-toolbar.tsx:226
-#: apps/web/src/desktop/posts/posts-desk.tsx:128
+#: apps/web/src/desktop/market/market-toolbar.tsx:227
+#: apps/web/src/desktop/posts/posts-desk.tsx:130
 msgid "Filters"
 msgstr "Vichujio"
 
@@ -4133,16 +4132,16 @@ msgstr "Mikusanyiko"
 msgid "Get"
 msgstr "Pata"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:385
+#: apps/web/src/desktop/market/market-toolbar.tsx:374
 msgid "Get {symbol}"
 msgstr ""
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:396
+#: apps/web/src/desktop/market/market-toolbar.tsx:385
 msgid "Get <0>{symbol}</0>"
 msgstr ""
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:385
-#: apps/web/src/desktop/market/market-toolbar.tsx:400
+#: apps/web/src/desktop/market/market-toolbar.tsx:374
+#: apps/web/src/desktop/market/market-toolbar.tsx:389
 msgid "Get voucher"
 msgstr ""
 
@@ -4232,19 +4231,20 @@ msgstr "Shikilia kadi ikiwa bapa nyuma ya simu yako."
 msgid "Hold your sign-in card's QR code up to the camera"
 msgstr ""
 
+#: apps/web/src/desktop/shell/sidebar.tsx:42
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:182
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:184
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:349
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:352
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:373
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:368
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:371
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:392
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:411
 #: apps/web/src/features/home/ui/wallet-page.tsx:220
 #: apps/web/src/features/home/ui/wallet-page.tsx:222
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:187
 msgid "Holdings"
 msgstr "Hazina"
 
-#: apps/web/src/desktop/pools/pool-main.tsx:389
+#: apps/web/src/desktop/pools/pool-main.tsx:390
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:68
 msgctxt "Pool tab"
 msgid "Holdings"
@@ -4274,9 +4274,9 @@ msgstr "Ujenzi wa nyumba"
 msgid "Housekeeping"
 msgstr "Utunzaji wa nyumba"
 
-#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:74
-msgid "How CLC works"
-msgstr ""
+#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:64
+#~ msgid "How CLC works"
+#~ msgstr ""
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:451
 #~ msgid "How many vouchers to create once this voucher is published"
@@ -4291,7 +4291,7 @@ msgstr "Ni thamani kiasi gani ya {unitSymbol} inaweza kubadilishwa kutoka "
 "kwenye puli kwa kutumia vocha za {0}?"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:489
-#: apps/web/src/desktop/market/market-toolbar.tsx:307
+#: apps/web/src/desktop/market/market-toolbar.tsx:308
 msgid "How should categories match?"
 msgstr "Kategoria zilingane vipi?"
 
@@ -4324,7 +4324,7 @@ msgstr "Uzoefu wako ulikuwaje?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:119
 #: apps/web/src/desktop/auth/auth-gate-desk.tsx:65
-#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:137
+#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:131
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:48
 msgid "I already have an account"
 msgstr "Nina akaunti tayari"
@@ -4444,7 +4444,7 @@ msgstr "Ongeza kiasi cha {0}"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:160
 #: apps/web/src/desktop/market/place-panel.tsx:61
-#: apps/web/src/desktop/pools/pool-main.tsx:395
+#: apps/web/src/desktop/pools/pool-main.tsx:396
 #: apps/web/src/desktop/vouchers/voucher-desk.tsx:275
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:71
 msgid "Info"
@@ -4507,7 +4507,7 @@ msgstr "Nambari ya simu si sahihi"
 #~ msgstr "Hii ni bidhaa au huduma?"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:135
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:225
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:226
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:298
 msgid "Issuer"
 msgstr "Mtoaji"
@@ -4526,9 +4526,9 @@ msgid "Keep"
 msgstr "Bakiza"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:454
-#: apps/web/src/desktop/shell/command-palette.tsx:132
+#: apps/web/src/desktop/shell/command-palette.tsx:149
 #: apps/web/src/desktop/shell/shortcut-help.tsx:65
-#: apps/web/src/desktop/shell/top-bar.tsx:21
+#: apps/web/src/desktop/shell/top-bar.tsx:27
 msgid "Keyboard shortcuts"
 msgstr ""
 
@@ -4597,7 +4597,6 @@ msgstr "Ukopeshaji"
 
 #: apps/web/src/components/theme-selector.tsx:17
 #: apps/web/src/desktop/account/settings-desk.tsx:349
-#: apps/web/src/desktop/auth/onboarding-header.tsx:117
 msgid "Light"
 msgstr "Mwanga"
 
@@ -4630,7 +4629,7 @@ msgstr ""
 #: apps/web/src/components/resource-usage.tsx:153
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:169
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:104
-#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:86
+#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:87
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:76
 #: apps/web/src/features/pools/hooks/use-create-pool-form.ts:209
 #: apps/web/src/features/vouchers/hooks/use-create-voucher-form.ts:212
@@ -4776,11 +4775,11 @@ msgstr "Kuunganisha passkey kumeshindikana. kadi yako ya kuingia haujabadilika."
 msgid "Links"
 msgstr "Viungo"
 
-#: apps/web/src/desktop/pools/pool-main.tsx:356
+#: apps/web/src/desktop/pools/pool-main.tsx:357
 msgid "Liquidity"
 msgstr "Ukwasi"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:109
+#: apps/web/src/desktop/market/market-toolbar.tsx:107
 msgid "List"
 msgstr "Orodha"
 
@@ -4803,8 +4802,8 @@ msgstr "Lita"
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:169
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:200
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:240
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:620
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:689
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:641
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:711
 #: apps/web/src/desktop/wants/want-place-desk.tsx:406
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:110
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:177
@@ -4830,7 +4829,7 @@ msgstr "Pakia maoni zaidi"
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:145
 #: apps/web/src/desktop/wallet/receive-desk.tsx:180
 #: apps/web/src/desktop/wallet/send-desk.tsx:692
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:432
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:451
 #: apps/web/src/features/home/ui/activity-page.tsx:181
 #: apps/web/src/features/home/ui/activity-page.tsx:218
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
@@ -4879,8 +4878,8 @@ msgid "Loading location map"
 msgstr "Inapakia ramani ya eneo"
 
 #: apps/web/src/desktop/market/market-list-desk.tsx:279
-#: apps/web/src/desktop/market/market-map-desk.tsx:120
-#: apps/web/src/desktop/market/market-map-desk.tsx:133
+#: apps/web/src/desktop/market/market-map-desk.tsx:121
+#: apps/web/src/desktop/market/market-map-desk.tsx:134
 #: apps/web/src/features/home/ui/market-list-page.tsx:201
 #: apps/web/src/features/home/ui/market-page.tsx:169
 #: apps/web/src/features/home/ui/marketplace-page.tsx:175
@@ -4889,7 +4888,7 @@ msgstr "Inapakia soko…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:215
 #: apps/web/src/desktop/market/market-list-states.tsx:80
-#: apps/web/src/desktop/posts/posts-desk.tsx:225
+#: apps/web/src/desktop/posts/posts-desk.tsx:229
 #: apps/web/src/features/home/ui/activity-page.tsx:213
 #: apps/web/src/features/home/ui/marketplace-page.tsx:234
 #: apps/web/src/features/home/ui/posts-page.tsx:156
@@ -4917,7 +4916,7 @@ msgstr "Inapakia taarifa za bwawa…"
 msgid "Loading pool…"
 msgstr "Inapakia puli…"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:568
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:589
 #: apps/web/src/features/home/ui/wallet-page.tsx:394
 #: apps/web/src/features/pools/ui/pools-page.tsx:290
 msgid "Loading pools…"
@@ -4930,7 +4929,7 @@ msgstr "Inapakia chapisho…"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:314
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:332
-#: apps/web/src/desktop/posts/posts-desk.tsx:182
+#: apps/web/src/desktop/posts/posts-desk.tsx:186
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:60
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:66
 #: apps/web/src/features/home/ui/posts-page.tsx:124
@@ -4980,8 +4979,8 @@ msgstr "Inapakia vocha…"
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:247
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:927
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:145
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:383
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:492
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:402
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:512
 #: apps/web/src/features/home/ui/wallet-page.tsx:171
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:221
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:944
@@ -4998,7 +4997,7 @@ msgid "Loading Want…"
 msgstr "Inapakia ombi…"
 
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:325
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:639
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:661
 #: apps/web/src/features/home/ui/wallet-page.tsx:291
 #: apps/web/src/features/pools/ui/pool-wants-panel.tsx:20
 #: apps/web/src/features/wants/ui/wants-page.tsx:122
@@ -5053,7 +5052,7 @@ msgstr "Inapakia wasifu wako…"
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:41
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:75
 #: apps/web/src/desktop/wallet/send-desk.tsx:215
-#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:42
+#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:43
 #: apps/web/src/desktop/wants/want-place-desk.tsx:386
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:27
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
@@ -5175,7 +5174,7 @@ msgstr "Simamia vocha"
 
 #: apps/web/src/components/market-bar.tsx:355
 #: apps/web/src/components/navigation/bottom-navigation.tsx:57
-#: apps/web/src/desktop/market/market-toolbar.tsx:104
+#: apps/web/src/desktop/market/market-toolbar.tsx:102
 msgid "Map"
 msgstr "Ramani"
 
@@ -5203,10 +5202,10 @@ msgstr "Alama ya ramani"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:57
 #: apps/web/src/desktop/market/market-list-desk.tsx:148
 #: apps/web/src/desktop/market/market-list-desk.tsx:329
-#: apps/web/src/desktop/market/market-map-desk.tsx:185
-#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:149
+#: apps/web/src/desktop/market/market-map-desk.tsx:186
+#: apps/web/src/desktop/onboarding/onboarding-desk.tsx:143
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:95
+#: apps/web/src/desktop/shell/sidebar.tsx:143
 #: apps/web/src/features/home/ui/market-page.tsx:60
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:68
@@ -5214,10 +5213,10 @@ msgstr "Alama ya ramani"
 msgid "Market"
 msgstr "Soko"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:116
-#: apps/web/src/desktop/shell/command-palette.tsx:198
-#: apps/web/src/desktop/shell/sidebar.tsx:292
-#: apps/web/src/desktop/shell/sidebar.tsx:294
+#: apps/web/src/desktop/market/market-toolbar.tsx:114
+#: apps/web/src/desktop/shell/command-palette.tsx:215
+#: apps/web/src/desktop/shell/sidebar.tsx:229
+#: apps/web/src/desktop/shell/sidebar.tsx:245
 #: apps/web/src/features/home/ui/marketplace-page.tsx:102
 msgid "Marketplace"
 msgstr "Soko"
@@ -5226,9 +5225,9 @@ msgstr "Soko"
 msgid "Marketplace details"
 msgstr ""
 
-#: apps/web/src/desktop/shell/sidebar.tsx:279
+#: apps/web/src/desktop/shell/sidebar.tsx:229
 msgid "Marketplace lists"
-msgstr ""
+msgstr "Orodha za soko"
 
 #: apps/web/src/components/market-bar.tsx:274
 msgid "Marketplace sections"
@@ -5239,7 +5238,7 @@ msgstr "Sehemu za soko"
 #~ msgstr "Vocha za sokoni"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:491
-#: apps/web/src/desktop/market/market-toolbar.tsx:309
+#: apps/web/src/desktop/market/market-toolbar.tsx:310
 #: apps/web/src/desktop/posts/post-facets.tsx:186
 msgid "Match"
 msgstr "Linganisha"
@@ -5433,11 +5432,13 @@ msgstr "Katalogi yangu"
 #~ msgstr "Katalogi zangu"
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:50
-#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:29
+#: apps/web/src/desktop/shell/sidebar.tsx:46
+#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:30
 msgid "My Catalogs"
 msgstr "Katalogi zangu"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:545
+#: apps/web/src/desktop/shell/sidebar.tsx:44
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:566
 #: apps/web/src/features/catalogs/hooks/use-catalog-member-picker.tsx:152
 #: apps/web/src/features/home/ui/wallet-page.tsx:386
 msgid "My Pools"
@@ -5445,7 +5446,7 @@ msgstr "Vikundi vyangu"
 
 #: apps/web/src/desktop/posts/my-posts-desk.tsx:72
 #: apps/web/src/desktop/posts/my-posts-desk.tsx:119
-#: apps/web/src/desktop/posts/posts-desk.tsx:103
+#: apps/web/src/desktop/posts/posts-desk.tsx:105
 #: apps/web/src/desktop/shell/crumbs.tsx:50
 #: apps/web/src/features/home/ui/posts-page.tsx:110
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:31
@@ -5454,10 +5455,11 @@ msgstr "Vikundi vyangu"
 msgid "My posts"
 msgstr "Machapisho yangu"
 
+#: apps/web/src/desktop/shell/sidebar.tsx:43
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:206
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:218
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:468
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:483
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:488
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:503
 #: apps/web/src/features/catalogs/hooks/use-catalog-member-picker.tsx:117
 #: apps/web/src/features/home/ui/wallet-page.tsx:115
 #: apps/web/src/features/home/ui/wallet-page.tsx:167
@@ -5476,7 +5478,8 @@ msgstr "Anwani ya pochi yangu"
 #~ msgid "My wallet username"
 #~ msgstr "Jina la mtumiaji la pochi yangu"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:626
+#: apps/web/src/desktop/shell/sidebar.tsx:45
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:648
 #: apps/web/src/features/home/ui/wallet-page.tsx:282
 msgid "My Wants"
 msgstr "Maombi yangu"
@@ -5583,7 +5586,7 @@ msgstr "Mmiliki mpya hawezi kuwa mmoja wa mikataba ya mali hii"
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:79
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:263
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:298
-#: apps/web/src/desktop/posts/posts-desk.tsx:109
+#: apps/web/src/desktop/posts/posts-desk.tsx:111
 #: apps/web/src/desktop/shell/crumbs.tsx:52
 #: apps/web/src/features/home/ui/posts-page.tsx:105
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
@@ -5675,7 +5678,7 @@ msgstr "Hakuna shughuli inayolingana na vichujio hivi."
 #: apps/web/src/desktop/activity/activity-desk.tsx:543
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:172
 #: apps/web/src/desktop/wallet/receive-desk.tsx:189
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:441
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:460
 #: apps/web/src/features/home/ui/activity-page.tsx:159
 msgid "No activity yet."
 msgstr "Bado hakuna shughuli."
@@ -5706,12 +5709,12 @@ msgid "No catalogs found."
 msgstr "Hakuna katalogi zilizopatikana."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:471
-#: apps/web/src/desktop/market/market-toolbar.tsx:293
+#: apps/web/src/desktop/market/market-toolbar.tsx:294
 msgid "No categories are available for the current results."
 msgstr "Hakuna kategoria zinazopatikana kwa matokeo ya sasa."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:443
-#: apps/web/src/desktop/market/market-toolbar.tsx:269
+#: apps/web/src/desktop/market/market-toolbar.tsx:270
 #: apps/web/src/desktop/posts/post-facets.tsx:159
 msgid "No category filters are available."
 msgstr "Hakuna vichujio vya kategoria vinavyopatikana."
@@ -5783,7 +5786,7 @@ msgstr "Hakuna vikundi vinavyokubali vocha zako, kuwa na vocha hii na kulingana 
 #~ msgstr "Hakuna kikomo cha amana"
 
 #: apps/web/src/components/wants/want-detail.tsx:110
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:726
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:748
 #: apps/web/src/desktop/wants/want-form-desk.tsx:195
 #: apps/web/src/desktop/wants/want-place-desk.tsx:185
 #: apps/web/src/features/wants/ui/want-form-page.tsx:143
@@ -5837,7 +5840,7 @@ msgstr "Bado hakuna matokeo sokoni. Tembelea <0>Mkoba</0> wako ili kuorodhesha "
 msgid "No marketplace results to show yet."
 msgstr "Bado hakuna matokeo ya soko ya kuonyesha."
 
-#: apps/web/src/desktop/shell/command-palette.tsx:367
+#: apps/web/src/desktop/shell/command-palette.tsx:384
 msgid "No matches"
 msgstr ""
 
@@ -5905,13 +5908,13 @@ msgstr "Hakuna vikundi vyenye vocha hii vinavyolingana na vichujio hivi."
 msgid "No pools yet."
 msgstr "Bado hakuna puli."
 
-#: apps/web/src/desktop/posts/posts-desk.tsx:195
+#: apps/web/src/desktop/posts/posts-desk.tsx:199
 #: apps/web/src/features/home/ui/posts-page.tsx:134
 msgid "No posts match this search."
 msgstr "Hakuna machapisho yanayolingana na utafutaji huu."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:354
-#: apps/web/src/desktop/posts/posts-desk.tsx:203
+#: apps/web/src/desktop/posts/posts-desk.tsx:207
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:83
 #: apps/web/src/features/home/ui/posts-page.tsx:136
 msgid "No posts yet."
@@ -6024,8 +6027,8 @@ msgstr "Hakuna vocha za kupokea"
 #: apps/web/src/components/wants/want-detail.tsx:216
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:194
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:227
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:397
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:501
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:416
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:521
 #: apps/web/src/desktop/wants/want-place-desk.tsx:296
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:56
 #: apps/web/src/features/home/ui/wallet-page.tsx:242
@@ -6035,7 +6038,7 @@ msgstr "Bado hakuna hati."
 
 #: apps/web/src/desktop/wallet/cash-desk.tsx:57
 #: apps/web/src/desktop/wallet/receive-desk.tsx:99
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:296
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:314
 #: apps/web/src/features/wallet/ui/cash-page.tsx:56
 #: apps/web/src/features/wallet/ui/receive-page.tsx:72
 msgid "No wallet address available."
@@ -6050,7 +6053,7 @@ msgstr "Bado hakuna maombi yaliyounganishwa na bwawa hili."
 msgid "No Wants found."
 msgstr "Hakuna maombi yaliyopatikana."
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:648
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:670
 #: apps/web/src/features/home/ui/wallet-page.tsx:309
 msgid "No Wants yet."
 msgstr "Bado hakuna maombi."
@@ -6139,7 +6142,7 @@ msgstr "Hakuna kilichopita katika kikundi hiki bado."
 #~ msgstr ""
 
 #: apps/web/src/components/catalog-filter-controls.tsx:469
-#: apps/web/src/desktop/market/market-toolbar.tsx:291
+#: apps/web/src/desktop/market/market-toolbar.tsx:292
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Hakuna kinacholingana na “{searchTerm}” chenye kategoria."
 
@@ -6153,7 +6156,7 @@ msgstr "Hakuna kinacholingana na “{searchTerm}” chenye kategoria."
 msgid "Notification permission denied"
 msgstr "Ruhusa ya arifa imekataliwa"
 
-#: apps/web/src/desktop/shell/top-bar.tsx:22
+#: apps/web/src/desktop/shell/top-bar.tsx:28
 msgid "Notification settings"
 msgstr ""
 
@@ -6207,7 +6210,7 @@ msgid "Off"
 msgstr "Zimezimwa"
 
 #: apps/web/src/desktop/market/market-bits.tsx:80
-#: apps/web/src/desktop/shell/command-palette.tsx:73
+#: apps/web/src/desktop/shell/command-palette.tsx:78
 #: apps/web/src/features/home/ui/marketplace-page.tsx:409
 msgid "Offer"
 msgstr "Toleo"
@@ -6228,7 +6231,7 @@ msgstr "Bidhaa au huduma imesasishwa."
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:125
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:128
 #: apps/web/src/desktop/market/place-panel.tsx:58
-#: apps/web/src/desktop/pools/pool-main.tsx:383
+#: apps/web/src/desktop/pools/pool-main.tsx:384
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:188
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
@@ -6238,9 +6241,9 @@ msgstr "Matoleo"
 
 #: apps/web/src/components/market-bar.tsx:265
 #: apps/web/src/components/resource-usage.tsx:117
-#: apps/web/src/desktop/market/market-toolbar.tsx:33
+#: apps/web/src/desktop/market/market-toolbar.tsx:32
 #: apps/web/src/desktop/shell/crumbs.tsx:22
-#: apps/web/src/desktop/shell/sidebar.tsx:27
+#: apps/web/src/desktop/shell/sidebar.tsx:34
 #: apps/web/src/features/home/ui/offers-page.tsx:93
 msgid "Offers"
 msgstr "Matoleo"
@@ -6285,7 +6288,7 @@ msgstr ""
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:569
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:174
 #: apps/web/src/desktop/posts/post-desk.tsx:209
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:266
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:267
 #: apps/web/src/features/home/ui/report-page.tsx:549
 #: apps/web/src/features/pools/ui/pool-info-panel.tsx:129
 msgid "Open in Maps"
@@ -6310,7 +6313,7 @@ msgstr "Fungua eneo kwenye Ramani za Google"
 msgid "Open menu"
 msgstr "Fungua menyu"
 
-#: apps/web/src/desktop/shell/command-palette.tsx:143
+#: apps/web/src/desktop/shell/command-palette.tsx:160
 msgid "Open pool {label}"
 msgstr ""
 
@@ -6427,7 +6430,7 @@ msgstr "Akaunti nyingine zinashikilia <0>{amount} {symbol}</0> za vocha yako."
 
 #: apps/web/src/desktop/shell/crumbs.tsx:36
 #: apps/web/src/desktop/wallet/cash-desk.tsx:39
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:322
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:340
 msgid "Other cash options"
 msgstr ""
 
@@ -6638,7 +6641,7 @@ msgstr "Hali ya malipo haijulikani"
 msgid "Pending"
 msgstr "Inasubiri"
 
-#: apps/web/src/desktop/shell/command-palette.tsx:197
+#: apps/web/src/desktop/shell/command-palette.tsx:214
 msgid "People"
 msgstr ""
 
@@ -6674,7 +6677,7 @@ msgstr "Kilimo endelevu"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:378
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:131
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:71
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:204
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:205
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:282
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:95
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
@@ -6768,7 +6771,7 @@ msgstr "Kitalu cha mimea"
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:461
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:240
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:386
-#: apps/web/src/desktop/shell/command-palette.tsx:79
+#: apps/web/src/desktop/shell/command-palette.tsx:84
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 #: apps/web/src/features/home/ui/activity-page.tsx:267
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
@@ -6811,7 +6814,7 @@ msgstr "Anwani ya kikundi"
 msgid "Pool balances"
 msgstr "Salio za kikundi"
 
-#: apps/web/src/desktop/pools/pool-main.tsx:249
+#: apps/web/src/desktop/pools/pool-main.tsx:250
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:269
 msgid "Pool contents"
 msgstr "Yaliyomo kwenye kikundi"
@@ -6845,7 +6848,7 @@ msgid "Pool details updated."
 msgstr "Maelezo ya bwawa yamesasishwa."
 
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:89
-#: apps/web/src/desktop/pools/pool-main.tsx:365
+#: apps/web/src/desktop/pools/pool-main.tsx:366
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:457
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:581
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:200
@@ -6983,12 +6986,12 @@ msgstr "Maelezo ya kufuatilia puli hayapo."
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/market/market-search-field.tsx:349
-#: apps/web/src/desktop/market/market-toolbar.tsx:36
+#: apps/web/src/desktop/market/market-toolbar.tsx:35
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:91
 #: apps/web/src/desktop/posts/post-facets.tsx:194
 #: apps/web/src/desktop/shell/crumbs.tsx:28
-#: apps/web/src/desktop/shell/sidebar.tsx:30
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:190
+#: apps/web/src/desktop/shell/sidebar.tsx:37
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:205
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:154
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:82
@@ -7057,10 +7060,10 @@ msgstr "Chapisho limehaririwa."
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:358
 #: apps/web/src/desktop/market/market-layers.tsx:39
 #: apps/web/src/desktop/market/place-panel.tsx:60
-#: apps/web/src/desktop/posts/posts-desk.tsx:98
-#: apps/web/src/desktop/posts/posts-desk.tsx:209
+#: apps/web/src/desktop/posts/posts-desk.tsx:100
+#: apps/web/src/desktop/posts/posts-desk.tsx:213
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:98
+#: apps/web/src/desktop/shell/sidebar.tsx:146
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:73
@@ -7260,7 +7263,7 @@ msgid "Pricing"
 msgstr "Upangaji wa bei"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:36
-#: apps/web/src/desktop/shell/sidebar.tsx:149
+#: apps/web/src/desktop/shell/sidebar.tsx:216
 msgid "Primary navigation"
 msgstr "Urambazaji wa msingi"
 
@@ -7513,10 +7516,10 @@ msgid "Receipt copied"
 msgstr "Risiti imenakiliwa"
 
 #: apps/web/src/desktop/pools/detail/pool-receive-popover.tsx:19
-#: apps/web/src/desktop/shell/command-palette.tsx:94
+#: apps/web/src/desktop/shell/command-palette.tsx:103
 #: apps/web/src/desktop/shell/crumbs.tsx:34
 #: apps/web/src/desktop/wallet/receive-desk.tsx:85
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:310
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:328
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/wallet/ui/collect-page.tsx:111
@@ -7746,7 +7749,7 @@ msgstr "Ondoa {0}"
 msgid "Remove {tag}"
 msgstr "Ondoa {tag}"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:390
+#: apps/web/src/desktop/market/market-toolbar.tsx:379
 msgid "Remove filter: {label}"
 msgstr ""
 
@@ -7873,7 +7876,7 @@ msgstr "Inahitajika"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:522
 #: apps/web/src/desktop/market/market-layers.tsx:100
-#: apps/web/src/desktop/market/market-toolbar.tsx:329
+#: apps/web/src/desktop/market/market-toolbar.tsx:330
 #: apps/web/src/desktop/posts/post-facets.tsx:242
 msgid "Reset"
 msgstr "Weka upya"
@@ -7895,11 +7898,11 @@ msgstr "Weka upya nembo"
 msgid "Resources shown on the map"
 msgstr "Rasilimali zinazoonyeshwa kwenye ramani"
 
-#: apps/web/src/desktop/shell/command-palette.tsx:278
+#: apps/web/src/desktop/shell/command-palette.tsx:295
 msgid "Results"
 msgstr ""
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:129
+#: apps/web/src/desktop/market/market-map-desk.tsx:130
 msgid "Results unavailable"
 msgstr ""
 
@@ -7918,12 +7921,12 @@ msgstr ""
 #~ msgid "Retired"
 #~ msgstr "Imestaafishwa"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:600
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:621
 #: apps/web/src/features/home/ui/wallet-page.tsx:453
 msgid "Retired — withdrawals available"
 msgstr "Imestaafishwa — utoaji wa fedha unapatikana"
 
-#: apps/web/src/desktop/pools/pool-main.tsx:223
+#: apps/web/src/desktop/pools/pool-main.tsx:224
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:183
 msgid "Retired pool"
 msgstr "Kikundi kilichostaafishwa"
@@ -8016,20 +8019,20 @@ msgstr "Mapumziko"
 #: apps/web/src/desktop/posts/post-desk.tsx:77
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:105
 #: apps/web/src/desktop/posts/post-editor-desk.tsx:563
-#: apps/web/src/desktop/shell/command-palette.tsx:381
+#: apps/web/src/desktop/shell/command-palette.tsx:398
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:163
 #: apps/web/src/desktop/vouchers/create/details-step.tsx:302
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:123
 #: apps/web/src/desktop/vouchers/detail/voucher-catalog-button.tsx:29
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:262
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:622
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:118
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:119
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:86
 #: apps/web/src/desktop/vouchers/detail/voucher-section-bits.tsx:82
 #: apps/web/src/desktop/vouchers/voucher-desk.tsx:130
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:56
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:130
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:342
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:360
 #: apps/web/src/desktop/wants/want-form-desk.tsx:85
 #: apps/web/src/desktop/wants/want-place-desk.tsx:75
 #: apps/web/src/desktop/wants/want-place-desk.tsx:241
@@ -8249,7 +8252,7 @@ msgstr "Changanua anwani ya mpokeaji"
 
 #: apps/web/src/components/wants/want-row.tsx:66
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:311
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:666
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:688
 #: apps/web/src/desktop/wants/want-form-desk.tsx:448
 #: apps/web/src/desktop/wants/want-place-desk.tsx:114
 #: apps/web/src/features/home/ui/wallet-page.tsx:348
@@ -8288,7 +8291,7 @@ msgstr "Tafuta kwa jina au alama"
 msgid "Search by voucher name, symbol, address or transaction hash."
 msgstr "Tafuta kwa jina la vocha, alama, anwani au hashi ya muamala."
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:188
+#: apps/web/src/desktop/market/market-toolbar.tsx:189
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:75
 msgid "Search catalogs"
 msgstr "Tafuta katalogi"
@@ -8307,7 +8310,7 @@ msgstr "Tafuta nchi"
 #~ msgid "Search currencies"
 #~ msgstr "Tafuta sarafu"
 
-#: apps/web/src/desktop/shell/command-palette.tsx:365
+#: apps/web/src/desktop/shell/command-palette.tsx:382
 msgid "Search failed"
 msgstr ""
 
@@ -8317,7 +8320,7 @@ msgstr ""
 msgid "Search for a town or place"
 msgstr "Tafuta mji au eneo"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:180
+#: apps/web/src/desktop/market/market-toolbar.tsx:181
 msgid "Search offers"
 msgstr "Tafuta matoleo"
 
@@ -8348,7 +8351,7 @@ msgid "Search pool tags"
 msgstr "Tafuta lebo za puli"
 
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:163
-#: apps/web/src/desktop/market/market-toolbar.tsx:186
+#: apps/web/src/desktop/market/market-toolbar.tsx:187
 #: apps/web/src/desktop/posts/post-facets.tsx:225
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:185
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:196
@@ -8363,7 +8366,7 @@ msgstr "Tafuta puli"
 msgid "Search post tags"
 msgstr "Tafuta lebo za machapisho"
 
-#: apps/web/src/desktop/posts/posts-desk.tsx:118
+#: apps/web/src/desktop/posts/posts-desk.tsx:120
 msgid "Search posts"
 msgstr ""
 
@@ -8392,10 +8395,10 @@ msgstr ""
 msgid "Search tags"
 msgstr "Tafuta lebo"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:189
-#: apps/web/src/desktop/shell/command-palette.tsx:254
-#: apps/web/src/desktop/shell/command-palette.tsx:272
-#: apps/web/src/desktop/shell/command-palette.tsx:273
+#: apps/web/src/desktop/market/market-toolbar.tsx:190
+#: apps/web/src/desktop/shell/command-palette.tsx:271
+#: apps/web/src/desktop/shell/command-palette.tsx:289
+#: apps/web/src/desktop/shell/command-palette.tsx:290
 #: apps/web/src/features/home/ui/market-page.tsx:96
 #: apps/web/src/features/home/ui/marketplace-page.tsx:108
 msgid "Search the marketplace"
@@ -8429,7 +8432,7 @@ msgstr "Tafuta lebo za vocha"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:309
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:163
-#: apps/web/src/desktop/market/market-toolbar.tsx:184
+#: apps/web/src/desktop/market/market-toolbar.tsx:185
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:524
 #: apps/web/src/desktop/posts/post-facets.tsx:134
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:185
@@ -8439,11 +8442,11 @@ msgstr "Tafuta lebo za vocha"
 msgid "Search vouchers"
 msgstr "Tafuta vocha"
 
-#: apps/web/src/desktop/shell/top-bar.tsx:38
+#: apps/web/src/desktop/shell/top-bar.tsx:44
 msgid "Search vouchers, pools, people"
 msgstr "Tafuta vocha, hazina, watu"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:182
+#: apps/web/src/desktop/market/market-toolbar.tsx:183
 #: apps/web/src/features/wants/ui/wants-page.tsx:63
 msgid "Search Wants"
 msgstr "Tafuta maombi"
@@ -8477,7 +8480,7 @@ msgstr "Inatafuta mabwawa…"
 msgid "Searching recipients…"
 msgstr "Tunatafuta wapokeaji…"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:216
+#: apps/web/src/desktop/market/market-map-desk.tsx:219
 msgid "Searching this area"
 msgstr "Inatafuta eneo hili"
 
@@ -8488,7 +8491,7 @@ msgstr "Inatafuta vocha…"
 
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:211
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:553
-#: apps/web/src/desktop/shell/command-palette.tsx:361
+#: apps/web/src/desktop/shell/command-palette.tsx:378
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:683
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:147
@@ -8504,7 +8507,7 @@ msgstr "Sehemu"
 #~ msgid "See all"
 #~ msgstr "Tazama zote"
 
-#: apps/web/src/desktop/shell/command-palette.tsx:169
+#: apps/web/src/desktop/shell/command-palette.tsx:186
 msgid "See all results for “{deferred}”"
 msgstr ""
 
@@ -8581,13 +8584,13 @@ msgid "Sell to a bank account"
 msgstr "Uza kwenda kwenye akaunti ya benki"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:333
-#: apps/web/src/desktop/shell/command-palette.tsx:93
+#: apps/web/src/desktop/shell/command-palette.tsx:100
 #: apps/web/src/desktop/shell/crumbs.tsx:32
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:132
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:135
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:309
 #: apps/web/src/desktop/wallet/send-desk.tsx:284
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:304
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:322
 #: apps/web/src/features/home/ui/wallet-page.tsx:71
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:193
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:365
@@ -8629,7 +8632,7 @@ msgstr "Tuma ripoti"
 msgid "Send to"
 msgstr "Tuma kwa"
 
-#: apps/web/src/desktop/shell/command-palette.tsx:143
+#: apps/web/src/desktop/shell/command-palette.tsx:160
 msgid "Send to {label}"
 msgstr ""
 
@@ -8713,9 +8716,9 @@ msgstr "Inaandaa pochi yako…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:71
 #: apps/web/src/desktop/account/settings-desk.tsx:62
-#: apps/web/src/desktop/shell/command-palette.tsx:129
+#: apps/web/src/desktop/shell/command-palette.tsx:144
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:99
+#: apps/web/src/desktop/shell/sidebar.tsx:147
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
 #: apps/web/src/features/home/ui/settings-page.tsx:53
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -8796,7 +8799,7 @@ msgstr "Onyesha maoni ya nyota {stars}"
 msgid "Show all"
 msgstr "Onyesha yote"
 
-#: apps/web/src/desktop/ui/tabs.tsx:117
+#: apps/web/src/desktop/ui/tabs.tsx:124
 msgid "Show earlier tabs"
 msgstr ""
 
@@ -8804,7 +8807,7 @@ msgstr ""
 msgid "Show full"
 msgstr ""
 
-#: apps/web/src/desktop/ui/tabs.tsx:117
+#: apps/web/src/desktop/ui/tabs.tsx:124
 msgid "Show more tabs"
 msgstr ""
 
@@ -8873,8 +8876,8 @@ msgstr "Inaonyeshwa kwa yeyote anayetumia bwawa hili"
 
 #: apps/web/src/components/creditable-browse-control.tsx:67
 #: apps/web/src/components/market-bar.tsx:140
+#: apps/web/src/desktop/auth/sign-in-action.tsx:21
 #: apps/web/src/desktop/market/market-notices.tsx:91
-#: apps/web/src/desktop/market/market-toolbar.tsx:374
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:254
 #: apps/web/src/routes/__root.tsx:341
 msgid "Sign in"
@@ -9075,7 +9078,7 @@ msgstr "Sauti"
 msgid "Stable sent"
 msgstr "Stable iliyotumwa"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:357
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:376
 msgid "Stables"
 msgstr "Sarafu thabiti"
 
@@ -9113,7 +9116,7 @@ msgstr "Inaanza"
 msgid "Starts {0}"
 msgstr "Linaanza {0}"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:724
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:746
 msgid "Starts {starts}"
 msgstr "Inaanza {starts}"
 
@@ -9235,7 +9238,7 @@ msgstr "Faili za SVG hazitumiki. Tumia PNG, JPEG, au WebP."
 #: apps/web/src/desktop/activity/activity-desk.tsx:796
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:632
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:644
-#: apps/web/src/desktop/shell/command-palette.tsx:97
+#: apps/web/src/desktop/shell/command-palette.tsx:110
 #: apps/web/src/features/pools/hooks/use-pool-activity-details.ts:48
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:202
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:518
@@ -9324,7 +9327,7 @@ msgstr "Inabadilisha…"
 msgid "Swaps"
 msgstr "Mabadilishano"
 
-#: apps/web/src/desktop/pools/pool-main.tsx:374
+#: apps/web/src/desktop/pools/pool-main.tsx:375
 msgid "Swaps · 30d"
 msgstr "Mabadilishano · siku 30"
 
@@ -9369,7 +9372,7 @@ msgstr "Alama ilikuwa imechukuliwa, inatumia {0} badala yake."
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:100
 #: apps/web/src/desktop/catalogs/catalog-fields-desk.tsx:101
 #: apps/web/src/desktop/market/market-list-desk.tsx:478
-#: apps/web/src/desktop/market/market-toolbar.tsx:265
+#: apps/web/src/desktop/market/market-toolbar.tsx:266
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:374
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:76
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:306
@@ -9466,8 +9469,8 @@ msgstr "Waeleze watu kuhusu biashara yako..."
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:73
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:87
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:710
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:212
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:243
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:213
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:244
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:536
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:640
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:78
@@ -9720,7 +9723,6 @@ msgstr "Vocha haikuweza kuchapishwa."
 #: apps/web/src/components/theme-selector.tsx:46
 #: apps/web/src/desktop/account/settings-desk.tsx:344
 #: apps/web/src/desktop/account/settings-desk.tsx:346
-#: apps/web/src/desktop/auth/onboarding-header.tsx:114
 msgid "Theme"
 msgstr "Mandhari"
 
@@ -9948,7 +9950,7 @@ msgstr "Kikundi hiki hakina chochote bado."
 #~ msgid "This pool is full of it"
 #~ msgstr "Kikundi hiki kimejaa vocha hii"
 
-#: apps/web/src/desktop/pools/pool-main.tsx:226
+#: apps/web/src/desktop/pools/pool-main.tsx:227
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:186
 msgid "This pool is hidden from discovery and does not accept new swaps or "
 "deposits in CLC. You can still withdraw funds and view its history."
@@ -10091,7 +10093,7 @@ msgstr "Zana"
 msgid "Total fees"
 msgstr "Jumla ya ada"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:261
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:279
 msgid "Total value"
 msgstr "Thamani yote"
 
@@ -10417,7 +10419,7 @@ msgstr "Sasisha maoni yako"
 msgid "Updated"
 msgstr "Ilisasishwa"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:158
+#: apps/web/src/desktop/market/market-toolbar.tsx:159
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:121
 msgid "Updating…"
 msgstr "Inasasisha…"
@@ -10585,11 +10587,11 @@ msgid "Uses voucher rates set for this pool"
 msgstr "Hutumia viwango vya vocha vilivyowekwa kwa bwawa hili"
 
 #: apps/web/src/desktop/wallet/send-desk.tsx:467
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:208
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:223
 msgid "Value"
 msgstr "Thamani"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:208
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:223
 msgid "Value ({unitLabel})"
 msgstr "Thamani ({unitLabel})"
 
@@ -10620,7 +10622,7 @@ msgid "Vibration"
 msgstr "Mtetemo"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:472
-#: apps/web/src/desktop/market/market-toolbar.tsx:101
+#: apps/web/src/desktop/market/market-toolbar.tsx:99
 #: apps/web/src/desktop/posts/my-posts-desk.tsx:55
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:111
 msgid "View"
@@ -10628,12 +10630,12 @@ msgstr "Tazama"
 
 #: apps/web/src/desktop/wallet/receive-desk.tsx:172
 #: apps/web/src/desktop/wallet/receive-desk.tsx:175
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:373
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:376
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:424
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:427
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:483
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:486
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:392
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:395
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:443
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:446
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:503
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:506
 #: apps/web/src/features/home/ui/wallet-page.tsx:119
 #: apps/web/src/features/home/ui/wallet-page.tsx:167
 #: apps/web/src/features/home/ui/wallet-page.tsx:180
@@ -10707,13 +10709,13 @@ msgstr "vocha"
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:406
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:551
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:680
-#: apps/web/src/desktop/shell/command-palette.tsx:77
+#: apps/web/src/desktop/shell/command-palette.tsx:82
 #: apps/web/src/desktop/vouchers/create/voucher-preview.tsx:110
 #: apps/web/src/desktop/vouchers/create/wizard-steps.tsx:12
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:81
 #: apps/web/src/desktop/wallet/send-desk.tsx:414
 #: apps/web/src/desktop/wallet/send-desk.tsx:584
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:171
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:186
 #: apps/web/src/features/home/ui/marketplace-page.tsx:411
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:131
 #: apps/web/src/features/posts/hooks/use-post-editor.ts:144
@@ -10861,17 +10863,17 @@ msgstr "Vocha: Yoyote"
 #: apps/web/src/desktop/market/market-layers.tsx:35
 #: apps/web/src/desktop/market/market-list-desk.tsx:505
 #: apps/web/src/desktop/market/market-search-field.tsx:348
-#: apps/web/src/desktop/market/market-toolbar.tsx:35
+#: apps/web/src/desktop/market/market-toolbar.tsx:34
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:325
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:464
-#: apps/web/src/desktop/pools/pool-main.tsx:352
-#: apps/web/src/desktop/pools/pool-main.tsx:387
+#: apps/web/src/desktop/pools/pool-main.tsx:353
+#: apps/web/src/desktop/pools/pool-main.tsx:388
 #: apps/web/src/desktop/posts/post-facets.tsx:100
 #: apps/web/src/desktop/shell/crumbs.tsx:26
-#: apps/web/src/desktop/shell/sidebar.tsx:29
+#: apps/web/src/desktop/shell/sidebar.tsx:36
 #: apps/web/src/desktop/vouchers/create-voucher-desk.tsx:131
 #: apps/web/src/desktop/wallet/all-vouchers-desk.tsx:254
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:356
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:375
 #: apps/web/src/desktop/wants/want-place-desk.tsx:291
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:29
 #: apps/web/src/features/home/ui/market-list-page.tsx:124
@@ -10953,9 +10955,9 @@ msgstr "Inasubiri mnyororo…"
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:96
+#: apps/web/src/desktop/shell/sidebar.tsx:144
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:249
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:267
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
 #: apps/web/src/features/home/ui/wallet-page.tsx:124
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:313
@@ -10971,7 +10973,7 @@ msgstr "Inasubiri mnyororo…"
 msgid "Wallet"
 msgstr "Mkoba"
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:256
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:274
 #: apps/web/src/features/home/ui/wallet-page.tsx:129
 msgid "Wallet actions"
 msgstr "Vitendo vya mkoba"
@@ -10979,6 +10981,10 @@ msgstr "Vitendo vya mkoba"
 #: apps/web/src/components/auth/authenticated-route.tsx:59
 #~ msgid "Wallet actions are available after you sign up or sign in."
 #~ msgstr "Vitendo vya mkoba vinapatikana baada ya kujisajili au kuingia."
+
+#: apps/web/src/desktop/shell/sidebar.tsx:275
+msgid "Wallet sections"
+msgstr "Sehemu za mkoba"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:611
 #: apps/web/src/features/home/ui/settings-page.tsx:206
@@ -10989,7 +10995,7 @@ msgstr "Kikao cha mkoba"
 #: apps/web/src/desktop/market/market-bits.tsx:74
 #: apps/web/src/desktop/market/market-list-desk.tsx:440
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:282
-#: apps/web/src/desktop/shell/command-palette.tsx:75
+#: apps/web/src/desktop/shell/command-palette.tsx:80
 #: apps/web/src/desktop/wants/want-form-desk.tsx:409
 #: apps/web/src/desktop/wants/want-outline.tsx:11
 #: apps/web/src/desktop/wants/want-place-desk.tsx:58
@@ -11017,11 +11023,11 @@ msgstr "Picha ya ombi"
 #: apps/web/src/components/market-bar.tsx:266
 #: apps/web/src/components/resource-usage.tsx:119
 #: apps/web/src/desktop/market/market-layers.tsx:36
-#: apps/web/src/desktop/market/market-toolbar.tsx:34
+#: apps/web/src/desktop/market/market-toolbar.tsx:33
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:333
-#: apps/web/src/desktop/pools/pool-main.tsx:385
+#: apps/web/src/desktop/pools/pool-main.tsx:386
 #: apps/web/src/desktop/shell/crumbs.tsx:24
-#: apps/web/src/desktop/shell/sidebar.tsx:28
+#: apps/web/src/desktop/shell/sidebar.tsx:35
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:63
 #: apps/web/src/features/wants/ui/want-detail-page.tsx:28
 #: apps/web/src/features/wants/ui/wants-page.tsx:57
@@ -11073,7 +11079,7 @@ msgstr "Hatukuweza kuthibitisha kama vocha hii tayari ina usambazaji."
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:70
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:207
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:213
-#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:187
+#: apps/web/src/desktop/vouchers/detail/voucher-info.tsx:188
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:251
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:267
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:240
@@ -11110,7 +11116,7 @@ msgstr "Vocha ni nini?"
 msgid "intro.offer.title"
 msgstr "Ofa ni nini?"
 
-#: apps/web/src/desktop/market/market-toolbar.tsx:265
+#: apps/web/src/desktop/market/market-toolbar.tsx:266
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:114
 msgid "What they offer"
 msgstr "Kile wanachotoa"
@@ -11303,11 +11309,11 @@ msgid "You have seven days after the swap to write or edit your review."
 msgstr "Una siku saba baada ya kubadilisha kuandika au kuhariri maoni yako."
 
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:75
-#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:51
+#: apps/web/src/desktop/wallet/wallet-catalogs.tsx:52
 msgid "You haven't created a catalog yet."
 msgstr "Bado hujaunda katalogi."
 
-#: apps/web/src/desktop/wallet/wallet-desk.tsx:577
+#: apps/web/src/desktop/wallet/wallet-desk.tsx:598
 #: apps/web/src/features/home/ui/wallet-page.tsx:414
 msgid "You haven't created a pool yet."
 msgstr "Bado hujaunda kikundi."
@@ -11565,6 +11571,6 @@ msgstr "Vijana"
 msgid "Zoom"
 msgstr "Kuza"
 
-#: apps/web/src/desktop/market/market-map-desk.tsx:157
+#: apps/web/src/desktop/market/market-map-desk.tsx:158
 msgid "Zoom in to see individual results."
 msgstr ""

@@ -27,7 +27,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
   const chrome = desktopChrome(pathname, view ? { ...search, view } : search, declared);
   return (
     <div className="flex h-dvh min-h-0 bg-background text-foreground">
-      <DesktopSidebar rail={chrome === "map"} />
+      <DesktopSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         {chrome === "map" ? null : <DesktopTopBar />}
         {chrome === "fallback" ? (
@@ -42,7 +42,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
       </div>
       <CommandPalette />
       <ShortcutHelp />
-      <DesktopShortcuts sidebarToggle={chrome !== "map"} />
+      <DesktopShortcuts />
     </div>
   );
 }

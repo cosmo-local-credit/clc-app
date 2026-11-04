@@ -15,6 +15,7 @@ import { MarketMap } from "#/features/home/ui/market-map.lazy";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
+import { DeskSignInAction } from "#/desktop/auth/sign-in-action";
 import { MarketAvatar, MarketKindBadge } from "#/desktop/market/market-bits";
 import { useClearMarketNarrowing, useClearOutputVoucher } from "#/desktop/market/market-narrowing";
 import { MarketMapNotice, MarketOutputNotice } from "#/desktop/market/market-notices";
@@ -120,7 +121,7 @@ export function MarketMapDesk({
           {screen.isFetching ? <MapLoading label={t`Loading marketplace…`} /> : null}
           <div
             aria-live="polite"
-            className="shrink-0 border-border border-b px-3.5 py-2.5 text-xs text-muted-foreground"
+            className="shrink-0 px-3.5 pt-2 pb-2.5 text-xs text-muted-foreground"
           >
             {/* A zero is only a count once a result set has arrived. */}
             {screen.results.state === "ready" ? (
@@ -208,16 +209,20 @@ export function MarketMapDesk({
             />
           </Suspense>
         )}
-        {areaScoped ? (
-          <div className="pointer-events-none absolute end-4 top-4">
-            <DeskChip>
-              <span role="status">
-                <RiFocus3Line aria-hidden="true" />
-                <Trans>Searching this area</Trans>
-              </span>
-            </DeskChip>
-          </div>
-        ) : null}
+        {/* The map chrome has no top bar, so this corner is the shell's top-right. */}
+        <div className="absolute end-4 top-4 flex items-center gap-2 empty:hidden">
+          {areaScoped ? (
+            <div className="pointer-events-none">
+              <DeskChip>
+                <span role="status">
+                  <RiFocus3Line aria-hidden="true" />
+                  <Trans>Searching this area</Trans>
+                </span>
+              </DeskChip>
+            </div>
+          ) : null}
+          <DeskSignInAction />
+        </div>
         {screen.isCardOpen ? null : (
           <div className="pointer-events-none absolute end-4 bottom-4">{screen.locationButton}</div>
         )}

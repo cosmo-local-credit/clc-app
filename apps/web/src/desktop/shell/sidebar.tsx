@@ -13,11 +13,18 @@ import {
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
-import { desktopNavSelection, type DesktopScopeId } from "#/desktop/chrome";
+import {
+  type DeskWalletSection,
+  DESK_WALLET_SECTIONS,
+  desktopNavSelection,
+  type DesktopScopeId,
+  deskWalletSectionOf,
+} from "#/desktop/chrome";
 import { MarketHomeLink, MarketScopeLink } from "#/desktop/shell/market-links";
 import { useSidebarCollapsed } from "#/desktop/sidebar-state";
 import { DeskTooltip, DeskTooltipProvider } from "#/desktop/ui/tooltip";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { canReachPrivateRoutes } from "#/features/auth/logic/private-routes";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { cn } from "#/lib/utils";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
@@ -30,6 +37,14 @@ const SCOPES: readonly { id: DesktopScopeId; label: ReactNode }[] = [
   { id: "pools", label: <Trans>Pools</Trans> },
   { id: "catalogs", label: <Trans>Catalogs</Trans> },
 ];
+
+const WALLET_SECTION_LABELS: Record<DeskWalletSection, ReactNode> = {
+  holdings: <Trans>Holdings</Trans>,
+  "my-vouchers": <Trans>My Vouchers</Trans>,
+  "my-pools": <Trans>My Pools</Trans>,
+  "my-wants": <Trans>My Wants</Trans>,
+  "my-catalogs": <Trans>My Catalogs</Trans>,
+};
 
 const FOOTER_ICON =
   "flex size-8 shrink-0 items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground";
@@ -59,25 +74,58 @@ function RailTip({
   return show ? <DeskTooltip label={label}>{children}</DeskTooltip> : children;
 }
 
+/** The indented list a top-level item owns: the marketplace lists, the Wallet's sections. */
+function SubNav({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div
+      aria-label={label}
+      role="group"
+      className="ms-[17px] mt-0.5 mb-1.5 flex flex-col gap-px border-sidebar-border border-s ps-2"
+    >
+      {children}
+    </div>
+  );
+}
+
+function subItemClass(active: boolean) {
+  return cn(
+    "flex h-7 items-center px-2 text-xs font-medium hover:bg-sidebar-accent",
+    active
+      ? "bg-sidebar-accent font-semibold text-foreground"
+      : "text-muted-foreground hover:text-foreground",
+  );
+}
+
+function railItemClass(active: boolean) {
+  return cn(
+    "flex h-8 items-center px-3 text-sm hover:bg-muted",
+    active ? `bg-muted font-semibold ${DESK_SELECTED_EDGE}` : "font-medium",
+  );
+}
+
 /**
- * The 224px sidebar, or the 56px rail. The rail keeps every destination and
+ * The 192px sidebar, or the 56px rail. The rail keeps every destination and
  * control the sidebar has, as an icon with a name: it is the sidebar's
- * collapsed state, not a different set of places. The map forces the rail
- * (`rail`) and so has no Expand, but its Market icon opens the marketplace
- * lists the expanded sidebar shows beneath it.
+ * collapsed state, not a different set of places, and nothing but the person's
+ * own Collapse puts it there. Each collapsed parent that owns a list keeps it
+ * in a popover beside its icon, so the rail still reaches every one.
  */
-export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
+export function DesktopSidebar() {
   const { t } = useLingui();
-  const { collapsed: stored, toggle } = useSidebarCollapsed();
-  const collapsed = rail || stored;
+  const { collapsed, toggle } = useSidebarCollapsed();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const search = useRouterState({ select: (state) => state.location.search });
+  const hash = useRouterState({ select: (state) => state.location.hash });
   const selection = desktopNavSelection(pathname, search);
   const auth = useAuthStatus();
   const profile = useAuthProfile({ enabled: auth.isAuthenticated });
+  // Wallet, Activity and Settings all sit behind `AuthenticatedRoute`. A guest
+  // who clicks one only reaches the sign-in gate, so they are not offered.
+  const privateNav = canReachPrivateRoutes(auth);
   const address = auth.address;
   const name = profile.data?.name?.trim();
   const marketChild = selection.nav === "market" && Boolean(selection.scope);
+  const walletSection = selection.nav === "wallet" ? deskWalletSectionOf(hash) : undefined;
   const settingsCurrent = selection.nav === "settings";
   const itemClass = (active: boolean) =>
     cn(
@@ -99,7 +147,7 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
   const settingsLabel = t`Settings`;
   const profileLabel = t`Edit profile`;
 
-  const settingsLink = (
+  const settingsLink = !privateNav ? null : (
     <Link
       to="/"
       search={{ tab: "settings" }}
@@ -116,12 +164,31 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
     </span>
   );
 
+  const walletSectionLink = (
+    section: DeskWalletSection,
+    className: string,
+    onClick?: () => void,
+  ) => (
+    <Link
+      key={section}
+      to="/"
+      search={{ tab: "wallet" }}
+      hash={section}
+      activeOptions={{ includeHash: true }}
+      aria-current={walletSection === section ? "page" : undefined}
+      onClick={onClick}
+      className={className}
+    >
+      {WALLET_SECTION_LABELS[section]}
+    </Link>
+  );
+
   return (
     <DeskTooltipProvider>
       <aside
         className={cn(
           "flex h-dvh shrink-0 flex-col border-sidebar-border border-e bg-sidebar text-sidebar-foreground",
-          collapsed ? "w-14" : "w-56",
+          collapsed ? "w-14" : "w-48",
         )}
       >
         <div
@@ -130,8 +197,17 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
             collapsed ? "justify-center" : "px-3.5",
           )}
         >
-          <CLCLogo sharp className="size-6" />
-          {collapsed ? null : <span className="font-heading text-base font-bold">CLC</span>}
+          {/* The brand is the way home, as it is on every other site. */}
+          <Link
+            to="/"
+            className="flex min-w-0 items-center gap-2 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+          >
+            <CLCLogo sharp className="size-6" />
+            {/* Kept for the link's name when the rail hides it. */}
+            <span className={cn("font-heading text-base font-bold", collapsed && "sr-only")}>
+              CLC
+            </span>
+          </Link>
           {collapsed ? null : (
             <DeskTooltip label={t`Collapse`}>
               <button
@@ -159,48 +235,79 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
             </MarketHomeLink>
           </RailTip>
           {collapsed ? (
-            <RailScopes current={selection.nav === "market" ? selection.scope : undefined} />
+            <RailMenu trigger={t`Marketplace lists`} title={t`Marketplace`}>
+              {(close) =>
+                SCOPES.map((scope) => (
+                  <MarketScopeLink
+                    key={scope.id}
+                    scope={scope.id}
+                    aria-current={selection.scope === scope.id ? "page" : undefined}
+                    onClick={close}
+                    className={railItemClass(selection.scope === scope.id)}
+                  >
+                    {scope.label}
+                  </MarketScopeLink>
+                ))
+              }
+            </RailMenu>
           ) : (
-            <div className="ms-[17px] mt-0.5 mb-1.5 flex flex-col gap-px border-sidebar-border border-s ps-2">
+            <SubNav label={t`Marketplace`}>
               {SCOPES.map((scope) => (
                 <MarketScopeLink
                   key={scope.id}
                   scope={scope.id}
                   aria-current={selection.scope === scope.id ? "page" : undefined}
-                  className={cn(
-                    "flex h-7 items-center px-2 text-xs font-medium hover:bg-sidebar-accent",
-                    selection.scope === scope.id
-                      ? "bg-sidebar-accent font-semibold text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+                  className={subItemClass(selection.scope === scope.id)}
                 >
                   {scope.label}
                 </MarketScopeLink>
               ))}
-            </div>
+            </SubNav>
           )}
-          <RailTip show={collapsed} label={walletLabel}>
-            <Link
-              to="/"
-              search={{ tab: "wallet" }}
-              aria-label={collapsed ? walletLabel : undefined}
-              aria-current={selection.nav === "wallet" ? "page" : undefined}
-              className={itemClass(selection.nav === "wallet")}
-            >
-              {body(<RiWallet3Line aria-hidden="true" />, walletLabel)}
-            </Link>
-          </RailTip>
-          <RailTip show={collapsed} label={activityLabel}>
-            <Link
-              to="/"
-              search={{ tab: "activity" }}
-              aria-label={collapsed ? activityLabel : undefined}
-              aria-current={selection.nav === "activity" ? "page" : undefined}
-              className={itemClass(selection.nav === "activity")}
-            >
-              {body(<RiPulseLine aria-hidden="true" />, activityLabel)}
-            </Link>
-          </RailTip>
+          {privateNav ? (
+            <RailTip show={collapsed} label={walletLabel}>
+              <Link
+                to="/"
+                search={{ tab: "wallet" }}
+                // Its sections differ from it by hash alone, so the router has to
+                // weigh the hash or it would call this active on every one of them.
+                activeOptions={{ includeHash: true }}
+                aria-label={collapsed ? walletLabel : undefined}
+                aria-current={selection.nav === "wallet" && !walletSection ? "page" : undefined}
+                className={itemClass(selection.nav === "wallet" && (!walletSection || collapsed))}
+              >
+                {body(<RiWallet3Line aria-hidden="true" />, walletLabel)}
+              </Link>
+            </RailTip>
+          ) : null}
+          {!privateNav ? null : collapsed ? (
+            <RailMenu trigger={t`Wallet sections`} title={walletLabel}>
+              {(close) =>
+                DESK_WALLET_SECTIONS.map((section) =>
+                  walletSectionLink(section, railItemClass(walletSection === section), close),
+                )
+              }
+            </RailMenu>
+          ) : (
+            <SubNav label={walletLabel}>
+              {DESK_WALLET_SECTIONS.map((section) =>
+                walletSectionLink(section, subItemClass(walletSection === section)),
+              )}
+            </SubNav>
+          )}
+          {privateNav ? (
+            <RailTip show={collapsed} label={activityLabel}>
+              <Link
+                to="/"
+                search={{ tab: "activity" }}
+                aria-label={collapsed ? activityLabel : undefined}
+                aria-current={selection.nav === "activity" ? "page" : undefined}
+                className={itemClass(selection.nav === "activity")}
+              >
+                {body(<RiPulseLine aria-hidden="true" />, activityLabel)}
+              </Link>
+            </RailTip>
+          ) : null}
           <RailTip show={collapsed} label={postsLabel}>
             <Link
               to="/"
@@ -215,19 +322,12 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
         </nav>
         {collapsed ? (
           <div className="flex shrink-0 flex-col items-center gap-1 border-sidebar-border border-t p-2.5">
-            {rail ? null : (
-              <DeskTooltip label={t`Expand`}>
-                <button
-                  type="button"
-                  className={FOOTER_ICON}
-                  aria-label={t`Expand`}
-                  onClick={toggle}
-                >
-                  <RiSideBarLine aria-hidden="true" className="rtl:-scale-x-100" />
-                </button>
-              </DeskTooltip>
-            )}
-            <DeskTooltip label={settingsLabel}>{settingsLink}</DeskTooltip>
+            <DeskTooltip label={t`Expand`}>
+              <button type="button" className={FOOTER_ICON} aria-label={t`Expand`} onClick={toggle}>
+                <RiSideBarLine aria-hidden="true" className="rtl:-scale-x-100" />
+              </button>
+            </DeskTooltip>
+            {settingsLink ? <DeskTooltip label={settingsLabel}>{settingsLink}</DeskTooltip> : null}
             {address ? (
               <DeskTooltip label={profileLabel}>
                 <Link
@@ -240,7 +340,7 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
               </DeskTooltip>
             ) : null}
           </div>
-        ) : (
+        ) : !address && !settingsLink ? null : (
           <div className="flex shrink-0 items-center gap-2.5 border-sidebar-border border-t p-2.5">
             {address ? (
               <Link to="/settings/profile" className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -260,7 +360,7 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
             ) : (
               <span className="flex-1" />
             )}
-            <DeskTooltip label={settingsLabel}>{settingsLink}</DeskTooltip>
+            {settingsLink ? <DeskTooltip label={settingsLabel}>{settingsLink}</DeskTooltip> : null}
           </div>
         )}
       </aside>
@@ -269,45 +369,34 @@ export function DesktopSidebar({ rail = false }: { rail?: boolean }) {
 }
 
 /**
- * The rail's way to the marketplace lists. The expanded sidebar lists them
- * under Market; here they open from a control beside the Market icon, so the
- * map, where the rail is forced, still reaches every list.
+ * A collapsed parent's list, as a popover beside its icon. The expanded
+ * sidebar lists the same places inline; here they open from a control under
+ * the icon, so the rail reaches every one of them too.
  */
-function RailScopes({ current }: { current: DesktopScopeId | undefined }) {
-  const { t } = useLingui();
+function RailMenu({
+  trigger,
+  title,
+  children,
+}: {
+  trigger: string;
+  title: string;
+  children: (close: () => void) => ReactNode;
+}) {
   const [open, setOpen] = useState(false);
-  const label = t`Marketplace lists`;
   return (
     <PopoverRoot open={open} onOpenChange={setOpen}>
-      <DeskTooltip label={label}>
+      <DeskTooltip label={trigger}>
         <PopoverTrigger
-          aria-label={label}
+          aria-label={trigger}
           className="mx-auto flex h-5 w-full items-center justify-center text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
         >
           <RiArrowRightSLine aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
         </PopoverTrigger>
       </DeskTooltip>
       <PopoverContent side="inline-end" align="start" sideOffset={4} className="w-44 p-1">
-        <PopoverTitle className="sr-only">
-          <Trans>Marketplace</Trans>
-        </PopoverTitle>
-        <nav aria-label={t`Marketplace`} className="flex flex-col">
-          {SCOPES.map((scope) => (
-            <MarketScopeLink
-              key={scope.id}
-              scope={scope.id}
-              aria-current={current === scope.id ? "page" : undefined}
-              onClick={() => setOpen(false)}
-              className={cn(
-                "flex h-8 items-center px-3 text-sm hover:bg-muted",
-                current === scope.id
-                  ? `bg-muted font-semibold ${DESK_SELECTED_EDGE}`
-                  : "font-medium",
-              )}
-            >
-              {scope.label}
-            </MarketScopeLink>
-          ))}
+        <PopoverTitle className="sr-only">{title}</PopoverTitle>
+        <nav aria-label={title} className="flex flex-col">
+          {children(() => setOpen(false))}
         </nav>
       </PopoverContent>
     </PopoverRoot>

@@ -21,7 +21,6 @@ import {
   parseMarketplaceScope,
   pickMarketplaceSearch,
 } from "#/lib/navigation/marketplace-search";
-import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
 import { MapLayersChip, type MapLayers } from "#/desktop/market/market-layers";
 import { MarketSearchField } from "#/desktop/market/market-search-field";
@@ -92,7 +91,6 @@ export function MarketDeskToolbar({
         onOpenChange={onFiltersOpenChange}
       />
       <CreditChip credit={credit} onCredit={onCredit} />
-      <SignInAction credit={credit} />
       {layers ? <MapLayersChip layers={layers} /> : null}
       <OutputChip output={output} onClear={onClearOutput} />
     </>
@@ -115,7 +113,10 @@ export function MarketDeskToolbar({
     <DeskTabs
       label={t`Marketplace`}
       tight={layout === "column"}
-      className={layout === "column" ? "-mx-3.5 border-b-0 px-1" : undefined}
+      // The column carries no rail at all: the result count sits right under
+      // the tabs, and a hairline there boxes it in against the list's own rows.
+      rule={layout !== "column"}
+      className={layout === "column" ? "-mx-3.5 px-1" : undefined}
     >
       {SCOPES.map((entry) => (
         <DeskTab key={entry.id} active={entry.id === scope}>
@@ -129,7 +130,7 @@ export function MarketDeskToolbar({
 
   if (layout === "column") {
     return (
-      <div className="grid shrink-0 gap-2.5 border-border border-b px-3.5 pt-3.5">
+      <div className="grid shrink-0 gap-2.5 px-3.5 pt-3.5">
         {search}
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           {chips}
@@ -362,18 +363,6 @@ function CreditChip({
         <Trans>Credit</Trans>
       </button>
     </DeskChip>
-  );
-}
-
-/** A guest's way in, where a member has Credit, as the phone's market bar has it. */
-function SignInAction({ credit }: { credit: Credit }) {
-  if (credit.auth.isLoading || credit.auth.isAuthenticated) return null;
-  return (
-    <Button asChild>
-      <Link to="/onboarding" search={onboardingSearch("welcome")}>
-        <Trans>Sign in</Trans>
-      </Link>
-    </Button>
   );
 }
 

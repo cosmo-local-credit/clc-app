@@ -241,16 +241,13 @@ describe("the single-key shortcuts", () => {
     expect(press(document.body, "j")).toBe(false);
   });
 
-  it("toggle the sidebar with [ only where the sidebar shows a control for it", async () => {
-    const { unmount } = await renderInShell(<DesktopShortcuts />);
+  it("toggle the sidebar with [, and back again", async () => {
+    await renderInShell(<DesktopShortcuts />);
     expect(press(document.body, "[")).toBe(true);
     expect(window.localStorage.getItem(SIDEBAR_KEY)).toBe("collapsed");
-    unmount();
 
-    window.localStorage.removeItem(SIDEBAR_KEY);
-    await renderInShell(<DesktopShortcuts sidebarToggle={false} />);
-    expect(press(document.body, "[")).toBe(false);
-    expect(window.localStorage.getItem(SIDEBAR_KEY)).toBeNull();
+    expect(press(document.body, "[")).toBe(true);
+    expect(window.localStorage.getItem(SIDEBAR_KEY)).toBe("expanded");
   });
 
   it("focus the search field only when one can be reached", async () => {

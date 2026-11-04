@@ -398,11 +398,22 @@ describe("MarketMapDesk requested output (Get a voucher)", () => {
     });
   });
 
-  it("offers a guest Sign in beside the map controls", async () => {
+  // The map chrome has no top bar, so a guest's way in sits over the map
+  // itself rather than among the toolbar's chips.
+  it("puts a guest's Sign in over the map, not in the results toolbar", async () => {
     mocks.mapList.mockResolvedValue({ features: [] });
     renderMap("/market?view=map");
     const link = await screen.findByRole("link", { name: "Sign in" });
     expect(link.getAttribute("href")).toBe("/onboarding?step=welcome");
+    expect(screen.getByRole("navigation", { name: "Marketplace" }).contains(link)).toBe(false);
+  });
+
+  it("shows a member no Sign in over the map", async () => {
+    signIn();
+    mocks.mapList.mockResolvedValue({ features: [] });
+    renderMap("/market?view=map");
+    expect(await screen.findByRole("button", { name: "Filters" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
   });
 });
 

@@ -340,15 +340,16 @@ describe("MarketListDesk requested output (Get a voucher)", () => {
 });
 
 describe("MarketListDesk guest entry", () => {
-  it("gives a guest a Sign in action in the toolbar and a member Credit instead", async () => {
+  // The way in is the top bar's Sign in; the toolbar holds filters only.
+  it("keeps Credit from a guest without putting a way in among the chips", async () => {
     mocks.list.mockResolvedValue(page([pool(POOL_A, "Mombasa Bakers")]));
     renderList("/market?scope=pools&view=list");
-    const signInLink = await screen.findByRole("link", { name: "Sign in" });
-    expect(signInLink.getAttribute("href")).toBe("/onboarding?step=welcome");
+    expect(await screen.findByRole("button", { name: "Filters" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Credit" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
   });
 
-  it("shows no Sign in to a member", async () => {
+  it("gives a member Credit in that place", async () => {
     signIn();
     mocks.list.mockResolvedValue(page([pool(POOL_A, "Mombasa Bakers")]));
     renderList("/market?scope=pools&view=list");

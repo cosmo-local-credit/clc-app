@@ -36,12 +36,17 @@ const EDGE = 2;
  * `kind="tabs"` is a local content switch with the tablist pattern: pass
  * `DeskTab`s with `id` and `controls`, render the panel in a `DeskTabPanel`,
  * and Left/Right/Home/End move between tabs.
+ *
+ * The strip draws the rail the active tab's 2px marker sits in. Pass
+ * `rule={false}` where an enclosing element already draws that line, so the
+ * two do not stack into a 2px grey band under the marker.
  */
 export function DeskTabs({
   children,
   label,
   kind = "nav",
   tight = false,
+  rule = true,
   className,
 }: {
   children: ReactNode;
@@ -49,6 +54,8 @@ export function DeskTabs({
   kind?: TabsKind;
   /** The narrow results column and the place panel. */
   tight?: boolean;
+  /** False where the container's own border is the rail. */
+  rule?: boolean;
   className?: string;
 }) {
   const { t } = useLingui();
@@ -115,7 +122,10 @@ export function DeskTabs({
       type="button"
       tabIndex={-1}
       aria-label={direction === "start" ? t`Show earlier tabs` : t`Show more tabs`}
-      className="flex w-7 shrink-0 items-center justify-center border-border border-b text-muted-foreground hover:text-foreground"
+      className={cn(
+        "flex w-7 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground",
+        rule && "border-border border-b",
+      )}
       onClick={() => page(direction)}
     >
       {direction === "start" ? (
@@ -133,7 +143,10 @@ export function DeskTabs({
       role={kind === "tabs" ? "tablist" : undefined}
       aria-label={kind === "tabs" ? label : undefined}
       onKeyDown={onKeyDown}
-      className="group/tabs flex min-w-0 flex-1 items-end overflow-x-auto border-border border-b [scrollbar-width:none]"
+      className={cn(
+        "group/tabs flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:none]",
+        rule && "border-border border-b",
+      )}
     >
       <TabsContext.Provider value={{ kind, scroller }}>{children}</TabsContext.Provider>
     </div>
