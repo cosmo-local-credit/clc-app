@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { OtxTrackingOutcome, OtxTrackResult } from "@clc/api/features/auth/client";
+import { TRACKING_UNCONFIRMED } from "@clc/api/features/auth/client";
 import { BackendApiError } from "@clc/api/client/errors";
 import { RelayerError } from "@clc/api/features/relayer/client";
 import { useOtxTracking } from "./use-otx-tracking";
@@ -113,5 +114,107 @@ describe("useOtxTracking", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.outcome).toEqual({ kind: "pending" });
+  });
+
+  it("gives up on a tracking id that never appears, rather than polling for good", async () => {
+    // A discarded job writes no OTX row ever, so this 404 never clears. Without
+    // a deadline the caller shows a spinner behind a job that already failed.
+    const queryFn = vi
+      .fn()
+      .mockRejectedValue(new RelayerError("not_found", "tracking id not found", 404));
+
+    const { result } = renderHook(
+      () => useOtxTracking("tracking-gone", { pollMs: 10, notFoundTimeoutMs: 40, queryFn }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.outcome.kind).toBe("pending"));
+    await waitFor(() =>
+      expect(result.current.outcome).toEqual({
+        kind: "error",
+        error: TRACKING_UNCONFIRMED,
+      }),
+    );
+
+    // The deadline also stops the polling it was waiting on.
+    const settled = queryFn.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(queryFn.mock.calls.length).toBe(settled);
+  });
+
+  it("waits out a slow worker that writes the row inside the deadline", async () => {
+    const queryFn = vi
+      .fn()
+      .mockRejectedValueOnce(new RelayerError("not_found", "tracking id not found", 404))
+      .mockResolvedValue({
+        otx: [
+          {
+            id: 1,
+            trackingId: "tracking-slow",
+            otxType: "RELAY_DELEGATE_EXEC",
+            txHash: "0xdeadbeef",
+            nonce: 0,
+            replaced: false,
+            createdAt: "2026-06-18T00:00:00Z",
+            status: "SUCCESS",
+          },
+        ],
+      });
+
+    const { result } = renderHook(
+      () => useOtxTracking("tracking-slow", { pollMs: 10, notFoundTimeoutMs: 10_000, queryFn }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.outcome.kind).toBe("success"));
+  });
+
+  it("keeps waiting on a pending transaction once its row exists", async () => {
+    // The deadline is for an id that never appears. A row that is on-chain and
+    // unconfirmed is waited on for as long as the chain takes.
+    const queryFn = vi.fn().mockResolvedValue({
+      otx: [
+        {
+          id: 1,
+          trackingId: "tracking-pending",
+          otxType: "RELAY_DELEGATE_EXEC",
+          txHash: "0xdeadbeef",
+          nonce: 0,
+          replaced: false,
+          createdAt: "2026-06-18T00:00:00Z",
+          status: "IN_NETWORK",
+        },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => useOtxTracking("tracking-pending", { pollMs: 10, notFoundTimeoutMs: 20, queryFn }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(queryFn).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(result.current.outcome).toEqual({ kind: "pending" });
+  });
+
+  it("reports the backend's own reason when it knows the job failed", async () => {
+    // clc-core answers 410 with the discarded job's error, which is not a 404
+    // and so is terminal on arrival — no deadline needed.
+    const queryFn = vi
+      .fn()
+      .mockRejectedValue(
+        new RelayerError("server_error", "delegate: authorization contract 0xaaa != 0xbbb", 410),
+      );
+
+    const { result } = renderHook(() => useOtxTracking("tracking-410", { pollMs: 10, queryFn }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() =>
+      expect(result.current.outcome).toEqual({
+        kind: "error",
+        error: "delegate: authorization contract 0xaaa != 0xbbb",
+      }),
+    );
   });
 });
