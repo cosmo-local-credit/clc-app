@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
 import { TbNfc } from "react-icons/tb";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { Button } from "#/components/ui/button";
 import { AddressQRCode } from "#/components/wallet";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { DeskKV } from "#/desktop/ui/kv";
+import { ReceivePosterDialog } from "#/desktop/wallet/receive-poster-dialog";
 import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
 import { FullValue } from "#/desktop/ui/full-value";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
@@ -21,6 +22,9 @@ import { useWebNfcSupported } from "#/lib/nfc/ndef-adapter";
  * Receive is a focused page: the QR and the address to give out, and the
  * network warning. It does not mount the Wallet behind a dimmed pane, and it
  * does not repeat the activity list that the Activity tab is for.
+ *
+ * Share opens the payment poster, the same picture the phone draws, so a
+ * printed counter code and a chat both carry the QR rather than bare text.
  */
 export function ReceiveDesk() {
   const chainName = CHAIN_INFO.name;
@@ -31,6 +35,7 @@ export function ReceiveDesk() {
   const username = identity.data?.alias ?? null;
   useDeskTrailLabel(username);
   const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
+  const [posterOpen, setPosterOpen] = useState(false);
 
   const copy = (value: string, copyingUsername = false) => {
     if (!navigator.clipboard) {
@@ -43,19 +48,6 @@ export function ReceiveDesk() {
       .catch(() =>
         toast.error(copyingUsername ? t`Couldn't copy username` : t`Couldn't copy address`),
       );
-  };
-
-  const share = async () => {
-    if (!address) return;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: t`My wallet address`, text: address });
-      } catch (error) {
-        if (error instanceof Error && error.name !== "AbortError") copy(address);
-      }
-      return;
-    }
-    copy(address);
   };
 
   return (
@@ -127,7 +119,7 @@ export function ReceiveDesk() {
               <RiFileCopyLine aria-hidden="true" />
               <Trans>Copy</Trans>
             </Button>
-            <Button type="button" disabled={!address} onClick={() => void share()}>
+            <Button type="button" disabled={!address} onClick={() => setPosterOpen(true)}>
               <RiShareLine aria-hidden="true" />
               <Trans>Share</Trans>
             </Button>
@@ -142,6 +134,18 @@ export function ReceiveDesk() {
           ) : null}
         </div>
       </div>
+      {/* Mounted only once asked for: drawing the poster reads the profile
+          photo, which Receive itself has no need of. */}
+      {posterOpen && address && receiveQrValue ? (
+        <ReceivePosterDialog
+          open
+          onClose={() => setPosterOpen(false)}
+          address={address}
+          qrValue={receiveQrValue}
+          name={null}
+          username={username}
+        />
+      ) : null}
     </DeskCanvas>
   );
 }
