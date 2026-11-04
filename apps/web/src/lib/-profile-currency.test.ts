@@ -9,6 +9,8 @@ describe("preferredCurrencyForCountry", () => {
     ["UG", "UGX"],
     ["RS", "RSD"],
     ["DE", "EUR"],
+    ["IN", "INR"],
+    ["BT", "BTN"],
     ["unknown", "USD"],
   ])("suggests %s as %s", (country, currency) => {
     expect(preferredCurrencyForCountry(country)).toBe(currency);
