@@ -1,7 +1,14 @@
 import type { ActivityKind } from "@clc/api/features/accounts/client";
 import { getAddress, isAddress } from "viem";
 
-export const ACTIVITY_KIND_ORDER = ["creation", "sent", "received", "swapped"] as const;
+export const ACTIVITY_KIND_ORDER = [
+  "creation",
+  "sent",
+  "received",
+  "swapped",
+  "deposited",
+  "pool_payout",
+] as const;
 
 /** Date windows the desktop activity table filters its loaded rows by. */
 export const ACTIVITY_RANGES = ["7d", "30d", "90d"] as const;

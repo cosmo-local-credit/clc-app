@@ -7,7 +7,10 @@
  * trip. Invalidation follows, so the server still reconciles.
  */
 
+import { privateKeySigner, signSiweMessage } from "@clc/api/features/auth/siwe";
+import { buildKeyRotationStatement } from "@clc/core/features/key-rotation/logic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { privateKeyToAccount } from "viem/accounts";
 
 import type {
   AdminUser,
@@ -23,6 +26,7 @@ import {
 } from "@clc/api/features/admin/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { clcApi } from "#/lib/api";
+import { CHAIN_ID } from "#/lib/chain";
 
 export function useAdminUsers(params: AdminUserParams) {
   return useQuery(adminUsersQueryOptions(clcApi.admin, params));
@@ -99,6 +103,29 @@ export function useUpdateUserRole() {
       queryClient.setQueryData<AdminUser | null>(adminKeys.user(user.ethereumAddress), user);
       return queryClient.invalidateQueries({ queryKey: [...adminKeys.all, "users"] });
     },
+  });
+}
+
+/**
+ * SUPERADMIN only: moves an account to a new sign-in card when nothing can
+ * sign for the old one. The new card signs; the old card is not involved, and
+ * the old wallet's assets stay on chain.
+ */
+export function useRotateUserKey() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ address, newKey }: { address: string; newKey: `0x${string}` }) => {
+      const newAddress = privateKeyToAccount(newKey).address;
+      const proof = await signSiweMessage(clcApi.auth, privateKeySigner(newKey), {
+        domain: window.location.host,
+        uri: window.location.origin,
+        chainId: CHAIN_ID,
+        statement: buildKeyRotationStatement(address, newAddress),
+      });
+      return clcApi.admin.rotateUserKey(address, proof);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminKeys.all }),
   });
 }
 

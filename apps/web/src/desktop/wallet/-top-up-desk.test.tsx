@@ -67,8 +67,9 @@ import { TopUpDesk } from "./top-up-desk";
 
 async function mount(url: string) {
   const root = createRootRoute({ component: Outlet });
+  const nav = createRoute({ getParentRoute: () => root, id: "_nav", component: Outlet });
   const topUp = createRoute({
-    getParentRoute: () => root,
+    getParentRoute: () => nav,
     path: "/wallet/top-up",
     validateSearch: (search: Record<string, unknown>) => ({
       sheet:
@@ -80,7 +81,7 @@ async function mount(url: string) {
     component: TopUpDesk,
   });
   const router = createRouter({
-    routeTree: root.addChildren([topUp]),
+    routeTree: root.addChildren([nav.addChildren([topUp])]),
     history: createMemoryHistory({ initialEntries: [url] }),
   });
   render(<RouterProvider router={router} />);

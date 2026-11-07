@@ -79,8 +79,14 @@ afterEach(() => {
 describe("voucher mint receipt navigation", () => {
   it("keeps the supply chosen during creation when the flow lands with it in the URL", async () => {
     const rootRoute = createRootRoute({ component: Outlet });
-    const receiptRoute = createRoute({
+    // The receipt sits in the navigation shell, as it does in the app.
+    const navRoute = createRoute({
       getParentRoute: () => rootRoute,
+      id: "_nav",
+      component: Outlet,
+    });
+    const receiptRoute = createRoute({
+      getParentRoute: () => navRoute,
       path: "/vouchers/create/receipt",
       validateSearch: voucherReceiptSearchSchema,
       component: function Receipt() {
@@ -89,7 +95,7 @@ describe("voucher mint receipt navigation", () => {
       },
     });
     const router = createRouter({
-      routeTree: rootRoute.addChildren([receiptRoute]),
+      routeTree: rootRoute.addChildren([navRoute.addChildren([receiptRoute])]),
       history: createMemoryHistory({
         // Exactly what the create flow pushes: a plain, unquoted amount.
         initialEntries: ["/vouchers/create/receipt?trackingId=deploy-1&mintAmount=2000"],
@@ -114,8 +120,14 @@ describe("voucher mint receipt navigation", () => {
       path: "/vouchers/create/review",
       component: () => <h1>Voucher review</h1>,
     });
-    const receiptRoute = createRoute({
+    // The receipt sits in the navigation shell, as it does in the app.
+    const navRoute = createRoute({
       getParentRoute: () => rootRoute,
+      id: "_nav",
+      component: Outlet,
+    });
+    const receiptRoute = createRoute({
+      getParentRoute: () => navRoute,
       path: "/vouchers/create/receipt",
       validateSearch: voucherReceiptSearchSchema,
       component: function Receipt() {
@@ -124,7 +136,7 @@ describe("voucher mint receipt navigation", () => {
       },
     });
     const router = createRouter({
-      routeTree: rootRoute.addChildren([reviewRoute, receiptRoute]),
+      routeTree: rootRoute.addChildren([reviewRoute, navRoute.addChildren([receiptRoute])]),
       history: createMemoryHistory({
         initialEntries: ["/vouchers/create/review", "/vouchers/create/receipt?trackingId=deploy-1"],
       }),

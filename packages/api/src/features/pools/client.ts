@@ -326,10 +326,18 @@ export type PoolsClient = ReturnType<typeof createPoolsClient>;
 
 export function createPoolsClient(http: HttpClient, options: { adminComposition?: boolean } = {}) {
   return {
-    /** Owner recovery includes retired catalog rows, unlike public discovery. */
-    async getOwnedPools(params: CursorParams, signal?: AbortSignal): Promise<UserPoolPage> {
+    /**
+     * Owner recovery includes retired catalog rows, unlike public discovery.
+     * `owner` may name one of the account's replaced sign-in cards, to find
+     * the pools its old wallet still owns on chain.
+     */
+    async getOwnedPools(
+      params: CursorParams & { owner?: string },
+      signal?: AbortSignal,
+    ): Promise<UserPoolPage> {
+      const owner = params.owner ? `&owner=${encodeURIComponent(params.owner)}` : "";
       const result = await http.request<BackendPoolPage>(
-        `/api/v2/users/me/owned-pools${formatCursorQuery(params)}`,
+        `/api/v2/users/me/owned-pools${formatCursorQuery(params)}${owner}`,
         poolReadRequest(signal),
       );
       const received = result.pools ?? [];

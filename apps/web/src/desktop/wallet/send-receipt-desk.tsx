@@ -51,7 +51,7 @@ export function SendReceiptDesk() {
     uoaValue,
     uoa,
     uoaUnavailable,
-  } = useSearch({ from: "/wallet/send/receipt" });
+  } = useSearch({ from: "/_nav/wallet/send/receipt" });
   useDeskTrailLabel(symbol ?? null);
   const tracking = useOtxTracking(trackingId ?? null, {
     queryKey: "send-relay-track",

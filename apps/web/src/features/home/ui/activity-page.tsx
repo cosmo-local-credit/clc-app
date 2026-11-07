@@ -286,7 +286,7 @@ function ActivityRow({
     );
   }
 
-  const incoming = item.kind !== "sent";
+  const incoming = item.direction ? item.direction === "IN" : item.kind !== "sent";
   const created = item.kind === "creation";
   const Icon = created ? RiSparkling2Line : incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
   const transferDate = formatTransferDate(item.dateBlock);
@@ -304,7 +304,11 @@ function ActivityRow({
       </span>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1.5 text-sm font-medium">
-          {created ? (
+          {item.kind === "deposited" ? (
+            <Trans>Deposit</Trans>
+          ) : item.kind === "pool_payout" ? (
+            <Trans>Pay Out</Trans>
+          ) : created ? (
             <Trans>Created</Trans>
           ) : incoming ? (
             <Trans>Received</Trans>
@@ -320,20 +324,25 @@ function ActivityRow({
             </>
           ) : null}
         </p>
-        <p className="flex min-w-0 text-muted-foreground text-xs">
-          <span className="min-w-0 truncate">
+        <p className="min-w-0 text-muted-foreground text-xs">
+          <span className="block truncate">
             {created ? (
               <Trans>New supply</Trans>
             ) : (
               <>
                 {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                <RecipientIdentityLabel address={item.counterpartyAddress} />
+                {item.poolName &&
+                (incoming ? item.senderAddress : item.recipientAddress).toLowerCase() ===
+                  item.poolAddresses?.[0]?.toLowerCase() ? (
+                  item.poolName
+                ) : (
+                  <RecipientIdentityLabel address={item.counterpartyAddress} />
+                )}
               </>
             )}
           </span>
           {transferDate ? (
-            <span className="shrink-0 whitespace-pre">
-              <span aria-hidden="true"> · </span>
+            <span className="block">
               <time dateTime={item.dateBlock}>{transferDate}</time>
             </span>
           ) : null}
@@ -345,6 +354,11 @@ function ActivityRow({
           {item.transfer.tokenSymbol}
         </span>
         {uoaLabel ? <span className="block text-muted-foreground">({uoaLabel})</span> : null}
+        {!item.success ? (
+          <span className="block text-muted-foreground">
+            <Trans>Failed</Trans>
+          </span>
+        ) : null}
       </span>
     </button>
   );
@@ -354,9 +368,10 @@ function toTransferDetails(
   item: Exclude<AccountActivityItem, { kind: "swapped" }>,
 ): TransferDetails {
   return {
+    activityKind: item.kind === "deposited" || item.kind === "pool_payout" ? item.kind : undefined,
     txHash: item.txHash,
     dateBlock: item.dateBlock,
-    direction: item.kind === "sent" ? "OUT" : "IN",
+    direction: item.direction ?? (item.kind === "sent" ? "OUT" : "IN"),
     senderAddress: item.senderAddress,
     recipientAddress: item.recipientAddress,
     ...item.transfer,

@@ -40,14 +40,15 @@ const writeText = vi.fn();
 
 async function mount() {
   const root = createRootRoute({ component: Outlet });
+  const nav = createRoute({ getParentRoute: () => root, id: "_nav", component: Outlet });
   const receipt = createRoute({
-    getParentRoute: () => root,
+    getParentRoute: () => nav,
     path: "/wallet/send/receipt",
     validateSearch: (search: Record<string, unknown>) => search,
     component: SendReceiptDesk,
   });
   const router = createRouter({
-    routeTree: root.addChildren([receipt]),
+    routeTree: root.addChildren([nav.addChildren([receipt])]),
     history: createMemoryHistory({
       initialEntries: [
         `/wallet/send/receipt?${new URLSearchParams({

@@ -130,7 +130,7 @@ export function SendReceiptPage({
   };
   const pageClass = embedded
     ? "flex flex-col"
-    : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]";
+    : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav";
 
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -595,7 +595,7 @@ function ReceiptShell({
       className={
         embedded
           ? "flex flex-col"
-          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav"
       }
     >
       <div className="flex flex-col items-center text-center">

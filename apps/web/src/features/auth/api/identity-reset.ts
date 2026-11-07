@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import { clearPrivateKey } from "#/connectors/privateKey";
+import { useRotationSession } from "#/features/key-rotation/state/rotation-session";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useCollectPayerKey } from "#/features/wallet/state/collect-payer-key";
 import { useCollectSession } from "#/features/wallet/state/collect-session";
@@ -57,6 +58,10 @@ export function clearIdentitySecrets(retain: RetainedSecretSlot): void {
   // leave it in memory for whoever picks the phone up next.
   useCollectPayerKey.getState().clear();
   useCollectSession.getState().reset();
+  // A card replacement holds both cards' keys in memory. Its own switch to the
+  // new card retains "private-key" and must keep them, since the old key still
+  // has to sign; any teardown drops them.
+  if (retain === "none") useRotationSession.getState().clear();
 }
 
 /**

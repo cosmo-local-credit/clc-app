@@ -31,6 +31,7 @@ import { getAddress } from "viem";
 
 import type { HttpClient } from "../../client/http-client";
 import type { CursorParams, HexAddress } from "../../lib/api-normalize";
+import type { KeyRotationResult, KeyRotationSiweProof } from "../auth/client";
 import {
   formatCursorQuery,
   isPresent,
@@ -538,6 +539,11 @@ export type AdminClient = {
   approveUser(address: string): Promise<AdminUser>;
   rejectUser(address: string): Promise<AdminUser>;
   updateUserRole(address: string, role: "ADMIN" | "USER"): Promise<AdminUser>;
+  /**
+   * SUPERADMIN only: moves the account at `address` to a new sign-in card that
+   * signed `proof`, without the old card. Sets no cookie.
+   */
+  rotateUserKey(address: string, proof: KeyRotationSiweProof): Promise<KeyRotationResult>;
   updateUserLimits(address: string, limits: AdminUserLimits): Promise<AdminUser>;
   updateUserProfile(address: string, profile: AdminUserProfile): Promise<AdminUser>;
   getAccountStats(address: string, signal?: AbortSignal): Promise<AdminAccountStats>;
@@ -814,6 +820,13 @@ export function createAdminClient(http: HttpClient): AdminClient {
 
     updateUserRole(address, role) {
       return mutateUser(`/api/v2/admin/users/${encodeURIComponent(address)}/role`, { role });
+    },
+
+    rotateUserKey(address, proof) {
+      return http.request<KeyRotationResult>(
+        `/api/v2/admin/users/${encodeURIComponent(address)}/key-rotation`,
+        { method: "POST", body: JSON.stringify({ new: proof }) },
+      );
     },
 
     updateUserLimits(address, limits) {

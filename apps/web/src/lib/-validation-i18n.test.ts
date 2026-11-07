@@ -72,6 +72,10 @@ const knownErrors = [
   "Each voucher can only be linked once",
   "Each image can only be added once",
   "Each attachment can only be added once",
+  // Destroying vouchers.
+  "Enter an amount greater than zero.",
+  "Enter an amount this voucher supports.",
+  "Amount exceeds your balance",
 ] as const;
 
 describe("translateValidationError", () => {
@@ -91,6 +95,9 @@ describe("translateValidationError", () => {
     );
     expect(translateValidationError("Pool name is required", i18n)).toBe(
       "Jina la puli linahitajika",
+    );
+    expect(translateValidationError("Amount exceeds your balance", i18n)).toBe(
+      "Kiasi kinazidi salio lako",
     );
   });
 

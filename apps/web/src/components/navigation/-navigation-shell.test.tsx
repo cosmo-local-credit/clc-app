@@ -104,6 +104,27 @@ async function renderShell(initialEntry: string) {
     staticData: { navOwner: "voucher" },
     component: () => <h1>Voucher</h1>,
   });
+  const profileRoute = createRoute({
+    getParentRoute: () => navRoute,
+    path: "/settings/profile",
+    staticData: { navOwner: "settings" },
+    component: () => <h1>Edit profile</h1>,
+  });
+  const sendRoute = createRoute({
+    getParentRoute: () => navRoute,
+    path: "/wallet/send",
+    staticData: { navOwner: "wallet" },
+    component: () => <h1>Send</h1>,
+  });
+  const installRoute = createRoute({
+    getParentRoute: () => navRoute,
+    path: "/install",
+    staticData: { navOwner: "install" },
+    validateSearch: (search: Record<string, unknown>) => ({
+      from: search.from === "settings" ? ("settings" as const) : undefined,
+    }),
+    component: () => <h1>Install</h1>,
+  });
   const router = createRouter({
     routeTree: rootRoute.addChildren([
       navRoute.addChildren([
@@ -113,6 +134,9 @@ async function renderShell(initialEntry: string) {
         poolRoute,
         vouchersRoute,
         voucherRoute,
+        profileRoute,
+        sendRoute,
+        installRoute,
       ]),
     ]),
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
@@ -178,6 +202,9 @@ describe("NavigationShell", () => {
   it.each([
     ["/pools/0x1111111111111111111111111111111111111111", "Wallet"],
     ["/wallet/vouchers", "Wallet"],
+    ["/wallet/send", "Wallet"],
+    ["/settings/profile", "Settings"],
+    ["/install?from=settings", "Settings"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=market", "Map"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=posts&reportId=report-1", "Posts"],
     ["/vouchers/0x2222222222222222222222222222222222222222?from=wallet", "Wallet"],
@@ -193,6 +220,14 @@ describe("NavigationShell", () => {
     );
     expect(screen.getByRole("link", { name: "Map" })).toBeTruthy();
     expect(screen.queryByTestId("clc-logo")).toBeNull();
+  });
+
+  it("leaves a shared install link's landing page without navigation", async () => {
+    await renderShell("/install");
+
+    const heading = await screen.findByRole("heading", { name: "Install" });
+    expect(screen.queryByRole("navigation", { name: "Primary navigation" })).toBeNull();
+    expect(heading.parentElement?.style.getPropertyValue("--bottom-nav-offset")).toBe("");
   });
 
   it("keeps the Market logo when a Want sheet is open", async () => {

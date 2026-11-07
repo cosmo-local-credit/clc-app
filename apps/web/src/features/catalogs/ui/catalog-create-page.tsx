@@ -17,7 +17,7 @@ function CatalogCreateContent({ intent }: { intent?: CatalogCreateIntent }) {
   const { t } = useLingui();
   const { mine, usage, profile, member, catalog, failed, finish, place } = useCatalogCreate(intent);
   return (
-    <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-12">
+    <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-bottom-nav">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         <Trans>Create catalog</Trans>

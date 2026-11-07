@@ -72,11 +72,18 @@ async function renderBanner({
       </>
     ),
   });
-  const routes = ["/", "/onboarding", "/wallet/send/amount"].map((routePath) =>
+  const routes = ["/", "/onboarding"].map((routePath) =>
     createRoute({ getParentRoute: () => rootRoute, path: routePath, component: () => null }),
   );
+  // Send sits in the navigation shell, so its route ID carries the layout.
+  const navRoute = createRoute({ getParentRoute: () => rootRoute, id: "_nav", component: Outlet });
+  const sendAmountRoute = createRoute({
+    getParentRoute: () => navRoute,
+    path: "/wallet/send/amount",
+    component: () => null,
+  });
   const router = createRouter({
-    routeTree: rootRoute.addChildren(routes),
+    routeTree: rootRoute.addChildren([...routes, navRoute.addChildren([sendAmountRoute])]),
     history: createMemoryHistory({ initialEntries: [path] }),
   });
   render(

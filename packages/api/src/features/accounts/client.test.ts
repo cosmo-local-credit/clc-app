@@ -218,3 +218,27 @@ describe("account status", () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 });
+
+describe("owned vouchers", () => {
+  it("lists a replaced card's vouchers, retired ones included, by owner", async () => {
+    const owner = "0x8fd379246834eac74B8419FfdA202CF8051F7A03";
+    const fetcher = mockFetch({
+      ok: true,
+      result: {
+        vouchers: [
+          { id: 3, address: "0x1", name: "Old", symbol: "OLD", ownerAddress: owner, active: false },
+        ],
+        last: 3,
+      },
+    });
+    vi.stubGlobal("fetch", fetcher);
+
+    await expect(api.getOwnedVouchers({ perPage: 100, owner })).resolves.toMatchObject({
+      vouchers: [{ symbol: "OLD", active: false }],
+    });
+    expect(fetcher).toHaveBeenCalledWith(
+      `https://api.test/api/v2/users/me/vouchers?perPage=100&owner=${owner}`,
+      expect.anything(),
+    );
+  });
+});

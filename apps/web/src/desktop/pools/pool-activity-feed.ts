@@ -2,8 +2,8 @@ import type { UserPool } from "@clc/api/features/pools/client";
 import { useMemo } from "react";
 import { getAddress, isAddress } from "viem";
 
-import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
-import { buildPoolActivity } from "#/features/pools/logic/pool-activity";
+import { poolActivityFromAccount } from "#/features/pools/logic/pool-activity";
+import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 
 /**
  * Everything that has moved through the pool, newest first. The Activity table
@@ -13,14 +13,20 @@ import { buildPoolActivity } from "#/features/pools/logic/pool-activity";
  */
 export function usePoolActivityFeed(pool: UserPool | undefined, enabled: boolean) {
   // clc-core validates the path parameter as a checksummed address.
-  const query = useAccountTransfersInfinite(
+  const query = useAccountActivityInfinite(
     pool && isAddress(pool.address) ? getAddress(pool.address) : undefined,
     { poll: true, enabled },
   );
   const pages = query.data?.pages;
+  const poolAddress = pool?.address;
   const entries = useMemo(
-    () => buildPoolActivity(pages?.flatMap((page) => page.transfers) ?? []),
-    [pages],
+    () =>
+      poolAddress
+        ? (pages?.flatMap((page) => page.activity) ?? []).map((item) =>
+            poolActivityFromAccount(item, poolAddress),
+          )
+        : [],
+    [pages, poolAddress],
   );
   return { query, entries };
 }

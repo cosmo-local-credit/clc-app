@@ -55,7 +55,7 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
       className={
         embedded
           ? "flex flex-col"
-          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+          : "flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav"
       }
     >
       {embedded ? null : <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />}

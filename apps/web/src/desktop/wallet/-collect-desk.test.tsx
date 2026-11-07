@@ -5,6 +5,7 @@ import {
   createRouter,
   Outlet,
   RouterProvider,
+  useSearch,
 } from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -26,7 +27,8 @@ async function mount(url: string) {
       token: typeof search.token === "string" ? search.token : undefined,
     }),
     component: function Collect() {
-      return <CollectDesk token={collect.useSearch().token} />;
+      const search: Record<string, unknown> = useSearch({ strict: false });
+      return <CollectDesk token={typeof search.token === "string" ? search.token : undefined} />;
     },
   });
   const router = createRouter({

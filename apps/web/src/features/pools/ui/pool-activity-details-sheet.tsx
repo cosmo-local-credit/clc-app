@@ -30,10 +30,9 @@ import { PoolSwapFeeValue } from "./pool-swap-fee-value";
  * fits a pool. A swap here is two legs and sometimes a third for the protocol's
  * cut, and the whole point of the activity list is that those belong together.
  *
- * The activity entry comes from `token_transfer`, while an opened swap also
- * reads its transaction receipt. The transfer feed reconstructs the legs and
- * can spot a separate protocol transfer; the settlement event supplies the
- * pool fee that never moved and the authoritative complete fee split.
+ * Core classifies the operation and matches its indexed transfer legs. An
+ * opened swap also reads its receipt: the settlement event supplies the pool
+ * fee that never moved and the complete fee split.
  */
 export function PoolActivityDetailsSheet({
   poolAddress,
@@ -73,6 +72,11 @@ export function PoolActivityDetailsSheet({
                     {entry.success ? t`Confirmed` : t`Failed`}
                   </Badge>
                 </DetailRow>
+                {entry.initiatorAddress ? (
+                  <DetailRow label={t`Initiated by`}>
+                    <EllipsizedAddress address={entry.initiatorAddress} />
+                  </DetailRow>
+                ) : null}
 
                 {entry.kind === "swap" ? (
                   <>

@@ -9,11 +9,11 @@ import { Textarea } from "#/components/ui/textarea";
 import { DeskInspector } from "#/desktop/ui/inspector";
 import { usePaperWalletCustomizer } from "#/features/onboarding/hooks/use-paper-wallet-customizer";
 import type { PaperWalletSetupState } from "#/features/onboarding/hooks/use-paper-wallet-setup";
-import { PaperWalletCard } from "#/features/onboarding/ui/paper-wallet-card";
+import { PaperWalletCard } from "#/components/paper-wallet/paper-wallet-card";
 import {
   PAPER_WALLET_HEIGHT,
   PAPER_WALLET_WIDTH,
-} from "#/features/onboarding/ui/paper-wallet-constants";
+} from "#/components/paper-wallet/paper-wallet-constants";
 
 /**
  * The card itself, scaled to its column. It is the node the download, print

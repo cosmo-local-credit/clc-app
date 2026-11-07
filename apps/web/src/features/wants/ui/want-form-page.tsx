@@ -21,7 +21,7 @@ export function WantFormPage({ id }: { id?: string }) {
   const { ownerQuery, profile, usage, loading, failed, retry } = useWantFormSources(id);
 
   return (
-    <main className="min-h-[100svh] space-y-5 bg-background px-4 pb-12 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
+    <main className="min-h-[100svh] space-y-5 bg-background px-4 pb-bottom-nav pt-[calc(env(safe-area-inset-top)+0.875rem)]">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
       <h1>{id ? <Trans>Edit Want</Trans> : <Trans>Create Want</Trans>}</h1>
       {loading ? (

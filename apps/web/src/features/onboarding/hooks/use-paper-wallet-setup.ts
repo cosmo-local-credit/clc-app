@@ -5,21 +5,13 @@ import {
   PAPER_WALLET_PREVIEW_MAX_SCALE,
   PAPER_WALLET_PREVIEW_SCALE,
   PAPER_WALLET_WIDTH,
-} from "#/features/onboarding/ui/paper-wallet-constants";
+} from "#/components/paper-wallet/paper-wallet-constants";
 import {
   exportPaperWallet,
   exportPaperWalletSheet,
-} from "#/features/onboarding/ui/paper-wallet-export";
-import type { PaperWalletCustomization } from "#/features/onboarding/ui/paper-wallet-types";
-
-/**
- * Whether the app is running as an installed PWA, where the anchor fallback is
- * known to be silently ignored on iOS. Only there is the rendered PNG worth showing:
- * the preview above it is live DOM and cannot be long-pressed into Photos.
- */
-function isIosInstalledApp(): boolean {
-  return (navigator as Navigator & { standalone?: boolean }).standalone === true;
-}
+} from "#/components/paper-wallet/paper-wallet-export";
+import type { PaperWalletCustomization } from "#/components/paper-wallet/paper-wallet-types";
+import { downloadFile, isIosInstalledApp } from "#/lib/save-file";
 
 export type UsePaperWalletSetupProps = {
   address: `0x${string}`;
@@ -80,7 +72,6 @@ export function usePaperWalletSetupState({
   contentRef.current = { qrUrl, customization: normalizedCustomization };
   const preparedRef = useRef<{
     file: File;
-    fileName: string;
     qrUrl: string;
     customization: PaperWalletCustomization;
   } | null>(null);
@@ -125,7 +116,7 @@ export function usePaperWalletSetupState({
     return () => observer.disconnect();
   }, []);
 
-  async function prepareCard(): Promise<{ file: File; fileName: string }> {
+  async function prepareCard(): Promise<{ file: File }> {
     if (!cardRef.current) throw new Error("Sign-in card is missing");
     const content = contentRef.current;
     const prepared = preparedRef.current;
@@ -140,7 +131,7 @@ export function usePaperWalletSetupState({
     ) {
       throw new Error("Sign-in card changed while exporting");
     }
-    const result = { file: new File([blob], fileName, { type: "image/png" }), fileName };
+    const result = { file: new File([blob], fileName, { type: "image/png" }) };
     preparedRef.current = { ...result, ...content };
     return result;
   }
@@ -151,22 +142,18 @@ export function usePaperWalletSetupState({
     setDownloadError(null);
     setSavedCardUrl(null);
     try {
-      const { file, fileName } = await prepareCard();
-      const url = URL.createObjectURL(file);
+      const { file } = await prepareCard();
 
+      // An installed iOS app ignores download anchors. Only there is the
+      // rendered PNG worth showing: the preview above it is live DOM and cannot
+      // be long-pressed into Photos.
       if (isIosInstalledApp()) {
-        setSavedCardUrl(url);
+        setSavedCardUrl(URL.createObjectURL(file));
         onDownloaded?.();
         return;
       }
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      downloadFile(file);
       onDownloaded?.();
     } catch {
       setDownloadError(t`Could not save the sign-in card. Try again.`);
@@ -196,14 +183,7 @@ export function usePaperWalletSetupState({
         return;
       }
 
-      const url = URL.createObjectURL(file);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      downloadFile(file);
       onDownloaded?.();
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
@@ -223,7 +203,8 @@ export function usePaperWalletSetupState({
     setPrintingCard(true);
     setDownloadError(null);
     try {
-      const { file, fileName } = await prepareCard();
+      const { file } = await prepareCard();
+      const fileName = file.name;
       const url = URL.createObjectURL(file);
       const frame = document.createElement("iframe");
       frame.setAttribute("aria-hidden", "true");

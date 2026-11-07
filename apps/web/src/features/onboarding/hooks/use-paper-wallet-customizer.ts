@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { useRef, useState } from "react";
 
-import type { PaperWalletCustomization } from "#/features/onboarding/ui/paper-wallet-types";
+import type { PaperWalletCustomization } from "#/components/paper-wallet/paper-wallet-types";
 
 const MAX_LOGO_BYTES = 512 * 1024; // 512 KB
 const ACCEPTED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];

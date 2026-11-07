@@ -16,6 +16,13 @@ describe("activity search", () => {
     });
   });
 
+  it("preserves pool filters in activity URLs", () => {
+    expect(parseActivitySearch({ activityTypes: "POOL_PAYOUT,deposited" }).types).toEqual([
+      "deposited",
+      "pool_payout",
+    ]);
+  });
+
   it("drops unknown types instead of leaking them to the backend", () => {
     expect(parseActivitySearch({ activityTypes: "received,unknown" })).toEqual({
       q: "",

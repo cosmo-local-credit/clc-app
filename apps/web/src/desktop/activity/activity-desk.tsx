@@ -167,6 +167,8 @@ export function ActivityDesk({
     sent: t`Sent`,
     received: t`Received`,
     swapped: t`Swaps`,
+    deposited: t`Deposits`,
+    pool_payout: t`Pay Out`,
   };
   const withHeader =
     types.length === 1 && types[0] === "received"

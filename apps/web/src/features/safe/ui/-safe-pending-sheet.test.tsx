@@ -275,6 +275,42 @@ describe("SafePendingSheet", () => {
     expect(screen.queryByText("Nonce 1")).toBeNull();
   });
 
+  it("re-reads the catalog past the browser copy when a handover leaves the queue", async () => {
+    const handover = encodeFunctionData({
+      abi: parseAbi(["function transferOwnership(address)"]),
+      functionName: "transferOwnership",
+      args: [OTHER],
+    });
+    const executed = proposal({ data: handover });
+    const next = proposal({ safeTxHash: `0x${"cd".repeat(32)}`, nonce: "2" });
+    await openWith([executed, next]);
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    mocks.voucher.mockClear();
+
+    mocks.pending.mockResolvedValue([next]);
+    await act(() => queryClient.refetchQueries());
+    await waitFor(() =>
+      expect(mocks.voucher).toHaveBeenCalledWith(executed.to, expect.anything(), {
+        cache: "reload",
+      }),
+    );
+    await waitFor(() =>
+      expect(invalidate.mock.calls.map(([filters]) => filters?.queryKey?.[1])).toEqual(
+        expect.arrayContaining(["vouchers", "pools", "marketplace", "wants", "accounts"]),
+      ),
+    );
+  });
+
+  it("does not re-read the catalog while the queue is unchanged", async () => {
+    const tx = proposal();
+    await openWith([tx]);
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    mocks.voucher.mockClear();
+    await act(() => queryClient.refetchQueries());
+    expect(invalidate).not.toHaveBeenCalled();
+    expect(mocks.voucher).not.toHaveBeenCalledWith(tx.to, expect.anything(), { cache: "reload" });
+  });
+
   it("does not offer to confirm a call it cannot decode", async () => {
     const sheet = await openWith([proposal({ data: "0x12345678" })]);
     expect(within(sheet).getByText("Unknown call")).toBeTruthy();

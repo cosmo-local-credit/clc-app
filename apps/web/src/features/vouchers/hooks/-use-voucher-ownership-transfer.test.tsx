@@ -6,7 +6,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const OWNER = "0x1111111111111111111111111111111111111111" as const;
 const TOKEN = "0x2222222222222222222222222222222222222222" as const;
 const NEW_OWNER = "0x3333333333333333333333333333333333333333" as const;
+const SAFE = "0x4444444444444444444444444444444444444444" as const;
+const SOLO_OWNER_INFO = {
+  owner: undefined,
+  info: undefined,
+  pending: false,
+  isSafeOwned: false,
+  isSafeSigner: false,
+  unsupportedOwner: false,
+  canManage: false,
+};
 const mocks = vi.hoisted(() => ({
+  ownerInfo: undefined as unknown,
+  safeWrite: vi.fn(),
   relay: vi.fn(),
   track: vi.fn(),
   read: vi.fn(),
@@ -17,18 +29,10 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("#/features/webauthn/api/relay-calibur-batch", () => ({ relayCaliburBatch: mocks.relay }));
 vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
-  useAssetOwnerInfo: () => ({
-    owner: undefined,
-    info: undefined,
-    pending: false,
-    isSafeOwned: false,
-    isSafeSigner: false,
-    unsupportedOwner: false,
-    canManage: false,
-  }),
+  useAssetOwnerInfo: () => mocks.ownerInfo,
 }));
 vi.mock("#/features/safe/hooks/use-safe-write", () => ({
-  useSafeWrite: () => ({ write: vi.fn() }),
+  useSafeWrite: () => ({ write: mocks.safeWrite }),
 }));
 vi.mock("wagmi", () => ({
   useClient: () => mocks.client,
@@ -68,6 +72,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   useOwnershipSubmissions.setState({ submissions: {} });
+  mocks.ownerInfo = SOLO_OWNER_INFO;
   mocks.address = OWNER;
   mocks.client = { chain: { id: 100 } };
   mocks.delegation = "not-delegated";
@@ -222,6 +227,45 @@ describe("voucher ownership settlement", () => {
       await expect(result.current.mutateAsync(input)).rejects.toThrow(/on-chain owner/);
     });
     expect(mocks.relay).not.toHaveBeenCalled();
+  });
+  describe("when a Safe owns the voucher and the wallet is one of its signers", () => {
+    beforeEach(() => {
+      mocks.ownerInfo = {
+        ...SOLO_OWNER_INFO,
+        info: { kind: "safe", owner: SAFE, signers: [OWNER], threshold: 2 },
+        isSafeOwned: true,
+        isSafeSigner: true,
+        canManage: true,
+      };
+      mocks.read.mockReset().mockResolvedValue(SAFE);
+      mocks.safeWrite.mockRejectedValue(new Error("proposed"));
+    });
+    it("proposes the handover from the Safe when the Safe is named as the owner", async () => {
+      const { result } = renderHook(
+        () => useVoucherOwnershipTransfer({ address: TOKEN, ownerAddress: SAFE }),
+        { wrapper },
+      );
+      await act(async () => {
+        await expect(result.current.mutateAsync({ ...input, ownerAddress: SAFE })).rejects.toThrow(
+          /proposed/,
+        );
+      });
+      expect(mocks.safeWrite).toHaveBeenCalledWith({
+        safe: SAFE,
+        calls: [expect.objectContaining({ to: TOKEN })],
+      });
+      expect(mocks.relay).not.toHaveBeenCalled();
+    });
+    it("rejects the signer's own wallet as the owner, because the Safe is the on-chain owner", async () => {
+      const { result } = renderHook(
+        () => useVoucherOwnershipTransfer({ address: TOKEN, ownerAddress: SAFE }),
+        { wrapper },
+      );
+      await act(async () => {
+        await expect(result.current.mutateAsync(input)).rejects.toThrow(/on-chain owner/);
+      });
+      expect(mocks.safeWrite).not.toHaveBeenCalled();
+    });
   });
   it("keeps cancellation retryable and never records an unsubmitted transfer", async () => {
     mocks.relay.mockRejectedValue(new Error("User cancelled"));

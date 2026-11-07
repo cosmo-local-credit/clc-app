@@ -48,7 +48,7 @@ function historyKey(transaction: PretiumCashTransaction): string {
 export function TopUpDesk() {
   const access = useCashAccess();
   const { cashAddress, cashTransactions, transactionsQuery, disabledReason } = access;
-  const search = useSearch({ from: "/wallet/top-up" });
+  const search = useSearch({ from: "/_nav/wallet/top-up" });
   const navigate = useNavigate({ from: "/wallet/top-up" });
   const panel: CashPanel | null = search.tx ? null : (search.sheet ?? null);
   const selectedTx = search.tx

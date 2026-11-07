@@ -20,9 +20,12 @@ import {
 } from "#/features/onboarding/hooks/use-onboarding-wallet";
 import { onboardingSearch, type WalletPage } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
-import { PaperWalletCustomizer } from "./paper-wallet-customizer";
-import { PaperWalletProtectionControls } from "./paper-wallet-protection";
-import { PaperWalletPreview, PaperWalletSaveActions } from "./paper-wallet-setup";
+import { PaperWalletCustomizer } from "#/components/paper-wallet/paper-wallet-customizer";
+import { PaperWalletProtectionControls } from "#/components/paper-wallet/paper-wallet-protection";
+import {
+  PaperWalletPreview,
+  PaperWalletSaveActions,
+} from "#/components/paper-wallet/paper-wallet-setup";
 
 /** Where each wallet page sits in the whole signup, after the profile's three. */
 const PAGE_STEP: Record<WalletPage, number> = { card: 4, save: 5, link: 6 };

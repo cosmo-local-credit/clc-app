@@ -40,7 +40,6 @@ export async function relayCaliburBatch(
   input: RelayCaliburBatchInput,
   client: RelayerClient,
 ): Promise<RelayCaliburBatchResult> {
-  const batchedCall = { calls: input.calls, revertOnFailure: true };
   const {
     result: { relayerAddress },
   } = await client.getHealth();
@@ -62,31 +61,18 @@ export async function relayCaliburBatch(
       throw new Error("Stored passkey does not match the connected wallet.");
     }
 
-    const preview = await client.relayPreview({
-      userAddress: credential.address,
-      batchedCall,
-      keyHash: credential.keyHash,
-      executor,
-      deadline,
-    });
-    const signedBatch = {
-      batchedCall,
-      nonce: preview.result.nonce,
-      keyHash: credential.keyHash,
-      executor,
-      deadline,
-    };
-    const signature = encodeAbiParameters(
-      [{ type: "bytes" }, { type: "bytes" }],
-      [await signDigestWithPasskey(preview.result.digest, credential.credentialId), "0x"],
+    const payload = await signCaliburBatchWithPasskey(
+      {
+        credentialId: credential.credentialId,
+        keyHash: credential.keyHash,
+        senderAddress: credential.address,
+        calls: input.calls,
+        deadline,
+        executor,
+      },
+      client,
     );
-    const { result } = await client.relay({
-      userAddress: credential.address,
-      signedBatch,
-      signature,
-      signatureType: "webauthn",
-      authorization: undefined,
-    });
+    const { result } = await client.relay(payload);
     return {
       trackingId: result.trackingId,
       signatureType: "webauthn",
@@ -181,6 +167,59 @@ export async function signCaliburBatchWithAccount(
     signature,
     signatureType: "secp256k1",
     authorization,
+  };
+}
+
+export type SignCaliburBatchWithPasskeyInput = {
+  /** The passkey, supplied explicitly. Never looked up from storage or the connector. */
+  credentialId: string;
+  /** Its Calibur key hash on `senderAddress`'s account. */
+  keyHash: `0x${string}`;
+  senderAddress: `0x${string}`;
+  calls: CaliburCall[];
+  /** Unix seconds; "0" means no deadline. */
+  deadline: string;
+  executor: `0x${string}`;
+};
+
+/**
+ * Previews and signs a Calibur batch with a registered passkey, returning the
+ * request ready for `relay()` without sending it — the passkey counterpart of
+ * `signCaliburBatchWithAccount`.
+ *
+ * A passkey key is registered on one account but not bound to the session:
+ * after a sign-in card is replaced, the passkey still signs for the old wallet
+ * while the session is the new one, which is how what is left there moves.
+ * Calibur checks the key against `senderAddress` on chain; nothing here can.
+ */
+export async function signCaliburBatchWithPasskey(
+  input: SignCaliburBatchWithPasskeyInput,
+  client: RelayerClient,
+): Promise<RelayPayload> {
+  const batchedCall = { calls: input.calls, revertOnFailure: true };
+  const preview = await client.relayPreview({
+    userAddress: input.senderAddress,
+    batchedCall,
+    keyHash: input.keyHash,
+    executor: input.executor,
+    deadline: input.deadline,
+  });
+  const signature = encodeAbiParameters(
+    [{ type: "bytes" }, { type: "bytes" }],
+    [await signDigestWithPasskey(preview.result.digest, input.credentialId), "0x"],
+  );
+  return {
+    userAddress: input.senderAddress,
+    signedBatch: {
+      batchedCall,
+      nonce: preview.result.nonce,
+      keyHash: input.keyHash,
+      executor: input.executor,
+      deadline: input.deadline,
+    },
+    signature,
+    signatureType: "webauthn",
+    authorization: undefined,
   };
 }
 

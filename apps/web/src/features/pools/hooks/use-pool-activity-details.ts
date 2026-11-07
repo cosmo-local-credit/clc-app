@@ -12,10 +12,9 @@ import { CHAIN_INFO } from "#/lib/chain";
 /**
  * One pool event, with everything the transfers feed recorded about it.
  *
- * The activity entry comes from `token_transfer`, while an opened swap also
- * reads its transaction receipt. The transfer feed reconstructs the legs and
- * can spot a separate protocol transfer; the settlement event supplies the
- * pool fee that never moved and the authoritative complete fee split.
+ * Core classifies the operation and matches its indexed transfer legs. An
+ * opened swap also reads its receipt: the settlement event supplies the pool
+ * fee that never moved and the complete fee split.
  */
 export function usePoolActivityDetails({
   poolAddress,
@@ -50,7 +49,7 @@ export function usePoolActivityDetails({
         ? t`Created`
         : entry.direction === "IN"
           ? t`Deposit`
-          : t`Paid out`;
+          : t`Pay Out`;
   const copy = (value: string) => {
     if (!navigator.clipboard) {
       toast.error(t`Couldn't copy transaction hash`);

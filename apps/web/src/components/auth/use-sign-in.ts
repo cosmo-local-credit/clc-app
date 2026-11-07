@@ -25,6 +25,7 @@ import { readNfcCardContent } from "@clc/core/features/nfc/logic";
 import { parsePaperWalletImportPayload } from "@clc/core/features/wallet/paper-wallet";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { sanitizeInternalRedirect } from "./redirect";
+import { useReplacedCredentialMessage } from "./replaced-credential";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
@@ -60,6 +61,7 @@ export function useSignIn({
   const queryClient = useQueryClient();
   const { isConnected, connector } = useConnection();
   const { mutateAsync: disconnect } = useDisconnect();
+  const replacedCredentialMessage = useReplacedCredentialMessage();
   const backendSignin = useBackendPrivateKeySignin();
   const [panelState, setPanelState] = useState<AuthPanelState>("form");
   const [showScanner, setShowScanner] = useState(false);
@@ -95,6 +97,11 @@ export function useSignIn({
   }
 
   function handleBackendError(err: unknown, retry?: () => void) {
+    const replaced = replacedCredentialMessage(err);
+    if (replaced) {
+      setError(replaced);
+      return;
+    }
     if (err instanceof BackendApiError) {
       if (err.kind === "not-found") {
         setAccountNotFoundOpen(true);

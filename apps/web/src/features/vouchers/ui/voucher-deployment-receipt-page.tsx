@@ -102,7 +102,7 @@ export function VoucherDeploymentReceiptPage({
 
   if (receipt.phase === "supply") {
     return (
-      <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-bottom-nav">
         <div className="flex flex-col items-center text-center">
           {mintFailed || supplyCheckFailed ? (
             <FailureCross />
@@ -226,7 +226,7 @@ export function VoucherDeploymentReceiptPage({
   const { publishedSupply, publishedSupplyValue, deploymentTxHash, mintTxHash } = receipt;
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-bottom-nav">
       <div className="flex flex-col items-center text-center">
         <SuccessCheck />
         <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
@@ -326,7 +326,7 @@ function DeploymentStateShell({
   showContractRow?: boolean;
 }) {
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-bottom-nav">
       <div className="flex flex-col items-center text-center">
         {icon}
         <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">{title}</h1>
