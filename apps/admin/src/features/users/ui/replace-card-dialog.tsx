@@ -119,6 +119,11 @@ export function ReplaceCardDialog({
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
+          {password ? null : (
+            <p className="text-xs text-destructive">
+              Without a password, anyone who gets the card file can access the wallet.
+            </p>
+          )}
           {password ? (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="replace-card-confirm">Confirm password</Label>

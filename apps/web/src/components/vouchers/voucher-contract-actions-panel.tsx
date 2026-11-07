@@ -413,7 +413,7 @@ function VoucherBurnSheet({
     },
   });
 
-  const pending = burn.isPending || delegationStatus === "checking" || balance.isPending;
+  const pending = burn.isPending || delegationStatus === "checking" || balance.isLoading;
   const tokenBalance =
     balance.data === undefined
       ? undefined

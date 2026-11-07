@@ -99,6 +99,40 @@ describe("runRotationBatches", () => {
     expect(second).toEqual(first);
   });
 
+  it("carries the authorization again when the batch that held it never landed", async () => {
+    readCaliburDelegation.mockResolvedValueOnce(false).mockResolvedValueOnce(false);
+    const client = relayer();
+    vi.mocked(client.trackRelay).mockResolvedValueOnce(settled("REVERTED") as never);
+
+    await runRotationBatches({
+      batches: [batch(1), batch(2)],
+      from: OLD,
+      signer: { kind: "card", key: OLD_KEY },
+      relayer: client,
+    });
+
+    const relays = vi.mocked(client.relay).mock.calls.map(([payload]) => payload);
+    expect(relays[0]?.authorization).toBeDefined();
+    expect(relays[1]?.authorization).toBeDefined();
+  });
+
+  it("does not repeat the authorization once the chain shows the wallet delegated", async () => {
+    readCaliburDelegation.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    const client = relayer();
+    vi.mocked(client.trackRelay).mockResolvedValueOnce(settled("REVERTED") as never);
+
+    await runRotationBatches({
+      batches: [batch(1), batch(2)],
+      from: OLD,
+      signer: { kind: "card", key: OLD_KEY },
+      relayer: client,
+    });
+
+    const relays = vi.mocked(client.relay).mock.calls.map(([payload]) => payload);
+    expect(relays[0]?.authorization).toBeDefined();
+    expect(relays[1]?.authorization).toBeUndefined();
+  });
+
   it("keeps going past a reverted batch", async () => {
     readCaliburDelegation.mockResolvedValue(true);
     const client = relayer();

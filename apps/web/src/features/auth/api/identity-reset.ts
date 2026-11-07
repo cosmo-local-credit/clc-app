@@ -60,7 +60,7 @@ export function clearIdentitySecrets(retain: RetainedSecretSlot): void {
   // A card replacement holds both cards' keys in memory. Its own switch to the
   // new card retains "private-key" and must keep them, since the old key still
   // has to sign; any teardown drops them.
-  if (retain === "none") useRotationSession.getState().clear();
+  if (retain !== "private-key") useRotationSession.getState().clear();
 }
 
 /**
