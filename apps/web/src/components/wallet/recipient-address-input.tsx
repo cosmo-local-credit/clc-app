@@ -1,4 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { BackendApiError } from "@clc/api/client/errors";
 import { recipientLabel, type RecipientIdentity } from "@clc/api/features/recipients/client";
 import { useEffect, useRef, useState } from "react";
 import { RiQrScan2Line } from "react-icons/ri";
@@ -84,19 +85,26 @@ export function RecipientAddressInput({
   const searchTerm = !directAddress && trimmedQuery !== "" ? trimmedQuery : null;
   const search = useRecipientSearch(searchTerm, allowPools);
   const currentSelection = selected?.query === trimmedQuery ? selected.identity : null;
-  const recipient: ResolvedRecipientAddress | null = directAddress
-    ? {
-        name: reverseResolution.data ? recipientLabel(reverseResolution.data) : null,
-        address: directAddress,
-        source: reverseResolution.data ? "reverse-name" : wasScanned ? "qr" : "manual",
-      }
-    : currentSelection
+  // A replaced sign-in card is still a valid address, but whoever compromised
+  // it can spend what arrives there, so it never resolves as a recipient.
+  const replacedCard =
+    reverseResolution.error instanceof BackendApiError &&
+    reverseResolution.error.kind === "card-replaced";
+  const recipient: ResolvedRecipientAddress | null = replacedCard
+    ? null
+    : directAddress
       ? {
-          name: recipientLabel(currentSelection),
-          address: currentSelection.address,
-          source: normalizedPhone ? "phone" : "alias",
+          name: reverseResolution.data ? recipientLabel(reverseResolution.data) : null,
+          address: directAddress,
+          source: reverseResolution.data ? "reverse-name" : wasScanned ? "qr" : "manual",
         }
-      : null;
+      : currentSelection
+        ? {
+            name: recipientLabel(currentSelection),
+            address: currentSelection.address,
+            source: normalizedPhone ? "phone" : "alias",
+          }
+        : null;
   const resolutionError = searchTerm ? search.error : null;
   const matches =
     searchTerm && !currentSelection
@@ -229,6 +237,11 @@ export function RecipientAddressInput({
       {resolutionError ? (
         <p className="mt-3 text-destructive text-xs" role="alert">
           <Trans>Couldn't resolve that recipient.</Trans>
+        </p>
+      ) : null}
+      {replacedCard ? (
+        <p className="mt-3 text-destructive text-xs" role="alert">
+          <Trans>This sign-in card was replaced. Ask its owner for their new address.</Trans>
         </p>
       ) : null}
     </div>

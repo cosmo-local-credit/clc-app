@@ -272,6 +272,18 @@ describe("pools client", () => {
     );
   });
 
+  it("lists a replaced sign-in card's pools by owner", async () => {
+    const owner = "0x8fd379246834eac74B8419FfdA202CF8051F7A03";
+    const fetcher = mockFetch({ ok: true, result: { pools: [] } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getOwnedPools({ perPage: 100, owner });
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/v2/users/me/owned-pools?perPage=100&owner=${owner}`),
+      expect.anything(),
+    );
+  });
+
   it("normalizes a null owner recovery catalog", async () => {
     vi.stubGlobal("fetch", mockFetch({ ok: true, result: { pools: null } }));
 

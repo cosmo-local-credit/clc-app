@@ -100,8 +100,6 @@ describe("ActivityPage", () => {
   it.each([
     ["deposited", "OUT", "Deposit", "To"],
     ["pool_payout", "IN", "Pay Out", "From"],
-    ["withdrawn", "NONE", "Pay Out", "To"],
-    ["fee_withdrawn", "IN", "Pay Out", "From"],
   ])(
     "renders %s with its explicit direction and matching details",
     async (kind, direction, label, relation) => {
@@ -118,7 +116,6 @@ describe("ActivityPage", () => {
         counterpartyAddress: pool,
         poolAddresses: [pool],
         poolName: "Community Pool",
-        initiatorAddress: ADDRESS,
         transfer: {
           tokenAddress: pool,
           tokenSymbol: "TEST",
@@ -139,13 +136,11 @@ describe("ActivityPage", () => {
       renderWithQueryClient(<ActivityPage address={ADDRESS} />);
       const row = await screen.findByRole("button", { name: new RegExp(label) });
       expect(row.textContent).toContain(relation);
-      if (direction === "NONE") expect(within(row).getByText("No balance change")).toBeTruthy();
       fireEvent.click(row);
       const dialog = screen.getByRole("dialog");
       expect(
         within(dialog).getByText(kind === "deposited" ? "Deposit into pool" : "Pay Out"),
       ).toBeTruthy();
-      if (direction === "NONE") expect(within(dialog).getByText("No balance change")).toBeTruthy();
       fireEvent.keyDown(document, { key: "Escape" });
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     },

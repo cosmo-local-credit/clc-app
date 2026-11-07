@@ -30,6 +30,16 @@ vi.mock("sonner", () => ({
   toast,
 }));
 
+const renderReceivePoster = vi.hoisted(() => vi.fn());
+vi.mock("./receive-poster", () => ({
+  renderReceivePoster,
+  RECEIVE_POSTER_WIDTH: 1080,
+  RECEIVE_POSTER_HEIGHT: 1440,
+}));
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => ({ data: null, fetchStatus: "idle" }),
+}));
+
 import { ReceivePage } from "./receive-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
@@ -39,6 +49,12 @@ const writeText = vi.fn().mockResolvedValue(undefined);
 beforeEach(() => {
   identity.data = null;
   qrCode.toDataURL.mockResolvedValue("data:image/png;base64,qr-code");
+  renderReceivePoster.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
+  Object.defineProperty(URL, "createObjectURL", {
+    value: vi.fn(() => "blob:poster"),
+    configurable: true,
+  });
+  Object.defineProperty(URL, "revokeObjectURL", { value: vi.fn(), configurable: true });
   Object.defineProperty(navigator, "clipboard", {
     value: { writeText },
     configurable: true,
@@ -122,5 +138,29 @@ describe("ReceivePage", () => {
       `ethereum:${ADDRESS}@${CHAIN_ID}`,
       expect.any(Object),
     );
+  });
+
+  it("opens the payment poster from Share, drawn from the receive QR and the username", async () => {
+    identity.data = { name: "Alice Example", alias: "alice" };
+    useConnectionMock.mockReturnValue({ address: ADDRESS });
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        <ReceivePage />
+      </QueryClientProvider>,
+    );
+
+    expect(screen.queryByText("Payment QR code")).toBeNull();
+    expect(renderReceivePoster).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /^share$/i }));
+
+    expect(await screen.findByRole("img", { name: "Payment QR code" })).toBeTruthy();
+    expect(renderReceivePoster.mock.calls[0]?.[0]).toMatchObject({
+      qrValue: `ethereum:${ADDRESS}@${CHAIN_ID}`,
+      name: "Alice Example",
+      identity: { title: "Alice Example", detail: "alice · 0x1a3E18…73563d" },
+    });
   });
 });

@@ -79,6 +79,41 @@ export function touchOwnerTier(owner: StorageOwner): void {
 }
 
 /**
+ * Hands one owner's tier to another, for an account that replaced its sign-in
+ * card: the address book and remembered filters belong to the person, and the
+ * person now signs in as `to`.
+ *
+ * Runs before the new identity resolves, so `use-identity-transition.ts` finds
+ * the tier already in place. A key `to` already holds is kept, not overwritten,
+ * and `from` is emptied either way so the replaced card's tier cannot linger.
+ */
+export function moveOwnerTier(from: StorageOwner, to: StorageOwner): void {
+  if (from === to) return;
+  const storage = getLocalStorage();
+  if (!storage) return;
+
+  const fromPrefix = ownerTierKeyPrefixFor(from);
+  const moving: string[] = [];
+  try {
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(fromPrefix)) moving.push(key);
+    }
+  } catch {
+    return;
+  }
+
+  const toPrefix = ownerTierKeyPrefixFor(to);
+  for (const key of moving) {
+    const target = `${toPrefix}${key.slice(fromPrefix.length)}`;
+    const value = readStorageItem(key);
+    if (value !== null && readStorageItem(target) === null) writeStorageItem(target, value);
+    removeStorageItem(key);
+  }
+  writeRegistry([to, ...readRegistry().filter((owner) => owner !== from && owner !== to)]);
+}
+
+/**
  * Drops the least recently used owner's tier so a quota-failed write can retry.
  *
  * Returns whether anything was actually freed, so a caller that retries on true

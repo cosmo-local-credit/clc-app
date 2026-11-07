@@ -47,7 +47,7 @@ export type PoolActivityEntry =
   | PoolSwapEntry
   | (PoolActivityBase & { kind: "mint"; leg: PoolActivityLeg })
   | (PoolActivityBase & {
-      kind: "transfer" | "withdrawal" | "fee-withdrawal" | "payout";
+      kind: "transfer" | "payout";
       direction: "IN" | "OUT";
       counterpartyAddress: string;
       leg: PoolActivityLeg;
@@ -66,7 +66,8 @@ export function poolActivityFromAccount(
         ? "IN"
         : "OUT";
   const movement = item.kind === "swapped" ? item.sent : item.transfer;
-  const counterparty = item.counterpartyAddress ?? item.initiatorAddress ?? "";
+  const initiatorAddress = item.kind === "swapped" ? item.initiatorAddress : undefined;
+  const counterparty = item.counterpartyAddress ?? initiatorAddress ?? "";
   const detail: PoolTransfer = {
     ...movement,
     id: item.id,
@@ -84,7 +85,7 @@ export function poolActivityFromAccount(
     txHash: item.txHash,
     dateBlock: item.dateBlock,
     success: item.success,
-    initiatorAddress: item.initiatorAddress,
+    initiatorAddress,
     detail,
   };
   if (item.kind === "swapped")
@@ -97,13 +98,11 @@ export function poolActivityFromAccount(
       protocolFee: item.protocolFee ?? null,
     };
   if (item.kind === "creation") return { ...base, kind: "mint", leg: movement };
-  const kind =
-    item.kind === "withdrawn"
-      ? "withdrawal"
-      : item.kind === "fee_withdrawn"
-        ? "fee-withdrawal"
-        : item.kind === "pool_payout"
-          ? "payout"
-          : "transfer";
-  return { ...base, kind, direction, counterpartyAddress: counterparty, leg: movement };
+  return {
+    ...base,
+    kind: item.kind === "pool_payout" ? "payout" : "transfer",
+    direction,
+    counterpartyAddress: counterparty,
+    leg: movement,
+  };
 }

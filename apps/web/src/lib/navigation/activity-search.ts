@@ -6,8 +6,6 @@ export const ACTIVITY_KIND_ORDER = [
   "received",
   "swapped",
   "deposited",
-  "withdrawn",
-  "fee_withdrawn",
   "pool_payout",
 ] as const;
 

@@ -93,16 +93,6 @@ export function PoolActivityDetailsSheet({
         <SheetContent className="max-h-[85svh] overflow-y-auto [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
             <Badge caps>{kind}</Badge>
-            {entry?.kind === "withdrawal" ? (
-              <p className="text-sm">
-                <Trans>Withdrawal</Trans>
-              </p>
-            ) : null}
-            {entry?.kind === "fee-withdrawal" ? (
-              <p className="text-sm">
-                <Trans>Fee withdrawal</Trans>
-              </p>
-            ) : null}
             <SheetTitle className="sr-only">
               <Trans>Pool activity details</Trans>
             </SheetTitle>

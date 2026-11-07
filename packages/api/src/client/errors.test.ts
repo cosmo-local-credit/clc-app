@@ -68,6 +68,8 @@ describe("classifyBackendError", () => {
     expect(classifyBackendError(200, "E06")).toBe("unauthenticated");
     expect(classifyBackendError(409, "E17")).toBe("conflict");
     expect(classifyBackendError(200, "E17")).toBe("conflict");
+    expect(classifyBackendError(410, "E20")).toBe("card-replaced");
+    expect(classifyBackendError(409, "E21")).toBe("passkey-moved");
   });
 
   it("treats an ok:false envelope with no known code as an application refusal", () => {

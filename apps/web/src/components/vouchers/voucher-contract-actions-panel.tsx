@@ -1,12 +1,16 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
-import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
+import {
+  voucherBurnAmountSchema,
+  voucherMintAmountSchema,
+} from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
-import { parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
+  RiFireLine,
   RiPencilLine,
   RiShieldKeyholeLine,
   RiSparkling2Line,
@@ -39,6 +43,11 @@ import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
 import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
+import {
+  useVoucherBurn,
+  useVoucherOwnerBalance,
+  voucherOwnerBalanceQueryKeys,
+} from "#/features/vouchers/hooks/use-voucher-burn";
 import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherOwnershipTransfer } from "#/features/vouchers/hooks/use-voucher-ownership-transfer";
 import { RetirementControl } from "#/components/retirement/retirement-control";
@@ -47,7 +56,7 @@ import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-dele
 
 import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
 
-type VoucherControlSheet = "details" | "mint" | "ownership";
+type VoucherControlSheet = "details" | "mint" | "burn" | "ownership";
 
 /**
  * Everything the issuer can change about one voucher, in a single group.
@@ -132,6 +141,14 @@ export function VoucherContractActionsPanel({
               label={t`Create vouchers`}
               onClick={() => setSheet("mint")}
             />
+            {/* `burn` takes from msg.sender, and clc-core's Safe policy does not allow it. */}
+            {contract.safeOwned ? null : (
+              <ActionRow
+                icon={<RiFireLine className="size-4" aria-hidden="true" />}
+                label={t`Destroy vouchers`}
+                onClick={() => setSheet("burn")}
+              />
+            )}
             <ActionRow
               icon={<RiUserSharedLine className="size-4" aria-hidden="true" />}
               label={t`Transfer ownership`}
@@ -175,6 +192,16 @@ export function VoucherContractActionsPanel({
             ownerAddress={contract.ownerAddress}
             safeOwned={contract.safeOwned}
           />
+          {contract.safeOwned ? null : (
+            <VoucherBurnSheet
+              open={sheet === "burn"}
+              onClose={() => setSheet(null)}
+              tokenAddress={contract.tokenAddress as `0x${string}`}
+              tokenSymbol={tokenSymbol}
+              tokenDecimals={contract.tokenDecimals}
+              ownerAddress={contract.ownerAddress}
+            />
+          )}
           <VoucherOwnershipTransferSheet
             open={sheet === "ownership"}
             onClose={() => setSheet(null)}
@@ -325,6 +352,127 @@ function VoucherMintSheet({
                   <Trans>Creating vouchers…</Trans>
                 ) : (
                   <Trans>Create vouchers</Trans>
+                )}
+              </Button>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
+  );
+}
+
+function VoucherBurnSheet({
+  open,
+  onClose,
+  tokenAddress,
+  tokenSymbol,
+  tokenDecimals,
+  ownerAddress,
+}: {
+  open: boolean;
+  onClose: () => void;
+  tokenAddress: `0x${string}`;
+  tokenSymbol: string;
+  tokenDecimals: number;
+  ownerAddress: `0x${string}`;
+}) {
+  const { t } = useLingui();
+  const queryClient = useQueryClient();
+  const delegationStatus = useCaliburDelegation(ownerAddress);
+  const burn = useVoucherBurn();
+  const reportError = useReportWriteError();
+  const balance = useVoucherOwnerBalance(tokenAddress, ownerAddress, open);
+  const form = useForm({
+    defaultValues: { amount: "" },
+    validators: {
+      onSubmit: z.object({
+        amount: voucherBurnAmountSchema(
+          tokenDecimals,
+          balance.data === undefined ? undefined : BigInt(balance.data),
+        ),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await burn.mutateAsync({
+          tokenAddress,
+          ownerAddress,
+          amountRaw: parseTokenAmount(value.amount, tokenDecimals),
+          includeAuthorization: delegationStatus === "not-delegated",
+        });
+        void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
+        void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
+        void queryClient.invalidateQueries({ queryKey: voucherOwnerBalanceQueryKeys.all });
+        toast.success(t`Voucher destruction submitted.`);
+        form.reset();
+        onClose();
+      } catch (error) {
+        if (reportError(error, t`Couldn't destroy vouchers.`)) onClose();
+      }
+    },
+  });
+
+  const pending = burn.isPending || delegationStatus === "checking" || balance.isLoading;
+  const tokenBalance =
+    balance.data === undefined
+      ? undefined
+      : `${formatTokenAmount(balance.data, tokenDecimals, tokenDecimals)} ${tokenSymbol}`;
+
+  return (
+    <SheetRoot
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="[&>div:first-child]:hidden">
+          <SheetHeader className="px-6 pt-5 pb-3">
+            <SheetTitle>
+              <Trans>Destroy vouchers</Trans>
+            </SheetTitle>
+          </SheetHeader>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
+          >
+            <div className="space-y-4 px-6 pb-3">
+              <form.Field name="amount">
+                {(field) => (
+                  <Field
+                    label={t`Destroy vouchers`}
+                    htmlFor="voucher-burn-amount"
+                    hint={tokenBalance === undefined ? tokenSymbol : t`Balance ${tokenBalance}`}
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id="voucher-burn-amount"
+                      dir="ltr"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      disabled={burn.isPending}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+            </div>
+            <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <Button type="submit" variant="destructive" tap className="w-full" pending={pending}>
+                {delegationStatus === "checking" ? (
+                  <Trans>Preparing wallet…</Trans>
+                ) : burn.isPending ? (
+                  <Trans>Destroying vouchers…</Trans>
+                ) : (
+                  <Trans>Destroy vouchers</Trans>
                 )}
               </Button>
             </SheetFooter>

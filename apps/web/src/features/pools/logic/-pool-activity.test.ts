@@ -61,27 +61,24 @@ describe("server-classified pool activity", () => {
     expect(entry.initiatorAddress).toBe(owner);
   });
 
-  it.each([
-    ["withdrawn", "withdrawal"],
-    ["fee_withdrawn", "fee-withdrawal"],
-    ["pool_payout", "payout"],
-  ] as const)("preserves %s instead of guessing its method", (kind, expected) => {
+  it("preserves pool_payout instead of guessing its method", () => {
     const entry = poolActivityFromAccount(
       {
         ...direct,
-        kind,
+        kind: "pool_payout",
         direction: "OUT",
         senderAddress: pool,
         recipientAddress: recipient,
         counterpartyAddress: recipient,
-        initiatorAddress: kind === "withdrawn" ? owner : undefined,
       },
       pool,
     );
-    expect(entry.kind).toBe(expected);
+    expect(entry.kind).toBe("payout");
     expect(entry.detail.senderAddress).toBe(pool);
     expect(entry.detail.recipientAddress).toBe(recipient);
-    expect(entry.initiatorAddress).toBe(kind === "withdrawn" ? owner : undefined);
+    expect(entry.initiatorAddress).toBeUndefined();
+    if (entry.kind === "swap" || entry.kind === "mint") throw new Error("expected direct movement");
+    expect(entry.leg.amount).toBe(leg.amount);
   });
 
   it("keeps issuance separate from deposits", () => {

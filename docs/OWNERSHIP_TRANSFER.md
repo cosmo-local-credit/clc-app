@@ -74,7 +74,10 @@ tooling/ownership-integration/run.sh
 Override `CLC_PROTOCOL_ARTIFACTS` / `CLC_CALIBUR_ARTIFACTS` if their `out/` folders
 are elsewhere. Six tests exercise signed delegated execution for all three
 pricing modes, including rollback of every earlier transfer when SwapPool's
-handover fails. Copied artifacts and Foundry output stay untracked.
+handover fails. Four more cover sign-in card replacement (`docs/AUTH.md`): the
+creator's fee address moving before SwapPool's handover, a sealed fee address
+that must be left out, a voucher and then its balance, and an expired voucher's
+balance that cannot move. Copied artifacts and Foundry output stay untracked.
 
 Backend tests (from `clc-core`):
 

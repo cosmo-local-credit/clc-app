@@ -16,7 +16,9 @@ import { addressUrl } from "#/lib/explorer";
 import { formatDateTime, initials } from "#/lib/format";
 import { cn } from "#/lib/utils";
 import { useAdminSession } from "#/features/auth/admin-session";
+import { KEY_ROTATION_ENABLED } from "#/lib/key-rotation-config";
 import { useApproveUser, useRejectUser, useUpdateUserRole } from "../use-admin-users";
+import { ReplaceCardDialog } from "./replace-card-dialog";
 
 /** Shown when an account has no name, so the title is never an empty line. */
 const UNNAMED = "Unnamed account";
@@ -59,9 +61,18 @@ export function AccountHeader({
   const updateRole = useUpdateUserRole();
   const session = useAdminSession();
   const [roleTarget, setRoleTarget] = useState<"ADMIN" | "USER" | null>(null);
+  const [replacingCard, setReplacingCard] = useState(false);
   const busy = approve.isPending || reject.isPending || updateRole.isPending;
   const canManageRoles =
     session.status === "authenticated" && isSuperAdminRole(session.operator.role);
+  // clc-core refuses the operator's own account and any superadmin's.
+  const canReplaceCard =
+    KEY_ROTATION_ENABLED &&
+    canManageRoles &&
+    account !== null &&
+    !isSuperAdminRole(account.role) &&
+    session.status === "authenticated" &&
+    session.operator.address.toLowerCase() !== account.ethereumAddress.toLowerCase();
 
   const name = account?.name?.trim() ? account.name : UNNAMED;
 
@@ -186,6 +197,17 @@ export function AccountHeader({
                 </Button>
               ) : null}
 
+              {canReplaceCard ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => setReplacingCard(true)}
+                >
+                  Move to a new card
+                </Button>
+              ) : null}
+
               {account.status !== "REJECTED" ? (
                 // "Ban user" over "Reject": the same endpoint serves both a
                 // never-approved signup and an account being shut out later, and only
@@ -206,6 +228,14 @@ export function AccountHeader({
           ) : null}
         </div>
       </div>
+
+      {account && replacingCard ? (
+        <ReplaceCardDialog
+          address={account.ethereumAddress}
+          name={account.name}
+          onClose={() => setReplacingCard(false)}
+        />
+      ) : null}
 
       {account && roleTarget ? (
         <ConfirmDialog

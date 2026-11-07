@@ -33,8 +33,6 @@ export function ActivityFilterSheet({
     received: t`Received`,
     swapped: t`Swapped`,
     deposited: t`Deposits`,
-    withdrawn: t`Withdrawals`,
-    fee_withdrawn: t`Fee withdrawals`,
     pool_payout: t`Pay Out`,
   };
 

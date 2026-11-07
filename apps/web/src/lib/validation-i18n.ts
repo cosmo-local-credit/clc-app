@@ -244,6 +244,21 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Supply has more decimal places than this voucher supports",
         message: "Supply has more decimal places than this voucher supports",
       });
+    case "Enter an amount greater than zero.":
+      return i18n._({
+        id: "Enter an amount greater than zero.",
+        message: "Enter an amount greater than zero.",
+      });
+    case "Enter an amount this voucher supports.":
+      return i18n._({
+        id: "Enter an amount this voucher supports.",
+        message: "Enter an amount this voucher supports.",
+      });
+    case "Amount exceeds your balance":
+      return i18n._({
+        id: "Amount exceeds your balance",
+        message: "Amount exceeds your balance",
+      });
     case "Message must be 500 characters or fewer":
       return i18n._({
         id: "Message must be 500 characters or fewer",

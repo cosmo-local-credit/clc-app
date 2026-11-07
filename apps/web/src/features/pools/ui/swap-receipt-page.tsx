@@ -185,7 +185,7 @@ export function SwapReceiptPage({
   };
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav">
       <ReceiptHeader title={t`Swapped`} />
       <div className="my-5 border border-border bg-card">
         {amountLabel ? (
@@ -374,7 +374,7 @@ function ReceiptShell({
   onDone?: () => void;
 }) {
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav">
       <ReceiptHeader icon={icon} title={title} amount={amount} message={message} />
       <div className="my-5 border border-border bg-card">
         {poolName ? (

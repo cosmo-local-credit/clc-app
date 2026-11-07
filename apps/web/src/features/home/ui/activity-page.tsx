@@ -9,7 +9,6 @@ import {
   RiChat1Line,
   RiCloseLine,
   RiSearchLine,
-  RiUserLine,
   RiSparkling2Line,
 } from "react-icons/ri";
 
@@ -289,14 +288,7 @@ function ActivityRow({
 
   const incoming = item.direction ? item.direction === "IN" : item.kind !== "sent";
   const created = item.kind === "creation";
-  const neutral = item.direction === "NONE";
-  const Icon = created
-    ? RiSparkling2Line
-    : neutral
-      ? RiUserLine
-      : incoming
-        ? RiArrowLeftDownLine
-        : RiArrowRightUpLine;
+  const Icon = created ? RiSparkling2Line : incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
   const transferDate = formatTransferDate(item.dateBlock);
   const uoaLabel = formatTransferUnitValue(item.transfer.uoaValue, item.transfer.uoa, locale);
   return (
@@ -306,7 +298,7 @@ function ActivityRow({
       onClick={onOpen}
     >
       <span
-        className={`flex size-7 shrink-0 items-center justify-center bg-muted ${created || neutral ? "text-foreground" : incoming ? "text-primary" : "text-destructive"}`}
+        className={`flex size-7 shrink-0 items-center justify-center bg-muted ${created ? "text-foreground" : incoming ? "text-primary" : "text-destructive"}`}
       >
         <Icon className="size-3.5" aria-hidden="true" />
       </span>
@@ -314,9 +306,7 @@ function ActivityRow({
         <p className="flex items-center gap-1.5 text-sm font-medium">
           {item.kind === "deposited" ? (
             <Trans>Deposit</Trans>
-          ) : item.kind === "withdrawn" ||
-            item.kind === "fee_withdrawn" ||
-            item.kind === "pool_payout" ? (
+          ) : item.kind === "pool_payout" ? (
             <Trans>Pay Out</Trans>
           ) : created ? (
             <Trans>Created</Trans>
@@ -336,16 +326,6 @@ function ActivityRow({
         </p>
         <p className="min-w-0 text-muted-foreground text-xs">
           <span className="block truncate">
-            {item.kind === "withdrawn" ? (
-              <>
-                <Trans>Withdrawal</Trans> ·{" "}
-              </>
-            ) : null}
-            {item.kind === "fee_withdrawn" ? (
-              <>
-                <Trans>Fee withdrawal</Trans> ·{" "}
-              </>
-            ) : null}
             {created ? (
               <Trans>New supply</Trans>
             ) : (
@@ -367,11 +347,6 @@ function ActivityRow({
             </span>
           ) : null}
         </p>
-        {neutral ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>No balance change</Trans>
-          </p>
-        ) : null}
       </div>
       <span className="shrink-0 text-end font-mono text-xs font-semibold">
         <span className="block">
@@ -393,14 +368,7 @@ function toTransferDetails(
   item: Exclude<AccountActivityItem, { kind: "swapped" }>,
 ): TransferDetails {
   return {
-    activityKind:
-      item.kind === "deposited" ||
-      item.kind === "withdrawn" ||
-      item.kind === "fee_withdrawn" ||
-      item.kind === "pool_payout"
-        ? item.kind
-        : undefined,
-    initiatorAddress: item.initiatorAddress,
+    activityKind: item.kind === "deposited" || item.kind === "pool_payout" ? item.kind : undefined,
     txHash: item.txHash,
     dateBlock: item.dateBlock,
     direction: item.direction ?? (item.kind === "sent" ? "OUT" : "IN"),

@@ -210,16 +210,6 @@ function EntrySubtitle({ entry }: { entry: PoolActivityEntry }) {
   if (entry.kind === "mint") return <Trans>New supply</Trans>;
   return (
     <>
-      {entry.kind === "withdrawal" ? (
-        <>
-          <Trans>Withdrawal</Trans> ·{" "}
-        </>
-      ) : null}
-      {entry.kind === "fee-withdrawal" ? (
-        <>
-          <Trans>Fee withdrawal</Trans> ·{" "}
-        </>
-      ) : null}
       {!entry.success ? (
         <>
           <Trans>Failed</Trans> ·{" "}

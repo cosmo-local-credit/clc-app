@@ -36,9 +36,9 @@ export function ProfileEditPage() {
   const profileQuery = useAuthProfile();
 
   return (
-    // No bottom padding: the form's save bar sits flush with the screen edge
-    // and carries the safe-area inset itself.
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
+    // Bottom padding is exactly the navigation's height: the save bar sits flush
+    // on top of it, and the navigation carries the safe-area inset.
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[var(--bottom-nav-offset)]">
       <BackChevron label={t`Settings`} to="/" search={{ tab: "settings" }} />
 
       <h1 className="mb-6 font-heading text-[1.75rem] font-bold leading-tight">
@@ -400,9 +400,9 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
           </div>
         </div>
 
-        {/* Pinned to the bottom of the screen so Save is reachable from any
-            field, and pushed there by mt-auto when the form is short. */}
-        <div className="sticky bottom-0 z-20 -mx-6 mt-auto border-border border-t bg-card px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {/* Pinned above the navigation so Save is reachable from any field,
+            and pushed there by mt-auto when the form is short. */}
+        <div className="sticky bottom-[var(--bottom-nav-offset)] z-20 -mx-6 mt-auto border-border border-t bg-card px-6 py-3">
           {submitError ? (
             <p role="alert" className="mb-2 text-destructive text-xs">
               {submitError}

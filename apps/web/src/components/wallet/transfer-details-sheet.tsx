@@ -30,10 +30,9 @@ import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { ShareReceiptButton } from "./share-receipt-button";
 
 export type TransferDetails = {
-  activityKind?: "deposited" | "withdrawn" | "fee_withdrawn" | "pool_payout";
-  initiatorAddress?: string;
+  activityKind?: "deposited" | "pool_payout";
   txHash: string;
-  direction: "IN" | "OUT" | "NONE";
+  direction: "IN" | "OUT";
   senderAddress: string;
   recipientAddress: string;
   tokenAddress: string;
@@ -65,9 +64,7 @@ export function TransferDetailsSheet({
   const badge =
     transfer?.activityKind === "deposited"
       ? t`Deposit into pool`
-      : transfer?.activityKind === "withdrawn" ||
-          transfer?.activityKind === "fee_withdrawn" ||
-          transfer?.activityKind === "pool_payout"
+      : transfer?.activityKind === "pool_payout"
         ? t`Pay Out`
         : created
           ? t`Created voucher`
@@ -119,21 +116,6 @@ export function TransferDetailsSheet({
         <SheetContent className="max-h-[85svh] overflow-y-auto [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
             <Badge caps>{badge}</Badge>
-            {transfer?.activityKind === "withdrawn" ? (
-              <p className="text-sm">
-                <Trans>Withdrawal</Trans>
-              </p>
-            ) : null}
-            {transfer?.activityKind === "fee_withdrawn" ? (
-              <p className="text-sm">
-                <Trans>Fee withdrawal</Trans>
-              </p>
-            ) : null}
-            {transfer?.direction === "NONE" ? (
-              <p className="text-sm">
-                <Trans>No balance change</Trans>
-              </p>
-            ) : null}
             <SheetTitle className="sr-only">
               <Trans>Transaction details</Trans>
             </SheetTitle>
@@ -154,7 +136,7 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="text-end font-mono text-xs font-semibold">
+                  <span className="min-w-0 break-words text-end font-mono text-xs font-semibold">
                     <span className="block">
                       {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                       <Link
@@ -196,14 +178,6 @@ export function TransferDetailsSheet({
                     />
                   )}
                 </div>
-                {transfer.activityKind && transfer.initiatorAddress ? (
-                  <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
-                    <span className="text-muted-foreground text-xs">
-                      <Trans>Initiated by</Trans>
-                    </span>
-                    <RecipientIdentityLabel address={transfer.initiatorAddress} showAddress />
-                  </div>
-                ) : null}
                 <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
                   <span className="text-muted-foreground text-xs">
                     <Trans>To</Trans>
@@ -229,11 +203,9 @@ export function TransferDetailsSheet({
                 lines={[
                   created
                     ? t`I created ${amountLabel}.`
-                    : transfer.direction === "NONE"
-                      ? t`I initiated a Pay Out of ${amountLabel} to ${recipientLabel}.`
-                      : transfer.direction === "OUT"
-                        ? t`I sent ${amountLabel} to ${recipientLabel}.`
-                        : t`I received ${amountLabel} from ${senderLabel}.`,
+                    : transfer.direction === "OUT"
+                      ? t`I sent ${amountLabel} to ${recipientLabel}.`
+                      : t`I received ${amountLabel} from ${senderLabel}.`,
                   ...(transfer.direction === "OUT" && recipientLabel !== transfer.recipientAddress
                     ? [`${t`Address`}: ${transfer.recipientAddress}`]
                     : []),

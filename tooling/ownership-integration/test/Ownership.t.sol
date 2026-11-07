@@ -9,6 +9,7 @@ interface Vm {
     function prank(address) external;
     function expectRevert() external;
     function sign(uint256, bytes32) external returns (uint8, bytes32, bytes32);
+    function warp(uint256) external;
 }
 
 struct Call {
@@ -42,6 +43,12 @@ interface IOwned {
 
 interface IPool {
     function feeAddress() external view returns (address);
+    function seal(uint8) external returns (uint8);
+}
+
+interface IVoucher {
+    function mintTo(address, uint256) external;
+    function balanceOf(address) external view returns (uint256);
 }
 
 contract FixtureProxy {
@@ -100,6 +107,10 @@ contract PoolOwnershipIntegrationTest {
     }
 
     function setupPool(uint256 mode, bool divided) internal returns (address[] memory targets) {
+        return setupPoolPaying(mode, divided, feeRecipient);
+    }
+
+    function setupPoolPaying(uint256 mode, bool divided, address fees) internal returns (address[] memory targets) {
         address registry = proxy(
             "TokenUniqueSymbolIndex",
             abi.encodeWithSignature(
@@ -126,7 +137,7 @@ contract PoolOwnershipIntegrationTest {
                 uint8(6),
                 divided ? address(this) : sender,
                 policy,
-                feeRecipient,
+                fees,
                 registry,
                 limiter,
                 quoter,
@@ -142,21 +153,37 @@ contract PoolOwnershipIntegrationTest {
         targets[targets.length - 1] = pool;
     }
 
+    function handover(address[] memory targets) internal view returns (Call[] memory calls) {
+        calls = new Call[](targets.length);
+        for (uint256 i; i < targets.length; i++) {
+            calls[i] = Call(targets[i], 0, abi.encodeCall(IOwned.transferOwnership, (recipient)));
+        }
+    }
+
     function signed(address[] memory targets)
         internal
         returns (SignedBatchedCall memory batch, bytes memory signature)
     {
-        Call[] memory calls = new Call[](targets.length);
-        bytes32[] memory hashes = new bytes32[](targets.length);
-        for (uint256 i; i < targets.length; i++) {
-            calls[i] = Call(targets[i], 0, abi.encodeCall(IOwned.transferOwnership, (recipient)));
+        return signedCalls(handover(targets), 0);
+    }
+
+    /// `nonce` is the root key's sequence: its key hash is zero.
+    function signedCalls(Call[] memory calls, uint256 nonce)
+        internal
+        returns (SignedBatchedCall memory batch, bytes memory signature)
+    {
+        bytes32[] memory hashes = new bytes32[](calls.length);
+        for (uint256 i; i < calls.length; i++) {
             hashes[i] = keccak256(
                 abi.encode(
-                    keccak256("Call(address to,uint256 value,bytes data)"), calls[i].to, 0, keccak256(calls[i].data)
+                    keccak256("Call(address to,uint256 value,bytes data)"),
+                    calls[i].to,
+                    calls[i].value,
+                    keccak256(calls[i].data)
                 )
             );
         }
-        batch = SignedBatchedCall(BatchedCall(calls, true), 0, bytes32(0), address(0), 0);
+        batch = SignedBatchedCall(BatchedCall(calls, true), nonce, bytes32(0), address(0), 0);
         bytes32 batchHash = keccak256(
             abi.encode(
                 keccak256("BatchedCall(Call[] calls,bool revertOnFailure)Call(address to,uint256 value,bytes data)"),
@@ -170,7 +197,7 @@ contract PoolOwnershipIntegrationTest {
                     "SignedBatchedCall(BatchedCall batchedCall,uint256 nonce,bytes32 keyHash,address executor,uint256 deadline)BatchedCall(Call[] calls,bool revertOnFailure)Call(address to,uint256 value,bytes data)"
                 ),
                 batchHash,
-                0,
+                nonce,
                 bytes32(0),
                 address(0),
                 0
@@ -225,5 +252,87 @@ contract PoolOwnershipIntegrationTest {
 
     function testOracleFailureRollsBackEveryOwner() public {
         rollback(2);
+    }
+
+    // Key rotation (GH #412): the old card's wallet hands everything it owns
+    // alone to the new card, in the batches planKeyRotationBatches makes.
+
+    function withFeeAddress(address pool, Call[] memory handoverCalls) internal view returns (Call[] memory calls) {
+        calls = new Call[](handoverCalls.length + 1);
+        calls[0] = Call(pool, 0, abi.encodeWithSignature("setFeeAddress(address)", recipient));
+        for (uint256 i; i < handoverCalls.length; i++) {
+            calls[i + 1] = handoverCalls[i];
+        }
+    }
+
+    function testRotationMovesTheCreatorsFeeAddressBeforeTheHandover() public {
+        address[] memory targets = setupPoolPaying(1, false, sender);
+        address pool = targets[targets.length - 1];
+        (SignedBatchedCall memory batch, bytes memory signature) =
+            signedCalls(withFeeAddress(pool, handover(targets)), 0);
+        wallet.execute(batch, signature);
+        for (uint256 i; i < targets.length; i++) {
+            require(IOwned(targets[i]).owner() == recipient, "handover incomplete");
+        }
+        require(IPool(pool).feeAddress() == recipient, "fees still go to the old card");
+    }
+
+    function testRotationLeavesASealedFeeAddressAndStillHandsOver() public {
+        address[] memory targets = setupPoolPaying(0, false, sender);
+        address pool = targets[targets.length - 1];
+        vm.prank(sender);
+        IPool(pool).seal(2);
+
+        (SignedBatchedCall memory sealedBatch, bytes memory sealedSignature) =
+            signedCalls(withFeeAddress(pool, handover(targets)), 0);
+        vm.expectRevert();
+        wallet.execute(sealedBatch, sealedSignature);
+
+        // The plan leaves setFeeAddress out of a sealed pool's group.
+        (SignedBatchedCall memory batch, bytes memory signature) = signed(targets);
+        wallet.execute(batch, signature);
+        for (uint256 i; i < targets.length; i++) {
+            require(IOwned(targets[i]).owner() == recipient, "handover incomplete");
+        }
+        require(IPool(pool).feeAddress() == sender, "sealed fee address moved");
+    }
+
+    function voucher(uint256 expiresAt) internal returns (address token) {
+        token = proxy(
+            "GiftableToken",
+            abi.encodeWithSignature(
+                "initialize(string,string,uint8,address,uint256)", "Voucher", "VCH", uint8(6), sender, expiresAt
+            )
+        );
+        vm.prank(sender);
+        IVoucher(token).mintTo(sender, 100);
+    }
+
+    function testRotationMovesAVoucherThenItsBalance() public {
+        address token = voucher(0);
+        Call[] memory ownership = new Call[](1);
+        ownership[0] = Call(token, 0, abi.encodeCall(IOwned.transferOwnership, (recipient)));
+        (SignedBatchedCall memory first, bytes memory firstSignature) = signedCalls(ownership, 0);
+        wallet.execute(first, firstSignature);
+
+        Call[] memory transfers = new Call[](1);
+        transfers[0] = Call(token, 0, abi.encodeWithSignature("transfer(address,uint256)", recipient, 100));
+        (SignedBatchedCall memory second, bytes memory secondSignature) = signedCalls(transfers, 1);
+        wallet.execute(second, secondSignature);
+
+        require(IOwned(token).owner() == recipient, "voucher still owned by the old card");
+        require(IVoucher(token).balanceOf(recipient) == 100, "balance not moved");
+        require(IVoucher(token).balanceOf(sender) == 0, "balance left on the old card");
+    }
+
+    function testRotationCannotMoveAnExpiredVoucherBalance() public {
+        address token = voucher(block.timestamp + 1 days);
+        vm.warp(block.timestamp + 2 days);
+        Call[] memory transfers = new Call[](1);
+        transfers[0] = Call(token, 0, abi.encodeWithSignature("transfer(address,uint256)", recipient, 100));
+        (SignedBatchedCall memory batch, bytes memory signature) = signedCalls(transfers, 0);
+        vm.expectRevert();
+        wallet.execute(batch, signature);
+        require(IVoucher(token).balanceOf(sender) == 100, "expired balance moved");
     }
 }

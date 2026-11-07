@@ -65,14 +65,6 @@ describe("PoolActivityDetailsSheet", () => {
     ["Created", { ...base, kind: "mint", leg }],
     ["Deposit", { ...base, kind: "transfer", direction: "IN", counterpartyAddress: TRADER, leg }],
     ["Pay Out", { ...base, kind: "transfer", direction: "OUT", counterpartyAddress: TRADER, leg }],
-    [
-      "Pay Out",
-      { ...base, kind: "withdrawal", direction: "OUT", counterpartyAddress: TRADER, leg },
-    ],
-    [
-      "Pay Out",
-      { ...base, kind: "fee-withdrawal", direction: "OUT", counterpartyAddress: TRADER, leg },
-    ],
     ["Pay Out", { ...base, kind: "payout", direction: "OUT", counterpartyAddress: TRADER, leg }],
   ])("titles the sheet %s", (title, entry) => {
     render(

@@ -5,6 +5,7 @@ import {
   safeTransactionSchema,
   type SafeTransaction,
 } from "@clc/core/features/safe/logic";
+import { getAddress } from "viem";
 import { z } from "zod";
 import type { HttpClient } from "../../client/http-client";
 
@@ -48,10 +49,18 @@ export function createSafeClient(http: HttpClient) {
       );
     },
     async propose(input: ProposeSafeTransactionInput) {
+      // The Transaction Service rejects an address that is not EIP-55. The
+      // SafeTx hash is over the 20 bytes, so the checksum does not change it.
+      const tx = {
+        ...input.tx,
+        to: getAddress(input.tx.to),
+        gasToken: getAddress(input.tx.gasToken),
+        refundReceiver: getAddress(input.tx.refundReceiver),
+      };
       return safeProposalSchema.parse(
         await http.request<unknown>("/api/v2/safe/proposals", {
           method: "POST",
-          body: JSON.stringify(input),
+          body: JSON.stringify({ ...input, tx }),
         }),
       );
     },
