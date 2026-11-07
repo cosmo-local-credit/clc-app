@@ -70,8 +70,6 @@ export type ActivityKind =
   | "received"
   | "swapped"
   | "deposited"
-  | "withdrawn"
-  | "fee_withdrawn"
   | "pool_payout";
 
 export type ActivityLeg = {
@@ -87,12 +85,9 @@ export type ActivityLeg = {
 
 type DirectAccountActivityItem = {
   kind: Exclude<ActivityKind, "swapped">;
-  /** Nominal withdrawal debit; transfer.amount can be smaller after token tax. */
-  nominalAmount?: string;
-  direction?: "IN" | "OUT" | "NONE";
+  direction?: "IN" | "OUT";
   poolAddresses?: string[];
   poolName?: string;
-  initiatorAddress?: string;
   id: number;
   txHash: string;
   dateBlock: string;

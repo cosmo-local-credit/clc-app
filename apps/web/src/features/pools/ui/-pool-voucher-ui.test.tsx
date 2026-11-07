@@ -802,8 +802,7 @@ describe("pool voucher UI", () => {
       {
         ...base,
         id: 2,
-        kind: "withdrawn",
-        nominalAmount: "6000000",
+        kind: "pool_payout",
         direction: "OUT",
         senderAddress: POOL_ADDRESS,
         recipientAddress: recipient,
@@ -813,18 +812,10 @@ describe("pool voucher UI", () => {
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="activity" />);
     const panel = await screen.findByRole("tabpanel");
     expect(await within(panel).findByRole("button", { name: /Deposit.*5 USDC/ })).toBeTruthy();
-    const payout = await within(panel).findByRole("button", { name: /Pay Out.*Withdrawal/ });
+    const payout = await within(panel).findByRole("button", { name: /Pay Out.*5 USDC/ });
     expect(payout.textContent).toContain("−5 USDC");
     fireEvent.click(payout);
     expect(within(screen.getByRole("dialog")).getByText("Pay Out")).toBeTruthy();
-    expect(
-      within(screen.getByRole("dialog")).getByText("Withdrawn from pool").parentElement
-        ?.textContent,
-    ).toContain("6 USDC");
-    expect(
-      within(screen.getByRole("dialog")).getByText("Received by recipient").parentElement
-        ?.textContent,
-    ).toContain("5 USDC");
     fireEvent.keyDown(document, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(within(panel).getByRole("button", { name: "Filters" }));
