@@ -17,12 +17,21 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
 vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
   useAssetOwner: (_address: string, owner: string | null) => owner,
 }));
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render as renderBase,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { offeringKeys } from "@clc/api/features/offerings/queries";
 import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { UserPool } from "@clc/api/features/pools/client";
+import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 
 const OWNER = "0xDeF0000000000000000000000000000000000456";
 const OTHER = "0x9999999999999999999999999999999999999999";
@@ -58,6 +67,12 @@ const mocks = vi.hoisted(() => ({
       | undefined,
   },
   updateProfile: vi.fn(),
+  vouchersResult: {
+    vouchers: [] as PoolVoucher[],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -86,12 +101,7 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
-  usePoolVouchersWithStatus: () => ({
-    vouchers: [],
-    isPending: false,
-    isError: false,
-    refetch: vi.fn(),
-  }),
+  usePoolVouchersWithStatus: () => mocks.vouchersResult,
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
@@ -209,6 +219,16 @@ vi.mock("#/components/ui/markdown-editor", async () => {
 
 import { PoolDetailPage } from "./pool-detail-page";
 
+let queryClient: QueryClient;
+
+function render(ui: ReactNode) {
+  return renderBase(ui, {
+    wrapper: ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    ),
+  });
+}
+
 function pool(overrides: Partial<UserPool> = {}): UserPool {
   return {
     id: "7",
@@ -259,6 +279,10 @@ const savedProfile = {
 };
 
 beforeEach(() => {
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  mocks.vouchersResult.vouchers = [];
+  mocks.vouchersResult.isPending = false;
+  mocks.vouchersResult.isError = false;
   mocks.poolResult.data = pool();
   mocks.poolResult.privateInfo = undefined;
   mocks.updateProfile.mockReset();
@@ -266,9 +290,54 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  queryClient.clear();
   mocks.auth.isAuthenticated = true;
   mocks.auth.isLoading = false;
   mocks.auth.session = { address: OWNER, chainId: 100 };
+});
+
+describe("PoolDetailPage Offers refresh", () => {
+  const voucher = (tokenAddress: string) => ({ tokenAddress, active: true }) as PoolVoucher;
+
+  it("refreshes this pool's Offers when vouchers are added or removed, without a reload", async () => {
+    const key = offeringKeys.byPoolInfinite(ADDRESS, 20);
+    const otherKey = offeringKeys.byPoolInfinite(OTHER, 20);
+    queryClient.setQueryData(key, { pages: [], pageParams: [] });
+    queryClient.setQueryData(otherKey, { pages: [], pageParams: [] });
+    const view = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    await waitFor(() => expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true));
+
+    for (const vouchers of [[voucher(OWNER), voucher(OTHER)], [voucher(OTHER)], []]) {
+      queryClient.setQueryData(key, { pages: [], pageParams: [] });
+      mocks.vouchersResult.vouchers = vouchers;
+      view.rerender(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+      await waitFor(() => expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true));
+      expect(queryClient.getQueryState(otherKey)?.isInvalidated).toBe(false);
+    }
+  });
+
+  it("waits for the complete voucher list and ignores order, casing, and metadata changes", async () => {
+    const key = offeringKeys.byPoolInfinite(ADDRESS, 20);
+    queryClient.setQueryData(key, { pages: [], pageParams: [] });
+    mocks.vouchersResult.vouchers = [voucher(OWNER)];
+    mocks.vouchersResult.isPending = true;
+    const view = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    expect(queryClient.getQueryState(key)?.isInvalidated).toBe(false);
+
+    mocks.vouchersResult.vouchers.push(voucher(OTHER));
+    mocks.vouchersResult.isPending = false;
+    view.rerender(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    await waitFor(() => expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true));
+
+    queryClient.setQueryData(key, { pages: [], pageParams: [] });
+    mocks.vouchersResult.vouchers = [
+      voucher(OTHER),
+      { ...voucher(OWNER.toLowerCase()), name: "Updated name" },
+    ];
+    view.rerender(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    await act(async () => {});
+    expect(queryClient.getQueryState(key)?.isInvalidated).toBe(false);
+  });
 });
 
 describe("PoolDetailPage pool details editor", () => {

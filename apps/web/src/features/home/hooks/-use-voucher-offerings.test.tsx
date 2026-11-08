@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
@@ -6,11 +6,13 @@ import { offeringKeys } from "@clc/api/features/offerings/queries";
 
 import {
   useCurrentVoucherOfferingsInfinite,
+  usePoolOfferingsInfinite,
   useVoucherOfferingsInfinite,
 } from "./use-voucher-offerings";
 
 const VOUCHER_ADDRESS = "0x4444444444444444444444444444444444444444";
 const SELLER_ADDRESS = "0x6666666666666666666666666666666666666666";
+const POOL_ADDRESS = "0x7777777777777777777777777777777777777777";
 
 function newClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -44,6 +46,8 @@ function offering(id: number) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
+  focusManager.setFocused(undefined);
 });
 
 describe("useVoucherOfferingsInfinite", () => {
@@ -109,5 +113,97 @@ describe("useVoucherOfferingsInfinite", () => {
       expect.stringContaining(`/api/v2/vouchers/${VOUCHER_ADDRESS}/offerings`),
       expect.objectContaining({ cache: "no-store", credentials: "omit", method: "GET" }),
     );
+  });
+});
+
+describe("usePoolOfferingsInfinite", () => {
+  it("refreshes a cached empty result when returning to the pool's Offers tab", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response({ offerings: [], first: 0, last: 0 }))
+      .mockResolvedValue(response({ offerings: [offering(10)], first: 10, last: 10 }));
+    vi.stubGlobal("fetch", fetcher);
+    const client = newClient();
+    const provider = wrapper(client);
+    const firstVisit = renderHook(() => usePoolOfferingsInfinite(POOL_ADDRESS), {
+      wrapper: provider,
+    });
+    await waitFor(() => expect(firstVisit.result.current.isSuccess).toBe(true));
+    expect(firstVisit.result.current.data?.pages[0]?.offerings).toEqual([]);
+    firstVisit.unmount();
+
+    // The same browser session and query cache survive the tab switch.
+    const nextVisit = renderHook(() => usePoolOfferingsInfinite(POOL_ADDRESS), {
+      wrapper: provider,
+    });
+    await waitFor(() => expect(nextVisit.result.current.data?.pages[0]?.offerings).toHaveLength(1));
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher).toHaveBeenLastCalledWith(
+      expect.stringContaining(`/api/v2/pools/${POOL_ADDRESS}/offerings`),
+      expect.objectContaining({ cache: "no-store", credentials: "omit", method: "GET" }),
+    );
+    nextVisit.unmount();
+    client.clear();
+  });
+
+  it("does not poll while browsing and still refreshes on focus", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response({ offerings: [], first: 0, last: 0 }))
+      .mockResolvedValue(response({ offerings: [offering(10)], first: 10, last: 10 }));
+    vi.stubGlobal("fetch", fetcher);
+    vi.useFakeTimers();
+    focusManager.setFocused(true);
+    const client = newClient();
+    const view = renderHook(() => usePoolOfferingsInfinite(POOL_ADDRESS), {
+      wrapper: wrapper(client),
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(view.result.current.data?.pages[0]?.offerings).toEqual([]);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_001);
+    });
+    expect(view.result.current.data?.pages[0]?.offerings).toEqual([]);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+
+    act(() => focusManager.setFocused(false));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      focusManager.setFocused(true);
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(view.result.current.data?.pages[0]?.offerings).toHaveLength(1);
+
+    view.unmount();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    client.clear();
+  });
+
+  it("does not fetch or poll without a pool address", async () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    vi.useFakeTimers();
+    focusManager.setFocused(true);
+    const client = newClient();
+    const view = renderHook(() => usePoolOfferingsInfinite(undefined), {
+      wrapper: wrapper(client),
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+    expect(view.result.current.fetchStatus).toBe("idle");
+    expect(fetcher).not.toHaveBeenCalled();
+    view.unmount();
+    client.clear();
   });
 });

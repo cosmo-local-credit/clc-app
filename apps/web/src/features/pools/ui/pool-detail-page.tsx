@@ -1,8 +1,10 @@
 import type { PoolVoucher } from "@clc/api/features/pools/client";
+import { invalidatePoolOfferings } from "@clc/api/features/offerings/cache";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   RiAddLine,
   RiArrowLeftRightLine,
@@ -81,6 +83,7 @@ export function PoolDetailPage({
   wantId?: string;
 }) {
   const { t } = useLingui();
+  const queryClient = useQueryClient();
   const auth = useAuthStatus();
   const poolQuery = useUserPoolByAddress(
     poolAddress,
@@ -108,6 +111,19 @@ export function PoolDetailPage({
   });
   const poolVouchers = poolVouchersQuery.vouchers;
   const vouchers = poolVouchers.filter((voucher) => voucher.active);
+  // Core can index membership after the write-triggered refresh. Reuse this
+  // completed list to refresh Offers when its voucher addresses change.
+  const voucherMembership =
+    pool && !poolVouchersQuery.isPending && !poolVouchersQuery.isError
+      ? vouchers
+          .map((voucher) => voucher.tokenAddress.toLowerCase())
+          .sort()
+          .join(",")
+      : undefined;
+  useEffect(() => {
+    if (voucherMembership === undefined) return;
+    void invalidatePoolOfferings(queryClient, poolAddress);
+  }, [poolAddress, queryClient, voucherMembership]);
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
     auth.isAuthenticated && !!pool && (isAdminRole(auth.session?.role) || isPoolOwner);
