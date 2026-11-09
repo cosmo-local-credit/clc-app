@@ -134,9 +134,6 @@ export function ActivityDesk({
     () => activityQuery.data?.pages.flatMap((page) => page.activity) ?? [],
     [activityQuery.data],
   );
-  // The voucher and range filters only hide loaded rows; search and type
-  // filters change which rows load, so those pages are not the whole feed.
-  const isNew = useActivityVisit(settled === "" && types.length === 0 ? loaded : undefined);
   const vouchers = useMemo(() => activityVouchers(loaded), [loaded]);
   // The window is measured from when the range was picked, not every render.
   const rangeStart = useMemo(() => activityRangeStart(filters.range, Date.now()), [filters.range]);
@@ -173,6 +170,9 @@ export function ActivityDesk({
   const locale = i18n.locales?.[0] ?? i18n.locale;
   const isFiltered =
     settled !== "" || types.length > 0 || filters.voucher !== undefined || rangeStart !== null;
+  const isNew = useActivityVisit(
+    searchReady && activityQuery.isSuccess && !isFiltered ? activity : undefined,
+  );
   const rangeLabels: Record<ActivityRange, string> = {
     "7d": t`Last 7 days`,
     "30d": t`Last 30 days`,

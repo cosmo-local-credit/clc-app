@@ -66,7 +66,9 @@ export function ActivityPage({
     [activityQuery.data],
   );
   const isFiltered = settled !== "" || types.length > 0;
-  const isNew = useActivityVisit(isFiltered ? undefined : activity);
+  const isNew = useActivityVisit(
+    searchReady && activityQuery.isSuccess && !isFiltered ? activity : undefined,
+  );
 
   useEffect(() => setDraftQuery(query), [query]);
   useEffect(() => {

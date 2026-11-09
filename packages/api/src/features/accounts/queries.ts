@@ -54,9 +54,17 @@ export const accountKeys = {
       q,
       ...types,
     ] as const,
-  /** The newest unfiltered activity page alone, for an unread count that polls. */
-  activityLatest: (address: string, perPage: number) =>
-    ["clc", "accounts", "activity", "latest", address.toLowerCase(), perPage] as const,
+  /** Latest activity through the saved seen block, independent of the screen's pages. */
+  activityLatest: (address: string, perPage: number, since?: string) =>
+    [
+      "clc",
+      "accounts",
+      "activity",
+      "latest",
+      address.toLowerCase(),
+      perPage,
+      since ?? null,
+    ] as const,
 
   /**
    * One cursor page of transfers, for a table that pages rather than one that
@@ -220,21 +228,45 @@ export function accountActivityInfiniteQueryOptions(
 }
 
 /**
- * The newest page of activity as a single page, not an infinite list.
+ * Latest activity back through `since`, including every row in that block.
  *
- * An unread count polls while the person is elsewhere in the app. Polling the
- * infinite read would refetch every page the Activity screen loaded, so the
- * count reads its own first page under its own key.
+ * Without a saved marker, only the first page is needed to establish a baseline.
+ * Subsequent reads follow cursors until they pass the seen block or exhaust the
+ * feed, so outgoing rows cannot push an unread receipt out of the count. This
+ * window is independent of the Activity screen's loaded history and filters.
  */
 export function accountActivityLatestQueryOptions(
   accounts: AccountsClient,
   address: string | undefined,
   perPage: number,
+  since?: string,
 ) {
   return queryOptions({
-    queryKey: accountKeys.activityLatest(address ?? "none", perPage),
-    queryFn: ({ signal }) =>
-      accounts.getAccountActivity({ address: requireAddress(address), perPage }, signal),
+    queryKey: accountKeys.activityLatest(address ?? "none", perPage, since),
+    queryFn: async ({ signal }) => {
+      const accountAddress = requireAddress(address);
+      const first = await accounts.getAccountActivity({ address: accountAddress, perPage }, signal);
+      if (!since) return first;
+
+      const boundary = Date.parse(since);
+      const activity = [...first.activity];
+      const cursors = new Set<number>();
+      let page = first;
+      while (
+        page.activity.length >= perPage &&
+        page.last !== undefined &&
+        page.activity.every((item) => Date.parse(item.dateBlock) >= boundary)
+      ) {
+        if (cursors.has(page.last)) throw new Error("Activity pagination did not advance.");
+        cursors.add(page.last);
+        page = await accounts.getAccountActivity(
+          { address: accountAddress, perPage, cursor: page.last, next: true },
+          signal,
+        );
+        activity.push(...page.activity);
+      }
+      return { ...first, activity, last: page.last };
+    },
     enabled: Boolean(address),
   });
 }

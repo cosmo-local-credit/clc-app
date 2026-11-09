@@ -21,7 +21,7 @@ import {
 import { accountsClient } from "#/lib/api/accounts";
 import type { StorageOwner } from "#/lib/storage/owner-tier-key";
 
-/** The rows the count looks at: one page, so the badge tops out at this many. */
+/** Page size for the unread window, which is read back through the seen block. */
 const LATEST_PAGE_SIZE = 20;
 const LATEST_POLL_MS = 30_000;
 
@@ -30,7 +30,7 @@ const INBOX_CHANGED_EVENT = "clc-notification-inbox-changed";
 
 /**
  * How many incoming Activity rows arrived since the person last opened
- * Activity, read from the newest page and a marker in `localStorage`.
+ * Activity, read back through the marker saved in `localStorage`.
  *
  * Guests and an undecided session count nothing. The first successful read for
  * an owner with no marker seeds one silently, so a new device does not open on
@@ -41,9 +41,11 @@ export function useActivityUnseen() {
   const owner = useStorageOwner();
   const address = auth.isAuthenticated ? auth.address : undefined;
   const enabled = Boolean(address) && owner !== null;
+  const marker = useSeenMarker(owner);
+  const since = marker?.at;
   const queryClient = useQueryClient();
   const latest = useQuery({
-    ...accountActivityLatestQueryOptions(accountsClient, address, LATEST_PAGE_SIZE),
+    ...accountActivityLatestQueryOptions(accountsClient, address, LATEST_PAGE_SIZE, since),
     ...transientBackendReadQueryPolicy,
     staleTime: 4_000,
     refetchOnReconnect: true,
@@ -52,7 +54,6 @@ export function useActivityUnseen() {
     refetchIntervalInBackground: false,
     enabled,
   });
-  const marker = useSeenMarker(owner);
   const items = latest.data?.activity;
 
   useEffect(() => {
@@ -68,48 +69,47 @@ export function useActivityUnseen() {
       accountsClient,
       address,
       LATEST_PAGE_SIZE,
+      since,
     );
     const refresh = () => void queryClient.invalidateQueries({ queryKey });
     window.addEventListener(INBOX_CHANGED_EVENT, refresh);
     return () => window.removeEventListener(INBOX_CHANGED_EVENT, refresh);
-  }, [address, enabled, queryClient]);
-
-  /** Marks the newest page as seen, plus any rows the caller has on screen. */
-  const markSeen = useCallback(
-    (shown: readonly AccountActivityItem[] = []) => {
-      if (!owner || !items) return;
-      const current = readSeenMarker(owner);
-      const next = advanceSeenMarker([...items, ...shown], current);
-      if (next !== current) writeSeenMarker(owner, next);
-    },
-    [owner, items],
-  );
+  }, [address, enabled, queryClient, since]);
 
   const count =
     enabled && address && marker && items ? countUnseenIncoming(items, marker, address) : 0;
-  return { count, owner, address, items, markSeen };
+  return { count };
 }
 
 /**
- * The Activity screen's side of the count: opening it clears the badge, and
- * the rows that were unread stay marked for the rest of the visit.
+ * Successfully displayed, unfiltered Activity advances the seen marker while
+ * the document is visible. Unread rows keep their dots for the whole visit.
  *
- * `shown` is the screen's unfiltered list, or nothing while a search or filter
- * narrows it. The screen polls faster than the badge, so a row can appear there
- * before the newest page has it; marking only the newest page would leave that
- * row to come back as unread after the person has seen it.
+ * `shown` is absent while the feed is pending, failed or filtered. The badge's
+ * independent request never acknowledges rows on behalf of this screen.
  */
 export function useActivityVisit(shown?: readonly AccountActivityItem[]) {
-  const { owner, address, items, markSeen } = useActivityUnseen();
+  const auth = useAuthStatus();
+  const owner = useStorageOwner();
+  const address = auth.isAuthenticated ? auth.address : undefined;
   const [before, setBefore] = useState<{ owner: StorageOwner; marker: SeenMarker | null } | null>(
     null,
   );
 
   useEffect(() => {
-    if (!owner || !items) return;
-    if (before?.owner !== owner) setBefore({ owner, marker: readSeenMarker(owner) });
-    markSeen(shown);
-  }, [before?.owner, items, markSeen, owner, shown]);
+    if (!owner || !address) return;
+    const acknowledge = () => {
+      if (document.visibilityState !== "visible") return;
+      const marker = readSeenMarker(owner);
+      setBefore((current) => (current?.owner === owner ? current : { owner, marker }));
+      if (!shown) return;
+      const next = advanceSeenMarker(shown, marker);
+      if (next !== marker) writeSeenMarker(owner, next);
+    };
+    acknowledge();
+    document.addEventListener("visibilitychange", acknowledge);
+    return () => document.removeEventListener("visibilitychange", acknowledge);
+  }, [address, owner, shown]);
 
   const baseline = before && before.owner === owner ? before.marker : null;
   return useCallback(
