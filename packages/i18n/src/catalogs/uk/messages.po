@@ -77,7 +77,7 @@ msgstr "{count, plural, one {# допис} few {# дописи} many {# допи
 #~ msgstr "Оберіть бажану валюту"
 
 #. placeholder {0}: activity.length
-#: apps/web/src/desktop/activity/activity-desk.tsx:465
+#: apps/web/src/desktop/activity/transactions-desk.tsx:473
 #: apps/web/src/features/home/ui/activity-page.tsx:157
 msgid "{0, plural, one {# activity item shown.} other {# activity items "
 "shown.}}"
@@ -513,6 +513,7 @@ msgid "About Cosmo-Local Credit"
 msgstr "Про Cosmo-Local Credit"
 
 #: apps/web/src/components/terms-acceptance-field.tsx:29
+#: apps/web/src/desktop/messaging/thread-desk.tsx:177
 #: apps/web/src/features/messaging/ui/thread-page.tsx:100
 msgid "Accept"
 msgstr "Прийняти"
@@ -585,14 +586,14 @@ msgstr "Активний"
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
-#: apps/web/src/desktop/activity/activity-desk.tsx:340
-#: apps/web/src/desktop/activity/activity-desk.tsx:505
+#: apps/web/src/desktop/activity/activity-header.tsx:29
+#: apps/web/src/desktop/activity/transactions-desk.tsx:513
 #: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:221
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:877
 #: apps/web/src/desktop/pools/pool-main.tsx:440
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:133
+#: apps/web/src/desktop/shell/sidebar.tsx:134
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
@@ -605,16 +606,17 @@ msgstr "Активний"
 msgid "Activity"
 msgstr "Активність"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 msgid "Activity not found."
 msgstr "Запис активності не знайдено."
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:32
+#: apps/web/src/desktop/activity/activity-header.tsx:57
 msgid "Activity sections"
 msgstr "Розділи активності"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:136
+#: apps/web/src/desktop/shell/sidebar.tsx:137
 msgid "Activity, {unreadActivity, plural, one {# new} other {# new}}"
 msgstr "Активність, {unreadActivity, plural, one {# нове} few {# нові} many {# "
 "нових} other {# нового}}"
@@ -660,6 +662,7 @@ msgid "Add a phone number to your profile to use MPESA."
 msgstr "Додайте номер телефону до профілю, щоб користуватися MPESA."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:66
+#: apps/web/src/desktop/messaging/composer-desk.tsx:80
 #: apps/web/src/features/messaging/ui/message-composer.tsx:93
 msgid "Add a photo"
 msgstr "Додати фотографію"
@@ -794,8 +797,8 @@ msgid "Address book"
 msgstr "Адресна книга"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:588
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:31
 #: apps/web/src/desktop/wallet/receive-desk.tsx:47
@@ -852,7 +855,7 @@ msgstr "Сільське господарство"
 
 #: apps/web/src/components/market-bar.tsx:205
 #: apps/web/src/components/market-bar.tsx:264
-#: apps/web/src/desktop/activity/activity-desk.tsx:350
+#: apps/web/src/desktop/activity/transactions-desk.tsx:358
 #: apps/web/src/desktop/market/market-toolbar.tsx:31
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:964
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:399
@@ -876,8 +879,8 @@ msgstr "Усі пули"
 msgid "All selected"
 msgstr "Усі вибрані"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:412
-#: apps/web/src/desktop/activity/activity-desk.tsx:416
+#: apps/web/src/desktop/activity/transactions-desk.tsx:420
+#: apps/web/src/desktop/activity/transactions-desk.tsx:424
 msgid "All time"
 msgstr "Увесь час"
 
@@ -910,7 +913,7 @@ msgstr "Перед надсиланням завжди перевіряйте, �
 #~ "безпеці."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/desktop/activity/activity-desk.tsx:294
+#: apps/web/src/desktop/activity/transactions-desk.tsx:302
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:395
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:919
@@ -989,7 +992,7 @@ msgstr "Уже триває інше зчитування картки. Спро
 msgid "Any selected"
 msgstr "Будь-який вибраний"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:389
+#: apps/web/src/desktop/activity/transactions-desk.tsx:397
 msgid "Any voucher"
 msgstr "Будь-який ваучер"
 
@@ -1070,10 +1073,12 @@ msgstr "Ви впевнені, що хочете подати запит на в
 msgid "Art"
 msgstr "Мистецтво"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:124
 #: apps/web/src/features/messaging/ui/thread-page.tsx:211
 msgid "Ask Support anything."
 msgstr "Запитайте Підтримку про будь-що."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:229
 #: apps/web/src/features/messaging/ui/thread-page.tsx:156
 msgid "Ask to talk again"
 msgstr "Попросити поновити розмову"
@@ -1113,11 +1118,12 @@ msgstr "Очікує схвалення"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
-#: apps/web/src/components/messaging/new-message-sheet.tsx:204
+#: apps/web/src/components/messaging/new-message-sheet.tsx:157
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
 #: apps/web/src/desktop/market/place-panel.tsx:122
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:91
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1202,11 +1208,14 @@ msgstr "Опис профілю має містити не більше 500 си
 msgid "Biodiversity"
 msgstr "Біорізноманіття"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:184
 msgid "Block"
 msgstr "Заблокувати"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
 msgid "Block this person?"
 msgstr "Заблокувати цю людину?"
@@ -1293,6 +1302,7 @@ msgstr "Доступ до камери заборонено."
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:434
 #: apps/web/src/desktop/account/profile-desk.tsx:443
 #: apps/web/src/desktop/account/settings-desk.tsx:176
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:365
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:434
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:465
@@ -1776,7 +1786,7 @@ msgid "Clear filter"
 msgstr "Очистити фільтр"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:115
-#: apps/web/src/desktop/activity/activity-desk.tsx:532
+#: apps/web/src/desktop/activity/transactions-desk.tsx:540
 #: apps/web/src/desktop/market/market-list-desk.tsx:410
 #: apps/web/src/desktop/market/market-notices.tsx:198
 #: apps/web/src/desktop/market/market-notices.tsx:266
@@ -1813,7 +1823,7 @@ msgstr "Очистити місце"
 #: apps/web/src/components/catalog-filter-controls.tsx:476
 #: apps/web/src/components/market-search.tsx:73
 #: apps/web/src/components/market-search.tsx:180
-#: apps/web/src/desktop/activity/activity-desk.tsx:445
+#: apps/web/src/desktop/activity/transactions-desk.tsx:453
 #: apps/web/src/desktop/market/market-search-field.tsx:131
 #: apps/web/src/desktop/market/market-toolbar.tsx:299
 #: apps/web/src/features/home/ui/activity-page.tsx:132
@@ -1891,8 +1901,8 @@ msgid "Collaboration"
 msgstr "Співпраця"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:185
-#: apps/web/src/desktop/shell/sidebar.tsx:189
+#: apps/web/src/desktop/shell/sidebar.tsx:186
+#: apps/web/src/desktop/shell/sidebar.tsx:190
 msgid "Collapse"
 msgstr "Згорнути"
 
@@ -2043,9 +2053,9 @@ msgstr "Підтвердьте ключем доступу. Стара карт�
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -2195,6 +2205,7 @@ msgid "Contact Phone"
 msgstr "Контактний телефон"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:63
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:74
 msgid "Contact support"
 msgstr "Звернутися до підтримки"
 
@@ -2289,16 +2300,20 @@ msgstr "Адреса контракту"
 msgid "Contract address copied"
 msgstr "Адресу контракту скопійовано"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:55
 #: apps/web/src/features/messaging/ui/thread-page.tsx:50
 msgid "Conversation"
 msgstr "Розмова"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:100
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:73
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:95
 msgid "Conversation options"
 msgstr "Параметри розмови"
 
 #: apps/web/src/components/messaging/messages-section.tsx:55
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:74
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:75
 msgid "Conversations"
 msgstr "Розмови"
 
@@ -2357,7 +2372,7 @@ msgstr "Копіювати посилання"
 #~ msgid "Copy mint transaction hash"
 #~ msgstr "Копіювати хеш транзакції випуску"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:839
+#: apps/web/src/desktop/activity/transactions-desk.tsx:847
 #: apps/web/src/desktop/pools/detail/pool-receive-popover.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:56
 msgid "Copy pool address"
@@ -2395,7 +2410,7 @@ msgid "Copy supply creation transaction hash"
 msgstr "Копіювати хеш транзакції випуску"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
-#: apps/web/src/desktop/activity/activity-desk.tsx:699
+#: apps/web/src/desktop/activity/transactions-desk.tsx:707
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:178
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:125
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:255
@@ -2538,8 +2553,8 @@ msgstr "Не вдалося скопіювати"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:583
 #: apps/web/src/desktop/account/settings-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:26
 #: apps/web/src/desktop/wallet/cash-desk.tsx:32
@@ -2634,7 +2649,7 @@ msgstr "Не вдалося скопіювати хеш транзакції в�
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:39
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:45
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:130
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:168
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:174
@@ -2689,8 +2704,8 @@ msgstr "Не вдалося визначити країну в цьому міс
 "поруч."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
-#: apps/web/src/desktop/activity/activity-desk.tsx:491
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:993
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:153
 #: apps/web/src/desktop/wallet/send-desk.tsx:535
@@ -2749,6 +2764,8 @@ msgid "Couldn't load marketplace results."
 msgstr "Не вдалося завантажити результати ринку."
 
 #: apps/web/src/components/messaging/messages-section.tsx:26
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:48
+#: apps/web/src/desktop/messaging/thread-desk.tsx:107
 #: apps/web/src/features/messaging/ui/thread-page.tsx:188
 msgid "Couldn't load messages."
 msgstr "Не вдалося завантажити повідомлення."
@@ -2758,6 +2775,7 @@ msgid "Couldn't load more"
 msgstr "Не вдалося завантажити ще"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:23
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:31
 msgid "Couldn't load notifications."
 msgstr "Не вдалося завантажити сповіщення."
 
@@ -2821,11 +2839,12 @@ msgid "Couldn't load tags."
 msgstr "Не вдалося завантажити теги."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:29
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:52
 msgid "Couldn't load the helpdesk."
 msgstr "Не вдалося завантажити розділ допомоги."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:247
-#: apps/web/src/desktop/activity/activity-desk.tsx:872
+#: apps/web/src/desktop/activity/transactions-desk.tsx:880
 msgid "Couldn't load the private attachment."
 msgstr "Не вдалося завантажити приватне вкладення."
 
@@ -2834,6 +2853,7 @@ msgstr "Не вдалося завантажити приватне вкладе
 msgid "Couldn't load the Want form."
 msgstr "Не вдалося завантажити форму потреби."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:80
 #: apps/web/src/features/messaging/ui/thread-page.tsx:69
 msgid "Couldn't load this conversation."
 msgstr "Не вдалося завантажити цю розмову."
@@ -2973,6 +2993,7 @@ msgid "Couldn't publish your voucher."
 msgstr "Не вдалося опублікувати ваш ваучер."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:67
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:78
 msgid "Couldn't reach Support. Try again."
 msgstr "Не вдалося зв’язатися з Підтримкою. Спробуйте ще раз."
 
@@ -3073,14 +3094,17 @@ msgstr "Не вдалося знайти пули."
 msgid "Couldn't search vouchers."
 msgstr "Не вдалося знайти ваучери."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:156
+#: apps/web/src/components/messaging/new-message-sheet.tsx:119
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:129
 msgid "Couldn't search. Try again."
 msgstr "Не вдалося виконати пошук. Спробуйте ще раз."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:127
+#: apps/web/src/components/messaging/new-message-sheet.tsx:90
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:85
 msgid "Couldn't send the request. Try again."
 msgstr "Не вдалося надіслати запит. Спробуйте ще раз."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:60
 #: apps/web/src/features/messaging/ui/message-composer.tsx:60
 msgid "Couldn't send. Your message is kept; send it again."
 msgstr "Не вдалося надіслати. Ваше повідомлення збережено; надішліть його ще "
@@ -3264,9 +3288,9 @@ msgid "Create your account"
 msgstr "Створіть обліковий запис"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/desktop/activity/activity-desk.tsx:187
-#: apps/web/src/desktop/activity/activity-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:718
+#: apps/web/src/desktop/activity/transactions-desk.tsx:195
+#: apps/web/src/desktop/activity/transactions-desk.tsx:597
+#: apps/web/src/desktop/activity/transactions-desk.tsx:726
 #: apps/web/src/desktop/posts/post-desk.tsx:305
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:74
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:97
@@ -3385,9 +3409,9 @@ msgstr "Темний режим"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:97
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
-#: apps/web/src/desktop/activity/activity-desk.tsx:255
-#: apps/web/src/desktop/activity/activity-desk.tsx:745
-#: apps/web/src/desktop/activity/activity-desk.tsx:846
+#: apps/web/src/desktop/activity/transactions-desk.tsx:263
+#: apps/web/src/desktop/activity/transactions-desk.tsx:753
+#: apps/web/src/desktop/activity/transactions-desk.tsx:854
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:168
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:942
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:100
@@ -3399,7 +3423,7 @@ msgstr "Темний режим"
 msgid "Date"
 msgstr "Дата"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:409
+#: apps/web/src/desktop/activity/transactions-desk.tsx:417
 msgid "Date range"
 msgstr "Період"
 
@@ -3421,6 +3445,7 @@ msgstr "Десяткові знаки"
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "Кількість десяткових знаків має бути цілим числом від 0 до 18"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:184
 #: apps/web/src/features/messaging/ui/thread-page.tsx:108
 msgid "Decline"
 msgstr "Відхилити"
@@ -3497,7 +3522,7 @@ msgid "Deposited in this pool"
 msgstr "Внесені до цього пулу"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:35
-#: apps/web/src/desktop/activity/activity-desk.tsx:191
+#: apps/web/src/desktop/activity/transactions-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:871
 msgid "Deposits"
 msgstr "Внески"
@@ -3739,7 +3764,7 @@ msgstr "Редагувати допис"
 #: apps/web/src/desktop/account/profile-desk.tsx:120
 #: apps/web/src/desktop/account/settings-desk.tsx:236
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:140
+#: apps/web/src/desktop/shell/sidebar.tsx:141
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:32
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:79
 msgid "Edit profile"
@@ -3782,7 +3807,7 @@ msgstr "Літні люди"
 #: apps/web/src/components/wants/want-detail.tsx:187
 #: apps/web/src/desktop/account/profile-desk.tsx:172
 #: apps/web/src/desktop/account/profile-desk.tsx:184
-#: apps/web/src/desktop/activity/activity-desk.tsx:901
+#: apps/web/src/desktop/activity/transactions-desk.tsx:909
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:372
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:353
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:109
@@ -4042,8 +4067,8 @@ msgid "Existing fee recipient"
 msgstr "Поточний отримувач комісії"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:294
 #: apps/web/src/desktop/shell/sidebar.tsx:295
+#: apps/web/src/desktop/shell/sidebar.tsx:296
 msgid "Expand"
 msgstr "Розгорнути"
 
@@ -4088,9 +4113,9 @@ msgstr "Термін дії спливає"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:898
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:54
@@ -4329,8 +4354,8 @@ msgstr "Кадруйте фото"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:167
-#: apps/web/src/desktop/activity/activity-desk.tsx:196
-#: apps/web/src/desktop/activity/activity-desk.tsx:751
+#: apps/web/src/desktop/activity/transactions-desk.tsx:204
+#: apps/web/src/desktop/activity/transactions-desk.tsx:759
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:144
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/features/home/ui/activity-page.tsx:349
@@ -4407,7 +4432,7 @@ msgstr "Ремесла"
 msgid "Handmade"
 msgstr "Ручна робота"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:600
+#: apps/web/src/desktop/activity/transactions-desk.tsx:608
 #: apps/web/src/features/home/ui/activity-page.tsx:337
 msgid "Has a message"
 msgstr "Має повідомлення"
@@ -4422,6 +4447,7 @@ msgstr "Здоров’я"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:27
 #: apps/web/src/components/messaging/helpdesk-section.tsx:42
+#: apps/web/src/desktop/activity/activity-header.tsx:48
 #: apps/web/src/features/messaging/ui/thread-page.tsx:43
 msgid "Helpdesk"
 msgstr "Допомога"
@@ -4555,7 +4581,7 @@ msgid "I already have an account"
 msgstr "У мене вже є обліковий запис"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:205
-#: apps/web/src/desktop/activity/activity-desk.tsx:772
+#: apps/web/src/desktop/activity/transactions-desk.tsx:780
 msgid "I created {amountLabel}."
 msgstr "Я випустив(-ла) {amountLabel}."
 
@@ -4574,7 +4600,7 @@ msgid "I made a swap."
 msgstr "Я здійснив обмін."
 
 #. placeholder {0}: item.senderAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:775
+#: apps/web/src/desktop/activity/transactions-desk.tsx:783
 msgid "I received {amountLabel} from {0}."
 msgstr "Я отримав(-ла) {amountLabel} від {0}."
 
@@ -4596,7 +4622,7 @@ msgstr "Я зберіг цей ключ. Якщо його втратити, м�
 "відновити."
 
 #. placeholder {0}: item.recipientAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:774
+#: apps/web/src/desktop/activity/transactions-desk.tsx:782
 msgid "I sent {amountLabel} to {0}."
 msgstr "Я надіслав(-ла) {amountLabel} отримувачу {0}."
 
@@ -4724,7 +4750,8 @@ msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Запит на встановлення надіслано. Щоб завершити, виконайте вказівки "
 "браузера."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:109
+#: apps/web/src/components/messaging/new-message-sheet.tsx:72
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:67
 msgid "Introduce yourself"
 msgstr "Представтеся"
 
@@ -4790,15 +4817,15 @@ msgstr "Кілограм"
 msgid "Language"
 msgstr "Мова"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:178
+#: apps/web/src/desktop/activity/transactions-desk.tsx:186
 msgid "Last 30 days"
 msgstr "Останні 30 днів"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:177
+#: apps/web/src/desktop/activity/transactions-desk.tsx:185
 msgid "Last 7 days"
 msgstr "Останні 7 днів"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:179
+#: apps/web/src/desktop/activity/transactions-desk.tsx:187
 msgid "Last 90 days"
 msgstr "Останні 90 днів"
 
@@ -5028,6 +5055,7 @@ msgstr "Список"
 msgid "Litre"
 msgstr "Літр"
 
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:99
 #: apps/web/src/features/messaging/ui/message-list.tsx:74
 msgid "Load earlier messages"
 msgstr "Завантажити попередні повідомлення"
@@ -5038,10 +5066,11 @@ msgstr "Завантажити попередні повідомлення"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
 #: apps/web/src/components/wants/want-detail.tsx:295
-#: apps/web/src/desktop/activity/activity-desk.tsx:549
+#: apps/web/src/desktop/activity/transactions-desk.tsx:557
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
 #: apps/web/src/desktop/market/market-list-states.tsx:100
 #: apps/web/src/desktop/market/market-search-field.tsx:450
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:79
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:187
@@ -5071,9 +5100,9 @@ msgid "Loading"
 msgstr "Завантаження"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:411
-#: apps/web/src/desktop/activity/activity-desk.tsx:480
-#: apps/web/src/desktop/activity/activity-desk.tsx:486
-#: apps/web/src/desktop/activity/activity-desk.tsx:634
+#: apps/web/src/desktop/activity/transactions-desk.tsx:488
+#: apps/web/src/desktop/activity/transactions-desk.tsx:494
+#: apps/web/src/desktop/activity/transactions-desk.tsx:642
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:989
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:145
@@ -5107,6 +5136,7 @@ msgstr "Завантаження готівкових операцій…"
 msgid "Loading contact information…"
 msgstr "Завантажуємо контактну інформацію…"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:100
 #: apps/web/src/features/messaging/ui/thread-page.tsx:60
 msgid "Loading conversation…"
 msgstr "Завантаження розмови…"
@@ -5117,6 +5147,7 @@ msgid "Loading credit limits…"
 msgstr "Завантаження кредитних лімітів…"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:24
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:46
 msgid "Loading helpdesk…"
 msgstr "Завантаження розділу допомоги…"
 
@@ -5144,6 +5175,7 @@ msgid "Loading marketplace…"
 msgstr "Завантаження ринку…"
 
 #: apps/web/src/components/messaging/messages-section.tsx:21
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:42
 msgid "Loading messages…"
 msgstr "Завантаження повідомлень…"
 
@@ -5159,6 +5191,7 @@ msgid "Loading more…"
 msgstr "Завантаження ще…"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:18
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:25
 msgid "Loading notifications…"
 msgstr "Завантаження сповіщень…"
 
@@ -5202,7 +5235,7 @@ msgid "Loading posts…"
 msgstr "Завантаження дописів…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:240
-#: apps/web/src/desktop/activity/activity-desk.tsx:865
+#: apps/web/src/desktop/activity/transactions-desk.tsx:873
 msgid "Loading private attachment…"
 msgstr "Завантаження приватного вкладення…"
 
@@ -5468,7 +5501,7 @@ msgstr "Мітка на мапі"
 #: apps/web/src/desktop/market/market-map-desk.tsx:186
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:131
+#: apps/web/src/desktop/shell/sidebar.tsx:132
 #: apps/web/src/features/home/ui/market-page.tsx:60
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:68
@@ -5478,8 +5511,8 @@ msgstr "Ринок"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:114
 #: apps/web/src/desktop/shell/command-palette.tsx:224
-#: apps/web/src/desktop/shell/sidebar.tsx:211
-#: apps/web/src/desktop/shell/sidebar.tsx:227
+#: apps/web/src/desktop/shell/sidebar.tsx:212
+#: apps/web/src/desktop/shell/sidebar.tsx:228
 #: apps/web/src/features/home/ui/marketplace-page.tsx:102
 msgid "Marketplace"
 msgstr "Ринок"
@@ -5488,7 +5521,7 @@ msgstr "Ринок"
 msgid "Marketplace details"
 msgstr "Деталі ринку"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:211
+#: apps/web/src/desktop/shell/sidebar.tsx:212
 msgid "Marketplace lists"
 msgstr "Списки ринку"
 
@@ -5506,7 +5539,8 @@ msgstr "Розділи ринку"
 msgid "Match"
 msgstr "Збіг"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:165
+#: apps/web/src/components/messaging/new-message-sheet.tsx:128
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:140
 msgid "Matching people"
 msgstr "Знайдені люди"
 
@@ -5536,8 +5570,10 @@ msgstr "Макс. {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Медіафайл має бути завантаженим URL із http(s)"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:179
+#: apps/web/src/components/messaging/new-message-sheet.tsx:142
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
+#: apps/web/src/desktop/messaging/composer-desk.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:152
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
 #: apps/web/src/features/messaging/ui/message-composer.tsx:64
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
@@ -5556,6 +5592,7 @@ msgid "Message or order shared."
 msgstr "Повідомлення або замовлення надіслано."
 
 #: apps/web/src/components/messaging/messages-section.tsx:44
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
 msgid "Message requests"
 msgstr "Запити на листування"
 
@@ -5565,6 +5602,8 @@ msgid "Message shared."
 msgstr "Повідомлення опубліковано."
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:25
+#: apps/web/src/desktop/activity/activity-header.tsx:46
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:103
 #: apps/web/src/features/messaging/ui/thread-page.tsx:43
 msgid "Messages"
 msgstr "Повідомлення"
@@ -5847,6 +5886,7 @@ msgstr "Назва, символ або адреса"
 msgid "Natural building"
 msgstr "Природне будівництво"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
 msgid "Neither of you can send messages. Only you can ask to talk again."
 msgstr "Ніхто з вас не може надсилати повідомлення. Лише ви можете попросити "
@@ -5876,8 +5916,10 @@ msgstr "Нове"
 #~ msgid "New member"
 #~ msgstr "Новий учасник"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:88
-#: apps/web/src/components/messaging/new-message-sheet.tsx:96
+#: apps/web/src/components/messaging/new-message-sheet.tsx:51
+#: apps/web/src/components/messaging/new-message-sheet.tsx:59
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:49
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:56
 msgid "New message"
 msgstr "Нове повідомлення"
 
@@ -5930,8 +5972,8 @@ msgstr "Новий підписант"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:480
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:171
-#: apps/web/src/desktop/activity/activity-desk.tsx:278
-#: apps/web/src/desktop/activity/activity-desk.tsx:754
+#: apps/web/src/desktop/activity/transactions-desk.tsx:286
+#: apps/web/src/desktop/activity/transactions-desk.tsx:762
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:147
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:911
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:83
@@ -5991,7 +6033,7 @@ msgstr "Ні"
 msgid "No {0} fees have accrued yet."
 msgstr "Комісії {0} ще не накопичилися."
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:515
+#: apps/web/src/desktop/activity/transactions-desk.tsx:523
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1005
 #: apps/web/src/features/home/ui/activity-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:100
@@ -6003,8 +6045,8 @@ msgstr "Жодна активність не відповідає цим філ�
 #~ msgstr "Жодна дія не відповідає цьому пошуку."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:434
-#: apps/web/src/desktop/activity/activity-desk.tsx:474
-#: apps/web/src/desktop/activity/activity-desk.tsx:536
+#: apps/web/src/desktop/activity/transactions-desk.tsx:482
+#: apps/web/src/desktop/activity/transactions-desk.tsx:544
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:172
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:489
 #: apps/web/src/features/home/ui/activity-page.tsx:170
@@ -6059,6 +6101,10 @@ msgstr "Контактні дані недоступні."
 #: apps/web/src/components/wants/want-detail.tsx:170
 msgid "No contact information given"
 msgstr "Контактну інформацію не вказано"
+
+#: apps/web/src/desktop/messaging/messages-desk.tsx:28
+msgid "No conversation open"
+msgstr "Жодної розмови не відкрито"
 
 #: apps/web/src/components/ui/country-sheet.tsx:89
 #: apps/web/src/desktop/ui/phone-field.tsx:103
@@ -6169,7 +6215,8 @@ msgstr "Поки що немає результатів ринку для від
 msgid "No matches"
 msgstr "Збігів немає"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:161
+#: apps/web/src/components/messaging/new-message-sheet.tsx:124
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:134
 msgid "No matching people."
 msgstr "Нікого не знайдено."
 
@@ -6179,6 +6226,8 @@ msgid "No matching recipients."
 msgstr "Відповідних отримувачів не знайдено."
 
 #: apps/web/src/components/messaging/messages-section.tsx:40
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:57
+#: apps/web/src/desktop/messaging/thread-desk.tsx:126
 #: apps/web/src/features/messaging/ui/thread-page.tsx:211
 msgid "No messages yet."
 msgstr "Повідомлень ще немає."
@@ -6188,6 +6237,7 @@ msgid "No more results"
 msgstr "Більше результатів немає"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:37
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:40
 msgid "No notifications yet."
 msgstr "Сповіщень ще немає."
 
@@ -6509,6 +6559,8 @@ msgstr "Сховище сповіщень недоступне"
 #: apps/web/src/components/messaging/notifications-section.tsx:41
 #: apps/web/src/desktop/account/settings-desk.tsx:378
 #: apps/web/src/desktop/account/settings-desk.tsx:416
+#: apps/web/src/desktop/activity/activity-header.tsx:47
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:46
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:33
 msgid "Notifications"
 msgstr "Сповіщення"
@@ -6716,13 +6768,15 @@ msgstr "Відкрити сторінку ваучера"
 msgid "Opening sign-in card…"
 msgstr "Відкриття картка для входу…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:114
+#: apps/web/src/components/messaging/new-message-sheet.tsx:77
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
 #: apps/web/src/desktop/account/profile-desk.tsx:131
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:72
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:50
@@ -6954,7 +7008,7 @@ msgstr "Заплатіть мені в CLC"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:36
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:68
-#: apps/web/src/desktop/activity/activity-desk.tsx:192
+#: apps/web/src/desktop/activity/transactions-desk.tsx:200
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:872
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1048
 #: apps/web/src/features/home/ui/activity-page.tsx:325
@@ -6983,7 +7037,7 @@ msgid "Payment QR code"
 msgstr "QR-код для оплати"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:281
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:251
 msgid "Payment receipt"
@@ -6994,6 +7048,8 @@ msgid "Payment status unknown"
 msgstr "Стан платежу невідомий"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:43
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:162
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -7054,7 +7110,7 @@ msgstr "Пермакультура"
 #: apps/web/src/components/vouchers/voucher-about.tsx:117
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/desktop/account/profile-desk.tsx:200
-#: apps/web/src/desktop/activity/activity-desk.tsx:911
+#: apps/web/src/desktop/activity/transactions-desk.tsx:919
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:396
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:355
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:131
@@ -7083,6 +7139,7 @@ msgstr "Телефон недоступний"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:55
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:174
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -7108,6 +7165,7 @@ msgstr "Фотографії"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "Фотографії відображаються в порядку їх додавання."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:28
 #: apps/web/src/features/messaging/ui/message-composer.tsx:28
 msgid "Photos to send"
 msgstr "Фото для надсилання"
@@ -7149,7 +7207,7 @@ msgstr "Розсадник"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
 #: apps/web/src/components/wallet/recipient-address-input.tsx:204
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
 #: apps/web/src/desktop/market/market-search-field.tsx:428
@@ -7369,7 +7427,7 @@ msgstr "Відомості для відстеження пулу відсутн
 #: apps/web/src/components/market-bar.tsx:189
 #: apps/web/src/components/market-bar.tsx:268
 #: apps/web/src/components/resource-usage.tsx:118
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/market/market-search-field.tsx:349
@@ -7450,7 +7508,7 @@ msgstr "Допис оновлено."
 #: apps/web/src/desktop/posts/posts-desk.tsx:100
 #: apps/web/src/desktop/posts/posts-desk.tsx:213
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:138
+#: apps/web/src/desktop/shell/sidebar.tsx:139
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:73
@@ -7655,7 +7713,7 @@ msgid "Pricing"
 msgstr "Ціноутворення"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:40
-#: apps/web/src/desktop/shell/sidebar.tsx:198
+#: apps/web/src/desktop/shell/sidebar.tsx:199
 msgid "Primary navigation"
 msgstr "Основна навігація"
 
@@ -7669,8 +7727,8 @@ msgid "Privacy note"
 msgstr "Примітка про конфіденційність"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:258
-#: apps/web/src/desktop/activity/activity-desk.tsx:880
-#: apps/web/src/desktop/activity/activity-desk.tsx:884
+#: apps/web/src/desktop/activity/transactions-desk.tsx:888
+#: apps/web/src/desktop/activity/transactions-desk.tsx:892
 msgid "Private attachment"
 msgstr "Приватне вкладення"
 
@@ -7746,7 +7804,7 @@ msgstr "картка для входу захищено. Зберігайте п
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
-#: apps/web/src/desktop/activity/activity-desk.tsx:826
+#: apps/web/src/desktop/activity/transactions-desk.tsx:834
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:108
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:119
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:232
@@ -7950,10 +8008,10 @@ msgstr "Отримати ваучери"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:75
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:33
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:473
-#: apps/web/src/desktop/activity/activity-desk.tsx:189
-#: apps/web/src/desktop/activity/activity-desk.tsx:591
-#: apps/web/src/desktop/activity/activity-desk.tsx:720
-#: apps/web/src/desktop/activity/activity-desk.tsx:819
+#: apps/web/src/desktop/activity/transactions-desk.tsx:197
+#: apps/web/src/desktop/activity/transactions-desk.tsx:599
+#: apps/web/src/desktop/activity/transactions-desk.tsx:728
+#: apps/web/src/desktop/activity/transactions-desk.tsx:827
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:869
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
 #: apps/web/src/features/home/ui/activity-page.tsx:329
@@ -8163,6 +8221,7 @@ msgstr "Видалити з пулу"
 msgid "Remove link {0}"
 msgstr "Видалити посилання {0}"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:40
 #: apps/web/src/features/messaging/ui/message-composer.tsx:40
 msgid "Remove photo"
 msgstr "Видалити фото"
@@ -8222,6 +8281,7 @@ msgstr "Переглянути знову"
 msgid "Reply"
 msgstr "Відповісти"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:142
 msgid "Report"
 msgstr "Поскаржитися"
@@ -8254,10 +8314,12 @@ msgstr "Період звіту"
 msgid "Report provenance"
 msgstr "Походження звіту"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:84
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:170
 msgid "Report sent."
 msgstr "Скаргу надіслано."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:141
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
 msgid "Report this person"
 msgstr "Поскаржитися на цю людину"
@@ -8269,6 +8331,9 @@ msgstr "Подано скаргу"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:38
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:157
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:157
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
+#: apps/web/src/desktop/messaging/thread-desk.tsx:163
 #: apps/web/src/features/messaging/ui/thread-page.tsx:86
 msgid "Request"
 msgstr "Запит"
@@ -8295,6 +8360,10 @@ msgstr "Запит відхилено"
 msgid "Request retirement"
 msgstr "Запросити виведення з обігу"
 
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
+msgid "Requests"
+msgstr "Запити"
+
 #: apps/web/src/components/ui/avatar-picker.tsx:95
 #: apps/web/src/components/ui/location-picker.tsx:71
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:286
@@ -8319,6 +8388,10 @@ msgstr "Скинути шари"
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:149
 msgid "Reset logo"
 msgstr "Скинути логотип"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:64
+msgid "Resolved"
+msgstr "Вирішено"
 
 #~ msgid "Resolving recipient…"
 #~ msgstr "Визначення отримувача…"
@@ -8552,11 +8625,14 @@ msgstr "Відгуки"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Тут з’являться відгуки про цей ваучер."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:107
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:181
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:132
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:179
 msgid "Revoke"
 msgstr "Відкликати"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:133
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:85
 msgid "Revoke this conversation?"
 msgstr "Відкликати цю розмову?"
@@ -8744,8 +8820,8 @@ msgstr "Шукати «{query}»"
 msgid "Search “{term}”"
 msgstr "Шукати «{term}»"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:435
-#: apps/web/src/desktop/activity/activity-desk.tsx:436
+#: apps/web/src/desktop/activity/transactions-desk.tsx:443
+#: apps/web/src/desktop/activity/transactions-desk.tsx:444
 #: apps/web/src/features/home/ui/activity-page.tsx:123
 #: apps/web/src/features/home/ui/activity-page.tsx:124
 msgid "Search activity"
@@ -8956,8 +9032,9 @@ msgstr "Пошук у цій області"
 msgid "Searching vouchers…"
 msgstr "Пошук ваучерів…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:151
+#: apps/web/src/components/messaging/new-message-sheet.tsx:114
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:211
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:124
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:553
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -9052,6 +9129,7 @@ msgid "Sell to a bank account"
 msgstr "Продати на банківський рахунок"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:333
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/shell/command-palette.tsx:101
 #: apps/web/src/desktop/shell/crumbs.tsx:32
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:136
@@ -9085,12 +9163,14 @@ msgstr "Надішліть зі свого гаманця Gnosis через Jump
 "виведіть кошти до банку або M-Pesa."
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:187
 msgid "Send report"
 msgstr "Надіслати звіт"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:201
+#: apps/web/src/components/messaging/new-message-sheet.tsx:154
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:94
 msgid "Send request"
 msgstr "Надіслати запит"
 
@@ -9120,6 +9200,7 @@ msgstr "Надішліть xDAI відповідно до вказівок."
 msgid "Sending"
 msgstr "Надсилання"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/wallet/send-desk.tsx:380
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
 #: apps/web/src/features/messaging/ui/message-composer.tsx:107
@@ -9131,10 +9212,10 @@ msgstr "Надсилання…"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:69
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:32
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:475
-#: apps/web/src/desktop/activity/activity-desk.tsx:188
-#: apps/web/src/desktop/activity/activity-desk.tsx:593
-#: apps/web/src/desktop/activity/activity-desk.tsx:722
-#: apps/web/src/desktop/activity/activity-desk.tsx:813
+#: apps/web/src/desktop/activity/transactions-desk.tsx:196
+#: apps/web/src/desktop/activity/transactions-desk.tsx:601
+#: apps/web/src/desktop/activity/transactions-desk.tsx:730
+#: apps/web/src/desktop/activity/transactions-desk.tsx:821
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:868
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
@@ -9195,7 +9276,7 @@ msgstr "Налаштування гаманця…"
 #: apps/web/src/desktop/account/settings-desk.tsx:68
 #: apps/web/src/desktop/shell/command-palette.tsx:145
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:139
+#: apps/web/src/desktop/shell/sidebar.tsx:140
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:29
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -9250,7 +9331,7 @@ msgstr "Поділитися квитанцією"
 
 #. placeholder {0}: share.sharedBy.name
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:261
-#: apps/web/src/desktop/activity/activity-desk.tsx:887
+#: apps/web/src/desktop/activity/transactions-desk.tsx:895
 msgid "Shared by {0}"
 msgstr "Опублікував(-ла) {0}"
 
@@ -9610,9 +9691,9 @@ msgstr "Починається {starts}"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:64
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
-#: apps/web/src/desktop/activity/activity-desk.tsx:316
-#: apps/web/src/desktop/activity/activity-desk.tsx:733
-#: apps/web/src/desktop/activity/activity-desk.tsx:801
+#: apps/web/src/desktop/activity/transactions-desk.tsx:324
+#: apps/web/src/desktop/activity/transactions-desk.tsx:741
+#: apps/web/src/desktop/activity/transactions-desk.tsx:809
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:65
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:279
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:399
@@ -9717,6 +9798,8 @@ msgid "Supply must be greater than zero"
 msgstr "Кількість має бути більшою за нуль"
 
 #: apps/web/src/components/messaging/peer.tsx:36
+#: apps/web/src/desktop/messaging/conversation-desk.tsx:29
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:126
 #: apps/web/src/features/messaging/ui/message-list.tsx:97
 msgid "Support"
 msgstr "Підтримка"
@@ -9727,8 +9810,8 @@ msgstr "Файли SVG не підтримуються. Використовуй
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
-#: apps/web/src/desktop/activity/activity-desk.tsx:587
-#: apps/web/src/desktop/activity/activity-desk.tsx:793
+#: apps/web/src/desktop/activity/transactions-desk.tsx:595
+#: apps/web/src/desktop/activity/transactions-desk.tsx:801
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:258
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:270
 #: apps/web/src/desktop/shell/command-palette.tsx:111
@@ -9819,7 +9902,7 @@ msgstr "Обмін"
 msgid "Swapping…"
 msgstr "Обмін…"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:190
+#: apps/web/src/desktop/activity/transactions-desk.tsx:198
 msgid "Swaps"
 msgstr "Обміни"
 
@@ -10002,6 +10085,9 @@ msgstr "URL умов"
 msgid "Test with a small amount first."
 msgstr "Спочатку перевірте з невеликою сумою."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:194
+#: apps/web/src/desktop/messaging/thread-desk.tsx:234
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:123
 #: apps/web/src/features/messaging/ui/thread-page.tsx:118
 #: apps/web/src/features/messaging/ui/thread-page.tsx:161
@@ -10177,6 +10263,7 @@ msgstr "Платіж відхилено: {detail}"
 msgid "The payment was refused. Nothing was charged."
 msgstr "Платіж відхилено. Нічого не списано."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:54
 #: apps/web/src/features/messaging/ui/message-composer.tsx:54
 msgid "The photo didn't upload. Remove it and try again."
 msgstr "Фото не завантажилося. Видаліть його й спробуйте ще раз."
@@ -10252,6 +10339,7 @@ msgstr "Для обміну на цей ваучер поки нічого не�
 msgid "These filters aren't valid."
 msgstr "Ці фільтри недійсні."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:151
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:107
 msgid "They won't be able to message you or send you requests."
 msgstr "Ця людина не зможе писати вам або надсилати запити."
@@ -10329,10 +10417,12 @@ msgid "This contract does not expose a compatible multisig owner list. The "
 msgstr "Цей контракт не надає сумісного списку власників мультипідпису. Актив "
 "може бути заблокований."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:75
 #: apps/web/src/features/messaging/ui/thread-page.tsx:64
 msgid "This conversation isn't available."
 msgstr "Ця розмова недоступна."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:206
 #: apps/web/src/features/messaging/ui/thread-page.tsx:130
 msgid "This conversation was revoked."
 msgstr "Цю розмову відкликано."
@@ -10544,6 +10634,7 @@ msgstr "Цей QR-код не містить дійсного приватног
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "Цей QR-код не містить дійсної картки для входу."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:204
 #: apps/web/src/features/messaging/ui/thread-page.tsx:128
 msgid "This request was declined."
 msgstr "Цей запит відхилено."
@@ -10587,8 +10678,8 @@ msgstr "Заголовок має містити не більше 200 симв�
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:183
-#: apps/web/src/desktop/activity/activity-desk.tsx:198
-#: apps/web/src/desktop/activity/activity-desk.tsx:760
+#: apps/web/src/desktop/activity/transactions-desk.tsx:206
+#: apps/web/src/desktop/activity/transactions-desk.tsx:768
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:159
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/desktop/wallet/send-desk.tsx:182
@@ -10658,8 +10749,8 @@ msgid "Training"
 msgstr "Навчання"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:102
-#: apps/web/src/desktop/activity/activity-desk.tsx:761
-#: apps/web/src/desktop/activity/activity-desk.tsx:851
+#: apps/web/src/desktop/activity/transactions-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:859
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:174
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:251
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:196
@@ -10682,7 +10773,7 @@ msgid "Transaction hash"
 msgstr "Хеш транзакції"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:44
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:129
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:173
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:202
@@ -10695,10 +10786,11 @@ msgid "Transaction hash copied"
 msgstr "Хеш транзакції скопійовано"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:24
+#: apps/web/src/desktop/activity/activity-header.tsx:45
 msgid "Transactions"
 msgstr "Транзакції"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:622
+#: apps/web/src/desktop/activity/transactions-desk.tsx:630
 msgid "Transfer details"
 msgstr "Деталі переказу"
 
@@ -10751,8 +10843,13 @@ msgstr "Поїздка"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:65
 #: apps/web/src/desktop/account/profile-desk.tsx:53
 #: apps/web/src/desktop/account/settings-desk.tsx:545
-#: apps/web/src/desktop/activity/activity-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:507
 #: apps/web/src/desktop/market/market-search-field.tsx:442
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:51
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:34
+#: apps/web/src/desktop/messaging/thread-desk.tsx:90
+#: apps/web/src/desktop/messaging/thread-desk.tsx:114
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:255
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:68
@@ -10810,7 +10907,7 @@ msgstr "Поїздка"
 msgid "Try again"
 msgstr "Спробувати ще раз"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:287
+#: apps/web/src/desktop/activity/transactions-desk.tsx:295
 #: apps/web/src/desktop/market/market-list-desk.tsx:507
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:54
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:50
@@ -10832,7 +10929,7 @@ msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Щоб шукати ваучери, введіть щонайменше {VOUCHER_SEARCH_MIN_CHARS} "
 "символи."
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:456
+#: apps/web/src/desktop/activity/transactions-desk.tsx:464
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:173
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:532
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:196
@@ -10890,12 +10987,16 @@ msgstr "Не вдалося завантажити мову. Відновлен�
 msgid "Unavailable"
 msgstr "Недоступно"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:250
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:184
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:182
 #: apps/web/src/features/messaging/ui/thread-page.tsx:180
 msgid "Unblock"
 msgstr "Розблокувати"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:136
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:88
 msgid "Unblock this person?"
 msgstr "Розблокувати цю людину?"
@@ -11073,6 +11174,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "Скористайтеся <0>Binance</0> або іншою місцевою біржею, а потім "
 "<1>Jumper</1>, щоб надіслати кошти до свого гаманця Gnosis."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:52
 #: apps/web/src/features/messaging/ui/message-composer.tsx:52
 msgid "Use a JPEG, PNG or WebP photo under 8 MB."
 msgstr "Використайте фото JPEG, PNG або WebP розміром до 8 MB."
@@ -11162,8 +11264,10 @@ msgstr "Ім’я користувача скопійовано"
 msgid "Username must contain 1–80 characters"
 msgstr "Ім’я користувача має містити від 1 до 80 символів"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:135
-#: apps/web/src/components/messaging/new-message-sheet.tsx:146
+#: apps/web/src/components/messaging/new-message-sheet.tsx:98
+#: apps/web/src/components/messaging/new-message-sheet.tsx:109
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:114
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:115
 msgid "Username or phone number"
 msgstr "Ім’я користувача або номер телефону"
 
@@ -11289,7 +11393,7 @@ msgstr "ваучер"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/desktop/activity/activity-desk.tsx:374
+#: apps/web/src/desktop/activity/transactions-desk.tsx:382
 #: apps/web/src/desktop/market/market-bits.tsx:82
 #: apps/web/src/desktop/market/market-list-desk.tsx:448
 #: apps/web/src/desktop/market/place-panel.tsx:204
@@ -11327,7 +11431,7 @@ msgid "Voucher controls"
 msgstr "Керування ваучером"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 msgid "Voucher creation receipt"
 msgstr "Квитанція про випуск ваучера"
 
@@ -11439,11 +11543,11 @@ msgstr "Теги ваучера"
 msgid "Voucher tracking details are missing."
 msgstr "Відомості для відстеження ваучера відсутні."
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:379
+#: apps/web/src/desktop/activity/transactions-desk.tsx:387
 msgid "Voucher: <0>{voucherLabel}</0>"
 msgstr "Ваучер: <0>{voucherLabel}</0>"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:383
+#: apps/web/src/desktop/activity/transactions-desk.tsx:391
 msgid "Voucher: Any"
 msgstr "Ваучер: будь-який"
 
@@ -11543,6 +11647,7 @@ msgstr "Очікування підтвердження в блокчейні"
 msgid "Waiting for the chain…"
 msgstr "Очікування блокчейну…"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:189
 #: apps/web/src/features/messaging/ui/thread-page.tsx:113
 msgid "Waiting for them to accept your request."
 msgstr "Очікуємо, поки співрозмовник прийме ваш запит."
@@ -11552,7 +11657,7 @@ msgstr "Очікуємо, поки співрозмовник прийме ва�
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:132
+#: apps/web/src/desktop/shell/sidebar.tsx:133
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
@@ -11708,6 +11813,7 @@ msgstr "З поверненням"
 msgid "What are you offering?"
 msgstr "Що ви пропонуєте?"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:155
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:111
 msgid "What happened?"
 msgstr "Що сталося?"
@@ -11763,7 +11869,7 @@ msgstr "Де і для чого"
 msgid "Where did this happen?"
 msgstr "Де це сталося?"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:199
+#: apps/web/src/desktop/activity/transactions-desk.tsx:207
 msgid "With"
 msgstr "З"
 
@@ -11798,6 +11904,7 @@ msgstr "Вивести ліквідність"
 msgid "Withdrawal submitted"
 msgstr "Запит на виведення надіслано"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:94
 #: apps/web/src/features/messaging/ui/message-composer.tsx:70
 msgid "Write a message"
 msgstr "Напишіть повідомлення"
@@ -11853,7 +11960,8 @@ msgstr "Так"
 msgid "You already have a catalog."
 msgstr "У вас уже є каталог."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:123
+#: apps/web/src/components/messaging/new-message-sheet.tsx:86
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:81
 msgid "You already have a conversation with this person."
 msgstr "У вас уже є розмова з цією людиною."
 
@@ -11861,6 +11969,7 @@ msgstr "У вас уже є розмова з цією людиною."
 #~ msgid "You are signed in with the passkey on this device."
 #~ msgstr "Ви ввійшли за допомогою ключа доступу на цьому пристрої."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:243
 #: apps/web/src/features/messaging/ui/thread-page.tsx:170
 msgid "You blocked this person."
 msgstr "Ви заблокували цю людину."
@@ -11897,7 +12006,8 @@ msgstr "Ви й надалі можете знімати кошти після �
 msgid "You can write or edit your review until {0}."
 msgstr "Ви можете написати або відредагувати свій відгук до {0}."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:121
+#: apps/web/src/components/messaging/new-message-sheet.tsx:84
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:79
 msgid "You can't message this person."
 msgstr "Ви не можете написати цій людині."
 
@@ -11992,7 +12102,8 @@ msgstr "Ви отримаєте"
 msgid "You'll send"
 msgstr "Ви надішлете"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:125
+#: apps/web/src/components/messaging/new-message-sheet.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:83
 msgid "You've sent too many requests today. Try again tomorrow."
 msgstr "Сьогодні ви надіслали забагато запитів. Спробуйте ще раз завтра."
 

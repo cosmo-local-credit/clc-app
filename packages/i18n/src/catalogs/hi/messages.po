@@ -77,7 +77,7 @@ msgstr "{count, plural, one {# पोस्ट} other {# पोस्ट}}"
 #~ msgstr "पसंदीदा मुद्रा चुनें"
 
 #. placeholder {0}: activity.length
-#: apps/web/src/desktop/activity/activity-desk.tsx:465
+#: apps/web/src/desktop/activity/transactions-desk.tsx:473
 #: apps/web/src/features/home/ui/activity-page.tsx:157
 msgid "{0, plural, one {# activity item shown.} other {# activity items "
 "shown.}}"
@@ -508,6 +508,7 @@ msgid "About Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit के बारे में"
 
 #: apps/web/src/components/terms-acceptance-field.tsx:29
+#: apps/web/src/desktop/messaging/thread-desk.tsx:177
 #: apps/web/src/features/messaging/ui/thread-page.tsx:100
 msgid "Accept"
 msgstr "स्वीकार करें"
@@ -580,14 +581,14 @@ msgstr "सक्रिय"
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
-#: apps/web/src/desktop/activity/activity-desk.tsx:340
-#: apps/web/src/desktop/activity/activity-desk.tsx:505
+#: apps/web/src/desktop/activity/activity-header.tsx:29
+#: apps/web/src/desktop/activity/transactions-desk.tsx:513
 #: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:221
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:877
 #: apps/web/src/desktop/pools/pool-main.tsx:440
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:133
+#: apps/web/src/desktop/shell/sidebar.tsx:134
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
@@ -600,16 +601,17 @@ msgstr "सक्रिय"
 msgid "Activity"
 msgstr "गतिविधि"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 msgid "Activity not found."
 msgstr "गतिविधि नहीं मिली।"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:32
+#: apps/web/src/desktop/activity/activity-header.tsx:57
 msgid "Activity sections"
 msgstr "गतिविधि अनुभाग"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:136
+#: apps/web/src/desktop/shell/sidebar.tsx:137
 msgid "Activity, {unreadActivity, plural, one {# new} other {# new}}"
 msgstr "गतिविधि, {unreadActivity, plural, one {# नया} other {# नए}}"
 
@@ -654,6 +656,7 @@ msgid "Add a phone number to your profile to use MPESA."
 msgstr "MPESA का उपयोग करने के लिए अपनी प्रोफ़ाइल में एक फ़ोन नंबर जोड़ें।"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:66
+#: apps/web/src/desktop/messaging/composer-desk.tsx:80
 #: apps/web/src/features/messaging/ui/message-composer.tsx:93
 msgid "Add a photo"
 msgstr "एक फोटो जोड़ें"
@@ -788,8 +791,8 @@ msgid "Address book"
 msgstr "पता पुस्तिका"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:588
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:31
 #: apps/web/src/desktop/wallet/receive-desk.tsx:47
@@ -846,7 +849,7 @@ msgstr "कृषि"
 
 #: apps/web/src/components/market-bar.tsx:205
 #: apps/web/src/components/market-bar.tsx:264
-#: apps/web/src/desktop/activity/activity-desk.tsx:350
+#: apps/web/src/desktop/activity/transactions-desk.tsx:358
 #: apps/web/src/desktop/market/market-toolbar.tsx:31
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:964
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:399
@@ -870,8 +873,8 @@ msgstr "सभी पूल"
 msgid "All selected"
 msgstr "सभी चयनित"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:412
-#: apps/web/src/desktop/activity/activity-desk.tsx:416
+#: apps/web/src/desktop/activity/transactions-desk.tsx:420
+#: apps/web/src/desktop/activity/transactions-desk.tsx:424
 msgid "All time"
 msgstr "सारा समय"
 
@@ -905,7 +908,7 @@ msgstr "भेजने से पहले हमेशा पुष्टि �
 #~ "संजो कर रखना।"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/desktop/activity/activity-desk.tsx:294
+#: apps/web/src/desktop/activity/transactions-desk.tsx:302
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:395
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:919
@@ -984,7 +987,7 @@ msgstr "दूसरा कार्ड स्कैन पहले से ह�
 msgid "Any selected"
 msgstr "कोई भी चयनित"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:389
+#: apps/web/src/desktop/activity/transactions-desk.tsx:397
 msgid "Any voucher"
 msgstr "कोई भी वाउचर"
 
@@ -1065,10 +1068,12 @@ msgstr "क्या आप वाकई इस वाउचर को उपय
 msgid "Art"
 msgstr "कला"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:124
 #: apps/web/src/features/messaging/ui/thread-page.tsx:211
 msgid "Ask Support anything."
 msgstr "Support से कुछ भी पूछें।"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:229
 #: apps/web/src/features/messaging/ui/thread-page.tsx:156
 msgid "Ask to talk again"
 msgstr "फिर से बात करने का अनुरोध करें"
@@ -1108,11 +1113,12 @@ msgstr "अनुमोदन की प्रतीक्षा है"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
-#: apps/web/src/components/messaging/new-message-sheet.tsx:204
+#: apps/web/src/components/messaging/new-message-sheet.tsx:157
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
 #: apps/web/src/desktop/market/place-panel.tsx:122
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:91
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1197,11 +1203,14 @@ msgstr "बायो 500 अक्षर या उससे कम होना
 msgid "Biodiversity"
 msgstr "जैव विविधता"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:184
 msgid "Block"
 msgstr "ब्लॉक करें"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
 msgid "Block this person?"
 msgstr "इस व्यक्ति को ब्लॉक करें?"
@@ -1287,6 +1296,7 @@ msgstr "कैमरा पहुंच अस्वीकृत."
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:434
 #: apps/web/src/desktop/account/profile-desk.tsx:443
 #: apps/web/src/desktop/account/settings-desk.tsx:176
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:365
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:434
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:465
@@ -1769,7 +1779,7 @@ msgid "Clear filter"
 msgstr "फ़िल्टर साफ़ करें"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:115
-#: apps/web/src/desktop/activity/activity-desk.tsx:532
+#: apps/web/src/desktop/activity/transactions-desk.tsx:540
 #: apps/web/src/desktop/market/market-list-desk.tsx:410
 #: apps/web/src/desktop/market/market-notices.tsx:198
 #: apps/web/src/desktop/market/market-notices.tsx:266
@@ -1806,7 +1816,7 @@ msgstr "स्थान साफ़ करें"
 #: apps/web/src/components/catalog-filter-controls.tsx:476
 #: apps/web/src/components/market-search.tsx:73
 #: apps/web/src/components/market-search.tsx:180
-#: apps/web/src/desktop/activity/activity-desk.tsx:445
+#: apps/web/src/desktop/activity/transactions-desk.tsx:453
 #: apps/web/src/desktop/market/market-search-field.tsx:131
 #: apps/web/src/desktop/market/market-toolbar.tsx:299
 #: apps/web/src/features/home/ui/activity-page.tsx:132
@@ -1884,8 +1894,8 @@ msgid "Collaboration"
 msgstr "सहयोग"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:185
-#: apps/web/src/desktop/shell/sidebar.tsx:189
+#: apps/web/src/desktop/shell/sidebar.tsx:186
+#: apps/web/src/desktop/shell/sidebar.tsx:190
 msgid "Collapse"
 msgstr "पतन"
 
@@ -2037,9 +2047,9 @@ msgstr "अपनी पासकी से पुष्टि करें। �
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -2188,6 +2198,7 @@ msgid "Contact Phone"
 msgstr "फ़ोन से संपर्क करें"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:63
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:74
 msgid "Contact support"
 msgstr "सहायता से संपर्क करें"
 
@@ -2282,16 +2293,20 @@ msgstr "अनुबंध का पता"
 msgid "Contract address copied"
 msgstr "अनुबंध का पता कॉपी किया गया"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:55
 #: apps/web/src/features/messaging/ui/thread-page.tsx:50
 msgid "Conversation"
 msgstr "बातचीत"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:100
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:73
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:95
 msgid "Conversation options"
 msgstr "बातचीत के विकल्प"
 
 #: apps/web/src/components/messaging/messages-section.tsx:55
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:74
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:75
 msgid "Conversations"
 msgstr "बातचीत"
 
@@ -2350,7 +2365,7 @@ msgstr "लिंक कॉपी करें"
 #~ msgid "Copy mint transaction hash"
 #~ msgstr "टकसाल लेनदेन हैश कॉपी करें"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:839
+#: apps/web/src/desktop/activity/transactions-desk.tsx:847
 #: apps/web/src/desktop/pools/detail/pool-receive-popover.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:56
 msgid "Copy pool address"
@@ -2388,7 +2403,7 @@ msgid "Copy supply creation transaction hash"
 msgstr "आपूर्ति निर्माण लेनदेन हैश की प्रतिलिपि बनाएँ"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
-#: apps/web/src/desktop/activity/activity-desk.tsx:699
+#: apps/web/src/desktop/activity/transactions-desk.tsx:707
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:178
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:125
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:255
@@ -2532,8 +2547,8 @@ msgstr "कॉपी नहीं किया जा सका"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:583
 #: apps/web/src/desktop/account/settings-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:26
 #: apps/web/src/desktop/wallet/cash-desk.tsx:32
@@ -2628,7 +2643,7 @@ msgstr "आपूर्ति निर्माण लेनदेन हैश
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:39
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:45
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:130
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:168
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:174
@@ -2682,8 +2697,8 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "यहां किसी देश की पहचान नहीं हो सकी. किसी नजदीकी स्थान का प्रयास करें."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
-#: apps/web/src/desktop/activity/activity-desk.tsx:491
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:993
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:153
 #: apps/web/src/desktop/wallet/send-desk.tsx:535
@@ -2742,6 +2757,8 @@ msgid "Couldn't load marketplace results."
 msgstr "बाज़ार के परिणाम लोड नहीं किए जा सके।"
 
 #: apps/web/src/components/messaging/messages-section.tsx:26
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:48
+#: apps/web/src/desktop/messaging/thread-desk.tsx:107
 #: apps/web/src/features/messaging/ui/thread-page.tsx:188
 msgid "Couldn't load messages."
 msgstr "संदेश लोड नहीं हो सके।"
@@ -2751,6 +2768,7 @@ msgid "Couldn't load more"
 msgstr "और लोड नहीं किया जा सका"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:23
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:31
 msgid "Couldn't load notifications."
 msgstr "सूचनाएं लोड नहीं हो सकीं।"
 
@@ -2814,11 +2832,12 @@ msgid "Couldn't load tags."
 msgstr "टैग लोड नहीं हो सके."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:29
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:52
 msgid "Couldn't load the helpdesk."
 msgstr "हेल्पडेस्क लोड नहीं हो सका।"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:247
-#: apps/web/src/desktop/activity/activity-desk.tsx:872
+#: apps/web/src/desktop/activity/transactions-desk.tsx:880
 msgid "Couldn't load the private attachment."
 msgstr "निजी अनुलग्नक लोड नहीं किया जा सका."
 
@@ -2827,6 +2846,7 @@ msgstr "निजी अनुलग्नक लोड नहीं किय�
 msgid "Couldn't load the Want form."
 msgstr "ज़रूरत फ़ॉर्म लोड नहीं हो सका।"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:80
 #: apps/web/src/features/messaging/ui/thread-page.tsx:69
 msgid "Couldn't load this conversation."
 msgstr "यह बातचीत लोड नहीं हो सकी।"
@@ -2967,6 +2987,7 @@ msgid "Couldn't publish your voucher."
 msgstr "आपका वाउचर प्रकाशित नहीं किया जा सका."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:67
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:78
 msgid "Couldn't reach Support. Try again."
 msgstr "Support से संपर्क नहीं हो सका। पुनः प्रयास करें।"
 
@@ -3066,14 +3087,17 @@ msgstr "पूल खोजे नहीं जा सके."
 msgid "Couldn't search vouchers."
 msgstr "वाउचर नहीं खोजे जा सके."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:156
+#: apps/web/src/components/messaging/new-message-sheet.tsx:119
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:129
 msgid "Couldn't search. Try again."
 msgstr "खोज नहीं हो सकी। पुनः प्रयास करें।"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:127
+#: apps/web/src/components/messaging/new-message-sheet.tsx:90
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:85
 msgid "Couldn't send the request. Try again."
 msgstr "अनुरोध नहीं भेजा जा सका। पुनः प्रयास करें।"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:60
 #: apps/web/src/features/messaging/ui/message-composer.tsx:60
 msgid "Couldn't send. Your message is kept; send it again."
 msgstr "नहीं भेजा जा सका। आपका संदेश सुरक्षित है; इसे फिर से भेजें।"
@@ -3256,9 +3280,9 @@ msgid "Create your account"
 msgstr "अपना खाता बनाएँ"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/desktop/activity/activity-desk.tsx:187
-#: apps/web/src/desktop/activity/activity-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:718
+#: apps/web/src/desktop/activity/transactions-desk.tsx:195
+#: apps/web/src/desktop/activity/transactions-desk.tsx:597
+#: apps/web/src/desktop/activity/transactions-desk.tsx:726
 #: apps/web/src/desktop/posts/post-desk.tsx:305
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:74
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:97
@@ -3377,9 +3401,9 @@ msgstr "डार्क मोड"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:97
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
-#: apps/web/src/desktop/activity/activity-desk.tsx:255
-#: apps/web/src/desktop/activity/activity-desk.tsx:745
-#: apps/web/src/desktop/activity/activity-desk.tsx:846
+#: apps/web/src/desktop/activity/transactions-desk.tsx:263
+#: apps/web/src/desktop/activity/transactions-desk.tsx:753
+#: apps/web/src/desktop/activity/transactions-desk.tsx:854
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:168
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:942
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:100
@@ -3391,7 +3415,7 @@ msgstr "डार्क मोड"
 msgid "Date"
 msgstr "दिनांक"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:409
+#: apps/web/src/desktop/activity/transactions-desk.tsx:417
 msgid "Date range"
 msgstr "समय सीमा"
 
@@ -3413,6 +3437,7 @@ msgstr "दशमलव"
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "दशमलव 0 से 18 तक एक पूर्ण संख्या होनी चाहिए"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:184
 #: apps/web/src/features/messaging/ui/thread-page.tsx:108
 msgid "Decline"
 msgstr "अस्वीकार करें"
@@ -3489,7 +3514,7 @@ msgid "Deposited in this pool"
 msgstr "इस पूल में जमा किया गया"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:35
-#: apps/web/src/desktop/activity/activity-desk.tsx:191
+#: apps/web/src/desktop/activity/transactions-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:871
 msgid "Deposits"
 msgstr "जमा"
@@ -3731,7 +3756,7 @@ msgstr "पोस्ट संपादित करें"
 #: apps/web/src/desktop/account/profile-desk.tsx:120
 #: apps/web/src/desktop/account/settings-desk.tsx:236
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:140
+#: apps/web/src/desktop/shell/sidebar.tsx:141
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:32
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:79
 msgid "Edit profile"
@@ -3774,7 +3799,7 @@ msgstr "बुज़ुर्ग"
 #: apps/web/src/components/wants/want-detail.tsx:187
 #: apps/web/src/desktop/account/profile-desk.tsx:172
 #: apps/web/src/desktop/account/profile-desk.tsx:184
-#: apps/web/src/desktop/activity/activity-desk.tsx:901
+#: apps/web/src/desktop/activity/transactions-desk.tsx:909
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:372
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:353
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:109
@@ -4036,8 +4061,8 @@ msgid "Existing fee recipient"
 msgstr "मौजूदा शुल्क प्राप्तकर्ता"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:294
 #: apps/web/src/desktop/shell/sidebar.tsx:295
+#: apps/web/src/desktop/shell/sidebar.tsx:296
 msgid "Expand"
 msgstr "विस्तार करें"
 
@@ -4082,9 +4107,9 @@ msgstr "समाप्त हो रहा है"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:898
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:54
@@ -4325,8 +4350,8 @@ msgstr "अपनी फोटो को फ़्रेम करें"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:167
-#: apps/web/src/desktop/activity/activity-desk.tsx:196
-#: apps/web/src/desktop/activity/activity-desk.tsx:751
+#: apps/web/src/desktop/activity/transactions-desk.tsx:204
+#: apps/web/src/desktop/activity/transactions-desk.tsx:759
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:144
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/features/home/ui/activity-page.tsx:349
@@ -4405,7 +4430,7 @@ msgstr "हस्तशिल्प"
 msgid "Handmade"
 msgstr "हस्तनिर्मित"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:600
+#: apps/web/src/desktop/activity/transactions-desk.tsx:608
 #: apps/web/src/features/home/ui/activity-page.tsx:337
 msgid "Has a message"
 msgstr "एक संदेश है"
@@ -4420,6 +4445,7 @@ msgstr "स्वास्थ्य"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:27
 #: apps/web/src/components/messaging/helpdesk-section.tsx:42
+#: apps/web/src/desktop/activity/activity-header.tsx:48
 #: apps/web/src/features/messaging/ui/thread-page.tsx:43
 msgid "Helpdesk"
 msgstr "हेल्पडेस्क"
@@ -4553,7 +4579,7 @@ msgid "I already have an account"
 msgstr "मेरे पास पहले से ही एक खाता है"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:205
-#: apps/web/src/desktop/activity/activity-desk.tsx:772
+#: apps/web/src/desktop/activity/transactions-desk.tsx:780
 msgid "I created {amountLabel}."
 msgstr "मैंने {amountLabel} बनाया।"
 
@@ -4572,7 +4598,7 @@ msgid "I made a swap."
 msgstr "मैंने एक अदला-बदली की।"
 
 #. placeholder {0}: item.senderAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:775
+#: apps/web/src/desktop/activity/transactions-desk.tsx:783
 msgid "I received {amountLabel} from {0}."
 msgstr "मुझे {0} से {amountLabel} प्राप्त हुआ।"
 
@@ -4594,7 +4620,7 @@ msgstr "मैंने यह कुंजी सहेज ली है. य�
 "जा सकेगा।"
 
 #. placeholder {0}: item.recipientAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:774
+#: apps/web/src/desktop/activity/transactions-desk.tsx:782
 msgid "I sent {amountLabel} to {0}."
 msgstr "मैंने {amountLabel} को {0} पर भेजा।"
 
@@ -4722,7 +4748,8 @@ msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "स्थापना का अनुरोध किया गया. समाप्त करने के लिए अपने ब्राउज़र के "
 "निर्देशों का पालन करें।"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:109
+#: apps/web/src/components/messaging/new-message-sheet.tsx:72
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:67
 msgid "Introduce yourself"
 msgstr "अपना परिचय दें"
 
@@ -4788,15 +4815,15 @@ msgstr "किलोग्राम"
 msgid "Language"
 msgstr "भाषा"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:178
+#: apps/web/src/desktop/activity/transactions-desk.tsx:186
 msgid "Last 30 days"
 msgstr "पिछले 30 दिन"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:177
+#: apps/web/src/desktop/activity/transactions-desk.tsx:185
 msgid "Last 7 days"
 msgstr "पिछले 7 दिन"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:179
+#: apps/web/src/desktop/activity/transactions-desk.tsx:187
 msgid "Last 90 days"
 msgstr "पिछले 90 दिन"
 
@@ -5027,6 +5054,7 @@ msgstr "सूची"
 msgid "Litre"
 msgstr "लीटर"
 
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:99
 #: apps/web/src/features/messaging/ui/message-list.tsx:74
 msgid "Load earlier messages"
 msgstr "पिछले संदेश लोड करें"
@@ -5037,10 +5065,11 @@ msgstr "पिछले संदेश लोड करें"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
 #: apps/web/src/components/wants/want-detail.tsx:295
-#: apps/web/src/desktop/activity/activity-desk.tsx:549
+#: apps/web/src/desktop/activity/transactions-desk.tsx:557
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
 #: apps/web/src/desktop/market/market-list-states.tsx:100
 #: apps/web/src/desktop/market/market-search-field.tsx:450
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:79
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:187
@@ -5070,9 +5099,9 @@ msgid "Loading"
 msgstr "लोड हो रहा है"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:411
-#: apps/web/src/desktop/activity/activity-desk.tsx:480
-#: apps/web/src/desktop/activity/activity-desk.tsx:486
-#: apps/web/src/desktop/activity/activity-desk.tsx:634
+#: apps/web/src/desktop/activity/transactions-desk.tsx:488
+#: apps/web/src/desktop/activity/transactions-desk.tsx:494
+#: apps/web/src/desktop/activity/transactions-desk.tsx:642
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:989
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:145
@@ -5106,6 +5135,7 @@ msgstr "नकद गतिविधि लोड हो रही है..."
 msgid "Loading contact information…"
 msgstr "संपर्क जानकारी लोड हो रही है…"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:100
 #: apps/web/src/features/messaging/ui/thread-page.tsx:60
 msgid "Loading conversation…"
 msgstr "बातचीत लोड हो रही है…"
@@ -5116,6 +5146,7 @@ msgid "Loading credit limits…"
 msgstr "क्रेडिट सीमा लोड हो रही है..."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:24
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:46
 msgid "Loading helpdesk…"
 msgstr "हेल्पडेस्क लोड हो रहा है…"
 
@@ -5143,6 +5174,7 @@ msgid "Loading marketplace…"
 msgstr "बाज़ार लोड हो रहा है..."
 
 #: apps/web/src/components/messaging/messages-section.tsx:21
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:42
 msgid "Loading messages…"
 msgstr "संदेश लोड हो रहे हैं…"
 
@@ -5158,6 +5190,7 @@ msgid "Loading more…"
 msgstr "और अधिक लोड हो रहा है..."
 
 #: apps/web/src/components/messaging/notifications-section.tsx:18
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:25
 msgid "Loading notifications…"
 msgstr "सूचनाएं लोड हो रही हैं…"
 
@@ -5201,7 +5234,7 @@ msgid "Loading posts…"
 msgstr "पोस्ट लोड हो रही हैं..."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:240
-#: apps/web/src/desktop/activity/activity-desk.tsx:865
+#: apps/web/src/desktop/activity/transactions-desk.tsx:873
 msgid "Loading private attachment…"
 msgstr "निजी अनुलग्नक लोड हो रहा है..."
 
@@ -5467,7 +5500,7 @@ msgstr "मानचित्र पिन"
 #: apps/web/src/desktop/market/market-map-desk.tsx:186
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:131
+#: apps/web/src/desktop/shell/sidebar.tsx:132
 #: apps/web/src/features/home/ui/market-page.tsx:60
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:68
@@ -5477,8 +5510,8 @@ msgstr "बाज़ार"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:114
 #: apps/web/src/desktop/shell/command-palette.tsx:224
-#: apps/web/src/desktop/shell/sidebar.tsx:211
-#: apps/web/src/desktop/shell/sidebar.tsx:227
+#: apps/web/src/desktop/shell/sidebar.tsx:212
+#: apps/web/src/desktop/shell/sidebar.tsx:228
 #: apps/web/src/features/home/ui/marketplace-page.tsx:102
 msgid "Marketplace"
 msgstr "बाज़ार"
@@ -5487,7 +5520,7 @@ msgstr "बाज़ार"
 msgid "Marketplace details"
 msgstr "बाज़ार विवरण"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:211
+#: apps/web/src/desktop/shell/sidebar.tsx:212
 msgid "Marketplace lists"
 msgstr "बाज़ार सूचियाँ"
 
@@ -5505,7 +5538,8 @@ msgstr "बाज़ार के अनुभाग"
 msgid "Match"
 msgstr "मिलान"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:165
+#: apps/web/src/components/messaging/new-message-sheet.tsx:128
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:140
 msgid "Matching people"
 msgstr "मिलते-जुलते लोग"
 
@@ -5536,8 +5570,10 @@ msgstr "अधिकतम {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "मीडिया एक अपलोड किया गया http(s) URL होना चाहिए"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:179
+#: apps/web/src/components/messaging/new-message-sheet.tsx:142
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
+#: apps/web/src/desktop/messaging/composer-desk.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:152
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
 #: apps/web/src/features/messaging/ui/message-composer.tsx:64
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
@@ -5556,6 +5592,7 @@ msgid "Message or order shared."
 msgstr "संदेश या ऑर्डर साझा किया गया।"
 
 #: apps/web/src/components/messaging/messages-section.tsx:44
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
 msgid "Message requests"
 msgstr "संदेश अनुरोध"
 
@@ -5565,6 +5602,8 @@ msgid "Message shared."
 msgstr "संदेश साझा किया गया."
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:25
+#: apps/web/src/desktop/activity/activity-header.tsx:46
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:103
 #: apps/web/src/features/messaging/ui/thread-page.tsx:43
 msgid "Messages"
 msgstr "संदेश"
@@ -5847,6 +5886,7 @@ msgstr "नाम, चिन्ह या पता"
 msgid "Natural building"
 msgstr "प्राकृतिक निर्माण"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
 msgid "Neither of you can send messages. Only you can ask to talk again."
 msgstr "आप दोनों में से कोई भी संदेश नहीं भेज सकता। केवल आप फिर से बात करने का "
@@ -5876,8 +5916,10 @@ msgstr "नया"
 #~ msgid "New member"
 #~ msgstr "नया सदस्य"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:88
-#: apps/web/src/components/messaging/new-message-sheet.tsx:96
+#: apps/web/src/components/messaging/new-message-sheet.tsx:51
+#: apps/web/src/components/messaging/new-message-sheet.tsx:59
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:49
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:56
 msgid "New message"
 msgstr "नया संदेश"
 
@@ -5930,8 +5972,8 @@ msgstr "नया हस्ताक्षरकर्ता"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:480
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:171
-#: apps/web/src/desktop/activity/activity-desk.tsx:278
-#: apps/web/src/desktop/activity/activity-desk.tsx:754
+#: apps/web/src/desktop/activity/transactions-desk.tsx:286
+#: apps/web/src/desktop/activity/transactions-desk.tsx:762
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:147
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:911
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:83
@@ -5991,7 +6033,7 @@ msgstr "नहीं"
 msgid "No {0} fees have accrued yet."
 msgstr "अभी तक कोई {0} शुल्क जमा नहीं हुआ है।"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:515
+#: apps/web/src/desktop/activity/transactions-desk.tsx:523
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1005
 #: apps/web/src/features/home/ui/activity-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:100
@@ -6003,8 +6045,8 @@ msgstr "कोई गतिविधि इन फ़िल्टर से म�
 #~ msgstr "कोई गतिविधि इस खोज से मेल नहीं खाती।"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:434
-#: apps/web/src/desktop/activity/activity-desk.tsx:474
-#: apps/web/src/desktop/activity/activity-desk.tsx:536
+#: apps/web/src/desktop/activity/transactions-desk.tsx:482
+#: apps/web/src/desktop/activity/transactions-desk.tsx:544
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:172
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:489
 #: apps/web/src/features/home/ui/activity-page.tsx:170
@@ -6059,6 +6101,10 @@ msgstr "कोई संपर्क विवरण उपलब्ध नह�
 #: apps/web/src/components/wants/want-detail.tsx:170
 msgid "No contact information given"
 msgstr "कोई संपर्क जानकारी नहीं दी गई"
+
+#: apps/web/src/desktop/messaging/messages-desk.tsx:28
+msgid "No conversation open"
+msgstr "कोई बातचीत खुली नहीं है"
 
 #: apps/web/src/components/ui/country-sheet.tsx:89
 #: apps/web/src/desktop/ui/phone-field.tsx:103
@@ -6169,7 +6215,8 @@ msgstr "अभी दिखाने के लिए बाज़ार का 
 msgid "No matches"
 msgstr "कोई मिलान नहीं"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:161
+#: apps/web/src/components/messaging/new-message-sheet.tsx:124
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:134
 msgid "No matching people."
 msgstr "कोई मिलता-जुलता व्यक्ति नहीं।"
 
@@ -6179,6 +6226,8 @@ msgid "No matching recipients."
 msgstr "कोई मेल खाने वाला प्राप्तकर्ता नहीं."
 
 #: apps/web/src/components/messaging/messages-section.tsx:40
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:57
+#: apps/web/src/desktop/messaging/thread-desk.tsx:126
 #: apps/web/src/features/messaging/ui/thread-page.tsx:211
 msgid "No messages yet."
 msgstr "अभी तक कोई संदेश नहीं।"
@@ -6188,6 +6237,7 @@ msgid "No more results"
 msgstr "और कोई परिणाम नहीं"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:37
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:40
 msgid "No notifications yet."
 msgstr "अभी तक कोई सूचना नहीं।"
 
@@ -6508,6 +6558,8 @@ msgstr "अधिसूचना संग्रहण अनुपलब्ध 
 #: apps/web/src/components/messaging/notifications-section.tsx:41
 #: apps/web/src/desktop/account/settings-desk.tsx:378
 #: apps/web/src/desktop/account/settings-desk.tsx:416
+#: apps/web/src/desktop/activity/activity-header.tsx:47
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:46
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:33
 msgid "Notifications"
 msgstr "सूचनाएं"
@@ -6715,13 +6767,15 @@ msgstr "वाउचर पेज खोलें"
 msgid "Opening sign-in card…"
 msgstr "साइन-इन कार्ड खोला जा रहा है…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:114
+#: apps/web/src/components/messaging/new-message-sheet.tsx:77
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
 #: apps/web/src/desktop/account/profile-desk.tsx:131
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:72
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:50
@@ -6953,7 +7007,7 @@ msgstr "CLC पर मुझे भुगतान करें"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:36
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:68
-#: apps/web/src/desktop/activity/activity-desk.tsx:192
+#: apps/web/src/desktop/activity/transactions-desk.tsx:200
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:872
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1048
 #: apps/web/src/features/home/ui/activity-page.tsx:325
@@ -6982,7 +7036,7 @@ msgid "Payment QR code"
 msgstr "भुगतान QR कोड"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:281
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:251
 msgid "Payment receipt"
@@ -6993,6 +7047,8 @@ msgid "Payment status unknown"
 msgstr "भुगतान स्थिति अज्ञात"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:43
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:162
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -7053,7 +7109,7 @@ msgstr "स्थायी कृषि"
 #: apps/web/src/components/vouchers/voucher-about.tsx:117
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/desktop/account/profile-desk.tsx:200
-#: apps/web/src/desktop/activity/activity-desk.tsx:911
+#: apps/web/src/desktop/activity/transactions-desk.tsx:919
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:396
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:355
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:131
@@ -7082,6 +7138,7 @@ msgstr "फ़ोन उपलब्ध नहीं है"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:55
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:174
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -7107,6 +7164,7 @@ msgstr "तस्वीरें"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "फ़ोटो उसी क्रम में दिखाई देती हैं जिस क्रम में आप उन्हें जोड़ते हैं।"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:28
 #: apps/web/src/features/messaging/ui/message-composer.tsx:28
 msgid "Photos to send"
 msgstr "भेजने के लिए फ़ोटो"
@@ -7149,7 +7207,7 @@ msgstr "पौधशाला"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
 #: apps/web/src/components/wallet/recipient-address-input.tsx:204
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
 #: apps/web/src/desktop/market/market-search-field.tsx:428
@@ -7369,7 +7427,7 @@ msgstr "पूल ट्रैकिंग विवरण गायब है�
 #: apps/web/src/components/market-bar.tsx:189
 #: apps/web/src/components/market-bar.tsx:268
 #: apps/web/src/components/resource-usage.tsx:118
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/market/market-search-field.tsx:349
@@ -7450,7 +7508,7 @@ msgstr "पोस्ट अपडेट किया गया."
 #: apps/web/src/desktop/posts/posts-desk.tsx:100
 #: apps/web/src/desktop/posts/posts-desk.tsx:213
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:138
+#: apps/web/src/desktop/shell/sidebar.tsx:139
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:73
@@ -7654,7 +7712,7 @@ msgid "Pricing"
 msgstr "मूल्य निर्धारण"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:40
-#: apps/web/src/desktop/shell/sidebar.tsx:198
+#: apps/web/src/desktop/shell/sidebar.tsx:199
 msgid "Primary navigation"
 msgstr "प्राथमिक नेविगेशन"
 
@@ -7668,8 +7726,8 @@ msgid "Privacy note"
 msgstr "गोपनीयता नोट"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:258
-#: apps/web/src/desktop/activity/activity-desk.tsx:880
-#: apps/web/src/desktop/activity/activity-desk.tsx:884
+#: apps/web/src/desktop/activity/transactions-desk.tsx:888
+#: apps/web/src/desktop/activity/transactions-desk.tsx:892
 msgid "Private attachment"
 msgstr "निजी लगाव"
 
@@ -7746,7 +7804,7 @@ msgstr "साइन-इन कार्ड सुरक्षित है. प
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
-#: apps/web/src/desktop/activity/activity-desk.tsx:826
+#: apps/web/src/desktop/activity/transactions-desk.tsx:834
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:108
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:119
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:232
@@ -7949,10 +8007,10 @@ msgstr "वाउचर प्राप्त करें"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:75
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:33
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:473
-#: apps/web/src/desktop/activity/activity-desk.tsx:189
-#: apps/web/src/desktop/activity/activity-desk.tsx:591
-#: apps/web/src/desktop/activity/activity-desk.tsx:720
-#: apps/web/src/desktop/activity/activity-desk.tsx:819
+#: apps/web/src/desktop/activity/transactions-desk.tsx:197
+#: apps/web/src/desktop/activity/transactions-desk.tsx:599
+#: apps/web/src/desktop/activity/transactions-desk.tsx:728
+#: apps/web/src/desktop/activity/transactions-desk.tsx:827
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:869
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
 #: apps/web/src/features/home/ui/activity-page.tsx:329
@@ -8162,6 +8220,7 @@ msgstr "पूल से निकालें"
 msgid "Remove link {0}"
 msgstr "लिंक {0} हटाएँ"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:40
 #: apps/web/src/features/messaging/ui/message-composer.tsx:40
 msgid "Remove photo"
 msgstr "फ़ोटो हटाएं"
@@ -8221,6 +8280,7 @@ msgstr "फिर से चलाएँ"
 msgid "Reply"
 msgstr "उत्तर"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:142
 msgid "Report"
 msgstr "रिपोर्ट करें"
@@ -8253,10 +8313,12 @@ msgstr "रिपोर्ट अवधि"
 msgid "Report provenance"
 msgstr "उत्पत्ति की रिपोर्ट करें"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:84
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:170
 msgid "Report sent."
 msgstr "रिपोर्ट भेज दी गई।"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:141
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
 msgid "Report this person"
 msgstr "इस व्यक्ति की रिपोर्ट करें"
@@ -8268,6 +8330,9 @@ msgstr "रिपोर्ट किया गया"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:38
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:157
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:157
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
+#: apps/web/src/desktop/messaging/thread-desk.tsx:163
 #: apps/web/src/features/messaging/ui/thread-page.tsx:86
 msgid "Request"
 msgstr "अनुरोध"
@@ -8294,6 +8359,10 @@ msgstr "अनुरोध अस्वीकार कर दिया गय�
 msgid "Request retirement"
 msgstr "उपयोग से हटाने का अनुरोध करें"
 
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
+msgid "Requests"
+msgstr "अनुरोध"
+
 #: apps/web/src/components/ui/avatar-picker.tsx:95
 #: apps/web/src/components/ui/location-picker.tsx:71
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:286
@@ -8318,6 +8387,10 @@ msgstr "परतें रीसेट करें"
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:149
 msgid "Reset logo"
 msgstr "लोगो रीसेट करें"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:64
+msgid "Resolved"
+msgstr "हल हो गया"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:240
 #~ msgid "Resolving recipient…"
@@ -8553,11 +8626,14 @@ msgstr "समीक्षाएँ"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "इस वाउचर की समीक्षाएं यहां दिखाई देंगी."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:107
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:181
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:132
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:179
 msgid "Revoke"
 msgstr "वापस लें"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:133
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:85
 msgid "Revoke this conversation?"
 msgstr "इस बातचीत को वापस लें?"
@@ -8746,8 +8822,8 @@ msgstr "“{query}” खोजें"
 msgid "Search “{term}”"
 msgstr "“{term}” खोजें"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:435
-#: apps/web/src/desktop/activity/activity-desk.tsx:436
+#: apps/web/src/desktop/activity/transactions-desk.tsx:443
+#: apps/web/src/desktop/activity/transactions-desk.tsx:444
 #: apps/web/src/features/home/ui/activity-page.tsx:123
 #: apps/web/src/features/home/ui/activity-page.tsx:124
 msgid "Search activity"
@@ -8958,8 +9034,9 @@ msgstr "इस क्षेत्र में खोज रहे हैं"
 msgid "Searching vouchers…"
 msgstr "वाउचर खोज रहे हैं..."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:151
+#: apps/web/src/components/messaging/new-message-sheet.tsx:114
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:211
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:124
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:553
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -9054,6 +9131,7 @@ msgid "Sell to a bank account"
 msgstr "बैंक खाते में बेचें"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:333
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/shell/command-palette.tsx:101
 #: apps/web/src/desktop/shell/crumbs.tsx:32
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:136
@@ -9087,12 +9165,14 @@ msgstr "अपने Gnosis वॉलेट से Jumper के माध्य
 "बैंक या M-Pesa में निकालें।"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:187
 msgid "Send report"
 msgstr "रिपोर्ट भेजें"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:201
+#: apps/web/src/components/messaging/new-message-sheet.tsx:154
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:94
 msgid "Send request"
 msgstr "अनुरोध भेजें"
 
@@ -9122,6 +9202,7 @@ msgstr "निर्देश के अनुसार xDAI भेजें।"
 msgid "Sending"
 msgstr "भेजा जा रहा है"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/wallet/send-desk.tsx:380
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
 #: apps/web/src/features/messaging/ui/message-composer.tsx:107
@@ -9133,10 +9214,10 @@ msgstr "भेजा जा रहा है..."
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:69
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:32
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:475
-#: apps/web/src/desktop/activity/activity-desk.tsx:188
-#: apps/web/src/desktop/activity/activity-desk.tsx:593
-#: apps/web/src/desktop/activity/activity-desk.tsx:722
-#: apps/web/src/desktop/activity/activity-desk.tsx:813
+#: apps/web/src/desktop/activity/transactions-desk.tsx:196
+#: apps/web/src/desktop/activity/transactions-desk.tsx:601
+#: apps/web/src/desktop/activity/transactions-desk.tsx:730
+#: apps/web/src/desktop/activity/transactions-desk.tsx:821
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:868
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
@@ -9198,7 +9279,7 @@ msgstr "आपका वॉलेट सेट किया जा रहा ह
 #: apps/web/src/desktop/account/settings-desk.tsx:68
 #: apps/web/src/desktop/shell/command-palette.tsx:145
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:139
+#: apps/web/src/desktop/shell/sidebar.tsx:140
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:29
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -9253,7 +9334,7 @@ msgstr "शेयर रसीद"
 
 #. placeholder {0}: share.sharedBy.name
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:261
-#: apps/web/src/desktop/activity/activity-desk.tsx:887
+#: apps/web/src/desktop/activity/transactions-desk.tsx:895
 msgid "Shared by {0}"
 msgstr "{0} द्वारा साझा किया गया"
 
@@ -9614,9 +9695,9 @@ msgstr "{starts} से शुरू"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:64
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
-#: apps/web/src/desktop/activity/activity-desk.tsx:316
-#: apps/web/src/desktop/activity/activity-desk.tsx:733
-#: apps/web/src/desktop/activity/activity-desk.tsx:801
+#: apps/web/src/desktop/activity/transactions-desk.tsx:324
+#: apps/web/src/desktop/activity/transactions-desk.tsx:741
+#: apps/web/src/desktop/activity/transactions-desk.tsx:809
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:65
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:279
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:399
@@ -9721,6 +9802,8 @@ msgid "Supply must be greater than zero"
 msgstr "आपूर्ति शून्य से अधिक होनी चाहिए"
 
 #: apps/web/src/components/messaging/peer.tsx:36
+#: apps/web/src/desktop/messaging/conversation-desk.tsx:29
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:126
 #: apps/web/src/features/messaging/ui/message-list.tsx:97
 msgid "Support"
 msgstr "Support"
@@ -9731,8 +9814,8 @@ msgstr "SVG फ़ाइलें समर्थित नहीं हैं. 
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
-#: apps/web/src/desktop/activity/activity-desk.tsx:587
-#: apps/web/src/desktop/activity/activity-desk.tsx:793
+#: apps/web/src/desktop/activity/transactions-desk.tsx:595
+#: apps/web/src/desktop/activity/transactions-desk.tsx:801
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:258
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:270
 #: apps/web/src/desktop/shell/command-palette.tsx:111
@@ -9823,7 +9906,7 @@ msgstr "अदला-बदली जारी है"
 msgid "Swapping…"
 msgstr "अदला-बदली जारी है…"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:190
+#: apps/web/src/desktop/activity/transactions-desk.tsx:198
 msgid "Swaps"
 msgstr "स्वैप"
 
@@ -10006,6 +10089,9 @@ msgstr "शर्तें URL"
 msgid "Test with a small amount first."
 msgstr "पहले छोटी राशि से जाँच करें।"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:194
+#: apps/web/src/desktop/messaging/thread-desk.tsx:234
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:123
 #: apps/web/src/features/messaging/ui/thread-page.tsx:118
 #: apps/web/src/features/messaging/ui/thread-page.tsx:161
@@ -10180,6 +10266,7 @@ msgstr "भुगतान अस्वीकार कर दिया गय�
 msgid "The payment was refused. Nothing was charged."
 msgstr "भुगतान से इनकार कर दिया गया. कुछ भी शुल्क नहीं लिया गया."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:54
 #: apps/web/src/features/messaging/ui/message-composer.tsx:54
 msgid "The photo didn't upload. Remove it and try again."
 msgstr "फ़ोटो अपलोड नहीं हुई। इसे हटाकर पुनः प्रयास करें।"
@@ -10255,6 +10342,7 @@ msgstr "इस वाउचर के साथ विनिमय के लि
 msgid "These filters aren't valid."
 msgstr "ये फ़िल्टर मान्य नहीं हैं."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:151
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:107
 msgid "They won't be able to message you or send you requests."
 msgstr "वे आपको संदेश या अनुरोध नहीं भेज पाएंगे।"
@@ -10332,10 +10420,12 @@ msgid "This contract does not expose a compatible multisig owner list. The "
 msgstr "यह अनुबंध मल्टीसिग स्वामियों की संगत सूची उपलब्ध नहीं कराता। संपत्ति "
 "लॉक हो सकती है।"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:75
 #: apps/web/src/features/messaging/ui/thread-page.tsx:64
 msgid "This conversation isn't available."
 msgstr "यह बातचीत उपलब्ध नहीं है।"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:206
 #: apps/web/src/features/messaging/ui/thread-page.tsx:130
 msgid "This conversation was revoked."
 msgstr "यह बातचीत वापस ले ली गई।"
@@ -10547,6 +10637,7 @@ msgstr "इस QR कोड में वैध निजी कुंजी न
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "इस QR कोड में कोई मान्य साइन-इन कार्ड नहीं है।"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:204
 #: apps/web/src/features/messaging/ui/thread-page.tsx:128
 msgid "This request was declined."
 msgstr "यह अनुरोध अस्वीकार कर दिया गया।"
@@ -10589,8 +10680,8 @@ msgstr "शीर्षक 200 अक्षर या उससे कम हो
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:183
-#: apps/web/src/desktop/activity/activity-desk.tsx:198
-#: apps/web/src/desktop/activity/activity-desk.tsx:760
+#: apps/web/src/desktop/activity/transactions-desk.tsx:206
+#: apps/web/src/desktop/activity/transactions-desk.tsx:768
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:159
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/desktop/wallet/send-desk.tsx:182
@@ -10660,8 +10751,8 @@ msgid "Training"
 msgstr "प्रशिक्षण"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:102
-#: apps/web/src/desktop/activity/activity-desk.tsx:761
-#: apps/web/src/desktop/activity/activity-desk.tsx:851
+#: apps/web/src/desktop/activity/transactions-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:859
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:174
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:251
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:196
@@ -10684,7 +10775,7 @@ msgid "Transaction hash"
 msgstr "लेनदेन हैश"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:44
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:129
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:173
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:202
@@ -10697,10 +10788,11 @@ msgid "Transaction hash copied"
 msgstr "लेन-देन हैश कॉपी किया गया"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:24
+#: apps/web/src/desktop/activity/activity-header.tsx:45
 msgid "Transactions"
 msgstr "लेनदेन"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:622
+#: apps/web/src/desktop/activity/transactions-desk.tsx:630
 msgid "Transfer details"
 msgstr "ट्रांसफ़र विवरण"
 
@@ -10753,8 +10845,13 @@ msgstr "यात्रा"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:65
 #: apps/web/src/desktop/account/profile-desk.tsx:53
 #: apps/web/src/desktop/account/settings-desk.tsx:545
-#: apps/web/src/desktop/activity/activity-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:507
 #: apps/web/src/desktop/market/market-search-field.tsx:442
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:51
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:34
+#: apps/web/src/desktop/messaging/thread-desk.tsx:90
+#: apps/web/src/desktop/messaging/thread-desk.tsx:114
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:255
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:68
@@ -10812,7 +10909,7 @@ msgstr "यात्रा"
 msgid "Try again"
 msgstr "पुनः प्रयास करें"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:287
+#: apps/web/src/desktop/activity/transactions-desk.tsx:295
 #: apps/web/src/desktop/market/market-list-desk.tsx:507
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:54
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:50
@@ -10833,7 +10930,7 @@ msgstr "पूल खोजने के लिए कम से कम {POOL_SE
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "वाउचर खोजने के लिए कम से कम {VOUCHER_SEARCH_MIN_CHARS} अक्षर टाइप करें।"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:456
+#: apps/web/src/desktop/activity/transactions-desk.tsx:464
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:173
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:532
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:196
@@ -10891,12 +10988,16 @@ msgstr "भाषा लोड करने में असमर्थ. अं
 msgid "Unavailable"
 msgstr "अनुपलब्ध"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:250
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:184
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:182
 #: apps/web/src/features/messaging/ui/thread-page.tsx:180
 msgid "Unblock"
 msgstr "अनब्लॉक करें"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:136
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:88
 msgid "Unblock this person?"
 msgstr "इस व्यक्ति को अनब्लॉक करें?"
@@ -11074,6 +11175,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "अपने Gnosis वॉलेट में धन भेजने के लिए <0>Binance</0> या किसी अन्य "
 "स्थानीय एक्सचेंज और फिर <1>Jumper</1> का उपयोग करें।"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:52
 #: apps/web/src/features/messaging/ui/message-composer.tsx:52
 msgid "Use a JPEG, PNG or WebP photo under 8 MB."
 msgstr "8 MB से छोटी JPEG, PNG या WebP फ़ोटो का उपयोग करें।"
@@ -11163,8 +11265,10 @@ msgstr "उपयोगकर्ता नाम कॉपी किया ग�
 msgid "Username must contain 1–80 characters"
 msgstr "उपयोगकर्ता नाम में 1–80 अक्षर होने चाहिए"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:135
-#: apps/web/src/components/messaging/new-message-sheet.tsx:146
+#: apps/web/src/components/messaging/new-message-sheet.tsx:98
+#: apps/web/src/components/messaging/new-message-sheet.tsx:109
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:114
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:115
 msgid "Username or phone number"
 msgstr "यूज़रनेम या फ़ोन नंबर"
 
@@ -11290,7 +11394,7 @@ msgstr "वाउचर"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/desktop/activity/activity-desk.tsx:374
+#: apps/web/src/desktop/activity/transactions-desk.tsx:382
 #: apps/web/src/desktop/market/market-bits.tsx:82
 #: apps/web/src/desktop/market/market-list-desk.tsx:448
 #: apps/web/src/desktop/market/place-panel.tsx:204
@@ -11328,7 +11432,7 @@ msgid "Voucher controls"
 msgstr "वाउचर नियंत्रण"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 msgid "Voucher creation receipt"
 msgstr "वाउचर निर्माण रसीद"
 
@@ -11440,11 +11544,11 @@ msgstr "वाउचर टैग"
 msgid "Voucher tracking details are missing."
 msgstr "वाउचर ट्रैकिंग विवरण गायब हैं।"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:379
+#: apps/web/src/desktop/activity/transactions-desk.tsx:387
 msgid "Voucher: <0>{voucherLabel}</0>"
 msgstr "वाउचर: <0>{voucherLabel}</0>"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:383
+#: apps/web/src/desktop/activity/transactions-desk.tsx:391
 msgid "Voucher: Any"
 msgstr "वाउचर: कोई भी"
 
@@ -11544,6 +11648,7 @@ msgstr "ऑन-चेन पुष्टि की प्रतीक्षा �
 msgid "Waiting for the chain…"
 msgstr "श्रृंखला की प्रतीक्षा में..."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:189
 #: apps/web/src/features/messaging/ui/thread-page.tsx:113
 msgid "Waiting for them to accept your request."
 msgstr "आपके अनुरोध को स्वीकार किए जाने की प्रतीक्षा है।"
@@ -11553,7 +11658,7 @@ msgstr "आपके अनुरोध को स्वीकार किए �
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:132
+#: apps/web/src/desktop/shell/sidebar.tsx:133
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
@@ -11709,6 +11814,7 @@ msgstr "पुनः स्वागत है"
 msgid "What are you offering?"
 msgstr "आप क्या ऑफ़र कर रहे हैं?"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:155
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:111
 msgid "What happened?"
 msgstr "क्या हुआ?"
@@ -11764,7 +11870,7 @@ msgstr "कहां और किस लिए"
 msgid "Where did this happen?"
 msgstr "ये कहां हुआ?"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:199
+#: apps/web/src/desktop/activity/transactions-desk.tsx:207
 msgid "With"
 msgstr "के साथ"
 
@@ -11799,6 +11905,7 @@ msgstr "तरलता निकालें"
 msgid "Withdrawal submitted"
 msgstr "निकासी प्रस्तुत की गई"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:94
 #: apps/web/src/features/messaging/ui/message-composer.tsx:70
 msgid "Write a message"
 msgstr "संदेश लिखें"
@@ -11854,7 +11961,8 @@ msgstr "हाँ"
 msgid "You already have a catalog."
 msgstr "आपके पास पहले से एक कैटलॉग है।"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:123
+#: apps/web/src/components/messaging/new-message-sheet.tsx:86
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:81
 msgid "You already have a conversation with this person."
 msgstr "इस व्यक्ति के साथ आपकी पहले से बातचीत है।"
 
@@ -11862,6 +11970,7 @@ msgstr "इस व्यक्ति के साथ आपकी पहले 
 #~ msgid "You are signed in with the passkey on this device."
 #~ msgstr "आप इस डिवाइस पर पासकी से साइन इन हैं।"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:243
 #: apps/web/src/features/messaging/ui/thread-page.tsx:170
 msgid "You blocked this person."
 msgstr "आपने इस व्यक्ति को ब्लॉक किया है।"
@@ -11899,7 +12008,8 @@ msgstr "पूल को उपयोग से हटाए जाने के
 msgid "You can write or edit your review until {0}."
 msgstr "आप {0} तक अपनी समीक्षा लिख या संपादित कर सकते हैं।"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:121
+#: apps/web/src/components/messaging/new-message-sheet.tsx:84
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:79
 msgid "You can't message this person."
 msgstr "आप इस व्यक्ति को संदेश नहीं भेज सकते।"
 
@@ -11997,7 +12107,8 @@ msgstr "तुम्हें प्राप्त होगा"
 msgid "You'll send"
 msgstr "आप भेज दीजिएगा"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:125
+#: apps/web/src/components/messaging/new-message-sheet.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:83
 msgid "You've sent too many requests today. Try again tomorrow."
 msgstr "आपने आज बहुत अधिक अनुरोध भेजे हैं। कल पुनः प्रयास करें।"
 

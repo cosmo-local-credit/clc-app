@@ -76,7 +76,7 @@ msgstr "{count, plural, one {# chapisho} other {# machapisho}}"
 #~ msgstr "Chagua sarafu unayopendelea"
 
 #. placeholder {0}: activity.length
-#: apps/web/src/desktop/activity/activity-desk.tsx:465
+#: apps/web/src/desktop/activity/transactions-desk.tsx:473
 #: apps/web/src/features/home/ui/activity-page.tsx:157
 msgid "{0, plural, one {# activity item shown.} other {# activity items "
 "shown.}}"
@@ -508,6 +508,7 @@ msgid "About Cosmo-Local Credit"
 msgstr "Kuhusu Cosmo-Local Credit"
 
 #: apps/web/src/components/terms-acceptance-field.tsx:29
+#: apps/web/src/desktop/messaging/thread-desk.tsx:177
 #: apps/web/src/features/messaging/ui/thread-page.tsx:100
 msgid "Accept"
 msgstr "Kubali"
@@ -580,14 +581,14 @@ msgstr "Imewashwa"
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
-#: apps/web/src/desktop/activity/activity-desk.tsx:340
-#: apps/web/src/desktop/activity/activity-desk.tsx:505
+#: apps/web/src/desktop/activity/activity-header.tsx:29
+#: apps/web/src/desktop/activity/transactions-desk.tsx:513
 #: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:221
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:877
 #: apps/web/src/desktop/pools/pool-main.tsx:440
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:133
+#: apps/web/src/desktop/shell/sidebar.tsx:134
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
@@ -600,16 +601,17 @@ msgstr "Imewashwa"
 msgid "Activity"
 msgstr "Shughuli"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 msgid "Activity not found."
 msgstr "Shughuli haikupatikana."
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:32
+#: apps/web/src/desktop/activity/activity-header.tsx:57
 msgid "Activity sections"
 msgstr "Sehemu za shughuli"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:136
+#: apps/web/src/desktop/shell/sidebar.tsx:137
 msgid "Activity, {unreadActivity, plural, one {# new} other {# new}}"
 msgstr "Shughuli, {unreadActivity, plural, one {# mpya} other {# mpya}}"
 
@@ -654,6 +656,7 @@ msgid "Add a phone number to your profile to use MPESA."
 msgstr "Ongeza nambari ya simu kwenye wasifu wako ili kutumia MPESA."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:66
+#: apps/web/src/desktop/messaging/composer-desk.tsx:80
 #: apps/web/src/features/messaging/ui/message-composer.tsx:93
 msgid "Add a photo"
 msgstr "Ongeza picha"
@@ -787,8 +790,8 @@ msgid "Address book"
 msgstr "Kitabu cha anwani"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:588
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:31
 #: apps/web/src/desktop/wallet/receive-desk.tsx:47
@@ -845,7 +848,7 @@ msgstr "Kilimo"
 
 #: apps/web/src/components/market-bar.tsx:205
 #: apps/web/src/components/market-bar.tsx:264
-#: apps/web/src/desktop/activity/activity-desk.tsx:350
+#: apps/web/src/desktop/activity/transactions-desk.tsx:358
 #: apps/web/src/desktop/market/market-toolbar.tsx:31
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:964
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:399
@@ -869,8 +872,8 @@ msgstr "Vikundi vyote"
 msgid "All selected"
 msgstr "Zote zilizochaguliwa"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:412
-#: apps/web/src/desktop/activity/activity-desk.tsx:416
+#: apps/web/src/desktop/activity/transactions-desk.tsx:420
+#: apps/web/src/desktop/activity/transactions-desk.tsx:424
 msgid "All time"
 msgstr "Muda wote"
 
@@ -904,7 +907,7 @@ msgstr "Daima hakikisha tokeni na mtandao vinalingana kabla ya kutuma."
 #~ "salama."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/desktop/activity/activity-desk.tsx:294
+#: apps/web/src/desktop/activity/transactions-desk.tsx:302
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:395
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:919
@@ -983,7 +986,7 @@ msgstr "Usomaji mwingine wa kadi tayari unaendelea. Jaribu tena."
 msgid "Any selected"
 msgstr "Yoyote iliyochaguliwa"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:389
+#: apps/web/src/desktop/activity/transactions-desk.tsx:397
 msgid "Any voucher"
 msgstr "Vocha yoyote"
 
@@ -1064,10 +1067,12 @@ msgstr "Una uhakika unataka kuomba kustaafishwa kwa vocha hii?"
 msgid "Art"
 msgstr "Sanaa"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:124
 #: apps/web/src/features/messaging/ui/thread-page.tsx:211
 msgid "Ask Support anything."
 msgstr "Uliza Usaidizi chochote."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:229
 #: apps/web/src/features/messaging/ui/thread-page.tsx:156
 msgid "Ask to talk again"
 msgstr "Omba kuzungumza tena"
@@ -1107,11 +1112,12 @@ msgstr "Inasubiri idhini"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
-#: apps/web/src/components/messaging/new-message-sheet.tsx:204
+#: apps/web/src/components/messaging/new-message-sheet.tsx:157
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
 #: apps/web/src/desktop/market/place-panel.tsx:122
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:91
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1196,11 +1202,14 @@ msgstr "Wasifu lazima uwe na herufi zisizozidi 500"
 msgid "Biodiversity"
 msgstr "Bayoanuwai"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:184
 msgid "Block"
 msgstr "Zuia"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
 msgid "Block this person?"
 msgstr "Kumzuia mtu huyu?"
@@ -1286,6 +1295,7 @@ msgstr "Ruhusa ya kamera imekataliwa."
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:434
 #: apps/web/src/desktop/account/profile-desk.tsx:443
 #: apps/web/src/desktop/account/settings-desk.tsx:176
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:365
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:434
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:465
@@ -1769,7 +1779,7 @@ msgid "Clear filter"
 msgstr "Ondoa kichujio"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:115
-#: apps/web/src/desktop/activity/activity-desk.tsx:532
+#: apps/web/src/desktop/activity/transactions-desk.tsx:540
 #: apps/web/src/desktop/market/market-list-desk.tsx:410
 #: apps/web/src/desktop/market/market-notices.tsx:198
 #: apps/web/src/desktop/market/market-notices.tsx:266
@@ -1806,7 +1816,7 @@ msgstr "Futa eneo"
 #: apps/web/src/components/catalog-filter-controls.tsx:476
 #: apps/web/src/components/market-search.tsx:73
 #: apps/web/src/components/market-search.tsx:180
-#: apps/web/src/desktop/activity/activity-desk.tsx:445
+#: apps/web/src/desktop/activity/transactions-desk.tsx:453
 #: apps/web/src/desktop/market/market-search-field.tsx:131
 #: apps/web/src/desktop/market/market-toolbar.tsx:299
 #: apps/web/src/features/home/ui/activity-page.tsx:132
@@ -1884,8 +1894,8 @@ msgid "Collaboration"
 msgstr "Ushirikiano"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:185
-#: apps/web/src/desktop/shell/sidebar.tsx:189
+#: apps/web/src/desktop/shell/sidebar.tsx:186
+#: apps/web/src/desktop/shell/sidebar.tsx:190
 msgid "Collapse"
 msgstr "Kunja"
 
@@ -2037,9 +2047,9 @@ msgstr "Thibitisha kwa passkey yako. Kadi yako ya zamani itaacha kufanya kazi "
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -2190,6 +2200,7 @@ msgid "Contact Phone"
 msgstr "Simu ya mawasiliano"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:63
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:74
 msgid "Contact support"
 msgstr "Wasiliana na usaidizi"
 
@@ -2284,16 +2295,20 @@ msgstr "Anwani ya mkataba"
 msgid "Contract address copied"
 msgstr "Anwani ya mkataba imenakiliwa"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:55
 #: apps/web/src/features/messaging/ui/thread-page.tsx:50
 msgid "Conversation"
 msgstr "Mazungumzo"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:100
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:73
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:95
 msgid "Conversation options"
 msgstr "Chaguo za mazungumzo"
 
 #: apps/web/src/components/messaging/messages-section.tsx:55
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:74
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:75
 msgid "Conversations"
 msgstr "Mazungumzo"
 
@@ -2352,7 +2367,7 @@ msgstr "Nakili kiungo"
 #~ msgid "Copy mint transaction hash"
 #~ msgstr "Nakili hashi ya muamala wa utengenezaji"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:839
+#: apps/web/src/desktop/activity/transactions-desk.tsx:847
 #: apps/web/src/desktop/pools/detail/pool-receive-popover.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:56
 msgid "Copy pool address"
@@ -2390,7 +2405,7 @@ msgid "Copy supply creation transaction hash"
 msgstr "Nakili hashi ya muamala wa kuunda usambazaji"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
-#: apps/web/src/desktop/activity/activity-desk.tsx:699
+#: apps/web/src/desktop/activity/transactions-desk.tsx:707
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:178
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:125
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:255
@@ -2532,8 +2547,8 @@ msgstr "Imeshindwa kunakili"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:583
 #: apps/web/src/desktop/account/settings-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:26
 #: apps/web/src/desktop/wallet/cash-desk.tsx:32
@@ -2628,7 +2643,7 @@ msgstr "Haikuweza kunakili hashi ya muamala wa kuunda usambazaji"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:39
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:45
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:130
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:168
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:174
@@ -2682,8 +2697,8 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Haikuwezekana kutambua nchi hapa. Jaribu sehemu iliyo karibu."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
-#: apps/web/src/desktop/activity/activity-desk.tsx:491
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:993
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:153
 #: apps/web/src/desktop/wallet/send-desk.tsx:535
@@ -2742,6 +2757,8 @@ msgid "Couldn't load marketplace results."
 msgstr "Imeshindikana kupakia matokeo ya soko."
 
 #: apps/web/src/components/messaging/messages-section.tsx:26
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:48
+#: apps/web/src/desktop/messaging/thread-desk.tsx:107
 #: apps/web/src/features/messaging/ui/thread-page.tsx:188
 msgid "Couldn't load messages."
 msgstr "Imeshindikana kupakia jumbe."
@@ -2751,6 +2768,7 @@ msgid "Couldn't load more"
 msgstr "Imeshindwa kupakia zaidi"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:23
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:31
 msgid "Couldn't load notifications."
 msgstr "Imeshindikana kupakia arifa."
 
@@ -2814,11 +2832,12 @@ msgid "Couldn't load tags."
 msgstr "Imeshindwa kupakia lebo."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:29
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:52
 msgid "Couldn't load the helpdesk."
 msgstr "Imeshindikana kupakia dawati la msaada."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:247
-#: apps/web/src/desktop/activity/activity-desk.tsx:872
+#: apps/web/src/desktop/activity/transactions-desk.tsx:880
 msgid "Couldn't load the private attachment."
 msgstr "Haikuwezekana kupakia kiambatisho cha faragha."
 
@@ -2827,6 +2846,7 @@ msgstr "Haikuwezekana kupakia kiambatisho cha faragha."
 msgid "Couldn't load the Want form."
 msgstr "Fomu ya ombi haikuweza kupakiwa."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:80
 #: apps/web/src/features/messaging/ui/thread-page.tsx:69
 msgid "Couldn't load this conversation."
 msgstr "Imeshindikana kupakia mazungumzo haya."
@@ -2966,6 +2986,7 @@ msgid "Couldn't publish your voucher."
 msgstr "Imeshindikana kuchapisha vocha yako."
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:67
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:78
 msgid "Couldn't reach Support. Try again."
 msgstr "Imeshindikana kufikia Usaidizi. Jaribu tena."
 
@@ -3066,14 +3087,17 @@ msgstr "Haikuwezekana kutafuta puli."
 msgid "Couldn't search vouchers."
 msgstr "Haikuwezekana kutafuta vocha."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:156
+#: apps/web/src/components/messaging/new-message-sheet.tsx:119
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:129
 msgid "Couldn't search. Try again."
 msgstr "Imeshindikana kutafuta. Jaribu tena."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:127
+#: apps/web/src/components/messaging/new-message-sheet.tsx:90
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:85
 msgid "Couldn't send the request. Try again."
 msgstr "Imeshindikana kutuma ombi. Jaribu tena."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:60
 #: apps/web/src/features/messaging/ui/message-composer.tsx:60
 msgid "Couldn't send. Your message is kept; send it again."
 msgstr "Imeshindikana kutuma. Ujumbe wako umehifadhiwa; utume tena."
@@ -3256,9 +3280,9 @@ msgid "Create your account"
 msgstr "Fungua akaunti yako"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/desktop/activity/activity-desk.tsx:187
-#: apps/web/src/desktop/activity/activity-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:718
+#: apps/web/src/desktop/activity/transactions-desk.tsx:195
+#: apps/web/src/desktop/activity/transactions-desk.tsx:597
+#: apps/web/src/desktop/activity/transactions-desk.tsx:726
 #: apps/web/src/desktop/posts/post-desk.tsx:305
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:74
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:97
@@ -3377,9 +3401,9 @@ msgstr "Hali ya giza"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:97
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
-#: apps/web/src/desktop/activity/activity-desk.tsx:255
-#: apps/web/src/desktop/activity/activity-desk.tsx:745
-#: apps/web/src/desktop/activity/activity-desk.tsx:846
+#: apps/web/src/desktop/activity/transactions-desk.tsx:263
+#: apps/web/src/desktop/activity/transactions-desk.tsx:753
+#: apps/web/src/desktop/activity/transactions-desk.tsx:854
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:168
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:942
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:100
@@ -3391,7 +3415,7 @@ msgstr "Hali ya giza"
 msgid "Date"
 msgstr "Tarehe"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:409
+#: apps/web/src/desktop/activity/transactions-desk.tsx:417
 msgid "Date range"
 msgstr "Kipindi"
 
@@ -3413,6 +3437,7 @@ msgstr "Nafasi za desimali"
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "Nafasi za desimali lazima ziwe namba kamili kutoka 0 hadi 18"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:184
 #: apps/web/src/features/messaging/ui/thread-page.tsx:108
 msgid "Decline"
 msgstr "Kataa"
@@ -3489,7 +3514,7 @@ msgid "Deposited in this pool"
 msgstr "Zilizowekwa kwenye puli hii"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:35
-#: apps/web/src/desktop/activity/activity-desk.tsx:191
+#: apps/web/src/desktop/activity/transactions-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:871
 msgid "Deposits"
 msgstr "Amana"
@@ -3730,7 +3755,7 @@ msgstr "Hariri chapisho"
 #: apps/web/src/desktop/account/profile-desk.tsx:120
 #: apps/web/src/desktop/account/settings-desk.tsx:236
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:140
+#: apps/web/src/desktop/shell/sidebar.tsx:141
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:32
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:79
 msgid "Edit profile"
@@ -3773,7 +3798,7 @@ msgstr "Wazee"
 #: apps/web/src/components/wants/want-detail.tsx:187
 #: apps/web/src/desktop/account/profile-desk.tsx:172
 #: apps/web/src/desktop/account/profile-desk.tsx:184
-#: apps/web/src/desktop/activity/activity-desk.tsx:901
+#: apps/web/src/desktop/activity/transactions-desk.tsx:909
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:372
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:353
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:109
@@ -4036,8 +4061,8 @@ msgid "Existing fee recipient"
 msgstr "Mpokeaji wa sasa wa ada"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:294
 #: apps/web/src/desktop/shell/sidebar.tsx:295
+#: apps/web/src/desktop/shell/sidebar.tsx:296
 msgid "Expand"
 msgstr "Panua"
 
@@ -4082,9 +4107,9 @@ msgstr "Inaisha muda"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:898
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:54
@@ -4324,8 +4349,8 @@ msgstr "Panga picha yako"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:167
-#: apps/web/src/desktop/activity/activity-desk.tsx:196
-#: apps/web/src/desktop/activity/activity-desk.tsx:751
+#: apps/web/src/desktop/activity/transactions-desk.tsx:204
+#: apps/web/src/desktop/activity/transactions-desk.tsx:759
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:144
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/features/home/ui/activity-page.tsx:349
@@ -4404,7 +4429,7 @@ msgstr "Ufundi wa mikono"
 msgid "Handmade"
 msgstr "Imetengenezwa kwa mikono"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:600
+#: apps/web/src/desktop/activity/transactions-desk.tsx:608
 #: apps/web/src/features/home/ui/activity-page.tsx:337
 msgid "Has a message"
 msgstr "Ina ujumbe"
@@ -4419,6 +4444,7 @@ msgstr "Afya"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:27
 #: apps/web/src/components/messaging/helpdesk-section.tsx:42
+#: apps/web/src/desktop/activity/activity-header.tsx:48
 #: apps/web/src/features/messaging/ui/thread-page.tsx:43
 msgid "Helpdesk"
 msgstr "Msaada"
@@ -4552,7 +4578,7 @@ msgid "I already have an account"
 msgstr "Nina akaunti tayari"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:205
-#: apps/web/src/desktop/activity/activity-desk.tsx:772
+#: apps/web/src/desktop/activity/transactions-desk.tsx:780
 msgid "I created {amountLabel}."
 msgstr "Nimeunda {amountLabel}."
 
@@ -4570,7 +4596,7 @@ msgid "I made a swap."
 msgstr "Nimefanya ubadilishaji."
 
 #. placeholder {0}: item.senderAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:775
+#: apps/web/src/desktop/activity/transactions-desk.tsx:783
 msgid "I received {amountLabel} from {0}."
 msgstr "Nimepokea {amountLabel} kutoka kwa {0}."
 
@@ -4591,7 +4617,7 @@ msgid "I saved my sign-in card. If I lose it, I may lose access to my wallet."
 msgstr "Nimehifadhi ufunguo huu. Ukipotea, mkoba wangu hauwezi kurejeshwa."
 
 #. placeholder {0}: item.recipientAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:774
+#: apps/web/src/desktop/activity/transactions-desk.tsx:782
 msgid "I sent {amountLabel} to {0}."
 msgstr "Nimemtumia {0} {amountLabel}."
 
@@ -4718,7 +4744,8 @@ msgstr "Kiungo cha usakinishaji"
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Usakinishaji umeombwa. Fuata maelekezo ya kivinjari chako ili kumaliza."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:109
+#: apps/web/src/components/messaging/new-message-sheet.tsx:72
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:67
 msgid "Introduce yourself"
 msgstr "Jitambulishe"
 
@@ -4784,15 +4811,15 @@ msgstr "Kilogramu"
 msgid "Language"
 msgstr "Lugha"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:178
+#: apps/web/src/desktop/activity/transactions-desk.tsx:186
 msgid "Last 30 days"
 msgstr "Siku 30 zilizopita"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:177
+#: apps/web/src/desktop/activity/transactions-desk.tsx:185
 msgid "Last 7 days"
 msgstr "Siku 7 zilizopita"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:179
+#: apps/web/src/desktop/activity/transactions-desk.tsx:187
 msgid "Last 90 days"
 msgstr "Siku 90 zilizopita"
 
@@ -5026,6 +5053,7 @@ msgstr "Orodha"
 msgid "Litre"
 msgstr "Lita"
 
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:99
 #: apps/web/src/features/messaging/ui/message-list.tsx:74
 msgid "Load earlier messages"
 msgstr "Pakia jumbe za awali"
@@ -5036,10 +5064,11 @@ msgstr "Pakia jumbe za awali"
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
 #: apps/web/src/components/wants/want-detail.tsx:295
-#: apps/web/src/desktop/activity/activity-desk.tsx:549
+#: apps/web/src/desktop/activity/transactions-desk.tsx:557
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
 #: apps/web/src/desktop/market/market-list-states.tsx:100
 #: apps/web/src/desktop/market/market-search-field.tsx:450
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:79
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:187
@@ -5069,9 +5098,9 @@ msgid "Loading"
 msgstr "Inapakia"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:411
-#: apps/web/src/desktop/activity/activity-desk.tsx:480
-#: apps/web/src/desktop/activity/activity-desk.tsx:486
-#: apps/web/src/desktop/activity/activity-desk.tsx:634
+#: apps/web/src/desktop/activity/transactions-desk.tsx:488
+#: apps/web/src/desktop/activity/transactions-desk.tsx:494
+#: apps/web/src/desktop/activity/transactions-desk.tsx:642
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:989
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:145
@@ -5105,6 +5134,7 @@ msgstr "Inapakia shughuli za pesa…"
 msgid "Loading contact information…"
 msgstr "Inapakia maelezo ya mawasiliano…"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:100
 #: apps/web/src/features/messaging/ui/thread-page.tsx:60
 msgid "Loading conversation…"
 msgstr "Inapakia mazungumzo…"
@@ -5115,6 +5145,7 @@ msgid "Loading credit limits…"
 msgstr "Inapakia vikomo vya mkopo…"
 
 #: apps/web/src/components/messaging/helpdesk-section.tsx:24
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:46
 msgid "Loading helpdesk…"
 msgstr "Inapakia dawati la msaada…"
 
@@ -5142,6 +5173,7 @@ msgid "Loading marketplace…"
 msgstr "Inapakia soko…"
 
 #: apps/web/src/components/messaging/messages-section.tsx:21
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:42
 msgid "Loading messages…"
 msgstr "Inapakia jumbe…"
 
@@ -5157,6 +5189,7 @@ msgid "Loading more…"
 msgstr "Inapakia zaidi…"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:18
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:25
 msgid "Loading notifications…"
 msgstr "Inapakia arifa…"
 
@@ -5200,7 +5233,7 @@ msgid "Loading posts…"
 msgstr "Inapakia machapisho…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:240
-#: apps/web/src/desktop/activity/activity-desk.tsx:865
+#: apps/web/src/desktop/activity/transactions-desk.tsx:873
 msgid "Loading private attachment…"
 msgstr "Inapakia kiambatisho cha faragha…"
 
@@ -5467,7 +5500,7 @@ msgstr "Alama ya ramani"
 #: apps/web/src/desktop/market/market-map-desk.tsx:186
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:131
+#: apps/web/src/desktop/shell/sidebar.tsx:132
 #: apps/web/src/features/home/ui/market-page.tsx:60
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:68
@@ -5477,8 +5510,8 @@ msgstr "Soko"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:114
 #: apps/web/src/desktop/shell/command-palette.tsx:224
-#: apps/web/src/desktop/shell/sidebar.tsx:211
-#: apps/web/src/desktop/shell/sidebar.tsx:227
+#: apps/web/src/desktop/shell/sidebar.tsx:212
+#: apps/web/src/desktop/shell/sidebar.tsx:228
 #: apps/web/src/features/home/ui/marketplace-page.tsx:102
 msgid "Marketplace"
 msgstr "Soko"
@@ -5487,7 +5520,7 @@ msgstr "Soko"
 msgid "Marketplace details"
 msgstr "Maelezo ya soko"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:211
+#: apps/web/src/desktop/shell/sidebar.tsx:212
 msgid "Marketplace lists"
 msgstr "Orodha za soko"
 
@@ -5505,7 +5538,8 @@ msgstr "Sehemu za soko"
 msgid "Match"
 msgstr "Linganisha"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:165
+#: apps/web/src/components/messaging/new-message-sheet.tsx:128
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:140
 msgid "Matching people"
 msgstr "Watu wanaolingana"
 
@@ -5536,8 +5570,10 @@ msgstr "Kiwango cha juu {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Maudhui yawe URL ya http(s) iliyopakiwa"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:179
+#: apps/web/src/components/messaging/new-message-sheet.tsx:142
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
+#: apps/web/src/desktop/messaging/composer-desk.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:152
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
 #: apps/web/src/features/messaging/ui/message-composer.tsx:64
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
@@ -5556,6 +5592,7 @@ msgid "Message or order shared."
 msgstr "Ujumbe au agizo limeshirikiwa."
 
 #: apps/web/src/components/messaging/messages-section.tsx:44
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
 msgid "Message requests"
 msgstr "Maombi ya ujumbe"
 
@@ -5565,6 +5602,8 @@ msgid "Message shared."
 msgstr "Ujumbe umeshirikiwa."
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:25
+#: apps/web/src/desktop/activity/activity-header.tsx:46
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:103
 #: apps/web/src/features/messaging/ui/thread-page.tsx:43
 msgid "Messages"
 msgstr "Jumbe"
@@ -5848,6 +5887,7 @@ msgstr "Jina, alama au anwani"
 msgid "Natural building"
 msgstr "Ujenzi wa asili"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
 msgid "Neither of you can send messages. Only you can ask to talk again."
 msgstr "Hakuna kati yenu anayeweza kutuma jumbe. Ni wewe tu unayeweza kuomba "
@@ -5877,8 +5917,10 @@ msgstr "Mpya"
 #~ msgid "New member"
 #~ msgstr "Mwanachama mpya"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:88
-#: apps/web/src/components/messaging/new-message-sheet.tsx:96
+#: apps/web/src/components/messaging/new-message-sheet.tsx:51
+#: apps/web/src/components/messaging/new-message-sheet.tsx:59
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:49
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:56
 msgid "New message"
 msgstr "Ujumbe mpya"
 
@@ -5931,8 +5973,8 @@ msgstr "Mtia sahihi mpya"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:480
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:171
-#: apps/web/src/desktop/activity/activity-desk.tsx:278
-#: apps/web/src/desktop/activity/activity-desk.tsx:754
+#: apps/web/src/desktop/activity/transactions-desk.tsx:286
+#: apps/web/src/desktop/activity/transactions-desk.tsx:762
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:147
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:911
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:83
@@ -5992,7 +6034,7 @@ msgstr "Hapana"
 msgid "No {0} fees have accrued yet."
 msgstr "Bado hakuna ada za {0} zilizokusanywa."
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:515
+#: apps/web/src/desktop/activity/transactions-desk.tsx:523
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1005
 #: apps/web/src/features/home/ui/activity-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:100
@@ -6004,8 +6046,8 @@ msgstr "Hakuna shughuli inayolingana na vichujio hivi."
 #~ msgstr "Hakuna shughuli inayolingana na utafutaji huu."
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:434
-#: apps/web/src/desktop/activity/activity-desk.tsx:474
-#: apps/web/src/desktop/activity/activity-desk.tsx:536
+#: apps/web/src/desktop/activity/transactions-desk.tsx:482
+#: apps/web/src/desktop/activity/transactions-desk.tsx:544
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:172
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:489
 #: apps/web/src/features/home/ui/activity-page.tsx:170
@@ -6060,6 +6102,10 @@ msgstr "Hakuna maelezo ya mawasiliano yanayopatikana."
 #: apps/web/src/components/wants/want-detail.tsx:170
 msgid "No contact information given"
 msgstr "Hakuna taarifa za mawasiliano zilizotolewa"
+
+#: apps/web/src/desktop/messaging/messages-desk.tsx:28
+msgid "No conversation open"
+msgstr "Hakuna mazungumzo yaliyofunguliwa"
 
 #: apps/web/src/components/ui/country-sheet.tsx:89
 #: apps/web/src/desktop/ui/phone-field.tsx:103
@@ -6173,7 +6219,8 @@ msgstr "Bado hakuna matokeo ya soko ya kuonyesha."
 msgid "No matches"
 msgstr "Hakuna kinacholingana"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:161
+#: apps/web/src/components/messaging/new-message-sheet.tsx:124
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:134
 msgid "No matching people."
 msgstr "Hakuna watu wanaolingana."
 
@@ -6183,6 +6230,8 @@ msgid "No matching recipients."
 msgstr "Hakuna wapokeaji wanaolingana."
 
 #: apps/web/src/components/messaging/messages-section.tsx:40
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:57
+#: apps/web/src/desktop/messaging/thread-desk.tsx:126
 #: apps/web/src/features/messaging/ui/thread-page.tsx:211
 msgid "No messages yet."
 msgstr "Bado hakuna jumbe."
@@ -6192,6 +6241,7 @@ msgid "No more results"
 msgstr "Hakuna matokeo zaidi"
 
 #: apps/web/src/components/messaging/notifications-section.tsx:37
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:40
 msgid "No notifications yet."
 msgstr "Bado hakuna arifa."
 
@@ -6513,6 +6563,8 @@ msgstr "Hifadhi ya arifa haipatikani"
 #: apps/web/src/components/messaging/notifications-section.tsx:41
 #: apps/web/src/desktop/account/settings-desk.tsx:378
 #: apps/web/src/desktop/account/settings-desk.tsx:416
+#: apps/web/src/desktop/activity/activity-header.tsx:47
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:46
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:33
 msgid "Notifications"
 msgstr "Arifa"
@@ -6722,13 +6774,15 @@ msgstr "Fungua ukurasa wa vocha"
 msgid "Opening sign-in card…"
 msgstr "Inafungua kadi ya kuingia…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:114
+#: apps/web/src/components/messaging/new-message-sheet.tsx:77
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
 #: apps/web/src/desktop/account/profile-desk.tsx:131
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:72
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:50
@@ -6960,7 +7014,7 @@ msgstr "Nilipe kwenye CLC"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:36
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:68
-#: apps/web/src/desktop/activity/activity-desk.tsx:192
+#: apps/web/src/desktop/activity/transactions-desk.tsx:200
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:872
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1048
 #: apps/web/src/features/home/ui/activity-page.tsx:325
@@ -6989,7 +7043,7 @@ msgid "Payment QR code"
 msgstr "Msimbo wa QR wa malipo"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:281
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:251
 msgid "Payment receipt"
@@ -7000,6 +7054,8 @@ msgid "Payment status unknown"
 msgstr "Hali ya malipo haijulikani"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:43
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:162
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -7060,7 +7116,7 @@ msgstr "Kilimo endelevu"
 #: apps/web/src/components/vouchers/voucher-about.tsx:117
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/desktop/account/profile-desk.tsx:200
-#: apps/web/src/desktop/activity/activity-desk.tsx:911
+#: apps/web/src/desktop/activity/transactions-desk.tsx:919
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:396
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:355
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:131
@@ -7089,6 +7145,7 @@ msgstr "Simu haipatikani"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:55
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:174
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -7114,6 +7171,7 @@ msgstr "Picha"
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "Picha zinaonekana kwa mpangilio unaozizoongeza."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:28
 #: apps/web/src/features/messaging/ui/message-composer.tsx:28
 msgid "Photos to send"
 msgstr "Picha za kutuma"
@@ -7155,7 +7213,7 @@ msgstr "Kitalu cha mimea"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
 #: apps/web/src/components/wallet/recipient-address-input.tsx:204
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
 #: apps/web/src/desktop/market/market-search-field.tsx:428
@@ -7376,7 +7434,7 @@ msgstr "Maelezo ya kufuatilia puli hayapo."
 #: apps/web/src/components/market-bar.tsx:189
 #: apps/web/src/components/market-bar.tsx:268
 #: apps/web/src/components/resource-usage.tsx:118
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/market/market-search-field.tsx:349
@@ -7457,7 +7515,7 @@ msgstr "Chapisho limehaririwa."
 #: apps/web/src/desktop/posts/posts-desk.tsx:100
 #: apps/web/src/desktop/posts/posts-desk.tsx:213
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:138
+#: apps/web/src/desktop/shell/sidebar.tsx:139
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:73
@@ -7662,7 +7720,7 @@ msgid "Pricing"
 msgstr "Upangaji wa bei"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:40
-#: apps/web/src/desktop/shell/sidebar.tsx:198
+#: apps/web/src/desktop/shell/sidebar.tsx:199
 msgid "Primary navigation"
 msgstr "Urambazaji wa msingi"
 
@@ -7676,8 +7734,8 @@ msgid "Privacy note"
 msgstr "Taarifa ya faragha"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:258
-#: apps/web/src/desktop/activity/activity-desk.tsx:880
-#: apps/web/src/desktop/activity/activity-desk.tsx:884
+#: apps/web/src/desktop/activity/transactions-desk.tsx:888
+#: apps/web/src/desktop/activity/transactions-desk.tsx:892
 msgid "Private attachment"
 msgstr "Kiambatisho cha faragha"
 
@@ -7754,7 +7812,7 @@ msgstr "kadi ya kuingia umelindwa. Weka nenosiri mbali na kadi."
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
-#: apps/web/src/desktop/activity/activity-desk.tsx:826
+#: apps/web/src/desktop/activity/transactions-desk.tsx:834
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:108
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:119
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:232
@@ -7958,10 +8016,10 @@ msgstr "Pokea vocha"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:75
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:33
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:473
-#: apps/web/src/desktop/activity/activity-desk.tsx:189
-#: apps/web/src/desktop/activity/activity-desk.tsx:591
-#: apps/web/src/desktop/activity/activity-desk.tsx:720
-#: apps/web/src/desktop/activity/activity-desk.tsx:819
+#: apps/web/src/desktop/activity/transactions-desk.tsx:197
+#: apps/web/src/desktop/activity/transactions-desk.tsx:599
+#: apps/web/src/desktop/activity/transactions-desk.tsx:728
+#: apps/web/src/desktop/activity/transactions-desk.tsx:827
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:869
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
 #: apps/web/src/features/home/ui/activity-page.tsx:329
@@ -8172,6 +8230,7 @@ msgstr "Ondoa kwenye puli"
 msgid "Remove link {0}"
 msgstr "Ondoa kiungo {0}"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:40
 #: apps/web/src/features/messaging/ui/message-composer.tsx:40
 msgid "Remove photo"
 msgstr "Ondoa picha"
@@ -8231,6 +8290,7 @@ msgstr "Rudia"
 msgid "Reply"
 msgstr "Jibu"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:142
 msgid "Report"
 msgstr "Ripoti"
@@ -8263,10 +8323,12 @@ msgstr "Kipindi cha ripoti"
 msgid "Report provenance"
 msgstr "Asili ya ripoti"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:84
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:170
 msgid "Report sent."
 msgstr "Ripoti imetumwa."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:141
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
 msgid "Report this person"
 msgstr "Ripoti mtu huyu"
@@ -8278,6 +8340,9 @@ msgstr "Imeripotiwa"
 
 #: apps/web/src/components/messaging/conversation-row.tsx:38
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:157
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:157
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
+#: apps/web/src/desktop/messaging/thread-desk.tsx:163
 #: apps/web/src/features/messaging/ui/thread-page.tsx:86
 msgid "Request"
 msgstr "Ombi"
@@ -8304,6 +8369,10 @@ msgstr "Ombi limekataliwa"
 msgid "Request retirement"
 msgstr "Omba kustaafisha"
 
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
+msgid "Requests"
+msgstr "Maombi"
+
 #: apps/web/src/components/ui/avatar-picker.tsx:95
 #: apps/web/src/components/ui/location-picker.tsx:71
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:286
@@ -8328,6 +8397,10 @@ msgstr "Weka upya tabaka"
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:149
 msgid "Reset logo"
 msgstr "Weka upya nembo"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:64
+msgid "Resolved"
+msgstr "Imetatuliwa"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:240
 #~ msgid "Resolving recipient…"
@@ -8563,11 +8636,14 @@ msgstr "Maoni"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Maoni kuhusu vocha hii yataonekana hapa."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:107
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:181
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:132
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:179
 msgid "Revoke"
 msgstr "Batilisha"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:133
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:85
 msgid "Revoke this conversation?"
 msgstr "Kubatilisha mazungumzo haya?"
@@ -8755,8 +8831,8 @@ msgstr "Tafuta “{query}”"
 msgid "Search “{term}”"
 msgstr "Tafuta “{term}”"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:435
-#: apps/web/src/desktop/activity/activity-desk.tsx:436
+#: apps/web/src/desktop/activity/transactions-desk.tsx:443
+#: apps/web/src/desktop/activity/transactions-desk.tsx:444
 #: apps/web/src/features/home/ui/activity-page.tsx:123
 #: apps/web/src/features/home/ui/activity-page.tsx:124
 msgid "Search activity"
@@ -8968,8 +9044,9 @@ msgstr "Inatafuta eneo hili"
 msgid "Searching vouchers…"
 msgstr "Inatafuta vocha…"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:151
+#: apps/web/src/components/messaging/new-message-sheet.tsx:114
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:211
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:124
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:553
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -9064,6 +9141,7 @@ msgid "Sell to a bank account"
 msgstr "Uza kwenda kwenye akaunti ya benki"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:333
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/shell/command-palette.tsx:101
 #: apps/web/src/desktop/shell/crumbs.tsx:32
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:136
@@ -9097,12 +9175,14 @@ msgstr "Tuma kutoka kwenye pochi yako ya Gnosis kupitia Jumper kwenda kwenye "
 "soko la kubadilisha, kisha toa kwenda benki yako au M-Pesa."
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:187
 msgid "Send report"
 msgstr "Tuma ripoti"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:201
+#: apps/web/src/components/messaging/new-message-sheet.tsx:154
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:94
 msgid "Send request"
 msgstr "Tuma ombi"
 
@@ -9132,6 +9212,7 @@ msgstr "Tuma xDAI kama ulivyoelekezwa."
 msgid "Sending"
 msgstr "Inatuma"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/wallet/send-desk.tsx:380
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
 #: apps/web/src/features/messaging/ui/message-composer.tsx:107
@@ -9143,10 +9224,10 @@ msgstr "Inatuma…"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:69
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:32
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:475
-#: apps/web/src/desktop/activity/activity-desk.tsx:188
-#: apps/web/src/desktop/activity/activity-desk.tsx:593
-#: apps/web/src/desktop/activity/activity-desk.tsx:722
-#: apps/web/src/desktop/activity/activity-desk.tsx:813
+#: apps/web/src/desktop/activity/transactions-desk.tsx:196
+#: apps/web/src/desktop/activity/transactions-desk.tsx:601
+#: apps/web/src/desktop/activity/transactions-desk.tsx:730
+#: apps/web/src/desktop/activity/transactions-desk.tsx:821
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:868
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
@@ -9208,7 +9289,7 @@ msgstr "Inaandaa pochi yako…"
 #: apps/web/src/desktop/account/settings-desk.tsx:68
 #: apps/web/src/desktop/shell/command-palette.tsx:145
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:139
+#: apps/web/src/desktop/shell/sidebar.tsx:140
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:29
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -9263,7 +9344,7 @@ msgstr "Shiriki risiti"
 
 #. placeholder {0}: share.sharedBy.name
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:261
-#: apps/web/src/desktop/activity/activity-desk.tsx:887
+#: apps/web/src/desktop/activity/transactions-desk.tsx:895
 msgid "Shared by {0}"
 msgstr "Imeshirikiwa na {0}"
 
@@ -9624,9 +9705,9 @@ msgstr "Inaanza {starts}"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:64
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
-#: apps/web/src/desktop/activity/activity-desk.tsx:316
-#: apps/web/src/desktop/activity/activity-desk.tsx:733
-#: apps/web/src/desktop/activity/activity-desk.tsx:801
+#: apps/web/src/desktop/activity/transactions-desk.tsx:324
+#: apps/web/src/desktop/activity/transactions-desk.tsx:741
+#: apps/web/src/desktop/activity/transactions-desk.tsx:809
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:65
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:279
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:399
@@ -9731,6 +9812,8 @@ msgid "Supply must be greater than zero"
 msgstr "Usambazaji lazima uwe zaidi ya sifuri"
 
 #: apps/web/src/components/messaging/peer.tsx:36
+#: apps/web/src/desktop/messaging/conversation-desk.tsx:29
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:126
 #: apps/web/src/features/messaging/ui/message-list.tsx:97
 msgid "Support"
 msgstr "Usaidizi"
@@ -9741,8 +9824,8 @@ msgstr "Faili za SVG hazitumiki. Tumia PNG, JPEG, au WebP."
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
-#: apps/web/src/desktop/activity/activity-desk.tsx:587
-#: apps/web/src/desktop/activity/activity-desk.tsx:793
+#: apps/web/src/desktop/activity/transactions-desk.tsx:595
+#: apps/web/src/desktop/activity/transactions-desk.tsx:801
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:258
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:270
 #: apps/web/src/desktop/shell/command-palette.tsx:111
@@ -9833,7 +9916,7 @@ msgstr "Inabadilisha"
 msgid "Swapping…"
 msgstr "Inabadilisha…"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:190
+#: apps/web/src/desktop/activity/transactions-desk.tsx:198
 msgid "Swaps"
 msgstr "Mabadilishano"
 
@@ -10016,6 +10099,9 @@ msgstr "Kiungo cha masharti"
 msgid "Test with a small amount first."
 msgstr "Jaribu kwanza kwa kiasi kidogo."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:194
+#: apps/web/src/desktop/messaging/thread-desk.tsx:234
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:123
 #: apps/web/src/features/messaging/ui/thread-page.tsx:118
 #: apps/web/src/features/messaging/ui/thread-page.tsx:161
@@ -10193,6 +10279,7 @@ msgstr "Malipo yamekataliwa: {detail}"
 msgid "The payment was refused. Nothing was charged."
 msgstr "Malipo yamekataliwa. Hakuna kilichotozwa."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:54
 #: apps/web/src/features/messaging/ui/message-composer.tsx:54
 msgid "The photo didn't upload. Remove it and try again."
 msgstr "Picha haikupakiwa. Iondoe kisha ujaribu tena."
@@ -10269,6 +10356,7 @@ msgstr "Bado hakuna kinachopatikana kwa kubadilishana kwa kutumia vocha hii."
 msgid "These filters aren't valid."
 msgstr "Vichujio hivi si sahihi."
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:151
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:107
 msgid "They won't be able to message you or send you requests."
 msgstr "Hataweza kukutumia ujumbe wala maombi."
@@ -10345,10 +10433,12 @@ msgid "This contract does not expose a compatible multisig owner list. The "
 msgstr "Mkataba huu hautoi orodha inayooana ya wamiliki wa pochi ya sahihi "
 "nyingi. Mali inaweza kufungiwa."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:75
 #: apps/web/src/features/messaging/ui/thread-page.tsx:64
 msgid "This conversation isn't available."
 msgstr "Mazungumzo haya hayapatikani."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:206
 #: apps/web/src/features/messaging/ui/thread-page.tsx:130
 msgid "This conversation was revoked."
 msgstr "Mazungumzo haya yamebatilishwa."
@@ -10561,6 +10651,7 @@ msgstr "Msimbo huu wa QR hauna ufunguo binafsi sahihi."
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "Msimbo huu wa QR hauna kadi halali ya kuingia."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:204
 #: apps/web/src/features/messaging/ui/thread-page.tsx:128
 msgid "This request was declined."
 msgstr "Ombi hili lilikataliwa."
@@ -10604,8 +10695,8 @@ msgstr "Kichwa kisizidi herufi 200"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:183
-#: apps/web/src/desktop/activity/activity-desk.tsx:198
-#: apps/web/src/desktop/activity/activity-desk.tsx:760
+#: apps/web/src/desktop/activity/transactions-desk.tsx:206
+#: apps/web/src/desktop/activity/transactions-desk.tsx:768
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:159
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/desktop/wallet/send-desk.tsx:182
@@ -10675,8 +10766,8 @@ msgid "Training"
 msgstr "Mafunzo"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:102
-#: apps/web/src/desktop/activity/activity-desk.tsx:761
-#: apps/web/src/desktop/activity/activity-desk.tsx:851
+#: apps/web/src/desktop/activity/transactions-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:859
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:174
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:251
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:196
@@ -10699,7 +10790,7 @@ msgid "Transaction hash"
 msgstr "Hashi ya muamala"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:44
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:129
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:173
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:202
@@ -10712,10 +10803,11 @@ msgid "Transaction hash copied"
 msgstr "Hashi ya muamala imenakiliwa"
 
 #: apps/web/src/components/messaging/activity-section-tabs.tsx:24
+#: apps/web/src/desktop/activity/activity-header.tsx:45
 msgid "Transactions"
 msgstr "Miamala"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:622
+#: apps/web/src/desktop/activity/transactions-desk.tsx:630
 msgid "Transfer details"
 msgstr "Maelezo ya uhamisho"
 
@@ -10768,8 +10860,13 @@ msgstr "Safari"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:65
 #: apps/web/src/desktop/account/profile-desk.tsx:53
 #: apps/web/src/desktop/account/settings-desk.tsx:545
-#: apps/web/src/desktop/activity/activity-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:507
 #: apps/web/src/desktop/market/market-search-field.tsx:442
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:51
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:34
+#: apps/web/src/desktop/messaging/thread-desk.tsx:90
+#: apps/web/src/desktop/messaging/thread-desk.tsx:114
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:255
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:68
@@ -10827,7 +10924,7 @@ msgstr "Safari"
 msgid "Try again"
 msgstr "Jaribu tena"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:287
+#: apps/web/src/desktop/activity/transactions-desk.tsx:295
 #: apps/web/src/desktop/market/market-list-desk.tsx:507
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:54
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:50
@@ -10848,7 +10945,7 @@ msgstr "Andika angalau herufi {POOL_SEARCH_MIN_CHARS} ili kutafuta mabwawa."
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Andika angalau herufi {VOUCHER_SEARCH_MIN_CHARS} kutafuta vocha."
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:456
+#: apps/web/src/desktop/activity/transactions-desk.tsx:464
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:173
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:532
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:196
@@ -10906,12 +11003,16 @@ msgstr "Imeshindikana kupakia lugha. Imerudi Kiingereza."
 msgid "Unavailable"
 msgstr "Haipatikani"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:250
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:184
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:182
 #: apps/web/src/features/messaging/ui/thread-page.tsx:180
 msgid "Unblock"
 msgstr "Ondoa kizuizi"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:136
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:88
 msgid "Unblock this person?"
 msgstr "Kumwondolea mtu huyu kizuizi?"
@@ -11089,6 +11190,7 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 msgstr "Tumia <0>Binance</0> au soko jingine la ndani, kisha <1>Jumper</1> "
 "kutuma fedha kwenye pochi yako ya Gnosis."
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:52
 #: apps/web/src/features/messaging/ui/message-composer.tsx:52
 msgid "Use a JPEG, PNG or WebP photo under 8 MB."
 msgstr "Tumia picha ya JPEG, PNG au WebP iliyo chini ya 8 MB."
@@ -11177,8 +11279,10 @@ msgstr "Jina la mtumiaji limenakiliwa"
 msgid "Username must contain 1–80 characters"
 msgstr "Jina la mtumiaji lazima liwe na herufi 1–80"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:135
-#: apps/web/src/components/messaging/new-message-sheet.tsx:146
+#: apps/web/src/components/messaging/new-message-sheet.tsx:98
+#: apps/web/src/components/messaging/new-message-sheet.tsx:109
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:114
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:115
 msgid "Username or phone number"
 msgstr "Jina la mtumiaji au nambari ya simu"
 
@@ -11304,7 +11408,7 @@ msgstr "vocha"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/desktop/activity/activity-desk.tsx:374
+#: apps/web/src/desktop/activity/transactions-desk.tsx:382
 #: apps/web/src/desktop/market/market-bits.tsx:82
 #: apps/web/src/desktop/market/market-list-desk.tsx:448
 #: apps/web/src/desktop/market/place-panel.tsx:204
@@ -11342,7 +11446,7 @@ msgid "Voucher controls"
 msgstr "Vidhibiti vya vocha"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 msgid "Voucher creation receipt"
 msgstr "Risiti ya uundaji wa vocha"
 
@@ -11454,11 +11558,11 @@ msgstr "Lebo za vocha"
 msgid "Voucher tracking details are missing."
 msgstr "Maelezo ya kufuatilia vocha hayapo."
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:379
+#: apps/web/src/desktop/activity/transactions-desk.tsx:387
 msgid "Voucher: <0>{voucherLabel}</0>"
 msgstr "Vocha: <0>{voucherLabel}</0>"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:383
+#: apps/web/src/desktop/activity/transactions-desk.tsx:391
 msgid "Voucher: Any"
 msgstr "Vocha: Yoyote"
 
@@ -11558,6 +11662,7 @@ msgstr "Inasubiri uthibitisho kwenye mnyororo"
 msgid "Waiting for the chain…"
 msgstr "Inasubiri mnyororo…"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:189
 #: apps/web/src/features/messaging/ui/thread-page.tsx:113
 msgid "Waiting for them to accept your request."
 msgstr "Inasubiri akubali ombi lako."
@@ -11567,7 +11672,7 @@ msgstr "Inasubiri akubali ombi lako."
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:132
+#: apps/web/src/desktop/shell/sidebar.tsx:133
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
@@ -11723,6 +11828,7 @@ msgstr "Karibu tena"
 msgid "What are you offering?"
 msgstr "Unatoa nini?"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:155
 #: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:111
 msgid "What happened?"
 msgstr "Nini kilitokea?"
@@ -11778,7 +11884,7 @@ msgstr "Mahali na matumizi yake"
 msgid "Where did this happen?"
 msgstr "Hii ilitokea wapi?"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:199
+#: apps/web/src/desktop/activity/transactions-desk.tsx:207
 msgid "With"
 msgstr "Na"
 
@@ -11813,6 +11919,7 @@ msgstr "Toa ukwasi"
 msgid "Withdrawal submitted"
 msgstr "Utoaji pesa umewasilishwa"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:94
 #: apps/web/src/features/messaging/ui/message-composer.tsx:70
 msgid "Write a message"
 msgstr "Andika ujumbe"
@@ -11868,7 +11975,8 @@ msgstr "Ndiyo"
 msgid "You already have a catalog."
 msgstr "Tayari una katalogi."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:123
+#: apps/web/src/components/messaging/new-message-sheet.tsx:86
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:81
 msgid "You already have a conversation with this person."
 msgstr "Tayari una mazungumzo na mtu huyu."
 
@@ -11876,6 +11984,7 @@ msgstr "Tayari una mazungumzo na mtu huyu."
 #~ msgid "You are signed in with the passkey on this device."
 #~ msgstr "Umeingia kwa passkey iliyo kwenye kifaa hiki."
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:243
 #: apps/web/src/features/messaging/ui/thread-page.tsx:170
 msgid "You blocked this person."
 msgstr "Umemzuia mtu huyu."
@@ -11914,7 +12023,8 @@ msgstr "Bado unaweza kutoa fedha baada ya kikundi kustaafishwa."
 msgid "You can write or edit your review until {0}."
 msgstr "Unaweza kuandika au kuhariri maoni yako hadi {0}."
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:121
+#: apps/web/src/components/messaging/new-message-sheet.tsx:84
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:79
 msgid "You can't message this person."
 msgstr "Huwezi kumtumia mtu huyu ujumbe."
 
@@ -12008,7 +12118,8 @@ msgstr "Utapokea"
 msgid "You'll send"
 msgstr "Utatuma"
 
-#: apps/web/src/components/messaging/new-message-sheet.tsx:125
+#: apps/web/src/components/messaging/new-message-sheet.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:83
 msgid "You've sent too many requests today. Try again tomorrow."
 msgstr "Umetuma maombi mengi mno leo. Jaribu tena kesho."
 
