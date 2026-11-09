@@ -26,6 +26,13 @@ export type UseOnboardingProfileOptions = {
   initialValues?: ProfileInput;
   /** Carried back in when the user returns to this step. */
   initialAvatarFile?: File | null;
+  /**
+   * The form as it stood when a layout switch took the other view away. Wins
+   * over the initial values: it holds what was typed since.
+   */
+  restored?: OnboardingProfileDraft;
+  /** Told every change, so the other view can take over after a switch. */
+  onDraft?: (draft: OnboardingProfileDraft) => void;
   /** Moves to the next page of the profile. */
   onPage: (page: Exclude<ProfilePage, "profile">) => void;
   /** A later page was opened before the earlier ones were filled in. */
@@ -33,7 +40,7 @@ export type UseOnboardingProfileOptions = {
   onNext: (data: ProfileInput, avatarFile: File) => void;
 };
 
-type ProfileFormValues = {
+export type ProfileFormValues = {
   name: string;
   username?: string;
   email: string;
@@ -42,6 +49,16 @@ type ProfileFormValues = {
   preferredCurrency: string;
   bio: string;
   website: string;
+};
+
+/** The profile form mid-signup, and the suggestions it has already made. */
+export type OnboardingProfileDraft = {
+  values: ProfileFormValues;
+  avatarFile: File | null;
+  currencyChosen: boolean;
+  currencySuggestedByLocation: boolean;
+  suggestedCountry: string | null;
+  suggestedUsername: string;
 };
 
 const DEFAULT_VALUES: ProfileFormValues = {
@@ -163,33 +180,41 @@ export function useOnboardingProfile({
   page,
   initialValues,
   initialAvatarFile,
+  restored,
   onPage,
   onRestart,
   onNext,
+  onDraft,
 }: UseOnboardingProfileOptions) {
   const { i18n, t } = useLingui();
   // Outside the form: profileSchema lives in @clc/core, which is React Native
   // compatible and cannot name a browser File. AvatarPicker validates the file;
   // this step also requires one before advancing.
-  const [avatarFile, setAvatarFile] = useState<File | null>(initialAvatarFile ?? null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(
+    restored ? restored.avatarFile : (initialAvatarFile ?? null),
+  );
   const [photoError, setPhotoError] = useState<string | null>(null);
   // A page shows its errors once its Continue has been pressed, or a field once
   // it has been touched, so a page never opens on errors from another one.
   const [attempted, setAttempted] = useState<ReadonlySet<ProfilePage>>(() => new Set());
   const approximateCamera = useIPCamera().data;
   const { formRef, focusFirstInvalidField } = useFirstInvalidFieldFocus();
-  const currencyWasChosenRef = useRef(Boolean(initialValues?.preferredCurrency));
+  const currencyWasChosenRef = useRef(
+    restored ? restored.currencyChosen : Boolean(initialValues?.preferredCurrency),
+  );
   const currencyWasSuggestedByLocationRef = useRef(
-    Boolean(initialValues?.location && !initialValues?.preferredCurrency),
+    restored
+      ? restored.currencySuggestedByLocation
+      : Boolean(initialValues?.location && !initialValues?.preferredCurrency),
   );
   // The phone field's dialling code follows the same country the currency does.
   // It is state rather than a ref because PhoneInputField renders from it.
   const [suggestedCountry, setSuggestedCountry] = useState<string | null>(
-    initialValues?.location?.country ?? null,
+    restored ? restored.suggestedCountry : (initialValues?.location?.country ?? null),
   );
 
   const form = useForm({
-    defaultValues: initialValues ?? DEFAULT_VALUES,
+    defaultValues: restored?.values ?? initialValues ?? DEFAULT_VALUES,
     validators: { onChange: profileSchema },
     onSubmit: async ({ value }) => {
       if (!avatarFile || !isStorageConfigured) return;
@@ -244,9 +269,9 @@ export function useOnboardingProfile({
   // What the last suggestion put in the field. The moment the value is
   // anything else, the person has taken the field over and nothing else is
   // suggested, including when they clear it to keep no username at all.
-  const suggestedUsernameRef = useRef("");
+  const suggestedUsernameRef = useRef(restored?.suggestedUsername ?? "");
   useEffect(() => {
-    if (usernameValue !== "" && usernameValue !== suggestedUsernameRef.current) return;
+    if (usernameValue !== suggestedUsernameRef.current) return;
     const hint = nameValue.trim().toLowerCase().split(/\s+/).join("-");
     if (!hint) return;
     const controller = new AbortController();
@@ -279,6 +304,20 @@ export function useOnboardingProfile({
   }
 
   const values = useStore(form.store, (state) => state.values);
+  // Every change goes to the route's onboarding session, so the other view can
+  // pick the form up where this one was after a layout switch.
+  const onDraftRef = useRef(onDraft);
+  onDraftRef.current = onDraft;
+  useEffect(() => {
+    onDraftRef.current?.({
+      values,
+      avatarFile,
+      currencyChosen: currencyWasChosenRef.current,
+      currencySuggestedByLocation: currencyWasSuggestedByLocationRef.current,
+      suggestedCountry,
+      suggestedUsername: suggestedUsernameRef.current,
+    });
+  }, [values, avatarFile, suggestedCountry]);
   const errors = useMemo(() => pageErrors(page, values), [page, values]);
   const probe = identityProbe(values);
   const fieldsRef = useRef(probe.fields);

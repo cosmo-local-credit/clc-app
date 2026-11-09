@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect } from "react";
 
 import { LayoutSwitch } from "#/desktop/switch";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { OnboardingSessionProvider } from "#/features/onboarding/state/onboarding-session";
 import { LandingPage } from "#/features/onboarding/ui/landing-page";
 import { SignInPage } from "#/features/onboarding/ui/sign-in-page";
 import {
@@ -66,8 +67,15 @@ function OnboardingRoutePage() {
         <OnboardingFlow step={step} redirectTo={redirect} />
       </Suspense>
     );
+  // The session sits above the switch: both views run one signup, and a layout
+  // switch must not drop it.
   return (
-    <LayoutSwitch mobile={mobile} desktop={<OnboardingDesk step={step} redirectTo={redirect} />} />
+    <OnboardingSessionProvider step={step}>
+      <LayoutSwitch
+        mobile={mobile}
+        desktop={<OnboardingDesk step={step} redirectTo={redirect} />}
+      />
+    </OnboardingSessionProvider>
   );
 }
 

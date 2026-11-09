@@ -1,6 +1,6 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
@@ -8,11 +8,20 @@ import { connect } from "wagmi/actions";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
-import { useBackendSignup } from "#/features/auth/hooks/use-backend-auth";
+import {
+  BACKEND_SIGNUP_MUTATION_KEY,
+  useBackendSignup,
+} from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
-import { useCaliburDelegateFromPk } from "#/features/webauthn/hooks/use-calibur-delegate-from-pk";
-import { useCaliburFromPk } from "#/features/webauthn/hooks/use-calibur-from-pk";
+import {
+  CALIBUR_DELEGATE_FROM_PK_MUTATION_KEY,
+  useCaliburDelegateFromPk,
+} from "#/features/webauthn/hooks/use-calibur-delegate-from-pk";
+import {
+  CALIBUR_UPGRADE_FROM_PK_MUTATION_KEY,
+  useCaliburFromPk,
+} from "#/features/webauthn/hooks/use-calibur-from-pk";
 import { pickPasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import type { WalletPage } from "#/lib/onboarding-search";
@@ -36,6 +45,9 @@ export type UseOnboardingWalletOptions = {
   privateKey: `0x${string}`;
   backendRegistered: boolean;
   onBackendRegistered: () => void;
+  /** A passkey was registered for this key, by this view or the one before a layout switch. */
+  passkeyRegistered: boolean;
+  onPasskeyRegistered: () => void;
   /** Session verified — parent/route owns history exit. */
   onDone: () => void;
 };
@@ -54,6 +66,8 @@ export function useOnboardingWallet({
   privateKey: pk,
   backendRegistered,
   onBackendRegistered,
+  passkeyRegistered,
+  onPasskeyRegistered,
   onDone,
 }: UseOnboardingWalletOptions) {
   const { t, i18n } = useLingui();
@@ -82,8 +96,6 @@ export function useOnboardingWallet({
   const [connectError, setConnectError] = useState<string | null>(null);
   const [linkConnectError, setLinkConnectError] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState<string | null>(null);
-  /** True once passkey registration finished; link CTA retries connect only. */
-  const [passkeyRegistered, setPasskeyRegistered] = useState(false);
   /** Only set after connector + session verification both succeed. */
   const finishingRef = useRef(false);
   /**
@@ -239,7 +251,7 @@ export function useOnboardingWallet({
   // Mark connecting before paint when upgrade completes so paper stays disabled.
   useLayoutEffect(() => {
     if (upgradeStep === "done" && !linkConnectError && !sessionError) {
-      setPasskeyRegistered(true);
+      onPasskeyRegistered();
       setCaliburConnecting(true);
     }
   }, [upgradeStep, linkConnectError, sessionError]);
@@ -353,8 +365,21 @@ export function useOnboardingWallet({
     !paperWalletDownloaded ||
     !paperWalletReady ||
     paperWalletEncrypting;
+  // Signup, activation or a passkey link started by the view a layout switch
+  // took away is still running, and still finishes the signup on its own. This
+  // view must not start a second one beside it.
+  const inFlightElsewhere =
+    useIsMutating({ mutationKey: BACKEND_SIGNUP_MUTATION_KEY }) +
+      useIsMutating({ mutationKey: CALIBUR_DELEGATE_FROM_PK_MUTATION_KEY }) +
+      useIsMutating({ mutationKey: CALIBUR_UPGRADE_FROM_PK_MUTATION_KEY }) >
+    0;
   const workInProgress =
-    isRegistering || isUpgrading || connecting || isDelegating || caliburPending;
+    isRegistering ||
+    isUpgrading ||
+    connecting ||
+    isDelegating ||
+    caliburPending ||
+    inFlightElsewhere;
   const linkBusy =
     formBlocked ||
     workInProgress ||
