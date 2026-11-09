@@ -5,7 +5,7 @@ import {
   pretiumOfframpRecipient,
 } from "@clc/core/features/wallet/pretium";
 import { useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { parsePhoneNumber } from "react-phone-number-input";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
   useAccountTokensInfinite,
 } from "#/features/wallet/hooks/use-account-balances";
 import {
+  PRETIUM_ONRAMP_MUTATION_KEY,
   pretiumQueryKeys,
   useCreatePretiumLink,
   usePretiumLinkByAddress,
@@ -34,6 +35,9 @@ import {
 } from "#/features/wallet/logic/pretium-cash";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
+
+/** Every withdrawal relayed to Pretium, for a view mounted while one is still out. */
+export const PRETIUM_OFFRAMP_MUTATION_KEY = ["pretium", "offramp"] as const;
 
 function toChecksumAddress(address: `0x${string}` | undefined): `0x${string}` | undefined {
   if (!address) return undefined;
@@ -93,6 +97,10 @@ export function useCashAccess() {
 /**
  * The Add stables (onramp) form: a KES amount, the approximate USD₮ it buys,
  * and the MPESA prompt. `submit` resolves true once the prompt is sent.
+ *
+ * `pending` reads the mutation cache rather than this form's own mutation: a
+ * layout switch mounts the other view's form while the first one's prompt is
+ * still out, and that form must not send a second one.
  */
 export function useAddStables({
   access,
@@ -102,10 +110,12 @@ export function useAddStables({
   ratesEnabled: boolean;
 }) {
   const { t } = useLingui();
+  const queryClient = useQueryClient();
   const { cashAddress: address, phone, disabledReason, hasKenyanPhone } = access;
   const [amount, setAmount] = useState("");
   const ratesQuery = usePretiumRates(ratesEnabled);
   const triggerOnramp = useTriggerPretiumOnramp();
+  const inFlight = useIsMutating({ mutationKey: PRETIUM_ONRAMP_MUTATION_KEY }) > 0;
   const mutationError = triggerOnramp.error instanceof Error ? triggerOnramp.error.message : null;
 
   const amountValue = Number(amount);
@@ -130,6 +140,9 @@ export function useAddStables({
       : null;
 
   const submit = async (): Promise<boolean> => {
+    // The cache, not this render's `inFlight`: a second press that lands before
+    // the button re-renders as pending must not send a second prompt.
+    if (queryClient.isMutating({ mutationKey: PRETIUM_ONRAMP_MUTATION_KEY }) > 0) return false;
     if (!address || !canContinue) return false;
     try {
       // Pretium's onramp treats the phone as an MPESA shortcode and requires a
@@ -162,7 +175,7 @@ export function useAddStables({
     approxUsdt,
     ratesPending: ratesQuery.isPending,
     mutationError,
-    pending: triggerOnramp.isPending,
+    pending: inFlight,
     submit,
   };
 }
@@ -171,6 +184,7 @@ export function useAddStables({
  * The Withdraw (offramp) form: the MPESA link check, the eligible stables, a
  * whole-KES amount and the transfer to Pretium. Transient state resets when
  * `open` turns false. `submit` resolves true once the transfer is relayed.
+ * Like Add stables, `pending` covers a withdrawal the other view started.
  */
 export function usePretiumWithdraw({
   open,
@@ -212,7 +226,8 @@ export function usePretiumWithdraw({
   }, [tokensQuery.data]);
 
   const delegation = useCaliburDelegation(address);
-  const sendTransfer = useSendVoucherTransfer();
+  const sendTransfer = useSendVoucherTransfer(PRETIUM_OFFRAMP_MUTATION_KEY);
+  const inFlight = useIsMutating({ mutationKey: PRETIUM_OFFRAMP_MUTATION_KEY }) > 0;
   const sendError = sendTransfer.error instanceof Error ? sendTransfer.error.message : null;
 
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>(undefined);
@@ -273,6 +288,7 @@ export function usePretiumWithdraw({
   };
 
   const submit = async (): Promise<boolean> => {
+    if (queryClient.isMutating({ mutationKey: PRETIUM_OFFRAMP_MUTATION_KEY }) > 0) return false;
     if (!address || !selected || !hasValidAmount || !offrampRecipient) return false;
     // Reverse the whole-shilling KES amount through the buy rate. MAX also uses
     // the trimmed whole KES value, so the displayed KES amount and signed token
@@ -329,7 +345,7 @@ export function usePretiumWithdraw({
     retryLink,
     canWithdraw,
     sendError,
-    pending: sendTransfer.isPending,
+    pending: inFlight,
     submit,
   };
 }

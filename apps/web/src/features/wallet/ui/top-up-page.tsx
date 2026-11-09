@@ -26,6 +26,8 @@ import { EllipsizedAddress } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
 import { useAddStables, useCashAccess } from "#/features/wallet/hooks/use-pretium-cash";
+import { useTopUpSheet } from "#/features/wallet/hooks/use-top-up-sheet";
+import { topUpHistoryKey } from "#/features/wallet/top-up-search";
 import {
   formatCashDate,
   formatHistoryKes,
@@ -40,14 +42,26 @@ import { WithdrawSheet } from "./withdraw-sheet";
 
 export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useLingui();
-  const [addStablesOpen, setAddStablesOpen] = useState(false);
-  const [withdrawOpen, setWithdrawOpen] = useState(false);
-  const [selectedOnramp, setSelectedOnramp] = useState<PretiumCashTransaction | null>(null);
-  const [selectedOfframp, setSelectedOfframp] = useState<PretiumCashTransaction | null>(null);
+  // The open form lives in `?sheet=`, shared with the desktop view: opening one
+  // is a history entry, so Back closes it, and it survives a layout switch.
+  const { sheet, tx, open, close } = useTopUpSheet();
+  const addStablesOpen = sheet === "add";
+  const withdrawOpen = sheet === "withdraw";
+  // The sheets are opened by the rows below; they only ever ask to close.
+  const onSheetOpenChange = (isOpen: boolean) => {
+    if (!isOpen) close();
+  };
 
   const access = useCashAccess();
   const { cashAddress, cashTransactions, transactionsQuery, disabledReason, entryDisabled } =
     access;
+  // A history row is `?tx=` too, so a row the desktop inspector had open stays
+  // open here after a layout switch, and Back closes it.
+  const selected = tx
+    ? (cashTransactions.find((transaction) => topUpHistoryKey(transaction) === tx) ?? null)
+    : null;
+  const selectRow = (transaction: PretiumCashTransaction) =>
+    open({ tx: topUpHistoryKey(transaction) });
   const addStables = useAddStables({ access, ratesEnabled: addStablesOpen });
 
   return (
@@ -80,7 +94,7 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
 
           <button
             type="button"
-            onClick={() => setAddStablesOpen(true)}
+            onClick={() => open({ sheet: "add" })}
             className="flex w-full items-center gap-3 border border-border bg-card p-4 text-start active:bg-muted"
           >
             <PretiumLogo />
@@ -108,7 +122,7 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
 
           <button
             type="button"
-            onClick={() => setWithdrawOpen(true)}
+            onClick={() => open({ sheet: "withdraw" })}
             className="flex w-full items-center gap-3 border border-border bg-card p-4 text-start active:bg-muted"
           >
             <PretiumLogo />
@@ -133,15 +147,15 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
             onRetry={() => {
               void transactionsQuery.refetch();
             }}
-            onSelectOnramp={setSelectedOnramp}
-            onSelectOfframp={setSelectedOfframp}
+            onSelectOnramp={selectRow}
+            onSelectOfframp={selectRow}
           />
         </div>
       </div>
 
       <AddStablesSheet
         open={addStablesOpen}
-        onOpenChange={setAddStablesOpen}
+        onOpenChange={onSheetOpenChange}
         form={addStables}
         phone={access.phone}
         profilePending={access.profilePending}
@@ -151,7 +165,7 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
 
       <WithdrawSheet
         open={withdrawOpen}
-        onOpenChange={setWithdrawOpen}
+        onOpenChange={onSheetOpenChange}
         address={cashAddress}
         phone={access.phone}
         disabledReason={disabledReason}
@@ -159,19 +173,15 @@ export function TopUpPage({ embedded = false }: { embedded?: boolean } = {}) {
       />
 
       <OnrampDetailsSheet
-        onramp={selectedOnramp}
-        open={selectedOnramp !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedOnramp(null);
-        }}
+        onramp={selected?.kind === "onramp" ? selected : null}
+        open={selected?.kind === "onramp"}
+        onOpenChange={onSheetOpenChange}
       />
 
       <OfframpDetailsSheet
-        offramp={selectedOfframp}
-        open={selectedOfframp !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedOfframp(null);
-        }}
+        offramp={selected?.kind === "offramp" ? selected : null}
+        open={selected?.kind === "offramp"}
+        onOpenChange={onSheetOpenChange}
       />
     </div>
   );

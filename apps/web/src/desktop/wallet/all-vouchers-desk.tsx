@@ -1,4 +1,3 @@
-import type { ResourceUsage } from "@clc/api/features/resource-limits/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef } from "react";
@@ -24,6 +23,7 @@ import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { resetVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
+import { DeskQuotaText } from "#/desktop/ui/quota";
 
 export function AllVouchersDesk() {
   const { t } = useLingui();
@@ -100,7 +100,12 @@ export function AllVouchersDesk() {
         header: t`Balance`,
         align: "end",
         width: "10rem",
-        sortValue: (row) => Number(row.balance ?? 0),
+        // Whole units: raw base units would rank an 18-decimal token above a
+        // 6-decimal one holding a million times more.
+        sortValue: (row) =>
+          row.balance && row.tokenDecimals !== undefined
+            ? Number(row.balance) / 10 ** row.tokenDecimals
+            : 0,
         cell: (row) => (
           <span className="font-heading text-base font-semibold tracking-tight" dir="ltr">
             {row.amount}
@@ -210,7 +215,7 @@ export function AllVouchersDesk() {
                         <Trans>Unavailable</Trans>
                       </span>
                     ) : quota ? (
-                      <QuotaUsed quota={quota} />
+                      <DeskQuotaText quota={quota} className="text-xs text-muted-foreground" />
                     ) : null
                   }
                 >
@@ -339,22 +344,4 @@ function hasBalance(token: WalletToken): boolean {
   } catch {
     return false;
   }
-}
-
-function QuotaUsed({ quota }: { quota: ResourceUsage["vouchers"] }) {
-  const { i18n } = useLingui();
-  const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
-  const used = digits.format(quota.used);
-  const limit = digits.format(quota.limit);
-  return (
-    <span className="text-xs text-muted-foreground" aria-live="polite">
-      {quota.unlimited ? (
-        <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-      ) : (
-        <Trans id="{used} of {limit} used">
-          {used} of {limit} used
-        </Trans>
-      )}
-    </span>
-  );
 }

@@ -227,7 +227,12 @@ export function WalletDesk() {
       header: t`Balance`,
       align: "end",
       width: "9rem",
-      sortValue: (row) => Number(row.balance ?? 0),
+      // Whole units: raw base units would rank an 18-decimal token above a
+      // 6-decimal one holding a million times more.
+      sortValue: (row) =>
+        row.balance && row.tokenDecimals !== undefined
+          ? Number(row.balance) / 10 ** row.tokenDecimals
+          : 0,
       cell: (row) => (
         <span className="font-heading text-base font-semibold tracking-tight" dir="ltr">
           {row.amount}

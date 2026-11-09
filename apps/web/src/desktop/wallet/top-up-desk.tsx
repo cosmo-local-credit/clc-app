@@ -2,8 +2,7 @@ import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useCallback, useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { RiArrowRightSLine, RiErrorWarningLine } from "react-icons/ri";
 
 import { Badge } from "#/components/ui/badge";
@@ -18,12 +17,13 @@ import { DeskInspector, DeskSplit } from "#/desktop/ui/inspector";
 import { DeskKV } from "#/desktop/ui/kv";
 import { DeskCanvas, DeskRow, DeskRowList, DeskSection, DeskTitle } from "#/desktop/ui/page";
 import { FullValue } from "#/desktop/ui/full-value";
-import { useInspectorHistory } from "#/desktop/wallet/use-inspector-history";
 import {
   useAddStables,
   useCashAccess,
   usePretiumWithdraw,
 } from "#/features/wallet/hooks/use-pretium-cash";
+import { useTopUpSheet } from "#/features/wallet/hooks/use-top-up-sheet";
+import { topUpHistoryKey } from "#/features/wallet/top-up-search";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import {
   cashTimestamp,
@@ -32,12 +32,6 @@ import {
   ONRAMP_ASSET_LABEL,
 } from "#/features/wallet/logic/pretium-cash";
 import { CHAIN_INFO } from "#/lib/chain";
-
-type CashPanel = "add" | "withdraw";
-
-function historyKey(transaction: PretiumCashTransaction): string {
-  return `${transaction.kind}-${transaction.reference}`;
-}
 
 /**
  * The two MPESA ramps and the Pretium history; forms and receipts open in the
@@ -48,26 +42,14 @@ function historyKey(transaction: PretiumCashTransaction): string {
 export function TopUpDesk() {
   const access = useCashAccess();
   const { cashAddress, cashTransactions, transactionsQuery, disabledReason } = access;
-  const search = useSearch({ from: "/_nav/wallet/top-up" });
-  const navigate = useNavigate({ from: "/wallet/top-up" });
-  const panel: CashPanel | null = search.tx ? null : (search.sheet ?? null);
-  const selectedTx = search.tx
-    ? (cashTransactions.find((transaction) => historyKey(transaction) === search.tx) ?? null)
+  // The open form or row lives in the URL, shared with the phone view. Opening
+  // the first pushes history; switching replaces it. Closing pops what an open
+  // pushed, in either view, or, for a direct link, goes to the page itself.
+  const { sheet: panel, tx, open, close } = useTopUpSheet();
+  const selectedTx = tx
+    ? (cashTransactions.find((transaction) => topUpHistoryKey(transaction) === tx) ?? null)
     : null;
   const addStables = useAddStables({ access, ratesEnabled: panel === "add" });
-  const inspectorOpen = panel !== null || search.tx !== undefined;
-  // Opening the first inspector pushes history; switching replaces it. Closing
-  // pops what this page pushed, or, for a direct link, goes to the page itself.
-  const toParent = useCallback(() => void navigate({ search: {}, replace: true }), [navigate]);
-  const history = useInspectorHistory(inspectorOpen, toParent);
-
-  function open(next: { sheet?: CashPanel; tx?: string }) {
-    if (next.sheet === search.sheet && next.tx === search.tx) return;
-    const replace = inspectorOpen;
-    if (!replace) history.markPushed();
-    void navigate({ search: next, replace });
-  }
-  const close = history.close;
 
   return (
     <div className="flex h-full min-h-0">
@@ -110,8 +92,8 @@ export function TopUpDesk() {
               error={!!cashAddress && transactionsQuery.isError}
               fetching={transactionsQuery.isFetching}
               onRetry={() => void transactionsQuery.refetch()}
-              selectedKey={search.tx ?? null}
-              onSelect={(transaction) => open({ tx: historyKey(transaction) })}
+              selectedKey={tx ?? null}
+              onSelect={(transaction) => open({ tx: topUpHistoryKey(transaction) })}
             />
           </DeskCanvas>
         }
@@ -127,7 +109,7 @@ export function TopUpDesk() {
               entryDisabled={access.entryDisabled}
               onClose={close}
             />
-          ) : search.tx !== undefined ? (
+          ) : tx !== undefined ? (
             <DeskInspector
               title={
                 selectedTx?.kind === "offramp" ? (
@@ -599,7 +581,7 @@ function CashHistory({
           label={t`Pretium history`}
           rows={transactions}
           columns={columns}
-          rowKey={historyKey}
+          rowKey={topUpHistoryKey}
           selectedKey={selectedKey}
           onSelect={onSelect}
           empty={<Trans>No cash activity yet.</Trans>}

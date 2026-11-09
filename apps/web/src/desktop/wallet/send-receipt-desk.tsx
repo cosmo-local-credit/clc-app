@@ -1,3 +1,4 @@
+import { formatSubmittedAt } from "@clc/core/lib/otx";
 import { recipientLabel as formatRecipientLabel } from "@clc/api/features/recipients/client";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic";
@@ -29,15 +30,6 @@ import { RELAYER_URL } from "#/lib/relayer-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
-function formatSubmittedAt(value: string, locale: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-}
-
 export function SendReceiptDesk() {
   const { i18n, t } = useLingui();
   const navigate = useNavigate();
@@ -51,6 +43,7 @@ export function SendReceiptDesk() {
     uoaValue,
     uoa,
     uoaUnavailable,
+    returnPool,
   } = useSearch({ from: "/_nav/wallet/send/receipt" });
   useDeskTrailLabel(symbol ?? null);
   const tracking = useOtxTracking(trackingId ?? null, {
@@ -116,10 +109,20 @@ export function SendReceiptDesk() {
       <StatusPill tone="pending" label={<Trans>Pending</Trans>} />
     );
 
+  // Replaced, as on the phone: Back must not reopen a receipt that is done.
   function done() {
+    if (returnPool) {
+      void navigate({
+        to: "/pools/$poolAddress",
+        params: { poolAddress: returnPool },
+        replace: true,
+      });
+      return;
+    }
     void navigate({
       to: "/",
       search: { tab: "activity", ...(txHash ? { tx: txHash } : {}) },
+      replace: true,
     });
   }
 
@@ -290,7 +293,7 @@ export function SendReceiptDesk() {
             </>
           ) : null}
           <Button type="button" onClick={done}>
-            <Trans>Done</Trans>
+            {returnPool ? <Trans>Back to pool</Trans> : <Trans>Done</Trans>}
           </Button>
         </div>
       </div>

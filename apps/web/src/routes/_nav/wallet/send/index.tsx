@@ -37,7 +37,11 @@ function SendRecipientRoute() {
     <AuthenticatedRoute>
       <LayoutSwitch
         mobile={<SendRecipientPage token={token} amount={amount} />}
-        desktop={<SendDesk step="recipient" token={token} amount={amount} to={seeded} />}
+        desktop={
+          // Keyed: the palette's "Send to X" lands here while Send may already
+          // be open, and the desk reads `to` only when it mounts.
+          <SendDesk key={seeded ?? ""} step="recipient" token={token} amount={amount} to={seeded} />
+        }
       />
     </AuthenticatedRoute>
   );

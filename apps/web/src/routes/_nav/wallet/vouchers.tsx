@@ -42,9 +42,15 @@ export const Route = createFileRoute("/_nav/wallet/vouchers")({
 });
 
 function AllVouchersRoute() {
+  // Only the desktop's panel link reaches here with a voucher (beforeLoad sent
+  // every other one to its page). The phone has no panel and follows it there.
+  const { voucher } = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <LayoutSwitch mobile={<AllVouchersPage />} desktop={<AllVouchersDesk />} />
+      <LayoutSwitch
+        mobile={<AllVouchersPage voucher={parseVoucherAddress(voucher)} />}
+        desktop={<AllVouchersDesk />}
+      />
     </AuthenticatedRoute>
   );
 }

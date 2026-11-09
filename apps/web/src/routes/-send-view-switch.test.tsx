@@ -1,4 +1,12 @@
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  act,
+  fireEvent,
+  render as renderView,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 /**
@@ -80,6 +88,7 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
   }),
 }));
 vi.mock("#/features/wallet/hooks/use-send-voucher-transfer", () => ({
+  SEND_VOUCHER_MUTATION_KEY: ["wallet", "send"],
   useSendVoucherTransfer: () => mocks.send,
 }));
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
@@ -137,6 +146,12 @@ import { SendDesk } from "#/desktop/wallet/send-desk";
 import { SendAmountPage } from "#/features/wallet/ui/send-amount-page";
 import { SendRecipientPage } from "#/features/wallet/ui/send-recipient-page";
 import { clearViewDrafts, useViewDraftStore } from "#/lib/view-drafts";
+
+/** Both views read the mutation cache for a send still relaying. */
+function render(ui: React.ReactElement) {
+  const client = new QueryClient();
+  return renderView(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+}
 
 const originalMatchMedia = window.matchMedia;
 const media = { matches: false, listeners: new Set<() => void>() };

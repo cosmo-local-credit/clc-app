@@ -1,3 +1,4 @@
+import { formatSubmittedAt } from "@clc/core/lib/otx";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { recipientLabel as formatRecipientLabel } from "@clc/api/features/recipients/client";
 import {
@@ -637,13 +638,4 @@ function ReceiptShell({
       ) : null}
     </div>
   );
-}
-
-function formatSubmittedAt(value: string, locale: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
 }

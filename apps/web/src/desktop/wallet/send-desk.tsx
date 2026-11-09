@@ -1,16 +1,8 @@
-import {
-  formatUnitOfAccountDisplayValue,
-  formatVoucherUnitValue,
-} from "@clc/core/features/market/logic";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import {
-  formatTokenAmount,
-  formatTokenAmountFixed,
-  parseTokenAmount,
-} from "@clc/core/features/wallet/logic";
+import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
+import { type ReactNode, useState } from "react";
 import { RiGroupLine } from "react-icons/ri";
 import { getAddress, isAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -31,36 +23,17 @@ import { SendRecipientField } from "#/desktop/wallet/send-recipient-field";
 import { SendReviewDialog } from "#/desktop/wallet/send-review-dialog";
 import { Dash } from "#/desktop/wallet/wallet-parts";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
-import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import {
   useAddressBookRecipients,
   useUpsertAddressBookRecipient,
 } from "#/features/wallet/hooks/use-address-book";
-import {
-  useAccountTransfersInfinite,
-  useAllAccountTokens,
-} from "#/features/wallet/hooks/use-account-balances";
-import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
-import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { recentSendRecipients } from "#/features/wallet/logic/recent-send-recipients";
-import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
-import { useKeepSendDraft, useSendDraft } from "#/features/wallet/hooks/use-send-draft";
-import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { useSendDraft } from "#/features/wallet/hooks/use-send-draft";
+import { useSendPayment } from "#/features/wallet/hooks/use-send-payment";
 import { GUEST_STORAGE_OWNER, type StorageOwner } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
-
-function sanitizeAmount(raw: string): string {
-  const cleaned = raw.replace(/[^0-9.]/g, "");
-  const firstDot = cleaned.indexOf(".");
-  if (firstDot === -1) return cleaned;
-  const whole = cleaned.slice(0, firstDot);
-  const fraction = cleaned
-    .slice(firstDot + 1)
-    .replace(/\./g, "")
-    .slice(0, 2);
-  return `${whole}.${fraction}`;
-}
 
 function hexAddress(value: unknown): `0x${string}` | undefined {
   return typeof value === "string" && isAddress(value) ? getAddress(value) : undefined;
@@ -91,11 +64,9 @@ export function SendDesk({
   to?: `0x${string}`;
 }) {
   const { i18n, t } = useLingui();
-  const navigate = useNavigate();
   const locationSearch = useRouterState({ select: (state) => state.location.search });
   const route = readSendLocation(locationSearch);
   const seededTo = to ?? route.to ?? route.recipient;
-  const seededToken = (token ?? route.token)?.toLowerCase();
   const seededLabel =
     route.recipientLabel &&
     route.recipient &&
@@ -103,14 +74,7 @@ export function SendDesk({
     route.recipient.toLowerCase() === seededTo.toLowerCase()
       ? route.recipientLabel
       : undefined;
-  const returnPool = route.returnPool;
   const { address } = useConnection();
-  const delegationStatus = useCaliburDelegation(address);
-  const tokensQuery = useAllAccountTokens(address);
-  const sendVoucher = useSendVoucherTransfer();
-  const tokens = tokensQuery.tokens
-    .filter((item) => item.catalogActive !== false)
-    .map(accountTokenToWalletToken);
   // The phone and desktop views share one draft of this payment, so a zoom or
   // resize across the breakpoint carries the recipient, amount and voucher
   // over. Only the fields: the review step and "Max" never come back.
@@ -118,18 +82,6 @@ export function SendDesk({
   const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
   const draft = useSendDraft(wallet);
   const restored = draft.restored;
-  const [selectedId, setSelectedId] = useState<string | undefined>(
-    restored?.token?.toLowerCase() ?? seededToken,
-  );
-  const selectedToken = selectedId ? tokens.find((item) => item.id === selectedId) : tokens[0];
-  const firstTokenId = tokens[0]?.id;
-  useEffect(() => {
-    if (!selectedId && firstTokenId) setSelectedId(firstTokenId);
-  }, [selectedId, firstTokenId]);
-  const [amount, setAmount] = useState(() =>
-    sanitizeAmount(restored ? restored.amount : (amountProp ?? route.amount ?? "")),
-  );
-  const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [query, setQuery] = useState(restored ? restored.query : (seededTo ?? ""));
   const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipientAddress | null>(
@@ -170,77 +122,24 @@ export function SendDesk({
     ? resolvedRecipient
     : (selectedRecipient ?? resolvedRecipient);
   useDeskTrailLabel(recipient?.name ?? null);
-  useKeepSendDraft(draft, {
+  // The URL's label and pool belong to the recipient it named: the payment
+  // drops both once the person picks someone else.
+  const payment = useSendPayment({
+    sender: address,
+    draft,
+    seed: {
+      token: token ?? route.token,
+      amount: amountProp ?? route.amount,
+      recipient: seededTo,
+      recipientLabel: seededLabel,
+      returnPool: route.returnPool,
+    },
     query,
     recipient,
-    amount,
-    // Preserve the asset currently shown, including a default/shortcut choice.
-    // A missing selection keeps its id and cannot silently become another asset.
-    token: selectedId ?? selectedToken?.id,
   });
+  const { tokens, tokensQuery, selectedToken, amount, exactVoucherAmount, unitValueLabel } =
+    payment;
   const showRecent = query.trim() === "";
-  const tokenDecimals = selectedToken?.tokenDecimals ?? 2;
-  const voucherDetail = useMarketVoucherDetail(selectedToken?.contractAddress);
-  const parsedAmountRaw = useMemo(() => {
-    if (!selectedToken || amount.trim() === "") return null;
-    try {
-      return maxAmountRaw ?? parseTokenAmount(amount, tokenDecimals);
-    } catch {
-      return null;
-    }
-  }, [amount, maxAmountRaw, selectedToken, tokenDecimals]);
-  const exactVoucherAmount =
-    parsedAmountRaw === null
-      ? null
-      : formatTokenAmount(parsedAmountRaw, tokenDecimals, tokenDecimals);
-  const submittedVoucherAmount = maxAmountRaw ? (exactVoucherAmount ?? amount) : amount;
-  const unitValue =
-    exactVoucherAmount === null
-      ? null
-      : formatVoucherUnitValue(
-          exactVoucherAmount,
-          voucherDetail.data?.voucherValue ?? null,
-          voucherDetail.data?.voucherUoa ?? null,
-        );
-  const localizedUnitValue = unitValue
-    ? (formatUnitOfAccountDisplayValue(unitValue.value, i18n.locales?.[0] ?? i18n.locale) ??
-      unitValue.value)
-    : null;
-  const unitValueLabel =
-    exactVoucherAmount === null
-      ? null
-      : unitValue && localizedUnitValue
-        ? `${localizedUnitValue} ${unitValue.unit}`
-        : voucherDetail.isPending
-          ? t`Loading…`
-          : t`Unavailable`;
-  const balanceRaw = selectedToken?.balance ?? null;
-  const amountValue = Number(amount);
-  const isValidAmount =
-    amount.trim() !== "" &&
-    Number.isFinite(amountValue) &&
-    amountValue > 0 &&
-    parsedAmountRaw !== null &&
-    BigInt(parsedAmountRaw) > 0n;
-  const exceedsMax =
-    isValidAmount && balanceRaw !== null
-      ? BigInt(parsedAmountRaw) > BigInt(balanceRaw)
-      : selectedToken
-        ? amountValue > Number(selectedToken.amount.replace(/,/g, ""))
-        : false;
-  const recipientAddress = recipient?.address ?? null;
-  const tokenAddress =
-    selectedToken?.contractAddress && isAddress(selectedToken.contractAddress)
-      ? getAddress(selectedToken.contractAddress)
-      : null;
-  const canSend =
-    !!address &&
-    !!recipientAddress &&
-    !!tokenAddress &&
-    !!selectedToken &&
-    delegationStatus !== "checking" &&
-    isValidAmount &&
-    !exceedsMax;
   const loadingTokens = Boolean(address) && tokensQuery.isPending;
   function handleSelectRecipient(next: Recipient) {
     const nextAddress = hexAddress(next.address);
@@ -257,13 +156,8 @@ export function SendDesk({
     setQuery(next.label);
   }
 
-  function selectToken(id: string) {
-    setMaxAmountRaw(null);
-    setSelectedId(id);
-  }
-
   async function openReview() {
-    if (!recipient || !canSend) return;
+    if (!recipient || !payment.canSend || payment.inFlight) return;
     const saved = await upsertRecipient
       .mutateAsync({
         label: recipient.name ?? recipient.address,
@@ -323,23 +217,20 @@ export function SendDesk({
                       label={t`Amount`}
                       value={amount}
                       autoFocus={step === "amount"}
-                      aria-invalid={exceedsMax}
+                      aria-invalid={payment.exceedsBalance}
                       style={{
                         height: "4rem",
                         paddingInlineEnd: "9rem",
                         paddingInlineStart: "0.875rem",
                       }}
-                      onValueChange={(value) => {
-                        setMaxAmountRaw(null);
-                        setAmount(sanitizeAmount(value));
-                      }}
+                      onValueChange={payment.setAmount}
                     />
                     <div className="absolute inset-y-0 end-3 flex items-center">
                       <TokenPicker
                         tokens={tokens}
                         selected={selectedToken}
                         loading={loadingTokens}
-                        onSelect={selectToken}
+                        onSelect={payment.selectToken}
                       />
                     </div>
                   </div>
@@ -350,21 +241,7 @@ export function SendDesk({
                           Balance <span className="font-mono">{selectedToken.amount}</span>
                         </Trans>
                       </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          if (selectedToken.balance) {
-                            setAmount(
-                              formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2),
-                            );
-                            setMaxAmountRaw(selectedToken.balance);
-                            return;
-                          }
-                          setMaxAmountRaw(null);
-                          setAmount(selectedToken.amount.replace(/,/g, ""));
-                        }}
-                      >
+                      <Button type="button" variant="outline" onClick={payment.setMax}>
                         <Trans>Max</Trans>
                       </Button>
                     </div>
@@ -398,7 +275,7 @@ export function SendDesk({
                       <Trans>Try again</Trans>
                     </Button>
                   ) : null}
-                  {exceedsMax ? (
+                  {payment.exceedsBalance ? (
                     <p className="text-xs text-destructive" role="alert">
                       <Trans>Amount exceeds your balance</Trans>
                     </p>
@@ -491,70 +368,30 @@ export function SendDesk({
           scrolling body, not laid over it, so it never covers a field or an error. */}
       <div className="shrink-0 border-border border-t bg-card">
         <div className="flex w-full max-w-[1324px] justify-end px-6 py-3 @4xl:px-8">
+          {/* Disarmed while any send is relaying, including one the phone view
+              started before a resize brought this panel up. */}
           <Button
             type="button"
             className="min-w-40"
-            disabled={!canSend}
-            pending={upsertRecipient.isPending}
+            disabled={!payment.canSend}
+            pending={upsertRecipient.isPending || payment.inFlight}
             onClick={() => void openReview()}
           >
-            <Trans>Review</Trans>
+            {payment.inFlight ? <Trans>Sending…</Trans> : <Trans>Review</Trans>}
           </Button>
         </div>
       </div>
       <SendReviewDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        amount={submittedVoucherAmount}
+        amount={payment.submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
         unitValueLabel={unitValueLabel}
-        recipient={recipientAddress}
-        recipientLabel={recipient?.name ?? seededLabel}
-        error={sendVoucher.error instanceof Error ? sendVoucher.error.message : null}
-        isPending={sendVoucher.isPending}
-        onConfirm={async () => {
-          if (
-            !canSend ||
-            !address ||
-            !selectedToken ||
-            !parsedAmountRaw ||
-            !tokenAddress ||
-            !recipientAddress
-          ) {
-            return;
-          }
-          const result = await sendVoucher
-            .mutateAsync({
-              senderAddress: address,
-              tokenAddress,
-              recipientAddress,
-              amountRaw: parsedAmountRaw,
-              includeAuthorization: delegationStatus === "not-delegated",
-            })
-            .catch(() => null);
-          if (!result) return;
-          draft.clear();
-          const submittedUnitValue = relaySnapshotUnitValue(
-            result.valuationSnapshots,
-            tokenAddress,
-            exactVoucherAmount ?? amount,
-          );
-          void navigate({
-            to: "/wallet/send/receipt",
-            search: {
-              trackingId: result.trackingId,
-              token: tokenAddress,
-              recipient: recipientAddress,
-              recipientLabel: recipient?.name ?? seededLabel,
-              amount: submittedVoucherAmount,
-              symbol: selectedToken.symbol,
-              ...(submittedUnitValue
-                ? { uoaValue: submittedUnitValue.value, uoa: submittedUnitValue.unit }
-                : { uoaUnavailable: true }),
-              ...(returnPool ? { returnPool } : {}),
-            },
-          });
-        }}
+        recipient={payment.recipientAddress}
+        recipientLabel={payment.recipientLabel}
+        error={payment.error}
+        isPending={payment.inFlight}
+        onConfirm={payment.confirm}
       />
     </div>
   );

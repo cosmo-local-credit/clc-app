@@ -3,6 +3,7 @@ import { lazy } from "react";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { LayoutSwitch } from "#/desktop/switch";
+import { validateTopUpSearch } from "#/features/wallet/top-up-search";
 import { TopUpPage } from "#/features/wallet/ui";
 
 const TopUpDesk = lazy(() =>
@@ -11,13 +12,8 @@ const TopUpDesk = lazy(() =>
 
 export const Route = createFileRoute("/_nav/wallet/top-up")({
   staticData: { navOwner: "wallet", desktop: "fill" },
-  // Desktop inspector state: the open ramp form, or a history row by kind-reference.
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { sheet?: "add" | "withdraw"; tx?: string } => ({
-    sheet: search.sheet === "add" || search.sheet === "withdraw" ? search.sheet : undefined,
-    tx: typeof search.tx === "string" && search.tx.length > 0 ? search.tx : undefined,
-  }),
+  // The open ramp form in either view, or a history row in the desktop inspector.
+  validateSearch: validateTopUpSearch,
   component: TopUpRoute,
 });
 

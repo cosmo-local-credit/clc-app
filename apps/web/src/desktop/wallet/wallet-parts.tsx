@@ -1,7 +1,7 @@
 import type { AccountActivityItem } from "@clc/api/features/accounts/client";
 import type { ResourceKind, ResourceUsage } from "@clc/api/features/resource-limits/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 
 import { SwapActivityTitle } from "#/components/activity/swap-activity";
@@ -10,6 +10,7 @@ import { Spinner } from "#/components/ui/spinner";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import type { useResourceUsage } from "#/hooks/use-resource-usage";
 import { cn } from "#/lib/utils";
+import { DeskQuotaText } from "#/desktop/ui/quota";
 
 /** The small states and rows the Wallet's sections share. */
 
@@ -33,22 +34,10 @@ export function QuotaMeta({
   usage: ReturnType<typeof useResourceUsage>;
   kind: ResourceKind;
 }) {
-  const { i18n } = useLingui();
   const quota: ResourceUsage[ResourceKind] | undefined = usage.data?.[kind];
   if (usage.isError || !quota) return null;
-  const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
-  const used = digits.format(quota.used);
-  const limit = digits.format(quota.limit);
   return (
-    <span className="text-xs whitespace-nowrap text-muted-foreground" aria-live="polite">
-      {quota.unlimited ? (
-        <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-      ) : (
-        <Trans id="{used} of {limit} used">
-          {used} of {limit} used
-        </Trans>
-      )}
-    </span>
+    <DeskQuotaText quota={quota} className="text-xs whitespace-nowrap text-muted-foreground" />
   );
 }
 

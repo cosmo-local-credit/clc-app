@@ -1,17 +1,19 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+} from "@tanstack/react-router";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { account, clipboardWrite, toastSuccess } = vi.hoisted(() => ({
   account: { address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as string | undefined },
   clipboardWrite: vi.fn(),
   toastSuccess: vi.fn(),
-}));
-
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, ...props }: { children: React.ReactNode }) => <a {...props}>{children}</a>,
-  useRouter: () => ({ history: { back: vi.fn() } }),
-  useCanGoBack: () => false,
 }));
 
 vi.mock("wagmi", () => ({
@@ -47,11 +49,31 @@ vi.mock("#/lib/chain", () => ({
   },
 }));
 
+import { validateTopUpSearch } from "#/features/wallet/top-up-search";
 import { TopUpPage } from "./top-up-page";
 
-function renderWithQueryClient(ui: React.ReactElement) {
+/** The page at its real path, so its open sheet is the URL's `?sheet=`. */
+function renderTopUp(entry = "/wallet/top-up") {
+  const root = createRootRoute({ component: Outlet });
+  const nav = createRoute({ getParentRoute: () => root, id: "_nav", component: Outlet });
+  const topUp = createRoute({
+    getParentRoute: () => nav,
+    path: "/wallet/top-up",
+    validateSearch: validateTopUpSearch,
+    component: TopUpPage,
+  });
+  const wallet = createRoute({ getParentRoute: () => nav, path: "/", component: () => null });
+  const router = createRouter({
+    routeTree: root.addChildren([nav.addChildren([topUp, wallet])]),
+    history: createMemoryHistory({ initialEntries: [entry] }),
+  });
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
+  return router;
 }
 
 function mockPretiumBackend({
@@ -165,7 +187,7 @@ describe("TopUpPage", () => {
   it("shows the Cash page shell with add, withdraw, and Pretium history sections", async () => {
     mockPretiumBackend({ phone: "+254712345678" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     expect(await screen.findByRole("heading", { name: "Cash" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Add stables" })).toBeTruthy();
@@ -177,7 +199,7 @@ describe("TopUpPage", () => {
   it("opens the add stables sheet with the user's Kenyan MPESA number and a 100 KES placeholder", async () => {
     mockPretiumBackend({ phone: "+254712345678" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     expect(screen.queryByRole("textbox", { name: /amount/i })).toBeNull();
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
@@ -197,10 +219,53 @@ describe("TopUpPage", () => {
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(false);
   });
 
+  it("opens a sheet as a history entry that Back closes", async () => {
+    mockPretiumBackend({ phone: "+254712345678" });
+    const router = renderTopUp();
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
+    expect(await screen.findByRole("textbox", { name: /amount/i })).toBeTruthy();
+    expect(router.state.location.search).toEqual({ sheet: "add" });
+    expect(router.history.location.state.__TSR_index).toBe(1);
+
+    router.history.back();
+
+    await waitFor(() => expect(screen.queryByRole("textbox", { name: /amount/i })).toBeNull());
+    expect(router.state.location.search).toEqual({});
+    expect(router.state.location.pathname).toBe("/wallet/top-up");
+  });
+
+  it("dismissing a sheet pops the entry its opening pushed", async () => {
+    mockPretiumBackend({ phone: "+254712345678" });
+    const router = renderTopUp();
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[1]);
+    expect(await screen.findByRole("button", { name: /^withdraw$/i })).toBeTruthy();
+    expect(router.state.location.search).toEqual({ sheet: "withdraw" });
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => expect(router.state.location.search).toEqual({}));
+    expect(router.history.location.state.__TSR_index).toBe(0);
+    expect(router.history.canGoBack()).toBe(false);
+  });
+
+  it("opens the sheet a link names and closes it in place", async () => {
+    mockPretiumBackend({ phone: "+254712345678" });
+    const router = renderTopUp("/wallet/top-up?sheet=add");
+
+    expect(await screen.findByRole("textbox", { name: /amount/i })).toBeTruthy();
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => expect(router.state.location.search).toEqual({}));
+    expect(router.state.location.pathname).toBe("/wallet/top-up");
+    expect(router.history.length).toBe(1);
+  });
+
   it("can repeatedly open and dismiss the add stables sheet", async () => {
     mockPretiumBackend({ phone: "+254712345678" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     const addButton = (await screen.findAllByText("MPESA via Pretium"))[0]?.closest("button");
     expect(addButton).toBeTruthy();
@@ -216,7 +281,7 @@ describe("TopUpPage", () => {
   it("starts a Pretium onramp from the add stables sheet", async () => {
     const fetchMock = mockPretiumBackend({ phone: "+254712345678" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
     fireEvent.change(await screen.findByRole("textbox", { name: /amount/i }), {
@@ -238,6 +303,29 @@ describe("TopUpPage", () => {
       asset: "USDT",
       amount: 100,
     });
+  });
+
+  it("sends one MPESA prompt when Continue is pressed twice before the screen catches up", async () => {
+    const fetchMock = mockPretiumBackend({ phone: "+254712345678" });
+
+    renderTopUp();
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
+    fireEvent.change(await screen.findByRole("textbox", { name: /amount/i }), {
+      target: { value: "100" },
+    });
+    const start = await screen.findByRole("button", { name: /continue/i });
+    act(() => {
+      start.click();
+      start.click();
+    });
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(
+      fetchMock.mock.calls.filter(([input]) =>
+        requestUrl(input).includes("/api/v2/pretium/trigger-onramp"),
+      ),
+    ).toHaveLength(1);
   });
 
   it("shows every returned Pretium history item without trimming", async () => {
@@ -289,7 +377,7 @@ describe("TopUpPage", () => {
       ],
     });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     await screen.findByRole("button", { name: /complete.*onramp/i });
     expect(await screen.findByRole("button", { name: /complete.*offramp.*kes 400/i })).toBeTruthy();
@@ -304,7 +392,7 @@ describe("TopUpPage", () => {
     const pretiumId = "PTM-1234567890-ABCDEFG";
     mockPretiumBackend({ phone: "+254712345678", history: true, pretiumId });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     // Row mirrors the activity feed: labelled "Onramp", amount shown, no Pretium id.
     expect(await screen.findByRole("button", { name: /complete.*onramp/i })).toBeTruthy();
@@ -324,6 +412,26 @@ describe("TopUpPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /copy pretium id/i }));
     await waitFor(() => expect(clipboardWrite).toHaveBeenCalledWith(pretiumId));
     expect(toastSuccess).toHaveBeenCalledWith("Pretium ID copied");
+  });
+
+  it("opens the history row a link names, as the desktop inspector left it, and Back closes it", async () => {
+    // A row open in the desktop inspector is `?tx=`; narrowing the window must
+    // keep it open here, and tapping a row is a history entry Back closes.
+    const pretiumId = "PTM-1234567890-ABCDEFG";
+    mockPretiumBackend({ phone: "+254712345678", history: true, pretiumId });
+
+    const router = renderTopUp(`/wallet/top-up?tx=onramp-${pretiumId}`);
+    expect(await screen.findByText("Pretium ID")).toBeTruthy();
+
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByText("Pretium ID")).toBeNull());
+    expect(router.state.location.search).toEqual({});
+
+    fireEvent.click(await screen.findByRole("button", { name: /complete.*onramp/i }));
+    expect(await screen.findByText("Pretium ID")).toBeTruthy();
+    expect(router.state.location.search).toEqual({ tx: `onramp-${pretiumId}` });
+    router.history.back();
+    await waitFor(() => expect(screen.queryByText("Pretium ID")).toBeNull());
   });
 
   it("opens completed offramp history rows in the detail sheet", async () => {
@@ -347,7 +455,7 @@ describe("TopUpPage", () => {
       ],
     });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     const row = await screen.findByRole("button", { name: /complete.*offramp.*kes 1000/i });
     expect(row.textContent).toContain("KES 1000");
@@ -366,7 +474,7 @@ describe("TopUpPage", () => {
   it("marks incomplete Pretium history rows with the pending status icon", async () => {
     mockPretiumBackend({ phone: "+254712345678", history: true, historyStatus: "PENDING" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     expect(await screen.findByRole("button", { name: /pending.*onramp/i })).toBeTruthy();
   });
@@ -374,7 +482,7 @@ describe("TopUpPage", () => {
   it("disables cash entry for a non-Kenyan phone number", async () => {
     mockPretiumBackend({ phone: "+12133734253" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
@@ -386,7 +494,7 @@ describe("TopUpPage", () => {
   it("warns without blocking for a non-Safaricom Kenyan number", async () => {
     mockPretiumBackend({ phone: "+254730000000" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
@@ -401,7 +509,7 @@ describe("TopUpPage", () => {
   it("does not warn for a Safaricom number", async () => {
     mockPretiumBackend({ phone: "+254712345678" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
@@ -412,7 +520,7 @@ describe("TopUpPage", () => {
   it("disables cash entry when the profile has no phone number", async () => {
     mockPretiumBackend({ phone: "" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
@@ -426,7 +534,7 @@ describe("TopUpPage", () => {
   it("enables the Withdraw section and opens the offramp sheet", async () => {
     mockPretiumBackend({ phone: "+254712345678" });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     // No longer "Soon"; the second MPESA entry is the withdraw trigger.
     expect(await screen.findByRole("heading", { name: "Withdraw" })).toBeTruthy();
@@ -455,7 +563,7 @@ describe("TopUpPage", () => {
       ],
     });
 
-    renderWithQueryClient(<TopUpPage />);
+    renderTopUp();
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[1]);
 
