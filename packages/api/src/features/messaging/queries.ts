@@ -58,12 +58,15 @@ type FetchMessagePage<M extends { id: number }> = (
 ) => Promise<{ items: M[]; hasMore: boolean }>;
 
 /**
- * A thread's refresh: the newest page the first time, and afterwards only
- * what is newer than the newest message held, through `after=<newest id>`.
+ * A thread's refresh: the newest page until a read has returned a message,
+ * and afterwards only what is newer than the newest message a read returned,
+ * through `after=<fetchedThrough>`. Messages the caller sent are not a cursor.
  *
  * Message ids rise in commit order within a conversation, so the forward read
- * cannot skip one. The result is merged with whatever the cache holds when it
- * lands, so an older page or a sent message written meanwhile is kept.
+ * cannot skip one. The result is merged by id with whatever the cache holds
+ * when it lands, so an older page or a sent message written meanwhile is kept.
+ * Only a server read decides `hasOlder`: the newest page here, an older page
+ * in `loadOlderThreadMessages`.
  */
 async function refreshThreadMessages<M extends { id: number }>(
   client: QueryClient,
@@ -71,17 +74,15 @@ async function refreshThreadMessages<M extends { id: number }>(
   fetchPage: FetchMessagePage<M>,
   signal: AbortSignal,
 ): Promise<ThreadMessages<M>> {
-  const current = client.getQueryData<ThreadMessages<M>>(queryKey);
-  let fetched: M[];
-  let hasOlder: boolean;
-  if (!current || current.items.length === 0) {
+  const cursor = client.getQueryData<ThreadMessages<M>>(queryKey)?.fetchedThrough;
+  let fetched: M[] = [];
+  let newestPageHasOlder: boolean | undefined;
+  if (cursor === undefined) {
     const page = await fetchPage({ limit: THREAD_PAGE_SIZE }, signal);
     fetched = page.items;
-    hasOlder = page.hasMore;
+    newestPageHasOlder = page.hasMore;
   } else {
-    fetched = [];
-    hasOlder = current.hasOlder;
-    let after = newestMessageId(current.items);
+    let after = cursor;
     for (let index = 0; index < MAX_FORWARD_PAGES; index++) {
       const page = await fetchPage({ after, limit: FORWARD_PAGE_SIZE }, signal);
       fetched = mergeMessages(fetched, page.items);
@@ -90,9 +91,13 @@ async function refreshThreadMessages<M extends { id: number }>(
     }
   }
   const latest = client.getQueryData<ThreadMessages<M>>(queryKey);
+  const held = latest?.fetchedThrough ?? cursor;
+  const newest = newestMessageId(fetched);
   return {
     items: mergeMessages(latest?.items ?? [], fetched),
-    hasOlder: latest && latest.items.length > 0 ? latest.hasOlder : hasOlder,
+    hasOlder: newestPageHasOlder ?? latest?.hasOlder ?? false,
+    fetchedThrough:
+      newest === undefined || held === undefined ? (newest ?? held) : Math.max(held, newest),
   };
 }
 
@@ -107,19 +112,24 @@ async function loadOlderThreadMessages<M extends { id: number }>(
   if (!current || oldest === undefined || !current.hasOlder) return false;
   const page = await fetchPage({ before: oldest, limit: THREAD_PAGE_SIZE });
   client.setQueryData<ThreadMessages<M>>(queryKey, (latest) => ({
+    ...latest,
     items: mergeMessages(page.items, latest?.items ?? []),
     hasOlder: page.hasMore,
   }));
   return page.hasMore;
 }
 
-/** Appends one message the caller just sent, so it shows before the next poll. */
+/**
+ * Appends one message the caller just sent, so it shows before the next poll.
+ * It moves neither the forward cursor nor `hasOlder`: those come from reads.
+ */
 export function appendThreadMessage<M extends { id: number }>(
   client: QueryClient,
   queryKey: QueryKey,
   message: M,
 ): void {
   client.setQueryData<ThreadMessages<M>>(queryKey, (current) => ({
+    ...current,
     items: mergeMessages(current?.items ?? [], [message]),
     hasOlder: current?.hasOlder ?? false,
   }));

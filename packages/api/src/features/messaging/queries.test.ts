@@ -1,8 +1,10 @@
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import type { MessagingClient } from "./client";
+import type { AdminMessagingClient, MessagingClient } from "./client";
 import {
+  adminHelpdeskMessagesQueryOptions,
+  adminMessagingKeys,
   appendThreadMessage,
   conversationMessagesQueryOptions,
   loadOlderConversationMessages,
@@ -36,7 +38,7 @@ describe("conversation messages query", () => {
     const options = conversationMessagesQueryOptions(client, VIEWER, 3);
 
     const first = await queryClient.fetchQuery(options);
-    expect(first).toEqual({ items: [message(4), message(5)], hasOlder: true });
+    expect(first).toEqual({ items: [message(4), message(5)], hasOlder: true, fetchedThrough: 5 });
     expect(messages).toHaveBeenLastCalledWith(3, { limit: 50 }, expect.anything());
 
     const second = await queryClient.fetchQuery({ ...options, staleTime: 0 });
@@ -66,7 +68,7 @@ describe("conversation messages query", () => {
   it("keeps a sent message and older pages written while a refresh was in flight", async () => {
     const queryClient = new QueryClient();
     const key = messagingKeys.messages(VIEWER, 3);
-    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true });
+    queryClient.setQueryData(key, { items: [message(10)], hasOlder: true, fetchedThrough: 10 });
     let release: (value: {
       items: ReturnType<typeof message>[];
       hasMore: boolean;
@@ -95,5 +97,89 @@ describe("conversation messages query", () => {
     expect(messagingKeys.messages(VIEWER, 3)).toEqual(
       messagingKeys.messages(VIEWER.toLowerCase(), 3),
     );
+  });
+});
+
+type Page = { items: ReturnType<typeof message>[]; hasMore: boolean };
+type FetchPage = (...args: unknown[]) => Promise<Page>;
+
+/**
+ * The user thread and the admin helpdesk thread share one refresh, so each
+ * case runs on both. `read` is the first load, or a poll with `poll: true`.
+ */
+const threads = [
+  {
+    name: "user thread",
+    setup: (queryClient: QueryClient, fetchPage: FetchPage) => {
+      const options = conversationMessagesQueryOptions(
+        { messages: fetchPage } as unknown as MessagingClient,
+        VIEWER,
+        3,
+      );
+      return {
+        key: messagingKeys.messages(VIEWER, 3),
+        read: (poll = false) =>
+          queryClient.fetchQuery(poll ? { ...options, staleTime: 0 } : options),
+      };
+    },
+  },
+  {
+    name: "admin helpdesk thread",
+    setup: (queryClient: QueryClient, fetchPage: FetchPage) => {
+      const options = adminHelpdeskMessagesQueryOptions(
+        { helpdeskMessages: fetchPage } as unknown as AdminMessagingClient,
+        3,
+      );
+      return {
+        key: adminMessagingKeys.helpdeskMessages(3),
+        read: (poll = false) =>
+          queryClient.fetchQuery(poll ? { ...options, staleTime: 0 } : options),
+      };
+    },
+  },
+];
+
+describe.each(threads)("$name after a send", ({ setup }) => {
+  it("polls from the newest fetched id, so a message that landed before the send still arrives", async () => {
+    const queryClient = new QueryClient();
+    const fetchPage = vi
+      .fn<(...args: unknown[]) => Promise<Page>>()
+      .mockResolvedValueOnce({ items: [message(1)], hasMore: false })
+      .mockResolvedValueOnce({ items: [message(2), message(3)], hasMore: false })
+      .mockResolvedValue({ items: [], hasMore: false });
+    const { key, read } = setup(queryClient, fetchPage);
+
+    await read();
+    // Message 2 reaches the server, then the caller sends 3 before the next poll.
+    appendThreadMessage(queryClient, key, message(3));
+    const data = await read(true);
+
+    expect(fetchPage.mock.calls[1]?.[1]).toEqual({ after: 1, limit: 100 });
+    expect(data.items.map((item) => item.id)).toEqual([1, 2, 3]);
+
+    await read(true);
+    expect(fetchPage.mock.calls[2]?.[1]).toEqual({ after: 3, limit: 100 });
+  });
+
+  it("keeps older history reachable when a send lands before the first page", async () => {
+    const queryClient = new QueryClient();
+    let release: (page: Page) => void = () => {};
+    const fetchPage = vi
+      .fn<(...args: unknown[]) => Promise<Page>>()
+      .mockImplementationOnce(() => new Promise((resolve) => (release = resolve)))
+      .mockResolvedValue({ items: [], hasMore: false });
+    const { key, read } = setup(queryClient, fetchPage);
+
+    const initial = read();
+    await vi.waitFor(() => expect(fetchPage).toHaveBeenCalledTimes(1));
+    appendThreadMessage(queryClient, key, message(60));
+    release({ items: [message(10), message(59)], hasMore: true });
+    const data = await initial;
+
+    expect(data.items.map((item) => item.id)).toEqual([10, 59, 60]);
+    expect(data.hasOlder).toBe(true);
+
+    await read(true);
+    expect(fetchPage.mock.calls[1]?.[1]).toEqual({ after: 59, limit: 100 });
   });
 });

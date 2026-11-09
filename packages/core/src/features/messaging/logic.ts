@@ -198,10 +198,17 @@ export type AdminAbuseReportPage = z.infer<typeof adminAbuseReportPageSchema>;
 
 // Pure helpers.
 
-/** What a thread holds in memory: messages ascending by id, and whether older ones exist. */
+/**
+ * What a thread holds in memory: messages ascending by id, and whether older
+ * ones exist. `fetchedThrough` is the newest id a server read returned, the
+ * cursor the next forward read continues from. A message the caller sent is
+ * appended to `items` but never moves it: a reply that reached the server
+ * before the send has a lower id and would otherwise be skipped.
+ */
 export type ThreadMessages<M extends { id: number } = Message> = {
   items: M[];
   hasOlder: boolean;
+  fetchedThrough?: number;
 };
 
 /** Joins two runs of messages by id, ascending, later copies replacing earlier ones. */
