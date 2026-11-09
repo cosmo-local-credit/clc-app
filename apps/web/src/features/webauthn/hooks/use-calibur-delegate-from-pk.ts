@@ -13,6 +13,9 @@ export const DELEGATION_POLL_MS = 2_000;
 
 export type DelegationStep = "idle" | "authorizing" | "confirming" | "done" | "error";
 
+/** One activation per key: a view mounted after a layout switch sees one in flight. */
+export const CALIBUR_DELEGATE_FROM_PK_MUTATION_KEY = ["calibur", "delegate-from-pk"] as const;
+
 export function useCaliburDelegateFromPk(client: RelayerClient) {
   const [step, setStep] = useState<DelegationStep>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +43,7 @@ export function useCaliburDelegateFromPk(client: RelayerClient) {
   }, [trackingId, tracking.outcome]);
 
   const mutation = useMutation({
+    mutationKey: CALIBUR_DELEGATE_FROM_PK_MUTATION_KEY,
     mutationFn: async ({ privateKey }: { privateKey: `0x${string}` }) => {
       setError(null);
       setTrackingId(null);

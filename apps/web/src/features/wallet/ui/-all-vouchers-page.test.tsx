@@ -3,7 +3,10 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { useConnectionMock } = vi.hoisted(() => ({ useConnectionMock: vi.fn() }));
+const { navigate, useConnectionMock } = vi.hoisted(() => ({
+  navigate: vi.fn(),
+  useConnectionMock: vi.fn(),
+}));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -31,6 +34,7 @@ vi.mock("@tanstack/react-router", () => ({
     );
   },
   useCanGoBack: () => false,
+  useNavigate: () => navigate,
   useRouter: () => ({ history: { back: vi.fn() } }),
 }));
 
@@ -142,6 +146,27 @@ afterEach(() => {
 });
 
 describe("AllVouchersPage", () => {
+  it("opens the voucher a desktop panel link names, in place of the link", async () => {
+    mockReads();
+    const voucher = "0x00000000000000000000000000000000000000a1";
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AllVouchersPage voucher={voucher} />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith({
+        to: "/vouchers/$voucherAddress",
+        params: { voucherAddress: voucher },
+        search: { from: "vouchers" },
+        replace: true,
+      }),
+    );
+    expect(screen.queryByRole("heading", { name: "All Vouchers" })).toBeNull();
+  });
+
   it("keeps the title-row create action and puts the allowance beside My Vouchers", async () => {
     mockReads();
     renderPage();

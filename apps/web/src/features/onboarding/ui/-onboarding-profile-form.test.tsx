@@ -521,6 +521,21 @@ describe("OnboardingProfileForm Continue", () => {
     );
   });
 
+  it("stops suggesting a username once the person clears the suggestion", async () => {
+    mockSuggest.mockResolvedValue("jane-doe");
+    renderForm(vi.fn(), undefined, PHOTO);
+    fireEvent.change(textbox(/^name$/i), { target: { value: "Jane Doe" } });
+    const username = textbox(/^username$/i) as HTMLInputElement;
+    await waitFor(() => expect(username.value).toBe("jane-doe"), { timeout: 2000 });
+
+    fireEvent.change(username, { target: { value: "" } });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    });
+    expect(username.value).toBe("");
+    expect(mockSuggest).toHaveBeenCalledTimes(1);
+  });
+
   it("omits a blank username so signup can assign one automatically", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);

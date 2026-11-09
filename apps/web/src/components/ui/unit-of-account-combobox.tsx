@@ -36,28 +36,7 @@ export function UnitOfAccountCombobox({
   disabled?: boolean;
 }) {
   const { t } = useLingui();
-  const vocabulary = useUnitsOfAccount();
-  const options = useMemo<SearchableOption[]>(() => {
-    const byKey = new Map<string, SearchableOption>();
-    for (const option of UNIT_OF_ACCOUNT_OPTIONS) {
-      byKey.set(option.code.toLowerCase(), {
-        value: option.code,
-        label: formatUnitOfAccountOption(option),
-      });
-    }
-    for (const entry of vocabulary.data ?? []) {
-      const builtIn = findUnitOfAccountOption(entry.value);
-      const canonical = builtIn?.code ?? entry.value;
-      byKey.set(canonical.toLowerCase(), {
-        value: canonical,
-        label: builtIn ? formatUnitOfAccountOption(builtIn) : canonical,
-      });
-    }
-    if (value && !byKey.has(value.toLowerCase())) {
-      byKey.set(value.toLowerCase(), { value, label: value });
-    }
-    return [...byKey.values()];
-  }, [value, vocabulary.data]);
+  const { options, vocabulary } = useUnitOfAccountOptions(value);
 
   return (
     <div className="space-y-2">
@@ -85,4 +64,34 @@ export function UnitOfAccountCombobox({
       ) : null}
     </div>
   );
+}
+
+/**
+ * The built-in units plus the server's custom ones, keyed case-insensitively,
+ * with the current value kept even when neither list has it.
+ */
+export function useUnitOfAccountOptions(value: string) {
+  const vocabulary = useUnitsOfAccount();
+  const options = useMemo<SearchableOption[]>(() => {
+    const byKey = new Map<string, SearchableOption>();
+    for (const option of UNIT_OF_ACCOUNT_OPTIONS) {
+      byKey.set(option.code.toLowerCase(), {
+        value: option.code,
+        label: formatUnitOfAccountOption(option),
+      });
+    }
+    for (const entry of vocabulary.data ?? []) {
+      const builtIn = findUnitOfAccountOption(entry.value);
+      const canonical = builtIn?.code ?? entry.value;
+      byKey.set(canonical.toLowerCase(), {
+        value: canonical,
+        label: builtIn ? formatUnitOfAccountOption(builtIn) : canonical,
+      });
+    }
+    if (value && !byKey.has(value.toLowerCase())) {
+      byKey.set(value.toLowerCase(), { value, label: value });
+    }
+    return [...byKey.values()];
+  }, [value, vocabulary.data]);
+  return { options, vocabulary };
 }

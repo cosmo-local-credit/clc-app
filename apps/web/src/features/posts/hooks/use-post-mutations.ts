@@ -8,6 +8,15 @@ import { reportsClient } from "#/lib/api/reports";
 import { tokenTagsQueryKey } from "#/hooks/use-deployment";
 
 /**
+ * Names the author's post writes, so a view that mounts while one is still in
+ * flight (the phone/desktop swap) can see it and hold its own Save.
+ */
+export const postMutationKeys = {
+  create: ["posts", "create"] as const,
+  update: ["posts", "update"] as const,
+};
+
+/**
  * The author's own post writes.
  *
  * Nothing is optimistic. The resulting status is the server's — an author's edit
@@ -20,6 +29,7 @@ export function useCreatePost() {
   const { session } = useAuthStatus();
 
   return useMutation({
+    mutationKey: postMutationKeys.create,
     mutationFn: (input: ReportWrite) => reportsClient.createReport(input),
     onSuccess: async (report: ManagedReportDetail) => {
       await settleReportCreate(queryClient, report, session?.address);
@@ -40,6 +50,7 @@ export function useUpdatePost(previousStatus: ReportStatus | null | undefined) {
   const { session } = useAuthStatus();
 
   return useMutation({
+    mutationKey: postMutationKeys.update,
     mutationFn: ({ id, input }: { id: string; input: ReportWrite }) =>
       reportsClient.updateReport(id, input),
     onSuccess: async (report: ManagedReportDetail) => {

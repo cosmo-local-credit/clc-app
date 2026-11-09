@@ -1,3 +1,4 @@
+import { formatSubmittedAt } from "@clc/core/lib/otx";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import {
   formatPoolSwapFeePercentage,
@@ -185,7 +186,7 @@ export function SwapReceiptPage({
   };
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav">
       <ReceiptHeader title={t`Swapped`} />
       <div className="my-5 border border-border bg-card">
         {amountLabel ? (
@@ -374,7 +375,7 @@ function ReceiptShell({
   onDone?: () => void;
 }) {
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-bottom-nav">
       <ReceiptHeader icon={icon} title={title} amount={amount} message={message} />
       <div className="my-5 border border-border bg-card">
         {poolName ? (
@@ -438,12 +439,6 @@ function StatusRow({ status }: { status: React.ReactNode }) {
       {status}
     </div>
   );
-}
-
-function formatSubmittedAt(value: string, locale: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
 function localizeCanonicalAmount(amount: string, locale: string): string {

@@ -1,5 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
 import { TbNfc } from "react-icons/tb";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 import { useWebNfcSupported } from "#/lib/nfc/ndef-adapter";
+import { ReceivePosterSheet } from "./receive-poster-sheet";
 
 export function ReceivePage() {
   const chainName = CHAIN_INFO.name;
@@ -20,6 +22,7 @@ export function ReceivePage() {
   const identity = useReverseRecipientResolution(address ?? null);
   const username = identity.data?.alias ?? null;
   const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
+  const [posterOpen, setPosterOpen] = useState(false);
 
   const copy = (value: string, copyingUsername = false) => {
     if (!navigator.clipboard) {
@@ -34,25 +37,8 @@ export function ReceivePage() {
       );
   };
 
-  const share = async () => {
-    if (!address) return;
-    // Prefer the native share sheet; fall back to copying when unavailable.
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: t`My wallet address`, text: address });
-      } catch (error) {
-        // AbortError = user dismissed the sheet; not a failure worth surfacing.
-        if (error instanceof Error && error.name !== "AbortError") {
-          copy(address);
-        }
-      }
-      return;
-    }
-    copy(address);
-  };
-
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
 
       <div className="flex flex-col items-center">
@@ -151,11 +137,22 @@ export function ReceivePage() {
           <RiFileCopyLine className="size-4" aria-hidden="true" />
           <Trans>Copy</Trans>
         </Button>
-        <Button tap className="flex-1" disabled={!address} onClick={() => void share()}>
+        <Button tap className="flex-1" disabled={!address} onClick={() => setPosterOpen(true)}>
           <RiShareLine className="size-4" aria-hidden="true" />
           <Trans>Share</Trans>
         </Button>
       </div>
+
+      {address && receiveQrValue ? (
+        <ReceivePosterSheet
+          open={posterOpen}
+          onClose={() => setPosterOpen(false)}
+          address={address}
+          qrValue={receiveQrValue}
+          name={identity.data?.name ?? null}
+          username={username}
+        />
+      ) : null}
     </div>
   );
 }

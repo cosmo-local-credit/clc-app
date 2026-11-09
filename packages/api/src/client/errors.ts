@@ -23,6 +23,10 @@ export type BackendErrorKind =
   | "conflict"
   | "rate-limited"
   | "server"
+  /** The sign-in card was replaced; its address can never sign in again. */
+  | "card-replaced"
+  /** The passkey moved with its account and waits for the new card to register it. */
+  | "passkey-moved"
   /** The backend refused the operation for its own reasons. */
   | "application";
 
@@ -40,6 +44,10 @@ export const BACKEND_CODE_KINDS: Readonly<Record<string, BackendErrorKind>> = {
   E06: "unauthenticated",
   /** Email already belongs to a different identity. */
   E17: "conflict",
+  /** The sign-in card was replaced by a key rotation (HTTP 410). */
+  E20: "card-replaced",
+  /** The passkey's account replaced its card; the new card must register it (HTTP 409). */
+  E21: "passkey-moved",
 };
 
 /**

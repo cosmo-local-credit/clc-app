@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -133,6 +133,41 @@ describe("voucher ownership settlement", () => {
     );
     expect(localStorage.getItem("clc.ownership-submissions")).toContain("ownership-1");
     expect(mocks.relay).toHaveBeenCalledTimes(1);
+  });
+  it("tells a view mounted mid-transfer that this voucher's handover is still running", async () => {
+    let release!: (value: { trackingId: string }) => void;
+    mocks.relay.mockReturnValue(
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+    );
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const shared = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const asset = { address: TOKEN, ownerAddress: OWNER };
+    const first = renderHook(() => useVoucherOwnershipTransfer(asset), { wrapper: shared });
+    let transfer!: Promise<unknown>;
+    act(() => {
+      transfer = first.result.current.mutateAsync(input);
+    });
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalled());
+    first.unmount();
+
+    const second = renderHook(() => useVoucherOwnershipTransfer(asset), { wrapper: shared });
+    const otherVoucher = renderHook(
+      () => useVoucherOwnershipTransfer({ address: NEW_OWNER, ownerAddress: OWNER }),
+      { wrapper: shared },
+    );
+    expect(second.result.current.isPending).toBe(false);
+    expect(second.result.current.inFlight).toBe(true);
+    expect(otherVoucher.result.current.inFlight).toBe(false);
+
+    await act(async () => {
+      release({ trackingId: "ownership-1" });
+      await transfer;
+    });
+    await waitFor(() => expect(second.result.current.inFlight).toBe(false));
   });
   it("does not sign for an address other than the authenticated owner", async () => {
     mocks.address = NEW_OWNER;

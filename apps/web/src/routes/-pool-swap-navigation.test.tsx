@@ -6,6 +6,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -141,6 +142,7 @@ vi.mock("#/features/pools/hooks/use-pool-swap-maximum", () => ({
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-swap-transfer", () => ({
+  poolSwapTransferMutationKey: ["pool-swap", "transfer"],
   usePoolSwapTransfer: () => ({
     error: null,
     isPending: false,
@@ -153,7 +155,15 @@ import { PoolSwapPage } from "#/features/pools/ui";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
 function createTestRouter(search = "") {
-  const rootRoute = createRootRoute({ component: Outlet });
+  // The swap reads the mutation cache to tell whether a swap is still relaying.
+  const queryClient = new QueryClient();
+  const rootRoute = createRootRoute({
+    component: () => (
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+      </QueryClientProvider>
+    ),
+  });
   const swapRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/pools/$poolAddress/swap",

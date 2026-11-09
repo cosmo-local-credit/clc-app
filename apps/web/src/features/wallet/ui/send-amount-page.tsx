@@ -1,16 +1,7 @@
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
-import {
-  formatUnitOfAccountDisplayValue,
-  formatVoucherUnitValue,
-} from "@clc/core/features/market/logic";
-import {
-  formatTokenAmount,
-  formatTokenAmountFixed,
-  parseTokenAmount,
-} from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
@@ -25,33 +16,17 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { TokenLogo } from "#/components/wallet";
+import type { ResolvedRecipientAddress } from "#/components/wallet/recipient-address-input";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
-import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
-import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
-import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
-import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { useSendDraft } from "#/features/wallet/hooks/use-send-draft";
+import { useSendPayment } from "#/features/wallet/hooks/use-send-payment";
 import { cn } from "#/lib/utils";
 import { TokenPickerSheet } from "./token-picker-sheet";
 
-/** Keep only digits and a single decimal point, capped at 2 fraction digits. */
-function sanitizeAmount(raw: string): string {
-  const cleaned = raw.replace(/[^0-9.]/g, "");
-  const firstDot = cleaned.indexOf(".");
-  if (firstDot === -1) return cleaned;
-  const whole = cleaned.slice(0, firstDot);
-  const fraction = cleaned
-    .slice(firstDot + 1)
-    .replace(/\./g, "")
-    .slice(0, 2);
-  return `${whole}.${fraction}`;
-}
-
 export function SendAmountPage({
   token,
-  recipient,
-  recipientLabel,
+  recipient: recipientProp,
+  recipientLabel: recipientLabelProp,
   amount: seededAmount,
   returnPool,
 }: {
@@ -63,105 +38,49 @@ export function SendAmountPage({
   /** Pool whose Deposit shortcut opened this screen; carried on to the receipt. */
   returnPool?: string;
 }) {
-  const { i18n, t } = useLingui();
+  const { t } = useLingui();
   const navigate = useNavigate();
   const { address } = useConnection();
-  const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
-  const tokensQuery = useAllAccountTokens(address);
-  const sendVoucher = useSendVoucherTransfer();
-  const tokens = tokensQuery.tokens
-    .filter((item) => item.catalogActive !== false)
-    .map(accountTokenToWalletToken);
 
-  // Preselect the token passed from the token detail page; fall back to the
-  // first token once balances load if none was requested. Never substitute a
-  // different asset for a retired selection. `selectedId` mirrors the fetched token id
-  // (the lowercased contract address).
-  const [selectedId, setSelectedId] = useState<string | undefined>(token?.toLowerCase());
-  const selectedToken = selectedId ? tokens.find((item) => item.id === selectedId) : tokens[0];
-  const firstTokenId = tokens[0]?.id;
-  useEffect(() => {
-    if (!selectedId && firstTokenId) setSelectedId(firstTokenId);
-  }, [selectedId, firstTokenId]);
+  // After a zoom or resize from the desktop view the page opens with what was
+  // typed there. A restored recipient replaces the URL's, and no recipient in
+  // the draft means none is shown: this page never pays someone the person was
+  // no longer looking at. The confirmation sheet is not restored.
+  const draft = useSendDraft(address);
+  const restored = draft.restored;
+  const seededAddress = recipientProp?.startsWith("0x") ? (recipientProp as `0x${string}`) : null;
+  const recipient: ResolvedRecipientAddress | null = restored
+    ? (restored.recipient ?? null)
+    : seededAddress
+      ? { address: seededAddress, name: recipientLabelProp ?? null, source: "manual" }
+      : null;
+  const payment = useSendPayment({
+    sender: address,
+    draft,
+    seed: {
+      token,
+      amount: seededAmount,
+      recipient: recipientProp,
+      recipientLabel: recipientLabelProp,
+      returnPool,
+    },
+    query: recipient?.address ?? "",
+    recipient,
+  });
+  const { tokens, tokensQuery, selectedToken, amount, exceedsBalance, unitValueLabel } = payment;
+  const { recipientAddress, recipientLabel } = payment;
   // Preserve the current token selection when editing the recipient.
   const tokenParam = selectedToken?.contractAddress ?? selectedToken?.id ?? token;
 
-  // Seeded once. The param is a starting point a shortcut chose, not a
-  // controlled value — typing over it must not be undone by a re-render.
-  const [amount, setAmount] = useState(() => sanitizeAmount(seededAmount ?? ""));
   const [amountFocused, setAmountFocused] = useState(false);
-  const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const amountInputRef = useRef<HTMLInputElement>(null);
   const tokenSelectorRef = useRef<HTMLButtonElement>(null);
   const focusAmountAfterSelectionRef = useRef(false);
 
-  const tokenDecimals = selectedToken?.tokenDecimals ?? 2;
-  const voucherDetail = useMarketVoucherDetail(selectedToken?.contractAddress);
-  const parsedAmountRaw = useMemo(() => {
-    if (!selectedToken || amount.trim() === "") return null;
-    try {
-      return maxAmountRaw ?? parseTokenAmount(amount, tokenDecimals);
-    } catch {
-      return null;
-    }
-  }, [amount, maxAmountRaw, selectedToken, tokenDecimals]);
-  const exactVoucherAmount =
-    parsedAmountRaw === null
-      ? null
-      : formatTokenAmount(parsedAmountRaw, tokenDecimals, tokenDecimals);
-  const submittedVoucherAmount = maxAmountRaw ? (exactVoucherAmount ?? amount) : amount;
-  const unitValue =
-    exactVoucherAmount === null
-      ? null
-      : formatVoucherUnitValue(
-          exactVoucherAmount,
-          voucherDetail.data?.voucherValue ?? null,
-          voucherDetail.data?.voucherUoa ?? null,
-        );
-  const localizedUnitValue = unitValue
-    ? (formatUnitOfAccountDisplayValue(unitValue.value, i18n.locales?.[0] ?? i18n.locale) ??
-      unitValue.value)
-    : null;
-  const unitValueLabel =
-    exactVoucherAmount === null
-      ? null
-      : unitValue && localizedUnitValue
-        ? `${localizedUnitValue} ${unitValue.unit}`
-        : voucherDetail.isPending
-          ? t`Loading…`
-          : t`Unavailable`;
-  const balanceRaw = selectedToken?.balance ?? null;
-  const amountValue = Number(amount);
-  const isValidAmount =
-    amount.trim() !== "" &&
-    Number.isFinite(amountValue) &&
-    amountValue > 0 &&
-    parsedAmountRaw !== null &&
-    BigInt(parsedAmountRaw) > 0n;
-  const exceedsMax =
-    isValidAmount && balanceRaw !== null
-      ? BigInt(parsedAmountRaw) > BigInt(balanceRaw)
-      : selectedToken
-        ? amountValue > Number(selectedToken.amount.replace(/,/g, ""))
-        : false;
-  const recipientAddress =
-    recipient && recipient.startsWith("0x") ? (recipient as `0x${string}`) : null;
-  const tokenAddress = selectedToken?.contractAddress
-    ? (selectedToken.contractAddress as `0x${string}`)
-    : null;
-  const canSend =
-    !!address &&
-    !!recipientAddress &&
-    !!tokenAddress &&
-    !!selectedToken &&
-    delegationStatus !== "checking" &&
-    isValidAmount &&
-    !exceedsMax;
-
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={t`Send`} to="/wallet/send" search={{ token: tokenParam }} />
 
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
@@ -269,18 +188,15 @@ export function SendAmountPage({
               value={amount}
               onFocus={() => setAmountFocused(true)}
               onBlur={() => setAmountFocused(false)}
-              onChange={(event) => {
-                setMaxAmountRaw(null);
-                setAmount(sanitizeAmount(event.target.value));
-              }}
+              onChange={(event) => payment.setAmount(event.target.value)}
               // field-sizing sizes the input to its text exactly, so the
               // number + symbol pair centers true. size is the pre-support fallback.
               size={Math.max(amount.length, 1)}
-              aria-invalid={exceedsMax}
+              aria-invalid={exceedsBalance}
               aria-describedby={unitValueLabel ? "send-amount-uoa-value" : undefined}
               className={cn(
                 "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight caret-primary outline-none [field-sizing:content]",
-                exceedsMax && "text-destructive",
+                exceedsBalance && "text-destructive",
               )}
             />
             {!amount && !amountFocused ? (
@@ -302,24 +218,11 @@ export function SendAmountPage({
           </p>
         ) : null}
         {selectedToken ? (
-          <Button
-            variant="secondary"
-            tap
-            className="mt-3"
-            onClick={() => {
-              if (selectedToken.balance) {
-                setAmount(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
-                setMaxAmountRaw(selectedToken.balance);
-                return;
-              }
-              setMaxAmountRaw(null);
-              setAmount(selectedToken.amount.replace(/,/g, ""));
-            }}
-          >
+          <Button variant="secondary" tap className="mt-3" onClick={payment.setMax}>
             <Trans>Use max · {selectedToken.amount}</Trans>
           </Button>
         ) : null}
-        {exceedsMax ? (
+        {exceedsBalance ? (
           <p className="relative mt-2 text-destructive text-xs">
             <Trans>Amount exceeds your balance</Trans>
           </p>
@@ -328,13 +231,16 @@ export function SendAmountPage({
 
       <div className="flex-1" />
 
+      {/* Disarmed while any send is relaying, including one the desktop view
+          started before a resize brought this page back. */}
       <Button
         tap
         className="w-full"
-        disabled={!canSend || sendVoucher.isPending}
+        disabled={!payment.canSend}
+        pending={payment.inFlight}
         onClick={() => setConfirmOpen(true)}
       >
-        {t`Send`}
+        {payment.inFlight ? t`Sending…` : t`Send`}
       </Button>
 
       <TokenPickerSheet
@@ -344,8 +250,7 @@ export function SendAmountPage({
         selectedId={selectedToken?.id}
         onSelect={(next) => {
           focusAmountAfterSelectionRef.current = true;
-          setMaxAmountRaw(null);
-          setSelectedId(next.id);
+          payment.selectToken(next.id);
         }}
         finalFocus={() => {
           if (focusAmountAfterSelectionRef.current) {
@@ -359,47 +264,14 @@ export function SendAmountPage({
       <SendConfirmationSheet
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        amount={submittedVoucherAmount}
+        amount={payment.submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
         unitValueLabel={unitValueLabel}
         recipient={recipientAddress}
         recipientLabel={recipientLabel}
-        error={sendVoucher.error instanceof Error ? sendVoucher.error.message : null}
-        isPending={sendVoucher.isPending}
-        onConfirm={async () => {
-          if (!canSend || !selectedToken || !parsedAmountRaw || !tokenAddress || !recipientAddress)
-            return;
-          const result = await sendVoucher
-            .mutateAsync({
-              senderAddress: address as `0x${string}`,
-              tokenAddress,
-              recipientAddress,
-              amountRaw: parsedAmountRaw,
-              includeAuthorization: delegationStatus === "not-delegated",
-            })
-            .catch(() => null);
-          if (!result) return;
-          const submittedUnitValue = relaySnapshotUnitValue(
-            result.valuationSnapshots,
-            tokenAddress,
-            exactVoucherAmount ?? amount,
-          );
-          void navigate({
-            to: "/wallet/send/receipt",
-            search: {
-              trackingId: result.trackingId,
-              token: tokenAddress,
-              recipient: recipientAddress,
-              recipientLabel,
-              amount: submittedVoucherAmount,
-              symbol: selectedToken.symbol,
-              ...(submittedUnitValue
-                ? { uoaValue: submittedUnitValue.value, uoa: submittedUnitValue.unit }
-                : { uoaUnavailable: true }),
-              returnPool,
-            },
-          });
-        }}
+        error={payment.error}
+        isPending={payment.inFlight}
+        onConfirm={payment.confirm}
       />
     </div>
   );

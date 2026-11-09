@@ -28,6 +28,8 @@ export function UsernameInput({
   onBlur,
   onPending,
   settleRef,
+  suggested,
+  onSuggested,
   error,
 }: {
   id: string;
@@ -43,6 +45,14 @@ export function UsernameInput({
    * blur, and Continue calls it so leaving the page does not drop the result.
    */
   settleRef?: { current: (() => Promise<void>) | null };
+  /**
+   * What this field last filled in, from before a remount (a layout switch
+   * swaps the view). Without it the restored value reads as typed by hand and
+   * a changed name would never suggest again.
+   */
+  suggested?: string | null;
+  /** Told each suggestion as it is filled in, so the caller can carry it. */
+  onSuggested?: (suggestion: string) => void;
   error?: string | null;
 }) {
   const { t } = useLingui();
@@ -55,8 +65,12 @@ export function UsernameInput({
   const hint = usernameHint(name);
   const hintRef = useRef(hint);
   hintRef.current = hint;
-  const suggestionRef = useRef<string | null>(null);
-  const appliedHintRef = useRef<string | null>(null);
+  const onSuggestedRef = useRef(onSuggested);
+  onSuggestedRef.current = onSuggested;
+  const suggestionRef = useRef<string | null>(suggested ?? null);
+  // A carried suggestion was made for the name as it stands, so the remount
+  // does not ask again for the same one.
+  const appliedHintRef = useRef<string | null>(suggested ? hint : null);
   const requestId = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const flightRef = useRef<Promise<void> | null>(null);
@@ -105,6 +119,7 @@ export function UsernameInput({
             if (valueRef.current === atRequest || valueRef.current === suggestionRef.current) {
               suggestionRef.current = suggestion;
               appliedHintRef.current = hintNow;
+              onSuggestedRef.current?.(suggestion);
               if (valueRef.current !== suggestion) onChangeRef.current(suggestion);
             }
           }

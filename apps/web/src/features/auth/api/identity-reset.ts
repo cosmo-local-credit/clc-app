@@ -1,10 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import { clearPrivateKey } from "#/connectors/privateKey";
+import { useRotationSession } from "#/features/key-rotation/state/rotation-session";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useCollectPayerKey } from "#/features/wallet/state/collect-payer-key";
 import { useCollectSession } from "#/features/wallet/state/collect-session";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
+import { clearViewDrafts } from "#/lib/view-drafts";
 import { clearWebAuthnCredential } from "#/lib/webauthn-storage";
 
 /**
@@ -56,6 +58,10 @@ export function clearIdentitySecrets(retain: RetainedSecretSlot): void {
   // leave it in memory for whoever picks the phone up next.
   useCollectPayerKey.getState().clear();
   useCollectSession.getState().reset();
+  // A card replacement holds both cards' keys in memory. Its own switch to the
+  // new card retains "private-key" and must keep them, since the old key still
+  // has to sign; any teardown drops them.
+  if (retain !== "private-key") useRotationSession.getState().clear();
 }
 
 /**
@@ -82,9 +88,11 @@ export function clearScopedQueries(queryClient: QueryClient): void {
 }
 
 /**
- * Drops the half-written pool and voucher a previous account left in memory.
+ * Drops the half-written pool, voucher, Want, payment and edit a previous
+ * account left in memory, including the drafts the phone and desktop views hand
+ * to each other.
  *
- * These two stores never touched disk, so they looked safe — but signing out
+ * These stores never touched disk, so they looked safe — but signing out
  * does not reload the page, so the store outlives the session that filled it and
  * the next person to open the create flow finds it prefilled with someone
  * else's pool. Narrow, since it needs a sign-in without a reload, but it is the
@@ -97,6 +105,7 @@ export function clearScopedQueries(queryClient: QueryClient): void {
 export function clearInMemoryDrafts(): void {
   usePoolCreateDraft.getState().clearDraft();
   useVoucherCreateDraft.getState().clearDraft();
+  clearViewDrafts();
   useCollectPayerKey.getState().clear();
   useCollectSession.getState().reset();
 }

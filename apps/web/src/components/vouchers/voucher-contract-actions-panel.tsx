@@ -1,20 +1,14 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
-import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
-import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
-import { parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
+  RiFireLine,
   RiPencilLine,
   RiShieldKeyholeLine,
   RiSparkling2Line,
   RiUserSharedLine,
 } from "react-icons/ri";
-import { toast } from "sonner";
-import { getAddress, isAddress, isAddressEqual, zeroAddress } from "viem";
-import { z } from "zod";
 
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
@@ -30,24 +24,19 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
-import {
-  ownershipKey,
-  useOwnershipSubmissions,
-} from "#/features/ownership/state/ownership-submissions";
 import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
-import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
-import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
-import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
-import { useVoucherOwnershipTransfer } from "#/features/vouchers/hooks/use-voucher-ownership-transfer";
+import {
+  useVoucherBurnForm,
+  useVoucherControls,
+  useVoucherMintForm,
+  useVoucherOwnershipTransferForm,
+} from "#/features/vouchers/hooks/use-voucher-controls";
 import { RetirementControl } from "#/components/retirement/retirement-control";
-import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
-import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 
 import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
 
-type VoucherControlSheet = "details" | "mint" | "ownership";
+type VoucherControlSheet = "details" | "mint" | "burn" | "ownership";
 
 /**
  * Everything the issuer can change about one voucher, in a single group.
@@ -79,30 +68,13 @@ export function VoucherContractActionsPanel({
 }) {
   const { t } = useLingui();
   const [sheet, setSheet] = useState<VoucherControlSheet | null>(null);
-  const owner = useAssetOwnerInfo(tokenAddress ?? "", ownerAddress);
-
-  // The owner signs directly; a Safe owner is managed by its signers, who sign
-  // as themselves while the Safe stays the on-chain owner.
-  const signsAsOwner =
-    !!ownerAddress &&
-    !!walletAddress &&
-    (ownerAddress.toLowerCase() === walletAddress.toLowerCase() || owner.isSafeSigner);
-  const contract =
-    tokenAddress &&
-    ownerAddress &&
-    walletAddress &&
-    signsAsOwner &&
-    tokenDecimals !== undefined &&
-    Number.isInteger(tokenDecimals) &&
-    tokenDecimals >= 0
-      ? {
-          tokenAddress,
-          tokenDecimals,
-          ownerAddress: ownerAddress as `0x${string}`,
-          walletAddress: walletAddress as `0x${string}`,
-          safeOwned: owner.isSafeOwned,
-        }
-      : null;
+  const { contract, canRequestRetirement } = useVoucherControls({
+    tokenAddress,
+    tokenDecimals,
+    ownerAddress,
+    walletAddress,
+    requesterAddress,
+  });
 
   if (!editable && !contract) {
     return null;
@@ -132,6 +104,14 @@ export function VoucherContractActionsPanel({
               label={t`Create vouchers`}
               onClick={() => setSheet("mint")}
             />
+            {/* `burn` takes from msg.sender, and clc-core's Safe policy does not allow it. */}
+            {contract.safeOwned ? null : (
+              <ActionRow
+                icon={<RiFireLine className="size-4" aria-hidden="true" />}
+                label={t`Destroy vouchers`}
+                onClick={() => setSheet("burn")}
+              />
+            )}
             <ActionRow
               icon={<RiUserSharedLine className="size-4" aria-hidden="true" />}
               label={t`Transfer ownership`}
@@ -140,9 +120,7 @@ export function VoucherContractActionsPanel({
           </>
         ) : null}
         {/* A Safe signer requests on the Safe's behalf; clc-core records both. */}
-        {editable &&
-        requesterAddress &&
-        (ownerAddress?.toLowerCase() === requesterAddress.toLowerCase() || owner.isSafeSigner) ? (
+        {editable && requesterAddress && canRequestRetirement ? (
           <RetirementControl
             type="voucher"
             address={editable.address}
@@ -175,6 +153,16 @@ export function VoucherContractActionsPanel({
             ownerAddress={contract.ownerAddress}
             safeOwned={contract.safeOwned}
           />
+          {contract.safeOwned ? null : (
+            <VoucherBurnSheet
+              open={sheet === "burn"}
+              onClose={() => setSheet(null)}
+              tokenAddress={contract.tokenAddress as `0x${string}`}
+              tokenSymbol={tokenSymbol}
+              tokenDecimals={contract.tokenDecimals}
+              ownerAddress={contract.ownerAddress}
+            />
+          )}
           <VoucherOwnershipTransferSheet
             open={sheet === "ownership"}
             onClose={() => setSheet(null)}
@@ -209,43 +197,14 @@ function VoucherMintSheet({
   safeOwned: boolean;
 }) {
   const { t } = useLingui();
-  const queryClient = useQueryClient();
-  const delegationStatus = useCaliburDelegation(walletAddress);
-  const mint = useVoucherMint({ address: tokenAddress, ownerAddress });
-  const recipientSchema = z
-    .string()
-    .trim()
-    .refine((value) => isAddress(value, { strict: false }) && !isAddressEqual(value, zeroAddress), {
-      message: t`Enter a valid wallet address`,
-    });
-  const form = useForm({
-    defaultValues: { amount: "", recipient: ownerAddress as string },
-    validators: {
-      onSubmit: z.object({
-        amount: voucherMintAmountSchema(tokenDecimals),
-        recipient: safeOwned ? recipientSchema : z.string(),
-      }),
-    },
-    onSubmit: async ({ value }) => {
-      try {
-        await mint.mutateAsync({
-          tokenAddress: tokenAddress as `0x${string}`,
-          ownerAddress,
-          ...(safeOwned ? { recipientAddress: getAddress(value.recipient.trim()) } : {}),
-          amountRaw: parseTokenAmount(value.amount, tokenDecimals),
-          includeAuthorization: delegationStatus === "not-delegated",
-        });
-        void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-        void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-        toast.success(t`Voucher creation submitted.`);
-        onClose();
-      } catch (error) {
-        if (mint.reportError(error, t`Couldn't create vouchers.`)) onClose();
-      }
-    },
+  const { form, delegationStatus, pending } = useVoucherMintForm({
+    tokenAddress,
+    tokenDecimals,
+    walletAddress,
+    ownerAddress,
+    safeOwned,
+    onClose,
   });
-
-  const pending = mint.isPending || delegationStatus === "checking";
 
   return (
     <SheetRoot
@@ -335,6 +294,95 @@ function VoucherMintSheet({
   );
 }
 
+function VoucherBurnSheet({
+  open,
+  onClose,
+  tokenAddress,
+  tokenSymbol,
+  tokenDecimals,
+  ownerAddress,
+}: {
+  open: boolean;
+  onClose: () => void;
+  tokenAddress: `0x${string}`;
+  tokenSymbol: string;
+  tokenDecimals: number;
+  ownerAddress: `0x${string}`;
+}) {
+  const { t } = useLingui();
+  const { form, delegationStatus, burning, pending, balance } = useVoucherBurnForm({
+    tokenAddress,
+    tokenDecimals,
+    ownerAddress,
+    enabled: open,
+    onClose,
+  });
+  const tokenBalance = balance === undefined ? undefined : `${balance} ${tokenSymbol}`;
+
+  return (
+    <SheetRoot
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="[&>div:first-child]:hidden">
+          <SheetHeader className="px-6 pt-5 pb-3">
+            <SheetTitle>
+              <Trans>Destroy vouchers</Trans>
+            </SheetTitle>
+          </SheetHeader>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
+          >
+            <div className="space-y-4 px-6 pb-3">
+              <form.Field name="amount">
+                {(field) => (
+                  <Field
+                    label={t`Destroy vouchers`}
+                    htmlFor="voucher-burn-amount"
+                    hint={tokenBalance === undefined ? tokenSymbol : t`Balance ${tokenBalance}`}
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id="voucher-burn-amount"
+                      dir="ltr"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      disabled={burning}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+            </div>
+            <SheetFooter className="border-t border-border px-6 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <Button type="submit" variant="destructive" tap className="w-full" pending={pending}>
+                {delegationStatus === "checking" ? (
+                  <Trans>Preparing wallet…</Trans>
+                ) : burning ? (
+                  <Trans>Destroying vouchers…</Trans>
+                ) : (
+                  <Trans>Destroy vouchers</Trans>
+                )}
+              </Button>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
+  );
+}
+
 function VoucherOwnershipTransferSheet({
   open,
   onClose,
@@ -349,43 +397,12 @@ function VoucherOwnershipTransferSheet({
   walletAddress: `0x${string}`;
 }) {
   const { t } = useLingui();
-  const queryClient = useQueryClient();
-  const delegationStatus = useCaliburDelegation(walletAddress);
-  const transferOwnership = useVoucherOwnershipTransfer({ address: tokenAddress, ownerAddress });
-  const reportError = useReportWriteError();
-  const submission = useOwnershipSubmissions(
-    (state) => state.submissions[ownershipKey(tokenAddress)],
-  );
-  const form = useForm({
-    defaultValues: { newOwnerAddress: String(submission?.newOwnerAddress ?? "") },
-    validators: {
-      onSubmit: z.object({
-        newOwnerAddress: ownershipRecipientSchema(ownerAddress, [tokenAddress]),
-      }),
-    },
-    onSubmit: async ({ value }) => {
-      try {
-        const result = await transferOwnership.mutateAsync({
-          tokenAddress: tokenAddress as `0x${string}`,
-          ownerAddress,
-          newOwnerAddress: value.newOwnerAddress as `0x${string}`,
-          includeAuthorization: delegationStatus === "not-delegated",
-        });
-        void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-        void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-        if (result?.catalogSynced === false)
-          toast.info(
-            t`Ownership transferred on-chain. Catalog synchronization is delayed; your management controls have been removed.`,
-          );
-        else toast.success(t`Ownership transferred.`);
-        onClose();
-      } catch (error) {
-        if (reportError(error, t`Couldn't transfer ownership.`)) onClose();
-      }
-    },
+  const { form, submission, delegationStatus, pending } = useVoucherOwnershipTransferForm({
+    tokenAddress,
+    ownerAddress,
+    walletAddress,
+    onClose,
   });
-
-  const pending = transferOwnership.isPending || (!submission && delegationStatus === "checking");
 
   return (
     <SheetRoot

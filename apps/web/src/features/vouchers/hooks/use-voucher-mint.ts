@@ -9,6 +9,8 @@ import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
+import { useVoucherActionInFlight } from "./use-voucher-action-in-flight";
+
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 export type VoucherMintInput = {
@@ -20,18 +22,26 @@ export type VoucherMintInput = {
   includeAuthorization?: boolean;
 };
 
+/** Every voucher mint; `inFlight` narrows it to one voucher by its variables. */
+const VOUCHER_MINT_MUTATION_KEY = ["vouchers", "mint"] as const;
+
 /**
  * Mints to the owner. A Safe owner goes through the proposal flow: the call is
  * the same, the Safe is `msg.sender` to the token and the supply lands in the
- * Safe.
+ * Safe. `inFlight` is true while a mint of `asset` runs from any view.
  */
 export function useVoucherMint(asset?: { address: string; ownerAddress?: string | null }) {
   const { connector } = useConnection();
   const owner = useAssetOwnerInfo(asset?.address ?? "", asset?.ownerAddress);
   const safeWrite = useSafeWrite();
   const reportError = useReportWriteError();
+  const inFlight = useVoucherActionInFlight(
+    { mutationKey: VOUCHER_MINT_MUTATION_KEY },
+    asset?.address,
+  );
   return {
     ...useMutation({
+      mutationKey: VOUCHER_MINT_MUTATION_KEY,
       mutationFn: async (input: VoucherMintInput) => {
         const call = buildVoucherMintCall(input);
         if (asset && owner.info?.kind === "safe" && owner.isSafeSigner) {
@@ -52,5 +62,6 @@ export function useVoucherMint(asset?: { address: string; ownerAddress?: string 
       },
     }),
     reportError,
+    inFlight,
   };
 }

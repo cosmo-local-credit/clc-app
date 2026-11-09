@@ -20,8 +20,16 @@ export async function collectWebAuthnAssertion(
   const {
     result: { challenge: challengeB64 },
   } = await client.getWebAuthnChallenge();
-  const challengeBytes = base64UrlToBytes(challengeB64);
+  return collectWebAuthnAssertionFor(base64UrlToBytes(challengeB64));
+}
 
+/**
+ * The same prompt over a challenge the caller derived, for an assertion that
+ * must confirm one specific action rather than sign in.
+ */
+export async function collectWebAuthnAssertionFor(
+  challengeBytes: Uint8Array,
+): Promise<WebAuthnAssertionPayload> {
   const assertion = await requestWebAuthnAssertion({
     publicKey: {
       challenge: toArrayBuffer(challengeBytes),

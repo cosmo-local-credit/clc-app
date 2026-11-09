@@ -1,18 +1,11 @@
-import { useId, useState } from "react";
-import {
-  catalogMemberMutationOptions,
-  catalogMembershipQueryOptions,
-} from "@clc/api/features/catalogs/queries";
+import { useId } from "react";
 import type { CatalogCreateIntent } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { ComponentProps } from "react";
-import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
-import { useMyCatalog } from "#/features/catalogs/hooks/use-my-catalog";
-import { catalogsClient } from "#/lib/api/catalogs";
+import { useAddToCatalog } from "#/features/catalogs/hooks/use-add-to-catalog";
 
 type AddToCatalogButtonProps = CatalogCreateIntent &
   Pick<ComponentProps<typeof Button>, "className" | "size" | "tap">;
@@ -26,23 +19,11 @@ export function AddToCatalogButton({
   tap,
 }: AddToCatalogButtonProps) {
   const { t } = useLingui();
-  const mine = useMyCatalog();
   const selectId = useId();
-  const [selection, setSelection] = useState("");
-  const catalog = mine.catalogs.find((item) => item.id === selection) ?? mine.catalogs[0];
-  const owner = mine.auth.session?.address ?? "";
-  const membership = useQuery(
-    catalogMembershipQueryOptions(
-      catalogsClient,
-      mine.auth.isAuthenticated ? owner : "",
-      catalog?.id ?? "",
-      kind,
-      resourceId,
-    ),
-  );
-  const mutation = useMutation(
-    catalogMemberMutationOptions(catalogsClient, useQueryClient(), owner),
-  );
+  const { mine, catalog, setSelection, membership, mutation, add, retry } = useAddToCatalog({
+    kind,
+    resourceId,
+  });
   if (!mine.auth.isAuthenticated) return null;
   if (mine.isError || membership.isError)
     return (
@@ -51,10 +32,7 @@ export function AddToCatalogButton({
         size={size}
         tap={tap}
         className={className}
-        onClick={() => {
-          void mine.refetch();
-          if (catalog) void membership.refetch();
-        }}
+        onClick={retry}
         pending={mine.isFetching || membership.isFetching}
       >
         <Trans>Retry</Trans>
@@ -94,15 +72,7 @@ export function AddToCatalogButton({
         className={className}
         disabled={mine.isPending || membership.isPending || membership.data?.added}
         pending={mutation.isPending}
-        onClick={async () => {
-          if (!catalog) return;
-          try {
-            await mutation.mutateAsync({ catalogId: catalog.id, kind, resourceId, added: true });
-            toast.success(t`Added to catalog`);
-          } catch {
-            toast.error(t`Couldn't update the catalog. Try again.`);
-          }
-        }}
+        onClick={() => void add()}
       >
         {membership.data?.added ? (
           <Trans>Added to catalog</Trans>

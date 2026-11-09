@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { SafeTransaction } from "@clc/core/features/safe/logic";
+import { getAddress } from "viem";
 import { createHttpClient } from "../../client/http-client";
 import { createSafeClient } from "./client";
 
@@ -69,6 +70,29 @@ describe("safe client", () => {
       "https://api.example/api/v2/safe/proposals",
       expect.objectContaining({ method: "POST" }),
     );
+  });
+
+  it("checksums the address fields the Transaction Service rejects in lowercase", async () => {
+    const safe = "0x8fc371097031b44aaa0510e21f492072376e7b4f" as `0x${string}`;
+    const gasToken = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd" as `0x${string}`;
+    const refundReceiver = "0x1234567890abcdef1234567890abcdef12345678" as `0x${string}`;
+    const { spy, safe: api } = client(proposal);
+    await api.propose({
+      safe,
+      safeTxHash: proposal.safeTxHash as `0x${string}`,
+      sender: "0xe94da029c840e1f9b39a5759586114091818df15",
+      signature: `0x${"11".repeat(65)}`,
+      tx: { ...(proposal as SafeTransaction), to: safe, gasToken, refundReceiver },
+    });
+    const init = spy.mock.calls[0]?.[1] as RequestInit | undefined;
+    if (typeof init?.body !== "string") throw new Error("proposal body was not a string");
+    const sent = JSON.parse(init.body) as {
+      tx: { to: string; gasToken: string; refundReceiver: string };
+    };
+    expect(sent.tx.to).toBe(getAddress(safe));
+    expect(sent.tx.gasToken).toBe(getAddress(gasToken));
+    expect(sent.tx.refundReceiver).toBe(getAddress(refundReceiver));
+    expect(sent.tx.to).not.toBe(safe);
   });
 
   it("POSTs a confirmation and returns the updated proposal", async () => {

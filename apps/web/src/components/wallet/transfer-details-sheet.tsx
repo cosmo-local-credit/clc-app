@@ -30,6 +30,7 @@ import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { ShareReceiptButton } from "./share-receipt-button";
 
 export type TransferDetails = {
+  activityKind?: "deposited" | "pool_payout";
   txHash: string;
   direction: "IN" | "OUT";
   senderAddress: string;
@@ -54,12 +55,22 @@ export function TransferDetailsSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const { i18n, t } = useLingui();
-  const created = transfer ? isVoucherCreationTransfer(transfer) : false;
-  const badge = created
-    ? t`Created voucher`
-    : transfer?.direction === "IN"
-      ? t`Received voucher`
-      : t`Sent voucher`;
+  const created =
+    transfer?.direction === "IN" &&
+    isVoucherCreationTransfer({
+      direction: transfer.direction,
+      senderAddress: transfer.senderAddress,
+    });
+  const badge =
+    transfer?.activityKind === "deposited"
+      ? t`Deposit into pool`
+      : transfer?.activityKind === "pool_payout"
+        ? t`Pay Out`
+        : created
+          ? t`Created voucher`
+          : transfer?.direction === "IN"
+            ? t`Received voucher`
+            : t`Sent voucher`;
   const status = transfer?.success ? t`Confirmed` : t`Failed`;
   const transferDate = transfer
     ? formatTransferDate(transfer.dateBlock, i18n.locales?.[0] ?? i18n.locale)
@@ -125,7 +136,7 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="text-end font-mono text-xs font-semibold">
+                  <span className="min-w-0 break-words text-end font-mono text-xs font-semibold">
                     <span className="block">
                       {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                       <Link

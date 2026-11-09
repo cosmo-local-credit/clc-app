@@ -58,7 +58,7 @@ export function InstallPage({ from }: { from?: "settings" }) {
   }
 
   return (
-    <main className="flex min-h-[100svh] flex-col gap-8 bg-background px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <main className="flex min-h-[100svh] flex-col gap-8 bg-background px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-bottom-nav">
       <div className="flex items-center justify-between gap-3">
         {fromSettings ? (
           <BackChevron label={t`Settings`} to="/" search={{ tab: "settings" }} />

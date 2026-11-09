@@ -11,9 +11,16 @@ import { tokenTagsQueryKey } from "#/hooks/use-deployment";
 
 const poolDeployClient = createPoolDeployClient(clcHttp);
 
+/**
+ * Names every pool publish, so a view that mounts while one is still in flight
+ * (the phone/desktop swap) can see it and hold its own Publish.
+ */
+export const deployPoolMutationKey = ["pools", "deploy"] as const;
+
 export function useDeployPool() {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: deployPoolMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (payload: PoolDeployPayload) => poolDeployClient.deployPool(payload),
     // The symbol and name just claimed are now occupied for the next form.

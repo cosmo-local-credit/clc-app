@@ -23,6 +23,7 @@ import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-in
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
+import { useRefreshPoolOfferingsOnMembership } from "#/features/pools/hooks/use-pool-offerings-refresh";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
@@ -108,6 +109,11 @@ export function PoolDetailPage({
   });
   const poolVouchers = poolVouchersQuery.vouchers;
   const vouchers = poolVouchers.filter((voucher) => voucher.active);
+  useRefreshPoolOfferingsOnMembership(
+    poolAddress,
+    !!pool && !poolVouchersQuery.isPending && !poolVouchersQuery.isError,
+    vouchers,
+  );
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
     auth.isAuthenticated && !!pool && (isAdminRole(auth.session?.role) || isPoolOwner);

@@ -25,7 +25,22 @@ export const authKeys = {
     ["clc", "auth", "profile", address?.toLowerCase() ?? "current"] as const,
   webAuthnCredentials: (address: string) =>
     ["clc", "auth", "webauthn-credentials", address.toLowerCase()] as const,
+  keyRotations: (address: string) =>
+    ["clc", "auth", "key-rotations", address.toLowerCase()] as const,
 } as const;
+
+/**
+ * The sign-in cards the signed-in account replaced, so the app can offer to
+ * move what is left on one. Keyed by the current address like the passkeys,
+ * and `enabled` is the caller's for the same reason.
+ */
+export function keyRotationsQueryOptions(auth: AuthClient, address: string) {
+  return queryOptions({
+    queryKey: authKeys.keyRotations(address),
+    queryFn: () => auth.listKeyRotations(),
+    staleTime: 60_000,
+  });
+}
 
 /**
  * Base options for the profile read.

@@ -65,10 +65,14 @@ function siweRequest(statement: string): SiweRequest {
   };
 }
 
+/** Shared by every view of signup, so one mounted after a layout switch sees one in flight. */
+export const BACKEND_SIGNUP_MUTATION_KEY = ["auth", "signup"] as const;
+
 export function useBackendSignup() {
   const { t } = useLingui();
 
   return useMutation({
+    mutationKey: BACKEND_SIGNUP_MUTATION_KEY,
     mutationFn: async ({ profile, privateKey, avatarFile }: BackendSignupInput) => {
       if (!avatarFile) throw new Error(t`Add a profile photo to continue.`);
       if (!isStorageConfigured) throw new Error(t`Photo uploads are unavailable right now.`);

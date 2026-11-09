@@ -1,9 +1,8 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiCloseLine, RiNavigationLine } from "react-icons/ri";
 
-import { formatByteSize } from "@clc/core/features/reports/logic";
 import { getLocaleDirection, type SupportedLocale } from "@clc/i18n/locales";
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
@@ -32,20 +31,20 @@ import { SectionHeading } from "#/components/ui/section-heading";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { BackChevron } from "#/components/wallet";
-import type { ReportAttachment, ReportDetail, ReportImage } from "@clc/api/features/reports/client";
-import { useReport, useReportLocation } from "#/features/home/hooks/use-reports";
-import { useMyPost } from "#/features/posts/hooks/use-my-posts";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import type { ReportDetail, ReportImage } from "@clc/api/features/reports/client";
+import {
+  attachmentLabel,
+  attachmentMeta,
+  useCarouselPosition,
+  useReportPage,
+} from "#/features/home/hooks/use-report-page";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { formatReportDate, formatReportPeriod } from "#/lib/report-display";
 
 export function ReportPage({ reportId }: { reportId: string }) {
-  const { t, i18n } = useLingui();
-  const auth = useAuthStatus();
-  const reportQuery = useReport(reportId);
-  const ownedReportQuery = useMyPost(reportId);
-  const report = reportQuery.data;
-  const locationQuery = useReportLocation(report?.lat, report?.lng, auth.isAuthenticated);
+  const { t } = useLingui();
+  const { reportQuery, report, isAuthenticated, isAuthor, updated, locationLabel } =
+    useReportPage(reportId);
 
   if (reportQuery.isPending) return <ReportLoadingShell />;
   if (reportQuery.isError) {
@@ -63,15 +62,6 @@ export function ReportPage({ reportId }: { reportId: string }) {
     );
   }
   if (!report) return <ReportShell message={t`Post not found.`} />;
-
-  const updated = formatReportDate(report.updatedAt, i18n.locales?.[0] ?? i18n.locale);
-  const hasCoordinates = typeof report.lat === "number" && typeof report.lng === "number";
-  const coordinateLabel = hasCoordinates ? `${report.lat}, ${report.lng}` : null;
-  const locationLabel = locationQuery.data?.locationName ?? report.locationName ?? coordinateLabel;
-  // Public Post data deliberately contains no author address. The private
-  // owner endpoint is the authorization-aware source for showing Edit; its
-  // expected 404 for another person's Post stays invisible on this page.
-  const isAuthor = ownedReportQuery.data?.id === report.id;
 
   return (
     <div className="space-y-3">
@@ -92,7 +82,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
             ) : null}
           </div>
 
-          {updated || (auth.isAuthenticated && locationLabel) ? (
+          {updated || (isAuthenticated && locationLabel) ? (
             <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground text-xs leading-5">
               {updated && report.updatedAt ? (
                 <span className="inline-flex items-center gap-1">
@@ -100,10 +90,10 @@ export function ReportPage({ reportId }: { reportId: string }) {
                   <time dateTime={report.updatedAt}>{updated}</time>
                 </span>
               ) : null}
-              {updated && auth.isAuthenticated && locationLabel ? (
+              {updated && isAuthenticated && locationLabel ? (
                 <span aria-hidden="true">·</span>
               ) : null}
-              {auth.isAuthenticated && locationLabel ? <span>{locationLabel}</span> : null}
+              {isAuthenticated && locationLabel ? <span>{locationLabel}</span> : null}
             </p>
           ) : null}
 
@@ -375,28 +365,6 @@ function FullScreenImage({
   );
 }
 
-function useCarouselPosition(
-  api: CarouselApi | undefined,
-  initialPosition: number,
-  syncOnMount = true,
-): number {
-  const [current, setCurrent] = useState(initialPosition);
-
-  useEffect(() => {
-    if (!api) return;
-    const sync = () => setCurrent(api.selectedScrollSnap() + 1);
-    if (syncOnMount) sync();
-    api.on("select", sync);
-    api.on("reInit", sync);
-    return () => {
-      api.off("select", sync);
-      api.off("reInit", sync);
-    };
-  }, [api, syncOnMount]);
-
-  return current;
-}
-
 function ReportDetails({ report }: { report: ReportDetail }) {
   const { t, i18n } = useLingui();
   const period = formatReportPeriod(
@@ -428,12 +396,7 @@ function ReportDetails({ report }: { report: ReportDetail }) {
   );
 }
 
-/**
- * Files and embeds on the post.
- *
- * A filename when the upload recorded one, otherwise the host — a bare CDN URL
- * says nothing about what it is, and the whole path would not fit at 360px.
- */
+/** Files and embeds on the post. */
 function ReportAttachments({ report }: { report: ReportDetail }) {
   const { t } = useLingui();
   if (report.attachments.length === 0) return null;
@@ -468,24 +431,6 @@ function ReportAttachments({ report }: { report: ReportDetail }) {
       </ul>
     </section>
   );
-}
-
-function attachmentLabel(attachment: ReportAttachment): string {
-  if (attachment.filename) return attachment.filename;
-  try {
-    return new URL(attachment.url).host;
-  } catch {
-    return attachment.url;
-  }
-}
-
-function attachmentMeta(
-  attachment: ReportAttachment,
-  labels: { file: string; embed: string },
-): string {
-  const kind = attachment.kind === "FILE" ? labels.file : labels.embed;
-  const size = formatByteSize(attachment.byteSize);
-  return size ? `${kind} · ${size}` : kind;
 }
 
 function RelatedVouchers({ report }: { report: ReportDetail }) {

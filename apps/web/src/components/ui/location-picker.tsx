@@ -1,17 +1,13 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
-import { locationSchema } from "@clc/core/features/location/logic";
 import type { MapMarkerStyle } from "@clc/core/features/markers/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense } from "react";
 import { TbCurrentLocation } from "react-icons/tb";
 
 import { Input } from "#/components/ui/input";
 import { Spinner } from "#/components/ui/spinner";
+import { useLocationPicker } from "#/components/ui/use-location-picker";
 import type { FixedResourceMarkerKind } from "#/components/vouchers/marker-style-picker";
-import type { GeocodeSuggestion } from "#/lib/geo-client";
-import { reverseLocation, searchLocations } from "#/lib/geo-client";
-import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
-
 import { cn } from "#/lib/utils";
 import { LocationMap } from "./location-map.lazy";
 
@@ -33,12 +29,6 @@ type LocationPickerProps = {
   fill?: boolean;
 };
 
-type PlacePinOptions = {
-  locationNameHint?: string;
-  clearSuggestions?: boolean;
-  updateSearchInput?: boolean;
-};
-
 export function LocationPicker({
   value,
   onChange,
@@ -51,160 +41,21 @@ export function LocationPicker({
   fill = false,
 }: LocationPickerProps) {
   const { t } = useLingui();
-  const [query, setQuery] = useState({ text: value?.locationName ?? "", shouldSearch: false });
-  const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [pin, setPin] = useState<{ lat: number; lng: number } | null>(
-    value ? { lat: value.lat, lng: value.lng } : null,
-  );
-  const [reversePending, setReversePending] = useState(false);
-  const [reverseError, setReverseError] = useState<string | null>(null);
-  const [canRenderMap, setCanRenderMap] = useState(false);
-  const searchAbortRef = useRef<AbortController | null>(null);
-  const reverseAbortRef = useRef<AbortController | null>(null);
-  const reverseRequestRef = useRef(0);
-  const onChangeRef = useRef(onChange);
-  const geolocation = useBrowserGeolocation();
-  const geoStatus = geolocation.state.status;
-  const geoLat = geoStatus === "granted" ? geolocation.state.lat : null;
-  const geoLng = geoStatus === "granted" ? geolocation.state.lng : null;
-
-  useEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
-
-  useEffect(() => {
-    if (!value && reverseAbortRef.current) return;
-    const nextQuery = value?.locationName ?? "";
-    searchAbortRef.current?.abort();
-    setQuery((currentQuery) => {
-      if (currentQuery.text === nextQuery && !currentQuery.shouldSearch) return currentQuery;
-      return { text: nextQuery, shouldSearch: false };
-    });
-  }, [value?.locationName]);
-
-  useEffect(() => {
-    setCanRenderMap(true);
-  }, []);
-
-  useEffect(() => {
-    // Clearing the form value during a country lookup must keep the selected pin.
-    if (!value && reverseAbortRef.current) return;
-    setPin((current) => {
-      if (!value) return current ? null : current;
-      if (current?.lat === value.lat && current.lng === value.lng) return current;
-      return { lat: value.lat, lng: value.lng };
-    });
-  }, [value]);
-
-  const setSearchQueryFromLocation = useCallback((nextQuery: string) => {
-    searchAbortRef.current?.abort();
-    setQuery({ text: nextQuery, shouldSearch: false });
-  }, []);
-
-  const placePin = useCallback(
-    (lat: number, lng: number, options: PlacePinOptions = {}) => {
-      searchAbortRef.current?.abort();
-      setQuery((current) => (current.shouldSearch ? { ...current, shouldSearch: false } : current));
-      setPin({ lat, lng });
-      if (options.clearSuggestions !== false) {
-        setSuggestions([]);
-      }
-      setReverseError(null);
-      setReversePending(true);
-      reverseAbortRef.current?.abort();
-      const controller = new AbortController();
-      reverseAbortRef.current = controller;
-      const requestId = reverseRequestRef.current + 1;
-      reverseRequestRef.current = requestId;
-      onChangeRef.current(undefined);
-
-      void reverseLocation(lat, lng, controller.signal).then((result) => {
-        if (controller.signal.aborted || reverseRequestRef.current !== requestId) {
-          return;
-        }
-        reverseAbortRef.current = null;
-        setReversePending(false);
-        const reverseErrorMsg = t`Couldn't identify a country here. Try a nearby spot.`;
-        if (!result) {
-          setReverseError(reverseErrorMsg);
-          onChangeRef.current(undefined);
-          return;
-        }
-
-        const parsed = locationSchema.safeParse({
-          lat,
-          lng,
-          locationName: options.locationNameHint ?? result.locationName,
-          country: result.country,
-        });
-        if (!parsed.success) {
-          setReverseError(reverseErrorMsg);
-          onChangeRef.current(undefined);
-          return;
-        }
-
-        setReverseError(null);
-        if (options.updateSearchInput !== false) {
-          setSearchQueryFromLocation(parsed.data.locationName);
-        }
-        onChangeRef.current(parsed.data);
-      });
-    },
-    [setSearchQueryFromLocation, t],
-  );
-
-  useEffect(() => {
-    searchAbortRef.current?.abort();
-    // Only text entered by the user searches. Saved and reverse-geocoded names
-    // remain selected across rerenders and effect replay.
-    if (!query.shouldSearch) {
-      setSuggestions([]);
-      setSearching(false);
-      return;
-    }
-
-    const trimmedQuery = query.text.trim();
-    if (trimmedQuery.length < 3) {
-      setSuggestions([]);
-      setSearching(false);
-      return;
-    }
-
-    setSearching(true);
-    const controller = new AbortController();
-    searchAbortRef.current = controller;
-    const timeout = setTimeout(() => {
-      void searchLocations(trimmedQuery, controller.signal).then((results) => {
-        if (controller.signal.aborted) return;
-        setSuggestions(results.slice(0, 4));
-        setSearching(false);
-      });
-    }, 400);
-
-    return () => {
-      controller.abort();
-      clearTimeout(timeout);
-    };
-  }, [query.text, query.shouldSearch]);
-
-  useEffect(() => {
-    return () => {
-      searchAbortRef.current?.abort();
-      reverseAbortRef.current?.abort();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (geoStatus === "granted" && geoLat !== null && geoLng !== null) {
-      placePin(geoLat, geoLng);
-    }
-  }, [geoStatus, geoLat, geoLng, placePin]);
-
-  const geoUnavailable =
-    geolocation.state.status === "denied" || geolocation.state.status === "unavailable";
-  const geoRequesting = geolocation.state.status === "requesting";
-  const shownError = reverseError ?? (reversePending ? undefined : error);
+  const {
+    query,
+    search,
+    suggestions,
+    chooseSuggestion,
+    searching,
+    pin,
+    placePin,
+    reversePending,
+    shownError,
+    canRenderMap,
+    geolocation,
+    geoUnavailable,
+    geoRequesting,
+  } = useLocationPicker({ value, onChange, error });
   const mapHeight = fill ? "h-auto min-h-36 flex-1" : "h-52";
 
   return (
@@ -228,10 +79,8 @@ export function LocationPicker({
             role="searchbox"
             autoComplete="off"
             placeholder={t`Search for a town or place`}
-            value={query.text}
-            onChange={(event) => {
-              setQuery({ text: event.target.value, shouldSearch: true });
-            }}
+            value={query}
+            onChange={(event) => search(event.target.value)}
             className="bg-card pe-10"
             aria-invalid={!!shownError}
             aria-required={required || undefined}
@@ -260,12 +109,7 @@ export function LocationPicker({
                 role="option"
                 aria-selected="false"
                 className="block w-full px-3 py-2 text-start text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-                onClick={() => {
-                  setSearchQueryFromLocation(suggestion.address);
-                  placePin(suggestion.lat, suggestion.lng, {
-                    locationNameHint: suggestion.address,
-                  });
-                }}
+                onClick={() => chooseSuggestion(suggestion)}
               >
                 {suggestion.address}
               </button>

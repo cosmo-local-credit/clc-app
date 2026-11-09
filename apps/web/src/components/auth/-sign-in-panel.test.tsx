@@ -3,6 +3,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { BackendApiError } from "@clc/api/client/errors";
+
 import { getStoredKey, storePrivateKey } from "#/connectors/privateKey";
 import { getWebAuthnCredential, storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
@@ -204,6 +206,38 @@ describe("passkey sign-in credential teardown", () => {
       expect(mocks.signin).toHaveBeenCalled();
     });
     expect(getStoredKey()).toBe(ALICE_KEY);
+  });
+});
+
+describe("credentials a key rotation left behind", () => {
+  it("tells a replaced card to use the new one instead of offering sign-up", async () => {
+    mocks.isConnected = false;
+    mocks.backendSignin.mockRejectedValue(
+      new BackendApiError(410, "this sign-in card was replaced", "E20"),
+    );
+
+    renderPanel();
+    await submitPrivateKey(BOB_KEY);
+
+    expect(
+      await screen.findByText("This sign-in card was replaced. Sign in with your new card."),
+    ).toBeTruthy();
+    expect(getStoredKey()).toBeNull();
+  });
+
+  it("sends a moved passkey to the new card", async () => {
+    mocks.signin.mockRejectedValue(
+      new BackendApiError(409, "sign in with your new sign-in card", "E21"),
+    );
+
+    renderPanel();
+    fireEvent.click(screen.getByRole("button", { name: /google/i }));
+
+    expect(
+      await screen.findByText(
+        "This passkey moved with your account. Sign in with your new card to finish moving it.",
+      ),
+    ).toBeTruthy();
   });
 });
 

@@ -32,6 +32,8 @@ export function ActivityFilterSheet({
     sent: t`Sent`,
     received: t`Received`,
     swapped: t`Swapped`,
+    deposited: t`Deposits`,
+    pool_payout: t`Pay Out`,
   };
 
   const changeOpen = (next: boolean) => {

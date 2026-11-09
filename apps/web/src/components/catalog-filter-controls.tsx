@@ -3,11 +3,10 @@ import {
   CATALOG_MAX_VOUCHERS,
   type TagMatch,
   type VoucherRef,
-  formatVoucherAddress,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { RiCheckLine, RiCloseLine, RiFilter3Line, RiSearchLine } from "react-icons/ri";
 
 import { Badge } from "#/components/ui/badge";
@@ -42,6 +41,10 @@ import {
   type VoucherSearchControls,
 } from "#/features/home/hooks/use-voucher-search";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import {
+  type CatalogVoucherFacet,
+  useCatalogFilterDraft,
+} from "#/components/use-catalog-filter-draft";
 import { cn } from "#/lib/utils";
 
 export function CatalogSearchField({
@@ -97,33 +100,6 @@ type CatalogFacet = {
   tag: string;
   count: number;
 };
-
-export type CatalogVoucherFacet = VoucherRef & {
-  name: string;
-  symbol: string;
-  count: number;
-  placeholder?: boolean;
-};
-
-/**
- * Carries forward the name of anything newly selected. Search results vanish when the query is
- * cleared, so without this a chip picked a moment ago would fall back to its hex address.
- */
-function rememberVoucherNames(
-  selected: readonly VoucherRef[],
-  results: readonly MarketVoucher[],
-  setNames: (
-    update: (previous: ReadonlyMap<string, string>) => ReadonlyMap<string, string>,
-  ) => void,
-) {
-  const named = new Map(results.map((voucher) => [serializeVoucherRef(voucher), voucher.name]));
-  const additions = selected
-    .map(serializeVoucherRef)
-    .filter((key) => named.has(key))
-    .map((key): [string, string] => [key, named.get(key) ?? ""]);
-  if (additions.length === 0) return;
-  setNames((previous) => new Map([...previous, ...additions]));
-}
 
 /**
  * Shared shadcn/Base UI filter sheet for exhaustive catalogs.
@@ -186,74 +162,40 @@ export function CatalogFilterSheet({
   const matchHeadingId = useId();
   const voucherHeadingId = useId();
   const voucherMatchHeadingId = useId();
-  const [draftTags, setDraftTags] = useState<readonly string[]>([]);
-  const [draftTagMatch, setDraftTagMatch] = useState<TagMatch>("any");
-  // Mutable rather than readonly: Base UI types multi-select `selectedValue` as `Value[]`.
-  const [draftVouchers, setDraftVouchers] = useState<VoucherRef[]>([]);
-  const [draftVoucherMatch, setDraftVoucherMatch] = useState<TagMatch>("any");
-  // Names of vouchers picked in this session. Search results are transient — once the query is
-  // cleared the result that produced a chip is gone, so its label has to be kept here.
-  const [pickedVoucherNames, setPickedVoucherNames] = useState<ReadonlyMap<string, string>>(
-    new Map(),
-  );
-
-  const appliedCount = filter.result.ok
-    ? filter.tags.length + filter.vouchers.length + additionalAppliedCount
-    : "requested" in filter.result
-      ? filter.result.requested
-      : 0;
-  const atTagLimit = draftTags.length >= CATALOG_MAX_TAGS;
-  const atVoucherLimit = draftVouchers.length >= CATALOG_MAX_VOUCHERS;
-  // Disjunctive counts describe what a chip adds under Any. They ignore the selected tags,
-  // so showing them under All would imply a conjunctive count the backend did not compute.
-  const showCounts = draftTagMatch === "any";
-  // Counts stay scoped to the search, so a term whose matches carry no tags zeroes every chip.
-  const searchTerm = filter.filter?.term ?? "";
-  const hasSelectableFacet = facets.some(
-    (facet) => facet.count > 0 || draftTags.includes(facet.tag),
-  );
-  const selectedVoucherKeys = useMemo(
-    () => new Set(draftVouchers.map(serializeVoucherRef)),
-    [draftVouchers],
-  );
+  const {
+    draftTags,
+    draftTagMatch,
+    setDraftTagMatch,
+    draftVouchers,
+    draftVoucherMatch,
+    setDraftVoucherMatch,
+    appliedCount,
+    atTagLimit,
+    atVoucherLimit,
+    showCounts,
+    searchTerm,
+    hasSelectableFacet,
+    selectedVoucherKeys,
+    voucherLabel,
+    begin: openSheet,
+    toggleDraftTag,
+    changeOpen,
+    changeVouchers,
+    apply,
+    reset,
+    canReset,
+  } = useCatalogFilterDraft({
+    filter,
+    facets,
+    voucherFacets,
+    voucherSearch,
+    onOpenChange,
+    onApply,
+    additionalAppliedCount,
+    additionalDraftCount,
+    onResetAdditional,
+  });
   const voucherFilterEnabled = voucherSearch !== undefined;
-  // Selections stay bare VoucherRefs so a chip survives a query being cleared. Labels resolve
-  // against this session's picks first, then the applied filter's facets, then the address.
-  const voucherFacetByKey = useMemo(
-    () => new Map((voucherFacets ?? []).map((facet) => [serializeVoucherRef(facet), facet])),
-    [voucherFacets],
-  );
-
-  const voucherLabel = (voucher: VoucherRef) => {
-    const key = serializeVoucherRef(voucher);
-    return (
-      pickedVoucherNames.get(key) ??
-      voucherFacetByKey.get(key)?.name ??
-      formatVoucherAddress(voucher.address)
-    );
-  };
-
-  const openSheet = () => {
-    setDraftTags(filter.tags);
-    setDraftTagMatch(filter.tagMatch);
-    setDraftVouchers([...filter.vouchers]);
-    setDraftVoucherMatch(filter.voucherMatch);
-    voucherSearch?.setQuery("");
-    onOpenChange(true);
-  };
-
-  const toggleDraftTag = (tag: string) => {
-    const next = draftTags.includes(tag)
-      ? draftTags.filter((entry) => entry !== tag)
-      : [...draftTags, tag];
-    setDraftTags(next);
-    if (next.length < 2) setDraftTagMatch("any");
-  };
-
-  const changeOpen = (next: boolean) => {
-    if (!next) voucherSearch?.setQuery("");
-    onOpenChange(next);
-  };
 
   return (
     <>
@@ -339,14 +281,7 @@ export function CatalogFilterSheet({
                       serializeVoucherRef(item) === serializeVoucherRef(value)
                     }
                     value={draftVouchers}
-                    onValueChange={(next) => {
-                      setDraftVouchers(next);
-                      if (next.length < 2) setDraftVoucherMatch("any");
-                      rememberVoucherNames(next, voucherSearch.results, setPickedVoucherNames);
-                      // Clearing the query collapses the list, so the next search starts from the
-                      // hint rather than from stale results for a voucher already chosen.
-                      voucherSearch.setQuery("");
-                    }}
+                    onValueChange={changeVouchers}
                     inputValue={voucherSearch.query}
                     onInputValueChange={voucherSearch.setQuery}
                   >
@@ -573,14 +508,7 @@ export function CatalogFilterSheet({
                 filters" outgrows a 360px row in Dutch. Both stand as tall as
                 the Wallet's create buttons. */}
             <SheetFooter className="bg-card px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <Button
-                tap
-                className="w-full"
-                onClick={() => {
-                  onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
-                  onOpenChange(false);
-                }}
-              >
+              <Button tap className="w-full" onClick={apply}>
                 <RiCheckLine className="size-4" aria-hidden="true" />
                 <Trans>Apply filters</Trans>
               </Button>
@@ -588,16 +516,8 @@ export function CatalogFilterSheet({
                 variant="outline"
                 tap
                 className="w-full border-primary! text-primary hover:bg-primary/10 hover:text-primary"
-                disabled={
-                  draftTags.length === 0 && draftVouchers.length === 0 && additionalDraftCount === 0
-                }
-                onClick={() => {
-                  setDraftTags([]);
-                  setDraftTagMatch("any");
-                  setDraftVouchers([]);
-                  setDraftVoucherMatch("any");
-                  onResetAdditional?.();
-                }}
+                disabled={!canReset}
+                onClick={reset}
               >
                 <Trans>Reset</Trans>
               </Button>

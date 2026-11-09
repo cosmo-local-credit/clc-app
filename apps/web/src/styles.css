@@ -234,6 +234,21 @@ html {
 	scrollbar-gutter: stable;
 }
 
+/* The desktop shell scrolls inside its own panes; the page never does. */
+html[data-layout="desktop"] {
+	scrollbar-gutter: auto;
+}
+
+/*
+ * Secondary text on the desktop's gray canvas and muted table headers needs
+ * 4.5:1. The shared 0.556 gives 4.28:1 on the canvas and 4.34:1 on the muted
+ * surface; 0.5 gives 5.4:1 and 5.5:1 and stays neutral. Light only (dark is
+ * already 5.8:1 or better) and desktop only, so the phone keeps its token.
+ */
+html[data-layout="desktop"]:not(.dark) {
+	--muted-foreground: oklch(0.5 0 0);
+}
+
 body {
 	margin: 0;
 	background: var(--color-background);

@@ -5,6 +5,12 @@ import { useNearbyCatalog } from "#/components/nearby-catalog";
 import { mapSearchFrom } from "#/lib/navigation/marketplace-search";
 import { cn } from "#/lib/utils";
 
+/** Whether an active text search is limited to the area the map last showed. */
+export function useViewportScopedSearch(query: string): boolean {
+  const discovery = useNearbyCatalog();
+  return query.trim().length > 0 && Boolean(discovery?.bounds?.length);
+}
+
 /** Explains why an active text search can differ after the map has moved. */
 export function MarketViewportSearchNotice({
   query,
@@ -13,8 +19,7 @@ export function MarketViewportSearchNotice({
   query: string;
   className?: string;
 }) {
-  const discovery = useNearbyCatalog();
-  if (query.trim().length === 0 || !discovery?.bounds?.length) return null;
+  if (!useViewportScopedSearch(query)) return null;
 
   return (
     <p className={cn("text-xs text-muted-foreground", className)}>

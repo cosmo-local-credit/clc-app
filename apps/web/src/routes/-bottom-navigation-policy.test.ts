@@ -6,7 +6,7 @@ type RoutePolicy = {
   id: string;
   fullPath: string;
   source: string;
-  navOwner?: "home" | "market" | "posts" | "wallet" | "voucher";
+  navOwner?: "home" | "market" | "posts" | "wallet" | "settings" | "voucher" | "install";
 };
 
 const ROUTES_DIR = resolve(import.meta.dirname);
@@ -38,7 +38,12 @@ const routePolicy = [
     source: "_nav/market/index.tsx",
     navOwner: "market",
   },
-  { id: "/catalogs/create", fullPath: "/catalogs/create", source: "catalogs/create.tsx" },
+  {
+    id: "/_nav/catalogs/create",
+    fullPath: "/catalogs/create",
+    source: "_nav/catalogs/create.tsx",
+    navOwner: "wallet",
+  },
   // $reportId is a directory, not a leaf: the owner edit route lives beside the
   // public detail one, and a leaf file with a sibling folder becomes a layout
   // with no Outlet.
@@ -104,24 +109,39 @@ const routePolicy = [
     source: "_nav/wants/$wantId.tsx",
     navOwner: "market",
   },
+  // Signing in carries no navigation.
   { id: "/onboarding", fullPath: "/onboarding", source: "onboarding.tsx" },
-  { id: "/install", fullPath: "/install", source: "install.tsx" },
   {
-    id: "/settings/profile",
+    id: "/_nav/install",
+    fullPath: "/install",
+    source: "_nav/install.tsx",
+    navOwner: "install",
+  },
+  {
+    id: "/_nav/settings/profile",
     fullPath: "/settings/profile",
-    source: "settings/profile.tsx",
+    source: "_nav/settings/profile.tsx",
+    navOwner: "settings",
   },
   { id: "/posts/", fullPath: "/posts/", source: "posts/index.tsx" },
   { id: "/settings/", fullPath: "/settings/", source: "settings/index.tsx" },
+  // Leaving drops the replacement's in-memory keys, so no tab bar to leave by.
+  {
+    id: "/settings/sign-in-card",
+    fullPath: "/settings/sign-in-card",
+    source: "settings/sign-in-card.tsx",
+  },
+  // A wizard's three-step draft lives in component state a tab tap would discard.
   {
     id: "/vouchers/create/$step",
     fullPath: "/vouchers/create/$step",
     source: "vouchers/create/$step.tsx",
   },
   {
-    id: "/vouchers/create/receipt",
+    id: "/_nav/vouchers/create/receipt",
     fullPath: "/vouchers/create/receipt",
-    source: "vouchers/create/receipt.tsx",
+    source: "_nav/vouchers/create/receipt.tsx",
+    navOwner: "wallet",
   },
   {
     id: "/pools/create/$step",
@@ -129,41 +149,77 @@ const routePolicy = [
     source: "pools/create/$step.tsx",
   },
   {
-    id: "/pools/create/receipt",
+    id: "/_nav/pools/create/receipt",
     fullPath: "/pools/create/receipt",
-    source: "pools/create/receipt.tsx",
+    source: "_nav/pools/create/receipt.tsx",
+    navOwner: "wallet",
   },
   { id: "/wallet/", fullPath: "/wallet/", source: "wallet/index.tsx" },
-  { id: "/wallet/cash", fullPath: "/wallet/cash", source: "wallet/cash.tsx" },
-  { id: "/wallet/collect", fullPath: "/wallet/collect", source: "wallet/collect.tsx" },
-  { id: "/wallet/receive", fullPath: "/wallet/receive", source: "wallet/receive.tsx" },
-  { id: "/wallet/top-up", fullPath: "/wallet/top-up", source: "wallet/top-up.tsx" },
-  { id: "/wallet/wants/new", fullPath: "/wallet/wants/new", source: "wallet/wants/new.tsx" },
   {
-    id: "/wallet/wants/$wantId/edit",
+    id: "/_nav/wallet/cash",
+    fullPath: "/wallet/cash",
+    source: "_nav/wallet/cash.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/wallet/collect",
+    fullPath: "/wallet/collect",
+    source: "_nav/wallet/collect.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/wallet/receive",
+    fullPath: "/wallet/receive",
+    source: "_nav/wallet/receive.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/wallet/top-up",
+    fullPath: "/wallet/top-up",
+    source: "_nav/wallet/top-up.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/wallet/wants/new",
+    fullPath: "/wallet/wants/new",
+    source: "_nav/wallet/wants/new.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/wallet/wants/$wantId/edit",
     fullPath: "/wallet/wants/$wantId/edit",
-    source: "wallet/wants/$wantId/edit.tsx",
+    source: "_nav/wallet/wants/$wantId/edit.tsx",
+    navOwner: "wallet",
   },
-  { id: "/wallet/send/", fullPath: "/wallet/send/", source: "wallet/send/index.tsx" },
   {
-    id: "/wallet/send/amount",
+    id: "/_nav/wallet/send/",
+    fullPath: "/wallet/send/",
+    source: "_nav/wallet/send/index.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/wallet/send/amount",
     fullPath: "/wallet/send/amount",
-    source: "wallet/send/amount.tsx",
+    source: "_nav/wallet/send/amount.tsx",
+    navOwner: "wallet",
   },
   {
-    id: "/wallet/send/receipt",
+    id: "/_nav/wallet/send/receipt",
     fullPath: "/wallet/send/receipt",
-    source: "wallet/send/receipt.tsx",
+    source: "_nav/wallet/send/receipt.tsx",
+    navOwner: "wallet",
   },
   {
-    id: "/pools/$poolAddress/swap/",
+    id: "/_nav/pools/$poolAddress/swap/",
     fullPath: "/pools/$poolAddress/swap/",
-    source: "pools/$poolAddress/swap/index.tsx",
+    source: "_nav/pools/$poolAddress/swap/index.tsx",
+    navOwner: "wallet",
   },
   {
-    id: "/pools/$poolAddress/swap/receipt",
+    id: "/_nav/pools/$poolAddress/swap/receipt",
     fullPath: "/pools/$poolAddress/swap/receipt",
-    source: "pools/$poolAddress/swap/receipt.tsx",
+    source: "_nav/pools/$poolAddress/swap/receipt.tsx",
+    navOwner: "wallet",
   },
 ] satisfies RoutePolicy[];
 
@@ -208,7 +264,7 @@ describe("bottom-navigation route policy", () => {
       expect(
         readFileSync(file, "utf8"),
         `${relative(ROUTES_DIR, file)} must declare navOwner`,
-      ).toMatch(/navOwner:\s*"(?:home|market|posts|wallet|voucher)"/);
+      ).toMatch(/navOwner:\s*"(?:home|market|posts|wallet|settings|voucher|install)"/);
     }
   });
 });

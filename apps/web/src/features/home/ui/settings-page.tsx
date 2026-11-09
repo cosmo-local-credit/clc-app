@@ -31,6 +31,7 @@ import { AccountSettingsSection } from "./account-settings-section";
 import { MultisigSettingsRows } from "./multisig-settings-section";
 import { NotificationSettingsSection } from "./notification-settings-section";
 import { PasskeySettingsSection } from "./passkey-settings-section";
+import { SignInCardSettingsSection } from "./sign-in-card-settings-section";
 
 export function SettingsPage({
   address,
@@ -65,6 +66,7 @@ export function SettingsPage({
 
       <SettingsGroup label={t`Sign-in`}>
         <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />
+        <SignInCardSettingsSection address={address} />
         <WalletSessionRow address={address} delegationStatus={delegationStatus} />
       </SettingsGroup>
 

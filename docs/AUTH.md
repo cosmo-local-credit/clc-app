@@ -240,6 +240,54 @@ New behavior:
 
 The import flow signs in with the backend before connecting the private-key connector.
 
+## Replacing a Sign-in Card
+
+A sign-in card's key is the root key of an EOA delegated to Calibur, and Calibur
+cannot revoke a root key. So replacing a compromised card (GH #412) moves the
+account to a new address. Settings → Sign-in → **Replace sign-in card** opens
+`/settings/sign-in-card`, behind `VITE_KEY_ROTATION_ENABLED`.
+
+1. **Review.** `loadRotationAssets` lists what the old wallet owns alone, from
+   chain reads: pools (with the fee address when it is the creator's), vouchers
+   whose `owner()` is the card (retired ones included), balances by `balanceOf`,
+   and native gas. Safe-owned assets never qualify. Expired vouchers, sealed fee
+   addresses, contracts whose reads fail and anything a per-call simulation says
+   would revert are listed as staying behind; none of them stops the rest.
+2. **New card.** Generated in memory, protected and saved with the shared
+   `components/paper-wallet` builder, then scanned back. Nothing moves to a key
+   nobody kept.
+3. **Switch.** `POST /auth/key-rotation` with two SIWE proofs over the statement
+   `buildKeyRotationStatement(old, new)`. When the account has an active passkey,
+   the old card's proof must be a passkey assertion over
+   `keyRotationPasskeyChallenge(statement, nonce)`, which commits to both cards;
+   a sign-in assertion is refused. The wallet-switch signal is taken before the
+   request, so a sign-out while it is pending wins over its answer. clc-core moves the account in
+   place (same user id), retires the old address (E20 on any sign-in or recipient
+   lookup) and signs out every session for it. The client then moves the owner
+   tier (`moveOwnerTier`), stores the new key and connects it, as the `?w=`
+   switch does.
+4. **Move.** `runRotationBatches` relays the planned batches as the old wallet,
+   one at a time, ownership before transfers. A lost response is resent as the
+   identical request under its `operationId`.
+5. **Passkeys.** `relinkMovedPasskeys` reads the account's passkeys from clc-core
+   and registers each `moved` one on the new wallet with the new root key, skips
+   any already registered, and follows a registration still settling. It is safe
+   to run again, and stops at a registration whose outcome is unknown rather
+   than sign the next one over the same Calibur nonce. A registration that
+   reverts leaves the passkey `moved`, so Settings keeps offering **Finish moving
+   your passkey**. Until then a moved passkey's sign-in answers E21, and a further
+   replacement carries it along.
+
+Both keys live only in `useRotationSession` (memory, no `persist`). It survives
+`AuthenticatedRoute` remounting during the switch, retains through
+`clearIdentitySecrets("private-key")`, and is cleared by `"none"`, by leaving the
+route and when the flow ends. After a reload, Settings offers **Move what's left
+from an old card** (`?from=<old address>`): scan the old card, or use a passkey
+that was registered on it. A SUPERADMIN can move an account whose holder cannot
+sign with either from the admin console; that moves only the account.
+
+Multisig memberships stay with the old card: the other signers must replace it.
+
 ## Global 401 Handling
 
 App-level React Query error handling watches for `BackendApiError` with `status === 401` or `code === 'E06'`. When seen, it invalidates `['auth', 'session']`. `useAuthStatus` then moves the UI to `connectedNoSession` so the user can re-authenticate.

@@ -35,10 +35,20 @@ function settleOfferingWrite(queryClient: QueryClient) {
   ]);
 }
 
+/**
+ * Names a voucher's offering writes, so a view that mounts while one is still
+ * in flight (the phone/desktop swap) can see it and hold its own Save.
+ */
+export const offeringMutationKeys = {
+  create: (voucherAddress: string) => ["offerings", "create", voucherAddress] as const,
+  update: (voucherAddress: string) => ["offerings", "update", voucherAddress] as const,
+};
+
 export function useCreateVoucherOffering(voucherAddress: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: offeringMutationKeys.create(voucherAddress),
     onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (input: OfferingWrite) =>
       offeringsClient.createVoucherOffering(voucherAddress, input),
@@ -53,6 +63,7 @@ export function useUpdateVoucherOffering(voucherAddress: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: offeringMutationKeys.update(voucherAddress),
     onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: ({ id, input }: { id: string; input: OfferingWrite }) =>
       offeringsClient.updateVoucherOffering(voucherAddress, id, input),

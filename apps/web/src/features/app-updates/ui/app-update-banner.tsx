@@ -28,8 +28,9 @@ import {
  */
 const RELOAD_UNSAFE_ROUTES: ReadonlySet<RouteIds<RegisteredRouter["routeTree"]>> = new Set([
   "/onboarding",
-  "/wallet/send/amount",
-  "/pools/$poolAddress/swap/",
+  "/_nav/wallet/send/amount",
+  "/_nav/pools/$poolAddress/swap/",
+  "/settings/sign-in-card",
   "/pools/create/$step",
   "/vouchers/create/$step",
 ]);
