@@ -82,6 +82,42 @@ describe("runNotificationSubscriptionHealthCheck", () => {
     );
   });
 
+  it("re-registers with the declared kinds once the worker's kinds change", async () => {
+    const current = { ...config, subscriptionHash: undefined };
+    dependencies.readConfig.mockResolvedValue(current);
+    await runNotificationSubscriptionHealthCheck(
+      { currentWalletAddress: config.identityWallet, serviceWorkerVersion: "worker-v1" },
+      dependencies,
+    );
+    const hash = dependencies.updateConfig.mock.calls[0]?.[0].subscriptionHash;
+    dependencies.registerDevice.mockClear();
+    dependencies.updateConfig.mockClear();
+
+    dependencies.readConfig.mockResolvedValue({
+      ...config,
+      subscriptionHash: hash,
+      workerKinds: ["voucher.received", "offramp.completed", "helpdesk.reply"],
+    });
+    await expect(
+      runNotificationSubscriptionHealthCheck(
+        { currentWalletAddress: config.identityWallet, serviceWorkerVersion: "worker-v1" },
+        dependencies,
+      ),
+    ).resolves.toMatchObject({ status: "refreshed" });
+    expect(dependencies.registerDevice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kinds: ["voucher.received", "offramp.completed", "helpdesk.reply"],
+      }),
+      expect.anything(),
+    );
+    expect(dependencies.updateConfig).toHaveBeenCalledWith(
+      expect.objectContaining({
+        registeredKinds: ["voucher.received", "offramp.completed", "helpdesk.reply"],
+      }),
+      "epoch-1",
+    );
+  });
+
   it("replaces the subscription when the VAPID key version changes", async () => {
     dependencies.fetchVapid.mockResolvedValue({
       keyVersion: "vapid-v2",

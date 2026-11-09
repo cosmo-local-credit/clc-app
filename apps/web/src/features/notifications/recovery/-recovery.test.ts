@@ -233,6 +233,38 @@ describe("syncNotificationInboxState", () => {
   });
 });
 
+describe("declared kinds on inbox sync", () => {
+  it("declares the kinds once this build's worker has recorded them", async () => {
+    storage.readConfig.mockResolvedValue({
+      identityEpoch: "epoch-1",
+      registrationId: "registration-1",
+      userId: "user-1",
+      syncCursor: "cursor-1",
+      workerKinds: ["voucher.received", "offramp.completed", "message.received"],
+    });
+    api.syncInbox.mockResolvedValue({
+      hasMore: false,
+      resetRequired: false,
+      deletions: [],
+      deletedIds: [],
+      messages: [],
+      nextSyncCursor: "cursor-2",
+    });
+
+    await syncNotificationInboxState();
+
+    expect(api.syncInbox).toHaveBeenCalledWith(
+      {
+        deviceId: "device-1",
+        lastSyncCursor: "cursor-1",
+        registrationId: "registration-1",
+        kinds: ["voucher.received", "offramp.completed", "message.received"],
+      },
+      { identityEpoch: "epoch-1" },
+    );
+  });
+});
+
 describe("notification feed pagination", () => {
   it("drains every page in order and applies a required snapshot reset atomically", async () => {
     api.syncInbox

@@ -31,6 +31,8 @@ export async function refreshNotificationPushSubscription(
     registrationId: string;
     vapidKeyVersion?: string;
     pushSubscription: { endpoint: string; keys: { auth: string; p256dh: string } };
+    /** The kinds the calling worker parses; absent means the service's v1 set. */
+    kinds?: string[];
   },
   options: NotificationTransportOptions,
 ): Promise<void> {

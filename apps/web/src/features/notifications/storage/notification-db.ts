@@ -84,6 +84,10 @@ export type NotificationConfigRecord = {
   vapidKeyVersion?: string;
   vapidPublicKey?: string;
   workerProtocolVersion?: number;
+  /** Kinds the active worker parses, written by that worker. Absent for workers before messaging. */
+  workerKinds?: string[];
+  /** Kinds last declared on `devices/register`, so a change re-registers. */
+  registeredKinds?: string[];
 };
 
 export type NotificationConfigPatch = Omit<Partial<NotificationConfigRecord>, "key" | "updatedAt">;

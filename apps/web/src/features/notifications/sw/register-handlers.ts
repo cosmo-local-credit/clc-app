@@ -7,6 +7,7 @@ import {
   sendNotificationClickAck,
   sendNotificationDeliveryAck,
 } from "../api/notification-client";
+import { NOTIFICATION_KINDS } from "../logic/payload-schema";
 import { flushQueuedNotificationAcks } from "../recovery/recovery";
 import { syncNavigatorAppBadge } from "../realtime/app-badge";
 import {
@@ -77,6 +78,7 @@ export function registerNotificationServiceWorkerHandlers(scope: ServiceWorkerGl
         updateNotificationConfig({
           serviceWorkerVersion: NOTIFICATION_SERVICE_WORKER_VERSION,
           workerProtocolVersion: NOTIFICATION_WORKER_PROTOCOL_VERSION,
+          workerKinds: [...NOTIFICATION_KINDS],
         }),
       ]),
     );
@@ -150,6 +152,7 @@ function createProtocolDependencies(): NotificationProtocolHandlerDependencies {
       updateNotificationConfig({
         serviceWorkerVersion,
         workerProtocolVersion: NOTIFICATION_WORKER_PROTOCOL_VERSION,
+        workerKinds: [...NOTIFICATION_KINDS],
       }),
   };
 }
@@ -227,6 +230,8 @@ function createSubscriptionChangeDependencies(
           registrationId: config.registrationId,
           pushSubscription: request.pushSubscription,
           vapidKeyVersion: request.vapidKeyVersion,
+          // The worker is its own build's worker, so it declares what it parses.
+          kinds: [...NOTIFICATION_KINDS],
         },
         { baseUrl: getNotificationBackendBaseUrl(), deviceToken: installation.installationToken },
       );

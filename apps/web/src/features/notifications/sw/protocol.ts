@@ -48,6 +48,8 @@ const pendingClickEventSchema = z.object({
 export const notificationWorkerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     compatible: z.boolean(),
+    /** The kinds the worker parses. Workers from before messaging omit it. */
+    kinds: z.array(z.string().max(64)).max(64).optional(),
     protocolVersion: protocolVersionSchema,
     requestId: requestIdSchema,
     type: z.literal("notification:compatibility-result"),

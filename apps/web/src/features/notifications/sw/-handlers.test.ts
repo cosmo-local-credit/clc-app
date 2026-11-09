@@ -258,6 +258,44 @@ describe("handleNotificationPush", () => {
     expect(spies.showNotification).not.toHaveBeenCalled();
     expect(spies.sendDeliveryAck).not.toHaveBeenCalled();
   });
+
+  it("ignores a kind this worker does not know, without saving or showing it", async () => {
+    const { dependencies, spies } = createDependencies();
+
+    await expect(
+      handleNotificationPush({ ...validPayload, kind: "pool.retired" }, dependencies),
+    ).resolves.toEqual({ status: "ignored" });
+
+    expect(spies.saveInboxMessage).not.toHaveBeenCalled();
+    expect(spies.showNotification).not.toHaveBeenCalled();
+  });
+
+  it("shows a message notification that opens its thread", async () => {
+    const { dependencies, spies } = createDependencies();
+
+    await expect(
+      handleNotificationPush(
+        {
+          ...validPayload,
+          kind: "message.received",
+          title: "New message",
+          body: "amina sent you a message.",
+          targetUrl: "/messages/12",
+          conversationId: "12",
+        },
+        dependencies,
+      ),
+    ).resolves.toMatchObject({ status: "displayed" });
+
+    expect(spies.showNotification).toHaveBeenCalledWith(
+      "New message",
+      expect.objectContaining({
+        data: expect.objectContaining({ kind: "message.received", targetUrl: "/messages/12" }),
+        renotify: false,
+        tag: "clc:notification-1",
+      }),
+    );
+  });
 });
 
 describe("handleNotificationClick", () => {

@@ -41,6 +41,8 @@ export type RegisterNotificationDeviceRequest = {
   appVersion?: string;
   currentWalletAddress?: string;
   deviceId: string;
+  /** The kinds this build can parse; absent means the service's v1 set. */
+  kinds?: string[];
   linkedWalletAddresses?: string[];
   permissionState?: NotificationPermissionSnapshot;
   platform?: string;
@@ -119,6 +121,8 @@ export type NotificationAckResponse = {
 export type SyncNotificationInboxRequest = {
   registrationId?: string;
   deviceId: string;
+  /** The kinds this build can parse; absent means the service's v1 set. */
+  kinds?: string[];
   lastSyncCursor?: string;
   linkedWalletAddresses?: string[];
 };
@@ -126,6 +130,7 @@ export type SyncNotificationInboxRequest = {
 type BackendNotificationPayload = {
   actions?: NotificationAction[];
   body: string;
+  conversationId?: string;
   createdAt: string;
   expiresAt?: string;
   kind: NotificationKind;
@@ -251,6 +256,7 @@ const notificationActionSchema = z.object({
 const backendNotificationPayloadBaseSchema = z.object({
   actions: z.array(notificationActionSchema).optional(),
   body: z.string(),
+  conversationId: z.string().optional(),
   createdAt: z.string(),
   expiresAt: z.string().optional(),
   kind: notificationKindSchema,
@@ -288,7 +294,14 @@ const syncNotificationInboxResponseSchema = z.object({
     z.object({ notificationId: z.string(), revision: z.number().int().nonnegative() }),
   ),
   deletedIds: z.array(z.string()),
-  messages: z.array(backendInboxMessageSchema),
+  // One at a time: a kind this build cannot parse, or one malformed item, is
+  // skipped rather than failing the page and stalling every other kind.
+  messages: z.array(z.unknown()).transform((items) =>
+    items.flatMap((item) => {
+      const parsed = backendInboxMessageSchema.safeParse(item);
+      return parsed.success ? [parsed.data] : [];
+    }),
+  ),
   nextSyncCursor: z.string(),
 });
 

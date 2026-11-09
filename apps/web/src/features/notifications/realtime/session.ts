@@ -16,12 +16,14 @@ import {
   readNotificationConfig,
   updateNotificationConfig,
 } from "../storage/notification-db";
+import { declaredNotificationKinds } from "../logic/declared-kinds";
 import { connectNotificationRealtime } from "./connection";
 
 export async function startNotificationSession(options: {
   walletAddress: string;
   signal: AbortSignal;
   onInboxChanged: () => void;
+  onMessagingChanged: (conversationId: number) => void;
   onIdentityChanged: () => void;
 }): Promise<() => void> {
   await whenNotificationIdentitySettled();
@@ -46,8 +48,9 @@ export async function startNotificationSession(options: {
   const client = { identityEpoch, signal: options.signal };
   const deviceId = await getOrCreateNotificationDeviceId();
   if (!identity.registrationId || identity.userId !== token.userId) {
+    const kinds = declaredNotificationKinds(identity);
     const registered = await registerNotificationDevice(
-      { deviceId, currentWalletAddress: options.walletAddress },
+      { deviceId, currentWalletAddress: options.walletAddress, ...(kinds ? { kinds } : {}) },
       client,
     );
     if (registered.userId !== token.userId || options.signal.aborted) return () => {};
@@ -57,6 +60,7 @@ export async function startNotificationSession(options: {
         userId: registered.userId,
         generation: registered.generation,
         syncCursor: identity.syncCursor ?? registered.inboxSyncCursor,
+        registeredKinds: kinds,
       },
       identityEpoch,
     );
@@ -78,6 +82,7 @@ export async function startNotificationSession(options: {
     client,
     signal: options.signal,
     onInboxChanged: options.onInboxChanged,
+    onMessagingChanged: options.onMessagingChanged,
     onIdentityChanged: options.onIdentityChanged,
   });
   const channel =

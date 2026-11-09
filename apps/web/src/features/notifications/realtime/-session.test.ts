@@ -73,6 +73,7 @@ function options(controller = new AbortController()) {
     signal: controller.signal,
     onInboxChanged: vi.fn(),
     onIdentityChanged: vi.fn(),
+    onMessagingChanged: vi.fn(),
   };
 }
 
