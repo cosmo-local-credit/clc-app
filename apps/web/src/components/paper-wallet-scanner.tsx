@@ -1,14 +1,12 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { ChangeEvent, ReactNode } from "react";
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { RiCameraLine, RiCloseLine, RiUploadLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
-import { QrCameraError, startQrCamera } from "#/lib/qr-camera";
-import { decodeQrImageFile } from "#/lib/qr-decode";
+import { usePaperWalletScan } from "#/components/use-paper-wallet-scan";
 
 type ScanMode = "choose" | "camera" | "upload";
-type ScanError = { type: "camera-denied"; message: string } | { type: "other"; message: string };
 
 interface PaperWalletScannerProps {
   onKeyDecoded: (key: string) => void;
@@ -19,101 +17,27 @@ interface PaperWalletScannerProps {
 export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalletScannerProps) {
   const { t } = useLingui();
   const [mode, setMode] = useState<ScanMode>("choose");
-  const [error, setError] = useState<ScanError | null>(null);
-  const [cameraStarting, setCameraStarting] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Incremented on cancel/unmount. An in-flight upload decode captures the
-  // current epoch and bails out if it no longer matches.
-  const epochRef = useRef(0);
-
-  useEffect(() => {
-    return () => {
-      epochRef.current += 1;
-    };
-  }, []);
-
-  // Back to the choices once the camera has let go, so a payload the parent
-  // rejects leaves something to press rather than a dead preview.
-  const onCameraDecoded = useEffectEvent((text: string) => {
-    setMode("choose");
-    onKeyDecoded(text);
-  });
-
-  const onCameraError = useEffectEvent((err: unknown) => {
-    const kind = err instanceof QrCameraError ? err.kind : "failed";
-    setError(
-      kind === "denied"
-        ? { type: "camera-denied", message: t`Camera access denied.` }
-        : kind === "no-camera"
-          ? { type: "other", message: t`No camera found on this device.` }
-          : { type: "other", message: t`Failed to start camera.` },
-    );
-  });
-
-  // The camera runs exactly while camera mode is shown. Leaving the mode or
-  // unmounting aborts it, which releases the stream wherever it has got to.
-  useEffect(() => {
-    const video = videoRef.current;
-    if (mode !== "camera" || !video) return;
-
-    const controller = new AbortController();
-    setCameraStarting(true);
-    startQrCamera(video, {
-      facingMode: "environment",
-      onDecoded: onCameraDecoded,
-      signal: controller.signal,
-    })
-      .catch((err: unknown) => {
-        if (!controller.signal.aborted) onCameraError(err);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setCameraStarting(false);
-      });
-
-    return () => {
-      controller.abort();
-      setCameraStarting(false);
-    };
-  }, [mode]);
-
-  const handleCameraScan = useCallback(() => {
-    setError(null);
-    setMode("camera");
-  }, []);
-
-  const handleFileUpload = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      setError(null);
-      const epoch = ++epochRef.current;
-
-      try {
-        const decoded = await decodeQrImageFile(file);
-        if (epochRef.current !== epoch) return;
-        if (decoded === null) throw new Error("No QR code in image");
-        onKeyDecoded(decoded);
-      } catch {
-        if (epochRef.current !== epoch) return;
-        setError({
-          type: "other",
-          message: t`No QR code found. Try again with a clearer image.`,
-        });
-      } finally {
-        if (epochRef.current === epoch && fileInputRef.current) fileInputRef.current.value = "";
-      }
+  const scan = usePaperWalletScan({
+    cameraActive: mode === "camera",
+    // Back to the choices once the camera has let go, so a payload the parent
+    // rejects leaves something to press rather than a dead preview.
+    onCameraDecoded: (text) => {
+      setMode("choose");
+      onKeyDecoded(text);
     },
-    [onKeyDecoded, t],
-  );
+    onImageDecoded: onKeyDecoded,
+  });
+  const { videoRef, fileInputRef, cameraStarting, error, handleFileUpload } = scan;
 
-  const handleCancel = useCallback(() => {
-    epochRef.current += 1;
-    setError(null);
+  function handleCameraScan() {
+    scan.clearError();
+    setMode("camera");
+  }
+
+  function handleCancel() {
+    scan.cancel();
     setMode("choose");
-  }, []);
+  }
 
   return (
     <div className="space-y-3">
@@ -142,7 +66,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
             className="w-full"
             onClick={() => {
               setMode("upload");
-              setError(null);
+              scan.clearError();
             }}
           >
             <RiUploadLine className="me-2 size-4" />
@@ -182,7 +106,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
                   className="w-full"
                   onClick={() => {
                     setMode("upload");
-                    setError(null);
+                    scan.clearError();
                   }}
                 >
                   <RiUploadLine className="me-2 size-4" />

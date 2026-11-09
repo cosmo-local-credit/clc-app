@@ -1,6 +1,6 @@
 import type { AccountActivityItem } from "@clc/api/features/accounts/client";
 import { describe, expect, it } from "vite-plus/test";
-import { poolActivityFromAccount } from "./pool-activity";
+import { countSwapsSince, poolActivityFromAccount } from "./pool-activity";
 
 const pool = "0x1111111111111111111111111111111111111111";
 const owner = "0x2222222222222222222222222222222222222222";
@@ -83,5 +83,43 @@ describe("server-classified pool activity", () => {
 
   it("keeps issuance separate from deposits", () => {
     expect(poolActivityFromAccount({ ...direct, kind: "creation" }, pool).kind).toBe("mint");
+  });
+});
+
+describe("countSwapsSince", () => {
+  const since = new Date("2026-09-01T00:00:00Z");
+  const swapAt = (id: number, dateBlock: string): AccountActivityItem => ({
+    id,
+    kind: "swapped",
+    txHash: `0xswap${id}`,
+    dateBlock,
+    success: true,
+    sent: { ...leg, tokenSymbol: "B", tokenAddress: "token-b", amount: "9" },
+    received: { ...leg, amount: "10" },
+    poolAddresses: [pool],
+    initiatorAddress: owner,
+    counterpartyAddress: owner,
+    senderAddress: owner,
+    recipientAddress: recipient,
+  });
+  const entries = (items: AccountActivityItem[]) =>
+    items.map((item) => poolActivityFromAccount(item, pool));
+
+  it("counts swaps inside the window, not deposits", () => {
+    const rows = entries([
+      swapAt(4, "2026-09-10T00:00:00Z"),
+      { ...direct, id: 3, dateBlock: "2026-09-05T00:00:00Z" },
+      swapAt(2, "2026-09-02T00:00:00Z"),
+      swapAt(1, "2026-08-20T00:00:00Z"),
+    ]);
+
+    expect(countSwapsSince(rows, since, true)).toEqual({ count: 2, complete: true });
+  });
+
+  it("is incomplete while more history may still fall inside the window", () => {
+    const rows = entries([swapAt(1, "2026-09-10T00:00:00Z")]);
+
+    expect(countSwapsSince(rows, since, true)).toEqual({ count: 1, complete: false });
+    expect(countSwapsSince(rows, since, false)).toEqual({ count: 1, complete: true });
   });
 });

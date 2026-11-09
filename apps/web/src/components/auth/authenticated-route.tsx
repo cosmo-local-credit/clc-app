@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useLocation } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 import { RiBookOpenLine } from "react-icons/ri";
 
 import {
@@ -13,17 +13,44 @@ import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
+import { type AuthGateSlot, useAuthGateSlot } from "./auth-gate-slot";
 import { sanitizeInternalRedirect } from "./redirect";
 
 export function AuthenticatedRoute({ children }: { children: ReactNode }) {
   const auth = useAuthStatus();
+  const slot = useAuthGateSlot();
 
   if (auth.isLoading) return <AuthRouteFallback />;
   if (auth.isAuthenticated) return <>{children}</>;
   if (auth.state === "sessionCheckError") {
+    if (slot) {
+      return (
+        <Suspense fallback={<div className="min-h-full bg-background" />}>
+          {slot.sessionError({ onRetry: auth.retry, retrying: auth.retrying })}
+        </Suspense>
+      );
+    }
     return <SessionCheckError onRetry={auth.retry} retrying={auth.retrying} />;
   }
+  if (slot) {
+    return (
+      <Suspense fallback={<div className="min-h-full bg-background" />}>
+        <SlottedAuthRequired render={slot.required} />
+      </Suspense>
+    );
+  }
   return <AuthRequiredScreen />;
+}
+
+/** The destination to return to after sign-in: this URL, if it is an internal path. */
+function useReturnDestination() {
+  const location = useLocation();
+  return sanitizeInternalRedirect(`${location.pathname}${location.searchStr}${location.hash}`);
+}
+
+function SlottedAuthRequired({ render }: { render: AuthGateSlot["required"] }) {
+  const redirectTo = useReturnDestination();
+  return <>{render({ redirectTo })}</>;
 }
 
 function AuthRouteFallback() {
@@ -59,12 +86,9 @@ function SessionCheckError({ onRetry, retrying }: { onRetry: () => void; retryin
  */
 function AuthRequiredScreen() {
   const { t } = useLingui();
-  const location = useLocation();
   const introduction = useFirstVisitIntroduction();
   const replay = useIntroductionReplay();
-  const redirectTo = sanitizeInternalRedirect(
-    `${location.pathname}${location.searchStr}${location.hash}`,
-  );
+  const redirectTo = useReturnDestination();
 
   return (
     <OnboardingScreen

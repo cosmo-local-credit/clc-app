@@ -108,7 +108,8 @@ vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
   usePoolVoucherTokens: () => [],
 }));
 
-vi.mock("#/features/pools/hooks/use-update-pool-profile", () => ({
+vi.mock("#/features/pools/hooks/use-update-pool-profile", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useUpdatePoolProfile: () => ({ mutateAsync: mocks.updateProfile, isPending: false }),
 }));
 
@@ -163,7 +164,8 @@ vi.mock("#/features/pools/hooks/use-pool-fee-settings", () => ({
   poolFeeSettingsQueryKeys: { all: ["pool-fee-settings"] },
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
+vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   usePoolAdminRelay: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 

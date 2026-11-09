@@ -1,3 +1,4 @@
+import { MutationObserver, QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { reloadPage } from "./page-reload";
 import { isModuleLoadError, reloadOnceForStaleChunk } from "./stale-chunk-recovery";
@@ -105,6 +106,37 @@ describe("reloadOnceForStaleChunk", () => {
     nextPage();
     expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR))).toBe(false);
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("waits for a payment in flight before reloading", async () => {
+    // A relay that is still running would lose the navigation to its receipt
+    // (and the in-memory drafts) if the page went away under it.
+    const queryClient = new QueryClient();
+    let settle!: () => void;
+    const relay = new MutationObserver(queryClient, {
+      mutationKey: ["wallet", "send"],
+      mutationFn: () =>
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+    });
+    void relay.mutate();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(queryClient.isMutating()).toBe(1);
+
+    expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR), queryClient)).toBe(true);
+    // A second failing chunk joins the wait rather than reloading now.
+    expect(reloadOnceForStaleChunk(new Error(`${IMPORT_ERROR}?2`), queryClient)).toBe(true);
+    expect(reload).not.toHaveBeenCalled();
+
+    settle();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("reloads at once when nothing is in flight", () => {
+    expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR), new QueryClient())).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 
   it("joins a reload already under way instead of issuing another", () => {

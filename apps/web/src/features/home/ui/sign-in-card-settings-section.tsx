@@ -1,21 +1,10 @@
-import {
-  keyRotationsQueryOptions,
-  webAuthnCredentialsQueryOptions,
-} from "@clc/api/features/auth/queries";
-import { formatBackendApiError, BackendApiError } from "@clc/api/client/errors";
 import { useLingui } from "@lingui/react/macro";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 import { RiFingerprintLine, RiInboxUnarchiveLine, RiRefreshLine } from "react-icons/ri";
-import { toast } from "sonner";
-import { useConnection } from "wagmi";
 
 import { PasskeyRenameNotice } from "#/components/passkey-rename-notice";
 import { ActionRow } from "#/components/ui/action-row";
-import { getStoredKey, PRIVATE_KEY_CONNECTOR_ID } from "#/connectors/privateKey";
-import { useRelinkPasskeys } from "#/features/key-rotation/hooks/use-key-rotation";
-import { authClient } from "#/lib/api/auth";
+import { useSignInCardSettings } from "#/features/key-rotation/hooks/use-sign-in-card-settings";
 import { KEY_ROTATION_ENABLED } from "#/lib/key-rotation-config";
 
 /**
@@ -30,17 +19,8 @@ export function SignInCardSettingsSection({ address }: { address?: `0x${string}`
 
 function SignInCardRows({ address }: { address: `0x${string}` }) {
   const { t } = useLingui();
-  const { connector } = useConnection();
-  const rotations = useQuery({ ...keyRotationsQueryOptions(authClient, address) });
-  const credentials = useQuery({ ...webAuthnCredentialsQueryOptions(authClient, address) });
-  const relink = useRelinkPasskeys();
-  const [passkeyMoved, setPasskeyMoved] = useState(false);
-  const latest = rotations.data?.[0];
-  const moved = (credentials.data?.credentials ?? []).some(
-    (credential) => credential.state === "moved",
-  );
-  // Registering on the new wallet needs its root key: a card session.
-  const canRelink = connector?.id === PRIVATE_KEY_CONNECTOR_ID && moved;
+  const { latest, canRelink, relinking, passkeyMoved, finishPasskeyMove } =
+    useSignInCardSettings(address);
 
   return (
     <>
@@ -59,25 +39,9 @@ function SignInCardRows({ address }: { address: `0x${string}` }) {
       {canRelink ? (
         <ActionRow
           icon={<RiFingerprintLine className="size-4" aria-hidden="true" />}
-          busy={relink.isPending}
-          label={relink.isPending ? t`Moving passkey…` : t`Finish moving your passkey`}
-          onClick={() => {
-            const key = getStoredKey();
-            if (!key) return;
-            relink.mutate(
-              { key },
-              {
-                onSuccess: () => {
-                  setPasskeyMoved(true);
-                  toast.success(t`Passkey moved`);
-                },
-                onError: (error) =>
-                  toast.error(
-                    error instanceof BackendApiError ? formatBackendApiError(error) : error.message,
-                  ),
-              },
-            );
-          }}
+          busy={relinking}
+          label={relinking ? t`Moving passkey…` : t`Finish moving your passkey`}
+          onClick={finishPasskeyMove}
         />
       ) : null}
       {passkeyMoved ? <PasskeyRenameNotice /> : null}

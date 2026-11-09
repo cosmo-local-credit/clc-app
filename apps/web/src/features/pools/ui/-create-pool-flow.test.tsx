@@ -86,7 +86,8 @@ vi.mock("#/components/ui/location-picker", () => ({
   ),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-deployment", () => ({
+vi.mock("#/features/pools/hooks/use-pool-deployment", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useDeployPool: () => ({
     error: null,
     isPending: false,

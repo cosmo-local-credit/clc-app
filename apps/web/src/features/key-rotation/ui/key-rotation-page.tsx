@@ -11,6 +11,7 @@ import { getStoredKey, PRIVATE_KEY_CONNECTOR_ID } from "#/connectors/privateKey"
 import { authClient } from "#/lib/api/auth";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 
+import { useNewCardRelink } from "../hooks/use-key-rotation";
 import { type OldCardSigner, useRotationSession } from "../state/rotation-session";
 import { MoveStep } from "./move-step";
 import { NewCardStep } from "./new-card-step";
@@ -54,6 +55,8 @@ export function KeyRotationPage({ from }: { from?: `0x${string}` }) {
   const movedPasskeys = useRotationSession((state) => state.movedPasskeys);
   const setStep = useRotationSession((state) => state.setStep);
   const [passkeyMoved, setPasskeyMoved] = useState(false);
+  // Survives a remount on the Done step, which local state does not.
+  const relinked = useNewCardRelink()?.status === "success";
   const connectorId = connector?.id;
 
   // Begins for the signed-in card, unless this replacement is already under
@@ -119,7 +122,7 @@ export function KeyRotationPage({ from }: { from?: `0x${string}` }) {
       />
     );
   } else {
-    body = <DoneStep onDone={finish} passkeyMoved={passkeyMoved} />;
+    body = <DoneStep onDone={finish} passkeyMoved={passkeyMoved || relinked} />;
   }
 
   return (

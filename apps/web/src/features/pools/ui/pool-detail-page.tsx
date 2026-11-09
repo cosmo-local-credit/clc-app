@@ -1,10 +1,8 @@
 import type { PoolVoucher } from "@clc/api/features/pools/client";
-import { invalidatePoolOfferings } from "@clc/api/features/offerings/cache";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
   RiAddLine,
   RiArrowLeftRightLine,
@@ -25,6 +23,7 @@ import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-in
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
+import { useRefreshPoolOfferingsOnMembership } from "#/features/pools/hooks/use-pool-offerings-refresh";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
@@ -83,7 +82,6 @@ export function PoolDetailPage({
   wantId?: string;
 }) {
   const { t } = useLingui();
-  const queryClient = useQueryClient();
   const auth = useAuthStatus();
   const poolQuery = useUserPoolByAddress(
     poolAddress,
@@ -111,19 +109,11 @@ export function PoolDetailPage({
   });
   const poolVouchers = poolVouchersQuery.vouchers;
   const vouchers = poolVouchers.filter((voucher) => voucher.active);
-  // Core can index membership after the write-triggered refresh. Reuse this
-  // completed list to refresh Offers when its voucher addresses change.
-  const voucherMembership =
-    pool && !poolVouchersQuery.isPending && !poolVouchersQuery.isError
-      ? vouchers
-          .map((voucher) => voucher.tokenAddress.toLowerCase())
-          .sort()
-          .join(",")
-      : undefined;
-  useEffect(() => {
-    if (voucherMembership === undefined) return;
-    void invalidatePoolOfferings(queryClient, poolAddress);
-  }, [poolAddress, queryClient, voucherMembership]);
+  useRefreshPoolOfferingsOnMembership(
+    poolAddress,
+    !!pool && !poolVouchersQuery.isPending && !poolVouchersQuery.isError,
+    vouchers,
+  );
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const canEditDetails =
     auth.isAuthenticated && !!pool && (isAdminRole(auth.session?.role) || isPoolOwner);

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
@@ -113,5 +113,112 @@ describe("useOtxTracking", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.outcome).toEqual({ kind: "pending" });
+  });
+
+  it("keeps polling a tracking id that has not appeared yet, however long it takes", async () => {
+    // A backed-up queue can take minutes to write the row. Showing that as a
+    // failure invites a second payment; a job that really ended without a row
+    // is answered with 410, which is terminal on arrival.
+    const queryFn = vi
+      .fn()
+      .mockRejectedValue(new RelayerError("not_found", "tracking id not found", 404));
+
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { result } = renderHook(
+        () => useOtxTracking("tracking-slow-queue", { pollMs: 1_000, queryFn }),
+        { wrapper: createWrapper() },
+      );
+      await waitFor(() => expect(queryFn).toHaveBeenCalled());
+
+      // Well past the two minutes the client once gave up after.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(150_000);
+      });
+      const calls = queryFn.mock.calls.length;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5_000);
+      });
+
+      expect(queryFn.mock.calls.length).toBeGreaterThan(calls);
+      expect(result.current.outcome).toEqual({ kind: "pending" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("resolves once a slow worker writes the row", async () => {
+    const queryFn = vi
+      .fn()
+      .mockRejectedValueOnce(new RelayerError("not_found", "tracking id not found", 404))
+      .mockResolvedValue({
+        otx: [
+          {
+            id: 1,
+            trackingId: "tracking-slow",
+            otxType: "RELAY_DELEGATE_EXEC",
+            txHash: "0xdeadbeef",
+            nonce: 0,
+            replaced: false,
+            createdAt: "2026-06-18T00:00:00Z",
+            status: "SUCCESS",
+          },
+        ],
+      });
+
+    const { result } = renderHook(() => useOtxTracking("tracking-slow", { pollMs: 10, queryFn }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.outcome.kind).toBe("success"));
+  });
+
+  it("keeps waiting on a pending transaction once its row exists", async () => {
+    // A row that is on-chain and unconfirmed is waited on for as long as the
+    // chain takes.
+    const queryFn = vi.fn().mockResolvedValue({
+      otx: [
+        {
+          id: 1,
+          trackingId: "tracking-pending",
+          otxType: "RELAY_DELEGATE_EXEC",
+          txHash: "0xdeadbeef",
+          nonce: 0,
+          replaced: false,
+          createdAt: "2026-06-18T00:00:00Z",
+          status: "IN_NETWORK",
+        },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => useOtxTracking("tracking-pending", { pollMs: 10, queryFn }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(queryFn).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(result.current.outcome).toEqual({ kind: "pending" });
+  });
+
+  it("reports the backend's own reason when it knows the job failed", async () => {
+    // clc-core answers 410 with the discarded job's error, which is not a 404
+    // and so is terminal on arrival.
+    const queryFn = vi
+      .fn()
+      .mockRejectedValue(
+        new RelayerError("server_error", "delegate: authorization contract 0xaaa != 0xbbb", 410),
+      );
+
+    const { result } = renderHook(() => useOtxTracking("tracking-410", { pollMs: 10, queryFn }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() =>
+      expect(result.current.outcome).toEqual({
+        kind: "error",
+        error: "delegate: authorization contract 0xaaa != 0xbbb",
+      }),
+    );
   });
 });

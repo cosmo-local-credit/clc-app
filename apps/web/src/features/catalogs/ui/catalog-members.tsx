@@ -1,19 +1,12 @@
-import {
-  catalogMemberMutationOptions,
-  catalogMembersQueryOptions,
-} from "@clc/api/features/catalogs/queries";
 import type { CatalogKind } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiAddLine } from "react-icons/ri";
-import { toast } from "sonner";
 import { CatalogPicture } from "#/components/catalogs/catalog-row";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { catalogsClient } from "#/lib/api/catalogs";
+import { useCatalogMembers } from "../hooks/use-catalog-members";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
 import { CatalogMemberPicker } from "./catalog-member-picker";
 
@@ -27,12 +20,8 @@ export function CatalogMembers({
   canEdit: boolean;
 }) {
   const { t } = useLingui();
-  const auth = useAuthStatus();
   const [adding, setAdding] = useState(false);
-  const query = useInfiniteQuery(catalogMembersQueryOptions(catalogsClient, catalogId, kind));
-  const remove = useMutation(
-    catalogMemberMutationOptions(catalogsClient, useQueryClient(), auth.session?.address ?? ""),
-  );
+  const { query, items, empty, remove, removeItem } = useCatalogMembers(catalogId, kind);
   return (
     <section className="space-y-3" aria-labelledby={`catalog-${kind}-title`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -62,67 +51,54 @@ export function CatalogMembers({
           </Button>
         </div>
       ) : null}
-      {query.isSuccess && !query.data.pages.some((page) => page.items.length) ? (
+      {empty ? (
         <p className="text-sm text-muted-foreground">
           {kind === "pool" ? <Trans>No pools yet.</Trans> : <Trans>No vouchers yet.</Trans>}
         </p>
       ) : null}
-      {query.data?.pages
-        .flatMap((page) => page.items)
-        .map((item) => {
-          const contents = (
-            <>
-              <CatalogPicture url={item.imageUrl} />
-              <span dir="auto" className="min-w-0 break-words font-medium">
-                {item.name}
-              </span>
-            </>
-          );
-          return (
-            <div key={item.id} className="flex items-center gap-2 border border-border bg-card p-3">
-              {kind === "pool" ? (
-                <Link
-                  to="/pools/$poolAddress"
-                  params={{ poolAddress: item.address }}
-                  className="flex min-w-0 flex-1 items-center gap-3"
-                >
-                  {contents}
-                </Link>
-              ) : (
-                <Link
-                  to="/vouchers/$voucherAddress"
-                  params={{ voucherAddress: item.address }}
-                  className="flex min-w-0 flex-1 items-center gap-3"
-                >
-                  {contents}
-                </Link>
-              )}
-              {canEdit ? (
-                <Button
-                  variant="outline"
-                  tap
-                  aria-label={t`Remove ${item.name}`}
-                  disabled={remove.isPending}
-                  pending={remove.isPending && remove.variables?.resourceId === item.id}
-                  onClick={async () => {
-                    try {
-                      await remove.mutateAsync({
-                        catalogId,
-                        kind,
-                        resourceId: item.id,
-                        added: false,
-                      });
-                    } catch {
-                      toast.error(t`Couldn't update the catalog. Try again.`);
-                    }
-                  }}
-                >
-                  <Trans>Remove</Trans>
-                </Button>
-              ) : null}
-            </div>
-          );
-        })}
+      {items.map((item) => {
+        const contents = (
+          <>
+            <CatalogPicture url={item.imageUrl} />
+            <span dir="auto" className="min-w-0 break-words font-medium">
+              {item.name}
+            </span>
+          </>
+        );
+        return (
+          <div key={item.id} className="flex items-center gap-2 border border-border bg-card p-3">
+            {kind === "pool" ? (
+              <Link
+                to="/pools/$poolAddress"
+                params={{ poolAddress: item.address }}
+                className="flex min-w-0 flex-1 items-center gap-3"
+              >
+                {contents}
+              </Link>
+            ) : (
+              <Link
+                to="/vouchers/$voucherAddress"
+                params={{ voucherAddress: item.address }}
+                className="flex min-w-0 flex-1 items-center gap-3"
+              >
+                {contents}
+              </Link>
+            )}
+            {canEdit ? (
+              <Button
+                variant="outline"
+                tap
+                aria-label={t`Remove ${item.name}`}
+                disabled={remove.isPending}
+                pending={remove.isPending && remove.variables?.resourceId === item.id}
+                onClick={() => void removeItem(item.id)}
+              >
+                <Trans>Remove</Trans>
+              </Button>
+            ) : null}
+          </div>
+        );
+      })}
       {query.hasNextPage ? (
         <Button
           variant="outline"

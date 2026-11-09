@@ -218,6 +218,8 @@ vi.mock("#/features/wallet/hooks/use-send-share", () => ({
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
   useQueryClient: () => mocks.queryClient,
+  // No provider here, so no mutation cache: nothing is ever in flight.
+  useIsMutating: () => 0,
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
@@ -418,7 +420,8 @@ vi.mock("#/components/ui/location-picker", () => ({
   ),
 }));
 
-vi.mock("#/features/wallet/hooks/use-offering-mutations", () => ({
+vi.mock("#/features/wallet/hooks/use-offering-mutations", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useCreateVoucherOffering: () => ({ mutateAsync: mocks.createOffering, isPending: false }),
   useUpdateVoucherOffering: () => ({ mutateAsync: mocks.updateOffering, isPending: false }),
   useDeleteVoucherOffering: () => ({ mutateAsync: mocks.deleteOffering, isPending: false }),

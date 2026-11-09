@@ -1,3 +1,4 @@
+import { useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "#/components/ui/button";
 import { isModuleLoadError, reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
@@ -9,15 +10,17 @@ import { isModuleLoadError, reloadOnceForStaleChunk } from "#/lib/stale-chunk-re
 // intentionally plain English for that reason.
 export function RouteError({ error }: { error: unknown }) {
   const [reloading, setReloading] = useState(false);
+  // From the router, not a provider: this renders outside the app's providers.
+  const queryClient = useRouter().options.context?.queryClient;
 
   useEffect(() => {
     if (isModuleLoadError(error)) {
       // Stale chunk after a deploy: reload once onto the fresh build. If this
       // chunk already reloaded once (persistent failure), fall through to the
       // manual error UI below instead of looping.
-      setReloading(reloadOnceForStaleChunk(error));
+      setReloading(reloadOnceForStaleChunk(error, queryClient));
     }
-  }, [error]);
+  }, [error, queryClient]);
 
   if (reloading) {
     // A full reload onto the current deploy is imminent; show nothing jarring.

@@ -62,6 +62,16 @@ export type PoolAdminSubmission = {
 export type PoolAdminAsset = { address: string; ownerAddress?: string | null };
 
 /**
+ * One key for every batch relayed for a pool, whichever form sent it: a view
+ * that mounts while one is still waiting for the chain (the phone/desktop swap)
+ * holds its own submit rather than relaying a second batch beside it.
+ */
+export const poolAdminRelayMutationKey = (poolAddress?: string) =>
+  poolAddress
+    ? (["pools", "admin-relay", poolAddress] as const)
+    : (["pools", "admin-relay"] as const);
+
+/**
  * `asset` names the pool being written, which is what lets the same call list go
  * to a Safe owner's proposal flow instead of a direct relay. Without it the
  * hook relays as the connected account, as before.
@@ -75,6 +85,7 @@ export function usePoolAdminRelay(asset?: PoolAdminAsset) {
   const reportError = useReportWriteError();
 
   const mutation = useMutation({
+    mutationKey: poolAdminRelayMutationKey(asset?.address),
     mutationFn: async (input: CaliburCall[] | PoolAdminSubmission) => {
       const submission: PoolAdminSubmission = Array.isArray(input) ? { calls: input } : input;
       if (submission.trackingId) {

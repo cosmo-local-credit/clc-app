@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { decodeFunctionData } from "viem";
@@ -78,7 +79,8 @@ const mocks = vi.hoisted(() => ({
   toastSuccess: vi.fn(),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
+vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   usePoolAdminRelay: () => ({ mutateAsync: mocks.relay, isPending: false }),
 }));
 
@@ -194,7 +196,7 @@ function relayedCalls(): CaliburCall[] {
 }
 
 function renderSheet(node: ReactNode) {
-  return render(<>{node}</>);
+  return render(<QueryClientProvider client={new QueryClient()}>{node}</QueryClientProvider>);
 }
 
 /** Search results stay hidden until the field has a real term. */

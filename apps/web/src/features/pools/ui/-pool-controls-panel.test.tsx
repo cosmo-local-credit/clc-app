@@ -11,7 +11,9 @@ vi.mock("#/features/pools/hooks/use-pool-ownership-transfer", () => ({
     isPending: mocks.ownershipPending,
   }),
 }));
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render as rtlRender, screen, waitFor, within } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { decodeFunctionData } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -65,7 +67,8 @@ vi.mock("#/features/ownership/hooks/use-asset-owner-info", () => ({
   }),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
+vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   usePoolAdminRelay: () => ({ mutateAsync: mocks.relay, isPending: false }),
 }));
 
@@ -178,6 +181,16 @@ beforeEach(() => {
 afterEach(() => {
   vi.clearAllMocks();
 });
+
+/** The owner forms read writes in flight from the query client. */
+function render(ui: ReactElement) {
+  const client = new QueryClient();
+  return rtlRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
+  });
+}
 
 describe("PoolControlsPanel withdrawing liquidity", () => {
   it("sends the named amount to the owner and leaves reserved fees behind", async () => {

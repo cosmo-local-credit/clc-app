@@ -146,6 +146,8 @@ type MarketMapProps = {
   cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
+  /** The pointer is over a pin, or has left every pin. Absent on the phone map. */
+  onHoverLocation?: (id: string | null) => void;
   /** A tap on the map that lands on nothing. */
   onDeselect?: () => void;
   /** The viewer started dragging the map. */
@@ -578,6 +580,7 @@ export function MarketMap({
   cameraScope,
   userLocation,
   onSelectLocation,
+  onHoverLocation,
   onDeselect,
   onUserPan,
   bottomInset = 0,
@@ -625,6 +628,9 @@ export function MarketMap({
   bottomInsetRef.current = bottomInset;
   const onSelectRef = useRef(onSelectLocation);
   onSelectRef.current = onSelectLocation;
+  const onHoverRef = useRef(onHoverLocation);
+  onHoverRef.current = onHoverLocation;
+  const hoverIdRef = useRef<string | null>(null);
   const onDeselectRef = useRef(onDeselect);
   onDeselectRef.current = onDeselect;
   const onUserPanRef = useRef(onUserPan);
@@ -717,6 +723,21 @@ export function MarketMap({
     mapRef.current = map;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
     let removeLabelEdgeListeners: (() => void) | undefined;
+
+    function handleMouseMove(event: MapMouseEvent) {
+      const hover = onHoverRef.current;
+      if (!hover) return;
+      const [feature] = map.queryRenderedFeatures(event.point, {
+        layers: INTERACTIVE_LAYER_IDS,
+      });
+      const id =
+        feature && typeof feature.properties?.id === "string" && feature.properties.id
+          ? feature.properties.id
+          : null;
+      if (id === hoverIdRef.current) return;
+      hoverIdRef.current = id;
+      hover(id);
+    }
 
     function handleMapClick(event: MapMouseEvent) {
       userHasInteractedRef.current = true;
@@ -836,6 +857,7 @@ export function MarketMap({
     map.on("load", handleLoad);
     map.on("style.load", handleStyleLoad);
     map.on("error", handleError);
+    map.on("mousemove", handleMouseMove);
     map.on("click", handleMapClick);
     map.on("dragstart", handleDragStart);
     map.on("zoomstart", handleUserInteraction);
@@ -859,6 +881,7 @@ export function MarketMap({
       map.off("load", handleLoad);
       map.off("style.load", handleStyleLoad);
       map.off("error", handleError);
+      map.off("mousemove", handleMouseMove);
       map.off("click", handleMapClick);
       map.off("dragstart", handleDragStart);
       map.off("zoomstart", handleUserInteraction);

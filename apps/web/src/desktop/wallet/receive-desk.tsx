@@ -1,0 +1,173 @@
+import { Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "@tanstack/react-router";
+import { useState, type ReactNode } from "react";
+import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
+import { TbNfc } from "react-icons/tb";
+import { toast } from "sonner";
+import { useConnection } from "wagmi";
+
+import { Badge } from "#/components/ui/badge";
+import { Button } from "#/components/ui/button";
+import { AddressQRCode } from "#/components/wallet";
+import { useDeskTrailLabel } from "#/desktop/trail";
+import { DeskKV } from "#/desktop/ui/kv";
+import { ReceivePosterDialog } from "#/desktop/wallet/receive-poster-dialog";
+import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
+import { FullValue } from "#/desktop/ui/full-value";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
+import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
+import { useWebNfcSupported } from "#/lib/nfc/ndef-adapter";
+
+/**
+ * Receive is a focused page: the QR and the address to give out, and the
+ * network warning. It does not mount the Wallet behind a dimmed pane, and it
+ * does not repeat the activity list that the Activity tab is for.
+ *
+ * Share opens the payment poster, the same picture the phone draws, so a
+ * printed counter code and a chat both carry the QR rather than bare text.
+ */
+export function ReceiveDesk() {
+  const chainName = CHAIN_INFO.name;
+  const { t } = useLingui();
+  const { address } = useConnection();
+  const nfcSupported = useWebNfcSupported();
+  const identity = useReverseRecipientResolution(address ?? null);
+  const username = identity.data?.alias ?? null;
+  useDeskTrailLabel(username);
+  const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
+  const [posterOpen, setPosterOpen] = useState(false);
+
+  const copy = (value: string, copyingUsername = false) => {
+    if (!navigator.clipboard) {
+      toast.error(copyingUsername ? t`Couldn't copy username` : t`Couldn't copy address`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(copyingUsername ? t`Username copied` : t`Address copied`))
+      .catch(() =>
+        toast.error(copyingUsername ? t`Couldn't copy username` : t`Couldn't copy address`),
+      );
+  };
+
+  return (
+    <DeskCanvas className="max-w-[1000px]">
+      <div className="flex min-w-0 items-center gap-3">
+        <DeskTitle>
+          <Trans>Receive</Trans>
+        </DeskTitle>
+        <Badge variant="outline" size="sm">
+          {chainName}
+        </Badge>
+      </div>
+
+      <div className="grid min-w-0 items-start gap-6 @3xl:grid-cols-[auto_minmax(0,1fr)]">
+        {address && receiveQrValue ? (
+          <div className="w-fit border border-border bg-card">
+            <AddressQRCode value={receiveQrValue} size={240} />
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            <Trans>No wallet address available.</Trans>
+          </p>
+        )}
+        <div className="grid min-w-0 gap-4">
+          {address ? (
+            <DeskKV
+              rows={[
+                username
+                  ? [
+                      <Trans key="label">Username</Trans>,
+                      <CopyValue
+                        key="value"
+                        label={t`Copy wallet username`}
+                        onCopy={() => copy(username, true)}
+                      >
+                        <span dir="auto" className="[overflow-wrap:anywhere]">
+                          {username}
+                        </span>
+                      </CopyValue>,
+                    ]
+                  : null,
+                [
+                  <Trans key="label">{chainName} address</Trans>,
+                  <FullValue
+                    key="value"
+                    value={address}
+                    initiallyFull
+                    copyLabel={t`Copy wallet address`}
+                    copiedMessage={t`Address copied`}
+                    failedMessage={t`Couldn't copy address`}
+                  />,
+                ],
+              ]}
+            />
+          ) : null}
+          <p className="border border-border border-s-[3px] border-s-warning bg-card px-4 py-3.5 text-sm">
+            <Trans>
+              Only send assets on the <strong>{chainName} network</strong> to this address. Other
+              networks may be lost.
+            </Trans>
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!address}
+              onClick={() => address && copy(address)}
+            >
+              <RiFileCopyLine aria-hidden="true" />
+              <Trans>Copy</Trans>
+            </Button>
+            <Button type="button" disabled={!address} onClick={() => setPosterOpen(true)}>
+              <RiShareLine aria-hidden="true" />
+              <Trans>Share</Trans>
+            </Button>
+          </div>
+          {nfcSupported && address ? (
+            <Button asChild variant="outline">
+              <Link to="/wallet/collect">
+                <TbNfc aria-hidden="true" />
+                <Trans>Collect by card</Trans>
+              </Link>
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      {/* Mounted only once asked for: drawing the poster reads the profile
+          photo, which Receive itself has no need of. */}
+      {posterOpen && address && receiveQrValue ? (
+        <ReceivePosterDialog
+          open
+          onClose={() => setPosterOpen(false)}
+          address={address}
+          qrValue={receiveQrValue}
+          name={null}
+          username={username}
+        />
+      ) : null}
+    </DeskCanvas>
+  );
+}
+
+function CopyValue({
+  label,
+  onCopy,
+  children,
+}: {
+  label: string;
+  onCopy: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      className="flex w-full min-w-0 items-center justify-between gap-2 text-start"
+      onClick={onCopy}
+    >
+      {children}
+      <RiFileCopyLine className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+    </button>
+  );
+}

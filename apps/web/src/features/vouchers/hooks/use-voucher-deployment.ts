@@ -12,9 +12,16 @@ import { tokenTagsQueryKey } from "#/hooks/use-deployment";
 
 const voucherDeployClient = createVoucherDeployClient(clcHttp);
 
+/**
+ * Names every voucher publish, so a view that mounts while one is still in
+ * flight (the phone/desktop swap) can see it and hold its own Publish.
+ */
+export const deployVoucherMutationKey = ["vouchers", "deploy"] as const;
+
 export function useDeployVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: deployVoucherMutationKey,
     onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (payload: VoucherDeployPayload) => voucherDeployClient.deployVoucher(payload),
     // The symbol and name just claimed are now occupied for the next form.

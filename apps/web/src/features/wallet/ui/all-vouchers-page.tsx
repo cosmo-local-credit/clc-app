@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { RiAddLine, RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
@@ -103,8 +103,17 @@ function CreateVoucherButton({ enabled = true }: { enabled?: boolean }) {
   );
 }
 
-export function AllVouchersPage() {
+export function AllVouchersPage({
+  voucher,
+}: {
+  /**
+   * A voucher the desktop list had open in its panel (`?voucher=…&panel=open`).
+   * The phone has no such panel, so it opens that voucher's page instead.
+   */
+  voucher?: `0x${string}`;
+} = {}) {
   const { t } = useLingui();
+  const navigate = useNavigate();
   const { address } = useConnection();
   // The voucher list is this screen's whole purpose, so it keeps a live poll.
   const balancesQuery = useAccountTokensInfinite(address, { poll: true });
@@ -132,6 +141,17 @@ export function AllVouchersPage() {
   useEffect(() => {
     resetVoucherCreateHistory();
   }, []);
+
+  useEffect(() => {
+    if (!voucher) return;
+    void navigate({
+      to: "/vouchers/$voucherAddress",
+      params: { voucherAddress: voucher },
+      search: { from: "vouchers" },
+      replace: true,
+    });
+  }, [navigate, voucher]);
+  if (voucher) return null;
 
   return (
     <div className="bg-background pb-bottom-nav flex min-h-[100svh] flex-col px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">

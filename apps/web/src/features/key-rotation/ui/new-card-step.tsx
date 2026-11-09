@@ -3,7 +3,8 @@ import { useState } from "react";
 import { FiLock } from "react-icons/fi";
 import { RiEdit2Line } from "react-icons/ri";
 
-import { usePaperWalletProtection } from "#/components/paper-wallet/paper-wallet-protection";
+import { usePaperWalletProtection } from "#/features/onboarding/hooks/use-paper-wallet-protection";
+import { PaperWalletProtectionControls } from "#/components/paper-wallet/paper-wallet-protection";
 import { usePaperWalletSetup } from "#/components/paper-wallet/paper-wallet-setup";
 import { AgreementField } from "#/components/ui/agreement-field";
 import { Button } from "#/components/ui/button";
@@ -48,7 +49,7 @@ export function NewCardStep({
         </Trans>
       </RotationNotice>
 
-      {protection.controls}
+      <PaperWalletProtectionControls protection={protection} />
 
       {protection.needsPassword ? (
         <Button

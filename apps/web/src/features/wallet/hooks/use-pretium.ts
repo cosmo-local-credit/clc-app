@@ -73,9 +73,13 @@ export function useCreatePretiumLink() {
   });
 }
 
+/** Every MPESA prompt Add stables sends, for a view mounted while one is still out. */
+export const PRETIUM_ONRAMP_MUTATION_KEY = ["pretium", "onramp"] as const;
+
 export function useTriggerPretiumOnramp() {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: PRETIUM_ONRAMP_MUTATION_KEY,
     mutationFn: (input: TriggerPretiumOnrampInput) => pretiumClient.triggerPretiumOnramp(input),
     onSuccess: (_result, input) => {
       void queryClient.invalidateQueries({

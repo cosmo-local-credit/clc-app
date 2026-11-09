@@ -1,7 +1,6 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { RiFileCopyLine } from "react-icons/ri";
-import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -14,7 +13,7 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { AddressQRCode, HighlightAddress } from "#/components/wallet";
-import { CHAIN_ID } from "#/lib/chain";
+import { usePoolReceive } from "#/features/pools/hooks/use-pool-receive";
 
 /** A shareable, chain-specific recipient address for direct pool deposits. */
 export function PoolReceiveSheet({
@@ -27,20 +26,7 @@ export function PoolReceiveSheet({
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const poolName = pool.name?.trim() || null;
-  const receiveName = poolName ?? pool.address;
-  const qrValue = `ethereum:${pool.address}@${CHAIN_ID}`;
-
-  const copy = () => {
-    if (!navigator.clipboard) {
-      toast.error(poolName ? t`Couldn't copy pool name` : t`Couldn't copy address`);
-      return;
-    }
-    void navigator.clipboard
-      .writeText(receiveName)
-      .then(() => toast.success(poolName ? t`Pool name copied` : t`Address copied`))
-      .catch(() => toast.error(poolName ? t`Couldn't copy pool name` : t`Couldn't copy address`));
-  };
+  const { poolName, qrValue, copy } = usePoolReceive(pool);
 
   return (
     <SheetRoot

@@ -8,11 +8,18 @@ import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { wantKeys } from "@clc/api/features/wants/queries";
 import { authClient } from "#/lib/api/auth";
 
+/**
+ * Every write of the account's own profile, the username's included: a view
+ * that mounts while one is still in flight (the phone/desktop swap) can see it.
+ */
+export const updateProfileMutationKey = ["auth", "profile", "update"] as const;
+
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   const { address } = useConnection();
 
   return useMutation({
+    mutationKey: updateProfileMutationKey,
     mutationFn: (payload: ProfilePayload) => authClient.submitProfile(payload),
     onSuccess: (saved) => {
       // Merged into whatever is cached rather than written over it: the update

@@ -106,3 +106,23 @@ export function poolActivityFromAccount(
     leg: movement,
   };
 }
+
+/**
+ * How many swaps the loaded history holds since `since`, and whether that
+ * history reaches back far enough to be the whole count. The feed is newest
+ * first, so it is complete once its oldest row predates `since` or nothing is
+ * left to load.
+ */
+export function countSwapsSince(
+  entries: readonly PoolActivityEntry[],
+  since: Date,
+  hasMore: boolean,
+): { count: number; complete: boolean } {
+  const cutoff = since.getTime();
+  const count = entries.filter(
+    (entry) => entry.kind === "swap" && new Date(entry.dateBlock).getTime() >= cutoff,
+  ).length;
+  const oldest = entries.at(-1);
+  const reachesBack = oldest !== undefined && new Date(oldest.dateBlock).getTime() < cutoff;
+  return { count, complete: !hasMore || reachesBack };
+}

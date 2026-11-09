@@ -44,6 +44,8 @@ import {
   BRAND_THEME_COLOR,
 } from "#/lib/brand";
 import { AppI18nProvider } from "#/providers/i18n";
+import { DesktopBoundary } from "#/desktop/shell/boundary";
+import { layoutBootstrapScript, useLayout } from "#/desktop/layout";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
@@ -52,6 +54,7 @@ import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
 import { useInstallPromptListener } from "#/features/install/install-store";
 import { installBootstrapScript } from "#/features/install/install-bootstrap";
 import { IntroductionProvider } from "#/components/introduction/introduction-provider";
+import { type AuthGateSlot, AuthGateSlotProvider } from "#/components/auth/auth-gate-slot";
 import appCss from "../styles.css?url";
 
 const AppDevtools = import.meta.env.DEV
@@ -61,6 +64,42 @@ const AppDevtools = import.meta.env.DEV
       })),
     )
   : null;
+
+const SafePendingDesk = lazy(() =>
+  import("#/desktop/safe/safe-pending-desk").then((module) => ({
+    default: module.SafePendingDesk,
+  })),
+);
+
+const DeskAuthRequired = lazy(() =>
+  import("#/desktop/auth/auth-gate-desk").then((module) => ({ default: module.DeskAuthRequired })),
+);
+const DeskSessionCheckError = lazy(() =>
+  import("#/desktop/auth/auth-gate-desk").then((module) => ({
+    default: module.DeskSessionCheckError,
+  })),
+);
+
+const DeskGuideDialog = lazy(() =>
+  import("#/desktop/onboarding/guide-dialog").then((module) => ({
+    default: module.DeskGuideDialog,
+  })),
+);
+
+/** "How to use CLC" on desktop: the guide in a dialog over the current page. */
+function desktopGuide({ onDone }: { onDone: () => void }) {
+  return (
+    <Suspense fallback={null}>
+      <DeskGuideDialog onDone={onDone} />
+    </Suspense>
+  );
+}
+
+/** What a guest on a protected route sees on desktop, in place of the phone's gate. */
+const DESKTOP_AUTH_GATE: AuthGateSlot = {
+  required: (props) => <DeskAuthRequired {...props} />,
+  sessionError: (props) => <DeskSessionCheckError {...props} />,
+};
 
 const EncryptedPaperWalletImportForm = lazy(() =>
   import("#/components/encrypted-paper-wallet-import-form").then((module) => ({
@@ -132,6 +171,7 @@ function AppInner() {
   const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
     useScanUrlImport({ address, isSwitching: switching });
   const [switchError, setSwitchError] = useState<string | null>(null);
+  const layout = useLayout();
 
   const pendingAddress = useMemo(
     () => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
@@ -255,11 +295,28 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
-      <SafePendingSheet />
-      <IntroductionProvider suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}>
-        <RootDiscoveryLocation>
-          <Outlet />
-        </RootDiscoveryLocation>
+      {/* A closed dialog until opened, so its chunk loads behind nothing: the
+          LayoutSwitch fallback is a page skeleton, which here would sit above
+          the whole shell. */}
+      {layout === "desktop" ? (
+        <Suspense fallback={null}>
+          <SafePendingDesk />
+        </Suspense>
+      ) : (
+        <SafePendingSheet />
+      )}
+      <IntroductionProvider
+        desktop={layout === "desktop"}
+        desktopGuide={desktopGuide}
+        suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}
+      >
+        <AuthGateSlotProvider value={layout === "desktop" ? DESKTOP_AUTH_GATE : null}>
+          <RootDiscoveryLocation>
+            <DesktopBoundary>
+              <Outlet />
+            </DesktopBoundary>
+          </RootDiscoveryLocation>
+        </AuthGateSlotProvider>
       </IntroductionProvider>
       {pendingEncryptedKey ? (
         <DialogRoot
@@ -331,6 +388,7 @@ function AppInner() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { queryClient } = Route.useRouteContext();
   // Recover from stale code-split chunks after a deploy. React.lazy imports
   // don't get TanStack Router's built-in reload-on-module-missing (that lives in
   // lazyRouteComponent), so without this a failed chunk fetch leaves the tab
@@ -341,13 +399,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     const onPreloadError = (event: WindowEventMap["vite:preloadError"]) => {
       // Only swallow the error if we actually reload — otherwise let it throw so
       // the root errorComponent surfaces a persistent failure instead of a hang.
-      if (reloadOnceForStaleChunk(event.payload)) {
+      // The reload waits for any relay in flight: a layout switch that needs
+      // the other view's chunk can land mid-payment.
+      if (reloadOnceForStaleChunk(event.payload, queryClient)) {
         event.preventDefault();
       }
     };
     window.addEventListener("vite:preloadError", onPreloadError);
     return () => window.removeEventListener("vite:preloadError", onPreloadError);
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -408,6 +468,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: installBootstrapScript }} />
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: layoutBootstrapScript }} />
       </head>
       <body>
         {children}

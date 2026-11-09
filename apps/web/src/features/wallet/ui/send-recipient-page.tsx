@@ -17,23 +17,39 @@ import {
   useUpsertAddressBookRecipient,
 } from "#/features/wallet/hooks/use-address-book";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useKeepSendDraft, useSendDraft } from "#/features/wallet/hooks/use-send-draft";
 import { recentSendRecipients } from "#/features/wallet/logic/recent-send-recipients";
 import { AddressBookSheet } from "./address-book-sheet";
 import { RecentRecipientRow } from "./recent-recipient-row";
 import { RecipientAddressCard } from "./recipient-address-card";
 
-export function SendRecipientPage({ token, amount }: { token?: string; amount?: string }) {
+export function SendRecipientPage({
+  token: tokenProp,
+  amount: amountProp,
+}: {
+  token?: string;
+  amount?: string;
+}) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
-  const [addressBookOpen, setAddressBookOpen] = useState(false);
-  const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipientAddress | null>(null);
-  const [resolvedRecipient, setResolvedRecipient] = useState<ResolvedRecipientAddress | null>(null);
   // One source of the owner per screen, threaded down — the same shape
   // `home-page.tsx` uses for `locationOwner`.
   const owner = useStorageOwner();
   const upsertRecipient = useUpsertAddressBookRecipient(owner);
   const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
+  // After a zoom or resize from the desktop view this page opens with what was
+  // typed there. The amount and voucher have no field on this page: they ride
+  // on to the amount step through the same search params the URL seeds.
+  const draft = useSendDraft(wallet);
+  const restored = draft.restored;
+  const token = restored?.token ?? tokenProp;
+  const amount = restored ? restored.amount : amountProp;
+  const [query, setQuery] = useState(restored?.query ?? "");
+  const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipientAddress | null>(
+    restored?.recipient ?? null,
+  );
+  const [resolvedRecipient, setResolvedRecipient] = useState<ResolvedRecipientAddress | null>(null);
   const transfersQuery = useAccountTransfersInfinite(wallet, { poll: false });
   const addressBook = useAddressBookRecipients(owner);
   const labels = new Map(
@@ -58,6 +74,14 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
     ? resolvedRecipient
     : (selectedRecipient ?? resolvedRecipient);
   const showRecent = query.trim() === "";
+  // Carry the effective values, including shortcut seeds. Once the other view
+  // restores a draft it deliberately trusts it instead of the older URL.
+  useKeepSendDraft(draft, {
+    query,
+    recipient,
+    amount: amount ?? "",
+    token,
+  });
 
   function handleSelectRecipient(recipient: Recipient) {
     if (recipient.address) {
