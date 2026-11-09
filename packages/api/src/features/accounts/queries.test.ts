@@ -7,6 +7,7 @@ import type {
 } from "./client";
 import {
   accountActivityInfiniteQueryOptions,
+  accountActivityLatestQueryOptions,
   accountKeys,
   accountTokensInfiniteQueryOptions,
   accountTransfersInfiniteQueryOptions,
@@ -25,6 +26,7 @@ describe("accountKeys", () => {
       accountKeys.transfers(ADDRESS, 20),
       accountKeys.transfersInfinite(ADDRESS, 20),
       accountKeys.activityInfinite(ADDRESS, 20),
+      accountKeys.activityLatest(ADDRESS, 20),
     ]) {
       expect(key.slice(0, accountKeys.all.length)).toEqual([...accountKeys.all]);
     }
@@ -40,6 +42,9 @@ describe("accountKeys", () => {
     expect(accountKeys.tokens(ADDRESS, 20)).not.toEqual(accountKeys.tokensInfinite(ADDRESS, 20));
     expect(accountKeys.transfers(ADDRESS, 20)).not.toEqual(
       accountKeys.transfersInfinite(ADDRESS, 20),
+    );
+    expect(accountKeys.activityLatest(ADDRESS, 20)).not.toEqual(
+      accountKeys.activityInfinite(ADDRESS, 20),
     );
   });
 
@@ -178,6 +183,28 @@ describe("logical activity search pagination", () => {
         next: true,
       },
       signal,
+    );
+  });
+});
+
+describe("latest activity page", () => {
+  it("reads the first unfiltered page with no cursor", async () => {
+    const result: AccountActivityResult = { activity: [] };
+    const getAccountActivity = vi.fn().mockResolvedValue(result);
+    const options = accountActivityLatestQueryOptions(
+      { getAccountActivity } as unknown as AccountsClient,
+      ADDRESS,
+      20,
+    );
+    const signal = new AbortController().signal;
+
+    await expect(options.queryFn?.({ signal } as never)).resolves.toBe(result);
+    expect(getAccountActivity).toHaveBeenCalledWith({ address: ADDRESS, perPage: 20 }, signal);
+  });
+
+  it("stays disabled without an address", () => {
+    expect(accountActivityLatestQueryOptions({} as AccountsClient, undefined, 20).enabled).toBe(
+      false,
     );
   });
 });

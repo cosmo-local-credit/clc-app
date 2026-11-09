@@ -54,6 +54,9 @@ export const accountKeys = {
       q,
       ...types,
     ] as const,
+  /** The newest unfiltered activity page alone, for an unread count that polls. */
+  activityLatest: (address: string, perPage: number) =>
+    ["clc", "accounts", "activity", "latest", address.toLowerCase(), perPage] as const,
 
   /**
    * One cursor page of transfers, for a table that pages rather than one that
@@ -213,6 +216,26 @@ export function accountActivityInfiniteQueryOptions(
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>
       lastPage.activity.length < perPage || lastPage.last === undefined ? undefined : lastPage.last,
+  });
+}
+
+/**
+ * The newest page of activity as a single page, not an infinite list.
+ *
+ * An unread count polls while the person is elsewhere in the app. Polling the
+ * infinite read would refetch every page the Activity screen loaded, so the
+ * count reads its own first page under its own key.
+ */
+export function accountActivityLatestQueryOptions(
+  accounts: AccountsClient,
+  address: string | undefined,
+  perPage: number,
+) {
+  return queryOptions({
+    queryKey: accountKeys.activityLatest(address ?? "none", perPage),
+    queryFn: ({ signal }) =>
+      accounts.getAccountActivity({ address: requireAddress(address), perPage }, signal),
+    enabled: Boolean(address),
   });
 }
 
