@@ -57,6 +57,8 @@ export function OnboardingProfileForm({ redirectTo, progressTotal, ...options }:
     identityNotice,
     previous,
     markCurrencyChosen,
+    username,
+    settleUsername,
   } = useOnboardingProfile(options);
 
   const title =
@@ -155,7 +157,10 @@ export function OnboardingProfileForm({ redirectTo, progressTotal, ...options }:
                       placeholder={t`Your name`}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
+                      onBlur={() => {
+                        field.handleBlur();
+                        settleUsername();
+                      }}
                       aria-invalid={!!err}
                       aria-label={t`Name`}
                     />
@@ -170,11 +175,10 @@ export function OnboardingProfileForm({ redirectTo, progressTotal, ...options }:
                 <UsernameInput
                   id="onb-username"
                   value={field.state.value ?? ""}
-                  hint={() => form.getFieldValue("name")}
+                  {...username}
                   onChange={field.handleChange}
                   onBlur={field.handleBlur}
                   error={shownError("username", field.state.meta.isTouched)}
-                  suggest={false}
                 />
               )}
             </form.Field>

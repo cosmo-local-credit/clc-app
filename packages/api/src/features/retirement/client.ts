@@ -80,6 +80,8 @@ export type AdminRetirementListParams = {
   resourceType?: RetirementResourceType;
   cursor?: number;
   perPage?: number;
+  /** Absent on the first page. `true` walks older ids; `false` walks newer ones. */
+  next?: boolean;
 };
 export type RetirementClient = ReturnType<typeof createRetirementClient>;
 
@@ -127,20 +129,30 @@ export function createRetirementClient(http: HttpClient) {
     },
     async listAdmin(params: AdminRetirementListParams = {}, signal?: AbortSignal) {
       const query = new URLSearchParams();
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined) query.set(key, String(value));
-      }
+      if (params.status !== undefined) query.set("status", params.status);
+      if (params.resourceType !== undefined) query.set("resourceType", params.resourceType);
+      if (params.perPage !== undefined) query.set("perPage", String(params.perPage));
+      if (params.cursor !== undefined) query.set("cursor", String(params.cursor));
+      if (params.next !== undefined) query.set("next", params.next ? "true" : "false");
       const result = await get<unknown>(
         `/api/v2/admin/retirement-requests${query.size ? `?${query}` : ""}`,
         signal,
       );
-      return z
+      const page = z
         .object({
           requests: requestsSchema,
           pendingCount: z.number().int().nonnegative(),
-          nextCursor: z.number().int().positive().nullable(),
+          first: z.number().int().nonnegative().optional(),
+          last: z.number().int().nonnegative().optional(),
         })
         .parse(result);
+      return {
+        requests: page.requests,
+        pendingCount: page.pendingCount,
+        first: page.first ?? 0,
+        last: page.last ?? 0,
+        receivedCount: page.requests.length,
+      };
     },
     async getAdminRequest(id: number, signal?: AbortSignal) {
       const result = await get<unknown>(`/api/v2/admin/retirement-requests/${id}`, signal);

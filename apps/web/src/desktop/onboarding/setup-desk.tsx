@@ -331,7 +331,10 @@ function ProfileSteps({ frame, redirectTo, ...options }: ProfileStepsProps) {
                         placeholder={t`Your name`}
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        onBlur={field.handleBlur}
+                        onBlur={() => {
+                          field.handleBlur();
+                          profile.settleUsername();
+                        }}
                         aria-invalid={!!err}
                       />
                       <FieldMessage error={err} />
@@ -344,11 +347,10 @@ function ProfileSteps({ frame, redirectTo, ...options }: ProfileStepsProps) {
                   <UsernameInput
                     id="onb-username"
                     value={field.state.value ?? ""}
-                    hint={() => form.getFieldValue("name")}
+                    {...profile.username}
                     onChange={field.handleChange}
                     onBlur={field.handleBlur}
                     error={shownError("username", field.state.meta.isTouched)}
-                    suggest={false}
                   />
                 )}
               </form.Field>
@@ -784,12 +786,16 @@ function WalletSteps({ frame, onPage, linkPasskey, ...options }: WalletStepsProp
               if (protection.needsPassword) void protection.protect();
             }}
           >
-            <div className="border border-border border-s-3 border-s-warning bg-card px-4 py-3.5 text-sm">
-              <Trans>
-                Save this card securely. If you use a password, keep it separately. Anyone with an
-                unprotected QR code can access the wallet.
-              </Trans>
-            </div>
+            {/* The phone's notice, in the privacy note's frame. */}
+            <aside className="border border-primary/30 bg-card">
+              <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
+                <Trans>
+                  Use this QR card to sign in to your wallet. Save it securely. If you add a
+                  password, keep it separately. Without a password, anyone who scans the card can
+                  access your wallet.
+                </Trans>
+              </p>
+            </aside>
             <label className="flex cursor-pointer items-center gap-2.5">
               <Checkbox checked={protection.enabled} onCheckedChange={protection.setEnabled} />
               <SectionHeading as="h2">

@@ -10,7 +10,10 @@ vi.unmock("@lingui/react");
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   signIn: {} as Record<string, unknown>,
+  suggest: vi.fn(),
 }));
+
+vi.mock("#/lib/api/recipients", () => ({ recipientsClient: { suggest: mocks.suggest } }));
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mocks.navigate,
@@ -135,6 +138,7 @@ beforeEach(async () => {
   document.documentElement.lang = "en";
   document.documentElement.dir = "ltr";
   mocks.navigate.mockReset();
+  mocks.suggest.mockReset().mockRejectedValue(new Error("offline"));
   mocks.signIn = signInState();
   useThemeStore.getState().setTheme("light");
 });
@@ -282,6 +286,20 @@ describe("setup", () => {
     expect(
       within(screen.getByRole("banner")).getByRole("button", { name: /^langue/i }),
     ).toBeTruthy();
+  });
+
+  it("suggests a username once the name is finished, as the phone does", async () => {
+    mocks.suggest.mockResolvedValue("wanjiru-kamau");
+    renderDesk("profile");
+
+    const name = screen.getByRole("textbox", { name: "Name" });
+    fireEvent.change(name, { target: { value: "Wanjiru Kamau" } });
+    // Leaving the name is the end of typing it: no wait for the pause.
+    fireEvent.blur(name);
+
+    const username = screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement;
+    await waitFor(() => expect(username.value).toBe("wanjiru-kamau"));
+    expect(mocks.suggest).toHaveBeenCalledWith("wanjiru-kamau", expect.any(AbortSignal));
   });
 
   it("has one page title and the header controls on every setup page", () => {

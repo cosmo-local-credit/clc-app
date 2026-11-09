@@ -1,10 +1,9 @@
 import type { RetirementRequest } from "@clc/api/features/retirement/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
-const OTHER = "0x2b4F29a8438cc9c644F6Cf1E9C287fF2fe84674e";
 
 const mocks = vi.hoisted(() => ({
   catalogs: vi.fn(),
@@ -285,40 +284,12 @@ describe("Wallet catalogs", () => {
 });
 
 describe("Wallet retirement requests", () => {
-  it("has no section until there is a request to show", async () => {
+  it("leaves them to My Vouchers, as the phone does", async () => {
+    mocks.listRetirements.mockResolvedValue([request(1, "pending")]);
     mount();
-    await waitFor(() => expect(mocks.listRetirements).toHaveBeenCalled());
+    await screen.findByRole("heading", { level: 2, name: "Holdings" });
     expect(screen.queryByRole("heading", { name: "Retirement requests" })).toBeNull();
-  });
-
-  it("shows each request's state and lets only the requester cancel a pending one", async () => {
-    mocks.listRetirements.mockResolvedValue([
-      request(1, "pending"),
-      request(2, "approved"),
-      request(3, "pending", OTHER),
-    ]);
-    mount();
-
-    const requests = await waitFor(() => section("Retirement requests"));
-    expect(within(requests).getAllByText("Awaiting admin review")).toHaveLength(2);
-    expect(within(requests).getByText("Retirement approved")).toBeTruthy();
-    const cancels = within(requests).getAllByRole("button", { name: "Cancel request" });
-    expect(cancels).toHaveLength(1);
-
-    fireEvent.click(cancels[0]);
-    await waitFor(() => expect(mocks.cancelRetirement).toHaveBeenCalledWith(1));
-  });
-
-  it("recovers from an unavailable history", async () => {
-    mocks.listRetirements
-      .mockRejectedValueOnce(new Error("offline"))
-      .mockResolvedValueOnce([request(4, "rejected")]);
-    mount();
-
-    const requests = await waitFor(() => section("Retirement requests"));
-    expect(within(requests).getByText("Could not load retirement requests.")).toBeTruthy();
-    fireEvent.click(within(requests).getByRole("button", { name: "Try again" }));
-    expect(await within(requests).findByText("Request rejected")).toBeTruthy();
+    expect(mocks.listRetirements).not.toHaveBeenCalled();
   });
 });
 

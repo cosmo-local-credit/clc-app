@@ -33,6 +33,7 @@ function user(address: string, status: string, overrides: Partial<AdminUser> = {
   return {
     id: 1,
     ethereumAddress: address,
+    username: null,
     name: "Someone",
     email: "someone@example.test",
     phone: "",

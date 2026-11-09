@@ -24,6 +24,7 @@ import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { resetVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { DeskQuotaText } from "#/desktop/ui/quota";
+import { WalletRetirements } from "#/desktop/wallet/wallet-retirements";
 
 export function AllVouchersDesk() {
   const { t } = useLingui();
@@ -246,6 +247,8 @@ export function AllVouchersDesk() {
                     </Button>
                   ) : null}
                 </DeskSection>
+                {/* With My Vouchers, as on the phone: a retired voucher's page may be gone. */}
+                {address ? <WalletRetirements viewer={address} /> : null}
               </>
             )}
           </DeskCanvas>

@@ -8,9 +8,6 @@ import { translateValidationError } from "./validation-i18n";
 
 const messages = [
   msg`Username`,
-  msg`Suggest username`,
-  msg`Finding a name…`,
-  msg`Couldn't suggest a username. Please try again.`,
   msg`Enter a username, pool name, phone number or address.`,
   msg`Recipient username, pool name, phone or address`,
   msg`Matching recipients`,

@@ -29,7 +29,7 @@ export function useRelayerGas() {
   });
 }
 
-/** Relayer health beside the gas balance, plus the platform signer. */
+/** Relayer health and the platform signer, for the protocol page. */
 export function useRelayDesk() {
   return useQuery({
     queryKey: dashboardKeys.relayDesk,

@@ -79,7 +79,7 @@ const navItems: Array<{
   { to: "/nfc-cards", label: "NFC cards", icon: MdOutlineNfc },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
-  { to: "/retirement-requests", label: "Retirement requests", icon: HiOutlineBell },
+  { to: "/retirement-requests", label: "Retirement", icon: HiOutlineBell },
   { to: "/reviews", label: "Reviews", icon: HiOutlineFlag },
   { to: "/deployments", label: "Deployments", icon: HiOutlineCube },
   { to: "/protocol", label: "Protocol", icon: HiOutlineAdjustments },
@@ -148,9 +148,9 @@ function AppShellInner() {
                         render={<Link to={item.to} />}
                       >
                         <item.icon />
-                        <span>{item.label}</span>
+                        <span className="min-w-0 truncate">{item.label}</span>
+                        {item.to === "/retirement-requests" ? <RetirementPendingBadge /> : null}
                       </SidebarMenuButton>
-                      {item.to === "/retirement-requests" ? <RetirementPendingBadge /> : null}
                       {item.children ? (
                         <SidebarMenuSub>
                           {item.children.map((child) => (

@@ -28,8 +28,8 @@ function RequestStatus({ status }: { status: RetirementRequestStatus }) {
 }
 
 /**
- * Retirement requests the account has made, kept reachable from the Wallet
- * because a retired voucher or pool may no longer have a public page. Hidden
+ * Retirement requests the account has made, kept with My Vouchers because a
+ * retired voucher or pool may no longer have a public page. Hidden
  * until there is history to show (or a failure to recover from); only the
  * requester can cancel, and only while the request is pending.
  */

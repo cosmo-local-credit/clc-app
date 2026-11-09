@@ -5,11 +5,10 @@ import { profileSchema, usernameSchema } from "@clc/core/features/signup/logic";
 import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
 import { useForm, useStore } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIPCamera } from "#/features/home/hooks/use-ip-camera";
 import { identityClient } from "#/lib/api/identity";
-import { recipientsClient } from "#/lib/api/recipients";
 import { isStorageConfigured } from "#/lib/api/storage";
 import type { ProfilePage } from "#/lib/onboarding-search";
 import {
@@ -263,35 +262,17 @@ export function useOnboardingProfile({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-check only when the page changes
   }, [page]);
 
-  // A handle, not the display name: lowercase, words joined by dashes.
-  const nameValue = useStore(form.store, (state) => state.values.name);
-  const usernameValue = useStore(form.store, (state) => state.values.username ?? "");
-  // What the last suggestion put in the field. The moment the value is
-  // anything else, the person has taken the field over and nothing else is
-  // suggested, including when they clear it to keep no username at all.
+  // The username field suggests a handle from the name itself (UsernameInput).
+  // What it last filled in is kept here only so a layout switch can hand it on:
+  // without it the restored value would read as typed by hand.
   const suggestedUsernameRef = useRef(restored?.suggestedUsername ?? "");
-  useEffect(() => {
-    if (usernameValue !== suggestedUsernameRef.current) return;
-    const hint = nameValue.trim().toLowerCase().split(/\s+/).join("-");
-    if (!hint) return;
-    const controller = new AbortController();
-    // Typing a name is a run of changes; ask once it settles.
-    const timer = window.setTimeout(() => {
-      void recipientsClient.suggest(hint, controller.signal).then(
-        (suggestion) => {
-          if (controller.signal.aborted) return;
-          suggestedUsernameRef.current = suggestion;
-          form.setFieldValue("username", suggestion, { dontUpdateMeta: true });
-        },
-        // A suggestion is a convenience: the field stays empty and typeable.
-        () => {},
-      );
-    }, 500);
-    return () => {
-      controller.abort();
-      window.clearTimeout(timer);
-    };
-  }, [form, nameValue, usernameValue]);
+  // A suggestion still in flight must land before Continue leaves the page.
+  // The name field's blur and Continue both settle it.
+  const [usernamePending, setUsernamePending] = useState(false);
+  const settleUsername = useRef<(() => Promise<void>) | null>(null);
+  const onUsernamePending = useCallback((pending: boolean) => {
+    setUsernamePending((current) => (current === pending ? current : pending));
+  }, []);
 
   /** A chosen location is a better hint than the network, for both fields. */
   function suggestForCountry(country: string) {
@@ -360,7 +341,7 @@ export function useOnboardingProfile({
   const contactConcern = Boolean(probe.fields.email || probe.fields.phone);
   const continueBlocked =
     page === "profile"
-      ? usernameConcern && (checking || Boolean(settled?.username))
+      ? usernamePending || (usernameConcern && (checking || Boolean(settled?.username)))
       : page === "contact"
         ? contactConcern && (checking || Boolean(settled?.email || settled?.phone))
         : (usernameConcern || contactConcern) &&
@@ -370,6 +351,8 @@ export function useOnboardingProfile({
     page === "location" && locationTaken ? translateValidationError(locationTaken, i18n) : null;
 
   async function handleContinue() {
+    // Leaving the name, including through Continue, is the end of typing it.
+    if (page === "profile") await settleUsername.current?.();
     if (continueBlocked) return;
     setAttempted((current) => new Set(current).add(page));
     const missingPhoto = page === "profile" && !avatarFile;
@@ -426,5 +409,17 @@ export function useOnboardingProfile({
     markCurrencyChosen: () => {
       currencyWasChosenRef.current = true;
     },
+    /** Wiring for UsernameInput: it suggests from the name, and Continue waits for it. */
+    username: {
+      name: values.name,
+      onPending: onUsernamePending,
+      settleRef: settleUsername,
+      suggested: suggestedUsernameRef.current || null,
+      onSuggested: (suggestion: string) => {
+        suggestedUsernameRef.current = suggestion;
+      },
+    },
+    /** The name field's blur: typing it has finished, so suggest now. */
+    settleUsername: () => void settleUsername.current?.(),
   };
 }

@@ -10,10 +10,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import type { RetirementRequest } from "@clc/api/features/retirement/client";
+
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
 const TOKEN = "0x1111111111111111111111111111111111111111";
 
-const mocks = vi.hoisted(() => ({ hasNextPage: false }));
+const OTHER = "0x2b4F29a8438cc9c644F6Cf1E9C287fF2fe84674e";
+
+const mocks = vi.hoisted(() => ({
+  hasNextPage: false,
+  listRetirements: vi.fn(),
+  cancelRetirement: vi.fn(),
+}));
+
+vi.mock("#/lib/api/retirement", () => ({
+  retirementClient: { listMine: mocks.listRetirements, cancel: mocks.cancelRetirement },
+}));
 
 vi.mock("wagmi", () => ({ useConnection: () => ({ address: ADDRESS }) }));
 vi.mock("#/hooks/use-resource-usage", () => ({
@@ -88,6 +100,8 @@ async function mount(url: string) {
 
 beforeEach(() => {
   mocks.hasNextPage = false;
+  mocks.listRetirements.mockReset().mockResolvedValue([]);
+  mocks.cancelRetirement.mockReset().mockResolvedValue(undefined);
   // jsdom lays nothing out; give the split room so the inspector docks.
   Object.defineProperty(HTMLElement.prototype, "clientWidth", {
     configurable: true,
@@ -143,5 +157,69 @@ describe("All Vouchers inspector", () => {
     const holdings = screen.getByRole("table", { name: "Holdings" });
     fireEvent.click(within(holdings).getByRole("button", { name: /Balance/ }));
     expect(screen.getByRole("status").textContent).toContain("rows loaded so far");
+  });
+});
+
+function request(id: number, status: RetirementRequest["status"], requester = ADDRESS) {
+  return {
+    id,
+    resourceType: "voucher",
+    resourceAddress: TOKEN,
+    resourceName: `Voucher ${id}`,
+    symbol: `V${id}`,
+    chainId: 100,
+    requesterAddress: requester,
+    ownerAddress: requester,
+    reason: `Reason ${id}`,
+    status,
+    requestedAt: "2026-10-25T12:00:00Z",
+    decisionAt: null,
+    decisionBy: null,
+    decisionReason: null,
+    snapshot: {},
+    decisionSnapshot: null,
+  } as unknown as RetirementRequest;
+}
+
+const requestsSection = () =>
+  screen
+    .getByRole("heading", { level: 2, name: "Retirement requests" })
+    .closest("section") as HTMLElement;
+
+describe("AllVouchersDesk retirement requests", () => {
+  it("has no section until there is a request to show", async () => {
+    await mount("/wallet/vouchers");
+    await waitFor(() => expect(mocks.listRetirements).toHaveBeenCalled());
+    expect(screen.queryByRole("heading", { name: "Retirement requests" })).toBeNull();
+  });
+
+  it("shows each request's state under My Vouchers and lets only the requester cancel a pending one", async () => {
+    mocks.listRetirements.mockResolvedValue([
+      request(1, "pending"),
+      request(2, "approved"),
+      request(3, "pending", OTHER),
+    ]);
+    await mount("/wallet/vouchers");
+
+    const requests = await waitFor(() => requestsSection());
+    expect(within(requests).getAllByText("Awaiting admin review")).toHaveLength(2);
+    expect(within(requests).getByText("Retirement approved")).toBeTruthy();
+    const cancels = within(requests).getAllByRole("button", { name: "Cancel request" });
+    expect(cancels).toHaveLength(1);
+
+    fireEvent.click(cancels[0]);
+    await waitFor(() => expect(mocks.cancelRetirement).toHaveBeenCalledWith(1));
+  });
+
+  it("recovers from an unavailable history", async () => {
+    mocks.listRetirements
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce([request(4, "rejected")]);
+    await mount("/wallet/vouchers");
+
+    const requests = await waitFor(() => requestsSection());
+    expect(within(requests).getByText("Could not load retirement requests.")).toBeTruthy();
+    fireEvent.click(within(requests).getByRole("button", { name: "Try again" }));
+    expect(await within(requests).findByText("Request rejected")).toBeTruthy();
   });
 });

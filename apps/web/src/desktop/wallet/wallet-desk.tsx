@@ -47,7 +47,6 @@ import {
   SectionActions,
 } from "#/desktop/wallet/wallet-parts";
 import { WalletProfileAction } from "#/desktop/wallet/wallet-profile-action";
-import { WalletRetirements } from "#/desktop/wallet/wallet-retirements";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
@@ -748,8 +747,6 @@ export function WalletDesk() {
         </DeskSection>
 
         <WalletCatalogs usage={usage} />
-
-        {address ? <WalletRetirements viewer={address} /> : null}
       </div>
     </DeskCanvas>
   );
