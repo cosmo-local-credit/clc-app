@@ -14,6 +14,7 @@ import { Input } from "#/components/ui/input";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { SelectContent, SelectItem, SelectRoot, SelectTrigger } from "#/components/ui/select";
 import { Spinner } from "#/components/ui/spinner";
+import { UnreadDot } from "#/components/ui/unread-count";
 import { ShareReceiptButton } from "#/components/wallet";
 import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import type { DeskColumn } from "#/desktop/ui/data-table";
@@ -24,6 +25,7 @@ import { DeskCanvas, DeskEyebrow, DeskTitleRow } from "#/desktop/ui/page";
 import { DeskChip } from "#/desktop/ui/segment";
 import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useActivityVisit } from "#/features/wallet/hooks/use-activity-unseen";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import {
   activityRangeStart,
@@ -132,6 +134,9 @@ export function ActivityDesk({
     () => activityQuery.data?.pages.flatMap((page) => page.activity) ?? [],
     [activityQuery.data],
   );
+  // The voucher and range filters only hide loaded rows; search and type
+  // filters change which rows load, so those pages are not the whole feed.
+  const isNew = useActivityVisit(settled === "" && types.length === 0 ? loaded : undefined);
   const vouchers = useMemo(() => activityVouchers(loaded), [loaded]);
   // The window is measured from when the range was picked, not every render.
   const rangeStart = useMemo(() => activityRangeStart(filters.range, Date.now()), [filters.range]);
@@ -263,11 +268,16 @@ export function ActivityDesk({
         sortValue: (row) => counterparty(row) ?? "",
         cell: (row) => {
           const other = counterparty(row);
-          return other ? (
-            <Counterparty address={other} />
-          ) : (
-            <span className="text-sm font-semibold">
-              <Trans>New supply</Trans>
+          return (
+            <span className="flex min-w-0 items-center gap-2">
+              {isNew(row) ? <UnreadDot /> : null}
+              {other ? (
+                <Counterparty address={other} />
+              ) : (
+                <span className="text-sm font-semibold">
+                  <Trans>New supply</Trans>
+                </span>
+              )}
             </span>
           );
         },
@@ -318,7 +328,7 @@ export function ActivityDesk({
         ),
       },
     ],
-    [locale, t, withHeader],
+    [isNew, locale, t, withHeader],
   );
 
   return (

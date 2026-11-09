@@ -20,6 +20,9 @@ vi.mock("#/lib/api/accounts", () => ({
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useReverseRecipientResolution: () => ({ data: undefined }),
 }));
+vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
+  useActivityVisit: () => () => false,
+}));
 vi.mock("#/features/wallet/hooks/use-send-share", () => ({
   useSendShare: () => ({ data: undefined, isPending: false, isError: false, fetchStatus: "idle" }),
 }));

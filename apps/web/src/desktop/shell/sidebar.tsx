@@ -1,3 +1,4 @@
+import { plural } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode, useState } from "react";
@@ -13,6 +14,7 @@ import {
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
+import { UnreadCount, UnreadCountLabel } from "#/components/ui/unread-count";
 import { desktopNavSelection, type DesktopScopeId } from "#/desktop/chrome";
 import { MarketHomeLink, MarketScopeLink } from "#/desktop/shell/market-links";
 import { useSidebarCollapsed } from "#/desktop/sidebar-state";
@@ -20,6 +22,7 @@ import { DeskTooltip, DeskTooltipProvider } from "#/desktop/ui/tooltip";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { canReachPrivateRoutes } from "#/features/auth/logic/private-routes";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { useActivityUnseen } from "#/features/wallet/hooks/use-activity-unseen";
 import { cn } from "#/lib/utils";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { DESK_SELECTED_EDGE } from "#/desktop/ui/page";
@@ -107,6 +110,7 @@ export function DesktopSidebar() {
   // Wallet, Activity and Settings all sit behind `AuthenticatedRoute`. A guest
   // who clicks one only reaches the sign-in gate, so they are not offered.
   const privateNav = canReachPrivateRoutes(auth);
+  const unreadActivity = useActivityUnseen().count;
   const address = auth.address;
   const name = profile.data?.name?.trim();
   const marketChild = selection.nav === "market" && Boolean(selection.scope);
@@ -127,6 +131,10 @@ export function DesktopSidebar() {
   const marketLabel = t`Market`;
   const walletLabel = t`Wallet`;
   const activityLabel = t`Activity`;
+  const activityRailLabel =
+    unreadActivity > 0
+      ? t`Activity, ${plural(unreadActivity, { one: "# new", other: "# new" })}`
+      : activityLabel;
   const postsLabel = t`Posts`;
   const settingsLabel = t`Settings`;
   const profileLabel = t`Edit profile`;
@@ -247,11 +255,25 @@ export function DesktopSidebar() {
               <Link
                 to="/"
                 search={{ tab: "activity" }}
-                aria-label={collapsed ? activityLabel : undefined}
+                aria-label={collapsed ? activityRailLabel : undefined}
                 aria-current={selection.nav === "activity" ? "page" : undefined}
                 className={itemClass(selection.nav === "activity")}
               >
-                {body(<RiPulseLine aria-hidden="true" />, activityLabel)}
+                <span className="relative flex">
+                  <RiPulseLine aria-hidden="true" />
+                  {collapsed ? (
+                    <UnreadCount count={unreadActivity} className="absolute -top-2 -end-2.5" />
+                  ) : null}
+                </span>
+                {collapsed ? null : (
+                  <>
+                    <span>
+                      {activityLabel}
+                      <UnreadCountLabel count={unreadActivity} />
+                    </span>
+                    <UnreadCount count={unreadActivity} className="ms-auto" />
+                  </>
+                )}
               </Link>
             </RailTip>
           ) : null}

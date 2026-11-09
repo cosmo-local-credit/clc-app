@@ -15,6 +15,10 @@ const auth = vi.hoisted(() => ({
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => auth,
 }));
+const unread = vi.hoisted(() => ({ count: 0 }));
+vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
+  useActivityUnseen: () => unread,
+}));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: { name: "Amina Otieno" } }),
 }));
@@ -23,6 +27,7 @@ beforeEach(() => {
   auth.isAuthenticated = true;
   auth.isLoading = false;
   auth.address = ADDRESS;
+  unread.count = 0;
   window.localStorage.removeItem("clc.desktop.sidebar");
   window.localStorage.removeItem("clc.desktop.market-view");
 });
@@ -101,6 +106,23 @@ describe("the collapsed rail", () => {
     await renderInShell(<DesktopSidebar />, "/?tab=market");
     expect(screen.getByRole("button", { name: "Collapse" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Wallet" }).textContent).toBe("Wallet");
+  });
+});
+
+describe("the Activity unread count", () => {
+  it("sits beside the label in the expanded sidebar", async () => {
+    unread.count = 2;
+    await renderInShell(<DesktopSidebar />, "/?tab=wallet");
+    const activity = screen.getByRole("link", { name: "Activity, 2 new" });
+    expect(activity.textContent).toContain("2");
+  });
+
+  it("stays in the rail's icon-only name", async () => {
+    unread.count = 12;
+    window.localStorage.setItem("clc.desktop.sidebar", "collapsed");
+    await renderInShell(<DesktopSidebar />, "/?tab=wallet");
+    const activity = screen.getByRole("link", { name: "Activity, 12 new" });
+    expect(activity.textContent).toBe("9+");
   });
 });
 
