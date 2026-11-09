@@ -1,4 +1,8 @@
-import { REVIEW_STARS, REVIEW_TEXT_LIMIT } from "@clc/core/features/reviews/logic";
+import {
+  REVIEW_STARS,
+  REVIEW_TEXT_LIMIT,
+  type ReviewResourceKind,
+} from "@clc/core/features/reviews/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useId, useState } from "react";
 import { RiStarFill, RiStarLine } from "react-icons/ri";
@@ -20,19 +24,23 @@ import { useReportSectionCount } from "./voucher-section-bits";
  * Reviews: the average beside the list, as the mock lays it out, with the
  * phone's star filter under the average. Writing, replying and reporting each
  * open the same editor as a dialog; "Write a review" sits in the header.
+ * A pool's reviews are the same surface: what earns a review is a swap in the
+ * pool rather than a redemption, and the copy says so.
  */
 export function VoucherReviewsDesk({
+  kind = "voucher",
   address,
   layout,
   onCount,
 }: {
+  kind?: ReviewResourceKind;
   address: string;
   layout: "page" | "panel";
   /** Reports the review total once the summary has loaded. */
   onCount?: (count: number | undefined) => void;
 }) {
   const { t, i18n } = useLingui();
-  const panel = useResourceReviewsPanel({ kind: "voucher", address });
+  const panel = useResourceReviewsPanel({ kind, address });
   const {
     auth,
     access,
@@ -68,7 +76,12 @@ export function VoucherReviewsDesk({
   let status = null;
   if (!viewer?.isOwner && !canWrite) {
     if (!auth.isAuthenticated) {
-      status = <Trans>Sign in after redeeming this voucher to leave a review.</Trans>;
+      status =
+        kind === "voucher" ? (
+          <Trans>Sign in after redeeming this voucher to leave a review.</Trans>
+        ) : (
+          <Trans>Sign in after swapping in this pool to leave a review.</Trans>
+        );
     } else if (access.isPending) {
       status = <Trans>Checking review eligibility…</Trans>;
     } else if (access.isError) {
@@ -84,8 +97,12 @@ export function VoucherReviewsDesk({
       status = <Trans>Your review was hidden by an admin.</Trans>;
     } else if (viewer) {
       status = viewer.review
-        ? t`Redeem this voucher again to update your review.`
-        : t`Redeem this voucher to leave a review within seven days.`;
+        ? kind === "voucher"
+          ? t`Redeem this voucher again to update your review.`
+          : t`Swap in this pool again to update your review.`
+        : kind === "voucher"
+          ? t`Redeem this voucher to leave a review within seven days.`
+          : t`Swap in this pool to leave a review within seven days.`;
     }
   }
 
@@ -181,7 +198,8 @@ export function VoucherReviewsDesk({
             ) : null}
           </div>
           <div className="flex min-w-0 flex-col [&>*+*]:border-border [&>*+*]:border-t">
-            {viewer?.review && !viewer.isOwner ? (
+            {/* An admin hid it: the phone says so rather than showing it. */}
+            {viewer?.review && !viewer.isOwner && !viewer.hidden ? (
               <article className="grid gap-1 bg-muted/40 px-3.5 py-3">
                 <p className="flex items-center gap-2 text-sm font-semibold">
                   <Trans>Your review</Trans>
@@ -203,7 +221,7 @@ export function VoucherReviewsDesk({
               <article
                 key={review.id}
                 className="grid gap-1 px-3.5 py-3"
-                aria-label={t`Voucher review`}
+                aria-label={kind === "voucher" ? t`Voucher review` : t`Pool review`}
               >
                 <ReviewStars stars={review.stars} />
                 {review.comment ? (
@@ -367,7 +385,7 @@ function ReviewForm({
   onCancel: () => void;
   onSave: (stars: number, text: string) => void;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [stars, setStars] = useState(initialStars);
   const [text, setText] = useState(initialText);
   const limit = kind === "flag" ? 500 : REVIEW_TEXT_LIMIT;
@@ -435,7 +453,12 @@ function ReviewForm({
       {kind === "review" && editableUntil ? (
         <p className="text-xs text-muted-foreground">
           <Trans>
-            You can write or edit your review until {new Date(editableUntil).toLocaleString()}.
+            You can write or edit your review until{" "}
+            {new Intl.DateTimeFormat(i18n.locales?.[0] ?? i18n.locale, {
+              dateStyle: "medium",
+              timeStyle: "short",
+            }).format(new Date(editableUntil))}
+            .
           </Trans>
         </p>
       ) : null}

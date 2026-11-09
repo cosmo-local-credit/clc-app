@@ -115,7 +115,7 @@ export function ReviewStep({ wizard }: { wizard: VoucherWizard }) {
           selector={(state) => [state.isSubmitting, state.values.acceptedTerms] as const}
         >
           {([isSubmitting, acceptedTerms]) => {
-            const publishing = isSubmitting || wizard.deployVoucher.isPending;
+            const publishing = isSubmitting || wizard.inFlight;
             return (
               <Button
                 type="submit"

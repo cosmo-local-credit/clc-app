@@ -61,7 +61,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const {
     form,
     blocked,
-    deployVoucher,
+    inFlight,
     tagsQuery,
     profile,
     checkNameAvailable,
@@ -405,7 +405,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         value={field.state.value || null}
                         onChange={(url) => field.handleChange(url ?? "")}
                         onBusyChange={setIconBusy}
-                        disabled={deployVoucher.isPending}
+                        disabled={inFlight}
                       />
                     )}
                   </form.Field>
@@ -446,7 +446,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       kind="voucher"
                       value={icon}
                       onChange={(next) => form.setFieldValue("markerIcon", next)}
-                      disabled={deployVoucher.isPending}
+                      disabled={inFlight}
                     />
                   </div>
                 )}
@@ -727,9 +727,9 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     tap
                     className="w-full"
                     disabled={!acceptedTerms || blocked}
-                    pending={isSubmitting || deployVoucher.isPending}
+                    pending={isSubmitting || inFlight}
                   >
-                    {isSubmitting || deployVoucher.isPending ? (
+                    {isSubmitting || inFlight ? (
                       <Trans>Publishing…</Trans>
                     ) : (
                       <Trans>Confirm &amp; Publish</Trans>

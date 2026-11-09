@@ -17,7 +17,7 @@ export function ResourceReviewsPanel({
   address: string;
   presentation?: "tabpanel" | "section";
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const {
     auth,
     access,
@@ -169,7 +169,11 @@ export function ResourceReviewsPanel({
                   <p className="text-xs text-muted-foreground">
                     <Trans>
                       You can write or edit your review until{" "}
-                      {new Date(viewer!.editableUntil!).toLocaleString()}.
+                      {new Intl.DateTimeFormat(i18n.locales?.[0] ?? i18n.locale, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(viewer!.editableUntil!))}
+                      .
                     </Trans>
                   </p>
                   {editor?.kind === "review" ? (

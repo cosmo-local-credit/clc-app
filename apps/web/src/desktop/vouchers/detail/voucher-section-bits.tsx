@@ -10,6 +10,7 @@ import { ReviewStars } from "#/components/reviews/review-editor";
 import { useShareVoucher, type VoucherBalanceSummary } from "#/components/vouchers/voucher-summary";
 import { useReviewSummary } from "#/features/reviews/hooks/use-voucher-reviews";
 import { cn } from "#/lib/utils";
+import { DeskQuotaText } from "#/desktop/ui/quota";
 
 type Quota = ResourceUsageData[ResourceKind];
 
@@ -23,31 +24,18 @@ export function QuotaStatus({
   pending: boolean;
   error: boolean;
 }) {
-  const { i18n } = useLingui();
-  const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
-  const used = quota ? digits.format(quota.used) : "";
-  const limit = quota ? digits.format(quota.limit) : "";
-  return (
-    <span
-      aria-live="polite"
-      className={cn(
-        "font-sans text-xs font-normal",
-        quota && !quota.canCreate ? "text-destructive" : "text-muted-foreground",
-      )}
-    >
-      {error ? (
-        <Trans>Unavailable</Trans>
-      ) : pending || !quota ? (
-        <Trans>Loading…</Trans>
-      ) : quota.unlimited ? (
-        <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-      ) : (
-        <Trans id="{used} of {limit} used">
-          {used} of {limit} used
-        </Trans>
-      )}
-    </span>
+  const className = cn(
+    "font-sans text-xs font-normal",
+    quota && !quota.canCreate ? "text-destructive" : "text-muted-foreground",
   );
+  if (error || pending || !quota) {
+    return (
+      <span aria-live="polite" className={className}>
+        {error ? <Trans>Unavailable</Trans> : <Trans>Loading…</Trans>}
+      </span>
+    );
+  }
+  return <DeskQuotaText quota={quota} className={className} />;
 }
 
 /**

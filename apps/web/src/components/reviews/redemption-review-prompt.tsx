@@ -82,7 +82,8 @@ function EligiblePrompt({ target }: { target: ReviewTarget }) {
   );
 }
 
-function ReviewProcessingMessage({ kind }: { kind: ReviewResourceKind }) {
+/** Why the review cannot be written yet. Shared with the desktop receipts. */
+export function ReviewProcessingMessage({ kind }: { kind: ReviewResourceKind }) {
   if (kind === "voucher") {
     return (
       <Trans>

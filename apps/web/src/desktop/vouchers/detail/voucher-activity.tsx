@@ -171,7 +171,8 @@ export function VoucherActivityDesk({
         rowKey={(transfer) => activityRowKey(transfer)}
         empty={<Trans>No activity yet.</Trans>}
         renderRow={(transfer, props, cells) => (
-          <Link to="/" search={{ tab: "activity", tx: activityRowKey(transfer) }} {...props}>
+          // By hash: this feed's row ids are transfer ids, Activity's are not.
+          <Link to="/" search={{ tab: "activity", tx: transfer.txHash }} {...props}>
             {cells}
           </Link>
         )}

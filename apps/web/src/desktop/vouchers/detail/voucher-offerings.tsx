@@ -29,6 +29,7 @@ import {
 } from "#/features/vouchers/hooks/use-voucher-offerings-manager";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { cn } from "#/lib/utils";
+import { useResourceUsage } from "#/hooks/use-resource-usage";
 
 import { VoucherDialog } from "./voucher-dialog";
 import { QuotaStatus, useReportSectionCount } from "./voucher-section-bits";
@@ -38,12 +39,20 @@ import { QuotaStatus, useReportSectionCount } from "./voucher-section-bits";
  * place panel, a page at a time behind "Load more". The issuer also gets the
  * quota, "Add offering" in the header, and Edit / Remove under each tile.
  */
+/**
+ * On the page, as many 240px-or-wider tiles as the row holds. Three fixed
+ * columns stretched each tile past 400px on a wide canvas, which made the
+ * photo the whole card and left a short list looking sparse.
+ */
+const PAGE_GRID = "grid-cols-[repeat(auto-fill,minmax(240px,1fr))]";
+
 export function VoucherOfferingsDesk({
   address,
   symbol,
   voucherValue,
   voucherUoa,
   ownerAddress,
+  canEditDetails = false,
   layout,
   onCount,
 }: {
@@ -52,6 +61,8 @@ export function VoucherOfferingsDesk({
   voucherValue: string | null;
   voucherUoa: string | null;
   ownerAddress: string | null;
+  /** An admin or a manager: shown the quota, as the phone's Offerings title does. */
+  canEditDetails?: boolean;
   /** `page`: a titled section, 3 columns. `panel`: under the place panel's tabs, 2 columns. */
   layout: "page" | "panel";
   /** Reports the total once every page has loaded. */
@@ -65,15 +76,18 @@ export function VoucherOfferingsDesk({
   const visible = offerings.slice(0, limit);
   const hasMore = limit < offerings.length || query.hasNextPage;
   const rate: OfferingVoucherRate = { value: voucherValue, unit: voucherUoa };
-  const quota = usage.data?.offers;
+  // The manager's own query when this is the owner; the same cache entry either way.
+  const quotaUsage = useResourceUsage(isOwner || canEditDetails, address);
+  const quota = quotaUsage.data?.offers;
   useReportSectionCount(
     onCount,
     query.isSuccess && !query.hasNextPage ? offerings.length : undefined,
   );
 
-  const allowance = isOwner ? (
-    <QuotaStatus quota={quota} pending={usage.isPending} error={usage.isError} />
-  ) : null;
+  const allowance =
+    isOwner || canEditDetails ? (
+      <QuotaStatus quota={quota} pending={quotaUsage.isPending} error={quotaUsage.isError} />
+    ) : null;
   const add = isOwner ? (
     <span className="flex items-center gap-3">
       {usage.isError ? (
@@ -105,7 +119,7 @@ export function VoucherOfferingsDesk({
         </p>
       ) : null}
       {query.isPending ? (
-        <div className={cn("grid gap-4", layout === "page" ? "grid-cols-3" : "grid-cols-2")}>
+        <div className={cn("grid gap-4", layout === "page" ? PAGE_GRID : "grid-cols-2")}>
           {Array.from({ length: layout === "page" ? 3 : 2 }, (_, index) => (
             <Skeleton key={index} className="aspect-[4/5] rounded-none" />
           ))}
@@ -121,16 +135,20 @@ export function VoucherOfferingsDesk({
         </DeskPanel>
       ) : offerings.length === 0 ? (
         <DeskPanel>
+          {/* The phone's empty state: what to do for the issuer, what it means for anyone else. */}
           <p className="text-sm text-muted-foreground">
-            <Trans>No offerings yet</Trans>
+            {isOwner ? (
+              <Trans>
+                Add what you accept this voucher for, and it appears in the marketplace.
+              </Trans>
+            ) : (
+              <Trans>There is nothing available for exchange with this voucher yet.</Trans>
+            )}
           </p>
         </DeskPanel>
       ) : (
         <div
-          className={cn(
-            "grid auto-rows-fr gap-4",
-            layout === "page" ? "grid-cols-3" : "grid-cols-2",
-          )}
+          className={cn("grid auto-rows-fr gap-4", layout === "page" ? PAGE_GRID : "grid-cols-2")}
         >
           {visible.map((offering) => (
             <OfferingTile
@@ -199,7 +217,7 @@ export function VoucherOfferingsDesk({
     <DeskSection
       title={<Trans>Offerings</Trans>}
       action={
-        isOwner ? (
+        allowance || add ? (
           <span className="flex min-w-0 items-center gap-3">
             {allowance}
             {add}

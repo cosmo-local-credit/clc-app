@@ -67,11 +67,15 @@ vi.mock("#/lib/navigation/voucher-create-history", () => ({
   beginVoucherCreateHistory: vi.fn(),
   exitVoucherCreateHistory: vi.fn(),
 }));
-vi.mock("#/features/pools/hooks/use-pool-deployment", () => ({
-  useDeployPool: () => ({ error: null, isPending: false, mutateAsync: mocks.deployPool }),
+// The real deploy mutations over a stubbed transport: a publish still in flight
+// when the view swaps has to be visible to the view that replaces it.
+vi.mock("@clc/api/features/pools/deploy-client", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  createPoolDeployClient: () => ({ deployPool: mocks.deployPool }),
 }));
-vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
-  useDeployVoucher: () => ({ error: null, isPending: false, mutateAsync: mocks.deployVoucher }),
+vi.mock("@clc/api/features/vouchers/deploy-client", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  createVoucherDeployClient: () => ({ deployVoucher: mocks.deployVoucher }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({
@@ -86,6 +90,7 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
   }),
 }));
 vi.mock("#/hooks/use-deployment", () => ({
+  tokenTagsQueryKey: ["deployments", "token-tags"],
   useTokenTags: () => ({
     data: ["Agriculture", "Market"],
     isError: false,
@@ -178,6 +183,15 @@ function VoucherWizard({ step }: { step: VoucherCreateStep }) {
   );
 }
 
+/** A publish that settles only when the test says so. */
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((settle) => {
+    resolve = settle;
+  });
+  return { promise, resolve };
+}
+
 const entries = () => useViewDraftStore.getState().entries;
 const isDesktop = () => document.documentElement.dataset.layout === "desktop";
 /** The phone and desktop views label the same field a little differently. */
@@ -219,6 +233,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.stubGlobal("matchMedia", originalMatchMedia);
   delete document.documentElement.dataset.layout;
+  queryClient.clear();
   clearViewDrafts();
   usePoolCreateDraft.getState().clearDraft();
   useVoucherCreateDraft.getState().clearDraft();
@@ -426,5 +441,67 @@ describe("Create voucher across a phone/desktop view switch", () => {
     render(<VoucherWizard step="voucher" />);
     type("Voucher Name", "Name", "Typed signed out");
     expect(entries()).toEqual({});
+  });
+});
+
+describe("Publishing across a phone/desktop view switch", () => {
+  it("keeps the pool's publish busy in the other view until the first press settles", async () => {
+    const deploy = deferred<{ trackingId: string }>();
+    mocks.deployPool.mockReturnValue(deploy.promise);
+    const view = render(<PoolWizard step="pool" />);
+    type("Pool Name", "Name", "Kilifi Growers");
+    type("Pool Description", "Description", "A pool for Kilifi growers.");
+    type("Pool symbol", "Symbol", "KGP1");
+    view.rerender(<PoolWizard step="review" />);
+    fireEvent.click(screen.getByRole("checkbox", { name: /Accept Terms/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Confirm (&|and) Publish/i }));
+    await waitFor(() => expect(mocks.deployPool).toHaveBeenCalledTimes(1));
+
+    setViewport(true);
+
+    const publishing = screen.getByRole("button", { name: /Publishing/ }) as HTMLButtonElement;
+    expect(publishing.getAttribute("aria-busy")).toBe("true");
+    expect(publishing.disabled).toBe(true);
+
+    await act(async () => deploy.resolve({ trackingId: "pool-1" }));
+
+    const publish = await screen.findByRole("button", { name: /Confirm (&|and) Publish/i });
+    expect(publish.getAttribute("aria-busy")).toBeNull();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Accept Terms/ }));
+    expect(
+      (screen.getByRole("button", { name: /Confirm (&|and) Publish/i }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+    expect(mocks.deployPool).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the voucher's publish busy in the other view until the first press settles", async () => {
+    const deploy = deferred<{ trackingId: string }>();
+    mocks.deployVoucher.mockReturnValue(deploy.promise);
+    const view = render(<VoucherWizard step="voucher" />);
+    type("Voucher Name", "Name", "Kilifi Market");
+    type("Voucher Description", "Description", "Fresh food from Kilifi.");
+    type("Voucher Symbol", "Symbol", "KMKT");
+    view.rerender(<VoucherWizard step="review" />);
+    fireEvent.click(screen.getAllByRole("checkbox").at(-1) as HTMLElement);
+    fireEvent.click(screen.getByRole("button", { name: /Confirm (&|and) Publish/i }));
+    await waitFor(() => expect(mocks.deployVoucher).toHaveBeenCalledTimes(1));
+
+    setViewport(true);
+
+    const publishing = screen.getByRole("button", { name: /Publishing/ }) as HTMLButtonElement;
+    expect(publishing.getAttribute("aria-busy")).toBe("true");
+    expect(publishing.disabled).toBe(true);
+
+    await act(async () => deploy.resolve({ trackingId: "voucher-1" }));
+
+    const publish = await screen.findByRole("button", { name: /Confirm (&|and) Publish/i });
+    expect(publish.getAttribute("aria-busy")).toBeNull();
+    fireEvent.click(screen.getAllByRole("checkbox").at(-1) as HTMLElement);
+    expect(
+      (screen.getByRole("button", { name: /Confirm (&|and) Publish/i }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+    expect(mocks.deployVoucher).toHaveBeenCalledTimes(1);
   });
 });

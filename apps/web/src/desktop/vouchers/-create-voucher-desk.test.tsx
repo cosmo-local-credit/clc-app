@@ -48,7 +48,8 @@ vi.mock("#/lib/navigation/voucher-create-history", () => ({
   beginVoucherCreateHistory: vi.fn(),
   exitVoucherCreateHistory: vi.fn(),
 }));
-vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
+vi.mock("#/features/vouchers/hooks/use-voucher-deployment", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useDeployVoucher: () => ({ error: null, isPending: false, mutateAsync: vi.fn() }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => ({ data: {} }) }));

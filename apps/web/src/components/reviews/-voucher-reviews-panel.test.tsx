@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { ReviewAccess, ReviewPage } from "@clc/core/features/reviews/logic";
+import { activateLocale } from "@clc/i18n/index";
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
@@ -143,6 +144,20 @@ describe("voucher reviews", () => {
         "Good service",
       ),
     );
+  });
+
+  describe("in another language", () => {
+    afterEach(() => activateLocale("en"));
+
+    it("writes the review window's end in the app's language", async () => {
+      await activateLocale("de");
+      mount();
+      const until = new Intl.DateTimeFormat("de", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(access.editableUntil!));
+      expect(await screen.findByText((text) => text.includes(until))).toBeTruthy();
+    });
   });
 
   it("locks an existing review after its window expires", async () => {

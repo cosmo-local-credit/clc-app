@@ -8,6 +8,8 @@ import { useClient, useConnection } from "wagmi";
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
+import { useVoucherActionInFlight } from "./use-voucher-action-in-flight";
+
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 export type VoucherBurnInput = {
@@ -49,14 +51,19 @@ export function useVoucherOwnerBalance(
   });
 }
 
+/** Every voucher burn; `inFlight` narrows it to one voucher by its variables. */
+const VOUCHER_BURN_MUTATION_KEY = ["vouchers", "burn"] as const;
+
 /**
  * Burns from the owner's own balance. clc-core's Safe policy does not allow
  * `burn`, so a multisig owner is never offered this and the call is always
- * relayed for the owner's own wallet.
+ * relayed for the owner's own wallet. `inFlight` is true while a burn of this
+ * voucher runs from any view, including one that has since unmounted.
  */
-export function useVoucherBurn() {
+export function useVoucherBurn(tokenAddress?: string) {
   const { connector } = useConnection();
-  return useMutation({
+  const mutation = useMutation({
+    mutationKey: VOUCHER_BURN_MUTATION_KEY,
     mutationFn: (input: VoucherBurnInput) =>
       relayCaliburBatch(
         {
@@ -68,4 +75,9 @@ export function useVoucherBurn() {
         relayerClient,
       ),
   });
+  const inFlight = useVoucherActionInFlight(
+    { mutationKey: VOUCHER_BURN_MUTATION_KEY },
+    tokenAddress,
+  );
+  return { ...mutation, inFlight };
 }

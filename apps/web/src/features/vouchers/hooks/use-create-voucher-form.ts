@@ -12,6 +12,7 @@ import {
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
+import { useIsMutating } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +20,10 @@ import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
+import {
+  deployVoucherMutationKey,
+  useDeployVoucher,
+} from "#/features/vouchers/hooks/use-voucher-deployment";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
@@ -122,6 +126,9 @@ export function useCreateVoucherForm({
   const router = useRouter();
   const { address } = useConnection();
   const deployVoucher = useDeployVoucher();
+  // A publish outlives the view that started it: after a phone/desktop swap the
+  // other view's press would deploy the same voucher a second time.
+  const inFlight = useIsMutating({ mutationKey: deployVoucherMutationKey }) > 0;
   const usage = useResourceUsage();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
@@ -170,7 +177,7 @@ export function useCreateVoucherForm({
       },
     },
     onSubmit: async ({ value }) => {
-      if (usage.isError || !usage.data?.vouchers.canCreate) return;
+      if (inFlight || usage.isError || !usage.data?.vouchers.canCreate) return;
       if (!address) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
@@ -377,7 +384,8 @@ export function useCreateVoucherForm({
     usage,
     /** The issuer may not create another voucher, or usage could not be read. */
     blocked: usage.isError || !usage.data?.vouchers.canCreate,
-    deployVoucher,
+    /** A publish is in flight, from this view or the one it replaced. */
+    inFlight,
     tagsQuery,
     profile: profileQuery.data,
     checkNameAvailable,

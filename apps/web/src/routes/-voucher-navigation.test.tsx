@@ -147,7 +147,8 @@ vi.mock("#/features/images/use-image-upload", () => ({
   }),
 }));
 
-vi.mock("#/features/wallet/hooks/use-offering-mutations", () => ({
+vi.mock("#/features/wallet/hooks/use-offering-mutations", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useCreateVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdateVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useDeleteVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),

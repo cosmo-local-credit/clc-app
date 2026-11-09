@@ -20,7 +20,7 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 import { cn } from "#/lib/utils";
 
 const CELL =
-  "flex min-w-0 flex-col items-center justify-center gap-1 border-border border-e px-1 text-center leading-tight font-medium [overflow-wrap:anywhere] last:border-e-0 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground";
+  "flex min-w-0 flex-col items-center justify-center gap-1 border-border border-e text-center leading-tight font-medium [overflow-wrap:anywhere] last:border-e-0 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground";
 const LIVE = "hover:bg-muted";
 const DEAD = "cursor-not-allowed text-muted-foreground";
 
@@ -75,7 +75,11 @@ export function VoucherActionCells({
       ? ownerAddress
       : null;
   const verifiedWebsite = website && isHttpUrl(website) ? website : null;
-  const cell = cn(CELL, size === "page" ? "py-2.5 text-xs" : "py-2.5 text-2xs");
+  // The panel's cells are the narrow ones, so they keep the inline padding
+  // to a hair: six equal cells in a 400px column leave about 61px each, and
+  // 4px a side was the difference between "Directions" sitting on one line
+  // and breaking mid-word, which pushed the whole strip from 56px to 72px.
+  const cell = cn(CELL, size === "page" ? "px-1 py-2.5 text-xs" : "px-0.5 py-2.5 text-2xs");
   const icon = size === "page" ? "size-[18px]" : "size-4";
   const signedOut = !auth.isAuthenticated && !auth.isLoading;
   const checking = auth.isLoading;
@@ -240,20 +244,22 @@ export function VoucherActionCells({
         // One line, always the same height, so a reason appearing never moves
         // what is below. The text repeats what each disabled cell already
         // describes to a screen reader, so it is hidden from them here.
-        <div className="flex min-h-5 min-w-0 items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span aria-hidden="true" className="min-w-0 [overflow-wrap:anywhere]">
-            {shown ? reasons[shown] : null}
-          </span>
+        <div className="flex min-h-5 min-w-0 items-center gap-3 text-xs text-muted-foreground">
           {signedOut ? (
+            // Ahead of the reason, under the strip's first cells: at the far
+            // end of a wide canvas it read as a stray link belonging to nothing.
             <Link
               to="/onboarding"
               search={onboardingSearch("signin", redirectTo)}
               replace
-              className={cn(deskSectionLinkClass(), "ms-auto shrink-0")}
+              className={cn(deskSectionLinkClass(), "shrink-0")}
             >
               <Trans>Sign in</Trans>
             </Link>
           ) : null}
+          <span aria-hidden="true" className="min-w-0 [overflow-wrap:anywhere]">
+            {shown ? reasons[shown] : null}
+          </span>
           {unavailable.map((key) => (
             <span key={key} id={`${baseId}-${key}`} className="sr-only">
               {reasons[key]}

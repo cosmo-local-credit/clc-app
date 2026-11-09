@@ -3,10 +3,12 @@ import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client
 import { OFFERING_UNITS, offeringWriteSchema } from "@clc/core/features/offerings/logic";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
+import { useIsMutating } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import {
+  offeringMutationKeys,
   useCreateVoucherOffering,
   useUpdateVoucherOffering,
 } from "#/features/wallet/hooks/use-offering-mutations";
@@ -95,7 +97,15 @@ export function useOfferingForm({
    */
   const [photoBusy, setPhotoBusy] = useState(false);
 
-  const saving = create.isPending || update.isPending;
+  // A write outlives the view that started it: after a phone/desktop swap the
+  // other view's press would save the offering a second time.
+  const inFlight =
+    useIsMutating({
+      mutationKey: offering
+        ? offeringMutationKeys.update(voucherAddress)
+        : offeringMutationKeys.create(voucherAddress),
+    }) > 0;
+  const saving = create.isPending || update.isPending || inFlight;
 
   const form = useForm({
     defaultValues: {
@@ -110,6 +120,7 @@ export function useOfferingForm({
     },
     validators: { onSubmit: offeringWriteSchema },
     onSubmit: async ({ value }) => {
+      if (saving) return;
       // By this point the photo is already a stored URL: the field uploads on
       // selection, so there is no upload to sequence here and a failed write
       // leaves that URL in the form rather than re-sending the bytes.

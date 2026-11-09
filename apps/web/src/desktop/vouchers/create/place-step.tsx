@@ -31,7 +31,7 @@ import { FormFoot, type VoucherWizard } from "./wizard-bits";
 export function PlaceStep({ wizard }: { wizard: VoucherWizard }) {
   const { i18n, t } = useLingui();
   const { form, tagsQuery } = wizard;
-  const publishing = wizard.deployVoucher.isPending;
+  const publishing = wizard.inFlight;
   return (
     <>
       <DeskTitle>

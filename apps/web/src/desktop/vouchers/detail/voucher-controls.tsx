@@ -12,6 +12,7 @@ import { useId, useState, type ReactNode } from "react";
 import {
   RiArchiveLine,
   RiArrowRightSLine,
+  RiFireLine,
   RiPencilLine,
   RiShieldKeyholeLine,
   RiSparkling2Line,
@@ -39,6 +40,7 @@ import { RecipientAddressInput } from "#/components/wallet/recipient-address-inp
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import {
   type VoucherContractControl,
+  useVoucherBurnForm,
   useVoucherControls,
   useVoucherMintForm,
   useVoucherOwnershipTransferForm,
@@ -51,12 +53,12 @@ import { translateValidationError } from "#/lib/validation-i18n";
 
 import { VoucherDialog } from "./voucher-dialog";
 
-type ControlDialog = "details" | "mint" | "ownership" | "retirement";
+type ControlDialog = "details" | "mint" | "burn" | "ownership" | "retirement";
 
 /**
  * The issuer's controls at the foot of the Info column: Edit details, Safe
- * transactions, Create vouchers, Transfer ownership, and retirement. Each
- * opens a dialog over the same hook its phone sheet uses.
+ * transactions, Create vouchers, Destroy vouchers, Transfer ownership, and
+ * retirement. Each opens a dialog over the same hook its phone sheet uses.
  */
 export function VoucherOwnerControls({
   tokenAddress,
@@ -118,6 +120,14 @@ export function VoucherOwnerControls({
               label={t`Create vouchers`}
               onClick={() => setDialog("mint")}
             />
+            {/* `burn` takes from msg.sender, and clc-core's Safe policy does not allow it. */}
+            {contract.safeOwned ? null : (
+              <ControlRow
+                icon={<RiFireLine aria-hidden="true" />}
+                label={t`Destroy vouchers`}
+                onClick={() => setDialog("burn")}
+              />
+            )}
             <ControlRow
               icon={<RiUserSharedLine aria-hidden="true" />}
               label={t`Transfer ownership`}
@@ -163,6 +173,20 @@ export function VoucherOwnerControls({
               <MintForm contract={contract} tokenSymbol={tokenSymbol} onClose={close} />
             ) : null}
           </VoucherDialog>
+          {contract.safeOwned ? null : (
+            <VoucherDialog
+              open={dialog === "burn"}
+              onOpenChange={(open) => {
+                if (!open) close();
+              }}
+              title={<Trans>Destroy vouchers</Trans>}
+              bodyClassName="p-0"
+            >
+              {dialog === "burn" ? (
+                <BurnForm contract={contract} tokenSymbol={tokenSymbol} onClose={close} />
+              ) : null}
+            </VoucherDialog>
+          )}
           <VoucherDialog
             open={dialog === "ownership"}
             onOpenChange={(open) => {
@@ -201,7 +225,7 @@ function ControlRow({
     >
       {icon}
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <RiArrowRightSLine className="text-muted-foreground" aria-hidden="true" />
+      <RiArrowRightSLine className="text-muted-foreground rtl:-scale-x-100" aria-hidden="true" />
     </button>
   );
 }
@@ -382,6 +406,74 @@ function MintForm({
             <Trans>Creating vouchers…</Trans>
           ) : (
             <Trans>Create vouchers</Trans>
+          )}
+        </Button>
+      </FormFooter>
+    </form>
+  );
+}
+
+function BurnForm({
+  contract,
+  tokenSymbol,
+  onClose,
+}: {
+  contract: VoucherContractControl;
+  tokenSymbol: string;
+  onClose: () => void;
+}) {
+  const { t } = useLingui();
+  const { form, delegationStatus, burning, pending, balance } = useVoucherBurnForm({
+    tokenAddress: contract.tokenAddress as `0x${string}`,
+    tokenDecimals: contract.tokenDecimals,
+    ownerAddress: contract.ownerAddress,
+    enabled: true,
+    onClose,
+  });
+  const tokenBalance = balance === undefined ? undefined : `${balance} ${tokenSymbol}`;
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
+      <div className="grid gap-4 p-4">
+        <form.Field name="amount">
+          {(field) => (
+            <Field
+              label={t`Destroy vouchers`}
+              htmlFor="desk-voucher-burn-amount"
+              hint={tokenBalance === undefined ? tokenSymbol : t`Balance ${tokenBalance}`}
+              error={getFieldError(field.state.meta.errors)}
+            >
+              <Input
+                id="desk-voucher-burn-amount"
+                dir="ltr"
+                inputMode="decimal"
+                placeholder="0"
+                className="bg-card font-mono"
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                disabled={burning}
+                aria-invalid={field.state.meta.errors.length > 0}
+              />
+            </Field>
+          )}
+        </form.Field>
+      </div>
+      <FormFooter>
+        <Button type="button" variant="outline" disabled={burning} onClick={onClose}>
+          <Trans>Cancel</Trans>
+        </Button>
+        <Button type="submit" variant="destructive" pending={pending}>
+          {delegationStatus === "checking" ? (
+            <Trans>Preparing wallet…</Trans>
+          ) : burning ? (
+            <Trans>Destroying vouchers…</Trans>
+          ) : (
+            <Trans>Destroy vouchers</Trans>
           )}
         </Button>
       </FormFooter>

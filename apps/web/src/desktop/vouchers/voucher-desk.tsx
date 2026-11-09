@@ -13,6 +13,7 @@ import { VoucherAvatar, WALLET_TOKEN_BY_ID, type WalletToken } from "#/component
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { DeskCanvas, DeskDetail, DeskTitleRow } from "#/desktop/ui/page";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { canReachPrivateRoutes } from "#/features/auth/logic/private-routes";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useAssetOwner } from "#/features/ownership/hooks/use-asset-owner";
@@ -105,6 +106,7 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
   });
   useDeskTrailLabel(detail?.name ?? baseToken?.name);
   const { address: walletAddress } = useConnection();
+  const privateNav = canReachPrivateRoutes(auth);
   const { canEdit } = useCanEditVoucher(
     detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
     detail,
@@ -233,6 +235,7 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
                 voucherValue={resolvedVoucherValue}
                 voucherUoa={resolvedVoucherUoa}
                 ownerAddress={ownerForControls}
+                canEditDetails={canEdit}
                 layout="page"
                 onCount={sectionCounts.report.offerings}
               />
@@ -266,23 +269,28 @@ export function VoucherDesk({ voucherAddress }: { voucherAddress: `0x${string}` 
           </div>
         </>
       }
+      // Info is a members-only panel. For a visitor it is one sentence, which
+      // is not worth 360px of column: the sections take the width instead, and
+      // the way in is already the action strip's Sign in and the top bar's.
       side={
-        <section
-          aria-labelledby={infoHeadingId}
-          className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4"
-        >
-          <SectionHeading as="h2" id={infoHeadingId} className="sr-only">
-            {t`Info`}
-          </SectionHeading>
-          <VoucherInfoDesk
-            address={address}
-            symbol={token.symbol}
-            decimals={token.tokenDecimals}
-            ownerAddress={ownerForControls}
-            detail={detail}
-            privateInfo={privateInfo}
-          />
-        </section>
+        !privateNav ? null : (
+          <section
+            aria-labelledby={infoHeadingId}
+            className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4"
+          >
+            <SectionHeading as="h2" id={infoHeadingId} className="sr-only">
+              {t`Info`}
+            </SectionHeading>
+            <VoucherInfoDesk
+              address={address}
+              symbol={token.symbol}
+              decimals={token.tokenDecimals}
+              ownerAddress={ownerForControls}
+              detail={detail}
+              privateInfo={privateInfo}
+            />
+          </section>
+        )
       }
     />
   );

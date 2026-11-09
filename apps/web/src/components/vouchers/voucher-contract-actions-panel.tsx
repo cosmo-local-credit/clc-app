@@ -1,9 +1,6 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
-import { voucherBurnAmountSchema } from "@clc/core/features/vouchers/logic";
-import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   RiFireLine,
@@ -12,8 +9,6 @@ import {
   RiSparkling2Line,
   RiUserSharedLine,
 } from "react-icons/ri";
-import { toast } from "sonner";
-import { z } from "zod";
 
 import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
@@ -30,22 +25,14 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { RecipientOwnerNotice } from "#/components/safe/recipient-owner-notice";
-import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
-import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
 import { useSafeSheet } from "#/features/safe/state/safe-sheet";
 import {
+  useVoucherBurnForm,
   useVoucherControls,
   useVoucherMintForm,
   useVoucherOwnershipTransferForm,
 } from "#/features/vouchers/hooks/use-voucher-controls";
-import {
-  useVoucherBurn,
-  useVoucherOwnerBalance,
-  voucherOwnerBalanceQueryKeys,
-} from "#/features/vouchers/hooks/use-voucher-burn";
 import { RetirementControl } from "#/components/retirement/retirement-control";
-import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
-import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 
 import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
 
@@ -323,46 +310,14 @@ function VoucherBurnSheet({
   ownerAddress: `0x${string}`;
 }) {
   const { t } = useLingui();
-  const queryClient = useQueryClient();
-  const delegationStatus = useCaliburDelegation(ownerAddress);
-  const burn = useVoucherBurn();
-  const reportError = useReportWriteError();
-  const balance = useVoucherOwnerBalance(tokenAddress, ownerAddress, open);
-  const form = useForm({
-    defaultValues: { amount: "" },
-    validators: {
-      onSubmit: z.object({
-        amount: voucherBurnAmountSchema(
-          tokenDecimals,
-          balance.data === undefined ? undefined : BigInt(balance.data),
-        ),
-      }),
-    },
-    onSubmit: async ({ value }) => {
-      try {
-        await burn.mutateAsync({
-          tokenAddress,
-          ownerAddress,
-          amountRaw: parseTokenAmount(value.amount, tokenDecimals),
-          includeAuthorization: delegationStatus === "not-delegated",
-        });
-        void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
-        void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
-        void queryClient.invalidateQueries({ queryKey: voucherOwnerBalanceQueryKeys.all });
-        toast.success(t`Voucher destruction submitted.`);
-        form.reset();
-        onClose();
-      } catch (error) {
-        if (reportError(error, t`Couldn't destroy vouchers.`)) onClose();
-      }
-    },
+  const { form, delegationStatus, burning, pending, balance } = useVoucherBurnForm({
+    tokenAddress,
+    tokenDecimals,
+    ownerAddress,
+    enabled: open,
+    onClose,
   });
-
-  const pending = burn.isPending || delegationStatus === "checking" || balance.isPending;
-  const tokenBalance =
-    balance.data === undefined
-      ? undefined
-      : `${formatTokenAmount(balance.data, tokenDecimals, tokenDecimals)} ${tokenSymbol}`;
+  const tokenBalance = balance === undefined ? undefined : `${balance} ${tokenSymbol}`;
 
   return (
     <SheetRoot
@@ -403,7 +358,7 @@ function VoucherBurnSheet({
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
                       onBlur={field.handleBlur}
-                      disabled={burn.isPending}
+                      disabled={burning}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>
@@ -414,7 +369,7 @@ function VoucherBurnSheet({
               <Button type="submit" variant="destructive" tap className="w-full" pending={pending}>
                 {delegationStatus === "checking" ? (
                   <Trans>Preparing wallet…</Trans>
-                ) : burn.isPending ? (
+                ) : burning ? (
                   <Trans>Destroying vouchers…</Trans>
                 ) : (
                   <Trans>Destroy vouchers</Trans>

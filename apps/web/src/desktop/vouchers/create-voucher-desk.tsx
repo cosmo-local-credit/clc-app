@@ -1,15 +1,15 @@
+import type { ResourceUsage } from "@clc/api/features/resource-limits/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 
 import { Button } from "#/components/ui/button";
-import { Progress } from "#/components/ui/progress";
 import { DeskCanvas, DeskTitle } from "#/desktop/ui/page";
 import {
   useCreateVoucherForm,
   type VoucherCreateStep,
 } from "#/features/vouchers/hooks/use-create-voucher-form";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
-import { cn } from "#/lib/utils";
+import { DeskQuotaMeter } from "#/desktop/ui/quota";
 import { DetailsStep } from "./create/details-step";
 import { PlaceStep } from "./create/place-step";
 import { ReviewStep } from "./create/review-step";
@@ -104,38 +104,11 @@ export function CreateVoucherDesk({ step }: { step: VoucherCreateStep }) {
  * The usage line under the steps. A finite allowance gets a determinate meter;
  * an unlimited one has no denominator, so it is just "3 used · Unlimited".
  */
-function UsageMeter({
-  quota,
-}: {
-  quota: { used: number; limit: number; unlimited: boolean; canCreate: boolean };
-}) {
-  const { t, i18n } = useLingui();
-  const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
-  const used = digits.format(quota.used);
-  const limit = digits.format(quota.limit);
+function UsageMeter({ quota }: { quota: ResourceUsage["vouchers"] }) {
+  const { t } = useLingui();
   return (
     <div className="grid gap-1.5 border-border border-t pt-3.5">
-      <p className="text-xs text-muted-foreground" aria-live="polite">
-        {quota.unlimited ? (
-          <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-        ) : (
-          <Trans id="{used} of {limit} used">
-            {used} of {limit} used
-          </Trans>
-        )}
-      </p>
-      {!quota.unlimited && quota.limit > 0 ? (
-        <Progress
-          value={Math.min(quota.used, quota.limit)}
-          max={quota.limit}
-          aria-label={t`Vouchers`}
-          getAriaValueText={() => t`${used} of ${limit} used`}
-          className={cn(
-            "h-1 bg-foreground/12",
-            !quota.canCreate && "[&_[data-slot=progress-indicator]]:bg-destructive",
-          )}
-        />
-      ) : null}
+      <DeskQuotaMeter quota={quota} label={t`Vouchers`} />
     </div>
   );
 }

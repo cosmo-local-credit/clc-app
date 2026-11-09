@@ -1,6 +1,9 @@
 import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
-import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
-import { parseTokenAmount } from "@clc/core/features/wallet/logic";
+import {
+  voucherBurnAmountSchema,
+  voucherMintAmountSchema,
+} from "@clc/core/features/vouchers/logic";
+import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,6 +21,11 @@ import { useReportWriteError } from "#/features/safe/hooks/use-report-write-erro
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 
+import {
+  useVoucherBurn,
+  useVoucherOwnerBalance,
+  voucherOwnerBalanceQueryKeys,
+} from "./use-voucher-burn";
 import { useVoucherMint } from "./use-voucher-mint";
 import { useVoucherOwnershipTransfer } from "./use-voucher-ownership-transfer";
 
@@ -133,7 +141,77 @@ export function useVoucherMintForm({
   return {
     form,
     delegationStatus,
-    pending: mint.isPending || delegationStatus === "checking",
+    // A mint still running from another view (a layout switch remounts every
+    // form) holds this one too, so it cannot be submitted twice.
+    pending: mint.isPending || mint.inFlight || delegationStatus === "checking",
+  };
+}
+
+/**
+ * Destroying vouchers from the owner's own balance, capped at what the chain
+ * says it holds. Never offered for a Safe-owned voucher: clc-core's Safe
+ * policy does not allow `burn`. `enabled` gates the balance read to an open form.
+ */
+export function useVoucherBurnForm({
+  tokenAddress,
+  tokenDecimals,
+  ownerAddress,
+  enabled,
+  onClose,
+}: {
+  tokenAddress: `0x${string}`;
+  tokenDecimals: number;
+  ownerAddress: `0x${string}`;
+  enabled: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useLingui();
+  const queryClient = useQueryClient();
+  const delegationStatus = useCaliburDelegation(ownerAddress);
+  const burn = useVoucherBurn(tokenAddress);
+  const reportError = useReportWriteError();
+  const balance = useVoucherOwnerBalance(tokenAddress, ownerAddress, enabled);
+  const form = useForm({
+    defaultValues: { amount: "" },
+    validators: {
+      onSubmit: z.object({
+        amount: voucherBurnAmountSchema(
+          tokenDecimals,
+          balance.data === undefined ? undefined : BigInt(balance.data),
+        ),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await burn.mutateAsync({
+          tokenAddress,
+          ownerAddress,
+          amountRaw: parseTokenAmount(value.amount, tokenDecimals),
+          includeAuthorization: delegationStatus === "not-delegated",
+        });
+        void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
+        void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
+        void queryClient.invalidateQueries({ queryKey: voucherOwnerBalanceQueryKeys.all });
+        toast.success(t`Voucher destruction submitted.`);
+        form.reset();
+        onClose();
+      } catch (error) {
+        if (reportError(error, t`Couldn't destroy vouchers.`)) onClose();
+      }
+    },
+  });
+
+  const burning = burn.isPending || burn.inFlight;
+  return {
+    form,
+    delegationStatus,
+    burning,
+    pending: burning || delegationStatus === "checking" || balance.isPending,
+    /** The owner's on-chain balance at full precision; undefined until read. */
+    balance:
+      balance.data === undefined
+        ? undefined
+        : formatTokenAmount(balance.data, tokenDecimals, tokenDecimals),
   };
 }
 
@@ -190,6 +268,9 @@ export function useVoucherOwnershipTransferForm({
     form,
     submission,
     delegationStatus,
-    pending: transferOwnership.isPending || (!submission && delegationStatus === "checking"),
+    pending:
+      transferOwnership.isPending ||
+      transferOwnership.inFlight ||
+      (!submission && delegationStatus === "checking"),
   };
 }
