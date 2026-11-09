@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
+import { QueryClient } from "@tanstack/react-query";
 import type {
+  AccountActivityItem,
   AccountActivityResult,
   AccountsClient,
   AccountTokensResult,
@@ -7,6 +9,7 @@ import type {
 } from "./client";
 import {
   accountActivityInfiniteQueryOptions,
+  accountActivityLatestQueryOptions,
   accountKeys,
   accountTokensInfiniteQueryOptions,
   accountTransfersInfiniteQueryOptions,
@@ -25,6 +28,7 @@ describe("accountKeys", () => {
       accountKeys.transfers(ADDRESS, 20),
       accountKeys.transfersInfinite(ADDRESS, 20),
       accountKeys.activityInfinite(ADDRESS, 20),
+      accountKeys.activityLatest(ADDRESS, 20),
     ]) {
       expect(key.slice(0, accountKeys.all.length)).toEqual([...accountKeys.all]);
     }
@@ -40,6 +44,9 @@ describe("accountKeys", () => {
     expect(accountKeys.tokens(ADDRESS, 20)).not.toEqual(accountKeys.tokensInfinite(ADDRESS, 20));
     expect(accountKeys.transfers(ADDRESS, 20)).not.toEqual(
       accountKeys.transfersInfinite(ADDRESS, 20),
+    );
+    expect(accountKeys.activityLatest(ADDRESS, 20)).not.toEqual(
+      accountKeys.activityInfinite(ADDRESS, 20),
     );
   });
 
@@ -179,5 +186,135 @@ describe("logical activity search pagination", () => {
       },
       signal,
     );
+  });
+});
+
+describe("latest activity window", () => {
+  it("reads the first unfiltered page with no cursor", async () => {
+    const result: AccountActivityResult = { activity: [] };
+    const getAccountActivity = vi.fn().mockResolvedValue(result);
+    const options = accountActivityLatestQueryOptions(
+      { getAccountActivity } as unknown as AccountsClient,
+      ADDRESS,
+      20,
+    );
+    const signal = new AbortController().signal;
+
+    await expect(options.queryFn?.({ signal } as never)).resolves.toBe(result);
+    expect(getAccountActivity).toHaveBeenCalledWith({ address: ADDRESS, perPage: 20 }, signal);
+  });
+
+  it("stays disabled without an address", () => {
+    expect(accountActivityLatestQueryOptions({} as AccountsClient, undefined, 20).enabled).toBe(
+      false,
+    );
+  });
+
+  it("isolates each seen boundary in the query cache", () => {
+    expect(accountKeys.activityLatest(ADDRESS, 20, "2026-11-09T10:00:00Z")).not.toEqual(
+      accountKeys.activityLatest(ADDRESS, 20, "2026-11-09T10:00:05Z"),
+    );
+    expect(accountKeys.activityLatest(ADDRESS, 20)).toEqual(
+      accountKeys.activityLatest(ADDRESS.toLowerCase(), 20),
+    );
+  });
+
+  it("reads through a full page in the seen block and stops after passing it", async () => {
+    const sameBlock: AccountActivityItem = {
+      kind: "received",
+      id: 3,
+      txHash: "0x03",
+      dateBlock: "2026-11-09T10:00:05Z",
+      success: true,
+      transfer: {
+        tokenAddress: ADDRESS,
+        tokenName: "Token",
+        tokenSymbol: "TKN",
+        tokenDecimals: 6,
+        amount: "1000000",
+      },
+      senderAddress: ADDRESS,
+      recipientAddress: ADDRESS,
+      counterpartyAddress: ADDRESS,
+      hasNote: false,
+    };
+    const sibling = { ...sameBlock, id: 2, txHash: "0x02" };
+    const older = { ...sameBlock, id: 1, txHash: "0x01", dateBlock: "2026-11-09T10:00:00Z" };
+    const getAccountActivity = vi
+      .fn()
+      .mockResolvedValueOnce({ activity: [sameBlock], last: 3 })
+      .mockResolvedValueOnce({ activity: [sibling], last: 2 })
+      .mockResolvedValueOnce({ activity: [older], last: 1 });
+    const client = new QueryClient();
+    try {
+      const result = await client.fetchQuery(
+        accountActivityLatestQueryOptions(
+          { getAccountActivity } as unknown as AccountsClient,
+          ADDRESS,
+          1,
+          sameBlock.dateBlock,
+        ),
+      );
+      expect(result.activity).toEqual([sameBlock, sibling, older]);
+      expect(getAccountActivity).toHaveBeenCalledTimes(3);
+      const signal = getAccountActivity.mock.calls[0]?.[1] as AbortSignal;
+      expect(getAccountActivity).toHaveBeenNthCalledWith(
+        2,
+        { address: ADDRESS, perPage: 1, cursor: 3, next: true },
+        signal,
+      );
+      expect(getAccountActivity).toHaveBeenNthCalledWith(
+        3,
+        { address: ADDRESS, perPage: 1, cursor: 2, next: true },
+        signal,
+      );
+    } finally {
+      client.clear();
+    }
+  });
+
+  it("rejects an incomplete scan when a later page fails", async () => {
+    const getAccountActivity = vi
+      .fn()
+      .mockResolvedValueOnce({ activity: [{ dateBlock: "2026-11-09T10:00:05Z" }], last: 3 })
+      .mockRejectedValueOnce(new Error("second page failed"));
+    const client = new QueryClient();
+    try {
+      await expect(
+        client.fetchQuery(
+          accountActivityLatestQueryOptions(
+            { getAccountActivity } as unknown as AccountsClient,
+            ADDRESS,
+            1,
+            "2026-11-09T10:00:00Z",
+          ),
+        ),
+      ).rejects.toThrow("second page failed");
+    } finally {
+      client.clear();
+    }
+  });
+
+  it("rejects a repeated cursor instead of looping or counting rows twice", async () => {
+    const getAccountActivity = vi.fn().mockResolvedValue({
+      activity: [{ dateBlock: "2026-11-09T10:00:05Z" }],
+      last: 3,
+    });
+    const client = new QueryClient();
+    try {
+      await expect(
+        client.fetchQuery(
+          accountActivityLatestQueryOptions(
+            { getAccountActivity } as unknown as AccountsClient,
+            ADDRESS,
+            1,
+            "2026-11-09T10:00:00Z",
+          ),
+        ),
+      ).rejects.toThrow("Activity pagination did not advance.");
+      expect(getAccountActivity).toHaveBeenCalledTimes(2);
+    } finally {
+      client.clear();
+    }
   });
 });

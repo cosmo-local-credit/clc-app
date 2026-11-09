@@ -55,6 +55,10 @@ function logicalActivity(transfers: readonly TransferFixture[]) {
   );
 }
 
+vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
+  useActivityVisit: () => () => false,
+}));
+
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => ADDRESS.toLowerCase(),
 }));

@@ -2,6 +2,7 @@ import { Outlet, useMatches, useSearch } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { useActivityUnseen } from "#/features/wallet/hooks/use-activity-unseen";
 import {
   type HomeTab,
   isAtHomeTabRoot,
@@ -19,6 +20,7 @@ const BOTTOM_NAV_OFFSET = "calc(4rem + env(safe-area-inset-bottom))";
 
 export function NavigationShell() {
   const auth = useAuthStatus();
+  const unreadActivity = useActivityUnseen().count;
   const navOwner = useMatches({
     select: (matches) => matches.at(-1)?.staticData.navOwner,
   }) as NavOwner | undefined;
@@ -87,6 +89,7 @@ export function NavigationShell() {
         atActiveTabRoot={atActiveTabRoot}
         isMarketMap={isMarketMap}
         locked={!auth.isLoading && !signedIn}
+        unreadActivity={unreadActivity}
       />
     </>
   );

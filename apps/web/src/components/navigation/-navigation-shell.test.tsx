@@ -48,6 +48,10 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   },
 }));
 
+vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
+  useActivityUnseen: () => ({ count: 0 }),
+}));
+
 vi.mock("#/components/ui/clc-logo", () => ({
   CLCLogo: () => <svg data-testid="clc-logo" />,
 }));
