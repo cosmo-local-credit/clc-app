@@ -21,7 +21,7 @@ import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import { WantPicture } from "#/components/wants/want-row";
 import { PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
-import { activityRowKey } from "#/desktop/activity/activity-desk";
+import { activityRowKey } from "#/desktop/activity/transactions-desk";
 import type { DeskColumn } from "#/desktop/ui/data-table";
 import { DeskTable } from "#/desktop/ui/data-table";
 import {

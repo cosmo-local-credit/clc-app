@@ -27,7 +27,8 @@ vi.mock("#/features/wallet/hooks/use-send-share", () => ({
   useSendShare: () => ({ data: undefined, isPending: false, isError: false, fetchStatus: "idle" }),
 }));
 
-import { ActivityDesk, activityAmountSortValue, activityRowKey } from "./activity-desk";
+import { ActivityDesk } from "./activity-desk";
+import { activityAmountSortValue, activityRowKey } from "./transactions-desk";
 
 const ACCOUNT = getAddress(`0x${"a1".repeat(20)}`);
 const PEER = getAddress(`0x${"b2".repeat(20)}`);

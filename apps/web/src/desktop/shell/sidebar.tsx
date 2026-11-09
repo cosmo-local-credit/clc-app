@@ -22,7 +22,7 @@ import { DeskTooltip, DeskTooltipProvider } from "#/desktop/ui/tooltip";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { canReachPrivateRoutes } from "#/features/auth/logic/private-routes";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useActivityUnseen } from "#/features/wallet/hooks/use-activity-unseen";
+import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import { cn } from "#/lib/utils";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { DESK_SELECTED_EDGE } from "#/desktop/ui/page";
@@ -110,7 +110,8 @@ export function DesktopSidebar() {
   // Wallet, Activity and Settings all sit behind `AuthenticatedRoute`. A guest
   // who clicks one only reaches the sign-in gate, so they are not offered.
   const privateNav = canReachPrivateRoutes(auth);
-  const unreadActivity = useActivityUnseen().count;
+  // Transactions plus Messages and Helpdesk; the messaging part is zero while it is off.
+  const unreadActivity = useActivityCounts().total;
   const address = auth.address;
   const name = profile.data?.name?.trim();
   const marketChild = selection.nav === "market" && Boolean(selection.scope);

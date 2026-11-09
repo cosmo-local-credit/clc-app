@@ -173,6 +173,7 @@ function IndexPage() {
       <WalletDesk />
     ) : tab === "activity" ? (
       <ActivityDesk
+        section={parseActivitySection(search.section)}
         address={auth.address}
         query={activity.q}
         types={activity.types}

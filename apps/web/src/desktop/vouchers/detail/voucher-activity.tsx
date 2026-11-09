@@ -5,7 +5,7 @@ import { RiArrowLeftDownLine, RiArrowRightUpLine, RiSparkling2Line } from "react
 
 import { Button } from "#/components/ui/button";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
-import { activityRowKey } from "#/desktop/activity/activity-desk";
+import { activityRowKey } from "#/desktop/activity/transactions-desk";
 import { type DeskColumn, DeskTable } from "#/desktop/ui/data-table";
 import { DeskPanel, DeskSection } from "#/desktop/ui/page";
 import { useVoucherTransfers } from "#/features/wallet/hooks/use-voucher-transfers";
