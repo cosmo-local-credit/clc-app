@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger } from "#/components/ui/popover";
-import { Progress } from "#/components/ui/progress";
 import { MarketAvatar } from "#/desktop/market/market-bits";
 import { FullValue } from "#/desktop/ui/full-value";
 import { DeskKV } from "#/desktop/ui/kv";
@@ -20,6 +19,7 @@ import type {
 } from "#/features/pools/hooks/use-create-pool-form";
 import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { cn } from "#/lib/utils";
+import { DeskQuotaMeter } from "#/desktop/ui/quota";
 
 export type CreatePoolController = ReturnType<typeof useCreatePoolForm>;
 
@@ -47,10 +47,9 @@ export const FIELDS_CLEAR_OF_FOOT =
  * metadata, "3 used · Unlimited", with no bar even at zero.
  */
 export function PoolUsageDesk() {
-  const { t, i18n } = useLingui();
+  const { t } = useLingui();
   const query = useResourceUsage();
   const quota = query.data?.pools;
-  const digits = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale);
 
   if (query.isError) {
     return (
@@ -71,31 +70,9 @@ export function PoolUsageDesk() {
       </p>
     );
   }
-  const used = digits.format(quota.used);
-  const limit = digits.format(quota.limit);
   return (
-    <div className="grid gap-1.5" aria-live="polite">
-      <p className="text-muted-foreground text-xs">
-        {quota.unlimited ? (
-          <Trans id="{used} used · Unlimited">{used} used · Unlimited</Trans>
-        ) : (
-          <Trans id="{used} of {limit} used">
-            {used} of {limit} used
-          </Trans>
-        )}
-      </p>
-      {!quota.unlimited && quota.limit > 0 ? (
-        <Progress
-          value={Math.min(quota.used, quota.limit)}
-          max={quota.limit}
-          aria-label={t`Pools`}
-          getAriaValueText={() => t`${used} of ${limit} used`}
-          className={cn(
-            "h-1 bg-foreground/12",
-            !quota.canCreate && "[&_[data-slot=progress-indicator]]:bg-destructive",
-          )}
-        />
-      ) : null}
+    <div className="grid gap-1.5">
+      <DeskQuotaMeter quota={quota} label={t`Pools`} />
       {quota.canCreate ? null : (
         <p className="text-destructive text-xs">
           <Trans>Limit reached</Trans>

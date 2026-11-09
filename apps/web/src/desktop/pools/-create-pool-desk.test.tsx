@@ -63,7 +63,8 @@ vi.mock("#/lib/navigation/pool-create-history", () => ({
   beginPoolCreateHistory: vi.fn(),
   exitPoolCreateHistory: vi.fn(),
 }));
-vi.mock("#/features/pools/hooks/use-pool-deployment", () => ({
+vi.mock("#/features/pools/hooks/use-pool-deployment", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useDeployPool: () => ({ error: null, isPending: false, mutateAsync: vi.fn() }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => ({ data: null }) }));

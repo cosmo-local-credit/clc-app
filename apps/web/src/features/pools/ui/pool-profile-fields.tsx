@@ -36,7 +36,7 @@ export function PoolProfileFields({
   profile: ReturnType<typeof usePoolProfileForm>;
 }) {
   const { t, i18n } = useLingui();
-  const { form, update, tagsQuery, setImageBusy } = profile;
+  const { form, inFlight, tagsQuery, setImageBusy } = profile;
   return (
     <>
       <form.Field name="displayName">
@@ -111,7 +111,7 @@ export function PoolProfileFields({
               value={field.state.value || null}
               onChange={(url) => field.handleChange(url ?? "")}
               onBusyChange={setImageBusy}
-              disabled={update.isPending}
+              disabled={inFlight}
             />
           )}
         </form.Field>

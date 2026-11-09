@@ -20,6 +20,14 @@ const RECIPIENT = "0x2222e18f7329bb8b533e5be0d8b176ee1ed72222";
 const refs = vi.hoisted(() => ({
   model: { current: null as unknown },
   feed: { current: null as unknown },
+  feedArgs: { current: [] as unknown[] },
+  holdings: {
+    current: {
+      holdings: [] as { unitValueRaw: string | null }[],
+      unit: "KES",
+      isPending: false,
+    },
+  },
 }));
 
 // The page's own state (URL, side panel, tabs, stacking) is what is under test;
@@ -28,8 +36,22 @@ vi.mock("#/desktop/pools/pool-main", async (importOriginal) => ({
   ...(await importOriginal<typeof import("#/desktop/pools/pool-main")>()),
   usePoolDeskModel: () => refs.model.current,
 }));
-vi.mock("#/desktop/pools/pool-activity-feed", () => ({
-  usePoolActivityFeed: () => refs.feed.current,
+vi.mock("#/desktop/pools/pool-activity-feed", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("#/desktop/pools/pool-activity-feed")>()),
+  usePoolActivityFeed: (...args: unknown[]) => {
+    refs.feedArgs.current = args;
+    return refs.feed.current;
+  },
+}));
+vi.mock("#/components/reviews/review-summary", () => ({
+  ReviewSummaryContent: ({ kind, address }: { kind: string; address: string }) => (
+    <span>{`rating of ${kind} ${address}`}</span>
+  ),
+}));
+vi.mock("#/desktop/vouchers/detail/voucher-reviews", () => ({
+  VoucherReviewsDesk: ({ kind, address }: { kind?: string; address: string }) => (
+    <section aria-label="Reviews">{`${kind ?? "voucher"} reviews of ${address}`}</section>
+  ),
 }));
 vi.mock("#/desktop/pools/pool-swap-column", () => ({
   PoolSwapColumn: () => <section aria-label="Swap panel" />,
@@ -38,7 +60,7 @@ vi.mock("#/desktop/pools/detail/pool-receive-popover", () => ({ PoolReceivePopov
 vi.mock("#/components/catalogs/add-to-catalog-button", () => ({ AddToCatalogButton: () => null }));
 vi.mock("#/components/safe/multisig-owner-notice", () => ({ MultisigOwnerNotice: () => null }));
 vi.mock("#/features/pools/hooks/use-pool-holdings", () => ({
-  usePoolHoldings: () => ({ holdings: [], unit: "KES", isPending: false }),
+  usePoolHoldings: () => refs.holdings.current,
 }));
 vi.mock("#/features/pools/hooks/use-pool-fee-settings", () => ({
   usePoolFeeSettings: () => ({ data: undefined, isLoading: false }),
@@ -52,19 +74,29 @@ vi.mock("#/desktop/pools/detail/pool-info-desk", () => ({
 vi.mock("#/desktop/pools/detail/pool-tab-bodies", () => ({
   PoolOfferingsGrid: () => <p>offerings body</p>,
   PoolWantsTable: () => <p>wants body</p>,
-  PoolVouchersTable: () => <p>vouchers body</p>,
+  PoolVouchersTable: ({ figures }: { figures: boolean }) => (
+    <p>{figures ? "vouchers body with figures" : "vouchers body"}</p>
+  ),
   PoolHoldingsTable: () => <p>holdings body</p>,
   PoolCreditTable: () => <p>credit body</p>,
   PoolActivityTable: ({
     feed,
     selectedKey,
     onOpen,
+    types,
+    onTypesChange,
   }: {
     feed: { entries: { key: string }[] };
     selectedKey: string | undefined;
     onOpen: (entry: never) => void;
+    types: readonly string[];
+    onTypesChange: (types: readonly string[]) => void;
   }) => (
     <div>
+      <p>{`types: ${types.join(",")}`}</p>
+      <button type="button" onClick={() => onTypesChange(["swapped"])}>
+        filter swaps
+      </button>
       {feed.entries.map((entry) => (
         <button
           key={entry.key}
@@ -169,6 +201,7 @@ function setModel({
           name: "Kilifi Traders",
           imageUrl: null,
           locationName: "Kilifi, Kenya",
+          description: "Fish for flour along the coast.",
           tags: [],
           active,
         },
@@ -223,8 +256,8 @@ function mount(url: string) {
     initialIndex: url.startsWith("/elsewhere") ? 0 : 1,
   });
   const router = createRouter({ routeTree: root.addChildren([pool, elsewhere]), history });
-  render(<RouterProvider router={router} />);
-  return { router, history };
+  const view = render(<RouterProvider router={router} />);
+  return { router, history, unmount: view.unmount };
 }
 
 /** The wrapper `DeskDetail` puts the side column in. */
@@ -244,6 +277,7 @@ function precedesTitle(element: Element) {
 beforeEach(() => {
   setModel();
   setFeed();
+  refs.holdings.current = { holdings: [], unit: "KES", isPending: false };
 });
 
 afterEach(() => {
@@ -408,6 +442,18 @@ describe("pool tabs", () => {
     expect(tab("Offerings").getAttribute("aria-selected")).toBe("true");
     expect(screen.queryByText("credit body")).toBeNull();
   });
+
+  it("leaves Activity out for a guest on a retired pool, whose feed is read behind sign-in", async () => {
+    setModel({ authenticated: false, owner: false, active: false });
+    mount(`/pools/${POOL}?tab=activity`);
+    const list = await screen.findByRole("tablist");
+    expect(
+      within(list)
+        .getAllByRole("tab")
+        .map((entry) => entry.textContent),
+    ).toEqual(["Holdings", "Info"]);
+    expect(tab("Holdings").getAttribute("aria-selected")).toBe("true");
+  });
 });
 
 describe("pool side panel", () => {
@@ -558,10 +604,115 @@ describe("pool activity detail", () => {
     expect(router.state.location.search).not.toHaveProperty("entry");
   });
 
+  it("names who started a swap, as the phone's details do", async () => {
+    const initiator = "0x3333e18f7329bb8b533e5be0d8b176ee1ed73333";
+    setFeed({
+      entries: [
+        {
+          ...ENTRY,
+          kind: "swap",
+          key: "tx-2",
+          initiatorAddress: initiator,
+          counterpartyAddress: SENDER,
+          received: ENTRY.leg,
+          sent: { ...ENTRY.leg, tokenSymbol: "USDC", tokenName: "USD Coin" },
+          protocolFee: null,
+        },
+      ],
+    });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    mount(`/pools/${POOL}?tab=activity&entry=tx-2`);
+    const panel = await screen.findByRole("region", { name: "Created" });
+    expect(within(panel).getByText("Initiated by")).toBeTruthy();
+    fireEvent.click(within(panel).getByRole("button", { name: "Copy address" }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(initiator));
+  });
+
   it("opens no activity panel for a guest", async () => {
     setModel({ authenticated: false, owner: false });
     mount(`/pools/${POOL}?entry=tx-1`);
     await screen.findByRole("heading", { level: 1, name: "Kilifi Traders" });
     expect(screen.queryByRole("region", { name: "Created" })).toBeNull();
+  });
+});
+
+describe("pool header", () => {
+  it("shows a guest the description and the rating, and keeps the place and address for members", async () => {
+    setModel({ authenticated: false, owner: false });
+    mount(`/pools/${POOL}`);
+    await screen.findByRole("heading", { level: 1, name: "Kilifi Traders" });
+
+    expect(screen.getByText("Fish for flour along the coast.")).toBeTruthy();
+    expect(screen.getByText(`rating of pool ${POOL}`)).toBeTruthy();
+    expect(screen.queryByText("Kilifi, Kenya")).toBeNull();
+    expect(screen.queryByText("0x5c4e18…735aaa")).toBeNull();
+  });
+
+  it("adds the place and the contract address once signed in", async () => {
+    mount(`/pools/${POOL}`);
+    await screen.findByRole("heading", { level: 1, name: "Kilifi Traders" });
+
+    expect(screen.getByText("Fish for flour along the coast.")).toBeTruthy();
+    expect(screen.getByText(`rating of pool ${POOL}`)).toBeTruthy();
+    expect(screen.getByText("Kilifi, Kenya")).toBeTruthy();
+    expect(screen.getByText("0x5c4e18…735aaa")).toBeTruthy();
+  });
+
+  it("keeps the pool's holdings figures from a guest, as the phone hides Holdings and Credit", async () => {
+    refs.holdings.current = {
+      holdings: [{ unitValueRaw: "1000000" }],
+      unit: "KES",
+      isPending: false,
+    };
+    setModel({ authenticated: false, owner: false });
+    const guest = mount(`/pools/${POOL}?tab=vouchers`);
+    expect(await screen.findByText("vouchers body")).toBeTruthy();
+    expect(screen.queryByText("Liquidity")).toBeNull();
+    guest.unmount();
+
+    setModel();
+    mount(`/pools/${POOL}?tab=vouchers`);
+    expect(await screen.findByText("vouchers body with figures")).toBeTruthy();
+    expect(screen.getByText("Liquidity")).toBeTruthy();
+  });
+});
+
+describe("pool reviews", () => {
+  it("shows the pool's reviews to everyone, a retired pool's included", async () => {
+    setModel({ authenticated: false, owner: false });
+    const guest = mount(`/pools/${POOL}`);
+    expect(await screen.findByRole("region", { name: "Reviews" })).toBeTruthy();
+    expect(screen.getByText(`pool reviews of ${POOL}`)).toBeTruthy();
+    guest.unmount();
+
+    setModel({ active: false });
+    mount(`/pools/${POOL}`);
+    expect(await screen.findByText(`pool reviews of ${POOL}`)).toBeTruthy();
+  });
+});
+
+describe("pool activity filter", () => {
+  it("reads the activity types the URL names", async () => {
+    mount(`/pools/${POOL}?tab=activity&activityTypes=pool_payout,swapped`);
+    expect(await screen.findByText("types: swapped,pool_payout")).toBeTruthy();
+    expect(refs.feedArgs.current[2]).toEqual(["swapped", "pool_payout"]);
+  });
+
+  it("keeps a new filter in the URL without a history entry, and closes a row it may hide", async () => {
+    const { router } = mount(`/pools/${POOL}?tab=activity&entry=tx-1`);
+    await screen.findByRole("region", { name: "Created" });
+    const length = router.history.length;
+
+    fireEvent.click(screen.getByRole("button", { name: "filter swaps" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toMatchObject({
+        tab: "activity",
+        activityTypes: "swapped",
+      }),
+    );
+    expect(router.state.location.search).not.toHaveProperty("entry");
+    expect(router.history.length).toBe(length);
+    expect(refs.feedArgs.current[2]).toEqual(["swapped"]);
   });
 });

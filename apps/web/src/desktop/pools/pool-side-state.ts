@@ -35,7 +35,8 @@ export type PoolSideRequest =
  */
 const TOOL = "tool";
 const MANAGE = "manage";
-const ENTRY = "entry";
+/** The open activity row. The activity filter clears it too, as a new filter may hide the row. */
+export const ENTRY_PARAM = "entry";
 
 const TOOL_VALUES: Record<string, PoolTool> = {
   details: "details",
@@ -67,7 +68,7 @@ export function parsePoolSideRequest(search: unknown): PoolSideRequest | null {
     string,
     unknown
   >;
-  const entry = text(params[ENTRY]);
+  const entry = text(params[ENTRY_PARAM]);
   if (entry) return { kind: "activity", key: entry };
   const manage = text(params[MANAGE]);
   if (manage) return { kind: "voucher", address: manage.toLowerCase() };
@@ -81,7 +82,7 @@ function poolSideSearch(request: PoolSideRequest | null) {
   return {
     [TOOL]: request?.kind === "tool" ? TOOL_PARAM[request.tool] : undefined,
     [MANAGE]: request?.kind === "voucher" ? request.address : undefined,
-    [ENTRY]: request?.kind === "activity" ? request.key : undefined,
+    [ENTRY_PARAM]: request?.kind === "activity" ? request.key : undefined,
   };
 }
 

@@ -67,6 +67,17 @@ export function PoolActivityDetailSide({
               {entry.success ? t`Confirmed` : t`Failed`}
             </Badge>,
           ],
+          entry.initiatorAddress
+            ? [
+                <Trans key="label">Initiated by</Trans>,
+                <FullValue
+                  key="value"
+                  value={entry.initiatorAddress}
+                  copyLabel={t`Copy address`}
+                  onCopy={copyAddress}
+                />,
+              ]
+            : null,
           ...(swap
             ? ([
                 [

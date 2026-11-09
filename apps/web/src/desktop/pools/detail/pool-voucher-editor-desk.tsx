@@ -173,7 +173,7 @@ function ConfigurationSide({
   const { t } = useLingui();
   const {
     form,
-    relay,
+    inFlight,
     remove,
     confirmingRemoval,
     setConfirmingRemoval,
@@ -200,7 +200,7 @@ function ConfigurationSide({
       onSubmit={() => void form.handleSubmit()}
       footer={
         <div className="grid grid-cols-2 gap-2">
-          <Button type="button" variant="outline" disabled={relay.isPending} onClick={onClose}>
+          <Button type="button" variant="outline" disabled={inFlight} onClick={onClose}>
             <Trans>Cancel</Trans>
           </Button>
           <Button type="submit" disabled={!canSubmit} pending={saving}>
@@ -289,7 +289,7 @@ function ConfigurationSide({
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={relay.isPending}
+                  disabled={inFlight}
                   onClick={() => setConfirmingRemoval(false)}
                 >
                   <Trans>Keep</Trans>
@@ -297,7 +297,7 @@ function ConfigurationSide({
                 <Button
                   type="button"
                   variant="destructive"
-                  disabled={relay.isPending}
+                  disabled={inFlight}
                   pending={removing}
                   onClick={() => void remove()}
                 >
@@ -310,7 +310,7 @@ function ConfigurationSide({
               type="button"
               variant="destructive"
               className="justify-self-start"
-              disabled={relay.isPending}
+              disabled={inFlight}
               onClick={() => setConfirmingRemoval(true)}
             >
               <RiDeleteBinLine aria-hidden="true" />

@@ -1,3 +1,4 @@
+import type { ActivityKind } from "@clc/api/features/accounts/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
@@ -11,6 +12,7 @@ import { Link, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
+import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -28,6 +30,7 @@ import {
   PoolWantsTable,
 } from "#/desktop/pools/detail/pool-tab-bodies";
 import type { PoolActivityFeed } from "#/desktop/pools/pool-activity-feed";
+import { VoucherReviewsDesk } from "#/desktop/vouchers/detail/voucher-reviews";
 import { useDeskTrailLabel } from "#/desktop/trail";
 import { DeskTitleRow } from "#/desktop/ui/page";
 import { DeskTab, DeskTabPanel, DeskTabs } from "#/desktop/ui/tabs";
@@ -52,10 +55,6 @@ const POOL_TABS = [
 
 type PoolTab = (typeof POOL_TABS)[number];
 
-function isPoolTab(value: string | undefined): value is PoolTab {
-  return POOL_TABS.some((tab) => tab === value);
-}
-
 export function usePoolDeskReceive(): string | undefined {
   const search = useSearch({ strict: false }) as { receive?: unknown };
   return typeof search.receive === "string" ? search.receive.toLowerCase() : undefined;
@@ -63,7 +62,7 @@ export function usePoolDeskReceive(): string | undefined {
 
 export function usePoolDeskRequestedTab(): PoolTab | undefined {
   const search = useSearch({ strict: false }) as { tab?: unknown };
-  return typeof search.tab === "string" && isPoolTab(search.tab) ? search.tab : undefined;
+  return POOL_TABS.find((tab) => tab === search.tab);
 }
 
 /** Everything the pool page reads once and shares between its main and side columns. */
@@ -110,22 +109,31 @@ type PoolDeskModel = ReturnType<typeof usePoolDeskModel>;
 type LoadedPoolDeskModel = PoolDeskModel & { pool: UserPool };
 
 /**
- * The pool's header, figures, owner tools and tabs: the main column of the pool
- * page. The column is a size container, so what sits beside what is decided by
- * the width it really has: 560px when the swap column docks beside it, and the
- * full canvas when the swap stacks.
+ * The pool's header, figures, owner tools, tabs and reviews: the main column of
+ * the pool page. The column is a size container, so what sits beside what is
+ * decided by the width it really has: 560px when the swap column docks beside
+ * it, and the full canvas when the swap stacks.
+ *
+ * A guest sees what the phone shows one: the description, the rating, the
+ * public tabs and the reviews. The place, the contract address and the pool's
+ * figures sit behind sign-in with Info, Holdings and Credit.
  */
 export function PoolMain({
   model,
   side,
   onOpenSide,
   activity,
+  activityTypes,
 }: {
   model: LoadedPoolDeskModel;
   /** What the side column shows, so the row it describes reads as selected. */
   side: PoolSide | null;
   onOpenSide: (side: PoolSide) => void;
   activity: PoolActivityFeed;
+  activityTypes: {
+    types: readonly ActivityKind[];
+    setTypes: (types: readonly ActivityKind[]) => void;
+  };
 }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locales?.[0] ?? i18n.locale;
@@ -133,8 +141,13 @@ export function PoolMain({
   const requested = usePoolDeskRequestedTab() ?? "offerings";
   const receive = usePoolDeskReceive();
   const retired = pool.active === false;
+  // A retired pool keeps its history; a guest cannot read the feed, and the
+  // phone's route turns one away from Activity, so the tab is not offered.
   const visibleTabs: readonly PoolTab[] = retired
-    ? POOL_TABS.filter((tab) => tab === "holdings" || tab === "activity" || tab === "info")
+    ? POOL_TABS.filter(
+        (tab) =>
+          tab === "holdings" || (tab === "activity" && auth.isAuthenticated) || tab === "info",
+      )
     : auth.isAuthenticated
       ? POOL_TABS
       : POOL_TABS.filter(
@@ -162,17 +175,23 @@ export function PoolMain({
             wrap
             title={<span dir="auto">{pool.name}</span>}
             meta={
-              <>
-                {pool.locationName ? (
+              <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+                <ReviewSummaryContent kind="pool" address={pool.address} />
+                {auth.isAuthenticated ? (
                   <>
-                    <span dir="auto">{pool.locationName}</span>
-                    <span aria-hidden="true"> · </span>
+                    {pool.locationName ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span dir="auto">{pool.locationName}</span>
+                      </>
+                    ) : null}
+                    <span aria-hidden="true">·</span>
+                    <span dir="ltr" className="font-mono">
+                      {formatVoucherAddress(pool.address)}
+                    </span>
                   </>
                 ) : null}
-                <span dir="ltr" className="font-mono">
-                  {formatVoucherAddress(pool.address)}
-                </span>
-              </>
+              </span>
             }
           />
         </div>
@@ -207,14 +226,26 @@ export function PoolMain({
         </div>
       </div>
 
-      {model.ownerInfo.info?.kind === "safe" || pool.tags.length > 0 ? (
-        <div className="-mt-3 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5">
-          <MultisigOwnerNotice info={model.ownerInfo.info} />
-          {pool.tags.map((tag) => (
-            <Badge key={tag} variant="muted" size="sm">
-              {tag}
-            </Badge>
-          ))}
+      {pool.description || model.ownerInfo.info?.kind === "safe" || pool.tags.length > 0 ? (
+        <div className="-mt-3 grid min-w-0 gap-2">
+          {pool.description ? (
+            <p
+              dir="auto"
+              className="line-clamp-3 max-w-prose text-sm text-muted-foreground [overflow-wrap:anywhere]"
+            >
+              {pool.description}
+            </p>
+          ) : null}
+          {model.ownerInfo.info?.kind === "safe" || pool.tags.length > 0 ? (
+            <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5">
+              <MultisigOwnerNotice info={model.ownerInfo.info} />
+              {pool.tags.map((tag) => (
+                <Badge key={tag} variant="muted" size="sm">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -232,13 +263,14 @@ export function PoolMain({
         </div>
       ) : null}
 
-      <PoolStats
-        pool={pool}
-        poolVouchers={poolVouchers}
-        count={vouchers.length}
-        locale={locale}
-        showSwaps={auth.isAuthenticated}
-      />
+      {auth.isAuthenticated ? (
+        <PoolStats
+          pool={pool}
+          poolVouchers={poolVouchers}
+          count={vouchers.length}
+          locale={locale}
+        />
+      ) : null}
 
       <div className="grid min-w-0 gap-4">
         {/*
@@ -256,6 +288,7 @@ export function PoolMain({
               controls={`pool-panel-${tab}`}
             >
               <Link
+                from="/pools/$poolAddress/"
                 to="/pools/$poolAddress"
                 params={{ poolAddress }}
                 search={(previous) => ({ ...previous, tab: tab === "offerings" ? undefined : tab })}
@@ -282,6 +315,7 @@ export function PoolMain({
           {!retired && selectedTab === "vouchers" ? (
             <PoolVouchersTable
               pool={pool}
+              figures={auth.isAuthenticated}
               poolVouchers={poolVouchers}
               vouchers={vouchers}
               selectedKey={managedVoucher ?? receive}
@@ -300,6 +334,8 @@ export function PoolMain({
           {selectedTab === "activity" ? (
             <PoolActivityTable
               feed={activity}
+              types={activityTypes.types}
+              onTypesChange={activityTypes.setTypes}
               selectedKey={side?.kind === "activity" ? side.entry.key : undefined}
               onOpen={(entry) => onOpenSide({ kind: "activity", entry })}
             />
@@ -309,29 +345,32 @@ export function PoolMain({
           ) : null}
         </DeskTabPanel>
       </div>
+
+      <VoucherReviewsDesk key={pool.address} kind="pool" address={pool.address} layout="page" />
     </div>
   );
 }
 
-/** Vouchers, liquidity in the unit of account, and the pool fee — the figures the data has. */
+/**
+ * Vouchers, liquidity in the unit of account, the pool fee and recent swaps —
+ * the figures the data has. Signed-in only: they are the Holdings and Activity
+ * tabs summed, and those are behind sign-in.
+ */
 function PoolStats({
   pool,
   poolVouchers,
   count,
   locale,
-  showSwaps,
 }: {
   pool: UserPool;
   poolVouchers: PoolVoucher[];
   count: number;
   locale: string;
-  /** The transfers feed is read behind sign-in, as the Activity tab is. */
-  showSwaps: boolean;
 }) {
   const { holdings, unit, isPending } = usePoolHoldings(pool, poolVouchers);
   // The fee policy on chain, as the owner's Fee % row reads it; the catalog's copy lags.
   const fee = usePoolFeeSettings(pool, true);
-  const swaps = usePoolRecentSwaps(pool.address, showSwaps);
+  const swaps = usePoolRecentSwaps(pool.address, true);
   // Past the page cap the count is a floor, so it says so.
   const swapsValue: ReactNode = swaps.isError ? (
     <span className="text-muted-foreground">—</span>
@@ -372,7 +411,7 @@ function PoolStats({
               },
             ]
           : []),
-        ...(showSwaps ? [{ label: <Trans>Swaps · 30d</Trans>, value: swapsValue }] : []),
+        { label: <Trans>Swaps · 30d</Trans>, value: swapsValue },
       ]}
     />
   );

@@ -7,13 +7,17 @@ import {
 import { buildCollectPoolFeesCalls } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { useLingui } from "@lingui/react/macro";
+import { useIsMutating } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { isAddress, zeroAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
-import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
+import {
+  poolAdminRelayMutationKey,
+  usePoolAdminRelay,
+} from "#/features/pools/hooks/use-pool-admin";
 import {
   type PoolFeeSettings,
   usePoolFeeSettings,
@@ -66,6 +70,9 @@ export function usePoolWithdrawLiquidityForm({
   const { t } = useLingui();
   const { address } = useConnection();
   const relay = usePoolAdminRelay(pool);
+  // Any batch for this pool, including one the other view started before a
+  // phone/desktop swap: a second press would relay beside it.
+  const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
   const owner = useAssetOwnerInfo(pool.address, pool.ownerAddress);
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
@@ -79,7 +86,7 @@ export function usePoolWithdrawLiquidityForm({
       : null;
 
   const submit = async () => {
-    if (!selected || decimals === null || !address) return;
+    if (inFlight || !selected || decimals === null || !address) return;
     let amountRaw: string;
     try {
       amountRaw = parseTokenAmount(amount.trim(), decimals);
@@ -114,7 +121,7 @@ export function usePoolWithdrawLiquidityForm({
   };
 
   return {
-    relay,
+    inFlight,
     tokenAddress,
     selectToken: (next: string) => {
       setTokenAddress(next);
@@ -152,13 +159,14 @@ export function usePoolCollectFeesForm({
 }) {
   const { t } = useLingui();
   const relay = usePoolAdminRelay(pool);
+  const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
 
   const selected = vouchers.find((voucher) => voucher.tokenAddress.toLowerCase() === tokenAddress);
   const accruedRaw = tokenAddress ? treasury?.get(tokenAddress)?.feesRaw : undefined;
 
   const submit = async () => {
-    if (!selected) return;
+    if (inFlight || !selected) return;
     if (accruedRaw !== undefined && BigInt(accruedRaw) === 0n) {
       toast.error(t`No ${selected.symbol} fees have accrued yet.`);
       return;
@@ -178,7 +186,7 @@ export function usePoolCollectFeesForm({
   };
 
   return {
-    relay,
+    inFlight,
     tokenAddress,
     selectToken: setTokenAddress,
     selected,
@@ -211,6 +219,7 @@ export function usePoolFeeSettingsForm({
 }) {
   const { t } = useLingui();
   const relay = usePoolAdminRelay(pool);
+  const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
   const { address } = useConnection();
   const [feePercent, setFeePercent] = useState(settings?.feePercent ?? "");
   // Blank rather than the connected wallet when the pool has none: seeding the
@@ -234,7 +243,7 @@ export function usePoolFeeSettingsForm({
   const canSubmit = feeIsValid && recipientIsValid && (feeChanged || recipientChanged);
 
   const submit = async () => {
-    if (!canSubmit) return;
+    if (inFlight || !canSubmit) return;
     try {
       await relay.mutateAsync(
         buildSetPoolFeeCalls({
@@ -254,7 +263,7 @@ export function usePoolFeeSettingsForm({
   };
 
   return {
-    relay,
+    inFlight,
     connectedAddress: address,
     feePercent,
     setFeePercent,

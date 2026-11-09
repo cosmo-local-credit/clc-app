@@ -279,7 +279,7 @@ function WithdrawLiquidityForm({
 }) {
   const { t } = useLingui();
   const form = usePoolWithdrawLiquidityForm({ pool, vouchers, treasury, onDone });
-  const { selected, withdrawable, amount, relay } = form;
+  const { selected, withdrawable, amount, inFlight } = form;
 
   return (
     <>
@@ -331,10 +331,10 @@ function WithdrawLiquidityForm({
           tap
           className="w-full"
           disabled={!form.canSubmit}
-          pending={relay.isPending}
+          pending={inFlight}
           onClick={() => void form.submit()}
         >
-          {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Withdraw</Trans>}
+          {inFlight ? <Trans>Waiting for the chain…</Trans> : <Trans>Withdraw</Trans>}
         </Button>
       </SheetFooter>
     </>
@@ -385,14 +385,10 @@ function CollectFeesForm({
           tap
           className="w-full"
           disabled={!form.selected || !feeAddress}
-          pending={form.relay.isPending}
+          pending={form.inFlight}
           onClick={() => void form.submit()}
         >
-          {form.relay.isPending ? (
-            <Trans>Waiting for the chain…</Trans>
-          ) : (
-            <Trans>Collect fees</Trans>
-          )}
+          {form.inFlight ? <Trans>Waiting for the chain…</Trans> : <Trans>Collect fees</Trans>}
         </Button>
       </SheetFooter>
     </>
@@ -472,14 +468,10 @@ function FeeSettingsForm({
           tap
           className="w-full"
           disabled={!form.canSubmit}
-          pending={form.relay.isPending}
+          pending={form.inFlight}
           onClick={() => void form.submit()}
         >
-          {form.relay.isPending ? (
-            <Trans>Waiting for the chain…</Trans>
-          ) : (
-            <Trans>Save fee settings</Trans>
-          )}
+          {form.inFlight ? <Trans>Waiting for the chain…</Trans> : <Trans>Save fee settings</Trans>}
         </Button>
       </SheetFooter>
     </>

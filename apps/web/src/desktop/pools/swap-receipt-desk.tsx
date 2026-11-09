@@ -1,3 +1,4 @@
+import { formatSubmittedAt } from "@clc/core/lib/otx";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { formatOfferingDisplayValue } from "@clc/core/features/market/logic";
 import {
@@ -25,6 +26,7 @@ import { SectionHeading } from "#/components/ui/section-heading";
 import { FullValue } from "#/desktop/ui/full-value";
 import { DeskSwapFee } from "#/desktop/pools/detail/desk-swap-fee";
 import { PoolDeskFrame } from "#/desktop/pools/pool-desk";
+import { PoolSwapReviewDesk } from "#/desktop/pools/swap-review-desk";
 import { DeskKV } from "#/desktop/ui/kv";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
@@ -173,182 +175,186 @@ function SwapReceiptColumn({
   };
 
   return (
-    <ReceiptPanel
-      icon={<SuccessCheck />}
-      title={t`Swapped`}
-      subtitle={
-        submittedAt ? (
-          <time dateTime={submittedAt}>{formatSubmittedAt(submittedAt, locale)}</time>
-        ) : null
-      }
-    >
-      <DeskKV
-        rows={[
-          amountLabel
-            ? [
-                <Trans key="label">You receive</Trans>,
-                <SignedAmount key="value" direction="in" amount={amountLabel} />,
-              ]
-            : null,
-          sentLabel
-            ? [
-                <Trans key="label">You send</Trans>,
-                <SignedAmount key="value" direction="out" amount={sentLabel} />,
-              ]
-            : null,
-          [
-            <Trans key="label">Pool fee</Trans>,
-            <DeskSwapFee
-              key="value"
-              breakdown={feeBreakdown}
-              part="pool"
-              decimals={feeDecimals}
-              symbol={details.receiveSymbol}
-              locale={locale}
-              pending={settlement.isFetching}
-              amountRaw={
-                settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
-              }
-            />,
-          ],
-          [
-            <Trans key="label">Protocol fee</Trans>,
-            <DeskSwapFee
-              key="value"
-              breakdown={feeBreakdown}
-              part="protocol"
-              decimals={feeDecimals}
-              symbol={details.receiveSymbol}
-              locale={locale}
-              pending={settlement.isFetching}
-            />,
-          ],
-          [
-            <Trans key="label">Total fees</Trans>,
-            <DeskSwapFee
-              key="value"
-              breakdown={feeBreakdown}
-              part="total"
-              decimals={feeDecimals}
-              symbol={details.receiveSymbol}
-              locale={locale}
-              pending={settlement.isFetching}
-            />,
-          ],
-          details.poolName
-            ? [
-                <Trans key="label">Pool</Trans>,
-                <span key="value" dir="auto" className="font-sans">
-                  {details.poolName}
-                </span>,
-              ]
-            : null,
-          txHash
-            ? [
-                <Trans key="label">Transaction</Trans>,
-                <FullValue
-                  key="value"
-                  value={txHash}
-                  copyLabel={t`Copy transaction hash`}
-                  onCopy={copy}
-                />,
-              ]
-            : null,
-          [
-            <Trans key="label">Network</Trans>,
-            explorerUrl ? (
-              <a
+    <div className="grid min-w-0 gap-4">
+      <ReceiptPanel
+        icon={<SuccessCheck />}
+        title={t`Swapped`}
+        subtitle={
+          submittedAt ? (
+            <time dateTime={submittedAt}>{formatSubmittedAt(submittedAt, locale)}</time>
+          ) : null
+        }
+      >
+        <DeskKV
+          rows={[
+            amountLabel
+              ? [
+                  <Trans key="label">You receive</Trans>,
+                  <SignedAmount key="value" direction="in" amount={amountLabel} />,
+                ]
+              : null,
+            sentLabel
+              ? [
+                  <Trans key="label">You send</Trans>,
+                  <SignedAmount key="value" direction="out" amount={sentLabel} />,
+                ]
+              : null,
+            [
+              <Trans key="label">Pool fee</Trans>,
+              <DeskSwapFee
                 key="value"
-                href={explorerUrl}
-                rel="noopener noreferrer"
-                target="_blank"
-                className="font-sans text-primary hover:underline"
-              >
-                {CHAIN_INFO.name}
-              </a>
-            ) : (
-              <span key="value" className="font-sans">
-                {CHAIN_INFO.name}
-              </span>
-            ),
-          ],
-          [
-            <Trans key="label">Status</Trans>,
-            <StatusPill key="value" tone="success" label={t`Confirmed`} className="font-sans" />,
-          ],
-        ]}
-      />
-      {settlement.data?.source === "legacy" ? (
-        <p role="status" className="text-xs text-muted-foreground">
-          <Trans>Complete fee details are unavailable for this swap.</Trans>
-        </p>
-      ) : (!settlement.data && (!settlement.canLoad || settlement.isError)) ||
-        feeDecimals === undefined ? (
-        <div className="flex items-center justify-between gap-3">
-          <p role="alert" className="text-xs text-muted-foreground">
-            <Trans>Fee details unavailable.</Trans>
+                breakdown={feeBreakdown}
+                part="pool"
+                decimals={feeDecimals}
+                symbol={details.receiveSymbol}
+                locale={locale}
+                pending={settlement.isFetching}
+                amountRaw={
+                  settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
+                }
+              />,
+            ],
+            [
+              <Trans key="label">Protocol fee</Trans>,
+              <DeskSwapFee
+                key="value"
+                breakdown={feeBreakdown}
+                part="protocol"
+                decimals={feeDecimals}
+                symbol={details.receiveSymbol}
+                locale={locale}
+                pending={settlement.isFetching}
+              />,
+            ],
+            [
+              <Trans key="label">Total fees</Trans>,
+              <DeskSwapFee
+                key="value"
+                breakdown={feeBreakdown}
+                part="total"
+                decimals={feeDecimals}
+                symbol={details.receiveSymbol}
+                locale={locale}
+                pending={settlement.isFetching}
+              />,
+            ],
+            details.poolName
+              ? [
+                  <Trans key="label">Pool</Trans>,
+                  <span key="value" dir="auto" className="font-sans">
+                    {details.poolName}
+                  </span>,
+                ]
+              : null,
+            txHash
+              ? [
+                  <Trans key="label">Transaction</Trans>,
+                  <FullValue
+                    key="value"
+                    value={txHash}
+                    copyLabel={t`Copy transaction hash`}
+                    onCopy={copy}
+                  />,
+                ]
+              : null,
+            [
+              <Trans key="label">Network</Trans>,
+              explorerUrl ? (
+                <a
+                  key="value"
+                  href={explorerUrl}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  className="font-sans text-primary hover:underline"
+                >
+                  {CHAIN_INFO.name}
+                </a>
+              ) : (
+                <span key="value" className="font-sans">
+                  {CHAIN_INFO.name}
+                </span>
+              ),
+            ],
+            [
+              <Trans key="label">Status</Trans>,
+              <StatusPill key="value" tone="success" label={t`Confirmed`} className="font-sans" />,
+            ],
+          ]}
+        />
+        {settlement.data?.source === "legacy" ? (
+          <p role="status" className="text-xs text-muted-foreground">
+            <Trans>Complete fee details are unavailable for this swap.</Trans>
           </p>
-          {settlement.isError ? (
-            <Button
-              variant="outline"
-              pending={settlement.isFetching}
-              onClick={() => void settlement.refetch()}
-            >
-              <Trans>Try again</Trans>
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-      <div className="grid grid-cols-2 gap-2">
-        {explorerUrl ? (
-          <ShareReceiptButton
-            className="w-full"
-            title={t`Swap receipt`}
-            lines={[
-              amountLabel && sentLabel
-                ? poolName
-                  ? t`I swapped ${sentLabel} for ${amountLabel} in ${poolName}.`
-                  : t`I swapped ${sentLabel} for ${amountLabel}.`
-                : t`I made a swap.`,
-              ...feeShareLines({
-                breakdown: feeBreakdown,
-                decimals: feeDecimals,
-                symbol: details.receiveSymbol,
-                locale,
-                labels: { pool: t`Pool fee`, protocol: t`Protocol fee`, total: t`Total fees` },
-              }),
-              ...(submittedAt ? [formatSubmittedAt(submittedAt, locale)] : []),
-            ]}
-            url={explorerUrl}
-          />
+        ) : (!settlement.data && (!settlement.canLoad || settlement.isError)) ||
+          feeDecimals === undefined ? (
+          <div className="flex items-center justify-between gap-3">
+            <p role="alert" className="text-xs text-muted-foreground">
+              <Trans>Fee details unavailable.</Trans>
+            </p>
+            {settlement.isError ? (
+              <Button
+                variant="outline"
+                pending={settlement.isFetching}
+                onClick={() => void settlement.refetch()}
+              >
+                <Trans>Try again</Trans>
+              </Button>
+            ) : null}
+          </div>
         ) : null}
-        {sendReceived ? (
-          redeemReceived ? (
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/wallet/send/amount" search={redeemReceived}>
+        <div className="grid grid-cols-2 gap-2">
+          {explorerUrl ? (
+            <ShareReceiptButton
+              className="w-full"
+              title={t`Swap receipt`}
+              lines={[
+                amountLabel && sentLabel
+                  ? poolName
+                    ? t`I swapped ${sentLabel} for ${amountLabel} in ${poolName}.`
+                    : t`I swapped ${sentLabel} for ${amountLabel}.`
+                  : t`I made a swap.`,
+                ...feeShareLines({
+                  breakdown: feeBreakdown,
+                  decimals: feeDecimals,
+                  symbol: details.receiveSymbol,
+                  locale,
+                  labels: { pool: t`Pool fee`, protocol: t`Protocol fee`, total: t`Total fees` },
+                }),
+                ...(submittedAt ? [formatSubmittedAt(submittedAt, locale)] : []),
+              ]}
+              url={explorerUrl}
+            />
+          ) : null}
+          {sendReceived ? (
+            redeemReceived ? (
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/wallet/send/amount" search={redeemReceived}>
+                  <Trans>Redeem</Trans>
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" className="w-full" disabled>
                 <Trans>Redeem</Trans>
+              </Button>
+            )
+          ) : null}
+          {sendReceived ? (
+            <Button asChild variant="outline" className="w-full min-w-0">
+              <Link to="/wallet/send" search={sendReceived}>
+                <span className="truncate">
+                  <Trans>Send {details.receiveSymbol}</Trans>
+                </span>
               </Link>
             </Button>
-          ) : (
-            <Button variant="outline" className="w-full" disabled>
-              <Trans>Redeem</Trans>
-            </Button>
-          )
-        ) : null}
-        {sendReceived ? (
-          <Button asChild variant="outline" className="w-full min-w-0">
-            <Link to="/wallet/send" search={sendReceived}>
-              <span className="truncate">
-                <Trans>Send {details.receiveSymbol}</Trans>
-              </span>
-            </Link>
+          ) : null}
+          <Button className="w-full" onClick={exitReceipt}>
+            <Trans>Done</Trans>
           </Button>
-        ) : null}
-        <Button className="w-full" onClick={exitReceipt}>
-          <Trans>Done</Trans>
-        </Button>
-      </div>
-    </ReceiptPanel>
+        </div>
+      </ReceiptPanel>
+      {/* The phone receipt's review prompt, under the receipt rather than in it. */}
+      <PoolSwapReviewDesk key={poolAddress} poolAddress={poolAddress} />
+    </div>
   );
 }
 
@@ -435,12 +441,6 @@ function ReceiptPanel({
       {children}
     </section>
   );
-}
-
-function formatSubmittedAt(value: string, locale: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
 function localizeCanonicalAmount(amount: string, locale: string): string {

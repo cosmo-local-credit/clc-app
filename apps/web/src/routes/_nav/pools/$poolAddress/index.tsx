@@ -18,6 +18,8 @@ const searchSchema = z.object({
     .catch(undefined),
   voucher: z.string().optional().catch(undefined),
   wantId: z.string().trim().min(1).optional().catch(undefined),
+  /** The desktop Activity tab's kinds, comma separated, as the wallet's Activity takes them. */
+  activityTypes: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({

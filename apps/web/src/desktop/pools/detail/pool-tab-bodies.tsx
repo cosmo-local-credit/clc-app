@@ -1,3 +1,4 @@
+import type { ActivityKind } from "@clc/api/features/accounts/client";
 import type { Offering } from "@clc/api/features/offerings/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { poolWantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
@@ -18,11 +19,17 @@ import {
   RiArrowLeftDownLine,
   RiArrowLeftRightLine,
   RiArrowRightUpLine,
+  RiInformationLine,
   RiSettings3Line,
   RiSparkling2Line,
 } from "react-icons/ri";
 
-import { SwapActivityTitle, formatActivityLegAmount } from "#/components/activity/swap-activity";
+import {
+  SwapActivityAmounts,
+  SwapActivityTitle,
+  formatActivityLegAmount,
+} from "#/components/activity/swap-activity";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
@@ -30,6 +37,7 @@ import { TokenLogo, EllipsizedAddress, SignedAmount } from "#/components/wallet"
 import { WantPicture } from "#/components/wants/want-row";
 import type { PoolActivityFeed } from "#/desktop/pools/pool-activity-feed";
 import { DeskTable, type DeskColumn } from "#/desktop/ui/data-table";
+import { DeskChip } from "#/desktop/ui/segment";
 import { usePoolOfferingsInfinite } from "#/features/home/hooks/use-voucher-offerings";
 import { usePoolHoldings } from "#/features/pools/hooks/use-pool-holdings";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
@@ -38,6 +46,7 @@ import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { wantsClient } from "#/lib/api/wants";
+import { ACTIVITY_KIND_ORDER } from "#/lib/navigation/activity-search";
 import { cn } from "#/lib/utils";
 
 /** Loading, failed and empty states share one line of muted copy on the canvas. */
@@ -357,27 +366,54 @@ export function PoolWantsTable({ poolAddress }: { poolAddress: string }) {
 
 // ----------------------------------------------------------------- Vouchers
 
-/** The pool's vouchers; a row pre-fills the swap's To side. Owners get a gear per row. */
-export function PoolVouchersTable({
-  pool,
-  poolVouchers,
-  vouchers,
-  selectedKey,
-  onManage,
-  onApprove,
-}: {
+type PoolVouchersTableProps = {
   pool: UserPool;
   poolVouchers: PoolVoucher[];
   vouchers: PoolVoucher[];
   selectedKey: string | undefined;
   onManage?: (voucher: PoolVoucher) => void;
   onApprove?: () => void;
+};
+
+/** The pool's vouchers; a row pre-fills the swap's To side. Owners get a gear per row. */
+export function PoolVouchersTable({
+  figures,
+  ...props
+}: PoolVouchersTableProps & {
+  /**
+   * What the pool holds of each voucher, its limit and its rate: the Holdings
+   * and Credit tabs' figures, so behind sign-in like them. Without them the
+   * pool's balances are not read at all.
+   */
+  figures: boolean;
 }) {
+  return figures ? (
+    <PoolVouchersWithFigures {...props} />
+  ) : (
+    <PoolVoucherRows {...props} holdings={null} />
+  );
+}
+
+function PoolVouchersWithFigures(props: PoolVouchersTableProps) {
+  const holdings = usePoolHoldings(props.pool, props.poolVouchers);
+  return <PoolVoucherRows {...props} holdings={holdings} />;
+}
+
+function PoolVoucherRows({
+  pool,
+  vouchers,
+  selectedKey,
+  onManage,
+  onApprove,
+  holdings: state,
+}: PoolVouchersTableProps & { holdings: ReturnType<typeof usePoolHoldings> | null }) {
   const { t } = useLingui();
   const locale = useLocale();
   const voucherTokens = usePoolVoucherTokens(vouchers);
-  const { holdings, isPending } = usePoolHoldings(pool, poolVouchers);
-  const byAddress = new Map(holdings.map((holding) => [holding.tokenAddress, holding]));
+  const isPending = state?.isPending ?? false;
+  const byAddress = new Map(
+    (state?.holdings ?? []).map((holding) => [holding.tokenAddress, holding]),
+  );
   const rows = vouchers.map((voucher, index) => ({
     voucher,
     token: voucherTokens[index],
@@ -414,40 +450,42 @@ export function PoolVouchersTable({
         />
       ),
     },
-    {
-      id: "in-pool",
-      header: <Trans>In pool</Trans>,
-      align: "end",
-      width: "minmax(7rem,1fr)",
-      sortValue: (row) => sortable(row.holding?.liquidityRaw, row.holding?.decimals),
-      cell: (row) => figure(row.holding?.liquidityRaw, row.holding?.decimals ?? null),
-    },
-    {
-      id: "limit",
-      header: <Trans>Limit</Trans>,
-      align: "end",
-      width: "minmax(7rem,1fr)",
-      sortValue: (row) => sortable(limitRaw(row), row.holding?.decimals),
-      cell: (row) => figure(limitRaw(row), row.holding?.decimals ?? null),
-    },
-    {
-      id: "rate",
-      header: <Trans>Rate</Trans>,
-      align: "end",
-      width: "minmax(5.5rem,1fr)",
-      sortValue: (row) => sortable(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
-      cell: (row) => figure(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
-    },
-    ...(onManage
-      ? [
+    ...(state
+      ? ([
           {
-            id: "manage",
-            header: <span className="sr-only">{t`Manage voucher`}</span>,
-            width: "3.5rem",
-            cell: () => null,
-          } satisfies DeskColumn<Row>,
-        ]
+            id: "in-pool",
+            header: <Trans>In pool</Trans>,
+            align: "end",
+            width: "minmax(7rem,1fr)",
+            sortValue: (row) => sortable(row.holding?.liquidityRaw, row.holding?.decimals),
+            cell: (row) => figure(row.holding?.liquidityRaw, row.holding?.decimals ?? null),
+          },
+          {
+            id: "limit",
+            header: <Trans>Limit</Trans>,
+            align: "end",
+            width: "minmax(7rem,1fr)",
+            sortValue: (row) => sortable(limitRaw(row), row.holding?.decimals),
+            cell: (row) => figure(limitRaw(row), row.holding?.decimals ?? null),
+          },
+          {
+            id: "rate",
+            header: <Trans>Rate</Trans>,
+            align: "end",
+            width: "minmax(5.5rem,1fr)",
+            sortValue: (row) => sortable(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
+            cell: (row) => figure(row.holding?.ratePpm, POOL_PRICE_INDEX_DECIMALS),
+          },
+        ] satisfies DeskColumn<Row>[])
       : []),
+    // Room for the row's own buttons, laid over its end: the voucher's page,
+    // and the owner's settings.
+    {
+      id: "actions",
+      header: <span className="sr-only">{t`Actions`}</span>,
+      width: onManage ? "6rem" : "3.5rem",
+      cell: () => null,
+    },
   ];
 
   return (
@@ -478,18 +516,31 @@ export function PoolVouchersTable({
             >
               {cells}
             </Link>
-            {onManage ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={t`Manage ${row.voucher.symbol}`}
-                className="absolute end-2.5 top-1/2 -translate-y-1/2"
-                onClick={() => onManage(row.voucher)}
-              >
-                <RiSettings3Line aria-hidden="true" />
+            {/* The row pre-fills the swap; the voucher's own page, which the
+                phone's row opens, is a sibling link, as links do not nest. */}
+            <span className="absolute end-2.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
+              <Button asChild variant="ghost" size="icon">
+                <Link
+                  to="/vouchers/$voucherAddress"
+                  params={{ voucherAddress: row.voucher.tokenAddress.toLowerCase() }}
+                  search={{ poolAddress: pool.address }}
+                  aria-label={t`Open voucher page`}
+                >
+                  <RiInformationLine aria-hidden="true" />
+                </Link>
               </Button>
-            ) : null}
+              {onManage ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t`Manage ${row.voucher.symbol}`}
+                  onClick={() => onManage(row.voucher)}
+                >
+                  <RiSettings3Line aria-hidden="true" />
+                </Button>
+              ) : null}
+            </span>
           </div>
         )}
       />
@@ -791,19 +842,35 @@ export function PoolCreditTable({ pool, vouchers }: { pool: UserPool; vouchers: 
 
 // ----------------------------------------------------------------- Activity
 
-/** Everything that has moved through the pool; a row opens its details beside the pool. */
+/**
+ * Everything that has moved through the pool, of the kinds the filter names; a
+ * row opens its details beside the pool. The filter is the phone's sheet as a
+ * row of chips: the same kinds in the same order, All clearing them.
+ */
 export function PoolActivityTable({
   feed,
   selectedKey,
   onOpen,
+  types,
+  onTypesChange,
 }: {
   feed: PoolActivityFeed;
   selectedKey: string | undefined;
   onOpen: (entry: PoolActivityEntry) => void;
+  types: readonly ActivityKind[];
+  onTypesChange: (types: readonly ActivityKind[]) => void;
 }) {
   const { t } = useLingui();
   const locale = useLocale();
   const { query, entries } = feed;
+  const labels: Record<ActivityKind, string> = {
+    creation: t`Creation`,
+    sent: t`Sent`,
+    received: t`Received`,
+    swapped: t`Swapped`,
+    deposited: t`Deposits`,
+    pool_payout: t`Pay Out`,
+  };
   const columns: DeskColumn<PoolActivityEntry>[] = [
     {
       id: "event",
@@ -814,11 +881,11 @@ export function PoolActivityTable({
           <span
             className={cn(
               "flex size-7 shrink-0 items-center justify-center bg-muted",
-              entry.kind === "transfer"
-                ? entry.direction === "IN"
+              entry.kind === "swap" || entry.kind === "mint"
+                ? "text-foreground"
+                : entry.direction === "IN"
                   ? "text-primary"
-                  : "text-destructive"
-                : "text-foreground",
+                  : "text-destructive",
             )}
           >
             <EntryIcon entry={entry} />
@@ -826,6 +893,11 @@ export function PoolActivityTable({
           <span className="min-w-0 truncate text-sm font-semibold">
             <EntryTitle entry={entry} />
           </span>
+          {entry.success ? null : (
+            <Badge size="sm" caps variant="muted" className="shrink-0">
+              <Trans>Failed</Trans>
+            </Badge>
+          )}
         </span>
       ),
     },
@@ -850,8 +922,13 @@ export function PoolActivityTable({
       cell: (entry) =>
         entry.kind === "swap" ? (
           <span className="grid justify-items-end gap-0.5">
-            <SignedAmount direction="in" amount={formatActivityLegAmount(entry.received, locale)} />
-            <SignedAmount direction="out" amount={formatActivityLegAmount(entry.sent, locale)} />
+            <SwapActivityAmounts
+              incoming={entry.received}
+              outgoing={entry.sent}
+              protocolFee={entry.protocolFee ?? undefined}
+              locale={locale}
+              incomingFirst
+            />
           </span>
         ) : (
           <SignedAmount
@@ -875,6 +952,38 @@ export function PoolActivityTable({
   ];
   return (
     <div className="grid gap-4">
+      <div role="group" aria-label={t`Filters`} className="flex min-w-0 flex-wrap gap-2">
+        <DeskChip on={types.length === 0}>
+          <button
+            type="button"
+            aria-pressed={types.length === 0}
+            onClick={() => {
+              if (types.length > 0) onTypesChange([]);
+            }}
+          >
+            <Trans>All</Trans>
+          </button>
+        </DeskChip>
+        {ACTIVITY_KIND_ORDER.map((kind) => (
+          <DeskChip key={kind} on={types.includes(kind)}>
+            <button
+              type="button"
+              aria-pressed={types.includes(kind)}
+              onClick={() =>
+                onTypesChange(
+                  types.includes(kind)
+                    ? types.filter((entry) => entry !== kind)
+                    : ACTIVITY_KIND_ORDER.filter(
+                        (entry) => entry === kind || types.includes(entry),
+                      ),
+                )
+              }
+            >
+              {labels[kind]}
+            </button>
+          </DeskChip>
+        ))}
+      </div>
       {query.isPending ? (
         <TabNotice>
           <Trans>Loading activity…</Trans>
@@ -891,7 +1000,13 @@ export function PoolActivityTable({
           columns={columns}
           rowKey={(entry) => entry.key}
           selectedKey={selectedKey}
-          empty={<Trans>Nothing has moved through this pool yet.</Trans>}
+          empty={
+            types.length > 0 ? (
+              <Trans>No activity matches these filters.</Trans>
+            ) : (
+              <Trans>Nothing has moved through this pool yet.</Trans>
+            )
+          }
           // A row opens its details on click or Enter, not on focus: where the
           // page stacks the panel above the list, following focus would pull
           // the person away from the row they are tabbing through.
@@ -928,6 +1043,7 @@ function EntryTitle({ entry }: { entry: PoolActivityEntry }) {
   }
   if (entry.kind === "mint") return <Trans>Created in the pool</Trans>;
   // A deposit is the only inbound transfer a pool takes; outbound covers a fee
-  // sweep and a liquidity withdrawal, which the chain does not tell apart.
-  return entry.direction === "IN" ? <Trans>Deposit</Trans> : <Trans>Paid out</Trans>;
+  // sweep and a liquidity withdrawal, which the chain does not tell apart. The
+  // phone's words, which the row's details title uses too.
+  return entry.direction === "IN" ? <Trans>Deposit</Trans> : <Trans>Pay Out</Trans>;
 }

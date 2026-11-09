@@ -43,7 +43,7 @@ export function PoolProfileSide({
 /** Mounted once the record is read: TanStack Form takes its defaults once. */
 function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => void }) {
   const profile = usePoolProfileForm({ pool, onClose });
-  const { form, update, imageBusy } = profile;
+  const { form, inFlight, imageBusy } = profile;
   return (
     <PoolSidePanel
       title={<Trans>Edit pool details</Trans>}
@@ -51,13 +51,13 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
       onSubmit={() => void form.handleSubmit()}
       footer={
         <div className="grid grid-cols-2 gap-2">
-          <Button type="button" variant="outline" disabled={update.isPending} onClick={onClose}>
+          <Button type="button" variant="outline" disabled={inFlight} onClick={onClose}>
             <Trans>Cancel</Trans>
           </Button>
-          <Button type="submit" pending={update.isPending || imageBusy}>
+          <Button type="submit" pending={inFlight || imageBusy}>
             {imageBusy ? (
               <Trans>Uploading…</Trans>
-            ) : update.isPending ? (
+            ) : inFlight ? (
               <Trans>Saving…</Trans>
             ) : (
               <Trans>Save changes</Trans>

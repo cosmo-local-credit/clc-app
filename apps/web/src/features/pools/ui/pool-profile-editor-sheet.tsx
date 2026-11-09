@@ -85,7 +85,7 @@ export function PoolProfileEditorSheet({
 
 function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => void }) {
   const profile = usePoolProfileForm({ pool, onClose });
-  const { form, update, imageBusy } = profile;
+  const { form, inFlight, imageBusy } = profile;
 
   return (
     <form
@@ -100,10 +100,10 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
       </div>
 
       <SheetFooter>
-        <Button type="submit" tap className="w-full" pending={update.isPending || imageBusy}>
+        <Button type="submit" tap className="w-full" pending={inFlight || imageBusy}>
           {imageBusy ? (
             <Trans>Uploading…</Trans>
-          ) : update.isPending ? (
+          ) : inFlight ? (
             <Trans>Saving…</Trans>
           ) : (
             <Trans>Save changes</Trans>
@@ -114,7 +114,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
           variant="outline"
           tap
           className="w-full"
-          disabled={update.isPending}
+          disabled={inFlight}
           onClick={onClose}
         >
           <Trans>Cancel</Trans>

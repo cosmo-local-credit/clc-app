@@ -270,7 +270,7 @@ function PoolVoucherConfigurationForm({
   const { t } = useLingui();
   const {
     form,
-    relay,
+    inFlight,
     remove,
     confirmingRemoval,
     setConfirmingRemoval,
@@ -375,7 +375,7 @@ function PoolVoucherConfigurationForm({
                     variant="destructive"
                     tap
                     className="flex-1"
-                    disabled={relay.isPending}
+                    disabled={inFlight}
                     pending={removing}
                     onClick={() => void remove()}
                   >
@@ -386,7 +386,7 @@ function PoolVoucherConfigurationForm({
                     variant="outline"
                     tap
                     className="flex-1"
-                    disabled={relay.isPending}
+                    disabled={inFlight}
                     onClick={() => setConfirmingRemoval(false)}
                   >
                     <Trans>Keep</Trans>
@@ -399,7 +399,7 @@ function PoolVoucherConfigurationForm({
                 variant="destructive"
                 tap
                 className="w-full"
-                disabled={relay.isPending}
+                disabled={inFlight}
                 onClick={() => setConfirmingRemoval(true)}
               >
                 <RiDeleteBinLine className="size-4" aria-hidden="true" />
@@ -425,7 +425,7 @@ function PoolVoucherConfigurationForm({
           variant="outline"
           tap
           className="w-full"
-          disabled={relay.isPending}
+          disabled={inFlight}
           onClick={onClose}
         >
           <Trans>Cancel</Trans>

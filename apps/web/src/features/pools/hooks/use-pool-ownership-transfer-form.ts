@@ -2,6 +2,7 @@ import type { UserPool } from "@clc/api/features/pools/client";
 import { ownershipRecipientSchema } from "@clc/core/features/pool-admin/logic";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
+import { useIsMutating } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -9,6 +10,7 @@ import {
   ownershipKey,
   useOwnershipSubmissions,
 } from "#/features/ownership/state/ownership-submissions";
+import { poolAdminRelayMutationKey } from "#/features/pools/hooks/use-pool-admin";
 import { usePoolOwnershipTransfer } from "#/features/pools/hooks/use-pool-ownership-transfer";
 import { useReportWriteError } from "#/features/safe/hooks/use-report-write-error";
 
@@ -25,6 +27,10 @@ export function usePoolOwnershipTransferForm({
 }) {
   const { t } = useLingui();
   const transfer = usePoolOwnershipTransfer(pool);
+  // The transfer relays through the pool's admin batch, so a handover the other
+  // view started before a phone/desktop swap shows there while it settles.
+  const relaying = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
+  const inFlight = transfer.isPending || relaying;
   const reportError = useReportWriteError();
   const submission = useOwnershipSubmissions(
     (state) => state.submissions[ownershipKey(pool.address)],
@@ -45,7 +51,7 @@ export function usePoolOwnershipTransferForm({
       }),
     },
     onSubmit: async ({ value }) => {
-      if (!pool.ownerAddress) return;
+      if (inFlight || !pool.ownerAddress) return;
       try {
         const result = await transfer.mutateAsync({
           assetAddress: pool.address,
@@ -63,5 +69,5 @@ export function usePoolOwnershipTransferForm({
       }
     },
   });
-  return { form, transfer, submission };
+  return { form, inFlight, submission };
 }

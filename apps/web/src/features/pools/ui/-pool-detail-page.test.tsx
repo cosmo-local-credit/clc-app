@@ -17,9 +17,17 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
 vi.mock("#/features/ownership/hooks/use-asset-owner", () => ({
   useAssetOwner: (_address: string, owner: string | null) => owner,
 }));
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  act,
+  fireEvent,
+  render as rtlRender,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { UserPool } from "@clc/api/features/pools/client";
@@ -98,7 +106,8 @@ vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
   usePoolVoucherTokens: () => [],
 }));
 
-vi.mock("#/features/pools/hooks/use-update-pool-profile", () => ({
+vi.mock("#/features/pools/hooks/use-update-pool-profile", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useUpdatePoolProfile: () => ({ mutateAsync: mocks.updateProfile, isPending: false }),
 }));
 
@@ -153,7 +162,8 @@ vi.mock("#/features/pools/hooks/use-pool-fee-settings", () => ({
   poolFeeSettingsQueryKeys: { all: ["pool-fee-settings"] },
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
+vi.mock("#/features/pools/hooks/use-pool-admin", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   usePoolAdminRelay: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
@@ -270,6 +280,16 @@ afterEach(() => {
   mocks.auth.isLoading = false;
   mocks.auth.session = { address: OWNER, chainId: 100 };
 });
+
+/** The owner forms read writes in flight from the query client. */
+function render(ui: ReactElement) {
+  const client = new QueryClient();
+  return rtlRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
+  });
+}
 
 describe("PoolDetailPage pool details editor", () => {
   it("opens a retired pool on Holdings and keeps withdrawals while hiding new pool actions", () => {

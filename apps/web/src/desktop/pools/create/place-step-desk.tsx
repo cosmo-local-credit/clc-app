@@ -45,7 +45,7 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
               value={field.state.value || null}
               onChange={(url) => field.handleChange(url ?? "")}
               onBusyChange={pool.setLogoBusy}
-              disabled={pool.deployPool.isPending}
+              disabled={pool.inFlight}
             />
           )}
         </form.Field>

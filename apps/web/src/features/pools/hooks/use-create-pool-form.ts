@@ -28,6 +28,7 @@ import { useForm } from "@clc/core/lib/forms";
 import type { UnitOfAccount } from "@clc/core/lib/currencies";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useLingui } from "@lingui/react/macro";
+import { useIsMutating } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -35,7 +36,7 @@ import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
+import { deployPoolMutationKey, useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
@@ -133,6 +134,9 @@ export function useCreatePoolForm({
   const defaultPricing: PoolPricing = "relative";
   const poolCreateSchema = poolCreateSchemaForChain(activeChainId);
   const deployPool = useDeployPool();
+  // A publish outlives the view that started it: after a phone/desktop swap the
+  // other view's press would deploy the same pool a second time.
+  const inFlight = useIsMutating({ mutationKey: deployPoolMutationKey }) > 0;
   const usage = useResourceUsage();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
@@ -179,7 +183,7 @@ export function useCreatePoolForm({
       },
     },
     onSubmit: async ({ value }) => {
-      if (usage.isError || !usage.data?.pools.canCreate) return;
+      if (inFlight || usage.isError || !usage.data?.pools.canCreate) return;
       if (!address || chainId === undefined) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
@@ -437,7 +441,8 @@ export function useCreatePoolForm({
     activeChainId,
     hasOracle,
     usage,
-    deployPool,
+    /** A publish is in flight, from this view or the one it replaced. */
+    inFlight,
     tagsQuery,
     advancing,
     logoBusy,

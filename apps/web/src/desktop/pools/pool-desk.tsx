@@ -10,7 +10,11 @@ import { PoolControlSide } from "#/desktop/pools/detail/pool-manage-desk";
 import { PoolProfileSide } from "#/desktop/pools/detail/pool-profile-desk";
 import type { PoolSide } from "#/desktop/pools/detail/pool-side-panel";
 import { PoolVoucherEditorSide } from "#/desktop/pools/detail/pool-voucher-editor-desk";
-import { type PoolActivityFeed, usePoolActivityFeed } from "#/desktop/pools/pool-activity-feed";
+import {
+  type PoolActivityFeed,
+  usePoolActivityFeed,
+  usePoolActivityTypes,
+} from "#/desktop/pools/pool-activity-feed";
 import {
   PoolMain,
   usePoolDeskModel,
@@ -112,9 +116,11 @@ export function PoolDeskFrame({
   const requestedTab = usePoolDeskRequestedTab();
   const pool = model.pool;
   const request = dimmed ? null : navigation.request;
+  const activityTypes = usePoolActivityTypes();
   const activity = usePoolActivityFeed(
     pool,
     model.auth.isAuthenticated && (requestedTab === "activity" || request?.kind === "activity"),
+    activityTypes.types,
   );
   const panel = resolvePoolSide(request, model, activity);
 
@@ -159,6 +165,7 @@ export function PoolDeskFrame({
         if (target) navigation.open(target);
       }}
       activity={activity}
+      activityTypes={activityTypes}
     />
   );
   let docked: ReactNode = side;

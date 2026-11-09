@@ -17,12 +17,16 @@ import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
  * lists, recipient labels and facets are invalidated independently; the fresh
  * private row stays authoritative while those public projections refresh.
  */
+export const updatePoolProfileMutationKey = (address: string) =>
+  ["pools", "profile", address] as const;
+
 export function useUpdatePoolProfile(address: string) {
   const queryClient = useQueryClient();
   const auth = useAuthStatus();
   const viewer = auth.isAuthenticated ? auth.session?.address : undefined;
 
   return useMutation({
+    mutationKey: updatePoolProfileMutationKey(address),
     mutationFn: async (profile: PoolProfileUpdate) => {
       await poolsClient.updatePoolProfile(address, profile);
       return poolsClient.getPoolInfo(address);

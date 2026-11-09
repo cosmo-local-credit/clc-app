@@ -65,7 +65,7 @@ export function ReviewStepDesk({ pool }: { pool: CreatePoolController }) {
         }
       >
         {([isSubmitting, pricing, acceptedTerms]) => {
-          const publishing = isSubmitting || pool.deployPool.isPending;
+          const publishing = isSubmitting || pool.inFlight;
           return (
             <CreatePoolFormFoot>
               <span className="me-auto text-muted-foreground text-xs">

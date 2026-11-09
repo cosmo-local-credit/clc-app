@@ -19,7 +19,7 @@ export function PoolOwnershipTransferForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
-  const { form, transfer, submission } = usePoolOwnershipTransferForm({ pool, onDone });
+  const { form, inFlight, submission } = usePoolOwnershipTransferForm({ pool, onDone });
   return (
     <form
       className="flex min-h-0 flex-1 flex-col"
@@ -63,7 +63,7 @@ export function PoolOwnershipTransferForm({
                 onBlur={field.handleBlur}
                 ariaLabel={t`New owner address`}
                 ariaInvalid={field.state.meta.errors.length > 0}
-                disabled={transfer.isPending || !!submission}
+                disabled={inFlight || !!submission}
               />
               <RecipientOwnerNotice address={field.state.value} />
             </Field>
@@ -75,10 +75,10 @@ export function PoolOwnershipTransferForm({
           type="submit"
           tap
           className="w-full"
-          pending={transfer.isPending}
+          pending={inFlight}
           disabled={!settings && !submission}
         >
-          {transfer.isPending ? (
+          {inFlight ? (
             <Trans>Waiting for the chain…</Trans>
           ) : submission ? (
             <Trans>Check transfer status</Trans>

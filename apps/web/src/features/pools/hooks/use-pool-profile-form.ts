@@ -4,11 +4,15 @@ import { poolProfileTextSchema } from "@clc/core/features/pools/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
+import { useIsMutating } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { useUpdatePoolProfile } from "#/features/pools/hooks/use-update-pool-profile";
+import {
+  updatePoolProfileMutationKey,
+  useUpdatePoolProfile,
+} from "#/features/pools/hooks/use-update-pool-profile";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { translateRecipientError } from "#/lib/recipient-error-i18n";
 
@@ -37,6 +41,9 @@ export function usePoolProfileForm({ pool, onClose }: { pool: UserPool; onClose:
   const { t, i18n } = useLingui();
   const tagsQuery = useTokenTags();
   const update = useUpdatePoolProfile(pool.address);
+  // A save outlives the view that started it: after a phone/desktop swap the
+  // other view's press would write the record a second time.
+  const inFlight = useIsMutating({ mutationKey: updatePoolProfileMutationKey(pool.address) }) > 0;
   const [imageBusy, setImageBusy] = useState(false);
   const storedLocation: PoolPlace | undefined =
     pool.locationName !== null && pool.geoLat !== null && pool.geoLng !== null
@@ -59,6 +66,7 @@ export function usePoolProfileForm({ pool, onClose }: { pool: UserPool; onClose:
     },
     validators: { onSubmit: profileFormSchema },
     onSubmit: async ({ value }) => {
+      if (inFlight) return;
       try {
         const clearContactFields = (["email", "website", "phone"] as const).filter(
           (field) => Boolean(pool[field]?.trim()) && value[field].trim() === "",
@@ -102,5 +110,5 @@ export function usePoolProfileForm({ pool, onClose }: { pool: UserPool; onClose:
     },
   });
 
-  return { form, update, tagsQuery, imageBusy, setImageBusy };
+  return { form, inFlight, tagsQuery, imageBusy, setImageBusy };
 }

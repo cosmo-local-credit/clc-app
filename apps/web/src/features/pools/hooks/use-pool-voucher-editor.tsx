@@ -17,6 +17,7 @@ import {
 } from "@clc/core/features/wallet/logic";
 import { useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useIsMutating } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,7 +27,10 @@ import {
   VOUCHER_SEARCH_MIN_CHARS,
 } from "#/features/home/hooks/use-voucher-search";
 import { useApprovalSuggestions } from "#/features/pools/hooks/use-approval-suggestions";
-import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
+import {
+  poolAdminRelayMutationKey,
+  usePoolAdminRelay,
+} from "#/features/pools/hooks/use-pool-admin";
 import {
   usePoolQuoterKind,
   usePoolVoucherRatesByAddress,
@@ -247,14 +251,18 @@ export function usePoolVoucherConfiguration({
 }) {
   const { t } = useLingui();
   const relay = usePoolAdminRelay(pool);
+  // Any batch for this pool, including one the other view started before a
+  // phone/desktop swap: a second press would relay beside it.
+  const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
   // Save and Remove share one relay; this says which of the two is waiting.
   const [removing, setRemoving] = useState(false);
-  const saving = relay.isPending && !removing;
+  const saving = inFlight && !removing;
   const form = useForm({
     defaultValues: seed,
     validators: { onSubmit: poolVoucherRateSchema({ requireCreditLimit: hasLimiter }) },
     onSubmit: async ({ value }) => {
+      if (inFlight) return;
       if (hasLimiter && selected.decimals === null) {
         toast.error(t`This voucher's decimals are unknown, so a limit can't be set.`);
         return;
@@ -304,7 +312,7 @@ export function usePoolVoucherConfiguration({
   });
 
   const remove = async () => {
-    if (!voucher) return;
+    if (inFlight || !voucher) return;
     setRemoving(true);
     try {
       await relay.mutateAsync(
@@ -322,11 +330,11 @@ export function usePoolVoucherConfiguration({
     }
   };
 
-  const canSubmit = !registrationUnknown && !relay.isPending;
+  const canSubmit = !registrationUnknown && !inFlight;
 
   return {
     form,
-    relay,
+    inFlight,
     remove,
     confirmingRemoval,
     setConfirmingRemoval,

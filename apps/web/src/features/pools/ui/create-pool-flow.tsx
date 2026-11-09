@@ -53,7 +53,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     activeChainId,
     hasOracle,
     usage,
-    deployPool,
+    inFlight,
     tagsQuery,
     advancing,
     logoBusy,
@@ -395,7 +395,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         value={field.state.value || null}
                         onChange={(url) => field.handleChange(url ?? "")}
                         onBusyChange={setLogoBusy}
-                        disabled={deployPool.isPending}
+                        disabled={inFlight}
                       />
                     )}
                   </form.Field>
@@ -672,9 +672,9 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       tap
                       className="w-full"
                       disabled={!acceptedTerms || usage.isError || !usage.data?.pools.canCreate}
-                      pending={isSubmitting || deployPool.isPending}
+                      pending={isSubmitting || inFlight}
                     >
-                      {isSubmitting || deployPool.isPending ? (
+                      {isSubmitting || inFlight ? (
                         <Trans>Publishing…</Trans>
                       ) : (
                         <Trans>Confirm &amp; Publish</Trans>

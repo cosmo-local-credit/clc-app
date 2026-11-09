@@ -371,15 +371,15 @@ function WithdrawLiquiditySide({
 }) {
   const { t } = useLingui();
   const form = usePoolWithdrawLiquidityForm({ pool, vouchers, treasury, onDone: onClose });
-  const { selected, withdrawable, relay } = form;
+  const { selected, withdrawable, inFlight } = form;
   return (
     <PoolSidePanel
       title={<Trans>Withdraw liquidity</Trans>}
       onClose={onClose}
       onSubmit={() => void form.submit()}
       footer={
-        <Button type="submit" disabled={!form.canSubmit} pending={relay.isPending}>
-          {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Withdraw</Trans>}
+        <Button type="submit" disabled={!form.canSubmit} pending={inFlight}>
+          {inFlight ? <Trans>Waiting for the chain…</Trans> : <Trans>Withdraw</Trans>}
         </Button>
       }
     >
@@ -448,16 +448,8 @@ function CollectFeesSide({
       onClose={onClose}
       onSubmit={() => void form.submit()}
       footer={
-        <Button
-          type="submit"
-          disabled={!form.selected || !feeAddress}
-          pending={form.relay.isPending}
-        >
-          {form.relay.isPending ? (
-            <Trans>Waiting for the chain…</Trans>
-          ) : (
-            <Trans>Collect fees</Trans>
-          )}
+        <Button type="submit" disabled={!form.selected || !feeAddress} pending={form.inFlight}>
+          {form.inFlight ? <Trans>Waiting for the chain…</Trans> : <Trans>Collect fees</Trans>}
         </Button>
       }
     >
@@ -512,12 +504,8 @@ function FeeSettingsSide({
       onClose={onClose}
       onSubmit={() => void form.submit()}
       footer={
-        <Button type="submit" disabled={!form.canSubmit} pending={form.relay.isPending}>
-          {form.relay.isPending ? (
-            <Trans>Waiting for the chain…</Trans>
-          ) : (
-            <Trans>Save fee settings</Trans>
-          )}
+        <Button type="submit" disabled={!form.canSubmit} pending={form.inFlight}>
+          {form.inFlight ? <Trans>Waiting for the chain…</Trans> : <Trans>Save fee settings</Trans>}
         </Button>
       }
     >
@@ -573,15 +561,15 @@ function OwnershipSide({
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const { form, transfer, submission } = usePoolOwnershipTransferForm({ pool, onDone: onClose });
+  const { form, inFlight, submission } = usePoolOwnershipTransferForm({ pool, onDone: onClose });
   return (
     <PoolSidePanel
       title={<Trans>Transfer ownership</Trans>}
       onClose={onClose}
       onSubmit={() => void form.handleSubmit()}
       footer={
-        <Button type="submit" pending={transfer.isPending} disabled={!settings && !submission}>
-          {transfer.isPending ? (
+        <Button type="submit" pending={inFlight} disabled={!settings && !submission}>
+          {inFlight ? (
             <Trans>Waiting for the chain…</Trans>
           ) : submission ? (
             <Trans>Check transfer status</Trans>
@@ -643,7 +631,7 @@ function OwnershipSide({
               ariaLabel={t`New owner address`}
               className="min-w-0"
               ariaInvalid={field.state.meta.errors.length > 0}
-              disabled={transfer.isPending || !!submission}
+              disabled={inFlight || !!submission}
             />
             <RecipientOwnerNotice address={field.state.value} />
           </Field>
