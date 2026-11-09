@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 import { lazy } from "react";
 
 import { NearbyCatalog } from "#/components/nearby-catalog";
@@ -138,6 +138,11 @@ function MarketListRoute() {
   return <LayoutSwitch mobile={mobile} desktop={desktop} />;
 }
 
+/**
+ * The phone's lists have no card panel, so a voucher or Want named in the URL
+ * (a link copied on desktop, or a desktop panel open when the window narrowed)
+ * opens that item's own page instead of being dropped.
+ */
 function MarketMobile({
   scope,
   search,
@@ -147,6 +152,21 @@ function MarketMobile({
   search: MarketRouteSearch;
   owner: string;
 }) {
+  const voucherAddress = parseVoucherAddress(search.voucher);
+  if (voucherAddress) {
+    return (
+      <Navigate
+        to="/vouchers/$voucherAddress"
+        params={{ voucherAddress }}
+        search={{ from: "market" }}
+        replace
+      />
+    );
+  }
+  const wantId = parseWantId(search.want);
+  if (wantId) {
+    return <Navigate to="/wants/$wantId" params={{ wantId }} search={{ from: "market" }} replace />;
+  }
   if (scope === "catalogs") {
     return <CatalogsPage creditableSearch={search.creditable} />;
   }

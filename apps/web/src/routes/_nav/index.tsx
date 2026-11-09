@@ -138,6 +138,20 @@ function IndexPage() {
 
   if (auth.isLoading) return <HomePageFallback />;
 
+  // Both views filter Activity through the URL, the same way.
+  const onActivityQueryChange = (activityQ: string) =>
+    navigate({
+      search: (previous) => ({ ...previous, activityQ: activityQ || undefined }),
+      replace: true,
+    });
+  const onActivityTypesChange = (activityTypes: readonly string[]) =>
+    navigate({
+      search: (previous) => ({
+        ...previous,
+        activityTypes: activityTypes.length ? activityTypes.join(",") : undefined,
+      }),
+    });
+
   const mobile = (
     <Suspense fallback={<HomePageFallback />}>
       <HomePage
@@ -146,20 +160,8 @@ function IndexPage() {
         creditableSearch={creditable}
         activityQ={activity.q}
         activityTypes={activity.types}
-        onActivityQueryChange={(activityQ) =>
-          navigate({
-            search: (previous) => ({ ...previous, activityQ: activityQ || undefined }),
-            replace: true,
-          })
-        }
-        onActivityTypesChange={(activityTypes) =>
-          navigate({
-            search: (previous) => ({
-              ...previous,
-              activityTypes: activityTypes.length ? activityTypes.join(",") : undefined,
-            }),
-          })
-        }
+        onActivityQueryChange={onActivityQueryChange}
+        onActivityTypesChange={onActivityTypesChange}
       />
     </Suspense>
   );
@@ -171,20 +173,8 @@ function IndexPage() {
         address={auth.address}
         query={activity.q}
         types={activity.types}
-        onQueryChange={(activityQ) =>
-          navigate({
-            search: (previous) => ({ ...previous, activityQ: activityQ || undefined }),
-            replace: true,
-          })
-        }
-        onTypesChange={(activityTypes) =>
-          navigate({
-            search: (previous) => ({
-              ...previous,
-              activityTypes: activityTypes.length ? activityTypes.join(",") : undefined,
-            }),
-          })
-        }
+        onQueryChange={onActivityQueryChange}
+        onTypesChange={onActivityTypesChange}
       />
     ) : tab === "posts" ? (
       <NearbyCatalog>

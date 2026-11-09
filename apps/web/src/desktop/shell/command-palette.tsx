@@ -27,6 +27,7 @@ import { useResourceUsage } from "#/hooks/use-resource-usage";
 import { marketplaceClient } from "#/lib/api/marketplace";
 import { recipientsClient } from "#/lib/api/recipients";
 import { cn } from "#/lib/utils";
+import { CHAIN_ID } from "#/lib/chain";
 
 type Group = "actions" | "people" | "marketplace";
 
@@ -151,24 +152,32 @@ export function CommandPalette() {
     .filter((entry) => !needle || entry.label.toLowerCase().includes(needle))
     .map((entry) => ({ ...entry, group: "actions" as const }));
 
+  // The chain filter Send's own search applies. A guest gets pools only: Send
+  // is behind sign-in.
   const peopleEntries: Entry[] = searching
-    ? (people.data ?? []).map((person) => {
-        const label = recipientLabel(person);
-        return {
-          key: `person-${person.address}`,
-          group: "people" as const,
-          label: person.kind === "pool" ? t`Open pool ${label}` : t`Send to ${label}`,
-          hint: formatVoucherAddress(person.address),
-          mono: true,
-          run: () => {
-            if (person.kind === "pool") {
-              void navigate({ to: "/pools/$poolAddress", params: { poolAddress: person.address } });
-              return;
-            }
-            void navigate({ to: "/wallet/send", search: { to: person.address } });
-          },
-        };
-      })
+    ? (people.data ?? [])
+        .filter((person) => person.chainId === CHAIN_ID || person.chainId === 0)
+        .filter((person) => person.kind === "pool" || privateNav)
+        .map((person) => {
+          const label = recipientLabel(person);
+          return {
+            key: `person-${person.address}`,
+            group: "people" as const,
+            label: person.kind === "pool" ? t`Open pool ${label}` : t`Send to ${label}`,
+            hint: formatVoucherAddress(person.address),
+            mono: true,
+            run: () => {
+              if (person.kind === "pool") {
+                void navigate({
+                  to: "/pools/$poolAddress",
+                  params: { poolAddress: person.address },
+                });
+                return;
+              }
+              void navigate({ to: "/wallet/send", search: { to: person.address } });
+            },
+          };
+        })
     : [];
 
   const results = searching ? (market.data?.pages.flatMap((page) => page.results) ?? []) : [];

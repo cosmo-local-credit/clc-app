@@ -22,11 +22,6 @@ export function copyValue(value: string, copied: string, failed: string) {
 /** An address or a transaction hash: the head and tail are what people compare. */
 const HEX = /^0x[0-9a-fA-F]{8,}$/;
 
-/** `abcd1234…89abcd`, for an identifier that is not hex. */
-function shorten(value: string): string {
-  return value.length <= 20 ? value : `${value.slice(0, 10)}…${value.slice(-8)}`;
-}
-
 const LINK_BUTTON = cn(
   deskSectionLinkClass(),
   "font-sans outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground",
@@ -84,7 +79,8 @@ export function FullValue({
         <EllipsizedAddress address={value} />
       ) : (
         <span dir="ltr" className="min-w-0 font-mono">
-          {shorten(value)}
+          {/* `abcd1234…89abcd`, for an identifier that is not hex. */}
+          {value.length <= 20 ? value : `${value.slice(0, 10)}…${value.slice(-8)}`}
         </span>
       )}
       <span className="flex flex-wrap items-center gap-x-3 gap-y-1">

@@ -188,6 +188,14 @@ describe("results", () => {
     ).toBeTruthy();
   });
 
+  it("leaves out recipients on another chain, as Send's own search does", async () => {
+    recipients.search.mockResolvedValue([{ ...person, alias: "celo-amina", chainId: 42220 }, pool]);
+    const { input } = await openPalette();
+    type(input, "amina");
+    expect(await screen.findByRole("option", { name: /Open pool/ })).toBeTruthy();
+    expect(screen.queryByRole("option", { name: /celo-amina/ })).toBeNull();
+  });
+
   it("sends a person row to Send with that address", async () => {
     const { input, router } = await openPalette();
     type(input, "amina");
@@ -261,6 +269,15 @@ describe("a guest", () => {
     // Swap is the public pools list, and the shortcut reference is local.
     expect(screen.getByRole("option", { name: "Swap" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Keyboard shortcuts" })).toBeTruthy();
+  });
+
+  it("finds pools but is not offered Send to a person", async () => {
+    // Send is behind sign-in; the row would land a guest on the sign-in gate.
+    auth.isAuthenticated = false;
+    const { input } = await openPalette();
+    type(input, "tea");
+    expect(await screen.findByRole("option", { name: /Open pool/ })).toBeTruthy();
+    expect(screen.queryByRole("option", { name: /Send to/ })).toBeNull();
   });
 
   it("keeps them while the session check runs", async () => {

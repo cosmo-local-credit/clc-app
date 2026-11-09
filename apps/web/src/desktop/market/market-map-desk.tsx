@@ -97,7 +97,7 @@ export function MarketMapDesk({
 
   return (
     <div className="flex h-full min-h-0 w-full">
-      <div className="relative flex w-[400px] shrink-0 flex-col border-border border-e bg-card">
+      <div className="relative flex w-[400px] shrink-0 flex-col border-border border-e bg-card @min-[72rem]:w-[440px] @min-[100rem]:w-[480px]">
         <div
           className={cn("flex min-h-0 flex-1 flex-col", screen.isCardOpen && "invisible")}
           inert={screen.isCardOpen || undefined}

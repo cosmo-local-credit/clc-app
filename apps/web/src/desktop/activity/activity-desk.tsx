@@ -65,6 +65,9 @@ function readTx(search: unknown): string | undefined {
   return typeof tx === "string" && tx.length > 0 ? tx : undefined;
 }
 
+/** How far a link's transaction is looked for: 25 pages of 20, the last 500 rows. */
+const LINKED_SEEK_PAGES = 25;
+
 const CONFIRMED_BADGE = "border-success-ink/35 bg-success/10 text-success-ink";
 
 /** The leg a row's amount shows: what arrived for a swap, the transfer otherwise. */
@@ -143,6 +146,19 @@ export function ActivityDesk({
   const selected = tx
     ? (loaded.find((item) => activityRowKey(item) === tx || item.txHash === tx) ?? null)
     : null;
+  // A link can name a transaction older than the pages loaded so far: a
+  // voucher page links its own rows here by hash. Page on until it turns up or
+  // the feed ends, within a bound, rather than calling a real one missing.
+  const seekingLinked =
+    tx !== undefined &&
+    selected === null &&
+    activityQuery.hasNextPage === true &&
+    !activityQuery.isError &&
+    (activityQuery.data?.pages.length ?? 0) < LINKED_SEEK_PAGES;
+  const { fetchNextPage, isFetchingNextPage } = activityQuery;
+  useEffect(() => {
+    if (seekingLinked && !isFetchingNextPage) void fetchNextPage();
+  }, [seekingLinked, isFetchingNextPage, fetchNextPage]);
   const armed = useRef<string | null>(null);
   // Whether this page pushed the inspector's history entry, so Close can pop
   // exactly that entry. A direct link has nothing of ours to pop.
@@ -530,7 +546,8 @@ export function ActivityDesk({
           tx ? (
             <ActivityInspector
               item={selected}
-              missing={!activityQuery.isPending && !selected}
+              missing={!activityQuery.isPending && !selected && !seekingLinked}
+              failed={activityQuery.isError}
               onClose={closeInspector}
             />
           ) : null
@@ -581,10 +598,13 @@ function ActivityType({ item }: { item: AccountActivityItem }) {
 function ActivityInspector({
   item,
   missing,
+  failed,
   onClose,
 }: {
   item: AccountActivityItem | null;
   missing: boolean;
+  /** The feed failed to load, rather than loading without this row. */
+  failed: boolean;
   onClose: () => void;
 }) {
   const { t } = useLingui();
@@ -596,7 +616,7 @@ function ActivityInspector({
         <TransferInspector item={item} />
       ) : missing ? (
         <p role="alert" className="text-sm text-muted-foreground">
-          {t`Couldn't load activity.`}
+          {failed ? t`Couldn't load activity.` : t`Activity not found.`}
         </p>
       ) : (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">

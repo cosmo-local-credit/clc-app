@@ -123,7 +123,7 @@ function VoucherPlace({
           onClick={onClose}
           className="absolute start-3 top-3"
         >
-          <RiArrowLeftSLine aria-hidden="true" />
+          <RiArrowLeftSLine aria-hidden="true" className="rtl:-scale-x-100" />
         </Button>
       </div>
       {unavailable ? (

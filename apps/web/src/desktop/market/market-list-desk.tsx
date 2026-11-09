@@ -18,10 +18,12 @@ import { TagBadge } from "#/components/ui/tag-badge";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
-import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
+import { MARKET_FILTER_PREFERENCES_NAME } from "#/features/home/hooks/use-market-filter";
 import { useOutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
 import { useMarketFilterNotice } from "#/features/home/ui/market-filter-ui";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import type { MarketListScope } from "#/lib/navigation/marketplace-search";
+import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection";
@@ -64,9 +66,19 @@ export function MarketListDesk({
   const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
   const credit = useCreditableBrowse(creditableSearch);
   const output = useOutputVoucherBrowse(outputVoucherSearch, credit);
-  const filter = useMarketFilter(
+  // Offers and Pools remember their own filters, as the phone's Offers and
+  // Pools pages do; the other lists share the market's.
+  const filter = usePersistedCatalogFilter(
+    scope === "offers"
+      ? CATALOG_FILTER_PREFERENCE_NAMES.offers
+      : scope === "pools"
+        ? CATALOG_FILTER_PREFERENCE_NAMES.pools
+        : MARKET_FILTER_PREFERENCES_NAME,
     useStorageOwner(),
-    creditableSearch !== undefined || outputVoucherSearch !== undefined,
+    {
+      ...(scope === "pools" ? { voucherRelationships: false } : {}),
+      externalFilterActive: creditableSearch !== undefined || outputVoucherSearch !== undefined,
+    },
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
   const list = useMarketList({ scope, filter, credit, output });
@@ -214,7 +226,7 @@ export function MarketListDesk({
         }
         side={
           open ? (
-            <aside className="flex min-h-0 w-[380px] shrink-0 flex-col border-border border-s bg-card">
+            <aside className="flex min-h-0 w-[400px] shrink-0 flex-col border-border border-s bg-card @min-[72rem]:w-[430px] @min-[100rem]:w-[460px]">
               <MarketPlacePanel realFix={distanceOrigin} />
             </aside>
           ) : null

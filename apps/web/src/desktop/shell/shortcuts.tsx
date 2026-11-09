@@ -27,21 +27,12 @@ const ROW_LIST =
 
 const MODIFIER_KEYS = new Set(["Shift", "Control", "Alt", "Meta"]);
 
-function isFormControl(target: EventTarget | null) {
-  return target instanceof Element && target.closest(FORM_CONTROL) !== null;
-}
-
 /** A dialog, popover, menu or listbox is open, wherever focus is. The docked inspector is not one. */
 function layerOpen() {
   return (
     document.querySelector(`${LAYER}:not(${INSPECTOR})`) !== null ||
     document.querySelector(OPEN_POPUP) !== null
   );
-}
-
-/** The inspector, dialog, menu or popover the key was pressed inside. */
-function insideLayer(target: EventTarget | null) {
-  return target instanceof Element && target.closest(`${LAYER}, ${INSPECTOR}`) !== null;
 }
 
 function listOf(row: HTMLElement): Element {
@@ -112,7 +103,8 @@ export function DesktopShortcuts() {
         return;
       }
 
-      if (isFormControl(event.target)) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest(FORM_CONTROL)) return;
 
       if (key === "Escape") {
         // The topmost layer closes, and only it. An open popup, menu or dialog
@@ -140,7 +132,8 @@ export function DesktopShortcuts() {
 
       if (MODIFIER_KEYS.has(key)) return;
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      if (!state.enabled || layerOpen() || insideLayer(event.target)) {
+      // Pressed inside the inspector, a dialog, a menu or a popover.
+      if (!state.enabled || layerOpen() || target?.closest(`${LAYER}, ${INSPECTOR}`)) {
         clearChord();
         return;
       }

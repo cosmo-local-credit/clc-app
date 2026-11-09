@@ -67,6 +67,8 @@ vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
 }));
 vi.mock("#/desktop/market/place-panel", () => ({ MarketPlacePanel: () => null }));
 
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
+import { GUEST_STORAGE_OWNER, ownerScopedKey } from "#/lib/storage/owner-tier-key";
 import { MarketListDesk } from "./market-list-desk";
 
 function pool(address: string, name: string): MarketplaceResult {
@@ -336,6 +338,24 @@ describe("MarketListDesk requested output (Get a voucher)", () => {
     expect(await screen.findByText("No pools have this voucher available.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
     expect(mocks.list).not.toHaveBeenCalled();
+  });
+});
+
+describe("MarketListDesk remembered filters", () => {
+  const remember = (name: string, tags: string[]) =>
+    window.localStorage.setItem(
+      ownerScopedKey(GUEST_STORAGE_OWNER, name),
+      JSON.stringify({ tags, tagMatch: "any", vouchers: [], voucherMatch: "any" }),
+    );
+
+  it("restores the Pools list's own remembered tags, as the phone's Pools page does", async () => {
+    mocks.list.mockResolvedValue(page([pool(POOL_A, "Tea Pool")]));
+    remember(CATALOG_FILTER_PREFERENCE_NAMES.market, ["Market only"]);
+    remember(CATALOG_FILTER_PREFERENCE_NAMES.pools, ["Food"]);
+    const router = renderList("/market?scope=pools", "pools");
+
+    await waitFor(() => expect(JSON.stringify(router.state.location.search)).toContain("Food"));
+    expect(JSON.stringify(router.state.location.search)).not.toContain("Market only");
   });
 });
 

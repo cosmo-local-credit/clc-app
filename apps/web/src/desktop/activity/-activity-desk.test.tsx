@@ -149,6 +149,30 @@ describe("Activity amount order", () => {
   });
 });
 
+describe("Activity inspector on a linked transaction", () => {
+  it("pages on until it finds a linked transaction older than the first page", async () => {
+    // A voucher page links its own transfer rows here by hash, and an older one
+    // is not in the first page of the account feed.
+    const firstPage = Array.from({ length: 20 }, (_, index) =>
+      transfer(100 + index, "sent", leg(USDC, "USDC", 2, "100"), "2026-10-26T09:00:00Z"),
+    );
+    const old = transfer(7, "received", leg(VCH, "VCH", 0, "42"), "2026-01-02T09:00:00Z");
+    mocks.getAccountActivity
+      .mockResolvedValueOnce({ activity: firstPage, last: 100 })
+      .mockResolvedValueOnce({ activity: [old], last: undefined });
+
+    renderDesk(`/?tab=activity&tx=${old.txHash}`);
+
+    expect(await screen.findByText("+42")).toBeTruthy();
+    expect(screen.queryByText("Couldn't load activity.")).toBeNull();
+  });
+
+  it("says the transaction was not found once every page is in", async () => {
+    renderDesk(`/?tab=activity&tx=0x${"9".repeat(64)}`);
+    expect(await screen.findByText("Activity not found.")).toBeTruthy();
+  });
+});
+
 describe("Activity inspector close", () => {
   const key = activityRowKey(KFP_ROW);
 

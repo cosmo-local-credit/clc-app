@@ -129,7 +129,8 @@ const DETAIL_DOCK_REM = 63;
 
 /**
  * A detail page: the main column, and a 360px column for the panel that
- * sits beside it (swap, publish, a summary). The side column docks and sticks
+ * sits beside it (swap, publish, a summary). A page that passes no side gets
+ * one column, so a panel it chose not to show costs no width. The side column docks and sticks
  * only when the canvas is at least 63rem wide, which leaves the main column
  * 560px or more; below that the side panel stacks under (or, with
  * `stacked="side-first"`, over) the main column at full width.
@@ -152,6 +153,9 @@ export function DeskDetail({
 }) {
   const frame = useRef<HTMLDivElement>(null);
   const [docked, setDocked] = useState(true);
+  // A side the page decided not to render reserves nothing: the main column
+  // takes the width rather than leaving 360px of empty canvas beside it.
+  const hasSide = side != null && side !== false;
 
   useLayoutEffect(() => {
     const element = frame.current;
@@ -186,12 +190,17 @@ export function DeskDetail({
     <div
       ref={frame}
       className={cn(
-        "grid min-w-0 grid-cols-1 items-start gap-6 px-6 pt-7 pb-10 @4xl:px-8 @min-[63rem]:grid-cols-[minmax(0,1fr)_360px]",
+        "grid min-w-0 grid-cols-1 items-start gap-6 px-6 pt-7 pb-10 @4xl:px-8",
+        hasSide && "@min-[63rem]:grid-cols-[minmax(0,1fr)_360px]",
         "w-full max-w-[1324px]",
         className,
       )}
     >
-      {stacked === "side-first" && !docked ? [sideColumn, mainColumn] : [mainColumn, sideColumn]}
+      {!hasSide
+        ? mainColumn
+        : stacked === "side-first" && !docked
+          ? [sideColumn, mainColumn]
+          : [mainColumn, sideColumn]}
     </div>
   );
 }
