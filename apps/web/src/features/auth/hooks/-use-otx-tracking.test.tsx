@@ -1,10 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { OtxTrackingOutcome, OtxTrackResult } from "@clc/api/features/auth/client";
-import { TRACKING_UNCONFIRMED } from "@clc/api/features/auth/client";
 import { BackendApiError } from "@clc/api/client/errors";
 import { RelayerError } from "@clc/api/features/relayer/client";
 import { useOtxTracking } from "./use-otx-tracking";
@@ -116,33 +115,39 @@ describe("useOtxTracking", () => {
     expect(result.current.outcome).toEqual({ kind: "pending" });
   });
 
-  it("gives up on a tracking id that never appears, rather than polling for good", async () => {
-    // A discarded job writes no OTX row ever, so this 404 never clears. Without
-    // a deadline the caller shows a spinner behind a job that already failed.
+  it("keeps polling a tracking id that has not appeared yet, however long it takes", async () => {
+    // A backed-up queue can take minutes to write the row. Showing that as a
+    // failure invites a second payment; a job that really ended without a row
+    // is answered with 410, which is terminal on arrival.
     const queryFn = vi
       .fn()
       .mockRejectedValue(new RelayerError("not_found", "tracking id not found", 404));
 
-    const { result } = renderHook(
-      () => useOtxTracking("tracking-gone", { pollMs: 10, notFoundTimeoutMs: 40, queryFn }),
-      { wrapper: createWrapper() },
-    );
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { result } = renderHook(
+        () => useOtxTracking("tracking-slow-queue", { pollMs: 1_000, queryFn }),
+        { wrapper: createWrapper() },
+      );
+      await waitFor(() => expect(queryFn).toHaveBeenCalled());
 
-    await waitFor(() => expect(result.current.outcome.kind).toBe("pending"));
-    await waitFor(() =>
-      expect(result.current.outcome).toEqual({
-        kind: "error",
-        error: TRACKING_UNCONFIRMED,
-      }),
-    );
+      // Well past the two minutes the client once gave up after.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(150_000);
+      });
+      const calls = queryFn.mock.calls.length;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5_000);
+      });
 
-    // The deadline also stops the polling it was waiting on.
-    const settled = queryFn.mock.calls.length;
-    await new Promise((resolve) => setTimeout(resolve, 60));
-    expect(queryFn.mock.calls.length).toBe(settled);
+      expect(queryFn.mock.calls.length).toBeGreaterThan(calls);
+      expect(result.current.outcome).toEqual({ kind: "pending" });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
-  it("waits out a slow worker that writes the row inside the deadline", async () => {
+  it("resolves once a slow worker writes the row", async () => {
     const queryFn = vi
       .fn()
       .mockRejectedValueOnce(new RelayerError("not_found", "tracking id not found", 404))
@@ -161,17 +166,16 @@ describe("useOtxTracking", () => {
         ],
       });
 
-    const { result } = renderHook(
-      () => useOtxTracking("tracking-slow", { pollMs: 10, notFoundTimeoutMs: 10_000, queryFn }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useOtxTracking("tracking-slow", { pollMs: 10, queryFn }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.outcome.kind).toBe("success"));
   });
 
   it("keeps waiting on a pending transaction once its row exists", async () => {
-    // The deadline is for an id that never appears. A row that is on-chain and
-    // unconfirmed is waited on for as long as the chain takes.
+    // A row that is on-chain and unconfirmed is waited on for as long as the
+    // chain takes.
     const queryFn = vi.fn().mockResolvedValue({
       otx: [
         {
@@ -188,7 +192,7 @@ describe("useOtxTracking", () => {
     });
 
     const { result } = renderHook(
-      () => useOtxTracking("tracking-pending", { pollMs: 10, notFoundTimeoutMs: 20, queryFn }),
+      () => useOtxTracking("tracking-pending", { pollMs: 10, queryFn }),
       { wrapper: createWrapper() },
     );
 
@@ -199,7 +203,7 @@ describe("useOtxTracking", () => {
 
   it("reports the backend's own reason when it knows the job failed", async () => {
     // clc-core answers 410 with the discarded job's error, which is not a 404
-    // and so is terminal on arrival — no deadline needed.
+    // and so is terminal on arrival.
     const queryFn = vi
       .fn()
       .mockRejectedValue(

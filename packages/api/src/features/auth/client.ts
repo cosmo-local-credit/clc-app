@@ -222,19 +222,8 @@ export type OtxTrackingOutcome =
   | { kind: "success"; otx: OtxRecord }
   | { kind: "error"; error: string };
 
-/**
- * How long a tracking ID may answer "not found" before the wait is given up.
- *
- * The ID is issued when the job is enqueued, so a 404 in the first seconds is
- * the worker not having written its OTX row yet. Past this it is a job that
- * ended without one — a backend that reports the failure says so sooner, and
- * this is the floor under one that does not.
- */
-export const TRACKING_TIMEOUT_MS = 120_000;
+const TRACKING_TIMEOUT_MS = 120_000;
 export const TRACKING_POLL_MS = 2_000;
-
-/** Shown when a tracking ID never resolves either way. */
-export const TRACKING_UNCONFIRMED = "Transaction was accepted but not confirmed on-chain.";
 
 export type TrackingPollOptions = {
   timeoutMs?: number;
@@ -303,7 +292,7 @@ export async function pollTrackingCompletion(
     await sleep(pollMs);
   }
 
-  throw new Error(TRACKING_UNCONFIRMED);
+  throw new Error("Transaction was accepted but not confirmed on-chain.");
 }
 
 export type AuthClient = {
