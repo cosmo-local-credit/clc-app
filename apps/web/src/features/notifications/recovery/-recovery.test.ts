@@ -240,7 +240,14 @@ describe("declared kinds on inbox sync", () => {
       registrationId: "registration-1",
       userId: "user-1",
       syncCursor: "cursor-1",
-      workerKinds: ["voucher.received", "offramp.completed", "message.received"],
+      workerKinds: [
+        "voucher.received",
+        "offramp.completed",
+        "message.received",
+        "message.request",
+        "message.accepted",
+        "helpdesk.reply",
+      ],
     });
     api.syncInbox.mockResolvedValue({
       hasMore: false,
@@ -258,7 +265,14 @@ describe("declared kinds on inbox sync", () => {
         deviceId: "device-1",
         lastSyncCursor: "cursor-1",
         registrationId: "registration-1",
-        kinds: ["voucher.received", "offramp.completed", "message.received"],
+        kinds: [
+          "voucher.received",
+          "offramp.completed",
+          "message.received",
+          "message.request",
+          "message.accepted",
+          "helpdesk.reply",
+        ],
       },
       { identityEpoch: "epoch-1" },
     );

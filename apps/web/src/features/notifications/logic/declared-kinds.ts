@@ -4,17 +4,20 @@ import { NOTIFICATION_KINDS, type NotificationKind } from "./payload-schema";
  * The kinds this page declares to the notification service, or undefined to
  * declare nothing and get the v1 set.
  *
- * A kind is declared only once the active worker says it parses it too: the
- * service pushes declared kinds to the device, and a worker from an older build
- * would drop them. `workerKinds` is written by the worker itself, so it is absent
- * until this build's worker (or a later one) is active.
+ * The full set is declared only once this build's own worker is active, which
+ * is when the kinds the worker recorded (`workerKinds`, written by the worker
+ * itself) are exactly this page's. Every call replaces the device's stored set,
+ * and the worker's `refresh-subscription` declares its own set, so a page and a
+ * worker from different builds declaring different sets would reset the inbox
+ * back and forth. An empty list would mean "no notifications", so it is never
+ * sent.
  */
 export function declaredNotificationKinds(
   config: { workerKinds?: readonly string[] } | null | undefined,
 ): NotificationKind[] | undefined {
   const workerKinds = config?.workerKinds;
-  if (!workerKinds) return undefined;
-  return NOTIFICATION_KINDS.filter((kind) => workerKinds.includes(kind));
+  if (!workerKinds || !sameDeclaredKinds(workerKinds, NOTIFICATION_KINDS)) return undefined;
+  return [...NOTIFICATION_KINDS];
 }
 
 export function sameDeclaredKinds(

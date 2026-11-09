@@ -96,7 +96,14 @@ describe("runNotificationSubscriptionHealthCheck", () => {
     dependencies.readConfig.mockResolvedValue({
       ...config,
       subscriptionHash: hash,
-      workerKinds: ["voucher.received", "offramp.completed", "helpdesk.reply"],
+      workerKinds: [
+        "voucher.received",
+        "offramp.completed",
+        "message.received",
+        "message.request",
+        "message.accepted",
+        "helpdesk.reply",
+      ],
     });
     await expect(
       runNotificationSubscriptionHealthCheck(
@@ -106,13 +113,27 @@ describe("runNotificationSubscriptionHealthCheck", () => {
     ).resolves.toMatchObject({ status: "refreshed" });
     expect(dependencies.registerDevice).toHaveBeenCalledWith(
       expect.objectContaining({
-        kinds: ["voucher.received", "offramp.completed", "helpdesk.reply"],
+        kinds: [
+          "voucher.received",
+          "offramp.completed",
+          "message.received",
+          "message.request",
+          "message.accepted",
+          "helpdesk.reply",
+        ],
       }),
       expect.anything(),
     );
     expect(dependencies.updateConfig).toHaveBeenCalledWith(
       expect.objectContaining({
-        registeredKinds: ["voucher.received", "offramp.completed", "helpdesk.reply"],
+        registeredKinds: [
+          "voucher.received",
+          "offramp.completed",
+          "message.received",
+          "message.request",
+          "message.accepted",
+          "helpdesk.reply",
+        ],
       }),
       "epoch-1",
     );

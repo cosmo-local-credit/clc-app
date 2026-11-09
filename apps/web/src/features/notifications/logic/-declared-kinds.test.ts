@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { declaredNotificationKinds, sameDeclaredKinds } from "./declared-kinds";
+import { NOTIFICATION_KINDS } from "./payload-schema";
 
 describe("declaredNotificationKinds", () => {
   it("declares nothing until a worker has said what it parses", () => {
@@ -7,12 +8,18 @@ describe("declaredNotificationKinds", () => {
     expect(declaredNotificationKinds({})).toBeUndefined();
   });
 
-  it("declares the kinds both this page and the active worker parse", () => {
+  it("declares the full set once this build's worker is active", () => {
+    expect(declaredNotificationKinds({ workerKinds: [...NOTIFICATION_KINDS].reverse() })).toEqual(
+      NOTIFICATION_KINDS,
+    );
+  });
+
+  it("declares nothing while a worker from another build is active, and never an empty list", () => {
     expect(
-      declaredNotificationKinds({
-        workerKinds: ["voucher.received", "offramp.completed", "message.received", "future.kind"],
-      }),
-    ).toEqual(["voucher.received", "offramp.completed", "message.received"]);
+      declaredNotificationKinds({ workerKinds: [...NOTIFICATION_KINDS, "future.kind"] }),
+    ).toBeUndefined();
+    expect(declaredNotificationKinds({ workerKinds: ["voucher.received"] })).toBeUndefined();
+    expect(declaredNotificationKinds({ workerKinds: [] })).toBeUndefined();
   });
 });
 
