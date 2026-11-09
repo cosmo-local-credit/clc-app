@@ -206,7 +206,9 @@ export function useVoucherBurnForm({
     form,
     delegationStatus,
     burning,
-    pending: burning || delegationStatus === "checking" || balance.isPending,
+    // isLoading, not isPending: the balance query is disabled while the form is
+    // closed, and a disabled query stays pending, which would wedge the button.
+    pending: burning || delegationStatus === "checking" || balance.isLoading,
     /** The owner's on-chain balance at full precision; undefined until read. */
     balance:
       balance.data === undefined

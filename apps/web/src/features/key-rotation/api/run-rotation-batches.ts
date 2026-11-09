@@ -84,11 +84,12 @@ export async function runRotationBatches(input: {
             relayer,
           );
     const trackingId = await relayIdempotently(payload, relayer);
-    delegated = true;
+    const carriedAuthorization = !delegated;
 
     input.onProgress?.(index, "confirming");
     try {
       await waitForOwnershipRelay(relayer, trackingId);
+      delegated = true;
       result.moved.push(index);
       input.onProgress?.(index, "moved");
     } catch (error) {
@@ -97,6 +98,10 @@ export async function runRotationBatches(input: {
         return result;
       }
       result.failed.push(index);
+      // A reverted call keeps the delegation its authorization set; a dropped
+      // transaction does not. Ask the chain, so the next batch carries the
+      // authorization exactly when the wallet still needs one.
+      if (carriedAuthorization) delegated = await readCaliburDelegation(from).catch(() => false);
       input.onProgress?.(index, "failed");
     }
   }

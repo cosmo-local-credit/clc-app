@@ -7,6 +7,7 @@ import {
   clearIdentitySecrets,
   clearScopedQueries,
 } from "#/features/auth/api/identity-reset";
+import { useRotationSession } from "#/features/key-rotation/state/rotation-session";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { getWebAuthnCredential, storeWebAuthnCredential } from "#/lib/webauthn-storage";
@@ -61,6 +62,22 @@ describe("clearIdentitySecrets", () => {
 
     expect(getStoredKey()).toBeNull();
     expect(getWebAuthnCredential()).toMatchObject({ credentialId: "credential-1" });
+  });
+
+  it("drops a card replacement's keys on any teardown but its own switch to the new card", () => {
+    const oldSigner = { kind: "card", key: KEY } as const;
+    const begin = () => useRotationSession.getState().begin(CREDENTIAL.address, oldSigner);
+
+    begin();
+    clearIdentitySecrets("private-key");
+    expect(useRotationSession.getState().newKey).not.toBeNull();
+
+    clearIdentitySecrets("webauthn");
+    expect(useRotationSession.getState().newKey).toBeNull();
+
+    begin();
+    clearIdentitySecrets("none");
+    expect(useRotationSession.getState().newKey).toBeNull();
   });
 
   it("does not throw when the store is unreachable, so sign-out still proceeds", () => {

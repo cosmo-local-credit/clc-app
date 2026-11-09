@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { offeringKeys } from "@clc/api/features/offerings/queries";
 
 const { exitPoolCreateHistoryMock, state } = vi.hoisted(() => ({
   exitPoolCreateHistoryMock: vi.fn(),
@@ -58,8 +59,9 @@ vi.mock("#/lib/navigation/pool-create-history", () => ({
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { PoolDeploymentReceiptPage } from "./pool-deployment-receipt-page";
 
-function renderReceipt() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function renderReceipt(
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   return render(
     <QueryClientProvider client={queryClient}>
       <PoolDeploymentReceiptPage trackingId="tracking-1" />
@@ -94,6 +96,26 @@ afterEach(() => {
 });
 
 describe("PoolDeploymentReceiptPage", () => {
+  it("invalidates cached offers only when the new pool is confirmed", async () => {
+    const address = "0x3333333333333333333333333333333333333333";
+    const client = new QueryClient();
+    const key = offeringKeys.byPoolInfinite(address, 20);
+    client.setQueryData(key, {
+      pages: [{ offerings: [], first: 0, last: 0, receivedCount: 0 }],
+      pageParams: [undefined],
+    });
+    const pending = renderReceipt(client);
+    expect(client.getQueryState(key)?.isInvalidated).toBe(false);
+    pending.unmount();
+
+    state.contract = { address, name: "New pool", symbol: "NEW", status: "CONFIRMED" };
+    state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
+    const confirmed = renderReceipt(client);
+    await waitFor(() => expect(client.getQueryState(key)?.isInvalidated).toBe(true));
+    confirmed.unmount();
+    client.clear();
+  });
+
   it("shows all pool stages and does not complete after the first OTX succeeds", () => {
     state.trackingData = {
       otx: [

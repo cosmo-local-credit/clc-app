@@ -39,6 +39,7 @@ import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-in
 import { usePoolFeeSettings } from "#/features/pools/hooks/use-pool-fee-settings";
 import { usePoolHoldings } from "#/features/pools/hooks/use-pool-holdings";
 import { usePoolRecentSwaps } from "#/features/pools/hooks/use-pool-recent-swaps";
+import { useRefreshPoolOfferingsOnMembership } from "#/features/pools/hooks/use-pool-offerings-refresh";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { cn } from "#/lib/utils";
@@ -86,6 +87,12 @@ export function usePoolDeskModel(poolAddress: string) {
     owner: isPoolOwner ? auth.session?.address : undefined,
   });
   const poolVouchers = poolVouchersQuery.vouchers;
+  // As the phone's pool page: a voucher joining or leaving refreshes Offers.
+  useRefreshPoolOfferingsOnMembership(
+    poolAddress,
+    !!pool && !poolVouchersQuery.isPending && !poolVouchersQuery.isError,
+    poolVouchers.filter((voucher) => voucher.active),
+  );
   const canEditDetails =
     auth.isAuthenticated && !!pool && (isAdminRole(auth.session?.role) || isPoolOwner);
   const privateInfo = poolQuery.privateInfo

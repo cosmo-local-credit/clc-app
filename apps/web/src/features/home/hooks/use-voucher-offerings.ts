@@ -69,6 +69,10 @@ export function useManagedVoucherOfferingsInfinite(
  * Deliberately not a fan-out over `usePoolVouchers`: a pool may allow many
  * vouchers, and one request each would multiply into a request storm on a screen
  * that only ever renders 20 tiles at a time.
+ *
+ * Refresh on entry so a tab visit cannot reuse a fresh-but-empty market cache.
+ * Pool writes and changes in the loaded voucher list invalidate affected Offers.
+ * Browsing alone must not continuously refetch every loaded offering page.
  */
 export function usePoolOfferingsInfinite(
   poolAddress: string | undefined,
@@ -76,6 +80,10 @@ export function usePoolOfferingsInfinite(
 ) {
   return useInfiniteQuery({
     ...poolOfferingsInfiniteQueryOptions(offeringsClient, poolAddress, perPage),
-    ...MARKET_QUERY_FRESHNESS,
+    gcTime: MARKET_QUERY_FRESHNESS.gcTime,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }

@@ -1,8 +1,9 @@
-import { QueryClient } from "@tanstack/react-query";
-import { beforeEach, describe, expect, it } from "vite-plus/test";
+import { QueryClient, QueryObserver } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
   matchVoucherOfferingListKey,
+  invalidatePoolOfferings,
   offeringListKeyShapes,
   patchVoucherOfferingCaches,
   removeVoucherOfferingFromCaches,
@@ -13,6 +14,51 @@ import { offeringKeys } from "./queries";
 const VOUCHER = "0x4444444444444444444444444444444444444444";
 const OTHER_VOUCHER = "0x5555555555555555555555555555555555555555";
 const PER_PAGE = 20;
+
+it("invalidates only the changed pool and discovery filtered by that pool", async () => {
+  const client = new QueryClient();
+  const affected = [
+    offeringKeys.byPool(VOUCHER, 20),
+    offeringKeys.byPoolInfinite(VOUCHER, 20),
+    offeringKeys.discovery({ perPage: 20, pools: [{ chainId: 100, address: VOUCHER }] }),
+  ];
+  const unrelated = [
+    offeringKeys.byPool(OTHER_VOUCHER, 20),
+    offeringKeys.byPoolInfinite(OTHER_VOUCHER, 20),
+    offeringKeys.byVoucherInfinite(VOUCHER, 20),
+    offeringKeys.discovery({ perPage: 20 }),
+    offeringKeys.discovery({ perPage: 20, pools: [{ chainId: 100, address: OTHER_VOUCHER }] }),
+  ];
+  for (const key of [...affected, ...unrelated]) client.setQueryData(key, {});
+  await invalidatePoolOfferings(client, VOUCHER);
+  for (const key of affected) expect(client.getQueryState(key)?.isInvalidated).toBe(true);
+  for (const key of unrelated) expect(client.getQueryState(key)?.isInvalidated).toBe(false);
+  client.clear();
+});
+
+it("replaces an initial pool-offers request that started before membership was indexed", async () => {
+  const client = new QueryClient();
+  const key = offeringKeys.byPoolInfinite(VOUCHER, 20);
+  let finishOld!: (value: unknown) => void;
+  const read = vi
+    .fn()
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishOld = resolve;
+        }),
+    )
+    .mockResolvedValue({ pages: [{ offerings: [row("1")] }], pageParams: [undefined] });
+  const observer = new QueryObserver(client, { queryKey: key, queryFn: read });
+  const unsubscribe = observer.subscribe(() => {});
+  await invalidatePoolOfferings(client, VOUCHER);
+  finishOld({ pages: [{ offerings: [] }], pageParams: [undefined] });
+  await Promise.resolve();
+  expect(read).toHaveBeenCalledTimes(2);
+  expect(client.getQueryData(key)).toMatchObject({ pages: [{ offerings: [{ id: "1" }] }] });
+  unsubscribe();
+  client.clear();
+});
 
 function row(id: string, overrides: Partial<Offering> = {}): Offering {
   return {
