@@ -4,7 +4,7 @@ import {
   type SafeSignerChangeRequest,
   type SafeSignerState,
 } from "@clc/core/features/safe/logic";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import type { Client } from "viem";
 import { useClient } from "wagmi";
@@ -88,15 +88,21 @@ export function useSafeSigners(safe: `0x${string}`, enabled: boolean) {
  * Proposes a signer or threshold change to the Safe's queue. The signers are
  * read again at the moment of proposing, so the call matches the list the Safe
  * will check. Like every Safe write, success surfaces as SafeProposedError.
+ * `inFlight` is true while a proposal for this Safe runs from any view: a
+ * layout switch remounts Settings with a fresh observer that never saw it.
  */
 export function useProposeSignerChange(safe: `0x${string}`) {
   const client = useClient({ chainId: CHAIN_ID });
   const { write } = useSafeWrite();
-  return useMutation({
+  const mutationKey = ["safe-signer-change", CHAIN_ID, safe.toLowerCase()];
+  const mutation = useMutation({
+    mutationKey,
     mutationFn: async (change: SafeSignerChangeRequest) => {
       if (!client) throw new Error("The configured chain is unavailable.");
       const state = await readSignerState(client, safe);
       return write({ safe, calls: [buildSafeSignerChangeCall(state, change)] });
     },
   });
+  const inFlight = useIsMutating({ mutationKey }) > 0;
+  return { ...mutation, inFlight };
 }

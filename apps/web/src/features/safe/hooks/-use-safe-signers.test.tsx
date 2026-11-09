@@ -111,6 +111,34 @@ describe("useProposeSignerChange", () => {
   });
 });
 
+describe("a proposal still out after a layout switch", () => {
+  it("keeps the Safe's proposal busy for the view mounted next, and only that Safe's", async () => {
+    let release!: () => void;
+    mocks.write.mockReturnValue(
+      new Promise<void>((resolve) => {
+        release = resolve;
+      }),
+    );
+    const client = new QueryClient();
+    const shared = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const before = renderHook(() => useProposeSignerChange(SAFE), { wrapper: shared });
+    act(() => before.result.current.mutate({ kind: "changeThreshold", threshold: 3 }));
+    await waitFor(() => expect(mocks.write).toHaveBeenCalled());
+    before.unmount();
+
+    const after = renderHook(() => useProposeSignerChange(SAFE), { wrapper: shared });
+    const otherSafe = renderHook(() => useProposeSignerChange(FIRST), { wrapper: shared });
+    expect(after.result.current.isPending).toBe(false);
+    expect(after.result.current.inFlight).toBe(true);
+    expect(otherSafe.result.current.inFlight).toBe(false);
+
+    await act(async () => release());
+    await waitFor(() => expect(after.result.current.inFlight).toBe(false));
+  });
+});
+
 describe("useSafeSigners", () => {
   it("reads only once the sheet asks for it", async () => {
     const { result, rerender } = renderHook(({ enabled }) => useSafeSigners(SAFE, enabled), {

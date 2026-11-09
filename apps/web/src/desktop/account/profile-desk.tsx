@@ -1,14 +1,8 @@
-import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import type { ProfileResult } from "@clc/api/features/auth/client";
-import type { LocationInput } from "@clc/core/features/location/logic";
-import { locationSchema } from "@clc/core/features/location/logic";
-import { type ProfileEditInput, profileEditSchema } from "@clc/core/features/signup/logic";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiFileCopyLine } from "react-icons/ri";
-import { toast } from "sonner";
 
 import { ProfilePrivacyNotice } from "#/components/profile-privacy-notice";
 import { UsernameInput } from "#/components/profile/username-input";
@@ -22,14 +16,10 @@ import { Textarea } from "#/components/ui/textarea";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { DeskCanvas, DeskTitle, DeskTitleRow } from "#/desktop/ui/page";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
+import { useProfileEditForm } from "#/features/auth/hooks/use-profile-edit-form";
 import { useCopyUsername, useUsernameForm } from "#/features/auth/hooks/use-username-form";
 import { isStorageConfigured } from "#/lib/api/storage";
-import { preferredCurrencyForCountry } from "#/lib/profile-currency";
-import { translateRecipientError } from "#/lib/recipient-error-i18n";
 import { translateValidationError } from "#/lib/validation-i18n";
-
-const PLACEHOLDER_EMAIL_SUFFIX = "@clc.local";
 
 export function ProfileDesk() {
   const profileQuery = useAuthProfile();
@@ -73,78 +63,16 @@ export function ProfileDesk() {
 
 function ProfileForm({ profile }: { profile: ProfileResult }) {
   const { i18n, t } = useLingui();
-  const router = useRouter();
-  const canGoBack = useCanGoBack();
-  const navigate = useNavigate();
-  const updateProfile = useUpdateProfile();
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const storedAvatarUrl = profile.avatarUrl ?? null;
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(storedAvatarUrl);
-  const [avatarBusy, setAvatarBusy] = useState(false);
-
-  const seededLocation = locationSchema.safeParse({
-    lat: profile.geoLat,
-    lng: profile.geoLng,
-    locationName: profile.locationName,
-    country: profile.country,
-  });
-  const initialLocation: LocationInput | undefined = seededLocation.success
-    ? seededLocation.data
-    : undefined;
-
-  const defaultValues: ProfileEditInput = {
-    name: profile.name ?? "",
-    email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
-    phone: profile.phone ?? "",
-    location: initialLocation,
-    preferredCurrency:
-      profile.preferredCurrency?.trim() || preferredCurrencyForCountry(profile.country),
-    bio: profile.bio ?? "",
-    website: profile.website ?? "",
-  };
-
-  const form = useForm({
-    defaultValues,
-    validators: { onChange: profileEditSchema },
-    onSubmit: async ({ value }) => {
-      setSubmitError(null);
-      try {
-        const parsed = profileEditSchema.parse(value);
-        await updateProfile.mutateAsync({
-          name: parsed.name,
-          email: parsed.email,
-          phone: parsed.phone,
-          country: parsed.location?.country ?? profile.country,
-          preferredCurrency: parsed.preferredCurrency,
-          bio: parsed.bio,
-          website: parsed.website,
-          ...(parsed.location
-            ? {
-                locationName: parsed.location.locationName,
-                geoLat: parsed.location.lat,
-                geoLng: parsed.location.lng,
-              }
-            : { clearLocation: true }),
-          ...(avatarUrl !== storedAvatarUrl ? { avatarUrl } : {}),
-        });
-        toast.success(t`Profile updated`);
-        if (canGoBack) {
-          router.history.back();
-        } else {
-          void navigate({ to: "/", search: { tab: "settings" }, replace: true });
-        }
-      } catch (err) {
-        setSubmitError(
-          translateRecipientError(err, i18n) ??
-            (err instanceof BackendApiError
-              ? formatBackendApiError(err)
-              : err instanceof Error
-                ? err.message
-                : t`Couldn't save your profile.`),
-        );
-      }
-    },
-  });
+  const {
+    form,
+    avatarUrl,
+    setAvatarUrl,
+    avatarChanged,
+    avatarBusy,
+    setAvatarBusy,
+    submitError,
+    inFlight,
+  } = useProfileEditForm(profile);
 
   const fieldError = (err: string | null | undefined) =>
     err ? <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p> : null;
@@ -165,10 +93,14 @@ function ProfileForm({ profile }: { profile: ProfileResult }) {
               <Button
                 type="submit"
                 form={FORM_ID}
-                disabled={!(isDirty || avatarUrl !== storedAvatarUrl) || !canSubmit}
-                pending={isSubmitting || avatarBusy}
+                disabled={!(isDirty || avatarChanged) || !canSubmit}
+                pending={isSubmitting || avatarBusy || inFlight}
               >
-                {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
+                {avatarBusy
+                  ? t`Uploading photo…`
+                  : isSubmitting || inFlight
+                    ? t`Saving…`
+                    : t`Save changes`}
               </Button>
             )}
           </form.Subscribe>
@@ -201,7 +133,7 @@ function ProfileForm({ profile }: { profile: ProfileResult }) {
             value={avatarUrl}
             onChange={setAvatarUrl}
             onBusyChange={setAvatarBusy}
-            disabled={updateProfile.isPending}
+            disabled={inFlight}
           />
         ) : null}
 

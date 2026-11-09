@@ -1,7 +1,7 @@
 import { isSupportedLocale, LOCALE_OPTIONS } from "@clc/i18n/locales";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiExternalLinkLine, RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { useConnection } from "wagmi";
@@ -35,14 +35,19 @@ import {
 } from "#/features/home/hooks/use-notification-settings";
 import { usePasskeySettings } from "#/features/home/hooks/use-passkey-settings";
 import { useInstallStore } from "#/features/install/install-store";
+import { useMySafes } from "#/features/safe/hooks/use-safe-signers";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useHydratedTheme } from "#/providers/theme";
 import { useLocale } from "#/providers/i18n";
 
+import { MultisigSettingsDeskRows } from "./multisig-settings-desk";
+import { SetRow, SetRows } from "./set-row";
+import { SignInCardSettingsDeskRows } from "./sign-in-card-settings-desk";
+
 /**
- * Settings on a wide screen: five short groups on one page, every row one
+ * Settings on a wide screen: short groups on one page, every row one
  * shape — label, value, action — so values and actions line up across groups.
  */
 export function SettingsDesk({ address }: { address?: `0x${string}` }) {
@@ -54,6 +59,7 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
   const { signOut, isSigningOut } = useSignOut(locationOwner);
   const installed = useInstallStore((state) => state.installed);
   const replayIntroduction = useIntroductionReplay();
+  const mySafes = useMySafes();
   const [confirming, setConfirming] = useState(false);
 
   return (
@@ -80,9 +86,18 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
       <DeskSection title={t`Sign-in`}>
         <SetRows>
           <PasskeyRow address={wallet} isSigningOut={isSigningOut} />
+          <SignInCardSettingsDeskRows address={wallet} />
           <WalletSessionRow address={wallet} />
         </SetRows>
       </DeskSection>
+
+      {mySafes.data && mySafes.data.length > 0 ? (
+        <DeskSection title={t`Multisig`}>
+          <SetRows>
+            <MultisigSettingsDeskRows safes={mySafes.data} />
+          </SetRows>
+        </DeskSection>
+      ) : null}
 
       <DeskSection title={t`App`}>
         <SetRows>
@@ -179,38 +194,6 @@ export function SettingsDesk({ address }: { address?: `0x${string}` }) {
 }
 
 const NOTIFICATIONS_ANCHOR = "notifications";
-
-const ROW_GRID =
-  "grid min-h-14 grid-cols-[220px_minmax(0,1fr)_auto] items-center gap-4 ps-4 pe-2.5";
-
-function SetRows({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col border border-border bg-card [&>*+*]:border-border [&>*+*]:border-t">
-      {children}
-    </div>
-  );
-}
-
-function SetRow({
-  id,
-  label,
-  value,
-  action,
-}: {
-  /** An anchor other pages link to, as the top bar's notification settings do. */
-  id?: string;
-  label: ReactNode;
-  value?: ReactNode;
-  action?: ReactNode;
-}) {
-  return (
-    <div id={id} className={ROW_GRID}>
-      <span className="min-w-0 truncate text-sm font-semibold">{label}</span>
-      <div className="flex min-w-0 items-center gap-2 text-xs">{value}</div>
-      <div className="flex shrink-0 items-center justify-end">{action}</div>
-    </div>
-  );
-}
 
 function AccountRow() {
   const { t } = useLingui();
