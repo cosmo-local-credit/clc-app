@@ -1,7 +1,7 @@
 import type { AccountActivityItem, ActivityKind } from "@clc/api/features/accounts/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowLeftRightLine,
@@ -36,12 +36,15 @@ export function ActivityPage({
   types = [],
   onQueryChange,
   onTypesChange,
+  sections,
 }: {
   address?: string;
   query?: string;
   types?: readonly ActivityKind[];
   onQueryChange?: (query: string) => void;
   onTypesChange?: (types: readonly ActivityKind[]) => void;
+  /** Activity's sub-tabs, when messaging is on. */
+  sections?: ReactNode;
 }) {
   const { i18n, t } = useLingui();
   const [draftQuery, setDraftQuery] = useState(query);
@@ -104,6 +107,7 @@ export function ActivityPage({
       <h1 className="sr-only">{t`Activity`}</h1>
       <MarketFeedBar
         current="activity"
+        header={sections}
         search={
           <div className="relative h-full min-w-0 flex-1">
             <RiSearchLine

@@ -4,7 +4,10 @@ import { useConnection } from "wagmi";
 import { useSignOut } from "#/features/home/hooks/use-sign-out";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { ActivityInbox } from "./activity-inbox";
 import { ActivityPage } from "./activity-page";
+import { MESSAGING_ENABLED } from "#/lib/messaging-config";
+import type { ActivitySection } from "#/lib/navigation/activity-search";
 import { MarketPage } from "./market-page";
 import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
@@ -18,6 +21,8 @@ export type HomePageProps = {
   creditableSearch?: boolean | string | readonly (boolean | string)[];
   activityQ?: string;
   activityTypes?: readonly ActivityKind[];
+  /** Activity's sub-tab; read only when messaging is on. */
+  activitySection?: ActivitySection;
   onActivityQueryChange?: (query: string) => void;
   onActivityTypesChange?: (types: readonly ActivityKind[]) => void;
 };
@@ -28,6 +33,7 @@ export function HomePage({
   creditableSearch,
   activityQ,
   activityTypes,
+  activitySection = "transactions",
   onActivityQueryChange,
   onActivityTypesChange,
 }: HomePageProps) {
@@ -54,7 +60,17 @@ export function HomePage({
         <div className="min-h-[100svh] pb-bottom-nav">
           <main className={isFeedTab ? "px-4" : "px-6 pt-[calc(env(safe-area-inset-top)+1rem)]"}>
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
-            {currentTab === "activity" ? (
+            {currentTab === "activity" && MESSAGING_ENABLED ? (
+              <ActivityInbox
+                section={activitySection}
+                address={address}
+                query={activityQ}
+                types={activityTypes}
+                onQueryChange={onActivityQueryChange}
+                onTypesChange={onActivityTypesChange}
+              />
+            ) : null}
+            {currentTab === "activity" && !MESSAGING_ENABLED ? (
               <ActivityPage
                 address={address}
                 query={activityQ}

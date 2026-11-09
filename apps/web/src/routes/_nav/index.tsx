@@ -21,6 +21,7 @@ import {
   canonicalActivityRouteSearch,
   clearActivityRouteSearch,
   parseActivitySearch,
+  parseActivitySection,
 } from "#/lib/navigation/activity-search";
 
 const HomePage = lazy(() =>
@@ -108,7 +109,8 @@ export const Route = createFileRoute("/_nav/")({
     }
     if (
       search.tab !== "activity" &&
-      (search.activityQ !== undefined ||
+      (search.section !== undefined ||
+        search.activityQ !== undefined ||
         search.activityTypes !== undefined ||
         search.activityVoucher !== undefined ||
         search.activityRange !== undefined)
@@ -160,6 +162,7 @@ function IndexPage() {
         creditableSearch={creditable}
         activityQ={activity.q}
         activityTypes={activity.types}
+        activitySection={parseActivitySection(search.section)}
         onActivityQueryChange={onActivityQueryChange}
         onActivityTypesChange={onActivityTypesChange}
       />

@@ -364,10 +364,13 @@ export function MarketFeedBar({
   current,
   search,
   filters,
+  header,
 }: {
   current: "activity" | "posts";
   search: ReactNode;
   filters: ReactNode;
+  /** Sits above the search row inside the sticky bar, such as Activity's sub-tabs. */
+  header?: ReactNode;
 }) {
   const surfaceClassName = useMarketSurfaceClassName("page");
 
@@ -378,6 +381,7 @@ export function MarketFeedBar({
         surfaceClassName,
       )}
     >
+      {header}
       <MarketControlsRow search={search} filters={filters} />
       <MarketBadges current={current} />
     </div>
