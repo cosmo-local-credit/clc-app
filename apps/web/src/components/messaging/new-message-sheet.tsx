@@ -1,5 +1,3 @@
-import { BackendApiError } from "@clc/api/client/errors";
-import type { RecipientIdentity } from "@clc/api/features/recipients/client";
 import { CONVERSATION_INTRO_MAX, type Conversation } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
@@ -21,9 +19,7 @@ import {
 import { Textarea } from "#/components/ui/textarea";
 import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import { EllipsizedAddress } from "#/components/wallet/wallet-address";
-import { useRequestConversation } from "#/features/messaging/hooks/use-conversation-actions";
-import { useRecipientSearch } from "#/features/wallet/hooks/use-recipient-resolution";
-import { CHAIN_ID } from "#/lib/chain";
+import { useNewMessage } from "#/features/messaging/hooks/use-new-message";
 
 /**
  * Finds a person through the recipient search and asks to message them. Only
@@ -34,52 +30,19 @@ export function NewMessageSheet({ existing }: { existing: readonly Conversation[
   const { t } = useLingui();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<RecipientIdentity | null>(null);
-  const [intro, setIntro] = useState("");
-  const term = query.trim();
-  const search = useRecipientSearch(term === "" ? null : term, false);
-  const request = useRequestConversation();
-  const users = (search.data ?? []).filter(
-    (match) => match.kind === "user" && (match.chainId === CHAIN_ID || match.chainId === 0),
-  );
-
-  function changeOpen(next: boolean) {
-    setOpen(next);
-    if (!next) {
-      setQuery("");
-      setSelected(null);
-      setIntro("");
-      request.reset();
-    }
-  }
-
-  function openThread(conversationId: number) {
+  const flow = useNewMessage(existing, (conversationId) => {
     changeOpen(false);
     void navigate({
       to: "/messages/$conversationId",
       params: { conversationId: String(conversationId) },
     });
-  }
+  });
+  const { term, search, users, selected, intro, request, failure } = flow;
 
-  function choose(match: RecipientIdentity) {
-    const known = existing.find((conversation) => conversation.peer?.address === match.address);
-    if (known) openThread(known.id);
-    else setSelected(match);
+  function changeOpen(next: boolean) {
+    setOpen(next);
+    if (!next) flow.reset();
   }
-
-  const failure =
-    request.error instanceof BackendApiError
-      ? request.error.status === 404
-        ? "missing"
-        : request.error.status === 409
-          ? "exists"
-          : request.error.status === 429
-            ? "quota"
-            : "failed"
-      : request.error
-        ? "failed"
-        : null;
 
   return (
     <>
@@ -112,7 +75,7 @@ export function NewMessageSheet({ existing }: { existing: readonly Conversation[
                       value={intro}
                       maxLength={CONVERSATION_INTRO_MAX}
                       placeholder={t`Optional`}
-                      onChange={(event) => setIntro(event.target.value)}
+                      onChange={(event) => flow.setIntro(event.target.value)}
                     />
                   </Field>
                   {failure ? (
@@ -137,14 +100,14 @@ export function NewMessageSheet({ existing }: { existing: readonly Conversation[
                   <Input
                     id="new-message-search"
                     dir="ltr"
-                    value={query}
+                    value={flow.query}
                     maxLength={120}
                     autoCapitalize="none"
                     autoCorrect="off"
                     autoComplete="off"
                     spellCheck={false}
                     placeholder={t`Username or phone number`}
-                    onChange={(event) => setQuery(event.target.value)}
+                    onChange={(event) => flow.setQuery(event.target.value)}
                   />
                   {term && (search.isDebouncing || search.isFetching) ? (
                     <p className="text-muted-foreground text-xs">
@@ -175,7 +138,7 @@ export function NewMessageSheet({ existing }: { existing: readonly Conversation[
                             />
                             <EllipsizedAddress address={match.address} className="block" />
                           </div>
-                          <Button variant="outline" tap onClick={() => choose(match)}>
+                          <Button variant="outline" tap onClick={() => flow.choose(match)}>
                             <Trans>Message</Trans>
                           </Button>
                         </li>
@@ -187,20 +150,10 @@ export function NewMessageSheet({ existing }: { existing: readonly Conversation[
             </div>
             {selected ? (
               <SheetFooter>
-                <Button
-                  tap
-                  pending={request.isPending}
-                  onClick={() => {
-                    const note = intro.trim();
-                    request.mutate(
-                      { recipientAddress: selected.address, ...(note ? { intro: note } : {}) },
-                      { onSuccess: (conversation) => openThread(conversation.id) },
-                    );
-                  }}
-                >
+                <Button tap pending={request.isPending} onClick={flow.submit}>
                   <Trans>Send request</Trans>
                 </Button>
-                <Button variant="outline" tap onClick={() => setSelected(null)}>
+                <Button variant="outline" tap onClick={flow.unselect}>
                   <Trans>Back</Trans>
                 </Button>
               </SheetFooter>
