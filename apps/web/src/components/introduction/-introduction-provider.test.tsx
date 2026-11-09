@@ -110,9 +110,20 @@ it("releases the route immediately when a guest chooses Market", async () => {
   expect(screen.queryByTestId("welcome")).toBeNull();
 });
 
-it("skips the carousel on desktop and opens the concept grid from replay", async () => {
+it("skips the carousel on desktop and replays the guide over the page, signed in or not", async () => {
+  // /onboarding sends a signed-in member straight back out, so replay must not
+  // navigate there: the guide opens over the page instead.
   render(
-    <IntroductionProvider desktop>
+    <IntroductionProvider
+      desktop
+      desktopGuide={({ onDone }) => (
+        <div role="dialog" aria-label="Guide">
+          <button type="button" onClick={onDone}>
+            Done
+          </button>
+        </div>
+      )}
+    >
       <p>App content</p>
       <IntroductionReplayButton />
     </IntroductionProvider>,
@@ -120,8 +131,11 @@ it("skips the carousel on desktop and opens the concept grid from replay", async
   expect(await screen.findByText("App content")).toBeTruthy();
   expect(screen.queryByTestId("welcome")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "How to use CLC" }));
-  expect(mock.navigate).toHaveBeenCalledWith({
-    to: "/onboarding",
-    search: { step: "welcome" },
-  });
+
+  expect(screen.getByRole("dialog", { name: "Guide" })).toBeTruthy();
+  expect(screen.getByText("App content")).toBeTruthy();
+  expect(mock.navigate).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "Done" }));
+  expect(screen.queryByRole("dialog", { name: "Guide" })).toBeNull();
 });

@@ -1,10 +1,11 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
 
 import { desktopChrome, marketViewOf } from "#/desktop/chrome";
 import { resolveMarketView } from "#/desktop/market/market-view";
+import { usePaletteStore } from "#/desktop/palette-store";
 import { CommandPalette } from "#/desktop/shell/command-palette";
-import { ShortcutHelp } from "#/desktop/shell/shortcut-help";
+import { ShortcutHelp, useShortcutHelp } from "#/desktop/shell/shortcut-help";
 import { DesktopShortcuts } from "#/desktop/shell/shortcuts";
 import { DesktopSidebar } from "#/desktop/shell/sidebar";
 import { DesktopTopBar } from "#/desktop/shell/top-bar";
@@ -25,6 +26,15 @@ export function DesktopShell({ children }: { children: ReactNode }) {
   // follows the page it will hold, not the bare URL.
   const view = pathname === "/market" ? resolveMarketView(marketViewOf(search)) : undefined;
   const chrome = desktopChrome(pathname, view ? { ...search, view } : search, declared);
+  // Their open state is module-level, so it outlives the shell. Narrowing the
+  // window with ⌘K open must not leave it to reappear on the next widen.
+  useEffect(
+    () => () => {
+      usePaletteStore.getState().setOpen(false);
+      useShortcutHelp.getState().setOpen(false);
+    },
+    [],
+  );
   return (
     <div className="flex h-dvh min-h-0 bg-background text-foreground">
       <DesktopSidebar />
@@ -35,7 +45,10 @@ export function DesktopShell({ children }: { children: ReactNode }) {
             <div className="w-[430px] min-h-full bg-background">{children}</div>
           </div>
         ) : chrome === "map" ? (
-          <div className="flex min-h-0 flex-1 overflow-hidden">{children}</div>
+          // A size container like the canvas below, so the map's own columns can
+          // size against the space left by the sidebar. Without it a `@min-*`
+          // rule inside the map view matches nothing and fails silently.
+          <div className="@container flex min-h-0 flex-1 overflow-hidden">{children}</div>
         ) : (
           <div className="@container min-h-0 flex-1 overflow-auto">{children}</div>
         )}

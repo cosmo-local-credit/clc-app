@@ -2,8 +2,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { usePaletteStore } from "#/desktop/palette-store";
 import { renderInShell } from "./-shell-test-router";
 import { DesktopShell } from "./desktop-shell";
+import { useShortcutHelp } from "./shortcut-help";
 
 const ADDRESS = "0xabcdef1234567890abcdef1234567890abcdef12";
 
@@ -43,6 +45,18 @@ function shell(url: string) {
 const topBar = () => screen.queryByRole("navigation", { name: "Breadcrumb" });
 
 describe("DesktopShell", () => {
+  it("leaves the palette and the shortcut list closed when the shell goes away", async () => {
+    // Narrowing the window unmounts the shell with ⌘K open; widening again
+    // later must not open it out of nowhere.
+    const view = await shell("/?tab=wallet");
+    usePaletteStore.getState().setOpen(true);
+    useShortcutHelp.getState().setOpen(true);
+    view.unmount();
+
+    expect(usePaletteStore.getState().open).toBe(false);
+    expect(useShortcutHelp.getState().open).toBe(false);
+  });
+
   it("gives the map no top bar, and a sidebar [ still collapses", async () => {
     await shell("/?tab=market");
     expect(topBar()).toBeNull();

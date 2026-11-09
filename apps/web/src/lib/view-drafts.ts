@@ -12,9 +12,10 @@ import { create } from "zustand";
  *
  * What makes it safe for a payment app is what it refuses to be. It is not a
  * saved draft. An entry is only ever handed to a mount in the OTHER layout than
- * the one that wrote it, which is what a switch is. A mount in the same layout
- * (someone left the flow and came back, or an old entry nobody claimed) finds
- * the entry discarded, never restored. Leaving the flow while the layout stays
+ * the one that wrote it, which is what a switch is, or back to its own layout
+ * when the switch reversed before the other view mounted. A mount in the same
+ * layout otherwise (someone left the flow and came back, or an old entry nobody
+ * claimed) finds the entry discarded, never restored. Leaving the flow while the layout stays
  * put deletes the entry as well, so a draft cannot reappear on a later visit.
  *
  * The order this relies on, which `layout.ts` (in the desktop layer, not
@@ -36,7 +37,16 @@ import { create } from "zustand";
 
 type DraftLayout = "mobile" | "desktop";
 
-type DraftEntry = { value: unknown; layout: DraftLayout };
+type DraftEntry = {
+  value: unknown;
+  layout: DraftLayout;
+  /**
+   * Its view went away because of a switch and nothing has claimed it yet. A
+   * mount in the SAME layout may then claim it too: the layout flipped back
+   * before the other view (a lazy chunk) ever mounted.
+   */
+  handoff?: true;
+};
 
 type ViewDraftState = {
   entries: Record<string, DraftEntry>;
@@ -129,7 +139,7 @@ export function useViewDraft<T>({
     const entry = key ? useViewDraftStore.getState().entries[key] : undefined;
     return {
       key,
-      value: entry && entry.layout !== layout ? (entry.value as T) : undefined,
+      value: entry && (entry.layout !== layout || entry.handoff) ? (entry.value as T) : undefined,
     };
   });
   const restored = claim.key === key ? claim.value : undefined;
@@ -142,7 +152,9 @@ export function useViewDraft<T>({
     if (claim.key === key && claim.value !== undefined) {
       // Carry it forward under this layout so a second switch restores too. A
       // newer save from this very commit already did that, and wins.
-      if (!entry || entry.layout !== layout) putEntry(key, { value: claim.value, layout });
+      if (!entry || entry.layout !== layout || entry.handoff) {
+        putEntry(key, { value: claim.value, layout });
+      }
     } else if (entry) {
       // Same layout, or not meant for this mount: a draft is only a bridge.
       removeEntry(key);
@@ -156,10 +168,13 @@ export function useViewDraft<T>({
         removeEntry(key);
         return;
       }
-      // A switch took this view away. The other view claims the entry on mount;
-      // if none ever does, it does not wait around for a later visit.
+      // A switch took this view away. The other view claims the entry on mount,
+      // or this one does if the layout flips back first; if none ever does, it
+      // does not wait around for a later visit.
+      const handedOff: DraftEntry = { ...left, handoff: true };
+      putEntry(key, handedOff);
       setTimeout(() => {
-        if (useViewDraftStore.getState().entries[key] === left) removeEntry(key);
+        if (useViewDraftStore.getState().entries[key] === handedOff) removeEntry(key);
       }, UNCLAIMED_TTL_MS);
     };
   }, [claim, key, layout]);

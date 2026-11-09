@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { RiBookOpenLine } from "react-icons/ri";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useRouterState } from "@tanstack/react-router";
 import {
   createContext,
   lazy,
@@ -30,18 +30,20 @@ export function IntroductionProvider({
   children,
   suppressed = false,
   desktop = false,
+  desktopGuide,
 }: {
   children: ReactNode;
   /** Wallet import and account switching already own the screen. */
   suppressed?: boolean;
-  /**
-   * Desktop has no carousel. The welcome concept grid is the guide, and
-   * replaying it opens that screen.
-   */
+  /** Desktop has no carousel. The welcome concept grid is the guide. */
   desktop?: boolean;
+  /**
+   * How desktop replays the guide, over the page the person is on. Supplied
+   * from above, so this shared component never imports the desktop layer.
+   */
+  desktopGuide?: (props: { onDone: () => void }) => ReactNode;
 }) {
   const auth = useAuthStatus();
-  const navigate = useNavigate();
   const location = useRouterState({ select: (state) => state.location });
   const [seen, setSeen] = useState<boolean | null>(null);
   const [replay, setReplay] = useState(false);
@@ -73,12 +75,6 @@ export function IntroductionProvider({
   const blockGuide = suppressed || desktop;
   const waiting = !blockGuide && !replay && entry && (seen === null || auth.isLoading);
   const show = !blockGuide && (replay || (entry && auth.state === "guest" && seen === false));
-
-  useEffect(() => {
-    if (!desktop || !replay) return;
-    setReplay(false);
-    void navigate({ to: "/onboarding", search: { step: "welcome" } });
-  }, [desktop, replay, navigate]);
 
   function complete() {
     completeIntroduction();
@@ -117,7 +113,12 @@ export function IntroductionProvider({
             )}
           </Suspense>
         ) : (
-          children
+          <>
+            {children}
+            {/* Replay state lives here, above both views, so a guide open when
+                the window crosses the breakpoint stays open in the other one. */}
+            {desktop && replay && desktopGuide ? desktopGuide({ onDone: complete }) : null}
+          </>
         )}
       </ReplayContext.Provider>
     </FirstVisitContext.Provider>

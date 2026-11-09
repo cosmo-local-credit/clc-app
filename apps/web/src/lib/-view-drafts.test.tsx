@@ -76,6 +76,22 @@ describe("view drafts", () => {
     expect(field().value).toBe("rent for May");
   });
 
+  it("keeps the draft when the layout flips back before the other view mounts", () => {
+    // The desktop view is a lazy chunk. Narrow and widen again (or zoom out and
+    // back) before it arrives, and the phone view is all that ever mounts.
+    const view = render(
+      <div key="mobile">
+        <Field account={ALICE} />
+      </div>,
+    );
+    type("rent for May");
+
+    swapTo(view, "desktop", <p>loading the desktop view</p>);
+    swapTo(view, "mobile", <Field account={ALICE} />);
+
+    expect(field().value).toBe("rent for May");
+  });
+
   it("restores nothing after leaving the flow and coming back in the same layout", () => {
     const view = render(
       <div key="a">

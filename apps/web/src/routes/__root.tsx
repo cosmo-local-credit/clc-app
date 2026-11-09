@@ -46,7 +46,6 @@ import {
 import { AppI18nProvider } from "#/providers/i18n";
 import { DesktopBoundary } from "#/desktop/shell/boundary";
 import { layoutBootstrapScript, useLayout } from "#/desktop/layout";
-import { LayoutSwitch } from "#/desktop/switch";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
@@ -80,6 +79,21 @@ const DeskSessionCheckError = lazy(() =>
     default: module.DeskSessionCheckError,
   })),
 );
+
+const DeskGuideDialog = lazy(() =>
+  import("#/desktop/onboarding/guide-dialog").then((module) => ({
+    default: module.DeskGuideDialog,
+  })),
+);
+
+/** "How to use CLC" on desktop: the guide in a dialog over the current page. */
+function desktopGuide({ onDone }: { onDone: () => void }) {
+  return (
+    <Suspense fallback={null}>
+      <DeskGuideDialog onDone={onDone} />
+    </Suspense>
+  );
+}
 
 /** What a guest on a protected route sees on desktop, in place of the phone's gate. */
 const DESKTOP_AUTH_GATE: AuthGateSlot = {
@@ -281,9 +295,19 @@ function AppInner() {
     <>
       {/* Above every shell, so it reaches pre-auth routes too. */}
       <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
-      <LayoutSwitch mobile={<SafePendingSheet />} desktop={<SafePendingDesk />} />
+      {/* A closed dialog until opened, so its chunk loads behind nothing: the
+          LayoutSwitch fallback is a page skeleton, which here would sit above
+          the whole shell. */}
+      {layout === "desktop" ? (
+        <Suspense fallback={null}>
+          <SafePendingDesk />
+        </Suspense>
+      ) : (
+        <SafePendingSheet />
+      )}
       <IntroductionProvider
         desktop={layout === "desktop"}
+        desktopGuide={desktopGuide}
         suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)}
       >
         <AuthGateSlotProvider value={layout === "desktop" ? DESKTOP_AUTH_GATE : null}>
@@ -364,6 +388,7 @@ function AppInner() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { queryClient } = Route.useRouteContext();
   // Recover from stale code-split chunks after a deploy. React.lazy imports
   // don't get TanStack Router's built-in reload-on-module-missing (that lives in
   // lazyRouteComponent), so without this a failed chunk fetch leaves the tab
@@ -374,13 +399,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     const onPreloadError = (event: WindowEventMap["vite:preloadError"]) => {
       // Only swallow the error if we actually reload — otherwise let it throw so
       // the root errorComponent surfaces a persistent failure instead of a hang.
-      if (reloadOnceForStaleChunk(event.payload)) {
+      // The reload waits for any relay in flight: a layout switch that needs
+      // the other view's chunk can land mid-payment.
+      if (reloadOnceForStaleChunk(event.payload, queryClient)) {
         event.preventDefault();
       }
     };
     window.addEventListener("vite:preloadError", onPreloadError);
     return () => window.removeEventListener("vite:preloadError", onPreloadError);
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
