@@ -1,9 +1,15 @@
+import type { Want } from "@clc/core/features/wants/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
+const mocks = vi.hoisted(() => ({ mine: vi.fn(), create: vi.fn(), update: vi.fn() }));
+
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("#/lib/api/wants", () => ({
+  wantsClient: { mine: mocks.mine, create: mocks.create, update: mocks.update },
+}));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
 }));
@@ -40,6 +46,25 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 }));
 
 import { WantFormDesk } from "./want-form-desk";
+
+const WANT: Want = {
+  id: "7",
+  name: "Bicycle repair",
+  description: "Help repair a wheel",
+  locationName: "Kisumu Market",
+  geoLat: -0.0917,
+  geoLng: 34.768,
+  startsAt: "2026-10-24T08:00:00.000Z",
+  expiresAt: null,
+  status: "OPEN",
+  state: "active",
+  tags: ["Repair"],
+  imageUrl: null,
+  markerIcon: "question",
+  markerColor: "orange",
+  contactPermission: 0,
+  contactText: null,
+};
 
 function renderForm(ui: ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -122,5 +147,42 @@ describe("WantFormDesk", () => {
     expect(dates.className).toContain("@min-[30rem]:grid-cols-2");
     expect(within(dates).getByLabelText("Ends")).toBeTruthy();
     expect(dates.parentElement?.className).toContain("@container");
+  });
+
+  it("never offers the create form while the Want being edited is loading", async () => {
+    let answer!: (page: { wants: Want[]; first: number; last: number }) => void;
+    mocks.mine.mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
+    renderForm(<WantFormDesk wantId="7" />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Edit Want" })).toBeTruthy();
+    expect(screen.getByText("Loading Want…")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Create Want|Save Want/ })).toBeNull();
+    expect(screen.queryByLabelText("Name")).toBeNull();
+
+    await act(async () => answer({ wants: [WANT], first: 7, last: 7 }));
+
+    expect(((await screen.findByLabelText("Name")) as HTMLInputElement).value).toBe(WANT.name);
+    expect(screen.getByRole("button", { name: "Save Want" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Create Want" })).toBeNull();
+  });
+
+  it("offers Retry, never the create form, when the Want being edited fails to load", async () => {
+    mocks.mine.mockRejectedValueOnce(new Error("offline"));
+    renderForm(<WantFormDesk wantId="7" />);
+
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("Couldn't load the Want form.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Create Want|Save Want/ })).toBeNull();
+    expect(screen.queryByLabelText("Name")).toBeNull();
+
+    mocks.mine.mockResolvedValueOnce({ wants: [WANT], first: 7, last: 7 });
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save Want" })).toBeTruthy());
+    expect(mocks.create).not.toHaveBeenCalled();
   });
 });

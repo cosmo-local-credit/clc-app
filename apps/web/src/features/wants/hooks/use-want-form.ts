@@ -16,7 +16,7 @@ import {
   wantWriteSchema,
 } from "@clc/core/features/wants/logic";
 import { useLingui } from "@lingui/react/macro";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -28,6 +28,12 @@ import { wantsClient } from "#/lib/api/wants";
 import { useViewDraft } from "#/lib/view-drafts";
 
 export type WantFormProfile = NonNullable<ReturnType<typeof useAuthProfile>["data"]>;
+
+/**
+ * Names a Want's save, `"new"` for one being created, so a view that mounts
+ * while it is still in flight (the phone/desktop swap) can see it.
+ */
+export const wantSaveMutationKey = (id?: string) => [...wantKeys.all, "save", id ?? "new"] as const;
 
 function localDateTime(value: string | Date) {
   const date = typeof value === "string" ? new Date(value) : value;
@@ -175,9 +181,13 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   ]);
   const markerColor: MarkerColor = want?.markerColor ?? "orange";
   const [error, setError] = useState<string | null>(null);
-  const save = useMutation(
-    saveWantMutationOptions(wantsClient, queryClient, want?.id, want?.status === "CLOSED"),
-  );
+  const save = useMutation({
+    ...saveWantMutationOptions(wantsClient, queryClient, want?.id, want?.status === "CLOSED"),
+    mutationKey: wantSaveMutationKey(want?.id),
+  });
+  // A save outlives the view that started it: after a phone/desktop swap the
+  // other view's press would write the Want a second time.
+  const inFlight = useIsMutating({ mutationKey: wantSaveMutationKey(want?.id) }) > 0;
   const lifecycle = useMutation({
     mutationFn: (action: "close" | "delete") =>
       action === "close" ? wantsClient.close(want?.id ?? "") : wantsClient.remove(want?.id ?? ""),
@@ -194,6 +204,7 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
   });
 
   const submit = async () => {
+    if (inFlight) return;
     setError(null);
     if (!location) {
       setError(t`Choose a location.`);
@@ -285,7 +296,8 @@ export function useWantForm({ want, profile }: { want?: Want; profile: WantFormP
     setMarkerIcon,
     markerColor,
     error,
-    save,
+    /** A save is in flight, from this view or the one it replaced. */
+    inFlight,
     lifecycle,
     submit,
     runLifecycle,

@@ -1,4 +1,5 @@
 import type { ManagedReportDetail } from "@clc/api/features/reports/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -14,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   updatePost: vi.fn(),
   account: { address: undefined as string | undefined },
+  /** The desktop editor's leave guard, as the router would consult it. */
+  shouldBlock: undefined as (() => boolean | Promise<boolean>) | undefined,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -21,7 +24,10 @@ vi.mock("@tanstack/react-router", () => ({
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => true,
   useSearch: () => ({}),
-  useBlocker: () => ({ status: "idle", reset: vi.fn(), proceed: vi.fn() }),
+  useBlocker: (options: { shouldBlockFn: () => boolean | Promise<boolean> }) => {
+    mocks.shouldBlock = options.shouldBlockFn;
+    return { status: "idle", reset: vi.fn(), proceed: vi.fn() };
+  },
   Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -40,11 +46,13 @@ vi.mock("#/features/posts/hooks/use-my-posts", () => ({
   useMyPost: () => ({ data: saved(), isPending: false, isError: false, refetch: vi.fn() }),
   useMyPosts: () => ({ data: undefined, isPending: false, isError: false, refetch: vi.fn() }),
 }));
-vi.mock("#/features/posts/hooks/use-post-mutations", () => ({
-  useCreatePost: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useUpdatePost: () => ({ mutateAsync: mocks.updatePost, isPending: false }),
+// The real post mutations over a stubbed client: a save still in flight when
+// the view swaps has to be visible to the view that replaces it.
+vi.mock("#/lib/api/reports", () => ({
+  reportsClient: { createReport: vi.fn(), updateReport: mocks.updatePost },
 }));
 vi.mock("#/hooks/use-deployment", () => ({
+  tokenTagsQueryKey: ["deployments", "token-tags"],
   useTokenTags: () => ({ data: ["Agriculture"], isError: false, refetch: vi.fn() }),
 }));
 vi.mock("#/features/home/hooks/use-voucher-search", () => ({
@@ -148,12 +156,24 @@ function openViewport(desktop: boolean) {
 }
 
 function editor() {
+  const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return (
-    <LayoutSwitch
-      mobile={<PostEditorPage mode="edit" reportId="4633" />}
-      desktop={<PostEditorDesk mode="edit" reportId="4633" />}
-    />
+    <QueryClientProvider client={client}>
+      <LayoutSwitch
+        mobile={<PostEditorPage mode="edit" reportId="4633" />}
+        desktop={<PostEditorDesk mode="edit" reportId="4633" />}
+      />
+    </QueryClientProvider>
   );
+}
+
+/** A save that settles only when the test says so. */
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((settle) => {
+    resolve = settle;
+  });
+  return { promise, resolve };
 }
 
 const entries = () => useViewDraftStore.getState().entries;
@@ -276,5 +296,63 @@ describe("Edit post across a phone/desktop view switch", () => {
 
     await waitFor(() => expect(mocks.updatePost).toHaveBeenCalledTimes(1));
     expect(entries()).toEqual({});
+  });
+
+  it("keeps Save busy in the other view while the first press is still saving", async () => {
+    const save = deferred<ManagedReportDetail>();
+    mocks.updatePost.mockReturnValue(save.promise);
+    render(editor());
+    change("Title", "August harvest, week two");
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(mocks.updatePost).toHaveBeenCalledTimes(1));
+
+    setViewport(true);
+
+    await waitFor(() => expect(value("Title")).toBe("August harvest, week two"));
+    const saving = screen.getByRole("button", { name: "Saving…" }) as HTMLButtonElement;
+    expect(saving.getAttribute("aria-busy")).toBe("true");
+    expect(saving.disabled).toBe(true);
+
+    await act(async () => save.resolve(saved()));
+
+    const again = await screen.findByRole("button", { name: "Save changes" });
+    expect(again.getAttribute("aria-busy")).toBeNull();
+    expect((again as HTMLButtonElement).disabled).toBe(false);
+    expect(mocks.updatePost).toHaveBeenCalledTimes(1);
+  });
+
+  it("still holds restored edits that nobody is saving", async () => {
+    render(editor());
+    change("Title", "August harvest, week two");
+
+    setViewport(true);
+
+    await waitFor(() => expect(value("Title")).toBe("August harvest, week two"));
+    expect(await mocks.shouldBlock?.()).toBe(true);
+  });
+
+  it("lets the replaced view's save take the person to their posts, without asking", async () => {
+    const save = deferred<ManagedReportDetail>();
+    mocks.updatePost.mockReturnValue(save.promise);
+    // The router asks the mounted editor's guard when the save navigates.
+    let heldOnLeave: boolean | undefined;
+    mocks.navigate.mockImplementationOnce(async () => {
+      heldOnLeave = await mocks.shouldBlock?.();
+    });
+    render(editor());
+    change("Title", "August harvest, week two");
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(mocks.updatePost).toHaveBeenCalledTimes(1));
+
+    setViewport(true);
+
+    await waitFor(() => expect(value("Title")).toBe("August harvest, week two"));
+    expect(await mocks.shouldBlock?.()).toBe(false);
+
+    await act(async () => save.resolve(saved()));
+
+    await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/posts/mine" }));
+    expect(heldOnLeave).toBe(false);
+    expect(await mocks.shouldBlock?.()).toBe(false);
   });
 });

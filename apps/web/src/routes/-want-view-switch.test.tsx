@@ -173,6 +173,15 @@ function editor(id?: string) {
   );
 }
 
+/** A save that settles only when the test says so. */
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((settle) => {
+    resolve = settle;
+  });
+  return { promise, resolve };
+}
+
 const entries = () => useViewDraftStore.getState().entries;
 const value = (label: string) => (screen.getByLabelText(label) as HTMLInputElement).value;
 const change = (label: string, next: string) =>
@@ -296,6 +305,37 @@ describe("Create Want across a phone/desktop view switch", () => {
     setViewport(true);
 
     expect(value("Name")).toBe("");
+  });
+
+  it("keeps Create Want busy in the other view while the first press is still saving", async () => {
+    const save = deferred<Want>();
+    mocks.create.mockReturnValue(save.promise);
+    render(editor());
+    change("Name", "Wheel repair");
+    change("Description", "Need a spoke replaced");
+    change("Contact instructions", "Meet at the market");
+    fireEvent.click(screen.getByRole("button", { name: "Create Want" }));
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+
+    setViewport(true);
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Create Want" })).toBeTruthy());
+    expect(value("Name")).toBe("Wheel repair");
+    const busy = screen.getByRole("button", { name: "Create Want" }) as HTMLButtonElement;
+    expect(busy.getAttribute("aria-busy")).toBe("true");
+    expect(busy.disabled).toBe(true);
+
+    await act(async () => save.resolve(WANT));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Create Want" }).getAttribute("aria-busy"),
+      ).toBeNull(),
+    );
+    expect(
+      (screen.getByRole("button", { name: "Create Want" }) as HTMLButtonElement).disabled,
+    ).toBe(false);
+    expect(mocks.create).toHaveBeenCalledTimes(1);
   });
 
   it("forgets the draft once the Want is saved", async () => {

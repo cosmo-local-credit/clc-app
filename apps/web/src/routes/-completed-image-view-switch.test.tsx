@@ -16,10 +16,12 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: undefined }),
 }));
-vi.mock("#/features/pools/hooks/use-pool-deployment", () => ({
+vi.mock("#/features/pools/hooks/use-pool-deployment", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useDeployPool: () => ({ mutateAsync: mocks.deploy, isPending: false }),
 }));
-vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
+vi.mock("#/features/vouchers/hooks/use-voucher-deployment", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useDeployVoucher: () => ({ mutateAsync: mocks.deploy, isPending: false }),
 }));
 vi.mock("#/lib/api/catalogs", () => ({

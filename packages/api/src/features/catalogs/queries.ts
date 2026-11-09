@@ -147,6 +147,15 @@ export function catalogMembershipQueryOptions(
   });
 }
 
+/**
+ * Mutation keys, exported so a view that mounts while a write is still in
+ * flight (the phone/desktop swap) can see it. A new catalog is `"new"`.
+ */
+export const catalogMutationKeys = {
+  save: (id?: string) => [...catalogKeys.all, "save", id ?? "new"] as const,
+  member: (address: string) => [...catalogKeys.all, "member", address.toLowerCase()] as const,
+};
+
 /** Keep detail seeded while refreshing every list/count/member affected by a write. */
 export function saveCatalogMutationOptions(
   client: CatalogsClient,
@@ -154,7 +163,7 @@ export function saveCatalogMutationOptions(
   id?: string,
 ) {
   return mutationOptions({
-    mutationKey: [...catalogKeys.all, "save"],
+    mutationKey: catalogMutationKeys.save(id),
     onSettled: () => queryClient.invalidateQueries({ queryKey: resourceLimitKeys.all }),
     mutationFn: (input: CatalogWrite) => (id ? client.update(id, input) : client.create(input)),
     onSuccess: async (catalog) => {
@@ -172,7 +181,7 @@ export function catalogMemberMutationOptions(
   address: string,
 ) {
   return mutationOptions({
-    mutationKey: [...catalogKeys.all, "member", address.toLowerCase()],
+    mutationKey: catalogMutationKeys.member(address),
     mutationFn: (input: {
       catalogId: string;
       kind: CatalogKind;

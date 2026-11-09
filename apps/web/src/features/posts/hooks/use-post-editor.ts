@@ -16,8 +16,9 @@ import {
 import { useForm, useStore } from "@clc/core/lib/forms";
 import { isAdminRole } from "@clc/core/features/users/roles";
 import { useLingui } from "@lingui/react/macro";
+import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -28,7 +29,11 @@ import {
   writePostDraft,
 } from "#/features/posts/api/post-draft-storage";
 import { useMyPost } from "#/features/posts/hooks/use-my-posts";
-import { useCreatePost, useUpdatePost } from "#/features/posts/hooks/use-post-mutations";
+import {
+  postMutationKeys,
+  useCreatePost,
+  useUpdatePost,
+} from "#/features/posts/hooks/use-post-mutations";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 import { useViewDraft } from "#/lib/view-drafts";
@@ -191,15 +196,34 @@ export function usePostEditorForm({
 }: Pick<PostEditorSeed, "post" | "initial" | "draft" | "previousStatus">) {
   const { t } = useLingui();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const auth = useAuthStatus();
   const tagsQuery = useTokenTags();
   const create = useCreatePost();
   const update = useUpdatePost(previousStatus);
+  const mutationKey = post ? postMutationKeys.update : postMutationKeys.create;
 
   /** Bytes in flight. Save would otherwise persist the list from before them. */
   const [imagesBusy, setImagesBusy] = useState(false);
 
-  const saving = create.isPending || update.isPending;
+  // A save outlives the view that started it: after a phone/desktop swap the
+  // other view's press would write the post a second time.
+  const inFlight = useIsMutating({ mutationKey }) > 0;
+  const saving = create.isPending || update.isPending || inFlight;
+
+  // The saves this editor has seen in flight, whichever view started them. A
+  // save from before this editor opened is not one of them.
+  const watchedSaves = useRef(new Set<number>());
+  useEffect(() => {
+    const cache = queryClient.getMutationCache();
+    const watch = () => {
+      for (const write of cache.findAll({ mutationKey, status: "pending" })) {
+        watchedSaves.current.add(write.mutationId);
+      }
+    };
+    watch();
+    return cache.subscribe(watch);
+  }, [mutationKey, queryClient]);
   // A post may only link vouchers its author owns, unless the author has an
   // administrative role. A session with no role is treated as unprivileged: the picker
   // then offers less than the backend might allow, never more than it accepts.
@@ -222,6 +246,7 @@ export function usePostEditorForm({
     defaultValues: initial,
     validators: { onSubmit: reportWriteSchema },
     onSubmit: async ({ value }) => {
+      if (saving) return;
       try {
         if (post) {
           const saved = await update.mutateAsync({ id: post.id, input: value });
@@ -314,6 +339,20 @@ export function usePostEditorForm({
     setImagesBusy,
     voucherOwner,
     tagsQuery,
+    /**
+     * Read when a navigation asks to leave, not at render: a save is in flight,
+     * or one this editor saw has succeeded. Either way the save, not the
+     * person, is taking them away, and the unsaved edits are what it saved.
+     */
+    saveUnderway: () =>
+      queryClient
+        .getMutationCache()
+        .findAll({ mutationKey })
+        .some(
+          (write) =>
+            write.state.status === "pending" ||
+            (write.state.status === "success" && watchedSaves.current.has(write.mutationId)),
+        ),
     /** Discard means discard: the parked copy goes with the changes. */
     discardDraft: () => {
       viewDraft.clear();

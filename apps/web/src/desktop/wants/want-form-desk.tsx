@@ -62,10 +62,13 @@ const PREVIEW_PLACE =
 export function WantFormDesk({ wantId }: { wantId?: string }) {
   const { ownerQuery, profile, usage, loading, failed, retry } = useWantFormSources(wantId);
   const title = wantId ? <Trans>Edit Want</Trans> : <Trans>Create Want</Trans>;
-  const ready = profile.data && (wantId ? true : usage.data?.wants.canCreate);
+  // An edit waits for its Want: the editor without one is the create form, and
+  // Save there would publish a new Want instead of changing this one.
+  const want = wantId ? ownerQuery.data : undefined;
+  const ready = wantId ? want !== undefined : usage.data?.wants.canCreate;
 
   if (ready && profile.data) {
-    return <WantEditor want={wantId ? ownerQuery.data : undefined} profile={profile.data} />;
+    return <WantEditor want={want} profile={profile.data} />;
   }
   return (
     <DeskCanvas className="grid-cols-1 gap-x-8 @min-[43rem]:grid-cols-[minmax(160px,200px)_minmax(440px,560px)]">
@@ -97,7 +100,7 @@ function WantEditor({ want, profile }: { want?: Want; profile: WantFormProfile }
   const { t } = useLingui();
   const form = useWantForm({ want, profile });
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const busy = form.save.isPending;
+  const busy = form.inFlight;
 
   return (
     <DeskCanvas className={GRID}>

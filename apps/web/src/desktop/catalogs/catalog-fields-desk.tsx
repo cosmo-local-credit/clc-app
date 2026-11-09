@@ -34,7 +34,7 @@ export function CatalogFieldsDesk({
   title?: ReactNode;
 }) {
   const { t, i18n } = useLingui();
-  const { form, save, imageBusy, setImageBusy, error, tagOptions } = model;
+  const { form, inFlight, imageBusy, setImageBusy, error, tagOptions } = model;
   return (
     <form
       className="grid min-w-0 content-start gap-5"
@@ -91,7 +91,7 @@ export function CatalogFieldsDesk({
             value={field.state.value || null}
             onChange={(url) => field.handleChange(url ?? "")}
             onBusyChange={setImageBusy}
-            disabled={!isStorageConfigured || save.isPending}
+            disabled={!isStorageConfigured || inFlight}
           />
         )}
       </form.Field>
@@ -137,8 +137,8 @@ export function CatalogFieldsDesk({
       <div className="flex justify-end border-border border-t pt-4">
         <form.Subscribe selector={(state) => [state.isSubmitting]}>
           {([submitting]) => (
-            <Button type="submit" disabled={imageBusy} pending={submitting || save.isPending}>
-              {submitting ? <Trans>Saving…</Trans> : submitLabel}
+            <Button type="submit" disabled={imageBusy} pending={submitting || inFlight}>
+              {submitting || inFlight ? <Trans>Saving…</Trans> : submitLabel}
             </Button>
           )}
         </form.Subscribe>

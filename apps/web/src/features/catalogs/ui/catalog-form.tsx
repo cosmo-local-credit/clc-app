@@ -23,7 +23,7 @@ export function CatalogForm({
   onSaved: (catalog: Catalog) => void | Promise<void>;
 }) {
   const { t, i18n } = useLingui();
-  const { form, save, imageBusy, setImageBusy, error, tagOptions } = useCatalogForm({
+  const { form, inFlight, imageBusy, setImageBusy, error, tagOptions } = useCatalogForm({
     catalog,
     initialPlace,
     onSaved,
@@ -83,7 +83,7 @@ export function CatalogForm({
             value={field.state.value || null}
             onChange={(url) => field.handleChange(url ?? "")}
             onBusyChange={setImageBusy}
-            disabled={!isStorageConfigured || save.isPending}
+            disabled={!isStorageConfigured || inFlight}
           />
         )}
       </form.Field>
@@ -133,9 +133,9 @@ export function CatalogForm({
             tap
             className="w-full"
             disabled={imageBusy}
-            pending={submitting || save.isPending}
+            pending={submitting || inFlight}
           >
-            {submitting ? (
+            {submitting || inFlight ? (
               <Trans>Saving…</Trans>
             ) : catalog ? (
               <Trans>Save changes</Trans>

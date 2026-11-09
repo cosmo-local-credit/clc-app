@@ -139,15 +139,25 @@ function EditorForm({
   previousStatus,
 }: PostEditorSeed) {
   const { t } = useLingui();
-  const { form, values, saving, imagesBusy, setImagesBusy, voucherOwner, tagsQuery, discardDraft } =
-    usePostEditorForm({ post, initial, draft, previousStatus });
+  const {
+    form,
+    values,
+    saving,
+    imagesBusy,
+    setImagesBusy,
+    voucherOwner,
+    tagsQuery,
+    discardDraft,
+    saveUnderway,
+  } = usePostEditorForm({ post, initial, draft, previousStatus });
 
   // In-app navigation away from unsaved changes asks first. A submit in flight
-  // navigates on success, so it is never held.
+  // navigates on success, so it is never held: neither this view's, nor one the
+  // phone view started before a layout swap, which navigates once it lands.
   const blocker = useBlocker({
     shouldBlockFn: () => {
       const state = form.store.state;
-      return state.isDirty && !state.isSubmitting;
+      return state.isDirty && !state.isSubmitting && !saveUnderway();
     },
     enableBeforeUnload: false,
     withResolver: true,

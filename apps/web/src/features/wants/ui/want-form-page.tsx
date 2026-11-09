@@ -85,7 +85,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
     setMarkerIcon,
     markerColor,
     error,
-    save,
+    inFlight,
     lifecycle,
     submit,
     runLifecycle,
@@ -164,7 +164,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
         mode="want"
         value={markerIcon}
         onChange={setMarkerIcon}
-        disabled={save.isPending}
+        disabled={inFlight}
       />
       <ImageUploadField
         label={t`Want picture`}
@@ -173,7 +173,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
         value={imageUrl}
         onChange={setImageUrl}
         onBusyChange={setImageBusy}
-        disabled={!isStorageConfigured || save.isPending}
+        disabled={!isStorageConfigured || inFlight}
       />
       {profile.avatarUrl && imageUrl !== profile.avatarUrl ? (
         <Button
@@ -247,7 +247,7 @@ function WantForm({ want, profile }: { want?: Want; profile: WantFormProfile }) 
         type="submit"
         tap
         className="w-full"
-        pending={save.isPending || imageBusy}
+        pending={inFlight || imageBusy}
         disabled={imageBusy}
       >
         {want?.status === "CLOSED" ? (

@@ -200,4 +200,37 @@ describe("Catalog editing across phone/desktop views", () => {
     expect(useViewDraftStore.getState().entries).toEqual({});
     expect(router.history.location.state.__TSR_index).toBe(0);
   });
+
+  it("keeps Save busy in the other layout while the first press is still saving", async () => {
+    let fail!: (error: Error) => void;
+    mocks.api.update.mockReturnValue(
+      new Promise((_, reject) => {
+        fail = reject;
+      }),
+    );
+    mountAt(false);
+    fireEvent.click(await screen.findByRole("button", { name: "Edit catalog" }));
+    fireEvent.change(await screen.findByLabelText("Name"), {
+      target: { value: "Unsaved traders" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(mocks.api.update).toHaveBeenCalledTimes(1));
+
+    setViewport(true);
+
+    expect(((await screen.findByLabelText("Name")) as HTMLInputElement).value).toBe(
+      "Unsaved traders",
+    );
+    const saving = screen.getByRole("button", { name: "Saving…" }) as HTMLButtonElement;
+    expect(saving.getAttribute("aria-busy")).toBe("true");
+    expect(saving.disabled).toBe(true);
+
+    // Once the first press settles, Save is free again for a retry here.
+    await act(async () => fail(new Error("offline")));
+
+    const save = await screen.findByRole("button", { name: "Save changes" });
+    expect(save.getAttribute("aria-busy")).toBeNull();
+    expect((save as HTMLButtonElement).disabled).toBe(false);
+    expect(mocks.api.update).toHaveBeenCalledTimes(1);
+  });
 });

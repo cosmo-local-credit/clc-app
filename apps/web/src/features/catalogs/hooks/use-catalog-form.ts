@@ -1,11 +1,14 @@
 import { BackendApiError } from "@clc/api/client/errors";
-import { saveCatalogMutationOptions } from "@clc/api/features/catalogs/queries";
+import {
+  catalogMutationKeys,
+  saveCatalogMutationOptions,
+} from "@clc/api/features/catalogs/queries";
 import { catalogWriteSchema, type Catalog } from "@clc/core/features/catalogs/logic";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { useForm } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
@@ -60,6 +63,9 @@ export function useCatalogForm({
   const { t } = useLingui();
   const queryClient = useQueryClient();
   const save = useMutation(saveCatalogMutationOptions(catalogsClient, queryClient, catalog?.id));
+  // A save outlives the view that started it: after a phone/desktop swap the
+  // other view's press would write the catalog a second time.
+  const inFlight = useIsMutating({ mutationKey: catalogMutationKeys.save(catalog?.id) }) > 0;
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const tagsQuery = useTokenTags();
@@ -86,7 +92,7 @@ export function useCatalogForm({
     defaultValues: restored ? { ...defaultValues, ...restored } : defaultValues,
     validators: { onSubmit: formSchema },
     onSubmit: async ({ value }) => {
-      if (!value.location) return;
+      if (inFlight || !value.location) return;
       setError(null);
       try {
         const saved = await save.mutateAsync({
@@ -128,5 +134,5 @@ export function useCatalogForm({
     const subscription = form.store.subscribe(sync);
     return () => subscription.unsubscribe();
   }, [clearViewDraft, form, opened, saveViewDraft]);
-  return { form, save, imageBusy, setImageBusy, error, tagOptions: tagsQuery.data ?? [] };
+  return { form, inFlight, imageBusy, setImageBusy, error, tagOptions: tagsQuery.data ?? [] };
 }

@@ -1,6 +1,8 @@
 import type { ManagedReportDetail } from "@clc/api/features/reports/client";
 import { emptyReportWrite, type ReportWrite } from "@clc/core/features/reports/logic";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({ update: vi.fn(), create: vi.fn() }));
@@ -13,7 +15,8 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: undefined, isPending: false }),
 }));
-vi.mock("#/features/posts/hooks/use-post-mutations", () => ({
+vi.mock("#/features/posts/hooks/use-post-mutations", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useCreatePost: () => ({ mutateAsync: mocks.create, isPending: false }),
   useUpdatePost: () => ({ mutateAsync: mocks.update, isPending: false }),
 }));
@@ -154,6 +157,16 @@ afterEach(() => {
   delete document.documentElement.dataset.layout;
   vi.unstubAllGlobals();
 });
+
+/** The editor reads saves in flight from the query client. */
+function render(ui: ReactElement) {
+  const client = new QueryClient();
+  return rtlRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
+  });
+}
 
 describe("New post before the local draft debounce settles", () => {
   it.each([false, true])("keeps the newest fields when an older local draft exists=%s", (saved) => {

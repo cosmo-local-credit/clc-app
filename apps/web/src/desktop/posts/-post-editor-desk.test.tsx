@@ -1,5 +1,6 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
+import type { ReactElement, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
@@ -31,7 +32,8 @@ vi.mock("#/features/posts/hooks/use-my-posts", () => ({
   useMyPost: () => ({ data: undefined, isPending: false, isError: false, refetch: vi.fn() }),
   useMyPosts: () => ({ data: undefined, isPending: false, isError: false, refetch: vi.fn() }),
 }));
-vi.mock("#/features/posts/hooks/use-post-mutations", () => ({
+vi.mock("#/features/posts/hooks/use-post-mutations", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useCreatePost: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdatePost: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
@@ -94,6 +96,16 @@ async function parkDraft(title: string) {
     timeout: 2000,
   });
   first.unmount();
+}
+
+/** The editor reads saves in flight from the query client. */
+function render(ui: ReactElement) {
+  const client = new QueryClient();
+  return rtlRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
+  });
 }
 
 describe("a restored post draft", () => {
