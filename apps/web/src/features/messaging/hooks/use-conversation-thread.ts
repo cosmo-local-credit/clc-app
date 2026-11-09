@@ -7,7 +7,7 @@ import {
 } from "@clc/api/features/messaging/queries";
 import { type Conversation, readMarkerTarget } from "@clc/core/features/messaging/logic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { messagingClient } from "#/lib/api/messaging";
 import { useMessagingViewer } from "./use-messaging-viewer";
@@ -27,7 +27,7 @@ const threadRefreshPolicy = {
 /**
  * One open thread: its conversation (status, peer, read marker) and its
  * messages. Each poll is `GET /conversations/:id` plus one
- * `GET /conversations/:id/messages?after=<newest id>`, so a decline or revoke
+ * `GET /conversations/:id/messages?after=<newest fetched id>`, so a decline or revoke
  * arrives through the first and new messages through the second.
  *
  * Shared by the phone thread and the desktop inspector.
@@ -57,13 +57,18 @@ export function useConversationThread(conversationId: number) {
  * Moves the caller's read marker to the newest message once it is on screen
  * and the document is visible. Sends each id at most once; the server keeps the
  * marker monotonic, so a racing device cannot move it back.
+ *
+ * Returns the callback the message list reports to: the id of the newest
+ * message it has observed on screen, or undefined. Visibility belongs to that
+ * id, so a message that arrives while its predecessor is on screen is not read
+ * until the observer reports it too.
  */
 export function useMarkConversationRead(
   conversation: Conversation | undefined,
   newestId: number | undefined,
-  newestOnScreen: boolean,
-) {
+): (onScreenId: number | undefined) => void {
   const viewer = useMessagingViewer();
+  const [onScreenId, setOnScreenId] = useState<number | undefined>(undefined);
   const queryClient = useQueryClient();
   const sent = useRef<number | null>(null);
   const markRead = useMutation({
@@ -88,11 +93,14 @@ export function useMarkConversationRead(
       sent.current = null;
     },
   });
-  const target = conversation ? readMarkerTarget(newestId, conversation.lastReadMessageId) : null;
+  const target =
+    conversation && onScreenId === newestId
+      ? readMarkerTarget(newestId, conversation.lastReadMessageId)
+      : null;
   const { mutate } = markRead;
 
   useEffect(() => {
-    if (!conversation || target === null || !newestOnScreen) return;
+    if (!conversation || target === null) return;
     const attempt = () => {
       if (document.visibilityState !== "visible" || sent.current === target) return;
       sent.current = target;
@@ -101,5 +109,7 @@ export function useMarkConversationRead(
     attempt();
     document.addEventListener("visibilitychange", attempt);
     return () => document.removeEventListener("visibilitychange", attempt);
-  }, [conversation, mutate, newestOnScreen, target]);
+  }, [conversation, mutate, target]);
+
+  return setOnScreenId;
 }

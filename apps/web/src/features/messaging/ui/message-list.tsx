@@ -6,28 +6,29 @@ import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
 
 /**
- * A thread's messages, oldest first. Reports whether the newest one is on
- * screen, which is when the read marker may move.
+ * A thread's messages, oldest first. Reports the id of the newest one while
+ * it is on screen, and undefined otherwise; that is when the read marker may
+ * move.
  */
 export function MessageList({
   messages,
   hasOlder,
   loadingOlder,
   onLoadOlder,
-  onNewestVisibleChange,
+  onNewestOnScreenChange,
 }: {
   messages: readonly Message[];
   hasOlder: boolean;
   loadingOlder: boolean;
   onLoadOlder: () => void;
-  onNewestVisibleChange: (visible: boolean) => void;
+  onNewestOnScreenChange: (messageId: number | undefined) => void;
 }) {
   const newestRef = useRef<HTMLLIElement | null>(null);
   const newestId = messages.at(-1)?.id;
   const newestSender = messages.at(-1)?.sender;
   const [scrolledFor, setScrolledFor] = useState<number | undefined>(undefined);
-  const visibleChange = useRef(onNewestVisibleChange);
-  visibleChange.current = onNewestVisibleChange;
+  const visibleChange = useRef(onNewestOnScreenChange);
+  visibleChange.current = onNewestOnScreenChange;
 
   // Opening a thread, and each message the caller sends or that arrives while
   // they are already at the bottom, keeps the newest message in view.
@@ -45,17 +46,17 @@ export function MessageList({
 
   useEffect(() => {
     const target = newestRef.current;
-    if (!target) {
-      visibleChange.current(false);
+    if (!target || newestId === undefined) {
+      visibleChange.current(undefined);
       return;
     }
     // Without an observer the thread has just scrolled to its newest message.
     if (typeof IntersectionObserver === "undefined") {
-      visibleChange.current(true);
+      visibleChange.current(newestId);
       return;
     }
     const observer = new IntersectionObserver((entries) => {
-      visibleChange.current(entries.some((entry) => entry.isIntersecting));
+      visibleChange.current(entries.some((entry) => entry.isIntersecting) ? newestId : undefined);
     });
     observer.observe(target);
     return () => observer.disconnect();

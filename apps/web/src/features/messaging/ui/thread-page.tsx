@@ -2,7 +2,6 @@ import { BackendApiError } from "@clc/api/client/errors";
 import { conversationActions, newestMessageId } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 
 import { PeerAvatar, PeerName } from "#/components/messaging/peer";
 import { Button } from "#/components/ui/button";
@@ -23,10 +22,9 @@ export function ThreadPage({ conversationId }: { conversationId: number }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { conversation, messages, loadOlder } = useConversationThread(conversationId);
-  const [newestOnScreen, setNewestOnScreen] = useState(false);
   const items = messages.data?.items ?? [];
   const current = conversation.data;
-  useMarkConversationRead(current, newestMessageId(items), newestOnScreen);
+  const reportNewestOnScreen = useMarkConversationRead(current, newestMessageId(items));
   const setStatus = useSetConversationStatus(conversationId);
   const unblock = useBlockPeer(conversationId);
   const request = useRequestConversation();
@@ -203,7 +201,7 @@ export function ThreadPage({ conversationId }: { conversationId: number }) {
             hasOlder={messages.data.hasOlder}
             loadingOlder={loadOlder.isPending}
             onLoadOlder={() => loadOlder.mutate()}
-            onNewestVisibleChange={setNewestOnScreen}
+            onNewestOnScreenChange={reportNewestOnScreen}
           />
         ) : null}
         {messages.data && items.length === 0 && current?.status !== "pending" ? (

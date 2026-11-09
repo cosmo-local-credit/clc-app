@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useDeskTrail } from "#/desktop/trail";
+import { stubIntersectionObserver } from "#/lib/-fixtures/intersection-observer";
 import { AMINA, conversation, message, mountDesk, VIEWER } from "./-messaging-desk-fixtures";
 
 const mocks = vi.hoisted(() => ({
@@ -67,6 +68,29 @@ describe("desktop thread", () => {
     );
     await waitFor(() => expect(useDeskTrail.getState().label).toBe("user1"));
     await waitFor(() => expect(mocks.client.markRead).toHaveBeenCalledWith(1, 8));
+  });
+
+  it("waits for a newly arrived message to be on screen before marking it read", async () => {
+    const observer = stubIntersectionObserver();
+    mocks.client.get.mockImplementation((id: number) =>
+      Promise.resolve(conversation(id, { lastReadMessageId: 6, unreadCount: 1 })),
+    );
+    mocks.client.messages.mockResolvedValueOnce({
+      items: [message(6, 1), message(7, 1)],
+      hasMore: false,
+    });
+    const { client } = mountDesk("/messages/1");
+    const seventh = await screen.findByText("Message 7");
+    act(() => observer.reveal(seventh));
+    await waitFor(() => expect(mocks.client.markRead).toHaveBeenCalledWith(1, 7));
+
+    mocks.client.messages.mockResolvedValueOnce({ items: [message(8, 1)], hasMore: false });
+    await act(() => client.refetchQueries({ type: "active" }));
+    expect(await screen.findByText("Message 8")).toBeTruthy();
+    expect(mocks.client.markRead).toHaveBeenCalledOnce();
+
+    act(() => observer.reveal(screen.getByText("Message 8")));
+    await waitFor(() => expect(mocks.client.markRead).toHaveBeenLastCalledWith(1, 8));
   });
 
   it("moves between threads in place, so Back still returns to the inbox", async () => {

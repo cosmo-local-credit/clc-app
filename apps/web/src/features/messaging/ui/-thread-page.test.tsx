@@ -41,6 +41,7 @@ vi.mock("#/features/images/use-image-upload", () => ({
 }));
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 
+import { stubIntersectionObserver } from "#/lib/-fixtures/intersection-observer";
 import { ThreadPage } from "./thread-page";
 
 function message(id: number, sender: Message["sender"] = "peer", body = `Message ${id}`): Message {
@@ -172,6 +173,24 @@ describe("ThreadPage", () => {
     await screen.findByText("Message 3");
     await waitFor(() => expect(mocks.markRead).toHaveBeenCalledWith(5, 3));
     expect(mocks.markRead).toHaveBeenCalledOnce();
+  });
+
+  it("waits for a newly arrived message to be on screen before marking it read", async () => {
+    const observer = stubIntersectionObserver();
+    mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));
+    mocks.messages.mockResolvedValueOnce({ items: [message(1), message(2)], hasMore: false });
+    const client = mount();
+    const second = await screen.findByText("Message 2");
+    act(() => observer.reveal(second));
+    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledWith(5, 2));
+
+    mocks.messages.mockResolvedValueOnce({ items: [message(3)], hasMore: false });
+    await act(() => client.refetchQueries({ type: "active" }));
+    expect(await screen.findByText("Message 3")).toBeTruthy();
+    expect(mocks.markRead).toHaveBeenCalledOnce();
+
+    act(() => observer.reveal(screen.getByText("Message 3")));
+    await waitFor(() => expect(mocks.markRead).toHaveBeenLastCalledWith(5, 3));
   });
 
   it("opens a pending request with Accept and Decline", async () => {

@@ -12,8 +12,8 @@ import { cn } from "#/lib/utils";
  * It scrolls on its own, inside the pane. Opening a thread, and each message
  * the caller sends or that arrives while they are at the bottom, keeps the
  * newest one in view; loading earlier messages keeps the reader's place. It
- * reports whether the newest message is on screen, which is when the read
- * marker may move.
+ * reports the id of the newest message while it is on screen, and undefined
+ * otherwise, which is when the read marker may move.
  */
 export function MessageScrollerDesk({
   before,
@@ -22,7 +22,7 @@ export function MessageScrollerDesk({
   hasOlder,
   loadingOlder,
   onLoadOlder,
-  onNewestVisibleChange,
+  onNewestOnScreenChange,
 }: {
   before?: ReactNode;
   after?: ReactNode;
@@ -30,7 +30,7 @@ export function MessageScrollerDesk({
   hasOlder: boolean;
   loadingOlder: boolean;
   onLoadOlder: () => void;
-  onNewestVisibleChange: (visible: boolean) => void;
+  onNewestOnScreenChange: (messageId: number | undefined) => void;
 }) {
   const { t } = useLingui();
   const scroller = useRef<HTMLDivElement>(null);
@@ -42,8 +42,8 @@ export function MessageScrollerDesk({
   // Distance from the bottom when Load earlier was pressed, restored once the
   // older page is in so the message being read stays where it was.
   const anchor = useRef<number | null>(null);
-  const visibleChange = useRef(onNewestVisibleChange);
-  visibleChange.current = onNewestVisibleChange;
+  const visibleChange = useRef(onNewestOnScreenChange);
+  visibleChange.current = onNewestOnScreenChange;
 
   useLayoutEffect(() => {
     const box = scroller.current;
@@ -64,17 +64,18 @@ export function MessageScrollerDesk({
 
   useEffect(() => {
     const target = newestRef.current;
-    if (!target) {
-      visibleChange.current(false);
+    if (!target || newestId === undefined) {
+      visibleChange.current(undefined);
       return;
     }
     // Without an observer the pane has just scrolled to its newest message.
     if (typeof IntersectionObserver === "undefined") {
-      visibleChange.current(true);
+      visibleChange.current(newestId);
       return;
     }
     const observer = new IntersectionObserver(
-      (entries) => visibleChange.current(entries.some((entry) => entry.isIntersecting)),
+      (entries) =>
+        visibleChange.current(entries.some((entry) => entry.isIntersecting) ? newestId : undefined),
       { root: scroller.current },
     );
     observer.observe(target);

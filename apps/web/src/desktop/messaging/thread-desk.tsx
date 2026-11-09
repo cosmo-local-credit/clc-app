@@ -6,7 +6,7 @@ import {
 } from "@clc/core/features/messaging/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useId, useState } from "react";
+import { useId } from "react";
 
 import { PeerAvatar, PeerName } from "#/components/messaging/peer";
 import { Badge } from "#/components/ui/badge";
@@ -33,10 +33,9 @@ import {
 export function ThreadDesk({ conversationId }: { conversationId: number }) {
   const titleId = useId();
   const { conversation, messages, loadOlder } = useConversationThread(conversationId);
-  const [newestOnScreen, setNewestOnScreen] = useState(false);
   const items = messages.data?.items ?? [];
   const current = conversation.data;
-  useMarkConversationRead(current, newestMessageId(items), newestOnScreen);
+  const reportNewestOnScreen = useMarkConversationRead(current, newestMessageId(items));
   const missing =
     conversation.error instanceof BackendApiError && conversation.error.status === 404;
   const actions = current ? conversationActions(current) : null;
@@ -132,7 +131,7 @@ export function ThreadDesk({ conversationId }: { conversationId: number }) {
           hasOlder={messages.data?.hasOlder ?? false}
           loadingOlder={loadOlder.isPending}
           onLoadOlder={() => loadOlder.mutate()}
-          onNewestVisibleChange={setNewestOnScreen}
+          onNewestOnScreenChange={reportNewestOnScreen}
         />
       )}
 
