@@ -6,7 +6,7 @@ import type {
 } from "@clc/core/features/messaging/logic";
 import { QueryClient } from "@tanstack/react-query";
 
-export const USER: Peer = {
+const USER: Peer = {
   address: "0x1111111111111111111111111111111111111111",
   username: "amina",
   avatar: null,

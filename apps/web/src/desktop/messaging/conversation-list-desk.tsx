@@ -123,7 +123,7 @@ function ConversationGroup({
 }
 
 /** One conversation in the list column, or the helpdesk row. */
-export function ConversationRowDesk({
+function ConversationRowDesk({
   conversation,
   selected,
   replace = false,

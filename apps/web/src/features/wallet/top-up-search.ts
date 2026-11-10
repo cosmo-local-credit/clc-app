@@ -1,6 +1,6 @@
 import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
 
-export type TopUpSheet = "add" | "withdraw";
+type TopUpSheet = "add" | "withdraw";
 
 /** A Pretium history row's `?tx=` value, the same in both views. */
 export function topUpHistoryKey(transaction: PretiumCashTransaction): string {

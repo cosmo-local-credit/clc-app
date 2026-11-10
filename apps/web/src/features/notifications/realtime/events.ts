@@ -4,7 +4,7 @@ export const NOTIFICATION_INBOX_CHANGED_EVENT = "clc-notification-inbox-changed"
 /** Dispatched on `window` when a messaging sync publication arrives. */
 export const MESSAGING_CHANGED_EVENT = "clc-messaging-changed";
 
-export type MessagingChangedDetail = { conversationId: number };
+type MessagingChangedDetail = { conversationId: number };
 
 export function dispatchMessagingChanged(conversationId: number): void {
   window.dispatchEvent(

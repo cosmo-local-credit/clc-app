@@ -14,17 +14,17 @@ const imageUrlSchema = z
   .string()
   .refine(isHttpUrl, { message: "The image must be an http(s) URL" });
 
-export const peerSchema = z.object({
+const peerSchema = z.object({
   address: addressSchema,
   username: z.string().nullable(),
   avatar: z.string().nullable(),
 });
 export type Peer = z.infer<typeof peerSchema>;
 
-export const conversationKindSchema = z.enum(["direct", "helpdesk"]);
+const conversationKindSchema = z.enum(["direct", "helpdesk"]);
 export type ConversationKind = z.infer<typeof conversationKindSchema>;
 
-export const conversationStatusSchema = z.enum([
+const conversationStatusSchema = z.enum([
   "pending",
   "accepted",
   "declined",
@@ -32,13 +32,12 @@ export const conversationStatusSchema = z.enum([
   "open",
   "resolved",
 ]);
-export type ConversationStatus = z.infer<typeof conversationStatusSchema>;
 
 /** A status a member of a direct conversation may set. */
-export const directStatusChangeSchema = z.enum(["accepted", "declined", "revoked"]);
+const directStatusChangeSchema = z.enum(["accepted", "declined", "revoked"]);
 export type DirectStatusChange = z.infer<typeof directStatusChangeSchema>;
 
-export const helpdeskStatusSchema = z.enum(["open", "resolved"]);
+const helpdeskStatusSchema = z.enum(["open", "resolved"]);
 export type HelpdeskStatus = z.infer<typeof helpdeskStatusSchema>;
 
 /** `sender` is relative to the caller; "support" is an admin reply in helpdesk. */
@@ -76,7 +75,6 @@ export const conversationPageSchema = z.object({
   items: z.array(conversationSchema),
   nextCursor: z.string().nullable(),
 });
-export type ConversationPage = z.infer<typeof conversationPageSchema>;
 
 /**
  * Messages ascend by id. Without `after`, `hasMore` says older messages exist;
@@ -86,7 +84,6 @@ export const messagePageSchema = z.object({
   items: z.array(messageSchema),
   hasMore: z.boolean(),
 });
-export type MessagePage = z.infer<typeof messagePageSchema>;
 
 export const unreadCountsSchema = z.object({
   direct: z.number().int().nonnegative(),
@@ -95,8 +92,7 @@ export const unreadCountsSchema = z.object({
 });
 export type UnreadCounts = z.infer<typeof unreadCountsSchema>;
 
-export const blockSchema = peerSchema.extend({ createdAt: timestampSchema });
-export type Block = z.infer<typeof blockSchema>;
+const blockSchema = peerSchema.extend({ createdAt: timestampSchema });
 
 export const blockListSchema = z.object({ items: z.array(blockSchema) });
 
@@ -113,13 +109,13 @@ export const sendMessageInputSchema = z
   });
 export type SendMessageInput = z.infer<typeof sendMessageInputSchema>;
 
-export const conversationRequestInputSchema = z.object({
+const conversationRequestInputSchema = z.object({
   recipientAddress: addressSchema,
   intro: z.string().trim().max(CONVERSATION_INTRO_MAX).optional(),
 });
 export type ConversationRequestInput = z.infer<typeof conversationRequestInputSchema>;
 
-export const abuseReportInputSchema = z.object({
+const abuseReportInputSchema = z.object({
   reportedAddress: addressSchema,
   messageId: idSchema.optional(),
   comment: z.string().trim().max(ABUSE_REPORT_COMMENT_MAX).optional(),
@@ -144,7 +140,6 @@ export const adminMessagePageSchema = z.object({
   items: z.array(adminMessageSchema),
   hasMore: z.boolean(),
 });
-export type AdminMessagePage = z.infer<typeof adminMessagePageSchema>;
 
 export const adminHelpdeskItemSchema = z.object({
   id: idSchema,
@@ -162,12 +157,11 @@ export const adminHelpdeskPageSchema = z.object({
   items: z.array(adminHelpdeskItemSchema),
   nextCursor: z.string().nullable(),
 });
-export type AdminHelpdeskPage = z.infer<typeof adminHelpdeskPageSchema>;
 
-export const abuseReportStatusSchema = z.enum(["open", "dismissed", "actioned"]);
+const abuseReportStatusSchema = z.enum(["open", "dismissed", "actioned"]);
 export type AbuseReportStatus = z.infer<typeof abuseReportStatusSchema>;
 
-export const abuseReportResolutionSchema = z.enum(["dismissed", "actioned"]);
+const abuseReportResolutionSchema = z.enum(["dismissed", "actioned"]);
 export type AbuseReportResolution = z.infer<typeof abuseReportResolutionSchema>;
 
 export const adminAbuseReportSchema = z.object({
@@ -194,14 +188,12 @@ export const adminAbuseReportPageSchema = z.object({
   items: z.array(adminAbuseReportSchema),
   nextCursor: z.string().nullable(),
 });
-export type AdminAbuseReportPage = z.infer<typeof adminAbuseReportPageSchema>;
 
 /** The console's sidebar counters. */
 export const adminMessagingCountsSchema = z.object({
   helpdeskNeedsReply: z.number().int().nonnegative(),
   abuseReportsOpen: z.number().int().nonnegative(),
 });
-export type AdminMessagingCounts = z.infer<typeof adminMessagingCountsSchema>;
 
 // Pure helpers.
 

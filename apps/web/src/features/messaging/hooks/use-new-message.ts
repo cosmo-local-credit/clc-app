@@ -7,7 +7,7 @@ import { useRecipientSearch } from "#/features/wallet/hooks/use-recipient-resolu
 import { CHAIN_ID } from "#/lib/chain";
 import { useRequestConversation } from "./use-conversation-actions";
 
-export type NewMessageFailure = "missing" | "exists" | "quota" | "failed";
+type NewMessageFailure = "missing" | "exists" | "quota" | "failed";
 
 /**
  * Finding a person through the recipient search and asking to message them,

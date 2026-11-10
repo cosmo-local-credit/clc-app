@@ -16,7 +16,7 @@ import {
 import type { AdminMessagingClient, MessagePageParams, MessagingClient } from "./client";
 
 /** Newest messages a thread opens on, and each older page it loads after that. */
-export const THREAD_PAGE_SIZE = 50;
+const THREAD_PAGE_SIZE = 50;
 /** One forward read is a single `after=` call; a long backlog takes a few. */
 const FORWARD_PAGE_SIZE = 100;
 const MAX_FORWARD_PAGES = 5;
@@ -190,13 +190,6 @@ export function loadOlderConversationMessages(
   return loadOlderThreadMessages(client, messagingKeys.messages(viewer, id), (params) =>
     messaging.messages(id, params),
   );
-}
-
-export function blockListQueryOptions(messaging: MessagingClient, viewer: string) {
-  return queryOptions({
-    queryKey: messagingKeys.blocks(viewer),
-    queryFn: ({ signal }) => messaging.blocks(signal),
-  });
 }
 
 // Admin console.

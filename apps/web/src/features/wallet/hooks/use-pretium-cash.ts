@@ -37,7 +37,7 @@ import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-dele
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 /** Every withdrawal relayed to Pretium, for a view mounted while one is still out. */
-export const PRETIUM_OFFRAMP_MUTATION_KEY = ["pretium", "offramp"] as const;
+const PRETIUM_OFFRAMP_MUTATION_KEY = ["pretium", "offramp"] as const;
 
 function toChecksumAddress(address: `0x${string}` | undefined): `0x${string}` | undefined {
   if (!address) return undefined;

@@ -22,7 +22,7 @@ export type ComposerImage = {
   failed: boolean;
 };
 
-export type ComposerImageError = "unsupported" | "upload-failed";
+type ComposerImageError = "unsupported" | "upload-failed";
 
 /**
  * The composer's draft and its send, retry-safe end to end.

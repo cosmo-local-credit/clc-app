@@ -25,8 +25,6 @@ export const publicationSchema = z.union([
   notificationPublicationSchema,
 ]);
 
-export type RealtimePublication = z.infer<typeof publicationSchema>;
-
 export async function connectNotificationRealtime(options: {
   identityEpoch: string;
   userId: string;

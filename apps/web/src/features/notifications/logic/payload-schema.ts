@@ -5,7 +5,7 @@ import { normalizeNotificationTargetUrl } from "./target-url";
 const V1_NOTIFICATION_KINDS = ["voucher.received", "offramp.completed"] as const;
 
 /** Kinds that open a conversation. They show in Messages and Helpdesk, not in Notifications. */
-export const MESSAGING_NOTIFICATION_KINDS = [
+const MESSAGING_NOTIFICATION_KINDS = [
   "message.received",
   "message.request",
   "message.accepted",
