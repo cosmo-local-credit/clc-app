@@ -336,9 +336,11 @@ export function useCreateVoucherForm({
     }
   }, [draft, form, linked, profileQuery.data, restored]);
 
+  // Once, when the link is consumed: publishing writes a fresh snapshot while
+  // `linked` is still set, and that one must survive a failed deploy.
   useEffect(() => {
-    if (linked && storedDraft) clearDraft();
-  }, [clearDraft, linked, storedDraft]);
+    if (linked) clearDraft();
+  }, [clearDraft, linked]);
 
   // Keep the typed fields for a phone/desktop view swap while they differ from
   // how the form opened; forget them when they are back to that.
