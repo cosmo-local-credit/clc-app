@@ -2,6 +2,7 @@ import {
   adminHelpdeskItemQueryOptions,
   adminHelpdeskMessagesQueryOptions,
   adminHelpdeskQueueInfiniteQueryOptions,
+  adminMessagingCountsQueryOptions,
   adminMessagingKeys,
   loadOlderAdminHelpdeskMessages,
 } from "@clc/api/features/messaging/queries";
@@ -28,8 +29,20 @@ const POLLING = {
 
 /** Every status's queue: a reply or status change can move a conversation between them. */
 export function invalidateHelpdeskQueues(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({
-    queryKey: [...adminMessagingKeys.all, "helpdesk", "queue"],
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: [...adminMessagingKeys.all, "helpdesk", "queue"],
+    }),
+    queryClient.invalidateQueries({ queryKey: adminMessagingKeys.counts() }),
+  ]);
+}
+
+/** The sidebar's helpdesk and abuse-report counters, polled like the queues. */
+export function useAdminMessagingCounts() {
+  return useQuery({
+    ...adminMessagingCountsQueryOptions(adminMessaging),
+    ...POLLING,
+    refetchInterval: QUEUE_POLL_MS,
   });
 }
 

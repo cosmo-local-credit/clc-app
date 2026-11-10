@@ -1,25 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { HiOutlineBell } from "react-icons/hi";
-import { Badge } from "#/components/ui/badge";
+import { SidebarCount } from "#/components/admin/sidebar-count";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 import { usePendingRetirementCount } from "./use-retirement";
 
-/**
- * Count of pending retirement requests, drawn as the sidebar status counter:
- * in the row, after the label, and absent when nothing is waiting.
- */
+/** Count of pending retirement requests, as the sidebar status counter. */
 export function RetirementPendingBadge() {
   const count = usePendingRetirementCount();
-  if (count.data === undefined || count.isError || count.data < 1) return null;
   return (
-    <Badge
-      variant="destructive"
-      aria-label={`${count.data} pending retirement requests`}
+    <SidebarCount
+      count={count.isError ? undefined : count.data}
+      label="pending retirement requests"
       title="Pending retirement requests"
-      className="ml-auto h-5 min-w-5 justify-center px-1 font-mono group-data-[collapsible=icon]:hidden"
-    >
-      {count.data}
-    </Badge>
+    />
   );
 }
 

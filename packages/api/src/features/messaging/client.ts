@@ -16,6 +16,7 @@ import {
   adminHelpdeskItemSchema,
   adminHelpdeskPageSchema,
   adminMessagePageSchema,
+  adminMessagingCountsSchema,
   adminMessageSchema,
   blockListSchema,
   type ConversationKind,
@@ -181,6 +182,12 @@ const helpdeskPath = (id: number) => `/api/v2/admin/helpdesk/${encodeURIComponen
 
 export function createAdminMessagingClient(http: HttpClient) {
   return {
+    async counts(signal?: AbortSignal) {
+      return adminMessagingCountsSchema.parse(
+        await http.request("/api/v2/admin/messaging/counts", { ...NO_STORE, signal }),
+      );
+    },
+
     async helpdeskQueue(params: AdminQueueParams<HelpdeskStatus> = {}, signal?: AbortSignal) {
       const path = withQuery("/api/v2/admin/helpdesk", {
         status: params.status,

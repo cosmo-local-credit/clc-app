@@ -43,6 +43,7 @@ export const messagingKeys = {
 /** The admin queues live under their own root so a user-side invalidation never touches them. */
 export const adminMessagingKeys = {
   all: ["clc", "admin-messaging"] as const,
+  counts: () => [...adminMessagingKeys.all, "counts"] as const,
   helpdeskQueue: (status?: HelpdeskStatus) =>
     [...adminMessagingKeys.all, "helpdesk", "queue", status ?? "all"] as const,
   helpdeskThread: (id: number) => [...adminMessagingKeys.all, "helpdesk", "thread", id] as const,
@@ -241,6 +242,13 @@ export function loadOlderAdminHelpdeskMessages(
   return loadOlderThreadMessages(client, adminMessagingKeys.helpdeskMessages(id), (params) =>
     admin.helpdeskMessages(id, params),
   );
+}
+
+export function adminMessagingCountsQueryOptions(admin: AdminMessagingClient) {
+  return queryOptions({
+    queryKey: adminMessagingKeys.counts(),
+    queryFn: ({ signal }) => admin.counts(signal),
+  });
 }
 
 export function adminAbuseReportsInfiniteQueryOptions(

@@ -21,6 +21,10 @@ import { MdOutlineNfc } from "react-icons/md";
 import { BRAND_ICON_BASE } from "#/lib/brand";
 import { CommandPalette } from "#/components/layout/command-palette";
 import { OperatorMenu } from "#/components/layout/operator-menu";
+import {
+  AbuseReportsOpenBadge,
+  HelpdeskNeedsReplyBadge,
+} from "#/features/messaging/messaging-counts";
 import { RetirementPendingBadge } from "#/features/retirement/retirement-notification";
 import { MESSAGING_ENABLED } from "#/lib/messaging-config";
 import {
@@ -162,6 +166,8 @@ function AppShellInner() {
                         <item.icon />
                         <span className="min-w-0 truncate">{item.label}</span>
                         {item.to === "/retirement-requests" ? <RetirementPendingBadge /> : null}
+                        {item.to === "/helpdesk" ? <HelpdeskNeedsReplyBadge /> : null}
+                        {item.to === "/abuse-reports" ? <AbuseReportsOpenBadge /> : null}
                       </SidebarMenuButton>
                       {item.children ? (
                         <SidebarMenuSub>

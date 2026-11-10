@@ -47,9 +47,12 @@ export function AbuseReportsPage({ search }: { search: AbuseReportSearch }) {
       adminMessaging.resolveAbuseReport(report.id, status),
     onSuccess: async (report) => {
       // Every status's list: the report leaves `open` and joins its outcome.
-      await queryClient.invalidateQueries({
-        queryKey: [...adminMessagingKeys.all, "abuse-reports"],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [...adminMessagingKeys.all, "abuse-reports"],
+        }),
+        queryClient.invalidateQueries({ queryKey: adminMessagingKeys.counts() }),
+      ]);
       toast.success(report.status === "actioned" ? "Report actioned" : "Report dismissed");
       setPendingResolution(null);
     },

@@ -37,6 +37,8 @@ declare module "@tanstack/react-table" {
  * runs for as long as the table is mounted.
  */
 const UNSORTED: SortingState = [];
+/** Elements whose click is their own, not the row's. */
+const INTERACTIVE = 'a, button, input, select, textarea, label, [role="button"]';
 
 /**
  * Sortable table over a fully-loaded page of rows.
@@ -70,7 +72,8 @@ const UNSORTED: SortingState = [];
  * element: it takes no focus, answers no keyboard, and cannot be opened in a new
  * tab. Any table whose rows navigate must also put a real `<Link>` in one cell —
  * that link is the accessible path to the detail screen, and the row handler
- * merely widens its hit area.
+ * merely widens its hit area. A click on a link, button or control inside the
+ * row is that element's alone.
  */
 export function DataTable<TData>({
   columns,
@@ -165,7 +168,15 @@ export function DataTable<TData>({
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+              onClick={
+                onRowClick
+                  ? (event) => {
+                      // A link or button in the row keeps its own destination.
+                      if ((event.target as Element).closest(INTERACTIVE)) return;
+                      onRowClick(row.original);
+                    }
+                  : undefined
+              }
               className={cn(onRowClick && "cursor-pointer", rowClassName)}
             >
               {row.getVisibleCells().map((cell) => (

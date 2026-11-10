@@ -196,6 +196,13 @@ export const adminAbuseReportPageSchema = z.object({
 });
 export type AdminAbuseReportPage = z.infer<typeof adminAbuseReportPageSchema>;
 
+/** The console's sidebar counters. */
+export const adminMessagingCountsSchema = z.object({
+  helpdeskNeedsReply: z.number().int().nonnegative(),
+  abuseReportsOpen: z.number().int().nonnegative(),
+});
+export type AdminMessagingCounts = z.infer<typeof adminMessagingCountsSchema>;
+
 // Pure helpers.
 
 /**

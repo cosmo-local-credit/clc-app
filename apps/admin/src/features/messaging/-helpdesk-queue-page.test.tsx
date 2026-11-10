@@ -143,6 +143,22 @@ describe("helpdesk queue", () => {
     expect(router.state.location.search).toEqual({});
   });
 
+  it("opens the thread from anywhere in the row", async () => {
+    mocks.helpdeskQueue.mockResolvedValue({ items: [helpdeskItem(7)], nextCursor: null });
+    const { router } = mount();
+    fireEvent.click(await screen.findByText("Message 107"));
+    expect(await screen.findByText("thread 7")).toBeTruthy();
+    expect(router.state.location.pathname).toBe("/helpdesk/7");
+  });
+
+  it("keeps the account link's own destination inside a clickable row", async () => {
+    mocks.helpdeskQueue.mockResolvedValue({ items: [helpdeskItem(7)], nextCursor: null });
+    const { router } = mount();
+    fireEvent.click(await screen.findByRole("link", { name: /^Account / }));
+    expect(await screen.findByText("account")).toBeTruthy();
+    expect(router.state.location.pathname).toMatch(/^\/users\//);
+  });
+
   it("opens the thread from the user's name", async () => {
     mocks.helpdeskQueue.mockResolvedValue({ items: [helpdeskItem(7)], nextCursor: null });
     const { router } = mount();

@@ -145,6 +145,12 @@ export function HelpdeskQueuePage({ search }: { search: HelpdeskSearch }) {
             columns={columns}
             data={items}
             rowClassName="h-14"
+            onRowClick={(item) =>
+              void navigate({
+                to: "/helpdesk/$conversationId",
+                params: { conversationId: String(item.id) },
+              })
+            }
             emptyState={
               <EmptyState
                 title={status === "open" ? "No open conversations" : "No resolved conversations"}
