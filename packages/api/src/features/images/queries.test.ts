@@ -6,7 +6,13 @@ import type { AuthClient } from "../auth/client";
 import { authKeys } from "../auth/queries";
 import { reportKeys } from "../reports/queries";
 import { StorageApiError, type ImageUploadClient, type UploadedImage } from "./client";
-import { imageKeys, storageTokenQueryOptions, uploadImageMutationOptions } from "./queries";
+import {
+  imageKeys,
+  importImageMutationKey,
+  importImageMutationOptions,
+  storageTokenQueryOptions,
+  uploadImageMutationOptions,
+} from "./queries";
 
 const IDENTITY = "0xAbCdEf0000000000000000000000000000000001";
 
@@ -31,7 +37,10 @@ function authStub(tokens: string[] = ["tok-1", "tok-2"]) {
 
 function storageStub(impl: ImageUploadClient["upload"]) {
   const upload = vi.fn(impl);
-  return { storage: { baseUrl: "https://storage.test", upload }, upload };
+  return {
+    storage: { baseUrl: "https://storage.test", upload, import: vi.fn() },
+    upload,
+  };
 }
 
 function unauthorized() {
@@ -186,5 +195,98 @@ describe("uploadImageMutationOptions", () => {
     );
 
     expect(options.networkMode).toBe("online");
+  });
+});
+
+describe("importImageMutationOptions", () => {
+  const input = {
+    source: "https://images.example.org/v/123.jpg",
+    purpose: "voucher.icon" as const,
+    uploadId: "abc",
+  };
+
+  function importStub(impl: ImageUploadClient["import"]) {
+    const importFn = vi.fn(impl);
+    const client: ImageUploadClient = {
+      baseUrl: "https://storage.test",
+      upload: vi.fn(),
+      import: importFn,
+    };
+    return { storage: client, importFn };
+  }
+
+  async function runImport(client: QueryClient, auth: AuthClient, storage: ImageUploadClient) {
+    const { mutationFn, mutationKey } = importImageMutationOptions(auth, () => storage, IDENTITY, {
+      purpose: input.purpose,
+      uploadId: input.uploadId,
+    });
+    if (!mutationFn) throw new Error("importImageMutationOptions must define a mutationFn");
+    return mutationFn(input, { client, meta: undefined, mutationKey });
+  }
+
+  it("keys by purpose and upload id, so every view of a form finds the same import", () => {
+    const options = importImageMutationOptions(authStub().auth, vi.fn(), IDENTITY, {
+      purpose: "voucher.icon",
+      uploadId: "abc",
+    });
+
+    expect(options.mutationKey).toEqual(["clc", "images", "import", "voucher.icon", "abc"]);
+    expect(options.mutationKey).toEqual(importImageMutationKey("voucher.icon", "abc"));
+  });
+
+  it("re-reads the token once on a 401 and retries the import", async () => {
+    const client = new QueryClient();
+    const { auth, getStorageToken } = authStub(["stale", "fresh"]);
+    let attempt = 0;
+    const { storage, importFn } = importStub(async () => {
+      attempt += 1;
+      if (attempt === 1) throw unauthorized();
+      return uploaded;
+    });
+
+    await expect(runImport(client, auth, storage)).resolves.toEqual(uploaded);
+
+    expect(getStorageToken).toHaveBeenCalledTimes(2);
+    expect(importFn).toHaveBeenNthCalledWith(1, input, "stale");
+    expect(importFn).toHaveBeenNthCalledWith(2, input, "fresh");
+  });
+
+  it("surfaces a second 401 and does not re-read for any other failure", async () => {
+    const client = new QueryClient();
+    const { auth, getStorageToken } = authStub();
+    const { storage, importFn } = importStub(async () => {
+      throw unauthorized();
+    });
+    await expect(runImport(client, auth, storage)).rejects.toBeInstanceOf(StorageApiError);
+    expect(getStorageToken).toHaveBeenCalledTimes(2);
+    expect(importFn).toHaveBeenCalledTimes(2);
+
+    const other = new QueryClient();
+    const second = authStub();
+    const rejected = importStub(async () => {
+      throw new StorageApiError(400, "IMPORT_HOST_NOT_ALLOWED", "IMPORT_HOST_NOT_ALLOWED", {
+        kind: "rejected",
+      });
+    });
+    await expect(runImport(other, second.auth, rejected.storage)).rejects.toMatchObject({
+      code: "IMPORT_HOST_NOT_ALLOWED",
+    });
+    expect(second.getStorageToken).toHaveBeenCalledTimes(1);
+    expect(rejected.importFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a fetch failure once and never a rejected source", () => {
+    const options = importImageMutationOptions(authStub().auth, vi.fn(), IDENTITY, {
+      purpose: "voucher.icon",
+      uploadId: "abc",
+    });
+    const retry = options.retry as (count: number, error: unknown) => boolean;
+
+    const fetchFailed = new StorageApiError(502, "x", "IMPORT_FETCH_FAILED", { kind: "network" });
+    expect(retry(0, fetchFailed)).toBe(true);
+    expect(retry(1, fetchFailed)).toBe(false);
+    expect(
+      retry(0, new StorageApiError(400, "x", "IMPORT_CONTENT_REJECTED", { kind: "rejected" })),
+    ).toBe(false);
   });
 });

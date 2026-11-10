@@ -4,6 +4,7 @@ import { BackendApiError } from "../../client/errors";
 import {
   StorageApiError,
   createImageUploadClient,
+  imageImportUploadId,
   isRetryableStorageError,
   isStorageUnauthorized,
 } from "./client";
@@ -290,5 +291,84 @@ describe("checkImageFile", () => {
     const requestLimit = 8 * 1024 * 1024;
     expect(MAX_UPLOAD_BYTES).toBeLessThan(requestLimit);
     expect(checkImageFile({ type: "image/jpeg", size: requestLimit }).ok).toBe(false);
+  });
+});
+
+describe("import", () => {
+  const source = "https://images.example.org/v/123.jpg";
+
+  it("posts the source with the purpose's folder, width and crop as JSON", async () => {
+    const fetchMock = respond({ body: okBody });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await storage.import({ source, purpose: "voucher.icon", uploadId: "abc" }, "tok");
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://storage.test/v1/import");
+    expect(init.method).toBe("POST");
+    expect(init.credentials).toBe("omit");
+    expect(init.headers).toEqual({
+      Authorization: "Bearer tok",
+      "Content-Type": "application/json",
+    });
+    expect(JSON.parse(init.body as string)).toEqual({
+      url: source,
+      folder: "voucher",
+      uploadId: "abc",
+      width: 400,
+      aspect: "1:1",
+    });
+  });
+
+  it("asks for a 16:9 crop for a banner", async () => {
+    const fetchMock = respond({ body: okBody });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await storage.import({ source, purpose: "pool.banner", uploadId: "abc" }, "tok");
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(init.body as string)).toMatchObject({ aspect: "16:9", width: 1280 });
+  });
+
+  it("resolves to the stored object like an upload does", async () => {
+    vi.stubGlobal("fetch", respond({ body: okBody }));
+
+    await expect(
+      storage.import({ source, purpose: "voucher.icon", uploadId: "abc" }, "tok"),
+    ).resolves.toEqual({
+      url: okBody.payload.s3,
+      width: 1280,
+      height: 853,
+      byteSize: 82972,
+      contentType: "image/webp",
+    });
+  });
+
+  it.each([
+    [400, "IMPORT_HOST_NOT_ALLOWED", "rejected", false],
+    [502, "IMPORT_FETCH_FAILED", "network", true],
+    [400, "IMPORT_CONTENT_REJECTED", "rejected", false],
+    [429, "RATE_LIMITED", "rejected", false],
+    [401, "UNAUTHORIZED", "unauthorized", false],
+  ] as const)("maps %i %s to %s", async (status, code, kind, retryable) => {
+    vi.stubGlobal("fetch", respond({ status, body: { ok: false, code } }));
+
+    const error = await storage
+      .import({ source, purpose: "voucher.icon", uploadId: "abc" }, "tok")
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(StorageApiError);
+    expect(error).toMatchObject({ status, code, kind });
+    expect(isRetryableStorageError(error)).toBe(retryable);
+  });
+});
+
+describe("imageImportUploadId", () => {
+  it("is stable per source and distinct across sources", () => {
+    const a = imageImportUploadId("https://images.example.org/v/123.jpg");
+
+    expect(a).toBe(imageImportUploadId("https://images.example.org/v/123.jpg"));
+    expect(a).not.toBe(imageImportUploadId("https://images.example.org/v/124.jpg"));
+    expect(a).toMatch(/^[0-9a-f]{32}$/);
   });
 });
