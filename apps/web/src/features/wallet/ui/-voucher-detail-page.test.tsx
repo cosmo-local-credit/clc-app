@@ -1914,6 +1914,34 @@ describe("VoucherDetailPage contract controls", () => {
       }),
     );
   });
+
+  it("submits the Safe as the voucher owner when a signer transfers ownership", async () => {
+    const SIGNER = "0x5150000000000000000000000000000000000005";
+    mocks.safeSigners = [SIGNER];
+    try {
+      mocks.auth.session = { address: SIGNER, chainId: 100 };
+      mocks.address = SIGNER;
+      render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Transfer ownership" }));
+      const dialog = await screen.findByRole("dialog");
+      fireEvent.change(within(dialog).getByLabelText("New owner address"), {
+        target: { value: OTHER },
+      });
+      fireEvent.click(within(dialog).getByRole("button", { name: "Transfer ownership" }));
+
+      await waitFor(() =>
+        expect(mocks.transferOwnership).toHaveBeenCalledWith({
+          tokenAddress: ADDRESS,
+          ownerAddress: OWNER,
+          newOwnerAddress: OTHER,
+          includeAuthorization: false,
+        }),
+      );
+    } finally {
+      mocks.safeSigners = [];
+    }
+  });
 });
 
 describe("VoucherDetailPage retirement requests", () => {
