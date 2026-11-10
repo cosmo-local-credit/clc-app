@@ -289,10 +289,11 @@ const SEED = { candidate: CANDIDATE, exchangeRate: "2.5", creditLimit: "500" } a
 function approveSheet(
   approveSeed: { candidate: `0x${string}`; exchangeRate?: string; creditLimit?: string } | null,
   poolVouchers: PoolVoucher[] = [],
+  poolOverrides: Partial<UserPool> = {},
 ) {
   return (
     <PoolVoucherSheet
-      pool={pool()}
+      pool={pool(poolOverrides)}
       poolVouchers={poolVouchers}
       voucher={null}
       approveSeed={approveSeed}
@@ -379,12 +380,26 @@ describe("PoolVoucherSheet from a steward-approve link", () => {
     expect(field(screen.getByRole("dialog"), "Exchange rate").value).toBe("2.5");
   });
 
-  it("shows the already-approved block for a voucher in the pool's catalog, and seeds nothing", async () => {
-    renderSheet(approveSheet(SEED, [poolVoucher({ tokenAddress: CANDIDATE, id: "v2" })]));
+  it("falls back to the catalog's rows for a pool without a registry", async () => {
+    renderSheet(
+      approveSheet(SEED, [poolVoucher({ tokenAddress: CANDIDATE, id: "v2" })], {
+        tokenRegistryAddress: null,
+      }),
+    );
 
     const dialog = await screen.findByRole("dialog");
     expect(await within(dialog).findByText("This voucher is already approved.")).toBeTruthy();
     expect(within(dialog).queryByLabelText("Exchange rate")).toBeNull();
+  });
+
+  it("trusts the registry over a stale catalog row for a voucher just removed", async () => {
+    mocks.membership = { data: false, isPending: false, isError: false, refetch: vi.fn() };
+    renderSheet(approveSheet(SEED, [poolVoucher({ tokenAddress: CANDIDATE, id: "v2" })]));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(await within(dialog).findByText("1 JUAN")).toBeTruthy();
+    expect(within(dialog).queryByText("This voucher is already approved.")).toBeNull();
+    expect(field(dialog, "Exchange rate").value).toBe("2.5");
   });
 
   it("shows the block for a registry member too", async () => {
