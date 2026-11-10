@@ -22,6 +22,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const mocks = vi.hoisted(() => ({
   auth: { signedIn: true },
   deployVoucher: vi.fn(),
+  deployPool: vi.fn(),
 }));
 
 vi.mock("wagmi", () => ({
@@ -52,7 +53,7 @@ vi.mock("#/features/vouchers/hooks/use-voucher-deployment", async (importOrigina
 }));
 vi.mock("#/features/pools/hooks/use-pool-deployment", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  useDeployPool: () => ({ error: null, isPending: false, mutateAsync: vi.fn() }),
+  useDeployPool: () => ({ error: null, isPending: false, mutateAsync: mocks.deployPool }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: { email: "", phone: "" } }),
@@ -90,6 +91,7 @@ vi.mock("#/lib/api/names", () => ({
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { CreatePoolFlow, type PoolCreateStep } from "#/features/pools/ui";
 import { CreateVoucherFlow, type VoucherCreateStep } from "#/features/vouchers/ui";
+import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { carriesPrefill, useCreatePrefill } from "#/lib/navigation/create-prefill";
 import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
@@ -211,6 +213,7 @@ beforeEach(() => {
   resetPoolCreateHistory();
   clearViewDrafts();
   useVoucherCreateDraft.getState().clearDraft();
+  usePoolCreateDraft.getState().clearDraft();
   vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
 });
 
@@ -285,6 +288,46 @@ describe("creation-prefill links", () => {
     history.back();
     await screen.findByRole("heading", { name: "All vouchers" });
     expect(history.location.pathname).toBe("/wallet/vouchers");
+  });
+
+  it("keeps the retry snapshot a prefilled voucher publish wrote when the deploy fails", async () => {
+    mocks.deployVoucher.mockRejectedValue(new Error("relay down"));
+    await renderApp(["/wallet/vouchers", LINK]);
+    await screen.findByRole("heading", { name: "Create voucher" });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByRole("heading", { name: "Where and what for" });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByRole("heading", { name: "Confirm & publish" });
+    fireEvent.click(screen.getAllByRole("checkbox").at(-1) as HTMLElement);
+    fireEvent.click(screen.getByRole("button", { name: /Confirm (&|and) Publish/i }));
+
+    await waitFor(() => expect(mocks.deployVoucher).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(useVoucherCreateDraft.getState().draft).toMatchObject({
+        name: "Mama Mboga",
+        price: "50",
+      }),
+    );
+  });
+
+  it("keeps the retry snapshot a prefilled pool publish wrote when the deploy fails", async () => {
+    mocks.deployPool.mockRejectedValue(new Error("relay down"));
+    await renderApp([
+      "/pools/create/pool?v=1&name=Kibera+Growers&symbol=KBG&description=Growers+in+Kibera." +
+        "&locationName=Kibera&lat=-1.3133&lng=36.7876&country=KE",
+    ]);
+    await screen.findByRole("heading", { name: "Create pool" });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByRole("heading", { name: "Where and what for" });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    const terms = await screen.findByRole("checkbox", { name: /Accept Terms/ });
+    fireEvent.click(terms);
+    fireEvent.click(screen.getByRole("button", { name: /Confirm (&|and) Publish/i }));
+
+    await waitFor(() => expect(mocks.deployPool).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(usePoolCreateDraft.getState().draft).toMatchObject({ name: "Kibera Growers" }),
+    );
   });
 
   it("brings a signed-out person back to a prefilled step 1 after sign-in", async () => {

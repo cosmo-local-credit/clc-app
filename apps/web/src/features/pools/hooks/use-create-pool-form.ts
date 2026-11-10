@@ -346,9 +346,11 @@ export function useCreatePoolForm({
     }
   }, [activeChainId, draft, form, linked, profileQuery.data, restored]);
 
+  // Once, when the link is consumed: publishing writes a fresh snapshot while
+  // `linked` is still set, and that one must survive a failed deploy.
   useEffect(() => {
-    if (linked && storedDraft) clearDraft();
-  }, [clearDraft, linked, storedDraft]);
+    if (linked) clearDraft();
+  }, [clearDraft, linked]);
 
   // A linked fee above zero gets the recipient a typed one would: the connected
   // wallet. Never from the link, which could otherwise send the fees elsewhere.
