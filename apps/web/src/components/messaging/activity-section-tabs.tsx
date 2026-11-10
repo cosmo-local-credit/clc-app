@@ -4,6 +4,7 @@ import type { MouseEvent } from "react";
 
 import { UnreadCount, UnreadCountLabel } from "#/components/ui/unread-count";
 import type { ActivitySection } from "#/lib/navigation/activity-search";
+import { ACTIVITY_SECTION_ICONS } from "#/lib/navigation/activity-section-icons";
 import { cn } from "#/lib/utils";
 
 export type ActivitySectionCounts = Partial<Record<ActivitySection, number>>;
@@ -35,6 +36,7 @@ export function ActivitySectionTabs({
       {sections.map((section) => {
         const active = section === current;
         const count = counts[section] ?? 0;
+        const Icon = ACTIVITY_SECTION_ICONS[section];
         return (
           <Link
             key={section}
@@ -54,6 +56,7 @@ export function ActivitySectionTabs({
               active && "bg-foreground font-semibold text-background",
             )}
           >
+            <Icon aria-hidden="true" className="size-3.5 shrink-0" />
             <span className="truncate">
               {labels[section]}
               <UnreadCountLabel count={count} />

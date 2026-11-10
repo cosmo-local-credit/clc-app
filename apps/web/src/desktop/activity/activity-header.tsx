@@ -7,6 +7,7 @@ import { DeskTab, DeskTabs } from "#/desktop/ui/tabs";
 import { DeskTitleRow } from "#/desktop/ui/page";
 import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import { ACTIVITY_SECTIONS, type ActivitySection } from "#/lib/navigation/activity-search";
+import { ACTIVITY_SECTION_ICONS } from "#/lib/navigation/activity-section-icons";
 
 /**
  * Activity's title and, with messaging on, its four sections. Each section is
@@ -58,6 +59,7 @@ function ActivitySectionTabs({
       {ACTIVITY_SECTIONS.map((section) => {
         const active = section === current;
         const count = sectionCounts[section];
+        const Icon = ACTIVITY_SECTION_ICONS[section];
         return (
           <DeskTab key={section} active={active}>
             <Link
@@ -80,6 +82,7 @@ function ActivitySectionTabs({
               }}
               className="inline-flex items-center gap-1.5"
             >
+              <Icon aria-hidden="true" className="size-4 shrink-0" />
               <span>
                 {labels[section]}
                 <UnreadCountLabel count={count} />
