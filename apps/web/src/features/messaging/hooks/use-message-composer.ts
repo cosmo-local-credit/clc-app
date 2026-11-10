@@ -38,11 +38,19 @@ export function useMessageComposer(conversationId: number) {
   const upload = useImageUpload();
   const [body, setBody] = useState("");
   const [images, setImages] = useState<ComposerImage[]>([]);
-  const [imageError, setImageError] = useState<ComposerImageError | null>(null);
+  const [unsupported, setUnsupported] = useState(false);
   const pending = useRef<{ key: string; clientId: string } | null>(null);
   const previews = useRef(new Set<string>());
 
   const uploading = images.some((image) => image.url === null && !image.failed);
+  // A failed photo blocks the send until it is removed: sending the rest would
+  // drop it from the draft without the person choosing that.
+  const uploadFailed = images.some((image) => image.failed);
+  const imageError: ComposerImageError | null = uploadFailed
+    ? "upload-failed"
+    : unsupported
+      ? "unsupported"
+      : null;
   const content = buildMessageContent(
     body,
     images.flatMap((image) => (image.url ? [image.url] : [])),
@@ -85,7 +93,7 @@ export function useMessageComposer(conversationId: number) {
   }
 
   function submit() {
-    if (!content || !contentKey || uploading || send.isPending) return;
+    if (!content || !contentKey || uploading || uploadFailed || send.isPending) return;
     if (pending.current?.key !== contentKey) {
       pending.current = { key: contentKey, clientId: crypto.randomUUID() };
     }
@@ -95,10 +103,10 @@ export function useMessageComposer(conversationId: number) {
   async function addImage(file: File) {
     if (images.length >= MESSAGE_IMAGE_MAX) return;
     if (!checkImageFile(file).ok) {
-      setImageError("unsupported");
+      setUnsupported(true);
       return;
     }
-    setImageError(null);
+    setUnsupported(false);
     const key = crypto.randomUUID().replaceAll("-", "");
     const previewUrl = URL.createObjectURL(file);
     previews.current.add(previewUrl);
@@ -109,7 +117,6 @@ export function useMessageComposer(conversationId: number) {
         current.map((image) => (image.key === key ? { ...image, url: stored.url } : image)),
       );
     } catch {
-      setImageError("upload-failed");
       setImages((current) =>
         current.map((image) => (image.key === key ? { ...image, failed: true } : image)),
       );
@@ -133,7 +140,7 @@ export function useMessageComposer(conversationId: number) {
     removeImage,
     canAddImage: isStorageConfigured && images.length < MESSAGE_IMAGE_MAX,
     uploading,
-    canSend: content !== null && !uploading && !send.isPending,
+    canSend: content !== null && !uploading && !uploadFailed && !send.isPending,
     submit,
     send,
   };
