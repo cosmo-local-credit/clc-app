@@ -164,10 +164,14 @@ export function usePoolVoucherEditor({
   const membershipRequired = !voucher && poolTokenRegistryAddress(pool) !== null;
   const membershipPending = membershipRequired && membership.isPending;
   const membershipUnread = membershipRequired && membership.isError;
+  // The registry is authoritative where there is one: the catalog can still list
+  // a voucher just removed from it. Only a pool without a registry falls back to
+  // the catalog's rows.
   const approvalAlreadyRegistered =
     !voucher &&
-    (membership.data === true ||
-      (selected !== null && approvedCatalog.some((row) => row.tokenAddress === selected.address)));
+    (membershipRequired
+      ? membership.data === true
+      : selected !== null && approvedCatalog.some((row) => row.tokenAddress === selected.address));
   // Only register on a positive "not a member". An unread membership defaults to
   // not registering, because a redundant `add` reverts the whole batch while a
   // missing one merely leaves the voucher unlisted and re-approvable.
