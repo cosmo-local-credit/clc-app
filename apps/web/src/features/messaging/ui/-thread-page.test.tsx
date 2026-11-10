@@ -175,6 +175,30 @@ describe("ThreadPage", () => {
     expect(mocks.markRead).toHaveBeenCalledOnce();
   });
 
+  it("retries a failed read marker even when the polls that follow are unchanged", async () => {
+    mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));
+    mocks.messages.mockResolvedValue({ items: [message(1), message(2)], hasMore: false });
+    mocks.markRead.mockRejectedValueOnce(new BackendApiError(503, "unavailable"));
+    const client = mount();
+    await screen.findByText("Message 2");
+    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledOnce());
+    // An identical poll keeps every effect dependency equal.
+    await act(() => client.refetchQueries({ type: "active" }));
+    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledTimes(2), { timeout: 3_000 });
+    expect(mocks.markRead).toHaveBeenLastCalledWith(5, 2);
+  });
+
+  it("does not retry a read marker the server rejected", async () => {
+    mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));
+    mocks.messages.mockResolvedValue({ items: [message(1), message(2)], hasMore: false });
+    mocks.markRead.mockRejectedValueOnce(new BackendApiError(403, "forbidden"));
+    mount();
+    await screen.findByText("Message 2");
+    await waitFor(() => expect(mocks.markRead).toHaveBeenCalledOnce());
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    expect(mocks.markRead).toHaveBeenCalledOnce();
+  });
+
   it("waits for a newly arrived message to be on screen before marking it read", async () => {
     const observer = stubIntersectionObserver();
     mocks.get.mockResolvedValue(conversation({ lastReadMessageId: 1, unreadCount: 1 }));

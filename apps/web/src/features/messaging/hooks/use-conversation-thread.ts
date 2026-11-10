@@ -1,4 +1,8 @@
-import { transientBackendReadQueryPolicy } from "@clc/api/client/errors";
+import {
+  backendRetryDelayMs,
+  BackendApiError,
+  transientBackendReadQueryPolicy,
+} from "@clc/api/client/errors";
 import {
   conversationMessagesQueryOptions,
   conversationQueryOptions,
@@ -13,6 +17,7 @@ import { messagingClient } from "#/lib/api/messaging";
 import { useMessagingViewer } from "./use-messaging-viewer";
 
 const THREAD_POLL_MS = 5_000;
+const READ_MARKER_RETRY_MAX_MS = 30_000;
 
 /** Polls while the document is visible, and refreshes on focus and reconnect. */
 const threadRefreshPolicy = {
@@ -62,6 +67,10 @@ export function useConversationThread(conversationId: number) {
  * message it has observed on screen, or undefined. Visibility belongs to that
  * id, so a message that arrives while its predecessor is on screen is not read
  * until the observer reports it too.
+ *
+ * A transient failure schedules its own retry with backoff. Waiting for the
+ * effect to run again is not enough: an unchanged poll keeps every dependency
+ * equal, so the badge would stay until another message or visibility change.
  */
 export function useMarkConversationRead(
   conversation: Conversation | undefined,
@@ -71,6 +80,7 @@ export function useMarkConversationRead(
   const [onScreenId, setOnScreenId] = useState<number | undefined>(undefined);
   const queryClient = useQueryClient();
   const sent = useRef<number | null>(null);
+  const [retry, setRetry] = useState<{ attempt: number; at: number } | null>(null);
   const markRead = useMutation({
     mutationFn: ({ id, messageId }: { id: number; messageId: number }) =>
       messagingClient.markRead(id, messageId),
@@ -88,9 +98,25 @@ export function useMarkConversationRead(
       void queryClient.invalidateQueries({ queryKey: messagingKeys.unread(viewer) });
       void queryClient.invalidateQueries({ queryKey: messagingKeys.lists(viewer) });
     },
-    onError: () => {
-      // Let the next render try again.
+    onSettled: (_result, error) => {
+      if (!error) {
+        setRetry(null);
+        return;
+      }
+      // Clear the latch so the effect may send this id again.
       sent.current = null;
+      const transient =
+        error instanceof BackendApiError &&
+        (error.kind === "network" || error.kind === "server" || error.kind === "rate-limited");
+      setRetry((current) => {
+        if (!transient) return null;
+        const attempt = (current?.attempt ?? -1) + 1;
+        return {
+          attempt,
+          // Absolute, so a dependency change while waiting does not restart the wait.
+          at: Date.now() + Math.min(backendRetryDelayMs(error, attempt), READ_MARKER_RETRY_MAX_MS),
+        };
+      });
     },
   });
   const target =
@@ -106,10 +132,16 @@ export function useMarkConversationRead(
       sent.current = target;
       mutate({ id: conversation.id, messageId: target });
     };
-    attempt();
+    const timer = retry
+      ? window.setTimeout(attempt, Math.max(0, retry.at - Date.now()))
+      : undefined;
+    if (!retry) attempt();
     document.addEventListener("visibilitychange", attempt);
-    return () => document.removeEventListener("visibilitychange", attempt);
-  }, [conversation, mutate, target]);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", attempt);
+    };
+  }, [conversation, mutate, target, retry]);
 
   return setOnScreenId;
 }
