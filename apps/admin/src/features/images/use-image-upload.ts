@@ -20,5 +20,5 @@ export function useImageUpload() {
   const session = useAdminSession();
   const identity = session.status === "authenticated" ? session.operator.address : "";
 
-  return useMutation(uploadImageMutationOptions(clcApi.auth, storageClient(), identity));
+  return useMutation(uploadImageMutationOptions(clcApi.auth, storageClient, identity));
 }
