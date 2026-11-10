@@ -23,10 +23,12 @@ import {
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
+import { type PoolPrefill, poolPrefillForChain } from "@clc/core/features/pools/prefill";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
-import { useForm } from "@clc/core/lib/forms";
+import { useForm, useStore } from "@clc/core/lib/forms";
 import type { UnitOfAccount } from "@clc/core/lib/currencies";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
+import { imageImportUploadId } from "@clc/api/features/images/client";
 import { useLingui } from "@lingui/react/macro";
 import { useIsMutating } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -36,6 +38,7 @@ import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { type PendingImageImport, useImageImport } from "#/features/images/use-image-import";
 import { deployPoolMutationKey, useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
@@ -56,6 +59,8 @@ type PoolFormValues = Omit<PoolCreateInput, "location" | "acceptedTerms"> & {
   location: LocationInput | undefined;
   /** Form-only: whether `terms` is a link or the terms themselves. */
   termsMode: "url" | "text";
+  /** Form-only: the logo import a prefill link started, until it lands or is replaced. */
+  imageImport: PendingImageImport | null;
   acceptedTerms: boolean;
 };
 
@@ -76,8 +81,30 @@ const DEFAULT_VALUES: PoolFormValues = {
   terms: "",
   termsMode: "url",
   imageUrl: "",
+  imageImport: null,
   acceptedTerms: false,
 };
+
+/**
+ * The form a link opens: the defaults with the link's fields over them, after
+ * the chain's rules. The image source becomes a pending import, never an
+ * `imageUrl`, and only where the upload fields are rendered.
+ */
+function poolFormFromPrefill(prefill: PoolPrefill, chainId: number): PoolFormValues {
+  const { imageSource, terms, ...fields } = poolPrefillForChain(prefill, chainId, DEFAULT_VALUES);
+  return {
+    ...DEFAULT_VALUES,
+    ...fields,
+    ...(terms ? { terms, termsMode: "url" as const } : {}),
+    imageImport:
+      imageSource && isStorageConfigured
+        ? { source: imageSource, uploadId: imageImportUploadId(imageSource) }
+        : null,
+  };
+}
+
+/** Prefill fields folded under "Advanced", which a link opens on arrival. */
+const ADVANCED_PREFILL = ["symbol", "feePolicyDefault", "feesDecoupled"] as const;
 
 /**
  * Keep completed logo URLs and removals along with the written fields. Local
@@ -118,9 +145,12 @@ const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "imageUr
  */
 export function useCreatePoolForm({
   step,
+  prefill,
   revealAdvanced,
 }: {
   step: PoolCreateStep;
+  /** A v1 link's fields, read by the route. Applied on the first step only. */
+  prefill?: PoolPrefill | null;
   revealAdvanced: () => void;
 }) {
   const { t } = useLingui();
@@ -140,14 +170,25 @@ export function useCreatePoolForm({
   const usage = useResourceUsage();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
-  const draft = usePoolCreateDraft((state) => state.draft);
+  const storedDraft = usePoolCreateDraft((state) => state.draft);
   const setDraft = usePoolCreateDraft((state) => state.setDraft);
+  const clearDraft = usePoolCreateDraft((state) => state.clearDraft);
   const viewDraft = useViewDraft<PoolFormDraft>({ scope: "pool-create", account: address });
   const restored = viewDraft.restored;
+  // Seeding order: a view draft (the newest typing), then a link, then a retry
+  // snapshot, then the profile, then defaults. A link is read once, at mount,
+  // and only on the first step: a later step reached with one was sent back.
+  const [linked] = useState(() =>
+    !restored && step === "pool" && prefill
+      ? poolPrefillForChain(prefill, activeChainId, DEFAULT_VALUES)
+      : null,
+  );
+  // A link opened on purpose replaces whatever a failed publish left behind.
+  const draft = linked ? null : storedDraft;
   const hasPrefilledProfile = useRef(false);
   const suggestedSymbol = useSuggestedSymbol({
     kind: "pool",
-    initialSymbol: restored?.symbol ?? draft?.symbol ?? "",
+    initialSymbol: restored?.symbol ?? linked?.symbol ?? draft?.symbol ?? "",
   });
   const checkNameAvailable = useNameAvailabilityValidator("pool");
   const [logoBusy, setLogoBusy] = useState(false);
@@ -156,13 +197,22 @@ export function useCreatePoolForm({
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
   const [pristine] = useState<PoolFormValues>(() =>
-    draft
-      ? {
-          ...draft,
-          termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
-          acceptedTerms: false,
-        }
-      : { ...DEFAULT_VALUES, pricing: defaultPricing },
+    linked
+      ? poolFormFromPrefill(linked, activeChainId)
+      : draft
+        ? {
+            ...draft,
+            termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+            imageImport: null,
+            acceptedTerms: false,
+          }
+        : { ...DEFAULT_VALUES, pricing: defaultPricing },
+  );
+  // What the view-draft bridge compares against: the form without the link. A
+  // prefilled form differs from it from its first render, so a layout switch
+  // after Next has dropped the params still carries it.
+  const [baseline] = useState<PoolFormValues>(() =>
+    linked ? { ...DEFAULT_VALUES, pricing: defaultPricing } : pristine,
   );
   const form = useForm({
     // A draft carried over a view swap is newer than a retry snapshot: it holds
@@ -184,6 +234,7 @@ export function useCreatePoolForm({
     },
     onSubmit: async ({ value }) => {
       if (inFlight || usage.isError || !usage.data?.pools.canCreate) return;
+      if (value.imageImport !== null) return;
       if (!address || chainId === undefined) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
@@ -244,9 +295,13 @@ export function useCreatePoolForm({
     hasPrefilledProfile.current = true;
 
     const prefill = profilePrefill(profile);
+    // The profile fills gaps only: anything the link set is the link's, even a
+    // value equal to the default.
+    const fromLink = new Set<string>(Object.keys(linked ?? {}));
+    if (linked?.imageSource) fromLink.add("imageUrl");
 
     function seedText(name: SeedableTextField, value: string) {
-      if (!value) return;
+      if (!value || fromLink.has(name)) return;
       if (form.getFieldMeta(name)?.isTouched) return;
       if (form.getFieldValue(name) !== "") return;
       form.setFieldValue(name, value, { dontUpdateMeta: true });
@@ -274,6 +329,7 @@ export function useCreatePoolForm({
     ).safeParse(prefill.unitOfAccount);
     if (
       preferredUnit.success &&
+      !fromLink.has("unitOfAccount") &&
       !form.getFieldMeta("unitOfAccount")?.isTouched &&
       form.getFieldValue("unitOfAccount") === DEFAULT_VALUES.unitOfAccount
     ) {
@@ -282,18 +338,31 @@ export function useCreatePoolForm({
 
     if (
       prefill.location &&
+      !fromLink.has("location") &&
       !form.getFieldMeta("location")?.isTouched &&
       form.getFieldValue("location") === undefined
     ) {
       form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
     }
-  }, [activeChainId, draft, form, profileQuery.data, restored]);
+  }, [activeChainId, draft, form, linked, profileQuery.data, restored]);
+
+  useEffect(() => {
+    if (linked && storedDraft) clearDraft();
+  }, [clearDraft, linked, storedDraft]);
+
+  // A linked fee above zero gets the recipient a typed one would: the connected
+  // wallet. Never from the link, which could otherwise send the fees elsewhere.
+  useEffect(() => {
+    if (!linked || !address || Number(form.getFieldValue("feePolicyDefault")) <= 0) return;
+    if (form.getFieldValue("feeAddress") !== "") return;
+    form.setFieldValue("feeAddress", getAddress(address), { dontUpdateMeta: true });
+  }, [address, form, linked]);
 
   // Keep the typed fields for a phone/desktop view swap while they differ from
   // how the form opened; forget them when they are back to that.
   const { save: saveViewDraft, clear: clearViewDraft } = viewDraft;
   useEffect(() => {
-    const opened = JSON.stringify(poolDraftOf(pristine));
+    const opened = JSON.stringify(poolDraftOf(baseline));
     let seen: unknown;
     const sync = () => {
       const { values } = form.store.state;
@@ -308,12 +377,14 @@ export function useCreatePoolForm({
     sync();
     const subscription = form.store.subscribe(sync);
     return () => subscription.unsubscribe();
-  }, [clearViewDraft, form, pristine, saveViewDraft]);
+  }, [baseline, clearViewDraft, form, saveViewDraft]);
 
   useEffect(() => {
     // Advanced is a fold each view keeps for itself; a draft carried over a view
     // swap may hold values inside it, so open it, once, on arrival.
-    if (restored) revealAdvanced();
+    if (restored || ADVANCED_PREFILL.some((field) => linked?.[field] !== undefined)) {
+      revealAdvanced();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
   }, []);
 
@@ -326,6 +397,39 @@ export function useCreatePoolForm({
     if (poolNameSchema.safeParse(form.getFieldValue("name")).success) return;
     void navigate({ to: "/pools/create/$step", params: { step: "pool" }, replace: true });
   }, [form, navigate, step]);
+
+  const imageImport = useStore(form.store, (state) => state.values.imageImport);
+  const [logoImportFailed, setLogoImportFailed] = useState(false);
+  useImageImport({
+    purpose: "pool.image",
+    pending: imageImport,
+    onImported: (url) => {
+      form.setFieldValue("imageUrl", url, { dontUpdateMeta: true });
+      form.setFieldValue("imageImport", null, { dontUpdateMeta: true });
+    },
+    onFailed: () => {
+      form.setFieldValue("imageImport", null, { dontUpdateMeta: true });
+      setLogoImportFailed(true);
+    },
+  });
+
+  /** The person's own choice of logo wins over an import still running. */
+  function changeLogo(url: string | null) {
+    form.setFieldValue("imageImport", null);
+    setLogoImportFailed(false);
+    form.setFieldValue("imageUrl", url ?? "");
+  }
+
+  /** The upload field's own busy state; an upload starting also drops a running import. */
+  function reportLogoBusy(busy: boolean) {
+    setLogoBusy(busy);
+    if (!busy) return;
+    if (form.getFieldValue("imageImport") !== null) form.setFieldValue("imageImport", null);
+    setLogoImportFailed(false);
+  }
+
+  /** An upload or an import is still to land; Next and publish wait on both. */
+  const logoPending = logoBusy || imageImport !== null;
 
   async function fieldsAreValid(fields: readonly (keyof PoolFormValues)[]) {
     const results = await Promise.all(
@@ -406,7 +510,7 @@ export function useCreatePoolForm({
   }
 
   async function goToReview() {
-    if (logoBusy) return;
+    if (logoPending) return;
     if (!(await fieldsAreValid(PLACE_FIELDS))) return;
     void navigate({ to: "/pools/create/$step", params: { step: "review" } });
   }
@@ -445,8 +549,11 @@ export function useCreatePoolForm({
     inFlight,
     tagsQuery,
     advancing,
-    logoBusy,
-    setLogoBusy,
+    /** A logo upload or import is in flight. */
+    logoBusy: logoPending,
+    setLogoBusy: reportLogoBusy,
+    changeLogo,
+    logoImportFailed,
     canPublish: !usage.isError && Boolean(usage.data?.pools.canCreate),
     fillSuggestedSymbol,
     suggestSymbolFor,
