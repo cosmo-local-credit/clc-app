@@ -17,7 +17,8 @@ import {
  * registration until the sheet is downloaded — a reload mid-batch can leave
  * accounts registered whose keys nobody holds. Pool and voucher publishing
  * track the deployment with queries after the deploy mutation settles. The post
- * editor keeps its draft in form state.
+ * editor keeps its draft in form state, and a helpdesk thread its unsent reply
+ * and uploaded photos.
  */
 const RELOAD_UNSAFE_ROUTES: ReadonlySet<string> = new Set([
   "/_shell/paper-wallets",
@@ -26,6 +27,7 @@ const RELOAD_UNSAFE_ROUTES: ReadonlySet<string> = new Set([
   "/_shell/vouchers/publish",
   "/_shell/posts/new",
   "/_shell/posts/$reportId/edit",
+  "/_shell/helpdesk/$conversationId",
 ] satisfies (keyof FileRoutesById)[]);
 
 function onReloadUnsafeRoute(matches: readonly { routeId: string }[]): boolean {

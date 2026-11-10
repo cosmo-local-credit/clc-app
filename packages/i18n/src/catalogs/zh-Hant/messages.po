@@ -76,8 +76,8 @@ msgstr "{count, plural, other {# 篇貼文}}"
 #~ msgstr "選擇首選貨幣"
 
 #. placeholder {0}: activity.length
-#: apps/web/src/desktop/activity/activity-desk.tsx:465
-#: apps/web/src/features/home/ui/activity-page.tsx:151
+#: apps/web/src/desktop/activity/transactions-desk.tsx:473
+#: apps/web/src/features/home/ui/activity-page.tsx:157
 msgid "{0, plural, one {# activity item shown.} other {# activity items "
 "shown.}}"
 msgstr "{0, plural, other {已顯示 # 項活動。}}"
@@ -439,11 +439,11 @@ msgstr "資金池將代金券結合在一起，因此成員可以按已發佈的
 #~ msgid "A service"
 #~ msgstr "服務"
 
-#: apps/web/src/routes/__root.tsx:363
+#: apps/web/src/routes/__root.tsx:365
 msgid "A sign-in card link was opened. Sign in to this wallet?"
 msgstr "登入卡連結已開啟。用這個地址登入？"
 
-#: apps/web/src/routes/__root.tsx:361
+#: apps/web/src/routes/__root.tsx:363
 msgid "A sign-in card was scanned. Switch to this wallet?"
 msgstr "已掃描登入卡。切換到此錢包？"
 
@@ -489,6 +489,8 @@ msgid "About Cosmo-Local Credit"
 msgstr "關於 Cosmo-Local Credit"
 
 #: apps/web/src/components/terms-acceptance-field.tsx:29
+#: apps/web/src/desktop/messaging/thread-desk.tsx:177
+#: apps/web/src/features/messaging/ui/thread-page.tsx:100
 msgid "Accept"
 msgstr "接受"
 
@@ -560,31 +562,37 @@ msgstr "啟用"
 #: apps/web/src/components/market-bar.tsx:334
 #: apps/web/src/components/navigation/bottom-navigation.tsx:55
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:177
-#: apps/web/src/desktop/activity/activity-desk.tsx:340
-#: apps/web/src/desktop/activity/activity-desk.tsx:505
+#: apps/web/src/desktop/activity/activity-header.tsx:29
+#: apps/web/src/desktop/activity/transactions-desk.tsx:513
 #: apps/web/src/desktop/market/place-panel.tsx:62
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:221
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:877
 #: apps/web/src/desktop/pools/pool-main.tsx:440
 #: apps/web/src/desktop/shell/crumbs.tsx:16
-#: apps/web/src/desktop/shell/sidebar.tsx:133
+#: apps/web/src/desktop/shell/sidebar.tsx:134
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:167
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:200
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:467
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:472
-#: apps/web/src/features/home/ui/activity-page.tsx:102
-#: apps/web/src/features/home/ui/activity-page.tsx:145
+#: apps/web/src/features/home/ui/activity-inbox.tsx:59
+#: apps/web/src/features/home/ui/activity-page.tsx:107
+#: apps/web/src/features/home/ui/activity-page.tsx:151
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:71
 msgid "Activity"
 msgstr "活動"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 msgid "Activity not found."
 msgstr "找不到活動。"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:136
+#: apps/web/src/components/messaging/activity-section-tabs.tsx:32
+#: apps/web/src/desktop/activity/activity-header.tsx:57
+msgid "Activity sections"
+msgstr "活動分區"
+
+#: apps/web/src/desktop/shell/sidebar.tsx:137
 msgid "Activity, {unreadActivity, plural, one {# new} other {# new}}"
 msgstr "活動，{unreadActivity, plural, other {# 則新}}"
 
@@ -633,6 +641,8 @@ msgid "Add a phone number to your profile to use MPESA."
 msgstr "將電話號碼新增到您的個人資料中以使用 MPESA。"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:66
+#: apps/web/src/desktop/messaging/composer-desk.tsx:80
+#: apps/web/src/features/messaging/ui/message-composer.tsx:93
 msgid "Add a photo"
 msgstr "新增照片"
 
@@ -764,8 +774,8 @@ msgid "Address book"
 msgstr "地址簿"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:588
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:31
 #: apps/web/src/desktop/wallet/receive-desk.tsx:47
@@ -821,7 +831,7 @@ msgstr "農業"
 
 #: apps/web/src/components/market-bar.tsx:205
 #: apps/web/src/components/market-bar.tsx:264
-#: apps/web/src/desktop/activity/activity-desk.tsx:350
+#: apps/web/src/desktop/activity/transactions-desk.tsx:358
 #: apps/web/src/desktop/market/market-toolbar.tsx:31
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:964
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:399
@@ -845,8 +855,8 @@ msgstr "全部資金池"
 msgid "All selected"
 msgstr "全部選中"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:412
-#: apps/web/src/desktop/activity/activity-desk.tsx:416
+#: apps/web/src/desktop/activity/transactions-desk.tsx:420
+#: apps/web/src/desktop/activity/transactions-desk.tsx:424
 msgid "All time"
 msgstr "全部時間"
 
@@ -879,7 +889,7 @@ msgstr "傳送前請務必確認代幣和網路相符。"
 #~ msgstr "始終努力登入並恢復此錢包。確保安全。"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/desktop/activity/activity-desk.tsx:294
+#: apps/web/src/desktop/activity/transactions-desk.tsx:302
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:395
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:919
@@ -956,7 +966,7 @@ msgstr "另一項卡片掃描正在進行。請重試。"
 msgid "Any selected"
 msgstr "任意選擇"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:389
+#: apps/web/src/desktop/activity/transactions-desk.tsx:397
 msgid "Any voucher"
 msgstr "任何代金券"
 
@@ -1037,6 +1047,16 @@ msgstr "您確定要申請停用此代金券嗎？"
 msgid "Art"
 msgstr "藝術"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:124
+#: apps/web/src/features/messaging/ui/thread-page.tsx:211
+msgid "Ask Support anything."
+msgstr "有任何問題都可以問客服。"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:229
+#: apps/web/src/features/messaging/ui/thread-page.tsx:156
+msgid "Ask to talk again"
+msgstr "請求重新溝通"
+
 #: apps/web/src/features/home/ui/report-page.tsx:528
 #~ msgid "Author"
 #~ msgstr "作者"
@@ -1072,10 +1092,12 @@ msgstr "等待批准"
 
 #: apps/web/src/components/introduction/introduction.tsx:121
 #: apps/web/src/components/market-search.tsx:159
+#: apps/web/src/components/messaging/new-message-sheet.tsx:157
 #: apps/web/src/components/paper-wallet-scanner.tsx:119
 #: apps/web/src/components/paper-wallet-scanner.tsx:143
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:84
 #: apps/web/src/desktop/market/place-panel.tsx:122
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:91
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:171
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:249
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:410
@@ -1160,6 +1182,18 @@ msgstr "簡介不得超過 500 個字元"
 msgid "Biodiversity"
 msgstr "生物多樣性"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:186
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:184
+msgid "Block"
+msgstr "封鎖"
+
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:138
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:90
+msgid "Block this person?"
+msgstr "封鎖此人？"
+
 #: apps/web/src/features/home/hooks/use-notification-settings.tsx:197
 msgid "Blocked"
 msgstr "已封鎖"
@@ -1241,6 +1275,7 @@ msgstr "相機存取被拒絕。"
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:434
 #: apps/web/src/desktop/account/profile-desk.tsx:443
 #: apps/web/src/desktop/account/settings-desk.tsx:176
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:172
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:365
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:434
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:465
@@ -1259,6 +1294,7 @@ msgstr "相機存取被拒絕。"
 #: apps/web/src/desktop/wants/want-form-desk.tsx:376
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:175
 #: apps/web/src/features/home/ui/settings-page.tsx:154
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:191
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:120
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:380
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:230
@@ -1268,7 +1304,7 @@ msgstr "相機存取被拒絕。"
 #: apps/web/src/features/wallet/ui/collect-page.tsx:231
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:357
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:88
-#: apps/web/src/routes/__root.tsx:378
+#: apps/web/src/routes/__root.tsx:380
 msgid "Cancel"
 msgstr "取消"
 
@@ -1718,7 +1754,7 @@ msgid "Clear filter"
 msgstr "清除篩選條件"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:115
-#: apps/web/src/desktop/activity/activity-desk.tsx:532
+#: apps/web/src/desktop/activity/transactions-desk.tsx:540
 #: apps/web/src/desktop/market/market-list-desk.tsx:410
 #: apps/web/src/desktop/market/market-notices.tsx:198
 #: apps/web/src/desktop/market/market-notices.tsx:266
@@ -1728,7 +1764,7 @@ msgstr "清除篩選條件"
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:37
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:46
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:56
-#: apps/web/src/features/home/ui/activity-page.tsx:177
+#: apps/web/src/features/home/ui/activity-page.tsx:183
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:32
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:42
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:59
@@ -1755,10 +1791,10 @@ msgstr "清除位置"
 #: apps/web/src/components/catalog-filter-controls.tsx:476
 #: apps/web/src/components/market-search.tsx:73
 #: apps/web/src/components/market-search.tsx:180
-#: apps/web/src/desktop/activity/activity-desk.tsx:445
+#: apps/web/src/desktop/activity/transactions-desk.tsx:453
 #: apps/web/src/desktop/market/market-search-field.tsx:131
 #: apps/web/src/desktop/market/market-toolbar.tsx:299
-#: apps/web/src/features/home/ui/activity-page.tsx:126
+#: apps/web/src/features/home/ui/activity-page.tsx:132
 msgid "Clear search"
 msgstr "清除搜尋"
 
@@ -1833,8 +1869,8 @@ msgid "Collaboration"
 msgstr "協作"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:185
-#: apps/web/src/desktop/shell/sidebar.tsx:189
+#: apps/web/src/desktop/shell/sidebar.tsx:186
+#: apps/web/src/desktop/shell/sidebar.tsx:190
 msgid "Collapse"
 msgstr "收起"
 
@@ -1983,9 +2019,9 @@ msgstr "請使用通行金鑰確認。您的舊卡將無法再於任何裝置上
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:280
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -2054,14 +2090,14 @@ msgstr "正在連線錢包…"
 #: apps/web/src/desktop/account/settings-desk.tsx:565
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:266
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:84
-#: apps/web/src/routes/__root.tsx:369
+#: apps/web/src/routes/__root.tsx:371
 msgid "Connecting…"
 msgstr "正在連線…"
 
 #: apps/web/src/components/auth/use-sign-in.ts:122
 #: apps/web/src/features/onboarding/hooks/use-onboarding-wallet.ts:296
-#: apps/web/src/routes/__root.tsx:257
-#: apps/web/src/routes/__root.tsx:289
+#: apps/web/src/routes/__root.tsx:259
+#: apps/web/src/routes/__root.tsx:291
 msgid "Connection failed."
 msgstr "連線失敗。"
 
@@ -2126,6 +2162,11 @@ msgstr "聯絡電話"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:560
 msgid "Contact Phone"
 msgstr "聯絡電話"
+
+#: apps/web/src/components/messaging/helpdesk-section.tsx:63
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:74
+msgid "Contact support"
+msgstr "聯絡客服"
 
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:160
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:198
@@ -2218,6 +2259,23 @@ msgstr "合約地址"
 msgid "Contract address copied"
 msgstr "合約地址已複製"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:55
+#: apps/web/src/features/messaging/ui/thread-page.tsx:50
+msgid "Conversation"
+msgstr "對話"
+
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:100
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:73
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:95
+msgid "Conversation options"
+msgstr "對話選項"
+
+#: apps/web/src/components/messaging/messages-section.tsx:55
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:74
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:75
+msgid "Conversations"
+msgstr "對話"
+
 #: apps/web/src/desktop/ui/full-value.tsx:65
 msgid "Copied"
 msgstr "已複製"
@@ -2273,7 +2331,7 @@ msgstr "複製連結"
 #~ msgid "Copy mint transaction hash"
 #~ msgstr "複製鑄幣交易雜湊"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:839
+#: apps/web/src/desktop/activity/transactions-desk.tsx:847
 #: apps/web/src/desktop/pools/detail/pool-receive-popover.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:56
 msgid "Copy pool address"
@@ -2311,7 +2369,7 @@ msgid "Copy supply creation transaction hash"
 msgstr "複製增發交易雜湊"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:105
-#: apps/web/src/desktop/activity/activity-desk.tsx:699
+#: apps/web/src/desktop/activity/transactions-desk.tsx:707
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:178
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:125
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:255
@@ -2452,8 +2510,8 @@ msgstr "無法複製"
 
 #: apps/web/src/desktop/account/settings-desk.tsx:583
 #: apps/web/src/desktop/account/settings-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:840
 #: apps/web/src/desktop/activity/identified-address.tsx:22
+#: apps/web/src/desktop/activity/transactions-desk.tsx:848
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:35
 #: apps/web/src/desktop/wallet/cash-desk.tsx:26
 #: apps/web/src/desktop/wallet/cash-desk.tsx:32
@@ -2548,7 +2606,7 @@ msgstr "無法複製增發交易雜湊"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:39
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:45
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:130
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:168
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:174
@@ -2602,13 +2660,13 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "無法識別此處的國家/地區。嘗試一下附近的地方。"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:417
-#: apps/web/src/desktop/activity/activity-desk.tsx:491
-#: apps/web/src/desktop/activity/activity-desk.tsx:629
+#: apps/web/src/desktop/activity/transactions-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:637
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:993
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:153
 #: apps/web/src/desktop/wallet/send-desk.tsx:535
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:483
-#: apps/web/src/features/home/ui/activity-page.tsx:191
+#: apps/web/src/features/home/ui/activity-page.tsx:197
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:233
 msgid "Couldn't load activity."
@@ -2661,9 +2719,21 @@ msgstr "無法載入持有的代金券。"
 msgid "Couldn't load marketplace results."
 msgstr "無法載入市場結果。"
 
+#: apps/web/src/components/messaging/messages-section.tsx:26
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:48
+#: apps/web/src/desktop/messaging/thread-desk.tsx:107
+#: apps/web/src/features/messaging/ui/thread-page.tsx:188
+msgid "Couldn't load messages."
+msgstr "無法載入訊息。"
+
 #: apps/web/src/desktop/market/market-list-states.tsx:88
 msgid "Couldn't load more"
 msgstr "無法載入更多"
+
+#: apps/web/src/components/messaging/notifications-section.tsx:23
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:31
+msgid "Couldn't load notifications."
+msgstr "無法載入通知。"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:172
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:158
@@ -2724,8 +2794,13 @@ msgstr "無法載入評價。"
 msgid "Couldn't load tags."
 msgstr "無法載入標籤。"
 
+#: apps/web/src/components/messaging/helpdesk-section.tsx:29
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:52
+msgid "Couldn't load the helpdesk."
+msgstr "無法載入說明中心。"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:247
-#: apps/web/src/desktop/activity/activity-desk.tsx:872
+#: apps/web/src/desktop/activity/transactions-desk.tsx:880
 msgid "Couldn't load the private attachment."
 msgstr "無法載入私密附件。"
 
@@ -2733,6 +2808,11 @@ msgstr "無法載入私密附件。"
 #: apps/web/src/features/wants/ui/want-form-page.tsx:34
 msgid "Couldn't load the Want form."
 msgstr "無法載入需求表單。"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:80
+#: apps/web/src/features/messaging/ui/thread-page.tsx:69
+msgid "Couldn't load this conversation."
+msgstr "無法載入此對話。"
 
 #: apps/web/src/desktop/pools/pool-desk.tsx:142
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:79
@@ -2865,6 +2945,11 @@ msgstr "無法發佈您的資金池。"
 msgid "Couldn't publish your voucher."
 msgstr "無法發佈您的代金券。"
 
+#: apps/web/src/components/messaging/helpdesk-section.tsx:67
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:78
+msgid "Couldn't reach Support. Try again."
+msgstr "無法聯絡客服。請再試一次。"
+
 #: apps/web/src/features/wallet/ui/collect-page.tsx:123
 msgid "Couldn't reach the payment relay. Check your connection and try again."
 msgstr "無法連線支付中繼服務。請檢查網路連線並重試。"
@@ -2958,6 +3043,21 @@ msgstr "無法搜尋資金池。"
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:204
 msgid "Couldn't search vouchers."
 msgstr "無法搜尋代金券。"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:119
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:129
+msgid "Couldn't search. Try again."
+msgstr "搜尋失敗。請再試一次。"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:90
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:85
+msgid "Couldn't send the request. Try again."
+msgstr "無法傳送請求。請再試一次。"
+
+#: apps/web/src/desktop/messaging/composer-desk.tsx:60
+#: apps/web/src/features/messaging/ui/message-composer.tsx:60
+msgid "Couldn't send. Your message is kept; send it again."
+msgstr "傳送失敗。您的訊息已保留，請重新傳送。"
 
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:197
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:494
@@ -3136,13 +3236,13 @@ msgid "Create your account"
 msgstr "建立您的帳戶"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:471
-#: apps/web/src/desktop/activity/activity-desk.tsx:187
-#: apps/web/src/desktop/activity/activity-desk.tsx:589
-#: apps/web/src/desktop/activity/activity-desk.tsx:718
+#: apps/web/src/desktop/activity/transactions-desk.tsx:195
+#: apps/web/src/desktop/activity/transactions-desk.tsx:597
+#: apps/web/src/desktop/activity/transactions-desk.tsx:726
 #: apps/web/src/desktop/posts/post-desk.tsx:305
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:74
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:97
-#: apps/web/src/features/home/ui/activity-page.tsx:321
+#: apps/web/src/features/home/ui/activity-page.tsx:327
 #: apps/web/src/features/home/ui/report-page.tsx:512
 #: apps/web/src/features/pools/hooks/use-pool-activity-details.ts:49
 msgid "Created"
@@ -3256,9 +3356,9 @@ msgstr "深色模式"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:97
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
-#: apps/web/src/desktop/activity/activity-desk.tsx:255
-#: apps/web/src/desktop/activity/activity-desk.tsx:745
-#: apps/web/src/desktop/activity/activity-desk.tsx:846
+#: apps/web/src/desktop/activity/transactions-desk.tsx:263
+#: apps/web/src/desktop/activity/transactions-desk.tsx:753
+#: apps/web/src/desktop/activity/transactions-desk.tsx:854
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:168
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:942
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:100
@@ -3270,7 +3370,7 @@ msgstr "深色模式"
 msgid "Date"
 msgstr "日期"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:409
+#: apps/web/src/desktop/activity/transactions-desk.tsx:417
 msgid "Date range"
 msgstr "時間範圍"
 
@@ -3291,6 +3391,11 @@ msgstr "小數"
 #: apps/web/src/lib/validation-i18n.ts:158
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "小數必須是 0 到 18 之間的整數"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:184
+#: apps/web/src/features/messaging/ui/thread-page.tsx:108
+msgid "Decline"
+msgstr "拒絕"
 
 #. placeholder {0}: offering.name
 #: apps/web/src/components/offerings/offering-order-picker.tsx:143
@@ -3347,7 +3452,7 @@ msgstr "部署交易雜湊已複製"
 
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1048
 #: apps/web/src/desktop/pools/pool-main.tsx:217
-#: apps/web/src/features/home/ui/activity-page.tsx:317
+#: apps/web/src/features/home/ui/activity-page.tsx:323
 #: apps/web/src/features/pools/hooks/use-pool-activity-details.ts:51
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:231
@@ -3364,7 +3469,7 @@ msgid "Deposited in this pool"
 msgstr "存入此資金池"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:35
-#: apps/web/src/desktop/activity/activity-desk.tsx:191
+#: apps/web/src/desktop/activity/transactions-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:871
 msgid "Deposits"
 msgstr "存入紀錄"
@@ -3605,7 +3710,7 @@ msgstr "編輯貼文"
 #: apps/web/src/desktop/account/profile-desk.tsx:120
 #: apps/web/src/desktop/account/settings-desk.tsx:236
 #: apps/web/src/desktop/shell/crumbs.tsx:56
-#: apps/web/src/desktop/shell/sidebar.tsx:140
+#: apps/web/src/desktop/shell/sidebar.tsx:141
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:32
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:79
 msgid "Edit profile"
@@ -3648,7 +3753,7 @@ msgstr "長者"
 #: apps/web/src/components/wants/want-detail.tsx:187
 #: apps/web/src/desktop/account/profile-desk.tsx:172
 #: apps/web/src/desktop/account/profile-desk.tsx:184
-#: apps/web/src/desktop/activity/activity-desk.tsx:901
+#: apps/web/src/desktop/activity/transactions-desk.tsx:909
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:372
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:353
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:109
@@ -3811,7 +3916,7 @@ msgstr "輸入大於零的匯率"
 #: apps/web/src/components/auth/sign-in-panel.tsx:205
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:34
 #: apps/web/src/desktop/onboarding/sign-in-desk.tsx:412
-#: apps/web/src/routes/__root.tsx:332
+#: apps/web/src/routes/__root.tsx:334
 msgid "Enter card password"
 msgstr "輸入卡片密碼"
 
@@ -3907,8 +4012,8 @@ msgid "Existing fee recipient"
 msgstr "目前費用接收方"
 
 #: apps/web/src/components/ui/map-sheet.tsx:306
-#: apps/web/src/desktop/shell/sidebar.tsx:294
 #: apps/web/src/desktop/shell/sidebar.tsx:295
+#: apps/web/src/desktop/shell/sidebar.tsx:296
 msgid "Expand"
 msgstr "展開"
 
@@ -3953,9 +4058,9 @@ msgstr "即將到期"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:66
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:74
-#: apps/web/src/desktop/activity/activity-desk.tsx:326
-#: apps/web/src/desktop/activity/activity-desk.tsx:741
-#: apps/web/src/desktop/activity/activity-desk.tsx:809
+#: apps/web/src/desktop/activity/transactions-desk.tsx:334
+#: apps/web/src/desktop/activity/transactions-desk.tsx:749
+#: apps/web/src/desktop/activity/transactions-desk.tsx:817
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:67
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:898
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:54
@@ -3963,7 +4068,7 @@ msgstr "即將到期"
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:158
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:357
 #: apps/web/src/desktop/vouchers/voucher-receipt-desk.tsx:369
-#: apps/web/src/features/home/ui/activity-page.tsx:369
+#: apps/web/src/features/home/ui/activity-page.tsx:375
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:48
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:72
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:215
@@ -4195,11 +4300,11 @@ msgstr "調整照片畫面"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:167
-#: apps/web/src/desktop/activity/activity-desk.tsx:196
-#: apps/web/src/desktop/activity/activity-desk.tsx:751
+#: apps/web/src/desktop/activity/transactions-desk.tsx:204
+#: apps/web/src/desktop/activity/transactions-desk.tsx:759
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:144
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
-#: apps/web/src/features/home/ui/activity-page.tsx:343
+#: apps/web/src/features/home/ui/activity-page.tsx:349
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:148
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:218
 msgid "From"
@@ -4275,8 +4380,8 @@ msgstr "手工藝"
 msgid "Handmade"
 msgstr "手工製作"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:600
-#: apps/web/src/features/home/ui/activity-page.tsx:331
+#: apps/web/src/desktop/activity/transactions-desk.tsx:608
+#: apps/web/src/features/home/ui/activity-page.tsx:337
 msgid "Has a message"
 msgstr "有留言"
 
@@ -4287,6 +4392,13 @@ msgstr "標題"
 #: apps/web/src/components/vouchers/voucher-labels.ts:65
 msgid "Health"
 msgstr "健康"
+
+#: apps/web/src/components/messaging/activity-section-tabs.tsx:27
+#: apps/web/src/components/messaging/helpdesk-section.tsx:42
+#: apps/web/src/desktop/activity/activity-header.tsx:48
+#: apps/web/src/features/messaging/ui/thread-page.tsx:43
+msgid "Helpdesk"
+msgstr "說明中心"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 #~ msgid "Helps members find and understand your pool"
@@ -4416,7 +4528,7 @@ msgid "I already have an account"
 msgstr "我已經有一個帳戶"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:205
-#: apps/web/src/desktop/activity/activity-desk.tsx:772
+#: apps/web/src/desktop/activity/transactions-desk.tsx:780
 msgid "I created {amountLabel}."
 msgstr "我增發了 {amountLabel}。"
 
@@ -4434,7 +4546,7 @@ msgid "I made a swap."
 msgstr "我完成了一次兌換。"
 
 #. placeholder {0}: item.senderAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:775
+#: apps/web/src/desktop/activity/transactions-desk.tsx:783
 msgid "I received {amountLabel} from {0}."
 msgstr "我從 {0} 收到了 {amountLabel}。"
 
@@ -4455,7 +4567,7 @@ msgid "I saved my sign-in card. If I lose it, I may lose access to my wallet."
 msgstr "我已經儲存了這個金鑰。如果丟失，我的錢包將無法恢復。"
 
 #. placeholder {0}: item.recipientAddress
-#: apps/web/src/desktop/activity/activity-desk.tsx:774
+#: apps/web/src/desktop/activity/transactions-desk.tsx:782
 msgid "I sent {amountLabel} to {0}."
 msgstr "我將 {amountLabel} 傳送到 {0}。"
 
@@ -4580,6 +4692,11 @@ msgstr "安裝連結"
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "已請求安裝。請按照瀏覽器中的說明完成操作。"
 
+#: apps/web/src/components/messaging/new-message-sheet.tsx:72
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:67
+msgid "Introduce yourself"
+msgstr "介紹一下自己"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:33
 msgid "Invalid email address"
@@ -4642,15 +4759,15 @@ msgstr "公斤"
 msgid "Language"
 msgstr "語言"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:178
+#: apps/web/src/desktop/activity/transactions-desk.tsx:186
 msgid "Last 30 days"
 msgstr "最近 30 天"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:177
+#: apps/web/src/desktop/activity/transactions-desk.tsx:185
 msgid "Last 7 days"
 msgstr "最近 7 天"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:179
+#: apps/web/src/desktop/activity/transactions-desk.tsx:187
 msgid "Last 90 days"
 msgstr "最近 90 天"
 
@@ -4877,15 +4994,22 @@ msgstr "清單"
 msgid "Litre"
 msgstr "升"
 
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:99
+#: apps/web/src/features/messaging/ui/message-list.tsx:74
+msgid "Load earlier messages"
+msgstr "載入更早的訊息"
+
 #: apps/web/src/components/market-search.tsx:310
+#: apps/web/src/components/messaging/messages-section.tsx:73
 #: apps/web/src/components/offerings/offerings-panel.tsx:234
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:382
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:517
 #: apps/web/src/components/wants/want-detail.tsx:295
-#: apps/web/src/desktop/activity/activity-desk.tsx:549
+#: apps/web/src/desktop/activity/transactions-desk.tsx:557
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:267
 #: apps/web/src/desktop/market/market-list-states.tsx:100
 #: apps/web/src/desktop/market/market-search-field.tsx:450
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:95
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:79
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:193
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:187
@@ -4915,16 +5039,16 @@ msgid "Loading"
 msgstr "載入中"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:411
-#: apps/web/src/desktop/activity/activity-desk.tsx:480
-#: apps/web/src/desktop/activity/activity-desk.tsx:486
-#: apps/web/src/desktop/activity/activity-desk.tsx:634
+#: apps/web/src/desktop/activity/transactions-desk.tsx:488
+#: apps/web/src/desktop/activity/transactions-desk.tsx:494
+#: apps/web/src/desktop/activity/transactions-desk.tsx:642
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:223
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:989
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:145
 #: apps/web/src/desktop/wallet/send-desk.tsx:529
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:480
-#: apps/web/src/features/home/ui/activity-page.tsx:186
-#: apps/web/src/features/home/ui/activity-page.tsx:224
+#: apps/web/src/features/home/ui/activity-page.tsx:192
+#: apps/web/src/features/home/ui/activity-page.tsx:230
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:79
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:227
 msgid "Loading activity…"
@@ -4951,10 +5075,20 @@ msgstr "正在載入現金活動…"
 msgid "Loading contact information…"
 msgstr "正在載入聯絡資訊…"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:100
+#: apps/web/src/features/messaging/ui/thread-page.tsx:60
+msgid "Loading conversation…"
+msgstr "對話載入中…"
+
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:818
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:36
 msgid "Loading credit limits…"
 msgstr "正在載入信用額度…"
+
+#: apps/web/src/components/messaging/helpdesk-section.tsx:24
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:46
+msgid "Loading helpdesk…"
+msgstr "說明中心載入中…"
 
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:677
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:39
@@ -4979,16 +5113,26 @@ msgstr "載入位置圖"
 msgid "Loading marketplace…"
 msgstr "正在載入市場…"
 
+#: apps/web/src/components/messaging/messages-section.tsx:21
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:42
+msgid "Loading messages…"
+msgstr "訊息載入中…"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:215
 #: apps/web/src/desktop/market/market-list-states.tsx:80
 #: apps/web/src/desktop/posts/posts-desk.tsx:229
-#: apps/web/src/features/home/ui/activity-page.tsx:219
+#: apps/web/src/features/home/ui/activity-page.tsx:225
 #: apps/web/src/features/home/ui/marketplace-page.tsx:234
 #: apps/web/src/features/home/ui/posts-page.tsx:156
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:117
 #: apps/web/src/features/pools/ui/pools-page.tsx:361
 msgid "Loading more…"
 msgstr "載入更多…"
+
+#: apps/web/src/components/messaging/notifications-section.tsx:18
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:25
+msgid "Loading notifications…"
+msgstr "通知載入中…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:166
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:152
@@ -5030,7 +5174,7 @@ msgid "Loading posts…"
 msgstr "正在載入貼文…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:240
-#: apps/web/src/desktop/activity/activity-desk.tsx:865
+#: apps/web/src/desktop/activity/transactions-desk.tsx:873
 msgid "Loading private attachment…"
 msgstr "正在載入私密附件…"
 
@@ -5295,7 +5439,7 @@ msgstr "地圖示記"
 #: apps/web/src/desktop/market/market-map-desk.tsx:186
 #: apps/web/src/desktop/onboarding/onboarding-desk.tsx:115
 #: apps/web/src/desktop/shell/crumbs.tsx:12
-#: apps/web/src/desktop/shell/sidebar.tsx:131
+#: apps/web/src/desktop/shell/sidebar.tsx:132
 #: apps/web/src/features/home/ui/market-page.tsx:60
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:61
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:68
@@ -5305,8 +5449,8 @@ msgstr "市場"
 
 #: apps/web/src/desktop/market/market-toolbar.tsx:114
 #: apps/web/src/desktop/shell/command-palette.tsx:224
-#: apps/web/src/desktop/shell/sidebar.tsx:211
-#: apps/web/src/desktop/shell/sidebar.tsx:227
+#: apps/web/src/desktop/shell/sidebar.tsx:212
+#: apps/web/src/desktop/shell/sidebar.tsx:228
 #: apps/web/src/features/home/ui/marketplace-page.tsx:102
 msgid "Marketplace"
 msgstr "市場"
@@ -5315,7 +5459,7 @@ msgstr "市場"
 msgid "Marketplace details"
 msgstr "市場詳情"
 
-#: apps/web/src/desktop/shell/sidebar.tsx:211
+#: apps/web/src/desktop/shell/sidebar.tsx:212
 msgid "Marketplace lists"
 msgstr "市場清單"
 
@@ -5332,6 +5476,11 @@ msgstr "市場分區"
 #: apps/web/src/desktop/posts/post-facets.tsx:186
 msgid "Match"
 msgstr "匹配"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:128
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:140
+msgid "Matching people"
+msgstr "符合的使用者"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:193
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:147
@@ -5360,8 +5509,12 @@ msgstr "最大 {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "媒體必須是上傳的 http(s) URL"
 
+#: apps/web/src/components/messaging/new-message-sheet.tsx:142
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:155
+#: apps/web/src/desktop/messaging/composer-desk.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:152
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:140
+#: apps/web/src/features/messaging/ui/message-composer.tsx:64
 #: apps/web/src/features/wallet/hooks/use-send-share-form.ts:91
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:412
 msgid "Message"
@@ -5377,10 +5530,22 @@ msgstr "留言不得超過 500 個字元"
 msgid "Message or order shared."
 msgstr "留言或訂單已分享。"
 
+#: apps/web/src/components/messaging/messages-section.tsx:44
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
+msgid "Message requests"
+msgstr "訊息請求"
+
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:80
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:355
 msgid "Message shared."
 msgstr "留言已分享。"
+
+#: apps/web/src/components/messaging/activity-section-tabs.tsx:25
+#: apps/web/src/desktop/activity/activity-header.tsx:46
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:103
+#: apps/web/src/features/messaging/ui/thread-page.tsx:43
+msgid "Messages"
+msgstr "訊息"
 
 #: apps/web/src/desktop/wallet/send-share-desk.tsx:67
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:344
@@ -5660,6 +5825,11 @@ msgstr "名稱、符號或地址"
 msgid "Natural building"
 msgstr "自然建築"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:146
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:102
+msgid "Neither of you can send messages. Only you can ask to talk again."
+msgstr "你們雙方都無法傳送訊息。只有您可以請求重新溝通。"
+
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:261
@@ -5683,6 +5853,13 @@ msgstr "新"
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:359
 #~ msgid "New member"
 #~ msgstr "新成員"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:51
+#: apps/web/src/components/messaging/new-message-sheet.tsx:59
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:49
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:56
+msgid "New message"
+msgstr "新訊息"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:150
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:144
@@ -5733,12 +5910,12 @@ msgstr "新簽署者"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:480
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:171
-#: apps/web/src/desktop/activity/activity-desk.tsx:278
-#: apps/web/src/desktop/activity/activity-desk.tsx:754
+#: apps/web/src/desktop/activity/transactions-desk.tsx:286
+#: apps/web/src/desktop/activity/transactions-desk.tsx:762
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:147
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:911
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:83
-#: apps/web/src/features/home/ui/activity-page.tsx:340
+#: apps/web/src/features/home/ui/activity-page.tsx:346
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:151
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:210
 msgid "New supply"
@@ -5792,9 +5969,9 @@ msgstr "否"
 msgid "No {0} fees have accrued yet."
 msgstr "尚未產生 {0} 費用。"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:515
+#: apps/web/src/desktop/activity/transactions-desk.tsx:523
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1005
-#: apps/web/src/features/home/ui/activity-page.tsx:162
+#: apps/web/src/features/home/ui/activity-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:100
 msgid "No activity matches these filters."
 msgstr "沒有符合這些篩選條件的活動。"
@@ -5804,11 +5981,11 @@ msgstr "沒有符合這些篩選條件的活動。"
 #~ msgstr "沒有符合搜尋條件的活動。"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:434
-#: apps/web/src/desktop/activity/activity-desk.tsx:474
-#: apps/web/src/desktop/activity/activity-desk.tsx:536
+#: apps/web/src/desktop/activity/transactions-desk.tsx:482
+#: apps/web/src/desktop/activity/transactions-desk.tsx:544
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:172
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:489
-#: apps/web/src/features/home/ui/activity-page.tsx:164
+#: apps/web/src/features/home/ui/activity-page.tsx:170
 msgid "No activity yet."
 msgstr "還沒有活動。"
 
@@ -5860,6 +6037,10 @@ msgstr "沒有可用的聯絡資料。"
 #: apps/web/src/components/wants/want-detail.tsx:170
 msgid "No contact information given"
 msgstr "未提供聯絡資訊"
+
+#: apps/web/src/desktop/messaging/messages-desk.tsx:28
+msgid "No conversation open"
+msgstr "未開啟對話"
 
 #: apps/web/src/components/ui/country-sheet.tsx:89
 #: apps/web/src/desktop/ui/phone-field.tsx:103
@@ -5968,14 +6149,31 @@ msgstr "暫無可顯示的市場結果。"
 msgid "No matches"
 msgstr "無相符項目"
 
+#: apps/web/src/components/messaging/new-message-sheet.tsx:124
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:134
+msgid "No matching people."
+msgstr "沒有符合的使用者。"
+
 #: apps/web/src/components/wallet/recipient-address-input.tsx:223
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:185
 msgid "No matching recipients."
 msgstr "沒有匹配的接收方。"
 
+#: apps/web/src/components/messaging/messages-section.tsx:40
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:57
+#: apps/web/src/desktop/messaging/thread-desk.tsx:126
+#: apps/web/src/features/messaging/ui/thread-page.tsx:211
+msgid "No messages yet."
+msgstr "還沒有訊息。"
+
 #: apps/web/src/desktop/market/market-list-states.tsx:108
 msgid "No more results"
 msgstr "沒有更多結果"
+
+#: apps/web/src/components/messaging/notifications-section.tsx:37
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:40
+msgid "No notifications yet."
+msgstr "還沒有通知。"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:245
 msgid "No offerings yet"
@@ -6293,8 +6491,12 @@ msgstr "通知設定"
 msgid "Notification storage is unavailable"
 msgstr "通知儲存不可用"
 
+#: apps/web/src/components/messaging/activity-section-tabs.tsx:26
+#: apps/web/src/components/messaging/notifications-section.tsx:41
 #: apps/web/src/desktop/account/settings-desk.tsx:378
 #: apps/web/src/desktop/account/settings-desk.tsx:416
+#: apps/web/src/desktop/activity/activity-header.tsx:47
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:46
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:33
 msgid "Notifications"
 msgstr "通知"
@@ -6497,12 +6699,15 @@ msgstr "開啟代金券頁面"
 msgid "Opening sign-in card…"
 msgstr "正在開啟登入卡…"
 
+#: apps/web/src/components/messaging/new-message-sheet.tsx:77
 #: apps/web/src/components/ui/avatar-picker.tsx:98
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:218
 #: apps/web/src/components/vouchers/voucher-profile-editor-sheet.tsx:182
 #: apps/web/src/desktop/account/profile-desk.tsx:131
 #: apps/web/src/desktop/account/profile-desk.tsx:223
 #: apps/web/src/desktop/account/profile-desk.tsx:254
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:72
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:160
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:200
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:43
 #: apps/web/src/desktop/vouchers/create/place-step.tsx:50
@@ -6511,6 +6716,7 @@ msgstr "正在開啟登入卡…"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:94
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:140
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:171
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:116
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:247
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:277
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:393
@@ -6730,10 +6936,10 @@ msgstr "透過 CLC 付款給我"
 
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:36
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:68
-#: apps/web/src/desktop/activity/activity-desk.tsx:192
+#: apps/web/src/desktop/activity/transactions-desk.tsx:200
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:872
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:1048
-#: apps/web/src/features/home/ui/activity-page.tsx:319
+#: apps/web/src/features/home/ui/activity-page.tsx:325
 #: apps/web/src/features/pools/hooks/use-pool-activity-details.ts:52
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
 msgid "Pay Out"
@@ -6759,7 +6965,7 @@ msgid "Payment QR code"
 msgstr "收款 QR 碼"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:281
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:251
 msgid "Payment receipt"
@@ -6769,6 +6975,9 @@ msgstr "付款收據"
 msgid "Payment status unknown"
 msgstr "付款狀態未知"
 
+#: apps/web/src/components/messaging/conversation-row.tsx:43
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:162
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1095
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:145
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:214
@@ -6826,7 +7035,7 @@ msgstr "樸門永續設計"
 #: apps/web/src/components/vouchers/voucher-about.tsx:117
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:291
 #: apps/web/src/desktop/account/profile-desk.tsx:200
-#: apps/web/src/desktop/activity/activity-desk.tsx:911
+#: apps/web/src/desktop/activity/transactions-desk.tsx:919
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:396
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:355
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:131
@@ -6853,7 +7062,9 @@ msgstr "電話號碼"
 msgid "Phone unavailable"
 msgstr "電話不可用"
 
+#: apps/web/src/components/messaging/conversation-row.tsx:55
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:217
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:174
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:284
 #: apps/web/src/desktop/vouchers/detail/voucher-offerings.tsx:579
 msgid "Photo"
@@ -6878,6 +7089,11 @@ msgstr "照片"
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:183
 #~ msgid "Photos appear in the order you add them."
 #~ msgstr "照片會按新增順序顯示。"
+
+#: apps/web/src/desktop/messaging/composer-desk.tsx:28
+#: apps/web/src/features/messaging/ui/message-composer.tsx:28
+msgid "Photos to send"
+msgstr "待傳送的照片"
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:152
 msgid "Picked up where you left off — this post has not been submitted yet."
@@ -6916,7 +7132,7 @@ msgstr "苗圃"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:88
 #: apps/web/src/components/market-search.tsx:334
 #: apps/web/src/components/wallet/recipient-address-input.tsx:204
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/market/market-bits.tsx:72
 #: apps/web/src/desktop/market/market-list-desk.tsx:446
 #: apps/web/src/desktop/market/market-search-field.tsx:428
@@ -6927,7 +7143,7 @@ msgstr "苗圃"
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:392
 #: apps/web/src/desktop/shell/command-palette.tsx:85
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
-#: apps/web/src/features/home/ui/activity-page.tsx:276
+#: apps/web/src/features/home/ui/activity-page.tsx:282
 #: apps/web/src/features/home/ui/marketplace-page.tsx:412
 #: apps/web/src/features/key-rotation/ui/rotation-labels.ts:11
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
@@ -7136,7 +7352,7 @@ msgstr "資金池跟蹤詳細資訊丟失。"
 #: apps/web/src/components/market-bar.tsx:189
 #: apps/web/src/components/market-bar.tsx:268
 #: apps/web/src/components/resource-usage.tsx:118
-#: apps/web/src/desktop/activity/activity-desk.tsx:833
+#: apps/web/src/desktop/activity/transactions-desk.tsx:841
 #: apps/web/src/desktop/catalogs/catalog-desk.tsx:164
 #: apps/web/src/desktop/market/market-layers.tsx:37
 #: apps/web/src/desktop/market/market-search-field.tsx:349
@@ -7217,7 +7433,7 @@ msgstr "貼文已更新。"
 #: apps/web/src/desktop/posts/posts-desk.tsx:100
 #: apps/web/src/desktop/posts/posts-desk.tsx:213
 #: apps/web/src/desktop/shell/crumbs.tsx:18
-#: apps/web/src/desktop/shell/sidebar.tsx:138
+#: apps/web/src/desktop/shell/sidebar.tsx:139
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:184
 #: apps/web/src/desktop/vouchers/detail/voucher-section-nav.tsx:31
 #: apps/web/src/features/home/ui/posts-page.tsx:73
@@ -7421,7 +7637,7 @@ msgid "Pricing"
 msgstr "定價"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:40
-#: apps/web/src/desktop/shell/sidebar.tsx:198
+#: apps/web/src/desktop/shell/sidebar.tsx:199
 msgid "Primary navigation"
 msgstr "主要導航"
 
@@ -7435,8 +7651,8 @@ msgid "Privacy note"
 msgstr "隱私提示"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:258
-#: apps/web/src/desktop/activity/activity-desk.tsx:880
-#: apps/web/src/desktop/activity/activity-desk.tsx:884
+#: apps/web/src/desktop/activity/transactions-desk.tsx:888
+#: apps/web/src/desktop/activity/transactions-desk.tsx:892
 msgid "Private attachment"
 msgstr "私密附件"
 
@@ -7511,7 +7727,7 @@ msgstr "登入卡受到保護。將密碼與卡分開儲存。"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:82
 #: apps/web/src/components/activity/swap-activity.tsx:51
-#: apps/web/src/desktop/activity/activity-desk.tsx:826
+#: apps/web/src/desktop/activity/transactions-desk.tsx:834
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:108
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:119
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:232
@@ -7714,13 +7930,13 @@ msgstr "接收代金券"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:75
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:33
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:473
-#: apps/web/src/desktop/activity/activity-desk.tsx:189
-#: apps/web/src/desktop/activity/activity-desk.tsx:591
-#: apps/web/src/desktop/activity/activity-desk.tsx:720
-#: apps/web/src/desktop/activity/activity-desk.tsx:819
+#: apps/web/src/desktop/activity/transactions-desk.tsx:197
+#: apps/web/src/desktop/activity/transactions-desk.tsx:599
+#: apps/web/src/desktop/activity/transactions-desk.tsx:728
+#: apps/web/src/desktop/activity/transactions-desk.tsx:827
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:869
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:76
-#: apps/web/src/features/home/ui/activity-page.tsx:323
+#: apps/web/src/features/home/ui/activity-page.tsx:329
 msgid "Received"
 msgstr "已收到"
 
@@ -7931,6 +8147,11 @@ msgstr "從資金池中刪除"
 msgid "Remove link {0}"
 msgstr "刪除連結 {0}"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:40
+#: apps/web/src/features/messaging/ui/message-composer.tsx:40
+msgid "Remove photo"
+msgstr "移除照片"
+
 #. placeholder {0}: index + 1
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:254
 msgid "Remove photo {0}"
@@ -7985,6 +8206,11 @@ msgstr "重播"
 msgid "Reply"
 msgstr "回覆"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:117
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:142
+msgid "Report"
+msgstr "檢舉"
+
 #: apps/web/src/desktop/posts/post-desk.tsx:171
 #: apps/web/src/features/home/ui/report-page.tsx:381
 msgid "Report details"
@@ -8013,12 +8239,27 @@ msgstr "報告期"
 msgid "Report provenance"
 msgstr "報告出處"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:84
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:170
+msgid "Report sent."
+msgstr "檢舉已送出。"
+
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:141
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:93
+msgid "Report this person"
+msgstr "檢舉此人"
+
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:249
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:258
 msgid "Reported"
 msgstr "已舉報"
 
+#: apps/web/src/components/messaging/conversation-row.tsx:38
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:157
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:157
+#: apps/web/src/desktop/messaging/thread-desk.tsx:59
+#: apps/web/src/desktop/messaging/thread-desk.tsx:163
+#: apps/web/src/features/messaging/ui/thread-page.tsx:86
 msgid "Request"
 msgstr "請求"
 
@@ -8044,6 +8285,10 @@ msgstr "申請已被拒絕"
 msgid "Request retirement"
 msgstr "申請停用"
 
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:61
+msgid "Requests"
+msgstr "請求"
+
 #: apps/web/src/components/ui/avatar-picker.tsx:95
 #: apps/web/src/components/ui/location-picker.tsx:71
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:286
@@ -8068,6 +8313,10 @@ msgstr "重置圖層"
 #: apps/web/src/desktop/onboarding/paper-wallet-desk.tsx:149
 msgid "Reset logo"
 msgstr "重置徽標"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:64
+msgid "Resolved"
+msgstr "已解決"
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:240
 #~ msgid "Resolving recipient…"
@@ -8301,6 +8550,18 @@ msgstr "評價"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "對此代金券的評價將出現在此處。"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:107
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:181
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:132
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:179
+msgid "Revoke"
+msgstr "撤銷"
+
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:133
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:85
+msgid "Revoke this conversation?"
+msgstr "撤銷此對話？"
+
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:98
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:112
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:112
@@ -8481,10 +8742,10 @@ msgstr "搜尋「{query}」"
 msgid "Search “{term}”"
 msgstr "搜尋「{term}」"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:435
-#: apps/web/src/desktop/activity/activity-desk.tsx:436
-#: apps/web/src/features/home/ui/activity-page.tsx:117
-#: apps/web/src/features/home/ui/activity-page.tsx:118
+#: apps/web/src/desktop/activity/transactions-desk.tsx:443
+#: apps/web/src/desktop/activity/transactions-desk.tsx:444
+#: apps/web/src/features/home/ui/activity-page.tsx:123
+#: apps/web/src/features/home/ui/activity-page.tsx:124
 msgid "Search activity"
 msgstr "搜尋活動"
 
@@ -8492,7 +8753,7 @@ msgstr "搜尋活動"
 msgid "Search by name or symbol"
 msgstr "按名稱或符號搜尋"
 
-#: apps/web/src/features/home/ui/activity-page.tsx:140
+#: apps/web/src/features/home/ui/activity-page.tsx:146
 msgid "Search by voucher name, symbol, address or transaction hash."
 msgstr "依代金券名稱、符號、地址或交易雜湊搜尋。"
 
@@ -8693,7 +8954,9 @@ msgstr "正在搜尋此區域"
 msgid "Searching vouchers…"
 msgstr "正在搜尋代金券…"
 
+#: apps/web/src/components/messaging/new-message-sheet.tsx:114
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:211
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:124
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:553
 #: apps/web/src/desktop/shell/command-palette.tsx:387
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:237
@@ -8788,6 +9051,7 @@ msgid "Sell to a bank account"
 msgstr "賣出至銀行帳戶"
 
 #: apps/web/src/components/vouchers/voucher-summary.tsx:333
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/shell/command-palette.tsx:101
 #: apps/web/src/desktop/shell/crumbs.tsx:32
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:136
@@ -8796,6 +9060,7 @@ msgstr "賣出至銀行帳戶"
 #: apps/web/src/desktop/wallet/send-desk.tsx:178
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:348
 #: apps/web/src/features/home/ui/wallet-page.tsx:70
+#: apps/web/src/features/messaging/ui/message-composer.tsx:107
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:84
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:243
 msgid "Send"
@@ -8819,9 +9084,16 @@ msgid "Send from your Gnosis wallet through Jumper to an exchange, then "
 msgstr "從您的 Gnosis 錢包透過 Jumper 傳送至交易所，然後提領至銀行帳戶或 M-Pesa。"
 
 #: apps/web/src/components/reviews/review-editor.tsx:145
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:189
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:494
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:187
 msgid "Send report"
 msgstr "傳送報告"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:154
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:94
+msgid "Send request"
+msgstr "傳送請求"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:62
 #~ msgid "Send supported vouchers to this pool address."
@@ -8849,8 +9121,10 @@ msgstr "按照說明傳送 xDAI。"
 msgid "Sending"
 msgstr "傳送中"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:109
 #: apps/web/src/desktop/wallet/send-desk.tsx:380
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:110
+#: apps/web/src/features/messaging/ui/message-composer.tsx:107
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:243
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:348
 msgid "Sending…"
@@ -8859,14 +9133,14 @@ msgstr "正在傳送…"
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:69
 #: apps/web/src/components/activity/activity-filter-sheet.tsx:32
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:475
-#: apps/web/src/desktop/activity/activity-desk.tsx:188
-#: apps/web/src/desktop/activity/activity-desk.tsx:593
-#: apps/web/src/desktop/activity/activity-desk.tsx:722
-#: apps/web/src/desktop/activity/activity-desk.tsx:813
+#: apps/web/src/desktop/activity/transactions-desk.tsx:196
+#: apps/web/src/desktop/activity/transactions-desk.tsx:601
+#: apps/web/src/desktop/activity/transactions-desk.tsx:730
+#: apps/web/src/desktop/activity/transactions-desk.tsx:821
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:868
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:78
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:89
-#: apps/web/src/features/home/ui/activity-page.tsx:325
+#: apps/web/src/features/home/ui/activity-page.tsx:331
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:193
 msgid "Sent"
 msgstr "已傳送"
@@ -8923,7 +9197,7 @@ msgstr "正在設定您的錢包…"
 #: apps/web/src/desktop/account/settings-desk.tsx:68
 #: apps/web/src/desktop/shell/command-palette.tsx:145
 #: apps/web/src/desktop/shell/crumbs.tsx:20
-#: apps/web/src/desktop/shell/sidebar.tsx:139
+#: apps/web/src/desktop/shell/sidebar.tsx:140
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:29
 #: apps/web/src/features/home/ui/settings-page.tsx:54
 #: apps/web/src/features/install/ui/install-page.tsx:64
@@ -8978,7 +9252,7 @@ msgstr "分享收據"
 
 #. placeholder {0}: share.sharedBy.name
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:261
-#: apps/web/src/desktop/activity/activity-desk.tsx:887
+#: apps/web/src/desktop/activity/transactions-desk.tsx:895
 msgid "Shared by {0}"
 msgstr "由 {0} 分享"
 
@@ -9085,7 +9359,7 @@ msgstr "向任何使用此資金池的人展示"
 #: apps/web/src/desktop/auth/sign-in-action.tsx:21
 #: apps/web/src/desktop/market/market-notices.tsx:91
 #: apps/web/src/desktop/vouchers/detail/voucher-actions.tsx:257
-#: apps/web/src/routes/__root.tsx:369
+#: apps/web/src/routes/__root.tsx:371
 msgid "Sign in"
 msgstr "登入"
 
@@ -9154,7 +9428,7 @@ msgstr "使用私鑰登入"
 msgid "Sign in with QR card"
 msgstr "使用 QR 碼卡登入"
 
-#: apps/web/src/routes/__root.tsx:357
+#: apps/web/src/routes/__root.tsx:359
 msgid "Sign in with this card?"
 msgstr "使用此卡登入？"
 
@@ -9335,9 +9609,9 @@ msgstr "{starts} 開始"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:64
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:129
-#: apps/web/src/desktop/activity/activity-desk.tsx:316
-#: apps/web/src/desktop/activity/activity-desk.tsx:733
-#: apps/web/src/desktop/activity/activity-desk.tsx:801
+#: apps/web/src/desktop/activity/transactions-desk.tsx:324
+#: apps/web/src/desktop/activity/transactions-desk.tsx:741
+#: apps/web/src/desktop/activity/transactions-desk.tsx:809
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:65
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:279
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:399
@@ -9441,14 +9715,21 @@ msgstr "發行量的小數位數超過此代金券支援的位數"
 msgid "Supply must be greater than zero"
 msgstr "發行量必須大於零"
 
+#: apps/web/src/components/messaging/peer.tsx:36
+#: apps/web/src/desktop/messaging/conversation-desk.tsx:29
+#: apps/web/src/desktop/messaging/message-scroller-desk.tsx:126
+#: apps/web/src/features/messaging/ui/message-list.tsx:97
+msgid "Support"
+msgstr "客服"
+
 #: apps/web/src/features/onboarding/hooks/use-paper-wallet-customizer.ts:35
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "不支援 SVG 檔案。使用 PNG、JPEG 或 WebP。"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:55
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:58
-#: apps/web/src/desktop/activity/activity-desk.tsx:587
-#: apps/web/src/desktop/activity/activity-desk.tsx:793
+#: apps/web/src/desktop/activity/transactions-desk.tsx:595
+#: apps/web/src/desktop/activity/transactions-desk.tsx:801
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:258
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:270
 #: apps/web/src/desktop/shell/command-palette.tsx:111
@@ -9539,7 +9820,7 @@ msgstr "正在兌換"
 msgid "Swapping…"
 msgstr "正在兌換…"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:190
+#: apps/web/src/desktop/activity/transactions-desk.tsx:198
 msgid "Swaps"
 msgstr "兌換"
 
@@ -9551,11 +9832,11 @@ msgstr "兌換 · 30 天"
 msgid "Swaps settle within the market association..."
 msgstr "兌換在市場協會內結算…"
 
-#: apps/web/src/routes/__root.tsx:369
+#: apps/web/src/routes/__root.tsx:371
 msgid "Switch wallet"
 msgstr "切換錢包"
 
-#: apps/web/src/routes/__root.tsx:357
+#: apps/web/src/routes/__root.tsx:359
 msgid "Switch wallet?"
 msgstr "切換錢包？"
 
@@ -9721,6 +10002,15 @@ msgstr "條款 URL"
 msgid "Test with a small amount first."
 msgstr "請先以小額資金測試。"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:194
+#: apps/web/src/desktop/messaging/thread-desk.tsx:234
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:167
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:123
+#: apps/web/src/features/messaging/ui/thread-page.tsx:118
+#: apps/web/src/features/messaging/ui/thread-page.tsx:161
+msgid "That didn't work. Try again."
+msgstr "操作失敗。請再試一次。"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:43
 msgid "That email is already linked to an account"
@@ -9884,6 +10174,11 @@ msgstr "付款被拒絕：{detail}"
 msgid "The payment was refused. Nothing was charged."
 msgstr "付款被拒絕。沒有收取任何費用。"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:54
+#: apps/web/src/features/messaging/ui/message-composer.tsx:54
+msgid "The photo didn't upload. Remove it and try again."
+msgstr "照片上傳失敗。請移除後再試一次。"
+
 #: apps/web/src/features/pools/hooks/use-pool-deployment-receipt.ts:43
 msgid "The pool"
 msgstr "資金池"
@@ -9953,6 +10248,11 @@ msgstr "暫時沒有可與此代金券兌換的內容。"
 msgid "These filters aren't valid."
 msgstr "這些篩選條件無效。"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:151
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:107
+msgid "They won't be able to message you or send you requests."
+msgstr "對方將無法傳訊息給您或傳送請求。"
+
 #: apps/web/src/components/auth/auth-states.tsx:34
 msgid "This account cannot be approved. Contact support if you think this is a "
 "mistake."
@@ -10020,6 +10320,16 @@ msgstr "本次檢查包括資金池中已知的資產。尚未被追蹤的代幣
 msgid "This contract does not expose a compatible multisig owner list. The "
 "asset could be locked."
 msgstr "此合約未提供相容的多簽擁有者清單。資產可能遭到鎖定。"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:75
+#: apps/web/src/features/messaging/ui/thread-page.tsx:64
+msgid "This conversation isn't available."
+msgstr "此對話無法使用。"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:206
+#: apps/web/src/features/messaging/ui/thread-page.tsx:130
+msgid "This conversation was revoked."
+msgstr "此對話已被撤銷。"
 
 #: apps/web/src/desktop/wants/want-form-desk.tsx:251
 #: apps/web/src/features/wants/ui/want-form-page.tsx:190
@@ -10218,6 +10528,11 @@ msgstr "此QR 碼不包含有效的私鑰。"
 msgid "This QR code does not contain a valid sign-in card."
 msgstr "此 QR 碼不包含有效的登入卡。"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:204
+#: apps/web/src/features/messaging/ui/thread-page.tsx:128
+msgid "This request was declined."
+msgstr "此請求已被拒絕。"
+
 #: apps/web/src/components/retirement/retirement-request-form.tsx:98
 msgid "This resource is already retired."
 msgstr "此資源已停用。"
@@ -10256,12 +10571,12 @@ msgstr "標題不得超過 200 個字元"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:483
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:183
-#: apps/web/src/desktop/activity/activity-desk.tsx:198
-#: apps/web/src/desktop/activity/activity-desk.tsx:760
+#: apps/web/src/desktop/activity/transactions-desk.tsx:206
+#: apps/web/src/desktop/activity/transactions-desk.tsx:768
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:159
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:86
 #: apps/web/src/desktop/wallet/send-desk.tsx:182
-#: apps/web/src/features/home/ui/activity-page.tsx:343
+#: apps/web/src/features/home/ui/activity-page.tsx:349
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:218
 #: apps/web/src/features/wallet/ui/collect-page.tsx:138
@@ -10327,8 +10642,8 @@ msgid "Training"
 msgstr "培訓"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:102
-#: apps/web/src/desktop/activity/activity-desk.tsx:761
-#: apps/web/src/desktop/activity/activity-desk.tsx:851
+#: apps/web/src/desktop/activity/transactions-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:859
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:174
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:251
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:196
@@ -10351,7 +10666,7 @@ msgid "Transaction hash"
 msgstr "交易雜湊"
 
 #: apps/web/src/components/activity/account-swap-details-sheet.tsx:44
-#: apps/web/src/desktop/activity/activity-desk.tsx:682
+#: apps/web/src/desktop/activity/transactions-desk.tsx:690
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:129
 #: apps/web/src/desktop/pools/swap-receipt-desk.tsx:173
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:202
@@ -10363,7 +10678,12 @@ msgstr "交易雜湊"
 msgid "Transaction hash copied"
 msgstr "交易雜湊已複製"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:622
+#: apps/web/src/components/messaging/activity-section-tabs.tsx:24
+#: apps/web/src/desktop/activity/activity-header.tsx:45
+msgid "Transactions"
+msgstr "交易"
+
+#: apps/web/src/desktop/activity/transactions-desk.tsx:630
 msgid "Transfer details"
 msgstr "轉帳詳情"
 
@@ -10403,6 +10723,9 @@ msgstr "旅行"
 #: apps/web/src/components/auth/authenticated-route.tsx:67
 #: apps/web/src/components/catalog-filter-controls.tsx:344
 #: apps/web/src/components/market-search.tsx:306
+#: apps/web/src/components/messaging/helpdesk-section.tsx:37
+#: apps/web/src/components/messaging/messages-section.tsx:34
+#: apps/web/src/components/messaging/notifications-section.tsx:31
 #: apps/web/src/components/nfc-card-prompt.tsx:112
 #: apps/web/src/components/offerings/offerings-panel.tsx:180
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:42
@@ -10413,8 +10736,13 @@ msgstr "旅行"
 #: apps/web/src/desktop/account/multisig-settings-desk.tsx:65
 #: apps/web/src/desktop/account/profile-desk.tsx:53
 #: apps/web/src/desktop/account/settings-desk.tsx:545
-#: apps/web/src/desktop/activity/activity-desk.tsx:499
+#: apps/web/src/desktop/activity/transactions-desk.tsx:507
 #: apps/web/src/desktop/market/market-search-field.tsx:442
+#: apps/web/src/desktop/messaging/conversation-list-desk.tsx:51
+#: apps/web/src/desktop/messaging/helpdesk-desk.tsx:55
+#: apps/web/src/desktop/messaging/notifications-desk.tsx:34
+#: apps/web/src/desktop/messaging/thread-desk.tsx:90
+#: apps/web/src/desktop/messaging/thread-desk.tsx:114
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:199
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:255
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:68
@@ -10441,7 +10769,7 @@ msgstr "旅行"
 #: apps/web/src/desktop/wallet/wallet-parts.tsx:87
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 #: apps/web/src/features/home/hooks/use-report-filter-notice.ts:62
-#: apps/web/src/features/home/ui/activity-page.tsx:199
+#: apps/web/src/features/home/ui/activity-page.tsx:205
 #: apps/web/src/features/home/ui/multisig-settings-section.tsx:82
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:61
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:218
@@ -10451,6 +10779,8 @@ msgstr "旅行"
 #: apps/web/src/features/home/ui/wallet-page.tsx:406
 #: apps/web/src/features/key-rotation/ui/move-step.tsx:83
 #: apps/web/src/features/key-rotation/ui/review-step.tsx:48
+#: apps/web/src/features/messaging/ui/thread-page.tsx:80
+#: apps/web/src/features/messaging/ui/thread-page.tsx:196
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:192
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:93
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:229
@@ -10470,7 +10800,7 @@ msgstr "旅行"
 msgid "Try again"
 msgstr "再試一次"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:287
+#: apps/web/src/desktop/activity/transactions-desk.tsx:295
 #: apps/web/src/desktop/market/market-list-desk.tsx:507
 #: apps/web/src/desktop/vouchers/create/review-step.tsx:54
 #: apps/web/src/desktop/vouchers/detail/voucher-activity.tsx:50
@@ -10491,11 +10821,11 @@ msgstr "請至少輸入 {POOL_SEARCH_MIN_CHARS} 個字元來搜尋資金池。"
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "至少輸入 {VOUCHER_SEARCH_MIN_CHARS} 個字元來搜尋代金券。"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:456
+#: apps/web/src/desktop/activity/transactions-desk.tsx:464
 #: apps/web/src/desktop/catalogs/catalog-member-picker-desk.tsx:173
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:532
 #: apps/web/src/features/catalogs/ui/catalog-member-picker.tsx:196
-#: apps/web/src/features/home/ui/activity-page.tsx:138
+#: apps/web/src/features/home/ui/activity-page.tsx:144
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:636
 #: apps/web/src/features/posts/ui/post-pool-picker.tsx:142
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:191
@@ -10548,6 +10878,20 @@ msgstr "無法載入語言。恢復為英語。"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:112
 msgid "Unavailable"
 msgstr "不可用"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:250
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:112
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:184
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:137
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:182
+#: apps/web/src/features/messaging/ui/thread-page.tsx:180
+msgid "Unblock"
+msgstr "解除封鎖"
+
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:136
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:88
+msgid "Unblock this person?"
+msgstr "解除封鎖此人？"
 
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:503
 msgid "Undo"
@@ -10725,6 +11069,11 @@ msgid "Use <0>Binance</0> or another local exchange, then <1>Jumper</1> to send 
 "funds to your Gnosis wallet."
 msgstr "使用 <0>Binance</0> 或其他本地交易所，再透過 <1>Jumper</1> 將資金傳送到您的 Gnosis 錢包。"
 
+#: apps/web/src/desktop/messaging/composer-desk.tsx:52
+#: apps/web/src/features/messaging/ui/message-composer.tsx:52
+msgid "Use a JPEG, PNG or WebP photo under 8 MB."
+msgstr "請使用小於 8 MB 的 JPEG、PNG 或 WebP 照片。"
+
 #: apps/web/src/desktop/ui/phone-only.tsx:13
 #~ msgid "Use a phone to collect with an NFC card."
 #~ msgstr "請用手機透過 NFC 卡收款。"
@@ -10806,6 +11155,13 @@ msgstr "使用者名稱已複製"
 #: apps/web/src/lib/validation-i18n.ts:21
 msgid "Username must contain 1–80 characters"
 msgstr "使用者名稱必須包含 1–80 個字元"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:98
+#: apps/web/src/components/messaging/new-message-sheet.tsx:109
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:114
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:115
+msgid "Username or phone number"
+msgstr "使用者名稱或手機號碼"
 
 #: apps/web/src/features/auth/hooks/use-username-form.ts:51
 msgid "Username updated"
@@ -10929,7 +11285,7 @@ msgstr "代金券"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/desktop/activity/activity-desk.tsx:374
+#: apps/web/src/desktop/activity/transactions-desk.tsx:382
 #: apps/web/src/desktop/market/market-bits.tsx:82
 #: apps/web/src/desktop/market/market-list-desk.tsx:448
 #: apps/web/src/desktop/market/place-panel.tsx:204
@@ -10967,7 +11323,7 @@ msgid "Voucher controls"
 msgstr "代金券管理"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/desktop/activity/activity-desk.tsx:769
+#: apps/web/src/desktop/activity/transactions-desk.tsx:777
 msgid "Voucher creation receipt"
 msgstr "代金券建立收據"
 
@@ -11079,11 +11435,11 @@ msgstr "代金券標籤"
 msgid "Voucher tracking details are missing."
 msgstr "缺少代金券跟蹤詳情。"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:379
+#: apps/web/src/desktop/activity/transactions-desk.tsx:387
 msgid "Voucher: <0>{voucherLabel}</0>"
 msgstr "代金券：<0>{voucherLabel}</0>"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:383
+#: apps/web/src/desktop/activity/transactions-desk.tsx:391
 msgid "Voucher: Any"
 msgstr "代金券：任何"
 
@@ -11183,12 +11539,17 @@ msgstr "正在等待鏈上確認"
 msgid "Waiting for the chain…"
 msgstr "正在等待鏈上確認…"
 
+#: apps/web/src/desktop/messaging/thread-desk.tsx:189
+#: apps/web/src/features/messaging/ui/thread-page.tsx:113
+msgid "Waiting for them to accept your request."
+msgstr "正在等待對方接受您的請求。"
+
 #: apps/web/src/components/navigation/bottom-navigation.tsx:47
 #: apps/web/src/components/wallet/recipient-address-input.tsx:204
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1063
 #: apps/web/src/desktop/onboarding/setup-desk.tsx:1064
 #: apps/web/src/desktop/shell/crumbs.tsx:14
-#: apps/web/src/desktop/shell/sidebar.tsx:132
+#: apps/web/src/desktop/shell/sidebar.tsx:133
 #: apps/web/src/desktop/wallet/send-recipient-field.tsx:167
 #: apps/web/src/desktop/wallet/wallet-desk.tsx:293
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:21
@@ -11341,6 +11702,11 @@ msgstr "歡迎回來"
 msgid "What are you offering?"
 msgstr "您提供什麼商品或服務？"
 
+#: apps/web/src/desktop/messaging/thread-menu-desk.tsx:155
+#: apps/web/src/features/messaging/ui/thread-menu-sheet.tsx:111
+msgid "What happened?"
+msgstr "發生了什麼事？"
+
 #. js-lingui-explicit-id
 #: apps/web/src/components/introduction/introduction-content.ts:27
 msgid "intro.voucher.title"
@@ -11392,7 +11758,7 @@ msgstr "地點和用途"
 msgid "Where did this happen?"
 msgstr "這是哪裡發生的？"
 
-#: apps/web/src/desktop/activity/activity-desk.tsx:199
+#: apps/web/src/desktop/activity/transactions-desk.tsx:207
 msgid "With"
 msgstr "對方"
 
@@ -11426,6 +11792,11 @@ msgstr "提取流動性"
 #: apps/web/src/features/wallet/hooks/use-pretium-cash.ts:308
 msgid "Withdrawal submitted"
 msgstr "提領已提交"
+
+#: apps/web/src/desktop/messaging/composer-desk.tsx:94
+#: apps/web/src/features/messaging/ui/message-composer.tsx:70
+msgid "Write a message"
+msgstr "輸入訊息"
 
 #: apps/web/src/components/vouchers/voucher-detail-sections.tsx:369
 #: apps/web/src/desktop/vouchers/detail/voucher-posts.tsx:155
@@ -11478,9 +11849,19 @@ msgstr "是"
 msgid "You already have a catalog."
 msgstr "您已經有一個目錄。"
 
+#: apps/web/src/components/messaging/new-message-sheet.tsx:86
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:81
+msgid "You already have a conversation with this person."
+msgstr "您已經和此人有一個對話。"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:39
 #~ msgid "You are signed in with the passkey on this device."
 #~ msgstr "您已使用此裝置上的通行金鑰登入。"
+
+#: apps/web/src/desktop/messaging/thread-desk.tsx:243
+#: apps/web/src/features/messaging/ui/thread-page.tsx:170
+msgid "You blocked this person."
+msgstr "您已封鎖此人。"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:185
 #~ msgid "You can add up to three offerings to one order."
@@ -11513,6 +11894,11 @@ msgstr "資金池停用後，您仍可提取資金。"
 #: apps/web/src/desktop/vouchers/detail/voucher-reviews.tsx:455
 msgid "You can write or edit your review until {0}."
 msgstr "您可以在 {0} 之前撰寫或編輯您的評價。"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:84
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:79
+msgid "You can't message this person."
+msgstr "您無法傳訊息給此人。"
 
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:240
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:226
@@ -11603,6 +11989,11 @@ msgstr "您將收到"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:175
 msgid "You'll send"
 msgstr "您將傳送"
+
+#: apps/web/src/components/messaging/new-message-sheet.tsx:88
+#: apps/web/src/desktop/messaging/new-message-dialog.tsx:83
+msgid "You've sent too many requests today. Try again tomorrow."
+msgstr "您今天傳送的請求過多。請明天再試。"
 
 #: apps/web/src/features/home/hooks/use-passkey-settings.ts:36
 #~ msgid "Your account has a passkey, but it is not on this device. Your paper "

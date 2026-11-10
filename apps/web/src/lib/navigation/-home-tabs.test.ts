@@ -87,3 +87,12 @@ describe("isAtHomeTabRoot", () => {
     ).toBe(true);
   });
 });
+
+describe("Activity's own destination", () => {
+  it("is Transactions; another sub-tab is beneath it", () => {
+    expect(isAtHomeTabRoot({ tab: "activity" })).toBe(true);
+    expect(isAtHomeTabRoot({ tab: "activity", section: "transactions" })).toBe(true);
+    expect(isAtHomeTabRoot({ tab: "activity", section: "messages" })).toBe(false);
+    expect(isAtHomeTabRoot({ tab: "activity", section: "helpdesk" })).toBe(false);
+  });
+});

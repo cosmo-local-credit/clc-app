@@ -26,6 +26,12 @@ describe("desktopNavSelection", () => {
     expect(desktopNavSelection("/posts/rpt_1")).toEqual({ nav: "posts" });
     expect(desktopNavSelection("/settings/profile")).toEqual({ nav: "settings" });
   });
+
+  it("keeps an open thread under Activity", () => {
+    expect(desktopNavSelection("/messages/5")).toEqual({ nav: "activity" });
+    expect(deskCrumbIds("/messages/5")).toEqual(["activity"]);
+    expect(desktopChrome("/messages/5", {}, "fill")).toBe("fill");
+  });
 });
 
 describe("desktopChrome", () => {

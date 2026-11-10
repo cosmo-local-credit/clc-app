@@ -5,7 +5,11 @@ import {
   parseVoucherSheetSearch,
   type VoucherSheetSearch,
 } from "#/lib/navigation/voucher-sheet-search";
-import { pickActivitySearch, type ActivityRouteSearch } from "#/lib/navigation/activity-search";
+import {
+  parseActivitySection,
+  pickActivitySearch,
+  type ActivityRouteSearch,
+} from "#/lib/navigation/activity-search";
 import { parseWantSheetSearch, type WantSheetSearch } from "#/lib/navigation/want-sheet-search";
 
 const privateHomeTabs = ["wallet", "activity", "settings"] as const;
@@ -59,6 +63,8 @@ export function parseHomeSearch(
 export function isAtHomeTabRoot(search: unknown): boolean {
   const record = (search ?? {}) as Record<string, unknown>;
   const { tab, view, voucher, want } = parseHomeSearch(record);
+  // A sub-tab other than Transactions is beneath Activity's own destination.
+  if (tab === "activity") return parseActivitySection(record.section) === "transactions";
   if (tab !== "market") return true;
   if (view !== "map" || voucher || want) return false;
   if (record.creditable !== undefined) return false;

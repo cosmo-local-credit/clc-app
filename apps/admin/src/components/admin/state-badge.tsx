@@ -141,6 +141,24 @@ const stateTones: Record<string, StateTone> = {
     label: "failed",
     className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
+  // Helpdesk conversations and abuse reports. `open` is work waiting on an
+  // operator; the two report outcomes differ only in whether anything was done.
+  open: {
+    label: "open",
+    className: "border-state-pending/30 bg-state-pending/10 text-state-pending",
+  },
+  resolved: {
+    label: "resolved",
+    className: "border-state-active/30 bg-state-active/10 text-state-active",
+  },
+  dismissed: {
+    label: "dismissed",
+    className: NEUTRAL,
+  },
+  actioned: {
+    label: "actioned",
+    className: "border-state-active/30 bg-state-active/10 text-state-active",
+  },
   UNKNOWN_RPC_ERROR: {
     label: "rpc error",
     className: "border-destructive/30 bg-destructive/10 text-destructive",

@@ -16,8 +16,8 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => auth,
 }));
 const unread = vi.hoisted(() => ({ count: 0 }));
-vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
-  useActivityUnseen: () => unread,
+vi.mock("#/features/messaging/hooks/use-activity-counts", () => ({
+  useActivityCounts: () => ({ total: unread.count }),
 }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: { name: "Amina Otieno" } }),

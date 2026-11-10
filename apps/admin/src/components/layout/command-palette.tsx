@@ -4,6 +4,7 @@ import {
   HiOutlineAdjustments,
   HiOutlineBell,
   HiOutlineCash,
+  HiOutlineChatAlt2,
   HiOutlineCog,
   HiOutlineCollection,
   HiOutlineCube,
@@ -12,6 +13,7 @@ import {
   HiOutlineLightningBolt,
   HiOutlineNewspaper,
   HiOutlineQrcode,
+  HiOutlineShieldExclamation,
   HiOutlineSwitchHorizontal,
   HiOutlineTicket,
   HiOutlineTag,
@@ -26,6 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "#/components/ui/command";
+import { MESSAGING_ENABLED } from "#/lib/messaging-config";
 
 // The three transaction pages are listed individually rather than as one
 // "Transactions" entry. The palette is how an operator reaches a page without
@@ -37,6 +40,13 @@ const pages = [
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/retirement-requests", label: "Retirement", icon: HiOutlineBell },
   { to: "/reviews", label: "Reviews", icon: HiOutlineFlag },
+  // Behind VITE_MESSAGING_ENABLED, like the routes themselves.
+  ...(MESSAGING_ENABLED
+    ? ([
+        { to: "/helpdesk", label: "Helpdesk", icon: HiOutlineChatAlt2 },
+        { to: "/abuse-reports", label: "Abuse reports", icon: HiOutlineShieldExclamation },
+      ] as const)
+    : []),
   { to: "/deployments", label: "Deployments", icon: HiOutlineCube },
   { to: "/protocol", label: "Protocol", icon: HiOutlineAdjustments },
   { to: "/cash", label: "Cash", icon: HiOutlineCash },

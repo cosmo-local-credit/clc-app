@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { primeNotificationCue } from "./alert-cue";
 import { installAppBadgeSync } from "./app-badge";
+import { dispatchMessagingChanged, NOTIFICATION_INBOX_CHANGED_EVENT } from "./events";
 import { startNotificationSession } from "./session";
 
 export function useNotificationSession(walletAddress: string | undefined): void {
@@ -19,8 +20,9 @@ export function useNotificationSession(walletAddress: string | undefined): void 
         walletAddress,
         signal: controller.signal,
         onInboxChanged: () => {
-          window.dispatchEvent(new Event("clc-notification-inbox-changed"));
+          window.dispatchEvent(new Event(NOTIFICATION_INBOX_CHANGED_EVENT));
         },
+        onMessagingChanged: dispatchMessagingChanged,
         onIdentityChanged: () => {
           void queryClient.invalidateQueries({ queryKey: ["auth", "session"] });
         },

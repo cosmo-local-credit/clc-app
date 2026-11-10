@@ -1,11 +1,27 @@
 import { z } from "zod";
 import { normalizeNotificationTargetUrl } from "./target-url";
 
-const notificationKinds = ["voucher.received", "offramp.completed"] as const;
+/** Kinds every client in the field parses; the service assumes these when none are declared. */
+const V1_NOTIFICATION_KINDS = ["voucher.received", "offramp.completed"] as const;
 
-export const notificationKindSchema = z.enum(notificationKinds);
+/** Kinds that open a conversation. They show in Messages and Helpdesk, not in Notifications. */
+const MESSAGING_NOTIFICATION_KINDS = [
+  "message.received",
+  "message.request",
+  "message.accepted",
+  "helpdesk.reply",
+] as const;
+
+/** Every kind this build parses, declared to the service once this build's worker is active. */
+export const NOTIFICATION_KINDS = [...V1_NOTIFICATION_KINDS, ...MESSAGING_NOTIFICATION_KINDS];
+
+export const notificationKindSchema = z.enum(NOTIFICATION_KINDS);
 
 export type NotificationKind = z.infer<typeof notificationKindSchema>;
+
+export function isMessagingNotificationKind(kind: NotificationKind): boolean {
+  return (MESSAGING_NOTIFICATION_KINDS as readonly string[]).includes(kind);
+}
 
 export const notificationPrioritySchema = z.enum(["very-low", "low", "normal", "high"]);
 
@@ -37,6 +53,22 @@ const notificationKindPolicies = {
     ...sharedV1Policy,
     priority: "high",
   },
+  "message.received": {
+    ...sharedV1Policy,
+    priority: "high",
+  },
+  "message.request": {
+    ...sharedV1Policy,
+    priority: "high",
+  },
+  "message.accepted": {
+    ...sharedV1Policy,
+    priority: "normal",
+  },
+  "helpdesk.reply": {
+    ...sharedV1Policy,
+    priority: "high",
+  },
 } satisfies Record<NotificationKind, NotificationKindPolicy>;
 
 export function getNotificationKindPolicy(kind: NotificationKind): NotificationKindPolicy {
@@ -56,6 +88,8 @@ export type NotificationPayload = {
   deliveryExpiresAt?: string;
   actions?: NotificationAction[];
   body: string;
+  /** Decimal string, present on the messaging kinds. */
+  conversationId?: string;
   createdAt: string;
   expiresAt?: string;
   kind: NotificationKind;
@@ -91,6 +125,12 @@ const optionalIdSchema = optionalTrimmedString().pipe(trimmedString().min(1).max
 
 const notificationOptionalMetadataSchema = z.object({
   actions: z.array(notificationActionSchema).max(2).optional(),
+  conversationId: optionalTrimmedString().pipe(
+    z
+      .string()
+      .regex(/^[1-9][0-9]{0,18}$/)
+      .optional(),
+  ),
   expiresAt: optionalTrimmedString().pipe(isoTimestampSchema.optional()),
   offRampReference: optionalIdSchema,
   voucherId: optionalIdSchema,

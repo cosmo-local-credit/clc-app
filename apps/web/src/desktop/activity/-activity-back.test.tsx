@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { describe, expect, it } from "vite-plus/test";
 
-import { activityInspectorSearch } from "./activity-desk";
+import { activityInspectorSearch } from "./transactions-desk";
 
 const TX = "7:0xabc";
 

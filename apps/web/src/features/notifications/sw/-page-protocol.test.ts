@@ -52,6 +52,8 @@ describe("initializeNotificationWorkerProtocol", () => {
       serviceWorkerVersion: "notifications-worker-v1",
       workerProtocolVersion: 1,
     });
+    // A worker from before messaging names no kinds, so none are declared.
+    expect(dependencies.updateConfig.mock.calls[0]?.[0]).toHaveProperty("workerKinds", undefined);
     expect(dependencies.post).toHaveBeenCalledWith(
       dependencies.worker,
       expect.objectContaining({
@@ -66,6 +68,33 @@ describe("initializeNotificationWorkerProtocol", () => {
       protocolVersion: 1,
       targetUrl: "/wallet",
       type: "notification:event",
+    });
+  });
+
+  it("records the kinds a messaging-aware worker parses", async () => {
+    dependencies.request.mockImplementation(
+      async (_worker: ServiceWorker, message: NotificationPageMessage) =>
+        message.type === "notification:check-compatibility"
+          ? {
+              compatible: true,
+              kinds: ["voucher.received", "message.received"],
+              protocolVersion: 1,
+              requestId: message.requestId,
+              type: "notification:compatibility-result",
+            }
+          : {
+              protocolVersion: 1,
+              requestId: message.requestId,
+              type: "notification:ack-queue-flushed",
+            },
+    );
+
+    await initializeNotificationWorkerProtocol(dependencies);
+
+    expect(dependencies.updateConfig).toHaveBeenCalledWith({
+      serviceWorkerVersion: "notifications-worker-v1",
+      workerProtocolVersion: 1,
+      workerKinds: ["voucher.received", "message.received"],
     });
   });
 

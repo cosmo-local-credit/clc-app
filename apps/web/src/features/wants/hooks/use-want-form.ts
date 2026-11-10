@@ -33,7 +33,7 @@ export type WantFormProfile = NonNullable<ReturnType<typeof useAuthProfile>["dat
  * Names a Want's save, `"new"` for one being created, so a view that mounts
  * while it is still in flight (the phone/desktop swap) can see it.
  */
-export const wantSaveMutationKey = (id?: string) => [...wantKeys.all, "save", id ?? "new"] as const;
+const wantSaveMutationKey = (id?: string) => [...wantKeys.all, "save", id ?? "new"] as const;
 
 function localDateTime(value: string | Date) {
   const date = typeof value === "string" ? new Date(value) : value;

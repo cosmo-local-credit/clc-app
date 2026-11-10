@@ -122,7 +122,7 @@ vi.mock("#/lib/api/retirement", () => ({
   retirementClient: { listMine: mocks.listRetirements, cancel: mocks.cancelRetirement },
 }));
 // Only the row key is used; the Activity screen is its own module.
-vi.mock("#/desktop/activity/activity-desk", () => ({ activityRowKey: () => "row" }));
+vi.mock("#/desktop/activity/transactions-desk", () => ({ activityRowKey: () => "row" }));
 
 import { WalletDesk } from "./wallet-desk";
 

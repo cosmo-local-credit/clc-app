@@ -65,10 +65,14 @@ export function storageTokenQueryOptions(auth: AuthClient, identity: string) {
  * dropped and re-read, then the upload is retried. Query's own retry can re-enter
  * this path for a retryable failure, so one user action can reach two token reads;
  * a second 401 most often means the session itself is gone.
+ *
+ * `storage` is a getter, read only when an upload runs: the app's client rejects
+ * an unset storage URL, and a screen that merely offers uploads must still render
+ * without one.
  */
 export function uploadImageMutationOptions(
   auth: AuthClient,
-  storage: ImageUploadClient,
+  storage: () => ImageUploadClient,
   identity: string,
 ) {
   return mutationOptions({
@@ -79,16 +83,17 @@ export function uploadImageMutationOptions(
     gcTime: 60_000,
     mutationFn: async (input: UploadImageInput, context) => {
       const tokenOptions = storageTokenQueryOptions(auth, identity);
+      const client = storage();
       const session = await context.client.fetchQuery(tokenOptions);
 
       try {
-        return await storage.upload(input, session.token);
+        return await client.upload(input, session.token);
       } catch (error) {
         if (!isStorageUnauthorized(error)) throw error;
 
         context.client.removeQueries({ queryKey: tokenOptions.queryKey, exact: true });
         const refreshed = await context.client.fetchQuery(tokenOptions);
-        return storage.upload(input, refreshed.token);
+        return client.upload(input, refreshed.token);
       }
     },
     retry: (failureCount: number, error: unknown) =>

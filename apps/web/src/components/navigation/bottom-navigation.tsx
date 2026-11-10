@@ -31,7 +31,7 @@ export function BottomNavigation({
   isMarketMap: boolean;
   /** A guest: the private tabs carry a lock and open the sign-in screen. */
   locked?: boolean;
-  /** Incoming Activity rows since the person last opened it. */
+  /** Activity's sub-tab counts summed: new transactions, messages and support replies. */
   unreadActivity?: number;
 }) {
   const { t } = useLingui();

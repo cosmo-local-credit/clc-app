@@ -33,6 +33,14 @@ describe("handleNotificationProtocolMessage", () => {
 
     expect(respond).toHaveBeenCalledWith({
       compatible: true,
+      kinds: [
+        "voucher.received",
+        "offramp.completed",
+        "message.received",
+        "message.request",
+        "message.accepted",
+        "helpdesk.reply",
+      ],
       protocolVersion: 1,
       requestId: "request-1",
       type: "notification:compatibility-result",

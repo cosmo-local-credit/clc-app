@@ -14,7 +14,19 @@ export const ACTIVITY_KIND_ORDER = [
 export const ACTIVITY_RANGES = ["7d", "30d", "90d"] as const;
 export type ActivityRange = (typeof ACTIVITY_RANGES)[number];
 
+/** Activity's sub-tabs. `transactions` is the default and never written to the URL. */
+export const ACTIVITY_SECTIONS = ["transactions", "messages", "notifications", "helpdesk"] as const;
+export type ActivitySection = (typeof ACTIVITY_SECTIONS)[number];
+
+export function parseActivitySection(value: unknown): ActivitySection {
+  return (ACTIVITY_SECTIONS as readonly unknown[]).includes(value)
+    ? (value as ActivitySection)
+    : "transactions";
+}
+
 export type ActivityRouteSearch = {
+  /** Activity's sub-tab; absent is Transactions. */
+  section?: string;
   activityQ?: string | readonly string[];
   activityTypes?: string | readonly string[];
   /** Desktop only: one voucher's rows, by checksummed token address. */
@@ -38,7 +50,9 @@ export function pickActivitySearch(search: unknown): ActivityRouteSearch {
   const activityVoucher = pickStringSearchValue(record.activityVoucher);
   const activityRange = pickStringSearchValue(record.activityRange);
   const tx = typeof record.tx === "string" && record.tx.length > 0 ? record.tx : undefined;
+  const section = typeof record.section === "string" ? record.section : undefined;
   return {
+    ...(section !== undefined ? { section } : {}),
     ...(activityQ !== undefined ? { activityQ } : {}),
     ...(activityTypes !== undefined ? { activityTypes } : {}),
     ...(activityVoucher !== undefined ? { activityVoucher } : {}),
@@ -88,13 +102,16 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
   const raw = pickActivitySearch(search);
   const parsed = parseActivitySearch(raw);
   const desk = parseActivityDeskFilters(raw);
+  const section = parseActivitySection(raw.section);
   const canonical: ActivityRouteSearch = {
+    section: section === "transactions" ? undefined : section,
     activityQ: parsed.q || undefined,
     activityTypes: parsed.types.length ? parsed.types.join(",") : undefined,
     ...(raw.activityVoucher !== undefined ? { activityVoucher: desk.voucher } : {}),
     ...(raw.activityRange !== undefined ? { activityRange: desk.range } : {}),
   };
   if (
+    raw.section === canonical.section &&
     raw.activityQ === canonical.activityQ &&
     raw.activityTypes === canonical.activityTypes &&
     raw.activityVoucher === canonical.activityVoucher &&
@@ -107,6 +124,7 @@ export function canonicalActivityRouteSearch(search: unknown): ActivityRouteSear
 
 export function clearActivityRouteSearch(): ActivityRouteSearch {
   return {
+    section: undefined,
     activityQ: undefined,
     activityTypes: undefined,
     activityVoucher: undefined,

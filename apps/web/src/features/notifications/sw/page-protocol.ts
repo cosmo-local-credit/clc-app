@@ -61,6 +61,8 @@ export async function initializeNotificationWorkerProtocol(
     .updateConfig({
       serviceWorkerVersion: NOTIFICATION_SERVICE_WORKER_VERSION,
       workerProtocolVersion: compatibility.protocolVersion,
+      // Cleared when an older worker answers, so nothing it cannot parse is declared.
+      workerKinds: compatibility.kinds,
     })
     .catch(() => undefined);
   dependencies.post(worker, {

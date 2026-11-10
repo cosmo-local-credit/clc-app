@@ -363,6 +363,46 @@ describe("notification API wrappers", () => {
   });
 });
 
+describe("tolerant inbox parsing", () => {
+  const item = (kind: string, notificationId: string) => ({
+    body: "Body",
+    createdAt: "2026-06-05T12:00:00.000Z",
+    deviceId: "device-1",
+    kind,
+    notificationId,
+    pushStatus: "sent",
+    recordId: `record-${notificationId}`,
+    revision: 1,
+    sentAt: "2026-06-05T12:00:01.000Z",
+    targetUrl: "/wallet",
+    title: "Title",
+  });
+
+  it("skips a kind this build cannot parse and keeps the rest of the page", async () => {
+    const { fetcher } = createJsonFetcher({
+      hasMore: false,
+      resetRequired: false,
+      deletions: [],
+      deletedIds: [],
+      messages: [
+        item("voucher.received", "n-1"),
+        item("pool.retired", "n-2"),
+        { notificationId: "n-3" },
+        { ...item("message.received", "n-4"), targetUrl: "/messages/4", conversationId: "4" },
+      ],
+      nextSyncCursor: "cursor-2",
+    });
+
+    const page = await syncNotificationInbox(
+      { deviceId: "device-1", kinds: ["voucher.received", "message.received"] },
+      { baseUrl: "https://push.example", fetcher },
+    );
+    expect(page.messages.map((message) => message.notificationId)).toEqual(["n-1", "n-4"]);
+    expect(page.messages[1]?.conversationId).toBe("4");
+    expect(page.nextSyncCursor).toBe("cursor-2");
+  });
+});
+
 describe("notification API error handling", () => {
   it("surfaces JSON backend errors as NotificationClientError", async () => {
     const { fetcher } = createJsonFetcher({ error: "device not found" }, { status: 404 });

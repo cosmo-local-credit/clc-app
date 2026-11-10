@@ -16,6 +16,7 @@ import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as PostsIndexRouteImport } from './routes/posts/index'
 import { Route as NavIndexRouteImport } from './routes/_nav/index'
 import { Route as SettingsSignInCardRouteImport } from './routes/settings/sign-in-card'
+import { Route as MessagesConversationIdRouteImport } from './routes/messages/$conversationId'
 import { Route as NavInstallRouteImport } from './routes/_nav/install'
 import { Route as NavWantsIndexRouteImport } from './routes/_nav/wants/index'
 import { Route as NavVouchersIndexRouteImport } from './routes/_nav/vouchers/index'
@@ -82,6 +83,11 @@ const NavIndexRoute = NavIndexRouteImport.update({
 const SettingsSignInCardRoute = SettingsSignInCardRouteImport.update({
   id: '/settings/sign-in-card',
   path: '/settings/sign-in-card',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesConversationIdRoute = MessagesConversationIdRouteImport.update({
+  id: '/messages/$conversationId',
+  path: '/messages/$conversationId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NavInstallRoute = NavInstallRouteImport.update({
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/': typeof NavIndexRoute
   '/onboarding': typeof OnboardingRoute
   '/install': typeof NavInstallRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/settings/sign-in-card': typeof SettingsSignInCardRoute
   '/posts/': typeof PostsIndexRoute
   '/settings/': typeof SettingsIndexRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/install': typeof NavInstallRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/settings/sign-in-card': typeof SettingsSignInCardRoute
   '/': typeof NavIndexRoute
   '/posts': typeof PostsIndexRoute
@@ -343,6 +351,7 @@ export interface FileRoutesById {
   '/_nav': typeof NavRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/_nav/install': typeof NavInstallRoute
+  '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/settings/sign-in-card': typeof SettingsSignInCardRoute
   '/_nav/': typeof NavIndexRoute
   '/posts/': typeof PostsIndexRoute
@@ -387,6 +396,7 @@ export interface FileRouteTypes {
     | '/'
     | '/onboarding'
     | '/install'
+    | '/messages/$conversationId'
     | '/settings/sign-in-card'
     | '/posts/'
     | '/settings/'
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
   to:
     | '/onboarding'
     | '/install'
+    | '/messages/$conversationId'
     | '/settings/sign-in-card'
     | '/'
     | '/posts'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/_nav'
     | '/onboarding'
     | '/_nav/install'
+    | '/messages/$conversationId'
     | '/settings/sign-in-card'
     | '/_nav/'
     | '/posts/'
@@ -511,6 +523,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   NavRoute: typeof NavRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
+  MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   SettingsSignInCardRoute: typeof SettingsSignInCardRoute
   PostsIndexRoute: typeof PostsIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
@@ -568,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/sign-in-card'
       fullPath: '/settings/sign-in-card'
       preLoaderRoute: typeof SettingsSignInCardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/$conversationId': {
+      id: '/messages/$conversationId'
+      path: '/messages/$conversationId'
+      fullPath: '/messages/$conversationId'
+      preLoaderRoute: typeof MessagesConversationIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_nav/install': {
@@ -879,6 +899,7 @@ const NavRouteWithChildren = NavRoute._addFileChildren(NavRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   NavRoute: NavRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
+  MessagesConversationIdRoute: MessagesConversationIdRoute,
   SettingsSignInCardRoute: SettingsSignInCardRoute,
   PostsIndexRoute: PostsIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,

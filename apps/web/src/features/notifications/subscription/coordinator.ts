@@ -8,6 +8,7 @@ import {
   registerNotificationDevice,
   type VapidPublicKeyResponse,
 } from "../api/notification-client";
+import { declaredNotificationKinds } from "../logic/declared-kinds";
 import { detectNotificationCapability, type NotificationCapability } from "../platform/capability";
 import {
   beginNotificationIdentity,
@@ -150,12 +151,14 @@ export async function enableNotificationSubscription(
     const serviceWorkerVersion =
       options.serviceWorkerVersion ?? NOTIFICATION_SERVICE_WORKER_VERSION;
     const appVersion = options.appVersion ?? readAppVersion();
+    const kinds = declaredNotificationKinds(config);
 
     const registerResponse = await registerNotificationDevice(
       {
         appVersion,
         currentWalletAddress: options.currentWalletAddress,
         deviceId,
+        ...(kinds ? { kinds } : {}),
         permissionState: capability.permission,
         platform: capability.platform,
         pushSubscription: subscriptionResult.subscription,
@@ -175,6 +178,7 @@ export async function enableNotificationSubscription(
         userId: registerResponse.userId,
         generation: registerResponse.generation,
         syncCursor: config?.syncCursor ?? registerResponse.inboxSyncCursor,
+        registeredKinds: kinds,
         vapidKeyVersion: vapid.keyVersion,
         vapidPublicKey: vapid.publicKey,
       },

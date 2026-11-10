@@ -9,10 +9,21 @@ import type { NotificationClientOptions } from "../api/notification-client";
 import { syncNotificationInboxState } from "../recovery/recovery";
 import { isNotificationIdentityCurrent } from "../storage/notification-db";
 
-const publicationSchema = z.object({
+const notificationPublicationSchema = z.object({
   notificationId: z.string().min(1),
   revision: z.number().int().nonnegative(),
 });
+
+/** A messaging sync with no inbox entry. A `conversationId` of 0 names no conversation. */
+const messagingPublicationSchema = z.object({
+  type: z.literal("messaging"),
+  conversationId: z.number().int().nonnegative(),
+});
+
+export const publicationSchema = z.union([
+  messagingPublicationSchema,
+  notificationPublicationSchema,
+]);
 
 export async function connectNotificationRealtime(options: {
   identityEpoch: string;
@@ -22,6 +33,8 @@ export async function connectNotificationRealtime(options: {
   client?: NotificationClientOptions;
   signal?: AbortSignal;
   onInboxChanged?: () => void;
+  /** A conversation changed for this user: a message, a status, a read marker or a block. */
+  onMessagingChanged?: (conversationId: number) => void;
   onIdentityChanged?: () => void;
   initialToken?: Awaited<ReturnType<typeof fetchNotificationRealtimeToken>>;
 }): Promise<() => void> {
@@ -124,6 +137,10 @@ export async function connectNotificationRealtime(options: {
   client.on("publication", (event) => {
     const parsed = publicationSchema.safeParse(event.data);
     if (!parsed.success || stopped) return;
+    if ("type" in parsed.data) {
+      options.onMessagingChanged?.(parsed.data.conversationId);
+      return;
+    }
     const { notificationId, revision } = parsed.data;
     if ((revisions.get(notificationId) ?? -1) >= revision) return;
     revisions.set(notificationId, revision);

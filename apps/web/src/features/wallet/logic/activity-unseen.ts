@@ -7,7 +7,7 @@ import { z } from "zod";
  * that timestamp. Rows in one block share a timestamp and the indexer can deliver
  * them apart, so the keys keep a late sibling from passing as seen.
  */
-export const seenMarkerSchema = z.object({
+const seenMarkerSchema = z.object({
   at: z.string(),
   keys: z.array(z.string()),
 });

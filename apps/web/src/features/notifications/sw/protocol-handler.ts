@@ -1,3 +1,4 @@
+import { NOTIFICATION_KINDS } from "../logic/payload-schema";
 import type { NotificationPendingClickEvent } from "../storage/notification-db";
 import {
   NOTIFICATION_WORKER_PROTOCOL_VERSION,
@@ -25,6 +26,7 @@ export async function handleNotificationProtocolMessage(
   if (message.type === "notification:check-compatibility") {
     respond({
       compatible: message.supportedProtocolVersions.includes(NOTIFICATION_WORKER_PROTOCOL_VERSION),
+      kinds: [...NOTIFICATION_KINDS],
       protocolVersion: NOTIFICATION_WORKER_PROTOCOL_VERSION,
       requestId: message.requestId,
       type: "notification:compatibility-result",

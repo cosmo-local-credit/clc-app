@@ -248,7 +248,7 @@ export function useVoucherOwnershipTransferForm({
       try {
         const result = await transferOwnership.mutateAsync({
           tokenAddress: tokenAddress as `0x${string}`,
-          ownerAddress: walletAddress,
+          ownerAddress,
           newOwnerAddress: value.newOwnerAddress as `0x${string}`,
           includeAuthorization: delegationStatus === "not-delegated",
         });

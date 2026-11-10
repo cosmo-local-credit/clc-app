@@ -4,12 +4,14 @@ import {
   HiOutlineAdjustments,
   HiOutlineBell,
   HiOutlineCash,
+  HiOutlineChatAlt2,
   HiOutlineCollection,
   HiOutlineCube,
   HiOutlineFlag,
   HiOutlineHome,
   HiOutlineNewspaper,
   HiOutlineQrcode,
+  HiOutlineShieldExclamation,
   HiOutlineSwitchHorizontal,
   HiOutlineTag,
   HiOutlineTicket,
@@ -19,7 +21,12 @@ import { MdOutlineNfc } from "react-icons/md";
 import { BRAND_ICON_BASE } from "#/lib/brand";
 import { CommandPalette } from "#/components/layout/command-palette";
 import { OperatorMenu } from "#/components/layout/operator-menu";
+import {
+  AbuseReportsOpenBadge,
+  HelpdeskNeedsReplyBadge,
+} from "#/features/messaging/messaging-counts";
 import { RetirementPendingBadge } from "#/features/retirement/retirement-notification";
+import { MESSAGING_ENABLED } from "#/lib/messaging-config";
 import {
   Sidebar,
   SidebarContent,
@@ -49,6 +56,8 @@ type NavPath =
   | "/posts"
   | "/vocabulary"
   | "/reviews"
+  | "/helpdesk"
+  | "/abuse-reports"
   | "/deployments"
   | "/protocol"
   | "/cash"
@@ -81,6 +90,13 @@ const navItems: Array<{
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/retirement-requests", label: "Retirement", icon: HiOutlineBell },
   { to: "/reviews", label: "Reviews", icon: HiOutlineFlag },
+  // Behind VITE_MESSAGING_ENABLED, like the routes themselves.
+  ...(MESSAGING_ENABLED
+    ? [
+        { to: "/helpdesk" as const, label: "Helpdesk", icon: HiOutlineChatAlt2 },
+        { to: "/abuse-reports" as const, label: "Abuse reports", icon: HiOutlineShieldExclamation },
+      ]
+    : []),
   { to: "/deployments", label: "Deployments", icon: HiOutlineCube },
   { to: "/protocol", label: "Protocol", icon: HiOutlineAdjustments },
   { to: "/cash", label: "Cash", icon: HiOutlineCash },
@@ -150,6 +166,8 @@ function AppShellInner() {
                         <item.icon />
                         <span className="min-w-0 truncate">{item.label}</span>
                         {item.to === "/retirement-requests" ? <RetirementPendingBadge /> : null}
+                        {item.to === "/helpdesk" ? <HelpdeskNeedsReplyBadge /> : null}
+                        {item.to === "/abuse-reports" ? <AbuseReportsOpenBadge /> : null}
                       </SidebarMenuButton>
                       {item.children ? (
                         <SidebarMenuSub>

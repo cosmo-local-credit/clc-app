@@ -18,6 +18,7 @@ import {
   removeQueuedNotificationAck,
   updateNotificationAckAttempt,
 } from "../storage/notification-db";
+import { declaredNotificationKinds } from "../logic/declared-kinds";
 import { runNotificationSubscriptionHealthCheck } from "../subscription/health-check";
 
 const MAX_ACK_ATTEMPTS = 5;
@@ -144,12 +145,18 @@ export async function syncNotificationInboxState(
     return { status: "skipped" };
   const client = { ...options.client, identityEpoch: config.identityEpoch };
   let cursor = config.syncCursor;
+  const kinds = declaredNotificationKinds(config);
   let saved = 0;
   let deleted = 0;
   for (;;) {
     if (!(await isNotificationIdentityCurrent(config.identityEpoch))) return { status: "skipped" };
     const response = await syncNotificationInbox(
-      { deviceId, registrationId: config.registrationId, lastSyncCursor: cursor },
+      {
+        deviceId,
+        registrationId: config.registrationId,
+        lastSyncCursor: cursor,
+        ...(kinds ? { kinds } : {}),
+      },
       client,
     );
     const committed = await applyNotificationInboxPage(config.identityEpoch, cursor, {

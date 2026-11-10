@@ -52,6 +52,10 @@ vi.mock("#/features/wallet/hooks/use-activity-unseen", () => ({
   useActivityUnseen: () => ({ count: 0 }),
 }));
 
+vi.mock("#/features/messaging/hooks/use-messaging-unread", () => ({
+  useMessagingUnread: () => ({ counts: undefined, messages: 0, helpdesk: 0 }),
+}));
+
 vi.mock("#/components/ui/clc-logo", () => ({
   CLCLogo: () => <svg data-testid="clc-logo" />,
 }));
