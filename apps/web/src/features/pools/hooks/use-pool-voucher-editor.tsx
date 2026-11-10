@@ -17,8 +17,9 @@ import {
 } from "@clc/core/features/wallet/logic";
 import { useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { BackendApiError } from "@clc/api/client/errors";
 import { useIsMutating } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
@@ -47,6 +48,7 @@ import {
   suggestApprovalVouchers,
   toApprovalCandidate,
 } from "#/features/pools/logic/approval-suggestions";
+import type { PoolApproveSeed } from "#/lib/navigation/pool-side";
 
 /**
  * The voucher a steward is configuring, whichever screen they came from.
@@ -81,18 +83,63 @@ export type VoucherBalanceState =
 export function usePoolVoucherEditor({
   pool,
   voucher,
+  approvedCatalog = [],
+  approveSeed = null,
 }: {
   pool: UserPool;
   voucher: PoolVoucher | null;
+  /** The pool's catalog rows: a voucher already listed is already approved. */
+  approvedCatalog?: readonly PoolVoucher[];
+  /** A steward-approve link's voucher, rate and limit. The approve flow only. */
+  approveSeed?: PoolApproveSeed | null;
 }) {
   const { t } = useLingui();
   const quoter = usePoolQuoterKind(pool);
   const [picked, setPicked] = useState<ApprovalCandidate | null>(null);
+  // The link's seeds until they are dropped: a different voucher picked, the
+  // named one missing from the catalog, or already approved.
+  const [seeds, setSeeds] = useState<PoolApproveSeed | null>(voucher ? null : approveSeed);
+  const [candidateMissing, setCandidateMissing] = useState(false);
+  const candidateAddress = !picked && seeds ? seeds.candidate : undefined;
 
   // Only the picked voucher's decimals are missing — a pool row already carries
   // them — so the detail is fetched once a voucher is chosen rather than for
-  // every candidate in the search results.
-  const pickedDetail = useMarketVoucherDetail(picked?.address);
+  // every candidate in the search results. A link's candidate resolves through
+  // the same read, which also supplies its name and symbol.
+  const pickedDetail = useMarketVoucherDetail(picked?.address ?? candidateAddress);
+  const candidateDetail = candidateAddress ? pickedDetail.data : undefined;
+  const candidateError = candidateAddress && pickedDetail.isError ? pickedDetail.error : null;
+  // The catalog answering that it does not know the address, as opposed to a
+  // read that failed and may succeed on retry.
+  const candidateUnknown =
+    candidateError !== null &&
+    (!(candidateError instanceof BackendApiError) || candidateError.kind === "not-found");
+  useEffect(() => {
+    if (!candidateAddress) return;
+    if (candidateDetail) {
+      const candidate = toApprovalCandidate({
+        id: candidateDetail.address,
+        address: candidateDetail.address,
+        name: candidateDetail.name,
+        symbol: candidateDetail.symbol,
+      });
+      if (candidate) {
+        setPicked(candidate);
+        return;
+      }
+    }
+    if (candidateDetail || candidateUnknown) {
+      setSeeds(null);
+      setCandidateMissing(true);
+    }
+  }, [candidateAddress, candidateDetail, candidateUnknown]);
+
+  /** Picking, or clearing, any voucher but the named one drops the link's seeds. */
+  const choose = (next: ApprovalCandidate | null) => {
+    if (next?.address !== seeds?.candidate) setSeeds(null);
+    setCandidateMissing(false);
+    setPicked(next);
+  };
   const selected: PoolVoucherEditorVoucher | null = voucher
     ? {
         address: voucher.tokenAddress,
@@ -117,7 +164,10 @@ export function usePoolVoucherEditor({
   const membershipRequired = !voucher && poolTokenRegistryAddress(pool) !== null;
   const membershipPending = membershipRequired && membership.isPending;
   const membershipUnread = membershipRequired && membership.isError;
-  const approvalAlreadyRegistered = !voucher && membership.data === true;
+  const approvalAlreadyRegistered =
+    !voucher &&
+    (membership.data === true ||
+      (selected !== null && approvedCatalog.some((row) => row.tokenAddress === selected.address)));
   // Only register on a positive "not a member". An unread membership defaults to
   // not registering, because a redundant `add` reverts the whole batch while a
   // missing one merely leaves the voucher unlisted and re-approvable.
@@ -172,7 +222,7 @@ export function usePoolVoucherEditor({
     if (membershipUnread) void membership.refetch();
     if (rateUnread || capUnread) retryReads();
   };
-  const seed =
+  const chainSeed =
     selected && seedRatePpm && (!hasLimiter || seedCapRaw !== null)
       ? seedPoolVoucherRateInput({
           exchangeRatePpm: seedRatePpm,
@@ -180,6 +230,18 @@ export function usePoolVoucherEditor({
           decimals: selected.decimals,
         })
       : null;
+  // A link's rate and limit replace the chain's only once every read the chain
+  // seed waits on is in, so no block is lifted by them.
+  const seed =
+    chainSeed && seeds && selected?.address === seeds.candidate
+      ? applyApproveSeed(chainSeed, seeds, hasLimiter)
+      : chainSeed;
+  // A link never becomes a change to a live voucher: that stays a deliberate
+  // `manage`.
+  useEffect(() => {
+    if (approvalAlreadyRegistered && seeds) setSeeds(null);
+  }, [approvalAlreadyRegistered, seeds]);
+
   const configuring =
     selected &&
     seed &&
@@ -195,7 +257,20 @@ export function usePoolVoucherEditor({
   return {
     quoter,
     picked,
-    setPicked,
+    setPicked: choose,
+    /**
+     * A link's candidate: still resolving, unknown to the catalog (its seeds are
+     * dropped), or unreadable (kept for a retry).
+     */
+    candidate: candidateAddress
+      ? candidateError && !candidateUnknown
+        ? ("unreadable" as const)
+        : ("resolving" as const)
+      : candidateMissing
+        ? ("missing" as const)
+        : null,
+    retryCandidate: () => void pickedDetail.refetch(),
+    retryingCandidate: !!candidateAddress && pickedDetail.isFetching,
     selected,
     membership,
     membershipPending,
@@ -397,6 +472,28 @@ export function usePoolVoucherPicker({
     registryError,
     suggested,
     results,
+  };
+}
+
+/**
+ * The chain seed with a link's rate and limit over it, each kept only when the
+ * form's own schema accepts it; an invalid one keeps the chain value.
+ */
+function applyApproveSeed(
+  chainSeed: PoolVoucherRateInput,
+  seeds: PoolApproveSeed,
+  hasLimiter: boolean,
+): PoolVoucherRateInput {
+  const candidate = {
+    exchangeRate: seeds.exchangeRate ?? chainSeed.exchangeRate,
+    creditLimit: hasLimiter ? (seeds.creditLimit ?? chainSeed.creditLimit) : chainSeed.creditLimit,
+  };
+  const result = poolVoucherRateSchema({ requireCreditLimit: hasLimiter }).safeParse(candidate);
+  if (result.success) return candidate;
+  const invalid = new Set(result.error.issues.map((issue) => issue.path[0]));
+  return {
+    exchangeRate: invalid.has("exchangeRate") ? chainSeed.exchangeRate : candidate.exchangeRate,
+    creditLimit: invalid.has("creditLimit") ? chainSeed.creditLimit : candidate.creditLimit,
   };
 }
 

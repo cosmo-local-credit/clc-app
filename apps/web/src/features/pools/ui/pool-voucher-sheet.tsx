@@ -24,6 +24,7 @@ import {
 } from "#/components/ui/sheet";
 import type { useVoucherSearch } from "#/features/home/hooks/use-voucher-search";
 import type { ApprovalSuggestionSource } from "#/features/pools/hooks/use-approval-suggestions";
+import type { PoolApproveSeed } from "#/lib/navigation/pool-side";
 import {
   previewCap,
   type PoolVoucherEditorVoucher,
@@ -54,6 +55,7 @@ export function PoolVoucherSheet({
   pool,
   poolVouchers,
   voucher,
+  approveSeed = null,
   open,
   onClose,
 }: {
@@ -61,6 +63,8 @@ export function PoolVoucherSheet({
   poolVouchers: PoolVoucher[];
   /** Null opens the approve flow; a row opens the manage flow for that voucher. */
   voucher: PoolVoucher | null;
+  /** A steward-approve link's voucher, rate and limit. */
+  approveSeed?: PoolApproveSeed | null;
   open: boolean;
   onClose: () => void;
 }) {
@@ -86,6 +90,7 @@ export function PoolVoucherSheet({
               pool={pool}
               poolVouchers={poolVouchers}
               voucher={voucher}
+              approveSeed={approveSeed}
               onClose={onClose}
             />
           ) : null}
@@ -99,14 +104,21 @@ function PoolVoucherForm({
   pool,
   poolVouchers,
   voucher,
+  approveSeed,
   onClose,
 }: {
   pool: UserPool;
   poolVouchers: PoolVoucher[];
   voucher: PoolVoucher | null;
+  approveSeed: PoolApproveSeed | null;
   onClose: () => void;
 }) {
-  const editor = usePoolVoucherEditor({ pool, voucher });
+  const editor = usePoolVoucherEditor({
+    pool,
+    voucher,
+    approvedCatalog: poolVouchers,
+    approveSeed,
+  });
   const {
     quoter,
     setPicked,
@@ -178,8 +190,34 @@ function PoolVoucherForm({
             loadingDecimals={decimalsPending}
             onChange={voucher ? undefined : () => setPicked(null)}
           />
+        ) : editor.candidate === "resolving" ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Finding that voucher…</Trans>
+          </p>
+        ) : editor.candidate === "unreadable" ? (
+          <div className="space-y-2 border border-border bg-card p-4">
+            <p role="alert" className="text-destructive text-xs">
+              <Trans>Couldn't load that voucher.</Trans>
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              tap
+              pending={editor.retryingCandidate}
+              onClick={editor.retryCandidate}
+            >
+              <Trans>Retry</Trans>
+            </Button>
+          </div>
         ) : (
-          <VoucherPicker pool={pool} approvedCatalog={poolVouchers} onSelect={setPicked} />
+          <>
+            {editor.candidate === "missing" ? (
+              <p role="alert" className="text-destructive text-xs">
+                <Trans>Couldn't find that voucher</Trans>
+              </p>
+            ) : null}
+            <VoucherPicker pool={pool} approvedCatalog={poolVouchers} onSelect={setPicked} />
+          </>
         )}
 
         {quoter.isPending ? (

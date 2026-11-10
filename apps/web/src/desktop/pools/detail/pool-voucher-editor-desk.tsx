@@ -28,6 +28,7 @@ import {
   type VoucherBalanceState,
 } from "#/features/pools/hooks/use-pool-voucher-editor";
 import type { ApprovalCandidate } from "#/features/pools/logic/approval-suggestions";
+import type { PoolApproveSeed } from "#/lib/navigation/pool-side";
 
 /**
  * Approve a voucher into the pool (`voucher` null: pick one first) or change
@@ -38,14 +39,22 @@ export function PoolVoucherEditorSide({
   pool,
   poolVouchers,
   voucher,
+  approveSeed = null,
   onClose,
 }: {
   pool: UserPool;
   poolVouchers: PoolVoucher[];
   voucher: PoolVoucher | null;
+  /** A steward-approve link's voucher, rate and limit. */
+  approveSeed?: PoolApproveSeed | null;
   onClose: () => void;
 }) {
-  const editor = usePoolVoucherEditor({ pool, voucher });
+  const editor = usePoolVoucherEditor({
+    pool,
+    voucher,
+    approvedCatalog: poolVouchers,
+    approveSeed,
+  });
   const title = voucher ? <Trans>Manage voucher</Trans> : <Trans>Approve voucher</Trans>;
   const { selected, seed, seedRatePpm, configuring } = editor;
 
@@ -104,8 +113,32 @@ export function PoolVoucherEditorSide({
           loadingDecimals={editor.decimalsPending}
           onChange={voucher ? undefined : () => editor.setPicked(null)}
         />
+      ) : editor.candidate === "resolving" ? (
+        status(<Trans>Finding that voucher…</Trans>)
+      ) : editor.candidate === "unreadable" ? (
+        <div className="grid gap-2 border border-border p-3">
+          <p role="alert" className="text-xs text-destructive">
+            <Trans>Couldn't load that voucher.</Trans>
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="justify-self-start"
+            pending={editor.retryingCandidate}
+            onClick={editor.retryCandidate}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
       ) : (
-        <VoucherPicker pool={pool} approvedCatalog={poolVouchers} onSelect={editor.setPicked} />
+        <>
+          {editor.candidate === "missing" ? (
+            <p role="alert" className="text-xs text-destructive">
+              <Trans>Couldn't find that voucher</Trans>
+            </p>
+          ) : null}
+          <VoucherPicker pool={pool} approvedCatalog={poolVouchers} onSelect={editor.setPicked} />
+        </>
       )}
       {editor.quoter.isPending
         ? status(<Trans>Checking how this pool prices vouchers…</Trans>)
