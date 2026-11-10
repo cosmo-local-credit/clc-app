@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 import {
   getNotificationKindPolicy,
+  isMessagingNotificationKind,
+  NOTIFICATION_KINDS,
   type NotificationKind,
   notificationKindSchema,
   notificationPrioritySchema,
@@ -21,7 +23,14 @@ const basePayload = {
 };
 
 describe("notificationKindSchema", () => {
-  it.each<NotificationKind>(["voucher.received", "offramp.completed"])("accepts %s", (kind) => {
+  it.each<NotificationKind>([
+    "voucher.received",
+    "offramp.completed",
+    "message.received",
+    "message.request",
+    "message.accepted",
+    "helpdesk.reply",
+  ])("accepts %s", (kind) => {
     expect(notificationKindSchema.safeParse(kind).success).toBe(true);
   });
 
@@ -215,5 +224,58 @@ describe("parseNotificationPayload", () => {
     expect(result.payload.voucherId).toBeUndefined();
     expect(result.payload).not.toHaveProperty("metadataStatus");
     expect(result.rawPayload).toBe(rawPayload);
+  });
+});
+
+describe("messaging notification kinds", () => {
+  it("declares the v1 kinds plus the four messaging kinds", () => {
+    expect(NOTIFICATION_KINDS).toEqual([
+      "voucher.received",
+      "offramp.completed",
+      "message.received",
+      "message.request",
+      "message.accepted",
+      "helpdesk.reply",
+    ]);
+  });
+
+  it("marks only the messaging kinds as messaging", () => {
+    expect(NOTIFICATION_KINDS.filter(isMessagingNotificationKind)).toEqual([
+      "message.received",
+      "message.request",
+      "message.accepted",
+      "helpdesk.reply",
+    ]);
+  });
+
+  it("parses a message notification with its thread URL and conversation id", () => {
+    const result = parseNotificationPayload(
+      {
+        ...basePayload,
+        kind: "message.received",
+        title: "New message",
+        body: "amina sent you a message.",
+        targetUrl: "/messages/123",
+        conversationId: "123",
+      },
+      { appOrigin: APP_ORIGIN },
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.payload.targetUrl).toBe("/messages/123");
+    expect(result.payload.conversationId).toBe("123");
+    expect(result.payload.priority).toBe("high");
+  });
+
+  it("drops a malformed conversation id but keeps the notification", () => {
+    const result = parseNotificationPayload(
+      { ...basePayload, kind: "helpdesk.reply", targetUrl: "/messages/9", conversationId: "nine" },
+      { appOrigin: APP_ORIGIN },
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.payload.conversationId).toBeUndefined();
   });
 });

@@ -41,7 +41,7 @@ vi.mock("../storage/notification-db", () => ({ isNotificationIdentityCurrent: mo
 vi.mock("../recovery/recovery", () => ({ syncNotificationInboxState: mocks.sync }));
 vi.mock("./foreground-toast", () => ({ showForegroundNotification: mocks.show }));
 import { NotificationTransportError } from "@clc/api/features/notifications/client";
-import { connectNotificationRealtime } from "./connection";
+import { connectNotificationRealtime, publicationSchema } from "./connection";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -191,5 +191,38 @@ describe("notification realtime ownership", () => {
     expect(dismissers[512]).not.toHaveBeenCalled();
     stop();
     expect(dismissers[512]).toHaveBeenCalledOnce();
+  });
+});
+
+describe("realtime publication union", () => {
+  it("parses both publication shapes and nothing else", () => {
+    expect(publicationSchema.safeParse({ notificationId: "n1", revision: 0 }).success).toBe(true);
+    expect(publicationSchema.safeParse({ type: "messaging", conversationId: 12 }).data).toEqual({
+      type: "messaging",
+      conversationId: 12,
+    });
+    expect(publicationSchema.safeParse({ type: "messaging", conversationId: "12" }).success).toBe(
+      false,
+    );
+    expect(publicationSchema.safeParse({ type: "presence" }).success).toBe(false);
+  });
+
+  it("reports a messaging sync without a toast or an inbox sync", async () => {
+    const onMessagingChanged = vi.fn();
+    const onInboxChanged = vi.fn();
+    const stop = await connectNotificationRealtime({
+      ...identity,
+      onMessagingChanged,
+      onInboxChanged,
+    });
+    const publication = mocks.clients[0]?.listeners.get("publication");
+    publication?.({ data: { type: "messaging", conversationId: 42 } });
+    publication?.({ data: { type: "messaging", conversationId: 0 } });
+    publication?.({ data: { type: "unknown", conversationId: 1 } });
+    await Promise.resolve();
+    expect(onMessagingChanged.mock.calls).toEqual([[42], [0]]);
+    expect(mocks.show).not.toHaveBeenCalled();
+    expect(mocks.sync).not.toHaveBeenCalled();
+    stop();
   });
 });

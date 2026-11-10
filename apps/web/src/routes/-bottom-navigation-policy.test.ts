@@ -131,6 +131,12 @@ const routePolicy = [
     fullPath: "/settings/sign-in-card",
     source: "settings/sign-in-card.tsx",
   },
+  // A thread's composer sits where the tab bar would; Back returns to the inbox.
+  {
+    id: "/messages/$conversationId",
+    fullPath: "/messages/$conversationId",
+    source: "messages/$conversationId.tsx",
+  },
   // A wizard's three-step draft lives in component state a tab tap would discard.
   {
     id: "/vouchers/create/$step",

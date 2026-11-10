@@ -2,7 +2,7 @@ import { Outlet, useMatches, useSearch } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { useActivityUnseen } from "#/features/wallet/hooks/use-activity-unseen";
+import { useActivityCounts } from "#/features/messaging/hooks/use-activity-counts";
 import {
   type HomeTab,
   isAtHomeTabRoot,
@@ -20,7 +20,8 @@ const BOTTOM_NAV_OFFSET = "calc(4rem + env(safe-area-inset-bottom))";
 
 export function NavigationShell() {
   const auth = useAuthStatus();
-  const unreadActivity = useActivityUnseen().count;
+  // Transactions plus Messages and Helpdesk; the messaging part is zero while it is off.
+  const unreadActivity = useActivityCounts().total;
   const navOwner = useMatches({
     select: (matches) => matches.at(-1)?.staticData.navOwner,
   }) as NavOwner | undefined;

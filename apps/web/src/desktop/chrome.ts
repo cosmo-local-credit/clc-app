@@ -71,6 +71,7 @@ export function desktopNavSelection(
   if (path.startsWith("/offers")) return { nav: "market", scope: "offers" };
   if (path.startsWith("/posts")) return { nav: "posts" };
   if (path.startsWith("/settings")) return { nav: "settings" };
+  if (path.startsWith("/messages/")) return { nav: "activity" };
   return { nav: "market" };
 }
 
@@ -153,5 +154,6 @@ export function deskCrumbIds(pathname: string, search: DesktopSearch = {}): Desk
   if (path.startsWith("/catalogs/create")) return ["wallet", "create-catalog"];
   if (path.startsWith("/catalogs")) return ["catalogs"];
   if (path.startsWith("/wants")) return ["wants"];
+  if (path.startsWith("/messages/")) return ["activity"];
   return ["market"];
 }

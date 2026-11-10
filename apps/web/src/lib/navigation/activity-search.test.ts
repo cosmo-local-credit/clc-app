@@ -5,6 +5,7 @@ import {
   clearActivityRouteSearch,
   parseActivityDeskFilters,
   parseActivitySearch,
+  parseActivitySection,
   pickActivitySearch,
 } from "./activity-search";
 
@@ -76,5 +77,23 @@ describe("activity search", () => {
     expect(
       canonicalActivityRouteSearch({ activityVoucher: checksummed, activityRange: "30d" }),
     ).toBeNull();
+  });
+
+  it("reads the sub-tab, defaulting to Transactions", () => {
+    expect(parseActivitySection("messages")).toBe("messages");
+    expect(parseActivitySection("helpdesk")).toBe("helpdesk");
+    expect(parseActivitySection("bogus")).toBe("transactions");
+    expect(parseActivitySection(undefined)).toBe("transactions");
+  });
+
+  it("keeps a valid sub-tab and drops the default or an unknown one", () => {
+    expect(canonicalActivityRouteSearch({ section: "messages" })).toBeNull();
+    expect(canonicalActivityRouteSearch({ section: "transactions" })).toMatchObject({
+      section: undefined,
+    });
+    expect(canonicalActivityRouteSearch({ section: "inbox" })).toMatchObject({
+      section: undefined,
+    });
+    expect(clearActivityRouteSearch()).toHaveProperty("section", undefined);
   });
 });

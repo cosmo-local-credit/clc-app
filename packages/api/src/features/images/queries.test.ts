@@ -43,7 +43,7 @@ async function run(
   auth: AuthClient,
   storage: ImageUploadClient,
 ): Promise<UploadedImage> {
-  const { mutationFn, mutationKey } = uploadImageMutationOptions(auth, storage, IDENTITY);
+  const { mutationFn, mutationKey } = uploadImageMutationOptions(auth, () => storage, IDENTITY);
   if (!mutationFn) throw new Error("uploadImageMutationOptions must define a mutationFn");
 
   const input = {
@@ -142,7 +142,7 @@ describe("uploadImageMutationOptions", () => {
   it("retries only what a second attempt can fix", () => {
     const options = uploadImageMutationOptions(
       authStub().auth,
-      storageStub(async () => uploaded).storage,
+      () => storageStub(async () => uploaded).storage,
       IDENTITY,
     );
     const retry = options.retry as (count: number, error: unknown) => boolean;
@@ -169,10 +169,19 @@ describe("uploadImageMutationOptions", () => {
     });
   });
 
+  it("builds the storage client only when an upload runs", () => {
+    const storage = vi.fn(() => {
+      throw new Error("VITE_STORAGE_URL is unset");
+    });
+
+    expect(() => uploadImageMutationOptions(authStub().auth, storage, IDENTITY)).not.toThrow();
+    expect(storage).not.toHaveBeenCalled();
+  });
+
   it("will not fire while offline rather than queueing a File it cannot persist", () => {
     const options = uploadImageMutationOptions(
       authStub().auth,
-      storageStub(async () => uploaded).storage,
+      () => storageStub(async () => uploaded).storage,
       IDENTITY,
     );
 

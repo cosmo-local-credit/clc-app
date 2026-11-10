@@ -4,6 +4,7 @@ import {
   type NotificationPushSubscriptionJSON,
   registerNotificationDevice,
 } from "../api/notification-client";
+import { declaredNotificationKinds, sameDeclaredKinds } from "../logic/declared-kinds";
 import { detectNotificationCapability, type NotificationCapability } from "../platform/capability";
 import {
   isNotificationStorageAvailable,
@@ -90,7 +91,9 @@ export async function runNotificationSubscriptionHealthCheck(
       ? await dependencies.replaceSubscription(vapid.publicKey)
       : currentSubscription;
     const subscriptionHash = await hashPushSubscription(subscription, vapid.keyVersion);
+    const kinds = declaredNotificationKinds(config);
     const registrationChanged =
+      !sameDeclaredKinds(config.registeredKinds, kinds) ||
       !config.registrationId ||
       config.identityWallet !== options.currentWalletAddress?.toLowerCase() ||
       shouldReplaceSubscription ||
@@ -113,6 +116,7 @@ export async function runNotificationSubscriptionHealthCheck(
           appVersion: options.appVersion ?? config.appVersion,
           currentWalletAddress: options.currentWalletAddress,
           deviceId,
+          ...(kinds ? { kinds } : {}),
           permissionState: capability.permission,
           platform: capability.platform,
           pushSubscription: subscription,
@@ -134,6 +138,7 @@ export async function runNotificationSubscriptionHealthCheck(
         {
           ...baseConfigPatch,
           ...registration,
+          ...(registrationChanged ? { registeredKinds: kinds } : {}),
           appVersion: options.appVersion ?? config.appVersion,
           serviceWorkerVersion,
           subscriptionHash,

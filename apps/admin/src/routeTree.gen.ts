@@ -19,6 +19,7 @@ import { Route as ShellPaperWalletsRouteImport } from './routes/_shell/paper-wal
 import { Route as ShellNfcCardsRouteImport } from './routes/_shell/nfc-cards'
 import { Route as ShellDeploymentsRouteImport } from './routes/_shell/deployments'
 import { Route as ShellCashRouteImport } from './routes/_shell/cash'
+import { Route as ShellAbuseReportsRouteImport } from './routes/_shell/abuse-reports'
 import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
@@ -26,6 +27,7 @@ import { Route as ShellTransactionsIndexRouteImport } from './routes/_shell/tran
 import { Route as ShellRetirementRequestsIndexRouteImport } from './routes/_shell/retirement-requests/index'
 import { Route as ShellPostsIndexRouteImport } from './routes/_shell/posts/index'
 import { Route as ShellPoolsIndexRouteImport } from './routes/_shell/pools/index'
+import { Route as ShellHelpdeskIndexRouteImport } from './routes/_shell/helpdesk/index'
 import { Route as ShellVouchersPublishRouteImport } from './routes/_shell/vouchers/publish'
 import { Route as ShellVouchersAddressRouteImport } from './routes/_shell/vouchers/$address'
 import { Route as ShellUsersAddressRouteImport } from './routes/_shell/users/$address'
@@ -36,6 +38,7 @@ import { Route as ShellRetirementRequestsRequestIdRouteImport } from './routes/_
 import { Route as ShellPostsNewRouteImport } from './routes/_shell/posts/new'
 import { Route as ShellPoolsPublishRouteImport } from './routes/_shell/pools/publish'
 import { Route as ShellPoolsAddressRouteImport } from './routes/_shell/pools/$address'
+import { Route as ShellHelpdeskConversationIdRouteImport } from './routes/_shell/helpdesk/$conversationId'
 import { Route as ShellPostsReportIdIndexRouteImport } from './routes/_shell/posts/$reportId/index'
 import { Route as ShellPostsReportIdEditRouteImport } from './routes/_shell/posts/$reportId/edit'
 
@@ -88,6 +91,11 @@ const ShellCashRoute = ShellCashRouteImport.update({
   path: '/cash',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellAbuseReportsRoute = ShellAbuseReportsRouteImport.update({
+  id: '/abuse-reports',
+  path: '/abuse-reports',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellSplatRoute = ShellSplatRouteImport.update({
   id: '/$',
   path: '/$',
@@ -122,6 +130,11 @@ const ShellPostsIndexRoute = ShellPostsIndexRouteImport.update({
 const ShellPoolsIndexRoute = ShellPoolsIndexRouteImport.update({
   id: '/pools/',
   path: '/pools/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellHelpdeskIndexRoute = ShellHelpdeskIndexRouteImport.update({
+  id: '/helpdesk/',
+  path: '/helpdesk/',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellVouchersPublishRoute = ShellVouchersPublishRouteImport.update({
@@ -176,6 +189,12 @@ const ShellPoolsAddressRoute = ShellPoolsAddressRouteImport.update({
   path: '/pools/$address',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellHelpdeskConversationIdRoute =
+  ShellHelpdeskConversationIdRouteImport.update({
+    id: '/helpdesk/$conversationId',
+    path: '/helpdesk/$conversationId',
+    getParentRoute: () => ShellRoute,
+  } as any)
 const ShellPostsReportIdIndexRoute = ShellPostsReportIdIndexRouteImport.update({
   id: '/posts/$reportId/',
   path: '/posts/$reportId/',
@@ -190,6 +209,7 @@ const ShellPostsReportIdEditRoute = ShellPostsReportIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
   '/$': typeof ShellSplatRoute
+  '/abuse-reports': typeof ShellAbuseReportsRoute
   '/cash': typeof ShellCashRoute
   '/deployments': typeof ShellDeploymentsRoute
   '/nfc-cards': typeof ShellNfcCardsRoute
@@ -198,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/reviews': typeof ShellReviewsRoute
   '/settings': typeof ShellSettingsRoute
   '/vocabulary': typeof ShellVocabularyRoute
+  '/helpdesk/$conversationId': typeof ShellHelpdeskConversationIdRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
   '/posts/new': typeof ShellPostsNewRoute
@@ -208,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/users/$address': typeof ShellUsersAddressRoute
   '/vouchers/$address': typeof ShellVouchersAddressRoute
   '/vouchers/publish': typeof ShellVouchersPublishRoute
+  '/helpdesk/': typeof ShellHelpdeskIndexRoute
   '/pools/': typeof ShellPoolsIndexRoute
   '/posts/': typeof ShellPostsIndexRoute
   '/retirement-requests/': typeof ShellRetirementRequestsIndexRoute
@@ -219,6 +241,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/$': typeof ShellSplatRoute
+  '/abuse-reports': typeof ShellAbuseReportsRoute
   '/cash': typeof ShellCashRoute
   '/deployments': typeof ShellDeploymentsRoute
   '/nfc-cards': typeof ShellNfcCardsRoute
@@ -228,6 +251,7 @@ export interface FileRoutesByTo {
   '/settings': typeof ShellSettingsRoute
   '/vocabulary': typeof ShellVocabularyRoute
   '/': typeof ShellIndexRoute
+  '/helpdesk/$conversationId': typeof ShellHelpdeskConversationIdRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
   '/posts/new': typeof ShellPostsNewRoute
@@ -238,6 +262,7 @@ export interface FileRoutesByTo {
   '/users/$address': typeof ShellUsersAddressRoute
   '/vouchers/$address': typeof ShellVouchersAddressRoute
   '/vouchers/publish': typeof ShellVouchersPublishRoute
+  '/helpdesk': typeof ShellHelpdeskIndexRoute
   '/pools': typeof ShellPoolsIndexRoute
   '/posts': typeof ShellPostsIndexRoute
   '/retirement-requests': typeof ShellRetirementRequestsIndexRoute
@@ -251,6 +276,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteWithChildren
   '/_shell/$': typeof ShellSplatRoute
+  '/_shell/abuse-reports': typeof ShellAbuseReportsRoute
   '/_shell/cash': typeof ShellCashRoute
   '/_shell/deployments': typeof ShellDeploymentsRoute
   '/_shell/nfc-cards': typeof ShellNfcCardsRoute
@@ -260,6 +286,7 @@ export interface FileRoutesById {
   '/_shell/settings': typeof ShellSettingsRoute
   '/_shell/vocabulary': typeof ShellVocabularyRoute
   '/_shell/': typeof ShellIndexRoute
+  '/_shell/helpdesk/$conversationId': typeof ShellHelpdeskConversationIdRoute
   '/_shell/pools/$address': typeof ShellPoolsAddressRoute
   '/_shell/pools/publish': typeof ShellPoolsPublishRoute
   '/_shell/posts/new': typeof ShellPostsNewRoute
@@ -270,6 +297,7 @@ export interface FileRoutesById {
   '/_shell/users/$address': typeof ShellUsersAddressRoute
   '/_shell/vouchers/$address': typeof ShellVouchersAddressRoute
   '/_shell/vouchers/publish': typeof ShellVouchersPublishRoute
+  '/_shell/helpdesk/': typeof ShellHelpdeskIndexRoute
   '/_shell/pools/': typeof ShellPoolsIndexRoute
   '/_shell/posts/': typeof ShellPostsIndexRoute
   '/_shell/retirement-requests/': typeof ShellRetirementRequestsIndexRoute
@@ -284,6 +312,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/abuse-reports'
     | '/cash'
     | '/deployments'
     | '/nfc-cards'
@@ -292,6 +321,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/settings'
     | '/vocabulary'
+    | '/helpdesk/$conversationId'
     | '/pools/$address'
     | '/pools/publish'
     | '/posts/new'
@@ -302,6 +332,7 @@ export interface FileRouteTypes {
     | '/users/$address'
     | '/vouchers/$address'
     | '/vouchers/publish'
+    | '/helpdesk/'
     | '/pools/'
     | '/posts/'
     | '/retirement-requests/'
@@ -313,6 +344,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
+    | '/abuse-reports'
     | '/cash'
     | '/deployments'
     | '/nfc-cards'
@@ -322,6 +354,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocabulary'
     | '/'
+    | '/helpdesk/$conversationId'
     | '/pools/$address'
     | '/pools/publish'
     | '/posts/new'
@@ -332,6 +365,7 @@ export interface FileRouteTypes {
     | '/users/$address'
     | '/vouchers/$address'
     | '/vouchers/publish'
+    | '/helpdesk'
     | '/pools'
     | '/posts'
     | '/retirement-requests'
@@ -344,6 +378,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_shell'
     | '/_shell/$'
+    | '/_shell/abuse-reports'
     | '/_shell/cash'
     | '/_shell/deployments'
     | '/_shell/nfc-cards'
@@ -353,6 +388,7 @@ export interface FileRouteTypes {
     | '/_shell/settings'
     | '/_shell/vocabulary'
     | '/_shell/'
+    | '/_shell/helpdesk/$conversationId'
     | '/_shell/pools/$address'
     | '/_shell/pools/publish'
     | '/_shell/posts/new'
@@ -363,6 +399,7 @@ export interface FileRouteTypes {
     | '/_shell/users/$address'
     | '/_shell/vouchers/$address'
     | '/_shell/vouchers/publish'
+    | '/_shell/helpdesk/'
     | '/_shell/pools/'
     | '/_shell/posts/'
     | '/_shell/retirement-requests/'
@@ -449,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellCashRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/abuse-reports': {
+      id: '/_shell/abuse-reports'
+      path: '/abuse-reports'
+      fullPath: '/abuse-reports'
+      preLoaderRoute: typeof ShellAbuseReportsRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/$': {
       id: '/_shell/$'
       path: '/$'
@@ -496,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/pools'
       fullPath: '/pools/'
       preLoaderRoute: typeof ShellPoolsIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/helpdesk/': {
+      id: '/_shell/helpdesk/'
+      path: '/helpdesk'
+      fullPath: '/helpdesk/'
+      preLoaderRoute: typeof ShellHelpdeskIndexRouteImport
       parentRoute: typeof ShellRoute
     }
     '/_shell/vouchers/publish': {
@@ -568,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellPoolsAddressRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/helpdesk/$conversationId': {
+      id: '/_shell/helpdesk/$conversationId'
+      path: '/helpdesk/$conversationId'
+      fullPath: '/helpdesk/$conversationId'
+      preLoaderRoute: typeof ShellHelpdeskConversationIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/posts/$reportId/': {
       id: '/_shell/posts/$reportId/'
       path: '/posts/$reportId'
@@ -587,6 +645,7 @@ declare module '@tanstack/react-router' {
 
 interface ShellRouteChildren {
   ShellSplatRoute: typeof ShellSplatRoute
+  ShellAbuseReportsRoute: typeof ShellAbuseReportsRoute
   ShellCashRoute: typeof ShellCashRoute
   ShellDeploymentsRoute: typeof ShellDeploymentsRoute
   ShellNfcCardsRoute: typeof ShellNfcCardsRoute
@@ -596,6 +655,7 @@ interface ShellRouteChildren {
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellVocabularyRoute: typeof ShellVocabularyRoute
   ShellIndexRoute: typeof ShellIndexRoute
+  ShellHelpdeskConversationIdRoute: typeof ShellHelpdeskConversationIdRoute
   ShellPoolsAddressRoute: typeof ShellPoolsAddressRoute
   ShellPoolsPublishRoute: typeof ShellPoolsPublishRoute
   ShellPostsNewRoute: typeof ShellPostsNewRoute
@@ -606,6 +666,7 @@ interface ShellRouteChildren {
   ShellUsersAddressRoute: typeof ShellUsersAddressRoute
   ShellVouchersAddressRoute: typeof ShellVouchersAddressRoute
   ShellVouchersPublishRoute: typeof ShellVouchersPublishRoute
+  ShellHelpdeskIndexRoute: typeof ShellHelpdeskIndexRoute
   ShellPoolsIndexRoute: typeof ShellPoolsIndexRoute
   ShellPostsIndexRoute: typeof ShellPostsIndexRoute
   ShellRetirementRequestsIndexRoute: typeof ShellRetirementRequestsIndexRoute
@@ -618,6 +679,7 @@ interface ShellRouteChildren {
 
 const ShellRouteChildren: ShellRouteChildren = {
   ShellSplatRoute: ShellSplatRoute,
+  ShellAbuseReportsRoute: ShellAbuseReportsRoute,
   ShellCashRoute: ShellCashRoute,
   ShellDeploymentsRoute: ShellDeploymentsRoute,
   ShellNfcCardsRoute: ShellNfcCardsRoute,
@@ -627,6 +689,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellSettingsRoute: ShellSettingsRoute,
   ShellVocabularyRoute: ShellVocabularyRoute,
   ShellIndexRoute: ShellIndexRoute,
+  ShellHelpdeskConversationIdRoute: ShellHelpdeskConversationIdRoute,
   ShellPoolsAddressRoute: ShellPoolsAddressRoute,
   ShellPoolsPublishRoute: ShellPoolsPublishRoute,
   ShellPostsNewRoute: ShellPostsNewRoute,
@@ -637,6 +700,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellUsersAddressRoute: ShellUsersAddressRoute,
   ShellVouchersAddressRoute: ShellVouchersAddressRoute,
   ShellVouchersPublishRoute: ShellVouchersPublishRoute,
+  ShellHelpdeskIndexRoute: ShellHelpdeskIndexRoute,
   ShellPoolsIndexRoute: ShellPoolsIndexRoute,
   ShellPostsIndexRoute: ShellPostsIndexRoute,
   ShellRetirementRequestsIndexRoute: ShellRetirementRequestsIndexRoute,

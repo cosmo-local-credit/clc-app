@@ -20,7 +20,5 @@ import { storageClient } from "#/lib/api/storage";
 export function useImageUpload() {
   const { session } = useAuthStatus();
 
-  return useMutation(
-    uploadImageMutationOptions(authClient, storageClient(), session?.address ?? ""),
-  );
+  return useMutation(uploadImageMutationOptions(authClient, storageClient, session?.address ?? ""));
 }

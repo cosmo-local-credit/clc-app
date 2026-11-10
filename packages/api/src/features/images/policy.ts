@@ -21,7 +21,8 @@ export type ImagePurpose =
   | "pool.banner"
   | "report.image"
   | "offering.photo"
-  | "want.image";
+  | "want.image"
+  | "message.image";
 
 export type ImagePolicy = {
   /** Storage folder. Must be present in the service's `api.allowed_folders`. */
@@ -89,6 +90,9 @@ export const IMAGE_POLICIES: Readonly<Record<ImagePurpose, ImagePolicy>> = {
   // is 860 device pixels, close enough that the extra bytes buy nothing.
   "offering.photo": { folder: "offering", width: 800, aspect: 1 },
   "want.image": { folder: "offering", width: 800, aspect: 1 },
+  // A photo sent in a conversation is content, like a post image, so it keeps
+  // its shape. It reuses the report folder: no new storage allowlist.
+  "message.image": { folder: "report", width: 1280 },
 };
 
 /** The only containers storage-server can decode. Notably not HEIC. */

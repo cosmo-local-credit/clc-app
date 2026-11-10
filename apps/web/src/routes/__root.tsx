@@ -28,6 +28,7 @@ import { SafePendingSheet } from "#/features/safe/ui/safe-pending-sheet";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useNotificationSession } from "#/features/notifications/realtime/use-notification-session";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
+import { useMessagingRealtime } from "#/features/messaging/hooks/use-messaging-realtime";
 import { initializeServiceWorkerUpdatePolicy } from "#/features/notifications/sw/update-policy";
 import { beginWalletSwitch } from "#/lib/wallet-session";
 import { useScanUrlImport } from "#/lib/scan-url-import";
@@ -184,6 +185,7 @@ function AppInner() {
   useIdentityTransitionTeardown();
 
   useNotificationSession(auth.isAuthenticated ? address : undefined);
+  useMessagingRealtime();
 
   async function handleConfirmSwitch() {
     if (!pendingKey) return;

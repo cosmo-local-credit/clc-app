@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { normalizeNotificationTargetUrl } from "./target-url";
+import { messageThreadConversationId, normalizeNotificationTargetUrl } from "./target-url";
 
 const APP_ORIGIN = "https://app.cosmolocal.credit";
 
@@ -48,5 +48,23 @@ describe("normalizeNotificationTargetUrl", () => {
 
   it("rejects targets when no app origin is available", () => {
     expect(normalizeNotificationTargetUrl("/wallet", null)).toBeNull();
+  });
+});
+
+describe("thread target URLs", () => {
+  it("accepts a thread URL", () => {
+    expect(normalizeNotificationTargetUrl("/messages/123", APP_ORIGIN)).toBe("/messages/123");
+    expect(
+      normalizeNotificationTargetUrl("https://app.cosmolocal.credit/messages/123", APP_ORIGIN),
+    ).toBe("/messages/123");
+  });
+
+  it("reads the conversation id from a thread URL only", () => {
+    expect(messageThreadConversationId("/messages/123")).toBe(123);
+    expect(messageThreadConversationId("/messages/123?x=1")).toBe(123);
+    expect(messageThreadConversationId("/messages/0")).toBeNull();
+    expect(messageThreadConversationId("/messages/abc")).toBeNull();
+    expect(messageThreadConversationId("/messages/1/2")).toBeNull();
+    expect(messageThreadConversationId("/wallet")).toBeNull();
   });
 });

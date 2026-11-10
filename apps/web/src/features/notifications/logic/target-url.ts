@@ -69,3 +69,12 @@ function hasControlCharacter(value: string): boolean {
 
   return false;
 }
+
+/**
+ * The conversation a normalized target URL opens, for `/messages/<id>`, or
+ * null for any other destination.
+ */
+export function messageThreadConversationId(targetUrl: string): number | null {
+  const match = /^\/messages\/([1-9][0-9]{0,15})\/?(?:[?#]|$)/.exec(targetUrl);
+  return match ? Number(match[1]) : null;
+}
