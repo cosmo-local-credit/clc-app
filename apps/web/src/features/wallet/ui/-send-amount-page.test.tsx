@@ -31,6 +31,7 @@ vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-send-voucher-transfer", () => ({
+  SEND_VOUCHER_MUTATION_KEY: ["wallet", "send"],
   useSendVoucherTransfer: () => ({
     mutateAsync: sendMutateAsync,
     isPending: sendVoucherState.isPending,

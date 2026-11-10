@@ -26,6 +26,9 @@ export type UpgradeStep =
  * follows the relay to on-chain confirmation before storing the credential.
  * After success the caller should connect with `caliburConnector`.
  */
+/** One passkey link per key: a view mounted after a layout switch sees one in flight. */
+export const CALIBUR_UPGRADE_FROM_PK_MUTATION_KEY = ["calibur", "upgrade-from-pk"] as const;
+
 export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
   const [step, setStep] = useState<UpgradeStep>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +62,7 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
   }, [pendingUpgrade, tracking.outcome]);
 
   const upgradeAndLink = useMutation({
+    mutationKey: CALIBUR_UPGRADE_FROM_PK_MUTATION_KEY,
     mutationFn: async () => {
       setError(null);
       setPendingUpgrade(null);

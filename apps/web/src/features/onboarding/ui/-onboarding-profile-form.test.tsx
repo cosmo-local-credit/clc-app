@@ -2,16 +2,16 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate, mockResolveProfileCountry, mockIPCamera, mockGetAvailability } = vi.hoisted(
-  () => ({
+const { mockNavigate, mockResolveProfileCountry, mockIPCamera, mockGetAvailability, mockSuggest } =
+  vi.hoisted(() => ({
     mockNavigate: vi.fn(),
     mockResolveProfileCountry: vi.fn(),
     mockIPCamera: {
       current: { lat: -6.7924, lng: 39.2083, zoom: 11, source: "ip-city" as const },
     },
     mockGetAvailability: vi.fn(),
-  }),
-);
+    mockSuggest: vi.fn(),
+  }));
 
 vi.mock("#/features/home/hooks/use-ip-camera", () => ({
   useIPCamera: () => ({ data: mockIPCamera.current }),
@@ -26,6 +26,10 @@ vi.mock("#/lib/api/storage", () => ({
 
 vi.mock("#/lib/api/identity", () => ({
   identityClient: { getAvailability: mockGetAvailability },
+}));
+
+vi.mock("#/lib/api/recipients", () => ({
+  recipientsClient: { suggest: mockSuggest },
 }));
 
 vi.mock("#/lib/profile-currency", async (importOriginal) => {
@@ -264,6 +268,10 @@ beforeEach(() => {
   mockResolveProfileCountry.mockReset();
   mockResolveProfileCountry.mockResolvedValue("US");
   mockGetAvailability.mockReset();
+  mockSuggest.mockReset();
+  // A failed lookup leaves the handle blank, which is what these pages submit
+  // unless a test asks for a suggestion.
+  mockSuggest.mockRejectedValue(new Error("offline"));
   mockGetAvailability.mockResolvedValue({
     email: { available: true },
     phone: { available: true },
@@ -471,6 +479,33 @@ describe("OnboardingProfileForm Continue", () => {
     );
   });
 
+  it("suggests a username from the name and submits a later edit", async () => {
+    mockSuggest.mockResolvedValue("alice-1");
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+    fireEvent.change(textbox(/^name$/i), { target: { value: "Alice Example" } });
+
+    const username = textbox(/^username$/i) as HTMLInputElement;
+    expect(username.hasAttribute("aria-busy")).toBe(false);
+    expect(mockSuggest).not.toHaveBeenCalled();
+    fireEvent.blur(textbox(/^name$/i));
+    await waitFor(() => expect(username.value).toBe("alice-1"));
+    expect(mockSuggest).toHaveBeenCalledWith("alice-example", expect.any(AbortSignal));
+
+    fireEvent.change(username, { target: { value: "custom-handle" } });
+    fireEvent.change(textbox(/^name$/i), { target: { value: "Someone Else" } });
+    await pressContinue();
+    await completeContactPage();
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    await pressContinue();
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ username: "custom-handle" }),
+      PHOTO,
+    );
+    expect(mockSuggest).toHaveBeenCalledTimes(1);
+  });
+
   it("submits a chosen username", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
@@ -484,6 +519,21 @@ describe("OnboardingProfileForm Continue", () => {
       expect.objectContaining<Partial<ProfileInput>>({ username: "alice-2" }),
       PHOTO,
     );
+  });
+
+  it("stops suggesting a username once the person clears the suggestion", async () => {
+    mockSuggest.mockResolvedValue("jane-doe");
+    renderForm(vi.fn(), undefined, PHOTO);
+    fireEvent.change(textbox(/^name$/i), { target: { value: "Jane Doe" } });
+    const username = textbox(/^username$/i) as HTMLInputElement;
+    await waitFor(() => expect(username.value).toBe("jane-doe"), { timeout: 2000 });
+
+    fireEvent.change(username, { target: { value: "" } });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    });
+    expect(username.value).toBe("");
+    expect(mockSuggest).toHaveBeenCalledTimes(1);
   });
 
   it("omits a blank username so signup can assign one automatically", async () => {

@@ -5,6 +5,7 @@ import {
   TRACKING_POLL_MS,
   type OtxTrackingOutcome,
 } from "@clc/api/features/auth/client";
+import { RelayerError } from "@clc/api/features/relayer/client";
 import { authClient } from "#/lib/api/auth";
 
 /**
@@ -13,6 +14,11 @@ import { authClient } from "#/lib/api/auth";
  * 404 that's "not written yet", not a tracking failure, so treat it the same as
  * a pending outcome. The predicate lives in @clc/api because the poller behind
  * the one-shot waits needs the same rule.
+ *
+ * The wait has no client-side deadline. A queue that is backed up can take
+ * minutes to write the row, and calling that a failure invites a second
+ * payment. A job that ended without a row is clc-core's to report: it answers
+ * 410 with the reason, which is terminal on arrival.
  */
 export function useOtxTracking(
   trackingId: string | null,
@@ -47,14 +53,25 @@ export function useOtxTracking(
   const outcome: OtxTrackingOutcome = query.isError
     ? isTrackingNotFound(query.error)
       ? { kind: "pending" }
-      : {
-          kind: "error",
-          error: query.error instanceof Error ? query.error.message : "Tracking failed.",
-        }
+      : { kind: "error", error: trackingErrorMessage(query.error) }
     : getOutcome(query.data);
 
   return {
     ...query,
     outcome,
   };
+}
+
+/**
+ * What to show for a tracking call that failed.
+ *
+ * `RelayerError` is constructed with its code as the Error message, so reading
+ * `message` would put "server_error" in front of the person. Its `description`
+ * is the backend's own sentence — for a job clc-core knows was discarded, that
+ * names the reason the request was refused.
+ */
+function trackingErrorMessage(error: unknown): string {
+  if (error instanceof RelayerError && error.description) return error.description;
+  if (error instanceof Error && error.message) return error.message;
+  return "Tracking failed.";
 }

@@ -11,6 +11,7 @@ import {
 } from "react-icons/ri";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
+import { UnreadCount, UnreadCountLabel } from "#/components/ui/unread-count";
 import type { HomeTab } from "#/lib/navigation/home-tabs";
 import {
   marketplaceSearchForScope,
@@ -23,12 +24,15 @@ export function BottomNavigation({
   atActiveTabRoot,
   isMarketMap,
   locked = false,
+  unreadActivity = 0,
 }: {
   activeTab: HomeTab;
   atActiveTabRoot: boolean;
   isMarketMap: boolean;
   /** A guest: the private tabs carry a lock and open the sign-in screen. */
   locked?: boolean;
+  /** Incoming Activity rows since the person last opened it. */
+  unreadActivity?: number;
 }) {
   const { t } = useLingui();
   return (
@@ -52,6 +56,7 @@ export function BottomNavigation({
           activeTab={activeTab}
           atActiveTabRoot={atActiveTabRoot}
           icon={<RiNotification3Line />}
+          count={locked ? 0 : unreadActivity}
         />
         <MarketNavLink
           label={isMarketMap ? t`Market` : t`Map`}
@@ -85,6 +90,7 @@ function NavLink({
   atActiveTabRoot,
   icon,
   locked = false,
+  count = 0,
 }: {
   tab: HomeTab;
   label: string;
@@ -92,6 +98,7 @@ function NavLink({
   atActiveTabRoot: boolean;
   icon: ReactNode;
   locked?: boolean;
+  count?: number;
 }) {
   const active = activeTab === tab;
   return (
@@ -114,8 +121,12 @@ function NavLink({
             aria-hidden="true"
           />
         ) : null}
+        <UnreadCount count={count} className="absolute -top-1.5 -end-2.5" />
       </span>
-      <span className={cn("font-medium text-2xs", active && "font-semibold")}>{label}</span>
+      <span className={cn("font-medium text-2xs", active && "font-semibold")}>
+        {label}
+        <UnreadCountLabel count={count} />
+      </span>
     </Link>
   );
 }

@@ -94,9 +94,20 @@ function mount(entry = "/retirement-requests") {
   return router;
 }
 
+function adminPage(overrides: Record<string, unknown> = {}) {
+  return {
+    requests: [request],
+    pendingCount: 2,
+    first: request.id,
+    last: request.id,
+    receivedCount: 1,
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.listAdmin.mockResolvedValue({ requests: [request], pendingCount: 2, nextCursor: null });
+  mocks.listAdmin.mockResolvedValue(adminPage());
   mocks.getAdminRequest.mockResolvedValue({ request, events: [] });
   mocks.preview.mockResolvedValue(request.snapshot);
   mocks.approve.mockResolvedValue({ ...request, status: "approved" });
@@ -113,7 +124,9 @@ describe("retirement queue", () => {
         (screen.getByRole("button", { name: "Approve retirement" }) as HTMLButtonElement).disabled,
       ).toBe(false),
     );
-    mocks.listAdmin.mockResolvedValue({ requests: [], pendingCount: 1, nextCursor: null });
+    mocks.listAdmin.mockResolvedValue(
+      adminPage({ requests: [], pendingCount: 1, first: 0, last: 0, receivedCount: 0 }),
+    );
     mocks.getAdminRequest.mockResolvedValue({
       request: { ...request, status: "approved", decisionAt: "2026-10-25T13:00:00Z" },
       events: [],
@@ -124,62 +137,120 @@ describe("retirement queue", () => {
   });
 
   it("filters on the server, clears the cursor, and preserves the old filters on Back", async () => {
-    const router = mount("/retirement-requests?status=all&cursor=8");
+    const router = mount("/retirement-requests?status=all&cursor=8&dir=next");
     await screen.findByRole("link", { name: "Market pool" });
     fireEvent.change(screen.getByLabelText("Resource type"), { target: { value: "voucher" } });
     await waitFor(() =>
       expect(mocks.listAdmin).toHaveBeenCalledWith(
-        expect.objectContaining({ resourceType: "voucher", status: "all" }),
+        expect.objectContaining({
+          resourceType: "voucher",
+          status: "all",
+          perPage: 10,
+          cursor: undefined,
+          next: undefined,
+        }),
         expect.anything(),
       ),
     );
-    expect(router.state.location.search).toEqual({ status: "all", resourceType: "voucher" });
+    expect(router.state.location.search).toEqual({
+      status: "all",
+      resourceType: "voucher",
+      perPage: 10,
+    });
     act(() => router.history.back());
-    await waitFor(() => expect(router.state.location.search).toEqual({ status: "all", cursor: 8 }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        status: "all",
+        cursor: 8,
+        dir: "next",
+        perPage: 10,
+      }),
+    );
   });
 
-  it("refreshes, filters by status, and navigates both cursor controls", async () => {
-    mocks.listAdmin.mockResolvedValue({ requests: [request], pendingCount: 2, nextCursor: 12 });
-    const router = mount("/retirement-requests?cursor=8");
+  it("refreshes, filters by status, and pages like the voucher list", async () => {
+    mocks.listAdmin.mockResolvedValue(adminPage({ first: 20, last: 11, receivedCount: 10 }));
+    const router = mount("/retirement-requests?cursor=8&dir=next");
     await screen.findByRole("link", { name: "Market pool" });
+    expect(screen.getByLabelText("Rows per page")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Next page" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
     await waitFor(() =>
       expect(mocks.listAdmin).toHaveBeenCalledWith(
-        expect.objectContaining({ status: "pending", cursor: 8, perPage: 25 }),
+        expect.objectContaining({ status: "pending", cursor: 8, perPage: 10, next: true }),
         expect.anything(),
       ),
     );
 
     fireEvent.change(screen.getByLabelText("Status"), { target: { value: "approved" } });
-    await waitFor(() => expect(router.state.location.search).toEqual({ status: "approved" }));
-
-    fireEvent.click(screen.getByRole("button", { name: "Older requests" }));
     await waitFor(() =>
-      expect(router.state.location.search).toEqual({ status: "approved", cursor: 12 }),
+      expect(router.state.location.search).toEqual({ status: "approved", perPage: 10 }),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "First page" }));
-    await waitFor(() => expect(router.state.location.search).toEqual({ status: "approved" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        status: "approved",
+        cursor: 11,
+        dir: "next",
+        perPage: 10,
+      }),
+    );
+    await waitFor(() =>
+      expect(mocks.listAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({ status: "approved", cursor: 11, perPage: 10, next: true }),
+        expect.anything(),
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        status: "approved",
+        cursor: 20,
+        dir: "prev",
+        perPage: 10,
+      }),
+    );
+    await waitFor(() =>
+      expect(mocks.listAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({ status: "approved", cursor: 20, perPage: 10, next: false }),
+        expect.anything(),
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "First" }));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({ status: "approved", perPage: 10 }),
+    );
+
+    fireEvent.click(screen.getByLabelText("Rows per page"));
+    expect(await screen.findByRole("option", { name: "10" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "25" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "50" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "100" })).toBeTruthy();
   });
 
   it("clears the resource-type filter and renders address fallbacks", async () => {
-    mocks.listAdmin.mockResolvedValue({
-      requests: [{ ...request, resourceName: "", symbol: "" }],
-      pendingCount: 1,
-      nextCursor: null,
-    });
+    mocks.listAdmin.mockResolvedValue(
+      adminPage({
+        requests: [{ ...request, resourceName: "", symbol: "" }],
+        pendingCount: 1,
+      }),
+    );
     const router = mount("/retirement-requests?resourceType=pool");
     expect(await screen.findByRole("link", { name: ADDRESS })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Resource type"), { target: { value: "all" } });
-    await waitFor(() => expect(router.state.location.search).toEqual({}));
+    await waitFor(() => expect(router.state.location.search).toEqual({ perPage: 10 }));
   });
 
   it("keeps successful rows visible when a manual refresh fails", async () => {
     mocks.listAdmin
-      .mockResolvedValueOnce({ requests: [request], pendingCount: 2, nextCursor: null })
-      .mockResolvedValueOnce({ requests: [request], pendingCount: 2, nextCursor: null })
+      .mockResolvedValueOnce(adminPage())
+      .mockResolvedValueOnce(adminPage())
       .mockRejectedValueOnce(new Error("Refresh unavailable"));
     mount();
     await screen.findByRole("link", { name: "Market pool" });
@@ -251,7 +322,7 @@ describe("retirement queue", () => {
     mocks.listAdmin.mockRejectedValue(new Error("Service unavailable"));
     mount();
     await screen.findByText("Could not load retirement requests");
-    expect(screen.getByLabelText("Pending retirement count unavailable").textContent).toBe("—");
-    expect(screen.queryByText("0 pending across all resources")).toBeNull();
+    expect(screen.queryByLabelText(/pending retirement requests/)).toBeNull();
+    expect(screen.queryByText(/pending across all resources/)).toBeNull();
   });
 });

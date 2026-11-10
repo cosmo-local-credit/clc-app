@@ -1,26 +1,39 @@
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useEffect } from "react";
 
 import { PasskeyRenameNotice } from "#/components/passkey-rename-notice";
 import { Button } from "#/components/ui/button";
 
-import { useRelinkPasskeys } from "../hooks/use-key-rotation";
+import { useNewCardRelink, useRelinkPasskeys } from "../hooks/use-key-rotation";
 import { useRotationSession } from "../state/rotation-session";
 
-/** Registers the passkeys that came along on the new card's wallet. */
+/**
+ * Registers the passkeys that came along on the new card's wallet. Progress
+ * comes from `useNewCardRelink`, so a step remounted by a layout switch picks
+ * up a registration the previous one started.
+ */
 export function PasskeysStep({ onFinished }: { onFinished: (moved: boolean) => void }) {
   const { t } = useLingui();
   const relink = useRelinkPasskeys();
+  const latest = useNewCardRelink();
+  const pending = latest?.status === "pending";
+  const succeeded = latest?.status === "success";
+
+  useEffect(() => {
+    if (succeeded) onFinished(true);
+  }, [succeeded, onFinished]);
 
   const run = () => {
     const key = useRotationSession.getState().newKey;
     if (!key) return;
-    relink.mutate({ key }, { onSuccess: () => onFinished(true) });
+    relink.mutate({ key });
   };
-  const error = relink.error
-    ? relink.error instanceof BackendApiError
-      ? formatBackendApiError(relink.error)
-      : relink.error.message
+  const failure = latest?.status === "error" ? latest.error : null;
+  const error = failure
+    ? failure instanceof BackendApiError
+      ? formatBackendApiError(failure)
+      : failure.message
     : null;
 
   return (
@@ -31,14 +44,14 @@ export function PasskeysStep({ onFinished }: { onFinished: (moved: boolean) => v
         </p>
       ) : null}
       <div className="space-y-3">
-        <Button tap className="w-full" pending={relink.isPending} onClick={run}>
-          {relink.isPending ? t`Registering…` : t`Move my passkey`}
+        <Button tap className="w-full" pending={pending || succeeded} onClick={run}>
+          {pending || succeeded ? t`Registering…` : t`Move my passkey`}
         </Button>
         <Button
           variant="outline"
           tap
           className="w-full"
-          disabled={relink.isPending}
+          disabled={pending || succeeded}
           onClick={() => onFinished(false)}
         >
           <Trans>Skip</Trans>

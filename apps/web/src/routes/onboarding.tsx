@@ -1,7 +1,9 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect } from "react";
 
+import { LayoutSwitch } from "#/desktop/switch";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { OnboardingSessionProvider } from "#/features/onboarding/state/onboarding-session";
 import { LandingPage } from "#/features/onboarding/ui/landing-page";
 import { SignInPage } from "#/features/onboarding/ui/sign-in-page";
 import {
@@ -14,6 +16,11 @@ import { parseOnboardingSearch } from "#/lib/onboarding-search";
 const OnboardingFlow = lazy(() =>
   import("#/features/onboarding/ui/onboarding-flow").then((module) => ({
     default: module.OnboardingFlow,
+  })),
+);
+const OnboardingDesk = lazy(() =>
+  import("#/desktop/onboarding/onboarding-desk").then((module) => ({
+    default: module.OnboardingDesk,
   })),
 );
 
@@ -50,18 +57,25 @@ function OnboardingRoutePage() {
 
   if (auth.isLoading || auth.isAuthenticated) return <OnboardingFallback />;
 
-  if (step === "welcome") {
-    return <LandingPage redirectTo={redirect} />;
-  }
-
-  if (step === "signin") {
-    return <SignInPage redirectTo={redirect} />;
-  }
-
+  const mobile =
+    step === "welcome" ? (
+      <LandingPage redirectTo={redirect} />
+    ) : step === "signin" ? (
+      <SignInPage redirectTo={redirect} />
+    ) : (
+      <Suspense fallback={<OnboardingFallback />}>
+        <OnboardingFlow step={step} redirectTo={redirect} />
+      </Suspense>
+    );
+  // The session sits above the switch: both views run one signup, and a layout
+  // switch must not drop it.
   return (
-    <Suspense fallback={<OnboardingFallback />}>
-      <OnboardingFlow step={step} redirectTo={redirect} />
-    </Suspense>
+    <OnboardingSessionProvider step={step}>
+      <LayoutSwitch
+        mobile={mobile}
+        desktop={<OnboardingDesk step={step} redirectTo={redirect} />}
+      />
+    </OnboardingSessionProvider>
   );
 }
 

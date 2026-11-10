@@ -37,11 +37,13 @@ async function renderNavigation({
   activeTab,
   atActiveTabRoot,
   locked,
+  unreadActivity,
 }: {
   initialEntry?: string;
   activeTab?: HomeTab;
   atActiveTabRoot?: boolean;
   locked?: boolean;
+  unreadActivity?: number;
 } = {}) {
   function NavigationFixture() {
     const search = useSearch({ strict: false });
@@ -60,6 +62,7 @@ async function renderNavigation({
         atActiveTabRoot={selectedAtRoot}
         isMarketMap={isMarketMap}
         locked={locked}
+        unreadActivity={unreadActivity}
       />
     );
   }
@@ -96,6 +99,26 @@ async function renderNavigation({
 }
 
 describe("BottomNavigation", () => {
+  it("counts unread Activity on its tab and names the count", async () => {
+    await renderNavigation({ unreadActivity: 3 });
+    const activity = screen.getByRole("link", { name: "Activity, 3 new" });
+    expect(activity.textContent).toContain("3");
+  });
+
+  it("caps the unread count at 9+", async () => {
+    await renderNavigation({ unreadActivity: 27 });
+    expect(screen.getByRole("link", { name: "Activity, 27 new" }).textContent).toContain("9+");
+  });
+
+  it("shows no count at zero or for a guest", async () => {
+    const { unmount } = await renderNavigation({ unreadActivity: 0 });
+    expect(screen.getByRole("link", { name: "Activity" }).textContent).toBe("Activity");
+    unmount();
+
+    await renderNavigation({ unreadActivity: 4, locked: true });
+    expect(screen.getByRole("link", { name: "Activity" }).textContent).toBe("Activity");
+  });
+
   it("renders all five navigation links with typed search-param hrefs", async () => {
     await renderNavigation();
 

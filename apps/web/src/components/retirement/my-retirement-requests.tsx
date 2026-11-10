@@ -5,7 +5,7 @@ import { Button } from "#/components/ui/button";
 import { retirementClient } from "#/lib/api/retirement";
 import { RetirementRequestList } from "./retirement-request-list";
 
-/** Accessible from the wallet even when a retired voucher's public page is hidden. */
+/** Kept with My Vouchers, including when a retired voucher's public page is hidden. */
 export function MyRetirementRequests({ viewer }: { viewer: string }) {
   const history = useQuery(myRetirementRequestsQueryOptions(retirementClient, viewer));
   if (history.isPending || (!history.isError && history.data.length === 0)) return null;

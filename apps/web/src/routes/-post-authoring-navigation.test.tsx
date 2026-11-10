@@ -71,7 +71,8 @@ vi.mock("#/features/posts/hooks/use-my-posts", () => ({
   }),
 }));
 
-vi.mock("#/features/posts/hooks/use-post-mutations", () => ({
+vi.mock("#/features/posts/hooks/use-post-mutations", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useCreatePost: () => ({ mutateAsync: mocks.createPost, isPending: false }),
   useUpdatePost: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));

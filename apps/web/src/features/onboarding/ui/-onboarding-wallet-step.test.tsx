@@ -1,5 +1,6 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { forwardRef, useState } from "react";
+import { forwardRef, type ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
@@ -99,6 +100,7 @@ vi.mock("@clc/api/features/relayer/client", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-backend-auth", () => ({
+  BACKEND_SIGNUP_MUTATION_KEY: ["auth", "signup"],
   useBackendSignup: () => ({
     mutateAsync: mockBackendSignupMutateAsync,
     isPending: false,
@@ -107,6 +109,7 @@ vi.mock("#/features/auth/hooks/use-backend-auth", () => ({
 }));
 
 vi.mock("#/features/webauthn/hooks/use-calibur-delegate-from-pk", () => ({
+  CALIBUR_DELEGATE_FROM_PK_MUTATION_KEY: ["calibur", "delegate-from-pk"],
   useCaliburDelegateFromPk: () => ({
     step: mockDelegateStep.current,
     error: mockDelegateError.current,
@@ -116,6 +119,7 @@ vi.mock("#/features/webauthn/hooks/use-calibur-delegate-from-pk", () => ({
 }));
 
 vi.mock("#/features/webauthn/hooks/use-calibur-from-pk", () => ({
+  CALIBUR_UPGRADE_FROM_PK_MUTATION_KEY: ["calibur", "upgrade-from-pk"],
   useCaliburFromPk: () => ({
     step: mockUpgradeStep.current,
     error: null,
@@ -188,6 +192,7 @@ function WalletStepFixture({
   startPage?: WalletPage;
 }) {
   const [page, setPage] = useState<WalletPage>(startPage);
+  const [passkeyRegistered, setPasskeyRegistered] = useState(false);
   return (
     <>
       <span data-testid="page">{page}</span>
@@ -200,6 +205,8 @@ function WalletStepFixture({
         privateKey={STABLE_PK}
         backendRegistered={false}
         onBackendRegistered={vi.fn()}
+        passkeyRegistered={passkeyRegistered}
+        onPasskeyRegistered={() => setPasskeyRegistered(true)}
         progressTotal={linkPasskey ? 6 : 5}
         linkPasskey={linkPasskey}
         onDone={mockOnDone}
@@ -209,8 +216,14 @@ function WalletStepFixture({
 }
 
 function renderWalletStep(overrides: { linkPasskey?: boolean; startPage?: WalletPage } = {}) {
+  const queryClient = new QueryClient();
   return render(
     <WalletStepFixture linkPasskey={overrides.linkPasskey} startPage={overrides.startPage} />,
+    {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      ),
+    },
   );
 }
 
@@ -285,6 +298,11 @@ describe("OnboardingWalletStep pages", () => {
   it("starts on Your paper wallet with the password on and nothing to download yet", () => {
     renderWalletStep();
     expect(screen.getByRole("heading", { name: "Your sign-in card" })).toBeTruthy();
+    const notice = screen.getByText(/use this qr card to sign in/i).closest("aside");
+    expect(notice?.className).toContain("border-primary/30");
+    expect(notice?.querySelector("p")?.className).toContain("text-sm");
+    expect(notice?.querySelector("p")?.className).toContain("leading-snug");
+    expect(notice?.querySelector("p")?.className).toContain("text-muted-foreground");
     const art = document.querySelector('[data-art="sign-in-card"]');
     expect(art).toBeTruthy();
     expect(art?.getAttribute("aria-hidden")).toBe("true");

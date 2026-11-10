@@ -18,8 +18,9 @@ import { Card, CardContent } from "#/components/ui/card";
  * read the same way: rows first, then the map beneath them at the card's full
  * width, which is more map than the old split gave it.
  *
- * Nothing here repeats the header: name, status, role, id and the join date all
- * live up there, and the figures are a strip of their own above this row.
+ * Nothing here repeats the header except the username. Name, status, role, id
+ * and the join date live up there; the username is under the name and again
+ * here, beside email and phone, which is where the record is read.
  *
  * The limits are read-only here and changed in the sheet — the same division the
  * pool card draws, where every fee and dependency is shown but altered elsewhere.
@@ -36,6 +37,13 @@ export function AccountProfileCard({ account }: { account: AdminUser }) {
     <Card className="h-full">
       <CardContent className="flex h-full flex-col gap-4">
         <dl className="flex flex-col">
+          <RecordRow label="Username">
+            {account.username ? (
+              <RecordData>{account.username}</RecordData>
+            ) : (
+              <RecordAbsent>None</RecordAbsent>
+            )}
+          </RecordRow>
           <RecordRow label="Email">
             {account.email ? (
               <span className="truncate">{account.email}</span>

@@ -149,6 +149,7 @@ vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-swap-transfer", () => ({
+  poolSwapTransferMutationKey: ["pool-swap", "transfer"],
   usePoolSwapTransfer: () => ({
     mutateAsync: swapMutateAsync,
     isPending: swapTransferState.isPending,

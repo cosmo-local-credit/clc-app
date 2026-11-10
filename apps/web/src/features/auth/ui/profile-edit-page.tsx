@@ -1,11 +1,5 @@
-import type { LocationInput } from "@clc/core/features/location/logic";
-import { locationSchema } from "@clc/core/features/location/logic";
-import { type ProfileEditInput, profileEditSchema } from "@clc/core/features/signup/logic";
-import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
 import { ProfilePrivacyNotice } from "#/components/profile-privacy-notice";
@@ -16,20 +10,13 @@ import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { type ProfileResult } from "@clc/api/features/auth/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
+import { useProfileEditForm } from "#/features/auth/hooks/use-profile-edit-form";
 import { isStorageConfigured } from "#/lib/api/storage";
-import { preferredCurrencyForCountry } from "#/lib/profile-currency";
-import { translateRecipientError } from "#/lib/recipient-error-i18n";
 import { translateValidationError } from "#/lib/validation-i18n";
 
 import { ProfileUsernameSection } from "./profile-username-section";
-
-// The signup flow stores a placeholder email for wallets created without one.
-// Treat it as empty so the edit form starts blank rather than exposing it.
-const PLACEHOLDER_EMAIL_SUFFIX = "@clc.local";
 
 export function ProfileEditPage() {
   const { t } = useLingui();
@@ -70,92 +57,23 @@ export function ProfileEditPage() {
 
 function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   const { i18n, t } = useLingui();
-  const router = useRouter();
-  const canGoBack = useCanGoBack();
-  const navigate = useNavigate();
-  const updateProfile = useUpdateProfile();
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  // Outside the form for the same reason the picker is: the photo uploads on
-  // selection, so by submit time it is a URL and there is nothing to validate.
-  const storedAvatarUrl = profile.avatarUrl ?? null;
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(storedAvatarUrl);
-  const [avatarBusy, setAvatarBusy] = useState(false);
-
-  const seededLocation = locationSchema.safeParse({
-    lat: profile.geoLat,
-    lng: profile.geoLng,
-    locationName: profile.locationName,
-    country: profile.country,
-  });
-  const initialLocation: LocationInput | undefined = seededLocation.success
-    ? seededLocation.data
-    : undefined;
-
-  const defaultValues: ProfileEditInput = {
-    name: profile.name ?? "",
-    email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
-    phone: profile.phone ?? "",
-    location: initialLocation,
-    // Accounts made before profile preferences existed still get a useful,
-    // editable starting point the first time their profile is opened.
-    preferredCurrency:
-      profile.preferredCurrency?.trim() || preferredCurrencyForCountry(profile.country),
-    bio: profile.bio ?? "",
-    website: profile.website ?? "",
-  };
-
-  const form = useForm({
-    defaultValues,
-    validators: { onChange: profileEditSchema },
-    onSubmit: async ({ value }) => {
-      setSubmitError(null);
-      try {
-        const parsed = profileEditSchema.parse(value);
-        await updateProfile.mutateAsync({
-          name: parsed.name,
-          email: parsed.email,
-          phone: parsed.phone,
-          country: parsed.location?.country ?? profile.country,
-          preferredCurrency: parsed.preferredCurrency,
-          bio: parsed.bio,
-          website: parsed.website,
-          ...(parsed.location
-            ? {
-                locationName: parsed.location.locationName,
-                geoLat: parsed.location.lat,
-                geoLng: parsed.location.lng,
-              }
-            : { clearLocation: true }),
-          // Sent only when it moved: an omitted key preserves whatever is
-          // stored, so a save that never touched the photo cannot disturb it.
-          // null is what the client turns into clc-core's clearAvatar flag.
-          ...(avatarUrl !== storedAvatarUrl ? { avatarUrl } : {}),
-        });
-        toast.success(t`Profile updated`);
-        if (canGoBack) {
-          router.history.back();
-        } else {
-          void navigate({ to: "/", search: { tab: "settings" }, replace: true });
-        }
-      } catch (err) {
-        setSubmitError(
-          translateRecipientError(err, i18n) ??
-            (err instanceof BackendApiError
-              ? formatBackendApiError(err)
-              : err instanceof Error
-                ? err.message
-                : t`Couldn't save your profile.`),
-        );
-      }
-    },
-  });
+  const {
+    form,
+    avatarUrl,
+    setAvatarUrl,
+    avatarChanged,
+    avatarBusy,
+    setAvatarBusy,
+    submitError,
+    inFlight,
+  } = useProfileEditForm(profile);
 
   return (
     // The username section sits outside the <form>: its sheet portals out of
     // the DOM, but a React submit event would still bubble to this form.
     <>
       <ProfileUsernameSection profile={profile} />
-      <ProfilePrivacyNotice />
+      <ProfilePrivacyNotice className="mt-4" />
 
       <form
         aria-label={t`Edit profile`}
@@ -178,7 +96,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 value={avatarUrl}
                 onChange={setAvatarUrl}
                 onBusyChange={setAvatarBusy}
-                disabled={updateProfile.isPending}
+                disabled={inFlight}
               />
             ) : null}
 
@@ -421,12 +339,16 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
               // file finished.
               <Button
                 type="submit"
-                disabled={!(isDirty || avatarUrl !== storedAvatarUrl) || !canSubmit}
-                pending={isSubmitting || avatarBusy}
+                disabled={!(isDirty || avatarChanged) || !canSubmit}
+                pending={isSubmitting || avatarBusy || inFlight}
                 tap
                 className="w-full"
               >
-                {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
+                {avatarBusy
+                  ? t`Uploading photo…`
+                  : isSubmitting || inFlight
+                    ? t`Saving…`
+                    : t`Save changes`}
               </Button>
             )}
           </form.Subscribe>

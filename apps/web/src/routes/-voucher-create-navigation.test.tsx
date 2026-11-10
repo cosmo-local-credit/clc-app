@@ -50,7 +50,8 @@ vi.mock("#/components/ui/location-picker", () => ({
   ),
 }));
 
-vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
+vi.mock("#/features/vouchers/hooks/use-voucher-deployment", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useDeployVoucher: () => ({ error: null, isPending: false, mutateAsync: vi.fn() }),
 }));
 

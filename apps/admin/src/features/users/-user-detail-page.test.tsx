@@ -93,6 +93,7 @@ function account(overrides: Partial<AdminUser> = {}): AdminUser {
   return {
     id: 4210,
     ethereumAddress: ADDRESS,
+    username: "ada",
     name: "Ada Lovelace",
     email: "ada@example.test",
     phone: "+254700000000",
@@ -222,6 +223,14 @@ describe("UserDetailPage", () => {
 
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Ada Lovelace");
+    // Once under the name, once in the record beside email and phone. The
+    // record's term and definition are wrapped, so the role has no accessible
+    // name; the label's next sibling is the value in both places.
+    const usernameLabels = screen.getAllByText("Username");
+    expect(usernameLabels.length).toBe(2);
+    for (const label of usernameLabels) {
+      expect(label.nextElementSibling?.textContent).toBe("ada");
+    }
     // Every action is a button: nothing an operator came here to do costs a click
     // to find. Approval leads, banning is last and destructive.
     expect(screen.getByRole("button", { name: "Approve account" })).toBeTruthy();
@@ -321,6 +330,24 @@ describe("UserDetailPage", () => {
     await waitFor(() =>
       expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Unnamed account"),
     );
+  });
+
+  it("says when an account has no username", async () => {
+    listUsers.mockResolvedValue({
+      users: [account({ username: null })],
+      first: 0,
+      last: 0,
+      receivedCount: 1,
+    });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+
+    renderDetailRoute();
+
+    await waitFor(() => expect(screen.getAllByText("Username").length).toBe(2));
+    for (const label of screen.getAllByText("Username")) {
+      expect(label.nextElementSibling?.textContent).toBe("None");
+    }
   });
 
   it("shows the figures the stats endpoint returns", async () => {

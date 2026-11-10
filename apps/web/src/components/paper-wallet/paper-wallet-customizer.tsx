@@ -1,7 +1,7 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import { useRef, useState } from "react";
+import { Trans } from "@lingui/react/macro";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { usePaperWalletCustomizer } from "#/features/onboarding/hooks/use-paper-wallet-customizer";
 import type { PaperWalletCustomization } from "./paper-wallet-types";
 
 type Props = {
@@ -9,66 +9,14 @@ type Props = {
   onChange: (next: PaperWalletCustomization) => void;
 };
 
-const MAX_LOGO_BYTES = 512 * 1024; // 512 KB
-const ACCEPTED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
-
 /**
  * The paper wallet card's customization fields: name, website, description,
  * and a logo upload with a reset. The Save your card screen shows them in its
  * Customize sheet, over the live preview.
  */
 export function PaperWalletCustomizer({ value, onChange }: Props) {
-  const { t } = useLingui();
-  const [logoError, setLogoError] = useState<string | null>(null);
-  const [logoFileName, setLogoFileName] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function handleFieldUpdate(
-    field: Exclude<keyof PaperWalletCustomization, "logoDataUrl">,
-    next: string,
-  ) {
-    onChange({ ...value, [field]: next });
-  }
-
-  function handleLogoFile(target: HTMLInputElement) {
-    const file = target.files?.[0];
-    if (!file) return;
-
-    // Validate type
-    if (!ACCEPTED_LOGO_TYPES.includes(file.type)) {
-      setLogoError(t`SVG files are not supported. Use PNG, JPEG, or WebP.`);
-      target.value = "";
-      return;
-    }
-
-    // Validate size
-    if (file.size > MAX_LOGO_BYTES) {
-      setLogoError(t`File too large (${(file.size / 1024).toFixed(0)} KB). Maximum is 512 KB.`);
-      target.value = "";
-      return;
-    }
-
-    setLogoError(null);
-    setLogoFileName(file.name);
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      onChange({
-        ...value,
-        logoDataUrl: reader.result as string,
-      });
-    };
-    reader.readAsDataURL(file);
-
-    // Reset input so the same file can be re-selected
-    target.value = "";
-  }
-
-  function handleResetLogo() {
-    setLogoError(null);
-    setLogoFileName(null);
-    onChange({ ...value, logoDataUrl: null });
-  }
+  const { logoError, logoFileName, fileInputRef, setField, handleLogoFile, resetLogo } =
+    usePaperWalletCustomizer({ value, onChange });
 
   return (
     <div className="space-y-4">
@@ -81,7 +29,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
           id="pw-name"
           maxLength={32}
           value={value.name}
-          onChange={(event) => handleFieldUpdate("name", event.target.value)}
+          onChange={(event) => setField("name", event.target.value)}
         />
       </div>
 
@@ -94,7 +42,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
           id="pw-website"
           maxLength={40}
           value={value.website}
-          onChange={(event) => handleFieldUpdate("website", event.target.value)}
+          onChange={(event) => setField("website", event.target.value)}
         />
       </div>
 
@@ -108,7 +56,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
           rows={2}
           maxLength={80}
           value={value.description}
-          onChange={(event) => handleFieldUpdate("description", event.target.value)}
+          onChange={(event) => setField("description", event.target.value)}
           className="w-full rounded-none border border-border bg-card px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
         />
       </div>
@@ -141,7 +89,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
           ) : null}
 
           {value.logoDataUrl ? (
-            <Button variant="link" tap className="text-destructive" onClick={handleResetLogo}>
+            <Button variant="link" tap className="text-destructive" onClick={resetLogo}>
               <Trans>Reset logo</Trans>
             </Button>
           ) : null}

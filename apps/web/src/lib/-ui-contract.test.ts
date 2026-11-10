@@ -12,6 +12,10 @@ const ARBITRARY_SIZE_EXCEPTIONS: Record<string, readonly string[]> = {
   // The amounts being entered keep the sizes master gave them.
   "components/wallet/amount-input.tsx": ["text-[1.375rem]"],
   "features/wallet/ui/send-amount-page.tsx": ["text-[2.5rem]"],
+  // Desktop send keeps the amount size from the phone send screen.
+  "desktop/wallet/send-desk.tsx": ["text-[2.5rem]"],
+  // The desktop Wallet band's total value, at the mock's 2.25rem.
+  "desktop/wallet/wallet-desk.tsx": ["text-[2.25rem]"],
 };
 
 /**
@@ -23,6 +27,8 @@ const DISPLAY_SIZE_EXCEPTIONS: Record<string, readonly string[]> = {
   "components/offerings/offerings-panel.tsx": ["text-3xl", "text-5xl"],
   // The review average keeps master's size.
   "components/reviews/voucher-reviews-panel.tsx": ["text-4xl"],
+  // The desktop reviews section draws the same review average (mock 16, `.review-avg`).
+  "desktop/vouchers/detail/voucher-reviews.tsx": ["text-4xl"],
 };
 
 /**
@@ -33,6 +39,8 @@ const INTER_COUNT_FILES = new Set([
   "components/catalog-filter-controls.tsx",
   "components/reviews/voucher-reviews-panel.tsx",
   "components/ui/step-progress.tsx",
+  // The desktop reviews section's star tallies, as the phone panel draws them.
+  "desktop/vouchers/detail/voucher-reviews.tsx",
   "components/ui/tag-badge.tsx",
   "features/home/ui/market-list-page.tsx",
   "features/home/ui/posts-page.tsx",
@@ -165,6 +173,8 @@ describe("type and button contract", () => {
       "components/market-bar.tsx",
       // The pool's three quick actions.
       "features/pools/ui/pool-detail-page.tsx",
+      // The desktop top bar's search sits beside the 44px icon buttons.
+      "desktop/shell/top-bar.tsx",
     ]);
     const large = FILES.flatMap(({ path, text }) =>
       allowed.has(path)

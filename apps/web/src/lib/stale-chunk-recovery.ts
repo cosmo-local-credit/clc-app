@@ -14,7 +14,30 @@
 // URL) so a fresh deploy can always recover, but a genuinely persistent failure
 // surfaces the error instead of looping.
 
+import type { QueryClient } from "@tanstack/react-query";
+
 import { isReloadPending, reloadPage } from "#/lib/page-reload";
+
+/** What a reload waits on: a send, swap or publish whose relay is still running. */
+type InFlightWork = Pick<QueryClient, "isMutating" | "getMutationCache">;
+
+let waitingForIdle = false;
+
+/**
+ * Reloads once nothing is in flight. A relay finishing navigates to its
+ * receipt before the cache tells this listener, and a reload keeps the URL, so
+ * the person lands on the receipt rather than losing it.
+ */
+function reloadWhenIdle(work: InFlightWork) {
+  if (waitingForIdle) return;
+  waitingForIdle = true;
+  const unsubscribe = work.getMutationCache().subscribe(() => {
+    if (work.isMutating() > 0) return;
+    unsubscribe();
+    waitingForIdle = false;
+    reloadPage();
+  });
+}
 
 const MODULE_LOAD_ERROR =
   /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/;
@@ -57,19 +80,21 @@ function setReloadMarker(key: string): void {
  * placeholder while the navigation happens), `false` if this chunk already
  * triggered a reload in this tab session and the error should surface instead.
  */
-export function reloadOnceForStaleChunk(error: unknown): boolean {
+export function reloadOnceForStaleChunk(error: unknown, inFlight?: InFlightWork): boolean {
   if (typeof window === "undefined") return false;
 
   // Another reload — the update banner's, or another chunk's — is already
-  // replacing this page. Join it without spending this chunk's one shot, which
-  // a cancelled reload would otherwise have used up.
-  if (isReloadPending()) return true;
+  // replacing this page, or waiting to. Join it without spending this chunk's
+  // one shot, which a cancelled reload would otherwise have used up.
+  if (isReloadPending() || waitingForIdle) return true;
 
   const message = error instanceof Error ? error.message : String(error);
   const key = `${RELOAD_MARKER_PREFIX}${message}`;
   if (hasReloadMarker(key)) return false;
   setReloadMarker(key);
 
-  reloadPage();
+  // A layout switch that needs the other view's chunk can hit this mid-payment.
+  if (inFlight && inFlight.isMutating() > 0) reloadWhenIdle(inFlight);
+  else reloadPage();
   return true;
 }

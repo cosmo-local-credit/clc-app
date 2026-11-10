@@ -20,9 +20,17 @@ export type PoolSwapTransferInput = {
   includeAuthorization?: boolean;
 };
 
+/**
+ * Every pool swap relay, whichever view started it. A swap keeps relaying when
+ * a layout switch unmounts the view that confirmed it, so the view that mounts
+ * next finds it here (`useIsMutating`) and holds its own Swap back.
+ */
+export const poolSwapTransferMutationKey = ["pool-swap", "transfer"] as const;
+
 export function usePoolSwapTransfer() {
   const { connector } = useConnection();
   return useMutation({
+    mutationKey: poolSwapTransferMutationKey,
     mutationFn: (input: PoolSwapTransferInput) => {
       const relayInput = {
         senderAddress: input.senderAddress,

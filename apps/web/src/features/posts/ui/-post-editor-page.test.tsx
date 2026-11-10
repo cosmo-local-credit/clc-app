@@ -1,8 +1,9 @@
 import type { ManagedReportDetail } from "@clc/api/features/reports/client";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
 import { REPORT_BODY_MAX } from "@clc/core/features/reports/logic";
 import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
@@ -63,7 +64,8 @@ vi.mock("#/features/posts/hooks/use-my-posts", () => ({
   useMyPosts: () => ({ data: undefined, isPending: false, isError: false, refetch: vi.fn() }),
 }));
 
-vi.mock("#/features/posts/hooks/use-post-mutations", () => ({
+vi.mock("#/features/posts/hooks/use-post-mutations", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   useCreatePost: () => ({ mutateAsync: mocks.createPost, isPending: mocks.creating }),
   useUpdatePost: () => ({ mutateAsync: mocks.updatePost, isPending: mocks.updating }),
 }));
@@ -221,6 +223,16 @@ async function typeBody(text: string) {
     root.__lexicalEditor.update(() => {
       $selectAll();
     });
+  });
+}
+
+/** The editor reads saves in flight from the query client. */
+function render(ui: ReactElement) {
+  const client = new QueryClient();
+  return rtlRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
   });
 }
 

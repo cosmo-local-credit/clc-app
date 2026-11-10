@@ -1,3 +1,4 @@
+import { formatSubmittedAt } from "@clc/core/lib/otx";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import {
   formatPoolSwapFeePercentage,
@@ -438,12 +439,6 @@ function StatusRow({ status }: { status: React.ReactNode }) {
       {status}
     </div>
   );
-}
-
-function formatSubmittedAt(value: string, locale: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
 function localizeCanonicalAmount(amount: string, locale: string): string {

@@ -1,7 +1,3 @@
-import {
-  ReportPayloadTooLargeError,
-  type ManagedReportDetail,
-} from "@clc/api/features/reports/client";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import {
   REPORT_BODY_MAX,
@@ -13,23 +9,13 @@ import {
   REPORT_MAX_POOLS,
   REPORT_PARTICIPANTS_MAX,
   REPORT_TITLE_MAX,
-  emptyReportWrite,
   fromDateTimeLocalValue,
-  nowReportPeriod,
-  reportToFormValues,
-  reportWriteSchema,
   toDateTimeLocalValue,
-  voucherRefKey,
-  poolRefKey,
-  type ReportVoucherRef,
-  type ReportWrite,
 } from "@clc/core/features/reports/logic";
-import { getFieldError, useForm, useStore } from "@clc/core/lib/forms";
-import { isAdminRole } from "@clc/core/features/users/roles";
+import { getFieldError } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { toast } from "sonner";
+import { useRouter } from "@tanstack/react-router";
+import { useState, type ReactNode } from "react";
 
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
@@ -41,28 +27,19 @@ import { Skeleton } from "#/components/ui/skeleton";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { BackChevron } from "#/components/wallet";
 import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
-import { useTokenTags } from "#/hooks/use-deployment";
-import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import {
-  clearPostDraft,
-  readPostDraft,
-  writePostDraft,
-} from "#/features/posts/api/post-draft-storage";
-import { useMyPost } from "#/features/posts/hooks/use-my-posts";
-import { useCreatePost, useUpdatePost } from "#/features/posts/hooks/use-post-mutations";
-import { useDebouncedValue } from "#/lib/use-debounced-value";
+  type PostEditorBack,
+  type PostEditorSeed,
+  type SeedVoucher,
+  usePostEditorCreateSeed,
+  usePostEditorEditSeed,
+  usePostEditorForm,
+} from "#/features/posts/hooks/use-post-editor";
 import { PostAttachmentFields } from "./post-attachment-fields";
 import { PostConfirmDialog } from "./post-confirm-dialog";
 import { PostImageManager } from "./post-image-manager";
 import { PostVoucherPicker } from "./post-voucher-picker";
 import { PostPoolPicker } from "./post-pool-picker";
-
-/** Quiet time before an in-progress post is parked in local storage. */
-const DRAFT_SAVE_DEBOUNCE_MS = 500;
-
-/** A voucher a screen carried in, so the post opens already linked to it. */
-type SeedVoucher = { chainId: number; address: string; name?: string };
 
 export type PostEditorTarget =
   | { mode: "create"; voucher?: SeedVoucher | null }
@@ -82,42 +59,11 @@ export function PostEditorPage(target: PostEditorTarget) {
   return <PostEditorLoader reportId={target.reportId} />;
 }
 
-/**
- * What a new post starts with.
- *
- * The saved place and the moment of writing seed the new post, while a voucher
- * a screen carried in arrives linked. The profile name deliberately does not
- * seed the public Host field: naming a host is an explicit author choice.
- *
- * A draft this device parked wins over all of it: it is what the author
- * actually typed. The profile read is awaited rather than merged in later
- * because TanStack Form reads `defaultValues` once, so a form mounted before
- * the profile arrived would keep an empty Place.
- */
 function PostEditorCreate({ voucher }: { voucher: SeedVoucher | null }) {
   const { t } = useLingui();
-  const auth = useAuthStatus();
-  const profileQuery = useAuthProfile();
-  const owner = auth.address?.toLowerCase() ?? "";
-  // Read once, on mount: the editor writes to this same slot as it is typed in,
-  // so a later read would hand back the values the form already holds.
-  const [draft, setDraft] = useState(() => readPostDraft(owner));
-  // Stable across renders: the form's save effect keys off this, and a fresh
-  // object every keystroke would park the post on every render instead of on
-  // the debounce.
-  const draftControls = useMemo(
-    () => ({
-      owner,
-      restored: draft !== null,
-      onStartOver: () => {
-        clearPostDraft();
-        setDraft(null);
-      },
-    }),
-    [draft, owner],
-  );
+  const created = usePostEditorCreateSeed(voucher);
 
-  if (profileQuery.isPending) {
+  if (!created) {
     return (
       <EditorShell>
         <div aria-busy="true" aria-label={t`Loading your post…`} className="space-y-4">
@@ -129,66 +75,12 @@ function PostEditorCreate({ voucher }: { voucher: SeedVoucher | null }) {
     );
   }
 
-  const seededRef: ReportVoucherRef | null = voucher
-    ? { chainId: voucher.chainId, address: voucher.address }
-    : null;
-  const profile = profileQuery.data;
-  // Both halves of a coordinate or neither: a profile with one is not a place.
-  const hasProfileLocation =
-    typeof profile?.geoLat === "number" && typeof profile?.geoLng === "number";
-  const fresh: ReportWrite = {
-    ...emptyReportWrite,
-    ...nowReportPeriod(),
-    hostName: "",
-    geoLat: hasProfileLocation ? (profile?.geoLat ?? null) : null,
-    geoLng: hasProfileLocation ? (profile?.geoLng ?? null) : null,
-    vouchers: seededRef ? [seededRef] : [],
-  };
-  // The voucher was pressed just now, so it is linked even when a draft is
-  // restored over everything else.
-  const initial: ReportWrite = draft
-    ? {
-        ...draft,
-        vouchers:
-          seededRef &&
-          !draft.vouchers.some((entry) => voucherRefKey(entry) === voucherRefKey(seededRef))
-            ? [...draft.vouchers, seededRef].slice(0, REPORT_MAX_VOUCHERS)
-            : draft.vouchers,
-      }
-    : fresh;
-
-  return (
-    <PostEditorForm
-      // Remounted rather than reset when the draft is dropped: `defaultValues`
-      // is read once, so a new starting document is a new form.
-      key={draft ? "draft" : "fresh"}
-      initial={initial}
-      linkedNames={
-        seededRef && voucher?.name
-          ? new Map([[voucherRefKey(seededRef), voucher.name]])
-          : new Map<string, string>()
-      }
-      linkedPoolNames={new Map<string, string>()}
-      // Started from a voucher, so Back names the voucher — and a deep load
-      // with no history lands back on the tab the button was pressed from.
-      back={
-        seededRef
-          ? {
-              label: voucher?.name ?? t`Voucher`,
-              to: `/vouchers/${seededRef.address}`,
-              search: { tab: "posts" },
-            }
-          : undefined
-      }
-      draft={draftControls}
-      previousStatus={null}
-    />
-  );
+  return <PostEditorForm key={created.formKey} {...created.seed} />;
 }
 
 function PostEditorLoader({ reportId }: { reportId: string }) {
   const { t } = useLingui();
-  const postQuery = useMyPost(reportId);
+  const { postQuery, seed } = usePostEditorEditSeed(reportId);
 
   if (postQuery.isPending) {
     return (
@@ -202,7 +94,7 @@ function PostEditorLoader({ reportId }: { reportId: string }) {
     );
   }
 
-  if (postQuery.isError || !postQuery.data) {
+  if (postQuery.isError || !seed) {
     return (
       <EditorShell>
         <p className="border border-border bg-card p-3 text-muted-foreground text-sm">
@@ -220,33 +112,9 @@ function PostEditorLoader({ reportId }: { reportId: string }) {
     );
   }
 
-  const post = postQuery.data;
-  return (
-    // Keyed on the record: TanStack Form reads defaultValues once, so a reused
-    // instance would keep showing the previously loaded post.
-    <PostEditorForm
-      key={post.id}
-      post={post}
-      initial={reportToFormValues(post)}
-      linkedNames={
-        new Map(
-          post.vouchers.map((voucher) => [
-            voucherRefKey({ chainId: voucher.chainId, address: voucher.address }),
-            voucher.name,
-          ]),
-        )
-      }
-      linkedPoolNames={
-        new Map(
-          (post.pools ?? []).map((pool) => [
-            poolRefKey({ chainId: pool.chainId, address: pool.address }),
-            pool.name,
-          ]),
-        )
-      }
-      previousStatus={post.status}
-    />
-  );
+  // Keyed on the record: TanStack Form reads defaultValues once, so a reused
+  // instance would keep showing the previously loaded post.
+  return <PostEditorForm key={seed.post?.id} {...seed} />;
 }
 
 function PostEditorForm({
@@ -257,101 +125,20 @@ function PostEditorForm({
   back,
   draft,
   previousStatus,
-}: {
-  post?: ManagedReportDetail;
-  initial: ReportWrite;
-  /** Names for chips the picker's search may not return, keyed by `voucherRefKey`. */
-  linkedNames: Map<string, string>;
-  linkedPoolNames: Map<string, string>;
-  back?: EditorBack;
-  /**
-   * Local draft persistence, on the create screen only. An edit has a server
-   * copy of the same post, and whichever copy won would depend on which screen
-   * was opened last.
-   */
-  draft?: { owner: string; restored: boolean; onStartOver: () => void };
-  previousStatus: ManagedReportDetail["status"] | null;
-}) {
+}: PostEditorSeed) {
   const { t } = useLingui();
-  const navigate = useNavigate();
   const router = useRouter();
-  const auth = useAuthStatus();
-  const tagsQuery = useTokenTags();
-  const create = useCreatePost();
-  const update = useUpdatePost(previousStatus);
-
-  /** Bytes in flight. Save would otherwise persist the list from before them. */
-  const [imagesBusy, setImagesBusy] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
-
-  const saving = create.isPending || update.isPending;
-  // A post may only link vouchers its author owns, unless the author has an
-  // administrative role. A session with no role is treated as unprivileged: the picker
-  // then offers less than the backend might allow, never more than it accepts.
-  const voucherOwner = isAdminRole(auth.session?.role)
-    ? undefined
-    : (auth.session?.address ?? auth.address);
-
-  const form = useForm({
-    defaultValues: initial,
-    validators: { onSubmit: reportWriteSchema },
-    onSubmit: async ({ value }) => {
-      try {
-        if (post) {
-          const saved = await update.mutateAsync({ id: post.id, input: value });
-          toast.success(
-            saved.status === "APPROVED"
-              ? t`Post updated.`
-              : t`Saved. Your post is awaiting approval again.`,
-          );
-        } else {
-          await create.mutateAsync(value);
-          clearPostDraft();
-          toast.success(t`Post published.`);
-        }
-        await navigate({ to: "/posts/mine" });
-      } catch (error) {
-        // The form keeps its values, including uploaded URLs, so a retry does
-        // not re-send the bytes.
-        if (error instanceof ReportPayloadTooLargeError) {
-          toast.error(t`This post is too large to save. Shorten the text or remove some media.`);
-          return;
-        }
-        toast.error(error instanceof Error ? error.message : t`Couldn't save your post.`);
-      }
-    },
-  });
-
-  // Read through the store: `form.state` is a snapshot taken at render time and
-  // does not re-render when the form changes, so the back guard and the unload
-  // prompt would both stay armed against the values the page mounted with.
-  const formIsDirty = useStore(form.store, (state) => state.isDirty);
-  const isDirty = formIsDirty && !saving;
-  const values = useStore(form.store, (state) => state.values);
-  // Debounced, because this runs on every keystroke and a draft is only ever
-  // read on a later visit; `isDirty` is false while saving, which is what stops
-  // a write landing after the submit that cleared the draft.
-  const { settled: settledValues, isPending: settling } = useDebouncedValue(
-    values,
-    DRAFT_SAVE_DEBOUNCE_MS,
-  );
-
-  useEffect(() => {
-    // `settling` matters as much as the debounce: the settled values lag the
-    // form, so the render that first turns the form dirty still holds the
-    // values it mounted with, and writing those would park an empty post.
-    if (!draft || !isDirty || settling) return;
-    writePostDraft(draft.owner, settledValues);
-  }, [draft, isDirty, settledValues, settling]);
-
-  // The browser's own prompt covers a reload or a closed tab; the dialog below
-  // covers in-app navigation, which this never sees.
-  useEffect(() => {
-    if (!isDirty) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [isDirty]);
+  const {
+    form,
+    saving,
+    isDirty,
+    imagesBusy,
+    setImagesBusy,
+    voucherOwner,
+    tagsQuery,
+    discardDraft,
+  } = usePostEditorForm({ post, initial, draft, previousStatus });
 
   return (
     <EditorShell back={back} onBack={isDirty ? () => setConfirmLeave(true) : undefined}>
@@ -710,8 +497,7 @@ function PostEditorForm({
         confirmLabel={t`Discard changes`}
         onConfirm={() => {
           setConfirmLeave(false);
-          // Discard means discard: the parked copy goes with the changes.
-          if (draft) clearPostDraft();
+          discardDraft();
           router.history.back();
         }}
         onCancel={() => setConfirmLeave(false)}
@@ -742,15 +528,13 @@ function Section({
   );
 }
 
-type EditorBack = { label: string; to: string; search?: Record<string, unknown> };
-
 function EditorShell({
   children,
   back,
   onBack,
 }: {
   children: ReactNode;
-  back?: EditorBack;
+  back?: PostEditorBack;
   onBack?: () => void;
 }) {
   const { t } = useLingui();

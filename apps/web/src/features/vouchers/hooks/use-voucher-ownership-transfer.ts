@@ -12,6 +12,8 @@ import { useOwnershipTransfer } from "#/features/ownership/hooks/use-ownership-t
 import { CHAIN_ID } from "#/lib/chain";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
+import { useVoucherActionInFlight } from "./use-voucher-action-in-flight";
+
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 export type VoucherOwnershipTransferInput = {
@@ -21,7 +23,11 @@ export type VoucherOwnershipTransferInput = {
   includeAuthorization?: boolean;
 };
 
-/** Existing transport, with settlement and ordered catalog refresh. */
+/**
+ * Existing transport, with settlement and ordered catalog refresh. `inFlight`
+ * is true while a handover of `asset` runs from any view. The shared ownership
+ * mutation has no key, so it is found by its `ownership-voucher` scope.
+ */
 export function useVoucherOwnershipTransfer(asset?: {
   address: string;
   ownerAddress?: string | null;
@@ -81,8 +87,13 @@ export function useVoucherOwnershipTransfer(asset?: {
     },
     owner.isSafeSigner,
   );
+  const inFlight = useVoucherActionInFlight(
+    { predicate: (pending) => pending.options.scope?.id === "ownership-voucher" },
+    asset?.address,
+  );
   return {
     ...mutation,
+    inFlight,
     mutateAsync: (input: VoucherOwnershipTransferInput) =>
       mutation.mutateAsync({ ...input, assetAddress: input.tokenAddress }),
   };

@@ -1,7 +1,7 @@
 import type { AccountActivityItem, ActivityKind } from "@clc/api/features/accounts/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowLeftRightLine,
@@ -19,9 +19,11 @@ import { MarketFeedBar } from "#/components/market-bar";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { ListSkeleton } from "#/components/ui/list-skeleton";
+import { UnreadDot } from "#/components/ui/unread-count";
 import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useActivityVisit } from "#/features/wallet/hooks/use-activity-unseen";
 import {
   formatTransferDate,
   formatTransferUnitValue,
@@ -59,7 +61,14 @@ export function ActivityPage({
     AccountActivityItem,
     { kind: "swapped" }
   > | null>(null);
-  const activity = activityQuery.data?.pages.flatMap((page) => page.activity) ?? [];
+  const activity = useMemo(
+    () => activityQuery.data?.pages.flatMap((page) => page.activity) ?? [],
+    [activityQuery.data],
+  );
+  const isFiltered = settled !== "" || types.length > 0;
+  const isNew = useActivityVisit(
+    searchReady && activityQuery.isSuccess && !isFiltered ? activity : undefined,
+  );
 
   useEffect(() => setDraftQuery(query), [query]);
   useEffect(() => {
@@ -89,8 +98,6 @@ export function ActivityPage({
     activityQuery.hasNextPage,
     activityQuery.isFetchingNextPage,
   ]);
-
-  const isFiltered = settled !== "" || types.length > 0;
 
   return (
     <div className="space-y-3">
@@ -199,6 +206,7 @@ export function ActivityPage({
               <ActivityRow
                 key={`${item.txHash}-${item.id}`}
                 item={item}
+                isNew={isNew(item)}
                 isLast={index === activity.length - 1}
                 locale={i18n.locales?.[0] ?? i18n.locale}
                 onOpen={() => {
@@ -239,11 +247,13 @@ export function ActivityPage({
 
 function ActivityRow({
   item,
+  isNew,
   isLast,
   locale,
   onOpen,
 }: {
   item: AccountActivityItem;
+  isNew: boolean;
   isLast: boolean;
   locale: string;
   onOpen: () => void;
@@ -260,8 +270,9 @@ function ActivityRow({
           <RiArrowLeftRightLine className="size-3.5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">
+          <p className="flex items-center gap-1.5 text-sm font-medium">
             <SwapActivityTitle symbols={[item.received.tokenSymbol, item.sent.tokenSymbol]} />
+            {isNew ? <UnreadDot /> : null}
           </p>
           <p className="truncate text-muted-foreground text-xs">
             <Trans>Pool</Trans> {item.poolAddresses[0] ?? "—"}
@@ -323,6 +334,7 @@ function ActivityRow({
               </span>
             </>
           ) : null}
+          {isNew ? <UnreadDot /> : null}
         </p>
         <p className="min-w-0 text-muted-foreground text-xs">
           <span className="block truncate">

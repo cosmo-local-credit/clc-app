@@ -1,9 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { lazy, useEffect } from "react";
 import { z } from "zod";
 
+import { LayoutSwitch } from "#/desktop/switch";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { PoolDetailPage } from "#/features/pools/ui";
+
+const PoolDesk = lazy(() =>
+  import("#/desktop/pools/pool-desk").then((module) => ({ default: module.PoolDesk })),
+);
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 const searchSchema = z.object({
@@ -13,10 +18,12 @@ const searchSchema = z.object({
     .catch(undefined),
   voucher: z.string().optional().catch(undefined),
   wantId: z.string().trim().min(1).optional().catch(undefined),
+  /** The desktop Activity tab's kinds, comma separated, as the wallet's Activity takes them. */
+  activityTypes: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
-  staticData: { navOwner: "wallet" },
+  staticData: { navOwner: "wallet", desktop: "fill" },
   validateSearch: searchSchema,
   beforeLoad: ({ params, search }) => {
     const voucherAddress = parseVoucherAddress(search.voucher);
@@ -67,10 +74,15 @@ function PoolDetailRoute() {
   }, [activeTab, auth.isAuthenticated, auth.isLoading, navigate, poolAddress, requested]);
 
   return (
-    <div className="min-h-[100svh] bg-background text-foreground pb-bottom-nav">
-      <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-        <PoolDetailPage poolAddress={poolAddress} activeTab={activeTab} wantId={wantId} />
-      </main>
-    </div>
+    <LayoutSwitch
+      mobile={
+        <div className="min-h-[100svh] bg-background pb-bottom-nav text-foreground">
+          <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
+            <PoolDetailPage poolAddress={poolAddress} activeTab={activeTab} wantId={wantId} />
+          </main>
+        </div>
+      }
+      desktop={<PoolDesk poolAddress={poolAddress} />}
+    />
   );
 }

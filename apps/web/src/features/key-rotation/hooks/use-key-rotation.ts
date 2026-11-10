@@ -2,7 +2,13 @@ import { BackendApiError } from "@clc/api/client/errors";
 import { authKeys } from "@clc/api/features/auth/queries";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { planKeyRotationBatches } from "@clc/core/features/key-rotation/logic";
-import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  useMutation,
+  useMutationState,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { privateKeyToAccount } from "viem/accounts";
 import { connect, disconnect } from "wagmi/actions";
 
@@ -174,6 +180,9 @@ export function useMoveOldCardAssets() {
   });
 }
 
+/** Every passkey registration, for a view that mounts while one is out. */
+export const RELINK_PASSKEYS_MUTATION_KEY = ["key-rotation", "passkeys"] as const;
+
 /**
  * Registers the passkeys that came with the account on the new card's wallet.
  * `key` is the new card's: from the replacement in memory, or the stored key of
@@ -182,7 +191,7 @@ export function useMoveOldCardAssets() {
 export function useRelinkPasskeys() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ["key-rotation", "passkeys"],
+    mutationKey: RELINK_PASSKEYS_MUTATION_KEY,
     mutationFn: async (input: { key: `0x${string}` }) => {
       await relinkMovedPasskeys({ auth: authClient, relayer: relayerClient, newKey: input.key });
       return privateKeyToAccount(input.key).address;
@@ -192,4 +201,25 @@ export function useRelinkPasskeys() {
         queryKey: authKeys.webAuthnCredentials(privateKeyToAccount(input.key).address),
       }),
   });
+}
+
+/**
+ * The latest passkey registration for this replacement's new card, from the
+ * mutation cache rather than a component's observer: a layout switch remounts
+ * the route mid-registration, and a fresh observer neither sees the run in
+ * flight nor fires its per-call callbacks. Runs for another card (an earlier
+ * replacement, or Settings) are not this one's.
+ */
+export function useNewCardRelink() {
+  const runs = useMutationState({
+    filters: {
+      mutationKey: RELINK_PASSKEYS_MUTATION_KEY,
+      predicate: (mutation) => {
+        const key = useRotationSession.getState().newKey;
+        return key !== null && (mutation.state.variables as { key?: string })?.key === key;
+      },
+    },
+    select: (mutation) => ({ status: mutation.state.status, error: mutation.state.error }),
+  });
+  return runs.at(-1);
 }
