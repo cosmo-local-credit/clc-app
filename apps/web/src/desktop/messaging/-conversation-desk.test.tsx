@@ -117,11 +117,16 @@ describe("desktop thread", () => {
   it("answers a request with Accept and Decline before any composer", async () => {
     const request = conversation(1, { status: "pending", canAccept: true, intro: "Hi, it's Juma" });
     mocks.client.get.mockResolvedValue(request);
+    mocks.client.messages.mockResolvedValue({
+      items: [message(1, 1, "peer", "Hi, it's Juma")],
+      hasMore: false,
+    });
     mocks.client.setStatus.mockResolvedValue(conversation(1));
     mountDesk("/messages/1");
 
     const panel = await screen.findByRole("region", { name: "Request" });
-    expect(within(panel).getByText("Hi, it's Juma")).toBeTruthy();
+    expect(await screen.findByText("Hi, it's Juma")).toBeTruthy();
+    expect(within(panel).queryByText("Hi, it's Juma")).toBeNull();
     expect(screen.queryByRole("textbox", { name: "Message" })).toBeNull();
     expect(within(panel).getByRole("button", { name: "Decline" })).toBeTruthy();
 
@@ -129,6 +134,7 @@ describe("desktop thread", () => {
     await waitFor(() => expect(mocks.client.setStatus).toHaveBeenCalledWith(1, "accepted"));
     expect(await screen.findByRole("textbox", { name: "Message" })).toBeTruthy();
     expect(screen.queryByRole("region", { name: "Request" })).toBeNull();
+    expect(screen.getByText("Hi, it's Juma")).toBeTruthy();
   });
 
   it("waits on the other person for a request the caller sent", async () => {

@@ -217,19 +217,25 @@ describe("ThreadPage", () => {
     await waitFor(() => expect(mocks.markRead).toHaveBeenLastCalledWith(5, 3));
   });
 
-  it("opens a pending request with Accept and Decline", async () => {
+  it("opens a pending request with Accept and Decline, and keeps the intro once accepted", async () => {
     mocks.get.mockResolvedValue(
       conversation({ status: "pending", canAccept: true, intro: "Hi, I sell maize." }),
     );
-    mocks.messages.mockResolvedValue({ items: [], hasMore: false });
+    // The intro is the requester's first message, not a separate field on screen.
+    mocks.messages.mockResolvedValue({
+      items: [message(1, "peer", "Hi, I sell maize.")],
+      hasMore: false,
+    });
     mocks.setStatus.mockResolvedValue(conversation());
     mount();
     expect(await screen.findByText("Hi, I sell maize.")).toBeTruthy();
+    expect(screen.getAllByText("Hi, I sell maize.")).toHaveLength(1);
     expect(screen.queryByRole("textbox", { name: "Message" })).toBeNull();
     expect(screen.getByRole("button", { name: "Decline" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Accept" }));
     await waitFor(() => expect(mocks.setStatus).toHaveBeenCalledWith(5, "accepted"));
     expect(await screen.findByRole("textbox", { name: "Message" })).toBeTruthy();
+    expect(screen.getByText("Hi, I sell maize.")).toBeTruthy();
   });
 
   it("tells the requester they are waiting", async () => {

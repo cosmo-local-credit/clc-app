@@ -82,11 +82,6 @@ export function ThreadPage({ conversationId }: { conversationId: number }) {
 
         {current && current.kind === "direct" && current.status === "pending" ? (
           <section className="space-y-3 border border-border bg-card p-4" aria-label={t`Request`}>
-            {current.intro ? (
-              <p dir="auto" className="whitespace-pre-wrap break-words text-sm">
-                {current.intro}
-              </p>
-            ) : null}
             {actions?.canDecline ? (
               <div className="grid grid-cols-2 gap-2">
                 <Button

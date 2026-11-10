@@ -161,11 +161,6 @@ function ThreadNotices({ conversation }: { conversation: Conversation }) {
           className="grid gap-3 border border-border bg-background p-4"
           aria-label={t`Request`}
         >
-          {conversation.intro ? (
-            <p dir="auto" className="whitespace-pre-wrap break-words text-sm">
-              {conversation.intro}
-            </p>
-          ) : null}
           {actions.canDecline ? (
             <div className="flex gap-2">
               <Button
