@@ -10,6 +10,7 @@ import {
   reportMapQueryOptions,
   reportKeys,
   reportQueryOptions,
+  reportPoolFeedInfiniteQueryOptions,
   reportVoucherFeedInfiniteQueryOptions,
 } from "./queries";
 
@@ -40,9 +41,11 @@ describe("reportKeys", () => {
         },
         [],
         undefined,
+        "future",
         false,
       ),
       reportKeys.voucherFeed(undefined, 20),
+      reportKeys.poolFeed(undefined, 20),
       reportKeys.facetVocabulary(),
     ]) {
       expect(key.slice(0, reportKeys.all.length)).toEqual([...reportKeys.all]);
@@ -53,7 +56,7 @@ describe("reportKeys", () => {
     expect(reportKeys.list(20)).not.toEqual(reportKeys.feed(20));
   });
 
-  it("varies the public feed with the posted window", () => {
+  it("varies the public feed with Post timing", () => {
     expect(reportKeys.feed(20)).not.toEqual(reportKeys.feed(20, "all"));
     expect(reportKeys.filtered(null, 20)).not.toEqual(reportKeys.filtered(null, 20, "all"));
   });
@@ -80,13 +83,14 @@ describe("reportMapQueryOptions", () => {
   ] as const;
 
   it("isolates bounds, Credit pools, filters, and facet mode in its key", () => {
-    const base = reportKeys.map(filter, bounds, creditablePools, true);
-    expect(base).not.toEqual(reportKeys.map(filter, [], creditablePools, true));
-    expect(base).not.toEqual(reportKeys.map(filter, bounds, undefined, true));
+    const base = reportKeys.map(filter, bounds, creditablePools, "future", true);
+    expect(base).not.toEqual(reportKeys.map(filter, [], creditablePools, "future", true));
+    expect(base).not.toEqual(reportKeys.map(filter, bounds, undefined, "future", true));
     expect(base).not.toEqual(
-      reportKeys.map({ ...filter, term: "other" }, bounds, creditablePools, true),
+      reportKeys.map({ ...filter, term: "other" }, bounds, creditablePools, "future", true),
     );
-    expect(base).not.toEqual(reportKeys.map(filter, bounds, creditablePools, false));
+    expect(base).not.toEqual(reportKeys.map(filter, bounds, creditablePools, "future", false));
+    expect(base).not.toEqual(reportKeys.map(filter, bounds, creditablePools, "past", true));
   });
 
   it("walks every bounded page, sends Credit and AbortSignal, and asks for facets once", async () => {
@@ -141,7 +145,7 @@ describe("reportFeedInfiniteQueryOptions", () => {
     expect(options.getNextPageParam(page(null), [], undefined, [])).toBeUndefined();
   });
 
-  it("sends the posted window on the unfiltered walk", async () => {
+  it("sends timing on the unfiltered walk", async () => {
     const getReports = vi.fn().mockResolvedValue(page(null));
     const allTime = reportFeedInfiniteQueryOptions(
       { getReports } as unknown as ReportsClient,
@@ -152,7 +156,7 @@ describe("reportFeedInfiniteQueryOptions", () => {
     if (typeof allTime.queryFn !== "function") throw new Error("expected feed query function");
     await allTime.queryFn({ pageParam: undefined, signal: new AbortController().signal } as never);
     expect(getReports).toHaveBeenCalledWith(
-      expect.objectContaining({ posted: "all" }),
+      expect.objectContaining({ timing: "all" }),
       expect.any(AbortSignal),
     );
   });
@@ -174,7 +178,31 @@ describe("reportVoucherFeedInfiniteQueryOptions", () => {
       throw new Error("expected voucher feed query function");
     await options.queryFn({ pageParam: undefined, signal: new AbortController().signal } as never);
     expect(getFilteredReports).toHaveBeenCalledWith(
-      expect.objectContaining({ posted: "all" }),
+      expect.objectContaining({ timing: "all" }),
+      expect.any(AbortSignal),
+    );
+  });
+});
+
+describe("reportPoolFeedInfiniteQueryOptions", () => {
+  it("asks for all-time Posts related directly or indirectly to a Pool", async () => {
+    const getFilteredReports = vi.fn().mockResolvedValue(page(null));
+    const pool = {
+      chainId: 100,
+      address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" as const,
+    };
+    const options = reportPoolFeedInfiniteQueryOptions(
+      { getFilteredReports } as unknown as ReportsClient,
+      pool,
+      3,
+    );
+    if (typeof options.queryFn !== "function") throw new Error("expected Pool feed query function");
+    await options.queryFn({ pageParam: undefined, signal: new AbortController().signal } as never);
+    expect(getFilteredReports).toHaveBeenCalledWith(
+      expect.objectContaining({
+        timing: "all",
+        filter: expect.objectContaining({ pools: [pool] }),
+      }),
       expect.any(AbortSignal),
     );
   });

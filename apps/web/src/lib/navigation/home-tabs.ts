@@ -1,8 +1,8 @@
 import { isFilterSearchActive } from "@clc/core/features/catalog/logic";
-import type { PostedWithin } from "@clc/core/features/reports/logic";
+import type { PostTiming } from "@clc/core/features/reports/logic";
 
 import { catalogSearchForScope } from "#/lib/navigation/catalog-search";
-import { parsePostedSearch, pickPostedSearch } from "#/lib/navigation/posted-search";
+import { parsePostTimingSearch, pickPostTimingSearch } from "#/lib/navigation/post-timing-search";
 import {
   parseVoucherSheetSearch,
   type VoucherSheetSearch,
@@ -28,7 +28,8 @@ export type HomeRouteSearch = VoucherSheetSearch &
     tab?: HomeTab;
     view?: MarketView;
     holdings?: HoldingsFilter;
-    posted?: PostedWithin;
+    timing?: PostTiming;
+    posted?: string;
   };
 
 export function parseHomeTab(value: unknown): HomeTab {
@@ -46,7 +47,7 @@ export function parseMarketView(value: unknown): MarketView {
 export function parseHomeSearch(
   search: Record<string, unknown>,
 ): HomeRouteSearch & { voucher?: `0x${string}` } {
-  const rawPosted = pickPostedSearch(search).posted;
+  const postTiming = pickPostTimingSearch(search);
   return {
     tab: parseHomeTab(search.tab),
     view: parseMarketView(search.view),
@@ -56,7 +57,9 @@ export function parseHomeSearch(
     ...(search.holdings === "vouchers" || search.holdings === "stables"
       ? { holdings: search.holdings }
       : {}),
-    ...(rawPosted !== undefined ? { posted: parsePostedSearch(search) } : {}),
+    ...(postTiming.timing !== undefined || postTiming.posted !== undefined
+      ? { timing: parsePostTimingSearch(search) }
+      : {}),
   };
 }
 

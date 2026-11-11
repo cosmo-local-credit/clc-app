@@ -395,7 +395,7 @@ describe("PostsPage", () => {
     mocks.feed.data = { pages: [{ reports: [] }] };
     render(<PostsPage />);
 
-    expect(screen.getByText("No posts in this period.")).toBeTruthy();
+    expect(screen.getByText("No future posts.")).toBeTruthy();
     expect(screen.queryByText("No posts yet.")).toBeNull();
     // The header's own actions stay: an empty feed is exactly when an author
     // needs somewhere to write.
@@ -410,21 +410,22 @@ describe("PostsPage", () => {
     render(<PostsPage />);
 
     expect(screen.getByText("No posts yet.")).toBeTruthy();
-    expect(screen.queryByText("No posts in this period.")).toBeNull();
+    expect(screen.queryByText("No future posts.")).toBeNull();
   });
 
-  it("selects 1 month by default and writes all-time into the URL", () => {
+  it("selects Future by default and writes All into the URL", () => {
     render(<PostsPage />);
 
-    const group = screen.getByRole("group", { name: "Posted within" });
-    expect(
-      within(group).getByRole("button", { name: "1 month" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    fireEvent.click(within(group).getByRole("button", { name: "All time" }));
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+    const group = screen.getByRole("group", { name: "Time" });
+    expect(within(group).getByRole("button", { name: "Future" }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    fireEvent.click(within(group).getByRole("button", { name: "All" }));
     const search = mocks.navigate.mock.calls.at(-1)?.[0]?.search as (
       previous: Record<string, unknown>,
     ) => Record<string, unknown>;
-    expect(search({ tab: "posts" })).toEqual({ tab: "posts", posted: "all" });
+    expect(search({ tab: "posts" })).toEqual({ tab: "posts", timing: "all", posted: undefined });
   });
 });
 

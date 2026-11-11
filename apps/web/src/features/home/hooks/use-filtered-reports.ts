@@ -5,7 +5,7 @@ import {
   formatVoucherAddress,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
-import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
+import { DEFAULT_POST_TIMING, type PostTiming } from "@clc/core/features/reports/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -76,14 +76,14 @@ function asReportFilter(filter: CatalogFilter | null): ReportFilter | null {
 
 function useFilteredReportsQuery(
   filter: CatalogFilter | null,
-  posted: PostedWithin,
+  timing: PostTiming,
   perPage = REPORTS_FILTER_PAGE_SIZE,
 ) {
   const reportFilter = asReportFilter(filter);
   const nearby = useNearbyCatalog();
   return useQuery({
     queryKey: nearbyQueryKey(
-      filteredReportQueryKeys.filtered(reportFilter, perPage, posted),
+      filteredReportQueryKeys.filtered(reportFilter, perPage, timing),
       nearby,
     ),
     queryFn: async ({ signal }): Promise<FilteredReportFeed> => {
@@ -98,7 +98,7 @@ function useFilteredReportsQuery(
             perPage,
             cursor,
             filter: reportFilter,
-            posted,
+            timing,
             facets: index === 0,
             ...(nearby?.nearby === true ? { nearby: true } : {}),
             bounds: nearby?.bounds,
@@ -145,16 +145,16 @@ function useFilteredReportsQuery(
   });
 }
 
-function useReportFacetVocabulary(enabled: boolean, posted: PostedWithin) {
+function useReportFacetVocabulary(enabled: boolean, timing: PostTiming) {
   const nearby = useNearbyCatalog();
   return useQuery({
-    queryKey: nearbyQueryKey(filteredReportQueryKeys.facetVocabulary(posted), nearby),
+    queryKey: nearbyQueryKey(filteredReportQueryKeys.facetVocabulary(timing), nearby),
     queryFn: async ({ signal }) => {
       const page = await reportsClient.getFilteredReports(
         {
           perPage: 1,
           filter: asReportFilter(EMPTY_CATALOG_FILTER)!,
-          posted,
+          timing,
           facets: true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
           bounds: nearby?.bounds,
@@ -235,10 +235,10 @@ export function useReportFeed(
   },
   /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
   vocabularyEnabled: boolean,
-  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
+  timing: PostTiming = DEFAULT_POST_TIMING,
 ): ReportFeed {
-  const filtered = useFilteredReportsQuery(filter.isFiltered ? filter.filter : null, posted);
-  const vocabulary = useReportFacetVocabulary(vocabularyEnabled, posted);
+  const filtered = useFilteredReportsQuery(filter.isFiltered ? filter.filter : null, timing);
+  const vocabulary = useReportFacetVocabulary(vocabularyEnabled, timing);
 
   const state: FilteredReportsState = useMemo(() => {
     if (!filtered.isEnabled) return { status: "disabled" };

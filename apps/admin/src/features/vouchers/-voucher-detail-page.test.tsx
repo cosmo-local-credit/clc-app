@@ -262,7 +262,7 @@ describe("VoucherDetailPage tabs", () => {
     expect(await screen.findByText("Market day")).toBeTruthy();
     expect(mocks.getFilteredReports).toHaveBeenCalledWith(
       expect.objectContaining({
-        posted: "all",
+        timing: "all",
         filter: expect.objectContaining({
           vouchers: [{ chainId: 42220, address: ADDRESS }],
         }),

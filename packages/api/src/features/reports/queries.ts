@@ -2,7 +2,7 @@ import type { NearbyRequest } from "@clc/core/features/catalog/nearby";
 import { marketBoundsKey, type MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
-import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
+import { DEFAULT_POST_TIMING, type PostTiming } from "@clc/core/features/reports/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { ManagedReportsParams, ReportCursor, ReportFilter, ReportsClient } from "./client";
 import { isRetryableBackendError } from "../../client/errors";
@@ -36,20 +36,21 @@ export const reportKeys = {
 
   /** Finite and infinite reads cache different shapes, so they never share a key. */
   list: (perPage: number) => ["clc", "reports", "list", perPage] as const,
-  feed: (perPage: number, posted: PostedWithin = DEFAULT_POSTED_WITHIN) =>
-    ["clc", "reports", "feed", perPage, posted] as const,
+  feed: (perPage: number, timing: PostTiming = DEFAULT_POST_TIMING) =>
+    ["clc", "reports", "feed", perPage, timing] as const,
 
   detail: (id: string) => ["clc", "reports", "detail", id] as const,
 
   filtered: (
     filter: ReportFilter | null,
     perPage: number,
-    posted: PostedWithin = DEFAULT_POSTED_WITHIN,
-  ) => ["clc", "reports", "filtered", { filter, perPage, posted }] as const,
+    timing: PostTiming = DEFAULT_POST_TIMING,
+  ) => ["clc", "reports", "filtered", { filter, perPage, timing }] as const,
   map: (
     filter: CatalogFilter,
     bounds: readonly MarketBoundingBox[],
     pools: readonly VoucherRef[] | undefined,
+    timing: PostTiming,
     facets: boolean,
   ) =>
     [
@@ -59,6 +60,7 @@ export const reportKeys = {
       filter,
       marketBoundsKey(bounds),
       pools?.map(serializeVoucherRef).sort() ?? [],
+      timing,
       facets,
     ] as const,
 
@@ -76,8 +78,10 @@ export const reportKeys = {
       voucher ? serializeVoucherRef(voucher) : "none",
       perPage,
     ] as const,
-  facetVocabulary: (posted: PostedWithin = DEFAULT_POSTED_WITHIN) =>
-    ["clc", "reports", "facet-vocabulary", posted] as const,
+  poolFeed: (pool: VoucherRef | undefined, perPage: number) =>
+    ["clc", "reports", "pool", pool ? serializeVoucherRef(pool) : "none", perPage] as const,
+  facetVocabulary: (timing: PostTiming = DEFAULT_POST_TIMING) =>
+    ["clc", "reports", "facet-vocabulary", timing] as const,
 
   /**
    * One author's own posts, in every status.
@@ -103,18 +107,18 @@ export function reportFeedInfiniteQueryOptions(
   reports: ReportsClient,
   perPage: number,
   nearby?: NearbyRequest,
-  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
+  timing: PostTiming = DEFAULT_POST_TIMING,
 ) {
   return infiniteQueryOptions({
     queryKey: nearby?.scope
-      ? ([...reportKeys.feed(perPage, posted), nearby.scope] as const)
-      : reportKeys.feed(perPage, posted),
+      ? ([...reportKeys.feed(perPage, timing), nearby.scope] as const)
+      : reportKeys.feed(perPage, timing),
     queryFn: ({ pageParam, signal }) =>
       reports.getReports(
         {
           perPage,
           cursor: pageParam,
-          posted,
+          timing,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
           ...(nearby?.bounds ? { bounds: nearby.bounds } : {}),
         },
@@ -140,7 +144,32 @@ export function reportVoucherFeedInfiniteQueryOptions(
           perPage,
           cursor: pageParam,
           filter: { ...EMPTY_REPORT_FILTER, vouchers: [voucher] },
-          posted: "all",
+          timing: "all",
+        },
+        signal,
+      );
+    },
+    initialPageParam: undefined as ReportCursor | undefined,
+    getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+  });
+}
+
+/** Cursor-walked reports related directly to a Pool or through its active vouchers. */
+export function reportPoolFeedInfiniteQueryOptions(
+  reports: ReportsClient,
+  pool: VoucherRef | undefined,
+  perPage: number,
+) {
+  return infiniteQueryOptions({
+    queryKey: reportKeys.poolFeed(pool, perPage),
+    queryFn: ({ pageParam, signal }) => {
+      if (!pool) throw new Error("Pool is required.");
+      return reports.getFilteredReports(
+        {
+          perPage,
+          cursor: pageParam,
+          filter: { ...EMPTY_REPORT_FILTER, pools: [pool] },
+          timing: "all",
         },
         signal,
       );
@@ -154,11 +183,11 @@ export function reportFilteredQueryOptions(
   reports: ReportsClient,
   filter: ReportFilter,
   perPage: number,
-  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
+  timing: PostTiming = DEFAULT_POST_TIMING,
 ) {
   return queryOptions({
-    queryKey: reportKeys.filtered(filter, perPage, posted),
-    queryFn: ({ signal }) => reports.getFilteredReports({ filter, perPage, posted }, signal),
+    queryKey: reportKeys.filtered(filter, perPage, timing),
+    queryFn: ({ signal }) => reports.getFilteredReports({ filter, perPage, timing }, signal),
     placeholderData: keepPreviousData,
   });
 }
@@ -170,11 +199,18 @@ export function reportMapQueryOptions(
     filter: CatalogFilter;
     bounds: readonly MarketBoundingBox[];
     creditablePools?: readonly VoucherRef[];
+    timing?: PostTiming;
     facets: boolean;
   },
 ) {
   return queryOptions({
-    queryKey: reportKeys.map(input.filter, input.bounds, input.creditablePools, input.facets),
+    queryKey: reportKeys.map(
+      input.filter,
+      input.bounds,
+      input.creditablePools,
+      input.timing ?? DEFAULT_POST_TIMING,
+      input.facets,
+    ),
     queryFn: async ({ signal }) => {
       const rows = [];
       let cursor: ReportCursor | undefined;
@@ -188,6 +224,7 @@ export function reportMapQueryOptions(
             cursor,
             facets: input.facets && cursor === undefined,
             creditablePools: input.creditablePools,
+            timing: input.timing ?? DEFAULT_POST_TIMING,
           },
           signal,
         );

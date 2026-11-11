@@ -14,12 +14,14 @@ import { ManagerClosureNotice } from "#/components/closure/manager-closure-notic
 import { Badge } from "#/components/ui/badge";
 import { AuthenticatedDetailsGate } from "#/components/auth/authenticated-details-gate";
 import { PoolReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
+import { ReportList } from "#/components/reports/report-list";
 import { ReviewSummaryContent } from "#/components/reviews/review-summary";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { usePoolReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import { MultisigOwnerNotice } from "#/components/safe/multisig-owner-notice";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
@@ -408,6 +410,12 @@ export function PoolDetailPage({
         <PoolReviewsPanel key={poolAddress} address={poolAddress} presentation="section" />
       </section>
 
+      <PoolPostsSection
+        pool={{ chainId: pool.chainId, address: pool.address }}
+        authenticated={auth.isAuthenticated}
+        authLoading={auth.isLoading}
+      />
+
       {canManageOnChain ? (
         <PoolVoucherSheet
           pool={pool}
@@ -429,6 +437,84 @@ export function PoolDetailPage({
         />
       ) : null}
     </div>
+  );
+}
+
+function PoolPostsSection({
+  pool,
+  authenticated,
+  authLoading,
+}: {
+  pool: { chainId: number | null; address: `0x${string}` };
+  authenticated: boolean;
+  authLoading: boolean;
+}) {
+  const { t } = useLingui();
+  const poolRef =
+    pool.chainId === null ? undefined : { chainId: pool.chainId, address: pool.address };
+  const query = usePoolReportsInfinite(poolRef, 3, authenticated && !!poolRef);
+  const reports = query.data?.pages.flatMap((page) => page.reports) ?? [];
+
+  let content: ReactNode;
+  if (authLoading) {
+    content = <Trans>Loading posts…</Trans>;
+  } else if (!authenticated) {
+    content = <Trans>Sign in to view posts.</Trans>;
+  } else if (query.isPending) {
+    content = <Trans>Loading posts…</Trans>;
+  } else if (query.isError) {
+    content = (
+      <div className="space-y-2">
+        <p>
+          <Trans>Couldn't load posts.</Trans>
+        </p>
+        <Button
+          variant="outline"
+          tap
+          pending={query.isFetching}
+          onClick={() => void query.refetch()}
+        >
+          <Trans>Try again</Trans>
+        </Button>
+      </div>
+    );
+  } else if (reports.length === 0) {
+    content = <Trans>No posts yet.</Trans>;
+  } else {
+    content = <ReportList reports={reports} ariaLabel={t`Posts`} />;
+  }
+
+  return (
+    <section id="pool-posts" className="space-y-3" aria-labelledby="pool-posts-title">
+      <div className="flex items-center justify-between gap-3">
+        <SectionHeading id="pool-posts-title" as="h2">
+          <Trans>Posts</Trans>
+        </SectionHeading>
+        {poolRef ? (
+          <Button asChild variant="outline" tap>
+            <Link
+              to="/"
+              search={{
+                tab: "posts",
+                timing: "all",
+                pools: `${poolRef.chainId}:${pool.address.toLowerCase()}`,
+              }}
+            >
+              <Trans>View all</Trans>
+            </Link>
+          </Button>
+        ) : null}
+      </div>
+      <div
+        className={
+          reports.length > 0
+            ? undefined
+            : "border border-border bg-card p-4 text-muted-foreground text-sm"
+        }
+      >
+        {content}
+      </div>
+    </section>
   );
 }
 

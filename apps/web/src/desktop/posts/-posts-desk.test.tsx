@@ -178,13 +178,12 @@ describe("the Posts feed", () => {
     expect(screen.queryByPlaceholderText(/by title or description/i)).toBeNull();
   });
 
-  it("keeps the posted window above the grid and in the facet column", () => {
+  it("keeps one timing control in the facet column", () => {
     render(<PostsDesk />);
 
-    const groups = screen.getAllByRole("group", { name: "Posted within" });
-    expect(groups.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole("button", { name: "1 month" }).length).toBeGreaterThan(1);
-    expect(screen.getByRole("heading", { name: "Posted within" })).toBeTruthy();
+    expect(screen.getAllByRole("group", { name: "Time" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Future" })).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Time" })).toBeTruthy();
   });
 });
 

@@ -68,11 +68,22 @@ const marketMapFeatureSchema = z.discriminatedUnion("type", [
   marketMapClusterSchema,
 ]);
 
+const marketMapRelationshipFacetSchema = z.object({
+  id: z.number().int().positive(),
+  chainId: z.number().int().positive(),
+  address: z.string().min(1),
+  name: z.string().min(1),
+  symbol: z.string().min(1),
+  count: z.number().int().nonnegative(),
+});
+
 export const marketMapResponseSchema = z.object({
   features: z.array(marketMapFeatureSchema),
   tagFacets: z
     .array(z.object({ tag: z.string(), count: z.number().int().nonnegative() }))
     .optional(),
+  postVoucherFacets: z.array(marketMapRelationshipFacetSchema).optional(),
+  postPoolFacets: z.array(marketMapRelationshipFacetSchema).optional(),
 });
 
 export type MarketMapMarker = z.infer<typeof marketMapMarkerSchema>;

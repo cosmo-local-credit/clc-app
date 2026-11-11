@@ -4,6 +4,8 @@ import {
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 import {
+  DEFAULT_POST_TIMING,
+  type PostTiming,
   type PostedWithin,
   type ReportAttachmentKind,
   type ReportMarkerIcon,
@@ -11,6 +13,7 @@ import {
   type ReportWrite,
   isReportStatus,
   reportWriteSchema,
+  serializePostTiming,
   serializePostedWithin,
 } from "@clc/core/features/reports/logic";
 import {
@@ -215,6 +218,8 @@ export type FilteredReportsParams = {
   creditablePools?: readonly VoucherRef[];
   /** Created-at window. Omitted is 1 month; `all` is every approved post. */
   posted?: PostedWithin;
+  /** Schedule timing. New clients send this explicitly; it cannot accompany `posted`. */
+  timing?: PostTiming;
 };
 
 export type FilteredReportPage = ReportPage & {
@@ -379,13 +384,14 @@ export function createReportsClient(http: HttpClient) {
         nearby?: boolean;
         bounds?: readonly MarketBoundingBox[];
         posted?: PostedWithin;
+        timing?: PostTiming;
       },
       signal?: AbortSignal,
     ): Promise<ReportPage> {
       const query = new URLSearchParams({ perPage: String(params.perPage) });
       if (params.nearby) query.set("nearby", "true");
       appendMarketBounds(query, params.bounds);
-      appendPostedWithin(query, params.posted);
+      appendReportTiming(query, params.timing, params.posted);
       if (params.cursor) {
         query.set("cursorUpdatedAt", params.cursor.updatedAt);
         query.set("cursorId", params.cursor.id);
@@ -414,6 +420,7 @@ export function createReportsClient(http: HttpClient) {
         bounds,
         creditablePools,
         posted,
+        timing,
       }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
@@ -425,7 +432,7 @@ export function createReportsClient(http: HttpClient) {
         if (cursor.origin) query.set("cursorOrigin", cursor.origin);
       }
       appendCatalogFilter(query, filter);
-      appendPostedWithin(query, posted);
+      appendReportTiming(query, timing, posted);
       if (facets) query.set("facets", "true");
       if (nearby) query.set("nearby", "true");
       if (sort) query.set("sort", sort);
@@ -551,6 +558,22 @@ export function createReportsClient(http: HttpClient) {
 function appendPostedWithin(query: URLSearchParams, posted: PostedWithin | undefined): void {
   const value = serializePostedWithin(posted ?? "1m");
   if (value) query.set("posted", value);
+}
+
+function appendReportTiming(
+  query: URLSearchParams,
+  timing: PostTiming | undefined,
+  posted: PostedWithin | undefined,
+): void {
+  if (timing !== undefined) {
+    query.set("timing", timing);
+    return;
+  }
+  if (posted !== undefined) {
+    appendPostedWithin(query, posted);
+    return;
+  }
+  query.set("timing", serializePostTiming(DEFAULT_POST_TIMING) ?? DEFAULT_POST_TIMING);
 }
 
 function appendCatalogFilter(query: URLSearchParams, filter: CatalogFilter): void {

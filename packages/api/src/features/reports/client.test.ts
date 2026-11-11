@@ -36,22 +36,31 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("posted window", () => {
-  it("omits the 1-month default and always sends all-time", async () => {
+describe("Post schedule timing", () => {
+  it("defaults new reads to Future and preserves explicit legacy windows", async () => {
     const fetcher = mockFetch({ reports: [] });
     vi.stubGlobal("fetch", fetcher);
 
     await api.getReports({ perPage: 20 });
-    expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.has("posted")).toBe(false);
+    const future = new URL(String(fetcher.mock.calls[0]?.[0])).searchParams;
+    expect(future.get("timing")).toBe("future");
+    expect(future.has("posted")).toBe(false);
 
     await api.getReports({ perPage: 20, posted: "1m" });
-    expect(new URL(String(fetcher.mock.calls[1]?.[0])).searchParams.has("posted")).toBe(false);
+    const legacyDefault = new URL(String(fetcher.mock.calls[1]?.[0])).searchParams;
+    expect(legacyDefault.has("timing")).toBe(false);
+    expect(legacyDefault.has("posted")).toBe(false);
 
     await api.getReports({ perPage: 20, posted: "all" });
     expect(new URL(String(fetcher.mock.calls[2]?.[0])).searchParams.get("posted")).toBe("all");
 
     await api.getFilteredReports({ perPage: 20, filter: EMPTY_FILTER, posted: "6m" });
     expect(new URL(String(fetcher.mock.calls[3]?.[0])).searchParams.get("posted")).toBe("6m");
+
+    await api.getFilteredReports({ perPage: 20, filter: EMPTY_FILTER, timing: "past" });
+    const past = new URL(String(fetcher.mock.calls[4]?.[0])).searchParams;
+    expect(past.get("timing")).toBe("past");
+    expect(past.has("posted")).toBe(false);
   });
 });
 

@@ -3,6 +3,7 @@ import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import type { MarketMapKind } from "@clc/core/features/market-map/logic";
 import type { MarketplaceKind } from "@clc/core/features/marketplace/logic";
+import type { PostTiming } from "@clc/core/features/reports/logic";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -31,6 +32,7 @@ export function useMarketViewportList({
   kinds,
   bounds,
   settled,
+  postTiming,
 }: {
   filter: MarketFilterControls;
   credit: ReturnType<typeof useCreditableBrowse>;
@@ -38,6 +40,7 @@ export function useMarketViewportList({
   kinds: readonly MarketMapKind[];
   bounds: readonly MarketBoundingBox[];
   settled: boolean;
+  postTiming: PostTiming;
 }) {
   const parsed = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
   const blocked =
@@ -57,6 +60,11 @@ export function useMarketViewportList({
       kinds: kinds.map((kind) => MARKETPLACE_KIND[kind]),
       bounds,
       sort: "nearest",
+      postTiming,
+      postVouchers: kinds.includes("post") ? parsed.vouchers : [],
+      postVoucherMatch: parsed.voucherMatch,
+      postPools: kinds.includes("post") ? parsed.pools : [],
+      postPoolMatch: parsed.poolMatch,
       ...(output.poolRefs ? { pools: output.poolRefs } : {}),
     }),
     enabled,

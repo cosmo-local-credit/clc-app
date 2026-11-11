@@ -119,12 +119,26 @@ describe("marketplace HTTP contract", () => {
       kinds: ["voucher", "post"],
       sort: "nearest",
       bounds: [{ minLng: 39.5, minLat: -4.2, maxLng: 39.8, maxLat: -3.9 }],
+      postTiming: "past",
+      postVouchers: [
+        { chainId: 100, address: `0x${"c".repeat(40)}` },
+        { chainId: 100, address: `0x${"d".repeat(40)}` },
+      ],
+      postVoucherMatch: "all",
+      postPools: [{ chainId: 100, address: `0x${"e".repeat(40)}` }],
     });
 
     const url = new URL(fetcher.mock.calls[0]?.[0]);
     expect(url.searchParams.get("kinds")).toBe("voucher,post");
     expect(url.searchParams.get("sort")).toBe("nearest");
     expect(url.searchParams.getAll("bbox")).toEqual(["39.5,-4.2,39.8,-3.9"]);
+    expect(url.searchParams.get("postTiming")).toBe("past");
+    expect(url.searchParams.get("postVouchers")).toBe(
+      `100:0x${"c".repeat(40)},100:0x${"d".repeat(40)}`,
+    );
+    expect(url.searchParams.get("postVoucherMatch")).toBe("all");
+    expect(url.searchParams.get("postPools")).toBe(`100:0x${"e".repeat(40)}`);
+    expect(url.searchParams.has("postPoolMatch")).toBe(false);
     expect(fetcher.mock.calls[0]?.[1].credentials).toBe("include");
     expect(page.total).toBe(1201);
     expect(page.results[0]).toMatchObject({

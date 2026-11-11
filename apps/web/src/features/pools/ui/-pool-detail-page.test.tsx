@@ -43,6 +43,11 @@ vi.mock("#/components/reviews/review-summary", () => ({
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
   PoolReviewsPanel: () => <div data-testid="pool-reviews-panel" />,
 }));
+vi.mock("#/components/reports/report-list", () => ({
+  ReportList: ({ reports }: { reports: Array<{ title: string }> }) => (
+    <div aria-label="Posts">{reports.map((report) => report.title).join(", ")}</div>
+  ),
+}));
 
 const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
@@ -74,6 +79,16 @@ const mocks = vi.hoisted(() => ({
     isError: false,
     refetch: vi.fn(),
   },
+  poolReportsResult: {
+    data: { pages: [{ reports: [] as Array<{ id: string; title: string }> }] },
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    refetch: vi.fn(),
+    fetchNextPage: vi.fn(),
+  },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -87,7 +102,14 @@ vi.mock("@tanstack/react-router", () => ({
     preload: _preload,
     ...props
   }: Record<string, unknown> & { children?: ReactNode }) => (
-    <a {...(props as React.ComponentProps<"a">)}>{children}</a>
+    <a
+      href="#test"
+      data-to={typeof _to === "string" ? _to : undefined}
+      data-search={_search ? JSON.stringify(_search) : undefined}
+      {...(props as React.ComponentProps<"a">)}
+    >
+      {children}
+    </a>
   ),
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => false,
@@ -105,6 +127,10 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
 
 vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
   usePoolVouchersWithStatus: () => mocks.vouchersResult,
+}));
+
+vi.mock("#/features/home/hooks/use-reports", () => ({
+  usePoolReportsInfinite: () => mocks.poolReportsResult,
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
@@ -302,6 +328,14 @@ beforeEach(() => {
   mocks.vouchersResult.isError = false;
   mocks.poolResult.data = pool();
   mocks.poolResult.privateInfo = undefined;
+  mocks.poolReportsResult.data = { pages: [{ reports: [] }] };
+  mocks.poolReportsResult.isPending = false;
+  mocks.poolReportsResult.isError = false;
+  mocks.poolReportsResult.isFetching = false;
+  mocks.poolReportsResult.hasNextPage = false;
+  mocks.poolReportsResult.isFetchingNextPage = false;
+  mocks.poolReportsResult.refetch.mockReset();
+  mocks.poolReportsResult.fetchNextPage.mockReset();
   mocks.updateProfile.mockReset();
   mocks.updateProfile.mockResolvedValue(pool({ name: "Kilifi Market Traders" }));
 });
@@ -389,6 +423,15 @@ describe("PoolDetailPage pool details editor", () => {
         .compareDocumentPosition(screen.getByTestId("pool-reviews-panel")) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Posts" })).toBeTruthy();
+    expect(screen.getByText("Sign in to view posts.")).toBeTruthy();
+    const viewAll = screen.getByRole("link", { name: "View all" });
+    expect(viewAll.getAttribute("data-to")).toBe("/");
+    expect(JSON.parse(viewAll.getAttribute("data-search") ?? "{}")).toEqual({
+      tab: "posts",
+      timing: "all",
+      pools: `100:${ADDRESS.toLowerCase()}`,
+    });
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
       "Wants",
@@ -401,6 +444,21 @@ describe("PoolDetailPage pool details editor", () => {
     expect(screen.queryByRole("tab", { name: "Holdings" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "Credit" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "Activity" })).toBeNull();
+  });
+
+  it("renders related Pool Posts and retries a failed Posts read", () => {
+    mocks.poolReportsResult.data = {
+      pages: [{ reports: [{ id: "42", title: "Community harvest" }] }],
+    };
+    const loaded = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    expect(screen.getByText("Community harvest")).toBeTruthy();
+    loaded.unmount();
+
+    mocks.poolReportsResult.data = { pages: [{ reports: [] }] };
+    mocks.poolReportsResult.isError = true;
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(mocks.poolReportsResult.refetch).toHaveBeenCalledOnce();
   });
 
   it("gates Pool Info for guests and restores the complete panel after sign-in", () => {

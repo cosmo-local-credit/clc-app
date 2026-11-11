@@ -54,7 +54,7 @@ describe("market map HTTP contract", () => {
     expect(url.searchParams.getAll("tags")).toEqual(["Food", "Local"]);
     expect(url.searchParams.get("tagMatch")).toBe("all");
     expect(url.searchParams.get("creditablePools")).toBe(`100:0x${"a".repeat(40)}`);
-    expect(url.searchParams.has("posted")).toBe(false);
+    expect(url.searchParams.get("postTiming")).toBe("future");
     expect(url.searchParams.has("guest")).toBe(false);
     expect(url.searchParams.has("identity")).toBe(false);
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "include", signal });
@@ -64,7 +64,7 @@ describe("market map HTTP contract", () => {
     expect(result.features[0]?.type).toBe("cluster");
   });
 
-  it("sends a non-default post window and omits the 1-month default", async () => {
+  it("sends Post timing and relationship filters", async () => {
     const fetcher = respond({ features: [], tagFacets: [] });
     const client = createMarketMapClient(createHttpClient({ baseUrl: "https://api.test" }));
     await client.list({
@@ -72,18 +72,23 @@ describe("market map HTTP contract", () => {
       zoom: 2,
       kinds: ["post"],
       filter: { term: "", tags: [], tagMatch: "any" },
-      posted: "all",
+      postTiming: "all",
+      postVouchers: [{ chainId: 100, address: `0x${"b".repeat(40)}` }],
+      postPools: [{ chainId: 100, address: `0x${"c".repeat(40)}` }],
     });
-    expect(new URL(fetcher.mock.calls[0]?.[0]).searchParams.get("posted")).toBe("all");
+    const first = new URL(fetcher.mock.calls[0]?.[0]).searchParams;
+    expect(first.get("postTiming")).toBe("all");
+    expect(first.get("postVouchers")).toBe(`100:0x${"b".repeat(40)}`);
+    expect(first.get("postPools")).toBe(`100:0x${"c".repeat(40)}`);
 
     await client.list({
       bounds: [],
       zoom: 2,
       kinds: ["post"],
       filter: { term: "", tags: [], tagMatch: "any" },
-      posted: "1m",
+      postTiming: "future",
     });
-    expect(new URL(fetcher.mock.calls[1]?.[0]).searchParams.has("posted")).toBe(false);
+    expect(new URL(fetcher.mock.calls[1]?.[0]).searchParams.get("postTiming")).toBe("future");
   });
 
   it("rejects malformed successful responses", async () => {

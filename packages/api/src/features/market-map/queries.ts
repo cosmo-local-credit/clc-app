@@ -22,7 +22,13 @@ export const marketMapKeys = {
         creditablePools: params.creditablePools?.map(
           (pool) => `${pool.chainId}:${pool.address.toLowerCase()}`,
         ),
-        posted: params.posted ?? "1m",
+        postTiming: params.postTiming ?? "future",
+        postVouchers: params.postVouchers?.map(
+          (voucher) => `${voucher.chainId}:${voucher.address.toLowerCase()}`,
+        ),
+        postVoucherMatch: params.postVoucherMatch ?? "any",
+        postPools: params.postPools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`),
+        postPoolMatch: params.postPoolMatch ?? "any",
       },
     ] as const,
 };

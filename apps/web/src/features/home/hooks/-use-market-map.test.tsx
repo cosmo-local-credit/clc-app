@@ -102,14 +102,18 @@ describe("useMarketMap", () => {
         zoom: 9,
         kinds: ["voucher", "post"],
         facets: true,
-        posted: "1m",
+        postTiming: "future",
       }),
     );
   });
 
-  it("forwards the posted window into the map query", () => {
-    renderHook(() => useMarketMap({ ...options, posted: "all" }));
-    expect(mocks.options).toHaveBeenCalledWith({}, expect.objectContaining({ posted: "all" }));
+  it("forwards Post timing and relationships into the map query", () => {
+    const pool = { chainId: 100, address: `0x${"a".repeat(40)}` as const };
+    renderHook(() => useMarketMap({ ...options, postTiming: "all", postPools: [pool] }));
+    expect(mocks.options).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ postTiming: "all", postPools: [pool] }),
+    );
   });
 
   it("retains an error for recovery and retries on demand", () => {

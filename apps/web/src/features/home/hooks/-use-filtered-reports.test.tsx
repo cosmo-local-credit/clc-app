@@ -161,7 +161,7 @@ describe("filtered report walk", () => {
     expect(result.current.reports.map((row) => row.id)).toEqual(["5", "4", "3", "2"]);
   });
 
-  it("sends the posted window on the filtered walk and the vocabulary", async () => {
+  it("sends timing on the filtered walk and the vocabulary", async () => {
     mockWalk(page([5], null));
 
     const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true, "all"), {
@@ -169,7 +169,7 @@ describe("filtered report walk", () => {
     });
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
-    expect(getFilteredReports.mock.calls.map(([params]) => params.posted)).toEqual(["all", "all"]);
+    expect(getFilteredReports.mock.calls.map(([params]) => params.timing)).toEqual(["all", "all"]);
   });
 
   it("asks for facets on the first request only", async () => {

@@ -67,6 +67,7 @@ function setup({
         kinds: props.kinds,
         bounds: BOUNDS,
         settled: props.settled,
+        postTiming: "future",
       }),
     { wrapper, initialProps: { settled, kinds } },
   );
@@ -91,6 +92,7 @@ describe("useMarketViewportList", () => {
       pools: [{ chainId: 100, address: POOL }],
       sort: "nearest",
       perPage: 20,
+      postTiming: "future",
     });
     expect(result.current.rows.map((entry) => entry.id)).toEqual(["1"]);
     expect(result.current.total).toBe(1201);

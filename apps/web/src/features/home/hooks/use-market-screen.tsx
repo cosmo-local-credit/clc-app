@@ -5,7 +5,7 @@ import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { canonicalMarketMapZoom, type MarketMapKind } from "@clc/core/features/market-map/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { RiFocus3Line } from "react-icons/ri";
 
@@ -21,7 +21,7 @@ import {
   REAL_FIX_ZOOM,
   useMarketCamera,
 } from "#/features/home/hooks/use-market-camera";
-import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
+import { useMarketPostFilter } from "#/features/home/hooks/use-market-post-filter";
 import { useMarketMap } from "#/features/home/hooks/use-market-map";
 import { useMarketMapResourceSelection } from "#/features/home/hooks/use-market-map-resource-selection";
 import type { OutputVoucherBrowse } from "#/features/home/hooks/use-output-voucher-browse";
@@ -31,7 +31,7 @@ import { useMarketFilterNotice } from "#/features/home/ui/market-filter-ui";
 import type { MarketCamera, MarketViewport } from "#/features/home/ui/market-map";
 import { wantsClient } from "#/lib/api/wants";
 import { CHAIN_ID } from "#/lib/chain";
-import { parsePostedSearch } from "#/lib/navigation/posted-search";
+import { usePostTiming } from "#/lib/navigation/use-post-timing";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -178,21 +178,26 @@ export function useMarketScreen({
   const mapDiscoveryReady = fetchBounds.length > 0 || (!camera && !cameraBootstrapPending);
 
   // A link that names an output voucher is explicit: a remembered tag set must not join it.
-  const filter = useMarketFilter(useStorageOwner(), output !== undefined && output.state !== "off");
+  const storageOwner = useStorageOwner();
+  const filter = useMarketPostFilter(storageOwner, output !== undefined && output.state !== "off");
+  const postTiming = usePostTiming(storageOwner);
   const credit = useCreditableBrowse(creditableSearch);
   const mapResources = useMarketMapResourceSelection(locationOwner);
   const activeKinds = kinds ?? mapResources.selected;
+  const includesPosts = activeKinds.includes("post");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
   const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
-  const search = useSearch({ strict: false });
-  const posted = parsePostedSearch(search);
   const marketMap = useMarketMap({
     filter: parsedFilter,
     bounds: fetchBounds,
     zoom: fetchZoom,
     kinds: activeKinds,
-    posted,
+    postTiming: postTiming.timing,
+    postVouchers: includesPosts ? parsedFilter.vouchers : [],
+    postVoucherMatch: parsedFilter.voucherMatch,
+    postPools: includesPosts ? parsedFilter.pools : [],
+    postPoolMatch: parsedFilter.poolMatch,
     // Credit's pools, narrowed to the requested output's when the link has one.
     creditablePools: output ? output.poolRefs : credit.enabled ? credit.poolRefs : undefined,
     enabled:
@@ -207,6 +212,8 @@ export function useMarketScreen({
   });
   const locations = marketMap.locations;
   const tagFacets = marketMap.tagFacets;
+  const postVoucherFacets = marketMap.postVoucherFacets;
+  const postPoolFacets = marketMap.postPoolFacets;
 
   const isCardOpen = voucherSelection.voucher !== null || wantSelection.want !== null;
   const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
@@ -337,8 +344,9 @@ export function useMarketScreen({
   const filterClear = filter.clear;
   const clearFilters = useCallback(() => {
     filterClear();
+    postTiming.setTiming("future");
     alsoClear?.();
-  }, [alsoClear, filterClear]);
+  }, [alsoClear, filterClear, postTiming.setTiming]);
   const notice = useMarketFilterNotice(
     { ...filter, clear: clearFilters },
     marketMap.error,
@@ -410,7 +418,10 @@ export function useMarketScreen({
           : notice
             ? { kind: "notice", notice }
             : isEmpty
-              ? { kind: "empty", filtered: filter.isFiltered }
+              ? {
+                  kind: "empty",
+                  filtered: filter.isFiltered || (includesPosts && postTiming.timing !== "future"),
+                }
               : null;
 
   const mapNotice: ReactNode =
@@ -477,6 +488,10 @@ export function useMarketScreen({
     clusters: marketMap.clusters,
     isFetching: marketMap.isFetching,
     tagFacets,
+    postVoucherFacets,
+    postPoolFacets,
+    postTiming,
+    includesPosts,
     selectedLocationId,
     filter,
     mapResources,

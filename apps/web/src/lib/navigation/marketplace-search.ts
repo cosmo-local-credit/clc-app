@@ -1,6 +1,6 @@
 import { parseCatalogFilter, toCatalogSearchState } from "@clc/core/features/catalog/logic";
-import type { PostedWithin } from "@clc/core/features/reports/logic";
-import { parsePostedSearch, pickPostedSearch } from "#/lib/navigation/posted-search";
+import type { PostTiming } from "@clc/core/features/reports/logic";
+import { parsePostTimingSearch, pickPostTimingSearch } from "#/lib/navigation/post-timing-search";
 import {
   marketplaceScopeSchema,
   type MarketplaceScope,
@@ -14,7 +14,8 @@ import {
 
 export type MarketplaceRouteSearch = PoolRouteSearch & {
   scope?: string | readonly string[];
-  posted?: PostedWithin;
+  timing?: PostTiming;
+  posted?: string;
 };
 
 /** The lists the market's badges open: one per resource, and All of them mixed. */
@@ -23,7 +24,10 @@ export type MarketListScope = MarketplaceScope | "all";
 export function pickMarketplaceSearch(search: unknown): MarketplaceRouteSearch {
   const base = {
     ...pickPoolSearch(search),
-    ...(pickPostedSearch(search).posted !== undefined ? { posted: parsePostedSearch(search) } : {}),
+    ...(pickPostTimingSearch(search).timing !== undefined ||
+    pickPostTimingSearch(search).posted !== undefined
+      ? { timing: parsePostTimingSearch(search) }
+      : {}),
   };
   if (typeof search !== "object" || search === null) return base;
   const value = (search as Record<string, unknown>).scope;
@@ -77,7 +81,7 @@ export function marketplaceSearchForScope(
 }
 
 /**
- * The map's share of a list's search: the query, tags, Credit and post window carry
+ * The map's share of a list's search: the query, tags, Credit and Post timing carry
  * between the map and every list, and nothing that belongs to one list does.
  */
 export function mapSearchFrom(search: unknown): MarketplaceRouteSearch {
@@ -87,7 +91,7 @@ export function mapSearchFrom(search: unknown): MarketplaceRouteSearch {
     tags: state.tags,
     tagMatch: state.tagMatch,
     creditable: state.creditable,
-    ...(state.posted !== undefined ? { posted: state.posted } : {}),
+    ...(state.timing !== undefined ? { timing: state.timing } : {}),
   };
 }
 
@@ -102,6 +106,6 @@ export function marketplaceSharedSearch(search: unknown): MarketplaceRouteSearch
     ...(term.ok ? toCatalogSearchState(term.filter) : {}),
     ...(tags.ok ? toCatalogSearchState(tags.filter) : {}),
     creditable: creditable.ok ? (creditable.enabled ?? undefined) : undefined,
-    ...(state.posted !== undefined ? { posted: state.posted } : {}),
+    ...(state.timing !== undefined ? { timing: state.timing } : {}),
   };
 }

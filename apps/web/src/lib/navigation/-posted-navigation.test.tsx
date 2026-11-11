@@ -13,19 +13,19 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { BottomNavigation } from "#/components/navigation/bottom-navigation";
 import { Route as HomeRoute } from "#/routes/_nav/index";
 import { Route as MarketRoute } from "#/routes/_nav/market/index";
-import { writePostedWithinPreference } from "./catalog-filter-preference-storage";
+import { writePostTimingPreference } from "./catalog-filter-preference-storage";
 import { parseHomeTab } from "./home-tabs";
-import { usePostedWithin } from "./use-posted-within";
+import { usePostTiming } from "./use-post-timing";
 
 function PostsFixture() {
-  const { posted, setPosted } = usePostedWithin("guest");
+  const { timing, setTiming } = usePostTiming("guest");
   const search = useSearch({ strict: false });
   const tab = parseHomeTab(search.tab);
   return (
     <>
-      <output aria-label="Selected period">{posted}</output>
-      <button type="button" onClick={() => setPosted("1m")}>
-        Use one month
+      <output aria-label="Selected period">{timing}</output>
+      <button type="button" onClick={() => setTiming("past")}>
+        Use past
       </button>
       <BottomNavigation activeTab={tab} atActiveTabRoot isMarketMap={tab === "market"} />
     </>
@@ -60,39 +60,46 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-describe("posted-window navigation", () => {
-  it("keeps an explicit one-month link ahead of a saved all-time preference", async () => {
-    writePostedWithinPreference("guest", "all");
-    const { history } = await renderPosts("/?tab=posts&posted=1m");
+describe("Post timing navigation", () => {
+  it("keeps an explicit Past link ahead of a saved All preference", async () => {
+    writePostTimingPreference("guest", "all");
+    const { history } = await renderPosts("/?tab=posts&timing=past");
 
-    await waitFor(() => expect(screen.getByLabelText("Selected period").textContent).toBe("1m"));
-    expect(new URLSearchParams(history.location.search).get("posted")).toBe("1m");
+    await waitFor(() => expect(screen.getByLabelText("Selected period").textContent).toBe("past"));
+    expect(new URLSearchParams(history.location.search).get("timing")).toBe("past");
   });
 
-  it("shares a selected one-month window with someone whose preference is all-time", async () => {
-    const view = await renderPosts("/?tab=posts&posted=all");
-    fireEvent.click(screen.getByRole("button", { name: "Use one month" }));
-    await waitFor(() => expect(screen.getByLabelText("Selected period").textContent).toBe("1m"));
+  it("shares a selected Past filter with someone whose preference is All", async () => {
+    const view = await renderPosts("/?tab=posts&timing=all");
+    fireEvent.click(screen.getByRole("button", { name: "Use past" }));
+    await waitFor(() => expect(screen.getByLabelText("Selected period").textContent).toBe("past"));
     const sharedHref = view.history.location.href;
     view.unmount();
 
-    writePostedWithinPreference("guest", "all");
+    writePostTimingPreference("guest", "all");
     await renderPosts(sharedHref);
-    await waitFor(() => expect(screen.getByLabelText("Selected period").textContent).toBe("1m"));
+    await waitFor(() => expect(screen.getByLabelText("Selected period").textContent).toBe("past"));
   });
 
-  it.each(["all", "1m"])("keeps %s through Posts, Map and the market list", async (posted) => {
-    const { history } = await renderPosts(`/?tab=posts&posted=${posted}`);
+  it.each(["all", "past"])("keeps %s through Posts, Map and the market list", async (timing) => {
+    const { history } = await renderPosts(`/?tab=posts&timing=${timing}`);
     fireEvent.click(screen.getByRole("link", { name: "Map" }));
     await screen.findByRole("link", { name: "Market" });
-    expect(new URLSearchParams(history.location.search).get("posted")).toBe(posted);
+    expect(new URLSearchParams(history.location.search).get("timing")).toBe(timing);
 
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
     await waitFor(() => expect(history.location.pathname).toBe("/market"));
-    expect(new URLSearchParams(history.location.search).get("posted")).toBe(posted);
+    expect(new URLSearchParams(history.location.search).get("timing")).toBe(timing);
 
     await act(async () => history.back());
     await waitFor(() => expect(history.location.pathname).toBe("/"));
-    expect(new URLSearchParams(history.location.search).get("posted")).toBe(posted);
+    expect(new URLSearchParams(history.location.search).get("timing")).toBe(timing);
+  });
+
+  it("canonicalizes a legacy all-time link", async () => {
+    const { history } = await renderPosts("/?tab=posts&posted=all");
+    await waitFor(() => expect(screen.getByLabelText("Selected period").textContent).toBe("all"));
+    expect(new URLSearchParams(history.location.search).get("posted")).toBeNull();
+    expect(new URLSearchParams(history.location.search).get("timing")).toBe("all");
   });
 });

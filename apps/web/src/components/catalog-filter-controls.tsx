@@ -127,6 +127,7 @@ export function CatalogFilterSheet({
   onOpenChange,
   onApply,
   children,
+  afterFacets,
   trigger = "default",
   additionalAppliedCount = 0,
   additionalDraftCount = 0,
@@ -150,6 +151,8 @@ export function CatalogFilterSheet({
     voucherMatch: TagMatch,
   ) => void;
   children?: ReactNode;
+  /** Additional entity-specific groups rendered after Categories. */
+  afterFacets?: ReactNode;
   /** `bar` is the market bar's square, joined to the end of its search field. */
   trigger?: "default" | "bar";
   additionalAppliedCount?: number;
@@ -501,6 +504,10 @@ export function CatalogFilterSheet({
                     />
                   </div>
                 </section>
+              ) : null}
+
+              {afterFacets ? (
+                <div className="mt-4 border-t border-border pt-4">{afterFacets}</div>
               ) : null}
             </div>
 

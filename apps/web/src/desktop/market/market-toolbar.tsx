@@ -1,7 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import type { ReportPoolFacet, ReportVoucherFacet } from "@clc/api/features/reports/client";
 import { CATALOG_MAX_TAGS } from "@clc/core/features/catalog/logic";
+import type { PostTiming } from "@clc/core/features/reports/logic";
 import { RiCheckLine, RiCloseLine, RiFilter3Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
@@ -25,6 +27,15 @@ import { cn } from "#/lib/utils";
 import { MapLayersChip, type MapLayers } from "#/desktop/market/market-layers";
 import { MarketSearchField } from "#/desktop/market/market-search-field";
 import { DeskChip, DeskSegment, DeskSegmentItem } from "#/desktop/ui/segment";
+import { PostFacets } from "#/desktop/posts/post-facets";
+
+type MarketPostFilters = {
+  timing: PostTiming;
+  onTimingChange: (next: PostTiming) => void;
+  voucherFacets: ReportVoucherFacet[];
+  poolFacets: ReportPoolFacet[];
+  postsOnly: boolean;
+};
 
 type Credit = ReturnType<typeof useCreditableBrowse>;
 
@@ -47,6 +58,7 @@ export function MarketDeskToolbar({
   layers,
   count,
   refreshing = false,
+  postFilters,
 }: {
   layout: "column" | "page";
   scope: MarketListScope;
@@ -64,6 +76,7 @@ export function MarketDeskToolbar({
   count?: number;
   /** The list is refreshing behind the rows it still shows. */
   refreshing?: boolean;
+  postFilters?: MarketPostFilters;
 }) {
   const { t } = useLingui();
   const view = layout === "column" ? "map" : "list";
@@ -78,6 +91,7 @@ export function MarketDeskToolbar({
         facets={facets}
         open={filtersOpen}
         onOpenChange={onFiltersOpenChange}
+        postFilters={postFilters}
       />
       <CreditChip credit={credit} onCredit={onCredit} />
       {layers ? <MapLayersChip layers={layers} /> : null}
@@ -169,12 +183,14 @@ function FiltersChip({
   facets,
   open,
   onOpenChange,
+  postFilters,
 }: {
   scope: MarketListScope;
   filter: MarketFilterControls;
   facets: { tag: string; count: number }[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  postFilters?: MarketPostFilters;
 }) {
   const { t } = useLingui();
   const draft = useCatalogFilterDraft({
@@ -207,101 +223,117 @@ function FiltersChip({
         </PopoverTrigger>
       </DeskChip>
       <PopoverContent align="start" className="grid w-96 gap-4 p-0">
-        <div className="flex h-12 items-center justify-between gap-3 border-border border-b px-4">
-          <PopoverTitle className="font-heading text-base font-semibold">
-            {scope === "offers" ? (
-              <Trans>Filter offers</Trans>
-            ) : scope === "wants" ? (
-              <Trans>Filter Wants</Trans>
-            ) : scope === "vouchers" ? (
-              <Trans>Filter vouchers</Trans>
-            ) : scope === "pools" ? (
-              <Trans>Filter pools</Trans>
-            ) : scope === "catalogs" ? (
-              <Trans>Filter catalogs</Trans>
-            ) : (
-              <Trans>Filter marketplace</Trans>
-            )}
-          </PopoverTitle>
-          <span className="text-xs text-muted-foreground">
-            <Trans>
-              {draft.draftTags.length} of {CATALOG_MAX_TAGS}
-            </Trans>
-          </span>
-        </div>
-        <section className="grid gap-3 px-4" aria-label={t`Filter by tag`}>
-          <SectionHeading variant="group" as="h3">
-            {scope === "vouchers" ? <Trans>What they offer</Trans> : <Trans>Tags</Trans>}
-          </SectionHeading>
-          {facets.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              <Trans>No category filters are available.</Trans>
-            </p>
-          ) : draft.hasSelectableFacet ? (
-            <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto" role="group">
-              {facets.map((facet) => {
-                const selected = draft.draftTags.includes(facet.tag);
-                return (
-                  <SelectableTagBadge
-                    key={facet.tag}
-                    tag={facet.tag}
-                    selected={selected}
-                    count={draft.showCounts ? facet.count : undefined}
-                    disabled={!selected && (facet.count === 0 || draft.atTagLimit)}
-                    onClick={() => draft.toggleDraftTag(facet.tag)}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-3">
-              <p className="min-w-0 text-sm text-muted-foreground">
-                {searchTerm !== "" ? (
-                  <Trans>Nothing matching “{searchTerm}” carries a category.</Trans>
+        {postFilters ? (
+          <div className="max-h-[70vh] overflow-y-auto p-4">
+            <PostFacets
+              filter={filter}
+              tagFacets={facets}
+              voucherFacets={postFilters.voucherFacets}
+              poolFacets={postFilters.poolFacets}
+              timing={postFilters.timing}
+              onTimingChange={postFilters.onTimingChange}
+              ariaLabel={postFilters.postsOnly ? t`Filter posts` : t`Filter marketplace`}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="flex h-12 items-center justify-between gap-3 border-border border-b px-4">
+              <PopoverTitle className="font-heading text-base font-semibold">
+                {scope === "offers" ? (
+                  <Trans>Filter offers</Trans>
+                ) : scope === "wants" ? (
+                  <Trans>Filter Wants</Trans>
+                ) : scope === "vouchers" ? (
+                  <Trans>Filter vouchers</Trans>
+                ) : scope === "pools" ? (
+                  <Trans>Filter pools</Trans>
+                ) : scope === "catalogs" ? (
+                  <Trans>Filter catalogs</Trans>
                 ) : (
-                  <Trans>No categories are available for the current results.</Trans>
+                  <Trans>Filter marketplace</Trans>
                 )}
-              </p>
-              {draft.searchTerm !== "" ? (
-                <Button variant="outline" onClick={filter.clearTerm}>
-                  <Trans>Clear search</Trans>
-                </Button>
-              ) : null}
+              </PopoverTitle>
+              <span className="text-xs text-muted-foreground">
+                <Trans>
+                  {draft.draftTags.length} of {CATALOG_MAX_TAGS}
+                </Trans>
+              </span>
             </div>
-          )}
-        </section>
-        {draft.draftTags.length > 1 ? (
-          <section className="grid gap-3 px-4">
-            <SectionHeading variant="group" as="h3">
-              <Trans>How should categories match?</Trans>
-            </SectionHeading>
-            <div className="grid grid-cols-2 gap-2" role="group" aria-label={t`Match`}>
-              {(["any", "all"] as const).map((match) => (
-                <Toggle
-                  key={match}
-                  variant="outline"
-                  pressed={draft.draftTagMatch === match}
-                  onPressedChange={(pressed) => {
-                    if (pressed) draft.setDraftTagMatch(match);
-                  }}
-                  className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
-                >
-                  {draft.draftTagMatch === match ? <RiCheckLine aria-hidden="true" /> : null}
-                  {match === "any" ? t`Any selected` : t`All selected`}
-                </Toggle>
-              ))}
+            <section className="grid gap-3 px-4" aria-label={t`Filter by tag`}>
+              <SectionHeading variant="group" as="h3">
+                {scope === "vouchers" ? <Trans>What they offer</Trans> : <Trans>Tags</Trans>}
+              </SectionHeading>
+              {facets.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  <Trans>No category filters are available.</Trans>
+                </p>
+              ) : draft.hasSelectableFacet ? (
+                <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto" role="group">
+                  {facets.map((facet) => {
+                    const selected = draft.draftTags.includes(facet.tag);
+                    return (
+                      <SelectableTagBadge
+                        key={facet.tag}
+                        tag={facet.tag}
+                        selected={selected}
+                        count={draft.showCounts ? facet.count : undefined}
+                        disabled={!selected && (facet.count === 0 || draft.atTagLimit)}
+                        onClick={() => draft.toggleDraftTag(facet.tag)}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="min-w-0 text-sm text-muted-foreground">
+                    {searchTerm !== "" ? (
+                      <Trans>Nothing matching “{searchTerm}” carries a category.</Trans>
+                    ) : (
+                      <Trans>No categories are available for the current results.</Trans>
+                    )}
+                  </p>
+                  {draft.searchTerm !== "" ? (
+                    <Button variant="outline" onClick={filter.clearTerm}>
+                      <Trans>Clear search</Trans>
+                    </Button>
+                  ) : null}
+                </div>
+              )}
+            </section>
+            {draft.draftTags.length > 1 ? (
+              <section className="grid gap-3 px-4">
+                <SectionHeading variant="group" as="h3">
+                  <Trans>How should categories match?</Trans>
+                </SectionHeading>
+                <div className="grid grid-cols-2 gap-2" role="group" aria-label={t`Match`}>
+                  {(["any", "all"] as const).map((match) => (
+                    <Toggle
+                      key={match}
+                      variant="outline"
+                      pressed={draft.draftTagMatch === match}
+                      onPressedChange={(pressed) => {
+                        if (pressed) draft.setDraftTagMatch(match);
+                      }}
+                      className="data-[pressed]:border-primary data-[pressed]:bg-primary data-[pressed]:text-primary-foreground"
+                    >
+                      {draft.draftTagMatch === match ? <RiCheckLine aria-hidden="true" /> : null}
+                      {match === "any" ? t`Any selected` : t`All selected`}
+                    </Toggle>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+            <div className="flex justify-end gap-2 border-border border-t px-4 py-3">
+              <Button variant="outline" disabled={!draft.canReset} onClick={draft.reset}>
+                <Trans>Reset</Trans>
+              </Button>
+              <Button onClick={draft.apply}>
+                <RiCheckLine aria-hidden="true" />
+                <Trans>Apply filters</Trans>
+              </Button>
             </div>
-          </section>
-        ) : null}
-        <div className="flex justify-end gap-2 border-border border-t px-4 py-3">
-          <Button variant="outline" disabled={!draft.canReset} onClick={draft.reset}>
-            <Trans>Reset</Trans>
-          </Button>
-          <Button onClick={draft.apply}>
-            <RiCheckLine aria-hidden="true" />
-            <Trans>Apply filters</Trans>
-          </Button>
-        </div>
+          </>
+        )}
       </PopoverContent>
     </PopoverRoot>
   );
