@@ -11,7 +11,13 @@ import { myWantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { Button } from "#/components/ui/button";
-import { PoolLogo, SectionHeader, TokenLogo, type WalletToken } from "#/components/wallet";
+import {
+  HoldingBalance,
+  PoolLogo,
+  SectionHeader,
+  TokenLogo,
+  type WalletToken,
+} from "#/components/wallet";
 import { ResourceLimitMessage, ResourceQuotaTitle } from "#/components/resource-usage";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useSafeOwnersSignedBy } from "#/features/ownership/hooks/use-asset-owner-info";
@@ -40,9 +46,7 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
           <p className="text-sm font-semibold">{token.symbol}</p>
           <p className="text-muted-foreground truncate text-xs">{token.name}</p>
         </div>
-        <div className="shrink-0 text-end">
-          <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
-        </div>
+        <HoldingBalance token={token} />
       </>
     );
     return address ? (

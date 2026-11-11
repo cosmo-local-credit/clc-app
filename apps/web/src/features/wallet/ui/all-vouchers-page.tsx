@@ -7,7 +7,7 @@ import { useConnection } from "wagmi";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
-import { TokenLogo, type WalletToken } from "#/components/wallet";
+import { HoldingBalance, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
@@ -53,9 +53,7 @@ function VoucherRow({
           </div>
           <p className="text-muted-foreground text-xs">{voucher.name}</p>
         </div>
-        <p className="font-heading shrink-0 text-sm font-semibold tracking-tight">
-          {voucher.amount}
-        </p>
+        <HoldingBalance token={voucher} />
         <RiArrowDownSLine
           className={[
             "size-4 shrink-0 text-muted-foreground transition-transform",

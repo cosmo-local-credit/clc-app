@@ -13,6 +13,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { pickMarketplaceSearch } from "#/lib/navigation/marketplace-search";
+import type { MarketListScope } from "#/lib/navigation/marketplace-search";
 
 const VOUCHER = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
 const POOL_A = "0x00000000000000000000000000000000000000a1";
@@ -45,6 +46,7 @@ const mocks = vi.hoisted(() => ({
     retrying: false,
   },
   voucher: vi.fn(),
+  distanceOrigin: null as { lat: number; lng: number } | null,
 }));
 
 vi.mock("#/lib/api/marketplace", () => ({ marketplaceClient: { list: mocks.list } }));
@@ -63,7 +65,7 @@ vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
       : mocks.availability,
 }));
 vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
-  useDiscoveryDistanceOrigin: () => null,
+  useDiscoveryDistanceOrigin: () => mocks.distanceOrigin,
 }));
 vi.mock("#/desktop/market/place-panel", () => ({ MarketPlacePanel: () => null }));
 
@@ -80,6 +82,8 @@ function pool(address: string, name: string): MarketplaceResult {
     address,
     voucherCount: 3,
     locationName: "Mombasa",
+    geoLat: -4.05,
+    geoLng: 39.67,
     tags: [],
   } as unknown as MarketplaceResult;
 }
@@ -90,7 +94,7 @@ const page = (results: MarketplaceResult[], nextCursor: string | null = null) =>
   tagFacets: [],
 });
 
-function renderList(url: string, scope: "pools" | "vouchers" | "offers" = "pools") {
+function renderList(url: string, scope: MarketListScope = "pools") {
   const rootRoute = createRootRoute({ component: Outlet });
   const marketRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -116,6 +120,9 @@ function renderList(url: string, scope: "pools" | "vouchers" | "offers" = "pools
       stub("/pools/$poolAddress"),
       stub("/pools/$poolAddress/swap"),
       stub("/vouchers/$voucherAddress"),
+      stub("/catalogs/$catalogId"),
+      stub("/posts/$reportId"),
+      stub("/wants/$wantId"),
     ]),
     history: createMemoryHistory({ initialEntries: [url] }),
   });
@@ -138,6 +145,7 @@ beforeEach(() => {
   mocks.auth.state = "guest";
   mocks.auth.isAuthenticated = false;
   mocks.auth.address = undefined;
+  mocks.distanceOrigin = null;
   mocks.verification.pools = [];
   mocks.verification.status = "ready";
   mocks.availability.pools = [{ chainId: 100, address: POOL_A }];
@@ -384,47 +392,35 @@ function hrefOf(link: HTMLElement) {
 }
 
 describe("MarketListDesk navigation keeps the person's view", () => {
-  it("keeps the List view across scope tabs and Credit, without forcing another", async () => {
+  it("removes the duplicate scope tabs while preserving list search and Credit", async () => {
     signIn();
     mocks.verification.pools = [{ chainId: 100, address: POOL_A }];
     mocks.list.mockResolvedValue(page([pool(POOL_A, "Mombasa Bakers")]));
     renderList("/market?scope=pools&view=list&q=bake&creditable=true");
     await screen.findByText("Mombasa Bakers");
 
-    const tabs = screen.getByRole("navigation", { name: "Marketplace" });
-    for (const [name, scope] of [
-      ["All", "all"],
-      ["Offers", "offers"],
-      ["Wants", "wants"],
-      ["Vouchers", "vouchers"],
-      ["Catalogs", "catalogs"],
-    ] as const) {
-      const target = hrefOf(within(tabs).getByRole("link", { name }));
-      expect(target.path).toBe("/market");
-      expect(target.search).toMatchObject({ scope, view: "list", q: "bake" });
-    }
-    expect(within(tabs).getByRole("link", { name: "Pools" }).getAttribute("aria-current")).toBe(
-      "page",
+    expect(screen.queryByRole("navigation", { name: "Marketplace" })).toBeNull();
+    expect(screen.getByRole("combobox", { name: "Search pools" }).getAttribute("value")).toBe(
+      "bake",
+    );
+    expect(screen.getByRole("button", { name: "Credit" }).getAttribute("aria-pressed")).toBe(
+      "true",
     );
   });
 
-  it("carries the requested output between Map and List of Pools, and drops it for another scope", async () => {
+  it("opens the unified map without carrying a Pool-only output narrowing", async () => {
     mocks.list.mockResolvedValue(page([pool(POOL_A, "Mombasa Bakers")]));
     renderList(`/market?scope=pools&view=list&out_voucher=${VOUCHER}`);
     await screen.findByText("Mombasa Bakers");
 
     const view = screen.getByRole("group", { name: "View" });
     const map = hrefOf(within(view).getByRole("link", { name: "Map" }));
-    expect(map.path).toBe("/market");
-    expect(map.search).toMatchObject({ scope: "pools", view: "map", out_voucher: VOUCHER });
-
-    const tabs = screen.getByRole("navigation", { name: "Marketplace" });
-    const vouchers = hrefOf(within(tabs).getByRole("link", { name: "Vouchers" }));
-    expect(vouchers.search.out_voucher).toBeUndefined();
-    expect(vouchers.search.view).toBe("list");
+    expect(map.path).toBe("/");
+    expect(map.search).toMatchObject({ tab: "market", view: "map" });
+    expect(map.search.out_voucher).toBeUndefined();
   });
 
-  it("marks List as the current view and links Map to the same scope", async () => {
+  it("marks List as current and links Map to the unified destination", async () => {
     mocks.list.mockResolvedValue(page([pool(POOL_A, "Mombasa Bakers")]));
     renderList("/market?scope=vouchers&view=list", "vouchers");
     await screen.findByText("Mombasa Bakers");
@@ -432,10 +428,116 @@ describe("MarketListDesk navigation keeps the person's view", () => {
     expect(within(view).getByRole("link", { name: "List" }).getAttribute("aria-current")).toBe(
       "page",
     );
-    expect(hrefOf(within(view).getByRole("link", { name: "Map" })).search).toMatchObject({
-      scope: "vouchers",
-      view: "map",
-    });
+    const map = hrefOf(within(view).getByRole("link", { name: "Map" }));
+    expect(map.path).toBe("/");
+    expect(map.search).toMatchObject({ tab: "market", view: "map" });
+    expect(map.search.scope).toBeUndefined();
+  });
+});
+
+describe("MarketListDesk resource cards", () => {
+  it("renders every result kind with shared artwork, metadata, tags, distance, and destinations", async () => {
+    mocks.distanceOrigin = { lat: -4.05, lng: 39.67 };
+    const rows = [
+      {
+        kind: "voucher",
+        id: "voucher-1",
+        chainId: 100,
+        address: VOUCHER,
+        name: "Bakery voucher",
+        symbol: "BAKE",
+        voucherKind: "voucher",
+        imageUrl: "https://example.com/broken.webp",
+        locationName: "Kilifi",
+        geoLat: -4.05,
+        geoLng: 39.67,
+        distanceMeters: 25,
+        tags: ["Food", "Bread", "Local"],
+      },
+      {
+        kind: "want",
+        id: "12",
+        chainId: null,
+        address: null,
+        name: "Need a bicycle",
+        imageUrl: null,
+        locationName: "Kilifi",
+        geoLat: -4.06,
+        geoLng: 39.68,
+        tags: [],
+      },
+      pool(POOL_A, "Mombasa Bakers"),
+      {
+        kind: "catalog",
+        id: "23",
+        chainId: null,
+        address: null,
+        name: "Coastal directory",
+        description: "Local makers",
+        imageUrl: null,
+        locationName: "Mombasa",
+        geoLat: -4.04,
+        geoLng: 39.66,
+        tags: [],
+      },
+      {
+        kind: "post",
+        id: "34",
+        chainId: null,
+        address: null,
+        name: "Market report",
+        imageUrl: null,
+        locationName: "Kilifi",
+        geoLat: -4.03,
+        geoLng: 39.65,
+        tags: [],
+      },
+      {
+        kind: "offering",
+        id: "45",
+        chainId: 100,
+        address: VOUCHER,
+        voucherAddress: VOUCHER,
+        voucherName: "Bakery voucher",
+        voucherSymbol: "BAKE",
+        name: "Fresh bread",
+        imageUrl: null,
+        locationName: "Kilifi",
+        geoLat: -4.05,
+        geoLng: 39.67,
+        tags: [],
+      },
+    ] as unknown as MarketplaceResult[];
+    mocks.list.mockResolvedValue(page(rows));
+    const router = renderList("/market?scope=all&view=list", "all");
+
+    expect(await screen.findByText("Bakery voucher")).toBeTruthy();
+    expect(
+      screen.getByText((content) => content.includes("BAKE") && content.includes("Kilifi")),
+    ).toBeTruthy();
+    expect(screen.getByText("+1")).toBeTruthy();
+    const broken = document.querySelector('img[src="https://example.com/broken.webp"]');
+    expect(broken).toBeTruthy();
+    fireEvent.error(broken as HTMLImageElement);
+    expect(document.querySelector('img[src="https://example.com/broken.webp"]')).toBeNull();
+
+    expect(screen.getByRole("link", { name: /Mombasa Bakers/ }).getAttribute("href")).toBe(
+      `/pools/${POOL_A}`,
+    );
+    expect(screen.getByRole("link", { name: /Coastal directory/ }).getAttribute("href")).toBe(
+      "/catalogs/23",
+    );
+    expect(screen.getByRole("link", { name: /Market report/ }).getAttribute("href")).toBe(
+      "/posts/34",
+    );
+    expect(screen.getByRole("link", { name: /Fresh bread/ }).getAttribute("href")).toBe(
+      `/vouchers/${VOUCHER}?from=market`,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Need a bicycle/ }));
+    await waitFor(() =>
+      expect(router.state.location.search).toMatchObject({ scope: "all", want: "12" }),
+    );
   });
 });
 

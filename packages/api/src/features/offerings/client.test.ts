@@ -225,6 +225,21 @@ describe("getOfferings discovery", () => {
     expect(init).toMatchObject({ method: "GET", credentials: "omit" });
     expect(init).not.toHaveProperty("cache");
   });
+
+  it("sends nearest ordering and exact bounds as a private discovery read", async () => {
+    fetchMock.mockResolvedValue(response({ offerings: [], nextCursor: null }));
+
+    await api.getOfferings({
+      sort: "nearest",
+      bounds: [{ minLng: 39.5, minLat: -4.2, maxLng: 39.8, maxLat: -3.9 }],
+    });
+
+    const [rawUrl, init] = fetchMock.mock.calls[0] ?? [];
+    const url = new URL(String(rawUrl));
+    expect(url.searchParams.get("sort")).toBe("nearest");
+    expect(url.searchParams.getAll("bbox")).toEqual(["39.5,-4.2,39.8,-3.9"]);
+    expect(init).toMatchObject({ credentials: "include", cache: "no-store" });
+  });
 });
 
 describe("offerings HTTP cache policy", () => {

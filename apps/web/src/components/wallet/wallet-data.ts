@@ -1,3 +1,4 @@
+import type { VoucherUnitValue } from "@clc/core/features/market/logic";
 import { CELO_MAINNET_CUSD_ADDRESS } from "@clc/core/lib/constants/celo";
 
 /**
@@ -32,6 +33,8 @@ export type WalletToken = {
   tokenDecimals?: number;
   balance?: string;
   lastDateBlock?: string;
+  /** The balance in its own unit (a voucher's stated rate, a stable as USD). */
+  unitValue?: VoucherUnitValue | null;
   lat?: number;
   lng?: number;
 };

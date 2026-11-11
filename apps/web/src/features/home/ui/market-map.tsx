@@ -21,7 +21,12 @@ import {
 } from "#/lib/map-appearance";
 import { cn } from "#/lib/utils";
 import { useHydratedTheme } from "#/providers/theme";
-import { MAP_MAX_ZOOM, MARKET_SOURCE_ID, type MarketLocation } from "./market-data";
+import {
+  MAP_MAX_ZOOM,
+  MARKET_SOURCE_ID,
+  marketMinimumZoom,
+  type MarketLocation,
+} from "./market-data";
 import { keepMarketLabelsInsideViewport } from "./market-label-edges";
 import {
   MARKET_NETWORK_BADGE_COLOR,
@@ -697,11 +702,13 @@ export function MarketMap({
     try {
       const initialCamera = cameraRef.current;
       const initialStyle = standardStyleRef.current;
+      const initialMinZoom = marketMinimumZoom(containerRef.current.clientWidth);
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: initialStyle,
         center: initialCamera ? [initialCamera.lng, initialCamera.lat] : [WORLD.lng, WORLD.lat],
         zoom: initialCamera?.zoom ?? DEFAULT_ZOOM,
+        minZoom: initialMinZoom,
         maxZoom: MAP_MAX_ZOOM,
         bearing: 0,
         pitch: 0,
@@ -816,6 +823,12 @@ export function MarketMap({
       clearTimeout(settleTimer);
     }
 
+    function handleResize() {
+      const nextMinZoom = marketMinimumZoom(map.getCanvas().clientWidth);
+      if (map.getMinZoom() === nextMinZoom) return;
+      map.setMinZoom(nextMinZoom);
+    }
+
     function restoreStyle() {
       if (map.getSource(MARKET_SOURCE_ID)) return;
       addMarketLayers(
@@ -864,6 +877,7 @@ export function MarketMap({
     map.on("zoomstart", handleZoomStart);
     map.on("moveend", handleMoveEnd);
     map.on("movestart", handleMoveStart);
+    map.on("resize", handleResize);
 
     // The constructor already measures the container and sets the camera.
     // Discovery can use those bounds while basemap tiles are still loading.
@@ -888,6 +902,7 @@ export function MarketMap({
       map.off("zoomstart", handleZoomStart);
       map.off("moveend", handleMoveEnd);
       map.off("movestart", handleMoveStart);
+      map.off("resize", handleResize);
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       map.remove();

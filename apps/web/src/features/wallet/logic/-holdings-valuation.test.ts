@@ -1,6 +1,35 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { valueHolding, walletTotal, walletValuationUnit } from "./holdings-valuation";
+import {
+  nativeHoldingValue,
+  valueHolding,
+  walletTotal,
+  walletValuationUnit,
+} from "./holdings-valuation";
+
+describe("nativeHoldingValue", () => {
+  it("states a voucher in its own unit at its issuer's rate", () => {
+    expect(nativeHoldingValue("15.3", false, { value: "10", unit: "KES" })).toEqual({
+      value: "153",
+      unit: "KES",
+    });
+    expect(nativeHoldingValue("0.5", false, { value: "5", unit: "Hours" })).toEqual({
+      value: "2.5",
+      unit: "Hours",
+    });
+  });
+
+  it("counts a stable as US dollars", () => {
+    expect(nativeHoldingValue("12.5", true, null)).toEqual({ value: "12.5", unit: "USD" });
+  });
+
+  it("has no value without a usable rate", () => {
+    expect(nativeHoldingValue("10", false, null)).toBeNull();
+    expect(nativeHoldingValue("10", false, { value: null, unit: null })).toBeNull();
+    expect(nativeHoldingValue("10", false, { value: "0", unit: "KES" })).toBeNull();
+    expect(nativeHoldingValue("10", false, { value: "10", unit: "" })).toBeNull();
+  });
+});
 
 describe("valueHolding", () => {
   it("values a voucher at its issuer's rate in the same unit", () => {
