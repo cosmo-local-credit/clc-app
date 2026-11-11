@@ -1,4 +1,6 @@
 import { parseCatalogFilter, toCatalogSearchState } from "@clc/core/features/catalog/logic";
+import type { PostedWithin } from "@clc/core/features/reports/logic";
+import { parsePostedSearch, pickPostedSearch } from "#/lib/navigation/posted-search";
 import {
   marketplaceScopeSchema,
   type MarketplaceScope,
@@ -12,13 +14,17 @@ import {
 
 export type MarketplaceRouteSearch = PoolRouteSearch & {
   scope?: string | readonly string[];
+  posted?: PostedWithin;
 };
 
 /** The lists the market's badges open: one per resource, and All of them mixed. */
 export type MarketListScope = MarketplaceScope | "all";
 
 export function pickMarketplaceSearch(search: unknown): MarketplaceRouteSearch {
-  const base = pickPoolSearch(search);
+  const base = {
+    ...pickPoolSearch(search),
+    ...(pickPostedSearch(search).posted !== undefined ? { posted: parsePostedSearch(search) } : {}),
+  };
   if (typeof search !== "object" || search === null) return base;
   const value = (search as Record<string, unknown>).scope;
   if (typeof value === "string") return { ...base, scope: value };
@@ -71,7 +77,7 @@ export function marketplaceSearchForScope(
 }
 
 /**
- * The map's share of a list's search: the query, the tags and Credit carry
+ * The map's share of a list's search: the query, tags, Credit and post window carry
  * between the map and every list, and nothing that belongs to one list does.
  */
 export function mapSearchFrom(search: unknown): MarketplaceRouteSearch {
@@ -81,12 +87,13 @@ export function mapSearchFrom(search: unknown): MarketplaceRouteSearch {
     tags: state.tags,
     tagMatch: state.tagMatch,
     creditable: state.creditable,
+    ...(state.posted !== undefined ? { posted: state.posted } : {}),
   };
 }
 
 /** Canonical filters that can move safely between the map and every market list. */
 export function marketplaceSharedSearch(search: unknown): MarketplaceRouteSearch {
-  const state = pickPoolSearch(search);
+  const state = pickMarketplaceSearch(search);
   const term = parseCatalogFilter({ q: state.q });
   const tags = parseCatalogFilter({ tags: state.tags, tagMatch: state.tagMatch });
   const creditable = parsePoolCreditable(state.creditable);
@@ -95,5 +102,6 @@ export function marketplaceSharedSearch(search: unknown): MarketplaceRouteSearch
     ...(term.ok ? toCatalogSearchState(term.filter) : {}),
     ...(tags.ok ? toCatalogSearchState(tags.filter) : {}),
     creditable: creditable.ok ? (creditable.enabled ?? undefined) : undefined,
+    ...(state.posted !== undefined ? { posted: state.posted } : {}),
   };
 }

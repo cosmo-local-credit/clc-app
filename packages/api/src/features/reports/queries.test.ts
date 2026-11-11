@@ -10,6 +10,7 @@ import {
   reportMapQueryOptions,
   reportKeys,
   reportQueryOptions,
+  reportVoucherFeedInfiniteQueryOptions,
 } from "./queries";
 
 const MANAGED: ManagedReportsParams = { perPage: 20, status: "SUBMITTED" };
@@ -50,6 +51,11 @@ describe("reportKeys", () => {
 
   it("gives the finite list and the infinite feed distinct keys", () => {
     expect(reportKeys.list(20)).not.toEqual(reportKeys.feed(20));
+  });
+
+  it("varies the public feed with the posted window", () => {
+    expect(reportKeys.feed(20)).not.toEqual(reportKeys.feed(20, "all"));
+    expect(reportKeys.filtered(null, 20)).not.toEqual(reportKeys.filtered(null, 20, "all"));
   });
 
   it("varies with page size and id", () => {
@@ -133,6 +139,44 @@ describe("reportFeedInfiniteQueryOptions", () => {
 
   it("stops when the backend offers no next cursor", () => {
     expect(options.getNextPageParam(page(null), [], undefined, [])).toBeUndefined();
+  });
+
+  it("sends the posted window on the unfiltered walk", async () => {
+    const getReports = vi.fn().mockResolvedValue(page(null));
+    const allTime = reportFeedInfiniteQueryOptions(
+      { getReports } as unknown as ReportsClient,
+      20,
+      undefined,
+      "all",
+    );
+    if (typeof allTime.queryFn !== "function") throw new Error("expected feed query function");
+    await allTime.queryFn({ pageParam: undefined, signal: new AbortController().signal } as never);
+    expect(getReports).toHaveBeenCalledWith(
+      expect.objectContaining({ posted: "all" }),
+      expect.any(AbortSignal),
+    );
+  });
+});
+
+describe("reportVoucherFeedInfiniteQueryOptions", () => {
+  it("asks for all-time posts on a voucher's history", async () => {
+    const getFilteredReports = vi.fn().mockResolvedValue(page(null));
+    const voucher = {
+      chainId: 100,
+      address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as const,
+    };
+    const options = reportVoucherFeedInfiniteQueryOptions(
+      { getFilteredReports } as unknown as ReportsClient,
+      voucher,
+      20,
+    );
+    if (typeof options.queryFn !== "function")
+      throw new Error("expected voucher feed query function");
+    await options.queryFn({ pageParam: undefined, signal: new AbortController().signal } as never);
+    expect(getFilteredReports).toHaveBeenCalledWith(
+      expect.objectContaining({ posted: "all" }),
+      expect.any(AbortSignal),
+    );
   });
 });
 

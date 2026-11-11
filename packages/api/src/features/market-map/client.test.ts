@@ -4,9 +4,10 @@ import { BackendApiError } from "../../client/errors";
 import { createMarketMapClient } from "./client";
 
 function respond(result: unknown) {
+  const body = JSON.stringify({ ok: true, result });
   const fetcher = vi
     .fn()
-    .mockResolvedValue(new Response(JSON.stringify({ ok: true, result }), { status: 200 }));
+    .mockImplementation(() => Promise.resolve(new Response(body, { status: 200 })));
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
 }
@@ -53,6 +54,7 @@ describe("market map HTTP contract", () => {
     expect(url.searchParams.getAll("tags")).toEqual(["Food", "Local"]);
     expect(url.searchParams.get("tagMatch")).toBe("all");
     expect(url.searchParams.get("creditablePools")).toBe(`100:0x${"a".repeat(40)}`);
+    expect(url.searchParams.has("posted")).toBe(false);
     expect(url.searchParams.has("guest")).toBe(false);
     expect(url.searchParams.has("identity")).toBe(false);
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ credentials: "include", signal });
@@ -60,6 +62,28 @@ describe("market map HTTP contract", () => {
     expect(headers.has("authorization")).toBe(false);
     expect(headers.has("cookie")).toBe(false);
     expect(result.features[0]?.type).toBe("cluster");
+  });
+
+  it("sends a non-default post window and omits the 1-month default", async () => {
+    const fetcher = respond({ features: [], tagFacets: [] });
+    const client = createMarketMapClient(createHttpClient({ baseUrl: "https://api.test" }));
+    await client.list({
+      bounds: [],
+      zoom: 2,
+      kinds: ["post"],
+      filter: { term: "", tags: [], tagMatch: "any" },
+      posted: "all",
+    });
+    expect(new URL(fetcher.mock.calls[0]?.[0]).searchParams.get("posted")).toBe("all");
+
+    await client.list({
+      bounds: [],
+      zoom: 2,
+      kinds: ["post"],
+      filter: { term: "", tags: [], tagMatch: "any" },
+      posted: "1m",
+    });
+    expect(new URL(fetcher.mock.calls[1]?.[0]).searchParams.has("posted")).toBe(false);
   });
 
   it("rejects malformed successful responses", async () => {

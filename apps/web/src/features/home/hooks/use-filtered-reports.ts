@@ -5,6 +5,7 @@ import {
   formatVoucherAddress,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
+import { DEFAULT_POSTED_WITHIN, type PostedWithin } from "@clc/core/features/reports/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -73,11 +74,18 @@ function asReportFilter(filter: CatalogFilter | null): ReportFilter | null {
     : null;
 }
 
-function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS_FILTER_PAGE_SIZE) {
+function useFilteredReportsQuery(
+  filter: CatalogFilter | null,
+  posted: PostedWithin,
+  perPage = REPORTS_FILTER_PAGE_SIZE,
+) {
   const reportFilter = asReportFilter(filter);
   const nearby = useNearbyCatalog();
   return useQuery({
-    queryKey: nearbyQueryKey(filteredReportQueryKeys.filtered(reportFilter, perPage), nearby),
+    queryKey: nearbyQueryKey(
+      filteredReportQueryKeys.filtered(reportFilter, perPage, posted),
+      nearby,
+    ),
     queryFn: async ({ signal }): Promise<FilteredReportFeed> => {
       if (!reportFilter) throw new Error("The filtered reports query ran without a filter.");
 
@@ -90,6 +98,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
             perPage,
             cursor,
             filter: reportFilter,
+            posted,
             facets: index === 0,
             ...(nearby?.nearby === true ? { nearby: true } : {}),
             bounds: nearby?.bounds,
@@ -136,15 +145,16 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
   });
 }
 
-function useReportFacetVocabulary(enabled: boolean) {
+function useReportFacetVocabulary(enabled: boolean, posted: PostedWithin) {
   const nearby = useNearbyCatalog();
   return useQuery({
-    queryKey: nearbyQueryKey(filteredReportQueryKeys.facetVocabulary(), nearby),
+    queryKey: nearbyQueryKey(filteredReportQueryKeys.facetVocabulary(posted), nearby),
     queryFn: async ({ signal }) => {
       const page = await reportsClient.getFilteredReports(
         {
           perPage: 1,
           filter: asReportFilter(EMPTY_CATALOG_FILTER)!,
+          posted,
           facets: true,
           ...(nearby?.nearby === true ? { nearby: true } : {}),
           bounds: nearby?.bounds,
@@ -225,9 +235,10 @@ export function useReportFeed(
   },
   /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
   vocabularyEnabled: boolean,
+  posted: PostedWithin = DEFAULT_POSTED_WITHIN,
 ): ReportFeed {
-  const filtered = useFilteredReportsQuery(filter.isFiltered ? filter.filter : null);
-  const vocabulary = useReportFacetVocabulary(vocabularyEnabled);
+  const filtered = useFilteredReportsQuery(filter.isFiltered ? filter.filter : null, posted);
+  const vocabulary = useReportFacetVocabulary(vocabularyEnabled, posted);
 
   const state: FilteredReportsState = useMemo(() => {
     if (!filtered.isEnabled) return { status: "disabled" };

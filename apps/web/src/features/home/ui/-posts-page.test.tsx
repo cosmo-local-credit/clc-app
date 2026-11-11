@@ -395,12 +395,36 @@ describe("PostsPage", () => {
     mocks.feed.data = { pages: [{ reports: [] }] };
     render(<PostsPage />);
 
-    expect(screen.getByText("No posts yet.")).toBeTruthy();
+    expect(screen.getByText("No posts in this period.")).toBeTruthy();
+    expect(screen.queryByText("No posts yet.")).toBeNull();
     // The header's own actions stay: an empty feed is exactly when an author
     // needs somewhere to write.
     expect(screen.queryByRole("region", { name: "Field reports" })).toBeNull();
     expect(screen.getByRole("link", { name: "New post" }).getAttribute("href")).toBe("/posts/new");
     expect(screen.getByRole("link", { name: "My posts" }).getAttribute("href")).toBe("/posts/mine");
+  });
+
+  it("says the catalog is empty only across all time", () => {
+    mocks.search = { posted: "all" };
+    mocks.feed.data = { pages: [{ reports: [] }] };
+    render(<PostsPage />);
+
+    expect(screen.getByText("No posts yet.")).toBeTruthy();
+    expect(screen.queryByText("No posts in this period.")).toBeNull();
+  });
+
+  it("selects 1 month by default and writes all-time into the URL", () => {
+    render(<PostsPage />);
+
+    const group = screen.getByRole("group", { name: "Posted within" });
+    expect(
+      within(group).getByRole("button", { name: "1 month" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    fireEvent.click(within(group).getByRole("button", { name: "All time" }));
+    const search = mocks.navigate.mock.calls.at(-1)?.[0]?.search as (
+      previous: Record<string, unknown>,
+    ) => Record<string, unknown>;
+    expect(search({ tab: "posts" })).toEqual({ tab: "posts", posted: "all" });
   });
 });
 
@@ -747,6 +771,7 @@ describe("PostsPage filtering", () => {
 
     expect(screen.getByText("No posts match this search.")).toBeTruthy();
     expect(screen.queryByText("No posts yet.")).toBeNull();
+    expect(screen.queryByText("No posts in this period.")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
     expect(window.localStorage.getItem(POSTS_FILTER_KEY)).toBeNull();
   });

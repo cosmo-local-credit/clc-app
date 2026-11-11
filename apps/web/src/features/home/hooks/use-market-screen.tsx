@@ -5,7 +5,7 @@ import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { canonicalMarketMapZoom, type MarketMapKind } from "@clc/core/features/market-map/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { RiFocus3Line } from "react-icons/ri";
 
@@ -31,6 +31,7 @@ import { useMarketFilterNotice } from "#/features/home/ui/market-filter-ui";
 import type { MarketCamera, MarketViewport } from "#/features/home/ui/market-map";
 import { wantsClient } from "#/lib/api/wants";
 import { CHAIN_ID } from "#/lib/chain";
+import { parsePostedSearch } from "#/lib/navigation/posted-search";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { useWantSheetSelection } from "#/lib/navigation/use-want-sheet-selection";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
@@ -182,11 +183,14 @@ export function useMarketScreen({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
   const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
+  const search = useSearch({ strict: false });
+  const posted = parsePostedSearch(search);
   const marketMap = useMarketMap({
     filter: parsedFilter,
     bounds: fetchBounds,
     zoom: fetchZoom,
     kinds: activeKinds,
+    posted,
     // Credit's pools, narrowed to the requested output's when the link has one.
     creditablePools: output ? output.poolRefs : credit.enabled ? credit.poolRefs : undefined,
     enabled:

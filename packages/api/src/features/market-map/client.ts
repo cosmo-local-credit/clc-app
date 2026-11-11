@@ -1,5 +1,6 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import type { MarketBoundingBox } from "@clc/core/features/catalog/nearby";
+import { type PostedWithin, serializePostedWithin } from "@clc/core/features/reports/logic";
 import {
   canonicalMarketMapZoom,
   marketMapResponseSchema,
@@ -18,6 +19,7 @@ export type MarketMapParams = {
   filter: Pick<CatalogFilter, "term" | "tags" | "tagMatch">;
   facets?: boolean;
   creditablePools?: readonly { chainId: number; address: string }[];
+  posted?: PostedWithin;
 };
 
 export type MarketMapClient = ReturnType<typeof createMarketMapClient>;
@@ -38,6 +40,8 @@ export function createMarketMapClient(http: HttpClient) {
       for (const pool of params.creditablePools ?? []) {
         query.append("creditablePools", `${pool.chainId}:${pool.address}`);
       }
+      const posted = serializePostedWithin(params.posted ?? "1m");
+      if (posted) query.set("posted", posted);
 
       const parsed = marketMapResponseSchema.safeParse(
         await http.request<unknown>(`/api/v2/market-map?${query}`, {

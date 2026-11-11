@@ -1,6 +1,11 @@
 import type { TagMatch, VoucherRef } from "@clc/core/features/catalog/logic";
 import { parseCatalogFilter, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 import {
+  DEFAULT_POSTED_WITHIN,
+  type PostedWithin,
+  isPostedWithin,
+} from "@clc/core/features/reports/logic";
+import {
   readOwnerScoped,
   removeOwnerScoped,
   writeOwnerScoped,
@@ -40,6 +45,8 @@ export const CATALOG_FILTER_PREFERENCE_NAMES = {
   pools: "pools.filter-preferences.v1",
   posts: "posts.filter-preferences.v1",
 } as const;
+
+export const POSTED_WITHIN_PREFERENCE_NAME = "posts.posted-within.v1";
 
 export type CatalogFilterPreference = {
   tags: readonly string[];
@@ -164,4 +171,18 @@ export function writeCatalogFilterPreference(
 
 export function clearCatalogFilterPreference(owner: StorageOwner, name: string): void {
   removeOwnerScoped(owner, name);
+}
+
+export function readPostedWithinPreference(owner: StorageOwner): PostedWithin | null {
+  const raw = readOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+  if (!isPostedWithin(raw)) return null;
+  return raw === DEFAULT_POSTED_WITHIN ? null : raw;
+}
+
+export function writePostedWithinPreference(owner: StorageOwner, posted: PostedWithin): void {
+  if (posted === DEFAULT_POSTED_WITHIN) {
+    removeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME);
+    return;
+  }
+  writeOwnerScoped(owner, POSTED_WITHIN_PREFERENCE_NAME, posted);
 }

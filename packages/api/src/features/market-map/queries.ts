@@ -22,6 +22,7 @@ export const marketMapKeys = {
         creditablePools: params.creditablePools?.map(
           (pool) => `${pool.chainId}:${pool.address.toLowerCase()}`,
         ),
+        posted: params.posted ?? "1m",
       },
     ] as const,
 };

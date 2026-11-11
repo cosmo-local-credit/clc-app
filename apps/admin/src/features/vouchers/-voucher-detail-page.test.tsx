@@ -13,7 +13,33 @@ import { parseVoucherDetailSearch } from "./voucher-detail-search";
 
 const ADDRESS = "0xE74B7fDeda8f66A01dC438A012b1eE5cc377298D";
 
-const mocks = vi.hoisted(() => ({ active: true, restoreVoucher: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  active: true,
+  restoreVoucher: vi.fn(),
+  getFilteredReports: vi.fn().mockResolvedValue({
+    reports: [
+      {
+        id: "rep-1",
+        title: "Market day",
+        description: "Weekly sale",
+        imageUrl: null,
+        locationName: "Nairobi",
+        lat: null,
+        lng: null,
+        periodFrom: null,
+        periodTo: null,
+        createdAt: "2020-08-13T10:00:00Z",
+        updatedAt: "2020-08-13T10:00:00Z",
+        markerIcon: "post",
+        markerColor: "pink",
+        tags: ["market"],
+        vouchers: [],
+        pools: [],
+      },
+    ],
+    next: null,
+  }),
+}));
 
 // The query options are mocked below, so clcApi is only ever passed through
 // them — except by the restore mutation, which calls the client directly.
@@ -22,6 +48,7 @@ vi.mock("#/lib/api", () => ({
     admin: { restoreVoucher: (...args: unknown[]) => mocks.restoreVoucher(...args) },
     retirement: { restore: (...args: unknown[]) => mocks.restoreVoucher(...args) },
     market: {},
+    reports: { getFilteredReports: mocks.getFilteredReports },
   },
 }));
 
@@ -120,33 +147,6 @@ vi.mock("@clc/api/features/offerings/queries", () => ({
       first: 1,
       last: 1,
       receivedCount: 1,
-    }),
-  }),
-}));
-
-vi.mock("@clc/api/features/reports/queries", () => ({
-  reportFilteredQueryOptions: () => ({
-    queryKey: ["reports", ADDRESS],
-    queryFn: () => ({
-      reports: [
-        {
-          id: "rep-1",
-          title: "Market day",
-          description: "Weekly sale",
-          imageUrl: null,
-          locationName: "Nairobi",
-          lat: null,
-          lng: null,
-          periodFrom: null,
-          periodTo: null,
-          authorAddress: null,
-          createdAt: null,
-          updatedAt: "2026-08-13T10:00:00Z",
-          tags: ["market"],
-          vouchers: [],
-        },
-      ],
-      next: null,
     }),
   }),
 }));
@@ -260,6 +260,15 @@ describe("VoucherDetailPage tabs", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Approved posts" }));
     expect(await screen.findByText("Market day")).toBeTruthy();
+    expect(mocks.getFilteredReports).toHaveBeenCalledWith(
+      expect.objectContaining({
+        posted: "all",
+        filter: expect.objectContaining({
+          vouchers: [{ chainId: 42220, address: ADDRESS }],
+        }),
+      }),
+      expect.any(AbortSignal),
+    );
 
     fireEvent.click(screen.getByRole("tab", { name: "Pools" }));
     expect(await screen.findByRole("link", { name: "Kawangware Pool" })).toBeTruthy();

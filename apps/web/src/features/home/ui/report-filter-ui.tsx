@@ -30,14 +30,18 @@ import {
   formatVoucherAddress,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
+import type { PostedWithin } from "@clc/core/features/reports/logic";
 import { useReportFilterNotice } from "#/features/home/hooks/use-report-filter-notice";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
+import { PostedWithinChips } from "./posted-within-chips";
 
 export function ReportFilterSheet({
   filter,
   facets,
   voucherFacets,
   poolFacets,
+  posted,
+  onPostedChange,
   open,
   onOpenChange,
 }: {
@@ -45,6 +49,8 @@ export function ReportFilterSheet({
   facets: ReportTagFacet[];
   voucherFacets: ReportVoucherFacet[];
   poolFacets: ReportPoolFacet[];
+  posted: PostedWithin;
+  onPostedChange: (next: PostedWithin) => void;
   open: boolean;
   onOpenChange: (next: boolean) => void;
 }) {
@@ -94,6 +100,12 @@ export function ReportFilterSheet({
       }
       trigger="bar"
     >
+      <PostedWithinChips
+        posted={posted}
+        onChange={onPostedChange}
+        labeled
+        className="mb-4 border-border border-b pb-4"
+      />
       <ReportPoolFilter
         pools={draftPools}
         match={draftPoolMatch}
