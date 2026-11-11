@@ -296,9 +296,7 @@ function PayoutRecipientField({
         id={id}
         defaultValue={payout.recipient}
         onValueChange={payout.setRecipient}
-        onRecipientChange={(next) => {
-          if (next) payout.setRecipient(next.address);
-        }}
+        onRecipientChange={(next) => payout.setResolved(next?.address ?? null)}
         ariaLabel={t`Recipient`}
         ariaInvalid={payout.problem !== null}
       />

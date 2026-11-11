@@ -114,7 +114,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} ऑन-चेन विफल रहा। पूल नहीं बनाया गया."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:217
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
 msgid "{0} fees collected."
 msgstr "{0} शुल्क एकत्र किया गया।"
 
@@ -234,7 +234,7 @@ msgid "{0} wallet address"
 msgstr "{0} वॉलेट का पता"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:140
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} वापस ले लिया गया।"
 
@@ -370,8 +370,8 @@ msgid "{value} stars"
 msgstr "{value} सितारे"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:431
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:342
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:429
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:340
 msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
 msgstr "{withdrawable} {0} उपलब्ध है। संग्रह के लिए रोका गया शुल्क पूल में रहता "
 "है।"
@@ -936,7 +936,7 @@ msgstr "भेजने से पहले हमेशा पुष्टि �
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
 #: apps/web/src/desktop/activity/transactions-desk.tsx:302
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:427
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:919
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:146
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
@@ -953,7 +953,7 @@ msgstr "भेजने से पहले हमेशा पुष्टि �
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:549
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:618
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:338
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:336
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
@@ -1521,7 +1521,7 @@ msgid "Check supply again"
 msgstr "आपूर्ति की दोबारा जाँच करें"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:435
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:653
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:651
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:511
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:45
 msgid "Check the existing submission before another transfer:"
@@ -1532,7 +1532,7 @@ msgid "Check the Want details."
 msgstr "ज़रूरत का विवरण जाँचें।"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:470
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:616
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:614
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:549
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:84
 msgid "Check transfer status"
@@ -1951,8 +1951,8 @@ msgstr "इस कार्ड से पुनः संग्रह करे�
 msgid "Collect by card"
 msgstr "कार्ड द्वारा एकत्रित करें"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:486
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:449
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:484
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:447
 msgid "Collect fees"
 msgstr "फीस जमा करें"
 
@@ -1961,8 +1961,8 @@ msgstr "फीस जमा करें"
 #~ msgstr "एकत्रित अदला-बदली शुल्क का भुगतान यहां किया जाता है।"
 
 #. placeholder {0}: formatVoucherAddress(connectedAddress as `0x${string}`)
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:574
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:505
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:572
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:503
 msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "एकत्रित अदला-बदली शुल्क का भुगतान यहां किया जाता है। आपका अपना वॉलेट "
 "{0} है।"
@@ -2375,8 +2375,8 @@ msgid "Copy deployment transaction hash"
 msgstr "परिनियोजन लेनदेन हैश की प्रतिलिपि बनाएँ"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:340
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:501
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:636
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:54
 msgid "Copy fee recipient"
 msgstr "प्रतिलिपि शुल्क प्राप्तकर्ता"
@@ -2481,7 +2481,7 @@ msgstr "शेष राशि की जाँच नहीं हो सकी
 
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:21
 #: apps/web/src/components/retirement/retirement-control.tsx:72
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:712
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:710
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:279
 #: apps/web/src/desktop/wallet/wallet-retirements.tsx:46
 msgid "Could not load retirement requests."
@@ -2622,8 +2622,8 @@ msgstr "परिनियोजन लेनदेन हैश की प्�
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:291
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:297
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:505
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:640
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:151
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:104
 msgid "Couldn't copy fee recipient"
@@ -3053,6 +3053,10 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 "and try again."
 msgstr "वह कार्ड पढ़ा नहीं जा सका. इसे अपने फ़ोन के पीछे स्थिर रखें और पुनः "
 "प्रयास करें।"
+
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+msgid "Couldn't read the pool's fee recipient. Try again."
+msgstr "पूल का शुल्क प्राप्तकर्ता पढ़ा नहीं जा सका। फिर से कोशिश करें।"
 
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:207
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
@@ -3909,8 +3913,8 @@ msgstr "{0} को समाप्त"
 msgid "Enter a credit limit greater than zero"
 msgstr "शून्य से अधिक क्रेडिट सीमा दर्ज करें"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:556
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:486
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:554
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:484
 msgid "Enter a fee from 0 to 100"
 msgstr "0 से 100 तक शुल्क दर्ज करें"
 
@@ -3951,9 +3955,9 @@ msgid "Enter a valid wallet address"
 msgstr "एक वैध वॉलेट पता दर्ज करें"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:369
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:577
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:575
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:289
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:508
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:506
 #: apps/web/src/features/vouchers/hooks/use-voucher-controls.ts:112
 msgid "Enter a valid wallet address"
 msgstr "एक वैध वॉलेट पता दर्ज करें"
@@ -3969,7 +3973,7 @@ msgid "Enter an amount greater than zero."
 msgstr "शून्य से अधिक राशि दर्ज करें."
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:123
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "शून्य से अधिक राशि दर्ज करें."
@@ -3979,7 +3983,7 @@ msgstr "शून्य से अधिक राशि दर्ज करे�
 msgid "Enter an amount this voucher supports."
 msgstr "वह राशि दर्ज करें जिसका समर्थन यह वाउचर करता है।"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:119
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
 msgid "Enter an amount this voucher supports."
 msgstr "वह राशि दर्ज करें जिसका समर्थन यह वाउचर करता है।"
 
@@ -4102,7 +4106,7 @@ msgstr "Safe में इसे निष्पादित करें।"
 msgid "Executing…"
 msgstr "निष्पादित हो रहा है…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:633
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:631
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:38
 msgid "Existing fee recipient"
 msgstr "मौजूदा शुल्क प्राप्तकर्ता"
@@ -4191,7 +4195,7 @@ msgstr "खेती"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:139
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:286
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:544
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:542
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:204
 #: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:49
@@ -4216,20 +4220,20 @@ msgstr "शुल्क नीति"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:333
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:324
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:408
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:498
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:570
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:586
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:496
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:568
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:584
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:350
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:363
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:501
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:517
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:499
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:515
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:48
 msgid "Fee recipient"
 msgstr "शुल्क प्राप्तकर्ता"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:296
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:505
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:640
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:151
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:104
 msgid "Fee recipient copied"
@@ -5291,7 +5295,7 @@ msgid "Loading private attachment…"
 msgstr "निजी अनुलग्नक लोड हो रहा है..."
 
 #: apps/web/src/components/retirement/retirement-control.tsx:67
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:707
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:705
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:274
 msgid "Loading retirement requests…"
 msgstr "उपयोग से हटाने के अनुरोध लोड हो रहे हैं…"
@@ -5600,10 +5604,10 @@ msgstr "मिलते-जुलते लोग"
 msgid "Matching recipients"
 msgstr "मिलान प्राप्तकर्ता"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:451
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:449
 #: apps/web/src/desktop/wallet/send-desk.tsx:245
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:440
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:363
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:361
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:168
 msgid "Max"
 msgstr "अधिकतम"
@@ -5982,8 +5986,8 @@ msgstr "नया मालिक"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:442
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:454
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:660
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:672
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:658
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:670
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:518
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:530
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:52
@@ -6081,7 +6085,7 @@ msgid "No"
 msgstr "नहीं"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:205
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
 msgid "No {0} fees have accrued yet."
 msgstr "अभी तक कोई {0} शुल्क जमा नहीं हुआ है।"
 
@@ -6563,7 +6567,7 @@ msgstr "नहीं भेजा गया"
 
 #: apps/web/src/desktop/account/profile-desk.tsx:363
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:132
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:645
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:643
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:47
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:122
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:40
@@ -7370,11 +7374,11 @@ msgstr "पूल शुल्क"
 #~ msgstr "पूल शुल्क ({poolFeePercent})"
 
 #. placeholder {0}: formatVoucherAddress(settings.feeAddress)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:433
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
 msgid "Pool fee recipient: {0}"
 msgstr "पूल शुल्क प्राप्तकर्ता: {0}"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:298
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
 msgid "Pool fee updated."
 msgstr "पूल शुल्क अद्यतन किया गया."
 
@@ -7993,22 +7997,22 @@ msgstr "रेटिंग वितरण"
 msgid "Reading the current rate…"
 msgstr "वर्तमान दर पढ़ रहे हैं..."
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:432
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:430
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:148
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:341
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
 msgid "Reading the pool's balance…"
 msgstr "पूल की शेष राशि पढ़ी जा रही है…"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:288
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:521
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:418
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:475
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:519
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:416
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:473
 msgid "Reading this pool's fee…"
 msgstr "इस पूल का शुल्क पढ़ रहे हैं..."
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:135
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:645
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:643
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:438
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:125
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:40
@@ -8114,8 +8118,8 @@ msgstr "हाल के प्राप्तकर्ता"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:258
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:382
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:496
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:138
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:152
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
@@ -8124,8 +8128,8 @@ msgstr "हाल के प्राप्तकर्ता"
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:174
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:82
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:284
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:423
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:300
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:421
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:144
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
@@ -8534,7 +8538,7 @@ msgid "Retirement requested"
 msgstr "उपयोग से हटाने का अनुरोध किया गया"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:87
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:726
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:724
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:293
 msgid "Retirement requested — awaiting admin review. This resource stays active "
 "until approval."
@@ -8585,7 +8589,7 @@ msgstr "एकांत विश्राम"
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:99
 #: apps/web/src/desktop/pools/create/unit-combobox-desk.tsx:132
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:50
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:719
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:717
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:33
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:130
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:162
@@ -8759,8 +8763,8 @@ msgstr "ज़रूरत सहेजें और फिर खोलें"
 msgid "Save changes"
 msgstr "परिवर्तन सहेजें"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:549
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:532
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:547
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:530
 msgid "Save fee settings"
 msgstr "शुल्क सेटिंग सहेजें"
 
@@ -9913,8 +9917,8 @@ msgid "Swap fee"
 msgstr "अदला-बदली शुल्क"
 
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:273
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:554
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:484
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:552
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:482
 msgid "Swap fee (%)"
 msgstr "अदला-बदली शुल्क (%)"
 
@@ -10364,7 +10368,7 @@ msgid "The pool could not be published."
 msgstr "पूल प्रकाशित नहीं किया जा सका."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:127
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
 msgid "The pool doesn't hold that much {0}."
 msgstr "पूल में उतना {0} नहीं है।"
 
@@ -10372,7 +10376,7 @@ msgstr "पूल में उतना {0} नहीं है।"
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "बोली बदल गयी. पुष्टि करने से पहले अद्यतन राशियों की समीक्षा करें।"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:624
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:622
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:33
 msgid "The recipient gains pool management and liquidity withdrawal authority. "
 "You lose ownership immediately when the transaction confirms."
@@ -10389,9 +10393,9 @@ msgstr "अनुरोध रिले के उत्तर के बिन�
 msgid "The selected unit does not have a configured price feed."
 msgstr "चयनित इकाई में कॉन्फ़िगर मूल्य फ़ीड नहीं है."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:143
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:220
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:301
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10654,7 +10658,7 @@ msgstr "इस पूल में कोई सीमक नहीं है, �
 "सीमा निर्धारित नहीं की जा सकती है।"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:321
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:554
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:552
 msgid "This pool holds no vouchers yet."
 msgstr "इस पूल के पास अभी तक कोई वाउचर नहीं है।"
 
@@ -10888,8 +10892,8 @@ msgstr "ट्रांसफ़र विवरण"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:419
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:472
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:146
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:608
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:618
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:606
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:616
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:133
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:195
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:551
@@ -11719,14 +11723,14 @@ msgstr "पुष्टि की प्रतीक्षा में..."
 msgid "Waiting for on-chain confirmation"
 msgstr "ऑन-चेन पुष्टि की प्रतीक्षा की जा रही है"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:414
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:486
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:549
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:614
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:412
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:484
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:547
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:612
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:241
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:381
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:449
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:532
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:379
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:447
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:530
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:82
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:454
 msgid "Waiting for the chain…"
@@ -11958,11 +11962,11 @@ msgstr "ये कहां हुआ?"
 msgid "With"
 msgstr "के साथ"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:414
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:412
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:73
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:331
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:342
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:381
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:379
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:119
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:61
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:205
@@ -11970,7 +11974,7 @@ msgid "Withdraw"
 msgstr "वापस लेना"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:126
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:481
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:479
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:113
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:177
 #: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:46
@@ -11978,7 +11982,7 @@ msgid "Withdraw fees"
 msgstr "फीस वापस लें"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:120
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:409
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:407
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:108
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:159
 #: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:44

@@ -118,7 +118,7 @@ msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} a échoué sur la chaîne. Le bassin n’a pas été créé."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:217
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:261
 msgid "{0} fees collected."
 msgstr "Frais en {0} collectés."
 
@@ -238,7 +238,7 @@ msgid "{0} wallet address"
 msgstr "Adresse du portefeuille {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:140
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:162
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} retiré."
 
@@ -374,8 +374,8 @@ msgid "{value} stars"
 msgstr "{value} étoiles"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:431
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:342
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:429
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:340
 msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
 msgstr "{withdrawable} {0} disponibles. Les frais en attente de collecte "
 "restent dans le bassin."
@@ -948,7 +948,7 @@ msgstr "Vérifiez toujours que le jeton et le réseau correspondent avant "
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
 #: apps/web/src/desktop/activity/transactions-desk.tsx:302
 #: apps/web/src/desktop/pools/detail/pool-activity-detail-desk.tsx:120
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:427
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:425
 #: apps/web/src/desktop/pools/detail/pool-tab-bodies.tsx:919
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:146
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:155
@@ -965,7 +965,7 @@ msgstr "Vérifiez toujours que le jeton et le réseau correspondent avant "
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:549
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:618
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:127
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:338
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:336
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:147
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:157
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:87
@@ -1535,7 +1535,7 @@ msgid "Check supply again"
 msgstr "Vérifier à nouveau la quantité émise"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:435
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:653
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:651
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:511
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:45
 msgid "Check the existing submission before another transfer:"
@@ -1546,7 +1546,7 @@ msgid "Check the Want details."
 msgstr "Vérifiez les détails de la demande."
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:470
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:616
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:614
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:549
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:84
 msgid "Check transfer status"
@@ -1966,8 +1966,8 @@ msgstr "Encaisser à nouveau avec cette carte"
 msgid "Collect by card"
 msgstr "Encaisser par carte"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:486
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:449
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:484
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:447
 msgid "Collect fees"
 msgstr "Collecter les frais"
 
@@ -1976,8 +1976,8 @@ msgstr "Collecter les frais"
 #~ msgstr "Les frais d’échange perçus sont payés ici."
 
 #. placeholder {0}: formatVoucherAddress(connectedAddress as `0x${string}`)
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:574
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:505
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:572
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:503
 msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "Les frais d’échange perçus sont payés ici. Votre propre portefeuille "
 "est {0}."
@@ -2394,8 +2394,8 @@ msgid "Copy deployment transaction hash"
 msgstr "Copier le hachage de la transaction de déploiement"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:340
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:501
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:636
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:54
 msgid "Copy fee recipient"
 msgstr "Copier l’adresse du bénéficiaire des frais"
@@ -2501,7 +2501,7 @@ msgstr "Impossible de vérifier les soldes. Réessayez avant d’envoyer votre "
 
 #: apps/web/src/components/retirement/my-retirement-requests.tsx:21
 #: apps/web/src/components/retirement/retirement-control.tsx:72
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:712
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:710
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:279
 #: apps/web/src/desktop/wallet/wallet-retirements.tsx:46
 msgid "Could not load retirement requests."
@@ -2642,8 +2642,8 @@ msgstr "Impossible de copier le hachage de la transaction de déploiement"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:291
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:297
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:505
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:640
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:151
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:104
 msgid "Couldn't copy fee recipient"
@@ -3076,6 +3076,10 @@ msgid "Couldn't read that card. Hold it still against the back of your phone "
 "and try again."
 msgstr "Impossible de lire cette carte. Maintenez-la immobile contre le dos de "
 "votre téléphone, puis réessayez."
+
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:249
+msgid "Couldn't read the pool's fee recipient. Try again."
+msgstr "Impossible de lire le bénéficiaire des frais du bassin. Réessayez."
 
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:207
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
@@ -3933,8 +3937,8 @@ msgstr "Se termine {0}"
 msgid "Enter a credit limit greater than zero"
 msgstr "Saisissez une limite de crédit supérieure à zéro"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:556
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:486
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:554
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:484
 msgid "Enter a fee from 0 to 100"
 msgstr "Saisissez des frais compris entre 0 et 100"
 
@@ -3977,9 +3981,9 @@ msgid "Enter a valid wallet address"
 msgstr "Saisissez une adresse de portefeuille valide"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:369
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:577
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:575
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:289
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:508
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:506
 #: apps/web/src/features/vouchers/hooks/use-voucher-controls.ts:112
 msgid "Enter a valid wallet address"
 msgstr "Saisissez une adresse de portefeuille valide"
@@ -3995,7 +3999,7 @@ msgid "Enter an amount greater than zero."
 msgstr "Saisissez un montant supérieur à zéro."
 
 #: apps/web/src/desktop/pools/pool-swap-column.tsx:379
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:123
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:145
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:214
 msgid "Enter an amount greater than zero."
 msgstr "Saisissez un montant supérieur à zéro."
@@ -4005,7 +4009,7 @@ msgstr "Saisissez un montant supérieur à zéro."
 msgid "Enter an amount this voucher supports."
 msgstr "Saisissez un montant pris en charge par ce bon d’échange."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:119
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:141
 msgid "Enter an amount this voucher supports."
 msgstr "Saisissez un montant pris en charge par ce bon d’échange."
 
@@ -4129,7 +4133,7 @@ msgstr "Exécutez-la dans Safe."
 msgid "Executing…"
 msgstr "Exécution…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:633
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:631
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:38
 msgid "Existing fee recipient"
 msgstr "Bénéficiaire actuel des frais"
@@ -4218,7 +4222,7 @@ msgstr "Agriculture"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:139
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:286
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:544
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:542
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:118
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:204
 #: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:49
@@ -4243,20 +4247,20 @@ msgstr "Politique de frais"
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:333
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:324
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:408
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:498
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:570
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:586
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:496
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:568
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:584
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:350
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:363
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:501
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:517
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:499
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:515
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:48
 msgid "Fee recipient"
 msgstr "Bénéficiaire des frais"
 
 #: apps/web/src/desktop/pools/create/create-pool-parts.tsx:296
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:505
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:640
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:503
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:638
 #: apps/web/src/desktop/pools/pool-receipt-desk.tsx:151
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:104
 msgid "Fee recipient copied"
@@ -5322,7 +5326,7 @@ msgid "Loading private attachment…"
 msgstr "Chargement de la pièce jointe privée…"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:67
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:707
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:705
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:274
 msgid "Loading retirement requests…"
 msgstr "Chargement des demandes de retrait…"
@@ -5631,10 +5635,10 @@ msgstr "Personnes correspondantes"
 msgid "Matching recipients"
 msgstr "Destinataires correspondants"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:451
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:449
 #: apps/web/src/desktop/wallet/send-desk.tsx:245
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:440
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:363
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:361
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:168
 msgid "Max"
 msgstr "Max"
@@ -6015,8 +6019,8 @@ msgstr "Nouveau propriétaire"
 
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:442
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:454
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:660
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:672
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:658
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:670
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:518
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:530
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:52
@@ -6114,7 +6118,7 @@ msgid "No"
 msgstr "Non"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:205
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:236
 msgid "No {0} fees have accrued yet."
 msgstr "Aucun frais de {0} n’a encore été perçu."
 
@@ -6601,7 +6605,7 @@ msgstr "Non envoyé"
 
 #: apps/web/src/desktop/account/profile-desk.tsx:363
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:132
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:645
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:643
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:47
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:122
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:40
@@ -7419,11 +7423,11 @@ msgstr "Frais du bassin"
 #~ msgstr "Frais du bassin ({poolFeePercent})"
 
 #. placeholder {0}: formatVoucherAddress(settings.feeAddress)
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:433
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:431
 msgid "Pool fee recipient: {0}"
 msgstr "Bénéficiaire des frais du bassin : {0}"
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:298
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:342
 msgid "Pool fee updated."
 msgstr "Frais du bassin mis à jour."
 
@@ -8044,22 +8048,22 @@ msgstr "Répartition des notes"
 msgid "Reading the current rate…"
 msgstr "Lecture du taux actuel…"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:432
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:430
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:148
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:341
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
 msgid "Reading the pool's balance…"
 msgstr "Lecture du solde du bassin…"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:288
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:521
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:418
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:475
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:519
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:416
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:473
 msgid "Reading this pool's fee…"
 msgstr "Lecture des frais de ce bassin…"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:135
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:645
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:643
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:438
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:125
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:40
@@ -8166,8 +8170,8 @@ msgstr "Bénéficiaires récents"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:258
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:270
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:365
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:382
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:496
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:380
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:494
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:138
 #: apps/web/src/desktop/safe/safe-pending-desk.tsx:152
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:377
@@ -8176,8 +8180,8 @@ msgstr "Bénéficiaires récents"
 #: apps/web/src/desktop/wallet/send-receipt-desk.tsx:174
 #: apps/web/src/desktop/wallet/send-review-dialog.tsx:82
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:284
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:423
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:300
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:421
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:144
 #: apps/web/src/features/safe/ui/safe-pending-sheet.tsx:154
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:327
@@ -8588,7 +8592,7 @@ msgid "Retirement requested"
 msgstr "Retrait demandé"
 
 #: apps/web/src/components/retirement/retirement-control.tsx:87
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:726
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:724
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:293
 msgid "Retirement requested — awaiting admin review. This resource stays active "
 "until approval."
@@ -8639,7 +8643,7 @@ msgstr "Retraite"
 #: apps/web/src/desktop/pools/create/place-step-desk.tsx:99
 #: apps/web/src/desktop/pools/create/unit-combobox-desk.tsx:132
 #: apps/web/src/desktop/pools/detail/pool-info-desk.tsx:50
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:719
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:717
 #: apps/web/src/desktop/pools/detail/pool-profile-desk.tsx:33
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:130
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:162
@@ -8813,8 +8817,8 @@ msgstr "Enregistrer et rouvrir la demande"
 msgid "Save changes"
 msgstr "Enregistrer les modifications"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:549
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:532
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:547
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:530
 msgid "Save fee settings"
 msgstr "Enregistrer les paramètres de frais"
 
@@ -9978,8 +9982,8 @@ msgid "Swap fee"
 msgstr "Frais d’échange"
 
 #: apps/web/src/desktop/pools/create/pool-step-desk.tsx:273
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:554
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:484
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:552
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:482
 msgid "Swap fee (%)"
 msgstr "Frais d’échange (%)"
 
@@ -10437,7 +10441,7 @@ msgid "The pool could not be published."
 msgstr "Impossible de publier le bassin."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:127
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:149
 msgid "The pool doesn't hold that much {0}."
 msgstr "Le bassin ne contient pas autant de {0}."
 
@@ -10445,7 +10449,7 @@ msgstr "Le bassin ne contient pas autant de {0}."
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Le devis a changé. Vérifiez les montants mis à jour avant de confirmer."
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:624
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:622
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:33
 msgid "The recipient gains pool management and liquidity withdrawal authority. "
 "You lose ownership immediately when the transaction confirms."
@@ -10463,9 +10467,9 @@ msgstr "La demande a expiré sans réponse du service de paiement. Vérifiez le 
 msgid "The selected unit does not have a configured price feed."
 msgstr "Aucun flux de prix n’est configuré pour l’unité sélectionnée."
 
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:143
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:220
-#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:301
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:165
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:264
+#: apps/web/src/features/pools/hooks/use-pool-control-forms.ts:345
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:388
 #: apps/web/src/features/pools/hooks/use-pool-voucher-editor.tsx:406
 msgid "The transaction failed."
@@ -10734,7 +10738,7 @@ msgstr "Ce bassin n’a pas de limiteur : les dépôts sont donc illimités et 
 "aucune limite de crédit ne peut être définie."
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:321
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:554
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:552
 msgid "This pool holds no vouchers yet."
 msgstr "Ce bassin ne contient encore aucun bon d’échange."
 
@@ -10973,8 +10977,8 @@ msgstr "Détails du transfert"
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:419
 #: apps/web/src/components/vouchers/voucher-contract-actions-panel.tsx:472
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:146
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:608
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:618
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:606
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:616
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:133
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:195
 #: apps/web/src/desktop/vouchers/detail/voucher-controls.tsx:551
@@ -11808,14 +11812,14 @@ msgstr "En attente de confirmation…"
 msgid "Waiting for on-chain confirmation"
 msgstr "En attente de la confirmation sur la chaîne"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:414
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:486
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:549
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:614
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:412
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:484
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:547
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:612
 #: apps/web/src/desktop/pools/detail/pool-voucher-editor-desk.tsx:241
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:381
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:449
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:532
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:379
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:447
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:530
 #: apps/web/src/features/pools/ui/pool-ownership-transfer-form.tsx:82
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:454
 msgid "Waiting for the chain…"
@@ -12049,11 +12053,11 @@ msgstr "Où est-ce arrivé ?"
 msgid "With"
 msgstr "Avec"
 
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:414
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:412
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:73
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:331
 #: apps/web/src/desktop/wallet/top-up-desk.tsx:342
-#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:381
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:379
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:119
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:61
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:205
@@ -12061,7 +12065,7 @@ msgid "Withdraw"
 msgstr "Retirer"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:126
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:481
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:479
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:113
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:177
 #: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:46
@@ -12069,7 +12073,7 @@ msgid "Withdraw fees"
 msgstr "Retirer les frais"
 
 #: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:120
-#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:409
+#: apps/web/src/desktop/pools/detail/pool-manage-desk.tsx:407
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:108
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:159
 #: apps/web/src/features/safe/ui/safe-proposal-labels.tsx:44

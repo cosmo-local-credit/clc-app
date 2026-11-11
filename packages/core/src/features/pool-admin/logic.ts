@@ -310,7 +310,11 @@ export function buildWithdrawPoolFeesCalls(input: {
   poolAddress: `0x${string}`;
   tokenAddress: `0x${string}`;
   recipientAddress: `0x${string}`;
-  /** The pool's `feeAddress` as read from the chain; null when unset. */
+  /**
+   * The pool's `feeAddress`, null when unset. Read it from the chain just before
+   * building: the batch writes it back, so a stale value overwrites whatever
+   * replaced it.
+   */
   currentFeeAddress: `0x${string}` | null;
 }): CaliburCall[] {
   assertContractAddress(input.poolAddress, "pool");

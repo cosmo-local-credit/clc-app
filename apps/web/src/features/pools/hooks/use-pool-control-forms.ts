@@ -4,14 +4,17 @@ import {
   buildWithdrawPoolFeesCalls,
   buildWithdrawPoolLiquidityCalls,
   POOL_FEE_PERCENT_DECIMALS,
+  swapPoolFeeAddressAbi,
 } from "@clc/core/features/pool-admin/logic";
+import { BackendApiError } from "@clc/api/client/errors";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { useLingui } from "@lingui/react/macro";
 import { useIsMutating } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getAddress, isAddress, zeroAddress } from "viem";
-import { useConnection } from "wagmi";
+import { readContract } from "viem/actions";
+import { useClient, useConnection } from "wagmi";
 
 import { useAssetOwnerInfo } from "#/features/ownership/hooks/use-asset-owner-info";
 import {
@@ -25,6 +28,7 @@ import {
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 import { poolWithdrawalTokens } from "#/features/pools/logic/pool-withdrawal-tokens";
 import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 
 /**
  * What a steward's control surface reads once: the owner, the vouchers the
@@ -53,26 +57,43 @@ export function usePoolControls(
  * Where a withdrawal is paid: the address the steward chose, starting from the
  * signed-in wallet. That holds for a Safe-owned pool too, where the signer
  * proposing the withdrawal is the one taking it unless they name the Safe or
- * someone else. Null until the text is a payable address: not zero, and not
- * the pool, which would only pay itself.
+ * someone else.
+ *
+ * The field's text and the address it resolved to are kept apart: a name or a
+ * phone number resolves to an address, and a replaced Sign-in card resolves to
+ * nothing even though its address parses. `payable` is the resolved address
+ * once it is settled — not zero, not the pool, which would only pay itself, and
+ * not a card the reverse lookup reports replaced. Until that lookup answers, a
+ * replaced card looks like any other address, so a pending lookup is not payable.
  */
 function usePayoutRecipient(poolAddress: `0x${string}`) {
   const { address } = useConnection();
   const [recipient, setRecipient] = useState<string>(address ?? "");
+  const [resolved, setResolved] = useState<string | null>(null);
   const trimmed = recipient.trim();
-  const parsed = isAddress(trimmed) && trimmed !== zeroAddress ? getAddress(trimmed) : null;
-  const isPool = parsed !== null && parsed === getAddress(poolAddress);
+  const typed = isAddress(trimmed) ? getAddress(trimmed) : null;
+  const target = resolved && isAddress(resolved) ? getAddress(resolved) : null;
+  // The field's own query, so this costs no second request.
+  const lookup = useReverseRecipientResolution(target);
+  const replaced = lookup.error instanceof BackendApiError && lookup.error.kind === "card-replaced";
+  const candidate = target ?? typed;
+  const problem = !trimmed
+    ? null
+    : candidate === null || candidate === zeroAddress
+      ? ("invalid" as const)
+      : candidate === getAddress(poolAddress)
+        ? ("pool" as const)
+        : null;
+  // A typed address must be the one that resolved: the field reports a new
+  // text before it reports what that text resolves to.
+  const settled =
+    target !== null && (typed === null || typed === target) && !lookup.isPending && !replaced;
   return {
     recipient,
     setRecipient,
-    payable: isPool ? null : parsed,
-    problem: !trimmed
-      ? null
-      : parsed === null
-        ? ("invalid" as const)
-        : isPool
-          ? ("pool" as const)
-          : null,
+    setResolved,
+    payable: problem === null && settled ? target : null,
+    problem,
   };
 }
 
@@ -170,8 +191,16 @@ export function usePoolWithdrawLiquidityForm({
  * Pays out everything accrued in one voucher to the recipient the steward chose;
  * see `usePayoutRecipient`. `withdraw(token)` only pays the pool's own
  * `feeAddress`, so another recipient is reached through
- * `buildWithdrawPoolFeesCalls`, which needs the current fee address to restore.
+ * `buildWithdrawPoolFeesCalls`, which restores the fee address it is given.
  * A sealed fee address cannot be moved, so the recipient is pinned to it.
+ *
+ * The fee address is read from the chain at submit, not taken from the form's
+ * cached read: restoring a cached value would undo a recipient change made since,
+ * and a stale "the recipient is the fee address" would pay the replacement. Only
+ * the owner can change it. A Safe proposal takes the Safe's current nonce and is
+ * refused while another waits there, so no Safe transaction lands before it; a
+ * directly relayed batch is exposed only to another transaction of the owner's
+ * own landing in the seconds between this read and the batch.
  */
 export function usePoolCollectFeesForm({
   pool,
@@ -188,6 +217,7 @@ export function usePoolCollectFeesForm({
   onDone: () => void;
 }) {
   const { t } = useLingui();
+  const client = useClient();
   const relay = usePoolAdminRelay(pool);
   const inFlight = useIsMutating({ mutationKey: poolAdminRelayMutationKey(pool.address) }) > 0;
   const payout = usePayoutRecipient(pool.address);
@@ -205,13 +235,26 @@ export function usePoolCollectFeesForm({
       toast.error(t`No ${selected.symbol} fees have accrued yet.`);
       return;
     }
+    let currentFeeAddress: `0x${string}` | null;
+    try {
+      if (!client) throw new Error("No chain client.");
+      const live = await readContract(client, {
+        address: pool.address,
+        abi: swapPoolFeeAddressAbi,
+        functionName: "feeAddress",
+      });
+      currentFeeAddress = live === zeroAddress ? null : live;
+    } catch {
+      toast.error(t`Couldn't read the pool's fee recipient. Try again.`);
+      return;
+    }
     try {
       await relay.mutateAsync(
         buildWithdrawPoolFeesCalls({
           poolAddress: pool.address,
           tokenAddress: selected.tokenAddress,
           recipientAddress: recipient,
-          currentFeeAddress: settings.feeAddress,
+          currentFeeAddress,
         }),
       );
       toast.success(t`${selected.symbol} fees collected.`);
