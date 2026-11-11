@@ -117,6 +117,7 @@ vi.mock("@tanstack/react-router", () => ({
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => false,
   useNavigate: () => navigate,
+  useSearch: () => ({}),
 }));
 
 vi.mock("viem/actions", () => ({

@@ -1,3 +1,4 @@
+import type { VoucherPrefill } from "@clc/core/features/vouchers/prefill";
 import type { ResourceUsage } from "@clc/api/features/resource-limits/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
@@ -45,14 +46,24 @@ const PREVIEW =
  * The steps, the usage line, the form and the live preview. The form state and
  * step machine are the phone flow's, from `useCreateVoucherForm`.
  */
-export function CreateVoucherDesk({ step }: { step: VoucherCreateStep }) {
+export function CreateVoucherDesk({
+  step,
+  prefill,
+}: {
+  step: VoucherCreateStep;
+  prefill?: VoucherPrefill | null;
+}) {
   const { t } = useLingui();
   // Advanced hides the symbol, price and unit of account. It starts closed
   // unless a restored draft already carries values there, and opens itself when
   // Next is refused for one of them.
   const restored = useVoucherCreateDraft((state) => state.draft !== null);
   const [advancedOpen, setAdvancedOpen] = useState(restored);
-  const wizard = useCreateVoucherForm({ step, revealAdvanced: () => setAdvancedOpen(true) });
+  const wizard = useCreateVoucherForm({
+    step,
+    prefill,
+    revealAdvanced: () => setAdvancedOpen(true),
+  });
   const quota = wizard.usage.data?.vouchers;
 
   return (

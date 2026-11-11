@@ -1,3 +1,4 @@
+import type { PoolPrefill } from "@clc/core/features/pools/prefill";
 import {
   hasPoolOracleBaseCurrency,
   type PoolPricing,
@@ -42,7 +43,13 @@ import { PoolDetailsRows } from "./pool-details-rows";
 
 export type { PoolCreateStep };
 
-export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
+export function CreatePoolFlow({
+  step,
+  prefill,
+}: {
+  step: PoolCreateStep;
+  prefill?: PoolPrefill | null;
+}) {
   const { i18n, t } = useLingui();
   const router = useRouter();
   const advancedRef = useRef<HTMLDetailsElement>(null);
@@ -58,6 +65,8 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     advancing,
     logoBusy,
     setLogoBusy,
+    changeLogo,
+    logoImportFailed,
     fillSuggestedSymbol,
     suggestSymbolFor,
     normalizeSymbol,
@@ -67,6 +76,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     goToReview,
   } = useCreatePoolForm({
     step,
+    prefill,
     revealAdvanced: () => {
       if (advancedRef.current) advancedRef.current.open = true;
     },
@@ -393,12 +403,17 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         hint={t`Optional`}
                         purpose="pool.image"
                         value={field.state.value || null}
-                        onChange={(url) => field.handleChange(url ?? "")}
+                        onChange={changeLogo}
                         onBusyChange={setLogoBusy}
                         disabled={inFlight}
                       />
                     )}
                   </form.Field>
+                  {logoImportFailed ? (
+                    <p role="alert" className="mt-1.5 text-xs text-destructive">
+                      <Trans>Couldn't import the image</Trans>
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -671,7 +686,9 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       type="submit"
                       tap
                       className="w-full"
-                      disabled={!acceptedTerms || usage.isError || !usage.data?.pools.canCreate}
+                      disabled={
+                        !acceptedTerms || usage.isError || !usage.data?.pools.canCreate || logoBusy
+                      }
                       pending={isSubmitting || inFlight}
                     >
                       {isSubmitting || inFlight ? (

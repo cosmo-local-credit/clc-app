@@ -2,6 +2,8 @@ import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
+import type { VoucherPrefill } from "@clc/core/features/vouchers/prefill";
+import { imageImportUploadId } from "@clc/api/features/images/client";
 import {
   toVoucherDeployPayload,
   type VoucherUnit,
@@ -10,7 +12,7 @@ import {
   voucherNameSchema,
 } from "@clc/core/features/vouchers/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
-import { useForm } from "@clc/core/lib/forms";
+import { useForm, useStore } from "@clc/core/lib/forms";
 import { useLingui } from "@lingui/react/macro";
 import { useIsMutating } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -20,6 +22,7 @@ import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { type PendingImageImport, useImageImport } from "#/features/images/use-image-import";
 import {
   deployVoucherMutationKey,
   useDeployVoucher,
@@ -57,6 +60,8 @@ type VoucherFormValues = {
   /** Form-only: whether `terms` is a link or the terms themselves. */
   termsMode: "url" | "text";
   iconUrl: string;
+  /** Form-only: the icon import a prefill link started, until it lands or is replaced. */
+  iconImport: PendingImageImport | null;
   markerIcon: MarkerIcon | null;
   markerColor: MarkerColor | null;
   acceptedTerms: boolean;
@@ -80,6 +85,7 @@ export const VOUCHER_FORM_DEFAULTS: VoucherFormValues = {
   terms: "",
   termsMode: "url",
   iconUrl: "",
+  iconImport: null,
   markerIcon: null,
   markerColor: null,
   acceptedTerms: false,
@@ -97,6 +103,27 @@ function voucherDraftOf(values: VoucherFormValues): VoucherFormDraft {
   const { iconUrl, acceptedTerms: _acceptedTerms, ...fields } = values;
   return iconUrl === "" || isHttpUrl(iconUrl) ? { ...fields, iconUrl } : fields;
 }
+
+/**
+ * The form a link opens: the defaults with the link's fields over them. The
+ * image source becomes a pending import, never an `iconUrl`, and only where the
+ * upload fields are rendered.
+ */
+function voucherFormFromPrefill(prefill: VoucherPrefill): VoucherFormValues {
+  const { iconSource, terms, ...fields } = prefill;
+  return {
+    ...VOUCHER_FORM_DEFAULTS,
+    ...fields,
+    ...(terms ? { terms, termsMode: "url" as const } : {}),
+    iconImport:
+      iconSource && isStorageConfigured
+        ? { source: iconSource, uploadId: imageImportUploadId(iconSource) }
+        : null,
+  };
+}
+
+/** Prefill fields folded under "Advanced", which a link opens on arrival. */
+const ADVANCED_PREFILL = ["symbol", "price", "unitOfAccount"] as const;
 
 /** The text fields a saved profile can seed, all of which default to "". */
 type SeedableTextField = "name" | "email" | "phone" | "website" | "description" | "iconUrl";
@@ -116,9 +143,12 @@ const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "iconUrl
  */
 export function useCreateVoucherForm({
   step,
+  prefill,
   revealAdvanced,
 }: {
   step: VoucherCreateStep;
+  /** A v1 link's fields, read by the route. Applied on the first step only. */
+  prefill?: VoucherPrefill | null;
   revealAdvanced?: () => void;
 }) {
   const { t } = useLingui();
@@ -132,32 +162,46 @@ export function useCreateVoucherForm({
   const usage = useResourceUsage();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
-  const draft = useVoucherCreateDraft((state) => state.draft);
+  const storedDraft = useVoucherCreateDraft((state) => state.draft);
   const setDraft = useVoucherCreateDraft((state) => state.setDraft);
+  const clearDraft = useVoucherCreateDraft((state) => state.clearDraft);
   const viewDraft = useViewDraft<VoucherFormDraft>({ scope: "voucher-create", account: address });
   const restored = viewDraft.restored;
+  // Seeding order: a view draft (the newest typing), then a link, then a retry
+  // snapshot, then the profile, then defaults. A link is read once, at mount,
+  // and only on the first step: a later step reached with one was sent back.
+  const [linked] = useState(() => (!restored && step === "voucher" && prefill ? prefill : null));
+  // A link opened on purpose replaces whatever a failed publish left behind.
+  const draft = linked ? null : storedDraft;
   const hasPrefilledProfile = useRef(false);
   const suggestedSymbol = useSuggestedSymbol({
     kind: "voucher",
-    initialSymbol: restored?.symbol ?? draft?.symbol ?? "",
+    initialSymbol: restored?.symbol ?? linked?.symbol ?? draft?.symbol ?? "",
   });
   const checkNameAvailable = useNameAvailabilityValidator("voucher");
   const [iconBusy, setIconBusy] = useState(false);
   const [advancing, setAdvancing] = useState(false);
 
   const [pristine] = useState<VoucherFormValues>(() =>
-    draft
-      ? {
-          ...draft,
-          voucherType: "standard",
-          expiryDate: "",
-          decimals: "6",
-          iconUrl: draft.iconUrl ?? "",
-          termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
-          acceptedTerms: false,
-        }
-      : VOUCHER_FORM_DEFAULTS,
+    linked
+      ? voucherFormFromPrefill(linked)
+      : draft
+        ? {
+            ...draft,
+            voucherType: "standard",
+            expiryDate: "",
+            decimals: "6",
+            iconUrl: draft.iconUrl ?? "",
+            iconImport: null,
+            termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+            acceptedTerms: false,
+          }
+        : VOUCHER_FORM_DEFAULTS,
   );
+  // What the view-draft bridge compares against: the form without the link. A
+  // prefilled form differs from it from its first render, so a layout switch
+  // after Next has dropped the params still carries it.
+  const [baseline] = useState(() => (linked ? VOUCHER_FORM_DEFAULTS : pristine));
   const form = useForm({
     // A draft carried over a view swap is newer than a retry snapshot: it holds
     // what was typed since, so it goes on top.
@@ -178,6 +222,7 @@ export function useCreateVoucherForm({
     },
     onSubmit: async ({ value }) => {
       if (inFlight || usage.isError || !usage.data?.vouchers.canCreate) return;
+      if (value.iconImport !== null) return;
       if (!address) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
@@ -247,9 +292,13 @@ export function useCreateVoucherForm({
     hasPrefilledProfile.current = true;
 
     const prefill = profilePrefill(profile);
+    // The profile fills gaps only: anything the link set is the link's, even a
+    // value equal to the default.
+    const fromLink = new Set<string>(Object.keys(linked ?? {}));
+    if (linked?.iconSource) fromLink.add("iconUrl");
 
     function seedText(name: SeedableTextField, value: string) {
-      if (!value) return;
+      if (!value || fromLink.has(name)) return;
       if (form.getFieldMeta(name)?.isTouched) return;
       if (form.getFieldValue(name) !== "") return;
       form.setFieldValue(name, value, { dontUpdateMeta: true });
@@ -270,6 +319,7 @@ export function useCreateVoucherForm({
 
     if (
       prefill.unitOfAccount &&
+      !fromLink.has("unitOfAccount") &&
       !form.getFieldMeta("unitOfAccount")?.isTouched &&
       form.getFieldValue("unitOfAccount") === VOUCHER_FORM_DEFAULTS.unitOfAccount
     ) {
@@ -278,18 +328,25 @@ export function useCreateVoucherForm({
 
     if (
       prefill.location &&
+      !fromLink.has("location") &&
       !form.getFieldMeta("location")?.isTouched &&
       form.getFieldValue("location") === undefined
     ) {
       form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
     }
-  }, [draft, form, profileQuery.data, restored]);
+  }, [draft, form, linked, profileQuery.data, restored]);
+
+  // Once, when the link is consumed: publishing writes a fresh snapshot while
+  // `linked` is still set, and that one must survive a failed deploy.
+  useEffect(() => {
+    if (linked) clearDraft();
+  }, [clearDraft, linked]);
 
   // Keep the typed fields for a phone/desktop view swap while they differ from
   // how the form opened; forget them when they are back to that.
   const { save: saveViewDraft, clear: clearViewDraft } = viewDraft;
   useEffect(() => {
-    const opened = JSON.stringify(voucherDraftOf(pristine));
+    const opened = JSON.stringify(voucherDraftOf(baseline));
     let seen: unknown;
     const sync = () => {
       const { values } = form.store.state;
@@ -304,12 +361,14 @@ export function useCreateVoucherForm({
     sync();
     const subscription = form.store.subscribe(sync);
     return () => subscription.unsubscribe();
-  }, [clearViewDraft, form, pristine, saveViewDraft]);
+  }, [baseline, clearViewDraft, form, saveViewDraft]);
 
   useEffect(() => {
     // Advanced is a fold each view keeps for itself; a draft carried over a view
     // swap may hold values inside it, so open it, once, on arrival.
-    if (restored) revealAdvanced?.();
+    if (restored || ADVANCED_PREFILL.some((field) => linked?.[field] !== undefined)) {
+      revealAdvanced?.();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
   }, []);
 
@@ -326,6 +385,39 @@ export function useCreateVoucherForm({
       replace: true,
     });
   }, [form, navigate, step]);
+
+  const iconImport = useStore(form.store, (state) => state.values.iconImport);
+  const [iconImportFailed, setIconImportFailed] = useState(false);
+  useImageImport({
+    purpose: "voucher.icon",
+    pending: iconImport,
+    onImported: (url) => {
+      form.setFieldValue("iconUrl", url, { dontUpdateMeta: true });
+      form.setFieldValue("iconImport", null, { dontUpdateMeta: true });
+    },
+    onFailed: () => {
+      form.setFieldValue("iconImport", null, { dontUpdateMeta: true });
+      setIconImportFailed(true);
+    },
+  });
+
+  /** The person's own choice of icon wins over an import still running. */
+  function changeIcon(url: string | null) {
+    form.setFieldValue("iconImport", null);
+    setIconImportFailed(false);
+    form.setFieldValue("iconUrl", url ?? "");
+  }
+
+  /** The upload field's own busy state; an upload starting also drops a running import. */
+  function reportIconBusy(busy: boolean) {
+    setIconBusy(busy);
+    if (!busy) return;
+    if (form.getFieldValue("iconImport") !== null) form.setFieldValue("iconImport", null);
+    setIconImportFailed(false);
+  }
+
+  /** An upload or an import is still to land; Next and publish wait on both. */
+  const iconPending = iconBusy || iconImport !== null;
 
   async function fieldsAreValid(fields: readonly (keyof VoucherFormValues)[]) {
     const results = await Promise.all(
@@ -374,7 +466,7 @@ export function useCreateVoucherForm({
   }
 
   async function goToReview() {
-    if (iconBusy) return;
+    if (iconPending) return;
     if (!(await fieldsAreValid(PLACE_FIELDS))) return;
     void navigate({ to: "/vouchers/create/$step", params: { step: "review" } });
   }
@@ -392,8 +484,11 @@ export function useCreateVoucherForm({
     trackSymbol: (symbol: string) => suggestedSymbol.track(symbol),
     suggestSymbolFor,
     fillSuggestedSymbol,
-    iconBusy,
-    setIconBusy,
+    /** An icon upload or import is in flight. */
+    iconBusy: iconPending,
+    changeIcon,
+    setIconBusy: reportIconBusy,
+    iconImportFailed,
     advancing,
     goToPlace,
     goToReview,

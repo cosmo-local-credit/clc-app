@@ -78,7 +78,7 @@ export function ReviewStepDesk({ pool }: { pool: CreatePoolController }) {
               </Button>
               <Button
                 type="submit"
-                disabled={!acceptedTerms || !pool.canPublish}
+                disabled={!acceptedTerms || !pool.canPublish || pool.logoBusy}
                 pending={publishing}
               >
                 {publishing ? <Trans>Publishing…</Trans> : <Trans>Confirm and publish</Trans>}

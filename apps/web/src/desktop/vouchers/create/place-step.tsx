@@ -54,10 +54,15 @@ export function PlaceStep({ wizard }: { wizard: VoucherWizard }) {
                 id="voucher-logo"
                 purpose="voucher.icon"
                 value={field.state.value || null}
-                onChange={(url) => field.handleChange(url ?? "")}
+                onChange={wizard.changeIcon}
                 onBusyChange={wizard.setIconBusy}
                 disabled={publishing}
               />
+              {wizard.iconImportFailed ? (
+                <p role="alert" className="text-xs text-destructive">
+                  <Trans>Couldn't import the image</Trans>
+                </p>
+              ) : null}
             </div>
           )}
         </form.Field>
