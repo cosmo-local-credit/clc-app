@@ -4,12 +4,31 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const ADDRESS = "0xa316408425cF17F1827483dee621c6C3A9B5fad4";
+const PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+const ENCRYPTED_CARD = "6PYMvQX3P2CjYXVkxczC5ZbPyyiDgRJTZatN6uQUFgYhBbm7idLvfZWzao";
 
 vi.mock("#/components/paper-wallet-scanner", () => ({
-  PaperWalletScanner: ({ onKeyDecoded }: { onKeyDecoded: (value: string) => void }) => (
-    <button type="button" onClick={() => onKeyDecoded(`ethereum:${ADDRESS}?value=1`)}>
-      Decode QR
-    </button>
+  PaperWalletScanner: ({
+    onKeyDecoded,
+    onCancel,
+  }: {
+    onKeyDecoded: (value: string) => void;
+    onCancel: () => void;
+  }) => (
+    <div>
+      <button type="button" onClick={() => onKeyDecoded(`ethereum:${ADDRESS}?value=1`)}>
+        Decode QR
+      </button>
+      <button type="button" onClick={() => onKeyDecoded(PRIVATE_KEY)}>
+        Decode private key
+      </button>
+      <button type="button" onClick={() => onKeyDecoded(ENCRYPTED_CARD)}>
+        Decode encrypted card
+      </button>
+      <button type="button" onClick={onCancel}>
+        Close scanner
+      </button>
+    </div>
   ),
 }));
 
@@ -321,5 +340,25 @@ describe("RecipientAddressInput", () => {
     expect((screen.getByRole("textbox", { name: "Recipient" }) as HTMLInputElement).value).toBe(
       ADDRESS,
     );
+  });
+
+  it.each([
+    ["private key", "Decode private key"],
+    ["encrypted card", "Decode encrypted card"],
+  ])("refuses a scanned %s and leaves the field empty", async (_label, button) => {
+    const onRecipientChange = renderInput();
+
+    fireEvent.click(screen.getByRole("button", { name: "Scan QR" }));
+    fireEvent.click(screen.getByRole("button", { name: button }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "This QR is a sign-in card. Scan a wallet address.",
+    );
+    expect((screen.getByRole("textbox", { name: "Recipient" }) as HTMLInputElement).value).toBe("");
+    expect(onRecipientChange.mock.calls.some((call) => call[0] !== null)).toBe(false);
+    expect(screen.getByRole("button", { name: button })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close scanner" }));
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
