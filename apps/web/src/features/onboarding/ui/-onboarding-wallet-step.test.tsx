@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { forwardRef, type ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
@@ -320,6 +320,24 @@ describe("OnboardingWalletStep pages", () => {
     expect(screen.getByText(FAKE_ADDRESS)).toBeTruthy();
     expect(button(/download card/i)).toBeTruthy();
     expect(savedKey()).toBeTruthy();
+  });
+
+  it("points to Share card for a cloud copy only where the device can share files", async () => {
+    const hint = /tap share card to save a copy to your cloud storage/i;
+    renderWalletStep();
+    skipPassword();
+    expect(screen.queryByText(hint)).toBeNull();
+    cleanup();
+
+    Object.defineProperty(navigator, "canShare", { configurable: true, value: () => true });
+    try {
+      renderWalletStep();
+      skipPassword();
+      expect(await screen.findByText(hint)).toBeTruthy();
+      expect(button(/share card/i)).toBeTruthy();
+    } finally {
+      Reflect.deleteProperty(navigator, "canShare");
+    }
   });
 
   it("customizes the card from a sheet over the preview", async () => {

@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiLock } from "react-icons/fi";
-import { RiCheckLine, RiEdit2Line } from "react-icons/ri";
+import { RiCheckLine, RiEdit2Line, RiInformationLine } from "react-icons/ri";
 
 import { GuideArt } from "#/components/introduction/guide-art";
 import { OnboardingScreen, OnboardingTitle } from "#/components/onboarding-screen";
@@ -210,6 +210,12 @@ export function OnboardingWalletStep({
         </div>
         <PaperWalletPreview setup={setup} />
         <PaperWalletSaveActions setup={setup} />
+        {setup.shareSupported ? (
+          <p className="text-muted-foreground flex items-start gap-2 text-xs">
+            <RiInformationLine className="mt-px size-4 shrink-0" aria-hidden="true" />
+            <Trans>Tap Share card to save a copy to your cloud storage.</Trans>
+          </p>
+        ) : null}
         <AgreementField
           id="signup-saved-key"
           checked={acked}
