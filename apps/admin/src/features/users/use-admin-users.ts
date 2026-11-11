@@ -24,6 +24,7 @@ import {
   adminUserQueryOptions,
   adminUsersQueryOptions,
 } from "@clc/api/features/admin/queries";
+import { accountRetirementKeys } from "@clc/api/features/account-retirement/queries";
 import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { clcApi } from "#/lib/api";
 import { CHAIN_ID } from "#/lib/chain";
@@ -75,21 +76,39 @@ function useWriteUserToCache() {
   };
 }
 
-export function useApproveUser() {
+type ModerationInput = { address: string; reason?: string };
+
+/**
+ * Ban and unban each append a moderation event, so the history is invalidated
+ * beside the row that the response already updates.
+ */
+function useWriteModeratedUser() {
   const writeUser = useWriteUserToCache();
+  const queryClient = useQueryClient();
+
+  return (user: AdminUser) => {
+    writeUser(user);
+    void queryClient.invalidateQueries({ queryKey: accountRetirementKeys.all });
+  };
+}
+
+/** Unban, or approve a pending account. */
+export function useApproveUser() {
+  const onSuccess = useWriteModeratedUser();
 
   return useMutation({
-    mutationFn: (address: string) => clcApi.admin.approveUser(address),
-    onSuccess: writeUser,
+    mutationFn: ({ address, reason }: ModerationInput) => clcApi.admin.approveUser(address, reason),
+    onSuccess,
   });
 }
 
+/** Ban. */
 export function useRejectUser() {
-  const writeUser = useWriteUserToCache();
+  const onSuccess = useWriteModeratedUser();
 
   return useMutation({
-    mutationFn: (address: string) => clcApi.admin.rejectUser(address),
-    onSuccess: writeUser,
+    mutationFn: ({ address, reason }: ModerationInput) => clcApi.admin.rejectUser(address, reason),
+    onSuccess,
   });
 }
 

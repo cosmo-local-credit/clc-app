@@ -12,6 +12,7 @@ import { useDataState } from "#/lib/use-data-state";
 import { EditVoucherSheet } from "./ui/edit-voucher-sheet";
 import { OfferingEditorSheet, type OfferingEditor } from "./ui/offering-editor-sheet";
 import { VoucherContractSheet } from "./ui/voucher-contract-sheet";
+import { RetireResourceSheet } from "#/features/retirement/retire-resource-sheet";
 import { RestoreResourceSheet } from "#/features/retirement/restore-resource-sheet";
 import { RetirementResourceHistory } from "#/features/retirement/retirement-resource-history";
 import { VoucherHeader } from "./ui/voucher-header";
@@ -47,6 +48,7 @@ export function VoucherDetailPage({
   const voucherState = useDataState(voucherQuery, () => false);
 
   const [restoring, setRestoring] = useState(false);
+  const [retiring, setRetiring] = useState(false);
 
   const [editingVoucher, setEditingVoucher] = useState(false);
   const [contractOpen, setContractOpen] = useState(false);
@@ -75,6 +77,7 @@ export function VoucherDetailPage({
         onEdit={() => setEditingVoucher(true)}
         onContract={() => setContractOpen(true)}
         onRestore={() => setRestoring(true)}
+        onRetire={() => setRetiring(true)}
         restoring={false}
       />
 
@@ -86,6 +89,14 @@ export function VoucherDetailPage({
         name={voucher.name}
         open={restoring}
         onClose={() => setRestoring(false)}
+      />
+
+      <RetireResourceSheet
+        type="voucher"
+        address={address}
+        name={voucher.name}
+        open={retiring}
+        onClose={() => setRetiring(false)}
       />
 
       <VoucherRecordTabs

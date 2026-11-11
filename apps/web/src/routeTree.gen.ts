@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RecoveryRouteImport } from './routes/recovery'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NavRouteImport } from './routes/_nav'
 import { Route as WalletIndexRouteImport } from './routes/wallet/index'
@@ -51,6 +52,11 @@ import { Route as NavPoolsPoolAddressSwapIndexRouteImport } from './routes/_nav/
 import { Route as NavWalletWantsWantIdEditRouteImport } from './routes/_nav/wallet/wants/$wantId/edit'
 import { Route as NavPoolsPoolAddressSwapReceiptRouteImport } from './routes/_nav/pools/$poolAddress/swap/receipt'
 
+const RecoveryRoute = RecoveryRouteImport.update({
+  id: '/recovery',
+  path: '/recovery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -265,6 +271,7 @@ const NavPoolsPoolAddressSwapReceiptRoute =
 export interface FileRoutesByFullPath {
   '/': typeof NavIndexRoute
   '/onboarding': typeof OnboardingRoute
+  '/recovery': typeof RecoveryRoute
   '/install': typeof NavInstallRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/settings/sign-in-card': typeof SettingsSignInCardRoute
@@ -306,6 +313,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
+  '/recovery': typeof RecoveryRoute
   '/install': typeof NavInstallRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/settings/sign-in-card': typeof SettingsSignInCardRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_nav': typeof NavRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/recovery': typeof RecoveryRoute
   '/_nav/install': typeof NavInstallRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/settings/sign-in-card': typeof SettingsSignInCardRoute
@@ -395,6 +404,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/onboarding'
+    | '/recovery'
     | '/install'
     | '/messages/$conversationId'
     | '/settings/sign-in-card'
@@ -436,6 +446,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/onboarding'
+    | '/recovery'
     | '/install'
     | '/messages/$conversationId'
     | '/settings/sign-in-card'
@@ -479,6 +490,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_nav'
     | '/onboarding'
+    | '/recovery'
     | '/_nav/install'
     | '/messages/$conversationId'
     | '/settings/sign-in-card'
@@ -523,6 +535,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   NavRoute: typeof NavRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
+  RecoveryRoute: typeof RecoveryRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   SettingsSignInCardRoute: typeof SettingsSignInCardRoute
   PostsIndexRoute: typeof PostsIndexRoute
@@ -534,6 +547,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/recovery': {
+      id: '/recovery'
+      path: '/recovery'
+      fullPath: '/recovery'
+      preLoaderRoute: typeof RecoveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -899,6 +919,7 @@ const NavRouteWithChildren = NavRoute._addFileChildren(NavRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   NavRoute: NavRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
+  RecoveryRoute: RecoveryRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   SettingsSignInCardRoute: SettingsSignInCardRoute,
   PostsIndexRoute: PostsIndexRoute,

@@ -2,6 +2,7 @@ import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, type ReactNode } from "react";
 
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import { BackChevron, WALLET_TOKEN_BY_ID, type WalletToken } from "#/components/wallet";
 import {
@@ -219,6 +220,16 @@ export function VoucherDetailPage({
           />
         }
       />
+
+      {detail?.managerClosure ? (
+        <div className="mt-3">
+          <ManagerClosureNotice
+            closure={detail.managerClosure}
+            resource="voucher"
+            active={detail.active}
+          />
+        </div>
+      ) : null}
 
       <VoucherDetailSections
         className="mt-3"

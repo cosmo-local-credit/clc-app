@@ -708,3 +708,55 @@ describe("PoolDetailPage on-chain management", () => {
     expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
   });
 });
+
+describe("PoolDetailPage manager closure", () => {
+  const closedVoucher: Partial<PoolVoucher> = {
+    id: "9",
+    tokenAddress: OTHER,
+    name: "Kilifi Maize",
+    symbol: "MAIZE",
+    active: true,
+    managerClosure: { state: "CLOSED", closesAt: null },
+  };
+
+  it("tells everyone when the pool's managing account is scheduled to close", () => {
+    mocks.auth.session = { address: OTHER, chainId: 100 };
+    mocks.poolResult.data = pool({
+      managerClosure: { state: "SCHEDULED", closesAt: "2026-12-15T12:00:00Z" },
+    });
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+
+    const notice = screen.getByRole("status");
+    expect(notice.textContent).toMatch(
+      /^The account managing this pool is scheduled to close on December 1[45], 2026\. This pool remains active\.$/,
+    );
+  });
+
+  it("leaves a retired pool with its own warning only", () => {
+    mocks.poolResult.data = pool({
+      active: false,
+      managerClosure: { state: "CLOSED", closesAt: null },
+    });
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByText("Retired pool")).toBeTruthy();
+    expect(screen.queryByText(/This pool remains active/)).toBeNull();
+  });
+
+  it("marks a pool voucher whose manager has closed, without opening a box in the row", () => {
+    mocks.vouchersResult.vouchers = [closedVoucher as PoolVoucher];
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+
+    expect(
+      screen.getByText(
+        "The account managing this voucher has closed. This voucher remains active.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("shows nothing for a pool without a closure", () => {
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    expect(screen.queryByText(/The account managing this/)).toBeNull();
+  });
+});

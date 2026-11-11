@@ -1,3 +1,4 @@
+import type { ManagerClosure } from "@clc/core/features/account-retirement/logic";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -20,6 +21,7 @@ import {
   normalizeNumericText,
   normalizeRawAmount,
   normalizeStringArray,
+  normalizeManagerClosure,
   normalizeText,
 } from "../../lib/api-normalize";
 
@@ -53,6 +55,8 @@ export type FilteredPoolPage = UserPoolPage & {
 
 export type UserPool = {
   id: string;
+  /** Set while the managing account is scheduled to close, or has closed. */
+  managerClosure?: ManagerClosure;
   /** False when retired in CLC; the contract and owner withdrawals remain. */
   active?: boolean;
   chainId: number | null;
@@ -172,6 +176,8 @@ export function serializePoolProfileUpdate(profile: PoolProfileUpdate) {
 
 export type PoolVoucher = {
   id: string;
+  /** Set while the managing account is scheduled to close, or has closed. */
+  managerClosure?: ManagerClosure;
   chainId: number | null;
   name: string;
   description: string;
@@ -222,6 +228,7 @@ export type PoolVoucherPage = {
 };
 
 type BackendPool = Partial<{
+  managerClosure: unknown;
   id: string | number;
   active: boolean;
   chainId: string | number;
@@ -261,6 +268,7 @@ type BackendPool = Partial<{
 }>;
 
 type BackendPoolVoucher = Partial<{
+  managerClosure: unknown;
   id: string | number;
   chainId: string | number;
   address: string;
@@ -528,6 +536,7 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
   const symbol = normalizeText(pool.symbol) ?? "POOL";
   return {
     id: String(pool.id ?? address),
+    managerClosure: normalizeManagerClosure(pool.managerClosure),
     active: pool.active !== false,
     chainId: normalizeNumber(pool.chainId),
     address,
@@ -576,6 +585,7 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
   const symbol = normalizeText(voucher.symbol) ?? "VOUCHER";
   return {
     id: String(voucher.id ?? tokenAddress),
+    managerClosure: normalizeManagerClosure(voucher.managerClosure),
     chainId: normalizeNumber(voucher.chainId),
     name,
     description: normalizeText(voucher.description) ?? name,

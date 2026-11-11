@@ -166,6 +166,31 @@ beforeEach(() => {
 });
 
 describe("NavigationShell", () => {
+  it("has no tabs for a retiring account, only the screen it may open", async () => {
+    setAuth({
+      session: {
+        address: "0x1111111111111111111111111111111111111111",
+        accountLifecycle: "RETIREMENT_SCHEDULED",
+      } as { address: string },
+    });
+    await renderShell("/wallet/send");
+
+    await screen.findByRole("heading", { name: "Send" });
+    expect(screen.queryByRole("navigation")).toBeNull();
+  });
+
+  it("keeps the tabs for an active account whose session names its lifecycle", async () => {
+    setAuth({
+      session: {
+        address: "0x1111111111111111111111111111111111111111",
+        accountLifecycle: "ACTIVE",
+      } as { address: string },
+    });
+    await renderShell("/wallet/send");
+
+    expect(await screen.findByRole("navigation", { name: "Primary navigation" })).toBeTruthy();
+  });
+
   it("keeps Market selected while its button toggles between the map and All", async () => {
     const map = await renderShell("/");
     const mapLink = await screen.findByRole("link", { name: "Market" });

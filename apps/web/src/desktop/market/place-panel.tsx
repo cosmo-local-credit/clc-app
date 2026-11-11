@@ -5,6 +5,7 @@ import { useId, useState, type ReactNode } from "react";
 import { RiArrowLeftSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import { SectionHeading } from "#/components/ui/section-heading";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -183,6 +184,11 @@ function VoucherPlace({
               </div>
             ) : null}
           </div>
+          <ManagerClosureNotice
+            closure={detail?.managerClosure}
+            resource="voucher"
+            active={detail?.active}
+          />
           <VoucherActionCells
             address={voucherAddress}
             name={name}

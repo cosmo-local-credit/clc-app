@@ -191,7 +191,8 @@ const POOLS = [
   },
 ];
 
-function mockPoolsList() {
+/** `firstPool` is merged into the first pool the list endpoint returns. */
+function mockPoolsList(firstPool: Record<string, unknown> = {}) {
   vi.stubGlobal(
     "fetch",
     vi.fn((input: RequestInfo | URL) => {
@@ -220,6 +221,7 @@ function mockPoolsList() {
               decimals: 6,
               voucherCount: pool.voucherCount,
               tags: pool.tags,
+              ...(index === 0 ? firstPool : {}),
             })),
             first: 1,
             last: POOLS.length,
@@ -287,6 +289,17 @@ describe("pools list", () => {
     );
     expect(urls.filter((url) => url.includes("/vouchers"))).toHaveLength(0);
     expect(urls.filter((url) => !url.includes("facets=true"))).toHaveLength(1);
+  });
+
+  it("marks a pool whose managing account has closed, in plain row text", async () => {
+    mockPoolsList({ managerClosure: { state: "CLOSED", closesAt: null } });
+    renderWithQueryClient(<PoolsPage />);
+
+    await screen.findByText("Trade Pool");
+    expect(
+      screen.getAllByText("The account managing this pool has closed. This pool remains active."),
+    ).toHaveLength(1);
+    expect(screen.queryByRole("status")).toBeNull();
   });
 
   it("keeps the compact filter trigger and remembers applied facets", async () => {

@@ -118,7 +118,7 @@ vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useReverseRecipientResolution: (address: string | null) => mocks.reverse(address),
 }));
 
-import { PoolControlsPanel } from "./pool-controls-panel";
+import { PoolControlsPanel, PoolWithdrawActions } from "./pool-controls-panel";
 
 function pool(overrides: Partial<UserPool> = {}): UserPool {
   return {
@@ -664,5 +664,22 @@ describe("PoolControlsPanel ownership", () => {
       (within(dialog).getByRole("textbox", { name: "New owner address" }) as HTMLInputElement)
         .disabled,
     ).toBe(true);
+  });
+});
+
+describe("PoolWithdrawActions", () => {
+  it("offers only the two withdrawals, with no other pool control", () => {
+    render(<PoolWithdrawActions pool={pool()} />);
+    expect(screen.getByRole("button", { name: "Withdraw liquidity" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Withdraw fees" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Edit details|Transfer ownership/ })).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it.each(["Withdraw liquidity", "Withdraw fees"])("opens the %s sheet", async (name) => {
+    render(<PoolWithdrawActions pool={pool()} />);
+    fireEvent.click(screen.getByRole("button", { name }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(name)).toBeTruthy();
   });
 });

@@ -10,6 +10,7 @@ import {
 import { myWantsInfiniteQueryOptions } from "@clc/api/features/wants/queries";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+import { ManagerClosureNotice } from "#/components/closure/manager-closure-notice";
 import { Button } from "#/components/ui/button";
 import {
   HoldingBalance,
@@ -451,6 +452,12 @@ export function WalletPage({ address }: { address?: string }) {
               <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={34} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{pool.name}</p>
+                <ManagerClosureNotice
+                  closure={pool.managerClosure}
+                  resource="pool"
+                  active={pool.active}
+                  compact
+                />
                 {pool.active === false ? (
                   <p className="text-xs font-semibold">
                     <Trans>Retired — withdrawals available</Trans>

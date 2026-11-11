@@ -27,6 +27,7 @@ vi.mock("#/lib/api", () => ({ clcApi: { retirement: mocks } }));
 const ADDRESS = "0x1111111111111111111111111111111111111111";
 const request: RetirementRequest = {
   id: 7,
+  source: "OWNER",
   resourceType: "pool",
   resourceAddress: ADDRESS,
   resourceName: "Market pool",
@@ -114,6 +115,23 @@ beforeEach(() => {
 });
 
 describe("retirement queue", () => {
+  it.each([
+    ["OWNER", "Owner request"],
+    ["ADMIN", "Admin direct"],
+  ] as const)("shows a %s request's source in the queue and on its page", async (source, label) => {
+    mocks.listAdmin.mockResolvedValue(adminPage({ requests: [{ ...request, source }] }));
+    mocks.getAdminRequest.mockResolvedValue({
+      request: { ...request, source, status: "approved", decisionAt: "2026-10-25T13:00:00Z" },
+      events: [],
+    });
+    mount();
+    expect(await screen.findByText(label)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("link", { name: "Market pool" }));
+    await screen.findByRole("heading", { name: "Retirement request #7" });
+    expect(screen.getByText("Source").nextElementSibling?.textContent).toBe(label);
+  });
+
   it("keeps pending work visible after opening a request; approval refreshes the shared count", async () => {
     mount();
     fireEvent.click(await screen.findByRole("link", { name: "Market pool" }));

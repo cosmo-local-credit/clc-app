@@ -24,6 +24,7 @@ import { DEFAULT_PAGE_SIZE, filterSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
 import type { AccountSearch } from "./account-search";
+import { AccountLifecycleBadge } from "./ui/account-lifecycle-badge";
 import { useAdminUsers } from "./use-admin-users";
 
 const STATUS_OPTIONS: Array<{ value: "ALL" | AdminUserStatus; label: string }> = [
@@ -105,7 +106,15 @@ const columns: Array<ColumnDef<AdminUser>> = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <span className="font-mono text-xs uppercase">{row.original.status}</span>,
+    cell: ({ row }) => (
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-mono text-xs uppercase">{row.original.status}</span>
+        <AccountLifecycleBadge
+          lifecycle={row.original.lifecycle}
+          closesAt={row.original.closesAt}
+        />
+      </div>
+    ),
   },
 ];
 
@@ -123,6 +132,7 @@ export function UsersPage({ search }: { search: AccountSearch }) {
     ...(term ? { q: term } : {}),
     ...(search.status ? { status: search.status } : {}),
     ...(search.role === "admins" ? { roles: ["ADMIN", "SUPERADMIN"] as const } : {}),
+    ...(search.lifecycle ? { lifecycle: search.lifecycle } : {}),
   });
 
   const users = usersQuery.data?.users ?? [];
@@ -198,6 +208,34 @@ export function UsersPage({ search }: { search: AccountSearch }) {
               </ToggleGroupItem>
               <ToggleGroupItem value="admins" className="h-full px-2.5 font-mono text-xs uppercase">
                 Admins
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <ToggleGroup
+              variant="outline"
+              size="sm"
+              spacing={0}
+              value={[search.lifecycle ?? "all"]}
+              onValueChange={(values) => {
+                const value = values[0];
+                if (!value) return;
+                void navigate({
+                  to: "/users",
+                  search: filterSearch(search, {
+                    lifecycle: value === "retired" ? "retired" : undefined,
+                  }),
+                });
+              }}
+              aria-label="Account lifecycle"
+              className="border-border bg-card h-9 items-center border p-0.5"
+            >
+              <ToggleGroupItem value="all" className="h-full px-2.5 font-mono text-xs uppercase">
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="retired"
+                className="h-full px-2.5 font-mono text-xs uppercase"
+              >
+                Retired
               </ToggleGroupItem>
             </ToggleGroup>
           </>

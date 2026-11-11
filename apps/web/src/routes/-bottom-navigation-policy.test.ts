@@ -111,6 +111,8 @@ const routePolicy = [
   },
   // Signing in carries no navigation.
   { id: "/onboarding", fullPath: "/onboarding", source: "onboarding.tsx" },
+  // A retiring account has no tabs: the lifecycle gate keeps it here.
+  { id: "/recovery", fullPath: "/recovery", source: "recovery.tsx" },
   {
     id: "/_nav/install",
     fullPath: "/install",

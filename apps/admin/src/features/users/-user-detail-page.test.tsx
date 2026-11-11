@@ -233,7 +233,9 @@ describe("UserDetailPage", () => {
     }
     // Every action is a button: nothing an operator came here to do costs a click
     // to find. Approval leads, banning is last and destructive.
-    expect(screen.getByRole("button", { name: "Approve account" })).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Approve account" })).toBeTruthy(),
+    );
     expect(screen.getByRole("button", { name: "Edit profile" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Ban user" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /actions/i })).toBeNull();

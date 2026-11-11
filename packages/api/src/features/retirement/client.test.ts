@@ -34,6 +34,7 @@ const request = {
   ownerAddress: OWNER,
   reason: "Closing the project",
   status: "pending",
+  source: "OWNER",
   requestedAt: "2026-10-25T12:00:00Z",
   decisionAt: null,
   decisionBy: null,

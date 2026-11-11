@@ -2,6 +2,7 @@ import type { UserPool } from "@clc/api/features/pools/client";
 import { Link } from "@tanstack/react-router";
 import {
   HiOutlineAdjustments,
+  HiOutlineArchive,
   HiOutlineExternalLink,
   HiOutlinePencil,
   HiOutlinePlus,
@@ -41,12 +42,14 @@ export function PoolHeader({
   onEditProfile,
   onControls,
   onRestore,
+  onRetire,
 }: {
   pool: UserPool;
   onAddVoucher: () => void;
   onEditProfile: () => void;
   onControls: () => void;
   onRestore?: () => void;
+  onRetire?: () => void;
 }) {
   const canControl = sameAddress(useOperatorAddress(), pool.ownerAddress);
   return (
@@ -129,6 +132,12 @@ export function PoolHeader({
             <Button size="sm" onClick={onRestore}>
               <HiOutlineRefresh />
               Restore
+            </Button>
+          ) : null}
+          {pool.active !== false && onRetire ? (
+            <Button size="sm" variant="destructive" onClick={onRetire}>
+              <HiOutlineArchive />
+              Retire pool
             </Button>
           ) : null}
           <Button size="sm" onClick={onAddVoucher} disabled={pool.active === false}>

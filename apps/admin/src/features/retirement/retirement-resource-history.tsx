@@ -7,7 +7,7 @@ import { Button } from "#/components/ui/button";
 import { clcApi } from "#/lib/api";
 import { errorMessage } from "#/lib/data-state";
 import { RetirementEvents } from "./retirement-events";
-import { RetirementStatus } from "./retirement-status";
+import { RetirementSource, RetirementStatus } from "./retirement-status";
 
 export function RetirementResourceHistory({
   type,
@@ -53,6 +53,7 @@ export function RetirementResourceHistory({
                         Request #{request.id}
                       </Link>
                       <RetirementStatus status={request.status} />
+                      <RetirementSource source={request.source} />
                     </li>
                   ))}
                 </ul>

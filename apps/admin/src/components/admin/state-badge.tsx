@@ -159,6 +159,21 @@ const stateTones: Record<string, StateTone> = {
     label: "actioned",
     className: "border-state-active/30 bg-state-active/10 text-state-active",
   },
+  // An account's retirement lifecycle. ACTIVE is the resting state and is never
+  // drawn; the three others each mean the account is no longer in ordinary use.
+  RETIREMENT_SCHEDULED: {
+    label: "retiring",
+    className: "border-state-pending/30 bg-state-pending/10 text-state-pending",
+    pulse: true,
+  },
+  ERASURE_PENDING: {
+    label: "erasure pending",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+  ERASED: {
+    label: "erased",
+    className: NEUTRAL,
+  },
   UNKNOWN_RPC_ERROR: {
     label: "rpc error",
     className: "border-destructive/30 bg-destructive/10 text-destructive",
@@ -168,14 +183,18 @@ const stateTones: Record<string, StateTone> = {
 export function StateBadge({
   state,
   kind,
+  detail,
   className,
 }: {
   state: string;
   /** What the state describes, for the accessible label ("pool", "voucher"…). */
   kind: string;
+  /** Appended to the label, e.g. the closing date of a retiring account. */
+  detail?: string;
   className?: string;
 }) {
   const tone = stateTones[state] ?? { label: state.toLowerCase(), className: NEUTRAL };
+  const label = detail ? `${tone.label} · ${detail}` : tone.label;
 
   return (
     <Badge
@@ -185,10 +204,10 @@ export function StateBadge({
         tone.className,
         className,
       )}
-      aria-label={`${kind} state ${tone.label}`}
+      aria-label={`${kind} state ${label}`}
     >
       <span className={cn("size-1.5 bg-current", tone.pulse && "animate-pulse")} />
-      {tone.label}
+      {label}
     </Badge>
   );
 }

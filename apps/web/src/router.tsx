@@ -1,6 +1,7 @@
 import { BackendApiError } from "@clc/api/client/errors";
 import { QueryCache, QueryClient, MutationCache } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { isAccountRetiredError } from "#/features/account-retirement/logic/lifecycle";
 import { clearInMemoryDrafts, clearScopedQueries } from "#/features/auth/api/identity-reset";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { routeTree } from "./routeTree.gen";
@@ -32,9 +33,26 @@ function createWebQueryClient(): QueryClient {
     void queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
   };
 
+  /**
+   * A retired account's session refuses every write outside recovery with E23.
+   * Whichever request hit it, the session is what changed, so re-reading it is
+   * what moves the app into the recovery shell — including a retirement made on
+   * another device. Nothing is cleared: it is the same account, and the shell
+   * reloads what it needs.
+   */
+  const refreshAccountLifecycle = (error: unknown) => {
+    if (!isAccountRetiredError(error)) return;
+    void queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
+  };
+
+  const onRequestError = (error: unknown) => {
+    revalidateSession(error);
+    refreshAccountLifecycle(error);
+  };
+
   queryClient = new QueryClient({
-    queryCache: new QueryCache({ onError: revalidateSession }),
-    mutationCache: new MutationCache({ onError: revalidateSession }),
+    queryCache: new QueryCache({ onError: onRequestError }),
+    mutationCache: new MutationCache({ onError: onRequestError }),
     defaultOptions: {
       queries: {
         staleTime: 60_000,

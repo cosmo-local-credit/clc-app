@@ -119,7 +119,13 @@ export function SettingsPage({
  * Signing out clears this device's wallet secrets, so it asks first: a
  * paper-wallet member without the card to hand cannot get back in.
  */
-function SignOutRow({ isSigningOut, onSignOut }: { isSigningOut: boolean; onSignOut: () => void }) {
+export function SignOutRow({
+  isSigningOut,
+  onSignOut,
+}: {
+  isSigningOut: boolean;
+  onSignOut: () => void;
+}) {
   const { t } = useLingui();
   const [open, setOpen] = useState(false);
 

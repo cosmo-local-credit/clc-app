@@ -7,7 +7,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { AdminUser } from "@clc/api/features/admin/client";
@@ -179,5 +179,55 @@ describe("UsersPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     await waitFor(() => expect(screen.getByText("Account 4180")).toBeTruthy());
     expect(router.state.location.search).toMatchObject({ dir: "next" });
+  });
+  it("narrows to retired accounts from the lifecycle filter and returns to the first page", async () => {
+    listUsers.mockResolvedValue(page(user(4210)));
+
+    const router = renderUsersRoute("/users?cursor=99&dir=next");
+    await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
+    expect(listUsers).not.toHaveBeenCalledWith(
+      expect.objectContaining({ lifecycle: "retired" }),
+      expect.anything(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Retired" }));
+
+    await waitFor(() =>
+      expect(router.state.location.search).toMatchObject({ lifecycle: "retired" }),
+    );
+    expect(router.state.location.search.cursor).toBeUndefined();
+    expect(listUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ lifecycle: "retired" }),
+      expect.anything(),
+    );
+  });
+
+  it("clears the lifecycle filter from All", async () => {
+    listUsers.mockResolvedValue(page(user(4210)));
+
+    const router = renderUsersRoute("/users?lifecycle=retired");
+    await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Account lifecycle" })).getByRole("button", {
+        name: "All",
+      }),
+    );
+
+    await waitFor(() => expect(router.state.location.search).not.toHaveProperty("lifecycle"));
+  });
+
+  it("marks a retiring account in its row and leaves active ones plain", async () => {
+    listUsers.mockResolvedValue(
+      page(
+        user(4210, { lifecycle: "RETIREMENT_SCHEDULED", closesAt: "2027-05-11T10:00:00Z" }),
+        user(4209, { lifecycle: "ACTIVE", closesAt: null }),
+        user(4208),
+      ),
+    );
+
+    renderUsersRoute();
+    await waitFor(() => expect(screen.getByText("Account 4210")).toBeTruthy());
+
+    expect(screen.getAllByLabelText(/account lifecycle state retiring · closes/)).toHaveLength(1);
   });
 });
