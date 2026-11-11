@@ -18,7 +18,7 @@ import { toVocabularyTitleCase, validateCustomTag } from "../features/vocabulary
  * than apply digits it may already have lost.
  */
 
-export const PREFILL_VERSION = 1;
+const PREFILL_VERSION = 1;
 
 /**
  * The longest link a prefill may arrive on, in encoded bytes of
@@ -32,9 +32,9 @@ export const PREFILL_URL_MAX_BYTES = 4096;
 export const PREFILL_TAGS_MAX = 12;
 
 /** A param as the router hands it to `validateSearch`, and as it is handed back. */
-export type PrefillWireValue = string | number | boolean;
+type PrefillWireValue = string | number | boolean;
 
-export type PrefillWire = Record<string, PrefillWireValue>;
+type PrefillWire = Record<string, PrefillWireValue>;
 
 /**
  * What `validateSearch` returns (`search`, each accepted param in its wire form,
@@ -183,7 +183,7 @@ function jsonParses(value: string): boolean {
  * booleans are written bare, and `URLSearchParams` form-encodes the result.
  * `apps/web` checks it against the router's `defaultParseSearch`.
  */
-export function encodePrefillSearch(fields: PrefillHrefFields): string {
+function encodePrefillSearch(fields: PrefillHrefFields): string {
   const params = new URLSearchParams();
   params.set("v", String(PREFILL_VERSION));
   for (const [key, value] of Object.entries(fields)) {

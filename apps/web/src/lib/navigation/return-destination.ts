@@ -12,7 +12,7 @@ type LocationParts = { pathname: string; searchStr: string; hash: string };
  * The one string both the prefill byte budget and the onboarding redirect
  * measure, so the two cannot drift.
  */
-export function locationDestination({ pathname, searchStr, hash }: LocationParts) {
+function locationDestination({ pathname, searchStr, hash }: LocationParts) {
   return sanitizeInternalRedirect(`${pathname}${searchStr}${hash ? `#${hash}` : ""}`);
 }
 

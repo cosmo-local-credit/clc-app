@@ -25,7 +25,7 @@ import {
 } from "./logic";
 
 /** The step a pool prefill lands on, and the only one that reads it. */
-export const POOL_PREFILL_PATH = "/pools/create/pool";
+const POOL_PREFILL_PATH = "/pools/create/pool";
 
 /**
  * What a v1 link may seed into the pool create form. Never the owner, the fee
