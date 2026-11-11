@@ -12,6 +12,12 @@ export type AccountToken = {
   balance: string;
   iconUrl: string | null;
   lastDateBlock: string;
+  /**
+   * The issuer's stated rate from the catalog: one token is worth
+   * `voucherValue` `voucherUoa`. Absent when the catalog has none.
+   */
+  voucherValue?: string | null;
+  voucherUoa?: string | null;
 };
 
 export type AccountTokensResult = {

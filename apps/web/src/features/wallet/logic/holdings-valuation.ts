@@ -1,4 +1,8 @@
-import { formatVoucherUnitValue, sumDecimalAmounts } from "@clc/core/features/market/logic";
+import {
+  formatVoucherUnitValue,
+  sumDecimalAmounts,
+  type VoucherUnitValue,
+} from "@clc/core/features/market/logic";
 import { normalizeUnitOfAccount } from "@clc/core/lib/currencies";
 
 /** What one holding is worth in the wallet's unit, or why it has no figure. */
@@ -20,6 +24,19 @@ export type HoldingValuationInput = {
 };
 
 /**
+ * One holding in its own unit: a stable as US dollars, a voucher at its
+ * issuer's stated rate. `null` when the voucher states no usable rate.
+ */
+export function nativeHoldingValue(
+  amount: string,
+  stable: boolean,
+  rate: { value: string | null; unit: string | null } | null,
+): VoucherUnitValue | null {
+  if (stable) return formatVoucherUnitValue(amount, "1", "USD");
+  return rate ? formatVoucherUnitValue(amount, rate.value, rate.unit) : null;
+}
+
+/**
  * Restates one holding in `unit`.
  *
  * A voucher is worth what its issuer says one unit is worth, in the issuer's
@@ -33,14 +50,8 @@ export function valueHolding(
   unit: string,
   usdRate: { unit: string; value: string | null | undefined } | null,
 ): HoldingValue {
-  const native = input.stable
-    ? formatVoucherUnitValue(input.amount, "1", "USD")
-    : input.rate === undefined
-      ? "pending"
-      : input.rate === null
-        ? null
-        : formatVoucherUnitValue(input.amount, input.rate.value, input.rate.unit);
-  if (native === "pending") return { status: "pending" };
+  if (!input.stable && input.rate === undefined) return { status: "pending" };
+  const native = nativeHoldingValue(input.amount, input.stable, input.rate ?? null);
   if (!native) return { status: "unpriced" };
 
   const nativeUnit = normalizeUnitOfAccount(native.unit);
