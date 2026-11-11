@@ -7,12 +7,14 @@
  * its lifetime to the tab.
  */
 
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { mutationOptions, type QueryClient, queryOptions } from "@tanstack/react-query";
 
 import { backendRetryDelayMs, isRetryableBackendError } from "../../client/errors";
 import type { AuthClient } from "../auth/client";
+import type { ImagePurpose } from "./policy";
 import {
   type ImageUploadClient,
+  type ImportImageInput,
   type UploadImageInput,
   isRetryableStorageError,
   isStorageUnauthorized,
@@ -54,6 +56,28 @@ export function storageTokenQueryOptions(auth: AuthClient, identity: string) {
 }
 
 /**
+ * Runs one storage request with the cached token, dropping and re-reading it
+ * once on a 401.
+ */
+async function withStorageToken<T>(
+  auth: AuthClient,
+  identity: string,
+  client: QueryClient,
+  run: (token: string) => Promise<T>,
+): Promise<T> {
+  const tokenOptions = storageTokenQueryOptions(auth, identity);
+  const session = await client.fetchQuery(tokenOptions);
+  try {
+    return await run(session.token);
+  } catch (error) {
+    if (!isStorageUnauthorized(error)) throw error;
+    client.removeQueries({ queryKey: tokenOptions.queryKey, exact: true });
+    const refreshed = await client.fetchQuery(tokenOptions);
+    return run(refreshed.token);
+  }
+}
+
+/**
  * Uploads one file and resolves to the stored object.
  *
  * There is no `onSuccess` cache work on purpose: a stored object is not yet part
@@ -81,21 +105,45 @@ export function uploadImageMutationOptions(
     // durable across a reload, so it must not pretend to be queued.
     networkMode: "online" as const,
     gcTime: 60_000,
-    mutationFn: async (input: UploadImageInput, context) => {
-      const tokenOptions = storageTokenQueryOptions(auth, identity);
-      const client = storage();
-      const session = await context.client.fetchQuery(tokenOptions);
+    mutationFn: (input: UploadImageInput, context) =>
+      withStorageToken(auth, identity, context.client, (token) => storage().upload(input, token)),
+    retry: (failureCount: number, error: unknown) =>
+      failureCount < 1 && isRetryableStorageError(error),
+  });
+}
 
-      try {
-        return await client.upload(input, session.token);
-      } catch (error) {
-        if (!isStorageUnauthorized(error)) throw error;
+/**
+ * The key an import of one source for one purpose runs under, so every view of
+ * a form finds the same mutation: a layout switch while it runs joins it
+ * through `useMutationState` instead of firing a second request.
+ */
+export function importImageMutationKey(purpose: ImagePurpose, uploadId: string) {
+  return [...imageKeys.all, "import", purpose, uploadId] as const;
+}
 
-        context.client.removeQueries({ queryKey: tokenOptions.queryKey, exact: true });
-        const refreshed = await context.client.fetchQuery(tokenOptions);
-        return client.upload(input, refreshed.token);
-      }
-    },
+/**
+ * Has storage-server import one image from an allowlisted source.
+ *
+ * Same token handling as an upload: read through the Query cache, one re-read
+ * on a 401, and one retry of a retryable failure. Like an upload it moves no
+ * entity cache; the form holds the stored URL until a clc-core write sends it.
+ */
+export function importImageMutationOptions(
+  auth: AuthClient,
+  storage: () => ImageUploadClient,
+  identity: string,
+  input: { purpose: ImagePurpose; uploadId: string },
+) {
+  return mutationOptions({
+    mutationKey: importImageMutationKey(input.purpose, input.uploadId),
+    networkMode: "online" as const,
+    // A finished import is what a later mount of the same link applies without
+    // asking again, so it outlives the view that fired it for a while.
+    gcTime: 5 * 60_000,
+    mutationFn: (variables: ImportImageInput, context) =>
+      withStorageToken(auth, identity, context.client, (token) =>
+        storage().import(variables, token),
+      ),
     retry: (failureCount: number, error: unknown) =>
       failureCount < 1 && isRetryableStorageError(error),
   });

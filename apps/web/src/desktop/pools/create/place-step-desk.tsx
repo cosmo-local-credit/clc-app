@@ -43,12 +43,17 @@ export function PlaceStepDesk({ pool }: { pool: CreatePoolController }) {
               hint={t`Optional`}
               purpose="pool.image"
               value={field.state.value || null}
-              onChange={(url) => field.handleChange(url ?? "")}
+              onChange={pool.changeLogo}
               onBusyChange={pool.setLogoBusy}
               disabled={pool.inFlight}
             />
           )}
         </form.Field>
+      ) : null}
+      {pool.logoImportFailed ? (
+        <p role="alert" className="text-xs text-destructive">
+          <Trans>Couldn't import the image</Trans>
+        </p>
       ) : null}
 
       <div className="grid gap-2">

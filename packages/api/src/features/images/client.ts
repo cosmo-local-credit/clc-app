@@ -14,6 +14,8 @@
  * must not do that.
  */
 
+import { sha256, stringToBytes } from "viem";
+
 import { normalizeBaseUrl } from "../../client/http-client";
 import { parseRetryAfterMs } from "../../client/errors";
 import { IMAGE_POLICIES, type ImagePurpose, type UploadContentType } from "./policy";
@@ -41,6 +43,34 @@ export type UploadImageInput = {
   uploadId: string;
   signal?: AbortSignal;
 };
+
+export type ImportImageInput = {
+  /** The https source storage-server fetches, if its host is on the service's allowlist. */
+  source: string;
+  purpose: ImagePurpose;
+  /** From `imageImportUploadId(source)`, so a repeated import lands on the same object. */
+  uploadId: string;
+  signal?: AbortSignal;
+};
+
+/**
+ * The import's object name, derived from its source: reloading a prefilled
+ * link then lands on `<folder>/<uploadId>_<width>_<contentHash>.<ext>` again
+ * rather than a new object.
+ */
+export function imageImportUploadId(source: string): string {
+  return sha256(stringToBytes(source)).slice(2, 34);
+}
+
+/**
+ * The crop the service applies to an import, which has nobody to frame it.
+ * Only the shapes a purpose may declare; a purpose with none keeps its shape.
+ */
+function importAspect(aspect: number | undefined): string | undefined {
+  if (aspect === 1) return "1:1";
+  if (aspect !== undefined && Math.abs(aspect - 16 / 9) < 1e-9) return "16:9";
+  return undefined;
+}
 
 export type StorageErrorKind =
   /** No response at all: offline, DNS, TLS, CORS, dropped socket. */
@@ -90,6 +120,17 @@ function classifyStorageStatus(status: number): StorageErrorKind {
   return "rejected";
 }
 
+/**
+ * An import's codes say more than its status. The source could not be fetched
+ * is a network failure on the far side, worth the one retry; a host off the
+ * allowlist or content that is not an image never will be.
+ */
+const STORAGE_CODE_KINDS: Readonly<Record<string, StorageErrorKind>> = {
+  IMPORT_FETCH_FAILED: "network",
+  IMPORT_HOST_NOT_ALLOWED: "rejected",
+  IMPORT_CONTENT_REJECTED: "rejected",
+};
+
 export function isRetryableStorageError(error: unknown): boolean {
   if (!(error instanceof StorageApiError)) return false;
   return error.kind === "network" || error.kind === "timeout" || error.kind === "server";
@@ -101,6 +142,8 @@ export function isStorageUnauthorized(error: unknown): boolean {
 
 export type ImageUploadClient = {
   upload(input: UploadImageInput, token: string): Promise<UploadedImage>;
+  /** Has storage-server fetch, crop and store an image from an allowlisted host. */
+  import(input: ImportImageInput, token: string): Promise<UploadedImage>;
   readonly baseUrl: string;
 };
 
@@ -134,6 +177,83 @@ export function createImageUploadClient({
   );
   const doFetch: typeof globalThis.fetch = fetchImpl ?? ((...args) => globalThis.fetch(...args));
 
+  async function send(
+    path: string,
+    init: { headers: Record<string, string>; body: BodyInit; signal?: AbortSignal },
+    fallbackByteSize: number,
+  ): Promise<UploadedImage> {
+    let res: Response;
+    try {
+      res = await doFetch(`${normalizedBaseUrl}${path}`, {
+        method: "POST",
+        credentials: "omit",
+        ...init,
+      });
+    } catch (cause) {
+      // A cancelled request is not a failure the caller should surface.
+      if (cause instanceof Error && cause.name === "AbortError") throw cause;
+      throw new StorageApiError(
+        0,
+        cause instanceof Error ? cause.message : "Could not reach the storage service",
+        undefined,
+        { kind: "network", cause },
+      );
+    }
+
+    const retryAfterMs = parseRetryAfterMs(res.headers?.get?.("retry-after") ?? null);
+    const text = await res.text();
+    let body: UploadEnvelope | null = null;
+    if (text) {
+      try {
+        body = JSON.parse(text) as UploadEnvelope;
+      } catch (cause) {
+        // An unintelligible body on an error status is still that error: a 502
+        // HTML page from a proxy is a server fault and worth one retry.
+        throw new StorageApiError(
+          res.status,
+          res.statusText || "Non-JSON storage response",
+          undefined,
+          {
+            kind: res.ok ? "protocol" : classifyStorageStatus(res.status),
+            retryAfterMs,
+            cause,
+          },
+        );
+      }
+    }
+
+    if (!res.ok || body?.ok !== true) {
+      const code = body?.code;
+      throw new StorageApiError(res.status, code ?? res.statusText ?? "Upload failed", code, {
+        kind:
+          (code ? STORAGE_CODE_KINDS[code] : undefined) ??
+          (res.ok ? "rejected" : classifyStorageStatus(res.status)),
+        retryAfterMs,
+      });
+    }
+
+    const payload = body.payload;
+    const url = typeof payload?.s3 === "string" ? payload.s3 : "";
+    if (!url) {
+      throw new StorageApiError(res.status, "Storage response carried no object URL", undefined, {
+        kind: "protocol",
+      });
+    }
+
+    // Older deployments answer with `s3` alone. Zeroed dimensions say "unknown"
+    // rather than pretending to a size, which a caller reserving space can test.
+    return {
+      url,
+      width: typeof payload?.width === "number" ? payload.width : 0,
+      height: typeof payload?.height === "number" ? payload.height : 0,
+      byteSize: typeof payload?.byteSize === "number" ? payload.byteSize : fallbackByteSize,
+      contentType:
+        typeof payload?.contentType === "string"
+          ? (payload.contentType as UploadContentType)
+          : "image/webp",
+    };
+  }
+
   return {
     baseUrl: normalizedBaseUrl,
 
@@ -148,79 +268,37 @@ export function createImageUploadClient({
       form.append("name", input.uploadId);
       form.append("width", String(policy.width));
 
-      let res: Response;
-      try {
-        res = await doFetch(`${normalizedBaseUrl}/v1/upload`, {
-          method: "POST",
+      return send(
+        "/v1/upload",
+        {
           // The token is the credential; a cookie for this host would be neither
           // sent nor wanted.
-          credentials: "omit",
           headers: { Authorization: `Bearer ${token}` },
           body: form,
           signal: input.signal,
-        });
-      } catch (cause) {
-        // A cancelled upload is not a failure the caller should surface.
-        if (cause instanceof Error && cause.name === "AbortError") throw cause;
-        throw new StorageApiError(
-          0,
-          cause instanceof Error ? cause.message : "Could not reach the storage service",
-          undefined,
-          { kind: "network", cause },
-        );
-      }
+        },
+        input.file.size,
+      );
+    },
 
-      const retryAfterMs = parseRetryAfterMs(res.headers?.get?.("retry-after") ?? null);
-      const text = await res.text();
-      let body: UploadEnvelope | null = null;
-      if (text) {
-        try {
-          body = JSON.parse(text) as UploadEnvelope;
-        } catch (cause) {
-          // An unintelligible body on an error status is still that error: a 502
-          // HTML page from a proxy is a server fault and worth one retry.
-          throw new StorageApiError(
-            res.status,
-            res.statusText || "Non-JSON storage response",
-            undefined,
-            {
-              kind: res.ok ? "protocol" : classifyStorageStatus(res.status),
-              retryAfterMs,
-              cause,
-            },
-          );
-        }
-      }
-
-      if (!res.ok || body?.ok !== true) {
-        throw new StorageApiError(
-          res.status,
-          body?.code ?? res.statusText ?? "Upload failed",
-          body?.code,
-          { kind: res.ok ? "rejected" : classifyStorageStatus(res.status), retryAfterMs },
-        );
-      }
-
-      const payload = body.payload;
-      const url = typeof payload?.s3 === "string" ? payload.s3 : "";
-      if (!url) {
-        throw new StorageApiError(res.status, "Storage response carried no object URL", undefined, {
-          kind: "protocol",
-        });
-      }
-
-      // Older deployments answer with `s3` alone. Zeroed dimensions say "unknown"
-      // rather than pretending to a size, which a caller reserving space can test.
-      return {
-        url,
-        width: typeof payload?.width === "number" ? payload.width : 0,
-        height: typeof payload?.height === "number" ? payload.height : 0,
-        byteSize: typeof payload?.byteSize === "number" ? payload.byteSize : input.file.size,
-        contentType:
-          typeof payload?.contentType === "string"
-            ? (payload.contentType as UploadContentType)
-            : "image/webp",
-      };
+    async import(input, token) {
+      const policy = IMAGE_POLICIES[input.purpose];
+      const aspect = importAspect(policy.aspect);
+      return send(
+        "/v1/import",
+        {
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: input.source,
+            folder: policy.folder,
+            uploadId: input.uploadId,
+            width: policy.width,
+            ...(aspect ? { aspect } : {}),
+          }),
+          signal: input.signal,
+        },
+        0,
+      );
     },
   };
 }

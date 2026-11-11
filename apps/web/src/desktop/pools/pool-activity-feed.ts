@@ -4,7 +4,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { getAddress, isAddress } from "viem";
 
-import { ENTRY_PARAM } from "#/desktop/pools/pool-side-state";
+import { ENTRY_PARAM } from "#/lib/navigation/pool-side";
 import { poolActivityFromAccount } from "#/features/pools/logic/pool-activity";
 import { useAccountActivityInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { parseActivitySearch } from "#/lib/navigation/activity-search";

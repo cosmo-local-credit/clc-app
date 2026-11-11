@@ -1,3 +1,4 @@
+import type { PoolPrefill } from "@clc/core/features/pools/prefill";
 import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 
@@ -43,14 +44,24 @@ const PREVIEW =
   "grid min-w-0 content-start gap-4 @min-[43rem]:col-start-2 @min-[43rem]:row-start-2 @min-[62rem]:sticky @min-[62rem]:top-7 @min-[62rem]:col-start-3 @min-[62rem]:row-start-1";
 
 /** The steps and the pool allowance, the step's form, and a live preview of the Pools row. */
-export function CreatePoolDesk({ step }: { step: PoolCreateStep }) {
+export function CreatePoolDesk({
+  step,
+  prefill,
+}: {
+  step: PoolCreateStep;
+  prefill?: PoolPrefill | null;
+}) {
   const { t } = useLingui();
   // Advanced holds the symbol, pricing and fees, and starts folded. A restored
   // draft opens it, and so does Next being refused for a field inside it; the
   // first step also opens it on arrival when a value there is not the default.
   const restored = usePoolCreateDraft((state) => state.draft !== null);
   const [advancedOpen, setAdvancedOpen] = useState(restored);
-  const pool = useCreatePoolForm({ step, revealAdvanced: () => setAdvancedOpen(true) });
+  const pool = useCreatePoolForm({
+    step,
+    prefill,
+    revealAdvanced: () => setAdvancedOpen(true),
+  });
 
   return (
     <DeskCanvas width="read" className={GRID}>

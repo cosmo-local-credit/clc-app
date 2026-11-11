@@ -45,6 +45,7 @@ vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
 }));
 
 const mocks = vi.hoisted(() => ({
+  search: {} as Record<string, unknown>,
   auth: {
     isAuthenticated: true,
     isLoading: false,
@@ -90,6 +91,8 @@ vi.mock("@tanstack/react-router", () => ({
   ),
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => false,
+  useNavigate: () => vi.fn(),
+  useSearch: () => mocks.search,
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
@@ -195,7 +198,18 @@ vi.mock("wagmi", () => ({
 }));
 
 vi.mock("./pool-voucher-sheet", () => ({
-  PoolVoucherSheet: () => null,
+  PoolVoucherSheet: ({
+    open,
+    voucher,
+    approveSeed,
+  }: {
+    open: boolean;
+    voucher: unknown;
+    approveSeed?: unknown;
+  }) =>
+    open && voucher === null ? (
+      <div data-testid="approve-sheet">{JSON.stringify(approveSeed ?? null)}</div>
+    ) : null,
 }));
 
 // The picker geocodes and renders a map; the editor only needs it to hold a place.
@@ -282,6 +296,7 @@ const savedProfile = {
 
 beforeEach(() => {
   queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  mocks.search = {};
   mocks.vouchersResult.vouchers = [];
   mocks.vouchersResult.isPending = false;
   mocks.vouchersResult.isError = false;
@@ -658,6 +673,31 @@ describe("PoolDetailPage on-chain management", () => {
     expect(screen.queryByRole("button", { name: "Withdraw liquidity" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
+  });
+
+  it("opens the approve sheet with its seeds from a steward-approve link", () => {
+    mocks.search = {
+      tab: "vouchers",
+      tool: "approve",
+      candidate: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+      exchangeRate: "1",
+      creditLimit: "500",
+    };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+
+    expect(JSON.parse(screen.getByTestId("approve-sheet").textContent ?? "null")).toEqual({
+      candidate: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+      exchangeRate: "1",
+      creditLimit: "500",
+    });
+  });
+
+  it("leaves the page unchanged for a non-steward opening the same link", () => {
+    mocks.search = { tab: "vouchers", tool: "approve", candidate: OTHER };
+    mocks.auth.session = { address: OTHER, chainId: 100 };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+
+    expect(screen.queryByTestId("approve-sheet")).toBeNull();
   });
 
   it("withholds them from anyone else", () => {

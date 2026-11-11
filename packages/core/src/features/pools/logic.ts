@@ -86,7 +86,7 @@ export const poolTermsSchema = z.literal(true, {
   error: "Accept the terms to publish your pool",
 });
 
-const poolUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
+export const poolUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
   message: "Choose a unit of account",
 });
 
@@ -97,7 +97,7 @@ const poolUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
  * as vouchers join the pool, while unset rates start at parity. DecimalQuoter
  * remains the stateless equal-value option and OracleQuoter uses live feeds.
  */
-const poolPricingSchema = z.enum(["relative", "oracle", "decimal"]);
+export const poolPricingSchema = z.enum(["relative", "oracle", "decimal"]);
 
 /**
  * The pricing models a pool may *be*, which is the wider set.
